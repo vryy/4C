@@ -143,10 +143,6 @@ if (genprob.restart)
 #ifdef DEBUG 
     pss_status_to_err();
 #endif
-    /*----------------------------------- get the last handle in file */
-    pss_last_handle_in_file(&lasthandle,&nrecords);
-    /*--- the initial value for the next record on file is therefore :*/
-    allfiles.pss_counter = lasthandle + 1;
 }
 else/*------------------------------- no restart, open a new pss-file */
 {
@@ -160,16 +156,6 @@ else/*------------------------------- no restart, open a new pss-file */
      }
     if (par.myrank==0)
     printf("binary is written   to     %s\n",allfiles.outputfile_name);
-/* 
-   processors must have unique handles
-   process 0 takes handles 0..99999
-   process 1 takes handles 100000..199999
-   etc....
-   if one processors handles are all used the process starts again 
-   at myrank*100000 + nprocs*100000
-*/   
-    /* initial values: */
-    allfiles.pss_counter = par.myrank*100000;
 }
 /*-----------------------------------------------open .flavia.msh file */
 if (par.myrank==0)

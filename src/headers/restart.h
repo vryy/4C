@@ -8,21 +8,25 @@ int                          step;
 struct _STRUCT_DYNAMIC       sdyn;
 struct _STRUCT_DYN_CALC      dynvar;
 
-int                          dist_vec_rhs[10];
-int                          dist_vec_sol[10];
-int                          dist_vec_dispi[10];
-int                          dist_vec_vel[10];
-int                          dist_vec_acc[10];
-int                          dist_vec_fie[10];
-int                          dist_vec_work[10];
+long int                     dist_vec_rhs[10];
+long int                     dist_vec_sol[10];
+long int                     dist_vec_dispi[10];
+long int                     dist_vec_vel[10];
+long int                     dist_vec_acc[10];
+long int                     dist_vec_fie[10];
+long int                     dist_vec_work[10];
 
-int                          intforce;
-int                          dirich;
+long int                     intforce;
+long int                     dirich;
 
-int                          handle_of_node_handles;
-struct _ARRAY                node_handles;
+long int                     handle_of_node_handles;
+int                          node_fdim;
+int                          node_sdim;
+long int                   **node_handles;
 
-int                          handle_of_ele_handles;
-struct _ARRAY                ele_handles;
+long int                     handle_of_ele_handles;
+int                          ele_fdim;
+int                          ele_sdim;
+long int                   **ele_handles;
 
 } RESTART_DYNSTRUCT;

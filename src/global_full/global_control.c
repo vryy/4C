@@ -56,9 +56,9 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 void ntam(int argc, char *argv[])
 {
-int ierr;
-int handle;
-double t0,ti,tc;
+int      ierr;
+long int handle;
+double   t0,ti,tc;
 /*---------------------------------------- init devices, tracing, etc...*/
 ntaini(argc,argv);
 /*--------------------------------input phase, input of all information */

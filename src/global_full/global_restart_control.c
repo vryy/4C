@@ -49,10 +49,11 @@ void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
 int                  i;
 int                  ierr;
 int                  numnp;
-int                **node_handles;
+long int           **node_handles;
 int                  numele;
-int                **ele_handles;
+long int           **ele_handles;
 char                 resname[100];
+long int             longdummy;
 RESTART_DYNSTRUCT    res;
 DIST_VECTOR         *distwrite;
 NODE                *actnode;
@@ -144,7 +145,13 @@ pss_write_array(dirich_a,&(res.dirich),&ierr);
 */
 /*----------------------------------------------------------------------*/
 numnp = actpart->pdis[0].numnp;
-node_handles = amdef("nodehand",&(res.node_handles),numnp,3,"IA");
+res.node_handles = (long int**)MALLOC(numnp*sizeof(long int*));
+if (!res.node_handles) dserror("Allocation of memory failed");
+node_handles = res.node_handles;
+node_handles[0] = (long int*)MALLOC(3*numnp*sizeof(long int));
+if (!node_handles[0]) dserror("Allocation of memory failed");
+for (i=1; i<numnp; i++) 
+node_handles[i] = &(node_handles[0][i*3]);
 /*----------------------------------------------------------------------*/
 /* now we loop the nodes on the partition and each node writes his ARRAYs */
 for (i=0; i<numnp; i++)
@@ -161,12 +168,13 @@ for (i=0; i<numnp; i++)
    all nodal data is written, so we now write the node_handles and store
    the handle to this in res.handle_of_node_handles
 */
-pss_write_array(&(res.node_handles),&(res.handle_of_node_handles),&ierr);   
+pss_write("nod_hand",numnp,3,sizeof(long int),node_handles[0],&(res.handle_of_node_handles),&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------- delete the res.node_handles but keep the dimensions */
-amdel(&(res.node_handles));
-res.node_handles.fdim = numnp;
-res.node_handles.sdim = 3;
+res.node_fdim = numnp;
+res.node_sdim = 3;
+FREE(res.node_handles[0]);
+FREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /* 
@@ -179,7 +187,13 @@ res.node_handles.sdim = 3;
 */
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
-ele_handles = amdef("elehandl",&(res.ele_handles),numele,5,"IA");
+res.ele_handles = (long int**)MALLOC(numele*sizeof(long int*));
+if (!res.ele_handles) dserror("Allocation of memory failed");
+ele_handles = res.ele_handles;
+ele_handles[0] = (long int*)MALLOC(5*numele*sizeof(long int));
+if (!ele_handles[0]) dserror("Allocation of memory failed");
+for (i=1; i<numele; i++) 
+ele_handles[i] = &(ele_handles[0][i*5]);
 /*--------------------- now loop element and switch for type of element */
 *action = write_restart;
 for (i=0; i<actpart->pdis[0].numele; i++)
@@ -190,7 +204,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_shell8:
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,
-             0,res.ele_handles.sdim,ele_handles[i],action);
+             0,5,ele_handles[i],action);
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
@@ -219,12 +233,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    all ele data is written, so write the ele_handles and store the handle to
    it in res.handle_of_ele_handles
 */   
-pss_write_array(&(res.ele_handles),&(res.handle_of_ele_handles),&ierr);   
+res.ele_fdim = numele;
+res.ele_sdim = 5;
+pss_write("ele_hand",numele,5,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*------------------ delete the res.ele_handles but keep the dimensions */
-amdel(&(res.ele_handles));
-res.ele_handles.fdim = numele;
-res.ele_handles.sdim = 5;
+FREE(res.ele_handles[0]);
+FREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -234,7 +249,7 @@ res.ele_handles.sdim = 5;
    names are limited to 9 characters, so a step larger then res999999
    can not be restarted at the moment !!!!
 */   
-pss_write(resname,1,1,sizeof(RESTART_DYNSTRUCT),&res,&i,&ierr);
+pss_write(resname,1,1,sizeof(RESTART_DYNSTRUCT),&res,&longdummy,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 /*
@@ -291,13 +306,13 @@ void restart_read_nlnstructdyn(int restart,
 {
 int                  i;
 int                  ierr;
-int                  reshandle;
+long int             reshandle;
 int                  byte;
 int                  dims[3];
 int                  numnp;
-int                **node_handles;
+long int           **node_handles;
 int                  numele;
-int                **ele_handles;
+long int           **ele_handles;
 char                 resname[100];
 RESTART_DYNSTRUCT    res;
 DIST_VECTOR         *distread;
@@ -397,12 +412,20 @@ if (ierr != 1) dserror("Cannot read restart data");
 */
 /*----------------------------------------------------------------------*/
 numnp = actpart->pdis[0].numnp;
-if (numnp != res.node_handles.fdim || 3 != res.node_handles.sdim)
+if (numnp != res.node_fdim || 3 != res.node_sdim)
     dserror("Mismatch in number of nodes on reading restart");
 /*----------------------------------------- define the array of handles */
-node_handles = amdef("nodehand",&(res.node_handles),numnp,3,"IA");
+numnp = actpart->pdis[0].numnp;
+res.node_handles = (long int**)MALLOC(numnp*sizeof(long int*));
+if (!res.node_handles) dserror("Allocation of memory failed");
+node_handles = res.node_handles;
+node_handles[0] = (long int*)MALLOC(3*numnp*sizeof(long int));
+if (!node_handles[0]) dserror("Allocation of memory failed");
+for (i=1; i<numnp; i++) 
+node_handles[i] = &(node_handles[0][i*3]);
 /*------------------------------------------- read the array of handles */
-pss_read_array_name_handle(res.node_handles.name,&(res.node_handles),&(res.handle_of_node_handles),&ierr);
+pss_read_name_handle("nod_hand",&(res.node_fdim),&(res.node_sdim),&i,
+                     node_handles[0],&res.handle_of_node_handles,&ierr);
 if (ierr != 1) dserror("Cannot read restart data");
 /*---------------- now we loop the nodes and each node reads his ARRAYs */
 for (i=0; i<numnp; i++)
@@ -446,7 +469,9 @@ for (i=0; i<numnp; i++)
    /*-------------------------------------------------------------------*/
 } /* end of for (i=0; i<numnp; i++) */
 /*------------------------------- delete the handle array for the nodes */
-amdel(&(res.node_handles));
+/*amdel(&(res.node_handles));*/
+FREE(res.node_handles[0]);
+FREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -454,12 +479,19 @@ amdel(&(res.node_handles));
 */
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
-if (numele != res.ele_handles.fdim || 5 != res.ele_handles.sdim)
+if (numele != res.ele_fdim || 5 != res.ele_sdim)
     dserror("Mismatch in number of elements on reading restart");
 /*----------------------------------------- define the array of handles */
-ele_handles = amdef("elehandl",&(res.ele_handles),numele,5,"IA");
+res.ele_handles = (long int**)MALLOC(numele*sizeof(long int*));
+if (!res.ele_handles) dserror("Allocation of memory failed");
+ele_handles = res.ele_handles;
+ele_handles[0] = (long int*)MALLOC(5*numele*sizeof(long int));
+if (!ele_handles[0]) dserror("Allocation of memory failed");
+for (i=1; i<numele; i++) 
+ele_handles[i] = &(ele_handles[0][i*5]);
 /*------------------------------------------- read the array of handles */
-pss_read_array_name_handle(res.ele_handles.name,&(res.ele_handles),&(res.handle_of_ele_handles),&ierr);
+pss_read_name_handle("ele_hand",&res.ele_fdim,&res.ele_sdim,&i,
+                     ele_handles[0],&res.handle_of_ele_handles,&ierr);
 if (ierr != 1) dserror("Cannot read restart data");
 /*--------------------- now loop element and switch for type of element */
 *action = read_restart;
@@ -471,7 +503,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_shell8:
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,
-             0,res.ele_handles.sdim,ele_handles[i],action);
+             0,5,ele_handles[i],action);
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
@@ -497,7 +529,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------- delete the handle array of the elements */
-amdel(&(res.ele_handles));
+FREE(ele_handles[0]);
+FREE(ele_handles);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

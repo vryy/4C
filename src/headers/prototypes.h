@@ -618,100 +618,60 @@ void frend(void);
 /*----------------------------------------------------------------------*
  |  pss_pss.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
- | write a record to pss-file                            m.gee 11/00    |
- |                                                                      |
- | ierr=0     error in writing                                          |
- | ierr=1     writing successfull                                       |
- | ierr=2     record with this name already exists                      |
- |                                                                      |
- | name          name of record                                     (I) |
- | fdim          first dimension of record                          (I) |
- | sdim          scnd dimension of record                           (I) |
- | byte          size of one object inside record                   (I) |
- | startaddress  starting address of record to write                (I) |
- | ierr          error handler (see above)                          (O) |
- |                                                                      |
- | Attention: a record to write has to be contigous in memory !!        |
- |                                                                      |
- | How does a record on pss-file look like:                             |
- |                                                                      |
- | int           number_chars_of_name                                   |
- | char          name[]                                                 |
- | int           handle                                                 |
- | int           fdim                                                   |
- | int           sdim                                                   |
- | int           byte                                                   |
- | void          record[]                                               |
- |                                                                      |
- |                                                                      |
- *----------------------------------------------------------------------*/
-void pss_write(char       *name, 
-               int         fdim, 
-               int         sdim,
-               int         byte,
-               const void *startaddress,
-               int        *handle, 
-               int        *ierr);
-/*----------------------------------------------------------------------*
- | write the content of ARRAY to pss-file                m.gee 11/00    |
- |                                                                      |
- | ierr=0     error in writing                                          |
- | ierr=1     writing successfull                                       |
- | ierr=2     record with this name already exists                      |
- |                                                                      |
- | const ARRAY *array (input) adress of array to be written             |
- | int         *handle(output) unique handle returned by the pss-system |
- | int         *ierr  (output) success flag                             |
- |                                                                      |
- *----------------------------------------------------------------------*/
+void pss_write(char          *name, 
+               int            fdim, 
+               int            sdim,
+               int            byte,
+               const void    *startaddress,
+               long int      *handle, 
+               int           *ierr);
 void pss_write_array(const ARRAY *array, 
-                     int         *handle, 
+                     long int    *handle, 
                      int         *ierr);
-void pss_read_name(char *name, 
-                   int  *fdim, 
-                   int  *sdim,
-                   int  *byte,
-                   void *ziel,
-                   int  *handle, 
-                   int  *ierr);
-void pss_read_name_handle(char *name, 
-                          int  *fdim, 
-                          int  *sdim,
-                          int  *byte,
-                          void *ziel, 
-                          int  *handle, 
-                          int  *ierr);
-void pss_read_array_name(char  *name, 
-                         ARRAY *array,
-                         int   *handle,
-                         int   *ierr);
-void pss_read_array_name_handle(char  *name, 
-                                ARRAY *array,
-                                int   *handle,
-                                int   *ierr);
-void pss_read_array_handle(ARRAY *array,
-                           int   *handle,
-                           int   *ierr);
-void pss_chck(char *name,
-              int  *handle, 
-              int  *ierr);
-void pss_chck_handle(char *name,
-                     int  *handle, 
-                     int  *ierr);
-void pss_getdims_name(char *name, 
-                      int  *fdim,
-                      int  *sdim,
-                      int  *byte,
-                      int  *handle,
-                      int  *ierr);
-void pss_getdims_name_handle(char *name, 
-                             int  *fdim,
-                             int  *sdim,
-                             int  *byte,
-                             int  *handle,
-                             int  *ierr);
-void pss_status_to_err(void);
+void pss_read_name(char      *name, 
+                   int       *fdim, 
+                   int       *sdim,
+                   int       *byte,
+                   void      *ziel,
+                   long int  *handle, 
+                   int       *ierr);
+void pss_read_name_handle(char       *name, 
+                          int	     *fdim, 
+                          int	     *sdim,
+                          int	     *byte,
+                          void       *ziel, 
+                          long int   *handle, 
+                          int	     *ierr);
+void pss_read_array_name(char       *name, 
+                         ARRAY      *array,
+                         long int   *handle,
+                         int        *ierr);
+void pss_read_array_name_handle(char       *name, 
+                                ARRAY	   *array,
+                                long int   *handle,
+                                int	   *ierr);
+void pss_read_array_handle(ARRAY      *array,
+                           long int   *handle,
+                           int        *ierr);
+void pss_chck(char       *name,
+              long int   *handle, 
+              int        *ierr);
+void pss_chck_handle(char       *name,
+                     long int   *handle, 
+                     int        *ierr);
+void pss_getdims_name(char       *name, 
+                      int	 *fdim,
+                      int	 *sdim,
+                      int	 *byte,
+                      long int	 *handle,
+                      int	 *ierr);
+void pss_getdims_name_handle(char       *name, 
+                             int	*fdim,
+                             int	*sdim,
+                             int	*byte,
+                             long int	*handle,
+                             int	*ierr);
+void pss_status_to_err();
 /*----------------------------------------------------------------------*
  | routine to initialise the cpu - time                  genk 05/02     |
  *----------------------------------------------------------------------*/
