@@ -842,6 +842,7 @@ fdyn->adaptive=0;	/* default: no adaptive time stepping */
 fdyn->time_rhs=1;	/* default: build time rhs as W.A. Wall describes */
 fdyn->lte = 1.0e-03;	/* default: local truncation error for adapt. time*/
 fdyn->max_dt = 1.0;	/* default: maximal time step size to 1.0 */
+fdyn->min_dt = 0.0;	/* default: minimal time step size to 0.0 */
 fdyn->mlfem = 0;	/* default: no multi-level algorithm */
 
  
@@ -1079,6 +1080,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       if (strncmp(buffer,"mass",4)==0) 
          fdyn->time_rhs=0;
+      else if (strncmp(buffer,"classic",7)==0) 
+         fdyn->time_rhs=1;
       else
          dserror("TIME_RHS unknown!");     
    }
@@ -1159,6 +1162,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("SC_COORD_X"  ,&(fdyn->coord_scale[0]),&ierr);
    frdouble("SC_COORD_Y"  ,&(fdyn->coord_scale[1]),&ierr);
    frdouble("MAX_DT"      ,&(fdyn->max_dt),&ierr);
+   frdouble("MIN_DT"      ,&(fdyn->min_dt),&ierr);
    frdouble("LOC_TRUN_ERR",&(fdyn->lte)   ,&ierr);
    frdouble("SMAGCONST",&(fdyn->dynvar.smagcon),&ierr);
 
