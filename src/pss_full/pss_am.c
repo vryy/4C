@@ -7,9 +7,6 @@
 #ifdef DEBUG
 extern struct _TRACE         trace;
 #endif
-
-
-
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | global variable  num_byte_allocated                                  |
@@ -503,6 +500,55 @@ return;
 
 
 /*----------------------------------------------------------------------*
+ | multiply an array by a scalar                          m.gee 6/01    |
+ *----------------------------------------------------------------------*/
+void amscal(ARRAY *array, void *value)
+{
+register int     i;
+int              dim;
+int             *ivalue;
+double          *dvalue;
+int             *iptr;
+double          *dptr;
+#ifdef DEBUG 
+dstrc_enter("amscal");
+#endif
+/*----------------------------------------------------------------------*/
+dim = (array->fdim) * (array->sdim);
+switch (array->Typ)
+{
+case DA:
+   dvalue = (double*)value;
+   dptr   = array->a.da[0];
+   for (i=0; i<dim; i++) *(dptr++) *= (*dvalue);
+   break; 
+case DV:
+   dvalue = (double*)value;
+   dptr = array->a.dv;
+   for (i=0; i<dim; i++) *(dptr++) *= (*dvalue);
+   break;
+case IA:
+   ivalue = (int*)value;
+   iptr = array->a.ia[0];
+   for (i=0; i<dim; i++) *(iptr++) *= (*ivalue);
+   break; 
+case IV:
+   ivalue = (int*)value;
+   iptr = array->a.iv;
+   for (i=0; i<dim; i++) *(iptr++) *= (*ivalue); 
+   break; 
+default:
+   dserror("Unknown type of array given");
+}  
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of amscal */
+
+
+/*----------------------------------------------------------------------*
  | initialize an array by value                           m.gee 6/01    |
  *----------------------------------------------------------------------*/
 void aminit(ARRAY *array, void *value)
@@ -549,8 +595,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of aminit */
-
-
 
 
 
