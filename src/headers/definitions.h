@@ -62,6 +62,14 @@ typedef char      CHAR;
 #define c1jacb c1jacb_
 #define dsyev  dsyev_
 #define mumps_interface   mumps_interface_
+#define iluk           iluk_
+#define lusol          lusol_
+#define mlpcgveczero   mlpcgveczero_
+#define mlpcgvecvec    mlpcgvecvec_
+#define mlpcgupdupdvec mlpcgupdupdvec_
+#define mlpcgupdvec    mlpcgupdvec_
+#define dveczero       dveczero_
+#define iveczero       iveczero_
 #endif
 /* append underslash for CUSS Sunfire */
 #ifdef SUN 
@@ -85,6 +93,14 @@ typedef char      CHAR;
 #define c1jacb c1jacb_
 #define dsyev  dsyev_
 #define mumps_interface   mumps_interface_
+#define iluk           iluk_
+#define lusol          lusol_
+#define mlpcgveczero   mlpcgveczero_
+#define mlpcgvecvec    mlpcgvecvec_
+#define mlpcgupdupdvec mlpcgupdupdvec_
+#define mlpcgupdvec    mlpcgupdvec_
+#define dveczero       dveczero_
+#define iveczero       iveczero_
 #endif
 /* append underslash for SIXTYFOUR */
 #ifdef SIXTYFOUR 
@@ -108,6 +124,14 @@ typedef char      CHAR;
 #define c1jacb c1jacb_
 #define dsyev  dsyev_
 #define mumps_interface   mumps_interface_
+#define iluk           iluk_
+#define lusol          lusol_
+#define mlpcgveczero   mlpcgveczero_
+#define mlpcgvecvec    mlpcgvecvec_
+#define mlpcgupdupdvec mlpcgupdupdvec_
+#define mlpcgupdvec    mlpcgupdvec_
+#define dveczero       dveczero_
+#define iveczero       iveczero_
 #endif
 
 /*----------------------------------------------------------------------*
@@ -124,7 +148,7 @@ typedef char      CHAR;
  | square of a double                                                   |
  *----------------------------------------------------------------------*/
 static DOUBLE dsqrarg;
-#define DSQR(a) ((dsqrarg=(a)) == 0.0 ? 0.0 : dsqrarg*dsqrarg)
+#define DSQR(a) (a*a)
 
 /*----------------------------------------------------------------------*
  | the larger of two doubles (fast version)                             |
