@@ -38,6 +38,7 @@ extern ALLDYNA      *alldyn;
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _DESIGN *design;
+
 /*!---------------------------------------------------------------------
 \brief create fsi coupling conditions
 
@@ -57,10 +58,12 @@ void fsi_createfsicoup()
 INT i,j;                                  /* simply some counters       */
 INT hasdirich,hascouple,hasfsi,hasneum;   /* different flags            */
 
+FIELDTYP  fieldtyp;
+
 DNODE    *actdnode;
 DLINE    *actdline;
 DSURF    *actdsurf;
-FIELDTYP  fieldtyp;
+
 
 #ifdef DEBUG
 dstrc_enter("fsi_createfsicoup");
@@ -501,16 +504,18 @@ for (i=0;i<numfnp;i++)
    actfnode  = &(fluidfield->dis[0].node[i]);
    actfgnode = actfnode->gnode;
    if (actfgnode->fsicouple==NULL) continue;
-   actsnode = actfgnode->mfcpnode[numsf];
-   actanode = actfgnode->mfcpnode[numaf];
-   actsgnode = actsnode->gnode;
-   actagnode = actanode->gnode;
-   dsassert(actfnode->locsysId==0,"No locsys at FSI coupling node!\n");
-   dsassert(actsnode->locsysId==0,"No locsys at FSI coupling node!\n");
-   dsassert(actanode->locsysId==0,"No locsys at FSI coupling node!\n");
-   dsassert(actsgnode->fsicouple!=NULL,"FSI Coupling Condition Fluid-Struct not the same!\n");
-   dsassert(actagnode->fsicouple!=NULL,"FSI Coupling Condition Fluid-Ale not the same!\n");
-   dsassert(actfgnode->fsicouple->fsi_coupleId==actsgnode->fsicouple->fsi_coupleId,
+   if(actfgnode->fsicouple->fsi_mesh == conforming)
+   {
+     actsnode = actfgnode->mfcpnode[numsf];
+     actanode = actfgnode->mfcpnode[numaf];
+     actsgnode = actsnode->gnode;
+     actagnode = actanode->gnode;
+     dsassert(actfnode->locsysId==0,"No locsys at FSI coupling node!\n");
+     dsassert(actsnode->locsysId==0,"No locsys at FSI coupling node!\n");
+     dsassert(actanode->locsysId==0,"No locsys at FSI coupling node!\n");
+     dsassert(actsgnode->fsicouple!=NULL,"FSI Coupling Condition Fluid-Struct not the same!\n");
+     dsassert(actagnode->fsicouple!=NULL,"FSI Coupling Condition Fluid-Ale not the same!\n");
+     dsassert(actfgnode->fsicouple->fsi_coupleId==actsgnode->fsicouple->fsi_coupleId,
             "FSI Coupling Condition Fluid-Struct: wrong coupleId\n");
    dsassert(actfgnode->fsicouple->fsi_coupleId==actagnode->fsicouple->fsi_coupleId,
             "FSI Coupling Condition Fluid-Ale: wrong coupleId\n");
@@ -518,12 +523,13 @@ for (i=0;i<numfnp;i++)
             "FSI Coupling Condition Fluid-Struct: wrong mesh\n");
    dsassert(actfgnode->fsicouple->fsi_mesh==actagnode->fsicouple->fsi_mesh,
             "FSI Coupling Condition Fluid-Ale: wrong mesh\n");
-   dsassert(actfgnode->dirich!=NULL,"No dirich condition for fsi-coupling fluid node!\n");
-   if(actfgnode->dirich->dirich_type!=dirich_FSI) continue;
-   dsassert(actfnode->numdf==dim+1,"numdf not possible for fluid node at FSI interface!\n");
-   for (j=0;j<dim;j++)
-   dsassert(actfgnode->dirich->dirich_onoff.a.iv[j]==1,"wrong onoff() at fluid node!\n");
-   dsassert(actfgnode->dirich->dirich_onoff.a.iv[dim]==0,"wrong onoff() at fluid node!\n");
+     dsassert(actfgnode->dirich!=NULL,"No dirich condition for fsi-coupling fluid node!\n");
+     if(actfgnode->dirich->dirich_type!=dirich_FSI) continue;
+     dsassert(actfnode->numdf==dim+1,"numdf not possible for fluid node at FSI interface!\n");
+     for (j=0;j<dim;j++)
+     dsassert(actfgnode->dirich->dirich_onoff.a.iv[j]==1,"wrong onoff() at fluid node!\n");
+     dsassert(actfgnode->dirich->dirich_onoff.a.iv[dim]==0,"wrong onoff() at fluid node!\n");
+   }
 } /* end of loop over fluid nodes */
 
 for (i=0;i<numanp;i++)

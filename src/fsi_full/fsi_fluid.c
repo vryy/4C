@@ -343,6 +343,13 @@ if (fdyn->checkarea>0) out_area(totarea_a,fdyn->acttime,0,1);
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 /*---------- calculate time independent constants for time algorithm ---*/
 fluid_cons();
+
+#ifdef D_MORTAR
+/* redefine the size of sol_mf from 2 to 3, the third field is necessary*/
+/* to store the nodal forces due to fsi */
+  solserv_sol_zero(actfield, 0, 3, 3);
+#endif
+
 break;
 
 /*======================================================================*
@@ -360,6 +367,8 @@ break;
  * sol_increment[6][i] ... convective velocity at time (n+1)	        *
  * sol_mf[0][j]        ... solution at time (n+1)			*
  * sol_mf[1][j]        ... nodal stresses at FS-interface at time (n+1) *
+ * in mortar cases only:                                                *
+ * sol_mf[2][j]        ... nodal forces at FS-interface at time (n+1)   *
  *======================================================================*/
 case 2:
 
@@ -574,6 +583,18 @@ if (fsidyn->ifsi>0)
    solserv_sol_zero(actfield,0,3,1);
    fsi_fluidstress_result(actfield,fdyn->numdf);
 }
+
+
+#ifdef D_MORTAR
+if(fsidyn->coupmethod == 0) /* mortar method */
+{
+  /*------- redefine the size of sol_mf from 2 to 3, the third field is */
+  /*-------------------- necessary to store the nodal forces due to fsi */
+  solserv_sol_zero(actfield, 0, 3, 3);
+}
+#endif
+
+
 if (fsidyn->ifsi>=4)
 break;
 

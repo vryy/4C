@@ -95,7 +95,11 @@ static FSI_DYNAMIC    *fsidyn;
 static STRUCT_DYNAMIC *sdyn;
 static ALE_DYNAMIC    *adyn;
 
-#ifdef DEBUG
+#ifdef D_MORTAR
+INTERFACES            *int_faces; /* interface information for mortar   */
+#endif
+
+#ifdef DEBUG 
 dstrc_enter("dyn_fsi");
 #endif
 
@@ -117,6 +121,10 @@ numff       = 1;
 alefield    = &(field[2]);
 numaf       = 2;
 
+#ifdef D_MORTAR
+int_faces = (INTERFACES*)CCACALLOC(1,sizeof(INTERFACES));
+#endif
+
 /*-------------------------------------------------- plausibility check */
 dsassert(structfield->fieldtyp==structure,"FIELD 0 has to be structure\n");
 dsassert(fluidfield->fieldtyp==fluid,"FIELD 1 has to be fluid\n");
@@ -132,11 +140,25 @@ fsidyn= alldyn[3].fsidyn;
 fsidyn->time=ZERO;
 fsidyn->step=0;
 
+adyn->coupmethod = fsidyn->coupmethod;
+
 if (fdyn->freesurf==1)
 dserror("No explicit free surface combined with FSI!");
 
 /*---------------------------------- initialise fsi coupling conditions */
 fsi_initcoupling(structfield,fluidfield,alefield);
+
+#ifdef D_MORTAR
+if (fsidyn->coupmethod == 0) /* mortar method */
+{
+  /*-------------------------------------------- intitialize interfaces */
+  fsi_initcoupling_intfaces(structfield,fluidfield, int_faces);
+  /* ------------------------allocate memory for the several interfaces */
+  int_faces->interface = (INTERFACE*)CCACALLOC(int_faces->numint,
+                         sizeof(INTERFACE));
+}
+#endif
+
 /*--------------------------------- determine structural interface dofs */
 fsi_struct_intdofs(structfield);
 /*---------------------------------------- init all applied time curves */
@@ -175,6 +197,15 @@ if (par.myrank==0) out_gid_msh();
 /*--------------------------------------- write initial solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
 if (par.myrank==0) out_gid_sol_fsi(fluidfield,structfield);
+
+#ifdef D_MORTAR
+if (fsidyn->coupmethod == 0) /* mortar method */
+{
+  /*----------------------------- fill structure interfaces with values */
+  fsi_init_interfaces(structfield,fluidfield,int_faces);
+}
+#endif
+
 /*======================================================================*
                               T I M E L O O P
  *======================================================================*/
@@ -213,15 +244,43 @@ if (fsidyn->ifsi==1 || fsidyn->ifsi==3)
 /*---------------------------------------------- schemes with predictor */
 else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
 {
+   #ifdef D_MORTAR
+   if (fsidyn->coupmethod == 0) /* mortar method */
+   {
+     /*-- computation of mortar approximation, only for interfaces with */
+     /* --------------nonconforming discretizations */
+     fsi_mortar_coeff(fsidyn, int_faces);
+   }
+   #endif
+
    /*----------------- CSD - predictor for itnum==0 --------------------*/
    if (itnum==0)
    {
       fsi_struct(structfield,mctrlpre,itnum);
    }
+   #ifdef D_MORTAR
+   if (fsidyn->coupmethod == 0) /* mortar method */
+   {
+     /*-- computation of interface displacements for ale nodes, only for*/
+     /* ----------------- interfaces with nonconforming discretizations */
+     fsi_calc_disp4ale(fsidyn, int_faces);  
+   }
+   #endif
+
    /*------------------------------- CMD -------------------------------*/
    fsi_ale(alefield,mctrl);
    /*------------------------------- CFD -------------------------------*/
    fsi_fluid(fluidfield,mctrl);
+
+   #ifdef D_MORTAR
+   if (fsidyn->coupmethod == 0) /* mortar method */
+   {
+     fsi_calc_intforces(int_faces);
+     /* --------put coupling forces from fluid nodes to structure nodes */ 
+     fsi_put_coupforc2struct(structfield, int_faces);
+   }
+   #endif
+
    /*------------------------------- CSD -------------------------------*/
    fsi_struct(structfield,mctrl,itnum);
 }
