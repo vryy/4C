@@ -1120,9 +1120,7 @@ void solver_copy_csr(
                        DBCSR         *amatrix_csr,
 		       int            numeq_total
                      );
-/*! 
-\addtogroup CONTACT 
-*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  |  s8_contact1.c                                         m.gee 3/03    |
  *----------------------------------------------------------------------*/
@@ -1135,7 +1133,6 @@ void s8_contact_detection(FIELD        *actfield,
                           int          *iscontact,
                           double       *maxdt);
 #endif
-/*! @} (documentation module close)*/
 
 /************************************************************************
  | fluid_service.c                                                      |
