@@ -1,7 +1,7 @@
 #
 # binaries
 #                main
-OBJS_MAIN     = src/main/main_ccarat.o 
+OBJS_MAIN     = src/global_full/main_ccarat.o 
 #                global_full
 OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_inp_control.o \
