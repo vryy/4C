@@ -25,7 +25,7 @@
  *----------------------------------------------------------------------*/
 #include "enums.h"
 /*----------------------------------------------------------------------*
- | structures concerning domain decomposition                m.gee 8/00 |
+ | structures concerning domain decomposition             m.gee 8/00    |
  | and intra-communicators                                              |
  *----------------------------------------------------------------------*/
 #include "partition.h"
@@ -38,9 +38,9 @@
  *----------------------------------------------------------------------*/
 #include "design.h"
 /*----------------------------------------------------------------------*
- | structures used by load cases                          m.gee 8/00    |
+ | structures used by load curves                         m.gee 8/00    |
  *----------------------------------------------------------------------*/
-#include "load.h"
+#include "curve.h"
 /*----------------------------------------------------------------------*
  | standard conditions for nodes and elements on finite element level   |
  |                                                        m.gee 8/00    |
@@ -50,7 +50,22 @@
  | material laws                                          m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "materials.h"
+/*----------------------------------------------------------------------*
+ | structures used for static analysis                    m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#include "static_analysis.h"
+/*----------------------------------------------------------------------*
+ | structures used for dynamic analysis                   m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#include "dynamic.h"
+/*----------------------------------------------------------------------*
+ | structures used for bug and time tracing               m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#include "tracing.h"
 /*----------------------------------------------------------------------*/
+
+
+
 
 /*----------------------------------------------------------------------*
  | file I/O variables & fr-system                         m.gee 8/00    |
@@ -85,39 +100,25 @@ int               actrow;                 /* rowpointer used by fr        */
 char             *actplace;               /* pointer to actual place in input-file */
 } FILES;
 
+
+
+
+
 /*----------------------------------------------------------------------*
- | tracing of time & array bugs                           m.gee 8/00    |
- | This structures is used by the chained list that keeps trrack of     |
- | the function calls                                                   |
- |                                                                      |
+ | general IO-flags                                      m.gee 12/01    |
+ | flags to switch the output of certain data on or off, read from gid  |
  *----------------------------------------------------------------------*/
-typedef struct _TRACEROUT
+typedef struct _IO_FLAGS
 {
-struct _TRACEROUT   *prev;
-struct _TRACEROUT   *next;
-char                 name[50];
-enum 
-   {
-    dsnone,
-    dsin,
-    dsout
-   }                 dsroutcontrol;
-   
-} TRACEROUT;
-/*----------------------------------------------------------------------*
- | tracing of time & array bugs                           m.gee 8/00    |
- |                                                                      |
- *----------------------------------------------------------------------*/
-typedef struct _TRACE
-{
-int                 trace_on;             /* switches trace on/off */
-int                 num_arrays;           /* number of current int-arrays */
-int                 size_arrays;          /* size of vector arrays    */
-struct _ARRAY     **arrays;               /* pointer to the arrays    */
-int                 deepness;             /* the actual deepness of the calling tree */
-struct _TRACEROUT   routine[100];         /* chained list ring to trace routine */
-struct _TRACEROUT   *actroutine;          /* ptr to actual routine */
-} TRACE;
+int               struct_disp_file;    /* write displacements to .out */
+int               struct_stress_file;  /* write structural stress to .out */
+int               struct_disp_gid;     /* write structural displacements to .flavia.res */
+int               struct_stress_gid;   /* write structural stresses to .flavia.res */
+} IO_FLAGS;
+
+
+
+
 
 /*----------------------------------------------------------------------*
  | FIELD                                                   m.gee 8/00   |
@@ -142,6 +143,9 @@ struct _NODE      *node;          /* vector of nodes */
 
 } FIELD;
 
+
+
+
 /*----------------------------------------------------------------------*
  | general problem-variables                              m.gee 4/01    |
  | General information is held here                                     |           
@@ -162,105 +166,32 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
 
 } GENPROB;
 
-/*----------------------------------------------------------------------*
- | general IO-flags                                      m.gee 12/01    |
- | flags to switch the output of certain data on or off, read from gid  |
- *----------------------------------------------------------------------*/
-typedef struct _IO_FLAGS
-{
-int               struct_disp_file;    /* write displacements to .out */
-int               struct_stress_file;  /* write structural stress to .out */
-int               struct_disp_gid;     /* write structural displacements to .flavia.res */
-int               struct_stress_gid;   /* write structural stresses to .flavia.res */
-} IO_FLAGS;
 
 
-/*----------------------------------------------------------------------*
- | general dynamic-variables                              m.gee 4/01    |
- *----------------------------------------------------------------------*/
-typedef struct _DYNAMIC                  /* not used */
-{
-char dyntyp[50];
 
-int                nstep;    /* this all is in progress... */
-int                damp;     /* some of these values are read from gid */
-int                iter;
-int                maxiter;
 
-int                numcurve;
-struct _CURVE     *curve;
-
-double             dt;
-double             maxtime;
-double             beta;
-double             gamma;
-double             alpha_m;
-double             alpha_f;
-double             m_damp;
-double             k_damp;
-} DYNAMIC;
-
-/*----------------------------------------------------------------------*
- | enum NR_CONTROLTYP                                    m.gee 11/01    |
- | type of control algorithm for Newton-Raphson in nonlinear structural |
- | analysis                                                             |
- *----------------------------------------------------------------------*/
-typedef enum _NR_CONTROLTYP         /* type of nonlinear static control */
-{
-                       control_none,
-                       control_disp,     /* displacement control */
-                       control_load,     /* not impl. yet */
-                       control_arc       /* not implem. yet */
-} NR_CONTROLTYP;                         
-
-/*----------------------------------------------------------------------*
- | general static-variables                               m.gee 6/01    |
- | variables used by linear or nonlinear structural static analysis     |
- *----------------------------------------------------------------------*/
-typedef struct _STATIC_VAR               
-{
-int                 geolinear;          /* is linear calculation */
-int                 geononlinear;       /* is nonlinear calculation */
-enum _NR_CONTROLTYP nr_controltyp;      /* type of control */
-int                 nstep;              /* number of steps */
-int                 maxiter;            /* max number of iterations in NR */
-double              tolresid;           /* tolerance of residual forces */
-double              toldisp;            /* tolerance of residual displacements */
-double              stepsize;           /* steplenght */
-int                 iarc;               /* flag for arscaling in Crisfields Arclenght control */
-double              arcscl;             /* arc scaling scaling factor of load part of predictor */
-
-struct _NODE       *controlnode;        /* ptr to control node */
-int                 control_node_global;/* global control node Id (redundant) */
-int                 control_dof;        /* dof of control node to be controlled */
-} STATIC_VAR;
-
-/*----------------------------------------------------------------------*
- | general static-control-variables                       m.gee 6/01    |
- | variables to perform Newton Raphson                                  |
- *----------------------------------------------------------------------*/
-typedef struct _STANLN  
-{
-double              sp1;
-double              csp;                  /* current stiffness parameter */
-double              rlold;                /* load factor of last step */
-double              rlnew;                /* load factor of actual step */
-double              rlpre;                /* load factor from predictor */
-
-double              renorm;               /* some norms */
-double              rinorm;
-double              rrnorm;
-
-double              renergy;
-
-struct _ARRAY       arcfac;               /* vector of load factors of increments */
-} STANLN;
 
 /*----------------------------------------------------------------------*
  | Prototypes                                            m.gee 06/01    |
  | prototypes of all files using standardtypes.h                        |
  *----------------------------------------------------------------------*/
 #include "prototypes.h"
+/*----------------------------------------------------------------------*
+ | Prototypes                                            m.gee 06/01    |
+ | Prototypes of routines which include the                             |
+ | header solution.h are kept separately in prototypes_sol.h            |
+ | This is done, because of 2 reasons:                                  |
+ | 1. The structures defined in solution.h are very big                 |
+ | 2. in solution.h the headers of all kinds of solver libraries are    |
+ |    included. As we do not know exactly, what is defined in these     |
+ |    headers, it is better to keep the knowledge of these headers as   |
+ |    small as possible                                                 |
+ *----------------------------------------------------------------------*/
+
+
+
+
+
 /*----------------------------------------------------------------------*
  | global variables                                                     |
  |                                                                      |

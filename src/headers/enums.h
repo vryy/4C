@@ -83,6 +83,18 @@ typedef enum _PART_TYP
                        cut_nodes
 } PART_TYP;                         
 /*----------------------------------------------------------------------*
+ | enum NR_CONTROLTYP                                    m.gee 11/01    |
+ | type of control algorithm for Newton-Raphson in nonlinear structural |
+ | analysis                                                             |
+ *----------------------------------------------------------------------*/
+typedef enum _NR_CONTROLTYP         /* type of nonlinear static control */
+{
+                       control_none,
+                       control_disp,     /* displacement control */
+                       control_load,     /* not impl. yet */
+                       control_arc       /* not implem. yet */
+} NR_CONTROLTYP;                         
+/*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
  | to tell element routines what to do                                  |

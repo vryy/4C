@@ -58,7 +58,7 @@ typedef struct _ELEMENT
      {
      struct _SHELL8   *s8;                      /* shell8 element */
      struct _BRICK1   *b1;                      /* structural volume element */
-     struct _WALL1    *w1;                      /* 2D plain stress - plain strain element */
+     struct _WALL1    *w1;                      /* 2D plane stress - plane strain element */
      struct _FLUID3   *f3;                      /* 3D fluid element */
      struct _ALE      *ale;                     /* pseudo structural 2D or 3D ale element */
      }                          e;              /* name of union */ 
