@@ -52,6 +52,7 @@ typedef enum _DIS_TYP
 typedef enum _ELEMENT_TYP
 {
                        el_none,        /* unknown type of element */
+                       el_shell1,      /* 5 parameter shell element */
                        el_shell8,      /* 7 parameter shell element */
                        el_brick1,      /* structural brick element */
                        el_wall1,       /* 2D plane stress - plane strain element */
