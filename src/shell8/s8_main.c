@@ -36,6 +36,8 @@ dstrc_enter("shell8");
 /*----------------------------------------------------------------------*/
 if (intforce_global)
 intforce = intforce_global->a.dv;
+else
+intforce = NULL;
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
@@ -51,14 +53,14 @@ break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
-   s8static_ke(ele,
-               &actdata,
-               actmat,
-               estif_global,
-               NULL,
-               0,
-               0,
-               0);
+   s8static_keug(ele,
+                 &actdata,
+                 actmat,
+                 estif_global,
+                 NULL,
+                 intforce,
+                 0,
+                 0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:
