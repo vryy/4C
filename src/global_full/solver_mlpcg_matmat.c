@@ -1058,7 +1058,7 @@ ARRAY      send_a,recv_a;
 DOUBLE    *zs,*zr;
 char       sign='"';
 NODE      *actnode;
-DOUBLE     x[3],a[3],scal,sdc;
+DOUBLE     x[3],a[3],scal,sdc=0.0;
 INT        nnode;
 nnode = genprob.nnode;
 /*----------------------------------------------------------------------*/
