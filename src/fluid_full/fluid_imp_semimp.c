@@ -631,6 +631,19 @@ if (ioflags.fluid_stress_gid==1)
       &container,action);
 }
 
+if (fdyn->nim==0)
+{
+/*----------------------------------- calculate stabilisation parameter */
+   *action = calc_fluid_stab;
+   container.dvec         = NULL;
+   container.ftimerhs     = NULL;
+   container.fiterhs      = NULL;
+   container.nii          = 0;
+   container.nif          = 0;
+   container.nim          = 0;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+          &container,action);
+}
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
@@ -655,6 +668,13 @@ if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1)
    amredef(&(time_a),time_a.fdim+1000,1,"DV");
    time_a.a.dv[actpos] = fdyn->acttime;
    actpos++;
+}
+
+/*------------------------------------------- write restart to pss file */
+if (restartstep==fdyn->uprestart)
+{
+   restartstep=0;
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 }
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
@@ -691,13 +711,6 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
    out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 }
 
-/*------------------------------------------- write restart to pss file */
-if (restartstep==fdyn->uprestart)
-{
-   restartstep=0;
-   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
-}
-
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
 monitoring(actfield,genprob.numff,actpos,fdyn->acttime);
@@ -709,17 +722,6 @@ printf("PROC  %3d | total time for this time step: %10.3e \n",par.myrank,tt);
 /*--------------------- check time and number of steps and steady state */
 if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 {
-   if (fdyn->nim) goto timeloop;
-   /*-------------------------------- calculate stabilisation parameter */
-   *action = calc_fluid_stab;
-   container.dvec         = NULL;
-   container.ftimerhs     = NULL;
-   container.fiterhs      = NULL;
-   container.nii          = 0;
-   container.nif          = 0;
-   container.nim          = 0;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
-          &container,action);
    goto timeloop;
 }
 /*----------------------------------------------------------------------*
