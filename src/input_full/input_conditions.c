@@ -881,6 +881,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr) actdsurf->neum->neum_type = neum_consthydro_z;
    frchk("increaseHydro_z",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_increhydro_z;
+   frchk("orthopressure",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_orthopressure;
    /*--------------------------------------------------- read next line */
    frread();
 }
