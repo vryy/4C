@@ -4,8 +4,9 @@
  *----------------------------------------------------------------------*/
 typedef struct _STATIC_VAR               
 {
-int                 geolinear;          /* is linear calculation */
-int                 geononlinear;       /* is nonlinear calculation */
+int                 linear;             /* is linear calculation */
+int                 nonlinear;          /* is nonlinear calculation */
+enum _KINTYP        kintyp;             /* type of kinematic used in nonlinear calculation*/
 enum _NR_CONTROLTYP nr_controltyp;      /* type of control */
 int                 nstep;              /* number of steps */
 int                 maxiter;            /* max number of iterations in NR */
