@@ -17,6 +17,16 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -107,29 +117,30 @@ extern struct _MATERIAL  *mat;
 \param **vderxy  DOUBLE 	       (-)   global derivatives of velocity
 \param **evel    DOUBLE 	       (i)   element velocities
 \param  *velint  DOUBLE 	       (-)   vel. at integr. point
+\param  *velint  DOUBLE 	       (-)   vel. at integr. point
 \param  *eddyint  DOUBLE 	       (-)   eddy-visc. at integr. point (only for turbulence)
 \param  *visc     DOUBLE 	       (-)   viscosity
-\param **cutp    DOUBLE 	       (-)   cutting points
 \return void             
 
 ------------------------------------------------------------------------*/
 void f2_calelesize(			     
-	           ELEMENT         *ele,    
-                 ELEMENT         *eleke,    
-		   FLUID_DATA      *data, 
-	           DOUBLE         **xyze,
-		   DOUBLE          *funct,  
-	           DOUBLE         **deriv,  
-	           DOUBLE         **deriv2,  		 
-		   DOUBLE         **xjm,    
-               DOUBLE         **derxy, 
-               DOUBLE         **vderxy,
-		   DOUBLE         **evel,    		  
-		   DOUBLE          *velint, 
-		   DOUBLE         **cutp,    
-               DOUBLE          *eddy,
-               DOUBLE          *visc    
-                  )
+                     ELEMENT         *ele,    
+                     ELEMENT         *eleke,    
+                     FLUID_DATA      *data, 
+                     DOUBLE         **xyze,
+                     DOUBLE          *funct,  
+                     DOUBLE         **deriv,  
+                     DOUBLE         **deriv2,  		 
+                     DOUBLE         **xjm,    
+                     DOUBLE         **derxy, 
+                     DOUBLE         **vderxy, 
+                     DOUBLE         **evel,    		  
+                     DOUBLE          *ephin,
+                     DOUBLE          *ephing,    		  
+                     DOUBLE          *eddy,
+                     DOUBLE          *visc,   
+                     INT              cpele
+                     )
 {
 
 INT     i,ilen;         /* simply a counter	        		*/
@@ -137,7 +148,6 @@ INT     ieval = 0;	/* evaluation flag			        */
 INT     igc   = 0;	/* evaluation flag			        */
 INT     istrnint;       /* evaluation flag			        */
 INT     isharea;        /* evaluation flag			        */
-INT     ntyp;           /* element type (TRI or QUAD)  		        */
 INT     actmat;         /* number of actual material		        */
 INT     iel;            /* number of nodes of actual element            */
 DOUBLE  area;           /* element area                                 */
@@ -148,11 +158,13 @@ DOUBLE  fac,facr,facs;  /* factors                                      */
 DOUBLE  dia,dia1,dia2;  /* values used for calculation of element size  */
 DOUBLE  dx,dy;          /* values used for calculation of element size  */
 DOUBLE  gcoor[2];       /* global coordinates                           */
-DOUBLE  eddyint;        /* eddy-viscosity                               */
+DOUBLE  velint[2];
 DIS_TYP typ;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 FLUID_DYNAMIC *fdyn;
-
+#ifdef D_FLUID2TU
+DOUBLE  eddyint;        /* eddy-viscosity                               */
+#endif
 
 
 #ifdef DEBUG 
@@ -161,13 +173,12 @@ dstrc_enter("f2_calelesize");
 
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
-ntyp   = ele->e.f2->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f2->stabi.gls;
 
-if (ele->e.f2->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f2->stab_type == stab_gls, 
+         "routine with no or wrong stabilisation called");
 
 istrnint = gls->istrle * gls->ninths;
 isharea  = fdyn->ishape * gls->iareavol;
@@ -187,16 +198,16 @@ if (isharea==1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:    /* --> quad - element */
+   case quad4: case quad8: case quad9:    /* --> quad - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
    break;
-   case 2:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */              
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -204,8 +215,8 @@ if (isharea==1)
       f2_tri(funct,deriv,deriv2,e1,e2,typ,2);
    break;
    default:
-      dserror("ntyp unknown!\n");      
-   } /*end switch(ntyp) */
+      dserror("typ unknown!\n");      
+   } /*end switch(typ) */
    ieval++;
 /* -------------------------------------------- compute jacobian matrix */      
    f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
@@ -214,17 +225,17 @@ if (isharea==1)
    fdyn->totarea += area;
    if (istrnint==1)    /* compute streamlength */
    {
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
       ieval++;
       f2_gcoor(xyze,funct,iel,gcoor);
       igc++;
-      f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);            
+      f2_calstrlen(&strle,xyze,velint,ele,gcoor,typ);            
    } /* enidf (istrnint==1) */
    if (gls->idiaxy==1)    /* compute diagonal based diameter */
    {
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:
+      case quad4: case quad8: case quad9:
          dx = xyze[0][0] - xyze[0][2];
 	 dy = xyze[1][0] - xyze[1][2];
 	 dia1 = sqrt(dx*dx+dy*dy);
@@ -234,7 +245,7 @@ if (isharea==1)
 /*------ dia=sqrt(2)*area/(1/2*(dia1+dia2))=sqrt(8)*area/(dia1+dia2) ---*/
 	 dia = sqrt(EIGHT)*area/(dia1+dia2); 
       break;
-      case 2:    /* get global coordinate of element center */
+      case tri3: case tri6:    /* get global coordinate of element center */
          if (igc==0)
 	    f2_gcoor(xyze,funct,iel,gcoor);
 	 dia = ZERO;
@@ -247,8 +258,8 @@ if (isharea==1)
 	 dia = FOUR*area/sqrt(THREE*dia);
       break;
       default:
-          dserror("ntyp unknown!\n");
-      } /* end switch(ntyp) */
+          dserror("typ unknown!\n");
+      } /* end switch(typ) */
    } /* endif (ele->e.f2->idiaxy==1) */
 /*--------------------------------------------------- set element sizes *
   ----loop over 3 different element sizes: vel/pre/cont  ---------------*/
@@ -279,16 +290,16 @@ else if (istrnint==1 && isharea !=1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:    /* --> quad - element */
+   case quad4: case quad8: case quad9:    /* --> quad - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
    break;
-   case 2:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */              
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -296,17 +307,17 @@ else if (istrnint==1 && isharea !=1)
       f2_tri(funct,deriv,deriv2,e1,e2,typ,2);
    break;
    default:
-      dserror("ntyp unknown!\n");
-   } /* end switch(ntyp) */
+      dserror("typ unknown!\n");
+   } /* end switch(typ) */
    ieval++;
 /* ------------------------------------------- compute jacobian matrix */      
    f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
 /*----------------------------------------------- compute streamlength */
-   f2_veli(velint,funct,evel,iel);
+   f2_veci(velint,funct,evel,iel);
    ieval++;
    f2_gcoor(xyze,funct,iel,gcoor);
    igc++;
-   f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);       
+   f2_calstrlen(&strle,xyze,velint,ele,gcoor,typ);       
 /*--------------------------------------------------- set element sizes *
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
@@ -326,16 +337,16 @@ if(gls->istapc==1 || istrnint==1)
    case 0:
 /*------ get only values of integration parameters and shape functions
         no derivatives -------------------------------------------------*/
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> quad - element */
+      case quad4: case quad8: case quad9:   /* --> quad - element */
          e1   = data->qxg[0][0];
          facr = data->qwgt[0][0];
          e2   = data->qxg[0][0];
          facs = data->qwgt[0][0];
          f2_rec(funct,deriv,deriv2,e1,e2,typ,1);
       break;
-      case 2:       /* --> tri - element */              
+      case tri3: case tri6:       /* --> tri - element */              
          e1   = data->txgr[0][0];
          facr = data->twgt[0][0];
          e2   = data->txgs[0][0];
@@ -343,12 +354,12 @@ if(gls->istapc==1 || istrnint==1)
          f2_tri(funct,deriv,deriv2,e1,e2,typ,1);
       break;      
       default:
-         dserror("ntyp unknown!\n");
-      } /* end switch(ntyp) */
-      f2_veli(velint,funct,evel,iel);
+         dserror("typ unknown!\n");
+      } /* end switch(typ) */
+      f2_veci(velint,funct,evel,iel);
    break;
    case 1:            
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
    break;
    case 2:
    break;
@@ -359,6 +370,7 @@ if(gls->istapc==1 || istrnint==1)
    actmat=ele->mat-1;
    (*visc) = mat[actmat].m.fluid->viscosity;
 
+#ifdef D_FLUID2TU
   if (ele->e.f2->turbu == 1)
   {
    /*------------------------------------------- compute global derivates */
@@ -374,9 +386,17 @@ if(gls->istapc==1 || istrnint==1)
    f2_eddyirans(eleke,&eddyint,funct,eddy,iel);
    (*visc) += eddyint;
   }
+#endif
    
-   f2_calstabpar(ele,velint,(*visc),iel,ntyp,-1); 
+   f2_calstabpar(ele,velint,(*visc),iel,typ,-1); 
 } /* endif (ele->e.f2->istapc==1 || istrnint==1) */
+
+/*--------------------------------------------- copy stabpar to element */
+if (cpele==1)
+{
+   for (i=0;i<3;i++)
+      ele->e.f2->tau_old[i]=fdyn->tau[i];
+}
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -399,23 +419,21 @@ is calculated for one element during the integration loop
 \param  *xyze    DOUBLE                 (-)    nodal coordinates
 \param  *funct   DOUBLE 		(-)    natural shape funcs
 \param  *velint  DOUBLE 		(-)    vel at intpoint
-\param **cutp    DOUBLE 		(-)    cuttin points
 \param   visc    DOUBLE 		(i)    fluid viscosity
 \param   iel     INT		        (i)    act. num. of ele nodes
-\param   ntyp    INT		        (i)    element type
+\param   typ     DIS_TYP                (i)    element type
 \return void                                               
 \sa f2_calelesize()                               
 
 ------------------------------------------------------------------------*/
 void f2_calelesize2(			       
-	             ELEMENT         *ele,    
+                     ELEMENT         *ele,    
                      DOUBLE         **xyze,
-	             DOUBLE          *funct,    		   
-		     DOUBLE          *velint, 
-		     DOUBLE         **cutp,   
-		     DOUBLE           visc,   
-		     INT              iel,    
-		     INT              ntyp    
+                     DOUBLE          *funct,    		   
+                     DOUBLE          *velint,    
+                     DOUBLE           visc,   
+                     INT              iel,    
+                     DIS_TYP          typ    
                     )
 {
 INT    ilen;       /* simply a counter                                  */
@@ -432,14 +450,14 @@ dstrc_enter("f2_calelesize2");
 gls    = ele->e.f2->stabi.gls;
 istrnint = gls->istrle * gls->ninths;
 
-if (ele->e.f2->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f2->stab_type == stab_gls, 
+   "routine with no or wrong stabilisation called");
    
 if (istrnint==2)
 {
 /*------------------------------------------------ compute streamlength */
    f2_gcoor(xyze,funct,iel,gcoor);
-   f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);
+   f2_calstrlen(&strle,xyze,velint,ele,gcoor,typ);
 /*--------------------------------------------------- set element sizes *
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
@@ -450,7 +468,7 @@ if (istrnint==2)
 } /* endif (istrnint==2) */
 
 /*----------------------------------- calculate stabilisation parameter */               
-f2_calstabpar(ele,velint,visc,iel,ntyp,1); 
+f2_calstabpar(ele,velint,visc,iel,typ,1); 
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -474,27 +492,27 @@ straight.
 \param  *strle     DOUBLE   (o)    streamlength
 \param  *velint    DOUBLE   (i)    velocities at integr. point
 \param **xyze      DOUBLE   (i)    nodal coordinates
-\param  *ele 	   ELEMENT  (i)    actual element
+\param  *ele       ELEMENT  (i)    actual element
 \param  *gcoor     DOUBLE   (i)    global coord. of INT. point
-\param **cutp      DOUBLE   (-)    cutting points
-\param   ntyp	   INT      (i)    flag for element type
+\param   typ       DIS_TYP  (i)    flag for element type
 \return void                                               
 \sa f2_calelesize()                               
 
 ------------------------------------------------------------------------*/
 void f2_calstrlen(
-                   DOUBLE   *strle,     
-                   DOUBLE  **xyze,
-		   DOUBLE   *velint,   
-		   ELEMENT  *ele,      
-                   DOUBLE   *gcoor,    
-		   DOUBLE  **cutp,             
-		   INT       ntyp      
+                  DOUBLE   *strle,     
+                  DOUBLE  **xyze,
+                  DOUBLE   *velint,   
+                  ELEMENT  *ele,      
+                  DOUBLE   *gcoor,    
+                  DIS_TYP   typ      
                  )
 {
+char string[100]="Couldn't find two cutting points for element             \n";
 INT     nodcut=-1;
 INT     nodmax;
 INT     inod;
+DOUBLE cutp[2][2];
 DOUBLE dl,dx,dy,dxh,dyh;
 DOUBLE dsub,dval;
 
@@ -514,17 +532,19 @@ if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for stre
    streamlength is calculated via cutting points of velocity vector
    with straight boundaries                                             
 */
-switch(ntyp)
+switch(typ)
 {
-case 1: /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
+case quad4: case quad8: case quad9: 
+   /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
    nodmax = 3;
 break;
-case 2:  /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
+case tri3: case tri6:  
+   /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
    nodmax = 2;
 break;
 default:
-   dserror("ntyp unknown!\n");   
-} /* end switch(ntyp) */        
+   dserror("typ unknown!\n");   
+} /* end switch(typ) */        
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {
@@ -561,7 +581,8 @@ if (dl>=ZERO && dl <= ONE)
       goto calc1;
 } /* endif  (dl>=ZERO && dl <= ONE) */
 
-dserror("Couldn't find two cutting points!\n");
+sprintf(&string[45] ,"%-d" ,ele->Id);
+dserror(string);
 
 calc1:
 dx = cutp[0][1]-cutp[0][0];
