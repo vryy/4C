@@ -32,8 +32,7 @@ void fsi_aitken(
  ************************************************************************/
 void fsi_ale(
                FIELD            *actfield,
-               INT               mctrl,
-               INT               numfa
+               INT               mctrl
 	    );
 
 /************************************************************************
@@ -41,8 +40,7 @@ void fsi_ale(
  ************************************************************************/
 void fsi_ale_2step(
                     FIELD            *actfield,
-                    INT               mctrl,
-                    INT               numfa
+                    INT               mctrl
 	           );
 
 /************************************************************************
@@ -50,17 +48,23 @@ void fsi_ale_2step(
  ************************************************************************/
 void fsi_ale_laplace(
                      FIELD            *actfield,
-                     INT               mctrl,
-                     INT               numfa
+                     INT               mctrl
 	            );
+
+/************************************************************************
+ | fsi_ale_LAS.c                                                            |
+ ************************************************************************/
+void fsi_ale_LAS(
+                  FIELD            *actfield,
+                  INT               mctrl
+	       );
 
 /************************************************************************
  | fsi_ale_lin.c                                                            |
  ************************************************************************/
 void fsi_ale_lin(
                   FIELD            *actfield,
-                  INT               mctrl,
-                  INT               numfa
+                  INT               mctrl
 	       );
 
 /************************************************************************
@@ -68,8 +72,7 @@ void fsi_ale_lin(
  ************************************************************************/
 void fsi_ale_nln(
                    FIELD            *actfield,
-                   INT               mctrl,
-                   INT               numfa
+                   INT               mctrl
 	         );
 
 /************************************************************************
@@ -77,8 +80,7 @@ void fsi_ale_nln(
  ************************************************************************/
 void fsi_ale_spring(
                     FIELD            *actfield,
-                    INT               mctrl,
-                    INT               numfa
+                    INT               mctrl
 	           );
 
 /************************************************************************
@@ -113,8 +115,7 @@ void fsi_energycheck( void );
  ************************************************************************/ 
 void fsi_fluid(
 		       FIELD          *actfield, 
-		       INT             mctrl,
-		       INT             numff
+		       INT             mctrl
 	      );
 /************************************************************************
  | fsi_gradient.c                                                       |
@@ -138,16 +139,17 @@ void fsi_relax_intdisp(
  | fsi_service.c                                                        |
  ************************************************************************/
 void fsi_alecp(
-		             FIELD           *fluidfield, 
-		             INT               numdf,
-		             INT               phase
-	       );
+		             FIELD           *fluidfield,  
+                             DOUBLE           dt,
+		             INT              numdf,
+		             INT              phase
+	       ) ;
 void fsi_aleconv(
-		              FIELD           *fluidfield,
-		              INT              numdf,  
-                              INT              pos1, 
-		              INT              pos2
-	        );
+		             FIELD  *fluidfield,
+		             INT     numdf,  
+                             INT     pos1, 
+		             INT     pos2
+                );
 void fsi_copysol( 
                               FIELD           *actfield,  
                               INT              from,	 
@@ -175,8 +177,7 @@ void fsi_init_ale(FIELD *actfield,INT numr);
  ************************************************************************/
 void fsi_struct(
 		   FIELD             *actfield, 
-		   INT                mctrl, 
-		   INT                numfs,
+		   INT                mctrl,
 		   INT                fsiitnum
 	       );
 
