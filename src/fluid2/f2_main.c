@@ -3,6 +3,9 @@
 \brief main routine fluid2 element
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -27,7 +30,7 @@ extern struct _FIELD      *field;
  | global dense matrices for element routines             genk 04/02    |
  *----------------------------------------------------------------------*/
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief main fluid2 control routine
 
 <pre>                                                         genk 03/02
@@ -43,6 +46,7 @@ extern struct _FIELD      *field;
 \param	*action	         CALC_ACTION  (i)
 \param	*hasdirich	 int          (o)    flag
 \param  *hasext          int          (o)    flag
+\param  *container       CONTAINER    (i)    container
 \return void
 
 ------------------------------------------------------------------------*/
@@ -66,12 +70,10 @@ void fluid2(
 /*----------------------------------------------------------------------*/
 
 static int              numff;      /* actual number of fluid field     */
-MATERIAL               *actmat;     /* actual material                  */
+static int              viscstr;
 static FLUID_DATA      *data;      
-FLUID_DYNAMIC          *fdyn;
 static FLUID_DYN_CALC  *dynvar;
 FIELD                  *actfield;   /* actual field                     */
-
 #ifdef DEBUG 
 dstrc_enter("fluid2");
 #endif
@@ -90,12 +92,29 @@ case calc_fluid_init:
    } /* end loop over numff */
    dynvar = &(alldyn[numff].fdyn->dynvar);
    data   = &(alldyn[numff].fdyn->dynvar.data);
+   viscstr= alldyn[numff].fdyn->viscstr;
 /*------------------------------------------- init the element routines */   
    f2_intg(data,0);
    f2_calele(data,dynvar,NULL,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     NULL,NULL,1);
+	     NULL,NULL,0,1);
+   f2_iedg(NULL,ele,-1,1);
+break;
+
+case calc_fluid_initvort:
+/* ----------------------------------------- find number of fluid field */
+   for (numff=0;numff<genprob.numfld;numff++)
+   {
+      actfield=&(field[numff]);
+      if (actfield->fieldtyp==fluid)
+      break;
+   } /* end loop over numff */
+   dynvar = &(alldyn[numff].fdyn->dynvar);
+   data   = &(alldyn[numff].fdyn->dynvar.data);
+/*------------------------------------------- init the element routines */
+   f2_intg(data,0); 
+   f2_calvort(data,dynvar,ele,1);  
 break;
 
 /*------------------------------------------- call the element routines */
@@ -103,12 +122,22 @@ case calc_fluid:
    f2_calele(data,dynvar,ele,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     hasdirich,hasext,0);
+	     hasdirich,hasext,actintra->intra_rank,0);
 break;
 
 /*------------------------------------------- calculate fluid vorticity */
 case calc_fluid_vort:
-   dserror("calculation of vorticity not implemented yet!\n");
+   f2_calvort(data,dynvar,ele,0);
+break;
+
+/*-------------------------------------------- calculate fluid stresses */
+case calc_fluid_stress:
+    f2_stress(container->str,viscstr,data,ele);
+break;
+
+/*--------------------------------- calculate curvature at free surface */
+case calc_fluid_curvature:
+   f2_curvature(data,dynvar,ele,actintra->intra_rank);
 break;
 
 /*----------------------------------------------------------------------*/
@@ -126,3 +155,4 @@ dstrc_exit();
 /*----------------------------------------------------------------------*/
 return; 
 } /* end of fluid2 */
+/*! @} (documentation module close)*/
