@@ -615,19 +615,81 @@ void ls_init_double_line(
   LS_DYNAMIC* lsdyn
   )
 {
+  INT        i;
+  DOUBLE     xo,yo,x,y,xxo,yyo;
+  DOUBLE     max;
+  NODE      *actnode;
   
 #ifdef DEBUG 
   dstrc_enter("ls_init_double_line");
 #endif
 /*----------------------------------------------------------------------*/
 
-  /* do nothing for a while */
+  /* set start and end points of the first line */  
+  xo = lsdyn->lsdata->xs1;
+  yo = lsdyn->lsdata->ys2;
+
+  
+  /* loop over the nodes */
+  for (i=0; i<field->dis[0].numnp; i++)
+  {
+    actnode = &(field->dis[0].node[i]);
+    /* get the coordinates of the node */
+    x = actnode->x[0];
+    y = actnode->x[1];
+
+    /*
+     * compute compoonents of the position vector with
+     * respect to shifted coordinate system
+     */
+    xxo = x - xo;
+    yyo = y - yo;
+
+    if (xxo>=0)
+    {
+      if (yyo<=0)
+      {
+        actnode->sol_increment.a.da[0][0] = xxo;
+        actnode->sol_increment.a.da[1][0] = xxo;			
+        actnode->sol.a.da[0][0] = xxo;      
+      }
+      else
+      {
+        actnode->sol_increment.a.da[0][0] = sqrt(xxo*xxo+yyo*yyo);
+        actnode->sol_increment.a.da[1][0] = sqrt(xxo*xxo+yyo*yyo);			
+        actnode->sol.a.da[0][0] = sqrt(xxo*xxo+yyo*yyo);      
+      }
+    }
+    else
+    {
+      if (yyo<=0)
+      {
+        if (yyo>xxo)
+        {
+          max = yyo;
+        }
+        else
+        {
+          max = xxo;          
+        }
+        actnode->sol_increment.a.da[0][0] = max;
+        actnode->sol_increment.a.da[1][0] = max;			
+        actnode->sol.a.da[0][0] = max;      
+      }
+      else
+      {
+        actnode->sol_increment.a.da[0][0] = yyo;
+        actnode->sol_increment.a.da[1][0] = yyo;			
+        actnode->sol.a.da[0][0] = yyo;      
+      }
+    }
+  }
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();
 #endif
-
+  
   return;
 } /* end of ls_init_double_line */
 
