@@ -66,6 +66,7 @@ int        myrank;
 int        nprocs;
 int        imyrank;
 int        inprocs;
+
 #ifdef DEBUG 
 dstrc_enter("out_general");
 #endif
@@ -223,17 +224,27 @@ fprintf(out,"___________________________________________________________________
 fprintf(out,"Degrees of Freedom:\n");
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
-  actnode = &(actfield->dis[0].node[j]);
-  if(actnode->numdf==2)
-  {
-    fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
-          actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
-  }
-  else
-  {
-    fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
-          actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
-  }
+actnode = &(actfield->dis[0].node[j]);
+switch (actnode->numdf)
+{
+case 2:
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
+        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
+case 3:
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
+        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
+break;
+case 4:
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d\n",
+        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3]);
+break;
+case 6:
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d\n",
+        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4],actnode->dof[5]);
+break;
+default:
+break;
+}
 }
 fprintf(out,"________________________________________________________________________________\n\n");
 
