@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -100,3 +101,4 @@ void w1de33(double *sigi,  /* stresses from last iteration step         */
 /*----------------------------------------------------------------------*/
     return ;
 } /* end of w1de33 */
+#endif

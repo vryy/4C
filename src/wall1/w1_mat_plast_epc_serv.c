@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -218,3 +219,4 @@ void w1pres (double *sigma ,    /*  elastic predictor projected         */
     return ;
 } /* end of w1pres */
 /*----------------------------------------------------------------------*/
+#endif

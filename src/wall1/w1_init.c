@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -33,24 +34,12 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   if (actele->eltyp != el_wall1) continue;
   /*---------------------------------------- init integration points ---*/
   w1intg(actele,&data,0);
+/*---------------------------------------------------------fh 06/02-----*/  
+  /*-------------------------------- allocate the space for stresses ---*/
+  am4def("stress_GP",&(actele->e.w1->stress_GP),1,7,MAXGAUSS,0,"D3");
+  am4def("stress_ND",&(actele->e.w1->stress_ND),1,7,MAXNOD,0,"D3");
+/*----------------------------------------------------------------------*/  
   
-  /*----------------------------------------- init stress structures ---*/
-  size_i = actele->e.w1->nGP[0] * actele->e.w1->nGP[1];
-  size_j = actele->numnp;
-  
-  actele->e.w1->stress = (W1_ELE_STRESS*)calloc(1,sizeof(W1_ELE_STRESS));
-  
-  actele->e.w1->stress[0].gprr = (double*)calloc(size_i,sizeof(double));
-  actele->e.w1->stress[0].gpss = (double*)calloc(size_i,sizeof(double));
-  actele->e.w1->stress[0].gprs = (double*)calloc(size_i,sizeof(double));
-  
-  actele->e.w1->stress[0].fps  = (double*)calloc(size_i,sizeof(double));
-  actele->e.w1->stress[0].sps  = (double*)calloc(size_i,sizeof(double));
-  actele->e.w1->stress[0].aps  = (double*)calloc(size_i,sizeof(double));
-  
-  actele->e.w1->stress[0].ferr = (double*)calloc(size_j,sizeof(double));
-  actele->e.w1->stress[0].fess = (double*)calloc(size_j,sizeof(double));
-  actele->e.w1->stress[0].fers = (double*)calloc(size_j,sizeof(double));
   /*--------------------------------------------- init working array ---*/
   if(mat[actele->mat-1].mattyp == m_stvenpor)
   {
@@ -177,4 +166,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1init */
- 
+#endif

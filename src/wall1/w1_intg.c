@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 
@@ -411,3 +412,4 @@ dstrc_exit();
 return;
 } /* end of w1intg */
 /*----------------------------------------------------------------------*/
+#endif

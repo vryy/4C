@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -139,3 +140,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_stvpor */
+#endif
