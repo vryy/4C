@@ -306,7 +306,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich(actfield,adyn,0,0);
+ale_setdirich(actfield,adyn,0);
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
 ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,numeq_total,0,&container,action);
@@ -325,15 +325,28 @@ solver_control(
                   &(actsolv->rhs[actsysarray]),
                     init
                  );
+/* for nodes with locsys and DBCs the values would become mixed up, since
+   the solution is in the xyz* co-sys, but the sol-array is in the XYZ 
+   co-sys, so transform DBC nodes to xyz*                               */
+locsys_trans_sol_dirich(actfield,0,1,0,0); 
+
 /*-------------------------allreduce the result and put it to the nodes */
-solserv_result_total(
+solserv_result_incre(
                      actfield,
                      actintra,
                      &(actsolv->sol[actsysarray]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
+                     &(actsolv->sysarray_typ[actsysarray]),
+                     0
                     );
+
+/*--------------------------------- solution has to be in XYZ co-system */
+locsys_trans_sol(actfield,0,1,0,1); 
+
+/*------------------- copy from nodal sol_increment[0][j] to sol[0][j] */
+solserv_sol_copy(actfield,0,1,0,0,0);
+
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
    out_sol(actfield,actpart,actintra,adyn->step,0);

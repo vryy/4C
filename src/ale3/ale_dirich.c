@@ -67,7 +67,6 @@ time t to actnode->sol.a.da[0][j].
 void ale_setdirich(
     FIELD        *actfield, 
     ALE_DYNAMIC  *adyn, 
-    INT           actpos,
     INT           readstructpos
     )
 {
@@ -80,7 +79,6 @@ INT                   i,j;
 INT                   numnp_total;
 INT                   numele_total;
 INT                   actcurve;
-INT                   diff,max;
 INT                   numff,numsf;
 INT                   dim;
 DOUBLE                timefac[ALENUMTIMECURVE];
@@ -109,30 +107,20 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
   dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
 }
 
-/*------------------------ dirichlet values are applied in the xyz* co-sys
-   so transform nodal values with dirichlet conditions                   */
-locsys_trans_sol_dirich(actfield,0,1,0,0);   
-
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
    actanode  = &(actfield->dis[0].node[i]); 
    actagnode = actanode->gnode;      
-   if (actpos >= actanode->sol.fdim)
-   {
-      diff = actpos - actanode->sol.fdim;
-      max  = IMAX(diff,5);
-      amredef(&(actanode->sol),actanode->sol.fdim+max+1,actanode->sol.sdim,"DA");
-    }
-    if (actagnode->dirich==NULL)
-      continue;
-
+   if (actagnode->dirich==NULL) continue;
+   
     switch(actagnode->dirich->dirich_type)
     {
-
       case dirich_none:
         for (j=0;j<actanode->numdf;j++)
         {
+          /*--------- to make sure that there's no garbage we zero the sol-array */
+          actanode->sol_increment.a.da[0][j] = ZERO;  
           if (actagnode->dirich->dirich_onoff.a.iv[j]==0)
             continue;
           actcurve = actagnode->dirich->curve.a.iv[j]-1;
@@ -146,10 +134,9 @@ for (i=0;i<numnp_total;i++)
             |    sonst: Normalfall:                                               |
             |    actanode->sol.a.da[0][j] = initval*acttimefac;                   |
            *=====================================================================*/
-          if (fabs(initval-90.0) > EPS13)
+          if (FABS(initval-90.0) > EPS13)
           {
             actanode->sol_increment.a.da[0][j] = initval*acttimefac;  
-            actanode->sol.a.da[actpos][j] = initval*acttimefac; 
           }
           else
           {
@@ -162,12 +149,10 @@ for (i=0;i<numnp_total;i++)
             if (j==0)
             {
               actanode->sol_increment.a.da[0][j] = dd * cos(win+wino) - cx;
-              actanode->sol.a.da[actpos][j] = dd * cos(win+wino) - cx;
             }
             else
             {
               actanode->sol_increment.a.da[0][j] = dd * sin(win+wino) - cy;
-              actanode->sol.a.da[actpos][j] = dd * sin(win+wino) - cy;
             }
           } 
         }
@@ -181,9 +166,6 @@ for (i=0;i<numnp_total;i++)
       {
          actanode->sol_increment.a.da[0][j] =
 	    actsnode->sol_mf.a.da[readstructpos][j];  
-	 if (readstructpos != 6) /* 'ordinary' calculation */
-	    actanode->sol.a.da[actpos][j] = 
-	       actsnode->sol_mf.a.da[readstructpos][j]; 
       } /* readstructpos = 0 for 'ordinary' calculation *
                          = 6 for calculation for Relaxation parameter via
 			     steepest descent method */
@@ -224,9 +206,9 @@ for (i=0;i<numnp_total;i++)
 }
 
 /*------------------------ dirichlet values are applied in the xyz* co-sys
-   so transform back nodal values with dirichlet conditions             */
+   so transform nodal values with dirichlet conditions for 
+   sol_increment                                                          */
 locsys_trans_sol_dirich(actfield,0,1,0,1);   
-
 
 /*----------------------------------------------------------------------*/
 
@@ -307,6 +289,7 @@ for (i=0;i<numnp_total;i++)
    actanode  = &(actfield->dis[0].node[i]); 
    dsassert(actanode->locsysId==0,"locsys not implemented yet!\n");
    actagnode = actanode->gnode;      
+   dsassert(actanode->locsysId==0,"incremental DBCs at ALE nodes!\n");
    if (actpos >= actanode->sol.fdim)
    {
       diff = actpos - actanode->sol.fdim;
@@ -457,7 +440,7 @@ for (i=0;i<numnp_total;i++)
         |    sonst: Normalfall:                                               |
         |     actnode->sol.a.da[0][j] = initval*acttimefac;                   |
        *=====================================================================*/
-      if (fabs(initval-90.0) > EPS13)
+      if (FABS(initval-90.0) > EPS13)
         actnode->sol_increment.a.da[0][j] = initval*(acttimefac-prevtimefac);
       else
       {
