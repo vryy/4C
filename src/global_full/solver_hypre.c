@@ -1,5 +1,12 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c                                 |
+ | struct _FILES  allfiles;                                             |
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles; 
 /*--------------------------------------------------------------------------*
  |  control solver lib HYPRE                            m.gee 10/01         |
  |  struct _SOLVAR         *actsolv    ptr to actual solver structure       |
