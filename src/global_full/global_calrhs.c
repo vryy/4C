@@ -2,18 +2,25 @@
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |  routine to call rhs-routines                         m.gee 10/01    |
+ |  in here, only step dependent loads are calculated, which means      |
+ |  neumann conditions which may change from time/load step to step.    |
  *----------------------------------------------------------------------*/
 void calrhs(FIELD        *actfield,     /* the active field */
             SOLVAR       *actsolv,      /* the active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* the field's intra-communicator */
             int           actsysarray,  /* the active sparse array */
-            DIST_VECTOR  *rhs1,         /* 2 dist. vectors for rhs */
-            DIST_VECTOR  *rhs2,
-            int           kstep,        /* actual time or load incremental step */
+            DIST_VECTOR  *rhs1,         /* 1 dist. vectors for rhs */
+            int           kstep,
             CALC_ACTION  *action)       /* action to be passed to element routines */
 {
 int i;
+static ARRAY rhs_a;
+static double *rhs;
+#ifdef PARALLEL 
+static ARRAY rhsrecv_a;
+static double *rhsrecv;
+#endif
 SPARSE_TYP   *sysarraytyp;
 SPARSE_ARRAY *sysarray;
  #ifdef DEBUG
@@ -22,25 +29,45 @@ dstrc_enter("calrhs");
 /*----------------------------------------------------------------------*/
 sysarraytyp = &(actsolv->sysarray_typ[actsysarray]);
 sysarray    = &(actsolv->sysarray[actsysarray]);            
-              
-/*---------------------------------make rhs of nodal neumann conditions */
-calrhs_nodal_neumann(actpart,
-                     actintra,
-                     sysarraytyp,
-                     sysarray,
-                     rhs1);
-/*------------------------------ make rhs of element neumann conditions */
-/*               (yes I know now, strictly there is no such thing.....) */
-calrhs_ele_neumann(actfield,
-                   actsolv,
-                   actpart,
-                   actintra,
-                   sysarraytyp,
-                   sysarray,
-                   actsysarray,
-                   rhs2,
-                   kstep,
-                   action);
+/*-------------------- create a temporary vector of redundant full size */
+if (rhs_a.Typ != DV)
+{
+   rhs = amdef("tmprhs",&rhs_a,rhs1->numeq_total,1,"DV");
+}
+if (rhs_a.fdim < rhs1->numeq_total)
+{
+   amdel(&rhs_a);
+   rhs = amdef("tmprhs",&rhs_a,rhs1->numeq_total,1,"DV");
+}
+amzero(&rhs_a);
+#ifdef PARALLEL 
+if (rhsrecv_a.Typ != DV)
+{
+   rhsrecv = amdef("tmprhs",&rhsrecv_a,rhs1->numeq_total,1,"DV");
+}
+if (rhsrecv_a.fdim < rhs1->numeq_total)
+{
+   amdel(&rhsrecv_a);
+   rhsrecv = amdef("tmprhs",&rhsrecv_a,rhs1->numeq_total,1,"DV");
+}
+amzero(&rhsrecv_a);
+#endif
+/*--------- inherit the neuman conditions from design to discretization */
+for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
+/*---------------------------------- calculate point neumann conditions */
+rhs_point_neum(rhs,rhs1->numeq_total,actpart);
+/*--- line/surface/volume loads are a matter of element integration and */
+/*                                            different in each element */
+*action = calc_struct_eleload;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,rhs,NULL,rhs1->numeq_total,kstep,action);
+/*-------------------------------------------- allreduce the vector rhs */
+#ifdef PARALLEL 
+MPI_Allreduce(rhs,rhsrecv,rhs1->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+/*----------------- assemble rhs to rhs1, which is a distributed vector */
+assemble_vec(actintra,sysarraytyp,sysarray,rhs1,rhsrecv,1.0);
+#else
+assemble_vec(actintra,sysarraytyp,sysarray,rhs1,rhs,1.0);
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -48,159 +75,52 @@ dstrc_exit();
 return;
 } /* end of calrhs */
 
+/*----------------------------------------------------------------------*
+ |  point neumann conditions                             m.gee 3/02     |
+ | Attention! This assembly of nodal forces works only correct with     |
+ | partitioning in the "Cut_Elements" style !!!!
+ *----------------------------------------------------------------------*/
+void rhs_point_neum(double *rhs, int dimrhs, PARTITION *actpart)     
+{
+int             i,j;
+int             dof;
+NODE           *actnode;
+NEUM_CONDITION *actneum;
+#ifdef DEBUG
+dstrc_enter("rhs_point_neum");
+#endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<actpart->pdis[0].numnp; i++)
+{
+   /*------------------------ check presence of nodal eumann conditions */
+   if (actpart->pdis[0].node[i]->gnode->neum == NULL) continue;
+   /*-------------------------------------------------- set active node */
+   actnode = actpart->pdis[0].node[i];
+   /*------------------------------------- set active neumann condition */
+   actneum = actnode->gnode->neum;
+   /*------------------------------------------------ loop dofs of node */
+   for (j=0; j<actnode->numdf; j++)
+   {
+      /*-------------------------- check flag whether a dof has a value */
+      if (actneum->neum_onoff.a.iv[j]==0) continue;
+      /*----------------------------------- get dof which has the value */
+      dof = actnode->dof[j];
+      /*---------- check whether this dof is inside free dofs (<dimrhs) */
+      if (dof >= dimrhs) continue;
+      /*-------------------------------------------- assemble the value */
+      rhs[dof] += actneum->neum_val.a.dv[j];
+   }
+   /* unset the neumann condition from the discretization, to make sure */
+   /* it is not assembled again */
+   actnode->gnode->neum=NULL;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of rhs_point_neum */
 
  
 
 
-/*----------------------------------------------------------------------*
- |  routine to assemble nodal neumann conditions         m.gee 10/01    |
- *----------------------------------------------------------------------*/
-void calrhs_nodal_neumann(
-                           PARTITION    *actpart,    /* my active partition */
-                           INTRA        *actintra,   /* the field's communicator */
-                           SPARSE_TYP   *sysarraytyp,/* type of sparse matrix */
-                           SPARSE_ARRAY *sysarray,   /* sparse matrix number */
-                           DIST_VECTOR  *rhs         /* dist. vector */
-                          )
-{
-int                   i,j;               /* some counters */
-int                   dof;               
-NODE                 *actnode;
-COND_NODE            *actcond;
-
-ARRAY                 drhs_send_a;       /* send and receive buffers */
-double               *drhs_send;
-ARRAY                 drhs_recv_a;
-double               *drhs_recv;
-
-
-#ifdef DEBUG 
-dstrc_enter("calrhs");
-#endif
-/*----------------------------------------------------------------------*/
-/*------------------------------------------ allocate temporary vectors */
-/*------------------------------ these vectors are of global dimensions */
-drhs_send = amdef("tmp",&drhs_send_a,rhs->numeq_total,1,"DV");
-            amzero(&drhs_send_a);
-#ifdef PARALLEL 
-drhs_recv = amdef("tmp",&drhs_recv_a,rhs->numeq_total,1,"DV");
-            amzero(&drhs_recv_a);
-#endif
-/*---------------------------------------- do assembly to global vector */
-assemble_nn(actpart,rhs,drhs_send);
-/*----------------------------------------------- allreduce vector drhs */
-#ifdef PARALLEL 
-MPI_Allreduce(drhs_send,
-              drhs_recv,
-              rhs->numeq_total,
-              MPI_DOUBLE,
-              MPI_SUM,
-              actintra->MPI_INTRA_COMM);
-/*--------------------------------------add data to the DIST_VECTOR rhs */
-assemble_vec(actintra,
-                sysarraytyp,
-                sysarray,
-                rhs,
-                drhs_recv,
-                1.0);
-#else
-assemble_vec(actintra,
-                sysarraytyp,
-                sysarray,
-                rhs,
-                drhs_send,
-                1.0);
-#endif
-/*------------------------------------------------------ delete buffers */
-amdel(&drhs_send_a);
-#ifdef PARALLEL 
-amdel(&drhs_recv_a);
-#endif
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of calrhs */
-
-
-
-
-/*----------------------------------------------------------------------*
- |  routine to assemble element neumann conditions       m.gee 10/01    |
- *----------------------------------------------------------------------*/
-void calrhs_ele_neumann(FIELD        *actfield,    /* the active field */
-                        SOLVAR       *actsolv,     
-                        PARTITION    *actpart,
-                        INTRA        *actintra,
-                        SPARSE_TYP   *sysarraytyp,
-                        SPARSE_ARRAY *sysarray,
-                        int           actsysarray,
-                        DIST_VECTOR  *rhs,
-                        int           kstep,
-                        CALC_ACTION  *action) /* action to be passsed to element routines */
-{
-ARRAY                 drhs_send_a;
-double               *drhs_send;
-ARRAY                 drhs_recv_a;
-double               *drhs_recv;
-
-#ifdef DEBUG 
-dstrc_enter("calrhs_ele_neumann");
-#endif
-/*----------------------------------------------------------------------*/
-/*------------------------------------------ allocate temporary vectors */
-/*------------------------------ these vectors are of global dimensions */
-drhs_send = amdef("tmp",&drhs_send_a,rhs->numeq_total,1,"DV");
-            amzero(&drhs_send_a);
-#ifdef PARALLEL 
-drhs_recv = amdef("tmp",&drhs_recv_a,rhs->numeq_total,1,"DV");
-            amzero(&drhs_recv_a);
-#endif
-/*------------------------------------call element integration routines */
-calelm(
-         actfield,
-         actsolv,
-         actpart,
-         actintra,
-         actsysarray,
-         -1,
-         drhs_send,
-         rhs->numeq_total,
-         kstep,
-         action
-       );
-/*-----------------------------------------------Allreduce vectors drhs */
-#ifdef PARALLEL 
-MPI_Allreduce(drhs_send,
-              drhs_recv,
-              rhs->numeq_total,
-              MPI_DOUBLE,
-              MPI_SUM,
-              actintra->MPI_INTRA_COMM);
-/*--------------------------------------add data to the DIST_VECTOR rhs */
-assemble_vec(actintra,
-                sysarraytyp,
-                sysarray,
-                rhs,
-                drhs_recv,
-                1.0);
-#else
-assemble_vec(actintra,
-                sysarraytyp,
-                sysarray,
-                rhs,
-                drhs_send,
-                1.0);
-#endif
-/*------------------------------------------------------ delete buffers */
-amdel(&drhs_send_a);
-#ifdef PARALLEL 
-amdel(&drhs_recv_a);
-#endif
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of calrhs_ele_neumann */

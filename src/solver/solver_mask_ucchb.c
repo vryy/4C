@@ -103,14 +103,14 @@ counter=0;
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
-   if (actnode->c==NULL) continue;
-   if (actnode->c->iscoupled==0) continue;
+   if (actnode->gnode->couple==NULL && actnode->gnode->dirich==NULL) continue;
+   if (actnode->gnode->couple==NULL) continue;
    for (l=0; l<actnode->numdf; l++)
    {
       if (actnode->dof[l]>=actfield->dis[0].numeq) continue;
       /* there is coupling on this dof */
-      if (actnode->c->couple.a.ia[l][0] != 0 ||
-          actnode->c->couple.a.ia[l][1] != 0 )
+      if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
+          actnode->gnode->couple->couple.a.ia[l][1] != 0 )
       {
          if (counter>=actpart->pdis[0].coupledofs.fdim) 
          amredef(&(actpart->pdis[0].coupledofs),(actpart->pdis[0].coupledofs.fdim+5000),1,"IV");
@@ -388,15 +388,8 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
       dof = actnode->dof[l];
       /* dirichlet condition on dof */
       if (dof >= actfield->dis[0].numeq) continue;
-      /* no condition on dof */
-      if (actnode->c==NULL)
-      {
-         update[counter] = dof;
-         counter++;
-         continue;
-      }
       /* no coupling on dof */
-      if (actnode->c->iscoupled==0)
+      if (actnode->gnode->couple==NULL)
       {
          update[counter] = dof;
          counter++;

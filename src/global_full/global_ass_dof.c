@@ -116,26 +116,25 @@ for (i=0; i<genprob.numfld; i++)
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actnode = &(actfield->dis[0].node[j]);
-      if (actnode->c==NULL) continue;
-      if (actnode->c->iscoupled==0) continue;
+      if (actnode->gnode->couple==NULL) continue;
       for (l=0; l<actnode->numdf; l++)
       {
-         if (actnode->c->couple.a.ia[l][1]!=0)
+         if (actnode->gnode->couple->couple.a.ia[l][1]!=0)
          {
-            coupleID = actnode->c->couple.a.ia[l][1];
+            coupleID = actnode->gnode->couple->couple.a.ia[l][1];
             /* found a conflict with geostationary coupling and delete it */
-            if (actnode->c->couple.a.ia[l][0]!=0)
+            if (actnode->gnode->couple->couple.a.ia[l][0]!=0)
             {
                 iscouple_find_node_comp(
                                            actnode,
                                            actfield,
                                            &partnernode,
-                                           actnode->c->couple.a.ia[l][0],
+                                           actnode->gnode->couple->couple.a.ia[l][0],
                                            l);
                 if (partnernode==NULL) dserror("Cannot do geostationary coupling");                                         
-                partnernode->c->couple.a.ia[l][1] =  coupleID;
-                partnernode->c->couple.a.ia[l][0] =  0;
-                actnode->c->couple.a.ia[l][0]     =  0;                                 
+                partnernode->gnode->couple->couple.a.ia[l][1] =  coupleID;
+                partnernode->gnode->couple->couple.a.ia[l][0] =  0;
+                actnode->gnode->couple->couple.a.ia[l][0]     =  0;                                 
             }
          }
       }
@@ -146,7 +145,7 @@ for (i=0; i<genprob.numfld; i++)
    {
       actnode = &(actfield->dis[0].node[j]);
 /*------------------------------- the node does not have any conditions */
-      if (actnode->c==NULL)
+      if (actnode->gnode->couple==NULL && actnode->gnode->dirich==NULL)
       {
          for (l=0; l<actnode->numdf; l++)
          {
@@ -158,7 +157,7 @@ for (i=0; i<genprob.numfld; i++)
       else
       {
          /*----- the node does not have dirichlet or coupling condition */
-         if (actnode->c->isdirich==0 && actnode->c->iscoupled==0)
+         if (actnode->gnode->couple==NULL && actnode->gnode->dirich==NULL)
          {
             for (l=0; l<actnode->numdf; l++)
             {
@@ -174,13 +173,14 @@ for (i=0; i<genprob.numfld; i++)
                couple=0;
                geocouple=0;
                /*-------------------------- dof has dirichlet condition */
-               if (actnode->c->dirich_onoff.a.iv[l]!=0) dirich=1;
-               if (actnode->c->iscoupled!=0)
+               if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[l]!=0) 
+               dirich=1;
+               if (actnode->gnode->couple != NULL)
                {
                   /*---------- dof has geostationary coupling condition */
-                  if (actnode->c->couple.a.ia[l][0]!=0) geocouple=1;
+                  if (actnode->gnode->couple->couple.a.ia[l][0]!=0) geocouple=1;
                   /*------------------------ dof has coupling condition */
-                  if (actnode->c->couple.a.ia[l][1]!=0)    couple=1;
+                  if (actnode->gnode->couple->couple.a.ia[l][1]!=0)    couple=1;
                }
                /*-------------------------------------------------------*/
                if (couple==1 && geocouple==1) dserror("geostationary dof coupling conflicts");
@@ -194,13 +194,13 @@ for (i=0; i<genprob.numfld; i++)
                }
                else if (dirich==0 && couple==1 && geocouple==0)
                {
-                  coupleID = actnode->c->couple.a.ia[l][1];
+                  coupleID = actnode->gnode->couple->couple.a.ia[l][1];
                   find_assign_coupset(actfield,coupleID,&counter);
                }
                else if (dirich==0 && couple==0 && geocouple==1)
                {
                   /* the coupling Id */
-                  coupleID = actnode->c->couple.a.ia[l][0];
+                  coupleID = actnode->gnode->couple->couple.a.ia[l][0];
                   /* find a geometrically compatibel node */
                   iscouple_find_node_comp(
                                              actnode,
@@ -226,6 +226,8 @@ for (i=0; i<genprob.numfld; i++)
                      partnernode->dof[l] = actnode->dof[l];
                   }
                }
+             /*  else if (dirich==1 && couple==0 && geocouple==1) 
+               dserror("Case dirichlet condition in geocoupleset not yet implemented");*/
             }/* end of loops over dofs */
          }/* end of has dirich and/or coupling condition */
       }
@@ -236,7 +238,7 @@ for (i=0; i<genprob.numfld; i++)
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actnode = &(actfield->dis[0].node[j]);
-      if (actnode->c==NULL) continue;
+      if (actnode->gnode->couple==NULL && actnode->gnode->dirich==NULL) continue;
       for (l=0; l<actnode->numdf; l++)
       {
          if (actnode->dof[l]==-1)

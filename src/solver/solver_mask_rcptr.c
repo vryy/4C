@@ -256,15 +256,8 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
       dof = actnode->dof[l];
       /* dirichlet condition on dof */
       if (dof >= actfield->dis[0].numeq) continue;
-      /* no condition on dof */
-      if (actnode->c==NULL)
-      {
-         update[counter] = dof;
-         counter++;
-         continue;
-      }
       /* no coupling on dof */
-      if (actnode->c->iscoupled==0)
+      if (actnode->gnode->couple==NULL)
       {
          update[counter] = dof;
          counter++;
