@@ -37,9 +37,10 @@ void w1_call_mat(ELEMENT   *ele,
                  INT istore,/* controls storing of new stresses to wa */
                  INT newval)/* controls evaluation of new stresses    */
 {
-INT i;
-INT j;
-DOUBLE disd[4];
+INT i,j;
+INT smallscale=0; /* material law not called for small scale calculations!  */
+DOUBLE disd2;
+DOUBLE disd[5];
 /*----------------------------------------------------------------------*/
 DOUBLE strain[6];
 /*----------------------------------------------------------------------*/
@@ -54,10 +55,38 @@ dstrc_enter("w1_call_mat");
                  mat->m.stvenant->possionratio,
                  wtype,
                  d);
-    w1_disd(ele,bop,gop,alpha,wtype,disd);
-    w1_eps (disd,ele->e.w1->wtype,strain);
-    for (i=0; i<4; i++) stress[i] = 0.0;
-    for (i=0; i<4; i++) for (j=0; j<4; j++) stress[i] += d[i][j]*strain[j];
+     w1_disd(ele,bop,gop,alpha,wtype,disd);
+     switch(wtype)
+     {
+     /* calc. of stresses necessary for using lin.material in nonl.analysis-*/
+     case plane_stress:
+      disd2=(disd[2]+disd[3]);
+      stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2;
+      stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2;
+      stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2;
+      stress[3]=0.0;
+     break;
+
+     case plane_strain:
+      disd2=(disd[2]+disd[3]);
+      stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2;
+      stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2;
+      stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2;
+     /*---- szz ist zwar nicht Null, wird aber nicht gebraucht ---*/
+      stress[3]=0.0;
+     break;
+     
+     case rotat_symmet:
+      disd2=(disd[2]+disd[3]);           
+      stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2+d[0][3]*disd[4];
+      stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2+d[1][3]*disd[4];
+      stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2+d[2][3]*disd[4];
+      stress[3]=d[3][0]*disd[0]+d[3][1]*disd[1]+d[3][2]*disd2+d[3][3]*disd[4];
+     break;
+     default:
+       dserror(" unknown type of wall");
+     break;
+     }
   break;
   case m_stvenpor:/*------------------------ porous linear elastic ---*/
     w1_mat_stvpor(mat, ele->e.w1->elewa->matdata, wtype, d);
@@ -208,7 +237,10 @@ dstrc_enter("w1_call_mat");
                        stress,
                        d,
                        istore,
-                       newval);
+                       newval,
+                       NULL,
+                       smallscale,
+                       NULL);
   break;
   default:
     dserror(" unknown type of material law");

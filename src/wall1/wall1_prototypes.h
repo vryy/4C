@@ -1070,25 +1070,32 @@ void w1_mat_dam_mp(DOUBLE     youngs,
  | constitutive matrix - forces - linear elastic- Damage - 2D   he 04/03|
  | plane stress, plane strain, rotational symmetry                      |
  *----------------------------------------------------------------------*/
-void w1_mat_damage(DOUBLE ym,      /* young's modulus                   */
-                   DOUBLE pv,      /* poisson's ratio                   */
-                   INT    Equival, /* flag for equivalent strains       */
-                   INT    Damtyp,  /* flag for Damage-Typ               */
-                   DOUBLE Kappa_0, /* initial damage equivalent strain  */
-                   DOUBLE Kappa_m, /* factor for damage-law             */
-                   DOUBLE Alpha,   /* factor for expon. damage-function */
-                   DOUBLE Beta,    /* factor for expon. damage-function */
-                   DOUBLE k_fac,   /* factor for de Vree                */
-                   ELEMENT   *ele, /* actual element                    */
-                   WALL_TYPE wtype,/* plane stress/strain...            */
-                   DOUBLE **bop,   /* derivative operator               */
-                   DOUBLE  *gop,
-                   DOUBLE  *alpha,
-                   INT ip,         /* integration point Id              */
-                   DOUBLE *stress, /* vector of stresses                */
-                   DOUBLE **d,     /* constitutive matrix               */
-                   INT istore,     /* controls storing of stresses      */
-                   INT newval);     /* controls eval. of stresses        */
+/*----------------------------------------------------------------------*
+ | constitutive matrix - forces - linear elastic- Damage - 2D   he 04/03|
+ | plane stress, plane strain, rotational symmetry                      |
+ *----------------------------------------------------------------------*/
+void w1_mat_damage(DOUBLE    ym,         /* young's modulus                   */
+                   DOUBLE    pv,         /* poisson's ratio                   */
+                   INT       Equival,    /* flag for equivalent strains       */
+                   INT       Damtyp,     /* flag for Damage-Typ               */
+                   DOUBLE    Kappa_0,    /* initial damage equivalent strain  */
+                   DOUBLE    Kappa_m,    /* factor for damage-law             */
+                   DOUBLE    Alpha,      /* factor for expon. damage-function */       
+                   DOUBLE    Beta,       /* factor for expon. damage-function */
+                   DOUBLE    k_fac,      /* factor for de Vree                */       
+                   ELEMENT  *ele,        /* actual (macro-)element            */
+                   WALL_TYPE wtype,      /* plane stress/strain...            */         
+                   DOUBLE  **bop,        /* derivative operator               */
+                   DOUBLE   *gop,
+                   DOUBLE   *alpha,
+                   INT       ip,         /* integration point Id              */
+                   DOUBLE   *stress,     /* vector of stresses                */
+                   DOUBLE  **d,          /* constitutive matrix               */
+                   INT       istore,     /* controls storing of stresses      */
+                   INT       newval,     /* controls eval. of stresses        */
+                   ELEMENT  *actsmele,   /* act.smelement if small scale mat. */
+                   INT       smallscale, /* is it mat. law for small scale?   */
+                   DOUBLE    *strain_tot);/* total strain if small scale mat.  */ 
 /*----------------------------------------------------------------------*
  | create tensor from vector !!!!!!only for strains!!!!   he    04/03   |
  *----------------------------------------------------------------------*/

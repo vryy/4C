@@ -66,6 +66,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   am4zero(&(actele->e.w1->b_bar_history));
   am4zero(&(actele->e.w1->PK_history));
 #endif
+/*---------------------------------------- init info for multiscale ---*/  
+#ifdef D_MLSTRUCT
+    actele->e.w1->isinomegaprime = 0;
+    actele->e.w1->firstinomegaprime = 1;
+    actele->e.w1->translation[0] = 0.0;
+    actele->e.w1->translation[1] = 0.0;
+#endif /* D_MLSTRUCT */
   /*--------------------------------------------- init working array ---*/
   if(mat[actele->mat-1].mattyp == m_stvenpor)
   {

@@ -91,22 +91,27 @@ void w1_eleload(ELEMENT  *ele,     /* actual element                  */
                 INT       imyrank)
 {
 INT          lr,ls;              /* integration directions          */
-INT          i,j;                /* some loopers                    */
+INT          i,j,a;                /* some loopers                    */
 INT          inode,idof;         /* some loopers                    */
-INT          nir,nis;            /* number of GP's in r-s direction */
+INT          nir=0;            /* number of GP's in r-s direction */
+INT          nis=0;            /* number of GP's in r-s direction */
 INT          nil;                /* number of GP's in for triangle  */
 INT          iel;                /* number of element nodes         */
 INT          nd;                 /* element DOF                     */
-INT          intc;               /* "integration case" for tri-element */
+INT          intc=0;               /* "integration case" for tri-element */
 const INT    numdf  = 2;         /* dof per node                    */
 INT          foundsurface;       /* flag for surfaceload present    */
 INT          iedgnod[3];
 INT          irow;
 
 /* DOUBLE       thickness;            */
-DOUBLE       e1,e2;              /* GP-koordinates in r-s-system   */
-DOUBLE       fac,facr,facs;      /* integration factor  GP-info    */
+DOUBLE       e1=0.0;              /* GP-koordinates in r-s-system   */
+DOUBLE       e2=0.0;              /* GP-koordinates in r-s-system   */
+DOUBLE       fac;      /* integration factor  GP-info    */
+DOUBLE       facr=0.0;      /* integration factor  GP-info    */
+DOUBLE       facs=0.0;      /* integration factor  GP-info    */
 DOUBLE       det;                /* det of jacobian matrix         */
+DOUBLE       x_GP;                /* det of jacobian matrix         */
 
 /*--------------------- variables needed for integration of line loads */
 INT             foundline;   /* flag for lineload present or not       */
@@ -340,6 +345,17 @@ for (line=0; line<ngline; line++)
           }
           /*----------------------------------------- integration factor  */
           facline = ds * facr * facs ;
+          /*---------------- integration factor for rotational symmetry  */
+          if(ele->e.w1->wtype == rotat_symmet)
+          {
+            x_GP = 0.0;
+            for (a=0; a<iel; a++)
+            {
+              x_GP += funct[a] * ele->node[a]->x[0];
+            }
+           /* der Faktor  2 x PI tritt bei Fint und Fext auf, ->kuerzt sich */
+            facline = ds * facr * facs * x_GP;
+          }
           /*-------------------------------------------------------------*/
           /*                                uniform prescribed line load */
           /*-------------------------------------------------------------*/

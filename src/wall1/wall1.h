@@ -153,6 +153,16 @@ DOUBLE linmom[2];
 #endif
 
 W1_ELE_WA     *elewa;                         /* element working array */
+#ifdef D_MLSTRUCT
+  INT            isinomegaprime;     /* flag, if element is in Omega' */
+  INT            firstinomegaprime;  /* flag, if element is first time in Omega' */
+  DOUBLE         translation[2];     /* translation vector from submesh origin to element origin */
+  struct  _SM_ELEMENT_DATA    *sm_eledata;
+  struct  _SM_NODAL_DATA      *sm_nodaldata;
+  struct  _DBCSR              *stiff_mi_ma_csr; /* stored stiffness for rueckrechnung to d' */
+  union   _SPARSE_ARRAY       *stiff_mi_mi_ccf; /* stored stiffness for rueckrechnung to d' */
+  DOUBLE   fint_mi[3000];                       /* stored int.forces for rueckrechnung to d' */
+#endif /* D_MLSTRUCT */
 
 /*---------------------------------------------- array of forces ------*/
 enum
