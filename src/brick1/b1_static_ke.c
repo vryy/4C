@@ -89,7 +89,7 @@ for (lr=0; lr<nir; lr++)
      amzero(&bop_a);
      b1_bop(bop,deriv,xjm,det,iel);
      /*------------------------------------------- call material law ---*/
-     b1_mat_linel(mat->m.lin_el,D);
+     b1_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
      b1_keku(estif,bop,D,fac,nd,numeps);
   }/*============================================== end of loop over lt */

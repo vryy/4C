@@ -3,7 +3,7 @@
  | program to establish local material law for brick element    al 9/01 |
  | stress-strain law for isotropic material.                            |
  *----------------------------------------------------------------------*/
-void b1_mat_linel(LINEAR_ELASTIC *mat, double **d)
+void b1_mat_linel(STVENANT *mat, double **d)
 {
 double d1,d2,d3;
 double ym,pv;/*------------------------------------------ mat constants */
