@@ -212,6 +212,7 @@ OBJS11	      = src/output/out_global.o \
                 src/output/out_gid_msh.o \
                 src/output/out_gid_sol.o \
                 src/output/out_monitor.o \
+		src/output/out_gid_solfsi.o \
                 src/output/out_gid_soldyn.o
 #                wall1
 OBJS12	      = src/wall1/w1_bop.o \
