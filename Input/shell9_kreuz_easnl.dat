@@ -1,16 +1,23 @@
+//
+// Maintainer: Stefan Hartmann
+//             hartmann@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/hartmann/index.html
+//             0711 - 685-6120
+// 
+// necessary defines: -DD_SHELL9 -DD_MAT
+//
+// #define MAXNOD                (8)
+// #define MAXELE                (4)
+// #define MAXDOFPERNODE         (6)
+// #define MAXGAUSS              (16)
+// #define MAXRECORDPERELE       (6)
+// #define MAXNODESTRESS_SHELL9  (36)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
 Kreuzverbund - geom. nichtlinear
-//
-// Minimale Einstellungen in /src/headers/definitions.h
-//
-// MAXDOFPERNODE         (6)
-// MAXGAUSS              (16)
-// MAXRECORDPERELE       (6)
-// MAXNODESTRESS_SHELL9  (36)
-//
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS          16 
 NODES             65
@@ -441,7 +448,7 @@ NODE           65     COORD 2.000000000000000e+02     5.000000000000000e+01     
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Multilayer  NUM_KLAY       1 SEC_KLAY 100
-     KINLAY 1 NUM_MLAY 2 SEC_MLAY 50,50          SEC_MAT  1,1  SEC_PHI  0.0,90.0  SEC_ROT 3,3
+     KINLAY 1 NUM_MLAY 2 SEC_MLAY 50,50          SEC_MAT  1,1  SEC_PHI  45.0,45.0  SEC_ROT 3,3
 ----------------------------------------------MULTILAYER MATERIALS
 MULTIMAT 1  MAT_Struct_Orthotropic  EMOD1 31100 EMOD2 7600 EMOD3 7600 GMOD12 2900 GMOD13 2900 GMOD23 2600 XNUE12 0.303 XNUE13 0.303 XNUE23 0.303
 ------------------------------------------------------CONTROL NODE

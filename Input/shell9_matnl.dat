@@ -1,16 +1,23 @@
+//
+// Maintainer: Stefan Hartmann
+//             hartmann@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/hartmann/index.html
+//             0711 - 685-6120
+// 
+// necessary defines: -DD_SHELL9 -DD_MAT
+//
+// #define MAXNOD                (4)
+// #define MAXELE                (4)
+// #define MAXDOFPERNODE         (9)
+// #define MAXGAUSS              (24)
+// #define MAXRECORDPERELE       (6)
+// #define MAXNODESTRESS_SHELL9  (24)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-scordelis
-//
-// Minimale Einstellungen in /src/headers/definitions.h
-//
-// MAXDOFPERNODE         (9)
-// MAXGAUSS              (24)
-// MAXRECORDPERELE       (6)
-// MAXNODESTRESS_SHELL9  (24)
-//
+scordelis   material nonlinear
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS          16 
 NODES             25
