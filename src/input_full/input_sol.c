@@ -8,6 +8,7 @@ void inpctrsol(SOLVAR *solv)
 {
 int           ierr;
 char          buffer[50];
+MLVAR        *mlvar;
 AZVAR        *azvar;
 HYPREVARS    *hyprevars;
 PSUPERLUVARS *psuperluvars;
@@ -39,6 +40,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SOLVER"    ,buffer,&ierr);
    if (ierr==1)
    {
+      if (strncmp("MLIB_D_SP",buffer,9)==0) 
+      {
+#ifndef MLIB_PACKAGE
+         dserror("MLIB package is not compiled in");
+#endif
+         solv->solvertyp = mlib_d_sp;
+         solv->mlvar = (MLVAR*)calloc(1,sizeof(MLVAR));
+         if (!(solv->mlvar)) dserror("Allocation of MLVAR failed");
+         mlvar = solv->mlvar;
+      }
       if (strncmp("Aztec_MSR",buffer,9)==0) 
       {
 #ifndef AZTEC_PACKAGE
@@ -319,6 +330,25 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("HYPRE_THREAS",&(hyprevars->threshold),&ierr);
       frdouble("HYPRE_PARATHR" ,&(hyprevars->parathresh),&ierr);
       frdouble("HYPRE_PARAFILT",&(hyprevars->parafilter),&ierr);
+   break;
+   case mlib_d_sp:/*---------------------- read hp's direct mlib solver */
+      frint("SYMM"   ,&(mlvar->symm  ),&ierr);
+      frint("MSGLVL" ,&(mlvar->msglvl),&ierr);
+      frint("MAXZER" ,&(mlvar->maxzer),&ierr);
+
+      frdouble("PVTTOL",&(mlvar->pvttol) ,&ierr);
+
+      frchar("ORDER" ,buffer,&ierr);
+      if (ierr==1)
+      {
+         if (strncmp("NOO",buffer,5)==0) mlvar->order = 0;
+         if (strncmp("MMD",buffer,5)==0) mlvar->order = 1;
+         if (strncmp("NAT",buffer,5)==0) mlvar->order = 2;
+         if (strncmp("CMD",buffer,5)==0) mlvar->order = 3;
+         if (strncmp("RCM",buffer,5)==0) mlvar->order = 4;
+         if (strncmp("1WD",buffer,5)==0) mlvar->order = 5;
+         if (strncmp("MET",buffer,5)==0) mlvar->order = 6;
+      }
    break;
    case parsuperlu:/*--------------------- read solver parallel SuperLU */
    break;

@@ -75,6 +75,8 @@ inprocs = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
 switch (*mattyp)
 {
+case mds:
+break;
 case msr:
    amzero(&(mat->msr->val));
    mat->msr->is_factored=0;
@@ -445,6 +447,12 @@ case dense:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
    free(recvbuff);
 #endif
+break;
+case mds:
+   for (i=0; i<sysarray->mds->numeq; i++)
+   {
+      fullvec[i] = distvec->vec.a.dv[i];
+   }
 break;
 default:
    dserror("Unknown typ of system matrix given");

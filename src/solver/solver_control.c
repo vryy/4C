@@ -20,6 +20,9 @@ dstrc_enter("solver_control");
 /*----------------------------------------------------------------------*/
 switch(*sysarray_typ)
 {
+case mds:/*-------------------------------- system matrix is msr matrix */
+   solver_mlib(actsolv,actintra,sysarray->mds,sol,rhs,option);
+break;
 case msr:/*-------------------------------- system matrix is msr matrix */
    solver_az_msr(actsolv,actintra,sysarray->msr,sol,rhs,option);
 break;
