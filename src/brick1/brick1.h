@@ -1,10 +1,10 @@
 /*!----------------------------------------------------------------------
 \file
-\brief headerfile for 3D hex element, containing structures and prototypes
+\brief headerfile for 3D hex element, XX containing structures and prototypes
 
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
-
+#include "brick1_doxygen.h"
 /*! 
 \addtogroup BRICK1 
 *//*! @{ (documentation module open)*/
@@ -164,7 +164,7 @@ void brick1(PARTITION   *actpart,
             ARRAY       *emass_global,
             ARRAY      *intforce_global,
             CALC_ACTION *action,
-            CONTAINER   *container);   /*!< contains variables defined in container.h */
+            CONTAINER   *container);  
 /*----------------------------------------------------------------------*
  | c1_inpele.c                                               al 6/01    |
  | read brick1 element                                                  |

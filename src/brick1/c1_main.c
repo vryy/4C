@@ -1,6 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale2', the main routine of the 2d ale element 
+\brief contains the routine 'brick1', the main routine of the 3D Hexahedral
+/Tetrahedral element 
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
@@ -204,7 +205,7 @@ break;
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
-#endif
+#endif                                         /*end of "ifdef D_BRICK1"*/
 /*----------------------------------------------------------------------*/
 return; 
 } /* end of brick1 */
