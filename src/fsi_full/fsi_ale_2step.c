@@ -117,7 +117,6 @@ conditions.
 
 \param  *actfield   FIELD          (i)     ale field 			  
 \param   mctrl      INT            (i)     control flag		  
-\param   numfa      INT            (i)     number of ale field	  
 \warning 
 \return void                                               
                                         
@@ -128,11 +127,11 @@ conditions.
 *----------------------------------------------------------------------*/
 void fsi_ale_2step(
                     FIELD            *actfield,
-                    INT               mctrl,
-                    INT               numfa
-	         )
+                    INT               mctrl
+       	          )
 {
 INT        	i;		  /* a counter  		                        */
+static INT      numaf;            /* actual number ale field                            */
 static INT 	numeq;  	  /* number of equations on this proc                   */
 static INT 	numeq_total;	  /* total number of equations over all procs           */
 INT        	init;		  /* init flag for solver                               */
@@ -166,8 +165,9 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1: 
-adyn   = alldyn[genprob.numaf].adyn;
-fsidyn = alldyn[genprob.numaf+1].fsidyn;
+numaf  = genprob.numaf;
+adyn   = alldyn[numaf].adyn;
+fsidyn = alldyn[numaf+1].fsidyn;
 
 adyn->dt=fsidyn->dt;
 adyn->maxtime=fsidyn->maxtime;
@@ -185,16 +185,16 @@ restartstep=0;
 actsysarray=0;
 numsys = 1;  /* the number of system matrices */
 /*--------------------------------------------------- set some pointers */
-actsolv     = &(solv[numfa]);
-actpart     = &(partition[numfa]);
-action      = &(calc_action[numfa]);
+actsolv     = &(solv[numaf]);
+actpart     = &(partition[numaf]);
+action      = &(calc_action[numaf]);
 container.fieldtyp  = actfield->fieldtyp;
 /* to follow Chiandussi et al. calculation is performed in two steps, 
    first step linear, second step with modified stiffness
    reference calculation is performed incrementally                     */
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
-actintra    = &(par.intra[numfa]);
+actintra    = &(par.intra[numaf]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
@@ -214,7 +214,7 @@ if (fsidyn->ifsi == 6)
 {
    /*----------- one sysarray already exists, so copy the mask of it to */
    /* reallocate the vector of sparse matrices and the vector of there types
-   /* formerly lenght 1, now lenght 2 */
+      formerly lenght 1, now lenght 2 */
    numsys++;
    actsolv->nsysarray=2;
    constsysarray = 1;
@@ -306,7 +306,10 @@ if (genprob.restart!=0)
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numfa,0,0,adyn->time);
+{
+   out_monitor(actfield,numaf,ZERO,1);
+   monitoring(actfield,numaf,actpos,adyn->time);
+}
 
 /*---------------- put actual min and max stiffening factor in place ---*/
 container.min = 0.10;
@@ -354,9 +357,10 @@ if (par.myrank==0)
    printf("\n");
 }
 
-/*--------------------------------------- sequential staggered schemes: 
+/*--------------------------------------- sequential staggered schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
-if (fsidyn->ifsi<3) solserv_sol_copy(actfield,0,3,3,1,0);
+if (fsidyn->ifsi<3 && fsidyn->ifsi>0) 
+solserv_sol_copy(actfield,0,3,3,1,0);
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
    
@@ -489,18 +493,23 @@ solserv_sol_add(actfield,0,1,0,0,actpos,1.0);
 solserv_sol_copy(actfield,0,0,3,actpos,1);
 
 /*----------------------------------------------------------------------*/
-if (fsidyn->ifsi>=4)
+if (fsidyn->ifsi>=4 || fsidyn->ifsi<0)
 break;
 
 /*======================================================================* 
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
-/*------------------------------------ for iterative staggared schemes:
+/*------------------------------------ for iterative staggared schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
-if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,1,0);
+if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1) 
+   solserv_sol_copy(actfield,0,3,3,1,0);
 
-/*----------------- copy solution to sol_increment[1][i] for history ---*/
+/*--------------------- to get the corrected free surface position copy 
+  --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
+solserv_sol_copy(actfield,0,3,0,0,actpos);
+
+/*---------------------------- from sol_mf[1][j] to sol_increment[1][j] */
 solserv_sol_copy(actfield,0,3,1,1,1);
 
 /*------------------------------------------- print out results to .out */
@@ -516,7 +525,7 @@ if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
 }
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numfa,actpos,adyn->step,adyn->time);
+monitoring(actfield,numaf,actpos,adyn->time);
 
 if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 {
@@ -624,11 +633,6 @@ case 99:
 /* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
 if (actintra->intra_fieldtyp != ale) break;
 if (pssstep==0) actpos--;
-
-/*---------------------------------------------- print out to .mon file */
-if (ioflags.monitor==1 && par.myrank==0)
-out_monitor(actfield,numfa);
-
 
 /*------------------------------------------- print out results to .out */
 if (outstep!=0 && ioflags.ale_disp_file==1)
