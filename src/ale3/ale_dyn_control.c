@@ -6,6 +6,7 @@ of the problemtype ale
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "ale3.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #ifdef MLIB_PACKAGE
 #include "/opt/mlib/include/veclib.h" 

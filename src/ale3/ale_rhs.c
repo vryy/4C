@@ -6,6 +6,7 @@ dirichlet boundary conditions for ale elements
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "../shell8/shell8.h"
 #include "../wall1/wall1.h"

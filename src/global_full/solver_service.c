@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 
 /*----------------------------------------------------------------------*
@@ -195,6 +196,10 @@ break;
 case spoolmatrix:
    *numeq       = mat.spo->numeq;
    *numeq_total = mat.spo->numeq_total;
+break;
+case bdcsr:
+   *numeq       = mat.bdcsr->numeq;
+   *numeq_total = mat.bdcsr->numeq_total;
 break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");

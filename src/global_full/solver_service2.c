@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |  create number of distributed vectors - collective call ! m.gee 10/01|

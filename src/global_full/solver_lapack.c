@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |  control solver lib Lapack                            m.gee 11/01    |

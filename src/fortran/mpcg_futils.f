@@ -263,7 +263,7 @@ c
 c     initialization 
 c
       iadd = 0 
-      getelm = 0.0
+      mpcg_getelm = 0.0
       ibeg = ia(i)
       iend = ia(i+1)-1
 c
@@ -309,7 +309,7 @@ c     end both cases
 c     
       endif
 c     
- 20   if (iadd .ne. 0) getelm = a(iadd) 
+ 20   if (iadd .ne. 0) mpcg_getelm = a(iadd) 
 c
       return
 c--------end-of-getelm--------------------------------------------------

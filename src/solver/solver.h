@@ -1,3 +1,8 @@
+/*!---------------------------------------------------------------------
+\file
+\brief all data types for solver packages
+
+---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | includes for solver package AZTEC 2.1                 m.gee 10/01    |
  *----------------------------------------------------------------------*/
@@ -76,6 +81,7 @@ typedef enum _SPARSE_TYP
      skymatrix,              /* skyline format for solver colsol */  
      spoolmatrix,            /* matrix object for solver spooles */
      ccf,                    /* compressed column format for umfpack */
+     bdcsr                   /* block distributed compressed sparse row format */
 } SPARSE_TYP;
 
 /*----------------------------------------------------------------------*
@@ -94,7 +100,7 @@ struct _RC_PTR         *rc_ptr; /*         to Mump's row/column ptr matrix */
 struct _CCF            *ccf;    /*         to Umfpack compressed column matrix */
 struct _SKYMATRIX      *sky;    /*         to Colsol's skyline matrix */
 struct _SPOOLMAT       *spo;    /*         to Spoole's matrix */
-
+struct _DBCSR_ROOT     *bdcsr;  /* matrix needed by the MLPCG solver on the finest grid only */
 } SPARSE_ARRAY;
 
 /*----------------------------------------------------------------------*
@@ -116,6 +122,7 @@ struct _PSUPERLUVARS   *psuperluvars;      /* variables needed for Parallel Supe
 struct _LAPACKVARS     *lapackvars;        /* variables needed for Lapack */
 struct _MUMPSVARS      *mumpsvars;         /* variables needed for MUMPS */
 struct _COLSOLVARS     *colsolvars;        /* variables needed for colsol */
+struct _MLPCGVARS      *mlpcgvars;         /* variables needed for MLPCG */
 
 int                     nsysarray;         /* number of global sparse arrays for this field */   
 enum  _SPARSE_TYP      *sysarray_typ;      /* vector of types for all sparse arrays */
@@ -616,28 +623,19 @@ int                is_init;
 int                numeq;       /* number of equations                  */
 int                nnz;         /* number of nonzeroes                  */
 int                output;      /* fortran unit number =6 -> screen     */
-
 double             cond;        /* condition number                     */
-
 struct _ARRAY      colstr;      /* gives the index in rowind of the
                                    first nonzero in the lower triangular
                                    part of column j of the matrix       */
 struct _ARRAY      rowind;      /* list of row indices for all nonzeros
-                                   within each column                   */
- 
 /* output */
-
 double             rcond;       /* estimate the reciprocal of the l-norm
                                    condition number                     */
-
 int                inrtia[3];   /* number of positive, negative and 
                                    an indicator if there are zero
                                    eigenvalues                          */
-                                   
 double             global[150]; /* global communication array           */
-
 int                ierr;        /* = 0; normal return                   */                                   
-                                                   
 } ML_ARRAY_MDS;
 
 

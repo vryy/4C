@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -25,7 +26,8 @@ PSUPERLUVARS *psuperluvars;
 LAPACKVARS   *lapackvars;
 MUMPSVARS    *mumpsvars;
 COLSOLVARS   *colsolvars;
-#ifdef DEBUG 
+MLPCGVARS    *mlpcgvars;
+#ifdef DEBUG  
 dstrc_enter("inpctrsol");
 #endif
 /*----------------------------------------------------------------------*/
@@ -208,6 +210,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("SPOOLES package is not compiled in");
 #endif
          solv->solvertyp = SPOOLES_sym;
+      }
+      /*--------------------------------------------------- solver MLPCG */
+      if (strncmp("MLPCG",buffer,5)==0) 
+      {
+         solv->solvertyp = MLPCG;
+         solv->mlpcgvars = (MLPCGVARS*)CALLOC(1,sizeof(MLPCGVARS));
+         if (!(solv->mlpcgvars)) dserror("Alloction of MLPCGVARS failed");
+         mlpcgvars = solv->mlpcgvars;
       }
    }/* end of (ierr==1) */
 /*------------------------------------------- read solver specific data */
@@ -434,6 +444,44 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    case SPOOLES_nonsym:/*-------------------------- read solver Spooles */
    break;
    case SPOOLES_sym:/*----------------------------- read solver Spooles */
+   break;
+   case MLPCG:/*------------------------------------- read solver MLPCG */
+      frint("NUMLEV"      ,&(mlpcgvars->numlev)   ,&ierr);
+      frint("ILU_N"       ,&(mlpcgvars->ilu_n)    ,&ierr);
+      frint("COARSEILULEV",&(mlpcgvars->co_ilu_n) ,&ierr);
+      frint("PRESWEEP"    ,&(mlpcgvars->presweep) ,&ierr);
+      frint("POSTSWEEP"   ,&(mlpcgvars->postsweep),&ierr);
+
+      frdouble("PROLONGSMODAMP",&(mlpcgvars->p_omega),&ierr);
+      frdouble("TOLERANCE"     ,&(mlpcgvars->tol)    ,&ierr);
+
+      frchar("COARSESOLV" ,buffer,&ierr);
+      if (ierr==1)
+      {
+         if (strncmp("SPOOLES",buffer,7)==0) 
+         {
+            mlpcgvars->coarsesolv = co_spooles;
+#ifndef SPOOLES_PACKAGE
+            dserror("Spooles chosen as coarse solver but not compiled in");
+#endif            
+         }
+         if (strncmp("LAPACK",buffer,6)==0)  mlpcgvars->coarsesolv = co_lapack;
+         if (strncmp("ILU",buffer,3)==0)     mlpcgvars->coarsesolv = co_ilu;
+      }
+      frchar("PRESMO" ,buffer,&ierr);
+      if (ierr==1)
+      {
+         if (strncmp("fwdGS",buffer,5)==0)  mlpcgvars->presmoother = pre_fwdGS;
+         if (strncmp("Jacobi",buffer,6)==0) mlpcgvars->presmoother = pre_Jacobi;
+         if (strncmp("ILU",buffer,3)==0)    mlpcgvars->presmoother = pre_ilu;
+      }
+      frchar("POSTSMO" ,buffer,&ierr);
+      if (ierr==1)
+      {
+         if (strncmp("bckGS",buffer,5)==0)  mlpcgvars->postsmoother = post_bckGS;
+         if (strncmp("Jacobi",buffer,6)==0) mlpcgvars->postsmoother = post_Jacobi;
+         if (strncmp("ILU",buffer,3)==0)    mlpcgvars->postsmoother = post_ilu;
+      }
    break;
    default:/*-------------------------------------------- reading error */
       dserror("Unknown solvertyp - error in reading");

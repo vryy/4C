@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -57,6 +58,7 @@ int isrc_ptr     =0;
 int iscolsol     =0;
 int isspooles    =0;
 int isumfpack    =0;
+int ismlpcg      =0;
 FIELD      *actfield;      /* the active field */
 PARTITION  *actpart;       /* my partition of the active field */
 SOLVAR     *actsolv;       /* the active SOLVAR */
@@ -158,6 +160,13 @@ for (i=0; i<genprob.numfld; i++)
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with SPOOLES"); 
       else isspooles=1;
+   }
+   /*------------------------------ matrix is block distributed csr format for mlpcg */
+   if (actsolv->solvertyp==MLPCG)
+   {
+      if (actsolv->parttyp != cut_elements)
+      dserror("Partitioning has to be Cut_Elements for solution with MLPCG"); 
+      else ismlpcg=1;
    }
    /* allocate only one sparse matrix for each field. The sparsity
       pattern of the matrices for mass and damping and stiffness are  
@@ -333,6 +342,23 @@ for (i=0; i<genprob.numfld; i++)
       }
       mask_skyline(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].sky);
       iscolsol=0;
+   }
+   /*---------------------------------------- matrix is skyline format  */
+   if (ismlpcg==1)
+   {
+      actsolv->nsysarray = 1;
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      if (!actsolv->sysarray_typ || !actsolv->sysarray)
+         dserror("Allocation of SPARSE_ARRAY failed");
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+         actsolv->sysarray_typ[i] = bdcsr;
+         actsolv->sysarray[i].bdcsr = (DBCSR_ROOT*)CALLOC(1,sizeof(DBCSR_ROOT));
+         if (actsolv->sysarray[i].bdcsr==NULL) dserror("Allocation of DBCSR_ROOT failed");
+      }
+      mask_bdcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].bdcsr);
+      ismlpcg=0;
    }
 /*----------------------------------------------------------------------*/
 } /* end of loop over numfld fields */

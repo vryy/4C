@@ -1140,4 +1140,47 @@ void ale_calelm(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
 void ale_rhs(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
              INTRA *actintra, int sysarray1, int sysarray2, double *dirich,
              int global_numeq, int kstep, CALC_ACTION *action);
-             
+/*----------------------------------------------------------------------*
+ | MLPCG prototypes                                        m.gee 09/02  |
+ *----------------------------------------------------------------------*/
+void mask_bdcsr(FIELD         *actfield, 
+                PARTITION     *actpart, 
+                SOLVAR        *actsolv,
+                INTRA         *actintra, 
+                DBCSR_ROOT    *bdcsr);
+void bdcsr_make_bindx(FIELD         *actfield, 
+                      PARTITION     *actpart, 
+                      SOLVAR        *actsolv,
+                      DBCSR_ROOT    *bdcsr,
+                      int          **dof_connect);
+void  bdcsr_nnz_topology(FIELD         *actfield, 
+                         PARTITION     *actpart, 
+                         SOLVAR        *actsolv,
+                         INTRA         *actintra,
+                         DBCSR_ROOT    *bdcsr,
+                         int          **dof_connect);
+void bdcsr_update(FIELD         *actfield, 
+                 PARTITION      *actpart, 
+                 SOLVAR         *actsolv,
+                 INTRA          *actintra,
+                 DBCSR_ROOT     *bdcsr);
+void mlpcg_renumberdofs(int            myrank,
+                        int            nproc,
+                        FIELD         *actfield, 
+                        PARTDISCRET   *actpdiscret, 
+                        INTRA         *actintra,
+                        DBCSR_ROOT    *bdcsr);
+void bdcsr_numeq(FIELD         *actfield, 
+                 PARTITION     *actpart, 
+                 SOLVAR        *actsolv,
+                 INTRA         *actintra,
+                 int           *numeq);
+void solver_mlpcg( 
+                      struct _SOLVAR         *actsolv,
+                      struct _INTRA          *actintra,
+                      struct _DBCSR_ROOT     *bdcsr,
+                      struct _DIST_VECTOR    *sol,
+                      struct _DIST_VECTOR    *rhs,
+                      int                     option
+                     );
+

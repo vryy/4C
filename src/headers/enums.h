@@ -161,6 +161,7 @@ typedef enum _SOLVER_TYP
                        SPOOLES_sym,   /* spooles parallel direct solver */
                        SPOOLES_nonsym,/* spooles parallel direct solver */
                        umfpack,       /* solver package umfpack, matrix in compressed column format */
+                       MLPCG       /* solver package umfpack, matrix in compressed column format */
 } SOLVER_TYP;                         
 /*----------------------------------------------------------------------*
  | enum AZSOLVERTYP                                        m.gee 9/01  |

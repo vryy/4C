@@ -30,6 +30,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/global_mask_ccf.o \
                 src/global_full/global_mask_skyline.o \
                 src/global_full/global_mask_spooles.o \
+                src/global_full/global_mask_bdcsr.o \
                 src/global_full/global_calelm.o \
                 src/global_full/global_calelm_dyn.o \
                 src/global_full/global_calelm_fluid.o \
@@ -57,6 +58,8 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/solver_umfpack.o \
                 src/global_full/solver_colsol.o \
                 src/global_full/solver_spooles.o \
+                src/global_full/solver_mlpcg.o \
+                src/global_full/solver_mlpcg2.o \
                 src/global_full/restart_control.o \
                 src/global_full/machine_hpux.o 
 #                pss_full

@@ -5,6 +5,7 @@
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid2_prototypes.h"

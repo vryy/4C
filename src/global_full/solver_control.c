@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -64,8 +65,11 @@ break;
 case skymatrix:/*---------------------- system matrix is skyline matrix */
    solver_colsol(actsolv,actintra,sysarray->sky,sol,rhs,option);
 break;
-case spoolmatrix:/*-------------------- system matrix is skyline matrix */
+case spoolmatrix:/*-------------------- system matrix is spooles matrix */
    solver_spooles(actsolv,actintra,sysarray->spo,sol,rhs,option);
+break;
+case bdcsr:/*------------------------------ system matrix is csr matrix */
+   solver_mlpcg(actsolv,actintra,sysarray->bdcsr,sol,rhs,option);
 break;
 default:
    dserror("Unknown format typ of system matrix");

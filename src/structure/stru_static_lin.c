@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -203,7 +204,7 @@ solserv_result_total(
                      &(actsolv->sysarray_typ[actsysarray])
                     );
 /*--------------------------------------------- printout results to gid */
-if (ioflags.struct_disp_gid==1)
+if (ioflags.struct_disp_gid==1 && par.myrank==0)
 {
    out_gid_sol("displacement",actfield,actintra,0,0);
 }
@@ -216,7 +217,7 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    *action = calc_struct_stressreduce;
    calreduce(actfield,actpart,actintra,action,0);
    out_sol(actfield,actpart,actintra,0,0);
-   out_gid_sol("stress"      ,actfield,actintra,0,0);
+   if (par.myrank==0) out_gid_sol("stress"      ,actfield,actintra,0,0);
 }
 /*----------------------------------------------------------------------*/
 end:

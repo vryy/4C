@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 int cmp_int(const void *a, const void *b );
 double cmp_double(const void *a, const void *b );
