@@ -76,7 +76,7 @@ ABOUT THE PROLONGATOR!
 void mlpcg_precond_PtKP(DBCSR *P, DBCSR *incsr, DBCSR *outcsr, DBCSR *work,
                         AGG *agg, int nagg, INTRA *actintra)
 {
-int        i,j,k,l,m,n,counter,foundit,flag,ilength,dlength,tag;
+int        i,j,k,m,n,counter,foundit,ilength,tag;
 int        nproc,myrank;
 double     sum;
 int        index;
@@ -122,10 +122,10 @@ int        numeq_cscP,*update_cscP,*ia_cscP,*ja_cscP;
 double    *a_cscP;
 int        numeq_in,*update_in,*ia_in,*ja_in;
 double    *a_in;
-
+#if 0
 double     t1,t2;
-
-int        min1,max1,min2,max2,min,max;
+#endif
+int        min1,max1,min2,max2;
 
 #ifdef PARALLEL 
 MPI_Status   status;  
@@ -1052,7 +1052,7 @@ void mlpcg_printvec(int          iter,
                    PARTDISCRET *partdis,
                    INTRA       *actintra)
 {
-int        i,j,dof;
+int        i,dof;
 FILE      *out = allfiles.out_err;
 ARRAY      send_a,recv_a;
 double    *zs,*zr;

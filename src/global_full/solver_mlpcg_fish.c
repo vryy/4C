@@ -47,13 +47,11 @@ from the aggregation done before , this routine only from 0 to 1
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P_fish(MLLEVEL  *actlev, INTRA *actintra)
 {
-int          i,j,k,l,n,counter=0;
+int          i,j,k,n,counter=0;
 int          myrank,nproc;
 DBCSR       *actstiff;
 DBCSR       *P;
-double     **R;
 AGG         *actagg;
-int          min;
 int          nrow,ncol;
 double       aggblock[1000][500];
 int          rindex[1000],cindex[500];
@@ -125,7 +123,7 @@ if (mlprecond.ncall==0)
    P->firstcoupledof=actstiff->firstcoupledof;
    am_alloc_copy(&(actstiff->blocks),&(P->blocks));
    /* make a guess of the size of the prolongator */
-   counter *= actstiff->numeq * 4.0;
+   counter = (int)(counter*(actstiff->numeq)*4.0);
    /* open the prolongator */
    mlpcg_csr_open(P,actstiff->update.a.iv[0],actstiff->update.a.iv[actstiff->update.fdim-1],
                   actstiff->numeq_total,counter, actintra);
@@ -190,7 +188,7 @@ void mlpcg_precond_oneP_fish(AGG     *actagg,
                              DBCSR   *actstiff,
                              INTRA   *actintra)
 {
-int           i,j,k,l,counter;
+int           i,j,counter;
 double      **A;
 ARRAY         A_a;
 double      **Z;

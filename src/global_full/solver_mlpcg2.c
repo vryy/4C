@@ -45,7 +45,7 @@ void mlpcg_precond_amgVW(int    level,
                         INTRA *actintra,
                         int   *gamma)
 {
-int      i,j,k;
+int      i,j;
 DBCSR   *stiff;
 MLLEVEL *actlevel;
 MLLEVEL *nextlevel;
@@ -58,7 +58,6 @@ double  *rwork;
 ARRAY    zwork_a;
 double  *zwork;
 
-double  *zc,*rc;
 ARRAY    rcwork_a;
 double  *rcwork;
 ARRAY    zcwork_a;
@@ -208,7 +207,6 @@ double  *rwork;
 ARRAY    zwork_a;
 double  *zwork;
 
-double  *zc,*rc;
 ARRAY    rcwork_a;
 double  *rcwork;
 ARRAY    zcwork_a;
@@ -497,7 +495,7 @@ void mlpcg_precond_create(DBCSR     *bdcsr,
                           MLPCGVARS *mlpcgvars,
                           INTRA     *actintra)
 {
-int        i,j;
+int        i;
 MLLEVEL   *actlev;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -569,7 +567,7 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_precond_init(DBCSR  *bdcsr,MLPCGVARS *mlpcgvars, INTRA *actintra)
 {
-int        i,j;
+int        i;
 MLLEVEL   *actlev;
 double     t1,t2;
 /*----------------------------------------------------------------------*/
@@ -731,7 +729,7 @@ void mlpcg_precond_prolongz(double *zc, double *z, DBCSR *P, DBCSR *coarsecsr,
                             INTRA *actintra)
 {
 int        i,j,n,m,counter;
-int        actrow,actcol,colstart,colend,index,owner,flag,tag,length;
+int        actrow,actcol,colstart,colend,index,owner,tag,length;
 int        myrank,nproc;
 int       *update,*ia,*ja,numeq;
 double    *a;
@@ -936,11 +934,10 @@ void mlpcg_precond_restrictr(double *rc, double *r, DBCSR *P, DBCSR *coarsecsr,
 {
 int        i,j,n,m,counter;
 int        myrank,nproc;
-int        index,flag;
 int        sender,tag,length;
 int        numeq,*update,*ia,*ja;
 double    *a;
-int        actrow,actcol,colstart,colend,owner,rowindex;
+int        actrow,actcol,colstart,colend,owner;
 int        cindex;
 int        sendtos[MAXPROC][MAXPROC],sendtor[MAXPROC][MAXPROC];
 int        nsend=0,nrecv=0,sendsize;
@@ -1133,7 +1130,6 @@ DBCSR     *work=NULL;
 int      **blocks;
 int        max=0;
 AGG       *actagg;
-double     t1,t2;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_restrictK");
@@ -1240,9 +1236,9 @@ row in the matrix
 ------------------------------------------------------------------------*/
 void mlpcg_precond_check_fcd(DBCSR *matrix, INTRA *actintra)
 {
-int           i,j,n,actrow,actcol,colstart,colend;
+int           i,j;
 int           myrank,nproc;
-int           foundit,owner;
+int           owner;
 int           numeq,*update,*ia,*ja;
 double       *a;
 double        one=1.0;
@@ -1376,7 +1372,7 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_precond_getdirs(void)
 {
-int           i,j,k,l,counter;
+int           i,j,counter;
 PARTDISCRET  *actpdis;
 NODE         *actnode;
 ELEMENT      *actele;

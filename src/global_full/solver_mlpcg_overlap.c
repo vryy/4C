@@ -36,10 +36,9 @@ extern struct _MLPRECOND mlprecond;
 ------------------------------------------------------------------------*/
 void mlpcg_precond_smo_ILUn_overlap(double *z, double *r, DBCSR *csr, int nsweep, INTRA *actintra)
 {
-int            i,j,k,l,n,counter;
+int            i,j,k,n;
 int            dof,index,nrequest;
 int            myrank,nproc;
-int            numeq;
 DBCSR         *ilu;
 DBCSR         *asm;
 ARRAY          levs,w,jw;
@@ -79,13 +78,13 @@ if (csr->ilu==NULL)
    mlpcg_csr_localnumsf_overlap(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (asm->a.fdim+1)*2.0;
-   if (nsweep==2) size = (asm->a.fdim+1)*2.5;
-   if (nsweep==3) size = (asm->a.fdim+1)*3.0;
-   if (nsweep==4) size = (asm->a.fdim+1)*4.0;
-   if (nsweep==5) size = (asm->a.fdim+1)*5.0;
-   if (nsweep==6) size = (asm->a.fdim+1)*6.0;
-   if (nsweep>=7) size = (asm->a.fdim+1)*7.0;
+   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.0);
+   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.0);
+   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.0);
+   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.0);
+   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.0);
    tryagain:
    amdef("ilu_val"  ,&(ilu->a) ,size          ,1,"DV");
    amdef("ilu_bindx",&(ilu->ja),size          ,1,"IV");
@@ -132,7 +131,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size *= 1.3;
+         size = (int)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdel(&(ilu->ia));
@@ -162,13 +161,13 @@ else if (csr->ilu->is_factored != mlprecond.ncall && mlprecond.mod==0)
    mlpcg_csr_localnumsf_overlap(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (asm->a.fdim+1)*2.0;
-   if (nsweep==2) size = (asm->a.fdim+1)*2.5;
-   if (nsweep==3) size = (asm->a.fdim+1)*3.0;
-   if (nsweep==4) size = (asm->a.fdim+1)*4.0;
-   if (nsweep==5) size = (asm->a.fdim+1)*5.0;
-   if (nsweep==6) size = (asm->a.fdim+1)*6.0;
-   if (nsweep>=7) size = (asm->a.fdim+1)*7.0;
+   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.0);
+   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.0);
+   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.0);
+   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.0);
+   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.0);
    tryagain2:
    amdef("levs"     ,&levs     ,size          ,1,"IV");
    amdef("w"        ,&w        ,asm->numeq    ,1,"DV");
@@ -212,7 +211,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size *= 1.3;
+         size = (int)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdef("ilu_val"  ,&(ilu->a) ,size          ,1,"DV");
@@ -349,7 +348,6 @@ for (n=0; n<nproc; n++)
 for (i=0; i<nrequest; i++) MPI_Wait(&(request[i]),&status);
 CCAFREE(request);
 /*----------------------------------------------------------------------*/
-exit:
 rwork = CCAFREE(rwork);
 zwork = CCAFREE(zwork);
 amdel(&irecv_a);
@@ -381,7 +379,7 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_csr_overlap(DBCSR *csr, DBCSR *ocsr, DBCSR *ilu, int overlap, INTRA *actintra)
 {
-int       i,j,k,l,n,counter;
+int       i,j,k,n,counter;
 int       fcd;
 int       fcdindex;
 int       index;
@@ -575,7 +573,7 @@ for (n=0; n<nproc; n++)
 }
 if (k != nrequest) dserror("Number of sends wrong");
 /*---------------- make a guess how large my overlapping update will be */
-noupdate = numeq*3.0;
+noupdate = (int)(numeq*3.0);
 oupdate = amdef("oupdate",&oupdate_a,noupdate,1,"IV");
 /*------------------------------------------ put my own dofs to oupdate */
 counter=0;
@@ -601,7 +599,7 @@ for (n=0; n<nproc; n++)
    {
       if (counter>=noupdate)
       {
-         noupdate = numeq*3.0;
+         noupdate = (int)(numeq*3.0);
          oupdate = amredef(&oupdate_a,noupdate,1,"IV");
       }
       oupdate[counter++] = irecv[i+1];
@@ -667,7 +665,7 @@ for (n=0; n<nproc; n++)
       {
          if (counter>=njasend)
          {
-            njasend *= 1.5;
+            njasend = (int)(njasend*1.5);
             nasend   = njasend;
             jasend   = amredef(&jasend_a,nproc,njasend,"IA");
             asend    = amredef(&asend_a ,nproc,nasend ,"DA");
@@ -815,10 +813,8 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_csr_localnumsf_overlap(DBCSR *matrix)
 {
-int        i,j,k;
+int        i;
 int        numeq,*ia,*ja,*update,index;
-int        actrow,actcol;
-int        colstart,colend;
 int        nnz;
 int        shift,*bins;
 /*----------------------------------------------------------------------*/
@@ -875,9 +871,8 @@ void mlpcg_matvec_asm_overlap(double       *y,
                               int           init,
                               INTRA        *actintra)
 {
-int            i,j,k,l,m,n,counter,dof,index;
+int            i,j,k,n,dof,index;
 int            myrank,nproc;
-int            actrow,actcol,colstart,colend;
 double         sum;
 DBCSR         *ilu;
 DBCSR         *asm;

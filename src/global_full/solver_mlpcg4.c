@@ -37,19 +37,15 @@ from the aggregation done before , this routine only from 0 to 1
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P(MLLEVEL  *actlev, INTRA *actintra)
 {
-int          i,j,k,n,counter=0;
+int          i,j,k,counter=0;
 int          myrank,nproc;
 DBCSR       *actstiff;
 DBCSR       *P;
-double     **R;
 AGG         *actagg;
 MLLEVEL     *prevlev;
-int          min;
 int          nrow,ncol;
 double       aggblock[1000][500];
 int          rindex[1000],cindex[500];
-int          ndofs[MAXPROC],ndofr[MAXPROC];
-int          firstdof;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_P");
@@ -187,18 +183,14 @@ from the aggregation done before , this routine only from 0 to 1
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P0(MLLEVEL  *actlev, INTRA *actintra)
 {
-int          i,j,k,l,n,counter=0;
+int          i,j,k,counter=0;
 int          myrank,nproc;
 DBCSR       *actstiff;
 DBCSR       *P;
-double     **R;
 AGG         *actagg;
-int          min;
 int          nrow,ncol;
 double       aggblock[1000][500];
 int          rindex[1000],cindex[500];
-int          ndofs[MAXPROC],ndofr[MAXPROC];
-int          firstdof;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_P0");
@@ -353,19 +345,14 @@ void mlpcg_precond_oneP_vanek(AGG     *actagg,
                              DBCSR   *actstiff,
                              MLLEVEL *prevlevel)
 {
-int           i,j,k,l,counter;
+int           i,j,k,counter;
 AGG          *prevagg[200];
 AGG          *actprevagg;
-NODE         *node[200];
-NODE         *actnode;
-PARTDISCRET  *actpdis;
 int          *actblock;
 int           dof;
 double        x0,y0,z0,x,y,z;
 int           index;
-int           foundit;
 int           shift,bins[5000];
-double      **R;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_oneP_vanek");
@@ -551,7 +538,7 @@ void mlpcg_precond_oneP0_vanek(AGG     *actagg,
                                int     *ncol,
                                DBCSR   *actstiff)
 {
-int           i,j,k,l,counter;
+int           i,j,k,counter;
 NODE         *node[200];
 NODE         *actnode;
 PARTDISCRET  *actpdis;
@@ -559,7 +546,6 @@ int          *actblock;
 int           dof;
 double        x0,y0,z0,x,y,z,a1,a2,a3;
 int           index;
-int           foundit;
 int           shift,bins[5000];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -768,8 +754,8 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_smoothP(DBCSR *P, DBCSR *actstiff, INTRA *actintra)
 {
-int           i,j,k,l,n,m,counter;
-int           myrank,nproc,flag,tag;
+int           i,j,k,n,m,counter;
+int           myrank,nproc,tag;
 double        omega,fac;
 int           numeq,numeq_total;
 int           firstcol,lastcol,maxcol,mincol,intercol;

@@ -38,14 +38,11 @@ whether this has been done before
 ------------------------------------------------------------------------*/
 void mlpcg_precond_aggsetdofs(MLLEVEL *actlev,int numdf, INTRA *actintra)
 {
-int           i,j,k;
+int           i,j;
 int           myrank,nproc;
 int           sendbuff[MAXPROC],recvbuff[MAXPROC];
 int           firstdof=0;
 int           foundit =0;
-int           counter;
-int         **blocks;
-AGG          *actagg;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_aggsetdofs");
@@ -488,7 +485,7 @@ void mlpcg_precond_getneightoagg(int **neighblock,
                                  int  *ia,
                                  int  *ja)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        dof;
 int        index;
 int        column;
@@ -663,7 +660,7 @@ void mlpcg_precond_getfreenblocks(int  *actblock,
                                   int  *ia,
                                   int  *ja)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        dof;
 int        index;
 int        column;

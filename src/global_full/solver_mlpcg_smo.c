@@ -102,14 +102,12 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_precond_smo_ILUn(double *z, double *r, DBCSR *csr, int nsweep, INTRA *actintra)
 {
-int     i,n;
+int     i;
 int     myrank,nproc;
-int     numeq;
 DBCSR  *ilu;
 DBCSR  *asm;
 int     size,ierr=0;
 ARRAY   levs,w,jw;
-int    *update,nupdate;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_smo_ILUn");
@@ -148,13 +146,13 @@ if (csr->ilu==NULL)
    mlpcg_csr_localnumsf(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (asm->a.fdim+1)*2.0;
-   if (nsweep==2) size = (asm->a.fdim+1)*2.5;
-   if (nsweep==3) size = (asm->a.fdim+1)*3.5;
-   if (nsweep==4) size = (asm->a.fdim+1)*4.5;
-   if (nsweep==5) size = (asm->a.fdim+1)*5.5;
-   if (nsweep==6) size = (asm->a.fdim+1)*6.5;
-   if (nsweep>=7) size = (asm->a.fdim+1)*7.5;
+   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.5);
+   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.5);
+   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.5);
+   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.5);
+   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.5);
    tryagain:
    amdef("ilu_val"  ,&(ilu->a) ,size          ,1,"DV");
    amdef("ilu_bindx",&(ilu->ja),size          ,1,"IV");
@@ -201,7 +199,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size *= 1.3;
+         size = (int)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdel(&(ilu->ia));
@@ -245,13 +243,13 @@ else if (csr->ilu->is_factored != mlprecond.ncall && mlprecond.mod==0)
    mlpcg_csr_localnumsf(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (asm->a.fdim+1)*2.0;
-   if (nsweep==2) size = (asm->a.fdim+1)*2.5;
-   if (nsweep==3) size = (asm->a.fdim+1)*3.5;
-   if (nsweep==4) size = (asm->a.fdim+1)*4.5;
-   if (nsweep==5) size = (asm->a.fdim+1)*5.5;
-   if (nsweep==6) size = (asm->a.fdim+1)*6.5;
-   if (nsweep>=7) size = (asm->a.fdim+1)*7.5;
+   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.5);
+   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.5);
+   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.5);
+   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.5);
+   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.5);
    tryagain2:
    amdef("levs"     ,&levs     ,size          ,1,"IV");
    amdef("w"        ,&w        ,asm->numeq    ,1,"DV");
@@ -295,7 +293,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size *= 1.3;
+         size = (int)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdel(&(ilu->ia));
@@ -321,7 +319,6 @@ c           ierr  = -5   --> zero row encountered in A or U.
 ilu = csr->ilu;
 lusol(&(ilu->numeq),r,z,ilu->a.a.dv,ilu->ja.a.iv,ilu->ia.a.iv);
 /*----------------------------------------------------------------------*/
-exit:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -346,8 +343,7 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_precond_lapacksolve(double *z, double *r, DBCSR *csr, INTRA *actintra)
 {
-int      i,j,counter,info;
-int      actrow,actcol,colstart,colend,index;
+int      i,j,info;
 int      myrank,nproc;
 int      numeq_total,numeq;
 int     *update,*ia,*ja;
@@ -479,7 +475,6 @@ for (i=0; i<numeq; i++)
 /*------------------------------------------------------------- tidy up */
 amdel(&rrhs_a);
 /*----------------------------------------------------------------------*/
-exit:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -558,7 +553,6 @@ for (j=start+1; j<ncol; j++)
       R[j][j] = 0.0;
 } /* end of for (j=0; j<ncol; j++) */
 /*----------------------------------------------------------------------*/
-exit:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

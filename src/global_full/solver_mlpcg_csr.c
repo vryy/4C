@@ -40,7 +40,7 @@ void mlpcg_extractcollocal_init(DBCSR     *matrix,
 int           i,j,k,counter;
 int           *ia,*ja,*update,numeq,numeq_total;
 double        *a;
-int            actrow,actcol,colstart,colend;
+int            actcol,colstart,colend;
 
 int           *tmp;
 double       **test;
@@ -124,7 +124,7 @@ void mlpcg_extractcollocal_uninit(DBCSR    *matrix,
                                   int    ***icol,
                                   double ***dcol)
 {
-int           i,j,numeq_total;
+int           i,numeq_total;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -178,7 +178,7 @@ void mlpcg_extractcollocal_fast(DBCSR *matrix, int actcol,
                                 double **col,int **rcol, int *size, int *nrow,
                                 int *sizes, int ***icol, double ***dcol)
 {
-int           i,j,counter;
+int           i,counter;
 int          **ic;
 double       **dc;
 /*----------------------------------------------------------------------*/
@@ -308,7 +308,7 @@ void mlpcg_extractcolcsc(int      col,
                          int     *size,
                          int     *nrow)
 {
-int           i,j,k;
+int           i,k;
 int           index,rowstart,rowend;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -377,7 +377,7 @@ void mlpcg_extractrowcsr(int      row,
                          int     *size,
                          int     *ncol)
 {
-int           i,j,k;
+int           i,k;
 int           index,rowstart,rowend;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -441,7 +441,7 @@ void mlpcg_csr_open(DBCSR*  matrix,
                     int     nnz_guess,
                     INTRA  *actintra)
 {
-int        i,j;
+int        i;
 int        dofrangesend[MAXPROC*2],dofrangerecv[MAXPROC*2];
 int        myrank,nproc;
 int       *update;
@@ -539,13 +539,8 @@ return;
 void mlpcg_csr_zero(DBCSR*  matrix,
                     INTRA  *actintra)
 {
-int        i,j;
 int        myrank,nproc;
-int       *update;
-int        counter;
 int        ione=-1;
-int        isnew;
-int        rowguess;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_csr_zero");
@@ -664,7 +659,6 @@ check for alocated memory and free everything
 ------------------------------------------------------------------------*/
 void mlpcg_csr_destroy(DBCSR*   matrix)
 {
-int        i,j,k;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_csr_destroy");
@@ -739,7 +733,7 @@ void mlpcg_csr_extractsubblock(DBCSR *from, DBCSR *to,
                                int    cend,
                                INTRA *actintra)
 {
-int        i,j,k;
+int        i,j;
 int        numeq_from,*update_from,*ia_from,*ja_from;
 double    *a_from;
 int        actrow,actcol;
@@ -798,12 +792,11 @@ void mlpcg_csr_extractsubblock_dense(DBCSR *from, double **A,
                                      int   *index, int nindex,
                                      INTRA *actintra)
 {
-int        i,j,k;
+int        i,j;
 int        ii,jj;
 int        numeq_from,*update_from,*ia_from,*ja_from;
 double    *a_from;
-int        actrow,actcol;
-int        colstart,colend;
+int        colstart,colend,actrow,actcol;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_csr_extractsubblock_dense");
@@ -855,9 +848,8 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_csr_localnumsf(DBCSR *matrix)
 {
-int        i,j,k;
+int        i,j;
 int        numeq,*ia,*ja;
-int        actrow,actcol;
 int        colstart,colend;
 int        offset;
 /*----------------------------------------------------------------------*/
@@ -921,7 +913,7 @@ int        numeq;
 int        nnz_guess;
 int        new_nnz_guess;
 int        new_row_guess;
-int        move_row,move_index;
+int        move_index;
 int        sf_col,ef_col,st_col,et_col;
 int       *update;
 int       *ja,*ia;
@@ -930,7 +922,6 @@ int        actrow,row_index;
 int        actcol;
 int        colstart,colend;
 int        foundit;
-int        rowstart,rowend;
 int        hasmoved;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1124,7 +1115,7 @@ int        numeq;
 int        nnz_guess;
 int        new_nnz_guess;
 int        new_row_guess;
-int        move_row,move_index;
+int        move_index;
 int        sf_col,ef_col,st_col,et_col;
 int       *update;
 int       *ja,*ia;
@@ -1133,7 +1124,6 @@ int        actrow,row_index;
 int        actcol;
 int        colstart,colend;
 int        foundit;
-int        rowstart,rowend;
 int        hasmoved;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1319,12 +1309,12 @@ void mlpcg_csr_addentry(DBCSR*   matrix,
                         int     cindex,
                         INTRA   *actintra)
 {
-int        i,j,k,l,m,n,counter;
+int        k,l,m,n,counter;
 int        numeq;
 int        nnz_guess;
 int        new_nnz_guess;
 int        new_row_guess;
-int        move_row,move_index;
+int        move_index;
 int        sf_col,ef_col,st_col,et_col;
 int       *update;
 int       *ja,*ia;
@@ -1333,7 +1323,6 @@ int        actrow,row_index;
 int        actcol;
 int        colstart,colend;
 int        foundit;
-int        rowstart,rowend;
 int        hasmoved;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1512,12 +1501,12 @@ void mlpcg_csr_setentry(DBCSR*   matrix,
                         int     cindex,
                         INTRA   *actintra)
 {
-int        i,j,k,l,m,n,counter;
+int        k,l,m,n,counter;
 int        numeq;
 int        nnz_guess;
 int        new_nnz_guess;
 int        new_row_guess;
-int        move_row,move_index;
+int        move_index;
 int        sf_col,ef_col,st_col,et_col;
 int       *update;
 int       *ja,*ia;
@@ -1526,7 +1515,6 @@ int        actrow,row_index;
 int        actcol;
 int        colstart,colend;
 int        foundit;
-int        rowstart,rowend;
 int        hasmoved;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1706,12 +1694,12 @@ void mlpcg_csr_setentry_overlap(DBCSR*   matrix,
                                 int     cindex,
                                 INTRA   *actintra)
 {
-int        i,j,k,l,m,n,counter;
+int        k,l,m,n,counter;
 int        numeq;
 int        nnz_guess;
 int        new_nnz_guess;
 int        new_row_guess;
-int        move_row,move_index;
+int        move_index;
 int        sf_col,ef_col,st_col,et_col;
 int       *update;
 int       *ja,*ia;
@@ -1720,7 +1708,6 @@ int        actrow,row_index;
 int        actcol;
 int        colstart,colend;
 int        foundit;
-int        rowstart,rowend;
 int        hasmoved;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1907,12 +1894,12 @@ void mlpcg_csr_addrow(DBCSR*   matrix,
                       int      ncol,
                       INTRA   *actintra)
 {
-int        i,j,k,l,m,n,counter;
+int        j,k,l,m,n,counter;
 int        numeq;
 int        nnz_guess;
 int        new_nnz_guess;
 int        new_row_guess;
-int        move_row,move_index;
+int        move_index;
 int        sf_col,ef_col,st_col,et_col;
 int       *update;
 int       *ja,*ia;
@@ -1921,7 +1908,6 @@ int        actrow,row_index;
 int        actcol;
 int        colstart,colend;
 int        foundit;
-int        rowstart,rowend;
 int        hasmoved;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

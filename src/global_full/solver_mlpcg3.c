@@ -56,7 +56,6 @@ void mlpcg_solver_create(DBCSR       *bdcsr,
                          DIST_VECTOR *rhs,
                          MLPCGVARS   *mlpcgvars)
 {
-int        i,j;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_solver_create");
@@ -91,7 +90,7 @@ void mlpcg_pcg(DBCSR       *bdcsr,
                DIST_VECTOR *rhs,
                INTRA       *actintra)
 {
-int        i,j;
+int        i;
 int        myrank,nproc;
 int        numeq;
 double    *r,*z,*p,*q,*x,*b;
@@ -103,7 +102,6 @@ double     done=1.0;
 int        ione=1;
 int        izero=0;
 int        one=1,two;
-double     max,max2;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_pcg");
@@ -171,7 +169,7 @@ for (i=0; i<mlsolver.maxiter; i++)
    /* make eps */
    eps = sqrt(work);
    if (i!=0)
-   if (10%i==0)
+   if (i%10==0)
    if (myrank==0)
    {
       printf("%d : %20.15f\n",i,eps);
@@ -284,7 +282,6 @@ void mlpcg_matvec(double       *y,
 {
 int        i,j,counter;
 int        myrank,nproc;
-double    *dptr;
 int        index;
 
 int        numeq;
@@ -303,13 +300,11 @@ int        recv_size[MAXPROC],nrecv;
 int        own,flag;
 
 int        fcd,fcdindex;
-int        colstart,colend;
 int        column;
 
 int        shift;
 int        bins[5000];
 
-double     t1,t2;
 #ifdef PARALLEL 
 MPI_Status local_status;
 #endif
@@ -557,8 +552,6 @@ int        fcd,index_fcd;
 int        start_index,end_index;
 int        actdof,index_actdof;
 int        ngdof;
-int        maxngdof;
-int        actgdof;
 ARRAY      gupdatesend_a,gupdaterecv_a;
 int       *gupdatesend,*gupdaterecv;
 int        column;
@@ -864,7 +857,6 @@ make the vector product scalar = x * y with distributed vectors
 ------------------------------------------------------------------------*/
 void mlpcg_vecvec(double *scalar, double *x, double *y, int dim, INTRA *actintra)
 {
-int     i;
 double  sbuff=0.0;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -950,7 +942,7 @@ after a function call to mlpcg_matvec_init
 ------------------------------------------------------------------------*/
 int mlpcg_getowner(int dof, int owner[][2], int nproc)
 {
-int i,j,own;
+int i,own;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_getowner");
