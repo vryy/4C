@@ -171,7 +171,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"none",4)==0) 
       {
          actdnode->dirich->curve.a.iv[i] = 0;
-         colptr = strstr(allfiles.actplace,"none");
+         colptr = strstr(colptr,"none");
          dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
          colptr += 4;
       }
@@ -277,7 +277,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"none",4)==0) 
       {
          actdline->dirich->curve.a.iv[i] = 0;
-         colptr = strstr(allfiles.actplace,"none");
+         colptr = strstr(colptr,"none");
          dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
          colptr += 4;
       }
@@ -489,7 +489,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         if (strncmp(buffer,"none",4)==0) 
         {
            actdvol->dirich->curve.a.iv[i] = 0;
-           colptr = strstr(allfiles.actplace,"none");
+           colptr = strstr(colptr,"none");
            dsassert(colptr!=NULL,"Cannot read design-vol dirichlet conditions");
            colptr += 4;
         }
