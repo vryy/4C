@@ -156,6 +156,8 @@ static SPARSE_TYP    array_typ;   /* type of psarse system matrix               
 static FSI_DYNAMIC  *fsidyn;
 static ALE_DYNAMIC  *adyn;
 
+DOUBLE getmin,getmax;
+
 #ifdef BINIO
 static BIN_OUT_FIELD out_context;
 #endif
@@ -343,6 +345,7 @@ container.min = 0.10;
 container.max = 500.0;
 container.min_stiff = container.min;
 container.max_stiff = container.max;
+
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL
 if (ioflags.ale_disp==1 && par.myrank==0)
@@ -451,10 +454,23 @@ solserv_zero_mat(
 /*------------------------------------------ rezero dirichlet vector ---*/
 amzero(&dirich_a);
 /*---- put actual min and max stiffening factor in place for scaling ---*/
+#ifdef PARALLEL
+/* get minimal and maximal stiffnes of previous timestep over all procs */
+MPI_Reduce(&(container.min_stiff),&getmin,1,MPI_DOUBLE,MPI_MIN,0,actintra->MPI_INTRA_COMM);
+MPI_Reduce(&(container.max_stiff),&getmax,1,MPI_DOUBLE,MPI_MAX,0,actintra->MPI_INTRA_COMM);
+/* redistribute min and max stiffnes on all procs */
+MPI_Bcast(&getmin,1,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
+MPI_Bcast(&getmax,1,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
+container.min = getmin;
+container.max = getmax;
+#else
 container.min = container.min_stiff; /* min stiffness of prev time step */
 container.max = container.max_stiff; /* max stiffness of prev time step */
+#endif
+/* reset default values to be overwritten within the next element call  */
 container.max_stiff = 0.0;
 container.min_stiff = 1.E10;
+
 /*-call element routines to calculate & assemble stiffness matrix */
 *action = calc_ale_stiff_step2;
 container.kstep        = adyn->step;
@@ -579,7 +595,7 @@ if (restartstep==fsidyn->uprestart)
 
 /*--------------------------------------- do mesh quality statistics ---*/
 if (container.quality)
-  plot_ale_quality(actfield,fsidyn->step,actintra,actpart);
+  plot_ale_quality(actfield,fsidyn->step,fsidyn->time,actintra,actpart);
 /*--------------------------------------------------------------------- */
 
 break;
@@ -624,8 +640,8 @@ ale_setdirich(actfield,adyn,6);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
-ale_rhs(actfield,actsolv,actpart,actintra,constsysarray,-1,dirich,
-        numeq_total,0,&container,action);
+ale_rhs(actsolv,actpart,actintra,constsysarray,-1,dirich,
+        numeq_total,&container,action);
 
 /*------ add rhs from fsi coupling (-> prescribed displacements) to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[constsysarray]),
