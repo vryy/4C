@@ -133,8 +133,10 @@ void ale3inp(
 } /* end of ale3inp */
 
 
+#if 0
 
-
+/* we don't need this stuff, at least at the moment!!!!
+                                                             genk 05/03 */
 /*!----------------------------------------------------------------------
   \brief  copy element info from fluidfield to ale field 
 
@@ -183,23 +185,22 @@ void fluid_to_ale(
       fluid_ele->e.f2->my_ale  = NULL;  
     }
 #endif	  
-  }
-  for (i=0; i<alefield->dis[0].numele; i++)
-  {
-    ale_ele = &(alefield->dis[0].element[i]);
-    if (fluid_ele->eltyp==el_ale3)
-    {
+}
+for (i=0; i<alefield->dis[0].numele; i++)
+{
+   ale_ele = &(alefield->dis[0].element[i]);
+   if (ale_ele->eltyp==el_ale3)
+   {
       ale_ele->e.ale3->my_fluid = NULL;
-    }
-    if (fluid_ele->eltyp==el_ale2)
-    {
-      ale_ele->e.ale2->my_fluid = NULL;
-    }   
-  }
-
-  /* loop fluid elements */
-  for (i=0; i<fluidfield->dis[0].numele; i++)
-  {
+   }
+   if (ale_ele->eltyp==el_ale2)
+   {
+       ale_ele->e.ale2->my_fluid = NULL;
+   }   
+}
+/*----------------------------------------------------------------------*/
+for (i=0; i<fluidfield->dis[0].numele; i++)/*------ loop fluid elements */
+{
     fluid_ele = &(fluidfield->dis[0].element[i]);
 
 #ifdef D_FLUID3    
@@ -320,5 +321,6 @@ void find_compatible_ele(
 } /* end of find_compatible_ele */
 
 
+#endif
 #endif
 /*! @} (documentation module close)*/
