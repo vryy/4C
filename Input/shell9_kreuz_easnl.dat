@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/hartmann/index.html
 //             0711 - 685-6120
 // 
-// necessary defines: -DD_SHELL9 -DD_MAT
+// necessary defines: -DD_SHELL9 -DD_MAT -DRESULTTEST
 //
 // #define MAXNOD                (8)
 // #define MAXELE                (4)
@@ -454,7 +454,7 @@ NODE           65     COORD 2.000000000000000e+02     5.000000000000000e+01     
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Multilayer  NUM_KLAY       1 SEC_KLAY 100
-     KINLAY 1 NUM_MLAY 2 SEC_MLAY 50,50          SEC_MAT  1,1  SEC_PHI  45.0,45.0  SEC_ROT 3,3
+     KINLAY 1 NUM_MLAY 2 SEC_MLAY 50,50          SEC_MAT  1,1  SEC_PHI  0.0,90.0  SEC_ROT 3,3
 ----------------------------------------------MULTILAYER MATERIALS
 MULTIMAT 1  MAT_Struct_Orthotropic  EMOD1 31100 EMOD2 7600 EMOD3 7600 GMOD12 2900 GMOD13 2900 GMOD23 2600 XNUE12 0.303 XNUE13 0.303 XNUE23 0.303
 ------------------------------------------------------CONTROL NODE
