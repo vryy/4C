@@ -83,6 +83,9 @@ case calc_struct_stressreduce:
    if (actintra->intra_nprocs==1) goto end;
    s8_stress_reduce(actfield,actpart,actintra,kstep);      
 break;/*----------------------------------------------------------------*/
+/*-----------------------------------------------------update variables */
+case calc_struct_update_istep:
+break;/*----------------------------------------------------------------*/
 default:
    dserror("action unknown");
 break;
