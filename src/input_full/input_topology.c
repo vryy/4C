@@ -415,45 +415,48 @@ void inp_detailed_topology(DISCRET   *actdis)
   /*
      [[7]
      */
-  actdis->ngsurf = counter;
-  tmpgsurf       = actdis->gsurf;
-  actdis->gsurf  = (GSURF*)CCAREALLOC(actdis->gsurf,(actdis->ngsurf)*sizeof(GSURF));
-  /*---- if the realloc moved the gsurf to another place, adjust pointers */
-  if (actdis->gsurf != tmpgsurf) 
+  if (actdis->ngsurf != 0 || counter != 0)
   {
-    /*--------------- find the pointer offset between new and old gsurfs */
-    ptrdistance = (PTRSIZE)(actdis->gsurf) - (PTRSIZE)(tmpgsurf);
-    /*---------------------------- loop elements and adjust the pointers */
-    for (i=0; i<actdis->numele; i++)
+    actdis->ngsurf = counter;
+    tmpgsurf       = actdis->gsurf;
+    actdis->gsurf  = (GSURF*)CCAREALLOC(actdis->gsurf,(actdis->ngsurf)*sizeof(GSURF));
+    /*---- if the realloc moved the gsurf to another place, adjust pointers */
+    if (actdis->gsurf != tmpgsurf) 
     {
-      actele = &(actdis->element[i]);
-      switch (actele->distyp)
+      /*--------------- find the pointer offset between new and old gsurfs */
+      ptrdistance = (PTRSIZE)(actdis->gsurf) - (PTRSIZE)(tmpgsurf);
+      /*---------------------------- loop elements and adjust the pointers */
+      for (i=0; i<actdis->numele; i++)
       {
-        case line2:
-        case line3:
-          break;
-        case quad4: 
-        case quad8: 
-        case quad9: 
-        case tri3:  
-        case tri6:  
-          ShiftPointer((void**)&(actele->g.gsurf),ptrdistance);
-          break; 
-        case hex8: 
-        case hex20:
-        case hex27:
-        case tet4: 
-        case tet10:
-          actgvol = actele->g.gvol;
-          for (j=0; j<actgvol->ngsurf; j++) 
-            ShiftPointer((void**)&(actgvol->gsurf[j]),ptrdistance); 
-          break;
-        default:
-          dserror("Unknown type of discretization 1");
-          break;
-      }
-    }/* end i loop over elements */
-  }/* end of if (actdis->gsurf != tmpgsurf) */
+        actele = &(actdis->element[i]);
+        switch (actele->distyp)
+        {
+          case line2:
+          case line3:
+            break;
+          case quad4: 
+          case quad8: 
+          case quad9: 
+          case tri3:  
+          case tri6:  
+            ShiftPointer((void**)&(actele->g.gsurf),ptrdistance);
+            break; 
+          case hex8: 
+          case hex20:
+          case hex27:
+          case tet4: 
+          case tet10:
+            actgvol = actele->g.gvol;
+            for (j=0; j<actgvol->ngsurf; j++) 
+              ShiftPointer((void**)&(actgvol->gsurf[j]),ptrdistance); 
+            break;
+          default:
+            dserror("Unknown type of discretization 1");
+            break;
+        }
+      }/* end i loop over elements */
+    }/* end of if (actdis->gsurf != tmpgsurf) */
+  }
 
   /*----------------------------------------------------------------------*/
   /*                                                          make glines */
