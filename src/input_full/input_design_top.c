@@ -318,6 +318,7 @@ static void inpdesign_dpoint_fenode_read()
 {
 INT    i,ierr;
 INT    dnode;
+INT    found = 0;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dpoint_fenode_read");
 #endif
@@ -334,6 +335,7 @@ for (i=0; i<design->ndnode; i++)
       frint("DNODE",&dnode,&ierr);
       if (ierr==1)
       {
+         found = 1; /*fount at least one DNODE-NODE TOPOLOGY*/  
          if (dnode==i+1)
          {
             ndnode_fenode[i]=1;
@@ -348,6 +350,8 @@ for (i=0; i<design->ndnode; i++)
    nextdnode:
    frrewind();
 }
+/*----------------------------------------------------------------------*/
+if (found == 0) dserror("Cannot make DNODE-NODE topology");
 /*----------------------------------------------------------------------*/
 
 end:
