@@ -102,7 +102,6 @@ for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
    actdline->dnode = (DNODE**)CCACALLOC(2,sizeof(DNODE*));
-   if (!actdline->dnode) dserror("Allocation of memory failed");
    for (k=0; k<2; k++)
    {
       nodeid=actdline->my_dnodeId[k];
@@ -124,7 +123,6 @@ for (i=0; i<design->ndline; i++)
       if (actdnode->dline==NULL)
       {
          actdnode->dline = (DLINE**)CCACALLOC(actdnode->ndline,sizeof(DLINE*));
-         if (!actdnode->dline) dserror("Allocation of memory failed");
          actdnode->dline[0] = actdline;
       }
       else
@@ -142,7 +140,6 @@ for (i=0; i<design->ndsurf; i++)
 {
    actdsurf = &(design->dsurf[i]);
    actdsurf->dline = (DLINE**)CCACALLOC(actdsurf->ndline,sizeof(DLINE*));
-   if (!actdsurf->dline) dserror("Allocation of memory failed");
    for (k=0; k<actdsurf->my_dlineId.fdim; k++)
    {
       lineid = actdsurf->my_dlineId.a.ia[k][0];
@@ -164,7 +161,6 @@ for (i=0; i<design->ndsurf; i++)
       if (actdline->dsurf==NULL)
       {
          actdline->dsurf = (DSURF**)CCACALLOC(actdline->ndsurf,sizeof(DSURF*));
-         if (!actdline->dsurf) dserror("Allocation of memory failed");
          actdline->dsurf[0] = actdsurf;
       }
       else
@@ -182,7 +178,6 @@ for (i=0; i<design->ndvol; i++)
 {
    actdvol = &(design->dvol[i]);
    actdvol->dsurf = (DSURF**)CCACALLOC(actdvol->ndsurf,sizeof(DSURF**));
-   if (!actdvol->dsurf) dserror("Allocation of memory failed");
    for (k=0; k<actdvol->ndsurf; k++)
    {
       surfid = actdvol->my_dsurfId.a.ia[k][0];
@@ -204,7 +199,6 @@ for (i=0; i<design->ndvol; i++)
       if (actdsurf->dvol==NULL)
       {
          actdsurf->dvol = (DVOL**)CCACALLOC(actdsurf->ndvol,sizeof(DVOL*));
-         if (!actdsurf->dvol) dserror("Allocation of memory failed");
          actdsurf->dvol[0] = actdvol;
       }
       else
@@ -245,19 +239,15 @@ dstrc_enter("inpdesign_topology_fe");
 /*--------------------------------------------------read fe-design info */
 ndnode_fenode = (INT*)CCACALLOC(design->ndnode,sizeof(INT));
 dnode_fenode  = (INT**)CCACALLOC(design->ndnode,sizeof(INT*));
-if (!ndnode_fenode || !dnode_fenode) dserror("Allocation of memory failed");
 
 ndline_fenode = (INT*)CCACALLOC(design->ndline,sizeof(INT));;
 dline_fenode  = (INT**)CCACALLOC(design->ndline,sizeof(INT*));;
-if (!ndline_fenode || !dline_fenode) dserror("Allocation of memory failed");
 
 ndsurf_fenode = (INT*)CCACALLOC(design->ndsurf,sizeof(INT));;
 dsurf_fenode  = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
-if (!ndsurf_fenode || !dsurf_fenode) dserror("Allocation of memory failed");
 
 ndvol_fenode = (INT*)CCACALLOC(design->ndvol,sizeof(INT));;
 dvol_fenode  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
-if (!ndvol_fenode || !dvol_fenode) dserror("Allocation of memory failed");
 /*----------------------------- read the fe-nodes on each design object */
 inpdesign_dpoint_fenode_read();
 inpdesign_dline_fenode_read();
@@ -321,7 +311,6 @@ for (i=0; i<design->ndnode; i++)
          {
             ndnode_fenode[i]=1;
             dnode_fenode[i] = (INT*)CCAMALLOC(ndnode_fenode[i]*sizeof(INT));
-            if (!dnode_fenode[i]) dserror("Allocation of memory failed");
             frint("NODE",&(dnode_fenode[i][0]),&ierr);
             dnode_fenode[i][0]--;
             goto nextdnode;
@@ -368,7 +357,6 @@ frrewind();
 for (i=0; i<design->ndline; i++)
 {
    dline_fenode[i] = (INT*)CCAMALLOC(ndline_fenode[i]*sizeof(INT));
-   if (!dline_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dline */
 for (i=0; i<design->ndline; i++)
@@ -428,7 +416,6 @@ frrewind();
 for (i=0; i<design->ndsurf; i++)
 {
    dsurf_fenode[i] = (INT*)CCAMALLOC(ndsurf_fenode[i]*sizeof(INT));
-   if (!dsurf_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dsurf */
 for (i=0; i<design->ndsurf; i++)
@@ -488,7 +475,6 @@ frrewind();
 for (i=0; i<design->ndvol; i++)
 {
    dvol_fenode[i] = (INT*)CCAMALLOC(ndvol_fenode[i]*sizeof(INT));
-   if (!dvol_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dvol */
 for (i=0; i<design->ndvol; i++)
