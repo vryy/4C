@@ -382,7 +382,7 @@ for (lr=0; lr<nir; lr++)
                
                ip = 2* ngauss + lt;
                s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
-                           gkovc,gkonc,gkovr,gkonr,rot_axis,phi,ip,actlay,istore,newval);
+                           gkovc,gkonc,gkovr,gkonr,rot_axis,phi);
                /*- calculates physical stresses at gaussian point in respect to local/global coordinat system */
                ID_stress = ngauss + (2*actlay + lt) * (nir*nis);  /*write gp's layerwise*/
                s9_tstress(gp_stress,stress,ID_stress,gkovr,ele);
