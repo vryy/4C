@@ -15,6 +15,12 @@
 #include "../headers/solution.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
+/*! 
+\addtogroup OPTIMIZATION 
+*//*! @{ (documentation module open)*/
+
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |

@@ -13,6 +13,12 @@
 #include "../headers/solution.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
+/*! 
+\addtogroup OPTIMIZATION 
+*//*! @{ (documentation module open)*/
+
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
