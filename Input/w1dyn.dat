@@ -29,8 +29,8 @@ EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  20
 RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      60 
+TIMESTEP     0.005 
+NUMSTEP      600 
 MAXTIME      3.0
 BETA         0.25 
 GAMMA        0.5 
@@ -52,8 +52,8 @@ NUMCONT      1
 UPPSS        100
 SAVESTEP     100
 MAXTIME      5.0
-NUMSTEP      200  
-TIMESTEP     0.05
+NUMSTEP      2000  
+TIMESTEP     0.005
 ALPHA        1.00
 THETA        1.00
 GAMMA        1.00
@@ -244,7 +244,7 @@ NODE 4  COORD -2.000000  -0.500000  0.000000
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 200000000.0 NUE 0.2 DENS 5.0
+MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 200000.0 NUE 0.2 DENS 5.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
