@@ -326,9 +326,10 @@ for (i=0; i<genprob.numfld; i++)
    if (actgid->is_brick1_333)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# MESH %s FOR FIELD %s BRICK1 3x3x3 GP\n",actgid->brick1_333_name,actgid->fieldname);
+      fprintf(out,"# MESH %s FOR FIELD %s BRICK1 3x3x3 GP as HEX8!\n",actgid->brick1_333_name,actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 27\n",actgid->brick1_333_name);
+      /*fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 20\n",actgid->brick1_333_name);*/
+      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->brick1_333_name);
       /*-------------- if this is first mesh, print coodinates of nodes */
       if (is_firstmesh)
       {
@@ -339,13 +340,16 @@ for (i=0; i<genprob.numfld; i++)
          fprintf(out,"END COORDINATES\n");
       }
       /*------------------------------------------------ print elements */
+      /* gid shows Hex20 as Hex with eight nodes only, 
+                                               so the output is reduced */
       fprintf(out,"ELEMENTS\n");
       for (j=0; j<actfield->dis[0].numele; j++)
       {
          actele = &(actfield->dis[0].element[j]);
-         if (actele->eltyp != el_brick1 || actele->numnp !=27) continue;
+         if (actele->eltyp != el_brick1 || actele->numnp !=20) continue;
          fprintf(out," %6d ",actele->Id+1);
-         for (k=0; k<actele->numnp; k++)
+         /*for (k=0; k<actele->numnp; k++)*/
+         for (k=0; k<8; k++)
          fprintf(out,"%6d ",actele->node[k]->Id+1);
          fprintf(out,"\n");
       }
