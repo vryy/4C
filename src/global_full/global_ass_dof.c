@@ -50,6 +50,12 @@ for (i=0; i<genprob.numfld; i++)
             if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
          }
          break;
+      case el_wall1:
+         for (k=0; k<actele->numnp; k++)
+         {
+            if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
+         }
+         break;
       case el_fluid1:
          for (k=0; k<actele->numnp; k++)
          {
