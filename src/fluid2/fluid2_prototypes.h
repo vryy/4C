@@ -38,20 +38,21 @@ void f2_calq8curv( GLINE                        **actgline,
 void f2_calele(
                 FLUID_DATA     *data, 
                 FLUID_DYN_CALC *dynvar, 
-	          ELEMENT        *ele,             
+	        ELEMENT        *ele,             
                 ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
                 ARRAY          *emass_global,   
-	          ARRAY          *etforce_global,       
-	          ARRAY          *eiforce_global, 
-		    ARRAY          *edforce_global,		
-		    INT            *hasdirich,      
+	        ARRAY          *etforce_global,       
+	        ARRAY          *eiforce_global, 
+	        ARRAY          *edforce_global,		
+		INT            *hasdirich,      
                 INT            *hasext,
                 INT             imyrank,
-		    INT             init            
+		INT             is_relax,
+		INT             init            
 	       );
 void f2_stress(FLUID_STRESS str, INT viscstr ,FLUID_DATA     *data, 
-	          ELEMENT        *ele      );
+	       ELEMENT *ele, INT is_relax );
 void f2_curvature(
 	           FLUID_DATA     *data,
 		   FLUID_DYN_CALC *dynvar,  
@@ -440,7 +441,7 @@ void f2_calint(
 	       DOUBLE         **derxy,   
 	       DOUBLE         **derxy2,  
 	       DOUBLE         **eveln,   
-	       DOUBLE         **evelng,  
+	       DOUBLE         **evelng, 
 	       DOUBLE          *epren,   
 	       DOUBLE          *edeadn,
 	       DOUBLE          *edeadng,	        	       
@@ -743,7 +744,7 @@ void f2_calset(
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze,
                 DOUBLE         **eveln,    
-	        DOUBLE         **evelng, 
+	        DOUBLE         **evelng,     
 	        DOUBLE          *epren,
 		DOUBLE          *edeadn,
 		DOUBLE          *edeadng,
@@ -763,13 +764,19 @@ void f2_calseta(
 		DOUBLE          *edeadng,
 		DOUBLE          *ekappan,
 		DOUBLE          *ekappang,
-		INT             *hasext
+		INT             *hasext,
+		INT              is_relax
 	      );
 void f2_alecoor( 
                 FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze
 	       );
+void f2_alecoor_sd( 
+                   FLUID_DYN_CALC  *dynvar, 
+   	           ELEMENT         *ele,     
+                   DOUBLE         **xyze
+	          );
 void f2_veli(
              DOUBLE  *velint,     
              DOUBLE  *funct,    
@@ -1283,7 +1290,8 @@ void f2_calfsistress(
 		      DOUBLE        **vderxy,
 		      DOUBLE        **xjm,
 		      DOUBLE        **xyze,
-		      DOUBLE        **sigmaint
+		      DOUBLE        **sigmaint,
+		      INT             is_relax
 		    );
 /************************************************************************
  | f2_calsurfrhs.c                                                      |

@@ -197,20 +197,22 @@ in this routine the dirichlet boundary conditions for fluid2 and fluid3
 elements are set at time <T=fdyn->time>.
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[3][j] = initval*acttimefac'
-                                 |        |         |
-                            time (n+1)    |         |               
-                          initial value from input  |               
-                                       factor from timecurve
+    'actnode->sol_increment.a.da[pos][j] = initval*acttimefac'
+                                  |         |         |
+                            time (n+1)      |         |               
+                          initial value from input    |               
+                                         factor from timecurve
 </pre>
-\param *actfield FIELD         (i)  actual field (fluid)   
-\param *fdyn	 FLUID_DYNAMIC (i)  
+\param *actfield FIELD		(i)  actual field (fluid)   
+\param *fdyn	 FLUID_DYNAMIC	(i)  
+\param  pos	 INT		(i)	position, where to write dbc
 
 \return void     
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich(   FIELD           *actfield, 
-                        FLUID_DYNAMIC   *fdyn
+                        FLUID_DYNAMIC   *fdyn,
+			INT		 pos
 	            )
 {
 INT        i,j;
@@ -263,12 +265,12 @@ for (i=0;i<numnp_total;i++)
          else
             acttimefac = timefac[actcurve];
          initval  = actgnode->dirich->dirich_val.a.dv[j];               
-         actnode->sol_increment.a.da[3][j] = initval*acttimefac;	 
+         actnode->sol_increment.a.da[pos][j] = initval*acttimefac;	 
       } /* end loop over dofs */
    break;
    case dirich_FSI: /* dirichvalues = grid velocity!!! */     
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
-         actnode->sol_increment.a.da[3][j]
+         actnode->sol_increment.a.da[pos][j]
 	=actnode->sol_increment.a.da[4][j];
    break;
    default:
@@ -283,6 +285,197 @@ dstrc_exit();
 
 return;
 } /* end of fluid_settdirich*/
+
+
+/*!---------------------------------------------------------------------
+\brief routine to set dirichlet boundary conditions for fluid to determine
+Relaxation parameter
+
+<pre>                                                             cf 08/03
+
+in this routine the dirichlet boundary conditions for fluid2 and fluid3
+elements are set for the fluid solution needed to determine the Relaxation
+parameter via steepest descent method.
+
+the actual dirichlet values are written to the solution history of the
+nodes:
+    'actnode->sol_increment.a.da[7][j] = 0.0 
+                                 |          | 
+                fluid sol. for RelaxParam   | 
+					at Dirichlet boundaries
+  AND:
+    'actnode->sol_increment.a.da[7][j] = actnode->sol_increment.a.da[4][j]
+                                 |                  | 
+                fluid sol. for RelaxParam           | 
+					at fsi coupling interface,
+					      grid velocity
+</pre>
+\param *actfield FIELD         (i)  actual field (fluid)   
+\param *fdyn	 FLUID_DYNAMIC (i)  
+
+\return void     
+
+------------------------------------------------------------------------*/
+void fluid_setdirich_sd(
+                        FIELD           *actfield, 
+                        FLUID_DYNAMIC   *fdyn
+	               )
+{
+INT        i,j;
+INT        numnp_total;              /* total number of fluid nodes     */
+INT        numele_total;             /* total number of fluid elements  */
+INT        numdf;	             /* number of fluid dofs    	*/
+INT        numveldof;
+GNODE     *actgnode;	             /* actual GNODE		        */
+NODE      *actnode;                  /* actual NODE                     */
+
+#ifdef DEBUG 
+dstrc_enter("fluid_setdirich_sd");
+#endif 
+
+/*----------------------------------------------------- set some values */
+numnp_total  = actfield->dis[0].numnp;
+numele_total = actfield->dis[0].numele;
+numdf        = fdyn->numdf;
+numveldof    = numdf-1;
+
+/*-------------------- loop all nodes and set actual dirichlet condition */
+for (i=0;i<numnp_total;i++) 
+{
+   actnode  = &(actfield->dis[0].node[i]); 
+   actgnode = actnode->gnode;      
+   if (actgnode->dirich==NULL)
+         continue;
+   switch(actgnode->dirich->dirich_type)
+   {
+   case dirich_none:
+      for (j=0;j<actnode->numdf;j++) /* loop dofs */
+      {
+         if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
+            continue;
+         actnode->sol_increment.a.da[7][j] = 0.0;
+         actnode->sol_increment.a.da[6][j] = 0.0;	 	
+      } /* end loop over dofs */
+   break;
+   case dirich_FSI: /* dirichvalues = grid velocity!!! */     
+      for (j=0;j<numveldof;j++)  /* loop vel-dofs */
+         actnode->sol_increment.a.da[7][j]
+	=actnode->sol_increment.a.da[4][j];
+   break;
+   default:
+      dserror("dirch_type unknown!\n");
+   } /* end switch */
+} /*end loop over nodes */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of fluid_settdirich_sd*/
+
+
+
+
+/*!---------------------------------------------------------------------
+\brief routine to set dirichlet boundary conditions of acceleration
+
+<pre>                                                             cf 09/03
+
+in this routine the dirichlet boundary conditions for fluid2 and fluid3
+elements are set for the fluid acceleration. These conditions depend 
+upon the dbc for the velocity set in the input file according to the 
+time stepping sceme. 
+The actual implementation serves the generalised-alpha scheme.
+
+sol_increment[pos_to][i] = fac1 * sol_increment[pos_from1][i]
+                         + fac2 * sol_increment[pos_from2][i]
+                         + fac3 * sol_increment[pos_from3][i]
+
+
+</pre>
+\param *actfield	FIELD		(i)	actual field (fluid)   
+\param *fdyn	 	FLUID_DYNAMIC	(i)	fluid dynamic
+\param  pos_to		INT		(i)	pos in sol_increment to write to
+\param  pos1_from	INT		(i)	1st pos to read from
+\param  pos2_from	INT		(i)	2nd pos to read from
+\param  pos3_from	INT		(i)	3rd pos to read from
+\param	fac1		DOUBLE		(i)	factor of value at pos1_from
+\param	fac2		DOUBLE		(i)	factor of value at pos2_from
+\param	fac3		DOUBLE		(i)	factor of value at pos3_from
+
+\return void     
+
+------------------------------------------------------------------------*/
+void fluid_setdirich_acc(
+                         FIELD		*actfield, 
+                         FLUID_DYNAMIC	*fdyn,
+			 INT		 pos_to,
+			 INT		 pos1_from,
+			 INT		 pos2_from,
+			 INT		 pos3_from,
+			 DOUBLE		 fac1,
+			 DOUBLE		 fac2,
+			 DOUBLE		 fac3
+	                )
+{
+INT        i,j;
+INT        numnp_total;              /* total number of fluid nodes     */
+INT        numele_total;             /* total number of fluid elements  */
+INT        numdf;	             /* number of fluid dofs    	*/
+INT        numveldof;
+GNODE     *actgnode;	             /* actual GNODE		        */
+NODE      *actnode;                  /* actual NODE                     */
+
+#ifdef DEBUG 
+dstrc_enter("fluid_setdirich_acc");
+#endif 
+
+/*----------------------------------------------------- set some values */
+numnp_total  = actfield->dis[0].numnp;
+numele_total = actfield->dis[0].numele;
+numdf        = fdyn->numdf;
+numveldof    = numdf-1;
+
+/*-------------------- loop all nodes and set actual dirichlet condition */
+for (i=0;i<numnp_total;i++) 
+{
+   actnode  = &(actfield->dis[0].node[i]); 
+   actgnode = actnode->gnode;      
+   if (actgnode->dirich==NULL)
+         continue;
+   switch(actgnode->dirich->dirich_type)
+   {
+   case dirich_none:
+      for (j=0;j<actnode->numdf;j++) /* loop dofs */
+      {
+         if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
+            continue;
+	       actnode->sol_increment.a.da[pos_to][j] 
+	       = fac1 * actnode->sol_increment.a.da[pos1_from][j]
+               + fac2 * actnode->sol_increment.a.da[pos2_from][j]
+               + fac3 * actnode->sol_increment.a.da[pos3_from][j];
+      } /* end loop over dofs */
+   break;
+   case dirich_FSI: /* dirichvalues = grid velocity!!! */     
+      for (j=0;j<numveldof;j++)  /* loop vel-dofs */
+	 dserror("generalised alpha with FSI not yet implemented");
+   break;
+   default:
+      dserror("dirch_type unknown!\n");
+   } /* end switch */
+} /*end loop over nodes */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of fluid_settdirich_acc*/
+
+
 
 /*!---------------------------------------------------------------------
 \brief routine to calculate the element dirichlet load vector
@@ -302,6 +495,7 @@ the element load vector 'dforce' is calculated by eveluating
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
+\param   is_relax  INT       (i)   flag if it is for relaxation param
 
 \return void                                                                             
 
@@ -310,7 +504,8 @@ void fluid_caldirich(
                         ELEMENT         *actele,  
 		        DOUBLE          *dforces, 
                         DOUBLE         **estif,   
-		        INT             *hasdirich
+		        INT             *hasdirich,
+			INT              is_relax
 		    )     
 {
 
@@ -365,7 +560,11 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
    {
       if (actgnode->dirich==NULL) continue;
       dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[nrow+j] = actnode->sol_increment.a.da[3][j];
+      if (is_relax) /* calculation for relax.-Param. reads
+                       dbc from (sol_increment[7][j]) */
+         dirich[nrow+j] = actnode->sol_increment.a.da[7][j];
+      else 
+         dirich[nrow+j] = actnode->sol_increment.a.da[3][j];
    } /* end loop over dofs */
    nrow+=numdf;
 } /* end loop over nodes */

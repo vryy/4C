@@ -381,7 +381,7 @@ container.actndis=0;
 if (par.myrank==0) fluid_algoout(fdyn,dynvar);
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
-fluid_setdirich(actfield,fdyn);
+fluid_setdirich(actfield,fdyn,3);
 
 /*-------------------------------------------------- initialise timerhs */
 amzero(&ftimerhs_a);

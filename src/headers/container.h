@@ -46,6 +46,10 @@ INT            turbu;
 INT            niturbu_pro;
 INT            niturbu_n;
 enum _FLUID_STRESS str;         
+INT            is_relax;      /*!< flag, if calculation is for relaxation parameter */
+                              /*!< is_relax = 0 -> fluid results are read from sol_increment[3][i] */
+			      /*!< is_relax = 1 -> fluid results are read from sol_increment[7][i] */
+INT		gen_alpha;	/*!< generalised alpha time integration algorithm flag */
 #endif
 
 #ifdef D_OPTIM                /* include optimization code to ccarat        */

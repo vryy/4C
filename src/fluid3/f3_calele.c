@@ -163,7 +163,7 @@ if (dynvar->nii+(*hasext)!=0)
    f3_permeforce(eiforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
-fluid_caldirich(ele,edforce,estif,hasdirich);
+fluid_caldirich(ele,edforce,estif,hasdirich,0);
 
 end:
 /*----------------------------------------------------------------------*/

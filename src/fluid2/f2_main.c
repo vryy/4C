@@ -99,7 +99,7 @@ case calc_fluid_init:
    f2_calele(data,dynvar,NULL,NULL,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     NULL,NULL,0,1);
+	     NULL,NULL,0,0,1);
    f2_iedg(NULL,ele,-1,1);
 break;
 
@@ -123,7 +123,7 @@ case calc_fluid:
    f2_calele(data,dynvar,ele,eleke,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     hasdirich,hasext,actintra->intra_rank,0);
+	     hasdirich,hasext,actintra->intra_rank,container->is_relax,0);
 break;
 
 /*------------------------------------------- calculate fluid vorticity */
@@ -133,7 +133,7 @@ break;
 
 /*-------------------------------------------- calculate fluid stresses */
 case calc_fluid_stress:
-    f2_stress(container->str,viscstr,data,ele);
+    f2_stress(container->str,viscstr,data,ele,container->is_relax);
 break;
 
 /*--------------------------------- calculate curvature at free surface */

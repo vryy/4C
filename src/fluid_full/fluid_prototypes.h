@@ -25,13 +25,18 @@ void fluid_initdirich(  FIELD          *actfield,
                         FLUID_DYNAMIC  *fdyn
 		     );
 void fluid_setdirich(   FIELD           *actfield, 
-                        FLUID_DYNAMIC   *fdyn
+                        FLUID_DYNAMIC   *fdyn,
+			INT              pos
 	            );
+void fluid_setdirich_sd(   FIELD           *actfield, 
+                           FLUID_DYNAMIC   *fdyn
+	               );
 void fluid_caldirich(
                         ELEMENT         *actele,  
 		        DOUBLE          *dforces, 
                         DOUBLE         **estif,   
-		        INT             *hasdirich
+		        INT             *hasdirich,
+			INT              is_relax
 		    ); 
 
 /************************************************************************

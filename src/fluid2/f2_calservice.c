@@ -37,14 +37,14 @@ NOTE: in contradiction to the old programm the kinematic pressure
 				      
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
-\param   *ele      ELEMENT	   (i)    actual element
-\param  **xyze     DOUBLE          (o)    nodal coordinates
-\param  **eveln    DOUBLE	   (o)    ele vels at time n
-\param  **evelng   DOUBLE	   (o)    ele vels at time n+g
-\param   *epren    DOUBLE	   (o)    ele pres at time n
-\param   *edeadn   DOUBLE          (o)    ele dead load at n (selfweight)
-\param   *edeadng  DOUBLE          (o)    ele dead load at n+g (selfweight)
-\param   *hasext   INT             (o)    flag for external loads
+\param   *ele      ELEMENT	   (i)  actual element
+\param  **xyze     DOUBLE          (o)  nodal coordinates
+\param  **eveln    DOUBLE	   (o)  ele vels at time n
+\param  **evelng   DOUBLE	   (o)  ele vels at time n+g
+\param   *epren    DOUBLE	   (o)  ele pres at time n
+\param   *edeadn   DOUBLE          (o)  ele dead load at n (selfweight)
+\param   *edeadng  DOUBLE          (o)  ele dead load at n+g (selfweight)
+\param   *hasext   INT             (o)  flag for external loads
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ void f2_calset(
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze,
                 DOUBLE         **eveln,    
-	        DOUBLE         **evelng, 
+	        DOUBLE         **evelng,   
 	        DOUBLE          *epren,
 		DOUBLE          *edeadn,
 		DOUBLE          *edeadng,
@@ -201,6 +201,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param   *ekappan   DOUBLE          (o)    nodal curvature at n
 \param   *ekappang  DOUBLE          (o)    nodal curvature at n+g
 \param   *hasext    INT             (o)    flag for external loads
+\param    is_relax  INT             (i)    flag, if it's for relax.-param
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -218,7 +219,8 @@ void f2_calseta(
 		DOUBLE          *edeadng,
 		DOUBLE          *ekappan,
 		DOUBLE          *ekappang,
-		INT             *hasext
+		INT             *hasext,
+		INT              is_relax
 	      )
 {
 INT    i;           /* simply some counters                             */
@@ -230,11 +232,16 @@ NODE  *actfnode;    /* actual fluid node                                */
 GSURF *actgsurf;    /* actual gsurf                                     */
 
 #ifdef DEBUG 
-dstrc_enter("f2_calset");
+dstrc_enter("f2_calseta");
 #endif
 
 /*-------------------------------------------- set element coordinates */ 
-f2_alecoor(dynvar,ele,xyze);
+if (is_relax)
+{
+   f2_alecoor_sd(dynvar,ele,xyze);
+}
+else
+   f2_alecoor(dynvar,ele,xyze);
 
 /*----------------------------------------------------------------------*
  | position of the different solutions:                                 |
@@ -253,7 +260,7 @@ if(dynvar->isemim==0)  /* -> implicit time integration method ----------*/
    for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    {
       actfnode=ele->node[i];
-/*------------------------------------ set element velocities (n+gamma) */      
+/*------------------------------------ set element velocities (n+gamma) */ 
       evelng[0][i]   =actfnode->sol_increment.a.da[3][0];
       evelng[1][i]   =actfnode->sol_increment.a.da[3][1];
       ealecovng[0][i]=actfnode->sol_increment.a.da[6][0];
@@ -415,6 +422,86 @@ dstrc_exit();
 
 return; 
 } /* end of f2_alecoor */
+
+
+/*!--------------------------------------------------------------------- 
+\brief set element coordinates during ALE calculations for relaxation 
+parameter of steepest descent method
+
+<pre>                                                         ChFoe 08/03
+			 
+				      
+</pre>
+\param   *dynvar    FLUID_DYN_CALC  (i)
+\param   *ele       ELEMENT	    (i)    actual element
+\param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_alecoor_sd( 
+                   FLUID_DYN_CALC  *dynvar, 
+   	           ELEMENT         *ele,     
+                   DOUBLE         **xyze
+	          )
+{
+INT i,j;
+DOUBLE omt,theta;
+DOUBLE xy;
+NODE  *actfnode;    /* actual fluid node                                */
+NODE  *actanode;    /* actual ale node                                  */
+GNODE *actfgnode;   /* actual fluid gnode                               */
+
+
+#ifdef DEBUG 
+dstrc_enter("f2_alecoor_sd");
+#endif
+
+#ifdef D_FSI
+
+omt = dynvar->omt;
+theta = ONE-omt;
+
+/*-------------------------------------------- set element coordinates */ 
+
+/* computation of relaxation parameter always goes from configuration 0
+   to the one indicated by the actual incremental residuum vector g_i.
+   See diss. Mok for details p. 119 ff */
+
+for(i=0;i<ele->numnp;i++)
+{
+   actfnode = ele->node[i];
+   actfgnode = actfnode->gnode;
+   actanode = actfgnode->mfcpnode[genprob.numaf];
+   if(actfnode->numdf==NUMDF)
+   {
+      for (j=0;j<2;j++)
+      {
+         xyze[j][i] =  theta * ( actanode->sol_mf.a.da[2][j] ); 
+      }
+   }
+   else /* node on implicit free surface */
+   {
+   dserror("implicit free surface with steepest descent method not yet implementd");
+/*      for (j=0;j<2;j++)
+      {
+         xy    = actfnode->x[j];
+	 xyn   = xy + actanode->sol_mf.a.da[0][j];
+	 xyng  = xyn + actfnode->sol_increment.a.da[3][j+NUMDF]*dt;
+         xyze[j][i] =  theta*(xyng)+omt*(xyn);
+      } */
+   }
+}
+
+#else
+dserror("FSI-functions not compiled in!\n");
+#endif
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f2_alecoor_sd */
 
 
 /*!--------------------------------------------------------------------- 

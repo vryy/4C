@@ -55,7 +55,8 @@ void f2_calfsistress(
 		      DOUBLE        **vderxy,
 		      DOUBLE        **xjm,
 		      DOUBLE        **xyze,
-		      DOUBLE        **sigmaint
+		      DOUBLE        **sigmaint,
+		      INT             is_relax
 		    )
 {
 INT     i,j,node,lr,ls;      /* some counters                          */
@@ -64,6 +65,7 @@ INT     intc,icode;          /* flags                                  */
 INT     actmat;              /* actual material number                 */
 INT     ntyp;                /* flag for element type                  */
 INT     iv;                  /* counter for GAUSS points               */
+INT     pos;                 /* position, where to read from           */
 DOUBLE  preint,det,val;      /* element values                         */
 DOUBLE  e1,e2,r,s;         
 DIS_TYP typ;	             /* element displacement type              */
@@ -84,14 +86,17 @@ visc = mat[actmat].m.fluid->viscosity*dens; /* here we need dynamic viscosity! *
 ntyp = ele->e.f2->ntyp; 
 typ  = ele->distyp;
 
+if (is_relax) pos = 7;
+else          pos = 3;
+
 switch(viscstr)
 {
 case 0: /* only real pressure */
    for (i=0;i<iel;i++)
    {
       actnode=ele->node[i];
-      ele->e.f2->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[3][2]*dens;
-      ele->e.f2->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[3][2]*dens;
+      ele->e.f2->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[pos][2]*dens;
+      ele->e.f2->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[pos][2]*dens;
       ele->e.f2->stress_ND.a.da[i][2]= ZERO;
    }
 break;
@@ -118,9 +123,9 @@ case 1: /* real pressure + viscose stresses */
 /*-------- set element velocities, real pressure and coordinates -------*/
    for (j=0;j<iel;j++)
    {
-      evel[0][j] = ele->node[j]->sol_increment.a.da[3][0];
-      evel[1][j] = ele->node[j]->sol_increment.a.da[3][1];
-      epre[j]    = ele->node[j]->sol_increment.a.da[3][2]*dens;
+      evel[0][j] = ele->node[j]->sol_increment.a.da[pos][0];
+      evel[1][j] = ele->node[j]->sol_increment.a.da[pos][1];
+      epre[j]    = ele->node[j]->sol_increment.a.da[pos][2]*dens;
       xyze[0][j] = ele->node[j]->x[0];
       xyze[1][j] = ele->node[j]->x[1];
    }/*end for (j=0;j<iel;j++) */

@@ -305,7 +305,7 @@ dynvar->acttime=fdyn->time;
 if (par.myrank==0) fluid_algoout(fdyn,dynvar);
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
-fluid_setdirich(actfield,fdyn);
+fluid_setdirich(actfield,fdyn,3);
 
 /*-------------------------------------------------- initialise timerhs */
 amzero(&ftimerhs_a);
@@ -342,6 +342,7 @@ container.global_numeq = numeq_total;
 container.nii          = dynvar->nii;
 container.nif          = dynvar->nif;
 container.kstep        = 0;
+container.is_relax     = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
        &container,action);
 te=ds_cputime()-t1;
