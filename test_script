@@ -133,7 +133,6 @@ else
   fsi_mtr_dc4x4.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
-  fsi_tank3D_par.dat
   shell8_lineload.dat
   shell9_dpmisGF.dat
   shell9_el_lay_eans.dat
