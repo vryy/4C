@@ -136,9 +136,11 @@ for (i=0; i<design->ndline; i++)
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdline->dirich->dirich_val));
+      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdline->dirich->curve));
+      amdef("funct",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV"); 
+      amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for free surface */
       actdline->dirich->dirich_onoff.a.iv[0]=1;
       actdline->dirich->dirich_onoff.a.iv[1]=1;
@@ -189,9 +191,11 @@ for (i=0; i<design->ndnode; i++)
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->dirich_onoff));
       amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdnode->dirich->dirich_val));
+      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdnode->dirich->curve));
+      amdef("funct",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV"); 
+      amzero(&(actdnode->dirich->funct));
       /*----------------------------------- initialise for free surface */
       actdnode->dirich->dirich_onoff.a.iv[0] = 1;
       actdnode->dirich->dirich_onoff.a.iv[1] = 1; 
