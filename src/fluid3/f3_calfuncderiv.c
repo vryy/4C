@@ -1330,7 +1330,6 @@ In this routine the jacobian matrix and its determinant is calculated
 
 </pre>
 \param **xyze      DOUBLE   (i)    nodal coordinates
-\param  *funct     DOUBLE   (i)    natural shape functions
 \param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
 \param **xjm       DOUBLE   (o)    jacobian matrix
 \param  *det       DOUBLE   (o)    determinant of jacobian matrix
@@ -1340,7 +1339,6 @@ In this routine the jacobian matrix and its determinant is calculated
 
 ------------------------------------------------------------------------*/
 void f3_jaco(DOUBLE    **xyze,
-             DOUBLE     *funct,
              DOUBLE    **deriv,
              DOUBLE    **xjm,
              DOUBLE     *det,
@@ -1418,7 +1416,6 @@ In this routine the jacobian matrix and its determinant is calculated
 
 </pre>
 \param **xyze      DOUBLE   (i)    nodal coordinates
-\param  *funct     DOUBLE   (i)    natural shape functions
 \param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
 \param **xjm       DOUBLE   (o)    jacobian matrix
 \param  *det       DOUBLE   (o)    determinant of jacobian matrix
@@ -1429,7 +1426,6 @@ In this routine the jacobian matrix and its determinant is calculated
 
 ------------------------------------------------------------------------*/
 void f3_edgejaco( DOUBLE    **xyze,
-                  DOUBLE     *funct,
                   DOUBLE    **deriv,
                   DOUBLE    **xjm,
                   DOUBLE     *det,
