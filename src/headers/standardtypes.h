@@ -15,7 +15,6 @@
 #include "load.h"
 #include "conditions.h"
 #include "materials.h"
-#include "bunker.h"
 /*----------------------------------------------------------------------*
  | type definitions of basic structures                   m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -91,9 +90,6 @@ int               numnp;          /* number of nodes in this field */
 int               numele;         /* number of elements in this field */
 int               numeq;          /* number of unknowns */
 int               numdf;          /* number of degrees of freedom */
-
-int               db_bunker_pss_handle; /* pss-file handle for this bunker */
-int               db_bunker_Id; /* Id of bunker, created for this field */
 
 struct _ELEMENT   *element;       /* vector of elements */
 struct _NODE      *node;          /* vector of nodes */

@@ -7,11 +7,6 @@ void main(int argc, char *argv[]);
  *----------------------------------------------------------------------*/
 void assign_dof();
 /*----------------------------------------------------------------------*
- |  global_bunker_init.c                                 m.gee 11/01    |
- *----------------------------------------------------------------------*/
-void bunker_init();
-void part_bunker_access();
-/*----------------------------------------------------------------------*
  |  global_cal_control.c                                 m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void ntacal();
@@ -215,86 +210,6 @@ void* am4redef(ARRAY4D *array,
                int newsdim, 
                int newtdim,
                int newfodim);
-/*----------------------------------------------------------------------*
- |  pss_bunk1.c                                  m.gee 11/01    |
- *----------------------------------------------------------------------*/
-void db(
-           int      option,
-           int     *bunker_Id,
-           int     *access,
-           int     *handle,
-           ARRAY   *array,
-           int     *fdim,
-           int     *sdim,
-           char     name[],
-           char     typ[],
-           void    *data,
-           int     *pss_handle,
-           int     *ierr
-          );
-/*----------------------------------------------------------------------*
- |  pss_bunk2.c                                   m.gee 11/01    |
- *----------------------------------------------------------------------*/
-void db_init();
-void db_create(int *bunker_Id);
-void db_content_init(BUNKER *bptr);
-void db_create_access(int bunker_Id, int *access);
-void db_bunker_enlarge(BUNKER *bptr, int addaccess);
-void db_put_dat_new(int   bunker_Id,
-                       int   access,
-                       int  *handle,
-                       char  string[],
-                       void *startadress,
-                       int   fdim,
-                       int   sdim,
-                       char  typ[]);
-void db_put_array_new(int    bunker_Id,
-                         int    access,
-                         int   *handle,
-                         ARRAY *array);
-void db_put_array_overwrite(int    bunker_Id,
-                               int    access,
-                               int    handle,
-                               ARRAY *array);
-void db_probe_array(int bunker_Id,
-                       int  access,
-                       int  handle,
-                       char name[],
-                       int *fdim,
-                       int *sdim,
-                       char typ[],
-                       int *ierr);
-void db_check_existence(BUNKER *bunker,
-                           int     bunker_Id,
-                           int     numbunker,
-                           int     access,
-                           int     handle,
-                           int    *ierr);
-void db_get_array_alloc(int    bunker_Id,
-                           int    access,
-                           int    handle,
-                           ARRAY *array,
-                           int   *ierr);
-void db_get_array(int    bunker_Id,
-                     int    access,
-                     int    handle,
-                     ARRAY *array,
-                     int   *ierr);
-void db_get_dat(int bunker_Id,
-                   int  access,
-                   int  handle,
-                   void *data,
-                   int  *fdim,
-                   int  *sdim,
-                   int  *ierr);
-void db_del_entry(int  bunker_Id,
-                     int  access,
-                     int *handle);
-void db_del_access(int  bunker_Id,
-                      int *access);
-void db_del_bunker(int *bunker_Id);
-void db_bunker_to_pss(int bunker_Id, int *pss_handle);
-void db_bunker_from_pss(int bunker_Id, int pss_handle, int *err);
 /*----------------------------------------------------------------------*
  |  pss_ds.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/

@@ -86,8 +86,6 @@ int                     nrhs;              /* number of distributed rhs-vectors 
 struct _DIST_VECTOR    *rhs;               /* distributed rhs-vector */
 int                     nsol;              /* number of distributed solution vectors */
 struct _DIST_VECTOR    *sol;               /* dist. solution vectors */
-
-struct _ARRAY           db_access;         /* data bunker acces handle */
 } SOLVAR;
 
 /*----------------------------------------------------------------------*

@@ -50,7 +50,6 @@ struct _ELEMENT   **bou_element;         /* ptrs to boundary elements */
 struct _ARRAY       coupledofs;          /* number of coupled dofs, which dofs, */
                                          /* who is master owner and who is slave owner */ 
                                          /* for details, see global_mask_matrices.c */ 
-struct _ARRAY       db_access;           /* bunker access handles (not used) */
 } PARTITION;
 
 

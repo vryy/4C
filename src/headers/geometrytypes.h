@@ -20,8 +20,6 @@ typedef struct _NODE
      struct _ELEMENT          **element;       /* ptrs to elements to me */
 
      struct _COND_NODE         *c;             /* my conditions, if any */
-
-     struct _ARRAY              db_access;     /* my bunker access Ids (not used) */     
      
 } NODE;
 
@@ -49,11 +47,8 @@ typedef struct _ELEMENT
      struct _FLUID3   *f3;
      struct _ALE      *ale;
      }                          e;              /* element specific data */ 
+
      struct _COND_ELEMENT      *c;
-
-
-
-     struct _ARRAY              db_access;     /* my bunker access Ids (not used) */  
 
 } ELEMENT;
 
