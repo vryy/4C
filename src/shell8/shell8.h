@@ -152,17 +152,16 @@ double s8_local_coord_node(int node, int flag, ELEMENT_TYP typ);
 /*----------------------------------------------------------------------*
  |  s8_main.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void shell8(      FIELD     *actfield,
-                  PARTITION *actpart,
-                  INTRA     *actintra,
-                  ELEMENT   *ele,
-                  ARRAY     *estif_global,
-                  ARRAY     *emass_global,
-                  double    *global_vec,
-                  int        global_numeq,
-                  int        kstep,
-            const int        option
-            );
+void shell8(      FIELD      *actfield,
+                  PARTITION  *actpart,
+                  INTRA      *actintra,
+                  ELEMENT    *ele,
+                  ARRAY      *estif_global,
+                  ARRAY      *emass_global,
+                  double     *global_vec,
+                  int         global_numeq,
+                  int         kstep,
+                  CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/

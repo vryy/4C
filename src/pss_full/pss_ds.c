@@ -13,6 +13,12 @@ struct _TRACE         trace;
  | is defined in input_control_global.c
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
