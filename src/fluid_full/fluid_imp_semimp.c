@@ -368,6 +368,12 @@ alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
 *action = calc_fluid_init;
 calinit(actfield,actpart,action,&container);
 
+/*--------------------------------------------- calculate nodal normals */
+fluid_cal_normal(actfield,fdyn,1,action);
+
+/*------------------------------------------------- define local co-sys */
+fluid_locsys(actfield,fdyn);
+
 /*-------------------------------------- print out initial data to .out */
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
@@ -382,6 +388,13 @@ if (ioflags.fluid_stress_gid==1 && par.myrank==0)
   out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
 }
 
+/*---------------------------------------------------------- monitoring */
+if (ioflags.monitor==1)
+{
+   out_monitor(actfield,genprob.numff,ZERO,1);
+   monitoring(actfield,genprob.numff,actpos,fdyn->acttime);
+}
+
 /*---------- calculate time independent constants for time algorithm ---*/
 fluid_cons();
 
@@ -390,7 +403,7 @@ fluid_cons();
  *======================================================================*/
 /* nodal solution history fluid field:                                  *
  * sol[0][j]           ... initial data 				*
- * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
+ * sol[0...actpos][j]  ... solution for visualisation (real pressure)	*
  * sol_increment[0][j] ... solution at time (n-1)			*
  * sol_increment[1][j] ... solution at time (n) 			*
  * sol_increment[2][j] ... lin combin. of velocity at (n) and acc at (n)*
@@ -498,7 +511,6 @@ assemble_vec(actintra,
              fiterhs,
              1.0
              );
-
 /*-------------------------------------------------------- solve system */
 init=0;
 t1=ds_cputime();
@@ -655,6 +667,14 @@ fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 if (fdyn->mlfem==1) fluid_smcopy(actpart);		     
 #endif
 
+/*------------------------------------------- local co-ordinate system:
+  the values in sol are given in the xyz* co-system, however
+  output is done in the XYZ co-system. So we have to tranform the
+  values from xyz* to XYZ */
+#if 0
+locsys_trans_sol(actfield,0,0,actpos,1); 
+#endif
+
 /*--------------------------------------- write solution to .flavia.res */
 if (resstep==fdyn->upres && par.myrank==0) 
 {
@@ -686,13 +706,30 @@ if (restartstep==fdyn->res_write_evry)
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   
 }
 
+/*---------------------------------------------------------- monitoring */
+if (ioflags.monitor==1)
+monitoring(actfield,genprob.numff,actpos,fdyn->acttime);
+
 tt=ds_cputime()-t2;
 tts+=tt;
 printf("PROC  %3d | total time for this time step: %10.3e \n",par.myrank,tt);
 
 /*--------------------- check time and number of steps and steady state */
 if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
+{
+   if (fdyn->nim) goto timeloop;
+   /*-------------------------------- calculate stabilisation parameter */
+   *action = calc_fluid_stab;
+   container.dvec         = NULL;
+   container.ftimerhs     = NULL;
+   container.fiterhs      = NULL;
+   container.nii          = 0;
+   container.nif          = 0;
+   container.nim          = 0;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+          &container,action);   
    goto timeloop; 
+}
 /*----------------------------------------------------------------------*
  | -->  end of timeloop                                                 |
  *----------------------------------------------------------------------*/
