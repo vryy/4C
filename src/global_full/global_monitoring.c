@@ -20,7 +20,7 @@ and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
-struct _FILES           allfiles;
+extern struct _FILES        allfiles;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
