@@ -274,12 +274,14 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    switch(container->fieldtyp)
    {
    case structure:
+      /*------------------ assemble internal force or external forces */
       if (container->dvec)
       assemble_intforce(actele,&intforce_global,container);
-   
-      /*------ assemble the rhs vector of condensed dirichlet conditions */
+      /*--- assemble the rhs vector of condensed dirichlet conditions */
+      /* static case */
       if (container->dirich && container->isdyn==0)
       assemble_dirich(actele,&estif_global,container);
+      /* dynamic case */
       if (container->dirich && container->isdyn==1)
       assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
    break;
