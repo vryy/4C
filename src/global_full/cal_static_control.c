@@ -76,6 +76,10 @@ numdf       = actfield->numdf;
 array_typ   = actsolv->sysarray_typ[actsysarray];
 switch(array_typ)
 {
+case mds:/*--------------------------------- system array is mds matrix */
+   numeq       = actsolv->sysarray[actsysarray].mds->numeq;
+   numeq_total = numeq;
+break;
 case msr:/*--------------------------------- system array is msr matrix */
    numeq       = actsolv->sysarray[actsysarray].msr->numeq;
    numeq_total = actsolv->sysarray[actsysarray].msr->numeq_total;
