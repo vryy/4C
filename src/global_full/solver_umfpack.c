@@ -155,7 +155,7 @@ case 0:
 #endif
 
        /* symbolic factorization */
-       status = umfpack_di_symbolic (n, n, Ap, Ai, Ax, &symbolic, control, info);
+       status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
 #ifdef DEBUG 
        if (status < 0)
        {
