@@ -61,7 +61,6 @@ if (genprob.probtyp == prb_fsi)
    if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
    
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   if (field==NULL) dserror("Allocation of fields failed");
 
    field[genprob.numsf].fieldtyp = structure;   
    if (genprob.multidis>0) inpdis(&(field[genprob.numsf]));
@@ -90,7 +89,6 @@ if (genprob.probtyp==prb_structure)
 {
    if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   if (field==NULL) dserror("Allocation of fields failed");
    
    field[genprob.numsf].fieldtyp = structure;
    if (genprob.multidis>0) inpdis(&(field[genprob.numsf]));
@@ -102,7 +100,6 @@ if (genprob.probtyp == prb_opt)
 {  /*-- structure type of problem */
    if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   if (field==NULL) dserror("Allocation of fields failed");
 
    field[0].fieldtyp = structure;
    if (genprob.multidis>0) inpdis(&(field[0]));
@@ -115,7 +112,6 @@ if (genprob.probtyp==prb_fluid)
    if (genprob.numfld==1) /* single field fluid problem                 */
    {
       field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-      if (field==NULL) dserror("Allocation of fields failed");
    
       field[genprob.numff].fieldtyp = fluid;
       if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
@@ -125,7 +121,6 @@ if (genprob.probtyp==prb_fluid)
    else if (genprob.numfld==2) /* two field fluid problem (fluid+ale)       */
    {
       field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-      if (field==NULL) dserror("Allocation of fields failed");
       
       field[genprob.numff].fieldtyp = fluid;
       if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
@@ -144,7 +139,6 @@ if (genprob.probtyp==prb_ale)
 {
    if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   if (field==NULL) dserror("Allocation of fields failed");
    
    field[genprob.numaf].fieldtyp = ale;
    if (genprob.multidis>0) inpdis(&(field[genprob.numaf]));
@@ -225,7 +219,6 @@ for (i=0; i<genprob.nnode; i++)
 actdis->numnp=counter;
 /*-------------------------------------- Allocate the nodes to the field */
 actdis->node = (NODE*)CCACALLOC(counter,sizeof(NODE));
-if (actdis->node==NULL) dserror("Allocation of nodes failed");
 /*---------------- assign the node Ids and coords to the NODE structure */
 counter=0;
 for (i=0; i<genprob.nnode; i++)
@@ -368,7 +361,6 @@ dstrc_enter("inp_struct_field");
 if (structfield->ndis>1)
    dserror("different discretisations not implemented yet for structural elements\n");
 structfield->dis = (DISCRET*)CCACALLOC(structfield->ndis,sizeof(DISCRET));
-if (!structfield->dis) dserror("Allocation of memory failed");
 /*-------------------------------------------- count number of elements */
 frrewind();
 frfind("--STRUCTURE ELEMENTS");
@@ -382,7 +374,6 @@ frrewind();
 structfield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
 structfield->dis[0].element=(ELEMENT*)CCACALLOC(structfield->dis[0].numele,sizeof(ELEMENT));
-if (structfield->dis[0].element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
 frfind("--STRUCTURE ELEMENTS");
@@ -490,7 +481,6 @@ dstrc_enter("inp_fluid_field");
 /*-------------------------------------------- allocate discretizations */
 /*fluidfield->ndis=1; */
 fluidfield->dis = (DISCRET*)CCACALLOC(fluidfield->ndis,sizeof(DISCRET));
-if (!fluidfield->dis) dserror("Allocation of memory failed");
 
 /*
 remarks about different discretisations:
@@ -509,7 +499,6 @@ frrewind();
 fluidfield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
 fluidfield->dis[0].element=(ELEMENT*)CCACALLOC(fluidfield->dis[0].numele,sizeof(ELEMENT));
-if (fluidfield->dis[0].element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
 frfind("--FLUID ELEMENTS");
@@ -539,7 +528,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
             dserror("NUMFLUIDDIS has to be g.t. 1 for FLUID2_PRO Elements!\n");
          fluidfield->dis[1].numele = fluidfield->dis[0].numele;
 	 fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
-         if (fluidfield->dis[1].element==NULL) dserror("Allocation of ELEMENT failed");
          cpro++;
       } /* endif (cpro==0) */      
       fluidfield->dis[0].element[counter].eltyp=el_fluid2_pro;
@@ -585,7 +573,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        {
         fluidfield->dis[1].numele = fluidfield->dis[0].numele;
 	  fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
-         if (fluidfield->dis[1].element==NULL) dserror("Allocation of ELEMENT failed");
          cpro++;
        } /* endif (cpro==0) */      
        fluidfield->dis[1].element[counter].eltyp=el_fluid2_tu;
@@ -632,7 +619,6 @@ dstrc_enter("inp_ale_field");
 if (alefield->ndis>1) 
    dserror("different discretisations not implemented yet for structural elements\n");
 alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
-if (!alefield->dis) dserror("Allocation of memory failed");
 /*-------------------------------------------- count number of elements */
 frrewind();
 frfind("--ALE ELEMENTS");
@@ -646,7 +632,6 @@ frrewind();
 alefield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
 alefield->dis[0].element=(ELEMENT*)CCACALLOC(alefield->dis[0].numele,sizeof(ELEMENT));
-if (alefield->dis[0].element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
 frfind("--ALE ELEMENTS");
