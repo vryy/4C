@@ -6,6 +6,7 @@ of the problemtype ale
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "ale3.h"
+#include "../ale2/ale2.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
@@ -83,18 +84,82 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  *----------------------------------------------------------------------*/
  extern struct _FILES  allfiles;
 
-
-
-
 /*! 
 \addtogroup Ale 
 *//*! @{ (documentation module open)*/
 
+
 /*!----------------------------------------------------------------------
 \brief controls the  execution of pure ale problems
 
+<pre>                                                            ck 05/03 
+This routine  controls the  execution of pure ale problems. Depending on
+the type of the ale problem different dynamic routines are called.
+
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa   calling: dyn_ale_lin(), dyn_ale_nln(), dyn_ale_2step(), 
+               dyn_ale_spring(), dyn_ale_laplace()
+      called by: caldyn()
+
+*----------------------------------------------------------------------*/
+void dyn_ale()
+{
+#ifdef D_ALE
+
+#ifdef DEBUG 
+dstrc_enter("dyn_ale");
+#endif
+switch (alldyn->adyn->typ)
+{
+/*---------------------------------------- purely linear calculation ---*/
+   case classic_lin:
+      dyn_ale_lin();   
+   break;
+/*------------------- incremental calculation stiffened with min J_e ---*/
+   case min_Je_stiff:
+      dyn_ale_nln();
+   break;
+/*--------------------------------------------- two step calculation ---*/
+/*  calculation in two steps per timestep following Chiandussi et al. in 
+    'A simple method for automatic update of finite element meshes'
+    Commun. Numer. Meth. Engng. 2000; 16: 1-19                          */
+   case two_step:
+      dyn_ale_2step();
+   break;
+/*--------------------------------------------------- spring analogy ---*/
+/*  calculation following Farhat et al. in 'Torsional springs for 
+    two-dimensional dynamic unstructured fluid meshes' Comput. Methods
+    Appl. Mech. Engrg. 163 (1998) 231-245 */
+    case springs:
+       dyn_ale_spring();
+    break;
+/*------------------------------------------------ Laplace smoothing ---*/
+/*  calculation following Loehner et al. in 'Improved ALE mesh velocities
+    for moving bodies' Commun. num. methd. engng. 12 (1996) 599-608 */
+    case laplace:
+       dyn_ale_laplace();
+    break;
+/*---------------------------------------------------------- default ---*/
+   default:
+    dserror("unknown ale typ");
+   break;
+}
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of dyn_ale*/
+
+
+/*!----------------------------------------------------------------------
+\brief controls the  execution of purely linear ale problems
+
 <pre>                                                              mn 06/02 
-This routine  controls the  execution of pure ale problems.
+This routine  controls the execution of linear pure ale problems.
 Initialization, once the calculation of the stiffness matrix, and multiple
 calculation of the rhs and solving.
 
@@ -103,12 +168,12 @@ calculation of the rhs and solving.
 \warning There is nothing special to this routine
 \return void                                               
 \sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(); 
-      called by: caldyn()
+      called by: dyn_ale()
 
 *----------------------------------------------------------------------*/
-void dyn_ale()
-{
 #ifdef D_ALE
+void dyn_ale_lin()
+{
 INT           i;                /* a counter */
 INT           numeq;            /* number of equations on this proc */
 INT           numeq_total;      /* total number of equations over all procs */
@@ -131,20 +196,20 @@ DOUBLE       *dirich;
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 #ifdef DEBUG 
-dstrc_enter("dyn_ale");
+dstrc_enter("dyn_ale_lin");
 #endif
 /*----------------------------------------------------------------------*/
 container.isdyn = 0;            /* static calculation */
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
-actfield    = &(field[0]);
+actfield            = &(field[0]);
 container.fieldtyp  = actfield->fieldtyp;
 container.actndis   = 0;
-actsolv     = &(solv[0]);
-actpart     = &(partition[0]);
-action      = &(calc_action[0]);
-adyn        =   alldyn[0].adyn;
+actsolv             = &(solv[0]);
+actpart             = &(partition[0]);
+action              = &(calc_action[0]);
+adyn                =   alldyn[0].adyn;
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 #else
@@ -218,6 +283,7 @@ if (ioflags.ale_disp_gid==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
+printf("Performing pure ALE problem linear");
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
 /*===================================================================== */
@@ -261,15 +327,6 @@ solserv_result_total(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                     );
-/*---------------------allreduce the result and put it to sol_increment */
-solserv_result_incre(
-                     actfield,
-                     actintra,
-                     &(actsolv->sol[actsysarray]),
-                     0,
-                     &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
-                    );
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
    out_sol(actfield,actpart,actintra,adyn->step,0);
@@ -292,7 +349,1019 @@ CCAFREE(actintra);
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+return;
+} /* end of dyn_ale_lin */
+#endif
+
+
+
+
+
+/*!----------------------------------------------------------------------
+\brief controls the  execution of nonlinear ale problems
+
+<pre>                                                            ck 05/03 
+This routine controls the execution of nonlinear ale problems with 
+deformation dependent stiffening on elemental basis via minimal Jacobian 
+determinant.
+
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), ale_quality(); 
+      called by: caldyn()
+
+*----------------------------------------------------------------------*/
+void dyn_ale_nln()
+{
+#ifdef D_ALE
+INT           i;                /* counters */
+INT           numeq;            /* number of equations on this proc */
+INT           numeq_total;      /* total number of equations over all procs */
+INT           init;             /* init flag for solver */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+
+INT           actcurve;         /* indice of active time curve */
+DOUBLE        t0,t1;
+
+SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
+PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
+FIELD        *actfield;         /* pointer to the structural FIELD */
+INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
+CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
+ALE_DYNAMIC  *adyn;             /* pointer to structural dynamic input data */
+CONTAINER     container;        /* contains variables defined in container.h */
+
+ARRAY         dirich_a;         /* redundant vector of full length for dirichlet-part of rhs*/
+DOUBLE       *dirich;
+
+SPARSE_TYP    array_typ;        /* type of psarse system matrix */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("dyn_ale_nln");
+#endif
+/*------------ the distributed system matrix, which is used for solving */
+actsysarray=0;
+/*--------------------------------------------------- set some pointers */
+actfield            = &(field[0]);
+container.fieldtyp  = actfield->fieldtyp;
+container.actndis   = 0;
+container.isdyn     = 1;
+container.pos       = 0;
+actsolv             = &(solv[0]);
+actpart             = &(partition[0]);
+action              = &(calc_action[0]);
+adyn                =   alldyn[0].adyn;
+/*----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+actintra    = &(par.intra[0]);
+#else
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+if (!actintra) dserror("Allocation of INTRA failed");
+actintra->intra_fieldtyp = ale;
+actintra->intra_rank   = 0;
+actintra->intra_nprocs   = 1;
+#endif
+/*------------------------------------------------------ check proc ---*/
+if (actintra->intra_fieldtyp != ale) goto end;
+/*------------------------------------------------ typ of global matrix */
+array_typ   = actsolv->sysarray_typ[actsysarray];
+/*---------------------------- get global and local number of equations */
+/*   numeq equations are on this proc, the total number of equations is */
+/*                                                          numeq_total */
+solserv_getmatdims(actsolv->sysarray[actsysarray],
+                   actsolv->sysarray_typ[actsysarray],
+                   &numeq,
+                   &numeq_total);
+/*---------------------------------- number of rhs and solution vectors */
+actsolv->nrhs=1;
+actsolv->nsol=1;
+solserv_create_vec(&(actsolv->rhs),1,numeq_total,numeq,"DV");
+solserv_create_vec(&(actsolv->sol),1,numeq_total,numeq,"DV");
+/*------------------------------ init the created dist. vectors to zero */
+for (i=0; i<actsolv->nrhs; i++)
+   solserv_zero_vec(&(actsolv->rhs[i]));
+for (i=0; i<actsolv->nsol; i++)
+   solserv_zero_vec(&(actsolv->sol[i]));
+/*--------- create a vector of full length for dirichlet part of rhs ---*/
+dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
+/*--------------------------------------------------- initialize solver */
+init=1;
+solver_control(  
+                    actsolv,
+                    actintra,
+                  &(actsolv->sysarray_typ[actsysarray]),
+                  &(actsolv->sysarray[actsysarray]),
+                  &(actsolv->sol[actsysarray]),
+                  &(actsolv->rhs[actsysarray]),
+                    init
+                 );
+/*--------------------------------- init the dist sparse matrix to zero */
+/*               NOTE: Has to be called after solver_control(init=1) */
+solserv_zero_mat(
+                    actintra,
+                    &(actsolv->sysarray[actsysarray]),
+                    &(actsolv->sysarray_typ[actsysarray])
+                   );
+/*----------------------------- init the assembly for ONE sparse matrix */
+init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+/*------------------------------- init the element calculating routines */
+*action = calc_ale_init_nln;
+calinit(actfield,actpart,action,&container);
+/*--------------------------------------- init solution to zero -------*/
+solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+/*--------------------------------------- init all applied time curves */
+for (actcurve = 0;actcurve<numcurve;actcurve++)
+   dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);   
+/*------------------------------------------- print out results to .out */
+#ifdef PARALLEL 
+if (ioflags.struct_disp_file==1)
+{
+  if (par.myrank==0)  out_gid_domains(actfield);
+}
+#endif
+printf("Performing pure ALE problem nonlinear and stiffened");
+
+/*===================================================================== */
+/*                      T I M E L O O P                                 */
+/*===================================================================== */
+timeloop:
+t0 = ds_cputime();
+/*--------------------------------------------- increment step and time */
+adyn->step++;
+/*------------------------------------------------ set new absolue time */
+adyn->time += adyn->dt;
+/*------------------------------ init the created dist. vectors to zero */
+solserv_zero_vec(&(actsolv->rhs[actsysarray]));
+solserv_zero_vec(&(actsolv->sol[actsysarray]));
+/*--------------------------------------------------------------------- */
+amzero(&dirich_a);
+/*-------------------------set dirichlet boundary conditions on at time */
+ale_setdirich_increment(actfield,adyn,0);
+/*----------------------------------------------------------------------*/
+solserv_zero_mat(actintra,
+		 &(actsolv->sysarray[actsysarray]),
+		 &(actsolv->sysarray_typ[actsysarray])
+	         );
+/*----call element routines to calculate & assemble stiffness matrix */
+if (adyn->step <= adyn->num_initstep) 
+   *action = calc_ale_stiff_stress;
+else
+   *action = calc_ale_stiff_nln;
+container.dvec         = NULL;
+container.dirich       = dirich;
+container.global_numeq = numeq_total;
+switch (adyn->measure_quality)
+{
+   /*--------------------------------*/
+   case no_quality:
+      container.quality = 0;
+   break;
+   /*--------------------------------*/
+   case aspect_ratio:
+      container.quality = 1;
+   break;
+   /*--------------------------------*/
+   case corner_angle:
+      container.quality = 2;
+   break;
+   /*--------------------------------*/
+   case min_detF:
+      container.quality = 3;
+   break;
+   default:
+      dserror("element quality unknown");
+   break;
+}
+calelm(actfield,actsolv,actpart,actintra,
+       actsysarray,-1,&container,action);
+/*------------------------ add rhs from prescribed displacements to rhs */
+assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
+     &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
+     dirich,1.0);
+/*--------------------------------------------------------- call solver */
+init=0;
+solver_control(   actsolv,
+                  actintra,
+                 &(actsolv->sysarray_typ[actsysarray]),
+                 &(actsolv->sysarray[actsysarray]),
+                 &(actsolv->sol[actsysarray]),
+                 &(actsolv->rhs[actsysarray]),
+                   init
+                 );
+/*-------------------------allreduce the result and put it to the nodes */
+/*---------------------  write increment to increment vector place 0 ---*/
+solserv_result_incre(
+		     actfield,
+		     actintra,
+		     &(actsolv->sol[actsysarray]),
+		     0,
+		     &(actsolv->sysarray[actsysarray]),
+		     &(actsolv->sysarray_typ[actsysarray])
+		    );
+/*--------- update nodal solution values by adding actual increments ---*/
+   /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
+solserv_sol_add(actfield,0,1,1,0,1,1.0);
+   /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
+solserv_sol_copy(actfield,0,1,0,1,0);
+/*------------------------------------------- print out results to .out */
+if (ioflags.ale_disp_file==1)
+{
+    out_sol(actfield,actpart,actintra,adyn->step,0);
+    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+}
+/*--------------------------------------- do mesh quality statistics ---*/
+ale_quality(actfield,adyn->step);
+/*------------------------------------------ measure time for this step */
+t1 = ds_cputime();
+fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+/*-------------------------------------- check time and number of steps */
+if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
+goto timeloop;
+
+/*----------------------------------------------------------------------*/
+end:
+#ifndef PARALLEL 
+CCAFREE(actintra);
+#endif
+#ifdef DEBUG 
+dstrc_exit();
+#endif
 #endif
 return;
-} /* end of dyn_ale */
+} /* end of dyn_ale_nln */
+
+
+
+/*!----------------------------------------------------------------------
+\brief controls the  execution of ale problems in 2 steps per time step
+
+<pre>                                                              ck 06/03 
+This routine  controls the  execution of ale problems following Chiandussi
+et al. in 'A simple method for automatic umpdate of finite element meshes'
+Commun. Numer. Engng. 2000; 16: 1-19
+The calculation performes two solution steps per timestep. A first one to 
+get a strain distribution based on spatially constant stiffness within the 
+increment. In the second step the previous results are used to obtain a 
+spatially variying stiffness.
+
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa   calling: ale_calelm(), ale_setdirich_increment(), ale_rhs(), 
+               ale_quality(); 
+      called by: caldyn()
+
+*----------------------------------------------------------------------*/
+void dyn_ale_2step()
+{
+#ifdef D_ALE
+INT           i;                /* counters */
+INT           numeq;            /* number of equations on this proc */
+INT           numeq_total;      /* total number of equations over all procs */
+INT           init;             /* init flag for solver */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+
+INT           actcurve;         /* indice of active time curve */
+DOUBLE        t0,t1;
+
+SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
+PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
+FIELD        *actfield;         /* pointer to the structural FIELD */
+INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
+CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
+ALE_DYNAMIC  *adyn;             /* pointer to structural dynamic input data */
+CONTAINER     container;        /* contains variables defined in container.h */
+
+ARRAY         dirich_a;         /* redundant vector of full length for dirichlet-part of rhs*/
+DOUBLE       *dirich;
+
+SPARSE_TYP    array_typ;        /* type of sparse system matrix */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("dyn_ale_2step");
+#endif
+/*------------ the distributed system matrix, which is used for solving */
+actsysarray=0;
+/*--------------------------------------------------- set some pointers */
+actfield            = &(field[0]);
+container.fieldtyp  = actfield->fieldtyp;
+container.actndis   = 0;
+container.isdyn     = 1;
+container.pos       = 0;
+actsolv             = &(solv[0]);
+actpart             = &(partition[0]);
+action              = &(calc_action[0]);
+adyn                =   alldyn[0].adyn;
+/* to follow Chiandussi et al. calculation is performed in two steps, 
+   first step linear, second step with modified stiffness
+   reference calculation is performed incremental                       */
+/*----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+actintra    = &(par.intra[0]);
+#else
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+if (!actintra) dserror("Allocation of INTRA failed");
+actintra->intra_fieldtyp = ale;
+actintra->intra_rank   = 0;
+actintra->intra_nprocs   = 1;
+#endif
+/*------------------------------------------------------ check proc ---*/
+if (actintra->intra_fieldtyp != ale) goto end;
+/*------------------------------------------------ typ of global matrix */
+array_typ   = actsolv->sysarray_typ[actsysarray];
+/*---------------------------- get global and local number of equations */
+/*   numeq equations are on this proc, the total number of equations is */
+/*                                                          numeq_total */
+solserv_getmatdims(actsolv->sysarray[actsysarray],
+                   actsolv->sysarray_typ[actsysarray],
+                   &numeq,
+                   &numeq_total);
+/*---------------------------------- number of rhs and solution vectors */
+actsolv->nrhs=1;
+actsolv->nsol=1;
+solserv_create_vec(&(actsolv->rhs),1,numeq_total,numeq,"DV");
+solserv_create_vec(&(actsolv->sol),1,numeq_total,numeq,"DV");
+/*------------------------------ init the created dist. vectors to zero */
+for (i=0; i<actsolv->nrhs; i++)
+   solserv_zero_vec(&(actsolv->rhs[i]));
+for (i=0; i<actsolv->nsol; i++)
+   solserv_zero_vec(&(actsolv->sol[i]));
+/*--------- create a vector of full length for dirichlet part of rhs ---*/
+dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
+/*--------------------------------------------------- initialize solver */
+init=1;
+solver_control(  
+                    actsolv,
+                    actintra,
+                  &(actsolv->sysarray_typ[actsysarray]),
+                  &(actsolv->sysarray[actsysarray]),
+                  &(actsolv->sol[actsysarray]),
+                  &(actsolv->rhs[actsysarray]),
+                    init
+                 );
+/*--------------------------------- init the dist sparse matrix to zero */
+/*               NOTE: Has to be called after solver_control(init=1) */
+solserv_zero_mat(
+                    actintra,
+                    &(actsolv->sysarray[actsysarray]),
+                    &(actsolv->sysarray_typ[actsysarray])
+                   );
+/*----------------------------- init the assembly for ONE sparse matrix */
+init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+/*------------------------------- init the element calculating routines */
+*action = calc_ale_init_step2;  
+calinit(actfield,actpart,action,&container);
+/*--------------------------------------- init solution to zero -------*/
+solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+/*---------------- put actual min and max stiffening factor in place ---*/
+container.min = 0.10;
+container.max = 500.0;
+container.min_stiff = container.min;
+container.max_stiff = container.max;
+/*--------------------------------------- init all applied time curves */
+for (actcurve = 0;actcurve<numcurve;actcurve++)
+   dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);   
+/*------------------------------------------- print out results to .out */
+#ifdef PARALLEL 
+if (ioflags.struct_disp_file==1)
+{
+  if (par.myrank==0)  out_gid_domains(actfield);
+}
+#endif
+printf("Performing pure ALE problem in two steps");
+
+/*===================================================================== */
+/*                      T I M E L O O P                                 */
+/*===================================================================== */
+timeloop:
+t0 = ds_cputime();
+/*--------------------------------------------- increment step and time */
+adyn->step++;
+/*------------------------------------------------ set new absolue time */
+adyn->time += adyn->dt;
+/*------------------------------ init the created dist. vectors to zero */
+solserv_zero_vec(&(actsolv->rhs[actsysarray]));
+solserv_zero_vec(&(actsolv->sol[actsysarray]));
+/*--------------------------------------------------------------------- */
+amzero(&dirich_a);
+/*-------------------------set dirichlet boundary conditions on at time */
+/* write dirichlet cond. from dt on sol_increment */
+ale_setdirich_increment(actfield,adyn,0);
+/*----------------------------------------------------------------------*/
+solserv_zero_mat(
+		    actintra,
+		    &(actsolv->sysarray[actsysarray]),
+		    &(actsolv->sysarray_typ[actsysarray])
+		   );
+/*----call element routines to calculate & assemble stiffness matrix */
+*action = calc_ale_stiff;   /* first (linear) reference step */
+container.dvec         = NULL;
+container.dirich       = dirich;
+container.global_numeq = numeq_total;
+calelm(actfield,actsolv,actpart,actintra,
+       actsysarray,-1,&container,action);
+/*------------------------ add rhs from prescribed displacements to rhs */
+assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
+     &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
+     dirich,1.0);
+/*--------------------------------------------------------- call solver */
+init=0;
+solver_control(   actsolv,
+                  actintra,
+                 &(actsolv->sysarray_typ[actsysarray]),
+                 &(actsolv->sysarray[actsysarray]),
+                 &(actsolv->sol[actsysarray]),
+                 &(actsolv->rhs[actsysarray]),
+                   init
+                 );
+/*-------------------- allreduce the result and put it to sol_increment */
+solserv_result_incre(
+		     actfield,
+		     actintra,
+		     &(actsolv->sol[actsysarray]),
+		     0,
+		     &(actsolv->sysarray[actsysarray]),
+		     &(actsolv->sysarray_typ[actsysarray])
+		    );
+/*-------------------------------------- reset system matrix to zero ---*/
+solserv_zero_mat(
+     		 actintra,
+     		 &(actsolv->sysarray[actsysarray]),
+     		 &(actsolv->sysarray_typ[actsysarray])
+     		);
+/*------------------------------------------ rezero dirichlet vector ---*/
+amzero(&dirich_a);
+/*---- put actual min and max stiffening factor in place for scaling ---*/
+container.min = container.min_stiff; /* min stiffness of prev time step */
+container.max = container.max_stiff; /* max stiffness of prev time step */
+container.max_stiff = 0.0;
+container.min_stiff = 1.E10;
+/*-call element routines to calculate & assemble stiffness matrix */
+*action = calc_ale_stiff_step2;
+container.kstep        = adyn->step; 
+switch (adyn->measure_quality)
+{
+   /*--------------------------------*/
+   case no_quality:
+      container.quality = 0;
+   break;
+   /*--------------------------------*/
+   case aspect_ratio:
+      container.quality = 1;
+   break;
+   /*--------------------------------*/
+   case corner_angle:
+      container.quality = 2;
+   break;
+   /*--------------------------------*/
+   case min_detF:
+      container.quality = 3;
+   break;
+   default:
+      dserror("element quality unknown");
+   break;
+}
+calelm(actfield,actsolv,actpart,actintra,
+       actsysarray,-1,&container,action);
+/*--------------------------- init the created dist. vectors to zero ---*/
+solserv_zero_vec(&(actsolv->rhs[actsysarray]));
+solserv_zero_vec(&(actsolv->sol[actsysarray]));
+/*--------------------- add rhs from prescribed displacements to rhs ---*/
+assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
+   &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
+   dirich,1.0);
+/*------------------------------------------------------ call solver ---*/
+init=0;
+solver_control(actsolv,
+     	       actintra,
+     	      &(actsolv->sysarray_typ[actsysarray]),
+     	      &(actsolv->sysarray[actsysarray]),
+     	      &(actsolv->sol[actsysarray]),
+     	      &(actsolv->rhs[actsysarray]),
+     		init
+     	      );
+/*----------- allreduce the result and write it to the sol_increment ---*/
+solserv_result_incre(actfield,
+     		     actintra,
+     		    &(actsolv->sol[actsysarray]),
+     		     0,
+     		    &(actsolv->sysarray[actsysarray]),
+     		    &(actsolv->sysarray_typ[actsysarray])
+     		    );
+/*--------- update nodal solution values by adding actual increments ---*/
+   /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
+solserv_sol_add(actfield,0,1,1,0,1,1.0);
+   /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
+solserv_sol_copy(actfield,0,1,0,1,0);
+/*------------------------------------------- print out results to .out */
+if (ioflags.ale_disp_file==1)
+{
+    out_sol(actfield,actpart,actintra,adyn->step,0);
+    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+}
+/*--------------------------------------- do mesh quality statistics ---*/
+ale_quality(actfield,adyn->step);
+/*------------------------------------------ measure time for this step */
+t1 = ds_cputime();
+fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+/*-------------------------------------- check time and number of steps */
+if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
+goto timeloop;
+
+/*----------------------------------------------------------------------*/
+end:
+#ifndef PARALLEL 
+CCAFREE(actintra);
+#endif
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of dyn_ale_2step */
+
+
+
+/*!----------------------------------------------------------------------
+\brief controls the  execution of pure ale problems
+
+<pre>                                                            ck 05/03 
+This routine controls the execution of nonlinear pure ale problems that 
+are solved by means of spring analogy with lineal and torsional springs.
+The calculation follows Farhat et al. in 'Torsional springs for two-
+dimensional dynamic unstructured fluid meshes' in Comput. Methods Appl. Mech.
+Engrg. 163 (1998) 231-245
+
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), ale_quality(); 
+      called by: caldyn()
+
+*----------------------------------------------------------------------*/
+void dyn_ale_spring()
+{
+#ifdef D_ALE
+INT           i;                /* counters */
+INT           numeq;            /* number of equations on this proc */
+INT           numeq_total;      /* total number of equations over all procs */
+INT           init;             /* init flag for solver */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+
+INT           actcurve;         /* indice of active time curve */
+DOUBLE        t0,t1;
+
+SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
+PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
+FIELD        *actfield;         /* pointer to the structural FIELD */
+INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
+CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
+ALE_DYNAMIC  *adyn;             /* pointer to structural dynamic input data */
+CONTAINER     container;        /* contains variables defined in container.h */
+
+ARRAY         dirich_a;         /* redundant vector of full length for dirichlet-part of rhs*/
+DOUBLE       *dirich;
+
+SPARSE_TYP    array_typ;        /* type of psarse system matrix */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("dyn_ale_spring");
+#endif
+/*------------ the distributed system matrix, which is used for solving */
+actsysarray=0;
+/*--------------------------------------------------- set some pointers */
+actfield            = &(field[0]);
+container.fieldtyp  = actfield->fieldtyp;
+container.actndis   = 0;
+container.isdyn     = 1;
+container.pos       = 0;
+actsolv             = &(solv[0]);
+actpart             = &(partition[0]);
+action              = &(calc_action[0]);
+adyn                =   alldyn[0].adyn;
+/*----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+actintra    = &(par.intra[0]);
+#else
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+if (!actintra) dserror("Allocation of INTRA failed");
+actintra->intra_fieldtyp = ale;
+actintra->intra_rank   = 0;
+actintra->intra_nprocs   = 1;
+#endif
+/*------------------------------------------------------ check proc ---*/
+if (actintra->intra_fieldtyp != ale) goto end;
+/*------------------------------------------------ typ of global matrix */
+array_typ   = actsolv->sysarray_typ[actsysarray];
+/*---------------------------- get global and local number of equations */
+/*   numeq equations are on this proc, the total number of equations is */
+/*                                                          numeq_total */
+solserv_getmatdims(actsolv->sysarray[actsysarray],
+                   actsolv->sysarray_typ[actsysarray],
+                   &numeq,
+                   &numeq_total);
+/*---------------------------------- number of rhs and solution vectors */
+actsolv->nrhs=1;
+actsolv->nsol=1;
+solserv_create_vec(&(actsolv->rhs),1,numeq_total,numeq,"DV");
+solserv_create_vec(&(actsolv->sol),1,numeq_total,numeq,"DV");
+/*------------------------------ init the created dist. vectors to zero */
+for (i=0; i<actsolv->nrhs; i++)
+   solserv_zero_vec(&(actsolv->rhs[i]));
+for (i=0; i<actsolv->nsol; i++)
+   solserv_zero_vec(&(actsolv->sol[i]));
+/*--------- create a vector of full length for dirichlet part of rhs ---*/
+dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
+/*--------------------------------------------------- initialize solver */
+init=1;
+solver_control(  
+                    actsolv,
+                    actintra,
+                  &(actsolv->sysarray_typ[actsysarray]),
+                  &(actsolv->sysarray[actsysarray]),
+                  &(actsolv->sol[actsysarray]),
+                  &(actsolv->rhs[actsysarray]),
+                    init
+                 );
+/*--------------------------------- init the dist sparse matrix to zero */
+/*               NOTE: Has to be called after solver_control(init=1) */
+solserv_zero_mat(
+                    actintra,
+                    &(actsolv->sysarray[actsysarray]),
+                    &(actsolv->sysarray_typ[actsysarray])
+                   );
+/*----------------------------- init the assembly for ONE sparse matrix */
+init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+/*------------------------------- init the element calculating routines */
+ *action = calc_ale_init_spring;
+calinit(actfield,actpart,action,&container);
+/*--------------------------------------- init solution to zero -------*/
+solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+/*--------------------------------------- init all applied time curves */
+for (actcurve = 0;actcurve<numcurve;actcurve++)
+   dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);   
+/*------------------------------------------- print out results to .out */
+#ifdef PARALLEL 
+if (ioflags.struct_disp_file==1)
+{
+  if (par.myrank==0)  out_gid_domains(actfield);
+}
+#endif
+printf("Performing pure ALE problem with springs");
+
+/*===================================================================== */
+/*                      T I M E L O O P                                 */
+/*===================================================================== */
+timeloop:
+t0 = ds_cputime();
+/*--------------------------------------------- increment step and time */
+adyn->step++;
+/*------------------------------------------------ set new absolue time */
+adyn->time += adyn->dt;
+/*------------------------------ init the created dist. vectors to zero */
+solserv_zero_vec(&(actsolv->rhs[actsysarray]));
+solserv_zero_vec(&(actsolv->sol[actsysarray]));
+/*--------------------------------------------------------------------- */
+amzero(&dirich_a);
+/*-------------------------set dirichlet boundary conditions on at time */
+ale_setdirich_increment(actfield,adyn,0);
+/*----------------------------------------------------------------------*/
+solserv_zero_mat(actintra,
+		 &(actsolv->sysarray[actsysarray]),
+		 &(actsolv->sysarray_typ[actsysarray])
+	         );
+/*----call element routines to calculate & assemble stiffness matrix */
+*action = calc_ale_stiff_spring;
+container.dvec         = NULL;
+container.dirich       = dirich;
+container.global_numeq = numeq_total;
+switch (adyn->measure_quality)
+{
+   /*--------------------------------*/
+   case no_quality:
+      container.quality = 0;
+   break;
+   /*--------------------------------*/
+   case aspect_ratio:
+      container.quality = 1;
+   break;
+   /*--------------------------------*/
+   case corner_angle:
+      container.quality = 2;
+   break;
+   /*--------------------------------*/
+   case min_detF:
+      container.quality = 3;
+   break;
+   default:
+      dserror("element quality unknown");
+   break;
+}
+calelm(actfield,actsolv,actpart,actintra,
+       actsysarray,-1,&container,action);
+/*------------------------ add rhs from prescribed displacements to rhs */
+assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
+     &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
+     dirich,1.0);
+/*--------------------------------------------------------- call solver */
+init=0;
+solver_control(   actsolv,
+                  actintra,
+                 &(actsolv->sysarray_typ[actsysarray]),
+                 &(actsolv->sysarray[actsysarray]),
+                 &(actsolv->sol[actsysarray]),
+                 &(actsolv->rhs[actsysarray]),
+                   init
+                 );
+/*-------------------------allreduce the result and put it to the nodes */
+/*---------------------  write increment to increment vector place 0 ---*/
+solserv_result_incre(
+		     actfield,
+		     actintra,
+		     &(actsolv->sol[actsysarray]),
+		     0,
+		     &(actsolv->sysarray[actsysarray]),
+		     &(actsolv->sysarray_typ[actsysarray])
+		    );
+/*--------- update nodal solution values by adding actual increments ---*/
+   /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
+solserv_sol_add(actfield,0,1,1,0,1,1.0);
+   /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
+solserv_sol_copy(actfield,0,1,0,1,0);
+/*------------------------------------------- print out results to .out */
+if (ioflags.ale_disp_file==1)
+{
+    out_sol(actfield,actpart,actintra,adyn->step,0);
+    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+}
+/*--------------------------------------- do mesh quality statistics ---*/
+ale_quality(actfield,adyn->step);
+/*------------------------------------------ measure time for this step */
+t1 = ds_cputime();
+fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+/*-------------------------------------- check time and number of steps */
+if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
+goto timeloop;
+
+/*----------------------------------------------------------------------*/
+end:
+#ifndef PARALLEL 
+CCAFREE(actintra);
+#endif
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of dyn_ale_spring */
+
+
+
+
+/*!----------------------------------------------------------------------
+\brief controls the  execution of pure ale problems
+
+<pre>                                                            ck 06/03 
+This routine controls the execution of nonlinear pure ale problems
+with Laplace smoothing.
+The calculation follows Loehner et al. in 'Improved ale mesh velocities
+for moving bodies' commun. numer. Methods engineering Vol. 12, 599-608 
+(1996)
+spatially varying diffusivity, however, is not implemented as described 
+there.
+
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), ale_quality(); 
+      called by: caldyn()
+
+*----------------------------------------------------------------------*/
+void dyn_ale_laplace()
+{
+#ifdef D_ALE
+INT           i;                /* counters */
+INT           numeq;            /* number of equations on this proc */
+INT           numeq_total;      /* total number of equations over all procs */
+INT           init;             /* init flag for solver */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+
+INT           actcurve;         /* indice of active time curve */
+DOUBLE        t0,t1;
+
+SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
+PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
+FIELD        *actfield;         /* pointer to the structural FIELD */
+INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
+CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
+ALE_DYNAMIC  *adyn;             /* pointer to structural dynamic input data */
+CONTAINER     container;        /* contains variables defined in container.h */
+
+ARRAY         dirich_a;         /* redundant vector of full length for dirichlet-part of rhs*/
+DOUBLE       *dirich;
+
+SPARSE_TYP    array_typ;        /* type of psarse system matrix */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("dyn_ale_laplace");
+#endif
+/*------------ the distributed system matrix, which is used for solving */
+actsysarray=0;
+/*--------------------------------------------------- set some pointers */
+actfield            = &(field[0]);
+container.fieldtyp  = actfield->fieldtyp;
+container.actndis   = 0;
+container.isdyn     = 1;
+container.pos       = 0;
+actsolv             = &(solv[0]);
+actpart             = &(partition[0]);
+action              = &(calc_action[0]);
+adyn                =   alldyn[0].adyn;
+/*----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+actintra    = &(par.intra[0]);
+#else
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+if (!actintra) dserror("Allocation of INTRA failed");
+actintra->intra_fieldtyp = ale;
+actintra->intra_rank   = 0;
+actintra->intra_nprocs   = 1;
+#endif
+/*------------------------------------------------------ check proc ---*/
+if (actintra->intra_fieldtyp != ale) goto end;
+/*------------------------------------------------ typ of global matrix */
+array_typ   = actsolv->sysarray_typ[actsysarray];
+/*---------------------------- get global and local number of equations */
+/*   numeq equations are on this proc, the total number of equations is */
+/*                                                          numeq_total */
+solserv_getmatdims(actsolv->sysarray[actsysarray],
+                   actsolv->sysarray_typ[actsysarray],
+                   &numeq,
+                   &numeq_total);
+/*---------------------------------- number of rhs and solution vectors */
+actsolv->nrhs=1;
+actsolv->nsol=1;
+solserv_create_vec(&(actsolv->rhs),1,numeq_total,numeq,"DV");
+solserv_create_vec(&(actsolv->sol),1,numeq_total,numeq,"DV");
+/*------------------------------ init the created dist. vectors to zero */
+for (i=0; i<actsolv->nrhs; i++)
+   solserv_zero_vec(&(actsolv->rhs[i]));
+for (i=0; i<actsolv->nsol; i++)
+   solserv_zero_vec(&(actsolv->sol[i]));
+/*--------- create a vector of full length for dirichlet part of rhs ---*/
+dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
+/*--------------------------------------------------- initialize solver */
+init=1;
+solver_control(  
+                    actsolv,
+                    actintra,
+                  &(actsolv->sysarray_typ[actsysarray]),
+                  &(actsolv->sysarray[actsysarray]),
+                  &(actsolv->sol[actsysarray]),
+                  &(actsolv->rhs[actsysarray]),
+                    init
+                 );
+/*--------------------------------- init the dist sparse matrix to zero */
+/*               NOTE: Has to be called after solver_control(init=1) */
+solserv_zero_mat(
+                    actintra,
+                    &(actsolv->sysarray[actsysarray]),
+                    &(actsolv->sysarray_typ[actsysarray])
+                   );
+/*----------------------------- init the assembly for ONE sparse matrix */
+init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+/*------------------------------- init the element calculating routines */
+*action = calc_ale_init_laplace;
+calinit(actfield,actpart,action,&container);
+/*--------------------------------------- init solution to zero -------*/
+solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+/*--------------------------------------- init all applied time curves */
+for (actcurve = 0;actcurve<numcurve;actcurve++)
+   dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);   
+/*------------------------------------------- print out results to .out */
+#ifdef PARALLEL 
+if (ioflags.struct_disp_file==1)
+{
+  if (par.myrank==0)  out_gid_domains(actfield);
+}
+#endif
+printf("Performing pure ALE problem with Laplace smoothing");
+
+/*===================================================================== */
+/*                      T I M E L O O P                                 */
+/*===================================================================== */
+timeloop:
+t0 = ds_cputime();
+/*--------------------------------------------- increment step and time */
+adyn->step++;
+/*------------------------------------------------ set new absolue time */
+adyn->time += adyn->dt;
+/*------------------------------ init the created dist. vectors to zero */
+solserv_zero_vec(&(actsolv->rhs[actsysarray]));
+solserv_zero_vec(&(actsolv->sol[actsysarray]));
+/*--------------------------------------------------------------------- */
+amzero(&dirich_a);
+/*-------------------------set dirichlet boundary conditions on at time */
+ale_setdirich_increment(actfield,adyn,0);
+/*----------------------------------------------------------------------*/
+solserv_zero_mat(actintra,
+		 &(actsolv->sysarray[actsysarray]),
+		 &(actsolv->sysarray_typ[actsysarray])
+	         );
+/*----call element routines to calculate & assemble stiffness matrix */
+*action = calc_ale_stiff_laplace;
+container.dvec         = NULL;
+container.dirich       = dirich;
+container.global_numeq = numeq_total;
+switch (adyn->measure_quality)
+{
+   /*--------------------------------*/
+   case no_quality:
+      container.quality = 0;
+   break;
+   /*--------------------------------*/
+   case aspect_ratio:
+      container.quality = 1;
+   break;
+   /*--------------------------------*/
+   case corner_angle:
+      container.quality = 2;
+   break;
+   /*--------------------------------*/
+   case min_detF:
+      container.quality = 3;
+   break;
+   default:
+      dserror("element quality unknown");
+   break;
+}
+calelm(actfield,actsolv,actpart,actintra,
+       actsysarray,-1,&container,action);
+/*------------------------ add rhs from prescribed displacements to rhs */
+assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
+     &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
+     dirich,1.0);
+/*--------------------------------------------------------- call solver */
+init=0;
+solver_control(   actsolv,
+                  actintra,
+                 &(actsolv->sysarray_typ[actsysarray]),
+                 &(actsolv->sysarray[actsysarray]),
+                 &(actsolv->sol[actsysarray]),
+                 &(actsolv->rhs[actsysarray]),
+                   init
+                 );
+/*-------------------------allreduce the result and put it to the nodes */
+/*---------------------  write increment to increment vector place 0 ---*/
+solserv_result_incre(
+		     actfield,
+		     actintra,
+		     &(actsolv->sol[actsysarray]),
+		     0,
+		     &(actsolv->sysarray[actsysarray]),
+		     &(actsolv->sysarray_typ[actsysarray])
+		    );
+/*--------- update nodal solution values by adding actual increments ---*/
+   /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
+solserv_sol_add(actfield,0,1,1,0,1,1.0);
+   /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
+solserv_sol_copy(actfield,0,1,0,1,0);
+/*------------------------------------------- print out results to .out */
+if (ioflags.ale_disp_file==1)
+{
+    out_sol(actfield,actpart,actintra,adyn->step,0);
+    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+}
+/*--------------------------------------- do mesh quality statistics ---*/
+ale_quality(actfield,adyn->step);
+/*------------------------------------------ measure time for this step */
+t1 = ds_cputime();
+fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+/*-------------------------------------- check time and number of steps */
+if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
+goto timeloop;
+
+/*----------------------------------------------------------------------*/
+end:
+#ifndef PARALLEL 
+CCAFREE(actintra);
+#endif
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of dyn_ale_laplace */
+
+
+
 /*! @} (documentation module close)*/
