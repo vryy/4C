@@ -152,7 +152,7 @@ double s8_local_coord_node(int node, int flag, enum _DIS_TYP typ);
 /*----------------------------------------------------------------------*
  |  s8_main.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void shell8(FIELD      *actfield,
+/*void shell8(FIELD      *actfield,
             PARTITION  *actpart,
             INTRA      *actintra,
             ELEMENT    *ele,
@@ -161,7 +161,7 @@ void shell8(FIELD      *actfield,
             ARRAY      *intforce_global,
             int         kstep,
             int         handsize,
-            int        *handles,
+            long int   *handles,
             CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                       m.gee 11/01    |
@@ -446,6 +446,6 @@ void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
 /*----------------------------------------------------------------------*
  |  s8_restart.c                                         m.gee 05/02    |
  *----------------------------------------------------------------------*/
-void s8_write_restart(ELEMENT *actele, int nhandle, int *handles);
-void s8_read_restart(ELEMENT *actele, int nhandle, int *handles);
+void s8_write_restart(ELEMENT *actele, int nhandle, long int *handles);
+void s8_read_restart(ELEMENT *actele, int nhandle, long int *handles);
 #endif

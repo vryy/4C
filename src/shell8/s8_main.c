@@ -19,7 +19,7 @@ void shell8(FIELD      *actfield,
             ARRAY      *intforce_global,
             int         kstep,
             int         handsize,
-            int        *handles,
+            long int   *handles,
             CALC_ACTION *action)
 {
 #ifdef D_SHELL8

@@ -11,7 +11,7 @@ extern struct _PARTITION  *partition;
  |                                                        m.gee 5/02    |
  | write the data needed to restart this element                        |
  *----------------------------------------------------------------------*/
-void s8_write_restart(ELEMENT *actele, int nhandle, int *handles)
+void s8_write_restart(ELEMENT *actele, int nhandle, long int *handles)
 {
 int ierr;
 
@@ -52,7 +52,7 @@ return;
  |                                                        m.gee 5/02    |
  | read the data needed to restart this element                         |
  *----------------------------------------------------------------------*/
-void s8_read_restart(ELEMENT *actele, int nhandle, int *handles)
+void s8_read_restart(ELEMENT *actele, int nhandle, long int *handles)
 {
 int ierr;
 int dims[3];
