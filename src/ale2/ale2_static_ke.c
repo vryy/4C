@@ -1155,5 +1155,5 @@ return;
 
 
 
-#endif
 /*! @} (documentation module close)*/
+#endif

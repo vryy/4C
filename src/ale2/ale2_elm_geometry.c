@@ -11,7 +11,6 @@
 \addtogroup Ale 
 *//*! @{ (documentation module open)*/
 
-
 /*!----------------------------------------------------------------------
 \brief  area linear quadrilaterals
 
@@ -478,6 +477,5 @@ dstrc_exit();
 return;
 } /* end of ale2_bop */
 /*----------------------------------------------------------------------*/
-
-#endif
 /*! @} (documentation module close)*/
+#endif

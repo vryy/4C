@@ -86,7 +86,7 @@ and higher order elements are not implemented.
 \warning There is nothing special to this routine.
 
 \return void                                               
-\sa calling: 
+\sa calling: ---;
              called by: ale2_statik_ke(), ale2_statik_ke_test2()
 
 *----------------------------------------------------------------------*/
