@@ -5,7 +5,7 @@ double cmp_double(const void *a, const void *b );
 
 
 /*----------------------------------------------------------------------*
- |  calculate the mask of an msr matrix                  m.gee 5/01     |
+ |  calculate the mask of an spooles matrix              m.gee 5/01     |
  *----------------------------------------------------------------------*/
 void mask_spooles(FIELD         *actfield, 
                   PARTITION     *actpart, 
@@ -82,7 +82,7 @@ return;
  |  make the vectors                                        m.gee 1/02  |
  | irn_loc, jcn_loc, rowptr from update and bindx                       |
  *----------------------------------------------------------------------*/
-int  spo_make_sparsity(SPOOLMAT        *spo,
+void     spo_make_sparsity(SPOOLMAT        *spo,
                            int           *bindx)
 {
 int        i,j,k,l;
@@ -151,7 +151,7 @@ return;
  |  make the DMSR vector bindx                              m.gee 1/02  |
  | for format see Aztec manual                                          |
  *----------------------------------------------------------------------*/
-int  spo_make_bindx(FIELD         *actfield, 
+void    spo_make_bindx(FIELD         *actfield, 
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        SPOOLMAT      *spo,
@@ -192,7 +192,7 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate number of nonzero entries and dof topology    m.gee 1/02  |
  *----------------------------------------------------------------------*/
-int  spo_nnz_topology(FIELD         *actfield, 
+void  spo_nnz_topology(FIELD         *actfield, 
                        PARTITION    *actpart, 
                        SOLVAR       *actsolv,
                        INTRA        *actintra,
@@ -504,7 +504,7 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order   m.gee 5/01  |
  *----------------------------------------------------------------------*/
-int spo_update(FIELD         *actfield, 
+void spo_update(FIELD         *actfield, 
                 PARTITION     *actpart, 
                 SOLVAR        *actsolv,
                 INTRA         *actintra,

@@ -181,8 +181,8 @@ return;
 /*----------------------------------------------------------------------*
  |  fill sendbuffer isend and dsend                           m.gee 1/02|
  *----------------------------------------------------------------------*/
-int add_spo_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                    double **dsend,double **estif, int numsend)
+void add_spo_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
+                      double **dsend,double **estif, int numsend)
 {
 #ifdef SPOOLES_PACKAGE
 int         k,l;

@@ -1,6 +1,7 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 #include "../headers/restart.h"
+#include "../shell8/shell8.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
