@@ -26,8 +26,8 @@ write calls.
 To achieve highes performance each processor would have to store its
 data to its own file. That's the approach when there are local file
 systems and we really need highest performance. Postprocessing and
-restart would be much more difficult. But that's another story. It's
-not treated here.
+restart would be much more difficult. But that's another
+approach. It's not treated here.
 
 Output and input both follow the same pattern. Both are organized in a
 hierarchical way. At the top there is one global object that contains
@@ -374,6 +374,8 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
 /*!
   \brief Clean up.
 
+  The output field context's destructor.
+
   \author u.kue
   \date 08/04
 */
@@ -403,6 +405,8 @@ void init_bin_in_field(BIN_IN_FIELD* context,
 /*!
   \brief Clean up.
 
+  The input field context's destructor.
+
   \author u.kue
   \date 08/04
 */
@@ -428,6 +432,8 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
 /*----------------------------------------------------------------------*/
 /*!
   \brief Clean up.
+
+  The output chunk's destructor.
 
   \author u.kue
   \date 08/04

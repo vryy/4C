@@ -132,6 +132,10 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
 /*!
   \brief Find the number of different element types in this field.
 
+  This simply counts the different types. That's particularly easy
+  (and quick) because each field context knows what kinds of elements
+  there are.
+
   \author u.kue
   \date 09/04
 */
@@ -156,6 +160,13 @@ INT count_element_variants(struct _BIN_OUT_FIELD* field, ELEMENT_TYP type);
   \brief Find the number of double and integer values that are needed
   to store the mesh connectivity.
 
+  The mesh connectivity consists of all the ids of those nodes that
+  are connected to one particular element. So the main task here is to
+  find the maximum number of nodes per element. This a done without
+  looping all elements, instead the used element types are looped. To
+  each element type (major/minor) the number of nodes are known,
+  thanks to the global \a element_info .
+
   \author u.kue
   \date 09/04
 */
@@ -169,6 +180,21 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
 /*!
   \brief Find the number of double and integer values that are needed
   to store the element stresses.
+
+  We want to store the real stress array for each
+  element. Postprocessing can be done later. However the real array is
+  not always available. Each element is different. Some elements do
+  even extrapolate their stresses to the nodes. This should better be
+  done by the filter, but for now we'll have to support this. Thus we
+  need to find the size of the node based stress array, too.
+
+  Of course extrapolating to the nodes requires that all elements at
+  the node agree on the nodal stress. In effect this demands that only
+  one type of element is used in the discretization.
+
+  For many element types it's sufficient to lookup the \a element_info
+  table to find the stress array's size. But dynamic elements like
+  shell9 have to be treated specially.
 
   \author u.kue
   \date 09/04
@@ -199,6 +225,10 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
   encode all possible element variants in one gigantic array nor can
   we stick to the most space consuming version for lack of knowledge.
 
+  \param context      (i) pointer to an already set up output context
+  \param value_length (o) the number of double to store per element
+  \param size_length  (o) the number of integer to store per element
+
   \author u.kue
   \date 09/04
 */
@@ -211,6 +241,13 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
 /*----------------------------------------------------------------------*/
 /*!
   \brief Get the position of this field in the global field array.
+
+  We need to store the field's position along with the field's type
+  and the discretization number in the control file in order to
+  identify the discretization. (Here the distinction between field and
+  discretization matters.) The reason are problemtypes like SSI that
+  contain more than one field of one type, the field type is no unique
+  criterion.
 
   \author u.kue
   \date 10/04
@@ -236,6 +273,28 @@ void out_main_group_head(struct _BIN_OUT_FIELD  *context, CHAR* name);
   \brief Pack the values to be saved in some buffer to send them to
   their writing processor.
 
+  This is the hook function called by ``out_gather_values`` in order
+  to collect certain values from nodes, elements or distributed
+  vectors. This function or the ones called here must be changed in
+  case an element is updated.
+
+  There is a loop that calls this function for each destination
+  processor in turn. That is upon one call it has to collect all items
+  that go to one processor. These are always consecutive items, \a
+  dst_first_id gives the first item's id, \a dst_num gives the number
+  of items to be collected.
+
+  \param *chunk          (i)  the chunk that's going to be written
+  \param  type           (i)  what kind of values are to be collected
+  \param  array          (i)  the row of the node array that
+                              interesting; is ignored for some types
+  \param *actpdis        (i)  the partition's discretization
+  \param *send_buf       (o)  buffer to collect double values
+  \param  send_count     (i)  number of double values to be collected
+  \param *send_size_buf  (o)  buffer to collect integer values
+  \param  dst_first_id   (i)  the id (Id_loc) of the first item to be written
+  \param  dst_num        (i)  the number of (consecutive) items to be written
+
   \author u.kue
   \date 08/04
 */
@@ -255,6 +314,29 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
 /*!
   \brief Unpack what we received.
 
+  This is the hook function called by ``in_scatter_chunk`` in order
+  to distribute certain values to nodes, elements or distributed
+  vectors. This function or the ones called here must be changed in
+  case an element is updated.
+
+  There is a loop that calls this function for each source processor
+  in turn. That is upon one call it has to distribute all items that
+  come from one processor. The places these items go to are not
+  consecutive. For this reason the \a context knows the local ids
+  of these items. This has been figured out during initialization. See
+  \a init_bin_in_field .
+
+  \param *context         (i) the discretization the chunk belongs to
+  \param *chunk           (i) the chunk that's read
+  \param  type            (i) what kind of values are to be spread
+  \param  array           (i) the row of the node array the value are
+                              to go to; is ignored for some types
+  \param *recv_buf        (i) buffer of double values
+  \param  recv_count      (i) number of double values to be spread
+  \param *recv_size_buf   (i) buffer of integer values
+  \param *recv_size_count (i) buffer of integer values
+  \param  src             (i) the rank of the source processor
+
   \author u.kue
   \date 09/04
 */
@@ -273,6 +355,9 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
 /*----------------------------------------------------------------------*/
 /*!
   \brief Write all results for one step.
+
+  Write results for potprocessing. All algorithms call this function
+  (if they support binary output).
 
   This function can be called many times in a row per time step. But
   be careful not to mix calls of this function with calls to output

@@ -140,6 +140,16 @@ extern CHAR* fieldnames[];
 /*!
   \brief Mark all element types that are used in this discretization.
 
+  Here the context's element_flag table is set up. That is all
+  elements are checked and the corresponding entry (selected by
+  major/minor type number) in the flag table gets a tic.
+
+  The result is allreduced.
+
+  \param context  (i/o) pointer to an output context in the setup phase
+  \param actintra (i)   the communicator
+  \param actpdis  (i)   the partitions discretization
+
   \author u.kue
   \date 09/04
 */
@@ -255,12 +265,25 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
 
 
 /*----------------------------------------------------------------------*/
+/* Here we have lots of functions that do nothing but packing
+ * something (node arrays, element stuff, distributed vectors) into
+ * the output buffers. These functions share a common structure. See
+ * ``out_pack_items`` for an explanation of their parameters.
+ *
+ * These are the functions that need to be changed according to
+ * changes in the elements. */
+/*----------------------------------------------------------------------*/
+
+
+
+/*----------------------------------------------------------------------*/
 /*!
   \brief Pack the values of the indicated node array in some buffer to
   send them to their writing processor.
 
   \author u.kue
   \date 08/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
@@ -270,7 +293,7 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
                                  INT send_count,
                                  INT *send_size_buf,
                                  INT dst_first_id,
-                                 INT dst_numnodes)
+                                 INT dst_num)
 {
   INT j, counter;
 
@@ -296,20 +319,20 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
   for (j=0; j<actpdis->numnp; ++j) {                                    \
     NODE* actnode = actpdis->node[j];                                   \
     if ((actnode->Id_loc >= dst_first_id) &&                            \
-        (actnode->Id_loc < dst_first_id+dst_numnodes)) {                \
+        (actnode->Id_loc < dst_first_id+dst_num)) {                     \
+      DOUBLE *src_ptr;                                                  \
+      DOUBLE *dst_ptr;                                                  \
       INT k;                                                            \
       INT size = actnode->node_array.fdim*actnode->node_array.sdim;     \
       dsassert(size <= chunk->field->max_size[node_array_ ## node_array], \
-               "outdated size calculation. panic.");                      \
-      {                                                                   \
-        DOUBLE *src_ptr = actnode->node_array.a.da[0];                    \
-        DOUBLE *dst_ptr = &(send_buf[chunk->value_entry_length*counter]); \
-        pack_send_size_buf(node_array);                                   \
-        for (k=0; k<size; ++k) {                                          \
-          *dst_ptr++ = *src_ptr++;                                        \
-        }                                                                 \
-        counter += 1;                                                     \
+               "outdated size calculation. panic.");                    \
+      src_ptr = actnode->node_array.a.da[0];                            \
+      dst_ptr = &(send_buf[chunk->value_entry_length*counter]);         \
+      pack_send_size_buf(node_array);                                   \
+      for (k=0; k<size; ++k) {                                          \
+        *dst_ptr++ = *src_ptr++;                                        \
       }                                                                 \
+      counter += 1;                                                     \
     }                                                                   \
   }                                                                     \
   dsassert(counter*chunk->value_entry_length == send_count,             \
@@ -349,6 +372,7 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_mesh(BIN_OUT_CHUNK *chunk,
@@ -357,7 +381,7 @@ static void out_pack_mesh(BIN_OUT_CHUNK *chunk,
                           INT send_count,
                           INT *send_size_buf,
                           INT dst_first_id,
-                          INT dst_numnodes)
+                          INT dst_num)
 {
   INT i;
   INT len;
@@ -376,7 +400,7 @@ static void out_pack_mesh(BIN_OUT_CHUNK *chunk,
   for (i=0; i<actpdis->numele; ++i) {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_numnodes)) {
+        (actele->Id_loc < dst_first_id+dst_num)) {
       INT* ptr;
       INT j;
 
@@ -415,6 +439,7 @@ static void out_pack_mesh(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_coords(BIN_OUT_CHUNK *chunk,
@@ -423,7 +448,7 @@ static void out_pack_coords(BIN_OUT_CHUNK *chunk,
                             INT send_count,
                             INT *send_size_buf,
                             INT dst_first_id,
-                            INT dst_numnodes)
+                            INT dst_num)
 {
   INT i;
   INT len;
@@ -442,7 +467,7 @@ static void out_pack_coords(BIN_OUT_CHUNK *chunk,
   for (i=0; i<actpdis->numnp; ++i) {
     NODE* actnode = actpdis->node[i];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_numnodes)) {
+        (actnode->Id_loc < dst_first_id+dst_num)) {
       DOUBLE* ptr;
       INT j;
 
@@ -476,6 +501,7 @@ static void out_pack_coords(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 08/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_displacement(BIN_OUT_CHUNK *chunk,
@@ -485,7 +511,7 @@ static void out_pack_displacement(BIN_OUT_CHUNK *chunk,
                                   INT send_count,
                                   INT *send_size_buf,
                                   INT dst_first_id,
-                                  INT dst_numnodes)
+                                  INT dst_num)
 {
   INT j, counter, ndim;
 
@@ -511,7 +537,7 @@ static void out_pack_displacement(BIN_OUT_CHUNK *chunk,
   for (j=0; j<actpdis->numnp; ++j) {
     NODE* actnode = actpdis->node[j];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_numnodes)) {
+        (actnode->Id_loc < dst_first_id+dst_num)) {
       INT k;
       DOUBLE *ptr = actnode->sol.a.da[place];
 
@@ -550,6 +576,7 @@ static void out_pack_displacement(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 08/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_shell8_director(BIN_OUT_CHUNK *chunk,
@@ -558,7 +585,7 @@ static void out_pack_shell8_director(BIN_OUT_CHUNK *chunk,
                                      INT send_count,
                                      INT *send_size_buf,
                                      INT dst_first_id,
-                                     INT dst_numnodes)
+                                     INT dst_num)
 {
   INT i;
   INT k;
@@ -576,7 +603,7 @@ static void out_pack_shell8_director(BIN_OUT_CHUNK *chunk,
   for (i=0; i<actpdis->numele; ++i) {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_numnodes)) {
+        (actele->Id_loc < dst_first_id+dst_num)) {
       SHELL8* s8;
       INT minor;
       DOUBLE *dst_ptr;
@@ -626,6 +653,7 @@ static void out_pack_shell8_director(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
@@ -634,7 +662,7 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
                                    INT send_count,
                                    INT *send_size_buf,
                                    INT dst_first_id,
-                                   INT dst_numnodes)
+                                   INT dst_num)
 {
   INT i;
   INT k;
@@ -653,7 +681,7 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
   for (i=0; i<actpdis->numele; ++i) {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_numnodes)) {
+        (actele->Id_loc < dst_first_id+dst_num)) {
       SHELL9* s9;
       INT minor;
       DOUBLE *dst_ptr;
@@ -963,6 +991,7 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 08/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
@@ -972,7 +1001,7 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
                                          INT send_count,
                                          INT *send_size_buf,
                                          INT dst_first_id,
-                                         INT dst_numnodes)
+                                         INT dst_num)
 {
   INT i, counter, len;
 
@@ -989,7 +1018,7 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
   for (i=0; i<actpdis->numele; ++i) {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_numnodes)) {
+        (actele->Id_loc < dst_first_id+dst_num)) {
       SHELL9* s9;
       INT minor;
       DOUBLE *dst_ptr;
@@ -1266,6 +1295,7 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 08/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_velocity(BIN_OUT_CHUNK *chunk,
@@ -1275,7 +1305,7 @@ static void out_pack_velocity(BIN_OUT_CHUNK *chunk,
                               INT send_count,
                               INT *send_size_buf,
                               INT dst_first_id,
-                              INT dst_numnodes)
+                              INT dst_num)
 {
   INT j, counter, ndim;
 
@@ -1291,7 +1321,7 @@ static void out_pack_velocity(BIN_OUT_CHUNK *chunk,
   for (j=0; j<actpdis->numnp; ++j) {
     NODE* actnode = actpdis->node[j];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_numnodes)) {
+        (actnode->Id_loc < dst_first_id+dst_num)) {
       INT k;
       DOUBLE *ptr = actnode->sol.a.da[place];
 
@@ -1328,6 +1358,7 @@ static void out_pack_velocity(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 08/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_pressure(BIN_OUT_CHUNK *chunk,
@@ -1337,7 +1368,7 @@ static void out_pack_pressure(BIN_OUT_CHUNK *chunk,
                               INT send_count,
                               INT *send_size_buf,
                               INT dst_first_id,
-                              INT dst_numnodes)
+                              INT dst_num)
 {
   INT j, counter, ndim;
 
@@ -1353,7 +1384,7 @@ static void out_pack_pressure(BIN_OUT_CHUNK *chunk,
   for (j=0; j<actpdis->numnp; ++j) {
     NODE* actnode = actpdis->node[j];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_numnodes)) {
+        (actnode->Id_loc < dst_first_id+dst_num)) {
 
       dsassert((actnode->sol.fdim > place) &&
                (actnode->sol.sdim > ndim), "sol array too small");
@@ -1386,6 +1417,7 @@ static void out_pack_pressure(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_stress(BIN_OUT_CHUNK *chunk,
@@ -1395,7 +1427,7 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
                             INT send_count,
                             INT *send_size_buf,
                             INT dst_first_id,
-                            INT dst_numnodes)
+                            INT dst_num)
 {
   INT i;
   INT j;
@@ -1427,7 +1459,7 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
   for (i=0; i<actpdis->numele; ++i) {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_numnodes)) {
+        (actele->Id_loc < dst_first_id+dst_num)) {
       INT minor;
       DOUBLE **stress;
       DOUBLE *dst_ptr;
@@ -1673,13 +1705,15 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
 /*!
   \brief Pack the stresses.
 
-  Here the node based stresses are handled.
+  Here the node based stresses are handled. I'd like to avoid
+  this. Better have the filter do the interpolation.
 
   This is highly element specific. That is the filter must know what
   these numbers mean. Each element is different.
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_nd_stress(BIN_OUT_CHUNK *chunk,
@@ -1689,7 +1723,7 @@ static void out_pack_nd_stress(BIN_OUT_CHUNK *chunk,
                                INT send_count,
                                INT *send_size_buf,
                                INT dst_first_id,
-                               INT dst_numnodes)
+                               INT dst_num)
 {
   INT len;
   INT counter;
@@ -1708,7 +1742,7 @@ static void out_pack_nd_stress(BIN_OUT_CHUNK *chunk,
   for (j=0; j<actpdis->numnp; ++j) {
     NODE* actnode = actpdis->node[j];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_numnodes)) {
+        (actnode->Id_loc < dst_first_id+dst_num)) {
       INT k;
       INT count;
       INT numele;
@@ -1795,6 +1829,7 @@ static void out_pack_nd_stress(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_domain(BIN_OUT_CHUNK *chunk,
@@ -1803,7 +1838,7 @@ static void out_pack_domain(BIN_OUT_CHUNK *chunk,
                             INT send_count,
                             INT *send_size_buf,
                             INT dst_first_id,
-                            INT dst_numnodes)
+                            INT dst_num)
 {
   INT i;
   INT counter;
@@ -1819,7 +1854,7 @@ static void out_pack_domain(BIN_OUT_CHUNK *chunk,
   for (i=0; i<actpdis->numele; ++i) {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_numnodes)) {
+        (actele->Id_loc < dst_first_id+dst_num)) {
 
 #ifdef PARALLEL
       send_size_buf[2*counter  ] = actele->Id_loc;
@@ -1848,6 +1883,7 @@ static void out_pack_domain(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
@@ -1856,7 +1892,7 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
                                  INT send_count,
                                  INT *send_size_buf,
                                  INT dst_first_id,
-                                 INT dst_numnodes)
+                                 INT dst_num)
 {
   INT i;
   INT len;
@@ -1883,7 +1919,7 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #define boilerplate_copying_code                        \
   if ((dof >= dst_first_id) &&                          \
-      (dof < dst_first_id+dst_numnodes)) {              \
+      (dof < dst_first_id+dst_num)) {                   \
     INT j;                                              \
     DOUBLE* dst_ptr;                                    \
     dst_ptr = &(send_buf[len*counter]);                 \
@@ -2027,6 +2063,7 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
   \author u.kue
   \date 09/04
+  \sa out_pack_items
 */
 /*----------------------------------------------------------------------*/
 static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
@@ -2035,7 +2072,7 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
                                      INT send_count,
                                      INT *send_size_buf,
                                      INT dst_first_id,
-                                     INT dst_numnodes)
+                                     INT dst_num)
 {
   INT el;
   INT len;
@@ -2053,7 +2090,7 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
   for (el=0; el<actpdis->numele; ++el) {
     ELEMENT* actele = actpdis->element[el];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_numnodes)) {
+        (actele->Id_loc < dst_first_id+dst_num)) {
       DOUBLE* dst_ptr;
       INT* size_dst_ptr;
       INT j;
@@ -2397,6 +2434,28 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
   \brief Pack the values to be saved in some buffer to send them to
   their writing processor.
 
+  This is the hook function called by ``out_gather_values`` in order
+  to collect certain values from nodes, elements or distributed
+  vectors. This function or the ones called here must be changed in
+  case an element is updated.
+
+  There is a loop that calls this function for each destination
+  processor in turn. That is upon one call it has to collect all items
+  that go to one processor. These are always consecutive items, \a
+  dst_first_id gives the first item's id, \a dst_num gives the number
+  of items to be collected.
+
+  \param *chunk          (i)  the chunk that's going to be written
+  \param  type           (i)  what kind of values are to be collected
+  \param  array          (i)  the row of the node array that
+                              interesting; is ignored for some types
+  \param *actpdis        (i)  the partition's discretization
+  \param *send_buf       (o)  buffer to collect double values
+  \param  send_count     (i)  number of double values to be collected
+  \param *send_size_buf  (o)  buffer to collect integer values
+  \param  dst_first_id   (i)  the id (Id_loc) of the first item to be written
+  \param  dst_num        (i)  the number of (consecutive) items to be written
+
   \author u.kue
   \date 08/04
 */
@@ -2480,11 +2539,23 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
 
 
 /*----------------------------------------------------------------------*/
+/* Here we have lots of functions that do nothing but unpacking input
+ * buffers and put the values somewhere (node arrays, element stuff,
+ * distributed vectors). These functions share a common structure. See
+ * ``in_unpack_items`` for an explanation of their parameters.
+ *
+ * These are the functions that need to be changed according to
+ * changes in the elements. */
+/*----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*/
 /*!
   \brief Unpack the node arrays.
 
   \author u.kue
   \date 09/04
+  \sa in_unpack_items
 */
 /*----------------------------------------------------------------------*/
 static void in_unpack_node_arrays(BIN_IN_FIELD *context,
@@ -2600,6 +2671,7 @@ static void in_unpack_node_arrays(BIN_IN_FIELD *context,
 
   \author u.kue
   \date 09/04
+  \sa in_unpack_items
 */
 /*----------------------------------------------------------------------*/
 static void in_unpack_dist_vector(BIN_IN_FIELD *context,
@@ -2673,6 +2745,7 @@ static void in_unpack_dist_vector(BIN_IN_FIELD *context,
 
   \author u.kue
   \date 09/04
+  \sa in_unpack_items
 */
 /*----------------------------------------------------------------------*/
 static void in_unpack_restart_element(BIN_IN_FIELD *context,
@@ -3043,6 +3116,29 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 /*!
   \brief Unpack what we received.
 
+  This is the hook function called by ``in_scatter_chunk`` in order
+  to distribute certain values to nodes, elements or distributed
+  vectors. This function or the ones called here must be changed in
+  case an element is updated.
+
+  There is a loop that calls this function for each source processor
+  in turn. That is upon one call it has to distribute all items that
+  come from one processor. The places these items go to are not
+  consecutive. For this reason the \a context knows the local ids
+  of these items. This has been figured out during initialization. See
+  \a init_bin_in_field .
+
+  \param *context         (i) the discretization the chunk belongs to
+  \param *chunk           (i) the chunk that's read
+  \param  type            (i) what kind of values are to be spread
+  \param  array           (i) the row of the node array the value are
+                              to go to; is ignored for some types
+  \param *recv_buf        (i) buffer of double values
+  \param  recv_count      (i) number of double values to be spread
+  \param *recv_size_buf   (i) buffer of integer values
+  \param *recv_size_count (i) buffer of integer values
+  \param  src             (i) the rank of the source processor
+
   \author u.kue
   \date 09/04
 */
@@ -3090,6 +3186,10 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
 /*----------------------------------------------------------------------*/
 /*!
   \brief Find the number of different element types in this field.
+
+  This simply counts the different types. That's particularly easy
+  (and quick) because each field context knows what kinds of elements
+  there are.
 
   \author u.kue
   \date 09/04
@@ -3156,6 +3256,13 @@ INT count_element_variants(struct _BIN_OUT_FIELD* field, ELEMENT_TYP type)
   \brief Find the number of double and integer values that are needed
   to store the mesh connectivity.
 
+  The mesh connectivity consists of all the ids of those nodes that
+  are connected to one particular element. So the main task here is to
+  find the maximum number of nodes per element. This a done without
+  looping all elements, instead the used element types are looped. To
+  each element type (major/minor) the number of nodes are known,
+  thanks to the global \a element_info .
+
   \author u.kue
   \date 09/04
 */
@@ -3209,6 +3316,10 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
   Of course extrapolating to the nodes requires that all elements at
   the node agree on the nodal stress. In effect this demands that only
   one type of element is used in the discretization.
+
+  For many element types it's sufficient to lookup the \a element_info
+  table to find the stress array's size. But dynamic elements like
+  shell9 have to be treated specially.
 
   \author u.kue
   \date 09/04
@@ -3323,6 +3434,10 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
 
   And these are the functions you have to change when you want to add
   or change ccarat's elements.
+
+  \param context      (i) pointer to an already set up output context
+  \param value_length (o) the number of double to store per element
+  \param size_length  (o) the number of integer to store per element
 
   \author u.kue
   \date 09/04
@@ -3585,6 +3700,13 @@ end:
 /*!
   \brief Get the position of this field in the global field array.
 
+  We need to store the field's position along with the field's type
+  and the discretization number in the control file in order to
+  identify the discretization. (Here the distinction between field and
+  discretization matters.) The reason are problemtypes like SSI that
+  contain more than one field of one type, the field type is no unique
+  criterion.
+
   \author u.kue
   \date 10/04
 */
@@ -3651,6 +3773,9 @@ void out_main_group_head(struct _BIN_OUT_FIELD  *context, CHAR* name)
 /*----------------------------------------------------------------------*/
 /*!
   \brief Write all results for one step.
+
+  Write results for potprocessing. All algorithms call this function
+  (if they support binary output).
 
   This function can be called many times in a row per time step. But
   be careful not to mix calls of this function with calls to output
