@@ -3,7 +3,7 @@
 \brief input of control information and general problem data
 
 ------------------------------------------------------------------------*/
-#include "../headers/standardtypes.h"
+#include "../headers/standardtypes.h" 
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 /*!----------------------------------------------------------------------
@@ -180,15 +180,16 @@ genprob.multidis=0;
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
 /*----------------------------------------- defualt values for output */
-ioflags.struct_disp_file   =0;
-ioflags.struct_stress_file =0;
-ioflags.struct_disp_gid    =0;
-ioflags.struct_stress_gid  =0;
-ioflags.fluid_sol_gid      =0;
-ioflags.fluid_sol_file     =0; 
-ioflags.fluid_vis_file     =0;
-ioflags.ale_disp_file      =0;
-ioflags.ale_disp_gid       =0;
+ioflags.struct_disp_file      =0;
+ioflags.struct_stress_file    =0;
+ioflags.struct_disp_gid       =0;
+ioflags.struct_stress_gid     =0;
+ioflags.struct_stress_gid_smo =0;
+ioflags.fluid_sol_gid         =0;
+ioflags.fluid_sol_file        =0; 
+ioflags.fluid_vis_file        =0;
+ioflags.ale_disp_file         =0;
+ioflags.ale_disp_gid          =0;
 
 
 if (frfind("-PROBLEM TYP")==0) dserror("frfind: PROBLEM TYP not in input file");
@@ -275,6 +276,13 @@ if (frfind("---IO")==1)
       if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid=1;
+    }
+    frchar("STRUCT_STRESS_GID_SMO",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_gid_smo=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid_smo=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid_smo=1;
     }
     frchar("FLUID_SOL_GID",buffer,&ierr);
     if (ierr)
