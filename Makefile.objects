@@ -83,7 +83,8 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/solver_oll_aztec.o \
                 src/global_full/solver_oll_spooles.o \
 		src/global_full/global_oll_service.o \
-		src/global_full/global_oll_service2.o
+		src/global_full/global_oll_service2.o \
+		src/global_full/check_max_sizes.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
@@ -179,6 +180,7 @@ OBJS_ALE      = src/ale3/ale_call_stiff.o \
                 src/ale3/ale_dyn_control.o \
                 src/ale3/ale_rhs.o \
                 src/ale3/ale_service.o \
+		src/ale2/ale2_call_stiff.o \
                 src/ale2/ale2_bop.o \
                 src/ale2/ale2_funcderiv.o \
                 src/ale2/ale2_hourglass.o \
