@@ -4,7 +4,11 @@
 #ifdef AZTEC_PACKAGE
 #ifdef PARALLEL 
 /*-------------------------------- with mpi parallel version of aztec2.1*/
+#ifndef SUN
 #include </bau/stat33/users/statik/lib/AZTEC21_MPI/az_aztec.h>
+#else
+#include "../../../lib_sun/aztec21/lib/az_aztec.h"
+#endif
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
 #include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
