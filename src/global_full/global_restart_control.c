@@ -539,6 +539,7 @@ free(res.ele_handles);
    now we have to make the arrays node->sol, node->sol_increment, 
    node->sol_residual redundant for the whole field
 */
+#ifdef PARALLEL
 numnp = actfield->dis[0].numnp;  
 for (i=0; i<numnp; i++)
 {
@@ -566,6 +567,7 @@ for (i=0; i<numnp; i++)
    j = actnode->sol_residual.fdim * actnode->sol_residual.sdim;
    MPI_Bcast(actnode->sol_residual.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
 } 
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
