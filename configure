@@ -61,6 +61,10 @@ if grep '^DEBUG' "$2" 2>&1 > /dev/null ; then
 else
     DEBUGFLAG=
     PROGRAMNAME=$PROGRAMNAME.fast
+
+    CFLAGS=$CFLAGS $CFLAGS_OPT
+    FFLAGS=$FFLAGS $FFLAGS_OPT
+    LDFLAGS=$LDFLAGS $LDFLAGS_OPT
 fi
 
 # a parallel version needs one more compile time flag
