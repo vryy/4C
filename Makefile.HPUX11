@@ -5,8 +5,8 @@ include ./Makefile.personal_path
 #--------------------------------------------------------------------
 # choose seq. or par. executable
 #--------------------------------------------------------------------
-include ./Makefile.par
-#include ./Makefile.seq
+#include ./Makefile.par
+include ./Makefile.seq
 #
 #--------------------------------------------------------------------
 #    Makefile CARAT (parallel and sequentiel)
@@ -46,6 +46,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_mask_spooles.o \
                 ${SRC}/global_full/global_calelm.o \
                 ${SRC}/global_full/global_calelm_dyn.o \
+                ${SRC}/global_full/global_calelm_fluid.o \
                 ${SRC}/global_full/global_calrhs.o \
                 ${SRC}/global_full/solver_control.o \
                 ${SRC}/global_full/solver_service.o \
@@ -166,6 +167,30 @@ OBJS12	      = ${SRC}/wall1/w1_bop.o \
                 ${SRC}/wall1/w1_mat_plast_serv.o \
                 ${SRC}/wall1/w1_mat_serv.o \
                 ${SRC}/wall1/w1_static_ke.o
+#                fluid2
+OBJS14        = ${SRC}/fluid2/f2_caldirich.o \
+                ${SRC}/fluid2/f2_calelesize.o \
+                ${SRC}/fluid2/f2_calele.o \
+                ${SRC}/fluid2/f2_calfuncderiv.o \
+                ${SRC}/fluid2/f2_calint.o \
+                ${SRC}/fluid2/f2_caliterrhs.o \
+                ${SRC}/fluid2/f2_calgalmat.o \
+                ${SRC}/fluid2/f2_caljaco.o \
+                ${SRC}/fluid2/f2_calservice.o \
+                ${SRC}/fluid2/f2_calstabpar.o \
+                ${SRC}/fluid2/f2_calstabmat.o \
+                ${SRC}/fluid2/f2_caltimerhs.o \
+                ${SRC}/fluid2/f2_inpele.o \
+                ${SRC}/fluid2/f2_intg.o \
+                ${SRC}/fluid2/f2_main.o 
+#                fluid_full
+OBJS15        = ${SRC}/fluid_full/cal_fluid.o \
+                ${SRC}/fluid_full/fluid_dirich.o \
+                ${SRC}/fluid_full/fluid_imp_semimp.o \
+                ${SRC}/fluid_full/fluid_pr_mcorr.o \
+                ${SRC}/fluid_full/fluid_stationary.o \
+                ${SRC}/fluid_full/fluid_service.o \
+		${SRC}/fluid_full/inp_fluid_start_data.o
 #  fortran sequentiell              
 #OBJS13        = ${SRC}/fortran/colsol.o
 #  fortran parallel             
@@ -182,10 +207,10 @@ PROGRAM       = $(PROGRAM_NAME)
 # dependencies
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
-                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13)
+                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(LIBS) $(INCLUDES) -o $(PROGRAM)
+                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) $(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
 #
@@ -248,6 +273,17 @@ $(OBJS12):
 		@echo "Making $@ ..."
 		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
 		@echo "MainMake is back."
+#
+$(OBJS14):     
+		@echo "Making $@ ..."
+		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		@echo "MainMake is back."
+		@echo "MainMake is back."
+#
+$(OBJS15):     
+		@echo "Making $@ ..."
+		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		@echo "MainMake is back."
 # FORTRAN90
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -264,5 +300,5 @@ $(OBJS13):
 	$(FXX) $(FFLAGS) $(INCLUDES) -c  $<
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13)
+                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15)
 $
