@@ -199,7 +199,7 @@ for (i=0; i<design->ndline; i++)
 for (i=0; i<actdis->numele; i++)
 {
   actele = &(actdis->element[i]);
-  switch (actele->distyp)
+  switch (actele->eltyp)
   {
     case el_axishell:
       for (j=0; j<2; j++)
