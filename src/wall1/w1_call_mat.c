@@ -31,6 +31,8 @@ void w1_call_mat(ELEMENT   *ele,
                  MATERIAL  *mat, 
                  WALL_TYPE wtype,
                  double **bop,
+                 double  *gop,
+                 double  *alpha,
                  double **xjm,
                  int ip,       
                  double *stress,
@@ -60,7 +62,7 @@ dstrc_enter("w1_call_mat");
 /*--------------------------------------------------fh 03/02----------*/
     if (newval=1)
     {
-       w1_disd(ele,bop,wtype,disd);
+       w1_disd(ele,bop,gop,alpha,wtype,disd);
        switch(wtype)
        {
        case plane_stress:
@@ -96,6 +98,8 @@ dstrc_enter("w1_call_mat");
                        ele,
                        wtype,
                        bop,
+                       gop,
+                       alpha,
                        ip,
                        stress,
                        d,
@@ -142,6 +146,8 @@ dstrc_enter("w1_call_mat");
                        ele,
                        wtype,
                        bop,
+                       gop,
+                       alpha,
                        ip,
                        stress,
                        d,
@@ -178,6 +184,8 @@ dstrc_enter("w1_call_mat");
                        ele,                      
                        wtype,                    
                        bop,
+                       gop,
+                       alpha,
                        xjm,                      
                        ip,                       
                        stress,                   

@@ -5,11 +5,11 @@
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
-void w1_bop(double    **bop,
-            double    **deriv,
-            double    **xjm,
-            double      det,
-            int         iel)
+void w1_bop(double    **bop,          
+            double    **deriv,        
+            double    **xjm,          
+            double      det,          
+            int         iel)          
 {
 /*----------------------------------------------------------------------*/
 int inode, node_start;
@@ -43,4 +43,41 @@ dstrc_exit();
 return;
 } /* end of w1_bop */
 /*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | additional operator matrix gop at r,s for incomp modes    ah 9/02    |
+ *----------------------------------------------------------------------*/
+void w1_gop(double    *gop,            /* operator matrix G             */
+            double    **xjm0,          /* jacobian mtrix at r,s=0       */
+            double      det0,          /* det J at r,s=0                */
+            double      det,           /* det J at r,s                  */
+            double      e1,            /* actual GP coordinate r        */
+            double      e2)            /* actual GP coordinate s        */
+{
+/*----------------------------------------------------------------------*/
+int i;
+double dum;
+double xji[2][2];
+#ifdef DEBUG 
+dstrc_enter("w1_gop");
+#endif
+/*---------------------------------------------- inverse of jacobian ---*/
+dum = 1.0/det0;                                                             
+xji[0][0] = xjm0[1][1]* dum;
+xji[0][1] =-xjm0[0][1]* dum;
+xji[1][0] =-xjm0[1][0]* dum;
+xji[1][1] = xjm0[0][0]* dum;
+/*----------------------------------- calculate additional operator  ---*/
+  gop[0] = - xji[0][0] * 2 * e1 * det0 /  det ; 
+  gop[1] = - xji[1][0] * 2 * e1 * det0 /  det ; 
+  gop[2] = - xji[0][1] * 2 * e2 * det0 /  det ;
+  gop[3] = - xji[1][1] * 2 * e2 * det0 /  det ;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG             
+dstrc_exit();
+#endif
+return;
+} /* end of w1_gop */
+/*----------------------------------------------------------------------*/
+
 #endif

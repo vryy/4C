@@ -5,9 +5,9 @@
 /*----------------------------------------------------------------------*
  | initialize the element                                    al 6/01    |
  *----------------------------------------------------------------------*/
-void w1init(PARTITION *actpart,MATERIAL    *mat )
+void w1init(PARTITION *actpart,MATERIAL *mat)
 {
-int          i,j,k,ncm;
+int          i,j,k,l,m,ncm;
 int          size_i, size_j;
 ELEMENT     *actele;
 NODE        *actnode;
@@ -153,8 +153,44 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     {
        w1cdia(actele, &data, funct_h, deriv_h, xjm_h);
     }
-   /*-------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
   }/*matplast01*/
+  /*-------------------------------------------------------------------*/
+    if(actele->e.w1->modeltype == incomp_mode)
+    {
+     if(mat->mattyp == m_stvenant)
+     {
+      size_i = 1;
+      actele->e.w1->elewa = (W1_ELE_WA*)CCACALLOC(size_i,sizeof(W1_ELE_WA));
+      if (actele->e.w1->elewa==NULL)
+      {
+       dserror("Allocation of elewa in ELEMENT failed");
+       break;
+      } 
+     }
+     size_i = 1;
+     actele->e.w1->elewa[0].imodewa = (W1_IMODE_WA*)CCACALLOC(size_i,sizeof(W1_IMODE_WA));
+     if (actele->e.w1->elewa[0].imodewa==NULL)
+     {
+      dserror("Allocation of imodewa in ELEMENT failed");
+      break;
+     } 
+     for(l=0;l<4;l++)
+     { 
+       if(mat->mattyp != m_stvenant)
+       {
+         actele->e.w1->elewa[0].imodewa[0].fintn[l] = 0.0;
+         actele->e.w1->elewa[0].imodewa[0].alpha[l] = 0.0;
+       }
+       for(m=0;m<4;m++)
+       {
+        actele->e.w1->elewa[0].imodewa[0].knninv[l][m]  = 0.0;
+        actele->e.w1->elewa[0].imodewa[0].knc[2*l][m]   = 0.0;
+        actele->e.w1->elewa[0].imodewa[0].knc[2*l+1][m] = 0.0;
+       }
+     }
+    }
+   /*-------------------------------------------------------------------*/
 }/*matplast00*/
 /*----------------------------------------------------------------------*/
 amdel(&funct_a_h);       

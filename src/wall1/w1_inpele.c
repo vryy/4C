@@ -78,6 +78,12 @@ if (ierr==1)
  ele->e.w1->kintype = updated_lagr;
  dserror("updated lagrange for WALL1 not implemented");
 }
+/*--------------------------------------------- read model for QUAD4 */
+ele->e.w1->modeltype=displ_model;      /* default */
+frchk("Displ_Model",&ierr);
+if (ierr==1) ele->e.w1->modeltype=displ_model;
+frchk("Incomp_Mode",&ierr);
+if (ierr==1) ele->e.w1->modeltype=incomp_mode;
 /*--------------------------------------- read local or global stresses */
 frchar("STRESSES",buffer,&ierr);
 if (ierr)

@@ -12,16 +12,16 @@ void w1_cal_stress(ELEMENT   *ele,
                    ARRAY     *estif_global, 
                    double    *force,  /* global vector for internal forces (initialized!) */
                    int	      kstep,  /* number of current load step */
-		   int        init)
+		       int        init)
 {
-int                 i,j,k;            /* some loopers */
+int                 i,j,k,l;            /* some loopers */
 int                 nir,nis;          /* num GP in r/s/t direction */
 int                 lr, ls;           /* loopers over GP */
 int                 iel;              /* numnp to this element */
 int                 dof;
 int                 nd;
 int                 ip;
-int	            it=0;      /* flag for transformation global/local   */
+int	              it=0;      /* flag for transformation global/local   */
 int                 istore = 0;/* controls storing of new stresses to wa */
 int                 newval = 1;/* controls evaluation of new stresses    */
 const int           numdf  = 2;
@@ -29,10 +29,12 @@ const int           numeps = 3;
 const int           numstr = 4;
 
 double              fac;
-double              e1,e2,e3;         /*GP-coords*/
-double              facr,facs,fact;   /* weights at GP */
-double              xnu;              /* value of shell shifter */
+double              e1,e2;            /*GP-coords*/
+double              facr,facs;        /* weights at GP */
 double              weight;
+double              dum;
+double deltad[8], help[4];
+double knninv[4][4], knc[8][4];
 
 static ARRAY    D_a;      /* material tensor */     
 static double **D;         
@@ -42,12 +44,18 @@ static ARRAY    deriv_a;  /* derivatives of shape functions */
 static double **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
 static double **xjm;         
+static ARRAY    xjm0_a;    /* jacobian matrix at r,s=0*/     
+static double **xjm0;         
 static ARRAY    xji_a;    /* inverse of jacobian matrix */
 static double **xji;
 static ARRAY    F_a;      /* dummy matrix for saving stresses at gauss point*/
 static double  *F;  
 static ARRAY    bop_a;    /* B-operator */   
-static double **bop;       
+static double **bop;
+static ARRAY    gop_a;    /* incomp_modes: G-operator */   
+static double  *gop;
+static ARRAY    alpha_a;  /* incomp-modes: internal dof */   
+static double  *alpha;
 static ARRAY    spar_a;   /* function parameters for extrapolation */   
 static double **spar;       
 static ARRAY    transm_a; /* transformation matrix sig(loc)-->sig(glob) */   
@@ -57,7 +65,7 @@ static double **transmi;
 static ARRAY    work_a;
 static double **work;     /* working array */
 
-double det;
+double det,det0;
 int node, npoint;
 double fv, r, s;
 
@@ -72,9 +80,12 @@ funct     = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1 ,"DV");
 deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_WALL1 ,"DA");       
 D         = amdef("D"      ,&D_a   ,6,6             ,"DA");           
 xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf     ,"DA");           
+xjm0      = amdef("xjm0"   ,&xjm0_a,numdf,numdf     ,"DA");           
 xji       = amdef("xji"    ,&xji_a ,numdf,numdf     ,"DA");           
 F         = amdef("F"      ,&F_a,4,1     ,"DV");           
 bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_WALL1),"DA");           
+gop       = amdef("gop"  ,&gop_a ,4,1,"DV");           
+alpha     = amdef("alpha"  ,&alpha_a ,4,1,"DV");           
 transm    = amdef("transm"  ,&transm_a ,numstr,numstr,"DA");           
 transmi   = amdef("transmi"  ,&transmi_a ,numstr,numstr,"DA");           
 spar      = amdef("spar"  ,&spar_a ,numstr,16,"DA");           
@@ -89,6 +100,47 @@ nis     = ele->e.w1->nGP[1];
 iel     = ele->numnp;
 nd      = numdf * iel;
 npoint  = nir*nis;
+if(ele->e.w1->modeltype == incomp_mode)
+{
+ /*------------------ shape functions and their derivatives at r,s=0 ---*/
+ w1_funct_deriv(funct,deriv,0,0,ele->distyp,1);
+ /*-------------------------------- compute jacobian matrix at r,s=0 ---*/       
+ w1_jaco (funct,deriv,xjm0,&det0,ele,iel);
+ amzero(&alpha_a); 
+ if(mat->mattyp != m_stvenant)
+ {
+  for (i=0;i<4;i++)                        
+  alpha[i] = ele->e.w1->elewa[0].imodewa[0].alpha[i];
+ }
+ else
+ {
+  for (i=0; i<4; i++)
+  {
+    deltad[2*i]   = ele->node[i]->sol.a.da[0][0];
+    deltad[2*i+1] = ele->node[i]->sol.a.da[0][1];
+    for(j=0;j<4;j++)
+      knninv[i][j]=ele->e.w1->elewa[0].imodewa[0].knninv[i][j];
+    for(j=0;j<8;j++)
+      knc[j][i]=ele->e.w1->elewa[0].imodewa[0].knc[j][i];
+  }   
+/*-------------------------------------------- evaluate alpha ---*/
+  for (i=0; i<4; i++)
+  {
+    dum=0.0;
+    for (k=0; k<4; k++)
+    {
+     help[k] = 0.0;                                                              
+     for (l=0; l<8; l++)
+     {
+       help[k] += knc[l][k] * deltad[l];
+     }
+     /*-   help[k] += fintn[k];--*/
+     dum += knninv[i][k] * help[k];
+    }
+    alpha[i] -= dum ;
+  }
+ } 
+}
 /*================================================ integration loops ===*/
 ip = -1;
 for (lr=0; lr<nir; lr++)
@@ -110,10 +162,16 @@ for (lr=0; lr<nir; lr++)
       /*--------------------------------------- calculate operator B ---*/
       amzero(&bop_a);
       w1_bop(bop,deriv,xjm,det,iel);
-      /*------------------------------------------ call material law ---*/
+      /*--------------------------------------- calculate operator G ---*/
+      if(ele->e.w1->modeltype == incomp_mode)
+      {
+        amzero(&gop_a);
+        w1_gop(gop,xjm0,det0,det,e1,e2);
+      }
+     /*------------------------------------------ call material law ---*/
 /*-----------------------------------------------------fh 06/02---*/
       newval=1; /* Flag to calculate stresses */
-      w1_call_mat(ele, mat,ele->e.w1->wtype, bop, xjm, ip, F,D, istore,newval);
+      w1_call_mat(ele, mat,ele->e.w1->wtype, bop,gop,alpha, xjm, ip, F,D, istore,newval);
       
       /* transformation of global stresses into local stresses and vice versa */
       
