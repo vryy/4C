@@ -10,6 +10,12 @@ defined in pss_ds.c, declared in tracing.h
 extern struct _TRACE         trace;
 #endif
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB  genprob;
+/*----------------------------------------------------------------------*
  | Initialize program service systems                     m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void ntaini(int argc, char *argv[])
@@ -20,10 +26,8 @@ dsinit();
 #endif
 /*-------------------------------------------------------initialize I/O */
 ntadev(argc,argv);
-/*----------------------------------------- initialise CPU-time tracing */
-ds_cputime_init();
 /*------------------------------------------initialize free-field-input */
-frinit();
+frinit(); 
 
 /* because there is no dstrc_enter to this routine, the dstrc_exit has to
    be done 'by hand'
