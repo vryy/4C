@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -40,7 +41,7 @@ case calc_struct_init:
    w1init(actpart, mat);
    w1static_ke(NULL,NULL,NULL,NULL,NULL,1);
    w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1);
-   w1_cal_stress(NULL,NULL,NULL,NULL,NULL,1);
+   w1_cal_stress(NULL,NULL,NULL,NULL,NULL,0,1);
    w1_eleload(ele,&actdata,actmat,intforce,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
@@ -74,7 +75,7 @@ break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
    actmat = &(mat[ele->mat-1]);
-   w1_cal_stress(ele,&actdata,actmat,estif_global,intforce,0);
+   w1_cal_stress(ele,&actdata,actmat,estif_global,intforce,0,0);
 break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
 case calc_struct_eleload:
@@ -108,3 +109,4 @@ dstrc_exit();
 #endif
 return; 
 } /* end of wall1 */
+#endif

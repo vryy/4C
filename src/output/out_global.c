@@ -1,5 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
+#include "../wall1/wall1.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -214,9 +215,17 @@ fprintf(out,"___________________________________________________________________
 fprintf(out,"Degrees of Freedom:\n");
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
-actnode = &(actfield->dis[0].node[j]);
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
-        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
+  actnode = &(actfield->dis[0].node[j]);
+  if(actnode->numdf==2)
+  {
+    fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
+          actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
+  }
+  else
+  {
+    fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
+          actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
+  }
 }
 fprintf(out,"________________________________________________________________________________\n\n");
 
@@ -256,6 +265,7 @@ int        nprocs;
 int        imyrank;
 int        inprocs;
 int        ngauss;
+int	   numnp;
 #ifdef DEBUG 
 dstrc_enter("out_sol");
 #endif
@@ -388,11 +398,97 @@ for (j=0; j<actfield->dis[0].numele; j++)
        }
 #endif
    break;
+/*---------------------------------------------------------fh 03/02-------*/  
+   case el_wall1:
+       ngauss = actele->e.w1->nGP[0] * actele->e.w1->nGP[1];
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n",actele->Id,actele->Id_loc);
+       fprintf(out,"\n");
+/* check wether stresses at Gauss Points are presented in global xy- or local rs-coordinate system and write stress type */
+       switch(actele->e.w1->stresstyp)
+       {
+       case w1_xy:
+       fprintf(out,"Gaussian     Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       break;
+       case w1_rs:
+       fprintf(out,"Gaussian     Stress-rr    Stress-ss    Stress-rs    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       break;
+       default:
+       fprintf(out,"Gaussian     Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       }
+       for (i=0; i<ngauss; i++)
+       {
+       fprintf(out,"Gauss %d   %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       i,
+       actele->e.w1->stress_GP.a.d3[place][0][i],
+       actele->e.w1->stress_GP.a.d3[place][1][i],
+       actele->e.w1->stress_GP.a.d3[place][2][i],
+       actele->e.w1->stress_GP.a.d3[place][3][i],
+       actele->e.w1->stress_GP.a.d3[place][4][i],
+       actele->e.w1->stress_GP.a.d3[place][5][i],
+       actele->e.w1->stress_GP.a.d3[place][6][i]
+       );
+       }           
+   
+   break;
+   
    default:
       dserror("unknown type of element");
    break;
    }
 }
+fprintf(out,"\n");
+fprintf(out,"\n");
+
+for (j=0; j<actfield->dis[0].numele; j++)
+{
+   actele = &(actfield->dis[0].element[j]);
+   switch(actele->eltyp)
+   {
+   case el_wall1:
+       
+       numnp = actele->numnp;
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n",actele->Id,actele->Id_loc);
+       fprintf(out,"\n");
+/* check wether stresses at FE Nodes are presented in global xy- or local rs-coordinate system and write stress type */
+       switch(actele->e.w1->stresstyp)
+       {
+       case w1_xy:
+       fprintf(out,"Nodal            Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       break;
+       case w1_rs:
+       fprintf(out,"Nodal            Stress-rr    Stress-ss    Stress-rs    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       break;
+       default:
+       fprintf(out,"Nodal            Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       break;
+       }
+       for (i=0; i<numnp; i++)
+       {
+       fprintf(out,"Node %d  IEL %d %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       actele->node[i]->Id,
+       i,
+       actele->e.w1->stress_ND.a.d3[place][0][i],
+       actele->e.w1->stress_ND.a.d3[place][1][i],
+       actele->e.w1->stress_ND.a.d3[place][2][i],
+       actele->e.w1->stress_ND.a.d3[place][3][i],
+       actele->e.w1->stress_ND.a.d3[place][4][i],
+       actele->e.w1->stress_ND.a.d3[place][5][i],
+       actele->e.w1->stress_ND.a.d3[place][6][i]
+       );
+       }
+       
+             
+   break;
+   
+   }
+}
+
+/*----------------------------------------------------------------------*/  
+
+
+
 /*----------------------------------------------------------------------*/
 } /* end of if (myrank==0 && imyrank==0) */
 /*----------------------------------------------------------------------*/

@@ -48,23 +48,7 @@ double         dia;
 double        *matdata; /* element material data, actual density ... */
 int           *optdata; /* optimization variable number ... */
 } W1_ELE_WA;
-/*----------------------------------------------------------------------*
- | result struct: stresses                                   al 6/01    |
- *----------------------------------------------------------------------*/
-typedef struct _W1_ELE_STRESS
-{
-double      *gprr;
-double      *gpss;
-double      *gprs;
 
-double      *fps; /* first  principal stress       */                         
-double      *sps; /* second principal stress       */                    
-double      *aps; /* angle of principal direction  */                    
-
-double      *ferr;
-double      *fess;
-double      *fers;
-} W1_ELE_STRESS;
 /*----------------------------------------------------------------------*
  | type of 2D problem                                       al 01/02    |
  *----------------------------------------------------------------------*/
@@ -98,8 +82,18 @@ double        thick;
 
 W1_ELE_WA     *elewa;                         /* element working array */
 
-W1_ELE_STRESS *stress;                        /* element stresses      */
+/*---------------------------------------------- array of forces ------*/
+enum
+    {
+    w1_xy,
+    w1_rs,
+    }            stresstyp; 
 
+/*----------------------------------------------------------------------*
+ | result struct: stresses                                   fh 6/02    |
+ *----------------------------------------------------------------------*/
+struct _ARRAY4D  stress_GP;
+struct _ARRAY4D  stress_ND;
 } WALL1;
 /*----------------------------------------------------------------------*
  |  prototypes of main and input routines                   al 11/01    |

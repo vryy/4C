@@ -109,7 +109,7 @@ for (lr=0; lr<nir; lr++)
       fac = facr * facs * det; 
       /*--------------------------------------- calculate operator B ---*/
       amzero(&bop_a);
-      w1_bop(bop,deriv,xjm,det,xji,iel);
+      w1_bop(bop,deriv,xjm,det,iel);
       /*------------------------------------------ call material law ---*/
 /*-----------------------------------------------------fh 06/02---*/
       newval=1; /* Flag to calculate stresses */

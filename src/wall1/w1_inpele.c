@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -8,6 +9,7 @@ void w1inp(ELEMENT *ele)
 {
 int  i;
 int  ierr=0;
+char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("winp");
 #endif
@@ -76,7 +78,15 @@ if (ierr==1)
  ele->e.w1->kintype = updated_lagr;
  dserror("updated lagrange for WALL1 not implemented");
 }
-
+/*--------------------------------------- read local or global stresses */
+frchar("STRESSES",buffer,&ierr);
+if (ierr)
+{
+   if (strncmp(buffer,"XY",2)==0)       ele->e.w1->stresstyp = w1_xy;
+   if (strncmp(buffer,"RS",2)==0)       ele->e.w1->stresstyp = w1_rs;
+}
+if (ierr!=1) ele->e.w1->stresstyp = w1_xy;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -84,3 +94,4 @@ dstrc_exit();
 return;
 
 } /* end of w1inp */
+#endif

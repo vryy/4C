@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -37,6 +38,10 @@ void w1_call_mat(ELEMENT   *ele,
                  int istore,/* controls storing of new stresses to wa */
                  int newval)/* controls evaluation of new stresses    */
 {
+int i;
+int j;
+double disd2;
+double disd[4];
 /*----------------------------------------------------------------------*/
 double strain[6];
 double *qn;
@@ -52,6 +57,31 @@ dstrc_enter("w1_call_mat");
                  mat->m.stvenant->possionratio,
                  wtype,
                  d);
+/*--------------------------------------------------fh 03/02----------*/
+    if (newval=1)
+    {
+       w1_disd(ele,bop,wtype,disd);
+       switch(wtype)
+       {
+       case plane_stress:
+	  disd2=(disd[2]+disd[3]);
+    	  stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2;
+    	  stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2;
+    	  stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2;
+	  stress[3]=0;
+       break;
+       
+       case rotat_symmet:
+	  disd2=(disd[2]+disd[3]);        	 
+	  stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2+d[0][3]*disd[4];
+	  stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2+d[1][3]*disd[4];
+	  stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2+d[2][3]*disd[4];
+	  stress[3]=d[3][0]*disd[0]+d[3][1]*disd[1]+d[3][2]*disd2+d[3][3]*disd[4];
+       }
+    }    
+/*------------------------------------------------------------------*/	
+  
+  
   break;
   case m_stvenpor:/*------------------------ porous linear elastic ---*/
     w1_mat_stvpor(mat, ele->e.w1->elewa->matdata, wtype, d);
@@ -199,4 +229,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_getdensity */
+#endif
 #endif
