@@ -175,7 +175,7 @@ for (lr=0;lr<nir;lr++)
       /*-------------------------- we need the pressure shape fnct. too */
       f2_rec(functpr,derivpr,deriv2,e1,e2,typ2,icode);
       /*--------------------------------------- compute Jacobian matrix */
-      f2_jaco(xyze,funct,deriv,xjm,&det,iel,elev);
+      f2_jaco(xyze,deriv,xjm,&det,iel,elev);
       fac = facr*facs*det;
       /*---------- compute global derivates for velocity shape function */
       f2_gder(derxy,deriv,xjm,det,iel);
