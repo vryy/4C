@@ -2,6 +2,12 @@
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
@@ -78,8 +84,12 @@ int             convergence;        /* convergence flag */
 int             mod_disp,mod_stress;
 int             mod_res_write;
 int             restart;
+double          t0_res,t1_res;
+
 double          dt;
 int             nstep;
+
+double          t0,t1;
 
 double          dmax;               /* infinity norm of residual displacements */
 
@@ -418,11 +428,13 @@ Values of the different vectors from above in one loop:
 
 */
 timeloop:
+t0 = ds_cputime();
 /*------------------------------------------------- write memory report */
 if (par.myrank==0) dsmemreport();
 /*--------------------------------------------------- check for restart */
 if (restart)
 {
+   t0_res = ds_cputime();
    /*-------------- save the stepsize as it will be overwritten in sdyn */
    dt    = sdyn->dt;
    /*------ save the number of steps, as it will be overwritten in sdyn */
@@ -450,6 +462,9 @@ if (restart)
    sdyn->nstep = nstep;
    /*------------------------------------------- switch the restart off */
    restart=0;
+   /*----------------------------------------------------- measure time */
+   t1_res = ds_cputime();
+   fprintf(allfiles.out_err,"TIME for restart reading is %f sec\n",sdyn->step,t1_res-t0_res);
 }
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
@@ -833,6 +848,9 @@ restart_write_nlnstructdyn(sdyn,
 /*----------------------------------------------------- print time step */
 if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
 
+/*------------------------------------------ measure time for this step */
+t1 = ds_cputime();
+fprintf(allfiles.out_err,"TIME for step %d is %f sec\n",sdyn->step,t1-t0);
 /*-------------------------------------- check time and number of steps */
 if (sdyn->step < sdyn->nstep && sdyn->time <= sdyn->maxtime)
 goto timeloop;

@@ -64,7 +64,8 @@ ntaini(argc,argv);
 /*--------------------------------input phase, input of all information */
 t0=ds_cputime();
 ntainp();
-ti=ds_cputime()-t0;
+ti=ds_cputime();
+ti -= t0;
 /*------------------------ write output of all preprocessor information */
 if (genprob.restart==0)
 {
@@ -83,6 +84,7 @@ create_communicators();
 t0=ds_cputime();
 ntacal();
 tc=ds_cputime();
+tc -= t0;
 #ifdef PARALLEL 
 MPI_Barrier(MPI_COMM_WORLD);
 #endif
