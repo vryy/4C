@@ -19,7 +19,7 @@ LD=f77
 if grep '^SIXTYFOUR' "$definefile" 2>&1 > /dev/null ; then
    BIT=64
 else
-   BIT=32   
+   BIT=32
 fi
 
 

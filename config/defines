@@ -1,4 +1,3 @@
-
 # This is a sample defines file
 
 # fancy things first (there are terminals that don't like colors)
@@ -20,9 +19,9 @@
 #D_BRICK1           # defines element brick1
 #D_FLUID2           # defines element fluid2
 #D_FLUID2_PRO       # defines element fluid2 with projection method
-#FLUID2_ML          # defines element fluid2 with multilevel 
+#FLUID2_ML          # defines element fluid2 with multilevel
 #D_FLUID3           # defines element fluid3
-#FLUID3_ML          # defines element fluid3 with multilevel 
+#FLUID3_ML          # defines element fluid3 with multilevel
 #D_SHELL8           # defines element shell8
 #D_SHELL9           # defines element shell9
 #D_WALL1            # defines element wall1
@@ -66,12 +65,13 @@
 
 # inactive solvers
 #PARSUPERLU_PACKAGE # defines interface to solver library ParSuperLU
-#SUPERLU_PACKAGE    # defines interface to solver library SuperLU 
+#SUPERLU_PACKAGE    # defines interface to solver library SuperLU
 #MUMPS_PACKAGE      # defines interface to solver library Mumps
-#HYPRE_PACKAGE      # defines interface to solver library HYPRE 
+#HYPRE_PACKAGE      # defines interface to solver library HYPRE
 #MLIB_PACKAGE       # defines interface to solver library MLIB
 
 
 # visual packages (only in seriell)
 #VISUAL2_PACKAGE    # defines visualisation tool VISUAL2
 #VISUAL3_PACKAGE    # defines visualisation tool VISUAL3
+
