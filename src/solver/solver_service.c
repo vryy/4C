@@ -262,6 +262,24 @@ break;
 case spoolmatrix:
    amzero(&(mat->spo->A_loc));
    mat->spo->is_factored=0;
+#ifdef SPOOLES_PACKAGE
+   if (mat->spo->ncall > 0)
+   {
+      FrontMtx_free(mat->spo->frontmtx);
+      InpMtx_free(mat->spo->newA);
+      DenseMtx_free(mat->spo->newY);
+/*      DenseMtx_free(mat->spo->mtxX);*/
+      ETree_free(mat->spo->frontETree);
+      SubMtxManager_free(mat->spo->mtxmanager);
+      IV_free(mat->spo->newToOldIV);
+      IV_free(mat->spo->oldToNewIV);
+      IV_free(mat->spo->ownersIV);
+      IV_free(mat->spo->vtxmapIV);
+      IV_free(mat->spo->ownedColumnsIV);
+      SolveMap_free(mat->spo->solvemap);
+      IVL_free(mat->spo->symbfacIVL);
+   }
+#endif
 break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");

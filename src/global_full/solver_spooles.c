@@ -33,13 +33,13 @@ double    *b;
 double    *x;
 double    *opcounts,minops,cutoff,cpus[20],tau=100.;
 double     droptol=0.0;
-int        root,firsttag=0,error,stats[20];
-DV        *cumopsDV;
-IV        *ownedColumnsIV;
+int        root,firsttag=0,error=-1,stats[20];
+/*DV        *cumopsDV;
+IV        *ownedColumnsIV;*/
 int        nmycol;
-InpMtx    *newA;    
+/*InpMtx    *newA;    
 DenseMtx  *newY;
-SolveMap  *solvemap ;
+SolveMap  *solvemap ;*/
 int        sym=SPOOLES_NONSYMMETRIC;
 /*int        sym=SPOOLES_SYMMETRIC;*/
 int        pivotingflag;
@@ -141,6 +141,8 @@ case 0:
            and create the InpMtx object
    --------------------------------------------
 */
+if (spo->is_factored==0)
+{
    spo->mtxA = InpMtx_new();
    InpMtx_init(spo->mtxA,INPMTX_BY_ROWS,1,nnz,0);
    for (i=0; i<nnz; i++)
@@ -148,6 +150,7 @@ case 0:
    InpMtx_sortAndCompress(spo->mtxA);
    InpMtx_changeStorageMode(spo->mtxA,INPMTX_BY_VECTORS) ;
    /* debug */
+}
    if (msglvl)
    {
       fprintf(msgFile, "\n\n input matrix") ;
@@ -159,6 +162,8 @@ case 0:
    STEP 2: read the right hand side matrix B
    -----------------------------------------
 */
+if (spo->is_factored==0)
+{
    spo->mtxY = DenseMtx_new();
    DenseMtx_init(spo->mtxY,SPOOLES_REAL,0,0,numeq,1,1,numeq);
    DenseMtx_zero(spo->mtxY);
@@ -168,6 +173,20 @@ case 0:
       rowind1[i] = update[i];
       DenseMtx_setRealEntry(spo->mtxY,i,0,b[i]);
    }
+}
+else
+{
+   DenseMtx_free(spo->mtxY);
+   spo->mtxY = DenseMtx_new();
+   DenseMtx_init(spo->mtxY,SPOOLES_REAL,0,0,numeq,1,1,numeq);
+   DenseMtx_zero(spo->mtxY);
+   DenseMtx_rowIndices(spo->mtxY, &nrow, &rowind1);
+   for (i=0; i<numeq; i++)
+   {
+      rowind1[i] = update[i];
+      DenseMtx_setRealEntry(spo->mtxY,i,0,b[i]);
+   }
+}
    /* debug */
    if (msglvl)
    {
@@ -184,6 +203,8 @@ case 0:
    (2) order the graph using multiple minimum degree
    -------------------------------------------------
 */
+if (spo->is_factored==0)
+{
    spo->graph  = Graph_new();
    spo->adjIVL = InpMtx_MPI_fullAdjacency(spo->mtxA,stats,msglvl,msgFile,
                                           actintra->MPI_INTRA_COMM);
@@ -191,6 +212,7 @@ case 0:
    nedges = IVL_tsize(spo->adjIVL);
    Graph_init2(spo->graph,0,numeq_total,0,nedges,numeq_total,nedges,
                spo->adjIVL,NULL,NULL);
+}
    /* debug */
    if (msglvl)
    {
@@ -198,8 +220,11 @@ case 0:
       Graph_writeForHumanEye(spo->graph,msgFile);
       fflush(msgFile);
    }
+if (spo->is_factored==0)
+{
    spo->frontETree = orderViaMMD(spo->graph,seed+imyrank,msglvl,msgFile);
    Graph_free(spo->graph);
+}
    /* debug */
    if (msglvl)
    {
@@ -207,6 +232,8 @@ case 0:
       ETree_writeForHumanEye(spo->frontETree, msgFile);
       fflush(msgFile);
    }
+if (spo->is_factored==0)
+{
    opcounts = DVinit(inprocs,0.0);
    opcounts[imyrank] = ETree_nFactorOps(spo->frontETree,SPOOLES_REAL,sym);
    MPI_Allgather(&opcounts[imyrank],1,MPI_DOUBLE,
@@ -215,6 +242,7 @@ case 0:
    DVfree(opcounts);
    spo->frontETree = ETree_MPI_Bcast(spo->frontETree,root,msglvl,msgFile,
                                 actintra->MPI_INTRA_COMM);
+}
    /* debug */
    if (msglvl)
    {
@@ -230,6 +258,8 @@ case 0:
            permute the right hand side.
    -----------------------------------------------------
 */
+if (spo->is_factored==0)
+{
    spo->oldToNewIV = ETree_oldToNewVtxPerm(spo->frontETree);
    spo->newToOldIV = ETree_newToOldVtxPerm(spo->frontETree);
    ETree_permuteVertices(spo->frontETree,spo->oldToNewIV);
@@ -239,6 +269,7 @@ case 0:
    InpMtx_mapToUpperTriangle(spo->mtxA);
    InpMtx_changeCoordType(spo->mtxA,INPMTX_BY_CHEVRONS);
    InpMtx_changeStorageMode(spo->mtxA,INPMTX_BY_VECTORS);
+}
    DenseMtx_permuteRows(spo->mtxY,spo->oldToNewIV);
    /* debug */
    if (msglvl)
@@ -262,15 +293,18 @@ case 0:
            and the map from vertices to owners
    -------------------------------------------
 */
+if (spo->is_factored==0)
+{
    cutoff   = 1./(2*inprocs);
-   cumopsDV = DV_new();
-   DV_init(cumopsDV,inprocs,NULL);
-   spo->ownersIV = ETree_ddMap(spo->frontETree,SPOOLES_REAL,sym,cumopsDV,cutoff);
-   DV_free(cumopsDV);
+   spo->cumopsDV = DV_new();
+   DV_init(spo->cumopsDV,inprocs,NULL);
+   spo->ownersIV = ETree_ddMap(spo->frontETree,SPOOLES_REAL,sym,spo->cumopsDV,cutoff);
+   DV_free(spo->cumopsDV);
    spo->vtxmapIV = IV_new();
    IV_init(spo->vtxmapIV,numeq_total,NULL);
    IVgather(numeq_total,IV_entries(spo->vtxmapIV),IV_entries(spo->ownersIV),
             ETree_vtxToFront(spo->frontETree));
+}
    /* debug */
    if (msglvl)
    {
@@ -287,12 +321,15 @@ case 0:
    ---------------------------------------------------
 */
    firsttag = 0;
-   newA = InpMtx_MPI_split(spo->mtxA,spo->vtxmapIV,stats,msglvl,msgFile,
+ if (spo->is_factored==0)
+{
+  spo->newA = InpMtx_MPI_split(spo->mtxA,spo->vtxmapIV,stats,msglvl,msgFile,
                            firsttag,actintra->MPI_INTRA_COMM);
    firsttag++;
    InpMtx_free(spo->mtxA);
-   spo->mtxA = newA;
+   spo->mtxA = spo->newA;
    InpMtx_changeStorageMode(spo->mtxA,INPMTX_BY_VECTORS);
+}
    /* debug */
    if (msglvl)
    {
@@ -300,10 +337,10 @@ case 0:
       InpMtx_writeForHumanEye(spo->mtxA,msgFile) ;
       fflush(msgFile) ;
    }
-   newY = DenseMtx_MPI_splitByRows(spo->mtxY,spo->vtxmapIV,stats,msglvl, 
+   spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,spo->vtxmapIV,stats,msglvl, 
                                    msgFile,firsttag,actintra->MPI_INTRA_COMM);
    DenseMtx_free(spo->mtxY);
-   spo->mtxY = newY;
+   spo->mtxY = spo->newY;
    firsttag += inprocs;
    /* debug */
    if (msglvl)
@@ -318,10 +355,13 @@ case 0:
    STEP 7: compute the symbolic factorization
    ------------------------------------------
 */
+if (spo->is_factored==0)
+{
    spo->symbfacIVL = SymbFac_MPI_initFromInpMtx(spo->frontETree,spo->ownersIV,
                      spo->mtxA,stats,msglvl,msgFile,firsttag,
                      actintra->MPI_INTRA_COMM);
    firsttag += spo->frontETree->nfront;
+}
    /* debug */
    if (msglvl)
    {
@@ -335,25 +375,31 @@ case 0:
    STEP 8: initialize the front matrix
    -----------------------------------
 */
+if (spo->is_factored==0)
+{
    spo->mtxmanager = SubMtxManager_new() ;
    SubMtxManager_init(spo->mtxmanager, NO_LOCK, 0) ;
    spo->frontmtx = FrontMtx_new() ;
    FrontMtx_init(spo->frontmtx,spo->frontETree,spo->symbfacIVL,SPOOLES_REAL,sym,
                  FRONTMTX_DENSE_FRONTS,pivotingflag,NO_LOCK,imyrank,
                  spo->ownersIV,spo->mtxmanager,msglvl,msgFile);
+}
 /*--------------------------------------------------------------------*/
 /*
    -----------------------------------------
    STEP 9: compute the numeric factorization
    -----------------------------------------
 */
-   spo->chvmanager = ChvManager_new();
+ if (spo->is_factored==0)
+{
+  spo->chvmanager = ChvManager_new();
    ChvManager_init(spo->chvmanager,NO_LOCK,0);
    spo->rootchv = FrontMtx_MPI_factorInpMtx(spo->frontmtx,spo->mtxA,tau,droptol,
                         spo->chvmanager,spo->ownersIV,0,&error,cpus, 
                         stats,msglvl,msgFile,firsttag,actintra->MPI_INTRA_COMM);
    ChvManager_free(spo->chvmanager);
    firsttag += 3*(spo->frontETree->nfront) + 2;
+}
    /* debug */
    if (msglvl)
    {
@@ -371,9 +417,12 @@ case 0:
    STEP 10: post-process the factorization
    --------------------------------------
 */
+if (spo->is_factored==0)
+{
    FrontMtx_MPI_postProcess(spo->frontmtx,spo->ownersIV,stats,msglvl,
                             msgFile,firsttag,actintra->MPI_INTRA_COMM);
    firsttag += 5*inprocs ;
+}
    /* debug */
    if (msglvl)
    {
@@ -387,16 +436,19 @@ case 0:
    STEP 11: create the solve map object
    -----------------------------------
 */
-   solvemap = SolveMap_new() ;
-   SolveMap_ddMap(solvemap,spo->frontmtx->symmetryflag, 
+if (spo->is_factored==0)
+{
+   spo->solvemap = SolveMap_new() ;
+   SolveMap_ddMap(spo->solvemap,spo->frontmtx->symmetryflag, 
                   FrontMtx_upperBlockIVL(spo->frontmtx),
                   FrontMtx_lowerBlockIVL(spo->frontmtx),
                   inprocs,spo->ownersIV,FrontMtx_frontTree(spo->frontmtx), 
                   seed,msglvl,msgFile);
+}
    /* debug */
    if (msglvl)
    {
-      SolveMap_writeForHumanEye(solvemap,msgFile);
+      SolveMap_writeForHumanEye(spo->solvemap,msgFile);
       fflush(msgFile);
    }
 /*--------------------------------------------------------------------*/
@@ -405,8 +457,11 @@ case 0:
    STEP 12: redistribute the submatrices of the factors
    ----------------------------------------------------
 */
-   FrontMtx_MPI_split(spo->frontmtx,solvemap, 
+if (spo->is_factored==0)
+{
+   FrontMtx_MPI_split(spo->frontmtx,spo->solvemap, 
                       stats,msglvl,msgFile,firsttag,actintra->MPI_INTRA_COMM);
+}
    /* debug */
    if (msglvl)
    {
@@ -431,10 +486,10 @@ case 0:
 */
    rowmapIV = FrontMtx_MPI_rowmapIV(spo->frontmtx,spo->ownersIV,msglvl,
                                     msgFile,actintra->MPI_INTRA_COMM);
-   newY = DenseMtx_MPI_splitByRows(spo->mtxY,rowmapIV,stats,msglvl, 
+   spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,rowmapIV,stats,msglvl, 
                                    msgFile,firsttag,actintra->MPI_INTRA_COMM);
    DenseMtx_free(spo->mtxY);
-   spo->mtxY = newY;
+   spo->mtxY = spo->newY;
    IV_free(rowmapIV);
    }
    /* debug */
@@ -450,15 +505,18 @@ case 0:
    STEP 14: create a solution DenseMtx object
    ------------------------------------------
 */
-   ownedColumnsIV = FrontMtx_ownedColumnsIV(spo->frontmtx,imyrank,spo->ownersIV,
+if (spo->is_factored==0)
+{
+   spo->ownedColumnsIV = FrontMtx_ownedColumnsIV(spo->frontmtx,imyrank,spo->ownersIV,
                                             msglvl,msgFile);
-   nmycol = IV_size(ownedColumnsIV);
+}
+   nmycol = IV_size(spo->ownedColumnsIV);
    spo->mtxX = DenseMtx_new();
    if ( nmycol > 0 ) 
    {
       DenseMtx_init(spo->mtxX,SPOOLES_REAL,0,0,nmycol,1,1,nmycol);
       DenseMtx_rowIndices(spo->mtxX,&nrow,&rowind1);
-      IVcopy(nmycol,rowind1,IV_entries(ownedColumnsIV));
+      IVcopy(nmycol,rowind1,IV_entries(spo->ownedColumnsIV));
    }
 /*--------------------------------------------------------------------*/
 /*
@@ -469,9 +527,9 @@ case 0:
    spo->solvemanager = SubMtxManager_new();
    SubMtxManager_init(spo->solvemanager, NO_LOCK, 0);
    FrontMtx_MPI_solve(spo->frontmtx,spo->mtxX,spo->mtxY,spo->solvemanager,
-                      solvemap,cpus,stats,msglvl,msgFile,firsttag,
+                      spo->solvemap,cpus,stats,msglvl,msgFile,firsttag,
                       actintra->MPI_INTRA_COMM);
-   SubMtxManager_free(spo->solvemanager);
+  SubMtxManager_free(spo->solvemanager);
    /* debug */
    if (msglvl)
    {
@@ -522,19 +580,21 @@ case 0:
    free memory
    -----------
 */
+/*
    FrontMtx_free(spo->frontmtx);
-   InpMtx_free(newA);
-   DenseMtx_free(newY);
-   DenseMtx_free(spo->mtxX);
+   InpMtx_free(spo->newA);
+   DenseMtx_free(spo->newY);
    ETree_free(spo->frontETree);
    SubMtxManager_free(spo->mtxmanager);
    IV_free(spo->newToOldIV);
    IV_free(spo->oldToNewIV);
    IV_free(spo->ownersIV);
    IV_free(spo->vtxmapIV);
-   IV_free(ownedColumnsIV);
-   SolveMap_free(solvemap);
+   IV_free(spo->ownedColumnsIV);
+   SolveMap_free(spo->solvemap);
    IVL_free(spo->symbfacIVL);
+*/
+   DenseMtx_free(spo->mtxX);
 /*--------------------------------------------------------------------*/
    spo->is_factored=1;
    spo->ncall++;

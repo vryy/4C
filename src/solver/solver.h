@@ -520,22 +520,27 @@ struct _ARRAY           rowptr;          /* int vector holding the begin of each
 struct _ARRAY           A_loc;           /* the values of the matrix */
 
 #ifdef SPOOLES_PACKAGE
-FrontMtx               *frontmtx ;
+FrontMtx               *frontmtx;
 InpMtx                 *mtxA;            /* the sparse matrix object */
 DenseMtx               *mtxY;
 DenseMtx               *mtxX;
 Graph                  *graph;
 IVL                    *adjIVL;
 ETree                  *frontETree;
-IVL                    *symbfacIVL ;
+IVL                    *symbfacIVL;
 SubMtxManager          *mtxmanager;
-SubMtxManager          *solvemanager ;
-ChvManager             *chvmanager ;
-Chv                    *rootchv ;
+SubMtxManager          *solvemanager;
+ChvManager             *chvmanager;
+Chv                    *rootchv;
 IV                     *oldToNewIV;
 IV                     *newToOldIV;
 IV                     *ownersIV;
 IV                     *vtxmapIV;
+DV                     *cumopsDV;
+IV                     *ownedColumnsIV;
+InpMtx                 *newA;    
+DenseMtx               *newY;
+SolveMap               *solvemap;
 #endif
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
