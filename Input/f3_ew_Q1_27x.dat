@@ -61,9 +61,10 @@ DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 NUMDF        4
 IPRERHS      1
-NUMCONT      1
 UPPSS        1
-SAVESTEP     1
+UPOUT        1
+UPRES        1
+RESTARTEVRY  1
 MAXTIME      1000.0
 NUMSTEP      30  
 TIMESTEP     0.05
@@ -83,6 +84,7 @@ FLUID_START1 0.67
 INITIALFIELD zero_field
 STARTFUNCNO  2
 ------------------------------------------------------FLUID SOLVER
+//SOLVER         UMFPACK
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
@@ -116,6 +118,7 @@ AZPOLY         5
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
 SOLVER         Aztec_MSR
+//SOLVER         UMFPACK
 AZSOLVE        CG
 AZPREC         ILU
 AZREUSE        0  
