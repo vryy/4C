@@ -14,7 +14,7 @@ LD=mpicc
 
 BASEDIR="/home/ccarat/lib/linux"
 
-INCLUDEDIRS="-I/usr/local/mpich-1.2.5/include/ -I/home/ccarat/include"
+INCLUDEDIRS="-I/opt/mpich/include/ -I/home/ccarat/include"
 LIBDIRS="-L/usr/lib -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -L$BASEDIR/lapack -L$BASEDIR/blas -L$BASEDIR/metis" 
 
 # aztec
@@ -52,7 +52,7 @@ LIBS="-lc -lm -lF77ext -lf2c -lg2c -llapack -lblas -lmetis"
 PROGRAMNAME=cca_linux_par
 CFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
-CFLAGS="-v -ansi"
+CFLAGS="-ansi"
 FFLAGS=""
 LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
 
