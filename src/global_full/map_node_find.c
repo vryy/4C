@@ -1,6 +1,8 @@
 #include "../headers/standardtypes.h"
 #ifdef PARALLEL
-#ifndef SUSE73
+#ifdef SUN
+#include "../../../lib_sun/metis-4.0/Lib/metis.h"
+#else
 #include "/bau/stat33/users/statik/lib/METIS/metis.h"
 #endif
 #endif

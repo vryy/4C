@@ -2,7 +2,11 @@
 #include "../fluid3/fluid3.h"
 #include "../ale/ale.h"
 #ifdef PARALLEL 
+#ifdef SUN
+#include "../../../lib_sun/metis-4.0/Lib/metis.h"
+#else
 #include "/bau/stat33/users/statik/lib/METIS/metis.h"
+#endif
 #endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

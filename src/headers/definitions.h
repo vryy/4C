@@ -49,6 +49,16 @@ typedef char      CHAR;
 #define dgetrs dgetrs_
 #define colsol colsol_
 #endif
+/* append underslash for CUSS Sunfire */
+#ifdef SUN 
+#define dsytrf dsytrf_
+#define dsytri dsytri_
+#define dsytrs dsytrs_
+#define dgetrf dgetrf_
+#define dgetrs dgetrs_
+#define colsol colsol_
+#define mumps_interface   mumps_interface_
+#endif
 
 /*----------------------------------------------------------------------*
  | absolut value of an integer                                          |

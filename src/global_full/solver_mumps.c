@@ -10,7 +10,7 @@ fortran90 subroutines:
 #endif
 #endif
 /*----------------------------------------------------------------------*
- |  control solver lib Lapack                            m.gee 11/01    |
+ |  control solver lib MUMPS                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void solver_mumps(struct _SOLVAR         *actsolv,
                   struct _INTRA          *actintra,
@@ -66,7 +66,8 @@ switch(option)
 /*                                                           init phase */
 /*----------------------------------------------------------------------*/
 case 1:
-   /*------------------------------------- This will only do one HPUX! */
+   /*--------------------------------------- This will only do on HPUX! */
+   /*---------------------------------------- This will only do on SUN! */
 #ifdef PARALLEL 
    rc_ptr->comm  =  MPI_Comm_c2f(actintra->MPI_INTRA_COMM);
 #endif
@@ -96,7 +97,7 @@ case 1:
    job       = -1;                       /* analysis phase */
    parproc   =  1;                       /* imyrank=0 takes part in factorization */
    icntl     =  rc_ptr->icntl;           /* icntl[0..19] are MUMPS options */
-   icntl[17] =  2;                       /* see MUMPS manual */
+   icntl[17] =  3;                       /* see MUMPS manual */
    icntl[2]  =  0;                       /* no output to stdout by solver */
    n         =  rc_ptr->numeq_total;
    nz        =  rc_ptr->nnz_total;
