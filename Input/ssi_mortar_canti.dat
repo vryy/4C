@@ -1,0 +1,426 @@
+//
+// Maintainer: Steffen Genkinger
+//             genk@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/genkinger/
+//             0711 - 685-6127
+// 
+// necessary defines: RESULTTEST D_SSI D_MORTAR D_WALL1 CHECK_MAX
+//
+// #define MAXNOD           (4)
+// #define MAXELE           (4)
+// #define MAXDOFPERNODE    (2)
+// #define MAXGAUSS         (4)
+//
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Default_title
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS           7 
+NODES             18
+DIM                2
+MATERIALS          1
+NUMDF        2
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure_Structure_Interaction
+NUMFIELD     2
+MULTIDIS     no
+TIMETYP      Dynamic
+TRACE        secure
+RESTART      0
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE   No
+STRUCT_STRESS_FILE No
+STRUCT_DISP_GID    Yes
+STRUCT_STRESS_GID  Yes
+STRUCT_STRESS_GID_SMO  No
+FLUID_SOL_FILE         No
+FLUID_SOL_GID          No
+FLUID_VIS_FILE         No
+ALE_DISP_FILE          No
+ALE_DISP_GID           No
+MONITORING             No
+------------------------------------------------------------STATIC
+LINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Gen_Alfa
+EIGEN        0
+RESEVRYDISP  1
+RESEVRYSTRS  1
+RESTARTEVRY  20
+TIMESTEP     0.05 
+NUMSTEP      200 
+MAXTIME      5.0
+BETA         0.25 
+GAMMA        0.5 
+ALPHA_M      0.5 
+ALPHA_F      0.5
+XSI          0.0
+DAMPING      No 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
+TOLDISP      1.0E-10
+MAXITER      100
+CONTACT      0
+CET_flag      0
+FR_flag      0
+NPP          1.0E+06
+TPP          1.0E+06
+FR_COEF          0.4
+TIMEADAPT    0
+ITWANT       4
+MAXDT        0.07
+RESULTDT     0.05
+-----------------------------------------------------FLUID DYNAMIC
+-------------------------------------------------------FSI DYNAMIC
+-------------------------------------------------------SSI DYNAMIC
+MAXTIME      20.0
+TIMESTEP     0.1
+NUMSTEP      1
+UPPSS        1
+//COUPALGO     iter_stagg_AITKEN_rel_param
+COUPALGO     iter_stagg_fixed_rel_param
+CONVCRIT     ||g(i)||:sqrt(neq)
+ENERGYCHECK  no
+TOLENCHECK   1.0E-6
+RELAX        0.5
+ITEMAX       30
+CONVTOL      1.0E-10
+NESTEDITER   no
+ISDMAX       0
+ICHMAX       0
+ITECHAPP     20
+ICHOPT       no
+MESHCONFORM  no
+COUPMETHOD   mtr
+-------------------------------------------------------ALE DYNAMIC
+------------------------------------------------------OPTIMIZATION
+------------------------------------------------------FLUID SOLVER
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         Colsol
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 8
+NDLINE  8
+NDSURF  2
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 2 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 3 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.000000 1.000000 0.000000
+END POINT
+POINT
+Num: 4 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 1.000000 0.000000
+END POINT
+POINT
+Num: 5 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 6 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 2.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 7 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 2.000000 1.000000 0.000000
+END POINT
+POINT
+Num: 8 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.000000 1.000000 0.000000
+END POINT
+------------------------------------------------------DESIGN LINES
+STLINE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=2) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 4 1
+END STLINE
+STLINE
+Num: 2 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 2
+END STLINE
+STLINE
+Num: 3 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=2) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 2 3
+END STLINE
+STLINE
+Num: 4 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 3 4
+END STLINE
+STLINE
+Num: 5 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=5,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 5 6
+END STLINE
+STLINE
+Num: 6 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=6,NOE=2) Elemtype=1 IsStructured=1 size=3 Meshing=Default
+Points: 6 7
+END STLINE
+STLINE
+Num: 7 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=5,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 7 8
+END STLINE
+STLINE
+Num: 8 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=6,NOE=2) Elemtype=1 IsStructured=1 size=3 Meshing=Default
+Points: 8 5
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 0 conditions: 2 material: 2
+LAYER: Layer0
+Meshing Info: (num=1,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: SAME1ST
+Line: 1 Orientation: SAME1ST
+Line: 2 Orientation: SAME1ST
+Line: 3 Orientation: SAME1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-0.045000,1.050000,0.000000
+Point 1,2 coords:-0.045000,-0.050000,0.000000
+Point 2,1 coords:0.945000,1.050000,0.000000
+Point 2,2 coords:0.945000,-0.050000,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 0.450000 0.500000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 2 HigherEntity: 0 conditions: 2 material: 2
+LAYER: Layer0
+Meshing Info: (num=4,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 8 Orientation: SAME1ST
+Line: 5 Orientation: SAME1ST
+Line: 6 Orientation: SAME1ST
+Line: 7 Orientation: SAME1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:1.055000,1.050000,0.000000
+Point 1,2 coords:1.055000,-0.050000,0.000000
+Point 2,1 coords:2.045000,1.050000,0.000000
+Point 2,2 coords:2.045000,-0.050000,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 1.550000 0.500000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 1
+ E 6 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DPOINT 2
+ E 1 -   1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 Mid 
+ E 4 -   1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid 
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DLINE 0
+// E 1 -   1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid 
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
+DSURF 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DLINE 0
+-------------------------------DESIGN SSI COUPLING LINE CONDITIONS
+// DOBJECT SSI_TYPE
+DLINE 2
+ E 3 -   1 Slave non_conforming 
+ E 8 -   1 Master non_conforming 
+-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT FIELD FIXED FIXED FIXED FIXED FIXED FIXED
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0
+------------------------------------------------CONTACT CONDITIONS
+// contact conditions needed for the wall1  master slave contact (selfcontact not impl.) written by tcl-script
+DLINE 0
+-------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL COS POINT CONDITIONS
+DPOINT 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE      14 DNODE 1
+NODE       7 DNODE 2
+NODE      13 DNODE 3
+NODE      18 DNODE 4
+NODE       4 DNODE 5
+NODE       1 DNODE 6
+NODE       6 DNODE 7
+NODE      12 DNODE 8
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE      18 DLINE 1
+NODE      17 DLINE 1
+NODE      16 DLINE 1
+NODE      15 DLINE 1
+NODE      14 DLINE 1
+NODE      14 DLINE 2
+NODE       7 DLINE 2
+NODE       7 DLINE 3
+NODE       9 DLINE 3
+NODE      10 DLINE 3
+NODE      11 DLINE 3
+NODE      13 DLINE 3
+NODE      13 DLINE 4
+NODE      18 DLINE 4
+NODE       4 DLINE 5
+NODE       1 DLINE 5
+NODE       1 DLINE 6
+NODE       2 DLINE 6
+NODE       3 DLINE 6
+NODE       6 DLINE 6
+NODE       6 DLINE 7
+NODE      12 DLINE 7
+NODE      12 DLINE 8
+NODE       8 DLINE 8
+NODE       5 DLINE 8
+NODE       4 DLINE 8
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE      14 DSURFACE 1
+NODE       7 DSURFACE 1
+NODE      13 DSURFACE 1
+NODE      18 DSURFACE 1
+NODE      17 DSURFACE 1
+NODE      16 DSURFACE 1
+NODE      15 DSURFACE 1
+NODE       9 DSURFACE 1
+NODE      10 DSURFACE 1
+NODE      11 DSURFACE 1
+NODE       4 DSURFACE 2
+NODE       1 DSURFACE 2
+NODE       6 DSURFACE 2
+NODE      12 DSURFACE 2
+NODE       2 DSURFACE 2
+NODE       3 DSURFACE 2
+NODE       8 DSURFACE 2
+NODE       5 DSURFACE 2
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 2.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE            2     COORD 2.000000000000000e+00     3.333333333333333e-01     0.000000000000000e+00   
+NODE            3     COORD 2.000000000000000e+00     6.666666666666666e-01     0.000000000000000e+00   
+NODE            4     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE            5     COORD 1.000000000000000e+00     3.333333333333334e-01     0.000000000000000e+00   
+NODE            6     COORD 2.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+NODE            7     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE            8     COORD 1.000000000000000e+00     6.666666666666667e-01     0.000000000000000e+00   
+NODE            9     COORD 1.000000000000000e+00     2.500000000000000e-01     0.000000000000000e+00   
+NODE           10     COORD 1.000000000000000e+00     5.000000000000000e-01     0.000000000000000e+00   
+NODE           11     COORD 1.000000000000000e+00     7.500000000000000e-01     0.000000000000000e+00   
+NODE           12     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+NODE           13     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+NODE           14     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           15     COORD 0.000000000000000e+00     2.500000000000000e-01     0.000000000000000e+00   
+NODE           16     COORD 0.000000000000000e+00     5.000000000000000e-01     0.000000000000000e+00   
+NODE           17     COORD 0.000000000000000e+00     7.500000000000000e-01     0.000000000000000e+00   
+NODE           18     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 WALL QUAD4      18     17     11     13 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
+      2 WALL QUAD4      17     16     10     11 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
+      3 WALL QUAD4      16     15      9     10 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
+      4 WALL QUAD4      15     14      7      9 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
+      5 WALL QUAD4       8      3      6     12 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master 
+      6 WALL QUAD4       5      2      3      8 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master 
+      7 WALL QUAD4       4      1      2      5 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master 
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 2.1e+05 NUE 0.0 DENS 8.71e-09
+----------------------------------------------MULTILAYER MATERIALS
+------------------------------------------------------CONTROL NODE
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 10000.0 
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+--------------------------------------------------------MONITORING
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 5 POSITION sol(1,1) NAME dispx VALUE -0.0075867974998889 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 5 POSITION sol(1,2) NAME dispy VALUE  0.0192611971739686 TOLERANCE 1e-6
+---------------------------------------------------------------END
+// END
