@@ -9,6 +9,9 @@
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
+#include "../fluid3/fluid3_prototypes.h"
+#include "../fluid2/fluid2.h"
+#include "../fluid2/fluid2_prototypes.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
 /*----------------------------------------------------------------------*
@@ -52,7 +55,6 @@ dstrc_enter("inpfield");
 /*--------------------------------------read node coordinates from file */
 inpnodes();
 /*--------------------------------------------------------- read field  */
-/*-------- dependent on the problem typ need different number of fields */
 /*----------------------------------------------- FSI 3D typ of problem */
 if (genprob.probtyp == prb_fsi)
 {
@@ -61,20 +63,20 @@ if (genprob.probtyp == prb_fsi)
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
    if (field==NULL) dserror("Allocation of fields failed");
 
-   field[0].fieldtyp = structure;
-   if (genprob.multidis>0) inpdis(&(field[0]));
-   else field[0].ndis=1;
-   inp_struct_field(&(field[0]));
+   field[genprob.numsf].fieldtyp = structure;   
+   if (genprob.multidis>0) inpdis(&(field[genprob.numsf]));
+   else field[genprob.numsf].ndis=1;
+   inp_struct_field(&(field[genprob.numsf]));
    
-   field[1].fieldtyp = fluid;
-   if (genprob.multidis>0) inpdis(&(field[1]));
-   else field[1].ndis=1;
-   inp_fluid_field (&(field[1]));
+   field[genprob.numff].fieldtyp = fluid;
+   if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
+   else field[genprob.numff].ndis=1;
+   inp_fluid_field (&(field[genprob.numff]));
    
-   field[2].fieldtyp = ale;
-   if (genprob.multidis>0) inpdis(&(field[2]));
-   else field[2].ndis=1;
-   inp_ale_field  (&(field[2]));
+   field[genprob.numaf].fieldtyp = ale;
+   if (genprob.multidis>0) inpdis(&(field[genprob.numaf]));
+   else field[genprob.numaf].ndis=1;
+   inp_ale_field  (&(field[genprob.numaf]));
 
 /*--- ale and fluid field are supposed to be compatible, so inherit info */
 #ifdef D_ALE
@@ -89,11 +91,11 @@ if (genprob.probtyp==prb_structure)
    if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
    if (field==NULL) dserror("Allocation of fields failed");
-
-   field[0].fieldtyp = structure;
-   if (genprob.multidis>0) inpdis(&(field[0]));
-   else field[0].ndis=1;
-   inp_struct_field(&(field[0]));
+   
+   field[genprob.numsf].fieldtyp = structure;
+   if (genprob.multidis>0) inpdis(&(field[genprob.numsf]));
+   else field[genprob.numsf].ndis=1;
+   inp_struct_field(&(field[genprob.numsf]));
 }
 /*---------------------------------------- Optimisation type of problem */
 if (genprob.probtyp == prb_opt)
@@ -110,14 +112,32 @@ if (genprob.probtyp == prb_opt)
 /*----------------------------------------------- fluid type of problem */
 if (genprob.probtyp==prb_fluid)
 {
-   if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
-   field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   if (field==NULL) dserror("Allocation of fields failed");
+   if (genprob.numfld==1) /* single field fluid problem                 */
+   {
+      field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+      if (field==NULL) dserror("Allocation of fields failed");
    
-   field[0].fieldtyp = fluid;
-   if (genprob.multidis>0) inpdis(&(field[0]));
-   else field[0].ndis=1;
-   inp_fluid_field (&(field[0]));
+      field[genprob.numff].fieldtyp = fluid;
+      if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
+      else field[genprob.numff].ndis=1;
+      inp_fluid_field (&(field[genprob.numff]));
+   }
+   else if (genprob.numfld==2) /* two field fluid problem (fluid+ale)       */
+   {
+      field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+      if (field==NULL) dserror("Allocation of fields failed");
+      
+      field[genprob.numff].fieldtyp = fluid;
+      if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
+      else field[genprob.numff].ndis=1;
+      inp_fluid_field (&(field[genprob.numff]));
+
+      field[genprob.numaf].fieldtyp = ale;
+      if (genprob.multidis>0) inpdis(&(field[genprob.numaf]));
+      else field[genprob.numaf].ndis=1;
+      inp_ale_field  (&(field[genprob.numaf]));      
+   }
+   else dserror("NUMFLD>2 not allowed for Problemtype FLUID\n");   
 }
 /*------------------------------------------------- ale type of problem */
 if (genprob.probtyp==prb_ale)
@@ -125,11 +145,11 @@ if (genprob.probtyp==prb_ale)
    if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
    if (field==NULL) dserror("Allocation of fields failed");
-
-   field[0].fieldtyp = ale;
-   if (genprob.multidis>0) inpdis(&(field[0]));
-   else field[0].ndis=1;
-   inp_ale_field(&(field[0]));
+   
+   field[genprob.numaf].fieldtyp = ale;
+   if (genprob.multidis>0) inpdis(&(field[genprob.numaf]));
+   else field[genprob.numaf].ndis=1;
+   inp_ale_field(&(field[genprob.numaf]));
 }
 
 /*---------------------------------------- Optimisation type of problem */
@@ -541,8 +561,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1) 
    {
       fluidfield->dis[0].element[counter].eltyp=el_fluid3;
-      f3inp(&(fluidfield->dis[0].element[counter]));
-      goto read;
+      f3inp(&(fluidfield->dis[0].element[counter]),counter);
    }
 #endif   
 /*------------------------------------------------ elementtyp is FLUID2 */
@@ -557,8 +576,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1) 
    {
       fluidfield->dis[0].element[counter].eltyp=el_fluid2;
-      f2_inp(&(fluidfield->dis[0].element[counter]));
-      goto read;
+      f2_inp(&(fluidfield->dis[0].element[counter]),counter);
    }
 #endif
 /*----------------------------------------------------------------------*/
