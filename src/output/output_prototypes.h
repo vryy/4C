@@ -47,8 +47,8 @@ void out_gid_allcoords(FILE *out);
 /*----------------------------------------------------------------------*
  |  out_monitor.c                                         genk 01/03    |
  *----------------------------------------------------------------------*/
-void out_monitor(FIELD *actfield, INT numf);
-void out_area(ARRAY totarea_a); 
+void out_monitor(FIELD *actfield, INT numf,DOUBLE time,INT init);
+void out_area(ARRAY totarea_a, DOUBLE time, INT itnum, INT init);
 
 /*----------------------------------------------------------------------*
  |  out_checkfilesize.c                                   genk 08/03    |

@@ -69,157 +69,133 @@ extern struct _MONITOR *moni;
 </pre>
 
 \param *actfield    FIELD   (i)     actual field   
-\param  numf        INT     (i)     number of fluid field
+\param  numf        INT     (i)     number of field
 
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void out_monitor(FIELD *actfield, INT numf)
+void out_monitor(FIELD *actfield, INT numf,DOUBLE time,INT init)
 {
 INT       i,j;
-INT       actpos;
 INT       myrank;
 INT       numval;
-INT       numstep;
 INT       numnp;
-INT       rest;
-INT       full;
 INT     **monnodes;
 INT     **onoff;
 INT       counter;
-DOUBLE   *time;
-DOUBLE  **val;
-MONITOR  *actmoni;
-FILE     *mon = allfiles.out_mon;
+DOUBLE   *val;
 ARRAY     valdofs_a;
 INT      *valdofs;
 ARRAY     valIds_a;
-INT      *valIds;
+INT      *valIds; 
+MONITOR  *actmoni;
+FILE     *mon ;
 
 #ifdef DEBUG 
 dstrc_enter("out_monitor");
 #endif
+
 /*----------------------------------------------------------------------*/
 myrank = par.myrank;
 actmoni = &(moni[numf]);
-numstep = actmoni->numstep;
 numval = actmoni->numval;
 numnp = actmoni->numnp;
 
-if (numstep == 0 || numval == 0) goto end;
+if (numnp==0) goto end;
 
-if (numval>=3)
-{
-   rest = numval % 3;
-   full = numval/3;
-}
-else
-{
-   rest = numval;
-   full = 0;
-}    
-
-val      = actmoni->val.a.da;
-time     = actmoni->time.a.dv;
+val      = actmoni->val.a.dv;
 monnodes = actmoni->monnodes.a.ia;
 onoff    = actmoni->onoff.a.ia; 
 
-valdofs = amdef("valdofs",&valdofs_a,numval,1,"IV");
-valIds  = amdef("valIds",&valIds_a,numval,1,"IV");
-counter=0;
-for (i=0;i<numnp;i++)
-{
-   for (j=0;j<MAXDOFPERNODE;j++)
-   {
-      if (actmoni->onoff.a.ia[i][j]==-1) continue;
-      else 
-      {
-         valdofs[counter] = j;
-	 valIds[counter]=monnodes[i][0];
-         counter++;
-      }
-   }
-}
-
-if (counter!=numval)
-dserror("Cannot print monitoring data - counter != numval!\n");
+if (myrank>0) goto end;
 
 /*----------------------------------------------------------------------*/
-if (myrank==0)
+if (init==1)
 {
 
-fprintf(mon,"================================================================================\n");
+   valdofs = amdef("valdofs",&valdofs_a,numval,1,"IV");
+   valIds  = amdef("valIds",&valIds_a,numval,1,"IV");
+   counter=0;
+   for (i=0;i<numnp;i++)
+   {
+      for (j=0;j<MAXDOFPERNODE;j++)
+      {
+         if (actmoni->onoff.a.ia[i][j]==-1) continue;
+         else 
+         {
+            valdofs[counter] = j;
+	    valIds[counter]=monnodes[i][0];
+            counter++;
+         }
+      }
+   }
+
+   if (counter!=numval)
+      dserror("Cannot print monitoring data - counter != numval!\n");
+
+   switch (actfield->fieldtyp)
+   {
+   case structure:
+      mon = allfiles.out_smoni;
+      dsassert(mon!=NULL,"cannot write to NULL pointer!\n");
+      fprintf(mon,"#================================================================================\n");
+      fprintf(mon,"# MONITORING DATA: STRUCTURE FIELD\n");
+   break;
+   case fluid:
+      mon = allfiles.out_fmoni;
+      dsassert(mon!=NULL,"cannot write to NULL pointer!\n");
+      fprintf(mon,"#================================================================================\n");
+      fprintf(mon,"# MONITORING DATA: FLUID FIELD\n");
+   break;
+   case ale:
+      mon = allfiles.out_amoni;
+      dsassert(mon!=NULL,"cannot write to NULL pointer!\n");
+      fprintf(mon,"# =================================================================================\n");
+      fprintf(mon,"# MONITORING DATA: ALE FIELD\n");
+   break;
+   default:
+      dserror("fieldtyp unknown!\n");
+   }
+   fprintf(mon,"#================================================================================\n");
+   fprintf(mon,"#\n");
+   fprintf(mon,"#==============");
+   for (i=0;i<numval;i++) fprintf(mon,"=========================");
+   fprintf(mon,"\n");
+   fprintf(mon,"# TIME");
+   for (i=0;i<numval;i++) fprintf(mon,"           globalID/DOF  ");
+   fprintf(mon,"          \n");
+   fprintf(mon,"# ");
+   for (i=0;i<numval;i++) fprintf(mon,"                 %6d/%1d",valIds[i],valdofs[i]);
+   fprintf(mon,"\n");
+   fprintf(mon,"#==============");
+   for (i=0;i<numval;i++) fprintf(mon,"=========================");
+   fprintf(mon,"\n");
+
+   amdel(&valdofs_a);
+   amdel(&valIds_a);
+   goto end;
+}
+
 switch (actfield->fieldtyp)
 {
 case structure:
-   fprintf(mon,"MONITORING DATA: STRUCTURE FIELD\n");
+   mon = allfiles.out_smoni;
 break;
 case fluid:
-   fprintf(mon,"MONITORING DATA: FLUID FIELD\n");
+   mon = allfiles.out_fmoni;
 break;
 case ale:
-   fprintf(mon,"MONITORING DATA: ALE FIELD\n");
+   mon = allfiles.out_amoni;
 break;
 default:
 break;
 }
-fprintf(mon,"================================================================================\n");
+dsassert(mon!=NULL,"cannot write to NULL pointer!\n");
+fprintf(mon,"  %10.6lf   ",time);
+for (i=0;i<numval;i++) fprintf(mon," %- 24.7E",val[i]);
 fprintf(mon,"\n");
+fflush(mon);
 
-actpos=0;
-for (i=0;i<full;i++)
-{
-   fprintf(mon,"================================================================================\n");
-   fprintf(mon,"TIME            globalID/DOF           globalID/DOF          globalID/DOF         \n");
-   fprintf(mon,"                  %6d/%1d               %6d/%1d              %6d/%1d         \n",
-            valIds[actpos],valdofs[actpos],valIds[actpos+1],valdofs[actpos+1],valIds[actpos+2],valdofs[actpos+2]);                  
-   fprintf(mon,"================================================================================\n");
-   for (j=0;j<numstep;j++)
-   {
-      fprintf(mon,"%.8lf %18.7E %22.7E %21.7E\n",
-      time[j],val[actpos][j],val[actpos+1][j],val[actpos+2][j]);
-   }
-   fprintf(mon,"________________________________________________________________________________\n\n");
-   fprintf(mon,"\n");
-   actpos += 3;
-}
-
-if (rest==2)
-{
-   fprintf(mon,"================================================================================\n");
-   fprintf(mon,"TIME            globalID/DOF           globalID/DOF                 \n");
-   fprintf(mon,"                  %6d/%1d               %6d/%1d                      \n",
-           valIds[actpos],valdofs[actpos],valIds[actpos+1],valdofs[actpos+1]);                  
-   fprintf(mon,"================================================================================\n");
-   for (j=0;j<numstep;j++)
-   {
-      fprintf(mon,"%.8lf %18.7E %22.7E \n",
-      time[j],val[actpos][j],val[actpos+1][j]);
-   }
-   fprintf(mon,"________________________________________________________________________________\n\n");
-   fprintf(mon,"\n");
-}
-else if (rest==1)
-{
-   fprintf(mon,"================================================================================\n");
-   fprintf(mon,"TIME            globalID/DOF              \n");
-   fprintf(mon,"                  %6d/%1d                                \n",
-           valIds[actpos],valdofs[actpos]);                  
-   fprintf(mon,"================================================================================\n");
-   for (j=0;j<numstep;j++)
-   {
-      fprintf(mon,"%.8lf %18.7E  \n",
-      time[j],val[actpos][j]);
-   }
-   fprintf(mon,"________________________________________________________________________________\n\n");
-   fprintf(mon,"\n");
-
-}
-
-amdel(&valdofs_a);
-amdel(&valIds_a);
-}
-if (myrank==0) fflush(mon);
 end:
 #ifdef DEBUG 
 dstrc_exit();
@@ -240,46 +216,56 @@ return;
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void out_area(ARRAY totarea_a)
+void out_area(ARRAY totarea_a, DOUBLE time, INT itnum, INT init)
 {
-INT        i,j;
-INT        fdim,sdim;
+INT        i;
 INT        myrank;
-DOUBLE   **totarea;
-FILE      *mon = allfiles.out_mon;
+DOUBLE    *totarea;
+char      *charpointer;
+FILE      *mon;
 
 #ifdef DEBUG 
 dstrc_enter("out_area");
 #endif
 /*----------------------------------------------------------------------*/
 myrank  = par.myrank;
-fdim    = totarea_a.fdim;
-sdim    = totarea_a.sdim;
-totarea = totarea_a.a.da;
+totarea = totarea_a.a.dv;
+if (myrank>0) goto end;
 
+if (init==1)
+{
+   charpointer=allfiles.outputfile_name+strlen(allfiles.outputfile_kenner);
+   sprintf(charpointer,"%d",par.myrank);
+   charpointer++;
+   strncpy(charpointer,".fluidarea.mon",14);
+   charpointer+=14;
+   sprintf(charpointer,"\0");
+   if ( (allfiles.out_monarea=fopen(allfiles.outputfile_name,"w"))==NULL)
+   {
+      printf("Opening of output file .fluidarea.mon failed\n");
+#ifdef PARALLEL 
+      MPI_Finalize();
+#endif 
+      exit(1);
+   }
+   mon = allfiles.out_monarea;
+   fprintf(mon,"================================================================================\n");
+   fprintf(mon,"MONITORING DATA: TOTAL AREA FLUID FIELD\n");
+   fprintf(mon,"================================================================================\n");
+   fprintf(mon,"\n");
+   goto end;
+}
 
 /*----------------------------------------------------------------------*/
-if (myrank==0)
-{
-fprintf(mon,"================================================================================\n");
-fprintf(mon,"MONITORING DATA: TOTAL AREA FLUID FIELD\n");
-fprintf(mon,"================================================================================\n");
+mon = allfiles.out_monarea;
+
+fprintf(mon,"%10.6lf   ",time);
+for (i=0;i<itnum;i++) fprintf(mon," %24.7lf",totarea[i]);
 fprintf(mon,"\n");
 
-for (i=0;i<fdim;i++)
-{
-   fprintf(mon,"%6d",i+1);
-   for (j=0;j<sdim;j++)
-   {
-      fprintf(mon,"    %.8lf",totarea[i][j]);
-   }
-   fprintf(mon,"\n");
-}
-fprintf(mon,"________________________________________________________________________________\n\n");
-fprintf(mon,"\n");
-}
+fflush(mon);
 
-if (myrank==0) fflush(mon);
+end:
 
 #ifdef DEBUG 
 dstrc_exit();

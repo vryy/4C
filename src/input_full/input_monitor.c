@@ -41,6 +41,17 @@ extern struct _FIELD       *field;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par; 
+
 /*---------------------------------------------------------------------*
  | monotoring informations                                  genk 01/03 |
  *---------------------------------------------------------------------*/
@@ -57,6 +68,7 @@ INT cs=0;
 INT cf=0;
 INT ca=0;
 INT counter=0;
+INT mone=-1;
 INT numsf,numff,numaf;
 INT **snode=NULL, **fnode=NULL, **anode=NULL;
 INT actnum;
@@ -66,26 +78,17 @@ MONITOR *smoni=NULL, *fmoni=NULL, *amoni=NULL;
 FIELD *actfield;
 NODE *actnode;
 char  *colptr;
+char  *charpointer;
 
 #ifdef DEBUG 
 dstrc_enter("inp_monitor");
 #endif
 
-/*----------------------------------------------------------------------*/
-moni = (MONITOR*)CCACALLOC(genprob.numfld,sizeof(MONITOR));
-if (!moni) dserror("Allocation of MONITOR failed");
 
-for (i=0;i<genprob.numfld;i++)
-{
-   moni[i].numnp=0;
-   moni[i].numval=0;
-   moni[i].numstep=0;
-}
+ioflags.monitor=frfind("--MONITORING");
 if (ioflags.monitor==0) goto end;
+if (par.myrank>0) goto end;
 
-numsf=genprob.numsf;
-numff=genprob.numff;
-numaf=genprob.numaf;
 
 /*--------------------------------------------------- first count nodes */
 if (frfind("--MONITORING")==1)
@@ -103,15 +106,52 @@ if (frfind("--MONITORING")==1)
   }
 }
 
+/*----------------------------------------------------------------------*/
+if (cs+cf+ca>0)
+{
+   moni = (MONITOR*)CCACALLOC(genprob.numfld,sizeof(MONITOR));
 
-/*---------------------------------------------------------- check data */
+   for (i=0;i<genprob.numfld;i++)
+   {
+      moni[i].numnp=0;
+      moni[i].numval=0;
+   }
+}
+else
+{
+   ioflags.monitor=0;
+   goto end;
+}
+   
+numsf=genprob.numsf;
+numff=genprob.numff;
+numaf=genprob.numaf;
+
+
+/*--------------------------------------- check data and open mon files */
 /*----------------------------------------------------------- structure */
 if (numsf>=0 && cs>0)
 {
    smoni=&(moni[numsf]);
    smoni->numnp=cs;  
    snode = amdef("monnodes",&(moni[numsf].monnodes),cs,2,"IA");
+   aminit(&(moni[numsf].monnodes),&mone);
    sonoff = amdef("onoff",&(moni[numsf].onoff),cs,MAXDOFPERNODE,"IA");
+   charpointer=allfiles.outputfile_name+strlen(allfiles.outputfile_kenner);
+   sprintf(charpointer,"%d",par.myrank);
+   charpointer++;
+   strncpy(charpointer,".structure.mon",14);
+   charpointer+=14;
+   sprintf(charpointer,"\0");
+   if ( (allfiles.out_smoni=fopen(allfiles.outputfile_name,"w"))==NULL)
+   {
+      printf("Opening of output file .structure.mon failed\n");
+#ifdef PARALLEL 
+      MPI_Finalize();
+#endif 
+      exit(1);
+   }
+   printf("Structure monitoring       %s\n",allfiles.outputfile_name);
 }
 else if (numsf>=0 && cs==0)
 {
@@ -129,7 +169,23 @@ if (numff>=0 && cf>0)
    fmoni=&(moni[numff]);
    fmoni->numnp=cf;  
    fnode = amdef("monnodes",&(moni[numff].monnodes),cf,2,"IA");
+   aminit(&(moni[numff].monnodes),&mone);
    fonoff = amdef("onoff",&(moni[numff].onoff),cf,MAXDOFPERNODE,"IA");
+   charpointer=allfiles.outputfile_name+strlen(allfiles.outputfile_kenner);
+   sprintf(charpointer,"%d",par.myrank);
+   charpointer++;
+   strncpy(charpointer,".fluid.mon",10);
+   charpointer+=10;
+   sprintf(charpointer,"\0");
+   if ( (allfiles.out_fmoni=fopen(allfiles.outputfile_name,"w"))==NULL)
+   {
+      printf("Opening of output file .fluid.mon failed\n");
+#ifdef PARALLEL 
+      MPI_Finalize();
+#endif 
+      exit(1);
+   }
+   printf("Fluid monitoring           %s\n",allfiles.outputfile_name);
 }
 else if (numff>=0 && cf==0)
 {
@@ -147,7 +203,23 @@ if (numaf>=0 && ca>0)
    amoni=&(moni[numaf]);
    amoni->numnp=ca;  
    anode = amdef("monnodes",&(moni[numaf].monnodes),ca,2,"IA");
+   aminit(&(moni[numaf].monnodes),&mone);
    aonoff = amdef("onoff",&(moni[numaf].onoff),ca,MAXDOFPERNODE,"IA");
+   charpointer=allfiles.outputfile_name+strlen(allfiles.outputfile_kenner);
+   sprintf(charpointer,"%d",par.myrank);
+   charpointer++;
+   strncpy(charpointer,".ale.mon",8);
+   charpointer+=8;
+   sprintf(charpointer,"\0");
+   if ( (allfiles.out_amoni=fopen(allfiles.outputfile_name,"w"))==NULL)
+   {
+      printf("Opening of output file .fluid.mon failed\n");
+#ifdef PARALLEL 
+      MPI_Finalize();
+#endif 
+      exit(1);
+   }
+   printf("Ale monitoring             %s\n",allfiles.outputfile_name);
 }
 else if (numaf>=0 && ca==0)
 {
@@ -270,8 +342,7 @@ if (numaf>=0)
 /*-------------------------------------------- determine local node Ids */
 if (numsf>=0 && smoni->numnp>0)
 {
-   amdef("val",&(moni[numsf].val),smoni->numval,5,"DA");
-   amdef("time",&(moni[numsf].time),5,1,"DV");   
+   amdef("val",&(moni[numsf].val),smoni->numval,1,"DA");
    actfield = &(field[numsf]);
    for (i=0;i<actfield->dis[0].numnp;i++)
    {
@@ -286,11 +357,16 @@ if (numsf>=0 && smoni->numnp>0)
 	 }
       }
    }
+   /*--------------------------------------------- plausibility check */
+   for (j=0;j<smoni->numnp;j++)
+   {
+      if(snode[j][1]==-1)
+      dserror("Monitoring Id not existing in Structfield!\n");
+   }
 }
 if (numff>=0 && fmoni->numnp>0)
 {
-   amdef("val",&(moni[numff].val),fmoni->numval,5,"DA");
-   amdef("time",&(moni[numff].time),5,1,"DV"); 
+   amdef("val",&(moni[numff].val),fmoni->numval,1,"DV");
    actfield = &(field[numff]);
    for (i=0;i<actfield->dis[0].numnp;i++)
    {
@@ -300,16 +376,21 @@ if (numff>=0 && fmoni->numnp>0)
       {
          if (fnode[j][0] == actId)
 	 {
-	    fnode[j][1] = i;
+	    fnode[j][1] = i;            
 	    break;
 	 }
       }
    }
+   /*--------------------------------------------- plausibility check */
+   for (j=0;j<fmoni->numnp;j++)
+   {
+      if(fnode[j][1]==-1)
+      dserror("Monitoring Id not existing in Fluidfield!\n");
+   }
 }
 if (numaf>=0 && amoni->numnp>0)
 {
-   amdef("val",&(moni[numaf].val),amoni->numval,5,"DA");
-   amdef("time",&(moni[numaf].time),5,1,"DV"); 
+   amdef("val",&(moni[numaf].val),amoni->numval,1,"DV");
    actfield = &(field[numaf]);
    for (i=0;i<actfield->dis[0].numnp;i++)
    {
@@ -323,6 +404,12 @@ if (numaf>=0 && amoni->numnp>0)
 	    break;
 	 }
       }
+   }
+   /*--------------------------------------------- plausibility check */
+   for (j=0;j<amoni->numnp;j++)
+   {
+      if(anode[j][1]==-1)
+      dserror("Monitoring Id not existing in Alefield!\n");
    }
 }
 
