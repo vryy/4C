@@ -45,7 +45,7 @@
 #
 FXX=f90
 CCX=cc
-LDX=cc
+LDX=f90
 PFL	 = -DHPUX11 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
 	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
 	   -DAZTEC_PACKAGE -DUMFPACK
@@ -53,7 +53,7 @@ PFL	 = -DHPUX11 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
 #--------------------------------------------------------------------
 #
 CC	 = $(CCX)
-LD       = $(CCX)
+LD       = $(FXX)
 RM	 = /bin/rm -f
 #
 #------------------------------------------------ this is debug-32bit
@@ -74,14 +74,14 @@ UMFPACK       = -lumfpack40_hpux11_32
 #PROGRAM_NAME	= cca_seq_64_debg.exe
 #CFLAGS 	= -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
 #FFLAGS 	= +DA2.0W -g
-#LDFLAGS	= +DD64 -v
+#LDFLAGS	= +DA2.0W -v
 #AZTEC  	= -laztec_seq21_64
 #UMFPACK	= -lumfpack40_hpux11_64
 #------------------------------------------------- this is fast-64bit
 #PROGRAM_NAME   = cca_seq_64_fast.exe
 #CFLAGS         = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
 #FFLAGS         = +DA2.0W -O
-#LDFLAGS        = +DD64 -v
+#LDFLAGS        = +DA2.0W -v
 #AZTEC	       = -laztec_seq21_64
 #UMFPACK        = -lumfpack40_hpux11_64
 #--------------------------------------------------------------------
