@@ -408,7 +408,7 @@ iststep++;
 if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
 
 /*------------------------------ calculate constants for time algorithm */
-fluid_tcons(fdyn,dynvar);
+fluid_tcons(fdyn,dynvar,0);
 if (kapeps_yeah == 1) fluid_tcons_tu(fdyn,dynvar); 
 
 fdyn->time += dynvar->dta;
@@ -459,6 +459,7 @@ container.fiterhs      = fiterhs;
 container.global_numeq = numeq_total[rans]; 
 container.nii          = dynvar->nii;
 container.nif          = dynvar->nif;
+container.nim          = 0;
 container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,k_array,-1,
        &container,action);
