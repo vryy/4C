@@ -26,54 +26,74 @@
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
 #
 # 
-PFL       =  -DSUN -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE -DD_WALL1 -DMUMPS_PACKAGE -DPARALLEL
+PFL       =  -DSUN -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE -DD_WALL1 \
+             -DPARALLEL -DSPOOLES_PACKAGE
 #
-# utilities
+# set correct paths
+# the library lib_sun.tar.gz is in /bau/stat16/users/statik/lib
+#                                  /bau/stat33/users/statik/lib
+# put the lib_sun.tar.gz in the same directory as the ccarat, 
+# for example
+# /users/stgt/<name>/ccarat
+# /users/stgt/<name>/lib_sun.tar.gz
+# make 
+# gunzip lib_sun.tar.gz
+# tar -xvf lib_sun.tar
+#
+# set correct HOMEDIR to the directory where you placed ccarat and lib_sun
+HOMEDIR      =  /users/stgt/<name>
+SRC          =  $(HOMEDIR)/ccarat/src
+METISDIR     =  $(HOMEDIR)/lib_sun/metis-4.0/Lib
+SPOOLESDIR   =  $(HOMEDIR)/lib_sun/spooles
+NAGCDIR32      =  /soft/local/lpp/nagc/clsol06da 
+NAGCDIR64      =  /soft/local/lpp/nagc/clso606da
+
+
+#
+# compilers
 #
 CC	 = mpcc
 F77      = mpf90
-LD       = $(F77)
+LD       = $(CC)
 RM	 = /bin/rm -f
-#------------------------------------------- this is debug
-CFLAGS   = -g $(PFL) -DDEBUG
-FFLAGS   = -g -dalign
-PROGRAM  = cca_sun_debg.exe
-#-------------------------------------------- this is fast 
+#---------------------------------------------------------------
+#                                            this is debug 32bit
+#---------------------------------------------------------------
+#CFLAGS   = -g $(PFL) -DDEBUG
+#FFLAGS   = -g -dalign
+#LDFLAGS  = -g 
+#LDOPTS   = -g
+#NAGCDIR  = $(NAGCDIR32)
+#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR)
+#LIBS     = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -lnagc -lm -mt -lmpi
+#PROGRAM  = cca_sun_debg.exe
+#----------------------------------------------------------------
+#                                             this is fast 32 bit
+#----------------------------------------------------------------
 #CFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s $(PFL)
 #FFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
-#PROGRAM  = cca_sun_fast.exe
+#LDFLAGS  = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s
+#LDOPTS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
+#NAGCDIR  = $(NAGCDIR32)
+#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR)
+#LIBS     = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -lnagc -lm -mt -lmpi
+#PROGRAM  = cca_sun_fast32.exe
+#----------------------------------------------------------------
+#                                             this is fast 64 bit
+#----------------------------------------------------------------
+CFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s $(PFL)
+FFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector
+LDFLAGS	 = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s
+LDOPTS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector=s
+NAGCDIR  = $(NAGCDIR64)
+LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR)
+LIBS     = $(LIBPATHS) -lm -lmetis_sun64 -lspoolesMPI_sun64 -lspooles_sun64 -lnagc -lm -mt -lmpi
+PROGRAM  = cca_sun_fast64.exe
 #
-LDFLAGS	  =  -R -xlic_lib=sunperf -xvector
 #
-INCLUDES  =  -I/usr/include/  
-
-LDOPTS    = 
-
-HOMEDIR      =  /users/stgt/gee
-SRC          =  $(HOMEDIR)/ccarat/src
-
-MUMPSDIR     =  $(HOMEDIR)/lib_sun/MUMPS4.1.6/lib
-BLACSDIR     =  $(HOMEDIR)/lib_sun/BLACS/LIB
-SCALAPACKDIR =  $(HOMEDIR)/lib_sun/SCALAPACK
-METISDIR     =  $(HOMEDIR)/lib_sun/metis-4.0/Lib
-NAGF90DIR    =  /soft/local/lpp/nagf90/fnsol04db
-
-LIBPATHS  =  -L/usr/lib \
-             -M$(NAGF90DIR)/nag_mod_dir -L$(NAGF90DIR) \
-	     -L$(BLACSDIR) \
-	     -L$(SCALAPACKDIR) \
-	     -L$(MUMPSDIR) \
-	     -L$(METISDIR)
-
-LIBS	  =  $(LIBPATHS) -lm -lmetis_sun32 \
-                         -lmumps_sun \
-                         -lscalapack_sun \
-			 -lblacs_MPI-SUN4-0 \
-                         -lblacsCinit_MPI-SUN4-0 \
-			 -lblacsF77init_MPI-SUN4-0 \
-                         -lnagfl90 -lmpi 
-
-
+#
+INCLUDES  =  -I/usr/include/ -I$(NAGCDIR)/include
+#
 #
 # binaries
 #
@@ -225,9 +245,7 @@ OBJS12	      = ${SRC}/wall1/w1_bop.o \
                 ${SRC}/wall1/w1_mat_serv.o \
                 ${SRC}/wall1/w1_static_ke.o
 #                fortran
-OBJS13	      = ${SRC}/fortran/colsol.o \
-                ${SRC}/fortran/bi_f77_get_constants.o \
-		${SRC}/fortran/mumps_interface.o
+OBJS13	      = ${SRC}/fortran/colsol.o 
 #
 #
 # targets
