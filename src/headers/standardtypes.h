@@ -85,7 +85,8 @@ int               pss_counter;            /* number of records on pss-file */
 FILE             *in_input;               /* file-pointer input file     */
 FILE             *out_out;                /* file-pointer .out  file     */
 FILE             *out_err;                /* file-pointer .err  file     */
-FILE             *out_pss;                /* file-pointer .pss  file     */
+FILE             *out_pss;                /* file ptr to restart-pss file */
+FILE             *in_pss;                 /* file-pointer .pss  file     */
 
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
 FILE             *gidres;                 /* file pointer .flavia.res    */

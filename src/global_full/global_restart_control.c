@@ -18,19 +18,24 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  | write restart                                         m.gee 05/02    |
  | of nln-structural dynamics                                           |
- | NOTE:                                                                |
- | restart can only be performed with the last written restart step     |
- | noticed in the err-file                                              |
- | restarting in an earlier step works, but it leads to                 |
- | duplicate restart entries in the pss-file. This is o.k. as long as   |
- | the run goes further in number of steps as the one before            |
- | and writes a restart step which is outside the old step range        |
- | (bissle raetselhaft oder?)                                           |
- | Klartext:                                                            |
- | Wenn man nicht mit dem letzten restart-Schritt restartet koennen     |
- | lustige Effekte auftreten.                                           |
+ | How to restart:                                                      |
+ | 1.) run calculation with RESTART 0 and NUMSTEP 10 in the input file  |          
+ | 2.) cp xxx.pss xxx_0.pss                                             |
+ | 3.) run calculation with RESTART 9 and NUMSTEP 20 in the input file  |
+ |     by starting with                                                 |
+ |     cca_seq_10.20.exe input.dat xxx restart                          |
+ | 4.) cp xxx.respss xxx_1.pss                                          |
+ | 5.) cp xxx.respss xxx.pss                                            |
+ | 6.) run calculation with RESTART 19 and NUMSTEP 30 in the input file |
+ |     by starting with                                                 |
+ |     cca_seq_10.20.exe input.dat xxx restart                          |
+ | 7.) cp xxx.respss xxx_2.pss                                          |
+ | 8.) cp xxx.respss xxx.pss                                            |
+ | generally: restart is read from .pss and writes to .respss           |
+ |            a restarted calculation runs from step                    |
+ |            RESTART i+1 to NUMSTEP j-1                                |
  *----------------------------------------------------------------------*/
-void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
+void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,                  
                                 STRUCT_DYN_CALC *dynvar,
                                 FIELD           *actfield,
                                 PARTITION       *actpart,
@@ -54,6 +59,7 @@ int                  numele;
 long int           **ele_handles;
 char                 resname[100];
 long int             longdummy;
+FILE                *out;
 RESTART_DYNSTRUCT    res;
 DIST_VECTOR         *distwrite;
 NODE                *actnode;
@@ -62,6 +68,7 @@ ELEMENT             *actele;
 dstrc_enter("restart_write_nlnstructdyn");
 #endif
 /*----------------------------------------------------------------------*/
+out = allfiles.out_pss;
 /*-------- check the step we are in and create the name "res<step>" */
 res.step = sdyn->step;
 sprintf(resname,"res%d",res.step);
@@ -81,55 +88,55 @@ res.dist_vec_work[0]  = nwork;
  for (i=0; i<nrhs; i++)
  {
     distwrite = &(rhs[i]);
-    pss_write_array(&(distwrite->vec),&(res.dist_vec_rhs[i+1]),&ierr);
+    pss_write_array(&(distwrite->vec),&(res.dist_vec_rhs[i+1]),out,&ierr);
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*------------------------------------------------------ write the *sol */
  for (i=0; i<nsol; i++)
  {
     distwrite = &(sol[i]);
-    pss_write_array(&(distwrite->vec),&(res.dist_vec_sol[i+1]),&ierr);
+    pss_write_array(&(distwrite->vec),&(res.dist_vec_sol[i+1]),out,&ierr);
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*------------------------------------------------------ write the *dispi */
  for (i=0; i<ndis; i++)
  {
     distwrite = &(dispi[i]);
-    pss_write_array(&(distwrite->vec),&(res.dist_vec_dispi[i+1]),&ierr);
+    pss_write_array(&(distwrite->vec),&(res.dist_vec_dispi[i+1]),out,&ierr);
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*------------------------------------------------------ write the *vel */
  for (i=0; i<nvel; i++)
  {
     distwrite = &(vel[i]);
-    pss_write_array(&(distwrite->vec),&(res.dist_vec_vel[i+1]),&ierr);
+    pss_write_array(&(distwrite->vec),&(res.dist_vec_vel[i+1]),out,&ierr);
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*------------------------------------------------------ write the *acc */
  for (i=0; i<nacc; i++)
  {
     distwrite = &(acc[i]);
-    pss_write_array(&(distwrite->vec),&(res.dist_vec_acc[i+1]),&ierr);
+    pss_write_array(&(distwrite->vec),&(res.dist_vec_acc[i+1]),out,&ierr);
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*------------------------------------------------------ write the *fie */
  for (i=0; i<nfie; i++)
  {
     distwrite = &(fie[i]);
-    pss_write_array(&(distwrite->vec),&(res.dist_vec_fie[i+1]),&ierr);
+    pss_write_array(&(distwrite->vec),&(res.dist_vec_fie[i+1]),out,&ierr);
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*------------------------------------------------------ write the *work */
  for (i=0; i<nwork; i++)
  {
     distwrite = &(work[i]);
-    pss_write_array(&(distwrite->vec),&(res.dist_vec_work[i+1]),&ierr);
+    pss_write_array(&(distwrite->vec),&(res.dist_vec_work[i+1]),out,&ierr);
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*----------------------------------------- write the ARRAY *intforce_a */
-pss_write_array(intforce_a,&(res.intforce),&ierr);
+pss_write_array(intforce_a,&(res.intforce),out,&ierr);
 /*------------------------------------------- write the ARRAY *dirich_a */
-pss_write_array(dirich_a,&(res.dirich),&ierr);
+pss_write_array(dirich_a,&(res.dirich),out,&ierr);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /* 
@@ -157,18 +164,18 @@ node_handles[i] = &(node_handles[0][i*3]);
 for (i=0; i<numnp; i++)
 {
    actnode = actpart->pdis[0].node[i];
-   pss_write_array(&(actnode->sol),&(node_handles[i][0]),&ierr);
+   pss_write_array(&(actnode->sol),&(node_handles[i][0]),out,&ierr);
    if (ierr != 1) dserror("Error writing restart data");
-   pss_write_array(&(actnode->sol_increment),&(node_handles[i][1]),&ierr);
+   pss_write_array(&(actnode->sol_increment),&(node_handles[i][1]),out,&ierr);
    if (ierr != 1) dserror("Error writing restart data");
-   pss_write_array(&(actnode->sol_residual),&(node_handles[i][2]),&ierr);
+   pss_write_array(&(actnode->sol_residual),&(node_handles[i][2]),out,&ierr);
    if (ierr != 1) dserror("Error writing restart data");
 }
 /* 
    all nodal data is written, so we now write the node_handles and store
    the handle to this in res.handle_of_node_handles
 */
-pss_write("nod_hand",numnp,3,sizeof(long int),node_handles[0],&(res.handle_of_node_handles),&ierr);
+pss_write("nod_hand",numnp,3,sizeof(long int),node_handles[0],&(res.handle_of_node_handles),out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------- delete the res.node_handles but keep the dimensions */
 res.node_fdim = numnp;
@@ -235,7 +242,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 */   
 res.ele_fdim = numele;
 res.ele_sdim = 5;
-pss_write("ele_hand",numele,5,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),&ierr);
+pss_write("ele_hand",numele,5,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*------------------ delete the res.ele_handles but keep the dimensions */
 free(res.ele_handles[0]);
@@ -249,7 +256,7 @@ free(res.ele_handles);
    names are limited to 9 characters, so a step larger then res999999
    can not be restarted at the moment !!!!
 */   
-pss_write(resname,1,1,sizeof(RESTART_DYNSTRUCT),&res,&longdummy,&ierr);
+pss_write(resname,1,1,sizeof(RESTART_DYNSTRUCT),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 /*
@@ -316,6 +323,7 @@ long int           **node_handles;
 int                  numele;
 long int           **ele_handles;
 char                 resname[100];
+FILE                *in;
 RESTART_DYNSTRUCT    res;
 DIST_VECTOR         *distread;
 NODE                *actnode;
@@ -324,13 +332,13 @@ ELEMENT             *actele;
 dstrc_enter("restart_read_nlnstructdyn");
 #endif
 /*----------------------------------------------------------------------*/
-/*pss_status_to_err();
+in = allfiles.in_pss;
 /*----------------------------------- check the step that shall be read */
 sprintf(resname,"res%d",restart);
-pss_chck(resname,&reshandle,&ierr);
+pss_chck(resname,&reshandle,in,&ierr);
 if (ierr != 1) dserror("Cannot restart, step doesn't exist in pss-file");
 /*----------------------------- the structure res exists, so we read it */
-pss_read_name_handle(resname,&i,&i,&byte,&res,&reshandle,&ierr);
+pss_read_name_handle(resname,&i,&i,&byte,&res,&reshandle,in,&ierr);
 if (ierr != 1) dserror("Restart structure exists, but cannot read it");
 /*------------------------------- write the structure res.sdyn to *sdyn */
 *sdyn   = res.sdyn;
@@ -349,56 +357,56 @@ if (res.dist_vec_work[0]  != nwork) dserror("Mismatch in dimensions in restart")
 for (i=0; i<nrhs; i++)
 {
    distread = &(rhs[i]);
-   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_rhs[i+1]),&ierr);
+   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_rhs[i+1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
 }
 /*------------------------------------------------------------ read sol */
 for (i=0; i<nsol; i++)
 {
    distread = &(sol[i]);
-   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_sol[i+1]),&ierr);
+   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_sol[i+1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
 }
 /*------------------------------------------------------------ read dispi */
 for (i=0; i<ndis; i++)
 {
    distread = &(dispi[i]);
-   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_dispi[i+1]),&ierr);
+   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_dispi[i+1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
 }
 /*------------------------------------------------------------ read vel */
 for (i=0; i<nvel; i++)
 {
    distread = &(vel[i]);
-   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_vel[i+1]),&ierr);
+   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_vel[i+1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
 }
 /*------------------------------------------------------------ read acc */
 for (i=0; i<nacc; i++)
 {
    distread = &(acc[i]);
-   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_acc[i+1]),&ierr);
+   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_acc[i+1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
 }
 /*------------------------------------------------------------ read fie */
 for (i=0; i<nfie; i++)
 {
    distread = &(fie[i]);
-   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_fie[i+1]),&ierr);
+   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_fie[i+1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
 }
 /*------------------------------------------------------------ read work */
 for (i=0; i<nwork; i++)
 {
    distread = &(work[i]);
-   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_work[i+1]),&ierr);
+   pss_read_array_name_handle(distread->vec.name,&(distread->vec),&(res.dist_vec_work[i+1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
 }
 /*------------------------------------------- read the ARRAY *intforce_a */
-pss_read_array_name_handle(intforce_a->name,intforce_a,&(res.intforce),&ierr);
+pss_read_array_name_handle(intforce_a->name,intforce_a,&(res.intforce),in,&ierr);
 if (ierr != 1) dserror("Cannot read restart data");
 /*--------------------------------------------- read the ARRAY *dirich_a */
-pss_read_array_name_handle(dirich_a->name,dirich_a,&(res.dirich),&ierr);
+pss_read_array_name_handle(dirich_a->name,dirich_a,&(res.dirich),in,&ierr);
 if (ierr != 1) dserror("Cannot read restart data");
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -428,14 +436,14 @@ for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*3]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("nod_hand",&(res.node_fdim),&(res.node_sdim),&i,
-                     node_handles[0],&res.handle_of_node_handles,&ierr);
+                     node_handles[0],&res.handle_of_node_handles,in,&ierr);
 if (ierr != 1) dserror("Cannot read restart data");
 /*---------------- now we loop the nodes and each node reads his ARRAYs */
 for (i=0; i<numnp; i++)
 {
    actnode = actpart->pdis[0].node[i];
    /*------------------------- check for the dimensions of actnode->sol */
-   pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][0]),&ierr);
+   pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][0]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
    if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
@@ -443,11 +451,11 @@ for (i=0; i<numnp; i++)
        dims[1] != actnode->sol.sdim)
    amredef(&(actnode->sol),dims[0],dims[1],"DA");
    /*---------------------------------------------------------- read it */
-   pss_read_array_name_handle(actnode->sol.name,&(actnode->sol),&(node_handles[i][0]),&ierr);
+   pss_read_array_name_handle(actnode->sol.name,&(actnode->sol),&(node_handles[i][0]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
    /*-------------------------------------------------------------------*/
    /*--------------- check for the dimensions of actnode->sol_increment */
-   pss_getdims_name_handle(actnode->sol_increment.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][1]),&ierr);
+   pss_getdims_name_handle(actnode->sol_increment.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
    if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
@@ -455,11 +463,11 @@ for (i=0; i<numnp; i++)
        dims[1] != actnode->sol_increment.sdim)
    amredef(&(actnode->sol_increment),dims[0],dims[1],"DA");
    /*---------------------------------------------------------- read it */
-   pss_read_array_name_handle(actnode->sol_increment.name,&(actnode->sol_increment),&(node_handles[i][1]),&ierr);
+   pss_read_array_name_handle(actnode->sol_increment.name,&(actnode->sol_increment),&(node_handles[i][1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
    /*-------------------------------------------------------------------*/
    /*---------------- check for the dimensions of actnode->sol_residual */
-   pss_getdims_name_handle(actnode->sol_residual.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][2]),&ierr);
+   pss_getdims_name_handle(actnode->sol_residual.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][2]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
    if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
@@ -467,7 +475,7 @@ for (i=0; i<numnp; i++)
        dims[1] != actnode->sol_residual.sdim)
    amredef(&(actnode->sol_residual),dims[0],dims[1],"DA");
    /*---------------------------------------------------------- read it */
-   pss_read_array_name_handle(actnode->sol_residual.name,&(actnode->sol_residual),&(node_handles[i][2]),&ierr);
+   pss_read_array_name_handle(actnode->sol_residual.name,&(actnode->sol_residual),&(node_handles[i][2]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
    /*-------------------------------------------------------------------*/
 } /* end of for (i=0; i<numnp; i++) */
@@ -494,7 +502,7 @@ for (i=1; i<numele; i++)
 ele_handles[i] = &(ele_handles[0][i*5]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("ele_hand",&res.ele_fdim,&res.ele_sdim,&i,
-                     ele_handles[0],&res.handle_of_ele_handles,&ierr);
+                     ele_handles[0],&res.handle_of_ele_handles,in,&ierr);
 if (ierr != 1) dserror("Cannot read restart data");
 /*--------------------- now loop element and switch for type of element */
 *action = read_restart;

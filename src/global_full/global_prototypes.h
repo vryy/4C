@@ -623,10 +623,12 @@ void pss_write(char          *name,
                int            sdim,
                int            byte,
                const void    *startaddress,
-               long int      *handle, 
+               long int      *handle,
+               FILE          *out, 
                int           *ierr);
 void pss_write_array(const ARRAY *array, 
-                     long int    *handle, 
+                     long int    *handle,
+                     FILE        *out, 
                      int         *ierr);
 void pss_read_name(char      *name, 
                    int       *fdim, 
@@ -634,44 +636,53 @@ void pss_read_name(char      *name,
                    int       *byte,
                    void      *ziel,
                    long int  *handle, 
+                   FILE      *in,
                    int       *ierr);
 void pss_read_name_handle(char       *name, 
                           int	     *fdim, 
                           int	     *sdim,
                           int	     *byte,
                           void       *ziel, 
-                          long int   *handle, 
+                          long int   *handle,
+                          FILE       *in, 
                           int	     *ierr);
 void pss_read_array_name(char       *name, 
                          ARRAY      *array,
                          long int   *handle,
+                         FILE       *in,
                          int        *ierr);
 void pss_read_array_name_handle(char       *name, 
                                 ARRAY	   *array,
                                 long int   *handle,
+                                FILE       *in,
                                 int	   *ierr);
 void pss_read_array_handle(ARRAY      *array,
                            long int   *handle,
+                           FILE       *in,
                            int        *ierr);
 void pss_chck(char       *name,
               long int   *handle, 
+              FILE       *in,
               int        *ierr);
 void pss_chck_handle(char       *name,
                      long int   *handle, 
+                     FILE       *in,
                      int        *ierr);
 void pss_getdims_name(char       *name, 
                       int	 *fdim,
                       int	 *sdim,
                       int	 *byte,
                       long int	 *handle,
+                      FILE       *in,
                       int	 *ierr);
 void pss_getdims_name_handle(char       *name, 
                              int	*fdim,
                              int	*sdim,
                              int	*byte,
                              long int	*handle,
+                             FILE       *in,
                              int	*ierr);
-void pss_status_to_err();
+void pss_status_to_err(FILE *inout);
 /*----------------------------------------------------------------------*
  | routine to initialise the cpu - time                  genk 05/02     |
  *----------------------------------------------------------------------*/

@@ -113,7 +113,6 @@ if (par.myrank==0)
     printf("errors are reported to     %s\n",allfiles.outputfile_name);
 /*------------------------------------------------------open .pss file */
 /* is opened on all procs */     
-     strncpy(charpointer,".pss",4);
 /*-------------------------------------------------- check for restart */
      genprob.restart=0;
      if (argc > 3)
@@ -124,9 +123,14 @@ if (par.myrank==0)
        if (strncmp("restart",resptr,length)==0) genprob.restart++;
      } 
 /*----------------- in case of restart open the pss-file to apend mode */
+/* 
+   old pss-file is opened read/write/append on allfiles.in_pss
+   new pss-file is opened read/write        on allfiles.out_pss
+*/   
 if (genprob.restart)
 {
-     if ( (allfiles.out_pss=fopen(allfiles.outputfile_name,"a+b"))==NULL)
+     strncpy(charpointer,".pss",4);
+     if ( (allfiles.in_pss=fopen(allfiles.outputfile_name,"a+b"))==NULL)
      {
         printf("Opening of restart file .pss failed\n");
 #ifdef PARALLEL 
@@ -135,17 +139,28 @@ if (genprob.restart)
         exit(1);
      }
     if (par.myrank==0)
-    printf("binary is written   to     %s\n",allfiles.outputfile_name);
     printf("restart           from     %s\n",allfiles.outputfile_name);
     /*----------------------- set file pointer to the end of pss file */
     fseek(allfiles.out_pss,0,SEEK_END);
+
+     strncpy(charpointer,".respss",7);
+     if ( (allfiles.out_pss=fopen(allfiles.outputfile_name,"w+b"))==NULL)
+     {
+        printf("Opening of restart file .respss failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    if (par.myrank==0)
+    printf("binary is written   to     %s\n",allfiles.outputfile_name);
+    /*----------------------- set file pointer to the end of pss file */
+    fseek(allfiles.out_pss,0,SEEK_END);
     /*---------------- write status report about pss-file to err file */
-#ifdef DEBUG 
-    pss_status_to_err();
-#endif
 }
 else/*------------------------------- no restart, open a new pss-file */
 {
+     strncpy(charpointer,".pss",4);
      if ( (allfiles.out_pss=fopen(allfiles.outputfile_name,"w+b"))==NULL)
      {
         printf("Opening of output file .pss failed\n");
@@ -156,6 +171,7 @@ else/*------------------------------- no restart, open a new pss-file */
      }
     if (par.myrank==0)
     printf("binary is written   to     %s\n",allfiles.outputfile_name);
+    allfiles.in_pss=NULL;
 }
 /*-----------------------------------------------open .flavia.msh file */
 if (par.myrank==0)
