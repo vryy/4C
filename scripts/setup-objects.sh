@@ -107,6 +107,11 @@ if grep '^D_FSI' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_FSI)"
 fi
 
+# SSI
+if grep '^D_SSI' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_SSI)"
+fi
+
 # OPTIM 
 if grep '^D_OPTIM' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_OPT)"
