@@ -1,0 +1,26 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+
+# just for convenience
+MPIDIR=/opt/mpich
+INTELDIR=/lnm/intel/compiler70/ia32
+MKLDIR=/lnm/intel/mkl61
+
+PROGRAMNAME=cca_par_linux
+CC="$MPIDIR/bin/mpiCC -CC=$INTELDIR/bin/icc"
+F77="$MPIDIR/bin/mpif77 -fc=$INTELDIR/bin/ifc"
+LD=$F77
+
+INCLUDEDIRS="-I$MPIDIR/include -I$MKLDIR/include -I/lnm/include"
+LIBDIRS="-L$MPIDIR/lib -L$MKLDIR/lib/32 -L/lnm/lib"
+
+LIBS="-lc -lm \
+    -lmkl_lapack64 -lmkl -lguide \
+    -lmetis \
+    -laztec \
+    -lspoolesMPI -lspooles"
+
+CFLAGS="-Wall -ansi -w2 -O3 -tpp7 -ip -p -vec_report3 -opt_report_levelmin"
+FFLAGS="-Wall"
+LDFLAGS=

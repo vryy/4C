@@ -1,0 +1,20 @@
+# -*- shell-script -*-
+
+PLATFORM=HPUX_MUENCH
+
+# just for convenience
+MPIDIR=/opt/mpi
+
+PROGRAMNAME=cca_par_hpux
+F77=$MPIDIR/bin/mpif77
+CC=$MPIDIR/bin/mpicc
+LD=$F77
+
+INCLUDEDIRS="-I$MPIDIR/include -I/usr/local/include"
+LIBDIRS="-L/usr/local/lib/hpux32 -L/usr/local/lib -L/opt/mlib/lib/hpux32"
+
+LIBS="-llapack -lmetis -laztec -lspoolesMPI -lspooles"
+
+CFLAGS=
+FFLAGS=
+LDFLAGS=

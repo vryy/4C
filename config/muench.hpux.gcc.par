@@ -1,0 +1,22 @@
+# -*- shell-script -*-
+
+# Would it be possible to create a 64bit version? Would it be faster?
+
+PLATFORM=HPUX_MUENCH
+
+# just for convenience
+MPIDIR=/opt/mpi
+
+PROGRAMNAME=cca_par_hpux
+F77="MPI_F77=/usr/local/bin/g77 $MPIDIR/bin/mpif77"
+CC="MPI_CC=/usr/local/bin/gcc $MPIDIR/bin/mpicc"
+LD="$CC"
+
+INCLUDEDIRS="-I$MPIDIR/include -I/usr/local/include"
+LIBDIRS="-L/usr/local/lib/hpux32 -L/usr/local/lib -L/opt/mlib/lib/hpux32"
+
+LIBS="-lm -lg2c -llapack -lmetis -laztec -lspoolesMPI -lspooles"
+
+CFLAGS="-Wall -ansi -D_HPUX_SOURCE"
+FFLAGS="-Wall"
+LDFLAGS=

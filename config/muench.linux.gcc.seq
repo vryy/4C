@@ -1,0 +1,18 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+
+PROGRAMNAME=cca_seq_linux
+F77=g77
+CC=gcc
+LD=gcc
+
+INCLUDEDIRS="-I/opt/mpich/include -I/lnm/include"
+LIBDIRS="-L/lnm/lib"
+
+#LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec"
+LIBS="-lc -lm -lg2c -llapack -lblas -lmetis -laztec"
+
+CFLAGS="-Wall -ansi"
+FFLAGS="-Wall"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"

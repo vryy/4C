@@ -1,0 +1,22 @@
+
+# This is a sample defines file
+
+# even though we never make mistakes debugging is an option
+DEBUG
+
+# we want ccarat to do lots of things
+D_BRICK1  
+D_FLUID 
+D_FLUID2 
+D_FLUID2_PRO 
+D_FLUID3 
+D_SHELL8 
+D_BEAM3 
+D_ALE 
+D_WALL1 
+D_AXISHELL 
+D_MAT 
+D_FSI 
+
+# and of course it should use some solvers
+AZTEC_PACKAGE

@@ -1,0 +1,20 @@
+# -*- shell-script -*-
+
+PLATFORM="HPUX_MUENCH +DD64 -DSIXTYFOUR"
+
+# just for convenience
+MPIDIR=/opt/mpi
+
+PROGRAMNAME=cca_par_hpux64
+F77=$MPIDIR/bin/mpif77
+CC=$MPIDIR/bin/mpicc
+LD=$F77
+
+INCLUDEDIRS="-I$MPIDIR/include -I/usr/local/include"
+LIBDIRS="-L/usr/local/lib/hpux64 -L/usr/local/lib -L/opt/mlib/lib/hpux64"
+
+LIBS="-llapack -lmetis64 -laztec64 -lspoolesMPI64 -lspooles64"
+
+CFLAGS=
+FFLAGS=
+LDFLAGS=+DD64
