@@ -48,23 +48,23 @@ include ./Makefile.personal_path
 #
 # sequentiell part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_seq_10.20.exe
-#FXX   = f77
-#CCX   = cc
-#LDX   = cc
-#PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE
-#AZTEC = -laztec_seriell21
+PROGRAM_NAME  = cca_seq_10.20.exe
+FXX   = f77
+CCX   = cc
+LDX   = cc
+PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE
+AZTEC = -laztec_seriell21
 #--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_par_10.20.exe
-FXX   = /opt/mpi/bin/mpif77
-CCX   = /opt/mpi/bin/mpicc
-LDX   = /opt/mpi/bin/mpicc
-PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-        -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
-AZTEC = -laztec_par21
+#PROGRAM_NAME  = cca_par_10.20.exe
+#FXX   = /opt/mpi/bin/mpif77
+#CCX   = /opt/mpi/bin/mpicc
+#LDX   = /opt/mpi/bin/mpicc
+#PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+#        -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
+#AZTEC = -laztec_par21
 #
 #--------------------------------------------------------------------
 #
@@ -76,11 +76,11 @@ RM	 = /bin/rm -f
 # switch between fast and debug compilation by uncommenting 
 # the approbiate flags:
 #------------------------------------------------ this is debug-32bit
-#CFLAGS        = -D__HP__ +w1 +e -Aa -Ae -v -g ${PFL} -DDEBUG
-#FFLAGS        = -g -I/opt/mpi/include/
+CFLAGS        = -D__HP__ +w1 +e -Aa -Ae -v -g ${PFL} -DDEBUG
+FFLAGS        = -g -I/opt/mpi/include/
 #------------------------------------------------- this is fast-32bit
-CFLAGS       = -D__HP__  +e -Ae +w1 -v -OAa +Onolimit ${PFL}
-FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
+#CFLAGS       = -D__HP__  +e -Ae +w1 -v -OAa +Onolimit ${PFL}
+#FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
 INCLUDES = -I/opt/mpi/include/ \
