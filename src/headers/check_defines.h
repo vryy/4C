@@ -12,6 +12,12 @@ Maintainer: Malte Neumann
 ---------------------------------------------------------------------*/
 
 /*--------------------------------------- check plausibility of defines */
+/* spooles only in parallel */
+#if defined(SPOOLES_PACKAGE) && !defined(PARALLEL)
+#error "SPOOLES only possible in  PARALLEL."
+#error "Use -DPARALLEL in the makefile."
+#endif
+
 /* wallcontact */
 #if defined(WALLCONTACT) && !defined(D_CONTACT)
 #error "WALLCONTACT needs D_CONTACT."
