@@ -118,7 +118,7 @@ if (myrank==0)
 {
 /*-------------------------------------------------------- print header */
 fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"p_carat outputfile\n");
+fprintf(out,"CCARAT outputfile\n");
 fprintf(out,"________________________________________________________________________________\n\n");
 for (i=0; i<5; i++)
 fprintf(out,"%s\n",allfiles.title[i]);
