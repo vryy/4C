@@ -344,8 +344,11 @@ void perf_out ()
   perf_print(18,"assemble rhs vectors",    0,1);
   perf_print(19,"exchange dofs",           0,1);
   perf_print(20,"solve system",            0,1);
+  if (counter[21]+counter[22]>0)
   printf("%77s\n","-----------------------------------------------------------------------------");
+  if (counter[21]>0)
   perf_print(21,"permute fluid matrices",  2,1);
+  if (counter[22]>0)
   perf_print(22,"local co-ord. system",    2,1);
   printf("%77s\n","-----------------------------------------------------------------------------");
   user_perf = 0;
