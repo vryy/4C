@@ -90,6 +90,7 @@ typedef char      CHAR;
 #define dveczero            dveczero_
 #define iveczero            iveczero_
 #define fsdoc               fsdoc_
+#define v2_init             v2_init_
 #endif
 #ifndef AZTEC_PACKAGE
 void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
@@ -301,7 +302,8 @@ static INT iminarg1,iminarg2;
  | fluid2                                                               |
  *----------------------------------------------------------------------*/
 #define NUM_F2_VELDOF (2) /* number of velocity dofs per node */
-#define MAXNOD_F2 (9)    /* max. number of nodes per element */
+#define NUMDOF_FLUID2 (3) /* number of dofs per node */
+#define MAXNOD_F2     (9) /* max. number of nodes per element */
 /*----------------------------------------------------------------------*
  | fluid3                                                               |
  *----------------------------------------------------------------------*/

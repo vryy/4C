@@ -189,14 +189,16 @@ for (i=0; i<counter; i++)
       if (ierr!=1) dserror("cannot read CURVE\n");
       if (strncmp(buffer,"f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1",41)==0)
          actcurve->numex=-1;
-      else if (strncmp(buffer,"f(t)=exp(1-1:t)",15)==0)
+      else if (strncmp(buffer,"f(t)=exp(1-1:t)_for_t<C1_else_const.",36)==0)
          actcurve->numex=-2;
+      else if (strncmp(buffer,"f(t)=1-cos(C1*PI*t)",19)==0)
+         actcurve->numex=-3;
       else
          dserror("cannot read function of CURVE\n");
       if (ierr!=1) dserror("cannot read CURVE");
-      frdouble("C1",&(actcurve->c1),&ierr);
+      frdouble("c1",&(actcurve->c1),&ierr);
       if (ierr!=1) dserror("cannot read CURVE");  
-      frdouble("C2",&(actcurve->c2),&ierr); 
+      frdouble("c2",&(actcurve->c2),&ierr); 
       if (ierr!=1) dserror("cannot read CURVE");                
    }
 } /* end of loop over curve lines */

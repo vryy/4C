@@ -541,9 +541,13 @@ for (i=0; i<design->ndnode; i++)
          break;
       }
    }
-   if (!actnode) dserror("Cannot make DNODE<->GNODE topology");
-   actnode->gnode->ondesigntyp = ondnode;
-   actnode->gnode->d.dnode = actdnode;
+/*   if (!actnode) dserror("Cannot make DNODE<->GNODE topology"); 
+     check is done later again!!!                                       */
+   if (actnode)
+   {
+      actnode->gnode->ondesigntyp = ondnode;
+      actnode->gnode->d.dnode = actdnode;
+   }
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

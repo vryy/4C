@@ -66,6 +66,10 @@ void ntainp(void);
  *----------------------------------------------------------------------*/
 void mask_global_matrices(void);
 /*----------------------------------------------------------------------*
+ | global_monitoring.c                                    genk 01/03    |
+ *----------------------------------------------------------------------*/
+void monitoring(FIELD *actfield,int numf, int actpos, int actstep, double time); 
+/*----------------------------------------------------------------------*
  |  machine_hpux.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void ntadev(int argc, char *argv[]);
@@ -102,6 +106,9 @@ double dyn_facexplcurve(int actcurve,
 void out_general(void);
 void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
              int step, int place);
+
+void out_fluidmf(FIELD *fluidfield);
+void out_fsi(FIELD *fluidfield);
 /*----------------------------------------------------------------------*
  |  out_gid_sol.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
@@ -109,11 +116,17 @@ void out_gid_sol_init(void);
 void out_gid_domains(FIELD *actfield);
 void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step,
                  int place);
+void out_fsi(FIELD *fluidfield);
 /*----------------------------------------------------------------------*
  |  out_gid_msh.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_gid_msh(void);
 void out_gid_allcoords(FILE *out);
+/*----------------------------------------------------------------------*
+ |  out_monitor.c                                         genk 01/03    |
+ *----------------------------------------------------------------------*/
+void out_monitor(FIELD *actfield, int numf);
+void out_area(ARRAY totarea_a); 
 /*----------------------------------------------------------------------*
  |  inherit_insidedesign.c                                  m.gee 3/02  |
  *----------------------------------------------------------------------*/
@@ -123,6 +136,8 @@ void inherit_dirich_coup_indesign(void);
  *----------------------------------------------------------------------*/
 void inherit_design_dis_dirichlet(DISCRET *actdis);
 void inherit_design_dis_couple(DISCRET *actdis);
+void inherit_design_dis_fsicouple(DISCRET *actdis);
+void inherit_design_dis_freesurf(DISCRET *actdis);
 void inherit_design_dis_neum(DISCRET *actdis);
 /*----------------------------------------------------------------------*
  |  input_conditions.c                                  m.gee 11/01     |
@@ -145,11 +160,25 @@ In this routine the data in the FLUID DYNAMIC block of the input file
 are read and stored in fdyn	       
 
 </pre>
-\param  *data 	  FLUID_DATA       (o)	   
+\param  *fdyn 	  FLUID_DATA       (o)	   
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void inpctr_dyn_fluid(FLUID_DYNAMIC *fdyn);
+/*!---------------------------------------------------------------------                                         
+\brief input of the FSI DYNAMIC block in the input-file
+
+<pre>                                                         genk 09/02
+
+In this routine the data in the FSI DYNAMIC block of the input file
+are read and stored in fsidyn	       
+
+</pre>
+\param  *fsidyn 	  FSI_DATA       (o)	   
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void inpctr_dyn_fsi(FSI_DYNAMIC *fsidyn);
 /*----------------------------------------------------------------------*
  |  input_ctr_head.c                                  m.gee 11/01       |
  *----------------------------------------------------------------------*/
@@ -193,6 +222,10 @@ void inpnodes(void);
 void inp_struct_field(FIELD *structfield);
 void inp_fluid_field(FIELD *fluidfield);
 void inp_ale_field(FIELD *alefield);
+/*----------------------------------------------------------------------*
+ |  input_monitor                                         genk 01/03    |
+ *----------------------------------------------------------------------*/
+void inp_monitor(void); 
 /*----------------------------------------------------------------------*
  |  input_topology.c                                  m.gee 11/01       |
  *----------------------------------------------------------------------*/
@@ -754,42 +787,30 @@ void pss_getdims_name_handle(char       *name,
                              int	*ierr);
 void pss_status_to_err(FILE *inout);
 /*----------------------------------------------------------------------*
+ | pss_visual.c                                            genk 12/02   |
+ *----------------------------------------------------------------------*/
+void visual_writepss(FIELD  *actfield,  
+                       int     ntsteps,  
+		       ARRAY  *time_a	 
+		    );
+void visual_readpss(FIELD   *actfield, 
+                      int     *ntsteps,  
+		      ARRAY   *time_a	 
+		     );
+		     
+/*----------------------------------------------------------------------*
  | ccarat_visual2.c                                        genk 07/02   |
  *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------                                         
-\brief call of visual2 for fluid 
-
-<pre>                                                         genk 07/02      
-</pre>  
-\param  numf   int      (i)       actual number of fluid field
-\return void                                                                       
-
-------------------------------------------------------------------------*/
-void vis2caf(int numf);
-/*!---------------------------------------------------------------------                                         
-\brief  compute the array WCELL for use in QAT2V2 
-
-<pre>                                                         genk 07/02      
-</pre>  
-\param  *actfield     FIELD    (i)  actual field		 
-\return void                                                                       
-\warning QAT2V2 requires FORTRAN numbering, so increase node-numbers by one!!
-
-------------------------------------------------------------------------*/
+void vis2caf(int numf, int numa, int nums);
+void v2movie(void);
 void v2cell(FIELD *actfield);
-/*!---------------------------------------------------------------------                                         
-\brief dummy routine 
-
-<pre>                                                         genk 07/02      
-
-since VISUAL2 is called by a fortran routine, this one is necessary, if
-VIS2-routines are not compiled into the program
-
-</pre>  		 
-\return void                                                                       
-
-------------------------------------------------------------------------*/
-void v2_init(void);
+void v2_init(
+             char *titl, int *iopt, int *cmncol, char *cmfile, int *cmunit,
+	     int *xypix, float *xymin, float *xymax,
+	     int *nkeys, int *ikeys, int *tkeys, int *fkeys, float **flims,
+	     int *mnode, int *mptri, int *mpptri,
+	     int *mface, int *mpface, int *medge, int *mpedge
+	    );
 /*!---------------------------------------------------------------------                                         
 \brief input of optimization data 
 
