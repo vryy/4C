@@ -259,6 +259,7 @@ for (i=0; i<2*genprob.nnode; i++)
    if (nodeflag.a.iv[i]!=-1) counter++;
 }
 actdis->numnp=counter;
+dsassert(actdis->numnp>0, "No nodes in discretization");
 /*-------------------------------------- Allocate the nodes to the field */
 actdis->node = (NODE*)CCACALLOC(counter,sizeof(NODE));
 /*---------------- assign the node Ids and coords to the NODE structure */

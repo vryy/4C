@@ -124,6 +124,7 @@ for (i=0; i<design->ndvol; i++)
       am_alloc_copy(&(actdvol->dirich->dirich_onoff),&(actdsurf->dirich->dirich_onoff));  
       am_alloc_copy(&(actdvol->dirich->dirich_val),&(actdsurf->dirich->dirich_val));  
       am_alloc_copy(&(actdvol->dirich->curve),&(actdsurf->dirich->curve));
+      am_alloc_copy(&(actdvol->dirich->funct),&(actdsurf->dirich->funct));
    }/* loop j over dsurfs */
 }/* loop i over dvols */
 /*----------------------------------------------------------------------*/
@@ -163,6 +164,7 @@ for (i=0; i<design->ndsurf; i++)
       am_alloc_copy(&(actdsurf->dirich->dirich_onoff),&(actdline->dirich->dirich_onoff));  
       am_alloc_copy(&(actdsurf->dirich->dirich_val),&(actdline->dirich->dirich_val));  
       am_alloc_copy(&(actdsurf->dirich->curve),&(actdline->dirich->curve));
+      am_alloc_copy(&(actdsurf->dirich->funct),&(actdline->dirich->funct));
    }/* loop j over dlines */
 }/* loop i over dsurfs */
 /*----------------------------------------------------------------------*/
@@ -201,6 +203,7 @@ for (i=0; i<design->ndline; i++)
       am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));  
       am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));  
       am_alloc_copy(&(actdline->dirich->curve),&(actdnode->dirich->curve));
+      am_alloc_copy(&(actdline->dirich->funct),&(actdnode->dirich->funct));
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/

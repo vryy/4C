@@ -25,8 +25,8 @@ Maintainer: Malte Neumann
  | INT                 numfunct;                                        |
  | struct _FUNCT      *funct;                                           |
  *----------------------------------------------------------------------*/
-INT                 numfunct;
-struct _FUNCT      *funct;
+extern INT                 numfunct;
+extern struct _FUNCT      *funct;
 
 /*!----------------------------------------------------------------------
 \brief calculates the value of a given spatial function for a given gnode

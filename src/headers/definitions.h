@@ -58,6 +58,9 @@ typedef char      CHAR;
 #ifdef SUSE73 
 #define CCA_APPEND_U (1)
 #endif
+#ifdef LINUX_MUENCH
+#define CCA_APPEND_U (1)
+#endif
 /* append underslash for CUSS Sunfire */
 #ifdef SUN 
 #define CCA_APPEND_U (1)
@@ -68,6 +71,9 @@ typedef char      CHAR;
 #endif
 /* append underslash for HPUX11i flag */
 #ifdef HPUXITA 
+#define CCA_APPEND_U (1)
+#endif
+#ifdef HPUX_MUENCH
 #define CCA_APPEND_U (1)
 #endif
 
@@ -172,28 +178,50 @@ void fortranpow(DOUBLE *V,DOUBLE *R,DOUBLE *RE);
 #define DSQR(a) ((a)*(a))
 
 /*----------------------------------------------------------------------*
+ | plain old min and max (working version)                              |
+ *----------------------------------------------------------------------*/
+#if !defined(MAX)
+#define	MAX(a,b) (((a)>(b))?(a):(b))
+#endif
+#if !defined(MIN)
+#define	MIN(a,b) (((a)<(b))?(a):(b))
+#endif
+
+/*----------------------------------------------------------------------*
  | the larger of two doubles (fast version)                             |
  *----------------------------------------------------------------------*/
+/*
 static DOUBLE dmaxarg1,dmaxarg2;
 #define DMAX(a,b) (dmaxarg1=(a),dmaxarg2=(b), (dmaxarg1) > (dmaxarg2) ? (dmaxarg1) : (dmaxarg2))
+*/
+#define DMAX MAX
 
 /*----------------------------------------------------------------------*
  | the smaller of two doubles (fast version)                            |
  *----------------------------------------------------------------------*/
+/*
 static DOUBLE dminarg1,dminarg2;
 #define DMIN(a,b) (dminarg1=(a),dminarg2=(b), (dminarg1) < (dminarg2) ? (dminarg1) : (dminarg2))
+*/
+#define DMIN MIN
 
 /*----------------------------------------------------------------------*
  | the larger of two integer (fast version)                             |
  *----------------------------------------------------------------------*/
+/*
 static INT imaxarg1,imaxarg2;
 #define IMAX(a,b) (imaxarg1=(a),imaxarg2=(b), (imaxarg1) > (imaxarg2) ? (imaxarg1) : (imaxarg2))
+*/
+#define IMAX MAX
 
 /*----------------------------------------------------------------------*
  | the smaller of two integer (fast version)                            |
  *----------------------------------------------------------------------*/
+/*
 static INT iminarg1,iminarg2;
 #define IMIN(a,b) (iminarg1=(a),iminarg2=(b), (iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2))
+*/
+#define IMIN MIN
 
 /*----------------------------------------------------------------------*
  | max number of processors                                             |

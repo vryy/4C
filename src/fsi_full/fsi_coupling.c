@@ -94,6 +94,8 @@ for (i=0; i<design->ndline; i++)
       amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdline->dirich->dirich_val));
       amzero(&(actdline->dirich->curve));
+      amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
+      amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       actdline->dirich->dirich_onoff.a.iv[0] = 1;   
       actdline->dirich->dirich_onoff.a.iv[1] = 1;       
@@ -112,6 +114,8 @@ for (i=0; i<design->ndline; i++)
       amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdline->dirich->dirich_val));
       amzero(&(actdline->dirich->curve));
+      amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
+      amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       actdline->dirich->dirich_onoff.a.iv[0] = 1;   
       actdline->dirich->dirich_onoff.a.iv[1] = 1;   

@@ -54,6 +54,13 @@ c      PARAMETER (ZERO=0.0D0,ONE=1.0D0)
       DATA IRED/0/, ICOMP/0/ 
       SAVE ICOMP,IRED
 C
+C What's the use of these variables?
+C
+      T1=0.0
+      T2=0.0
+      T3=0.0
+      T4=0.0
+C
 C
 C       IPR = 0    ... NO TRACE PRINT DURING FACTORIZATION
 C       IPR = NNN  ... PRINT MESSAGE AFTER PROCESSING NNN EQUATIONS

@@ -112,7 +112,9 @@ knn       = amdef("knn"    ,&knn_a   ,4,4,"DA");
 knninv    = amdef("knninv" ,&knninv_a,4,4,"DA");           
 deltak    = amdef("deltak" ,&deltak_a,8,8,"DA");           
 fintn     = amdef("fintn"  ,&fintn_a ,4,1,"DV");           
-deltaf    = amdef("deltaf" ,&deltaf_a,8,1,"DV");           
+deltaf    = amdef("deltaf" ,&deltaf_a,8,1,"DV");
+
+amzero(&D_a);
 goto end;
 }
 /*----------------------------------------------------------------------*/

@@ -41,6 +41,14 @@ Maintainer: Malte Neumann
 #include "../../../../lib_ita1/aztec21/lib/az_aztec.h"
 #endif
 
+#ifdef LINUX_MUENCH
+#include <aztec21/lib/az_aztec.h>
+#endif
+
+#ifdef HPUX_MUENCH
+#include <aztec21/lib/az_aztec.h>
+#endif
+
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
 #ifdef HPUXITA
@@ -57,6 +65,14 @@ Maintainer: Malte Neumann
 
 #ifdef SUSE73
 #include "../../../lib_linux/aztec21/lib/az_aztec.h"
+#endif
+
+#ifdef LINUX_MUENCH
+#include <aztec21/lib/az_aztec.h>
+#endif
+
+#ifdef HPUX_MUENCH
+#include <aztec21/lib/az_aztec.h>
 #endif
 
 #endif
@@ -104,6 +120,14 @@ Maintainer: Malte Neumann
 
 #ifdef SUSE73
 #include "../../../lib_linux/spooles/MPI/spoolesMPI.h"
+#endif
+
+#ifdef LINUX_MUENCH
+#include <spooles/MPI/spoolesMPI.h>
+#endif
+
+#ifdef HPUX_MUENCH
+#include <spooles/MPI/spoolesMPI.h>
 #endif
 
 #endif

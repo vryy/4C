@@ -477,6 +477,7 @@ end:
 #ifndef PARALLEL 
 CCAFREE(actintra);
 #endif
+amdel(&(nln_data.arcfac));
 #ifdef DEBUG 
 dstrc_exit();
 #endif
