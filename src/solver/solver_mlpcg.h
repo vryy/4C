@@ -96,7 +96,6 @@ INT                     postsweep;   /*!< number of postsmoothing sweeps */
 struct _DISCRET        *fielddis;    /*!< warning: this is a pointer to the field original, not a copy! */
 struct _PARTDISCRET    *partdis;     /*!< warning: this is a pointer to the partition original, not a copy! */
 } MLPCGVARS;
-
 /*!------------------------------------------------------------------------
 \brief one level of the multilevel preconditioner
 
@@ -140,7 +139,7 @@ INT                     tentP_nrow;  /*!< number of rows in this piece of tent. 
 INT                    *tentP_rindex;/*!< the row indizes of this piece of tentative prolongator */
                                      /*   (the column indizes are the dofs) */
 DOUBLE                  x[3];
-/*struct _ARRAY          *R;*/           /*  The R-part of the P=QR factorization */
+struct _ARRAY          *R;           /*  The R-part of the P=QR factorization */
 enum
    {
     mlpcg_aggnone,
@@ -172,6 +171,11 @@ struct _PARTDISCRET    *partdis;         /*!< warning: this is a pointer to the 
 struct _ARRAY           director;        /*!< the nodal directors of the shell8 associated nodes */
 NODE                  **node;            /*!< ptr to the nodes of the partition */
 DOUBLE                  omega;           /*!< damping factor of the prolongator smoother */
+#if 0
+ARRAY                   v;
+ARRAY                   w;
+ARRAY                   H;
+#endif
 } MLPRECOND;
 /*!------------------------------------------------------------------------
 \brief the ml solver
@@ -186,6 +190,7 @@ typedef struct _MLSOLVER
 DOUBLE                     tol;         /*!< tolerance for the cg algorithm */
 INT                        maxiter;     /*!< max number of iterations for the cg algorithm */
 struct _ARRAY              r;           /*!< iterate vector of the cg-algorithm */     
+struct _ARRAY              runscale;    /*!< unscaled residuum */     
 struct _ARRAY              z;           /*!< iterate vector of the cg-algorithm */
 struct _ARRAY              p;           /*!< iterate vector of the cg-algorithm */
 struct _ARRAY              q;           /*!< iterate vector of the cg-algorithm */

@@ -15,6 +15,110 @@ Maintainer: Michael Gee
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../shell8/shell8.h"
+extern struct _FILES         allfiles;
+/*!----------------------------------------------------------------------
+\brief the multilevel preconditioner main structure
+
+<pre>                                                         m.gee 09/02    
+defined in solver_mlpcg.c
+</pre>
+
+*----------------------------------------------------------------------*/
+extern struct _MLPRECOND mlprecond;
+/*----------------------------------------------------------------------*
+ |  make eigenanalysis of system matrice                     m.gee 2/04|
+ *----------------------------------------------------------------------*/
+void mlpcg_eigen(DBCSR   *stiff, INTRA *actintra)
+{
+INT       i,j,k,ii,jj;
+INT       numeq;
+char      jobz[1];
+char      uplo[1];
+ARRAY     A_a;
+ARRAY     EW_a;
+DOUBLE  **A, *EW;
+INT       lwork;
+ARRAY     WORK_a, IWORK_a;
+DOUBLE   *WORK;
+INT      *IWORK,liwork;
+INT       info=1;
+INT      *ia,*ja,*update,colstart,colend;
+DOUBLE   *a;
+DIST_VECTOR    *distvecs;
+#ifdef DEBUG 
+dstrc_enter("mlpcg_eigen");
+#endif
+/*-------------------------------------------------------some variables */
+numeq    = stiff->numeq_total;
+/*
+solserv_create_vec(&distvecs,numeq,numeq,numeq,"DV");
+for (k=0; k<numeq; k++) solserv_zero_vec(&(distvecs[k]));
+*/
+lwork    = 1 + 10*numeq + 10*numeq*numeq;
+liwork   = 3 + 10*numeq;
+jobz[0]  = 'V';
+uplo[0]  = 'L';
+A     = amdef("A",&A_a,numeq,numeq,"DA");
+EW    = amdef("EW",&EW_a,numeq,1,"DV");
+WORK  = amdef("WORK",&WORK_a,lwork,1,"DV");
+IWORK = amdef("IWORK",&IWORK_a,liwork,1,"IV");
+amzero(&A_a);
+update = stiff->update.a.iv;
+ia     = stiff->ia.a.iv;
+ja     = stiff->ja.a.iv;
+a      = stiff->a.a.dv;
+/*--- fill the dense arrays A and B with the sparse stiffness and mass */
+for (i=0; i<numeq; i++)
+{
+   ii = update[i];
+   colstart = ia[i];
+   colend = ia[i+1];
+   for (j=colstart; j<colend; j++)
+   {
+      jj = ja[j];
+      A[ii][jj] = a[j];
+   }
+}
+/*--------------------------- call lapack to calculate the eigenvalues */
+printf("Reached eigensolver\n");
+fflush(stdout);
+dsyevd(jobz,uplo,&numeq,A[0],&numeq,EW,WORK,&lwork,IWORK,&liwork,&info);
+printf("info=%d\n",info);
+printf("Largest Eigenvalue is %30.15E\n",EW[numeq-1]);
+printf("Condition number is %30.15E\n",EW[numeq-1]/EW[0]);
+printf("Time step should then be smaller then %30.15E\n",2.0/(sqrt(EW[numeq-1])));
+fflush(stdout);
+/*----------------------------------------------------------------------*/
+/*
+for (i=0; i<numeq; i++)
+{
+   for (k=0; k<numeq; k++)
+   distvecs[i].vec.a.dv[k] = A[i][k];
+   mlpcg_printvec(i,distvecs[i].vec.a.dv,stiff,mlprecond.fielddis,mlprecond.partdis,actintra);
+}
+*/
+/*----------------------------------------------------------------------*/
+fprintf(allfiles.out_err,"------------------Eigenanalysis of SYMMETRIC (Keff-lambda*I)*phi=0-----\n");
+fprintf(allfiles.out_err,"Eigenvalues in ascending order:\n");
+for (k=0; k<numeq; k++)
+fprintf(allfiles.out_err," %d %40.20f \n",k+1,EW[k]);
+fprintf(allfiles.out_err,"------------------End Eigenanalysis---------------------------------\n");
+fflush(allfiles.out_err);
+/*----------------------------------------------------------------------*/
+amdel(&A_a);
+amdel(&EW_a);
+amdel(&WORK_a);
+amdel(&IWORK_a);
+dserror("End of eigenvalue analysis");
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_eigen */
+
+
+
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
@@ -119,8 +223,8 @@ return;
 }
 #endif
 
-#if 0
-INT mlpcg_precond_oneP_vanek_test(AGG     *actagg,
+#if 1
+void mlpcg_precond_oneP_vanek_QR(AGG     *actagg,
                              DOUBLE   aggblock[][500],
                              INT      rindex[],
                              INT      cindex[],
@@ -223,7 +327,7 @@ for (i=0; i<actagg->nblock; i++)
 } /* end of for (i=0; i<actagg->nblock; i++) */
 /*======================================================================*/
 /*======================================================================*/
-#endif /*- this is the calculation of the rigid body mode for SHELL8 !!!*/
+#endif 
 /*======================================================================*/
 /*======================================================================*/
 /*----------------------------------------------------------------------*/
@@ -233,9 +337,4 @@ dstrc_exit();
 return;
 } /* end of mlpcg_precond_oneP_vanek */
 #endif
-
-
-
-
-
 #endif

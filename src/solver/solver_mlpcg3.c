@@ -96,12 +96,13 @@ return;
 void mlpcg_pcg(DBCSR       *bdcsr, 
                DIST_VECTOR *sol,
                DIST_VECTOR *rhs,
+               DOUBLE      *D,
                INTRA       *actintra)
 {
 INT        i;
 INT        myrank,nproc;
 INT        numeq;
-DOUBLE    *r,*z,*p,*q,*x,*b;
+DOUBLE    *r,*z,*p,*q,*x,*b,*runscale;
 DOUBLE     rho1,rho2=1.0,beta,alfa;
 DOUBLE     work;
 DOUBLE     eps=1000000.0;
@@ -123,6 +124,7 @@ numeq       = bdcsr->numeq;
 x = sol->vec.a.dv;
 b = rhs->vec.a.dv;
 r = mlsolver.r.a.dv;
+runscale = mlsolver.runscale.a.dv;
 z = mlsolver.z.a.dv; 
 p = mlsolver.p.a.dv;
 q = mlsolver.q.a.dv;
@@ -141,11 +143,11 @@ for (i=0; i<mlsolver.maxiter; i++)
    mlpcg_precond_amgVW(0,&(mlsolver.z),&(mlsolver.r),actintra,&one);
    /*----------- this is the f-cycle algebraic multigrid preconditioner */
    /*two = 2;
-   mlpcg_precond_amgF(0,&(mlsolver.z),&(mlsolver.r),actintra,&two); */
+   mlpcg_precond_amgF(0,&(mlsolver.z),&(mlsolver.r),actintra,&two);
    /*------- this is a simple additive schwarz one level preconditioner */
-   /*mlpcg_precond_presmo(z,r,bdcsr,&(mlprecond.level[0]),actintra,0); */
+   /*mlpcg_precond_presmo(z,r,bdcsr,&(mlprecond.level[0]),actintra,0);
    /*--------------------------------- this is no preconditioner at all */
-   /*mlpcgupdvec(z,r,&done,&ione,&numeq); */
+   /*mlpcgupdvec(z,r,&done,&ione,&numeq);
    /*----------------------------------------- inner product rho1 = r*z */
    mlpcg_vecvec(&rho1,r,z,numeq,actintra);
    /*------------------------------- -------- check for first iteration */
@@ -167,17 +169,24 @@ for (i=0; i<mlsolver.maxiter; i++)
    /*------------------------------------------------- x = x + alfa * p */
    mlpcgupdvec(x,p,&alfa,&izero,&numeq);
    /*------------------------------------------------ write x to output */
-   /*mlpcg_printvec(i,x,bdcsr,mlprecond.fielddis,mlprecond.partdis,actintra); */
+   /*mlpcg_printvec(i,x,bdcsr,mlprecond.fielddis,mlprecond.partdis,actintra);*/
    /*------------------------------------------------- r = r - alfa * q */
    work = -1.0 * alfa;
    mlpcgupdvec(r,q,&work,&izero,&numeq);
    /*------------------------------------------------ check convergence */
-   /* make l2-norm of r */
+#if 0
+   /* for scaled system */
+   mlpcgupdvec(runscale,r,&done,&ione,&numeq);
+   mlpcg_sym_scale3(bdcsr,runscale,D,actintra);
+   mlpcg_vecvec(&work,runscale,runscale,numeq,actintra);
+#else
+   /* make norm of r*r */
    mlpcg_vecvec(&work,r,r,numeq,actintra);
+#endif
    /* make eps */
-   eps = sqrt(work);
+   eps = sqrt(FABS(work));
    if (i!=0)
-   if (i%10==0)
+   if (i%1==0)
    if (myrank==0)
    {
       printf("%d : %20.15f\n",i,eps);
@@ -245,6 +254,7 @@ numeq       = bdcsr->numeq;
 if (mlsolver.r.Typ != cca_DV)
 {
    amdef("r",&(mlsolver.r),numeq,1,"DV");
+   amdef("r",&(mlsolver.runscale),numeq,1,"DV");
    amdef("z",&(mlsolver.z),numeq,1,"DV");
    amdef("p",&(mlsolver.p),numeq,1,"DV");
    amdef("q",&(mlsolver.q),numeq,1,"DV");
@@ -915,7 +925,7 @@ dstrc_enter("mlpcg_getindex");
 #endif
 /*----------------------------------------------------------------------*/
 index = dof-(*update);
-if (index<0 ) 
+if (index<0 || index>=length) 
 {
 #ifdef DEBUG 
 dstrc_exit();
@@ -975,7 +985,166 @@ return(own);
 
 
 
+/*!---------------------------------------------------------------------
+\brief Do symmetric scaling of system of equations                                              
 
+<pre>                                                        m.gee 11/03 
+
+</pre>
+\return void                                               
+
+------------------------------------------------------------------------*/
+void mlpcg_sym_scale1(struct _DBCSR       *bdcsr,
+                     struct _DIST_VECTOR *rhs, 
+                     DOUBLE              *D,
+                     struct _INTRA       *actintra)
+{
+INT     i,j,row,col;
+INT    *update;
+INT    *ia;
+INT    *ja;
+DOUBLE *a;
+DOUBLE *f;
+INT     numeq,numeq_total;
+DOUBLE *send = NULL;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_sym_scale1");
+#endif
+/*----------------------------------------------------------------------*/
+update      = bdcsr->update.a.iv;
+ja          = bdcsr->ja.a.iv;
+ia          = bdcsr->ia.a.iv;
+a           = bdcsr->a.a.dv;
+f           = rhs->vec.a.dv;
+numeq       = bdcsr->numeq;
+numeq_total = bdcsr->numeq_total;
+send        = CCACALLOC(numeq_total,sizeof(DOUBLE));
+/*------------------------------------------ construct D as 1/sqrt(Aii) */
+/*------------------------------------------------------- and scale rhs */
+for (i=0; i<numeq; i++)
+{
+   row = update[i];
+   for (j=ia[i]; j<ia[i+1]; j++)
+   {
+      if (ja[j]==row)
+      {
+         send[row] = 1.0/sqrt(a[j]);
+         break;
+      }
+   }
+}
+/*--------------------------------------------------------- allreduce D */
+#ifdef PARALLEL
+MPI_Allreduce(send,D,numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+send = CCAFREE(send);
+#else
+dserror("MLPCG only in parallel!");
+#endif
+/*-------------------- make pre and post multiply of A with D = diag(D) */
+/*------------------------------------------------------- left multiply */
+for (i=0; i<numeq; i++)
+{
+   row = update[i];
+   for (j=ia[i]; j<ia[i+1]; j++)
+   {
+      col  = ja[j];
+      a[j] = a[j]*D[row]*D[col];
+   }
+   f[i] = f[i]*D[row];
+}
+/*------------------------------------------------------ right multiply */
+/*
+for (i=0; i<numeq; i++)
+{
+   for (j=ia[i]; j<ia[i+1]; j++)
+   {
+      col  = ja[j];
+      a[j] = a[j]*D[col];
+   }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_sym_scale1 */
+
+/*!---------------------------------------------------------------------
+\brief Remove symmetric scaling from solution vector                                             
+
+<pre>                                                        m.gee 11/03 
+
+</pre>
+\return void                                               
+
+------------------------------------------------------------------------*/
+void mlpcg_sym_scale2(struct _DBCSR       *bdcsr,
+                     struct _DIST_VECTOR *sol, 
+                     DOUBLE              *D,
+                     struct _INTRA       *actintra) 
+{
+INT     i,j,row;
+INT    *update;
+DOUBLE *f;
+INT     numeq;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_sym_scale2");
+#endif
+/*----------------------------------------------------------------------*/
+update      = bdcsr->update.a.iv;
+numeq       = bdcsr->numeq;
+f           = sol->vec.a.dv;
+/*------------------------------------------------------- left multiply */
+for (i=0; i<numeq; i++)
+{
+   row = update[i];
+   f[i] = f[i]*D[row];
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_sym_scale2 */
+/*!---------------------------------------------------------------------
+\brief Remove symmetric scaling from solution vector                                             
+
+<pre>                                                        m.gee 11/03 
+
+</pre>
+\return void                                               
+
+------------------------------------------------------------------------*/
+void mlpcg_sym_scale3(struct _DBCSR       *bdcsr,
+                     DOUBLE              *r, 
+                     DOUBLE              *D,
+                     struct _INTRA       *actintra)
+{
+INT     i,j,row;
+INT    *update;
+INT     numeq;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_sym_scale3");
+#endif
+/*----------------------------------------------------------------------*/
+update      = bdcsr->update.a.iv;
+numeq       = bdcsr->numeq;
+/*------------------------------------------------------- left multiply */
+for (i=0; i<numeq; i++)
+{
+   row = update[i];
+   r[i] = r[i]*D[row];
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_sym_scale3 */
 
 
 /*! @} (documentation module close)*/

@@ -17,30 +17,44 @@ Maintainer: Michael Gee
  | compressible ogden-material                            m.gee 6/03    |
  | no split in volumetric and deviatoric strains                        |
  *----------------------------------------------------------------------*/
-void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain, DOUBLE C_cart[][3][3][3],
-                          DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
-                          DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc)
+void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
+                          DOUBLE **gkonr,DOUBLE **gmkovc)
 {
-INT                 i,j,k,l,p,a,b,c,d;
-DOUBLE              nue;
-DOUBLE              beta,minusbeta;
-DOUBLE             *alfap;
-DOUBLE             *mup;
-DOUBLE              lame1;
-DOUBLE              kappa;
-DOUBLE              mu,E;                  /* shear and Young's modulus */
-DOUBLE              work;
-DOUBLE              F[3][3];               /* deformation gradient */
-DOUBLE              J;                     /* detF = third invariant */
-DOUBLE              CG[3][3];              /* right-Cauchy Green strains */
-/*DOUBLE              GL[3][3];*/              /* Green-Lagrange strains for testing */
-DOUBLE              CGlambda2[3];          /* eigenvalues of CG */
-DOUBLE              lambda[3];             /* principal stretches */
-DOUBLE              N[3][3];               /* eigenvectors of CG - principal stretch directions */
-DOUBLE              PK2[3][3];             /* 2.PK stress tensor in cartesian bases */
-DOUBLE              PK2main[3]/*,PK2venant[3]*/;/* 2.PK stresses in principal directions (main stresses) */
-DOUBLE              C[3][3][3][3];         /* components of material tangent in principal directions */
-DOUBLE              psi,psi1,psi2;
+      INT      i,j,k,l,p;
+      DOUBLE      mu;
+      DOUBLE      E;
+      DOUBLE      kappa;
+      DOUBLE      beta,mbeta;
+      DOUBLE      lame1;
+      DOUBLE      nue;
+      DOUBLE     *mup;
+      DOUBLE     *alfap;
+      DOUBLE      J;
+      DOUBLE      Jpowmbeta;
+      DOUBLE      psi;
+      
+      DOUBLE      CG[3][3];
+      DOUBLE      N[3][3];
+      DOUBLE      lam2[3];
+      DOUBLE      lam[3];
+      DOUBLE      lampowalfap[3][3];
+      DOUBLE      PK2[3];
+      DOUBLE      PK2cart[3][3];
+       
+      DOUBLE      C[3][3][3][3];
+      DOUBLE      C0000;      
+      DOUBLE      C0011;      
+      DOUBLE      C0022;      
+      DOUBLE      C1111;      
+      DOUBLE      C1122;
+      DOUBLE      C2222;
+      DOUBLE      C0101=0.0;
+      DOUBLE      C0202=0.0;
+      DOUBLE      C1212=0.0;
+
+      DOUBLE      scal;
+      DOUBLE      Ncross[3];
+
 #ifdef DEBUG 
 dstrc_enter("s8_mat_ogden_coupled");
 #endif
@@ -53,8 +67,8 @@ for (l=0; l<3; l++)
    C[i][j][k][l]     = 0.0;
 }
 /*------------------------------------------------- init some constants */
-/*if (!(mat->init))
-{*/
+if (!(mat->init))
+{
    /* make mu = 2.0 * shear modulus */
    mu = 0.0;
    for (i=0; i<3; i++) mu += mat->alfap[i] * mat->mup[i];
@@ -68,32 +82,15 @@ for (l=0; l<3; l++)
    mat->lambda = mat->kappa - (2.0/3.0)*mu;
    /* set init flag */
    mat->init=1;
-/*}*/
+}
 /*-------------------------------------------------- get some constants */
 nue       = mat->nue;
 beta      = mat->beta;
-minusbeta = -beta;
+mbeta     = -beta;
 alfap     = mat->alfap;
 mup       = mat->mup;
 lame1     = mat->lambda;
 kappa     = mat->kappa;
-/*------------------------------------------- make deformation gradient */
-/*
-F = gkovc diad gkonr (defined in mixed components and in mixed shell base vectors)
-F = Fi_^j gkovc_i dyad gkonr_^j
-
-As we are not interested in F itself but in the right Cauchy Green strain tensor we need
-CG = F^T * F = cg_ij gkonr_^i dyad gkonr_^j (covariant components in kontravariant bases)
-
-To build F^T * F is too much work, but from the definition of the Green-Lagrange strains we know that
-E = 0.5*(F^T*F - I) = 0.5*(gmkovc_ij - gmkovr_ij) gkonr_^i dyad gkonr_^j.
-
-The unit tensor I = gmkovr_ij gkonr_^i dyad gkonr_^j, so the part F^T*F must be
-CG = F^T*F = gmkovc_ij gkonr_^i dyad gkonr_^j.
-
-or the components cg_ij = gmkovc_ij. Nice, isn't it?
-
-*/
 /*---------------------------- make right Cauchy-Green strain tensor CG */
 /*
 CG = Ft * F = gmkovc_ij
@@ -111,148 +108,127 @@ CG[2][2] = gmkovc[2][2];
 CG is in covariant components in contravariant material bases, transform to cartesian
 */
 s8_kov_CGcuca(CG,gkonr); 
-/*----------------------------- make Green-Lagrange strains for testing */
-/*
-GL[0][0] = 0.5*(CG[0][0]-1.0);
-GL[0][1] = 0.5*(CG[0][1]);
-GL[0][2] = 0.5*(CG[0][2]);
-
-GL[1][0] = 0.5*(CG[1][0]);
-GL[1][1] = 0.5*(CG[1][1]-1.0);
-GL[1][2] = 0.5*(CG[1][2]);
-
-GL[2][0] = 0.5*(CG[2][0]);
-GL[2][1] = 0.5*(CG[2][1]);
-GL[2][2] = 0.5*(CG[2][2]-1.0);
-
-strain[0] = GL[0][0];   
-strain[1] = GL[0][1];   
-strain[2] = GL[0][2];   
-strain[3] = GL[1][1];   
-strain[4] = GL[1][2];   
-strain[5] = GL[2][2];  */
 /*----------------------------------------------------------------------*/
 /* make spectral decomposition and principal axes of right Cauchy Green */
 /*
 (CG - lambda_a*I)*PHI_a = 0
 */
-s8_ogden_principal_CG(CG,CGlambda2,N);
+s8_ogden_principal_CG(CG,lam2,N);
 /*---------------------------------------------- make principal strains */
-dsassert(CGlambda2[0]>0.0 && CGlambda2[1]>0.0 && CGlambda2[2]>0.0,"Principal stretches smaller zero");
-lambda[0] = sqrt(CGlambda2[0]);
-lambda[1] = sqrt(CGlambda2[1]);
-lambda[2] = sqrt(CGlambda2[2]);
+dsassert(lam2[0]>0.0 && lam2[1]>0.0 && lam2[2]>0.0,"Principal strains smaller zero");
+lam[0] = sqrt(lam2[0]);
+lam[1] = sqrt(lam2[1]);
+lam[2] = sqrt(lam2[2]);
+#if 1
+for (i=0; i<3; i++) mat->l[i] = lam[i];
+#endif
 /*------------------------------------------- make 3. invariant == detF */
-J         = lambda[0]*lambda[1]*lambda[2];
+J  = lam[0]*lam[1]*lam[2];
 dsassert(J>0.0,"detF <= 0.0 in Ogden material");
+Jpowmbeta = pow(J,mbeta);
+/*----------------------------------------- make powers lam[i]^alfap[p] */
+for (i=0; i<3; i++)
+for (p=0; p<3; p++)
+   lampowalfap[i][p] = pow(lam[i],alfap[p]);
+/*---------------- test orthogonality and unit length of eigenvectors N */
+#if 1 
+/*N0 * N1 = 0*/
+scal = N[0][0]*N[1][0] + N[0][1]*N[1][1] + N[0][2]*N[1][2];
+dsassert(FABS(scal)<EPS10,"eigenvectors N0,N1 not orthogonal");
+/*N0 * N2 = 0*/
+scal = N[0][0]*N[2][0] + N[0][1]*N[2][1] + N[0][2]*N[2][2];
+dsassert(FABS(scal)<EPS10,"eigenvectors N0,N2 not orthogonal");
+/*N1 * N2 = 0*/
+scal = N[1][0]*N[2][0] + N[1][1]*N[2][1] + N[1][2]*N[2][2];
+dsassert(FABS(scal)<EPS10,"eigenvectors N1,N2 not orthogonal");
+/*--------------------------- test proper orientation of eigenvectors N */
+/*N2 = N0 x N1*/
+Ncross[0] = N[0][1]*N[1][2] - N[0][2]*N[1][1];
+Ncross[1] = N[0][2]*N[1][0] - N[0][0]*N[1][2];
+Ncross[2] = N[0][0]*N[1][1] - N[0][1]*N[1][0];
+/*N2 * Ncross = 1.0*/
+scal = Ncross[0]*N[2][0] + Ncross[1]*N[2][1] + Ncross[2]*N[2][2];
+dsassert(FABS((scal-1.0))<EPS10,"eigenvectors do not form proper othogonal system");
+#endif
+/*----------------------------------------------------------------------*/
 /*--------------------------------------------------------- make energy */
-/*
-psi1 = 0.0;
-psi2 = 0.0;
+#if 0
+psi = 0.0;
 for (p=0; p<3; p++)
 {
-   for (a=0; a<3; a++)
-   {
-      fortranpow(&(lambda[a]),&work,&(alfap[p]));
-      psi1 += (mup[p]/alfap[p])*work;
-   }
-   psi1 -= (mup[p]/alfap[p])*3.0;
-   psi1 -= mup[p]*log(J);
+   psi += (mup[p]/alfap[p])*(lampowalfap[0][p]+lampowalfap[1][p]+lampowalfap[2][p]-3.0);
+   psi -= mup[p]*log(J);
 }
-fortranpow(&J,&work,&minusbeta);
-psi2 = (lame1/(beta*beta))*(work-1.0+beta*log(J));
-psi = psi1+psi2;
-printf("  coupled PSI1 %20.10f PSI2 %20.10f PSI %20.10f\n",psi1,psi2,psi);fflush(stdout);
-*/
-/*------------------------- calculate the 2.PK stresses (contravariant) */
-for (a=0; a<3; a++)
-{
-   PK2main[a] = 0.0;
-   for (p=0; p<3; p++) 
-   {
-      fortranpow(&(lambda[a]),&work,&(alfap[p]));
-      PK2main[a] += (mup[p])*(work-1.0);
-   }
-   fortranpow(&J,&work,&minusbeta);
-
-   PK2main[a] += (lame1/beta)*(1-work);
-
-   PK2main[a] /= CGlambda2[a];
-}
+psi += (lame1/(beta*beta))*(Jpowmbeta-1.0+beta*log(J));
+printf("  coupled PSI  %20.10f\n\n",psi);fflush(stdout);
+#endif
+/*--------------------------- calculate the 2.PK stresses in eigenbases */
+PK2[0] = 
+PK2[1] = 
+PK2[2] = (lame1/beta)*(1.0-Jpowmbeta);
+for (p=0; p<3; p++)
+   for (i=0; i<3; i++)
+      PK2[i] += mup[p]*(lampowalfap[i][p]-1.0);
+for (i=0; i<3; i++)
+   PK2[i] /= (lam2[i]);
+/*----------------------------------------------------------------------*/
+#if 0
+printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",PK2[0],PK2[1],PK2[2]);
+#endif
 /*----------------------- calculate the PK2 stresses in cartesian bases */
-/*
-PK2 = PK2main_a * N_a dyad N_a   (sum over a )
-*/
-s8_ogden_cartPK2(PK2,PK2main,N);
-/* sort cartesian stresses to the vector shell8-style */
-stress_cart[0] = PK2[0][0];   
-stress_cart[1] = PK2[0][1];   
-stress_cart[2] = PK2[0][2];   
-stress_cart[3] = PK2[1][1];   
-stress_cart[4] = PK2[1][2];   
-stress_cart[5] = PK2[2][2];   
-/*------------------------------------------------------ make PK2venant */
-/*
-work = 0.0;
-for (b=0; b<3; b++)
-   work += (CGlambda2[b]-1);
-for (a=0; a<3; a++)
-   PK2venant[a] = (lame1/2.0)*work + mu*(lambda[a]*lambda[a]-1.0);
-s8_ogden_cartPK2(PK2,PK2venant,N);
-stress_cart[0] = PK2[0][0];   
-stress_cart[1] = PK2[0][1];   
-stress_cart[2] = PK2[0][2];   
-stress_cart[3] = PK2[1][1];   
-stress_cart[4] = PK2[1][2];   
-stress_cart[5] = PK2[2][2];   
-*/
-/*================ make components of C[][][][] in principal directions */
-/*-------------------------------------------------- make C[a][a][a][a] */
-for (a=0; a<3; a++)
+s8_ogden_cartPK2(PK2cart,PK2,N);
+/*------------------ sort cartesian stresses to the vector shell8-style */
+stress_cart[0] = PK2cart[0][0];   
+stress_cart[1] = PK2cart[0][1];   
+stress_cart[2] = PK2cart[0][2];   
+stress_cart[3] = PK2cart[1][1];   
+stress_cart[4] = PK2cart[1][2];   
+stress_cart[5] = PK2cart[2][2];   
+/*---------------------- make deviatoric material tangent in eigenspace */
+/*================== components C_aaaa */
+C0000 = C1111 = C2222 = lame1*((2/beta+1.0)*Jpowmbeta-2/beta);
+for (p=0; p<3; p++)
 {
-   C[a][a][a][a] = 0.0;
-   for (p=0; p<3; p++) 
-   {
-      fortranpow(&(lambda[a]),&work,&(alfap[p]));
-      C[a][a][a][a] += mup[p]*(2.0+(alfap[p]-2.0)*work);
-   }
-
-   fortranpow(&J,&work,&minusbeta);
-   C[a][a][a][a] += lame1*(((2.0/beta)+1.0)*work-(2.0/beta));
-   
-   work = CGlambda2[a]*CGlambda2[a];
-   C[a][a][a][a] /= work;
+   C0000 += mup[p]*(2.0+(alfap[p]-2.0)*lampowalfap[0][p]);
+   C1111 += mup[p]*(2.0+(alfap[p]-2.0)*lampowalfap[1][p]);
+   C2222 += mup[p]*(2.0+(alfap[p]-2.0)*lampowalfap[2][p]);
 }
-/*-------------------------------------- make C[a][a][b][b] with a != b */
-fortranpow(&J,&work,&minusbeta);
-C[0][0][1][1] = (lame1/(CGlambda2[0]*CGlambda2[1]))*work;
-C[0][0][2][2] = (lame1/(CGlambda2[0]*CGlambda2[2]))*work;
-C[1][1][2][2] = (lame1/(CGlambda2[1]*CGlambda2[2]))*work;
-C[1][1][0][0] = C[0][0][1][1];
-C[2][2][0][0] = C[0][0][2][2];
-C[2][2][1][1] = C[1][1][2][2];
-/*--------------------------------------------- make C[a][b][a][b] a!=b */
-if (FABS(CGlambda2[0]-CGlambda2[1])>EPS12)
-C[0][1][0][1] = (PK2main[0]-PK2main[1])/(CGlambda2[0]-CGlambda2[1]);
+C0000 /= (lam2[0]*lam2[0]);
+C1111 /= (lam2[1]*lam2[1]);
+C2222 /= (lam2[2]*lam2[2]);
+/*================== components C_aabb */
+C0011 = C0022 = C1122 = lame1*Jpowmbeta;
+C0011 /= (lam2[0]*lam2[1]);
+C0022 /= (lam2[0]*lam2[2]);
+C1122 /= (lam2[1]*lam2[2]);
+/*================== components C_abab */
+if (FABS(lam2[0]-lam2[1])>EPS12)
+C0101 = (PK2[0]-PK2[1])/(lam2[0]-lam2[1]);
 else
-C[0][1][0][1] = 0.5*(C[0][0][0][0]-C[0][0][1][1]);
+C0101 = 0.5*(C0000-C0011);
 
-
-if (FABS(CGlambda2[0]-CGlambda2[2])>EPS12)
-C[0][2][0][2] = (PK2main[0]-PK2main[2])/(CGlambda2[0]-CGlambda2[2]);
+if (FABS(lam2[0]-lam2[2])>EPS12)
+C0202 = (PK2[0]-PK2[2])/(lam2[0]-lam2[2]);
 else
-C[0][2][0][2] = 0.5*(C[0][0][0][0]-C[0][0][2][2]);
+C0202 = 0.5*(C0000-C0022);
 
-
-if (FABS(CGlambda2[1]-CGlambda2[2])>EPS12)
-C[1][2][1][2] = (PK2main[1]-PK2main[2])/(CGlambda2[1]-CGlambda2[2]);
+if (FABS(lam2[1]-lam2[2])>EPS12)
+C1212 = (PK2[1]-PK2[2])/(lam2[1]-lam2[2]);
 else
-C[1][2][1][2] = 0.5*(C[1][1][1][1]-C[1][1][2][2]);
+C1212 = 0.5*(C1111-C1122);
+/*--------------------------------------------- put everything together */
+C[0][0][0][0] = C0000;
+C[1][1][1][1] = C1111;
+C[2][2][2][2] = C2222;
 
-C[1][0][1][0] = C[0][1][0][1];
-C[2][0][2][0] = C[0][2][0][2];
-C[2][1][2][1] = C[1][2][1][2];
-/*-------------------------------- calculate C_cart in cartesian basis */
+C[1][1][0][0] = C[0][0][1][1] = C0011;
+C[2][2][0][0] = C[0][0][2][2] = C0022;
+C[2][2][1][1] = C[1][1][2][2] = C1122;
+
+C[1][0][1][0] = C[0][1][0][1] = C0101;
+C[2][0][2][0] = C[0][2][0][2] = C0202;
+C[2][1][2][1] = C[1][2][1][2] = C1212;
+/*--------------------------------- calculate C_cart in cartesian basis */
 s8_ogden_Ccart(C,C_cart,N);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -402,12 +378,10 @@ PK2[1][2] += PK2main[2] * N[1][2]*N[2][2];
 PK2[2][0] += PK2main[2] * N[2][2]*N[0][2];
 PK2[2][1] += PK2main[2] * N[2][2]*N[1][2];
 PK2[2][2] += PK2main[2] * N[2][2]*N[2][2];
-*/
 /* make symmetry 
 PK2[1][0] = PK2[0][1];
 PK2[2][0] = PK2[0][2]; 
-PK2[2][1] = PK2[1][2];
-*/
+PK2[2][1] = PK2[1][2];*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -484,7 +458,7 @@ return;
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/03    |
  *----------------------------------------------------------------------*/
-INT s8_mat_lineltmp(DOUBLE E, DOUBLE nue, DOUBLE **g, DOUBLE **CC)
+void s8_mat_lineltmp(DOUBLE E, DOUBLE nue, DOUBLE **g, DOUBLE **CC)
 {
 INT i,j,k,l;
 DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
@@ -555,7 +529,7 @@ return;
 /*----------------------------------------------------------------------*
  |                                                        m.gee 5/03    |
  *----------------------------------------------------------------------*/
-INT s8_mat_linel_carttmp(DOUBLE emod, DOUBLE nue, 
+void s8_mat_linel_carttmp(DOUBLE emod, DOUBLE nue, 
                          DOUBLE C[][3][3][3])
 {
 INT i,j,k,l;

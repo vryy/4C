@@ -54,6 +54,7 @@ MLLEVEL     *prevlev;
 INT          nrow,ncol;
 DOUBLE       aggblock[1000][500];
 INT          rindex[1000],cindex[500];
+DOUBLE     **R;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_P");
@@ -112,7 +113,11 @@ for (i=0; i<actlev->nagg; i++)
 {
    actagg = &(actlev->agg[i]);
    /* create the tentative prolongator diagonal block of this aggregate */
+#if 0
    mlpcg_precond_oneP_vanek(actagg,aggblock,rindex,cindex,&nrow,&ncol,actstiff,prevlev);
+#else
+   mlpcg_precond_oneP_vanekQR(actagg,aggblock,rindex,cindex,&nrow,&ncol,actstiff,prevlev);
+#endif
    if (!(actagg->tentP))
    {
       actagg->tentP = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
@@ -133,6 +138,23 @@ for (i=0; i<actlev->nagg; i++)
       actagg->tentP->a.da[k][j] = aggblock[k][j];
    /*------------------ set number of rows in this piece of Prolongator */
    actagg->tentP_nrow = nrow;
+#if 1
+   /*--------- make gram-schmidt orthogonalization of this block P = QR */
+   if (actagg->R==NULL)
+   {
+      actagg->R = (ARRAY*)CCAMALLOC(sizeof(ARRAY));
+      R = amdef("R",actagg->R,actagg->numdf,actagg->numdf,"DA");
+   }
+   else
+   {
+      dsassert(actagg->R->Typ==cca_DA,"R not allocated in aggregate");
+      R = actagg->R->a.da;
+   }
+   /*------------------------ store the R part to use in the next level */
+   /*                                               and do gram-schmidt */
+   amzero(actagg->R);
+   mlpcg_precond_gramschmidt(actagg->tentP->a.da,R,nrow,ncol);
+#endif
 } /* end of for (i=0; i<actlev->nagg; i++) */
 /*--------------- loop all aggregates again and fill the DBCSR matrix P */   
 #if 1
@@ -199,6 +221,7 @@ AGG         *actagg;
 INT          nrow,ncol;
 DOUBLE       aggblock[1000][500];
 INT          rindex[1000],cindex[500];
+DOUBLE     **R;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_P0");
@@ -283,6 +306,21 @@ for (i=0; i<actlev->nagg; i++)
       actagg->tentP->a.da[k][j] = aggblock[k][j];
    /*------------------ set number of rows in this piece of Prolongator */
    actagg->tentP_nrow = nrow;
+#if 1
+   /*--------- make gram-schmidt orthogonalization of this block P = QR */
+   if (actagg->R==NULL)
+   {
+      actagg->R = (ARRAY*)CCAMALLOC(sizeof(ARRAY));
+      R = amdef("R",actagg->R,actagg->numdf,actagg->numdf,"DA");
+   }
+   else
+   {
+      dsassert(actagg->R->Typ==cca_DA,"R not allocated in aggregate");
+      R = actagg->R->a.da;
+   }
+   amzero(actagg->R);
+   mlpcg_precond_gramschmidt(actagg->tentP->a.da,R,nrow,ncol);
+#endif
 } /* end of for (i=0; i<actlev->nagg; i++) */
 /*--------------- loop all aggregates again and fill the DBCSR matrix P */   
 #if 1
@@ -324,6 +362,139 @@ dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_P0 */
+
+
+
+/*!---------------------------------------------------------------------
+\brief create the tentative prolongator for one aggregate                                          
+
+<pre>                                                        m.gee 11/02 
+
+</pre>
+\param actagg         AGG*    (i/o) the active aggregate
+\param aggblock       double[1000][500] (o) the aggregate's block prolongator
+\param rindex         int[1000]         (o) global indizes of aggblock
+\param cindex         int[500]          (o) global indizes of aggblock
+\param nrow           int*              (o) dimension of rindex
+\param ncol           int*              (o) dimension of cindex
+\param actstiff       DBCSR*            (i) fine grid stiffness matrix
+\param prevlevel      MLLEVEL*          (i) last level
+\return void                                               
+
+------------------------------------------------------------------------*/
+void mlpcg_precond_oneP_vanekQR(AGG     *actagg,
+                             double   aggblock[][500],
+                             int      rindex[],
+                             int      cindex[],
+                             int     *nrow,
+                             int     *ncol,
+                             DBCSR   *actstiff,
+                             MLLEVEL *prevlevel)
+{
+int           i,j,k,l,counter;
+AGG          *prevagg[200];
+AGG          *actprevagg;
+NODE         *node[200];
+NODE         *actnode;
+PARTDISCRET  *actpdis;
+int          *actblock;
+int           dof;
+double        x0,y0,z0,x,y,z,a1,a2,a3;
+int           index;
+int           foundit;
+int           shift,bins[5000];
+double      **R;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_precond_oneP_vanekQR");
+#endif
+/*----------------------------------------------------------------------*/
+/*------------------------ get the size of the tentative prolong. block */
+*nrow=0;
+for (i=0; i<actagg->nblock; i++)
+   (*nrow) += actagg->block[i][0];
+   
+*ncol = actagg->numdf;
+if (*nrow >= 1000 || *ncol >= 500)
+dserror("Local variable aggblock[1000][500] too small");
+/*--------------------------------------- get the global column indizes */
+for (i=0; i<actagg->numdf; i++)
+   cindex[i] = actagg->dof[i];
+/*------------------------------------------ get the global row indizes */   
+counter=0;
+for (i=0; i<actagg->nblock; i++)
+   for (j=0; j<actagg->block[i][0]; j++)
+   {
+      rindex[counter] = actagg->block[i][j+1];
+      counter++;
+   }
+dsassert(counter==*nrow,"Number of dofs in prolongator wrong");
+qsort((int*)rindex,*nrow,sizeof(int),cmp_int);
+/*------------------------------ get the nodal patch from the partition */
+/*======================================================================*/
+/*======================================================================*/
+#if 1 /*------------------ this is with R factors from rigid body modes */
+/*======================================================================*/
+/*======================================================================*/
+dsassert(actagg->nblock<=200,"Local variable prevagg[200] too small");
+dsassert(*ncol==6,"number of rbm's has to be 6 in this case");
+/* 
+the index of the agg in prevlev corresponds to the index of the block in
+blocks
+*/
+counter=0;
+for (i=0; i<actagg->nblock; i++)
+{
+   actblock = actagg->block[i];
+   dof      = actblock[1];
+   for (j=0; j<prevlevel->nagg; j++)
+   {
+       actprevagg = &(prevlevel->agg[j]);
+       for (k=0; k<actprevagg->numdf; k++)
+       {
+          if (dof == actprevagg->dof[k])
+          {
+             prevagg[counter] = actprevagg;
+             counter++;
+             goto nextblock;
+          }
+       }
+   }
+   nextblock:;
+}
+dsassert(counter==actagg->nblock,"Cannot find aggregates on lower level");
+/*----------------------- loop the nodes and put values to the aggblock */
+if (*nrow > 18000) dserror("local bins too small");
+init_quick_find(rindex,*nrow,&shift,bins);
+for (i=0; i<actagg->nblock; i++)
+{
+   /* these are the aggregates on prevlev which are part of actagg */
+   actprevagg = prevagg[i];
+   R          = actprevagg->R->a.da;
+   /* loop the dofs of the previous aggregate */
+   for (j=0; j<actprevagg->numdf; j++)
+   {
+      dof = actprevagg->dof[j];
+      /* find the dof in the row index */
+      index = quick_find(dof,rindex,*nrow,shift,bins);
+      if (index==-1) dserror("Cannot find aggregate-local dof");
+      /* put a row of R to the aggblock */
+      for (k=0; k<actprevagg->numdf; k++)
+         aggblock[index][k] = R[j][k];
+   }/* end of for (j=0; j<actprevagg->numdf; j++) */
+} /* end of for (i=0; i<actagg->nblock; i++) */
+/*======================================================================*/
+/*======================================================================*/
+#endif /*- this is the calculation of the rigid body mode for SHELL8 !!!*/
+/*======================================================================*/
+/*======================================================================*/
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_precond_oneP_vanekQR */
+
 
 
 
@@ -428,6 +599,7 @@ roty  |    0       0       0       0          1          0
 rotz  |    0       0       0       0          0          1
 */
 x0=0.0;y0=0.0;z0=0.0;
+#if 1
 for (i=0; i<actagg->nblock; i++)
 {
    x0 += prevagg[i]->x[0];
@@ -437,6 +609,7 @@ for (i=0; i<actagg->nblock; i++)
 x0 /= (actagg->nblock);
 y0 /= (actagg->nblock);
 z0 /= (actagg->nblock);
+#endif
 actagg->x[0] = x0;
 actagg->x[1] = y0;
 actagg->x[2] = z0;
@@ -1179,11 +1352,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_smoothP */
-
-
-
-
-
-
 #endif
 /*! @} (documentation module close)*/

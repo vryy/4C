@@ -172,6 +172,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NU3"  ,&(mat[i].m.compogden->mup[2])  ,&ierr);
       frdouble("DENS" ,&(mat[i].m.compogden->density) ,&ierr);
    }
+   frchk("MAT_Struct_Viscohyper",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_viscohyper;
+      mat[i].m.viscohyper = (VISCOHYPER*)CCACALLOC(1,sizeof(VISCOHYPER));
+      frdouble("NUE"  ,&(mat[i].m.viscohyper->nue)     ,&ierr);
+      frdouble("BETA" ,&(mat[i].m.viscohyper->beta)    ,&ierr);
+      frdouble("ALFA1",&(mat[i].m.viscohyper->alfap[0]),&ierr);
+      frdouble("ALFA2",&(mat[i].m.viscohyper->alfap[1]),&ierr);
+      frdouble("ALFA3",&(mat[i].m.viscohyper->alfap[2]),&ierr);
+      frdouble("NU1"  ,&(mat[i].m.viscohyper->mup[0])  ,&ierr);
+      frdouble("NU2"  ,&(mat[i].m.viscohyper->mup[1])  ,&ierr);
+      frdouble("NU3"  ,&(mat[i].m.viscohyper->mup[2])  ,&ierr);
+      frdouble("DENS" ,&(mat[i].m.viscohyper->density) ,&ierr);
+      frint   ("NMAXW",&(mat[i].m.viscohyper->nmaxw)   ,&ierr);
+      frdouble("TAU1" ,&(mat[i].m.viscohyper->tau[0])  ,&ierr);
+      frdouble("TAU2" ,&(mat[i].m.viscohyper->tau[1])  ,&ierr);
+      frdouble("TAU3" ,&(mat[i].m.viscohyper->tau[2])  ,&ierr);
+      frdouble("TAU4" ,&(mat[i].m.viscohyper->tau[3])  ,&ierr);
+      frdouble("BETA1",&(mat[i].m.viscohyper->betas[0]),&ierr);
+      frdouble("BETA2",&(mat[i].m.viscohyper->betas[1]),&ierr);
+      frdouble("BETA3",&(mat[i].m.viscohyper->betas[2]),&ierr);
+      frdouble("BETA4",&(mat[i].m.viscohyper->betas[3]),&ierr);
+   }
    frchk("MAT_3DMisesPlastic",&ierr);
    if (ierr==1)
    {

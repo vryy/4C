@@ -61,9 +61,9 @@ INT      numeq;
 
 DOUBLE  *z,*r;
 ARRAY    rwork_a;
-DOUBLE  *rwork = NULL;
+DOUBLE  *rwork;
 ARRAY    zwork_a;
-DOUBLE  *zwork = NULL;
+DOUBLE  *zwork;
 
 ARRAY    rcwork_a;
 DOUBLE  *rcwork;
@@ -85,6 +85,10 @@ numeq    = stiff->numeq;
 z        = z_a->a.dv;
 r        = r_a->a.dv;
 /*----------------------------------------------------------------------*/
+#if 0
+mlpcg_eigen(stiff,actintra);
+#endif
+/*----------------------------------------------------------------------*/
 if (level==0) 
    j = 1;
 else          
@@ -101,6 +105,11 @@ if (level != nlevel-1)
 /*=================================== on coarsest level do coarse solve */
 if (level == nlevel-1)
 {
+#if 1
+#ifdef PARALLEL
+   MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+#endif
    mlpcg_precond_coarsesolv(z,r,actlevel,actintra);
    goto exit;
 }
@@ -113,6 +122,11 @@ if (level < nlevel-1)
 {
    amzero(&zwork_a);
    /* make zwork from r */
+#if 1
+#ifdef PARALLEL
+   MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+#endif
    mlpcg_precond_presmo(zwork,rwork,stiff,actlevel,actintra,level);
    /* make z += zwork */
    mlpcgupdvec(z,zwork,&done,&izero,&numeq);
@@ -139,9 +153,19 @@ if (level < nlevel-1)
    /* call next level */
    for (i=0; i<j; i++)
    {
+#if 1
+#ifdef PARALLEL
+      MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+#endif
       mlpcg_precond_amgVW(level+1,&zcwork_a,&rcwork_a,actintra,gamma);
    }
    /* prolongue zc to this level */
+#if 1
+#ifdef PARALLEL
+   MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+#endif
    mlpcg_precond_prolongz(zcwork,zwork,actlevel->P,nextlevel->csr,actintra);
    /* update z += zwork */
    mlpcgupdvec(z,zwork,&done,&izero,&numeq);
@@ -160,6 +184,11 @@ if (level < nlevel-1)
 {
    amzero(&zwork_a);
    /* make zwork from rwork */
+#if 1
+#ifdef PARALLEL
+   MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+#endif
    mlpcg_precond_postsmo(zwork,rwork,stiff,actlevel,actintra,level);
    /* make z += zwork */
    mlpcgupdvec(z,zwork,&done,&izero,&numeq);
@@ -818,6 +847,7 @@ if (nproc>1)
    }
    dsassert(counter==2*nsend,"Number of sends wrong");
 }
+   MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 /*======================================================================*/
 
@@ -840,6 +870,9 @@ for (i=0; i<numeq; i++)
       z[i] += a[j] * zc[index];
    }
 }
+#ifdef PARALLEL
+   MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
 /*======================================================================*/
 
 /*=============================== make interproc multiplication part II */
@@ -893,6 +926,7 @@ if (nproc>1)
       }
    }
 /*------------------------------------ wait for sent messages to finish */
+   MPI_Barrier(actintra->MPI_INTRA_COMM);
 for (i=0; i<nsend*2; i++)
    MPI_Wait(&(request[i]),&status);
 }

@@ -162,6 +162,8 @@ OBJS_SHELL8   = src/shell8/s8_main.o \
                 src/shell8/s8_mat_linel.o \
                 src/shell8/s8_mat_ogden.o \
                 src/shell8/s8_mat_ogden2.o \
+                src/shell8/s8_mat_ogden3.o \
+                src/shell8/s8_mat_viscoushyper.o \
                 src/shell8/s8_btdb.o \
                 src/shell8/s8_eas.o \
                 src/shell8/s8_ans.o \

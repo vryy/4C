@@ -15,9 +15,9 @@ Maintainer: Michael Gee
 #include "shell8.h"
 /*----------------------------------------------------------------------*
  | compressible ogden-material                            m.gee 6/03    |
- | no split in volumetric and deviatoric strains                        |
+ | split in volumetric and deviatoric strains                           |
  *----------------------------------------------------------------------*/
-void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
+void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain, DOUBLE C_cart[3][3][3][3],
                             DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
                             DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc)
 {
@@ -37,7 +37,6 @@ DOUBLE              CG[3][3];              /* right-Cauchy Green strains */
 DOUBLE              CGlambda2[3];          /* eigenvalues of CG */
 DOUBLE              lambda[3];             /* principal stretches */
 DOUBLE              lambda_bar[3];         /* deviatoric principal stretches */
-DOUBLE              lambda_bar2[3];        /* deviatoric principal stretches power two*/
 DOUBLE              N[3][3];               /* eigenvectors of CG - principal stretch directions */
 DOUBLE              PK2[3][3];             /* 2.PK stress tensor in cartesian bases */
 DOUBLE              PK2main_dev[3];        /* deviatoric 2.PK stresses in principal directions (main stresses) */
@@ -45,7 +44,15 @@ DOUBLE              PK2main_vol[3];        /* volumetric 2.PK stresses in princi
 DOUBLE              PK2main[3];            /* 2.PK stresses in principal directions (main stresses) */
 DOUBLE              C[3][3][3][3];         /* components of material tangent in principal directions */
 DOUBLE              C_vol[3][3][3][3];     /* volumetric components of material tangent in principal directions */
+DOUBLE              C_cartvol[3][3][3][3];     
 DOUBLE              psi,psi1,psi2;
+
+DOUBLE              Ntest[3];
+#if 0
+/* for testing against holzapfel fortran routine*/
+DOUBLE              df[28],bpr[3],tautil[3],PK2tautil[3],atilp[6][6];
+DOUBLE              Ef;
+#endif
 #ifdef DEBUG 
 dstrc_enter("s8_mat_ogden_uncoupled");
 #endif
@@ -55,8 +62,11 @@ for (j=0; j<3; j++)
 for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 {
-   C[i][j][k][l]     = 0.0;
-   C_vol[i][j][k][l] = 0.0;
+   C[i][j][k][l]         = 0.0;
+   C_vol[i][j][k][l]     = 0.0;
+
+   C_cart[i][j][k][l]    = 0.0;
+   C_cartvol[i][j][k][l] = 0.0;
 }
 /*------------------------------------------------- init some constants */
 /*if (!(mat->init))
@@ -70,7 +80,7 @@ for (l=0; l<3; l++)
    /* make shear modulus */
    mu /= 2.0;
    /* make bulk modulus */
-   mat->kappa = E / (3.0*(1-2.0*mat->nue));
+   mat->kappa = E / (3.0*(1-2.0*(mat->nue)));
    /* make lame constant no. 1 */
    mat->lambda = mat->kappa - (2.0/3.0)*mu;
    /* set init flag */
@@ -86,14 +96,38 @@ lame1     = mat->lambda;
 kappa     = mat->kappa;
 /*------------------------------------------- make deformation gradient */
 /*
-F = gkovc diad gkonr (defined in cartesian base vectors)
+F = gkovc diad gkonr (defined in mixed components and in mixed shell base vectors)
+F = Fi_^j gkovc_i dyad gkonr_^j
+
+As we are not interested in F itself but in the right Cauchy Green strain tensor we need
+CG = F^T * F = cg_ij gkonr_^i dyad gkonr_^j (covariant components in kontravariant bases)
+
+To build F^T * F is too much work, but from the definition of the Green-Lagrange strains we know that
+E = 0.5*(F^T*F - I) = 0.5*(gmkovc_ij - gmkovr_ij) gkonr_^i dyad gkonr_^j.
+
+The unit tensor I = gmkovr_ij gkonr_^i dyad gkonr_^j, so the part F^T*F must be
+CG = F^T*F = gmkovc_ij gkonr_^i dyad gkonr_^j.
+
+or the components cg_ij = gmkovc_ij. Nice, isn't it?
+
 */
-/*s8_ogden_dyad33_ii(F,gkovc,gkonr);*/
 /*---------------------------- make right Cauchy-Green strain tensor CG */
 /*
-CG = Ft * F
+CG = Ft * F = gmkovc_ij
 */
-/*s8_ogden_CGFtF(CG,F);*/
+CG[0][0] = gmkovc[0][0];
+CG[0][1] = gmkovc[0][1];
+CG[0][2] = gmkovc[0][2];
+CG[1][0] = gmkovc[1][0];
+CG[1][1] = gmkovc[1][1];
+CG[1][2] = gmkovc[1][2];
+CG[2][0] = gmkovc[2][0];
+CG[2][1] = gmkovc[2][1];
+CG[2][2] = gmkovc[2][2];
+/*
+CG is in covariant components in contravariant material bases, transform to cartesian
+*/
+s8_kov_CGcuca(CG,gkonr); 
 /* make spectral decomposition and principal axes of right Cauchy Green */
 /*
 (CG - lambda_a*I)*PHI_a = 0
@@ -104,6 +138,54 @@ dsassert(CGlambda2[0]>0.0 && CGlambda2[1]>0.0 && CGlambda2[2]>0.0,"Principal str
 lambda[0] = sqrt(CGlambda2[0]);
 lambda[1] = sqrt(CGlambda2[1]);
 lambda[2] = sqrt(CGlambda2[2]);
+/* test for equality of two or three of them */
+if (FABS(lambda[0]-lambda[1])<EPS9) printf("lambda[0]==lambda[1]\n");
+if (FABS(lambda[0]-lambda[2])<EPS9) printf("lambda[0]==lambda[2]\n");
+if (FABS(lambda[1]-lambda[2])<EPS9) printf("lambda[1]==lambda[2]\n");
+/* test orthogonality of eigenvectors */
+/* N0 * N1 = 0.0 */
+work = N[0][0]*N[1][0]+N[0][1]*N[1][1]+N[0][2]*N[1][2];
+if (FABS(work)>EPS10)printf("eigenvectors N0 * N1 = %f\n",work);
+/* N0 * N2 = 0.0 */
+work = N[0][0]*N[2][0]+N[0][1]*N[2][1]+N[0][2]*N[2][2];
+if (FABS(work)>EPS10)printf("eigenvectors N0 * N2 = %f\n",work);
+/* N1 * N2 = 0.0 */
+work = N[1][0]*N[2][0]+N[1][1]*N[2][1]+N[1][2]*N[2][2];
+if (FABS(work)>EPS10)printf("eigenvectors N1 * N2 = %f\n",work);
+/* test length==1 of eigenvectors */
+work = N[0][0]*N[0][0]+N[0][1]*N[0][1]+N[0][2]*N[0][2];
+work = sqrt(work);
+if (FABS(work-1.0)>EPS10) printf("eigenvectors N0 not unit length %f\n",work);
+work = N[1][0]*N[1][0]+N[1][1]*N[1][1]+N[1][2]*N[1][2];
+work = sqrt(work);
+if (FABS(work-1.0)>EPS10) printf("eigenvectors N1 not unit length %f\n",work);
+work = N[2][0]*N[2][0]+N[2][1]*N[2][1]+N[2][2]*N[2][2];
+work = sqrt(work);
+if (FABS(work-1.0)>EPS10) printf("eigenvectors N2 not unit length %f\n",work);
+/* test proper right hand system, build N3 by cross product */
+Ntest[0] = N[0][1]*N[1][2] - N[0][2]*N[1][1];
+Ntest[1] = N[0][2]*N[1][0] - N[0][0]*N[1][2];
+Ntest[2] = N[0][0]*N[1][1] - N[0][1]*N[1][0];
+work = N[2][0]*Ntest[0] + N[2][1]*Ntest[1] + N[2][2]*Ntest[2];
+if (FABS(work-1.0)>EPS10) printf("eigenvectors are not right hand system  - cross product * N3 = %f\n",work);
+/*==================call holzapfel routine */
+#if 0
+bpr[0] = CGlambda2[0];
+bpr[1] = CGlambda2[1];
+bpr[2] = CGlambda2[2];
+df[21] = mup[0];
+df[22] = alfap[0];
+df[23] = mup[1];
+df[24] = alfap[1];
+df[25] = mup[2];
+df[26] = alfap[2];
+df[27] = 3.0;
+s8wder3f(df,bpr,tautil,atilp,&Ef);
+PK2tautil[0] = tautil[0]/CGlambda2[0];
+PK2tautil[1] = tautil[1]/CGlambda2[1];
+PK2tautil[2] = tautil[2]/CGlambda2[2];
+#endif
+/*=========================================*/
 /*------------------------------------------- make 3. invariant == detF */
 J         = lambda[0]*lambda[1]*lambda[2];
 dsassert(J>0.0,"detF <= 0.0 in Ogden material");
@@ -112,10 +194,8 @@ fortranpow(&J,&work,&monethird);
 lambda_bar[0] = work * lambda[0];
 lambda_bar[1] = work * lambda[1];
 lambda_bar[2] = work * lambda[2];
-lambda_bar2[0] = lambda_bar[0]*lambda_bar[0];
-lambda_bar2[1] = lambda_bar[1]*lambda_bar[1];
-lambda_bar2[2] = lambda_bar[2]*lambda_bar[2];
 /*--------------------------------------------------------- make energy */
+/*
 psi1 = 0.0;
 psi2 = 0.0;
 for (p=0; p<3; p++)
@@ -129,7 +209,8 @@ for (p=0; p<3; p++)
 fortranpow(&J,&work,&minusbeta);
 psi2 = (kappa/(beta*beta))*(work-1.0+beta*log(J));
 psi = psi1+psi2;
-/*printf("uncoupled PSI1 %20.10f PSI2 %20.10f PSI %20.10f\n",psi1,psi2,psi);fflush(stdout);*/
+printf("uncoupled PSI1 %20.10f PSI2 %20.10f PSI %20.10f\n",psi1,psi2,psi);fflush(stdout);
+*/
 /*-------------------------------- do deviatoric principal PK2 stresses */
 for (a=0; a<3; a++)
 {
@@ -152,15 +233,23 @@ for (a=0; a<3; a++)
 fortranpow(&J,&work,&minusbeta);
 for (a=0; a<3; a++)
 {
-   PK2main_vol[a] = (kappa/(beta*CGlambda2[a]))*(1.0-work);
-   PK2main[a] += PK2main_vol[a];
+   PK2main_vol[a]  = (kappa/(beta*CGlambda2[a]))*(1.0-work);
+   PK2main[a]     += PK2main_vol[a];
 }
+/*=========================================*/
+/*
+printf("     tautil[0] %14.8f      tautil[1] %14.8f      tautil[2] %14.8f\n",tautil[0],tautil[1],tautil[2]);
+printf("  PK2tautil[0] %14.8f   PK2tautil[1] %14.8f   PK2tautil[2] %14.8f\n",PK2tautil[0],PK2tautil[1],PK2tautil[2]);
+printf("PK2main_dev[0] %14.8f PK2main_dev[1] %14.8f PK2main_dev[2] %14.8f\n",PK2main_dev[0],PK2main_dev[1],PK2main_dev[2]);
+printf("PK2main_vol[0] %14.8f PK2main_vol[1] %14.8f PK2main_vol[2] %14.8f\n",PK2main_vol[0],PK2main_vol[1],PK2main_vol[2]);
+*/
+/*=========================================*/
 /*----------------------- calculate the PK2 stresses in cartesian bases */
 /*
 PK2 = PK2main_a * N_a dyad N_a   (sum over a )
 */
 s8_ogden_cartPK2(PK2,PK2main,N);
-/* sort cartesian stresses to the vector shell8-style */
+/*------------------ sort cartesian stresses to the vector shell8-style */
 stress_cart[0] = PK2[0][0];   
 stress_cart[1] = PK2[0][1];   
 stress_cart[2] = PK2[0][2];   
@@ -191,9 +280,6 @@ for (a=0; a<3; a++)
 C[0][0][1][1] = 0.0;
 C[0][0][2][2] = 0.0;
 C[1][1][2][2] = 0.0;
-C[1][1][0][0] = 0.0;
-C[2][2][0][0] = 0.0;
-C[2][2][1][1] = 0.0;
 for (p=0; p<3; p++)
 {
    work2 = 0.0;
@@ -248,10 +334,14 @@ C[2][1][2][1] = C[1][2][1][2];
 /*---------------------------------------------- make C_vol[a][a][a][a] */
 /*--------------------------------------------- volumetric contribution */
 fortranpow(&J,&work,&minusbeta);
-C_vol[0][0][0][0] = kappa*(((2.0/beta)+1)*work-(2.0/beta));
+C_vol[0][0][0][0] = kappa*(((2.0/beta)+1.0)*work-(2.0/beta));
 C_vol[1][1][1][1] = C_vol[2][2][2][2] = C_vol[0][0][0][0];
+
+C_vol[0][0][0][0] /= (CGlambda2[0]*CGlambda2[0]);
+C_vol[1][1][1][1] /= (CGlambda2[1]*CGlambda2[1]);
+C_vol[2][2][2][2] /= (CGlambda2[2]*CGlambda2[2]);
 /*-------------------------------------- make C[a][a][b][b] with a != b */
-fortranpow(&J,&work,&minusbeta);
+/*fortranpow(&J,&work,&minusbeta);*/
 C_vol[0][0][1][1] = (kappa/(CGlambda2[0]*CGlambda2[1]))*work;
 C_vol[0][0][2][2] = (kappa/(CGlambda2[0]*CGlambda2[2]))*work;
 C_vol[1][1][2][2] = (kappa/(CGlambda2[1]*CGlambda2[2]))*work;
@@ -260,7 +350,6 @@ C_vol[2][2][0][0] = C_vol[0][0][2][2];
 C_vol[2][2][1][1] = C_vol[1][1][2][2];
 /*--------------------------------------------- make C[a][b][a][b] a!=b */
 /*--------------------------------------------- volumetric contribution */
-/* not sure whether this is correct ====================================*/
 if (FABS(CGlambda2[0]-CGlambda2[1])>EPS12)
 C_vol[0][1][0][1] = (PK2main_vol[0]-PK2main_vol[1])/(CGlambda2[0]-CGlambda2[1]);
 else
@@ -281,24 +370,14 @@ C_vol[1][2][1][2] = 0.5*(C_vol[1][1][1][1]-C_vol[1][1][2][2]);
 C_vol[1][0][1][0] = C_vol[0][1][0][1];
 C_vol[2][0][2][0] = C_vol[0][2][0][2];
 C_vol[2][1][2][1] = C_vol[1][2][1][2];
-/*--------------------------------------------- add everything together */
-C[0][0][0][0] += C_vol[0][0][0][0];
-C[1][1][1][1] += C_vol[1][1][1][1];
-C[2][2][2][2] += C_vol[2][2][2][2];
-C[0][0][1][1] += C_vol[0][0][1][1];
-C[1][1][0][0] += C_vol[1][1][0][0];
-C[0][0][2][2] += C_vol[0][0][2][2];
-C[2][2][0][0] += C_vol[2][2][0][0];
-C[1][1][2][2] += C_vol[1][1][2][2];
-C[2][2][1][1] += C_vol[2][2][1][1];
-C[0][1][0][1] += C_vol[0][1][0][1];
-C[1][0][1][0] += C_vol[1][0][1][0];
-C[0][2][0][2] += C_vol[0][2][0][2];
-C[2][0][2][0] += C_vol[2][0][2][0];
-C[1][2][1][2] += C_vol[1][2][1][2];
-C[2][1][2][1] += C_vol[2][1][2][1];
 /*--------------------------------- calculate C_cart in cartesian basis */
 s8_ogden_Ccart(C,C_cart,N);
+s8_ogden_Ccart(C_vol,C_cartvol,N);
+for (i=0; i<3; i++)
+for (j=0; j<3; j++)
+for (k=0; k<3; k++)
+for (l=0; l<3; l++)
+C_cart[i][j][k][l] += C_cartvol[i][j][k][l];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

@@ -60,6 +60,10 @@ void solver_mlpcg(struct _SOLVAR         *actsolv,
                   INT                     option)
 {
 MLPCGVARS           *mlpcgvars;
+static ARRAY         a_copy;
+/* the symmetric scaling matrix */
+static ARRAY         Da; 
+static double       *D;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("solver_mlpcg");
@@ -93,12 +97,26 @@ case 0:
    mlprecond.mod = mlprecond.ncall % mlprecond.reuse;
    else
    mlprecond.mod = 0;
+   /*--------------- initialize the copy of a and allocate D first time */
+   if (bdcsr->a.fdim != a_copy.fdim)
+   {
+      amdef(bdcsr->a.name,&a_copy,bdcsr->a.fdim,bdcsr->a.sdim,"DV");
+      D = amdef("D",&Da,bdcsr->numeq_total,1,"DV");
+   }
+   /*-------------------------------- copy the array bdcsr->a to a_copy */
+   /*amcopy(&(bdcsr->a),&(a_copy));
+   /*-------------------------- make symmetric scaling of bdcsr and rhs */
+   mlpcg_sym_scale1(bdcsr,rhs,D,actintra);
    /*----------------------------- create the multilevel preconditioner */
    mlpcg_precond_init(bdcsr,mlpcgvars,actintra);
    /*-------------------------------------------------- init the solver */
    mlpcg_solver_init(bdcsr,sol,rhs,actintra);
    /*-------------------------------------------------- call the solver */
-   mlpcg_pcg(bdcsr,sol,rhs,actintra);
+   mlpcg_pcg(bdcsr,sol,rhs,D,actintra);
+   /*----------------------------------- scale-back the solution vector */
+   mlpcg_sym_scale2(bdcsr,sol,D,actintra);
+   /*------------------------------- copy original matrix back in place */
+   amcopy(&(a_copy),&(bdcsr->a));
    /*--------------------------------- increment number of solver calls */
    mlprecond.ncall++;
    bdcsr->is_factored = 1;

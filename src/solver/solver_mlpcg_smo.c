@@ -63,6 +63,7 @@ numeq = csr->numeq;
 /*-------------- allocate vector for the inverse of the diagonal of csr */
 Dinv = amdef("Dinv",&Dinv_a,numeq,1,"DV");
 /*------------------------------------------- allocate a working vector */
+if (nsweep>1)
 work = amdef("work",&work_a,numeq,1,"DV");
 /*----------------------- get the inverse of the diagonal of csr matrix */
 mlpcg_csr_getdinv(Dinv,csr,numeq);
@@ -70,6 +71,7 @@ mlpcg_csr_getdinv(Dinv,csr,numeq);
 for (i=0; i<numeq; i++) 
    z[i] = Dinv[i] * r[i];
 /*--------------------------------------- copy r to working vector work */
+if (nsweep>1)
 mlpcgupdvec(work,r,&done,&ione,&numeq);
 /*----------------------------------------- loop about number of sweeps */
 for (n=1; n<nsweep; n++)
@@ -84,6 +86,7 @@ for (n=1; n<nsweep; n++)
 }
 /*------------------------------------------------------------- tidy up */
 amdel(&Dinv_a);
+if (nsweep>1)
 amdel(&work_a);
 /*----------------------------------------------------------------------*/
 exit:

@@ -34,6 +34,7 @@ typedef struct _MATERIAL
      struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
      struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
+     struct _VISCOHYPER       *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
      struct _FLUID            *fluid;        /* fluid material */
      struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
      struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
@@ -99,8 +100,28 @@ typedef struct _COMPOGDEN
      DOUBLE                    density;        /* material specific weight */
      DOUBLE                    lambda;         /* 1. lame constant */
      DOUBLE                    kappa;          /* bulkmodulus */
+#if 1
+     DOUBLE                    l[3];
+#endif
 } COMPOGDEN;
 
+/*----------------------------------------------------------------------*
+ | viscoelastic compressible ogden material               m.gee 9/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _VISCOHYPER
+{
+     INT                       init;           /* init flag */
+     DOUBLE                    nue;            /* Possion ratio */
+     DOUBLE                    beta;           /* the unphysical material constant called beta */
+     DOUBLE                    alfap[3];       /* three parameters alfap */
+     DOUBLE                    mup[3];         /* three parameters nuep */  
+     DOUBLE                    density;        /* material specific weight */
+     DOUBLE                    lambda;         /* 1. lame constant */
+     DOUBLE                    kappa;          /* bulkmodulus */
+     INT                       nmaxw;          /* number of maxwell elements in the material (1-4) */
+     DOUBLE                    tau[4];         /* relaxation times of hte maxwell elements */
+     DOUBLE                    betas[4];       /* strain energy factors of the springs of the maxwell elements */
+} VISCOHYPER;
 
 /*----------------------------------------------------------------------*
  | fluid material                                         m.gee 4/01    |

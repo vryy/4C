@@ -93,7 +93,13 @@ extern struct _WALL_CONTACT contact;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
+/*----------------------------------------------------------------------*
+ | acttime and deltat                                     m.gee 9/03    |
+ | defined in stru_dyn_nln.c
+ | global variables of time to be seen from element routines            |
+ *----------------------------------------------------------------------*/
 DOUBLE acttime;
+DOUBLE deltat;
 
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear dynamic structural analysis m.gee 02/02|
@@ -379,6 +385,7 @@ container.dirich        = NULL;
 container.global_numeq  = 0;
 container.dirichfacs    = NULL;
 container.kstep         = 0;
+deltat                  = sdyn->dt;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
 
 /*-------------------------------------------- calculate damping matrix */
@@ -495,6 +502,7 @@ if (restart)
    t0_res = ds_cputime();
    /*-------------- save the stepsize as it will be overwritten in sdyn */
    dt    = sdyn->dt;
+   deltat = dt;
    /*------ save the number of steps, as it will be overwritten in sdyn */
    nstep = sdyn->nstep;
    maxtime = sdyn->maxtime;
@@ -519,6 +527,7 @@ if (restart)
 #endif
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
+   deltat   = dt;
    /*--------------------------------------- put nstep to the structure */
    sdyn->nstep = nstep;
    sdyn->maxtime = maxtime;
@@ -535,9 +544,6 @@ if (restart)
 sdyn->step++;
 repeatcount = 0;
 /*------------------- modifications to time steps size can be done here */
-#if 0
-adapt_top:
-#endif
 /*------------------------------------------------ set new absolue time */
 sdyn->time += sdyn->dt;
 /*--- put time to global variable for time-dependent load distributions */
@@ -893,10 +899,6 @@ if (dynvar.dinorm < sdyn->toldisp ||
 else
 {
    itnum++;
-#if 0
-   if (itnum==sdyn->maxiter && timeadapt)
-      goto adapt_bot;
-#endif
    if (itnum==sdyn->maxiter && !timeadapt)
       dserror("No convergence in maxiter steps");   
    goto iterloop;
@@ -958,60 +960,6 @@ if (contactflag)
 }
 #endif
 
-/*------------------------------ make time adaption iteration indicator */
-#if 0
-adapt_bot:
-if (timeadapt)
-{
-   eta    = ((DOUBLE)itwant)/((DOUBLE)itnum); 
-   olddt  = sdyn->dt;
-   newdt  = sdyn->dt * pow(eta,0.3333333);
-   if (newdt>1.5*(sdyn->dt)) 
-      newdt = 1.5*(sdyn->dt);
-   if (newdt>maxdt)
-      newdt = maxdt;
-   /* repeat step, if no convergence was reached */
-   if (convergence==0)
-   {
-      repeatcount++;
-      if (repeatcount >= 10) dserror("No convergence after repeating step 10 times");
-      if (par.myrank==0) printf("No convergence in maxiter steps - repeat step\n");
-      /* reduce the step size drastically */
-      eta         = ((DOUBLE)itwant)/40.0; 
-      newdt       = sdyn->dt * pow(eta,0.3333333);
-      sdyn->time -= sdyn->dt;
-      sdyn->dt    = newdt;
-      /* zero the incremental displacements */
-      solserv_zero_vec(&dispi[0]);
-      /* zero the residual displacements */
-      solserv_result_incre(actfield,actintra,&dispi[0],0,
-                          &(actsolv->sysarray[stiff_array]),
-			  &(actsolv->sysarray_typ[stiff_array]),0);
-      /* set old total displacements */
-      solserv_result_total(actfield,actintra,&(actsolv->sol[0]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
-      /* set element internal variables bacl to the last step */
-      *action = calc_struct_update_stepback;
-      container.dvec          = NULL;
-      container.dirich        = NULL;
-      container.global_numeq  = 0;
-      container.dirichfacs    = NULL;
-      container.kstep         = 0;
-      container.ekin          = 0.0;
-      calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
-      /* set contact augmented lagrangian multipliers back to last step */
-      #ifdef S8CONTACT
-      if (contactflag)
-      s8_contact_historyback(actintra);
-      #endif
-      /* go back to the predictor */
-      goto adapt_top;
-   }
-#ifdef PARALLEL
-   MPI_Bcast(&newdt,1,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
-#endif
-   sdyn->dt = newdt;
-}
-#endif
 /*----------------------------------------------------------------------*/
 /*                     AUGMENTATION FOR CONTACT                         */
 /*----------------------------------------------------------------------*/
@@ -1161,44 +1109,6 @@ if (par.myrank==0)
       out_gid_soldyn("stress"      ,actfield,actintra,sdyn->step,0,sdyn->time);
    }
 }
-/*----------------------------- printout results to gid time adaptivity */
-#if 0
-if (timeadapt)
-{
-   lowtime = sdyn->time - olddt;
-   uptime  = sdyn->time;
-   low     = lowtime / resultdt;
-   up      =  uptime / resultdt;
-   ilow    = (INT)floor(low);
-   iup     = (INT)ceil(up);
-   remain  = fmod(uptime,iup*resultdt);
-   if (remain<EPS12) iup++;
-   for (i=ilow+1; i<iup; i++) 
-   {
-       writetime = i*resultdt; 
-       tau       = writetime - lowtime;
-       tau2      = tau*tau;
-       tau3      = tau2*tau;
-       /* u_write = u_old */
-       solserv_sol_copy(actfield,0,0,0,10,8);
-       /* u_write += udot_old * tau */
-       solserv_sol_add (actfield,0,0,0,11,8,tau);
-       /* u_write += udotdot_old * fac */
-       fac = 0.5*tau2 - (sdyn->beta/olddt)*tau3;
-       solserv_sol_add (actfield,0,0,0,12,8,fac);
-       /* u_write += udotdot_new * fac */
-       fac = (sdyn->beta/olddt)*tau3;
-       solserv_sol_add (actfield,0,0,0,2,8,fac);
-       /* write displacements u_write */
-       if (par.myrank==0)
-       out_gid_soldyn("displacement",actfield,actintra,sdyn->writecounter,8,writetime);
-       /* write contact forces */
-       if (contactflag && par.myrank==0)
-       out_gid_soldyn("contact",actfield,actintra,sdyn->writecounter,9,writetime);
-       sdyn->writecounter++;
-   }
-}
-#endif
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)
 {
@@ -1219,9 +1129,6 @@ if (contactflag)
 #endif
 }                           
 /*----------------------------------------------------- print time step */
-#if 0
-if (par.myrank==0 &&  timeadapt)  dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,olddt);
-#endif
 if (par.myrank==0 && !timeadapt) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,sdyn->dt);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();

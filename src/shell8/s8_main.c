@@ -63,7 +63,7 @@ switch (*action)
 {
 /*----------------------------- init the element routines and directors */
 case calc_struct_init:
-   s8init(actfield);
+   s8init(actfield,actpart);
    s8static_ke(NULL,NULL,NULL,NULL,NULL,0,0,1);
    s8static_keug(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
    s8static_mass(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
@@ -165,6 +165,9 @@ case calc_struct_update_istep:
    }
    for (i=0; i<ele->e.s8->nhyb; i++)
    ele->e.s8->oldalfa.a.da[0][i] = ele->e.s8->alfa.a.da[0][i];
+   /*-------------------------------------- update the viscous material */
+   if (actmat->mattyp==m_viscohyper)
+      am4copy(ele->e.s8->his2,ele->e.s8->his1);
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------set variables back to last step */
 case calc_struct_update_stepback:

@@ -57,6 +57,8 @@ DOUBLE              stress[6], stress_r[12];                /* stress and stress
 DOUBLE              strain[6];                              /* strains */
 DOUBLE             *intforce;
 
+INT                 ngauss=0;
+
 static ARRAY        C_a;         static DOUBLE **C;         /* material tensor */
 static ARRAY        D_a;         static DOUBLE **D;         /* material tensor integrated in thickness direction */
 
@@ -415,7 +417,7 @@ for (lr=0; lr<nir; lr++)
          if (nhyb>0) s8_vthv(gmkovc,gmkonc,epsh,&detc,e3,condfac);
          /*------------------------------------------ call material law */
          s8_tmat(ele,mat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
-                    gkovc,gkonc,gkovr,gkonr,detc,detr,e3,0);
+                    gkovc,gkonc,gkovr,gkonr,detc,detr,e3,0,ngauss);
          /*---------------- do thickness integration of material tensor */           
          s8_tvma(D,C,stress,stress_r,e3,fact,condfac);
       }/*========================================== end of loop over lt */

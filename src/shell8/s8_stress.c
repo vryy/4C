@@ -262,7 +262,7 @@ for (lr=0; lr<nir; lr++)
                      amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3);     
          /*------------------------------------------ call material law */
          s8_tmat(ele,mat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
-                    gkovc,gkonc,gkovr,gkonr,detsrc,detsrr,e3,0);
+                    gkovc,gkonc,gkovr,gkonr,detsrc,detsrr,e3,0,ngauss);
          /*---------- calculates forces from stresses at gaussian point */
          s8_tfte(gp_stress,ngauss,stress,gkovr,akonr,gmkovr,gmkonr,amkovr,
                  amkonr,hhi,e3,fact,detsmr,detsrr);

@@ -44,6 +44,9 @@ struct _ARRAY    Lt;
 struct _ARRAY    Rtilde;
 /*-------------------------------------------- variables needed for ans */
 INT              ans;
+/*------------------------------- variables needed for material history */
+struct _ARRAY4D *his1;
+struct _ARRAY4D *his2;
 } SHELL8;
 
 /*----------------------------------------------------------------------*
@@ -119,7 +122,7 @@ void s8_funct_deriv(DOUBLE     *funct,
 /*----------------------------------------------------------------------*
  |  s8_init.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8init(FIELD *actfield);
+void s8init(FIELD *actfield, PARTITION *actpart);
 /*----------------------------------------------------------------------*
  |  s8_inpele.c                                          m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -232,22 +235,23 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
  |  s8_tmat.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void s8_tmat(ELEMENT    *ele,
-                MATERIAL   *mat,
-                DOUBLE     *stress,
-                DOUBLE     *strain,
-                DOUBLE    **C,
-                DOUBLE    **gmkovc,
-                DOUBLE    **gmkonc,
-                DOUBLE    **gmkovr,
-                DOUBLE    **gmkonr,
-                DOUBLE    **gkovc,
-                DOUBLE    **gkonc,
-                DOUBLE    **gkovr,
-                DOUBLE    **gkonr,
-                DOUBLE      detc,
-                DOUBLE      detr,
-                DOUBLE      e3,
-                INT         option);
+             MATERIAL   *mat,
+             DOUBLE     *stress,
+             DOUBLE     *strain,
+             DOUBLE    **C,
+             DOUBLE    **gmkovc,
+             DOUBLE    **gmkonc,
+             DOUBLE    **gmkovr,
+             DOUBLE    **gmkonr,
+             DOUBLE    **gkovc,
+             DOUBLE    **gkonc,
+             DOUBLE    **gkovr,
+             DOUBLE    **gkonr,
+             DOUBLE      detc,
+             DOUBLE      detr,
+             DOUBLE      e3,
+             INT         option,
+             INT         ngauss);
 void s8_getdensity(MATERIAL   *mat, DOUBLE *density);
 /*----------------------------------------------------------------------*
  |  s8_tmtr.c                                            m.gee 11/01    |
@@ -474,9 +478,8 @@ void s8_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
 /*----------------------------------------------------------------------*
  |  s8_mat_ogden.c                                       m.gee 06/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain, DOUBLE C_cart[][3][3][3],
-                          DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
-                          DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc);
+void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
+                          DOUBLE **gkonr,DOUBLE **gmkovc);
 void s8_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3]);
 void s8_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3]);
 void s8_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3]);
@@ -484,9 +487,14 @@ void s8_kov_CGcuca(DOUBLE T[3][3], const DOUBLE **gkon);
 /*----------------------------------------------------------------------*
  |  s8_mat_ogden2.c                                      m.gee 06/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
+void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain, DOUBLE C_cart[3][3][3][3],
                             DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
                             DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc);
+/*----------------------------------------------------------------------*
+ |  s8_mat_ogden3.c                                      m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_ogden_uncoupled2(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
+                            DOUBLE **gkonr, DOUBLE **gmkovc);
 /*----------------------------------------------------------------------*
  |  s8_mattransform.c                                    m.gee 06/03    |
  *----------------------------------------------------------------------*/
@@ -507,7 +515,20 @@ void s8static_mass(ELEMENT   *ele,                        /* the element structu
                    DOUBLE    *force,                      /* for internal forces (initialized!) */
                    INT        kstep,                      /* actual step in nonlinear analysis */
                    INT        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
-
+/*----------------------------------------------------------------------*
+ |  s8_mat_linel.c                                     m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_neohooke(NEO_HOOKE *mat, 
+                     DOUBLE    *stress, 
+                     DOUBLE   **CC,
+                     DOUBLE   **gmkonr,
+                     DOUBLE   **gmkonc,
+                     DOUBLE     detr,
+                     DOUBLE     detc);
+/*----------------------------------------------------------------------*
+ |  s8_fserv.f                                           m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8jacb(DOUBLE *A, DOUBLE *V);
 
 
 

@@ -14,14 +14,24 @@ Maintainer: Michael Gee
 #include "../headers/standardtypes.h"
 #include "shell8.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
  | initialize the element                                 m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8init(FIELD *actfield)
+void s8init(FIELD *actfield, PARTITION *actpart)
 {
 INT          i,j,k;
+INT          nmaxw;
+INT          ngauss;
+INT         *ngp;
 ELEMENT     *actele;
 NODE        *actnode;
 S8_DATA      data;
+MATERIAL    *actmat;
 /*DOUBLE     **a3ref;*/
 INT          numa3;
 DOUBLE       a3[3];
@@ -42,6 +52,24 @@ for (i=0; i<actfield->dis[0].numele; i++)
    s8a3(actele,&data,0);
    /*---------------------------------- allocate the space for stresses */
    am4def("forces",&(actele->e.s8->forces),1,18,MAXGAUSS,0,"D3");
+}
+/*--- loop elements in partition to allocate space for material history */
+for (i=0; i<actpart->pdis[0].numele; i++)
+{
+   actele = actpart->pdis[0].element[i];
+   actmat = &(mat[actele->mat-1]);
+   if (actmat->mattyp==m_viscohyper)/* material is viscohyperelastic */
+   {
+      nmaxw  = actmat->m.viscohyper->nmaxw;
+      ngp    = actele->e.s8->nGP;
+      ngauss = ngp[0]*ngp[1]*ngp[2];
+      actele->e.s8->his1 = CCACALLOC(1,sizeof(ARRAY4D));
+      actele->e.s8->his2 = CCACALLOC(1,sizeof(ARRAY4D));
+      am4def("mathis1",actele->e.s8->his1,ngauss,nmaxw+1,3,3,"D4");
+      am4def("mathis2",actele->e.s8->his2,ngauss,nmaxw+1,3,3,"D4");
+      am4zero(actele->e.s8->his1);
+      am4zero(actele->e.s8->his2);
+   }
 }
 /*--------------------- now do modification of directors bischoff style */
 /*------------------------------ allocate space for directors at a node */
