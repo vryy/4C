@@ -273,15 +273,18 @@ printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_
 if (par.myrank==0) printf("\n\n");
 
 /* write general data to .out */
-fprintf(out,"max. values for:\n");
-fprintf(out," step |    time    | ite|   ite tol  | steady tol |\n");
-fprintf(out,"---------------------------------------------------\n");
-fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
-    fdyn->nstep,fdyn->maxtime,fdyn->itemax,fdyn->ittol,fdyn->sttol);
-fprintf(out,"---------------------------------------------------\n");
-fprintf(out,"\n");
-fprintf(out," step |    time    | ite| vel. error | pre. error |\n");
-fprintf(out,"---------------------------------------------------\n");
+if (par.myrank==0)
+{
+  fprintf(out,"max. values for:\n");
+  fprintf(out," step |    time    | ite|   ite tol  | steady tol |\n");
+  fprintf(out,"---------------------------------------------------\n");
+  fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
+      fdyn->nstep,fdyn->maxtime,fdyn->itemax,fdyn->ittol,fdyn->sttol);
+  fprintf(out,"---------------------------------------------------\n");
+  fprintf(out,"\n");
+  fprintf(out," step |    time    | ite| vel. error | pre. error |\n");
+  fprintf(out,"---------------------------------------------------\n");
+}
 
 /*---------------------------------------- allocate dist. vectors 'rhs' */
 if (fdyn->iop == 7) actsolv->nrhs = 2; /* two dist. rhs vecs for BDF2	*/

@@ -1548,10 +1548,9 @@ dstrc_enter("fluid_steadycheck");
 fluid_norm(fdyn,actfield,numeq_total,&vrat,&prat);
 
 /*------------------------------------ output to the screen and to .out */
-fprintf(out,"---------------------------------------------------\n");
-
 if (par.myrank==0)
 {
+   fprintf(out,"---------------------------------------------------\n");
    switch (fdyn->stnorm) 
    {  
    case 0:
@@ -1584,7 +1583,8 @@ if (vrat<fdyn->sttol && prat<fdyn->sttol)
       fprintf(out,"    >>>>>> STEADY STATE REACHED <<<<<<\n");
    }
 }
-fprintf(out,"---------------------------------------------------\n");
+if (par.myrank==0)
+  fprintf(out,"---------------------------------------------------\n");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
