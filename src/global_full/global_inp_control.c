@@ -23,6 +23,16 @@ extern struct _TRACE         trace;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+
+#ifdef D_AXISHELL
+/*!----------------------------------------------------------------------
+\brief prototypes callable only in this file  
+*-----------------------------------------------------------------------*/
+void interpolate_axishell_conds(DISCRET  *actdis);
+#endif /* D_AXISHELL */
+
+
+
 /*----------------------------------------------------------------------*
  | input of control, element and load information         m.gee 8/00    |
  *----------------------------------------------------------------------*/
