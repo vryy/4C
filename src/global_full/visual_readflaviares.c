@@ -279,6 +279,7 @@ case structure:
    dserror("visualisation for structural field not implemented yet!\n");
 break;
 case ale:   
+#ifdef D_FSI
    numff = genprob.numff;
    numsf = genprob.numsf;
    structfield=&(field[numsf]);
@@ -380,6 +381,9 @@ case ale:
    if (*ntsteps==0) dserror("no displ. results in .flavia.res\n");
    amdel(&val_a);   
    amdel(&globloc);
+#else
+dserror("FSI functions not compiled in!\n");
+#endif
    break;
 }
 
