@@ -699,7 +699,7 @@ the element load vector 'dforce' is calculated by eveluating
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
-\param   is_relax  INT       (i)   flag if it is for relaxation param
+\param   readfrom  INT       (i)   position, where to read dbc from
 
 \return void                                                                             
 ------------------------------------------------------------------------*/
@@ -708,7 +708,7 @@ void fluid_caldirich(
 		        DOUBLE          *dforces, 
                         DOUBLE         **estif,   
 		        INT             *hasdirich,
-			INT              is_relax
+			INT		 readfrom
 		    )     
 {
 
@@ -763,11 +763,7 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
    {
       if (actgnode->dirich==NULL) continue;
       dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      if (is_relax) /* calculation for relax.-Param. reads
-                       dbc from (sol_increment[7][j]) */
-         dirich[nrow+j] = actnode->sol_increment.a.da[7][j];
-      else 
-         dirich[nrow+j] = actnode->sol_increment.a.da[3][j];
+      dirich[nrow+j] = actnode->sol_increment.a.da[readfrom][j];
    } /* end loop over dofs */
    nrow+=numdf;
 } /* end loop over nodes */
