@@ -879,40 +879,59 @@ dstrc_enter("inpctr_dyn_fluid");
 #endif
 
 /*-------------------------------------------------- set default values */
-fdyn->dyntyp=0;
-fdyn->iop=2;
-fdyn->freesurf=0;
-fdyn->surftens=0;
-fdyn->iops=2;
-fdyn->ite=1;
-fdyn->itchk=1;	 
-fdyn->itnorm=2;
-fdyn->stchk=0;
+/* general control variables of fluid dynamics */
+fdyn->dyntyp=0;         /* default: nonlin. time integration */
 fdyn->init=0;
-fdyn->iprerhs=1;
-fdyn->viscstr=0;
-fdyn->liftdrag=0;
+fdyn->iop=2;            /* default: one-step-theta */
+fdyn->iops=2;           /* default: one-step-theta */
+fdyn->mlfem = 0;	/* default: no multi-level algorithm */
 fdyn->numdf=genprob.ndim+1;  
+fdyn->ite=1;            /* default: fixed-point like */           
+fdyn->itnorm=fncc_L2;   /* default: L2-norm */
+fdyn->itemax=10;
+fdyn->stchk=-1;         /* default: no steady state check */  
+fdyn->stnorm=fnst_L2;   /* default: L2-norm */ 
+/* output flags */
 fdyn->uppss=1;  
 fdyn->upout=1;  
 fdyn->upres=1;  
-fdyn->res_write_evry=20;
+fdyn->uprestart=20;
+fdyn->resstep=0;
+/* time stepping flags and variables */
+fdyn->itnum=0;
 fdyn->nstep=1;
-fdyn->stchk=5;  
+fdyn->step=0;
 fdyn->nums=0;
-fdyn->itemax=3;
-fdyn->dt=0.01;    
+/* time integration variables */
 fdyn->maxtime=1000.0;
-fdyn->theta=0.5;
-fdyn->ittol=EPS6; 
-fdyn->sttol=EPS6; 
-fdyn->turbu=0;
-fdyn->adaptive=0;	/* default: no adaptive time stepping */
-fdyn->time_rhs=1;	/* default: build time rhs as W.A. Wall describes */
-fdyn->lte = 1.0e-03;	/* default: local truncation error for adapt. time*/
+fdyn->dt=0.01;    
 fdyn->max_dt = 1.0;	/* default: maximal time step size to 1.0 */
 fdyn->min_dt = 0.0;	/* default: minimal time step size to 0.0 */
-fdyn->mlfem = 0;	/* default: no multi-level algorithm */
+fdyn->theta=0.66;
+fdyn->thetas=ONE;
+fdyn->alpha_f=ONE;
+fdyn->alpha_m=ONE;
+fdyn->lte = EPS3;	/* default: local truncation error for adapt. time*/
+/* special facilities flags */
+fdyn->iprerhs=1;        /* this value is not in the input file! */
+fdyn->viscstr=0;        /* default: do not include viscose stresses */   
+fdyn->freesurf=0;       /* default: no free surface */
+fdyn->surftens=0;       /* default: do not include surface tension */
+fdyn->checkarea=0;
+fdyn->liftdrag=0;    
+fdyn->adaptive=0;	/* default: no adaptive time stepping */
+fdyn->time_rhs=1;	/* default: build time rhs as W.A. Wall describes */
+
+/* turbulence flags */
+fdyn->turbu=0;
+fdyn->dis_capt=0;
+fdyn->itemax_ke=100;
+fdyn->stepke=0;
+
+
+/* tolerances */
+fdyn->sttol=EPS6;
+fdyn->ittol=EPS6;
 
  
 if (frfind("-FLUID DYNAMIC")==0) goto end;
@@ -937,8 +956,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->iop=0; 
       else if (strncmp(buffer,"Gen_Alfa",8)==0) 
          fdyn->iop=1; 
-      else if (strncmp(buffer,"Gen_Alpha",9)==0) 
-         fdyn->iop=1;     
       else if (strncmp(buffer,"One_Step_Theta",14)==0) 
          fdyn->iop=4;    
       else if (strncmp(buffer,"BDF2",4)==0) 
@@ -957,16 +974,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("NONLINITER"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   ) 
-         fdyn->ite=0;
-      else if (strncmp(buffer,"fixed_point_like",16)==0) 
+      if (strncmp(buffer,"fixed_point_like",16)==0) 
          fdyn->ite=1;
       else if (strncmp(buffer,"Newton",6)==0) 
          fdyn->ite=2;                  
-      else if (strncmp(buffer,"fixed_point",11)==0) 
-         dserror("fixed_point iteration scheme removed!\n");
       else
          dserror("NONLINITER-Type unknown!");     
    }
@@ -976,22 +987,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
 	  strncmp(buffer,"no",2)==0    )
-      {  
-         fdyn->itchk=0;
-	 fdyn->itnorm=-1;      	  
-      }
+	 fdyn->itnorm=fncc_no;      	  
+      else if (strncmp(buffer,"L_infinity_norm",15)==0) 
+         fdyn->itnorm=fncc_Linf;
+      else if (strncmp(buffer,"L_1_norm",8)==0) 
+         fdyn->itnorm=fncc_L1;                  
+      else if (strncmp(buffer,"L_2_norm",8)==0) 
+         fdyn->itnorm=fncc_L2;
       else
-      {   
-	 fdyn->itchk=1;	       
-         if (strncmp(buffer,"L_infinity_norm",15)==0) 
-            fdyn->itnorm=0;
-         else if (strncmp(buffer,"L_1_norm",8)==0) 
-            fdyn->itnorm=1;                  
-         else if (strncmp(buffer,"L_2_norm",8)==0) 
-            fdyn->itnorm=2;
-         else
-            dserror("Norm for CONVCHECK unknown");   
-      }  
+         dserror("Norm for CONVCHECK unknown");   
    }   
    frchar("STEADYCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
@@ -999,22 +1003,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
 	  strncmp(buffer,"no",2)==0    )
-      { 
-         fdyn->stchk=0;
-	 fdyn->stnorm=-1;	  
-      }
-      else
-      {
-         fdyn->stchk=-1;	       
-         if (strncmp(buffer,"L_infinity_norm",15)==0) 
-            fdyn->stnorm=0;
-         else if (strncmp(buffer,"L_1_norm",8)==0) 
-            fdyn->stnorm=1;                  
-         else if (strncmp(buffer,"L_2_norm",8)==0) 
-            fdyn->stnorm=2;
-         else 	  
-	    dserror("Norm for CONVCHECK unknown");   
-      }
+	 fdyn->stnorm=fnst_no;	  
+      else if (strncmp(buffer,"L_infinity_norm",15)==0) 
+         fdyn->stnorm=fnst_Linf;
+      else if (strncmp(buffer,"L_1_norm",8)==0) 
+         fdyn->stnorm=fnst_L1;                  
+      else if (strncmp(buffer,"L_2_norm",8)==0) 
+         fdyn->stnorm=fnst_L2;
+      else     
+         dserror("Norm for STEADYCHECK unknown");   
    }
    frchar("INITIALFIELD"  ,buffer    ,&ierr);
    if (ierr==1)
@@ -1207,26 +1204,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }   
 
 /*--------------read INT */
-   frint("UPPSS"      ,&(fdyn->uppss)         ,&ierr);
-   frint("UPOUT"      ,&(fdyn->upout)         ,&ierr);
-   frint("UPRES"      ,&(fdyn->upres)         ,&ierr);
-   frint("RESSTEP"    ,&(fdyn->resstep)       ,&ierr);
-   frint("RESTARTEVRY",&(fdyn->res_write_evry),&ierr);
-   frint("NUMSTEP"    ,&(fdyn->nstep)         ,&ierr);
-   frint("STEADYSTEP" ,&i                     ,&ierr);   
-   if (ierr==1)
-   {
-      if (fdyn->stchk==-1)
-          fdyn->stchk=i;
-   }
-   frint("NUMSTASTEPS"  ,&(fdyn->nums),&ierr);
-   frint("STARTFUNCNO"  ,&i             ,&ierr);
+   frint("UPPSS"      ,&(fdyn->uppss)     ,&ierr);
+   frint("UPOUT"      ,&(fdyn->upout)     ,&ierr);
+   frint("UPRES"      ,&(fdyn->upres)     ,&ierr);
+   frint("RESSTEP"    ,&(fdyn->resstep)   ,&ierr);
+   frint("RESTARTEVRY",&(fdyn->uprestart) ,&ierr);
+   frint("NUMSTEP"    ,&(fdyn->nstep)     ,&ierr);
+   frint("STEADYSTEP" ,&(fdyn->stchk)     ,&ierr);   
+   frint("NUMSTASTEPS" ,&(fdyn->nums)     ,&ierr);
+   frint("STARTFUNCNO" ,&i                ,&ierr);
    if (ierr==1)
    {
       if (fdyn->init==-1)
           fdyn->init=i;
    }
-   frint("IPRERHS",&(fdyn->iprerhs),&ierr); 
    frint("ITEMAX" ,&(fdyn->itemax) ,&ierr);  
    
 /*--------------read DOUBLE */
@@ -1486,22 +1477,17 @@ dstrc_enter("inpctr_dyn_fsi");
 #endif
 
 /*-------------------------------------------------- set default values */
-fsidyn->ifsi=1;
-fsidyn->ipre=1;
-fsidyn->inrmfsi=1;
-fsidyn->ichecke=0;
-fsidyn->inest=0;
-fsidyn->ichopt=0;
-fsidyn->iait=0;
-fsidyn->itechapp=0;
-fsidyn->ichmax=1;
+fsidyn->ifsi=1;             /* default: sequ. staggered */
+fsidyn->ipre=1;             /* default: d(n) */
+fsidyn->inrmfsi=1;           
+fsidyn->ichecke=0;          /* default: no energy check */
 fsidyn->isdmax=1;  
 fsidyn->nstep=1;   
 fsidyn->itemax=1;  
-fsidyn->iale=1;    
-fsidyn->uppss=1;
+fsidyn->iale=1;             /* default pseudo structure */    
+fsidyn->uppss=1;    
 fsidyn->upres=1;
-fsidyn->res_write_evry=1;
+fsidyn->uprestart=1;
 fsidyn->dt=ONE/TEN;	
 fsidyn->maxtime=1000.0;
 fsidyn->entol=EPS6;  
@@ -1575,32 +1561,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Parameter for ENERGYCHECK unknown!");     
    }
 
-   frchar("NESTEDITER"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"No",2)==0  ||
-           strncmp(buffer,"NO",2)==0  ||
-	   strncmp(buffer,"no",2)==0) && length==2) 
-         fsidyn->inest=0;
-      else if (strncmp(buffer,"fluid+structure",15)==0 && length==15) 
-         fsidyn->inest=1;
-      else if (strncmp(buffer,"structure",9)==0 && length==9) 
-         fsidyn->inest=2;
-      else
-         dserror("Parameter unknown: NESTEDITER");     
-   }      
-   frchar("ICHOPT"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      length = strlen(buffer);
-      if (strncmp(buffer,"no",2)==0 && length==2) 
-         fsidyn->ichopt=0;
-      else if (strncmp(buffer,"yes",3)==0 && length==3) 
-         fsidyn->ichopt=1;
-      else
-         dserror("Parameter unknown: ICHOPT");     
-   }   
    frchar("IALE"    ,buffer    ,&ierr);
    if (ierr==1)
    {
@@ -1610,15 +1570,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("Parameter unknown: IALE");
    }
-/*--------------read INT */
-   frint("ITECHAPP"   ,&(fsidyn->itechapp)         ,&ierr);
-   frint("ICHMAX"     ,&(fsidyn->ichmax)           ,&ierr);
-   frint("ISDMAX"     ,&(fsidyn->isdmax)           ,&ierr);
-   frint("NUMSTEP"    ,&(fsidyn->nstep)            ,&ierr);
-   frint("ITEMAX"     ,&(fsidyn->itemax)           ,&ierr);
-   frint("UPPSS"      ,&(fsidyn->uppss)            ,&ierr);
-   frint("UPRES"      ,&(fsidyn->upres)            ,&ierr);
-   frint("RESTARTEVRY",&(fsidyn->res_write_evry)   ,&ierr);
+   frint("ISDMAX"     ,&(fsidyn->isdmax)     ,&ierr);
+   frint("NUMSTEP"    ,&(fsidyn->nstep)      ,&ierr);
+   frint("ITEMAX"     ,&(fsidyn->itemax)     ,&ierr);
+   frint("UPPSS"      ,&(fsidyn->uppss)      ,&ierr);
+   frint("UPRES"      ,&(fsidyn->upres)      ,&ierr);
+   frint("RESTARTEVRY",&(fsidyn->uprestart)  ,&ierr);
 /*--------------read DOUBLE */
    frdouble("TIMESTEP"    ,&(fsidyn->dt)     ,&ierr);
    frdouble("MAXTIME"     ,&(fsidyn->maxtime),&ierr);
