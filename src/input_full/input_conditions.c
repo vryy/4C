@@ -2310,73 +2310,75 @@ This routine reads an line lift&drag definition on design.
 *----------------------------------------------------------------------*/
 static void inpdesign_line_liftdrag()
 {
-  INT    i;
-  INT    ierr;
-  INT    ndline;
-  INT    dlineId;
-  char  *colptr;
-  DLINE *actdline;
+INT    i;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+char  *colptr;
+
+DLINE *actdline;
 
 #ifdef DEBUG
   dstrc_enter("inpdesign_line_liftdrag");
 #endif
 
-  /* find the beginning of line fluid liftdrag conditions */
-  if (frfind("--DESIGN FLUID LINE LIFT&DRAG") == 0) goto end;
-  frread();
+/* find the beginning of line fluid liftdrag conditions */
+if (frfind("--DESIGN FLUID LINE LIFT&DRAG") == 0) goto end;
+frread();
 
-  /* read number of design lines with conditions */
-  frint("DLINE",&ndline,&ierr);
-  dsassert(ierr==1,"Cannot read design-line lift&drag definition");
-  frread();
+/* read number of design lines with conditions */
+frint("DLINE",&ndline,&ierr);
+dsassert(ierr==1,"Cannot read design-line lift&drag definition");
+frread();
 
 
-  /* start reading the design lines */
-  while(strncmp(allfiles.actplace,"------",6)!=0)
+/* start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+  /* read the design line Id */
+  frint("E",&dlineId,&ierr);
+  dsassert(ierr==1,"Cannot read design-line left&drag definition");
+  dlineId--;
+
+  /* find the dline */
+  actdline=NULL;
+  for (i=0; i<design->ndline; i++)
   {
-    /* read the design line Id */
-    frint("E",&dlineId,&ierr);
-    dsassert(ierr==1,"Cannot read design-line left&drag definition");
-    dlineId--;
-
-    /* find the dline */
-    actdline=NULL;
-    for (i=0; i<design->ndline; i++)
+    if (design->dline[i].Id ==  dlineId)
     {
-      if (design->dline[i].Id ==  dlineId)
-      {
-        actdline = &(design->dline[i]);
-        break;
-      }
+      actdline = &(design->dline[i]);
+      break;
     }
-    dsassert(actdline!=NULL,"Cannot read designline-lift&drag definition");
-
-    /* allocate space for a liftdrag condition in this dline */
-    actdline->liftdrag = (FLUID_LIFTDRAG_CONDITION*)CCACALLOC(1,sizeof(FLUID_LIFTDRAG_CONDITION));
-    if (!actdline->liftdrag) dserror("Allocation of memory failed");
-
-    /* move pointer behind the "-" sign */
-    colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-line left&drag definition");
-    colptr++;
-
-    /* read the number */
-    actdline->liftdrag->liftdrag = strtol(colptr,&colptr,10);
-    if (actdline->liftdrag->liftdrag >= FLUID_NUM_LD)
-      dserror("Lift&Drag id larger than FLUID_NUM_LD");
-
-    /* read center coordinates */
-    actdline->liftdrag->ld_center[0] = strtod(colptr,&colptr);
-    actdline->liftdrag->ld_center[1] = strtod(colptr,&colptr);
-    actdline->liftdrag->ld_center[2] = 0.0;
-    /* read corresponding ALE-DLINE */
-    actdline->liftdrag->aledline = strtol(colptr,&colptr,10);
-    actdline->liftdrag->aledline--;
-
-    frread();
   }
+  dsassert(actdline!=NULL,"Cannot read designline-lift&drag definition");
+
+  /* allocate space for a liftdrag condition in this dline */
+  actdline->liftdrag = (FLUID_LIFTDRAG_CONDITION*)CCACALLOC(1,sizeof(FLUID_LIFTDRAG_CONDITION));
+  if (!actdline->liftdrag) dserror("Allocation of memory failed");
+
+  /* move pointer behind the "-" sign */
+  colptr = strstr(allfiles.actplace,"-");
+  dsassert(colptr!=NULL,"Cannot read design-line left&drag definition");
+  colptr++;
+
+  /* read the number */
+  actdline->liftdrag->liftdrag = strtol(colptr,&colptr,10);
+  if (actdline->liftdrag->liftdrag >= FLUID_NUM_LD)
+    dserror("Lift&Drag id larger than FLUID_NUM_LD");
+
+  /* read center coordinates */
+  actdline->liftdrag->ld_center[0] = strtod(colptr,&colptr);
+  actdline->liftdrag->ld_center[1] = strtod(colptr,&colptr);
+  actdline->liftdrag->ld_center[2] = 0.0;
+  /* read corresponding ALE-DLINE */
+  actdline->liftdrag->aledline = strtol(colptr,&colptr,10);
+  actdline->liftdrag->aledline--;
+
+  frread();
+}
+
 end:
-  /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -2698,7 +2700,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr++;
     colptr += 7;
   }
-  else dserror("Unknown stabilisation type!");
+  else if (strncmp(buffer,"USFEM",5)==0)
+  {
+    actdsurf->stab_type = stab_usfem;
+    /* move pointer after "PresPro" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 5;
+  }
+  else dserror("Unknown stabilisation type!");  
 
   /*---- All the following is done for eigther stabilisation type! ----*/
   switch (actdsurf->stab_type)
@@ -2964,6 +2974,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   break;
   case stab_prespro:
     dserror("Pressure Projection type of stabilisation has not yet been implemented!");
+  break;
+  case stab_usfem:
+/*    do nothing since there's so far no information to read here
+*/
   break;
   default:
     dserror("Unknown stabilisation type!");
