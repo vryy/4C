@@ -34,6 +34,7 @@ middle of each kinematic layer.
 \param  DOUBLE  ***akon    (o)  kontravariant basis vectors in reference layer of each kinematic layer
 \param  DOUBLE  ***amkov   (o)  kovariant metric in reference layer of each kinematic layer
 \param  DOUBLE  ***amkon   (o)  kontravariant metric in reference layer of each kinematic layer
+\param  DOUBLE   **akovh,..(i)  (help) arrays used to calculate akov,...
 \param  DOUBLE    *det     (o)  det of akon
 \param  DOUBLE    *funct   (i)  shape functions at GP
 \param  DOUBLE   **deriv   (i)  shape function derivatives at GP
