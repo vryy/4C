@@ -226,6 +226,9 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    default: dserror("Unknown type of assembly"); break;
    }
    /*--------------------------- assemble one or two system matrices */
+   dserror("container not yet implemented, use calelm!!");
+   # if 0
+   /* inconsistent with prototypes_sol.h due to container! */
    assemble(sysarray1,
             &estif_global,
             sysarray2,
@@ -235,6 +238,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             actintra,
             actele,
             assemble_action);
+   # endif
 }/* end of loop over elements */
 /*----------------------------------------------------------------------*/
 /*                    in parallel coupled dofs have to be exchanged now */
@@ -248,6 +252,8 @@ case calc_ale_rhs              : assemble_action = assemble_do_nothing; break;
 default: dserror("Unknown type of assembly"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
+# if 0
+/* inconsistent with prototypes_sol.h due to container! */
 assemble(sysarray1,
          NULL,
          sysarray2,
@@ -257,6 +263,8 @@ assemble(sysarray1,
          actintra,
          actele,
          assemble_action);
+# endif
+
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

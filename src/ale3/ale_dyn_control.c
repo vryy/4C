@@ -196,7 +196,11 @@ solserv_zero_mat(
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 /*------------------------------- init the element calculating routines */
 *action = calc_ale_init;
+dserror("Not yet changed to container-style");
+# if 0
+/* inconsistent with prototypes_sol.h due to container! */
 calinit(actfield,actpart,action);
+# endif 
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_ale_stiff;
 ale_calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,action);
