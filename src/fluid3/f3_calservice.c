@@ -104,6 +104,21 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
       } /* end of loop over nodes */
 } /* endif (dynvar->nif!=0) */
 
+if(dynvar->nim!=0) /* -> computation of mass rhs "on" ------------------
+                      -> vel(n)+a*acc(n) are needed --------------------*/
+/* NOTE: if there is no classic time rhs (as described in WAW) the array
+         eveln is misused and does NOT contain the velocity at time (n)
+	 but rather a linear combination of old velocities and 
+	 accelerations depending upon the time integration scheme!!!!!*/
+{
+      for(i=0;i<ele->numnp;i++) /* loop nodes of element */
+      {
+         actnode=ele->node[i];
+         eveln[0][i] = actnode->sol_increment.a.da[2][0];
+	 eveln[1][i] = actnode->sol_increment.a.da[2][1];
+	 eveln[2][i] = actnode->sol_increment.a.da[2][2];
+      } /* end of loop over nodes of element */  
+} /* endif (dynvar->nim!=0) */		       
 /*------------------------------------------------ check for dead load */
 actgvol = ele->g.gvol;
 if (actgvol->neum!=NULL)
