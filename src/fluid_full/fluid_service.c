@@ -66,7 +66,19 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 static FLUID_DYNAMIC *fdyn;
-extern struct _LS_DYNAMIC *lsdyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief routine to check starting algorithm
 
@@ -108,6 +120,12 @@ if (init==1)  /* save parameter from input */
    itemax_s = fdyn->itemax;
    theta_s  = fdyn->theta;
    thetas_s = fdyn->thetas;
+   if (theta_s < EPS5) 
+   {
+     theta_s = 1.0; /* hier bei Gelegenheit mal noch 'ne dswarning */     
+   }
+   if (iop_s == 7) /* BDF2 */
+     theta_s = 1.0;
    goto end;
 }
 
@@ -167,22 +185,53 @@ void fluid_cons( void )
 #ifdef DEBUG
 dstrc_enter("fluid_cons");
 #endif
+/*----------------------------------------------------- initialisation */
+fdyn->nir=0;
+fdyn->nil=0;
+fdyn->nii=0;
+fdyn->nis=0;
+fdyn->totarea=ZERO;
+
 /*----------------------------------------------------------------------*/
 fdyn = alldyn[genprob.numff].fdyn;
-fdyn->dtp = fdyn->dt;
+fdyn->dtp = fdyn->dt; /* set starting 'previous' step to prescribed value */
 fluid_startproc(NULL,1);
+
+
+/*--- the following is to distinguish beween Newton and fixed ----------
+      point like iteration it has been implemented for GLS- ------------
+      Stabilisation (Wall/Genkinger) only! -----------------------------
+      Within USFEM a full Newton Iteration is used always!!! -----------*/
+switch (fdyn->ite)
+{
+case 0:              /* no iteration */
+   dserror("results with no nonlin. iteration not checked yet!\n");
+break;
+case 1:              /* fixed point like iteration */
+break;
+case 2:              /* Newton iteration */
+   fdyn->nir = 1;
+   fdyn->nii = 1;
+break;
+case 3:              /* fixed point iteration */
+   dserror("fixed point iteration removed!!!\n");
+break;
+default:
+   dserror("Unknown nonlinear iteration");
+}
+
 /*----------------------------------------------------- check algorithm */
 switch(fdyn->iop)
 {
 
-case 1:		/* gen alpha implementation 1 */
+case 1:		/* gen alpha implementation */
    if (fabs(fdyn->theta*TWO*fdyn->alpha_f/fdyn->alpha_m - ONE) > EPS10)
    {
        fdyn->theta = fdyn->alpha_m / fdyn->alpha_f * 0.5;
        printf("\nWarning: Theta, Alpha_m and Alpha_f do not satisfy 2nd order condition.\n");
        printf("         Theta is recalculated.\n");
        printf("\n Theta = Alpha_m / (2 Alpha_f) = %6.4f \n\n", fdyn->theta);
-   }
+   } 
    fdyn->dta = 0.0;
 break;
 
@@ -192,14 +241,13 @@ break;
 
 case 7:		/* 2nd order backward differencing BDF2 */
    fdyn->dta = 0.0;
-
    /* set number of starting steps for restarts */
    if (genprob.restart != 0) /* restart using the pss-file */
    {
      /* nicht unbedingt notwendig !! */
      fdyn->nums = genprob.restart + 1;
    }
-   else  /* restart aus flavia.res */
+   else  /* restart aus flavia.res (or no restart) */
    {
      fdyn->nums += fdyn->step;
    }
@@ -226,12 +274,15 @@ return;
 <pre>                                                         genk 03/02
 
 in this routine the constants for the time integration algorithms are
-calculated, here time dependent values only are calculated
+calculated, here time dependent values only are calculated.
+
+NOTE: The time discretisation scheme itself is time dependent since 
+      starting steps using another scheme are possible!
 
 </pre>
 
 \return void
-\warning only ONE-STEP-THETA implemented up to now!
+\warning adaptive time stepping does not work for ALE calculations!
 
 ------------------------------------------------------------------------*/
 void fluid_tcons( void )
@@ -243,6 +294,7 @@ dstrc_enter("fluid_tcons");
 
 fdyn = alldyn[genprob.numff].fdyn;
 
+
 /*----------------------------------------------------- check algorithm */
 switch (fdyn->iop)
 {
@@ -251,7 +303,7 @@ case 1:		/* generalised alpha */
    {
       if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
    }
-   else if (fdyn->adaptive==0)
+   else /* constant time step size */
    {
       fdyn->dta  = fdyn->dt;
    }
@@ -259,14 +311,13 @@ case 1:		/* generalised alpha */
    fdyn->thpl = fdyn->thsl;
    fdyn->thsr = ZERO;
    fdyn->thpr = fdyn->thsr;
-   fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
 break;
 case 4:		/* one step theta */
    if (fdyn->adaptive)
    {
       if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
    }
-   else if (fdyn->adaptive==0)
+   else /* constant time step size */
    {
       fdyn->dta  = fdyn->dt;
    }
@@ -274,11 +325,8 @@ case 4:		/* one step theta */
    fdyn->thpl = fdyn->thsl;
    fdyn->thsr = (ONE - fdyn->theta)*fdyn->dta;
    fdyn->thpr = fdyn->thsr;
-   fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
-   fdyn->theta = fdyn->theta;
 break;
 case 7:		/* 2nd order backward differencing BDF2 */
-   fdyn->time_rhs = 0;	/* use mass rhs */
    if (fdyn->adaptive)
    {
       if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
@@ -286,18 +334,16 @@ case 7:		/* 2nd order backward differencing BDF2 */
                      / (2.0*fdyn->dta + fdyn->dtp);
       fdyn->thpl = fdyn->thsl;
       fdyn->thsr = 0.0;
-      fdyn->thpr = fdyn->thsr;
-      fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
+      fdyn->thpr = fdyn->thsr; 
 
    }
-   else if (fdyn->adaptive==0)
+   else /* constant time step size */
    {
       fdyn->dta  = fdyn->dt;
       fdyn->thsl = fdyn->dta*TWO/THREE;
       fdyn->thpl = fdyn->thsl;
       fdyn->thsr = 0.0;
       fdyn->thpr = fdyn->thsr;
-      fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
    }
 break;
 default:
@@ -318,20 +364,16 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief setting flags for nonlinear iteration schemes
+\brief setting flags for nonlinear iteration schemes for free surface
 
 <pre>                                                         genk 03/02
 
-in this routine the flags for the different nonlinear iteration schemes
-are set. Depending on the iteration schemes the evaluation of some
-termes in the LHS or the RHS have to turned on or off:
+in this routine the free surface flags for the different nonlinear 
+iteration schemes are set. Depending on the iteration schemes the 
+evaluation of some termes in the LHS or the RHS have to turned on or off.
 
-nir <->  EVALUATION OF NONLINEAR LHS N-REACTION
-nil <->  EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)
-nif <->  EVALUATION OF "TIME - RHS" (F-hat)
-nii <->  EVALUATION OF "ITERATION - RHS"
-nis <->  STATIONARY CASE (NO TIMEDEPENDENT TERMS)
-
+NOTE: This routine is not called any more in the Euler case! It is required
+      for ALE-free-surface problems only!                    chfoe 02/05
 </pre>
 \param  itnum      INT  	   (i)     actual number of iterations
 \return void
@@ -346,84 +388,8 @@ dstrc_enter("fluid_icons");
 #endif
 
 fdyn = alldyn[genprob.numff].fdyn;
-/*----------------------------------------------------- initialisation */
-fdyn->nir=0;
-fdyn->nil=0;
-fdyn->nif=0;
-fdyn->nii=0;
-fdyn->nis=0;
-fdyn->nim=0;
-fdyn->totarea=ZERO;
 
-switch (fdyn->ite)
-{
-case 0:		/* no iteration */
-   if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
-   {
-      fdyn->nif=3;      /* KCF */
-   }
-   else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
-   {
-      fdyn->nim=1;      /* KC(F) */
-   }
-   dserror("results with no nonlin. iteration not checked yet!\n");
-break;
-case 1:		/* fixed point like iteration */
-   if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
-   {
-      if (itnum==1)
-         fdyn->nif=3;   /* KCF */
-   }
-   else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
-   {
-      fdyn->nim=1;	/* KC(F) */
-   }
-break;
-case 2:		/* Newton iteration */
-   if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
-   {
-      if (itnum>1 || fdyn->iop==7) 	/* no time rhs for BDF2 */
-      {
-         fdyn->nir=3;
-         fdyn->nii=4;  /* KCRI */
-      }
-      else
-      {
-         fdyn->nir=3;
-         fdyn->nif=4;
-         fdyn->nii=5;  /* KCRFI */
-      }
-   }
-   else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
-   {
-      fdyn->nir=3;
-      fdyn->nii=4;
-      fdyn->nim=1;	/* KCR(F)I */
-   }
-break;
-case 3:		/* fixed point iteration */
-   dserror("fixed point iteration removed!!!\n");
-   if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
-   {
-      if (itnum>1)
-      {
-         fdyn->nii=2;  /* KI */
-      }
-      else
-      {
-         fdyn->nif=2;
-         fdyn->nii=3;  /* KFI */
-      }
-   }
-   else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
-   {
-      fdyn->nim=1;
-      fdyn->nii=3;  /* K(F)I */
-   }
-break;
-default:
-   dserror("Unknown nonlinear iteration");
-}
+fdyn->totarea=ZERO;
 
 /*------------------------------ flags for free surface tension effects */
 switch (fdyn->freesurf)
@@ -445,7 +411,6 @@ case 1: /* explicit local langrage: include only for first iteration
    }
 break;
 case 2: case 6:/* partioned implicit local lagrange*/
-   fdyn->nif=2;
    if (itnum>1)
    {
       fdyn->fsstnif = 0;
@@ -459,7 +424,6 @@ case 2: case 6:/* partioned implicit local lagrange*/
 break;
 case 3: case 5:/* vertical heightfunction */
    /*----------------------- evaluate "time rhs" in each iteration step */
-   fdyn->nif=2;
    fdyn->fsstnif  = fdyn->surftens;
    fdyn->fsstnii  = fdyn->surftens;
 break;
@@ -484,13 +448,13 @@ in this routine the solution history of the fluid field is initialised.
 The time-integration schemes require the solutions at different time-
 steps. They are stored in
 node->sol_incement: solution history used for calculations
-      sol_increment.a.da[0][i]: solution at (n-1)
-      sol_increment.a.da[1][i]: solution at (n)
-      sol_increment.a.da[2][i]: solution at (n+g)
-      sol_increment.a.da[3][i]: solution at (n+1)
-      sol_increment.a.da[4][i]: grid velocity
-      sol_increment.a.da[5][i]: convective velocity at (n)
-      sol_increment.a.da[6][i]: convective velocity at (n+1)
+      sol_increment.a.da[ipos.velnm][i]:  solution at (n-1)
+      sol_increment.a.da[ipos.veln][i]:   solution at (n)
+      sol_increment.a.da[ipos.hist][i]:   sol. history
+      sol_increment.a.da[ipos.velnp][i]:  solution at (n+1)
+      sol_increment.a.da[ipos.gridv][i]:  grid velocity
+      sol_increment.a.da[ipos.convn][i]:  convective velocity at (n)
+      sol_increment.a.da[ipos.convnp][i]: convective velocity at (n+1)
 In node->sol one findes the converged solutions of the time-steps, which
 are written to the output-file and the pss-file.
 
@@ -637,9 +601,9 @@ if (fdyn->freesurf==3 || fdyn->freesurf==5)
          amzero(&(actnode->sol_mf));
          phi = actnode->x[numdf-2];
          actnode->sol.a.da[0][numdf] = phi;
-         actnode->sol_increment.a.da[0][numdf] = phi;
-         actnode->sol_increment.a.da[1][numdf] = phi;
-         actnode->sol_increment.a.da[3][numdf] = phi;
+         actnode->sol_increment.a.da[ipos.velnm][numdf] = phi;
+         actnode->sol_increment.a.da[ipos.veln][numdf] = phi;
+         actnode->sol_increment.a.da[ipos.velnp][numdf] = phi;
          actnode->sol_mf.a.da[0][numdf] = phi;
       }
    }
@@ -1018,18 +982,18 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[1][0] = u1;
-	 actnode->sol_increment.a.da[1][1] = u2;
-	 actnode->sol_increment.a.da[1][2] = p ;
-	 actnode->sol_increment.a.da[3][0] = u1;
-	 actnode->sol_increment.a.da[3][1] = u2;
-	 actnode->sol_increment.a.da[3][2] = p ;
+	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos.veln][2] = p ;
+	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos.velnp][2] = p ;
          if (fdyn->freesurf==2 && actnode->xfs!=NULL)
 	 {
-	    actnode->sol_increment.a.da[1][3] = u1;
-	    actnode->sol_increment.a.da[1][4] = u2;
-	    actnode->sol_increment.a.da[3][3] = u1;
-	    actnode->sol_increment.a.da[3][4] = u2;
+	    actnode->sol_increment.a.da[ipos.veln][3] = u1;
+	    actnode->sol_increment.a.da[ipos.veln][4] = u2;
+	    actnode->sol_increment.a.da[ipos.velnp][3] = u1;
+	    actnode->sol_increment.a.da[ipos.velnp][4] = u2;
             actgnode = actnode->gnode;
             if (actgnode->dirich!=NULL)
 	    {
@@ -1039,8 +1003,8 @@ if (fdyn->init>=1)
                {
                   if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
 	          {
-		     actnode->sol_increment.a.da[1][j] = ZERO;
-		     actnode->sol_increment.a.da[3][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos.veln][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos.velnp][j] = ZERO;
                   }
 	       } /* end loop over dofs */
 	    }
@@ -1090,18 +1054,18 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[1][0] = u1;
-	 actnode->sol_increment.a.da[1][1] = u2;
-	 actnode->sol_increment.a.da[1][2] = p ;
-	 actnode->sol_increment.a.da[3][0] = u1;
-	 actnode->sol_increment.a.da[3][1] = u2;
-	 actnode->sol_increment.a.da[3][2] = p ;
+	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos.veln][2] = p ;
+	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos.velnp][2] = p ;
          if (fdyn->freesurf==2 && actnode->xfs!=NULL)
 	 {
-	    actnode->sol_increment.a.da[1][3] = u1;
-	    actnode->sol_increment.a.da[1][4] = u2;
-	    actnode->sol_increment.a.da[3][3] = u1;
-	    actnode->sol_increment.a.da[3][4] = u2;
+	    actnode->sol_increment.a.da[ipos.veln][3] = u1;
+	    actnode->sol_increment.a.da[ipos.veln][4] = u2;
+	    actnode->sol_increment.a.da[ipos.velnp][3] = u1;
+	    actnode->sol_increment.a.da[ipos.velnp][4] = u2;
             actgnode = actnode->gnode;
             if (actgnode->dirich!=NULL)
 	    {
@@ -1111,8 +1075,8 @@ if (fdyn->init>=1)
                {
                   if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
 	          {
-		     actnode->sol_increment.a.da[1][j] = ZERO;
-		     actnode->sol_increment.a.da[3][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos.veln][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos.velnp][j] = ZERO;
                   }
 	       } /* end loop over dofs */
 	    }
@@ -1153,18 +1117,18 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = u3;
 	 actnode->sol.a.da[0][3] = p ;
-	 actnode->sol_increment.a.da[0][0] = u1;
-	 actnode->sol_increment.a.da[0][1] = u2;
-	 actnode->sol_increment.a.da[0][2] = u3;
-	 actnode->sol_increment.a.da[0][3] = p ;
-	 actnode->sol_increment.a.da[1][0] = u1;
-	 actnode->sol_increment.a.da[1][1] = u2;
-	 actnode->sol_increment.a.da[1][2] = u3;
-	 actnode->sol_increment.a.da[1][3] = p ;
-	 actnode->sol_increment.a.da[3][0] = u1;
-	 actnode->sol_increment.a.da[3][1] = u2;
-	 actnode->sol_increment.a.da[3][2] = u3;
-	 actnode->sol_increment.a.da[3][3] = p ;
+	 actnode->sol_increment.a.da[ipos.velnm][0] = u1;
+	 actnode->sol_increment.a.da[ipos.velnm][1] = u2;
+	 actnode->sol_increment.a.da[ipos.velnm][2] = u3;
+	 actnode->sol_increment.a.da[ipos.velnm][3] = p ;
+	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos.veln][2] = u3;
+	 actnode->sol_increment.a.da[ipos.veln][3] = p ;
+	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos.velnp][2] = u3;
+	 actnode->sol_increment.a.da[ipos.velnp][3] = p ;
       }
    }
 
@@ -1190,15 +1154,15 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[0][0] = u1;
-	 actnode->sol_increment.a.da[0][1] = u2;
-	 actnode->sol_increment.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[1][0] = u1;
-	 actnode->sol_increment.a.da[1][1] = u2;
-	 actnode->sol_increment.a.da[1][2] = p ;
-	 actnode->sol_increment.a.da[3][0] = u1;
-	 actnode->sol_increment.a.da[3][1] = u2;
-	 actnode->sol_increment.a.da[3][2] = p ;
+	 actnode->sol_increment.a.da[ipos.velnm][0] = u1;
+	 actnode->sol_increment.a.da[ipos.velnm][1] = u2;
+	 actnode->sol_increment.a.da[ipos.velnm][2] = p ;
+	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos.veln][2] = p ;
+	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos.velnp][2] = p ;
       }
    }
 }
@@ -1587,9 +1551,9 @@ case fnst_Linf: /* L_infinity norm */
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
 #endif
-         dvnorm = DMAX(dvnorm,FABS(actnode->sol_increment.a.da[3][j]  \
-	                          -actnode->sol_increment.a.da[1][j]));
-          vnorm = DMAX( vnorm,FABS(actnode->sol_increment.a.da[3][j]));
+         dvnorm = DMAX(dvnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j]  \
+	                          -actnode->sol_increment.a.da[ipos.veln][j]));
+          vnorm = DMAX( vnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j]));
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
 #ifndef SOLVE_DIRICH
@@ -1599,9 +1563,9 @@ case fnst_Linf: /* L_infinity norm */
           actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
         continue;
 #endif
-      dpnorm = DMAX(dpnorm,FABS(actnode->sol_increment.a.da[3][predof]  \
-	                       -actnode->sol_increment.a.da[1][predof]));
-       pnorm = DMAX( pnorm,FABS(actnode->sol_increment.a.da[3][predof]));
+      dpnorm = DMAX(dpnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof]  \
+	                       -actnode->sol_increment.a.da[ipos.veln][predof]));
+       pnorm = DMAX( pnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof]));
    } /* end of loop over nodes */
 break;
 /*----------------------------------------------------------------------*/
@@ -1620,9 +1584,9 @@ case fnst_L1: /* L_1 norm */
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
 #endif
-         dvnorm += FABS(actnode->sol_increment.a.da[3][j]  \
-	               -actnode->sol_increment.a.da[1][j]);
-          vnorm += FABS(actnode->sol_increment.a.da[3][j]);
+         dvnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][j]  \
+	               -actnode->sol_increment.a.da[ipos.veln][j]);
+          vnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][j]);
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
 #ifndef SOLVE_DIRICH
@@ -1632,9 +1596,9 @@ case fnst_L1: /* L_1 norm */
           actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
         continue;
 #endif
-      dpnorm += FABS(actnode->sol_increment.a.da[3][predof]  \
-	            -actnode->sol_increment.a.da[1][predof]);
-       pnorm += FABS(actnode->sol_increment.a.da[3][predof]);
+      dpnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof]  \
+	            -actnode->sol_increment.a.da[ipos.veln][predof]);
+       pnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof]);
    } /* end of loop over nodes */
 break;
 /*----------------------------------------------------------------------*/
@@ -1653,9 +1617,9 @@ case fnst_L2: /* L_2 norm */
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
 #endif
-         dvnorm += DSQR(actnode->sol_increment.a.da[3][j]  \
-	               -actnode->sol_increment.a.da[1][j]);
-          vnorm += DSQR(actnode->sol_increment.a.da[3][j]);
+         dvnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][j]  \
+	               -actnode->sol_increment.a.da[ipos.veln][j]);
+          vnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][j]);
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
 #ifndef SOLVE_DIRICH
@@ -1665,9 +1629,9 @@ case fnst_L2: /* L_2 norm */
           actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
         continue;
 #endif
-      dpnorm += DSQR(actnode->sol_increment.a.da[3][predof]  \
-	            -actnode->sol_increment.a.da[1][predof]);
-       pnorm += DSQR(actnode->sol_increment.a.da[3][predof]);
+      dpnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][predof]  \
+	            -actnode->sol_increment.a.da[ipos.veln][predof]);
+       pnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][predof]);
    } /* end of loop over nodes */
    dvnorm = sqrt(dvnorm);
     vnorm = sqrt( vnorm);
@@ -2142,7 +2106,7 @@ printf("\n");
 switch(fdyn->iop)
 {
 case 1:
-   printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalised-Alpha1  STEP = %4d/%4d \n",
+   printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalised Alpha  STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;
 case 4:
@@ -2601,7 +2565,7 @@ void fluid_cal_error(
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
 #endif
-          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[3][j] - u[j]));
+          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]));
           vinorm = DMAX( vinorm,FABS(u[j]));
         } /* end of loop over vel-dofs */
 
@@ -2613,7 +2577,7 @@ void fluid_cal_error(
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
 #endif
-        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[3][predof] - p));
+        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p));
         pinorm = DMAX( pinorm,FABS(p));
 
 
@@ -2628,7 +2592,7 @@ void fluid_cal_error(
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
 #endif
-          dv1norm += FABS(actnode->sol_increment.a.da[3][j] - u[j]);
+          dv1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]);
           v1norm += FABS(u[j]);
         } /* end of loop over vel-dofs */
 
@@ -2640,7 +2604,7 @@ void fluid_cal_error(
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
 #endif
-        dp1norm += FABS(actnode->sol_increment.a.da[3][predof] - p);
+        dp1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p);
         p1norm += FABS(p);
 
 
@@ -2656,7 +2620,7 @@ void fluid_cal_error(
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
 #endif
-          dv2norm += pow(actnode->sol_increment.a.da[3][j] - u[j],2);
+          dv2norm += pow(actnode->sol_increment.a.da[ipos.velnp][j] - u[j],2);
           v2norm += pow(u[j],2);
         } /* end of loop over vel-dofs */
 
@@ -2668,7 +2632,7 @@ void fluid_cal_error(
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
 #endif
-        dp2norm += pow(actnode->sol_increment.a.da[3][predof] - p,2);
+        dp2norm += pow(actnode->sol_increment.a.da[ipos.velnp][predof] - p,2);
         p2norm += pow(p,2);
 
       } /* end ol LOOP all nodes */
@@ -2767,7 +2731,7 @@ void fluid_cal_error(
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
 #endif
-          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[3][j] - u[j]));
+          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]));
           vinorm = DMAX( vinorm,FABS(u[j]));
         } /* end of loop over vel-dofs */
 
@@ -2779,7 +2743,7 @@ void fluid_cal_error(
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
 #endif
-        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[3][predof] - p));
+        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p));
         pinorm = DMAX( pinorm,FABS(p));
 
 
@@ -2794,7 +2758,7 @@ void fluid_cal_error(
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
 #endif
-          dv1norm += FABS(actnode->sol_increment.a.da[3][j] - u[j]);
+          dv1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]);
           v1norm += FABS(u[j]);
         } /* end of loop over vel-dofs */
 
@@ -2806,7 +2770,7 @@ void fluid_cal_error(
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
 #endif
-        dp1norm += FABS(actnode->sol_increment.a.da[3][predof] - p);
+        dp1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p);
         p1norm += FABS(p);
 
 
@@ -2822,7 +2786,7 @@ void fluid_cal_error(
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
 #endif
-          dv2norm += pow(actnode->sol_increment.a.da[3][j] - u[j],2);
+          dv2norm += pow(actnode->sol_increment.a.da[ipos.velnp][j] - u[j],2);
           v2norm += pow(u[j],2);
         } /* end of loop over vel-dofs */
 
@@ -2834,7 +2798,7 @@ void fluid_cal_error(
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
 #endif
-        dp2norm += pow(actnode->sol_increment.a.da[3][predof] - p,2);
+        dp2norm += pow(actnode->sol_increment.a.da[ipos.velnp][predof] - p,2);
         p2norm += pow(p,2);
 
       } /* end ol LOOP all nodes */
@@ -2914,6 +2878,58 @@ void fluid_cal_error(
 
   return;
 } /* end of fluid_cal_error */
+
+
+
+/*!---------------------------------------------------------------------
+\brief init positions in sol_increment 
+
+<pre>                                                        chfoe 11/04
+
+This routine inits the positions in sol_increment in the case of a pure
+Eulerian problem.
+
+</pre>
+\return void
+
+------------------------------------------------------------------------*/
+void fluid_init_pos_euler(void)
+{
+#ifdef DEBUG
+  dstrc_enter("fluid_init_pos_euler");
+#endif
+
+if (fdyn->adaptive)
+{
+   /*---------------------------------------- adaptive time stepping ---*/
+   ipos.velnm = 0;
+   ipos.veln  = 1;  
+   ipos.hist  = 2; 
+   ipos.velnp = 3; 
+   ipos.accnm = 4;
+   ipos.accn  = 5;
+   ipos.pred  = 6;
+   ipos.terr  = 7;
+   
+   ipos.numsol = 8;
+}
+else
+{
+   /*------------------------------------------ fixed time step size ---*/
+   ipos.velnp = 0;  /* most recent solution */
+   ipos.veln  = 1;  /* previous soulution (at time n) */
+   ipos.velnm = 2;  /* last historical solution (at time n-1) */
+   ipos.accnm = 3;  /* acceleration at time n-1 */
+   ipos.accn  = 4;  /* acceleration at time n */
+   ipos.hist  = 5;  /* linear combination of old solutions */
+   
+   ipos.numsol = 6;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
 
 #endif
 
