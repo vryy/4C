@@ -168,6 +168,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"# RESULT DISPLACEMENTS on FIELD FSI\n");
     fprintf(out,"# TIME %18.5E \n",fsidyn->time);   
+    fprintf(out,"# STEP %6d    \n",fsidyn->step);   
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"RESULT %cdisplacement%c %cccarat%c %d %s %s\n",
         sign,sign,
@@ -230,7 +231,6 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
       }
     }
 
-
     /* write displacements of fluid field */
     /*-------------------------------------------------------------------*/
   }
@@ -288,8 +288,91 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     fprintf(out,"END VALUES\n");
   }
   /*-------------------------------------------------------------------*/
-
-
+#if 0
+  /* ------------- write fsi loads of structure field 
+   THIS DOES NOT WORK UP TO NOW!!!
+  /-----------------------------------------------------------------------*/
+  if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+  {
+    resulttype        = "VECTOR";
+    resultplace       = "ONNODES";
+    rangetable        = "standard_structure";
+    ncomponent        = genprob.ndim;
+    componentnames[0] = "x-load";
+    componentnames[1] = "y-load";
+    componentnames[2] = "z-load";
+    /*-------------------------------------------------------------------*/
+    fprintf(out,"#-------------------------------------------------------------------------------\n");
+    fprintf(out,"# RESULT FSI LOADS on FIELD STRUCTURE\n");
+    fprintf(out,"# TIME %18.5E \n",fsidyn->time);   
+    fprintf(out,"# STEP %6d    \n",fsidyn->step);   
+    fprintf(out,"#-------------------------------------------------------------------------------\n");
+    fprintf(out,"RESULT %cfsiload%c %cccarat%c %d %s %s\n",
+        sign,sign,
+        sign,sign,
+        fdyn->step,
+        resulttype,
+        resultplace
+        );
+    fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+        sign,rangetable,sign
+        );
+    /*-------------------------------------------------------------------*/
+    switch (genprob.ndim)
+    {
+      case 3:
+        fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+            sign,componentnames[0],sign,
+            sign,componentnames[1],sign,
+            sign,componentnames[2],sign
+            );
+        break;
+      case 2:
+        fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c\n",
+            sign,componentnames[0],sign,
+            sign,componentnames[1],sign
+            );
+        break;
+      default:
+        dserror("Unknown numer of dimensions");
+        break;
+    }
+    /*-------------------------------------------------------------------*/
+    fprintf(out,"VALUES\n");
+  }
+  if (ioflags.struct_disp_gid==1 && structfield!=NULL)
+  {
+    for (i=0; i<structfield->dis[0].numnp; i++)
+    {
+      actnode = &(structfield->dis[0].node[i]);
+      switch (genprob.ndim)
+      {
+        case 3:
+          fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+              actnode->Id+1,
+              fsidyn->fsiload[actnode->dof[0]],
+              fsidyn->fsiload[actnode->dof[1]],
+              fsidyn->fsiload[actnode->dof[2]]
+              );
+          break;
+        case 2:
+          fprintf(out," %6d %18.5E %18.5E \n",
+              actnode->Id+1,
+              fsidyn->fsiload[actnode->dof[0]],
+              fsidyn->fsiload[actnode->dof[1]]
+              );
+          break;
+        default:
+          dserror("Unknown number of dimensions");
+          break;
+      }
+    }
+  }
+  if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+  {
+    fprintf(out,"END VALUES\n");
+  }
+#endif
 
   /* write velocities and pressure of fluid field */
   if (ioflags.fluid_sol_gid==1) 
