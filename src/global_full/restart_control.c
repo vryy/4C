@@ -271,6 +271,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       beam3(actfield,actpart,actintra,actele,
             NULL,NULL,NULL,action,container);     
    break;
+   case el_interf:
+   break;
+   case el_wallge:
+   break;
    case el_none:
       dserror("Typ of element unknown");
    break;   
@@ -845,7 +849,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        container->handsize = MAXRECORDPERELE;
        container->handles = ele_handles[i];
        beam3(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,action,container);       
+             NULL,NULL,NULL,action,container);
+   break;
+   case el_interf:
+   
+   break;
+   case el_wallge:
+   
    break;
    case el_none:
       dserror("Typ of element unknown");
