@@ -245,7 +245,8 @@ if (genprob.probtyp==prb_fsi) fsi_createfsicoup();
 #ifdef D_FLUID
 /*----------------- inherit the freesurface condition inside the design 
    condition is transformed into a dirichlet condition for ale fiedl    */
-if (genprob.numff>=0 && genprob.numfld>1) fluid_createfreesurf();
+if (genprob.numff>=0 && genprob.numfld>1 && genprob.probtyp!=prb_twophase)
+  fluid_createfreesurf();
 /*------ inherit stabilisation condition from design to the elements ---*/
 for (i=0; i<genprob.numfld; i++)
 {

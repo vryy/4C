@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include "../headers/solution.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"
+#include "../ls/ls_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -73,6 +74,12 @@ case prb_ale:
     dyn_ale();
 break;
 #endif
+
+#ifdef D_LS
+case prb_twophase:
+    ls_dyn();
+break;
+#endif 
 default:
     dserror("Dynamic solution of unknown Problemtyp requested");
 break;

@@ -29,7 +29,15 @@ Maintainer: Malte Neumann
 #include "../fluid2_pro/fluid2pro_prototypes.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
+#include "../ls/ls_prototypes.h"
+#include "../xfem/xfem_prototypes.h"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -278,14 +286,15 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 
 #ifdef D_FLUID2
    case el_fluid2: 
-      if(container->turbu==2 || container->turbu==3)
-        actele2 = actpart->pdis[1].element[i];
-      else
-        actele2 = NULL;
-      fluid2(actpart,actintra,actele,actele2,
-             &estif_global,&emass_global,
-             &etforce_global,&eiforce_global,&edforce_global,
-	       action,&hasdirich,&hasext,container);
+     if(container->turbu==2 || container->turbu==3)
+       actele2 = actpart->pdis[1].element[i];
+     else
+       actele2 = NULL;
+     fluid2(
+       actpart,actintra,actele,actele2,
+       &estif_global,&emass_global,
+       &etforce_global,&eiforce_global,&edforce_global,
+       action,&hasdirich,&hasext,container);
    break;
 #endif
 
@@ -309,6 +318,16 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    break;
 #endif
 
+#ifdef D_XFEM
+   case el_fluid2_xfem:
+     xfem_fluid2(
+       actpart,actintra,actele,&estif_global,&emass_global,
+       &etforce_global,&eiforce_global,&edforce_global,action,
+       &hasdirich,&hasext,container
+       );
+   break;
+#endif
+   
 #ifdef D_FLUID3
    case el_fluid3: 
       fluid3(actpart,actintra,actele,
@@ -370,6 +389,15 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    break;
 #endif
 
+#ifdef D_LS   
+   case el_ls2:	 
+     ls2(
+       actpart,actintra,actele,&estif_global,&emass_global,
+       &etforce_global,&eiforce_global,action
+       );
+   break;
+#endif
+
    case el_none:
       dserror("Typ of element unknown");
    break;
@@ -414,9 +442,10 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_fluid_vort             : assemble_action = assemble_do_nothing; break;
    case calc_fluid_stress           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing; break;
-   case calc_fluid_f2pro         : assemble_action = assemble_two_matrix; break;
-   case calc_fluid_amatrix       : assemble_action = assemble_do_nothing; break;
-   case calc_fluid_f2pro_rhs_both : assemble_action = assemble_two_matrix; break;
+   case calc_fluid_f2pro            : assemble_action = assemble_two_matrix; break;
+   case calc_fluid_amatrix          : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_matrix; break;
+   case calc_ls                     : assemble_action = assemble_two_matrix; break;
    default: dserror("Unknown type of assembly 1"); break;
    }
    /*--------------------------- assemble one or two system matrices */
@@ -506,9 +535,26 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 			  container->pos); 
       }
    break;
-#endif 
+#endif
+#ifdef D_LS   
+   case levelset:
+     /* assemble the vector etforce_global to time rhs */
+     if (container->nif!=0)
+     {
+       container->dvec = container->ftimerhs;
+       assemble_intforce(actele,&etforce_global,container,actintra);
+     }
+     /* assemble the vector eiforce_global to iteration rhs */
+     if (container->nii!=0)
+     {   
+       container->dvec = container->fiterhs;
+       assemble_intforce(actele,&eiforce_global,container,actintra); 
+     }
+     container->dvec=NULL;   
+     break;
+#endif      
    default:
-      dserror("fieldtyp unknown!");
+     dserror("fieldtyp unknown!");
    }
 #ifdef PERF
   perf_end(18);
@@ -554,6 +600,7 @@ case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; break;
+case calc_ls                     : assemble_action = assemble_do_nothing;   break;
 default: dserror("Unknown type of assembly 2"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
@@ -615,6 +662,7 @@ case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_do_nothing;   break;
+case calc_ls                     : assemble_action = assemble_do_nothing;   break;
 default: dserror("Unknown type of assembly 3"); break;
 }
 assemble(sysarray1,
@@ -695,12 +743,14 @@ INT is_wall1 =0;
 INT is_fluid2=0;
 INT is_fluid2_pro=0;
 INT is_fluid2_tu=0;
+INT is_fluid2_xfem=0; 
 INT is_fluid3=0;
 INT is_ale3=0;
 INT is_ale2=0;
 INT is_beam3=0;
 INT is_interf=0;
 INT is_wallge=0;
+INT is_ls2=0; 
 
 ELEMENT *actele;              /* active element */
 /*----------------------------------------------------------------------*/
@@ -755,6 +805,9 @@ for (i=0; i<actfield->dis[kk].numele; i++)
    case el_fluid2_tu:
       is_fluid2_tu=1;
    break;
+   case el_fluid2_xfem:
+      is_fluid2_xfem=1;
+   break;
    case el_fluid3:
       is_fluid3=1;
    break;
@@ -769,6 +822,9 @@ for (i=0; i<actfield->dis[kk].numele; i++)
    break;
    case el_wallge:
       is_wallge=1;
+   break;
+   case el_ls2:
+      is_ls2=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -828,10 +884,12 @@ if (is_wall1==1)
 #ifdef D_FLUID2
 if (is_fluid2==1)
 {
-   fluid2(actpart,NULL,NULL,NULL,
-          &estif_global,&emass_global,
-          &etforce_global,&eiforce_global,&edforce_global,
-          action,NULL,NULL,container);
+  fluid2(
+    actpart,NULL,NULL,NULL,
+    &estif_global,&emass_global,
+    &etforce_global,&eiforce_global,&edforce_global,
+    action,NULL,NULL,container
+    );
 }
 #endif
 /*----------------------------- init all kind of routines for fluid2_pro */
@@ -844,7 +902,7 @@ if (is_fluid2_pro==1)
 	     &edforce_global,&gforce_global,action,NULL);
 }
 #endif
-/*-------------------------------- init all kind of routines for fluid2_tu */
+/*------------------------------ init all kind of routines for fluid2_tu */
 #ifdef D_FLUID2
 if (is_fluid2_tu==1)
 {
@@ -852,6 +910,17 @@ if (is_fluid2_tu==1)
              &estif_global,&emass_global,
              &etforce_global,&eiforce_global,&edforce_global,
              &eproforce_global,action,NULL,NULL,container);
+}
+#endif
+/*---------------------------- init all kind of routines for fluid2_xfem */
+#ifdef D_XFEM
+if (is_fluid2_xfem==1)
+{
+  xfem_fluid2(
+    actpart,NULL,NULL,&estif_global,&emass_global,
+    &etforce_global,&eiforce_global,&edforce_global,
+    action,NULL,NULL,container
+    );          
 }
 #endif
 /*-------------------------------- init all kind of routines for fluid3 */
@@ -908,6 +977,17 @@ if (is_wallge==1)
            action,container);                                
 }
 #endif
+/*---------------------------------- init all kind of routines for ls2 */
+#ifdef D_LS
+if (is_ls2==1)
+{
+  /* init all kind of routines for ls2 */    
+  ls2(
+    actpart,NULL,NULL,&estif_global,&emass_global,
+    &etforce_global,&eiforce_global,action
+    );
+}
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -937,11 +1017,13 @@ INT is_shell9=0;
 INT is_brick1=0;
 INT is_wall1 =0;
 INT is_fluid1=0;
+INT is_fluid2_xfem=0; 
 INT is_fluid3=0;
 INT is_ale3=0;
 INT is_beam3=0;
 INT is_interf=0;
 INT is_wallge=0;
+INT is_ls2=0; 
 
 ELEMENT *actele;
 #ifdef DEBUG 
@@ -972,6 +1054,9 @@ for (i=0; i<actfield->dis[0].numele; i++)
    case el_fluid2:
       is_fluid1=1;
    break;
+   case el_fluid2_xfem:
+      is_fluid2_xfem=1;
+   break;
    case el_fluid3:
       is_fluid3=1;
    break;
@@ -986,6 +1071,9 @@ for (i=0; i<actfield->dis[0].numele; i++)
    break;
    case el_wallge:
       is_wallge=1;
+   break;
+   case el_ls2:
+      is_ls2=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -1026,6 +1114,10 @@ if (is_wall1==1)
 if (is_fluid1==1)
 {
 }
+/*---------------------------------------reduce results for fluid2_xfem */
+if (is_fluid2_xfem==1)
+{
+}
 /*--------------------------------------------reduce results for fluid3 */
 if (is_fluid3==1)
 {
@@ -1044,6 +1136,10 @@ if (is_wallge==1)
 }
 /*---------------------------------------------reduce results for beam3 */
 if (is_beam3==1)
+{
+}
+/*----------------------------------------------reduce results for ls2 */
+if (is_ls2==1)
 {
 }
 /*----------------------------------------------------------------------*/

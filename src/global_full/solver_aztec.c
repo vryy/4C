@@ -208,6 +208,7 @@ switch (actsolv->fieldtyp)
 case structure: azname=1; break;
 case fluid:     azname=2; break;
 case ale:       azname=3; break;
+case levelset:  azname=4; break;
 default:
    dserror("Unknown type of field");
 break;

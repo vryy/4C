@@ -100,9 +100,21 @@ for (j=0; j<actfield->dis[0].numele; j++)
    case el_fluid2:
       for (k=0; k<actele->numnp; k++)
       {
-	 if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
+         if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
+#ifdef D_XFEM
+         if (genprob.xfem_on_off==1) /* =>enriched formulation */
+           actele->node[k]->numdf=5;
+#endif           
       }
       break;
+#ifdef D_XFEM
+   case el_fluid2_xfem:
+      for (k=0; k<actele->numnp; k++)
+      {
+        if (actele->node[k]->numdf < 5) actele->node[k]->numdf=5;
+      }
+      break;      
+#endif           
    case el_fluid3:
       for (k=0; k<actele->numnp; k++)
       {
@@ -143,6 +155,12 @@ for (j=0; j<actfield->dis[0].numele; j++)
 	 if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
       }
       break;
+#ifdef D_LS
+   case el_ls2:
+      for (k=0; k<actele->numnp; k++)
+        if (actele->node[k]->numdf < 1) actele->node[k]->numdf=1;
+      break;
+#endif      
    default:
       dserror("Unknown type of element, cannot assign number of dofs");
       break;
