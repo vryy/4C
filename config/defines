@@ -21,6 +21,7 @@
 #D_FLUID2_PRO       # defines element fluid2 with projection method
 #FLUID2_ML          # defines element fluid2 with multilevel
 #D_FLUID3           # defines element fluid3
+#D_FLUID3_F         # defines element fluid3_fast
 #FLUID3_ML          # defines element fluid3 with multilevel
 #D_SHELL8           # defines element shell8
 #D_SHELL9           # defines element shell9
