@@ -3,6 +3,9 @@
 \brief calling time algorithms (stationary/pm/isi) for fluid
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID
+*//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -14,6 +17,12 @@
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;    
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*!---------------------------------------------------------------------                                         
 \brief routine to control fluid dynamic analyis
@@ -34,12 +43,13 @@ see dissertation of W.A. WALL, chapter 4.2 'Zeitdiskretisierung'
 </pre>
 
 
-\return void                                                                             
+\return void        
 
 ------------------------------------------------------------------------*/
 void dyn_fluid()
 {
-int iop   ;                         /* flag for time algorithm          */ 
+int iop   ;                         /* flag for time algorithm          */
+int freesurf;                       /* flag for fluid problem w/ freesurface */ 
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 
 #ifdef DEBUG 
@@ -51,8 +61,9 @@ dstrc_enter("dyn_fluid");
 /*----------------------------------------------------------------------*/
 
 /*--------------------------------------------------- set some pointers */
-fdyn = alldyn[0].fdyn;
+fdyn = alldyn[genprob.numff].fdyn;
 iop = fdyn->iop;
+freesurf = fdyn->freesurf;
 
 /*------------------------------------------------------ initialisation */
 fdyn->time=0.0;
@@ -63,7 +74,10 @@ fdyn->step=0;
  *----------------------------------------------------------------------*/
 if      (iop ==0) fluid_stat();     /* stationary solution algorithm         */
 else if (iop ==1) fluid_pm();       /* predictor-multicorrector algorithm    */
-else if (iop >=2) fluid_isi(fdyn);  /* implicit and semi-implicit algorithms */
+else if (iop >=2 && freesurf==0) 
+                  fluid_isi(fdyn);  /* implicit and semi-implicit algorithms */
+else if (iop == 4 && freesurf>0)
+                  fluid_mf(0);      /* fluid multiefield algorithm      */
 else     dserror("unknown time algorithm"); 
 /*----------------------------------------------------------------------*/
 
@@ -78,7 +92,7 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of dynfluid */
-
+} /* end of dyn_fluid */
+/*! @} (documentation module close)*/
 
 
