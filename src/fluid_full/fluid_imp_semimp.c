@@ -601,6 +601,7 @@ if (fdyn->stchk==iststep)
 /*----------------------------------------------- lift&drag computation */
 if (fdyn->liftdrag>0)
 {
+  container.str = str;
   *action = calc_fluid_liftdrag;
   fluid_liftdrag(1,action,container,actfield,
                  actsolv,actpart,actintra,fdyn);
