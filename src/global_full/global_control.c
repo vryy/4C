@@ -67,12 +67,14 @@ ntainp();
 ti=ds_cputime();
 ti -= t0;
 /*------------------------ write output of all preprocessor information */
+/*
 if (genprob.restart==0)
 {
    pss_write("input_file",allfiles.numrows,allfiles.numcol,sizeof(char),
                 allfiles.input_file_hook,&handle,&ierr);
    if (ierr!=1) dserror("cannot write input_file to pss");
 }
+*/
 /*--------------------------------close the input file, delete the copy */
 /*---------- You cannot read anything from input file beyond this point */
 frend();
