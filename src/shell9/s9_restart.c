@@ -41,6 +41,16 @@ extern struct _FILES  allfiles;
 
 *----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
+/*!----------------------------------------------------------------------
+\brief vector of multilayer material law
+
+<pre>                                                            sh 10/02
+This structure struct _MULTIMAT  *multimat is defined in global_control.c
+and the type is in materials.h                                                  
+It holds all information about the layered section data
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _MULTIMAT  *multimat;
 
 
 /*!----------------------------------------------------------------------
@@ -50,6 +60,7 @@ extern struct _PARTITION  *partition;
 This routine writes the data needed to restart the shell9 element. 
 </pre>
 \param  ELEMENT  *actele   (i) actual element
+\param  MATERIAL *mat      (i)  the material structure
 \param  INT       nhandle  (i) size of handles
 \param  long int *handles  ( ) unique handle returned by the pss-system 
 \param  INT       init    (i) flag for initializing arrays
@@ -59,13 +70,15 @@ This routine writes the data needed to restart the shell9 element.
 \sa calling: ---; called by: shell9()   [s9_main.c]
 
 *----------------------------------------------------------------------*/
-void s9_write_restart(ELEMENT *actele, INT nhandle, long int *handles, INT init)
+void s9_write_restart(ELEMENT *actele, MATERIAL  *mat, INT nhandle, long int *handles, INT init)
 {
 INT j,n,k,kl,ml,ierr;
 INT size_j;
 INT num_klay;
 INT num_mlay;
 INT actlay;
+
+MULTIMAT      *actmultimat;                               /* material of actual material layer */
 static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 FILE *out;
 /*----------------------------------------------------------------------*/
@@ -77,10 +90,29 @@ if (init==1)
 {
    /*array for every layer elewares_a
      fdim = MAXLAY_SHELL9 (total number of layers)
-     sdim = sum of all possible entries in ipwa per GP (42 at the moment) 
-            * 
-            max number of GP (3x3x2 = 18 at the moment) */
-   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,42*18,"DA");    
+
+     sdim = max number of possible entries in ipwa per GP (35 at the moment) 
+            * max number of GP (3x3x2 = 18 at the moment) */
+
+    /*  pl_mises or pl_dp*/      
+    /*  DOUBLE       epstn;  /* equivalent strain                            */
+    /*  INT          yip;    /* stress state: 1=elastic 2=plastic            */
+    /*  DOUBLE       sig[6]; /* stresses                           [6]       */
+    /*  DOUBLE       eps[6]  /* strains                            [6]       */
+    /*  DOUBLE       qn[6]   /* backstress                         [6]       */
+    /*      ( == 20 )                                                        */
+
+    /*  pl_hoff */      
+    /*  INT          yip;       /* stress state: 1=elastic 2=plastic          */
+    /*  DOUBLE       dhard;     /* equivalent strain                          */
+    /*  DOUBLE       sig[6];    /* stresses                             [6]   */
+    /*  DOUBLE       eps[6]     /* strains                              [6]   */
+    /*  DOUBLE       dkappa[6]; /*                                      [6]   */
+    /*  DOUBLE       gamma[6];  /*                                      [6]   */
+    /*  DOUBLE       rkappa[9]; /*                                      [9]   */
+    /*      ( == 35 )                                                         */
+
+   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,35*18,"DA");    
 
    goto end;
 }
@@ -134,41 +166,67 @@ for (kl=0; kl<num_klay; kl++) /*loop all kinematic layers*/
    num_mlay = actele->e.s9->kinlay[kl].num_mlay;
    for (ml=0; ml<num_mlay; ml++) /*loop all material layers*/
    {
-    /*check if there is a ipwa for this layer */
+        /*check if there is a ipwa for this layer */
         if (!actele->e.s9->elewa[actlay].ipwa) goto next; /*no ipwa to this layer*/
+        
+        actmultimat = &(multimat[actele->e.s9->kinlay[kl].mmatID[ml]-1]);
         
         /*number of gausspoints in one layer*/     
         size_j = actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2];
 
         n = 0;
-        for (k=0; k<size_j; k++)/*write for every gausspoint -> elewares*/
-        {
-          elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].epstn;
-          n++;
-          elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].yip;
-          n++;
-          elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].dhard;
-          n++;
 
-          for (j=0; j<6; j++)
-          {
-            elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].sig[j];
-            n++;
-            elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].eps[j];
-            n++;
-            elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].qn[j];
-            n++;
-            elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].dkappa[j];
-            n++;
-            elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].gamma[j];
-            n++;
-          }
-          for (j=0; j<9; j++)
-          {
-            elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].rkappa[j];
-            n++;
-          }
-        }
+        /* pl_mises or pl_dp */
+        if (actmultimat->mattyp == m_pl_mises ||
+            actmultimat->mattyp == m_pl_dp    )
+        {
+           for (k=0; k<size_j; k++)/*write for every gausspoint -> elewares*/
+           {
+             elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].epstn;
+             n++;
+             elewares[actlay][n] = (double) actele->e.s9->elewa[actlay].ipwa[k].yip;
+             n++;
+
+             for (j=0; j<6; j++)
+             {
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].sig[j];
+               n++;
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].eps[j];
+               n++;
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].qn[j];
+               n++;
+             }
+           }
+        } /*end pl_mises of pl_dp*/
+
+        /* pl_hoff */
+        else if (actmultimat->mattyp ==  m_pl_hoff)
+        {
+           for (k=0; k<size_j; k++)/*write for every gausspoint -> elewares*/
+           {
+             elewares[actlay][n] = (double) actele->e.s9->elewa[actlay].ipwa[k].yip;
+             n++;
+             elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].dhard;
+             n++;
+
+             for (j=0; j<6; j++)
+             {
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].sig[j];
+               n++;
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].eps[j];
+               n++;
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].dkappa[j];
+               n++;
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].gamma[j];
+               n++;
+             }
+             for (j=0; j<9; j++)
+             {
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].rkappa[j];
+               n++;
+             }
+           }
+        } /*end pl_hoff*/
 
         next:
         actlay += 1;
@@ -199,6 +257,7 @@ return;
 This routine reads the data needed to restart the shell9 element. 
 </pre>
 \param  ELEMENT  *actele   (i) actual element
+\param  MATERIAL *mat      (i)  the material structure
 \param  INT       nhandle  (i) size of handles
 \param  long int *handles  ( ) unique handle returned by the pss-system 
 \param  INT       init    (i) flag for initializing arrays
@@ -213,13 +272,15 @@ This routine reads the data needed to restart the shell9 element.
  | read the data needed to restart this element                         |
  | modified from shell8                                    sh 02/03     |
  *----------------------------------------------------------------------*/
-void s9_read_restart(ELEMENT *actele, long int *handles, INT init)
+void s9_read_restart(ELEMENT *actele, MATERIAL  *mat, long int *handles, INT init)
 {
 INT j,n,k,kl,ml,ierr;
 INT size_j;
 INT num_klay;
 INT num_mlay;
 INT actlay;
+
+MULTIMAT      *actmultimat;                               /* material of actual material layer */
 static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 INT dims[3];
 FILE *in;
@@ -230,12 +291,9 @@ dstrc_enter("s9_read_restart");
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
-   /*array for every layer elewares_a
-     fdim = MAXLAY_SHELL9 (total number of layers)
-     sdim = sum of all possible entries in ipwa per GP (42 at the moment) 
-            * 
-            max number of GP (3x3x2 = 18 at the moment) */
-   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,42*18,"DA");    
+   /*for dimensions see s9_write_restart */
+               
+   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,35*18,"DA");    
 
    goto end;
 }
@@ -336,38 +394,64 @@ for (kl=0; kl<num_klay; kl++) /*loop all kinematic layers*/
     /*check if there is a ipwa for this layer */
         if (!actele->e.s9->elewa[actlay].ipwa) goto next; /*no ipwa to this layer*/
         
+        actmultimat = &(multimat[actele->e.s9->kinlay[kl].mmatID[ml]-1]);
+        
         /*number of gausspoints in one layer*/     
         size_j = actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2];
 
         n = 0;
-        for (k=0; k<size_j; k++)/*read for every gausspoint*/
-        {
-          actele->e.s9->elewa[actlay].ipwa[k].epstn = elewares[actlay][n];
-          n++;
-          actele->e.s9->elewa[actlay].ipwa[k].yip   = elewares[actlay][n];
-          n++;
-          actele->e.s9->elewa[actlay].ipwa[k].dhard = elewares[actlay][n];
-          n++;
 
-          for (j=0; j<6; j++)
-          {
-            actele->e.s9->elewa[actlay].ipwa[k].sig[j]    = elewares[actlay][n];
-            n++;
-            actele->e.s9->elewa[actlay].ipwa[k].eps[j]    = elewares[actlay][n];
-            n++;
-            actele->e.s9->elewa[actlay].ipwa[k].qn[j]     = elewares[actlay][n];
-            n++;
-            actele->e.s9->elewa[actlay].ipwa[k].dkappa[j] = elewares[actlay][n];
-            n++;
-            actele->e.s9->elewa[actlay].ipwa[k].gamma[j]  = elewares[actlay][n];
-            n++;
-          }
-          for (j=0; j<9; j++)
-          {
-            actele->e.s9->elewa[actlay].ipwa[k].rkappa[j] = elewares[actlay][n];
-            n++;
-          }
-        }
+        /* pl_mises or pl_dp */
+        if (actmultimat->mattyp == m_pl_mises ||
+            actmultimat->mattyp == m_pl_dp    )
+        {
+           for (k=0; k<size_j; k++)/*read for every gausspoint*/
+           {
+             actele->e.s9->elewa[actlay].ipwa[k].epstn   = elewares[actlay][n];
+             n++;
+             actele->e.s9->elewa[actlay].ipwa[k].yip     = (int) elewares[actlay][n];
+             n++;
+
+             for (j=0; j<6; j++)
+             {
+               actele->e.s9->elewa[actlay].ipwa[k].sig[j]    = elewares[actlay][n];
+               n++;
+               actele->e.s9->elewa[actlay].ipwa[k].eps[j]    = elewares[actlay][n];
+               n++;
+               actele->e.s9->elewa[actlay].ipwa[k].qn[j]     = elewares[actlay][n];
+               n++;
+             }
+           }
+        } /*end pl_mises of pl_dp*/
+
+        /* pl_hoff */
+        else if (actmultimat->mattyp ==  m_pl_hoff)
+        {
+           for (k=0; k<size_j; k++)/*read for every gausspoint*/
+           {
+             actele->e.s9->elewa[actlay].ipwa[k].yip     = (int) elewares[actlay][n];
+             n++;
+             actele->e.s9->elewa[actlay].ipwa[k].dhard   = elewares[actlay][n];
+             n++;
+
+             for (j=0; j<6; j++)
+             {
+               actele->e.s9->elewa[actlay].ipwa[k].sig[j]    = elewares[actlay][n];
+               n++;
+               actele->e.s9->elewa[actlay].ipwa[k].eps[j]    = elewares[actlay][n];
+               n++;
+               actele->e.s9->elewa[actlay].ipwa[k].dkappa[j] = elewares[actlay][n];
+               n++;
+               actele->e.s9->elewa[actlay].ipwa[k].gamma[j]  = elewares[actlay][n];
+               n++;
+             }
+             for (j=0; j<9; j++)
+             {
+               actele->e.s9->elewa[actlay].ipwa[k].rkappa[j] = elewares[actlay][n];
+               n++;
+             }
+           }
+        } /*end pl_hoff*/
 
         next:
         actlay += 1;
