@@ -134,18 +134,20 @@ double          dirichfacs[10];      /* factors needed for dirichlet-part of rhs
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
-
+CONTAINER       container;          /*!< contains variables defined in container.h */
+container.isdyn = 1;                /*!< dynamic calculation */
 #ifdef DEBUG 
 dstrc_enter("dyn_nln_stru_expl");
 #endif
 /*----------------------------------------------------------------------*/
 restart = genprob.restart;
 /*--------------------------------------------------- set some pointers */
-actfield    = &(field[0]);
-actsolv     = &(solv[0]);
-actpart     = &(partition[0]);
-action      = &(calc_action[0]);
-sdyn        =   alldyn[0].sdyn;
+actfield           = &(field[0]);
+actsolv            = &(solv[0]);
+actpart            = &(partition[0]);
+action             = &(calc_action[0]);
+sdyn               =   alldyn[0].sdyn;
+container.fieldtyp = actfield->fieldtyp;
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
@@ -307,11 +309,17 @@ init_assembly(actpart,actsolv,actintra,actfield,mass_array);
 
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
-calinit(actfield,actpart,action);
+calinit(actfield,actpart,action,&container);
 
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
-calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,mass_array,NULL,NULL,0,NULL,0,action);
+container.dvec         = NULL;
+container.dirich       = NULL;
+container.global_numeq = 0;
+container.dirichfacs   = NULL;
+container.kstep        = 0;
+calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
+
 /*------------------------------- make eigenvalue analysis if requested */
 if (sdyn->eigen==1)
 {
@@ -338,9 +346,9 @@ if (damp_array>0)
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
 /*---------------------- this vector holds loads due to external forces */
+container.kstep = 0;
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-       &(actsolv->rhs[1]),0,action);
-
+       &(actsolv->rhs[1]),action,&container);
 /*------------------------------------------------- copy the rhs vector */
 solserv_copy_vec(&(actsolv->rhs[1]),&(actsolv->rhs[3]));
 /*----------------------- init the time curve applied to the loads here */
@@ -434,7 +442,9 @@ if (restart)
                              3            , fie         ,
                              3            , work        ,
                              &intforce_a,
-                             &dirich_a);
+                             &dirich_a,
+                             &container /*!< contains variables defined in container.h */
+                             );
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
@@ -465,8 +475,13 @@ if (sdyn->step==0)
    /*---------------------------- calculate internal forces at time 0.0 */
    amzero(&intforce_a);
    *action = calc_struct_internalforce;
-   calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,-1,
-              intforce,NULL,numeq_total,NULL,0,action);
+   container.dvec         = intforce;
+   container.dirich       = NULL;
+   container.global_numeq = numeq_total;
+   container.dirichfacs   = NULL;
+   container.kstep        = 0;
+   calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,
+              &container,action);
    /*------------------------- store positive internal forces on fie[1] */
    solserv_zero_vec(&fie[1]);
    assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
@@ -488,15 +503,21 @@ solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
 solserv_copy_vec(&(actsolv->rhs[1]),&(actsolv->rhs[2]));
 /*--------------------------------------- make load at time t in rhs[1] */
 solserv_zero_vec(&(actsolv->rhs[1]));
+container.kstep = 0;
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-       &(actsolv->rhs[1]),0,action);
+       &(actsolv->rhs[1]),action,&container);
 dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 /*-------------------------------------- make internal forces at time t */
 amzero(&intforce_a);
 *action = calc_struct_internalforce;
-calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,-1,
-           intforce,NULL,numeq_total,NULL,0,action);
+container.dvec         = intforce;
+container.dirich       = NULL;
+container.global_numeq = numeq_total;
+container.dirichfacs   = NULL;
+container.kstep        = 0;
+calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,
+           &container,action);
 /*---------------------------- store positive internal forces on fie[2] */
 solserv_zero_vec(&fie[2]);
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
@@ -553,10 +574,16 @@ if (mod_stress==0 || mod_disp==0)
 if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 {
    *action = calc_struct_stress;
-   calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,-1,NULL,NULL,0,NULL,0,action);
+   container.dvec         = NULL;
+   container.dirich       = NULL;
+   container.global_numeq = 0;
+   container.dirichfacs   = NULL;
+   container.kstep        = 0;
+   calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,&container,action);
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
-   calreduce(actfield,actpart,actintra,action,0);
+   container.kstep = 0;
+   calreduce(actfield,actpart,actintra,action,&container);
 }
 /*-------------------------------------------- print out results to out */
 if (mod_stress==0 || mod_disp==0)
@@ -594,7 +621,9 @@ restart_write_nlnstructdyn(sdyn,
                            3            , fie         ,
                            3            , work        ,
                            &intforce_a,
-                           &dirich_a);
+                           &dirich_a,
+                           &container   /*!< contains variables defined in container.h */
+                           );
 /*----------------------------------------------------- print time step */
 if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,0);
 /*------------------------------------------ measure time for this step */
@@ -623,8 +652,3 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_nln_stru_expl */
-
-
-
-
-

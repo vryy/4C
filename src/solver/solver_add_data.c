@@ -8,8 +8,6 @@
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
 
-
-
 /*----------------------------------------------------------------------*
  |  routine to assemble element arrays to global sparse arrays m.gee 9/01|
  *----------------------------------------------------------------------*/
@@ -22,7 +20,8 @@ void assemble(
                  struct _SOLVAR        *actsolv,   /* the active SOLVAR */
                  struct _INTRA         *actintra,  /* the active intracommunicator */
                  struct _ELEMENT       *actele,    /* the element to assemble */
-                 enum _ASSEMBLE_ACTION  assemble_action  /* the assembly option */
+                 enum _ASSEMBLE_ACTION  assemble_action,  /* the assembly option */
+                 CONTAINER             *container  /*!< contains variables defined in container.h */
                 )
 /*----------------------------------------------------------------------*/
 {
@@ -702,8 +701,7 @@ return;
 /*----------------------------------------------------------------------*
  |  assembles an element vector to a redundant global vector m.gee 3/02 |
  *----------------------------------------------------------------------*/
-void assemble_intforce(ELEMENT *actele, double *fullvec, int dim,
-                       ARRAY *elevec_a)
+void assemble_intforce(ELEMENT *actele,ARRAY *elevec_a,CONTAINER *container)
 {
 int                   i,j;
 int                   dof;
@@ -721,7 +719,7 @@ for (i=0; i<actele->numnp; i++)
    for (j=0; j<numdf; j++)
    {
       dof = actele->node[i]->dof[j];
-      if (dof >= dim) 
+      if (dof >= container->global_numeq) 
       {
       /* Auflagerreaktionen werden auf sol_increment.a.da[1][] addiert */
       /* nicht getestet, evt. Konflikt mit Steuerroutinen 
@@ -733,7 +731,7 @@ for (i=0; i<actele->numnp; i++)
       */
          continue;
       }
-      fullvec[dof] += elevec[i*numdf+j];
+      container->dvec[dof] += elevec[i*numdf+j];
    }
 }
 /*----------------------------------------------------------------------*/
@@ -749,8 +747,7 @@ return;
  |  and then assembles this element vector of cond. dirich.conditions to the |
  |  global vector fullvec                                                    |
  *---------------------------------------------------------------------------*/
-void assemble_dirich(ELEMENT *actele, double *fullvec, int dim,
-                     ARRAY *estif_global)
+void assemble_dirich(ELEMENT *actele, ARRAY *estif_global, CONTAINER *container)
 {
 int                   i,j;
 int                   dof;
@@ -806,8 +803,8 @@ for (i=0; i<nd; i++)
 /*-------- now assemble the vector dforces to the global vector fullvec */
 for (i=0; i<nd; i++)
 {
-   if (lm[i] >= dim) continue;
-   fullvec[lm[i]] += dforces[i];
+   if (lm[i] >= container->global_numeq) continue;
+   container->dirich[lm[i]] += dforces[i];
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -12,8 +12,8 @@ void calrhs(FIELD        *actfield,     /* the active field */
             INTRA        *actintra,     /* the field's intra-communicator */
             int           actsysarray,  /* the active sparse array */
             DIST_VECTOR  *rhs1,         /* 1 dist. vectors for rhs */
-            int           kstep,
-            CALC_ACTION  *action)       /* action to be passed to element routines */
+            CALC_ACTION  *action,       /* action to be passed to element routines */
+            CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
 int i;
 static ARRAY rhs_a;
@@ -60,7 +60,10 @@ rhs_point_neum(rhs,rhs1->numeq_total,actpart);
 /*--- line/surface/volume loads are a matter of element integration and */
 /*                                            different in each element */
 *action = calc_struct_eleload;
-calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,rhs,NULL,rhs1->numeq_total,kstep,action);
+container->dvec         = rhs;
+container->dirich       = NULL;
+container->global_numeq = rhs1->numeq_total;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,container,action);
 /*-------------------------------------------- allreduce the vector rhs */
 #ifdef PARALLEL 
 MPI_Allreduce(rhs,rhsrecv,rhs1->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
@@ -121,7 +124,3 @@ dstrc_exit();
 #endif
 return;
 } /* end of rhs_point_neum */
-
- 
-
-

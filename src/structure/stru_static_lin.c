@@ -102,7 +102,12 @@ FIELD        *actfield;         /* pointer to the structural FIELD */
 INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
 CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 
-SPARSE_TYP    array_typ;     /* type of psarse system matrix */
+CONTAINER     container;        /*!< contains variables defined in container.h */
+
+SPARSE_TYP    array_typ;        /* type of psarse system matrix */
+
+container.isdyn = 0;            /*!< static calculation */
+
 #ifdef DEBUG 
 dstrc_enter("stalin");
 #endif
@@ -110,7 +115,8 @@ dstrc_enter("stalin");
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
-actfield    = &(field[0]);
+actfield            = &(field[0]);
+container.fieldtyp  = actfield->fieldtyp;
 /*----------------------------------------------------------------------*/
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
@@ -168,21 +174,19 @@ solserv_zero_mat(
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
-calinit(actfield,actpart,action);
+calinit(actfield,actpart,action,&container);
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_struct_linstiff;
-calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
+container.dvec         = NULL;
+container.dirich       = NULL;
+container.global_numeq = 0;
+container.kstep        = 0;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 /*----------------------------------- call rhs-routines to assemble rhs */
 /*-------------------------- the approbiate action is set inside calrhs */
-calrhs(
-          actfield,
-          actsolv,
-          actpart,
-          actintra,
-          actsysarray,
-          &(actsolv->rhs[actsysarray]),
-          0,
-          action);
+container.kstep = 0;
+calrhs(actfield,actsolv,actpart,actintra,actsysarray,
+       &(actsolv->rhs[actsysarray]),action,&container);
 /*--------------------------------------------------------- call solver */
 init=0;
 solver_control(
@@ -212,10 +216,15 @@ if (ioflags.struct_disp_gid==1 && par.myrank==0)
 if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 {
    *action = calc_struct_stress;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
+   container.dvec         = NULL;
+   container.dirich       = NULL;
+   container.global_numeq = 0;
+   container.kstep        = 0;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);   
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
-   calreduce(actfield,actpart,actintra,action,0);
+   container.kstep = 0;
+   calreduce(actfield,actpart,actintra,action,&container);
    out_sol(actfield,actpart,actintra,0,0);
    if (par.myrank==0) out_gid_sol("stress"      ,actfield,actintra,0,0);
 }

@@ -193,19 +193,28 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
+      # if 0
+      /* inconsistent with shell8.h due to container! */
       shell8(actfield,actpart,actintra,actele,
              &estif_global,&emass_global,&intforce_global,
              kstep,0,NULL,action);
+      # endif
    break;
    case el_brick1:
+      # if 0
+      /* inconsistent with brick1.h due to container! */
       brick1(actpart,actintra,actele,
              &estif_global,&emass_global,
              action);
+      # endif
    break;
    case el_wall1:
+      # if 0
+      /* inconsistent with wall1.h due to container! */
       wall1(actpart,actintra,actele,
             &estif_global,&emass_global,&intforce_global,0,NULL,
             action);
+      # endif
    break;
    case el_fluid2:
       fluid2(actpart,actintra,actele,
@@ -241,6 +250,9 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    default: dserror("Unknown type of assembly"); break;
    }
    /*------------------------------ assemble one or two system matrices */
+   dserror("container not yet implemented, use calelm!!!!");
+   # if 0
+   /* inconsistent with prototypes_sol.h due to container! */
    assemble(sysarray1,
             &estif_global,
             sysarray2,
@@ -252,13 +264,17 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             assemble_action);
    /*------------------- assemble the vector etforce_global to time-rhs */
    if (nif!=0)
+      /* inconsistent with prototypes_sol.h due to container! */
       assemble_intforce(actele,ftimerhs,global_numeq,&etforce_global);
    /*-------------- assemble the vector eiforce_global to iteration rhs */
    if (nii+hasext!=0)
+      /* inconsistent with prototypes_sol.h due to container! */
       assemble_intforce(actele,fiterhs,global_numeq,&eiforce_global); 
    /*-------------- assemble the vector edforce_global to iteration rhs */
    if (hasdirich!=0)
+      /* inconsistent with prototypes_sol.h due to container! */
       assemble_intforce(actele,fiterhs,global_numeq,&edforce_global);
+   # endif
 }/* end of loop over elements */
 /*----------------------------------------------------------------------*/
 /*                    in parallel coupled dofs have to be exchanged now */
@@ -277,6 +293,8 @@ case calc_fluid                : assemble_action = assemble_one_exchange; break;
 default: dserror("Unknown type of assembly"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
+# if 0
+/* inconsistent with prototypes_sol.h due to container! */
 assemble(sysarray1,
          NULL,
          sysarray2,
@@ -286,7 +304,9 @@ assemble(sysarray1,
          actintra,
          actele,
          assemble_action);
-#endif
+# endif
+
+# endif
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -364,17 +384,26 @@ for (i=0; i<actfield->dis[0].numele; i++)
 /*------------------------------- init all kind of routines for shell8  */
 if (is_shell8==1)
 {
+   # if 0
+   /* inconsistent with shell8.h due to container! */
    shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,0,NULL,action);
+   # endif
 }
 /*-------------------------------- init all kind of routines for brick1 */
 if (is_brick1==1)
 {
+   # if 0
+   /* inconsistent with brick1.h due to container! */
    brick1(actpart,NULL,NULL,&estif_global,&emass_global,action);
+   # endif
 }
 /*-------------------------------- init all kind of routines for wall1 */ 
 if (is_wall1==1)
 {
+   # if 0
+   /* inconsistent with wall1.h due to container! */
    wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,NULL,action);
+   # endif
 }
 /*-------------------------------- init all kind of routines for fluid2 */
 if (is_fluid2==1)
@@ -404,6 +433,3 @@ dstrc_exit();
 
 return;
 } /* end of calinit_fluid */
-
-
-

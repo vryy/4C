@@ -27,11 +27,9 @@ void calelm(FIELD        *actfield,     /* active field */
             INTRA        *actintra,     /* my intra-communicator */
             int           sysarray1,    /* number of first sparse system matrix */
             int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
-            double       *dvec,         /* global redundant vector passed to elements */
-            double       *dirich,       /* global redundant vector of dirichlet forces */
-            int           global_numeq, /* size of dvec */
-            int           kstep,        /* time in increment step we are in */
-            CALC_ACTION  *action)       /* calculation option passed to element routines */
+            CONTAINER    *container,    /*!< contains variables defined in container.h */
+            CALC_ACTION  *action)       /* calculation option passed to element routines */     
+     
 /*----------------------------------------------------------------------*/
 {
 int               i;
@@ -170,23 +168,27 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    /*------------------------------------ set pointer to active element */
    actele = actpart->pdis[0].element[i];
    /* if present, init the element vectors intforce_global and dirich_global */
-   if (dvec) amzero(&intforce_global);
+   if (container->dvec) amzero(&intforce_global);
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
+      container->handsize = 0;
+      container->handles  = NULL;
       shell8(actfield,actpart,actintra,actele,
              &estif_global,&emass_global,&intforce_global,
-             kstep,0,NULL,action);
+             action,container);
    break;
    case el_brick1:
       brick1(actpart,actintra,actele,
              &estif_global,&emass_global,
-             action);
+             action,container);
    break;
    case el_wall1:
+      container->handsize = 0;
+      container->handles  = NULL;
       wall1(actpart,actintra,actele,
-            &estif_global,&emass_global,&intforce_global,0,NULL,
-            action);
+            &estif_global,&emass_global,&intforce_global,
+            action, container);
    break;
    case el_fluid2: 
    break;
@@ -210,6 +212,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_struct_linstiff     : assemble_action = assemble_one_matrix; break;
    case calc_struct_nlnstiff     : assemble_action = assemble_one_matrix; break;
    case calc_struct_nlnstiffmass : assemble_action = assemble_two_matrix; break;
+   case calc_struct_internalforce: assemble_action = assemble_do_nothing; break;
    case calc_struct_eleload      : assemble_action = assemble_do_nothing; break;
    case calc_struct_stress       : assemble_action = assemble_do_nothing; break;
    case calc_struct_update_istep : assemble_action = assemble_do_nothing; break;
@@ -226,13 +229,17 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             actsolv,
             actintra,
             actele,
-            assemble_action);
+            assemble_action,
+            container);
    /*---------------------------- assemble the vector intforce_global */
-   if (dvec)
-   assemble_intforce(actele,dvec,global_numeq,&intforce_global);
+   if (container->dvec)
+   assemble_intforce(actele,&intforce_global,container);
+   
    /*------ assemble the rhs vector of condensed dirichlet conditions */
-   if (dirich)
-   assemble_dirich(actele,dirich,global_numeq,&estif_global);
+   if (container->dirich && container->isdyn==0)
+   assemble_dirich(actele,&estif_global,container);
+   if (container->dirich && container->isdyn==1)
+   assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
 }/* end of loop over elements */
 /*----------------------------------------------------------------------*/
 /*                    in parallel coupled dofs have to be exchanged now */
@@ -260,7 +267,8 @@ assemble(sysarray1,
          actsolv,
          actintra,
          actele,
-         assemble_action);
+         assemble_action,
+         container);
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -273,16 +281,13 @@ return;
 
 
 
-
-
-
-
 /*----------------------------------------------------------------------*
  |  routine to call elements to init                     m.gee 7/01     |
  *----------------------------------------------------------------------*/
 void calinit(FIELD       *actfield,   /* the active physical field */ 
              PARTITION   *actpart,    /* my partition of this field */
-             CALC_ACTION *action)
+             CALC_ACTION *action,
+             CONTAINER   *container)  /*!< contains variables defined in container.h */
 {
 int i;                        /* a counter */
 int is_shell8=0;              /* flags to check for presents of certain element types */
@@ -292,6 +297,7 @@ int is_fluid1=0;
 int is_fluid3=0;
 int is_ale3=0;
 int is_ale2=0;
+
 ELEMENT *actele;              /* active element */
 #ifdef DEBUG 
 dstrc_enter("calinit");
@@ -334,20 +340,27 @@ for (i=0; i<actfield->dis[0].numele; i++)
    }
 }/* end of loop over all elements */
 /*--------------------- init the element routines for all present types */
+container->kstep = 0;  
 /*------------------------------- init all kind of routines for shell8  */
 if (is_shell8==1)
 {
-   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,0,NULL,action);
+   container->handsize = 0;
+   container->handles  = NULL;
+   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+          action,container);
 }
 /*-------------------------------- init all kind of routines for brick1 */
 if (is_brick1==1)
 {
-   brick1(actpart,NULL,NULL,&estif_global,&emass_global,action);
+   brick1(actpart,NULL,NULL,&estif_global,&emass_global,action,container);
 }
 /*-------------------------------- init all kind of routines for wall1  */
 if (is_wall1==1)
 {
-   wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,NULL,action);
+   container->handsize = 0;
+   container->handles  = NULL;
+   wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+         action,container);
 }
 /*-------------------------------- init all kind of routines for fluid1 */
 if (is_fluid1==1)
@@ -387,7 +400,7 @@ void calreduce(FIELD       *actfield, /* the active field */
                PARTITION   *actpart,  /* my partition of this field */
                INTRA       *actintra, /* the field's intra-communicator */
                CALC_ACTION *action,   /* action for element routines */
-               int          kstep)    /* the actual time or incremental step */
+               CONTAINER   *container)/*!< contains variables defined in container.h */
 {
 int i;
 int is_shell8=0;
@@ -433,7 +446,9 @@ for (i=0; i<actfield->dis[0].numele; i++)
 /*-------------------------------------------reduce results for shell8  */
 if (is_shell8==1)
 {
-   shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,kstep,0,NULL,action);
+   container->handsize = 0;
+   container->handles  = NULL;
+   shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,action,container);
 }
 /*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)
@@ -461,13 +476,3 @@ dstrc_exit();
 #endif
 return;
 } /* end of calreduce */
-
-
-
-
-
-
-
-
-
-

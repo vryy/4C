@@ -153,17 +153,15 @@ double s8_local_coord_node(int node, int flag, enum _DIS_TYP typ);
 /*----------------------------------------------------------------------*
  |  s8_main.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-/*void shell8(FIELD      *actfield,
+void shell8(FIELD      *actfield,
             PARTITION  *actpart,
             INTRA      *actintra,
             ELEMENT    *ele,
             ARRAY      *estif_global,
             ARRAY      *emass_global,
             ARRAY      *intforce_global,
-            int         kstep,
-            int         handsize,
-            long int   *handles,
-            CALC_ACTION *action);
+            CALC_ACTION *action,
+            CONTAINER  *container);
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/

@@ -2,6 +2,7 @@
  | cal_nlnstatic_control.c                               m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void stanln(void);
+
 void conpre(
             FIELD         *actfield,     /* the actual physical field */
             SOLVAR        *actsolv,      /* the field-corresponding solver */
@@ -14,8 +15,10 @@ void conpre(
             DIST_VECTOR   *dispi,        /* dist. vector of incremental displacements */
             int            cdof,         /* number of the dof to be controlled */
             STANLN        *nln_data,     /* data of the Newton-Raphson method */
-            NR_CONTROLTYP  controltyp    /* type of control algorithm */
+            NR_CONTROLTYP  controltyp,    /* type of control algorithm */
+            CONTAINER     *container     /*!< contains variables defined in container.h */
           );
+
 void conequ(
             FIELD         *actfield,      /* the actual physical field */
             SOLVAR        *actsolv,       /* the field-corresponding solver */
@@ -30,8 +33,10 @@ void conequ(
             DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
             int            cdof,          /* number of dof to be controlled */
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
-            NR_CONTROLTYP  controltyp     /* type of control algorithm */
+            NR_CONTROLTYP  controltyp,     /* type of control algorithm */
+            CONTAINER     *container      /*!< contains variables defined in container.h */
           );
+          
 void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof, double csp);
 void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
                      double renorm, double energy, double dnorm, double rrnorm);
@@ -112,8 +117,9 @@ void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
 void dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn);
 void dyn_nlnstru_outhead_expl(void);
 void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter);
-void assemble_dirich_dyn(ELEMENT *actele, double *fullvec, int dim,
-                         ARRAY *estif_global, ARRAY *emass_global, double *facs);
+void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global, 
+                         ARRAY *emass_global, CONTAINER *container);
+
 /*----------------------------------------------------------------------*
  | fluid_service.c                                         genk 04/02   |
  *----------------------------------------------------------------------*/
@@ -160,35 +166,19 @@ void calelm(FIELD        *actfield,     /* active field */
             INTRA        *actintra,     /* my intra-communicator */
             int           sysarray1,    /* number of first sparse system matrix */
             int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
-            double       *dvec,         /* global redundant vector passed to elements */
-            double       *dirich,       /* global redundant vector of dirichlet forces */
-            int           global_numeq, /* size of dvec */
-            int           kstep,        /* time in increment step we are in */
-            CALC_ACTION  *action);       /* calculation option passed to element routines */
-
+            CONTAINER    *container,    /*!< contains variables defined in container.h */
+            CALC_ACTION  *action);       /* calculation option passed to element routines */            
+            
 void calinit(FIELD       *actfield,   /* the active physical field */ 
              PARTITION   *actpart,    /* my partition of this field */
-             CALC_ACTION *action);
+             CALC_ACTION *action,
+             CONTAINER   *container); /*!< contains variables defined in container.h */
+
 void calreduce(FIELD       *actfield, /* the active field */
                PARTITION   *actpart,  /* my partition of this field */
                INTRA       *actintra, /* the field's intra-communicator */
                CALC_ACTION *action,   /* action for element routines */
-               int          kstep);    /* the actual time or incremental step */
-/*----------------------------------------------------------------------*
- | global_calelm_dyn.c                                    m.gee 3/02    |
- *----------------------------------------------------------------------*/
-void calelm_dyn(FIELD        *actfield,     /* active field */        
-                SOLVAR       *actsolv,      /* active SOLVAR */
-                PARTITION    *actpart,      /* my partition of this field */
-                INTRA        *actintra,     /* my intra-communicator */
-                int           sysarray1,    /* number of first sparse system matrix */
-                int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
-                double       *dvec,         /* global redundant vector passed to elements */
-                double       *dirich,
-                int           global_numeq, /* size of dvec */
-                double       *dirichfacs,   /* factors for rhs-entries due to prescribed displacements */
-                int           kstep,        /* time in increment step we are in */
-                CALC_ACTION  *action);      /* calculation option passed to element routines */
+               CONTAINER   *container); /*!< contains variables defined in container.h */               
 /*----------------------------------------------------------------------*
  | global_calrhs.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -198,8 +188,8 @@ void calrhs(FIELD        *actfield,     /* the active field */
             INTRA        *actintra,     /* the field's intra-communicator */
             int           actsysarray,  /* the active sparse array */
             DIST_VECTOR  *rhs1,         /* 2 dist. vectors for rhs */
-            int           kstep,
-            CALC_ACTION  *action);       /* action to be passed to element routines */
+            CALC_ACTION  *action,       /* action to be passed to element routines */
+            CONTAINER    *container);    /*!< contains variables defined in container.h */
 void rhs_point_neum(double *rhs, int dimrhs, PARTITION *actpart);     
 /*----------------------------------------------------------------------*
  | global_mask_dense.c                                   m.gee 11/01    |
@@ -439,8 +429,8 @@ void assemble(
                  struct _SOLVAR        *actsolv,   /* the active SOLVAR */
                  struct _INTRA         *actintra,  /* the active intracommunicator */
                  struct _ELEMENT       *actele,    /* the element to assemble */
-                 enum _ASSEMBLE_ACTION  assemble_action  /* the assembly option */
-                );
+                 enum _ASSEMBLE_ACTION  assemble_action, /* the assembly option */
+                 CONTAINER             *container);  /*!< contains variables defined in container.h */                 
 void init_assembly(
                        struct _PARTITION      *actpart,
                        struct _SOLVAR         *actsolv,
@@ -454,10 +444,8 @@ void assemble_vec(INTRA        *actintra,
                     DIST_VECTOR  *rhs,
                     double       *drhs,
                     double        factor);
-void assemble_intforce(ELEMENT *actele, double *fullvec, int dim,
-                       ARRAY *elevec_a);
-void assemble_dirich(ELEMENT *actele, double *fullvec, int dim,
-                     ARRAY *estif_global);
+void assemble_intforce(ELEMENT *actele, ARRAY *elevec_a, CONTAINER *container);
+void assemble_dirich(ELEMENT *actele,ARRAY *estif_global,CONTAINER *container);
 /*----------------------------------------------------------------------*
  |  solver_add_dense.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -1060,7 +1048,8 @@ void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
                                 int nfie,  DIST_VECTOR *fie,
                                 int nwork, DIST_VECTOR *work,
                                 ARRAY *intforce_a,
-                                ARRAY *dirich_a);
+                                ARRAY *dirich_a,
+                                CONTAINER    *container);     /*!< contains variables defined in container.h */
 void restart_read_nlnstructdyn(int restart,
                                STRUCT_DYNAMIC  *sdyn,
                                STRUCT_DYN_CALC *dynvar,
@@ -1076,7 +1065,30 @@ void restart_read_nlnstructdyn(int restart,
                                int nfie,  DIST_VECTOR *fie,
                                int nwork, DIST_VECTOR *work,
                                ARRAY *intforce_a,
-                               ARRAY *dirich_a);
+                               ARRAY *dirich_a,
+                               CONTAINER    *container);     /*!< contains variables defined in container.h */ 
+void restart_write_nlnstructstat(STATIC_VAR     *statvar,/*------------ static input --*/                  
+             STANLN          *nln_data,  /*-- control variables for global NR-Iterat --*/
+             FIELD           *actfield,  /*---------------------------- actual field --*/
+             PARTITION       *actpart,   /*------------------------ actual partition --*/
+             INTRA           *actintra,  /*---------------- actual intra comunicator --*/
+             CALC_ACTION     *action,    /*---------- element action = write-restart --*/
+             int kstep,                  /*------------------------ actual load step --*/
+             int nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
+             int nsol,  DIST_VECTOR *sol,/* solution processorpart of actual load step */
+             int ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
+             CONTAINER    *container);     /*!< contains variables defined in container.h */
+void restart_read_nlnstructstat(int restart,   /*------------------------ restart step ??? --*/
+                STATIC_VAR     *statvar,       /*---------------------------- static input --*/                  
+                STANLN          *nln_data,     /*-- control variables for global NR-Iterat --*/
+                FIELD           *actfield,     /*---------------------------- actual field --*/
+                PARTITION       *actpart,      /*------------------------ actual partition --*/
+                INTRA           *actintra,     /*---------------- actual intra comunicator --*/
+                CALC_ACTION     *action,       /*---------- element action = write-restart --*/
+                int nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
+                int nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
+                int ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--     --*/
+                 CONTAINER    *container);       /*!< contains variables defined in container.h */
 /*---------------------------------------------------------------------*
  | routine to find the maximum value of a distributed vector           |
  | ab =  0 absolut maximum value                                       |
@@ -1141,32 +1153,6 @@ void calinit_fluid(FIELD       *actfield,
                    PARTITION   *actpart,    
                    CALC_ACTION *action);
 /*----------------------------------------------------------------------*
- |  restart_control.c                                   ah 08/02        |
- *----------------------------------------------------------------------*/
-void restart_write_nlnstructstat(STATIC_VAR     *statvar,/*------------ static input --*/                  
-             STANLN          *nln_data,  /*-- control variables for global NR-Iterat --*/
-             FIELD           *actfield,  /*---------------------------- actual field --*/
-             PARTITION       *actpart,   /*------------------------ actual partition --*/
-             INTRA           *actintra,  /*---------------- actual intra comunicator --*/
-             CALC_ACTION     *action,    /*---------- element action = write-restart --*/
-             int kstep,                  /*------------------------ actual load step --*/
-             int nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
-             int nsol,  DIST_VECTOR *sol,/* solution processorpart of actual load step */
-             int ndis,  DIST_VECTOR *dispi);/*- displacement processorpart  --"--     --*/
-/*----------------------------------------------------------------------*
- |  restart_control.c                                   ah 08/02        |
- *----------------------------------------------------------------------*/
-void restart_read_nlnstructstat(int restart,   /*------------------------ restart step ??? --*/
-                STATIC_VAR     *statvar,       /*---------------------------- static input --*/                  
-                STANLN          *nln_data,     /*-- control variables for global NR-Iterat --*/
-                FIELD           *actfield,     /*---------------------------- actual field --*/
-                PARTITION       *actpart,      /*------------------------ actual partition --*/
-                INTRA           *actintra,     /*---------------- actual intra comunicator --*/
-                CALC_ACTION     *action,       /*---------- element action = write-restart --*/
-                int nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
-                int nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
-                int ndis,  DIST_VECTOR *dispi); /*-- displacement processorpart  --"--     --*/
-/*----------------------------------------------------------------------*
  | ale_calelm.c                                               mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale_calelm(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, 
@@ -1220,4 +1206,3 @@ void solver_mlpcg(
                       struct _DIST_VECTOR    *rhs,
                       int                     option
                      );
-

@@ -16,11 +16,9 @@ void shell8(FIELD      *actfield,
             ELEMENT    *ele,
             ARRAY      *estif_global,
             ARRAY      *emass_global,
-            ARRAY      *intforce_global,
-            int         kstep,
-            int         handsize,
-            long int   *handles,
-            CALC_ACTION *action)
+            ARRAY      *intforce_global,    
+            CALC_ACTION *action,
+            CONTAINER  *container)    /*!< contains variables defined in container.h */
 {
 #ifdef D_SHELL8
 int          i;
@@ -71,7 +69,7 @@ case calc_struct_nlnstiff:
                  estif_global,
                  NULL,
                  intforce,
-                 kstep,
+                 container->kstep,
                  0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
@@ -83,7 +81,7 @@ case calc_struct_internalforce:
                  estif_global,
                  NULL,
                  intforce,
-                 kstep,
+                 container->kstep,
                  0);
 break;/*----------------------------------------------------------------*/
 /*-------------------------- calculate linear stiffness and mass matrix */
@@ -98,7 +96,7 @@ case calc_struct_nlnstiffmass:
                  estif_global,
                  emass_global,
                  intforce,
-                 kstep,
+                 container->kstep,
                  0);
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
@@ -107,7 +105,7 @@ case calc_struct_stress:
    if (imyrank==ele->proc) 
    {
       actmat = &(mat[ele->mat-1]);
-      s8_stress(ele,&actdata,actmat,kstep,0);
+      s8_stress(ele,&actdata,actmat,container->kstep,0);
    }
 break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
@@ -123,18 +121,18 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_stressreduce:
    /*------------------------------------- not necessary in sequentiell */
    if (actintra->intra_nprocs==1) goto end;
-   s8_stress_reduce(actfield,actpart,actintra,kstep);      
+   s8_stress_reduce(actfield,actpart,actintra,container->kstep);      
 break;/*----------------------------------------------------------------*/
 /*-----------------------------------------------------update variables */
 case calc_struct_update_istep:
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------------------------write restart */
 case write_restart:
-   s8_write_restart(ele,handsize,handles);
+   s8_write_restart(ele,container->handsize,container->handles);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------------------------read restart */
 case read_restart:
-   s8_read_restart(ele,handsize,handles);
+   s8_read_restart(ele,container->handsize,container->handles);
 break;/*----------------------------------------------------------------*/
 default:
    dserror("action unknown");

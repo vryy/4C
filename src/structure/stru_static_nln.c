@@ -111,6 +111,9 @@ STANLN        nln_data;           /* structure to store and pass data for stanln
 
 CALC_ACTION  *action;             /* pointer to the structures cal_action enum */
 
+CONTAINER     container;          /*!< contains variables defined in container.h */
+container.isdyn = 0;              /*!< static computation */
+
 #ifdef DEBUG 
 dstrc_enter("stanln");
 #endif
@@ -139,6 +142,7 @@ actfield    = &(field[0]);                      /* the structural field */
 actsolv     = &(solv[0]);         /* the corresponednt SOLVAR structure */
 actpart     = &(partition[0]);    /*     the partitioning of this field */
 action      = &(calc_action[0]);  /*        the calculation action enum */
+container.fieldtyp = actfield->fieldtyp;
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);    /*     the field's intra-communicator */
 /*---------------- if we are not parallel, we have to allocate a pseudo */
@@ -215,17 +219,12 @@ solver_control(actsolv, actintra,
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
-calinit(actfield,actpart,action);
+calinit(actfield,actpart,action,&container);
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
-calrhs(actfield,
-       actsolv,
-       actpart,
-       actintra,
-       actsysarray,
-       &(actsolv->rhs[actsysarray]),
-       0,
-       action);
+container.kstep = 0;
+calrhs(actfield,actsolv,actpart,actintra,actsysarray,
+        &(actsolv->rhs[actsysarray]),action,&container);
 /*--------------------------------------------------copy the rhs vector */
 solserv_copy_vec(&(actsolv->rhs[actsysarray]),&(actsolv->rhs[actsysarray+1]));
 /*----------------------------------------------------------------------*/
@@ -278,7 +277,8 @@ for (kstep=0; kstep<nstep; kstep++)
                            action,
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
-                           1            , dispi);
+                           1            , dispi,
+                           &container);  /*!< contains variables defined in container.h */ 
    /*--------------- give the restartinfo to the associated variables --*/
      kstep = restart; 
    /*--------------------------------------------- switch restart off --*/
@@ -301,7 +301,8 @@ for (kstep=0; kstep<nstep; kstep++)
           dispi,
           cdof,
          &nln_data,
-          controltyp);
+          controltyp,
+         &container);
    /*-------------------------------------- make equillibrium iteration */  
    conequ(actfield,
           actsolv,
@@ -316,10 +317,15 @@ for (kstep=0; kstep<nstep; kstep++)
           re,
           cdof,
           &nln_data,
-          controltyp);    
+          controltyp,
+          &container);    
    /*-- update for nonlinear material models - new stress/strain values */  
    *action = calc_struct_update_istep;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
+   container.dvec         = NULL;
+   container.dirich       = NULL;
+   container.global_numeq = 0;
+   container.kstep        = 0;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
    /*-------------- check, if output is to be written is this loadstep */
    mod_displ =    kstep  % statvar->resevry_disp;        
    mod_stress =   kstep  % statvar->resevry_stress;
@@ -330,12 +336,17 @@ for (kstep=0; kstep<nstep; kstep++)
       if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
       {
          *action = calc_struct_stress;
-         calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
+         container.dvec         = NULL;
+         container.dirich       = NULL;
+         container.global_numeq = 0;
+         container.kstep        = 0;
+         calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
          /*---------------------- reduce stresses, so they can be written */
          /*- this makes the result of the stress calculation redundant on */
          /*                                                         procs */
          *action = calc_struct_stressreduce;
-         calreduce(actfield,actpart,actintra,action,0);
+         container.kstep = 0;
+         calreduce(actfield,actpart,actintra,action,&container);
       }
    }
    /*--------------------------------------- print out results to .out */
@@ -369,7 +380,8 @@ for (kstep=0; kstep<nstep; kstep++)
                            kstep,
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
-                           1            , dispi);
+                           1            , dispi,
+                           &container);  /*!< contains variables defined in container.h */ 
     break;
     case control_arc:                            /* arclenght control */
       dserror("restart for arclengh not yet impl.");
@@ -405,10 +417,16 @@ return;
 } /* end of stanln */
 
 
+
+
+
+
+
+
 /*----------------------------------------------------------------------*
  |  PERFORM LINEAR PREDICTOR STEP                            m.gee 11/01|
  *----------------------------------------------------------------------*/
-void conpre(
+void conpre(  /*!< rueckgabe int da kein prototyp definiert wurde! */
             FIELD         *actfield,     /* the actual physical field */
             SOLVAR        *actsolv,      /* the field-corresponding solver */
             PARTITION     *actpart,      /* the partition of the proc */
@@ -420,8 +438,9 @@ void conpre(
             DIST_VECTOR   *dispi,        /* dist. vector of incremental displacements */
             int            cdof,         /* number of the dof to be controlled */
             STANLN        *nln_data,     /* data of the Newton-Raphson method */
-            NR_CONTROLTYP  controltyp    /* type of control algorithm */
-          )
+            NR_CONTROLTYP  controltyp,   /* type of control algorithm */
+            CONTAINER     *container 	 /*!< contains variables defined in container.h */
+           )
 {
 int                  i;                /* a counter */
 int                  init;             /* solver flag */
@@ -445,16 +464,17 @@ solserv_zero_mat(
 /*----------------------- calculate tangential stiffness in actsysarray */
 /*----- calculate the rhs resulting from dirichlet conditions in dirich */
 *action = calc_struct_nlnstiff;
+container->dvec         = NULL;
+container->dirich       = NULL;
+container->global_numeq = 0;
+container->kstep        = kstep;
 calelm(actfield,        /* active field                          */
        actsolv,         /* active solver typ                     */
        actpart,         /* my partition of this field            */
        actintra,        /* my intra-comunicators                 */
        actsysarray,     /* system-stiffness matrix               */
        -1,              /*system-mass matrix (there is no)       */
-       NULL,            /* system - internal force               */
-       NULL,            /* system - Fint-part by dirichlet cond. */
-       0,               /* system DOF                            */
-       kstep,           /* actual step number                    */
+       container,       /*!< contains variables defined in container.h */
        action);         /* what to do                            */
 /*----- copy original load vector from [actsysarray+1] to [actsysarray] */
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
@@ -547,7 +567,7 @@ return;
  |  PERFORM EQUILLIBRIUM ITERATION                           m.gee 11/01|
  |  within Newton Raphson                                               |
  *----------------------------------------------------------------------*/
-void conequ(
+void conequ( /*!< rueckgabe int da kein prototyp definiert wurde! */
             FIELD         *actfield,      /* the actual physical field */
             SOLVAR        *actsolv,       /* the field-corresponding solver */
             PARTITION     *actpart,       /* the partition of the proc */
@@ -561,8 +581,9 @@ void conequ(
             DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
             int            cdof,          /* number of dof to be controlled */
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
-            NR_CONTROLTYP  controltyp     /* type of control algorithm */
-          )
+            NR_CONTROLTYP  controltyp,    /* type of control algorithm */
+            CONTAINER     *container	  /*!< contains variables defined in container.h */
+           )
 {
 int                  i;                      /* counter variable */
 int                  init;                   /* init flag for solver */
@@ -671,17 +692,11 @@ solserv_zero_mat(
 amzero(&intforce_a);
 /*------------------------- calculate new stiffness and internal forces */
 *action = calc_struct_nlnstiff;
-calelm(actfield,
-       actsolv,
-       actpart,
-       actintra,
-       actsysarray,
-       -1,
-       intforce,
-       NULL,
-       actsolv->sol[0].numeq_total,
-       kstep,
-       action);
+container->dvec         = intforce;
+container->dirich       = NULL;
+container->global_numeq = actsolv->sol[0].numeq_total;
+container->kstep        = kstep;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,container,action);
 /* add internal forces to scaled external forces to get residual forces */
 assemble_vec(actintra,
              &(actsolv->sysarray_typ[actsysarray]),

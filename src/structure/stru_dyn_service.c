@@ -670,8 +670,8 @@ return;
  |                                                                           |
  | see PhD theses Mok page 165                                               |
  *---------------------------------------------------------------------------*/
-void assemble_dirich_dyn(ELEMENT *actele, double *fullvec, int dim,
-                         ARRAY *estif_global, ARRAY *emass_global, double *facs)
+void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global, 
+                         ARRAY *emass_global, CONTAINER *container)
 {
 int                   i,j;
 int                   counter,hasdirich;
@@ -705,11 +705,17 @@ for (i=0; i<actele->numnp; i++)
 /*--------------------- there are no dirichlet conditions here so leave */
 if (hasdirich==0) goto end;
 /*--------------------------------------- check for presence of damping */
-if (ABS(facs[7]) > EPS13 || ABS(facs[8]) > EPS13) 
+/*if (ABS(facs[7]) > EPS13 || ABS(facs[8]) > EPS13) 
 {
    idamp=1;
    mdamp = facs[7];
    kdamp = facs[8];
+}*/
+if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS13) 
+{
+   idamp=1;
+   mdamp = container->dirichfacs[7];
+   kdamp = container->dirichfacs[8];
 }
 /*----------------------------------------------------------------------*/
 estif  = estif_global->a.da;
@@ -765,7 +771,7 @@ for (i=0; i<nd; i++)
    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += estif[i][j] * dirich[j] * facs[6];
+      dforces[i] += estif[i][j] * dirich[j] * container->dirichfacs[6];
    }/* loop j over columns */
 }/* loop i over rows */
 
@@ -808,7 +814,7 @@ for (i=0; i<nd; i++)
    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += emass[i][j] * dirich[j] * facs[0];
+      dforces[i] += emass[i][j] * dirich[j] * container->dirichfacs[0];
    }/* loop j over columns */
 }/* loop i over rows */
 /*----------------------------------------------------------------------*/
@@ -839,7 +845,7 @@ for (i=0; i<nd; i++)
    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += emass[i][j] * dirich[j] * facs[1];
+      dforces[i] += emass[i][j] * dirich[j] * container->dirichfacs[1];
    }/* loop j over columns */
 }/* loop i over rows */
 /*----------------------------------------------------------------------*/
@@ -870,7 +876,7 @@ for (i=0; i<nd; i++)
    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += emass[i][j] * dirich[j] * facs[2];
+      dforces[i] += emass[i][j] * dirich[j] * container->dirichfacs[2];
    }/* loop j over columns */
 }/* loop i over rows */
 
@@ -914,7 +920,7 @@ for (i=0; i<nd; i++)
    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * facs[3];
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * container->dirichfacs[3];
    }/* loop j over columns */
 }/* loop i over rows */
 /*----------------------------------------------------------------------*/
@@ -945,7 +951,7 @@ for (i=0; i<nd; i++)
    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * facs[4];
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * container->dirichfacs[4];
    }/* loop j over columns */
 }/* loop i over rows */
 /*----------------------------------------------------------------------*/
@@ -976,7 +982,7 @@ for (i=0; i<nd; i++)
    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * facs[5];
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * container->dirichfacs[5];
    }/* loop j over columns */
 }/* loop i over rows */
 /*----------------------------------------------------------------------*/
@@ -988,8 +994,10 @@ for (i=0; i<nd; i++)
 /*-------- now assemble the vector dforces to the global vector fullvec */
 for (i=0; i<nd; i++)
 {
-   if (lm[i] >= dim) continue;
-   fullvec[lm[i]] += dforces[i];
+   /*if (lm[i] >= dim) continue;
+     fullvec[lm[i]] += dforces[i];*/
+   if (lm[i] >= container->global_numeq) continue;
+   container->dirich[lm[i]] += dforces[i];
 }
 /*----------------------------------------------------------------------*/
 end:

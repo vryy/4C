@@ -16,9 +16,8 @@ void wall1(PARTITION   *actpart,
            ARRAY       *estif_global,
            ARRAY       *emass_global,
            ARRAY       *intforce_global,
-           int          handsize,
-           long int    *handles,
-           CALC_ACTION *action)
+           CALC_ACTION *action,
+           CONTAINER   *container)   /*!< contains variables defined in container.h */
 {
 #ifdef D_WALL1
 int  i;
@@ -107,14 +106,14 @@ break;/*----------------------------------------------------------------*/
 case write_restart:
 #if 0
   momentan nicht notwendig, da keine notwendige Info im Element vgl. shell8
-      w1_write_restart(ele,handsize,handles);
+      w1_write_restart(ele,container->handsize,container->handles);
 #endif
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- write restart */
 case  read_restart:
 #if 0
   momentan nicht notwendig, da keine notwendige Info im Element vgl. shell8
-      w1_read_restart(ele,handsize,handles);
+      w1_read_restart(ele,container->handsize,container->handles);
 #endif
 break;/*----------------------------------------------------------------*/
 default:
@@ -128,4 +127,3 @@ dstrc_exit();
 #endif
 return; 
 } /* end of wall1 */
-

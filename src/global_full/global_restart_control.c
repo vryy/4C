@@ -56,7 +56,8 @@ void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
                                 int nfie,  DIST_VECTOR *fie,
                                 int nwork, DIST_VECTOR *work,
                                 ARRAY *intforce_a,
-                                ARRAY *dirich_a)
+                                ARRAY *dirich_a,
+                                CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
 int                  i;
 int                  ierr;
@@ -216,16 +217,20 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
+      container->kstep    = 0;      
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,
-             0,5,ele_handles[i],action);
+             NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
    break;
    case el_wall1:
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
       wall1(actpart,actintra,actele,NULL,NULL,NULL,
-            5,ele_handles[i],action);
+            action,container);
    break;
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
@@ -317,7 +322,8 @@ void restart_read_nlnstructdyn(int restart,
                                int nfie,  DIST_VECTOR *fie,
                                int nwork, DIST_VECTOR *work,
                                ARRAY *intforce_a,
-                               ARRAY *dirich_a)
+                               ARRAY *dirich_a,
+                               CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
 int                  i,j;
 int                  ierr;
@@ -520,15 +526,19 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
+      container->kstep    = 0;  
+      container->handsize = 5;
+      container->handles  = ele_handles[i];       
       shell8(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,
-             0,5,ele_handles[i],action);
+             NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
    break;
    case el_wall1:
-       wall1(actpart,actintra,actele,NULL,NULL,NULL,5,ele_handles[i],action);
+       container->handsize = 5;
+       container->handles  = ele_handles[i];
+       wall1(actpart,actintra,actele,NULL,NULL,NULL,action,container);
    break;
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
@@ -622,7 +632,8 @@ void restart_write_nlnstructstat(STATIC_VAR     *statvar, /*-------------- stati
                 int kstep,                  /*------------------------ actual load step --*/
                 int nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
                 int nsol,  DIST_VECTOR *sol,/* solution processorpart     --"--         --*/
-                int ndis,  DIST_VECTOR *dispi)/*- displacement processorpart  --"--     --*/
+                int ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
+                CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
 int                  i;                      /*-------------------------------- counter --*/
 int                  ierr;                   /*----------------------------- error-flag --*/
@@ -746,17 +757,20 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
+      container->kstep    = 0;   
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,
-             0,5,ele_handles[i],action);
+             NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
    break;
    case el_wall1:
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
       wall1(actpart,actintra,actele,
-            NULL,NULL,NULL,
-            5,ele_handles[i],action);
+            NULL,NULL,NULL,action,container);
    break;
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
@@ -844,7 +858,8 @@ void restart_read_nlnstructstat(int restart,   /*--------------------------- res
                 CALC_ACTION     *action,       /*---------- element action = write-restart --*/
                 int nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
                 int nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
-                int ndis,  DIST_VECTOR *dispi) /*-- displacement processorpart  --"--      --*/
+                int ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--      --*/
+                CONTAINER    *container)       /*!< contains variables defined in container.h */
 {                                                
 int                  i,j;                      /*-------------------------------- counters --*/
 int                  ierr;                     /*------------------------------ error-flag --*/
@@ -1008,15 +1023,19 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
+      container->kstep    = 0;    
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,
-             0,5,ele_handles[i],action);
+             NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
    break;
    case el_wall1:
-       wall1(actpart,actintra,actele,NULL,NULL,NULL,5,ele_handles[i],action);
+       container->handsize = 5;
+       container->handles  = ele_handles[i];
+       wall1(actpart,actintra,actele,NULL,NULL,NULL,action,container);
    break;
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
