@@ -67,11 +67,11 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 ------------------------------------------------------------------------*/
 void f2_calgalifv(
                   DOUBLE          *eforce,   
-		  DOUBLE          *covint,  
-		  DOUBLE          *funct,   
-		  DOUBLE           fac,     
-		  INT              iel      
-                 )  
+                  DOUBLE          *covint,  
+                  DOUBLE          *funct,   
+                  DOUBLE           fac,     
+                  INT              iel      
+                 ) 
 {
 INT    inode,isd;
 INT    irow;  
@@ -83,21 +83,19 @@ dstrc_enter("f2_calgalifv");
 
 /*--------------------------------------------------- set some factors */
 fdyn  = alldyn[genprob.numff].fdyn;
-facsl = fac * fdyn->thsl * fdyn->sigma;
+facsl = fac * fdyn->thsl;
 
 /*----------------------------------------------------------------------*
    Calculate convective forces of iteration force vector:
 
 EULER:
-                   /
-   (+/-) THETA*dt |  v * u * grad(u)  d_omega
-    |            /  
-    |-> signs due to nonlin. iteration scheme (fdyn->sigma) 
-
+               /
+   + THETA*dt |  v * u * grad(u)  d_omega
+             /  
 ALE:
-                   /
-   (+/-) THETA*dt |  v * c * grad(u)  d_omega
-                 /
+               /
+   + THETA*dt |  v * c * grad(u)  d_omega
+             /
  *----------------------------------------------------------------------*/ 
 irow = -1;
 for (inode=0;inode<iel;inode++)
@@ -151,6 +149,8 @@ NOTE:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
+
+\param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param   *ele      ELEMENT	   (i)    actual element
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param   *covint   DOUBLE	   (i)    conv. vels at INT. point
@@ -166,37 +166,37 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f2_calstabifv(
-                  ELEMENT         *ele,      
-		  DOUBLE          *eforce,  
-		  DOUBLE          *covint,  
-		  DOUBLE          *velint,  
-		  DOUBLE          *funct,   
-		  DOUBLE         **derxy,   
-		  DOUBLE         **derxy2,  
-		  DOUBLE           fac,     
-		  DOUBLE           visc,    
-		  INT              ihoel,   
-		  INT              iel      
+                     STAB_PAR_GLS    *gls,  
+                     ELEMENT         *ele,      
+                     DOUBLE          *eforce,  
+                     DOUBLE          *covint,  
+                     DOUBLE          *velint,  
+                     DOUBLE          *funct,   
+                     DOUBLE         **derxy,   
+                     DOUBLE         **derxy2,  
+                     DOUBLE           fac,     
+                     DOUBLE           visc,    
+                     INT              ihoel,   
+                     INT              iel      
                  )  
 {
 INT    inode,isd;
 INT    irow;  
 DOUBLE facsl,cc;
-DOUBLE aux, sign;
+DOUBLE aux;
+DOUBLE sign=ONE;
 DOUBLE taumu,taump;
 DOUBLE fact[2];
-STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calgalifv");
 #endif
 
 /*---------------------------------------------------------- initialise */
-gls   = ele->e.f2->stabi.gls;
 fdyn  = alldyn[genprob.numff].fdyn;
 
-if (ele->e.f2->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f2->stab_type == stab_gls,
+   "routine with no or wrong stabilisation called");
  
 /*--------------------------------------------------- set some factors */
 facsl = fac * fdyn->thsl * fdyn->sigma;
@@ -206,15 +206,12 @@ taump = fdyn->tau[1];
 /*----------------------------------------------------------------------*
    Calculate convective/convective stabilastion of iteration force vector:
 EULER:
-                   /
-   (+/-) THETA*dt |  tau_mu * u * grad(v) * u * grad(u)  d_omega
-    |            /  
-    |           
-    |-> signs due to nonlin. iteration scheme (fdyn->sigma)
-
+               /
+   + THETA*dt |  tau_mu * u * grad(v) * u * grad(u)  d_omega
+             /
 ALE:
                    /
-   (+/-) THETA*dt |  tau_mu * c * grad(v) * c * grad(u)  d_omega
+   + THETA*dt |  tau_mu * c * grad(v) * c * grad(u)  d_omega
                  / 
  *----------------------------------------------------------------------*/ 
 if (gls->iadvec!=0)
@@ -228,7 +225,7 @@ if (gls->iadvec!=0)
       for (isd=0;isd<2;isd++)
       {
          irow++;
-	 eforce[irow] += aux*fact[isd];
+	        eforce[irow] += aux*fact[isd];
       } /* end loop over isd */
    } /* end loop over inode */
 } /* endif (ele->e.f2->iadvec!=0) */
@@ -236,31 +233,18 @@ if (gls->iadvec!=0)
 /*----------------------------------------------------------------------*
    Calculate convective/viscous stabilastion of iteration force vector:
 EULER:
-                       /
-   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
-    |                /  
-    |           
-    |-> signs due to nonlin. iteration scheme (fdyn->sigma)
-
+                  /
+    -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
+                /  
 ALE:
-                       /
-   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * c * grad(u)  d_omega
-                     /
+                  /
+    -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * c * grad(u)  d_omega
+                /
 
  *----------------------------------------------------------------------*/ 
 if (gls->ivisc!=0 && ihoel!=0)
 {
-   switch (gls->ivisc) /* choose stabilisation type --> sign */
-   {
-   case 1: /* GLS- */
-      sign = ONE;
-   break;
-   case 2: /* GLS+ */
-      sign = -ONE;
-   break;
-   default:
-      dserror("viscous stabilisation parameter unknown: IVISC");
-   } /* end switch(ele->e.f2->ivisc) */
+   if (gls->ivisc==2) sign*=-ONE; /* GLS+ stabilisation */
    cc = facsl*visc*taump*sign;
    irow=0;
    for (inode=0;inode<iel;inode++)
@@ -312,6 +296,7 @@ NOTE:
     eforce[2*iel]					
       
 </pre>
+\param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param   *covint   DOUBLE	   (i)    conv. vels at INT. point
 \param  **derxy    DOUBLE	   (i)    global derivative
@@ -321,11 +306,12 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f2_calstabifp(
-                   DOUBLE          *eforce,   
-		   DOUBLE          *covint,  
-		   DOUBLE         **derxy,   
-		   DOUBLE           fac,     
-		   INT              iel        
+                     STAB_PAR_GLS    *gls,  
+                     DOUBLE          *eforce,   
+                     DOUBLE          *covint,  
+                     DOUBLE         **derxy,   
+                     DOUBLE           fac,     
+                     INT              iel        
                  )  
 {
 INT    inode; 
@@ -337,17 +323,24 @@ DOUBLE fact[2];
 dstrc_enter("f2_calgstabifp");
 #endif
 
+if (gls->ipres==0) goto end; /* no pressure stabilisation */
+
 /*--------------------------------------------------- set some factors */
 fdyn  = alldyn[genprob.numff].fdyn;
-facsl = fac * fdyn->thsl * fdyn->sigma;
+facsl = fac * fdyn->thsl;
 taump = fdyn->tau[1];
 
 /*----------------------------------------------------------------------*
    Calculate convective pressure stabilisation iteration force vector:
-                   /
-   (-/+) THETA*dt |  tau_mp * grad(q) * u * grad(u)  d_omega
-    |            /  
-    |-> signs due to nonlin. iteration scheme (fdyn->sigma) 
+EULER:
+               /
+   - THETA*dt |  tau_mp * grad(q) * u * grad(u)  d_omega
+             /  
+                   
+ALE:
+               /
+   - THETA*dt |  tau_mp * grad(q) * c * grad(u)  d_omega
+             / 
  *----------------------------------------------------------------------*/ 
 fact[0] = covint[0]*taump*facsl;
 fact[1] = covint[1]*taump*facsl;
@@ -357,6 +350,7 @@ for (inode=0;inode<iel;inode++)
 } /* end loop over inode */
 
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
