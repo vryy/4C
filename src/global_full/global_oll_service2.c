@@ -33,12 +33,13 @@ building the update vector and allocating the spare vector.
 \sa calling: ---; called by: --- 
 
 ------------------------------------------------------------------------*/
-void oll_open(OLL*  matrix,
-    INT     numeq,
-    INT     numeq_total,
-    FIELD  *actfield,
-    PARTITION *actpart,
-    INTRA  *actintra)
+void oll_open(OLL       *matrix,
+              INT        numeq,
+              INT        numeq_total,
+              FIELD     *actfield,
+              PARTITION *actpart,
+              INTRA     *actintra,
+              INT        dis)
 {
   INT       *update;
   /*----------------------------------------------------------------------*/
@@ -60,8 +61,8 @@ void oll_open(OLL*  matrix,
     matrix->col  = (MATENTRY**)CCACALLOC(matrix->cdim,sizeof(MATENTRY*));
     update = amdef("update", &(matrix->update), numeq, 1, "IV");
 
-    oll_update(actfield, actpart, actintra, 0, matrix);
-    oll_nnz_topology(actfield, actpart, actintra, matrix);
+    oll_update(actfield, actpart, actintra, dis, matrix);
+    oll_nnz_topology(actfield, actpart, actintra, matrix, dis);
 
     matrix->total = matrix->nnz;
     matrix->used  = 0;
@@ -587,10 +588,10 @@ fetched.
 
 ------------------------------------------------------------------------*/
 void oll_addval(
-    OLL*  matrix,
-    INT actrow,
-    INT actcol,
-    DOUBLE val)
+                OLL*  matrix,
+                INT actrow,
+                INT actcol,
+                DOUBLE val)
 {
   MATENTRY  **row;
   MATENTRY  **col;
@@ -1221,7 +1222,87 @@ void oll_to_msr(
 } /* end of oll_to_msr */
 
 
+/*!---------------------------------------------------------------------
+\brief copies an oll matrix to the ccf format 
 
+<pre>                                                       genk 10/03 
+
+This function copies an oll matrix to a matrix in ccf format. 
+
+</pre>
+\param *oll       OLL          (i)   the oll matrix
+\param *sysarray  SPARSE_ARRAY (o)   the sysarry matrix
+\return void                                               
+
+------------------------------------------------------------------------*/
+void oll_to_ccf(
+                OLL  *oll,
+                SPARSE_ARRAY *sysarray
+	       )
+{
+CCF	   *ccf;         /* a sparse matrix in compressed column format */
+INT	   *Ap;          /* column pointer vector			*/
+INT	   *Ai;          /* row pointer vector			        */
+INT        *update;      /* dofs updated on this proc                   */
+DOUBLE     *Ax;          /* values of the matrix			*/
+MATENTRY **col;          /* matrix column                               */
+MATENTRY  *actentry;     /* actual matrix entry                         */
+INT	   i;            /* simply a counter                            */
+INT	   nnz;          /* number of nonzero matrix entries            */
+INT        numeq;        /* number of equations on this proc            */
+INT        numeq_total;  /* total number of equations                   */
+INT        counter;     
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("oll_to_ccf"); 
+#endif
+#ifdef PARALLEL
+dserror("No UMFPACK for parallel OLL!\n");
+#endif
+/*----------------------------------------------------------------------*/
+ccf     = sysarray->ccf;
+/* -------------------------------------------------- create ccf matrix */
+col   = oll->col;
+nnz   = oll->nnz;
+numeq = oll->numeq;
+numeq_total = oll->numeq_total;
+
+/*--------------------------------------------- redefine matrix vectors */
+Ap = amredef(&(oll->sysarray[0].ccf->Ap),numeq_total+1,1,"IV");
+Ai = amredef(&(oll->sysarray[0].ccf->Ai),nnz 	 ,1,"IV");
+Ax = amredef(&(oll->sysarray[0].ccf->Ax),nnz 	 ,1,"DV");
+amredef(&(oll->sysarray[0].ccf->update),numeq,1,"IV");
+
+/*-------------------------------------------------- copy update vector */
+amcopy(&(oll->update),&(oll->sysarray[0].ccf->update));
+
+/* ------------------------------------ copy oll matrix into ccf format */
+counter = 0;
+Ap[0]=0;
+for (i=0; i<oll->cdim; i++)
+{
+   /* --------------------------------- get the first entry of column i */
+   actentry = col[i];
+   while (actentry!=NULL)
+   {
+      Ax[counter] = actentry->val;
+      Ai[counter] = actentry->r; 
+      counter++;     
+      actentry = actentry->cnext;
+   } /* END OF while col */
+   Ap[i+1]=counter;
+} /* END OF for all cols */
+
+if (counter!=oll->nnz)
+dserror("Error in copying oll to ccf!\n");
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of oll_to_msr */
 
 /*!---------------------------------------------------------------------
 \brief copy a matrix in oll format
@@ -1236,8 +1317,8 @@ using oll_open
 \sa  mlpcg_ll_open                                       
 ------------------------------------------------------------------------*/
 void oll_copy(
-    OLL   *from,
-    OLL  *to)
+              OLL   *from,
+              OLL   *to)
 {
 INT        i;
 MATENTRY  *actptr;
