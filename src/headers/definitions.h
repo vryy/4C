@@ -205,11 +205,13 @@ static INT iminarg1,iminarg2;
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
  *----------------------------------------------------------------------*/
 #define MAXDOFPERNODE    (6)
+/*#define MAXDOFPERNODE    (18)*/
 
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
 #define MAXGAUSS         (9)  
+/*#define MAXGAUSS         (72)*/
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
@@ -246,6 +248,7 @@ static INT iminarg1,iminarg2;
  | static restarting from and to pss file
  *----------------------------------------------------------------------*/
 #define MAXRECORDPERELE  (6)
+
 /*----------------------------------------------------------------------*
  | numbers                                                              |
  *----------------------------------------------------------------------*/
