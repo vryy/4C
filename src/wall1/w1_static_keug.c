@@ -24,11 +24,11 @@ int                 newval = 0;          /* controls evaluation of new stresses 
 const int           numdf  = 2;          /* number dof per node                    */
 const int           numeps = 4;          /* number of strain components            */
 
-double              fac,facm;              /* integration factor                        */
-double              e1,e2,e3;         /*GP-coords                                  */
-double              facr,facs,fact;   /* weights at GP                             */
-double              thick,density;    /* for calculation of mass matrix            */
-int                 imass;            /* flag -> mass matrix is/is not to evaluate */
+double              fac,facm;            /* integration factors                    */
+double              e1,e2;               /*GP-coords                               */
+double              facr,facs;           /* weights at GP                          */
+double              thick,density;       /* for calculation of mass matrix         */
+int                 imass;               /* flag -> mass matrix is to evaluate?    */
 
 static ARRAY    D_a;      /* material matrix */     
 static double **D; 
@@ -159,20 +159,16 @@ if(force)
 }
 estif     = estif_global->a.da;
 /*------------------------------ geometry update for total lagrange ----*/
-
-if(ele->e.w1->kintype==total_lagr)
+for (k=0; k<iel; k++)
 {
-  for (k=0; k<iel; k++)
-  {
-    xrefe[0][k]= ele->node[k]->x[0];                         /* x-direction */
-    xrefe[1][k]= ele->node[k]->x[1];                         /* y-direction */
-    xcure[0][k]= xrefe[0][k] + ele->node[k]->sol.a.da[0][0]; /* x-direction */
-    xcure[1][k]= xrefe[1][k] + ele->node[k]->sol.a.da[0][1]; /* y-direction */
-  }
+ xrefe[0][k]= ele->node[k]->x[0];                         /* x-direction */
+ xrefe[1][k]= ele->node[k]->x[1];                         /* y-direction */
+ xcure[0][k]= xrefe[0][k] + ele->node[k]->sol.a.da[0][0]; /* x-direction */
+ xcure[1][k]= xrefe[1][k] + ele->node[k]->sol.a.da[0][1]; /* y-direction */
 }
-else
+if(ele->e.w1->kintype==updated_lagr)
 {
-dserror("action unknown");
+ dserror("action unknown");
 }  
 /*================================================ integration loops ===*/
 ip = -1;
