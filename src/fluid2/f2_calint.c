@@ -299,45 +299,25 @@ for (lr=0;lr<nir;lr++)
 /*------------------- get pressure derivatives (n) at integration point */
             f2_pder(pderxy,derxy,epren,iel);
 	 } /* endif (dynvar->iprerhs>0) */
-         dsassert(dynvar->isemim==0,"only implicit methods implemented!\n");
-	 if (dynvar->isemim==0)
-	 {
 	    
-	    /* in all but semi-implicit cases (n+gamma_bar) = (n)
-	       --> hence we need the values according to u(n)
-	       NOTE: since "time forces" are only calculated in the first
-	       iteration step and in general U(n+1,0) =  U(n) - with only
-	       exception being the dirichlet values - the stability 
-	       parameter are not calculated for the field at (n) -
-	       instead the ones from the field (n+1,0) are taken
-	       (shouldn't be too much of a difference)!!!               */
-	    
+	 /* in all but semi-implicit cases (n+gamma_bar) = (n)
+	    --> hence we need the values according to u(n)
+	    NOTE: since "time forces" are only calculated in the first
+	    iteration step and in general U(n+1,0) =  U(n) - with only
+	    exception being the dirichlet values - the stability 
+	    parameter are not calculated for the field at (n) -
+	    instead the ones from the field (n+1,0) are taken
+	    (shouldn't be too much of a difference)!!!  	     */
+	 
 /*----------------------------- get velocities (n) at integration point */
-	    f2_veli(velint,funct,eveln,iel);
+	 f2_veli(velint,funct,eveln,iel);
 /*------------------- get velocitiederivatives (n) at integration point */
-            f2_vder(vderxy,derxy,eveln,iel);
+         f2_vder(vderxy,derxy,eveln,iel);
 /*------------- get 2nd velocities derivatives (n) at integration point */
-	    if (ihoel!=0)
-	       f2_vder2(vderxy2,derxy2,eveln,iel);	       
-	 } /* endif (dynvar->isemim==0) */
-	 if (dynvar->itwost!=0)
-	 {	    
-	    dserror("TWOSTEP-method not checked yet!!!!");
-	    /* for two-step methods we have values at two different times
-	       involved in the computation of the time forces
-	       --> velint  = U(n+g) from above;
-	           vel2int = U(n) get now;                              */
-	    
-/*----------------------------- get velocities (n) at integration point */
-	    f2_veli(vel2int,funct,eveln,iel);
-/*------------------- get velocitiederivatives (n) at integration point */
-            f2_vder(vderxy,derxy,eveln,iel);
-/*------------- get 2nd velocities derivatives (n) at integration point */
-	    if (ihoel!=0)
-	       f2_vder2(vderxy2,derxy2,eveln,iel);            
-	 } /* endif (dynvar->itwost!=0) */
-	 if (dynvar->itwost==0)
-	    vel2int=velint;
+	 if (ihoel!=0)
+	    f2_vder2(vderxy2,derxy2,eveln,iel);	       
+/*---------------- due to historical reasons there exist two velocities */
+	 vel2int=velint;
 /*------------------ get convective velocities (n) at integration point */
          f2_covi(vderxy,velint,covint);        	    
 /*--------------------- calculate galerkin part of "Time-RHS" (vel-dofs)*/
@@ -709,33 +689,25 @@ for (lr=0;lr<nir;lr++)
 /*------------------- get pressure derivatives (n) at integration point */
             f2_pder(pderxy,derxy,epren,iel);
 	 } /* endif (dynvar->iprerhs>0) */
-	 dsassert(dynvar->isemim==0,"only implicit methods implemented!\n");
-	 if (dynvar->isemim==0)
-	 {
-	    
-	    /* in all but semi-implicit cases (n+gamma_bar) = (n)
-	       --> hence we need the values according to u(n)
-	       NOTE: since "time forces" are only calculated in the first
-	       iteration step and in general U(n+1,0) =  U(n) - with only
-	       exception being the dirichlet values - the stability 
-	       parameter are not calculated for the field at (n) -
-	       instead the ones from the field (n+1,0) are taken
-	       (shouldn't be too much of a difference)!!!               */
-	    
+	 /* in all but semi-implicit cases (n+gamma_bar) = (n)
+	    --> hence we need the values according to u(n)
+	    NOTE: since "time forces" are only calculated in the first
+	    iteration step and in general U(n+1,0) =  U(n) - with only
+	    exception being the dirichlet values - the stability 
+	    parameter are not calculated for the field at (n) -
+	    instead the ones from the field (n+1,0) are taken
+	    (shouldn't be too much of a difference)!!!  	     */
+	 
 /*----------------------------- get velocities (n) at integration point */
-	    f2_veli(velint,funct,eveln,iel);
+	 f2_veli(velint,funct,eveln,iel);
 /*-------------- get ale-convective velocities (n) at integration point */
-            f2_veli(alecovint,funct,ealecovn,iel);
+         f2_veli(alecovint,funct,ealecovn,iel);
 /*------------------- get velocitiederivatives (n) at integration point */
-            f2_vder(vderxy,derxy,eveln,iel);
+         f2_vder(vderxy,derxy,eveln,iel);
 /*------------- get 2nd velocities derivatives (n) at integration point */
-	    if (ihoel!=0)
-	       f2_vder2(vderxy2,derxy2,eveln,iel);	       
-	 } /* endif (dynvar->isemim==0) */
-/*------------------------------------------- check for TWOSTEP-methods */	 
-         dsassert(dynvar->itwost==0,"TWOSTEP-methods not implemented for ALE!\n");
-/*-------------------------- velocities at different times are necassary
-         for TWOSTEP-methods. At the moment they are the same!          */	 
+	 if (ihoel!=0)
+	    f2_vder2(vderxy2,derxy2,eveln,iel);	       
+/*---------------- due to historical reasons there exist two velocities */
 	 vel2int=velint;
 /*------------------ get convective velocities (n) at integration point 
                      covint = c * grad(u)                               */

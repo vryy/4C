@@ -89,43 +89,16 @@ for(i=0;i<ele->numnp;i++)
  *---------------------------------------------------------------------*/
 
 
-if(dynvar->isemim==0)  /* -> implicit time integration method ---------*/
+/* -> implicit time integration method ---------*/
+for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 {
-   for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-   {
-      actnode=ele->node[i];
+   actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */      
-      evelng[0][i]=actnode->sol_increment.a.da[3][0];
-      evelng[1][i]=actnode->sol_increment.a.da[3][1]; 
+   evelng[0][i]=actnode->sol_increment.a.da[3][0];
+   evelng[1][i]=actnode->sol_increment.a.da[3][1]; 
 /*-------------------------------------- set supported pressures (n+1) */   
-   } /* end of loop over nodes of element */
+} /* end of loop over nodes of element */
    
-} /* endif (dynvar->isemim==0) */
-else  /* -> semi-implicit time integration method 
-       | for semi-impl. methods one needs extra suup. velocities-------*/
-{   
-   dserror("semi-implicit methods not checked yet!!!\n");
-   if(dynvar->itwost==0)   /* -> semi-implicit one-step ---------------*/
-   {
-      for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-      {
-         actnode=ele->node[i];
-/*-------------------------------- set element velocities at time (n)  */ 	 
-         evelng[0][i]=actnode->sol_increment.a.da[1][0];
-	 evelng[1][i]=actnode->sol_increment.a.da[1][1];
-      } /* end of loop over nodes of element */
-   } /* endif (dynvar->itwost==0) */
-   else  /* -> semi-implicit two-step ---------------------------------*/
-   {  
-      for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-      {
-         actnode=ele->node[i];
-/*--------------------------- set element velocities at time (n+gamma) */	 
-         evelng[0][i]=actnode->sol_increment.a.da[2][0];
-	 evelng[1][i]=actnode->sol_increment.a.da[2][1];
-      } /* end of loop over nodes of element */
-   } /* endif else */  
-} /* endif else */
 
 if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
@@ -255,26 +228,19 @@ else
  |       sol_increment.a.da[6][i]: convective velocity at (n+1) 	|
  *----------------------------------------------------------------------*/
 
-if(dynvar->isemim==0)  /* -> implicit time integration method ----------*/
+/* -> implicit time integration method ----------*/
+
+for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 {
-   for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-   {
-      actfnode=ele->node[i];
+   actfnode=ele->node[i];
 /*------------------------------------ set element velocities (n+gamma) */ 
-      evelng[0][i]   =actfnode->sol_increment.a.da[3][0];
-      evelng[1][i]   =actfnode->sol_increment.a.da[3][1];
-      ealecovng[0][i]=actfnode->sol_increment.a.da[6][0];
-      ealecovng[1][i]=actfnode->sol_increment.a.da[6][1];
-      egridv[0][i]   =actfnode->sol_increment.a.da[4][0];
-      egridv[1][i]   =actfnode->sol_increment.a.da[4][1];     
-   } /* end of loop over nodes of element */
-   
-} /* endif (dynvar->isemim==0) */
-else  /* -> semi-implicit time integration method 
-       | for semi-impl. methods one needs extra suup. velocities-------*/
-{   
-   dserror("semi-implicit method not implemented for ALE!!!\n");  
-} /* endif else */
+   evelng[0][i]   =actfnode->sol_increment.a.da[3][0];
+   evelng[1][i]   =actfnode->sol_increment.a.da[3][1];
+   ealecovng[0][i]=actfnode->sol_increment.a.da[6][0];
+   ealecovng[1][i]=actfnode->sol_increment.a.da[6][1];
+   egridv[0][i]   =actfnode->sol_increment.a.da[4][0];
+   egridv[1][i]   =actfnode->sol_increment.a.da[4][1];     
+} /* end of loop over nodes of element */
 
 if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
