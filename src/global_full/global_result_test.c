@@ -221,6 +221,10 @@ void global_result_test()
           actresult = actelement->e.saxi->stress_GP.a.d3[args[0]][args[1]][args[2]];
           nerr += compare_values(err, actresult, res->value, res);
         }
+        else if (parse_position_descr(res->position, "stress_ND", 3, args) == 1) {
+          actresult = actelement->e.saxi->stress_ND.a.d3[args[0]][args[1]][args[2]];
+          nerr += compare_values(err, actresult, res->value, res);
+        }
         else {
           dserror("Unknown position specifier");
         }
