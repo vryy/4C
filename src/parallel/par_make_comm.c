@@ -140,16 +140,18 @@ for (i=0; i<par.numfld; i++)
       possible tag value) in every communicator. It's guaranteed to be
       defined in MPI_COMM_WORLD, but apparently mpich doesn't copy it
       when creating new communicators. So lets do it ourselves. */
-   INT *iptr, flag, tag_bound;
-   iptr = &tag_bound;
-   MPI_Attr_get(par.intra[i].MPI_INTRA_COMM, MPI_TAG_UB, (void **) &iptr, &flag);
-   if ( flag == 0 ) {
+   {
+     INT *iptr, flag, tag_bound;
+     iptr = &tag_bound;
+     MPI_Attr_get(par.intra[i].MPI_INTRA_COMM, MPI_TAG_UB, (void **) &iptr, &flag);
+     if ( flag == 0 ) {
        /*dserror("No MPI_TAG_UB in new communicator.");*/
        MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, (void **) &iptr, &flag);
        if ( flag == 0 ) {
-           dserror("No MPI_TAG_UB in MPI_COMM_WORLD. Panic!");
+         dserror("No MPI_TAG_UB in MPI_COMM_WORLD. Panic!");
        }
        MPI_Attr_put(par.intra[i].MPI_INTRA_COMM, MPI_TAG_UB, (void *) iptr);
+     }
    }
 /*-----------------------------------------------------------------------*/   
 }/* end of loop over fields */
