@@ -563,6 +563,9 @@ fdyn->ishape = 1;
 numdf = fdyn->numdf;
 numele_total = actfield->dis[0].numele;
 
+/*---------------------------------------------------------------------*
+                      INITIALISE NODAL ARRAYS
+/*---------------------------------------------------------------------*
 /*-------------------------------- allocate space for solution history */
 for (k=0;k<actfield->ndis;k++)
 {
@@ -636,6 +639,31 @@ for (i=0;i<actfield->dis[0].numnp;i++)
 {
    actnode=&(actfield->dis[0].node[i]);
    amredef(&(actnode->sol),actnode->sol.fdim,actnode->sol.sdim+1,"DA");
+}
+
+/*---------------------------------------------------------------------*
+                     INITIALISE ELEMENT ARRAYS
+/*---------------------------------------------------------------------*
+/*------------- allocate array for stabilisation parameter (only pdis) */
+for (i=0;i<actpart->pdis[0].numele;i++)
+{
+   actele = actpart->pdis[0].element[i];
+#ifdef D_FLUID2
+   if (numdf==3)
+   {
+      dsassert(actele->eltyp==el_fluid2,"eltyp not allowed!\n");
+      amdef("Stabpar",&(actele->e.f2->tau_old),3,1,"DV");
+      amzero(&(actele->e.f2->tau_old));
+   }
+#endif
+#ifdef D_FLUID3
+   if (numdf==4)
+   {
+      dsassert(actele->eltyp==el_fluid3,"eltyp not allowed!\n");
+      amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
+      amzero(&(actele->e.f3->tau_old));
+   }
+#endif
 }
 
 /*-------------------- check for stress calculation and allocate arrays */
