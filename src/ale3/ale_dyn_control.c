@@ -234,7 +234,7 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
 /*   numeq equations are on this proc, the total number of equations is */
 /*                                                          numeq_total */
-solserv_getmatdims(actsolv->sysarray[actsysarray],
+solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                    actsolv->sysarray_typ[actsysarray],
                    &numeq,
                    &numeq_total);
@@ -443,7 +443,7 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
 /*   numeq equations are on this proc, the total number of equations is */
 /*                                                          numeq_total */
-solserv_getmatdims(actsolv->sysarray[actsysarray],
+solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                    actsolv->sysarray_typ[actsysarray],
                    &numeq,
                    &numeq_total);
@@ -693,7 +693,7 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
 /*   numeq equations are on this proc, the total number of equations is */
 /*                                                          numeq_total */
-solserv_getmatdims(actsolv->sysarray[actsysarray],
+solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                    actsolv->sysarray_typ[actsysarray],
                    &numeq,
                    &numeq_total);
@@ -984,7 +984,7 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
 /*   numeq equations are on this proc, the total number of equations is */
 /*                                                          numeq_total */
-solserv_getmatdims(actsolv->sysarray[actsysarray],
+solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                    actsolv->sysarray_typ[actsysarray],
                    &numeq,
                    &numeq_total);
@@ -1230,7 +1230,7 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
 /*   numeq equations are on this proc, the total number of equations is */
 /*                                                          numeq_total */
-solserv_getmatdims(actsolv->sysarray[actsysarray],
+solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                    actsolv->sysarray_typ[actsysarray],
                    &numeq,
                    &numeq_total);

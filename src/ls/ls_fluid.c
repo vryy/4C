@@ -288,7 +288,7 @@ void ls_fluid_init()
 
   /* get global and local number of equations */
   solserv_getmatdims(
-    actsolv->sysarray[actsysarray],
+    &(actsolv->sysarray[actsysarray]),
     actsolv->sysarray_typ[actsysarray],
     &numeq,
     &numeq_total

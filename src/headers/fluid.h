@@ -201,7 +201,7 @@ DOUBLE  dtp;	   /*!< previous time increment dt(n-1)                 */
 DOUBLE  dt_prop;   /*!< proposed new time increment dt(n+1)		*/
 DOUBLE  max_dt;    /*!< maximal time increment for adaptive             */
 DOUBLE  min_dt;    /*!< minimal time increment for adaptive             */
-/*DOUBLE  alpha;     /*!< time integration constant                       */
+/*DOUBLE  alpha;     / *!< time integration constant                       */
 DOUBLE  theta;     /*!< time integration constant                       */
 DOUBLE  thetas;    /*!< constant for starting algorithm)                */
 DOUBLE  alpha_m;   /*!< time integration constant                       */

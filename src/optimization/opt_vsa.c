@@ -144,7 +144,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
     /*----------------------- get global and local number of equations */
     if (statvar->nonlinear==1) 
     {
-      solserv_getmatdims(actsolv->sysarray[actsysarray],
+      solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                     actsolv->sysarray_typ[actsysarray],
                     &numeq,
                     &numeq_total);

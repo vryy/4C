@@ -206,7 +206,7 @@ if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
 actsolv->sysarray = 
 (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
-if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
+if (!actsolv->sysarray) dserror("Allocation of memory failed");
 
 /*-copy the matrices sparsity mask from stiff_array to mass_array (and to damp_array) */
 solserv_alloc_cp_sparsemask(  actintra,
@@ -232,7 +232,7 @@ solserv_zero_mat(
                 );
 
 /*---------------------------- get global and local number of equations */
-solserv_getmatdims(actsolv->sysarray[stiff_array],
+solserv_getmatdims(&(actsolv->sysarray[stiff_array]),
                    actsolv->sysarray_typ[stiff_array],
                    &numeq,
                    &numeq_total);

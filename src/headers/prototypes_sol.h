@@ -743,7 +743,7 @@ void solserv_add_mat(INTRA *actintra,
  | INT *numeq        (o)     proc-local dimension of sparse matrix      |
  | INT *numeq_total  (o)     global dimension of sparse matrix          |
  *----------------------------------------------------------------------*/
-void solserv_getmatdims(SPARSE_ARRAY mat,SPARSE_TYP mattyp,
+void solserv_getmatdims(SPARSE_ARRAY* mat,SPARSE_TYP mattyp,
                         INT *numeq, INT *numeq_total);
 /*----------------------------------------------------------------------*
  |  init a distributed matrix to zero - collective call !    m.gee 10/01|

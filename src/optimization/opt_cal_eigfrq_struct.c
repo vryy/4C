@@ -251,7 +251,7 @@ if(init==1)
                               &(actsolv->sysarray[mass_array]));
   }
 /*---------------------------- get global and local number of equations */
-  solserv_getmatdims(actsolv->sysarray[stiff_array],
+  solserv_getmatdims(&(actsolv->sysarray[stiff_array]),
                      actsolv->sysarray_typ[stiff_array],
                      &numeq,
                      &numeq_total);

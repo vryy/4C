@@ -287,7 +287,7 @@ solserv_zero_mat(
                 );
  
 /*---------------------------- get global and local number of equations */
-solserv_getmatdims(actsolv->sysarray[actsysarray],
+solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                    actsolv->sysarray_typ[actsysarray],
                    &numeq[kk],
                    &numeq_total[kk]);

@@ -190,7 +190,7 @@ return;
  | INT *numeq        (o)     proc-local dimension of sparse matrix      |
  | INT *numeq_total  (o)     global dimension of sparse matrix          |
  *----------------------------------------------------------------------*/
-void solserv_getmatdims(SPARSE_ARRAY mat,SPARSE_TYP mattyp,
+void solserv_getmatdims(SPARSE_ARRAY* mat,SPARSE_TYP mattyp,
                         INT *numeq, INT *numeq_total)
 {
 #ifdef DEBUG 
@@ -200,48 +200,48 @@ dstrc_enter("solserv_getmatdims");
 switch (mattyp)
 {
 case mds:
-   *numeq       = mat.mds->numeq;
+   *numeq       = mat->mds->numeq;
    *numeq_total = *numeq;
 break;
 case msr:
-   *numeq       = mat.msr->numeq;
-   *numeq_total = mat.msr->numeq_total;
+   *numeq       = mat->msr->numeq;
+   *numeq_total = mat->msr->numeq_total;
 break;
 case parcsr:
-   *numeq       = mat.parcsr->numeq;
-   *numeq_total = mat.parcsr->numeq_total;
+   *numeq       = mat->parcsr->numeq;
+   *numeq_total = mat->parcsr->numeq_total;
 break;
 case ucchb:
-   *numeq       = mat.ucchb->numeq;
-   *numeq_total = mat.ucchb->numeq_total;
+   *numeq       = mat->ucchb->numeq;
+   *numeq_total = mat->ucchb->numeq_total;
 break;
 case dense:
-   *numeq       = mat.dense->numeq;
-   *numeq_total = mat.dense->numeq_total;
+   *numeq       = mat->dense->numeq;
+   *numeq_total = mat->dense->numeq_total;
 break;
 case rc_ptr:
-   *numeq       = mat.rc_ptr->numeq;
-   *numeq_total = mat.rc_ptr->numeq_total;
+   *numeq       = mat->rc_ptr->numeq;
+   *numeq_total = mat->rc_ptr->numeq_total;
 break;
 case ccf:
-   *numeq       = mat.ccf->numeq;
-   *numeq_total = mat.ccf->numeq_total;
+   *numeq       = mat->ccf->numeq;
+   *numeq_total = mat->ccf->numeq_total;
 break;
 case skymatrix:
-   *numeq       = mat.sky->numeq;
-   *numeq_total = mat.sky->numeq_total;
+   *numeq       = mat->sky->numeq;
+   *numeq_total = mat->sky->numeq_total;
 break;
 case spoolmatrix:
-   *numeq       = mat.spo->numeq;
-   *numeq_total = mat.spo->numeq_total;
+   *numeq       = mat->spo->numeq;
+   *numeq_total = mat->spo->numeq_total;
 break;
 case bdcsr:
-   *numeq       = mat.bdcsr->numeq;
-   *numeq_total = mat.bdcsr->numeq_total;
+   *numeq       = mat->bdcsr->numeq;
+   *numeq_total = mat->bdcsr->numeq_total;
 break;
 case oll:
-   *numeq       = mat.oll->numeq;
-   *numeq_total = mat.oll->numeq_total;
+   *numeq       = mat->oll->numeq;
+   *numeq_total = mat->oll->numeq_total;
 break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
