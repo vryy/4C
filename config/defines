@@ -28,6 +28,7 @@
 #D_WALL1            # defines element wall1
 #D_INTERF           # defines interface element
 #D_WALLGE           # defines gradient enhanced wall element
+#D_MLSTRUCT         # defines an 2D element for structural analysis with multiscale
 #D_XFEM             # defines for enriched fluid element
 
 

@@ -23,6 +23,7 @@
 # -DD_WALL1      defines element wall1
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
+# -DD_MLSTRUCT   defines structural 2D multiscale element
 #
 #  PROBLEMTYPES:
 #  =============

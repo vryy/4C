@@ -112,7 +112,8 @@ OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_conditions.o \
                 src/input_full/inp_cal_dirich_fac.o \
                 src/input_full/input_funct.o \
-                src/input_full/input_resultdescr.o
+                src/input_full/input_resultdescr.o \
+                src/input_full/input_submesh.o
 #                fluid3
 OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
@@ -489,6 +490,13 @@ OBJS_F3ML     = src/fluid3ml/f3_mlbubmat.o \
                 src/fluid3ml/f3_mlsubmesh.o \
                 src/fluid3ml/f3_mltimerhs.o \
                 src/fluid3ml/f3_mlvmmrhs.o 
+#                stucture 2D ml
+OBJS_S2ML     = src/struct2_ml/s2ml_static_ke.o \
+                src/struct2_ml/s2ml_cal_smelm.o \
+                src/struct2_ml/s2ml_service.o \
+                src/struct2_ml/s2ml_stiff_wall.o \
+                src/struct2_ml/s2ml_strain.o \
+                src/struct2_ml/s2ml_stiff_interf.o
 #                optimization
 OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/input_optdata.o \
@@ -551,7 +559,8 @@ OBJS_IF       = src/interf/if_inpele.o \
                 src/interf/if_stress.o \
                 src/interf/if_mat_dyn.o \
                 src/interf/if_service.o \
-                src/interf/if_funcderiv.o
+                src/interf/if_funcderiv.o \
+                src/interf/if_restart.o
 #                gradient enhanced wall
 OBJS_WALLGE   = src/wallge/wge_setdof.o \
                 src/wallge/wge_inpele.o \

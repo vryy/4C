@@ -2,6 +2,11 @@
 # fluid objects:
 OBJ_FLUID=0
 
+# control-flag, to ensure that OBJS_S2ML get OBJS_WALL,OBJS_WALLGE,OBJS_IF:
+OBJ_W1=0
+OBJ_WGE=0
+OBJ_IF=0
+
 
 # objects:
 OBJECTS="\$(OBJS_MAIN) \$(OBJS_GLOBAL) \$(OBJS_SOLVER) \$(OBJS_PSS) \$(OBJS_INPUT) \
@@ -90,16 +95,47 @@ fi
 # WALL1
 if grep '^D_WALL1' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_WALL1)"
+    OBJ_W1=1
 fi
 
 # INTERF
 if grep '^D_INTERF' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_IF)"
+    OBJ_IF=1
 fi
 
 # WALLGE
 if grep '^D_WALLGE' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_WALLGE)"
+    OBJ_WGE=1
+fi
+
+# MLSTRUCT 
+if grep '^D_MLSTRUCT' "$definefile" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x1" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML)"
+    fi
+    if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_IF)"
+    fi
+    if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x1" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALLGE)"
+    fi
+    if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x1" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1)"
+    fi
+    if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x1" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1) \$(OBJS_WALLGE)"
+    fi
+    if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1) \$(OBJS_IF)"
+    fi
+    if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALLGE) \$(OBJS_IF)"
+    fi
+    if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1) \$(OBJS_WALLGE) \$(OBJS_IF)"
+    fi
 fi
 
 # FSI
