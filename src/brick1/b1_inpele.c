@@ -1,7 +1,7 @@
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 /*----------------------------------------------------------------------*
- | read shell8 element                                    m.gee 8/00    |
+ | read brick1 element                                    m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void b1inp(ELEMENT *ele)
 {
@@ -22,6 +22,7 @@ if (ele->e.b1==NULL) dserror("Allocation of element failed");
 frchk("HEX8",&ierr);
 if (ierr==1) 
 {
+   ele->distyp = hex8;
    ele->numnp=8;
    ele->lm = (int*)calloc(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
@@ -31,6 +32,7 @@ if (ierr==1)
 frchk("HEX20",&ierr);
 if (ierr==1) 
 {
+   ele->distyp = hex20;
    ele->numnp=20;
    ele->lm = (int*)calloc(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
@@ -41,6 +43,7 @@ frchk("HEX27",&ierr);
 if (ierr==1) 
 {
    ele->numnp=27;
+   ele->distyp = hex27;
    ele->lm = (int*)calloc(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX27",&(ele->lm[0]),ele->numnp,&ierr);
@@ -82,3 +85,4 @@ dstrc_exit();
 
 return;
 } /* end of b1inp */
+
