@@ -101,8 +101,8 @@ char             *vispssfile_kenner;
 char              vispssfile_name[100];
 size_t            outlenght;              /* lenght of output file kenner*/
 size_t            vispsslength;
-int               num_outputfiles;        /* number of output files      */
-int               pss_counter;            /* number of records on pss-file */
+INT               num_outputfiles;        /* number of output files      */
+INT               pss_counter;            /* number of records on pss-file */
 
 FILE             *in_input;               /* file-pointer input file     */
 FILE             *out_out;                /* file-pointer .out  file     */
@@ -119,9 +119,9 @@ char              title[5][500];          /* problem title                */
 char              line[500];              /* linebuffer for reading       */
 char            **input_file;             /* copy of the input file in rows and columns */
 char             *input_file_hook;        /* ptr the copy of the input file is allocated to */
-int               numcol;                 /* number of cols in inputfile  */
-int               numrows;                /* number of rows in inputfile  */
-int               actrow;                 /* rowpointer used by fr        */
+INT               numcol;                 /* number of cols in inputfile  */
+INT               numrows;                /* number of rows in inputfile  */
+INT               actrow;                 /* rowpointer used by fr        */
 char             *actplace;               /* pointer to actual place in input-file */
 } FILES;
 /*! @} (documentation module close)*/
@@ -136,16 +136,16 @@ char             *actplace;               /* pointer to actual place in input-fi
  *----------------------------------------------------------------------*/
 typedef struct _IO_FLAGS
 {
-int               struct_disp_file;    /* write displacements to .out */
-int               struct_stress_file;  /* write structural stress to .out */
-int               struct_disp_gid;     /* write structural displacements to .flavia.res */
-int               struct_stress_gid;   /* write structural stresses to .flavia.res */
-int               fluid_sol_file;      /* write vel/pre to .out */
-int               fluid_sol_gid;       /* write vel/pre to .flavia.res */
-int               fluid_vis_file;      /* write solution to pss-file for VISUAL2 */
-int               ale_disp_file;       /* write ale displacements to .out */
-int               ale_disp_gid;        /* write ale displacement to .flavia.res */
-int               monitor;
+INT               struct_disp_file;    /* write displacements to .out */
+INT               struct_stress_file;  /* write structural stress to .out */
+INT               struct_disp_gid;     /* write structural displacements to .flavia.res */
+INT               struct_stress_gid;   /* write structural stresses to .flavia.res */
+INT               fluid_sol_file;      /* write vel/pre to .out */
+INT               fluid_sol_gid;       /* write vel/pre to .flavia.res */
+INT               fluid_vis_file;      /* write solution to pss-file for VISUAL2 */
+INT               ale_disp_file;       /* write ale displacements to .out */
+INT               ale_disp_gid;        /* write ale displacement to .flavia.res */
+INT               monitor;
 } IO_FLAGS;
 
 
@@ -164,7 +164,7 @@ int               monitor;
 typedef struct _FIELD
 {
 enum _FIELDTYP     fieldtyp;      /* typ of field */
-int                ndis;          /* number of discretizations in this field */
+INT                ndis;          /* number of discretizations in this field */
 struct _DISCRET   *dis;           /* structure holding a number of discretisations */
 } FIELD;
 /*----------------------------------------------------------------------*
@@ -172,18 +172,18 @@ struct _DISCRET   *dis;           /* structure holding a number of discretisatio
  *----------------------------------------------------------------------*/
 typedef struct _DISCRET
 {
-int                numnp;          /* number of nodes in this field */ 
-int                numele;         /* number of elements in this field */
-int                numeq;          /* number of unknowns */
-int                numdf;          /* number of degrees of freedom */
+INT                numnp;          /* number of nodes in this field */ 
+INT                numele;         /* number of elements in this field */
+INT                numeq;          /* number of unknowns */
+INT                numdf;          /* number of degrees of freedom */
 
 struct _ELEMENT   *element;       /* vector of elements */
 struct _NODE      *node;          /* vector of nodes */
 
-int                ngnode;        /* number of geometry points */        
-int                ngline;        /* number of geometry lines */        
-int                ngsurf;        /* number of geometry surfaces */        
-int                ngvol;         /* number of geometry volumes */        
+INT                ngnode;        /* number of geometry points */        
+INT                ngline;        /* number of geometry lines */        
+INT                ngsurf;        /* number of geometry surfaces */        
+INT                ngvol;         /* number of geometry volumes */        
 struct _GNODE     *gnode;         /* vector of geometry points */    
 struct _GLINE     *gline;         /* vector of geometry lines */    
 struct _GSURF     *gsurf;         /* vector of geometry surfaces */    
@@ -199,18 +199,18 @@ struct _GVOL      *gvol;          /* vector of geometry volumes */
  *----------------------------------------------------------------------*/
 typedef struct _GENPROB
 {
-int               nele;          /* total number of elements over all fields */
-int               nnode;         /* total number of nodes over all fields*/
-int               ndim;          /* dimension of problem (2 or 3) */
-int               nmat;          /* total number of material laws */
-int               numfld;        /* number of fields */
-int               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
-int               restart;       /* is restart or not */
-int               visual;        /* flag for visualise mode or not */
-int               multidis;      /* flag for multi-discretisation problem */
-int               numsf;         /* actual number of struct-field */
-int               numff;         /* actual number of fluid field */
-int               numaf;         /* actual number of ale field */
+INT               nele;          /* total number of elements over all fields */
+INT               nnode;         /* total number of nodes over all fields*/
+INT               ndim;          /* dimension of problem (2 or 3) */
+INT               nmat;          /* total number of material laws */
+INT               numfld;        /* number of fields */
+INT               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
+INT               restart;       /* is restart or not */
+INT               visual;        /* flag for visualise mode or not */
+INT               multidis;      /* flag for multi-discretisation problem */
+INT               numsf;         /* actual number of struct-field */
+INT               numff;         /* actual number of fluid field */
+INT               numaf;         /* actual number of ale field */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
@@ -222,9 +222,9 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
  *---------------------------------------------------------------------*/
 typedef struct _MONITOR
 {
-int              numnp;
-int              numval;
-int              numstep;
+INT              numnp;
+INT              numval;
+INT              numstep;
 ARRAY            onoff;
 ARRAY            monnodes;
 ARRAY            val;
@@ -339,7 +339,7 @@ defined in pss_ds.c, declared in tracing.h
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
