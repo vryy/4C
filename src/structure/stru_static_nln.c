@@ -657,6 +657,12 @@ double               rli;
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 double              *intforce;               /* pointer to intforce_a.a.dv */
+#ifdef PARALLEL 
+static ARRAY intforcerecv_a;
+static double *intforcerecv;
+#endif
+
+
 #ifdef DEBUG 
 dstrc_enter("conequ");
 #endif
@@ -702,6 +708,18 @@ conequ_printiter(*itnum,disval,rlnew,dinorm,renorm,energy,dnorm,nln_data->rrnorm
 /*----------------------------------------------------------------------*/
 /*----------------------------- create an array for the internal forces */
 intforce = amdef("intforce",&intforce_a,actsolv->sol[0].numeq_total,1,"DV");
+#ifdef PARALLEL 
+if (intforcerecv_a.Typ != cca_DV)
+{
+   intforcerecv = amdef("tmpintf",&intforcerecv_a,actsolv->sol[0].numeq_total,1,"DV");
+}
+if (intforcerecv_a.fdim < actsolv->sol[0].numeq_total)
+{
+   amdel(&intforcerecv_a);
+   intforcerecv = amdef("tmpintforce",&intforcerecv_a,actsolv->sol[0].numeq_total,1,"DV");
+}
+amzero(&intforcerecv_a);
+#endif
 /*======================================================================*/
 /*                        start of the iteration loop of this increment */
 /*======================================================================*/
@@ -748,14 +766,17 @@ container->dirich       = NULL;
 container->global_numeq = actsolv->sol[0].numeq_total;
 container->kstep        = kstep;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,container,action);
+/*--------------------------------------- allreduce the vector intforce */
+#ifdef PARALLEL 
+amzero(&intforcerecv_a);
+MPI_Allreduce(intforce,intforcerecv,actsolv->sol[0].numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+
 /* add internal forces to scaled external forces to get residual forces */
-assemble_vec(actintra,
-             &(actsolv->sysarray_typ[actsysarray]),
-             &(actsolv->sysarray[actsysarray]),
-             &(re[0]),
-             intforce,
-             -1.0
-             );
+assemble_vec(actintra, &(actsolv->sysarray_typ[actsysarray]), &(actsolv->sysarray[actsysarray]), &(re[0]), intforcerecv, -1.0 );
+#else
+/* add internal forces to scaled external forces to get residual forces */
+assemble_vec(actintra, &(actsolv->sysarray_typ[actsysarray]), &(actsolv->sysarray[actsysarray]), &(re[0]), intforce, -1.0 );
+#endif
 /*-------------- solve for out-of balance loads, put solution to rsd[2] */
 /*                                                         K * du2 = -R */
 /*                                                initial guess is zero */
