@@ -59,6 +59,10 @@ void f3_calele(
 {
 static ARRAY     eveln_a;  /* element velocities at (n) 		*/
 static DOUBLE  **eveln;
+/*NOTE: if there is no classic time rhs (as described in WAW) the array
+         eveln is misused and does NOT contain the velocity at time (n)
+	 but rather a linear combination of old velocities and 
+	 accelerations depending upon the time integration scheme!!!!! */
 static ARRAY     evelng_a; /* element velocities at (n+gamma)		*/
 static DOUBLE  **evelng;
 static ARRAY     epren_a;  /* element pressures at (n)  		*/
@@ -171,7 +175,11 @@ if (dynvar->nii+(*hasext)!=0)
 
 /*------------------------------- calculate element load vector edforce */
 fluid_caldirich(ele,edforce,estif,hasdirich,3);
-
+   
+/*----------------------------------------- calculate emass * vec(n) ---*/
+if (dynvar->nim)
+   f3_massrhs(ele,emass,eveln,eiforce); 
+   
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
