@@ -24,7 +24,6 @@ This routine controls everything which has something to do with a shell9
 element.
 </pre>
 \param *actfield        FIELD       (i)   my field
-\param *actpart         PARTITION   (i)   my partition
 \param *actintra        INTRA       (i)   my intra-communicator 
 \param *ele             ELEMENT     (i)   my element
 \param *estif_global    ARRAY       (i)   global stiffness matrix
@@ -43,7 +42,6 @@ element.
 
 *----------------------------------------------------------------------*/
 void shell9(FIELD       *actfield,
-            PARTITION   *actpart,
             INTRA       *actintra,
             ELEMENT     *ele,
             ARRAY       *estif_global,
@@ -55,23 +53,24 @@ void shell9(FIELD       *actfield,
 /*----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 /*----------------------------------------------------------------------*/
-INT          i;
 INT          imyrank;
-INT          inprocs;
 
 DOUBLE      *intforce;
 
 S9_DATA      actdata;
 MATERIAL    *actmat;
 
-INT          kintyp = container->kintyp;  /* kintyp 0: geo_lin */
-                                          /* kintyp 1: upd_lagr */
-                                          /* kintyp 2: tot_lagr */
-
+INT          kintyp;  /* kintyp 0: geo_lin */
+                      /* kintyp 1: upd_lagr */
+                      /* kintyp 2: tot_lagr */
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("shell9");
 #endif
 /*----------------------------------------------------------------------*/
+kintyp = container->kintyp;  /* kintyp 0: geo_lin */
+                             /* kintyp 1: upd_lagr */
+                             /* kintyp 2: tot_lagr */
 if (kintyp == 1) dserror("Wrong KINTYP: Upd_Lagr not implemented for shell9");
 /*----------------------------------------------------------------------*/
 if (intforce_global)
@@ -84,8 +83,10 @@ case calc_struct_init:
    s9init(actfield);
    s9static_keug(NULL,NULL,NULL,NULL,NULL,0,NULL,0,1);
    s9eleload(NULL,NULL,NULL,1);
-   s9jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,1,0,NULL,NULL);
+   s9jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,1,0,NULL);
    s9_stress(NULL,NULL,NULL,0,0,1);
+   s9_write_restart(NULL,0,NULL,1);
+   s9_read_restart(NULL,NULL,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
@@ -165,18 +166,28 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_stressreduce:
    /*------------------------------------- not necessary in sequentiell */
    if (actintra->intra_nprocs==1) goto end;
-   s9_stress_reduce(actfield,actpart,actintra,container->kstep);      
+   s9_stress_reduce(actfield,actintra,container->kstep);      
 break;/*----------------------------------------------------------------*/
 /*-----------------------------------------------------update variables */
 case calc_struct_update_istep:
+   actmat = &(mat[ele->mat-1]);
+   s9static_keug(ele,
+                 &actdata,
+                 actmat,
+                 estif_global,
+                 NULL,
+                 kintyp,
+                 intforce,
+                 container->kstep,
+                 2);
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------------------------write restart */
 case write_restart:
-   s9_write_restart(ele,container->handsize,container->handles);
+   s9_write_restart(ele,container->handsize,container->handles,0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------------------------read restart */
 case read_restart:
-   s9_read_restart(ele,container->handsize,container->handles);
+   s9_read_restart(ele,container->handles,0);
 break;/*----------------------------------------------------------------*/
 default:
    dserror("action unknown");
