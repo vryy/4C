@@ -374,6 +374,9 @@ if (fdyn->init>=1)
    amdel(&(fdyn->start));
 }
 
+/*--------- inherit the neuman conditions from design to discretization */
+for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
