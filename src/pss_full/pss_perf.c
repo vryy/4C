@@ -16,10 +16,12 @@ double cputime_thread();
 #include "../headers/standardtypes.h"
 #include <sys/time.h>
 
-#ifdef LINUX_MUENCH
+
+#if defined(HPUX_MUENCH) || defined(LINUX_MUENCH)
 #include <unistd.h>
 #include <sys/times.h>
 #endif
+
 
 #ifdef PERF
 static DOUBLE begtime[100];
@@ -91,13 +93,22 @@ DOUBLE perf_time ()
   ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
 #endif
 
+#ifdef HPUX_MUENCH
+  DOUBLE clk_tck;
+  struct tms buf;
+
+  times(&buf);
+  clk_tck = (DOUBLE)sysconf(_SC_CLK_TCK);
+  ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
+#endif
+
 #ifdef BULL
   struct timeval _tstart;
   DOUBLE t1;
 
   gettimeofday(&_tstart, NULL);
   t1 =  (double)_tstart.tv_sec + (double)_tstart.tv_usec/(1000*1000);
-  ret = t1;
+  ret = t1/((DOUBLE)sysconf(_SC_CLK_TCK));
 #endif
 
   /*----------------------------------------------------------------------*/
@@ -267,7 +278,9 @@ void perf_print (INT index, char string[], INT bezug, INT ops)
   ------------------------------------------------------------------------*/
 void perf_out ()
 {
-
+  INT i;
+  INT user_perf;
+  
   /* --------------- print out time counters */
   printf("%2s %25s: %7s %12s %5s%3s %8s %8s\n",
       "ID",
@@ -306,6 +319,15 @@ void perf_out ()
   perf_print(19,"exchange dofs",           0,1);
   perf_print(20,"solve system",            0,1);
   printf("%77s\n","-----------------------------------------------------------------------------");
+  user_perf = 0;
+  for (i=30; i<90; ++i) {
+    if (counter[i] > 0) {
+      perf_print(i, "temp perf slot", 0, 1);
+      user_perf = 1;
+    }
+  }
+  if (user_perf)
+    printf("-----------------------------------------------------------------------------\n");
   perf_print(95,"amdef",                   0,1);
   perf_print(94,"amredef",                 0,1);
   perf_print(93,"amdel",                   0,1);
