@@ -44,6 +44,9 @@ union
 /*--------------------------------- element sizes for stability parameter */
 DOUBLE             hk[3];    /*!< vel/pres/cont                           */
 struct _ARRAY      tau_old;
+
+/*----- flag, if there is a lif&drag or fsi coupling line to this element */
+INT                force_on;
 /*-------------------------- flag for turbulence  1=algebraic, 2=ke-model, 3=ko-model */
 INT                turbu;
 
@@ -66,6 +69,7 @@ struct _ARRAY      stress_ND;    /*!< nodal stresses                         */
 /*------------------------------------------------------- nodal curvature */
 struct _ARRAY      kappa_ND;
 } FLUID2;
+
 
 #endif
 /*! @} (documentation module close)*/
