@@ -122,6 +122,10 @@ mask_global_matrices();
 #ifdef PERF
   perf_end(15);
 #endif
+
+/*------------------- inherit local co-ordinate systems to the elements */
+locsys_inherit_to_node();
+
 /*------------------------------------------------ write general output */
 out_general();
 /*--------------------------------------------------- write mesh to gid */
