@@ -1,12 +1,56 @@
 /*!----------------------------------------------------------------------
-\file
-\brief 
+\file global_locsys.c
+\brief all routines for local co-systems
 
 <pre>
 Maintainer: Steffen Genkinger
             genkinger@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/genkinger/
             0711 - 685-6127
+
+General explanation:
+   Local co-systems may be used for defining tangential or normal
+   DBCs along inclined or even curved Lines/Surfaces, e.g. 
+   slip dirichlet condition for fluids along a curved wall.
+   In such a case the DBCs  cannot be prescribed in the XYZ-system
+   any more.
+
+   One defines a new co-system xyz* for the specific design object.
+   The DBCs in the inpute file are then given in this new co-system. 
+   The locsys information is inherited from the Dobjects to the nodes
+   and all elements belonging to one of this node get this 
+   information, too. (locsys_inherit_to_node).
+         
+Bringing in the locsys information into the solution:
+   All nodal sol_arrays are still in the XYZ co-system. The element 
+   matrix and the ele-RHS are also build in the XYZ-system.
+   This means before applying the dirichlet conditions one has to 
+   tranform the used sol-array to the xyz* system, then the prescribed
+   values are applied and afterwards one has to transform back the
+   sol array. (locsys_trans_sol_dirich)
+   
+   After building the element stiffness matrix and the ele-RHS, one has
+   to transform them to the xyz* system (before assembling!)
+   (locsys_trans).
+   
+   When calculating the RHS due to dirichlet conditions (condensation)
+   the prescribed values have to be in the xyz* co-system.
+   
+   In the resulting solution the values can be in different co-sys. 
+   After copying back them to the sol-arrays at the nodes the solution
+   at the nodes with a locsys have to be transformed to the XYZ system
+   (locsys_trans_sol)
+
+Final Remarks:
+   To summerise: in the nodal sol-arrays the values are stored in the
+   XYZ co-system. Temporarily one transforms them (all or just the
+   dirichlet values) to xyz*. After the calculation one immediatetely
+   transforms them back.
+
+   The whole procedure looks quite complicated. However I did not 
+   see another possiblity for the used fluid-solver. It might
+   be simpler, when only working with struct elements ...
+    
 </pre>
 
 *----------------------------------------------------------------------*/
