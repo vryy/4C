@@ -2,7 +2,7 @@
 # check the different solvers
 
 # aztec
-if grep '^AZTEC_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]*AZTEC_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$AZTEC_LIB" = "x" ] ; then
         echo $0: Warning: Variable AZTEC_LIB undefined but AZTEC_PACKAGE requested.        
     fi
@@ -11,7 +11,7 @@ if grep '^AZTEC_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
 fi
 
 # spooles
-if grep '^SPOOLES_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]*SPOOLES_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$SPOOLES_LIB" = "x" ] ; then
         echo $0: Warning: Variable SPOOLES_LIB undefined but SPOOLES_PACKAGE requested.
     fi
@@ -20,7 +20,7 @@ if grep '^SPOOLES_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
 fi
 
 # umfpack
-if grep '^UMFPACK' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]*UMFPACK' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$UMFPACK_LIB" = "x" ] ; then
         echo $0: Warning: Variable UMFPACK_LIB undefined but UMFPACK_PACKAGE requested.
     fi
@@ -29,7 +29,7 @@ if grep '^UMFPACK' "$definefile" 2>&1 > /dev/null ; then
 fi
 
 # visual2
-if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]*VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$VISUAL2_LIB" = "x" ] ; then
         echo $0: Error: Variable VISUAL2_LIB undefined but VISUAL2_PACKAGE requested.
         exit 1
@@ -43,7 +43,7 @@ if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
 fi
 
 # visual3
-if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]*VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
        echo $0: Error: VISUAL2 & VISUAL3 cannot linked into the same executable. 
        exit 1
