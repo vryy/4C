@@ -3,10 +3,10 @@
 \brief 
 
 <pre>
-Maintainer: Steffen Genkinger
-            genkinger@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/genkinger/
-            0711 - 685-6127
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -113,6 +113,20 @@ DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
   dstrc_enter("get_node_result_value");
 #endif
 
+  /* for debugging...
+  {
+    INT i, j;
+    for (i=0; i<actnode->sol.fdim; ++i) {
+      printf("%d ", i);
+      for (j=0; j<actnode->sol.sdim; ++j) {
+        printf("%f ", actnode->sol.a.da[i][j]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+  }
+  */
+    
   if (parse_position_descr(position, "sol", 2, args) == 1) {
     return actnode->sol.a.da[args[0]][args[1]];
   }
@@ -179,7 +193,7 @@ void global_result_test()
 {
   FIELD  *alefield,*structfield,*fluidfield;
   NODE   *actnode;
-  DOUBLE  actresult, givenresult;
+  DOUBLE  actresult;
   FILE   *err = allfiles.out_err;
   INT i;
   INT nerr = 0;
