@@ -33,6 +33,7 @@ MATERIAL    *actmat;
 dstrc_enter("shell8");
 #endif
 /*----------------------------------------------------------------------*/
+if (intforce_global)
 intforce = intforce_global->a.dv;
 /*------------------------------------------------- switch to do option */
 switch (*action)
