@@ -277,7 +277,7 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
 static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
 {
   INT i;
-  NODE* res = 0;
+  NODE* res = NULL;
   PARTDISCRET* pdis;
   
 #ifdef DEBUG 
@@ -381,6 +381,9 @@ void global_result_test()
   if (genprob.numresults>0) {
     /* let's do it in a fancy style :) */
     printf("\n[37;1mChecking results ...[m\n");
+    fprintf(err,"\n===========================================\n");
+    fprintf(err,"Checking results ...\n");
+
   }
 
   for (i=0; i<genprob.numresults; ++i) {
@@ -409,6 +412,8 @@ void global_result_test()
         actresult = get_node_result_value(actnode, res->position);
         nerr += compare_values(err, actresult, res->value, res);
       }
+      else
+        dswarning(1,12);
     }
     else if (res->element != -1) {
       /* We have a value at an element. Find the element. If we have
@@ -481,6 +486,9 @@ void global_result_test()
   if (nerr > 0) {
     dserror("Result check failed");
   }
+  else
+    fprintf(err,"===========================================\n");
+
 
 
 /*----------------------------------------------------------------------*/
