@@ -27,6 +27,19 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 
@@ -46,11 +59,17 @@ extern struct _MATERIAL  *mat;
 In this routine, the element velocities, pressure and external loads
 at time steps (n) and (n+1) are set.
 
+NOTE: Due to the removal of the classical time rhs the element history
+      data ehist is now set rather than the old element velocity.
+      Multilevel fluid has not been checked for months so it very likely
+      does not work properly!
+
+NOTE: Due to the use of the time rhs edeadn will not be needed any more!
+
 </pre>
 \param   *ele      ELEMENT	   (i)    actual element
-\param  **eveln    DOUBLE	   (o)    ele vels at time step n
+\param  **ehist    DOUBLE	   (o)    ele history
 \param  **evel     DOUBLE	   (o)    ele vels at time step n+1
-\param   *epren    DOUBLE	   (o)    ele pres at time step n
 \param   *epre     DOUBLE	   (o)    ele pres at time step n+1
 \param   *edeadn   DOUBLE          (o)    ele dead load at time step n
 \param   *edead    DOUBLE          (o)    ele dead load at time step n+1
@@ -59,9 +78,8 @@ at time steps (n) and (n+1) are set.
 
 ------------------------------------------------------------------------*/
 void f2_lsset(ELEMENT	      *ele,
-              DOUBLE	     **eveln,
+              DOUBLE	     **ehist,
 	      DOUBLE	     **evel,
-	      DOUBLE	      *epren,
 	      DOUBLE	      *epre,
 	      DOUBLE	      *edeadn,
 	      DOUBLE	      *edead,
@@ -82,10 +100,9 @@ dstrc_enter("f2_lsset");
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
- |       sol_increment[0][i]: solution at (n-1)                        |
- |	 sol_increment[1][i]: solution at (n)                          |
- |	 sol_increment[2][i]: solution at (n+g)                        |
- |	 sol_increment[3][i]: solution at (n+1)                        |
+ |       sol_increment[ipos.velnm][i]: solution at (n-1)               |
+ |	 sol_increment[ipos.veln][i]:  solution at (n)                 |
+ |	 sol_increment[ipos.velnp][i]: solution at (n+1)               |
  *---------------------------------------------------------------------*/
 
 fdyn = alldyn[genprob.numff].fdyn;
@@ -94,25 +111,15 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of large-scale element */
 {
   actnode=ele->node[i];
 /*------------------------------------ set element velocities at (n+1) */
-  evel[0][i]=actnode->sol_increment.a.da[3][0];
-  evel[1][i]=actnode->sol_increment.a.da[3][1];
+  evel[0][i]=actnode->sol_increment.a.da[ipos.velnp][0];
+  evel[1][i]=actnode->sol_increment.a.da[ipos.velnp][1];
 /*------------------------------------- set element pressures at (n+1) */
-  epre[i]   =actnode->sol_increment.a.da[3][PREDOF];
-} /* end of loop over nodes of large-scale element */
+  epre[i]   =actnode->sol_increment.a.da[ipos.velnp][PREDOF];
+/*----------------------------------- set history data for time rhs ---*/  
+  ehist[0][i]=actnode->sol_increment.a.da[ipos.hist][0];
+  ehist[1][i]=actnode->sol_increment.a.da[ipos.hist][1];
 
-if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
-                      -> velocities and pressure at (n) are needed ----*/
-{
-  for(i=0;i<ele->numnp;i++) /* loop nodes of large-scale element */
-  {
-    actnode=ele->node[i];
-/*-------------------------------------- set element velocities at (n) */
-    eveln[0][i]=actnode->sol_increment.a.da[1][0];
-    eveln[1][i]=actnode->sol_increment.a.da[1][1];
-/*--------------------------------------- set element pressures at (n) */
-    epren[i]   =actnode->sol_increment.a.da[1][PREDOF];
-  } /* end of loop over nodes of large-scale element */
-} /* endif (fdyn->nif!=0) */
+} /* end of loop over nodes of large-scale element */
 
 /*------------------------------------------------ check for dead load */
 actgsurf = ele->g.gsurf;
