@@ -41,20 +41,20 @@ extern struct _FIELD      *field;
 
 <pre>                                                        he    11/02
 </pre>
-\param      *actpart	        PARTITION    (i)
-\param	*actintra	        INTRA        (i)
-\param	*eleke		  ELEMENT      (i)    actual element
-\param	*elev		        ELEMENT      (i)    element with velocities
-\param	*estif_global    ARRAY           (o)    element stiffness matrix
-\param      *emass_global    ARRAY           (o)    element mass matrix
-\param	*etforce_global  ARRAY           (o)    element time force vector
-\param      *eiforce_global  ARRAY           (o)    element iter force vector
-\param      *edforce_global  ARRAY           (o)    element dirich force vector
-\param      *eproforce_global   ARRAY        (o)    element production force vector
-\param	*action	        CALC_ACTION  (i)
-\param	*hasdirich	        INT          (o)    flag
-\param      *hasext             INT          (o)    flag
-\param      *container	        CONTAINER    (i)
+\param  *actpart          PARTITION   (i)
+\param  *actintra         INTRA       (i)
+\param  *eleke            ELEMENT     (i)    actual element
+\param  *elev             ELEMENT     (i)    element with velocities
+\param  *estif_global     ARRAY       (o)    element stiffness matrix
+\param  *emass_global     ARRAY       (o)    element mass matrix
+\param  *etforce_global   ARRAY       (o)    element time force vector
+\param  *eiforce_global   ARRAY       (o)    element iter force vector
+\param  *edforce_global   ARRAY       (o)    element dirich force vector
+\param  *eproforce_global ARRAY       (o)    element production force vector
+\param  *action           CALC_ACTION (i)
+\param  *hasdirich        INT         (o)    flag
+\param  *hasext           INT         (o)    flag
+\param  *container        CONTAINER   (i)
 \return void
 
 ------------------------------------------------------------------------*/
