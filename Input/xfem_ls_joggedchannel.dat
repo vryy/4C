@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de/Members/irhan/
 //             089 - 289-15236
 // 
-// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE RESULTTEST D_LS D_XFEM
+// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE UMFPACK RESULTTEST D_LS D_XFEM
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)
@@ -183,6 +183,7 @@ OC_ECO 1 global   equality constraints
 NSTEP        20
 NFSTEP       10
 NFREINIT     1
+NFREPRN      1
 ITEMAX       10
 INIT         2
 IOP          0
@@ -234,19 +235,21 @@ EPSILON            0.025
 ------------------------------------------LS_MATERIAL_SECOND_PHASE
 MAT       2 MAT_fluid VISCOSITY 4.0 DENSITY 4.0 GAMMA 1.0 
 ------------------------------------------------------FLUID SOLVER
-SOLVER         Aztec_MSR
-AZSOLVE        BiCGSTAB
-AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+SOLVER         UMFPACK
+//SOLVER         SPOOLES_nonsym
+//SOLVER         Aztec_MSR
+//AZSOLVE        BiCGSTAB
+//AZPREC         ILU
+//AZREUSE        0  
+//AZDROP         0.0  
+//AZFILL         1.0  
+//AZGFILL        1  
+//AZTOL          1.0E-15  
+//AZITER         2500  
+//AZSUB          50  
+//AZOMEGA        1.0  
+//AZGRAPH        1  
+//AZPOLY         5  
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Aztec_MSR

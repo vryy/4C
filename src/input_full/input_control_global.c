@@ -1020,6 +1020,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->init=8;
       else if (strncmp(buffer,"KIM-MOIN-FLOW",13)==0) 
          fdyn->init=9;
+      else if (strncmp(buffer,"BREAKING-DAM",12)==0) 
+         fdyn->init=10;
       else
          dserror("INITIALFIELD unknown!");
    }   
@@ -1727,6 +1729,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
   /* set some parameters */
   lsdyn->lsdata->boundary_on_off = 0;
   lsdyn->lsdata->reinitflag = 0;
+  lsdyn->lsdata->print_on_off = 0;  
   /* read in lsdyn */
   if (frfind("-LEVELSET DYNAMIC")==0) dserror("frfind: LEVELSET DYNAMIC not in input file");
   frread();
@@ -1736,6 +1739,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     frint("NSTEP", &(lsdyn->nstep), &ierr);
     frint("NFSTEP", &(lsdyn->nfstep), &ierr);
     frint("NFREINIT", &(lsdyn->nfreinit), &ierr);    
+    frint("NFREPRN", &(lsdyn->nfreprn), &ierr);    
     frint("ITEMAX", &(lsdyn->itemax), &ierr);	
     frint("INIT", &(lsdyn->init), &ierr);
     frint("IOP", &(lsdyn->iop), &ierr);

@@ -152,9 +152,14 @@ void ls_main(
         /* polygonize the elements cut by the interface */
         frontlsflag = front_ls_polygonize;
         ls_update(frontlsflag);
-        /* write front into file */
-        frontlsflag = front_ls_write;
-        ls_update(frontlsflag);
+        if (lsdyn->lsdata->print_on_off==1)
+        {
+          /* write front into file */
+          frontlsflag = front_ls_write;
+          ls_update(frontlsflag);
+          /* turn off print flag */
+          lsdyn->lsdata->print_on_off = 0;
+        }
         break;
 /*------------------------------------------------------------ finalize */
       case ls_finaphase:

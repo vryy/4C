@@ -85,6 +85,7 @@ void ls_dyn()
   INT                numff;
   INT                numls;
   INT                actcurve;
+  INT                pcnt = 0;
 
   LS_GEN_DATA       *lsdata;
   LSFLAG             lsflag;
@@ -190,9 +191,19 @@ void ls_dyn()
       }
     }
   }
+
   /* update level set module */
   if (lsdyn->step>lsdyn->nfstep)
   {
+    /* increment the print counter (used to print intermediate results into files) */
+    pcnt++;
+    if (pcnt==lsdyn->nfreprn)
+    {
+      if (lsdyn->lsdata->print_on_off!=0) dserror("lsdyn->lsdata->print_on_off!=0");
+      /* turn on print flag */
+      lsdyn->lsdata->print_on_off = 1;
+      pcnt = 0;
+    }
     lsflag = ls_updtphase;
     ls_main(lsflag);
   }

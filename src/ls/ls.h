@@ -107,6 +107,7 @@ typedef struct _LS_DYNAMIC
   INT 	                  nstep;       /* number of time steps */
   INT 	                  nfstep;      /* number of fluid only time steps */
   INT 	                  nfreinit;    /* frequency of reinitialization */
+  INT 	                  nfreprn;     /* frequency of print */  
   INT  	                  itemax;      /* maximum num. of itn. at a certain time step */
   INT                     iop;         /* time integration scheme */
   INT	                  ite;         /* iteration scheme */	
@@ -179,6 +180,7 @@ typedef struct _LS_GEN_DATA
 
   INT        boundary_on_off;     /* treatment of boundary */
   INT        reconstruct_on_off;  /* flag used in reconstruction phase */
+  INT        print_on_off;        /* flag used to control print out */  
 } LS_GEN_DATA;
 
 
