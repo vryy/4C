@@ -830,7 +830,7 @@ void spo_make_index(
     {
       ii_iscouple = 0;
       ii_owner    = -1;
-      add_msr_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
+      add_spo_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
     }
 #endif
 
