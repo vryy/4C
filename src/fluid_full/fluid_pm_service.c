@@ -11,6 +11,19 @@
 #include "fluid_prototypes.h"
 #include "fluid_pm_prototypes.h"
 #include "../fluid2_pro/fluid2pro.h"
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 /*----------------------------------------------------------------------*
 \brief  matrix product mat1 * lumped mat2
 
@@ -333,7 +346,40 @@ dstrc_exit();
 #endif
 return;
 }
+/*!---------------------------------------------------------------------
+\brief init positions in sol_increment 
 
+<pre>                                                        chfoe 01/05
+
+This routine inits the positions in sol_increment in the case of 
+projection method.
+Unused flags are set to '-1' in order to detect misuse easily.
+
+</pre>
+\return void
+
+------------------------------------------------------------------------*/
+void fluid_init_pos_pm(void)
+{
+#ifdef DEBUG
+  dstrc_enter("fluid_init_pos_pm");
+#endif
+
+/*---------------------------------------- adaptive time stepping ---*/
+ipos.veln  = 0; 
+ipos.velnp = 1;
+ipos.velnm =-1; 
+ipos.hist  =-1; 
+ipos.accnm =-1;
+ipos.accn  =-1;
+ipos.pred  =-1;
+ipos.terr  =-1;
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
 
 #endif
 /*! @} (documentation module close)*/

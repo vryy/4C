@@ -13,7 +13,7 @@ Maintainer: Steffen Genkinger
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID
+#ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "fluid_prototypes.h"
@@ -90,6 +90,19 @@ extern struct _CURVE *curve;
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 
@@ -372,9 +385,10 @@ if (ioflags.fluid_vis==1 )
 amdef("time",&time_a,1000,1,"DV");
 
 /*---------------------------------------------- initialise fluid field */
-fluid_init(actpart,actintra,actfield, 0,action,&container,4,str);
-fluid_init(actpart,actintra,actfield, 1,action,&container,4,str);
+fluid_init(actpart,actintra,actfield, 0,action,&container,2,str);
+fluid_init(actpart,actintra,actfield, 1,action,&container,2,str);
 actpos=0;
+fluid_init_pos_pm();
 
 /*---------------------------------------- init all applied time curves */
 for (actcurve=0; actcurve<numcurve; actcurve++)
@@ -523,7 +537,7 @@ case 1:
    fluid_setdirich_parabolic(actfield);
 break;
 case 2:
-   fluid_setdirich(actfield,3);
+   fluid_setdirich(actfield,ipos.velnp);
 break;
 case 3:
    fluid_setdirich_cyl(actfield);
@@ -548,11 +562,9 @@ amzero(&fdirich_a);
  | within the time loop.                                                 |
  *-----------------------------------------------------------------------*/
 *action = calc_fluid_f2pro_rhs_both;
-container.fiterhs      = fvelrhs1;
+container.frhs         = fvelrhs1;
 container.nii          = 1;
-container.ftimerhs     = fvelrhs2;
-container.nif          = 1;
-container.nim          = 0;
+container.fvelrhs2     = fvelrhs2;
 container.fidrichrhs   = fdirich;
 container.global_numeq = numeq_total[veldis];
 container.kstep        = 0;
@@ -631,12 +643,12 @@ solver_control(actsolv, actintra,
  | reduced gradient matrix but we believe that full A matrix is a       |
  | better approximation to the laplace operator over the whole domain   |                              |
  *----------------------------------------------------------------------*/
-solserv_result_incre(actfield,actintra,sol_v,3,
+solserv_result_incre(actfield,actintra,sol_v,ipos.velnp,
                      &(actsolv->sysarray[k_array]),
                      &(actsolv->sysarray_typ[k_array]),veldis);
 
 /*--------------------------------------- form the full velocity vector */
-fluid_pm_fullvel(actfield,veldis,fullvel,3);
+fluid_pm_fullvel(actfield,veldis,fullvel,ipos.velnp);
 
 /*------------------------------------- redistribute sol_v to resultvel */
 solserv_reddistvec(sol_v,
@@ -710,7 +722,7 @@ assemble_vec(actintra,
              1.0);
 
 /*---------------------- return divergence free velocities to the nodes */
-solserv_result_incre(actfield,actintra,sol_v,3,
+solserv_result_incre(actfield,actintra,sol_v,ipos.velnp,
                      &(actsolv->sysarray[k_array]),
                      &(actsolv->sysarray_typ[k_array]),veldis);
 
@@ -719,19 +731,19 @@ solserv_result_incre(actfield,actintra,sol_v,3,
 solserv_add_vec(sol_p,sol_pnew,TWO/fdyn->dta);
 
 /*--------------------------------- return pressure values to the nodes */
-solserv_result_incre(actfield,actintra,sol_pnew,3,
+solserv_result_incre(actfield,actintra,sol_pnew,ipos.velnp,
                      &(presolv->sysarray[0]),
                      &(presolv->sysarray_typ[0]),predis);
 
 /*-------- copy solution from sol_increment[3][j] to sol_increment[1[j] */
-solserv_sol_copy(actfield,veldis,node_array_sol_increment,node_array_sol_increment,3,1);
-solserv_sol_copy(actfield,predis,node_array_sol_increment,node_array_sol_increment,3,1);
+solserv_sol_copy(actfield,veldis,node_array_sol_increment,node_array_sol_increment,ipos.velnp,ipos.veln);
+solserv_sol_copy(actfield,predis,node_array_sol_increment,node_array_sol_increment,ipos.velnp,ipos.veln);
 
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
            and transform kinematic to real pressure --------------------*/
-solserv_sol_copy(actfield,veldis,node_array_sol_increment,node_array_sol,3,actpos);
-solserv_sol_copy(actfield,predis,node_array_sol_increment,node_array_sol,3,actpos);
+solserv_sol_copy(actfield,veldis,node_array_sol_increment,node_array_sol,ipos.velnp,actpos);
+solserv_sol_copy(actfield,predis,node_array_sol_increment,node_array_sol,ipos.velnp,actpos);
 fluid_transpres(actfield,predis,0,actpos,predof,0);
 
 /*------------------------- copy pressure from pre discr. to vel discr. */
