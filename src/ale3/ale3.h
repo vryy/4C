@@ -26,6 +26,10 @@ double        wgts[3];         /* weights at natural coordinates r */
 double        xgpt[3];         /* natural coordinates t of gaussian points */
 double        wgtt[3];         /* weights at natural coordinates r */
 } ALE3_DATA;
+/*----------------------------------------------------------------------*
+ | number of time curves for ale elements                    mn 8/02    |
+ *----------------------------------------------------------------------*/
+#define ALENUMTIMECURVE (5)
 
 /*----------------------------------------------------------------------*
  |  PROTOTYPES OF ALL ALE ROUTINES                       m.gee 11/01    |

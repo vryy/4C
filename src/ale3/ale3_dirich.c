@@ -1,8 +1,7 @@
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
-#define ONE (1.0)
-#define NUMTIMECURVE (5)
+#include "ale3.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -31,7 +30,7 @@ int                   i,j;
 int                   numnp_total;
 int                   numele_total;
 int                   actcurve;
-double                timefac[NUMTIMECURVE];
+double                timefac[ALENUMTIMECURVE];
 double                T;
 double                acttimefac;
 double                initval;
@@ -65,7 +64,7 @@ for (i=0;i<numnp_total;i++)
          continue;
       actcurve = actgnode->dirich->curve.a.iv[j]-1;
       if (actcurve<0)
-         acttimefac = ONE;
+         acttimefac = 1.0;
       else
          acttimefac = timefac[actcurve];
       initval  = actgnode->dirich->dirich_val.a.dv[j];               
