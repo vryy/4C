@@ -199,6 +199,8 @@ typedef char      CHAR;
 
 #define faddmsr             faddmsr_
 #define faddmsrp            faddmsrp_
+#define faddmsrd            faddmsrd_
+#define faddmsrdp           faddmsrdp_
 
 #endif
 

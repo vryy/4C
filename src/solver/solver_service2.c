@@ -917,7 +917,13 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    for (j=0; j<actnode->numdf; j++)
    {
       dof = actnode->dof[j];
+#ifndef SOLVE_DIRICH
       if (dof>=numeq_total) continue;
+#else
+      if (actnode->gnode->dirich!=NULL &&
+          actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+#endif
       actnode->sol.a.da[place][j] = result[dof];
    }
 }
@@ -977,7 +983,13 @@ for (i=0; i<actfield->dis[ndis].numnp; i++)
    for (j=0; j<actnode->numdf; j++)
    {
       dof = actnode->dof[j];
+#ifndef SOLVE_DIRICH
       if (dof>=numeq_total) continue;
+#else
+      if (actnode->gnode->dirich!=NULL &&
+          actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+#endif
       actnode->sol_increment.a.da[place][j] = result[dof];
    }
 }
@@ -1037,7 +1049,13 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    for (j=0; j<actnode->numdf; j++)
    {
       dof = actnode->dof[j];
+#ifndef SOLVE_DIRICH
       if (dof>=numeq_total) continue;
+#else
+      if (actnode->gnode->dirich!=NULL &&
+          actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+#endif
       actnode->sol_residual.a.da[place][j] = result[dof];
    }
 }
@@ -1094,7 +1112,13 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    for (j=0; j<actnode->numdf; j++)
    {
       dof = actnode->dof[j];
+#ifndef SOLVE_DIRICH
       if (dof>=numeq_total) continue;
+#else
+      if (actnode->gnode->dirich!=NULL &&
+          actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+#endif
       actnode->sol_mf.a.da[place][j] = result[dof];
    }
 }

@@ -235,6 +235,10 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 }
 
 /*--------------------------------------------------------- assign dofs */
+
+/* dirichlet conditioned dofs are not solved for */
+
+#ifndef SOLVE_DIRICH
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
   actnode = &(actfield->dis[0].node[j]);
@@ -259,9 +263,12 @@ for (j=0; j<actfield->dis[0].numnp; j++)
       numklay = (actnode->numdf-3)/3;
       for (i=1; i<numklay; i++)
       {
-        actnode->gnode->dirich->dirich_onoff.a.iv[3+3*i] = actnode->gnode->dirich->dirich_onoff.a.iv[3]; /*wx*/
-        actnode->gnode->dirich->dirich_onoff.a.iv[4+3*i] = actnode->gnode->dirich->dirich_onoff.a.iv[4]; /*wy*/
-        actnode->gnode->dirich->dirich_onoff.a.iv[5+3*i] = actnode->gnode->dirich->dirich_onoff.a.iv[5]; /*wz*/
+        actnode->gnode->dirich->dirich_onoff.a.iv[3+3*i]   /*wx*/
+          = actnode->gnode->dirich->dirich_onoff.a.iv[3];
+        actnode->gnode->dirich->dirich_onoff.a.iv[4+3*i]   /*wy*/
+          = actnode->gnode->dirich->dirich_onoff.a.iv[4];
+        actnode->gnode->dirich->dirich_onoff.a.iv[5+3*i]   /*wz*/
+          = actnode->gnode->dirich->dirich_onoff.a.iv[5];
       }
     }
 
@@ -351,9 +358,33 @@ for (j=0; j<actfield->dis[0].numnp; j++)
    }
 }
 actfield->dis[0].numdf = counter;
-/*----------------------------------------------------------------------*/
+
+#else
+
+printf("\nSolve also for dirichlet b.c.!!\n\n");
+
+/* include dirichlet conditioned dofs in the global matrix */
+for (j=0; j<actfield->dis[0].numnp; j++)
+{
+  actnode = &(actfield->dis[0].node[j]);
+
+  for (l=0; l<actnode->numdf; l++)
+  {
+    actnode->dof[l] = counter;
+    counter++;
+  }
+}
+
+actfield->dis[0].numeq = counter;
+actfield->dis[0].numdf = counter;
+
+#endif
+
+
 #ifdef DEBUG
 dstrc_exit();
 #endif
+
+
 return;
 } /* end of assign_dof */

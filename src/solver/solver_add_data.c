@@ -34,6 +34,14 @@ enum  _SPARSE_TYP    sysa1_typ;
 union _SPARSE_ARRAY *sysa1;
 enum  _SPARSE_TYP    sysa2_typ;
 union _SPARSE_ARRAY *sysa2;
+
+  DOUBLE    **estif;                /* element matrix to be added to system matrix */
+  DOUBLE    **emass;                /* element matrix to be added to system matrix */
+#ifdef SOLVE_DIRICH
+  INT         i,j,counter;
+  INT         numdf;
+#endif
+
 #ifdef DEBUG
 dstrc_enter("assemble");
 #endif
@@ -44,6 +52,7 @@ if (sysarray1>=0)
 {
    sysa1       = &(actsolv->sysarray[sysarray1]);
    sysa1_typ   =   actsolv->sysarray_typ[sysarray1];
+   estif       = elearray1->a.da;
 }
 else
 {
@@ -54,12 +63,35 @@ if (sysarray2>=0)
 {
    sysa2     = &(actsolv->sysarray[sysarray2]);
    sysa2_typ =   actsolv->sysarray_typ[sysarray2];
+   emass     = elearray2->a.da;
 }
 else
 {
    sysa2     = NULL;
    sysa2_typ = sparse_none;
 }
+
+/* for SOLVE_DIRICH, manipulate the element matrices */
+#ifdef SOLVE_DIRICH
+if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix)
+{
+  counter = 0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      if (actele->node[i]->gnode->dirich!=NULL &&
+          actele->node[i]->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+      {
+        estif[counter][counter] = 9.99e29;
+        if (sysarray2>=0) emass[counter][counter] = 9.99e29;
+      }
+      counter++;
+    }
+  }
+}
+#endif
+
 /*----------------------------------------------------------------------*/
 if (assemble_action==assemble_two_matrix)
 {

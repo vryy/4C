@@ -113,7 +113,9 @@ static  INT        *invbindx = NULL;
 
   INT         lm[MAXNOD*MAXDOFPERNODE];
   INT         owner[MAXNOD*MAXDOFPERNODE];
-
+#ifdef SOLVE_DIRICH
+  INT         dirich[MAXNOD*MAXDOFPERNODE];
+#endif
 
 
   eiforce = eiforce_global.a.dv;
@@ -235,6 +237,15 @@ static  INT        *invbindx = NULL;
 #ifdef PARALLEL
               owner[counter] = actele->node[i]->proc+1;
 #endif
+
+#ifdef SOLVE_DIRICH
+              if (actele->node[i]->gnode->dirich!=NULL &&
+                  actele->node[i]->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+                dirich[counter] = 1;
+              else
+                dirich[counter] = 0;
+#endif
+
               counter++;
             }
           }
@@ -252,6 +263,9 @@ static  INT        *invbindx = NULL;
 #ifdef PERF
     perf_begin(67);
 #endif
+
+
+#ifndef SOLVE_DIRICH
 
 #ifndef PARALLEL
           faddmsr(
@@ -290,6 +304,51 @@ static  INT        *invbindx = NULL;
               &loopl,
               &l);
 #endif
+
+#else
+
+#ifndef PARALLEL
+          faddmsrd(
+              estif_f,
+              &lm[0],
+              &owner[0],
+              &dirich[0],
+              invupd,
+              bindx,
+              invbindx,
+              val,
+              &myrank,
+              &nprocs,
+              &numeq_total,
+              &numeq,
+              &numnp,
+              &nd,
+              &aloopl,
+              &loopl,
+              &l);
+#else
+          faddmsrdp(
+              estif_f,
+              &lm[0],
+              &owner[0],
+              &dirich[0],
+              invupd,
+              bindx,
+              invbindx,
+              val,
+              &myrank,
+              &nprocs,
+              &numeq_total,
+              &numeq,
+              &numnp,
+              &nd,
+              &aloopl,
+              &loopl,
+              &l);
+#endif
+
+#endif
+
 
 #ifdef PERF
     perf_end(67);
