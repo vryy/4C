@@ -434,7 +434,6 @@ $(OBJS14):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
-		@echo "MainMake is back."
 #
 $(OBJS15):     
 		@echo "Making $@ ..."
