@@ -98,7 +98,10 @@ INT                iop;          /* !<time integration method */
 INT                numcont;      /*!< number of continuation steps */
 INT                uppss;        /*!< update pss file every n steps */
 INT                upout;        /*!< store results every n steps */      
+INT                upres;        /*!< store results in .flavia.res every n steps */      
+INT                res_write_evry; /*!< write restart every n steps */
 INT                nstep;        /*!< number of timesteps */
+INT                resstep;      /*!< restart step */
 INT                step;         /*!< the actual step */
 INT                stepke;       /*!< the actual step for kappa-epsilon*/
 INT                ite;          /*!< nonlinear iteration scheme */
@@ -130,7 +133,6 @@ DOUBLE             gamma;        /*!< time integration constant */
 DOUBLE             ittol;        /*!< tolerance for iteration convergence check */
 DOUBLE             sttol;        /*!< tolerance for steady state check */
 DOUBLE             thetas;       /*!< constant for starting algorithm) */
-struct _ARRAY      start;        /*!< starting field */
 struct _FLUID_DYN_CALC dynvar;
 } FLUID_DYNAMIC;
 

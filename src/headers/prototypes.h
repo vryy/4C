@@ -76,6 +76,85 @@ void ntadev(INT argc, char *argv[]);
 /*----------------------------------------------------------------------*
  |  restart_control.c                                    m.gee 02/02    |
  *----------------------------------------------------------------------*/
+void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,                  
+                                STRUCT_DYN_CALC *dynvar,
+                                FIELD           *actfield,
+                                PARTITION       *actpart,
+                                INTRA           *actintra,
+                                CALC_ACTION     *action,
+                                INT nrhs,  DIST_VECTOR *rhs,
+                                INT nsol,  DIST_VECTOR *sol,
+                                INT ndis,  DIST_VECTOR *dispi,
+                                INT nvel,  DIST_VECTOR *vel,
+                                INT nacc,  DIST_VECTOR *acc,
+                                INT nfie,  DIST_VECTOR *fie,
+                                INT nwork, DIST_VECTOR *work,
+                                ARRAY *intforce_a,
+                                ARRAY *dirich_a,
+                                CONTAINER    *container);
+void restart_read_nlnstructdyn(INT restart,
+                               STRUCT_DYNAMIC  *sdyn,
+                               STRUCT_DYN_CALC *dynvar,
+                               FIELD           *actfield,
+                               PARTITION       *actpart,
+                               INTRA           *actintra,
+                               CALC_ACTION     *action,
+                               INT nrhs,  DIST_VECTOR *rhs,
+                               INT nsol,  DIST_VECTOR *sol,
+                               INT ndis,  DIST_VECTOR *dispi,
+                               INT nvel,  DIST_VECTOR *vel,
+                               INT nacc,  DIST_VECTOR *acc,
+                               INT nfie,  DIST_VECTOR *fie,
+                               INT nwork, DIST_VECTOR *work,
+                               ARRAY *intforce_a,
+                               ARRAY *dirich_a,
+                               CONTAINER    *container);
+void restart_write_nlnstructstat(STATIC_VAR     *statvar, 
+                FIELD           *actfield,  
+                PARTITION       *actpart,   
+                INTRA           *actintra,  
+                CALC_ACTION     *action,    
+                INT kstep,                  
+                INT nrhs,  DIST_VECTOR *rhs,
+                INT nsol,  DIST_VECTOR *sol,
+                INT ndis,  DIST_VECTOR *dispi,
+                CONTAINER    *container);	
+void restart_read_nlnstructstat(INT restart,   
+                STATIC_VAR     *statvar,                         
+                STANLN          *nln_data,     
+                FIELD           *actfield,     
+                PARTITION       *actpart,      
+                INTRA           *actintra,     
+                CALC_ACTION     *action,       
+                INT nrhs,  DIST_VECTOR *rhs,   
+                INT nsol,  DIST_VECTOR *sol,   
+                INT ndis,  DIST_VECTOR *dispi, 
+                CONTAINER    *container);
+void restart_write_fluiddyn(FLUID_DYNAMIC   *fdyn,                  
+                            FIELD	    *actfield,
+                            PARTITION	    *actpart,
+                            INTRA	    *actintra,
+			    CALC_ACTION     *action,
+			    CONTAINER       *container);
+void restart_read_fluiddyn(INT restart,
+                           FLUID_DYNAMIC   *fdyn,
+                           FIELD	   *actfield,
+                           PARTITION	   *actpart,
+                           INTRA	   *actintra,
+			   CALC_ACTION     *action,
+			   CONTAINER       *container);
+void restart_write_aledyn(ALE_DYNAMIC       *adyn,                  
+                            FIELD	    *actfield,
+                            PARTITION	    *actpart,
+                            INTRA	    *actintra);
+void restart_read_aledyn(INT restart,
+                           ALE_DYNAMIC   *adyn,
+                           FIELD	   *actfield,
+                           PARTITION	   *actpart,
+                           INTRA	   *actintra);
+void restart_write_fsidyn(FSI_DYNAMIC       *fsidyn);
+void restart_read_fsidyn(INT restart,
+                         FSI_DYNAMIC   *fsidyn);
 /*----------------------------------------------------------------------*
  |  map_node_find.c                                      m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -116,8 +195,9 @@ void out_fluidtu(FIELD *actfield, INTRA *actintra, INT step, INT place);
 void out_gid_sol_init(void);
 void out_gid_domains(FIELD *actfield);
 void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, INT step,
-                 INT place);
+                 INT place, DOUBLE time);
 void out_fsi(FIELD *fluidfield);
+void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield);
 /*----------------------------------------------------------------------*
  |  out_gid_soldyn.c                                     m.gee 5/03     |
  *----------------------------------------------------------------------*/
@@ -133,6 +213,11 @@ void out_gid_allcoords(FILE *out);
  *----------------------------------------------------------------------*/
 void out_monitor(FIELD *actfield, INT numf);
 void out_area(ARRAY totarea_a); 
+
+/*----------------------------------------------------------------------*
+ |  out_checkfilesize.c                                   genk 08/03    |
+ *----------------------------------------------------------------------*/
+void out_checkfilesize(INT opt); 
 /*----------------------------------------------------------------------*
  |  inherit_insidedesign.c                                  m.gee 3/02  |
  *----------------------------------------------------------------------*/
