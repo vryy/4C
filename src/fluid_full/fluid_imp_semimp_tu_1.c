@@ -210,6 +210,11 @@ dynvar->coord_scale[1] = fdyn->coord_scale[1];
 dynvar->washvel    = 1.0;
 str                = str_none;
 dynvar->acttime    = ZERO;
+
+/*-------- this is no relaxation parameter solution and no gen alpha ---*/
+container.is_relax = 0;
+dynvar->gen_alpha = 0;
+
 /*--------------------------------------------- set max. iterationsteps */
 fdyn->itemax_ke    = 5*fdyn->itemax;
 
