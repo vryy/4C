@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# Start an mpi program on linux and open a debugger for every process.
+#
+# Use this script just like you would use mpirun.
+#
+# However, before it works you'll have find the file
+# /usr/lib/mpich/bin/mpirun_dbg.ddd (or wherever mpich is installed on 
+# your machine) and add the line
+#
+#    echo "next" >> $dbgfile
+#
+# just below the line
+#
+#    echo "run" >> $dbgfile
+#
+# This will cause the first debugger to run ccarat long enough that
+# all processes are started.
+#
+
+
+if [ $1 != "-np" ] || [ ! -x $3 ]; then
+  echo "usage: $0 -np np ccarat inputfile outputfile"
+  exit 1
+fi
+
+NP=$(($2-1))
+ccarat=`basename "$3"`
+
+# You want to do this regularly. However if you execute it here
+# you'll kill any ccarat instance currently running.
+#killall $ccarat
+
+# Start the first debugger. It'll start all processes.
+mpirun -dbg=ddd $* &
+
+# Wait until the child processes have been created. That's cruical.
+# If the script fails you might have to increase this time.
+sleep 5
+
+for i in `seq 1 $NP`; do
+  # find the right process number
+  # We need to get enough information out of ps.
+  # There are actually two processes for every working prodess.
+  # We need to get the parant's process number.
+  p=`ps w --cols 1000 -C $ccarat | grep "p4rmrank $i" | awk '{ if ($3 == "Ss") { print $1 } }'`
+
+  # Start a new ddd instance with ccarat and attach to process $p.
+  ddd "$3" $p &
+done
