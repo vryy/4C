@@ -37,55 +37,22 @@ void caldyn()
 dstrc_enter("caldyn");
 #endif
 /*----------------------------------------------------------------------*/
-switch (genprob.probtyp)
-{
-case prb_structure:
-    if (alldyn[0].sdyn->Typ == centr_diff)
-    {
-       dyn_nln_stru_expl();/* central difference time integration */
-    }
-    if (alldyn[0].sdyn->Typ == gen_alfa)
-    {
-       dyn_nln_structural();/* generalized alfa time integration */
-    }
-    if (alldyn[0].sdyn->Typ == Gen_EMM)
-    {
-#ifdef GEMM
-       dyn_nln_gemm(); /* Generalized Energy-Momentum time integration */
-#endif 
-    } 
-break;
 
-#ifdef D_FLUID
-case prb_fluid:
-    dyn_fluid();
-break;
-#endif
-
-#ifdef D_FSI
-case prb_fsi:
-    dyn_fsi(0);
-break;    
-#endif
-
-#ifdef D_ALE
-case prb_ale:
-    dyn_ale();
-break;
-#endif
-
-#ifdef D_LS
-case prb_twophase:
-case prb_levelset:  
-    ls_dyn();
-break;
-#endif 
-default:
-    dserror("Dynamic solution of unknown Problemtyp requested");
-break;
+if (alldyn[0].sdyn->Typ == centr_diff) {
+  /* central difference time integration */
+  dyn_nln_stru_expl();
 }
-
-
+else if (alldyn[0].sdyn->Typ == gen_alfa) {
+  /* generalized alfa time integration */
+  dyn_nln_structural();
+}
+else if (alldyn[0].sdyn->Typ == Gen_EMM) {
+#ifdef GEMM
+  dyn_nln_gemm(); /* Generalized Energy-Momentum time integration */
+#else
+  dserror("GEMM not supported");
+#endif 
+}
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

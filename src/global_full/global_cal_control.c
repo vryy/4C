@@ -122,31 +122,65 @@ if (par.myrank==0)
    }
 }
 /*------------------------ program to control execution of optimization */
-#ifdef D_OPTIM                   /* include optimization code to ccarat */
-if(genprob.probtyp==prb_opt)
-{
-  caloptmain();
-  goto end;
-}   
-#endif
 /*------------------ call control programs of static or dynamic control */
-if (genprob.timetyp==time_static)
-{
-     calsta();
+
+switch (genprob.probtyp) {
+case prb_structure:
+
+  switch (genprob.timetyp) {
+  case time_static:
+    calsta();
+    break;
+  case time_dynamic:
+    caldyn();
+    break;
+  default:
+    dserror("Unspecified time handling");
+  }
+
+  break;
+
+#ifdef D_FLUID
+case prb_fluid:
+  dyn_fluid();
+  break;
+#endif
+
+#ifdef D_FSI
+case prb_fsi:
+  dyn_fsi(0);
+  break;    
+#endif
+
+#ifdef D_ALE
+case prb_ale:
+  dyn_ale();
+  break;
+#endif
+
+#ifdef D_LS
+case prb_twophase:
+case prb_levelset:  
+  ls_dyn();
+  break;
+#endif
+
+#ifdef D_OPTIM
+case prb_opt:
+  caloptmain();
+  break;
+#endif
+  
+default:
+  dserror("solution of unknown problemtyp requested");
+break;
 }
-if (genprob.timetyp==time_dynamic)
-{
-     caldyn(); 
-}
+
 /*------------------------------------------------------- check results */
 #ifdef RESULTTEST
 global_result_test();
 #endif
 
-
-#ifdef D_OPTIM                   /* include optimization code to ccarat */
-end:
-#endif
 /*--------------------------------------------------- write warnings ---*/
 dswarning(2,0);
 /*----------------------------------------------------------------------*/
