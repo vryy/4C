@@ -130,8 +130,8 @@ double          dirichfacs[10];     /* factors needed for dirichlet-part of rhs 
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
-CONTAINER       container;          /*!< contains variables defined in container.h */
-container.isdyn = 1;                /*!< dynamic calculation */
+CONTAINER       container;          /* contains variables defined in container.h */
+container.isdyn = 1;                /* dynamic calculation */
 
 #ifdef DEBUG 
 dstrc_enter("dyn_nln_structural");
@@ -481,7 +481,7 @@ if (restart)
                              3            , work        ,
                              &intforce_a,
                              &dirich_a,
-                             &container);     /*!< contains variables defined in container.h */
+                             &container);     /* contains variables defined in container.h */
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
@@ -867,7 +867,7 @@ restart_write_nlnstructdyn(sdyn,
                            3            , work        ,
                            &intforce_a,
                            &dirich_a,
-                           &container);     /*!< contains variables defined in container.h */
+                           &container);     /* contains variables defined in container.h */
 /*----------------------------------------------------- print time step */
 if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
 

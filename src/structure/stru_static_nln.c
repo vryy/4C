@@ -111,8 +111,8 @@ STANLN        nln_data;           /* structure to store and pass data for stanln
 
 CALC_ACTION  *action;             /* pointer to the structures cal_action enum */
 
-CONTAINER     container;          /*!< contains variables defined in container.h */
-container.isdyn = 0;              /*!< static computation */
+CONTAINER     container;          /* contains variables defined in container.h */
+container.isdyn = 0;              /* static computation */
 
 #ifdef DEBUG 
 dstrc_enter("stanln");
@@ -278,7 +278,7 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
-                           &container);  /*!< contains variables defined in container.h */ 
+                           &container);  /* contains variables defined in container.h */ 
    /*--------------- give the restartinfo to the associated variables --*/
      kstep = restart; 
    /*--------------------------------------------- switch restart off --*/
@@ -381,7 +381,7 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
-                           &container);  /*!< contains variables defined in container.h */ 
+                           &container);  /* contains variables defined in container.h */ 
     break;
     case control_arc:                            /* arclenght control */
       dserror("restart for arclengh not yet impl.");
@@ -439,7 +439,7 @@ void conpre(  /*!< rueckgabe int da kein prototyp definiert wurde! */
             int            cdof,         /* number of the dof to be controlled */
             STANLN        *nln_data,     /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,   /* type of control algorithm */
-            CONTAINER     *container 	 /*!< contains variables defined in container.h */
+            CONTAINER     *container 	 /* contains variables defined in container.h */
            )
 {
 int                  i;                /* a counter */
@@ -474,7 +474,7 @@ calelm(actfield,        /* active field                          */
        actintra,        /* my intra-comunicators                 */
        actsysarray,     /* system-stiffness matrix               */
        -1,              /*system-mass matrix (there is no)       */
-       container,       /*!< contains variables defined in container.h */
+       container,       /* contains variables defined in container.h */
        action);         /* what to do                            */
 /*----- copy original load vector from [actsysarray+1] to [actsysarray] */
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
@@ -582,7 +582,7 @@ void conequ( /*!< rueckgabe int da kein prototyp definiert wurde! */
             int            cdof,          /* number of dof to be controlled */
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,    /* type of control algorithm */
-            CONTAINER     *container	  /*!< contains variables defined in container.h */
+            CONTAINER     *container	  /* contains variables defined in container.h */
            )
 {
 int                  i;                      /* counter variable */
