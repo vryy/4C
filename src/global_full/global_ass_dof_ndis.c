@@ -259,7 +259,7 @@ for (kk=0;kk<actfield->ndis;kk++)
 #endif             
 	    break;
 	    case 21:   
-#ifdef D_FLUID2
+#ifdef D_FLUID2TU
 	       f2tu_ass_dof(actnode,&counter);
 #endif
           break;
