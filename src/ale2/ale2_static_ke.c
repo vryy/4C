@@ -172,7 +172,11 @@ for (lr=0; lr<nir; lr++)
        ale2_hourglass(ele,estif);
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
-/*--------------------------------------- actual element coordinates ---*/
+
+/*----------------------------------------------------- local co-system */
+if(ele->locsys==locsys_yes)
+   locsys_trans(ele,estif,NULL,NULL,NULL); 
+
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
