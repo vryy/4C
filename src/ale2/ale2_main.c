@@ -45,7 +45,7 @@ void ale2(     PARTITION   *actpart,
 {
 #ifdef D_ALE
 ALE2_DATA     actdata;
-MATERIAL    *actmat;
+MATERIAL     *actmat;
 
 #ifdef DEBUG 
 dstrc_enter("ale2");
@@ -66,7 +66,58 @@ break;
 /*----------------------------------------------------------- do nothig */
 case calc_ale_rhs:
 break;  
-/*-------------------------------------------------------------- defaul */
+/*---------------------------------- init nonlinear element routines ---*/
+case calc_ale_init_nln:
+   ale2_static_ke_stiff(NULL,NULL,NULL,NULL,1,container->quality);
+   ale2_static_ke_prestress(NULL,NULL,NULL,NULL,1,NULL,0,container->quality);
+break;
+/*------------------------------------ calculate nonlinear stiffness ---*/
+case calc_ale_stiff_nln:  
+   actmat = &(mat[ele->mat-1]);
+   ale2_static_ke_stiff(ele,&actdata,actmat,estif_global,0,
+			container->quality); 
+break;
+/*------------- calculate stiffness with prestress for initial steps ---*/
+case calc_ale_stiff_stress:  
+   actmat = &(mat[ele->mat-1]);
+   ale2_static_ke_prestress(ele,&actdata,actmat,estif_global,0,
+                            container->dirich,container->global_numeq
+			    ,container->quality); 
+break;
+/*-------------------------- init element routines for two step calc ---*/
+case calc_ale_init_step2:  /* init element routines for both steps */
+   ale2_static_ke(NULL,NULL,NULL,NULL,1);
+   ale2_static_ke_step2(NULL,NULL,NULL,NULL,1,0,NULL,NULL,
+                        NULL,NULL); 
+break;
+/*---------------------------- calculate stiffness for two step calc ---*/
+case calc_ale_stiff_step2:
+   actmat = &(mat[ele->mat-1]);
+   ale2_static_ke_step2(ele,&actdata,actmat,estif_global,0,
+                       container->quality,&container->min_stiff,
+		       &container->max_stiff,&container->min,
+		       &container->max); 
+break;
+/*--------------------- init element routines for spring stiffnesses ---*/
+case calc_ale_init_spring:
+   ale2_static_ke_spring(NULL,NULL,0,1);
+break;
+/*------------------------------------- calculate spring stiffnesses ---*/
+case calc_ale_stiff_spring:
+   actmat = &(mat[ele->mat-1]);
+   ale2_static_ke_spring(ele,estif_global,container->quality,0);
+break;
+/*-------------------- init element routines for laplace stiffnesses ---*/
+case calc_ale_init_laplace:
+   ale2_static_ke_laplace(NULL,NULL,NULL,1,
+			container->quality);
+break;
+/*------------------------------------ calculate laplace stiffnesses ---*/
+case calc_ale_stiff_laplace:
+   ale2_static_ke_laplace(ele,&actdata,estif_global,0,
+			container->quality);
+break;
+/*------------------------------------------------------------- default */
 default:
    dserror("action unknown");
 break;
