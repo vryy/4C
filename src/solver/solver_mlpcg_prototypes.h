@@ -1,3 +1,4 @@
+/*
 void mlpcg_precond_create(DBCSR     *bdcsr, 
                           MLPCGVARS *mlpcgvars,
                           INTRA     *actintra);
@@ -41,14 +42,14 @@ void mlpcg_precond_P(MLLEVEL  *actlev, INTRA *actintra);
 void mlpcg_smoothP(DBCSR *P, double block[][500], int *rindex, int *cindex,
                   int *nrow, int *ncol, DBCSR *actstiff, 
                   AGG *agg, int nagg, INTRA *actintra);
-void mlpcg_precond_oneP0(AGG     *actagg,
+void mlpcg_precond_oneP0_vanek(AGG     *actagg,
                          double   aggblock[][500],
                          int      rindex[],
                          int      cindex[],
                          int     *nrow,
                          int     *ncol,
                          DBCSR   *actstiff);
-void mlpcg_precond_oneP(AGG     *actagg,
+void mlpcg_precond_oneP_vanek(AGG     *actagg,
                         double   aggblock[][500],
                         int      rindex[],
                         int      cindex[],
@@ -169,3 +170,4 @@ void mlpcg_precond_amgVW(int    level,
                          INTRA *actintra,
                          int   *gamma);
 
+*/
