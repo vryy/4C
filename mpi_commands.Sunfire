@@ -1,8 +1,11 @@
 use bash!
 
 ssh andromeda.rus.uni-stuttgart.de
+ssh perseus.rus.uni-stuttgart.de
+ssh pegasus.rus.uni-stuttgart.de
+ssh cassiopeia.rus.uni-stuttgart.de
 
-scp gee@129.69.117.33:wdir/CUSS/* .
+scp <name>@129.69.117.33:wdir/CUSS/* .
 
 mprun -np number_of_processes exe input output 
 
@@ -14,4 +17,7 @@ export MPI_INIT_TIMEOUT=-1
 prism  -np 1  cca_sun_debg.exe
 
 
-option Forte_6u1
+
+option Forte_6u2
+option nagc
+option nagcultra64
