@@ -259,7 +259,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
 
 /* print result of check to screen */
-printf("\n[37;1mChecking max values ...[m\n");
+printf("\n[35;1mChecking max values ...[m\n");
 printf("value         given  optimal\n");
 printf("----------------------------\n");
 printf("maxnod:         %3i      %3i\n",MAXNOD,maxnod);

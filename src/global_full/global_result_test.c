@@ -367,6 +367,7 @@ void global_result_test()
 #ifdef DEBUG 
   dstrc_enter("global_result_test");
 #endif
+  if (genprob.numresults<=0) goto end; 
 
 #ifndef PARALLEL
   if (genprob.numff>-1) fluidfield  = &(field[genprob.numff]);
@@ -378,13 +379,11 @@ void global_result_test()
   if (genprob.numsf>-1) structpart = &(partition[genprob.numsf]);
   if (genprob.numaf>-1) alepart    = &(partition[genprob.numaf]);
 
-  if (genprob.numresults>0) {
-    /* let's do it in a fancy style :) */
-    printf("\n[37;1mChecking results ...[m\n");
-    fprintf(err,"\n===========================================\n");
-    fprintf(err,"Checking results ...\n");
+  /* let's do it in a fancy style :) */
+  printf("\n[35;1mChecking results ...[m\n");
+  fprintf(err,"\n===========================================\n");
+  fprintf(err,"Checking results ...\n");
 
-  }
 
   for (i=0; i<genprob.numresults; ++i) {
     PARTITION* actpart = NULL;
@@ -489,9 +488,11 @@ void global_result_test()
   else
     fprintf(err,"===========================================\n");
 
+  printf("\n[35;1mOK[m\n");
 
 
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG 
   dstrc_exit();
 #endif
