@@ -11,6 +11,7 @@ include ./Makefile.personal_path
 # list of possible defines:
 #  
 # -DD_FLUID      defines general fluid problem
+# -DD_FSI        defines general FSI problem
 # -DD_BRICK1     defines element brick1
 # -DD_SHELL8     defines element shell8
 # -DD_SHELL9     defines element shell9
@@ -41,32 +42,37 @@ include ./Makefile.personal_path
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
+#
+# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell HPUX10)
+#                      (add -lVisual2 -lX11 to INCLUDES!!!)
 #--------------------------------------------------------------------
 #====================================================================
 # parallel part
 #====================================================================
-FXX     = /opt/mpi/bin/mpif90
-CCX     = /opt/mpi/bin/mpicc 
-LDX     = /opt/mpi/bin/mpif90 
-PFL     = -DPARALLEL -DHPUXITA -DD_SHELL8  -DD_SHELL9 -DD_FLUID -DD_FLUID2 \
-          -DD_FLUID3 -DD_ALE -DD_WALL1 -DD_OPTIM -DSPOOLES_PACKAGE
-NAME    = par
-MPI     = -lmpi
+FXX	= /opt/mpi/bin/mpif90
+CCX	= /opt/mpi/bin/mpicc 
+LDX	= /opt/mpi/bin/mpif90 
+PFL	= -DPARALLEL -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
+	  -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+	  -DSPOOLES_PACKAGE 
+NAME	= par
+MPI	= -lmpi
 #====================================================================
 # sequentiell part
 #====================================================================
-#FXX     = f90
-#CCX     = cc 
-#LDX     = f90 
-#PFL     = -DPARALLEL -DHPUXITA -DD_SHELL8 -DD_CONTACT -DS8CONTACT -DD_SHELL9 -DD_FLUID -DD_FLUID2 \
-#          -DD_FLUID3 -DD_ALE -DD_WALL1 -DD_OPTIM 
-#NAME    = seq
-#MPI     = 
+#FXX	 = f90
+#CCX	 = cc 
+#LDX	 = f90 
+#PFL	 = -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
+#	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+#	   -DSPOOLES_PACKAGE 
+#NAME	 = seq
+#MPI	 = 
 #--------------------------------------------------------------------     
 #------------------------------------------------- this is debg-32bit
 #PROGRAM_NAME  = cca_$(NAME)_32_debg.11i
 #CFLAGS        = +DSitanium -Aa -Ae -g +w1 -z \
-#                ${PFL} -DDEBUG
+#		 ${PFL} -DDEBUG
 #FFLAGS        = +DSitanium -g
 #LDFLAGS       = +DSitanium -g -v +A
 #AZTEC         =
@@ -74,15 +80,15 @@ MPI     = -lmpi
 #UMFPACK       =
 #SPOOLES       = -lspooles_ita2_32
 #------------------------------------------------- this is fast-32bit
-PROGRAM_NAME  = cca_$(NAME)_32_fast.11i
-CFLAGS        = +DSitanium -Aa -Ae +O3 +Onolimit +Optrs_to_globals +Odataprefetch  \
-                +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} 
-FFLAGS        = +DSitanium +O3 +Onolimit +Onoptrs_to_globals +Oinline
-LDFLAGS       = +DSitanium +O -v +A 
-AZTEC         =
-METIS         = -lmetis_ita2_32
-UMFPACK       =
-SPOOLES       = -lspooles_ita2_32
+#PROGRAM_NAME  = cca_$(NAME)_32_fast.11i
+#CFLAGS        = +DSitanium -Aa -Ae +O3 +Onolimit +Optrs_to_globals +Odataprefetch  \
+#		 +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} 
+#FFLAGS        = +DSitanium +O3 +Onolimit +Onoptrs_to_globals +Oinline
+#LDFLAGS       = +DSitanium +O -v +A 
+#AZTEC         =
+#METIS         = -lmetis_ita2_32
+#UMFPACK       =
+#SPOOLES       = -lspooles_ita2_32
 #------------------------------------------------- this is debg-64bit
 #PROGRAM_NAME  = cca_$(NAME)_64_debg.11i
 #CFLAGS        = +DSitanium -Aa -Ae +DD64 -g +w1 -z \
@@ -94,15 +100,15 @@ SPOOLES       = -lspooles_ita2_32
 #UMFPACK       = 
 #SPOOLES       = -lspooles_ita2_64
 #------------------------------------------------- this is fast-64bit
-#PROGRAM_NAME  = cca_$(NAME)_64_fast.11i
-#CFLAGS        = +DSitanium -Aa -Ae +DD64 +O3 +Onolimit +Optrs_to_globals +Odataprefetch \
-#                +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} -DSIXTYFOUR 
-#FFLAGS        = +DSitanium +DD64 +O3 +Onolimit +Onoptrs_to_globals +Oinline
-#LDFLAGS       = +DSitanium +DD64 -O -v +A
-#AZTEC         = 
-#METIS         = -lmetis_ita2_64
-#UMFPACK       = 
-#SPOOLES       = -lspooles_ita2_64
+PROGRAM_NAME  = cca_$(NAME)_64_fast.11i
+CFLAGS        = +DSitanium -Aa -Ae +DD64 +O3 +Onolimit +Optrs_to_globals +Odataprefetch \
+		+Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} -DSIXTYFOUR 
+FFLAGS        = +DSitanium +DD64 +O3 +Onolimit +Onoptrs_to_globals +Oinline
+LDFLAGS       = +DSitanium +DD64 -O -v +A
+AZTEC	      = 
+METIS	      = -lmetis_ita2_64
+UMFPACK       = 
+SPOOLES       = -lspooles_ita2_64
 #--------------------------------------------------------------------
 # general part
 #--------------------------------------------------------------------
@@ -136,11 +142,11 @@ PROGRAM       = $(PROGRAM_NAME)
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
-                $(OBJS16) $(OBJS_OPT)
+                $(OBJS16) $(OBJS17) $(OBJS_OPT)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) \
-                $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS_OPT) $(LIBS) $(INCLUDES) -o $(PROGRAM)
+                $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) $(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
 #
@@ -219,6 +225,11 @@ $(OBJS16):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
+$(OBJS17):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
 $(OBJS_OPT):     
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
@@ -240,5 +251,5 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS_OPT)
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT)
 $

@@ -8,6 +8,7 @@
 #  
 #  
 # -DD_FLUID     defines general fluid problem
+# -DD_FSI        defines general FSI problem
 # -DD_BRICK1    defines element brick1
 # -DD_SHELL8    defines element shell8
 # -DD_SHELL9    defines element shell9
@@ -37,13 +38,17 @@
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
+#
+# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell HPUX10)
+#                      (add -lVisual2 -lX11 to INCLUDES!!!)
 #--------------------------------------------------------------------
 #
 FXX=f90
 CCX=cc
 LDX=cc
-PFL=   -DHPUX11 -DD_SHELL8 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-       -DD_SHELL9 -DD_OPTIM -DAZTEC_PACKAGE -DMLIB_PACKAGE -DUMFPACK
+PFL	 = -DHPUX11 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
+	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+	   -DAZTEC_PACKAGE -DUMFPACK
 #
 #--------------------------------------------------------------------
 #
@@ -52,32 +57,32 @@ LD       = $(CCX)
 RM	 = /bin/rm -f
 #
 #------------------------------------------------ this is debug-32bit
-#PROGRAM_NAME  = cca_seq_32_debg.exe
-#CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
-#FFLAGS        = -g
-#LDFLAGS       = 
-#AZTEC         = -laztec_seq21_32
-#UMFPACK       = -lumfpack40_hpux11_32
+PROGRAM_NAME  = cca_seq_32_debg.exe
+CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
+FFLAGS        = -g
+LDFLAGS       = 
+AZTEC	      = -laztec_seq21_32
+UMFPACK       = -lumfpack40_hpux11_32
 #------------------------------------------------- this is fast-32bit
 #PROGRAM_NAME  = cca_seq_32_fast.exe
 #CFLAGS        = -D__HP__  +e -Ae +w1 -v -O +Onolimit ${PFL}
 #FFLAGS        = -O
-#LDFLAGS       = 
+#LDFLAGS       =
 #AZTEC         = -laztec_seq21_32
 #UMFPACK       = -lumfpack40_hpux11_32
 #------------------------------------------------ this is debug-64bit
-PROGRAM_NAME   = cca_seq_64_debg.exe
-CFLAGS         = -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
-FFLAGS         = +DA2.0W -g
-LDFLAGS        = +DD64 -v
-AZTEC          = -laztec_seq21_64
-UMFPACK        = -lumfpack40_hpux11_64
+#PROGRAM_NAME	= cca_seq_64_debg.exe
+#CFLAGS 	= -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
+#FFLAGS 	= +DA2.0W -g
+#LDFLAGS	= +DD64 -v
+#AZTEC  	= -laztec_seq21_64
+#UMFPACK	= -lumfpack40_hpux11_64
 #------------------------------------------------- this is fast-64bit
 #PROGRAM_NAME   = cca_seq_64_fast.exe
 #CFLAGS         = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
 #FFLAGS         = +DA2.0W -O
 #LDFLAGS        = +DD64 -v
-#AZTEC          = -laztec_seq21_64
+#AZTEC	       = -laztec_seq21_64
 #UMFPACK        = -lumfpack40_hpux11_64
 #--------------------------------------------------------------------
 INCLUDES        = -I/opt/mlib/include

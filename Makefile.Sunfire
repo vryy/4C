@@ -5,6 +5,7 @@
 #--------------------------------------------------------------------
 #  
 # -DD_FLUID      defines general fluid problem
+# -DD_FSI        defines general FSI problem
 # -DD_BRICK1    defines element brick1
 # -DD_SHELL8    defines element shell8
 # -DD_SHELL9    defines element shell9
@@ -34,6 +35,9 @@
 # -DUMFPACK            defines interface to solver library Umfpack
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
+#
+# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell HPUX10)
+#                      (add -lVisual2 -lX11 to INCLUDES!!!)
 #
 # 
 PFL       =  -DSUN -DD_SHELL8 -DD_SHELL9 -DD_BRICK1 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1  \
@@ -117,11 +121,11 @@ include ./Makefile.objects
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS_OPT)
+                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT)
 		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) -o $(PROGRAM)"
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-		$(OBJS15) $(OBJS16) $(OBJS_OPT) $(LIBS) -o $(PROGRAM)
+		$(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) $(LIBS) -o $(PROGRAM)
 
 
 		@echo "done"
@@ -200,6 +204,11 @@ $(OBJS16):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
+$(OBJS17):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
+		@echo "MainMake is back."
+#
 $(OBJS_OPT):     
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
@@ -217,5 +226,5 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS_OPT) 
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) 
 
