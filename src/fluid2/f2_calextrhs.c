@@ -3,6 +3,9 @@
 \brief external RHS for fluid2 element
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -93,10 +96,17 @@ return;
 In this routine the stabilisation part of the time forces for vel dofs
 is calculated:
 
+EULER:
                      /
    + thetas(l,r)*dt |  taum_mu * u * grad(v) * b^   d_omega
                    /  
 
+ALE:
+                     /
+   + thetas(l,r)*dt |  taum_mu * c * grad(v) * b^   d_omega
+                   /
+
+EULER/ALE:
                        /
    -/+ thetas(l,r)*dt |  tau_mp * 2*nue * div( eps(v) ) * b^  d_omega
                      /      	  		      
@@ -110,7 +120,12 @@ This routine is called twice with different values:
    b^ = b_old = deadn    
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-     
+
+NOTE: for EULER
+      velint = U
+
+NOTE: for ALE
+      velint = C (ale-convective velocity)           
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
@@ -166,8 +181,13 @@ default:
 
 /*----------------------------------------------------------------------*
    Calculate external/convective stab-forces of time force vector:
+EULER:
                      /
-   + thetas(l,r)*dt |  tau_mu * u * grad(v) * b  d_omega
+   + thetas(l,r)*dt |  taum_mu * u * grad(v) * b^   d_omega
+                   /  
+ALE:
+                     /
+   + thetas(l,r)*dt |  taum_mu * c * grad(v) * b^   d_omega
                    /
  *----------------------------------------------------------------------*/
 if (ele->e.f2->iadvec!=0)
@@ -316,3 +336,4 @@ return;
 } /* end of f2_stabexfp */ 
 
 #endif
+/*! @} (documentation module close)*/

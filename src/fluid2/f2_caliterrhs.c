@@ -3,6 +3,9 @@
 \brief iteration RHS for fluid2 element
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -15,10 +18,19 @@
 In this routine the galerkin part of the iteration forces for vel dofs
 is calculated:
 
+EULER:
+
                    /
    (+/-) THETA*dt |  v * u * grad(u)  d_omega
                  /  
 
+ALE:
+                   /
+   (+/-) THETA*dt |  v * c * grad(u)  d_omega
+                 /
+NOTE:
+  EULER:  covint = u*grad(u)
+  ALE:    covint = c*grad(u)
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
@@ -54,10 +66,17 @@ facsl = fac * dynvar->thsl * dynvar->sigma;
 
 /*----------------------------------------------------------------------*
    Calculate convective forces of iteration force vector:
+
+EULER:
                    /
    (+/-) THETA*dt |  v * u * grad(u)  d_omega
     |            /  
     |-> signs due to nonlin. iteration scheme (dynvar->sigma) 
+
+ALE:
+                   /
+   (+/-) THETA*dt |  v * c * grad(u)  d_omega
+                 /
  *----------------------------------------------------------------------*/ 
 irow = -1;
 for (inode=0;inode<iel;inode++)
@@ -81,19 +100,32 @@ return;
 \brief stabilisation part of iteration forces for vel dofs
 
 <pre>                                                         genk 04/02
+                                            modified for ALE  genk 01/03
 
 In this routine the stabilisation part of the iteration forces for vel dofs
 is calculated:
 
+EULER:
                    /
    (+/-) THETA*dt |  tau_mu * u * grad(v) * u * grad(u)  d_omega
                  /    
 
                        /
-   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) *  * grad(u)  d_omega
+   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
                      /
 
+ALE:
+                   /
+   (+/-) THETA*dt |  tau_mu * c * grad(v) * c * grad(u)  d_omega
+                 /    
 
+                       /
+   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * c * grad(u)  d_omega
+                     /
+
+NOTE:
+  EULER:  covint = u*grad(u)   velint = u
+  ALE:    covint = c*grad(u)   velint = alecovint (c)
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
@@ -146,11 +178,17 @@ taump = dynvar->tau[1];
 
 /*----------------------------------------------------------------------*
    Calculate convective/convective stabilastion of iteration force vector:
+EULER:
                    /
    (+/-) THETA*dt |  tau_mu * u * grad(v) * u * grad(u)  d_omega
     |            /  
     |           
     |-> signs due to nonlin. iteration scheme (dynvar->sigma)
+
+ALE:
+                   /
+   (+/-) THETA*dt |  tau_mu * c * grad(v) * c * grad(u)  d_omega
+                 / 
  *----------------------------------------------------------------------*/ 
 if (ele->e.f2->iadvec!=0)
 {
@@ -170,11 +208,18 @@ if (ele->e.f2->iadvec!=0)
 
 /*----------------------------------------------------------------------*
    Calculate convective/viscous stabilastion of iteration force vector:
+EULER:
                        /
-   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) *  * grad(u)  d_omega
+   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
     |                /  
     |           
     |-> signs due to nonlin. iteration scheme (dynvar->sigma)
+
+ALE:
+                       /
+   (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * c * grad(u)  d_omega
+                     /
+
  *----------------------------------------------------------------------*/ 
 if (ele->e.f2->ivisc!=0 && ihoel!=0)
 {
@@ -218,11 +263,21 @@ return;
 In this routine the stabilisation part of the iteration forces for pre 
 dofs is calculated:
 
+EULER:
                    /
    (-/+) THETA*dt |  tau_mp * grad(q) * u * grad(u)  d_omega
                  /  
 
+ALE:
+                   /
+   (-/+) THETA*dt |  tau_mp * grad(q) * c * grad(u)  d_omega
+                 / 
+		 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
+
+NOTE:
+  EULER:  covint = u*grad(u)  
+  ALE:    covint = c*grad(u)  
 
 NOTE:							
     there's only one full element force vector  	
@@ -286,3 +341,4 @@ return;
 
 
 #endif
+/*! @} (documentation module close)*/
