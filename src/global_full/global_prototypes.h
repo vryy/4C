@@ -19,7 +19,7 @@ Maintainer: Malte Neumann
 
 /* include all the other prototypes */
 #include "../pss_full/pss_prototypes.h"
-#include "../input/input_prototypes.h"
+#include "../input_full/input_prototypes.h"
 #include "../output/output_prototypes.h"
 #include "../math/math_prototypes.h"
 #include "../parallel/parallel_prototypes.h"
