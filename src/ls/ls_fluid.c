@@ -484,7 +484,7 @@ void ls_fluid_solv()
     fluid_prep_rhs(actfield);
 
   /* start time step on the screen */
-  if (fdyn->itchk!=0 && par.myrank==0)
+  if (fdyn->itnorm!=fncc_no && par.myrank==0)
   {
     printf("----------------------------------------------------------------\n");
     printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error -| \n");
@@ -727,7 +727,7 @@ void ls_fluid_fina()
   }
 
   /* write restart to pss file */
-  if (restartstep==fdyn->res_write_evry)
+  if (restartstep==fdyn->uprestart)
   {
     restartstep=0;
     restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   
