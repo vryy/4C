@@ -102,7 +102,7 @@ for (i=0; i<actele->numnp; i++)
 }/* end of loop over element nodes */
 if (counter != nd) dserror("assemblage failed due to wrong dof numbering");
 /*========================================== now start looping the dofs */
-/*======================================= loop over i (the element row) */
+/*==================================== loop over i (the element column) */
 for (i=0; i<nd; i++)
 {
    ii = lm[i];
@@ -112,8 +112,7 @@ for (i=0; i<nd; i++)
 #endif
    /*------------------------------------- check for boundary condition */
    if (ii>=numeq_total) continue;
-   /*------------------------------------- check for coupling condition */
-   /*================================= loop over j (the element column) */
+   /*==================================== loop over j (the element row) */
    start         = Ap[ii];
    lenght        = Ap[ii+1]-Ap[ii];
    for (j=0; j<nd; j++)
@@ -124,9 +123,9 @@ for (i=0; i<nd; i++)
       index         = find_index(jj,&(Ai[start]),lenght);
       if (index==-1) dserror("dof jj not found in this row ii");
       index        += start;
-      Ax[index] += estif[i][j];
+      Ax[index] += estif[j][i];
       if (istwo)
-      Bx[index] += emass[i][j];
+      Bx[index] += emass[j][i];
    } /* end loop over j */
 }/* end loop over i */
 /*----------------------------------------------------------------------*/

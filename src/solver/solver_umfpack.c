@@ -1,6 +1,16 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
 |  control solver Umpfack                            s.offermanns 05/02 |
 *----------------------------------------------------------------------*/
@@ -27,6 +37,9 @@ int           *Ai;
 double        *Ax;
 int           *icntl;
 
+DOUBLE         t;
+INT            status;
+
 ARRAY          b_a;
 double        *b;
 ARRAY          x_a;
@@ -35,10 +48,10 @@ ARRAY          tmp_a;
 double        *tmp;
 
 /* some umfpack variables see umfpack manual */
-double        *control = (double *) NULL;
-double        *info    = (double *) NULL;
+/*double        *control = (double *) NULL;
+double        *info    = (double *) NULL;*/
 void          *symbolic, *numeric;
-
+double        info [UMFPACK_INFO], control [UMFPACK_CONTROL];
 
 #ifdef DEBUG 
 dstrc_enter("solver_umfpack");
@@ -58,6 +71,13 @@ case 1:
    ccf->is_init     = 1;
    ccf->ncall       = 0;
    ccf->is_factored = 0;
+
+   /* get the default control parameters */
+   umfpack_di_defaults (control) ;
+#ifdef DEBUG 
+   control [UMFPACK_PRL] = 5 ;
+   umfpack_di_report_info (control, info) ;
+#endif
 
    break;
       
@@ -98,11 +118,56 @@ case 0:
    /*------------------------------ solution is only done on imyrank==0 */   
    if (imyrank==0)
    {
-      (void) umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
-      (void) umfpack_di_numeric (Ap, Ai, Ax, symbolic, &numeric, control, info);
-      umfpack_di_free_symbolic (&symbolic);
-      (void) umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
-      umfpack_di_free_numeric (&numeric);
+       t = umfpack_timer ( ) ;
+       /* get the default control parameters */
+       umfpack_di_defaults (control) ;
+#ifdef DEBUG 
+       control [UMFPACK_PRL] = 5 ;
+#endif
+
+/*       printf ("\nA: ") ;
+       (void) umfpack_di_report_matrix (n, n, Ap, Ai, Ax, 1, control) ;
+*/
+       /* symbolic factorization */
+       status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
+#ifdef DEBUG 
+       if (status < 0)
+       {
+           umfpack_di_report_info (control, info) ;
+           umfpack_di_report_status (control, status) ;
+           dserror ("umfpack_di_symbolic failed") ;
+       }
+#endif
+
+       /* numeric factorization */
+       status =  umfpack_di_numeric (Ap, Ai, Ax, symbolic, &numeric, control, info);
+#ifdef DEBUG 
+       if (status < 0)
+       {
+           umfpack_di_report_info (control, info) ;
+           umfpack_di_report_status (control, status) ;
+           dserror ("umfpack_di_numeric failed") ;
+       }
+#endif
+
+       umfpack_di_free_symbolic (&symbolic);
+
+       /* solve Ax=b */
+       status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
+#ifdef DEBUG 
+       if (status < 0)
+       {
+           umfpack_di_report_info (control, info) ;
+           umfpack_di_report_status (control, status) ;
+           dserror ("umfpack_di_solve failed") ;
+       }
+#endif
+
+       umfpack_di_free_numeric (&numeric);
+       t = umfpack_timer ( ) - t ;
+       fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
+
+
    }/* end of (imyrank==0) */
    /*------------------------------------------------- broadcast result */
 #ifdef PARALLEL
