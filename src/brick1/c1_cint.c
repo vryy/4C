@@ -134,7 +134,7 @@ static DOUBLE **bn;
 static DOUBLE **estif;    /* element stiffness matrix ke */
 static DOUBLE **emass;     /* element mass matrix */
 DOUBLE          lmvec[ 60]; /* lumped     mass vector */
-DOUBLE          consm[400]; /* consistent mass matrix */
+DOUBLE          consm[576]; /* consistent mass matrix */
 DOUBLE emasdg;  /* factor for lumped mass matrix */
 DOUBLE              density, facm, totmas;
 DOUBLE det;
@@ -190,12 +190,12 @@ for (i=0; i<81; i++) fielo[i] = 0.0;
 if (init==4 || init==5)
 {
   /*---------------------------------------------------- get density ---*/
-  #ifdef D_OPTIM                   /* include optimization code to ccarat */
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
    if(ele->e.c1->elewa->matdata==NULL) c1_getdensity(mat, &density);
    else density = ele->e.c1[0].elewa[0].matdata[0];
-  #else
+#else
   c1_getdensity(mat, &density);
-  #endif /* stop including optimization code to ccarat :*/
+#endif /* stop including optimization code to ccarat :*/
   for (i=0; i<60; i++)  lmvec[i] = 0.0;
   for (i=0; i<400; i++) consm[i] = 0.0;
   if(emass_global!=NULL) amzero(emass_global);
@@ -385,11 +385,17 @@ for (lr=0; lr<nir; lr++)
       fac = facr * facs *  fact * det;
       amzero(&bop_a);
       /*------------------------------------------------ mass matrix ---*/
-      if (init==4)
+      if (init==4)  /* lumped mass matrix */
       {
         facm = fac * density;
         totmas += facm;
         c1cptp (funct,lmvec,consm,&emasdg,iel,1,facm);
+      }
+      if (init == 5)  /* consistent mass matrix */
+      {
+        facm = fac * density;
+        totmas += facm;
+        c1cptp (funct,lmvec,consm,&emasdg,iel,2,facm);
       }
       /*-- local element coordinate system for anisotropic materials ---*/
       c1tram (xjm,g,gi);
@@ -501,11 +507,27 @@ for (lr=0; lr<nir; lr++)
   {
     fac=3.0*totmas/emasdg;
     for (i=0; i<nd; i++) fielo[i] = lmvec[i]*fac;
+    cc = 0;
+    for (i=0; i<nd; i=i+1)
+    {
+	emass[i][i] = lmvec[cc];
+	cc = cc + 1;
+    }
   }
   if (init==5)
   {
     cc=0;
-    for (i=0; i<nd; i++) for (j=0; j<nd; j++) emass[i][j] = consm[cc++];
+/*    for (i=0; i<nd; i++) for (j=0; j<nd; j++) emass[i][j] = consm[cc++]; */
+    for (i=0; i<nd; i=i+3)
+    {
+	for (j=0; j<nd; j=j+3)
+	{
+	    emass[i][j] = consm[cc];
+	    emass[i+1][j+1] = consm[cc];
+ 	    emass[i+2][j+2] = consm[cc];
+ 	    cc++;
+	}
+    }
   }
 /*----------------------------------------------------------------------*/
 /* reorder stiffness and element forces for 'gid' element-node topo...  */
@@ -960,17 +982,11 @@ case 2:
   cc = 0;
   for (i=0; i<iel; i++)
   {
-    for (k=0; k<3; k++)
-    {
       for (j=0; j<iel; j++)
       {
-        for (l=0; l<3; l++)
-        {
-           if(k==l) consm[cc] += fac*funct[i]*funct[j];
-           cc++;
-        }
+ 	  consm[cc] += fac*funct[i]*funct[j];
+ 	  cc++;
       }
-    }
   }
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------ lumped mass ---*/

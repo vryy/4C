@@ -107,6 +107,8 @@ case calc_struct_linstifflmass:
 break;/*----------------------------------------------------------------*/
 /*----------------------- calculate nonlinear stiffness and mass matrix */
 case calc_struct_nlnstiffmass:
+   actmat = &(mat[ele->mat-1]);
+   c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5);
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
