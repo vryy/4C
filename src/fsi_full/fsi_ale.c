@@ -51,8 +51,7 @@ control of fsi ale part; program continues depending on ALE_TYP in input
 *----------------------------------------------------------------------*/
 void fsi_ale(
                FIELD            *actfield,
-               INT               mctrl,
-               INT               numfa
+               INT               mctrl
 	    )
 {
 #ifdef D_FSI
@@ -67,32 +66,37 @@ switch (adyn->typ)
 {
 /*---------------------------------------- purely linear calculation ---*/
    case classic_lin:
-      fsi_ale_lin(actfield,mctrl,numfa);
+      fsi_ale_lin(actfield,mctrl);
    break;
 /*------------------- incremental calculation stiffened with min J_e ---*/
    case min_Je_stiff:
-      fsi_ale_nln(actfield,mctrl,numfa);
+      fsi_ale_nln(actfield,mctrl);
    break;
 /*--------------------------------------------- two step calculation ---*/
 /*  calculation in two steps per timestep following Chiandussi et al. in 
     'A simple method for automatic update of finite element meshes'
     Commun. Numer. Meth. Engng. 2000; 16: 1-19                          */
    case two_step:
-      fsi_ale_2step(actfield,mctrl,numfa);
+      fsi_ale_2step(actfield,mctrl);
    break;
 /*--------------------------------------------------- spring analogy ---*/
 /*  calculation following Farhat et al. in 'Torsional springs for 
     two-dimensional dynamic unstructured fluid meshes' Comput. Methods
     Appl. Mech. Engrg. 163 (1998) 231-245 */
    case springs:
-       fsi_ale_spring(actfield,mctrl,numfa);
+       fsi_ale_spring(actfield,mctrl);
     break;
 /*------------------------------------------------ Laplace smoothing ---*/
 /*  calculation following Loehner et al. in 'Improved ALE mesh velocities
     for moving bodies' Commun. num. methd. engng. 12 (1996) 599-608 */
    case laplace:
-       fsi_ale_laplace(actfield,mctrl,numfa);
+       fsi_ale_laplace(actfield,mctrl);
     break;
+/*-------------------------------------------- Large Amplitude Sloshing */
+/*  just a interpolation for large amplitude sloshing                    */
+   case LAS:
+      fsi_ale_LAS(actfield,mctrl);
+   break;
 /*---------------------------------------------------------- default ---*/
    default:
       dserror("unknown ale typ for fsi");
