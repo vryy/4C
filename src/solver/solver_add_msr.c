@@ -154,7 +154,8 @@ for (i=0; i<nd; i++)
       /*                (either not a coupled dof or I am master owner) */
       if (!ii_iscouple || ii_owner==myrank)
       {
-         if (i==j)
+         /* if (i==j) AL (coupling of several dofs in the same element) */
+         if (ii==jj)
          {
             ii_index = AZ_quick_find(ii,update,numeq,shift,bins);
             if (ii_index==-1) dserror("dof ii not found on this proc");
