@@ -1,5 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "gid.h"
+#ifdef D_SHELL8
+#include "../shell8/shell8.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -35,6 +38,9 @@ ELEMENT      *actele;
 ELEMENT      *firstele;
 NODE         *actnode;
 
+double        a1,a2,a3,thick,scal;
+int           tot_numnp;
+
 int           is_firstmesh;
 char          sign='"';
 
@@ -53,7 +59,9 @@ for (i=0; i<genprob.numfld; i++)
    actfield = &(field[i]);
    actgid   = &(gid[i]);
    /*----------------------------------- print the meshes of this field */
-
+#ifdef D_SHELL8
+#if 0
+   /* this is the quadrilateral version */
    if (actgid->is_shell8_22)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -82,7 +90,64 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
-
+#endif
+   /* this is the hexahedra version */
+   if (actgid->is_shell8_22)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s SHELL8 2x2x2 GP\n",actgid->shell8_22_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->shell8_22_name);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         tot_numnp = genprob.nnode;
+         for (i=0; i<actfield->dis[0].numnp; i++)
+         {
+            actnode = &(actfield->dis[0].node[i]);
+            /* find the director */
+            actele  = actnode->element[0];
+            for (j=0; j<actele->numnp; j++)
+               if (actele->node[j] == actnode) break;
+            if (j==4) dserror("Cannot find matching node in element");
+            thick = actele->e.s8->thick;
+            scal  = 100.0;
+            a1 = actele->e.s8->a3ref.a.da[0][j]*thick*scal/2.0;
+            a2 = actele->e.s8->a3ref.a.da[1][j]*thick*scal/2.0;
+            a3 = actele->e.s8->a3ref.a.da[2][j]*thick*scal/2.0;
+            /* the lower surface coordinate*/
+            fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",actnode->Id+1,
+                                                        actnode->x[0]-a1,
+                                                        actnode->x[1]-a2,
+                                                        actnode->x[2]-a3);
+            /* the upper surface coordinate */
+            fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",actnode->Id+1+tot_numnp,
+                                                        actnode->x[0]+a1,
+                                                        actnode->x[1]+a2,
+                                                        actnode->x[2]+a3);
+         }
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         /* lower surface nodes */
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         /* upper surface nodes */
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1+tot_numnp);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
 
    if (actgid->is_shell8_33)
    {
@@ -112,7 +177,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
-
+#endif
 
    if (actgid->is_brick1_222)
    {

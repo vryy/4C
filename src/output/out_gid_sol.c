@@ -239,6 +239,7 @@ for (i=0; i<genprob.numfld; i++)
       }
    } /* end of (j=0; j<actfield->numele; j++) */
    /*----------------------------- now we can write the gausspoint sets */
+#if 0/* this is the shell visualization using Quadrilateral */
    if (actgid->is_shell8_22)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -251,6 +252,21 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+#endif
+   /* this is the shell visualization using Hexahedra */
+   if (actgid->is_shell8_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                   sign,actgid->shell8_22_name,sign,
+                                                                   sign,actgid->shell8_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /*-------------------------------------------------*/
    if (actgid->is_shell8_33)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -495,8 +511,7 @@ for (i=0; i<genprob.numfld; i++)
 }
 if (!actgid) dserror("Cannot find correct field");
 /*----------------------------------------------------------------------*/
-
-if (actgid->is_shell8_22)
+if (actgid->is_shell8_22) 
 {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_22_name);
@@ -509,12 +524,14 @@ if (actgid->is_shell8_22)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
-      for (j=1; j<4; j++)
+#if 0
+      for (j=1; j<4; j++)/* quadrilateral version */
+#endif
+      for (j=1; j<8; j++)/* hexahedra version */
       fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
-
 
 if (actgid->is_shell8_33)
 {
@@ -534,7 +551,6 @@ if (actgid->is_shell8_33)
    }
    fprintf(out,"END VALUES\n");
 }
-
 
 if (actgid->is_brick1_222)
 {
@@ -857,6 +873,8 @@ int           ngauss;
 double      **forces;
 double      **stress;
 
+double        a1,a2,a3,thick,scal,sdc;
+int           tot_numnp;
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
@@ -929,6 +947,35 @@ if (strncmp(string,"displacement",stringlenght)==0)
      break;
    }
    fprintf(out,"VALUES\n");
+#ifdef D_SHELL8
+#if 1 /* this is hexahedra output */
+   if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
+   {
+      tot_numnp = genprob.nnode;
+      scal = 100.0;
+      sdc  = actfield->dis[0].element[0].e.s8->sdc;
+      for (i=0; i<actfield->dis[0].numnp; i++)
+      {
+         actnode = &(actfield->dis[0].node[i]);
+         /* the lower surface */
+         fprintf(out," %6d %23.15E %23.15E %23.15E\n",
+                                                    actnode->Id+1,
+                                                    actnode->sol.a.da[place][0]-actnode->sol.a.da[place][3]*scal/sdc,
+                                                    actnode->sol.a.da[place][1]-actnode->sol.a.da[place][4]*scal/sdc,
+                                                    actnode->sol.a.da[place][2]-actnode->sol.a.da[place][5]*scal/sdc
+                                                    );
+         /* the upper surface */
+         fprintf(out," %6d %23.15E %23.15E %23.15E\n",
+                                                    actnode->Id+1+tot_numnp,
+                                                    actnode->sol.a.da[place][0]+actnode->sol.a.da[place][3]*scal/sdc,
+                                                    actnode->sol.a.da[place][1]+actnode->sol.a.da[place][4]*scal/sdc,
+                                                    actnode->sol.a.da[place][2]+actnode->sol.a.da[place][5]*scal/sdc
+                                                    );
+      }
+   }
+   else
+#endif
+#endif   
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
@@ -1011,6 +1058,7 @@ if (strncmp(string,"stress",stringlenght)==0)
    /* these shells have 18 stresses, do 2 x 3D Matrix */
    /* for shell8 stresses permutation: */
    /* ii[18] = {0,2,8,1,3,16,4,17,9,5,7,14,6,10,12,11,13,15};*/
+#if 0
 #ifdef D_SHELL8
    if (actgid->is_shell8_22)
    {
@@ -1216,6 +1264,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       }
       fprintf(out,"END VALUES\n");
    }
+#endif
 #endif
 #ifdef D_WALL1
 /*---------------------------------------------------------fh 06/02----*/
