@@ -11,37 +11,12 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_ALE
-#include "../headers/standardtypes.h"
-#include "ale2.h"
-
 /*! 
 \addtogroup Ale 
 *//*! @{ (documentation module open)*/
-
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-/*---------------------------------------------------------------------*/
-/*!----------------------------------------------------------------------
-\brief ranks and communicators
-
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
-</pre>
-
-*----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
-
+#ifdef D_ALE
+#include "../headers/standardtypes.h"
+#include "ale2.h"
 
 /*!----------------------------------------------------------------------
 \brief  minimum corner angle of 4 noded quad ale element
@@ -342,7 +317,7 @@ void write_element_quality(ELEMENT  *ele,
 DOUBLE el_area;            /* area of the actual element */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("ale_quality");
+dstrc_enter("write_element_quality");
 #endif
 /*----------------------------------------------------------------------*/
 if (quality == 0)       /* no quality monitoring */
@@ -396,95 +371,6 @@ dstrc_exit();
 
 return;
 } /* end of write_element_quality */
-
-
-/*!----------------------------------------------------------------------
-\brief  element quality statistics
-
-<pre>                                                             ck 06/03
-element quality statistics
-
-</pre>
-\param *actfield  FIELD     (i)   actual field
-\param  step      INT       (i)   actual time step
-\param *actintra  INTRA     (i)   intra-communicator
-\param *actpart   PARTITION (i)   actual partition
-
-\warning Works at the moment for ale2-elements only!
-\return void                                               
-\sa calling: 
-             called by: dyn_ale();
-
-*----------------------------------------------------------------------*/
-void ale_quality(FIELD *field,INT step, 
-                 INTRA  *actintra, PARTITION    *actpart)
-{
-INT i;      /* a counter */
-INT numel;  /* number of elements in this discretisation */
-INT numele_total;
-
-DOUBLE quality;     /* current element quality measure */
-DOUBLE square = 0;       
-DOUBLE min, max;    /* minimal and maximal quality */
-DOUBLE stand_degr;  /* standard degression*/
-DOUBLE average;
-DOUBLE recv=ZERO;
-ELEMENT *actele;
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("ale_quality");
-#endif
-/*----------------------------------------------------------------------*/
-
-numel = actpart->pdis[0].numele;
-numele_total=field->dis[0].numele;
-average = 0.0;
-min = 2.0;
-max = -1.0;
-
-for (i=0; i<numel; i++)  /* loop over all elements */
-{
-   actele = actpart->pdis[0].element[i];
-   if (actele->proc!=par.myrank) continue;
-   quality = actele->e.ale2->quality;   
-   average += quality;
-   min = DMIN(quality,min);
-   max = DMAX(quality,max);
-   square += quality * quality;
-}
-
-#ifdef PARALLEL
-MPI_Reduce(&square,&recv,1,MPI_DOUBLE,MPI_SUM,0,actintra->MPI_INTRA_COMM);
-square=recv;
-MPI_Reduce(&average,&recv,1,MPI_DOUBLE,MPI_SUM,0,actintra->MPI_INTRA_COMM);
-average=recv;
-MPI_Reduce(&min,&recv,1,MPI_DOUBLE,MPI_MIN,0,actintra->MPI_INTRA_COMM);
-min=recv;
-MPI_Reduce(&max,&recv,1,MPI_DOUBLE,MPI_MAX,0,actintra->MPI_INTRA_COMM);
-max=recv;
-#endif
-
-if (par.myrank==0)
-{
-   if (numele_total > 1)
-      stand_degr = 1.0/(numele_total-1.0) * ( square - 1.0/numele_total*average*average );
-   else
-      stand_degr = 0.0;
-   average = average/numele_total;
-/*----------------------------------------------------- gnuplot file ---*/
-   fprintf(allfiles.gnu,"%i  %8.7f  %8.7f  %8.7f  %8.7f\n", 
-           step-1, average, stand_degr, min, max);
-   fflush(allfiles.gnu);
-}
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return;
-}
 
 /*! @} (documentation module close)*/
 #endif
