@@ -10,7 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
-
+#ifdef DEBUG 
+#include <assert.h>
+#endif
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -636,6 +638,9 @@ fflush(allfiles.out_err);
 #ifdef PARALLEL 
 MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
+#ifdef DEBUG 
+assert(0);
+#endif
 exit(EXIT_FAILURE);
 #endif
 return;
