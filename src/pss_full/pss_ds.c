@@ -635,7 +635,7 @@ return;
 } /* end of dserror */
 
 /*!-----------------------------------------------------------------------
-\brief get warnings and write them to the screen at the end 
+\brief get warnings and writes them to the screen at the end 
 
 <pre>                                                             ck 07/03
 depending on task it initialises all warnings to Zero (= no warning),
@@ -668,12 +668,12 @@ switch (task)
    case 1:
       if (warning == 1)
          ale_quality_min_J_triangles++;
-      if (warning == 2)
+      else if (warning == 2)
          ale_quality_ar++;	 
-      if (warning == 3)
+      else if (warning == 3)
          ale_quality_ca++;	 
-      if (warning == 4)
-         ale_quality_Je++;	 
+      else if (warning == 4)
+         ale_quality_Je++;
    break;
    /*------------------------------------------------ write warnings ---*/
    case 2:
@@ -691,6 +691,7 @@ switch (task)
    break;
    /*------------------------------------------------------- default ---*/
    default:
+      dserror("warning task unvalid");
    break;
 } /* end of switch init */
 } /* end of dswarning */
