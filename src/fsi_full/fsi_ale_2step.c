@@ -168,7 +168,7 @@ adyn->nstep=fsidyn->nstep;
 /*----------------------------------------------------------------------*/
 container.isdyn   = 0;  
 container.actndis = 0;    
-container.pos     = 1;
+container.pos     = 0;
 actpos=0;
 outstep=0;
 pssstep=0;
@@ -183,7 +183,7 @@ action      = &(calc_action[numfa]);
 container.fieldtyp  = actfield->fieldtyp;
 /* to follow Chiandussi et al. calculation is performed in two steps, 
    first step linear, second step with modified stiffness
-   reference calculation is performed incremental                       */
+   reference calculation is performed incrementally                     */
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 actintra    = &(par.intra[numfa]);
@@ -205,7 +205,6 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 if (fsidyn->ifsi == 6)
 {
    /*----------- one sysarray already exists, so copy the mask of it to */
-   /*---------------------------- mass_array (and damp_array if needed) */
    /* reallocate the vector of sparse matrices and the vector of there types
    /* formerly lenght 1, now lenght 2 */
    numsys++;
@@ -215,7 +214,7 @@ if (fsidyn->ifsi == 6)
    (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
    actsolv->sysarray = 
    (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
-   /*-copy the matrices sparsity mask from stiff_array to mass_array (and to damp_array) */
+   /*-copy the matrices sparsity mask */
    solserv_alloc_cp_sparsemask(  actintra,
                                &(actsolv->sysarray_typ[actsysarray]),
                                &(actsolv->sysarray[actsysarray]),
@@ -288,8 +287,8 @@ for (i = 0; i<numsys; i++)
 *action = calc_ale_init_step2;
 calinit(actfield,actpart,action,&container);
 
-/*--------------------------------- init sol_increment[1][j] to zero ---*/
-solserv_sol_zero(actfield,0,1,1); 
+/*--------------------------------------------------- init ale field ---*/
+fsi_init_ale(actfield,2);
 
 /*--------------------------------------------------- check for restart */
 if (genprob.restart!=0)
@@ -332,6 +331,8 @@ break;
  *======================================================================*
  * nodal solution history ale field:                                    *
  * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
+ * sol_increment[0][i] ... displacements at (n+1)			        *
+ * sol_increment[1][i] ... displacements at (n) 		        * 
  * sol_mf[0][i]        ... displacements at (n)			        *
  * sol_mf[1][i]        ... displacements at (n+1) 		        * 
  *======================================================================*/
@@ -354,17 +355,19 @@ dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT
 /*------------------------------ init the created dist. vectors to zero */
 solserv_zero_vec(&(actsolv->rhs[actsysarray]));
 solserv_zero_vec(&(actsolv->sol[actsysarray]));
+
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
 /* write incremental dirichlet cond. from dt on sol_increment */
-/* write total dirichlet cond. from dt on sol (to serve output) */
 ale_setdirich_increment_fsi(actfield,adyn,actpos);
+
 /*----------------------------------------------------------------------*/
 solserv_zero_mat(actintra,
 		 &(actsolv->sysarray[actsysarray]),
 		 &(actsolv->sysarray_typ[actsysarray])
 	         );
+
 /*--- call element routines to calculate & assemble stiffness matrix ---*/
 *action = calc_ale_stiff;   /* first (linear) reference step */
 container.dvec         = NULL;
@@ -373,6 +376,7 @@ container.global_numeq = numeq_total;
 container.isdyn        = 1;
 calelm(actfield,actsolv,actpart,actintra,
        actsysarray,-1,&container,action);
+
 /*------------------------ add rhs from prescribed displacements to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
      &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
@@ -389,7 +393,8 @@ solver_control(
                   &(actsolv->rhs[actsysarray]),
                     init
                  );
-/*-- allreduce the result of the trial step and put it to sol_increment */
+/*------------------------ allreduce the result of the trial step... ---*
+ *----------------------------------- ...and put it to sol_increment[0] */
 solserv_result_incre(
                      actfield,
                      actintra,
@@ -440,7 +445,6 @@ calelm(actfield,actsolv,actpart,actintra,
        actsysarray,-1,&container,action);
 /*------------------------ init the created dist. vectors to zero */
 solserv_zero_vec(&(actsolv->rhs[actsysarray]));
-solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*------------------ add rhs from prescribed displacements to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
    &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
@@ -455,7 +459,7 @@ solver_control(actsolv,
      	      &(actsolv->rhs[actsysarray]),
      		init
      	      );
-/*----------- allreduce the result and write it to the sol_increment ---*/
+/*-------- allreduce the result and write it to the sol_increment[0] ---*/
 solserv_result_incre(actfield,
      		     actintra,
      		    &(actsolv->sol[actsysarray]),
@@ -488,8 +492,8 @@ case 3:
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,1,0);
 
-/*----------------- set dirichlet boundary conditions on at output time */
-ale_setdirich_increment_fsi(actfield,adyn,actpos);
+/*----------------- copy solution to sol_increment[1][i] for history ---*/
+solserv_sol_copy(actfield,0,3,1,1,1);
 
 /*------------------------------------------- print out results to .out */
 outstep++;

@@ -202,7 +202,6 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 if (fsidyn->ifsi == 6)
 {
    /*----------- one sysarray already exists, so copy the mask of it to */
-   /*---------------------------- mass_array (and damp_array if needed) */
    /* reallocate the vector of sparse matrices and the vector of there types
    /* formerly lenght 1, now lenght 2 */
    numsys++;
@@ -212,7 +211,7 @@ if (fsidyn->ifsi == 6)
    (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
    actsolv->sysarray = 
    (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
-   /*-copy the matrices sparsity mask from stiff_array to mass_array (and to damp_array) */
+   /*-copy the matrices sparsity mask */
    solserv_alloc_cp_sparsemask(  actintra,
                                &(actsolv->sysarray_typ[actsysarray]),
                                &(actsolv->sysarray[actsysarray]),
@@ -285,8 +284,8 @@ for (i = 0; i<numsys; i++)
 *action = calc_ale_init_nln;
 calinit(actfield,actpart,action,&container);
 
-/*--------------------------------- init sol_increment[1][j] to zero ---*/
-solserv_sol_zero(actfield,0,1,1); 
+/*--------------------------------------------------- init ale field ---*/
+fsi_init_ale(actfield,2);
 
 /*--------------------------------------------------- check for restart */
 if (genprob.restart!=0)
@@ -324,7 +323,7 @@ break;
  |                     S O L U T I O N    P H A S E                     |
  *======================================================================*
  * nodal solution history ale field:                                    *
- * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
+ * sol[1...actpos][j]  ... solution for visualisation       		*
  * sol_mf[0][i]        ... displacements at (n)			        *
  * sol_mf[1][i]        ... displacements at (n+1) 		        *
  * sol_increment[0][i] ... working array (actual sol. increment)	*
@@ -438,13 +437,11 @@ break;
  *======================================================================*/
 case 3:
 /*------------------------------------ for iterative staggared schemes:
-/*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] 
-/*----------------------- and nodal sol_mf[1][i] to sol_increment[1][i] */
-if (fsidyn->ifsi>=4) 
-{
-   solserv_sol_copy(actfield,0,3,3,1,0);
-   solserv_sol_copy(actfield,0,3,1,1,1);
-}
+/*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
+if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,1,0);
+
+/*----------------- copy solution to sol_increment[1][i] for history ---*/
+solserv_sol_copy(actfield,0,3,1,1,1);
 
 /*----------------- set dirichlet boundary conditions on at output time */
 ale_setdirich_increment_fsi(actfield,adyn,actpos);

@@ -201,7 +201,6 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 if (fsidyn->ifsi == 6)
 {
    /*----------- one sysarray already exists, so copy the mask of it to */
-   /*---------------------------- mass_array (and damp_array if needed) */
    /* reallocate the vector of sparse matrices and the vector of there types
    /* formerly lenght 1, now lenght 2 */
    numsys++;
@@ -211,7 +210,7 @@ if (fsidyn->ifsi == 6)
    (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
    actsolv->sysarray = 
    (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
-   /*-copy the matrices sparsity mask from stiff_array to mass_array (and to damp_array) */
+   /*-copy the matrices sparsity mask */
    solserv_alloc_cp_sparsemask(  actintra,
                                &(actsolv->sysarray_typ[actsysarray]),
                                &(actsolv->sysarray[actsysarray]),
@@ -280,12 +279,12 @@ for (i = 0; i<numsys; i++)
    init_assembly(actpart,actsolv,actintra,actfield,i,0);
 }
 
-/*--------------------------------- init sol_increment[1][j] to zero ---*/
-solserv_sol_zero(actfield,0,1,1); 
-
 /*------------------------------- init the element calculating routines */
 *action = calc_ale_init_spring;
 calinit(actfield,actpart,action,&container);
+
+/*--------------------------------------------------- init ale field ---*/
+fsi_init_ale(actfield,2);
 
 /*--------------------------------------------------- check for restart */
 if (genprob.restart!=0)
@@ -433,11 +432,9 @@ case 3:
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,1,0);
 
-/*------------------------ copy from sol_mf[1][j] to sol_incrment[1][j] */
+/*----------------- copy solution to sol_increment[1][i] for history ---*/
 solserv_sol_copy(actfield,0,3,1,1,1);
 
-/*----------------- set dirichlet boundary conditions on at output time */
-ale_setdirich_increment_fsi(actfield,adyn,actpos);
 /*------------------------------------------- print out results to .out */
 outstep++;
 pssstep++;

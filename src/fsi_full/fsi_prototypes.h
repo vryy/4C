@@ -193,7 +193,8 @@ INT fsi_convcheck(            FIELD            *structfield,
                               FSI_DYNAMIC      *fsidyn, 
 			      INT               itnum
 		 );
-		 			 
+void fsi_init_ale(FIELD *actfield,INT numr);
+
 /************************************************************************
  | fsi_struct.c                                                         |
  ************************************************************************/

@@ -755,5 +755,51 @@ dstrc_exit();
 return (converged);
 } /* end of  fsi_convcheck*/
 
+
+
+/*!---------------------------------------------------------------------                                         
+\brief initialisation of ale field
+
+<pre>                                                        chfoe 11/03
+
+in this routine the ale field is initialised. The solution history is 
+enlarged to numr entities at the sol_increment.
+		     
+</pre>
+\param *acttfield   FIELD	(i)  ale field
+\param  numr 	    INT		(i)  number of sol_increment places needed
+\return void                                                                             
+
+\sa   calling: 
+      called by: fsi_ale_nln(), fsi_ale_spring, fsi_ale_laplace,
+                 fsi_ale_2step
+------------------------------------------------------------------------*/
+void fsi_init_ale(FIELD *actfield,INT numr)
+{
+INT 	 i, k;
+INT 	 numnp_total;
+NODE 	*actnode;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("fluid_init");
+#endif
+
+for (k=0;k<actfield->ndis;k++)
+{
+   numnp_total=actfield->dis[k].numnp;
+   for (i=0;i<numnp_total;i++)
+   {
+      actnode=&(actfield->dis[k].node[i]);
+      amredef(&(actnode->sol_increment),numr,actnode->numdf,"DA");
+      amzero(&(actnode->sol_increment));
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of fsi_init_ale */
+
 #endif
 /*! @} (documentation module close)*/
