@@ -261,13 +261,11 @@ static INT iminarg1,iminarg2;
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
  *----------------------------------------------------------------------*/
 #define MAXDOFPERNODE    (6)
-/*#define MAXDOFPERNODE    (18)*/
 
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
 #define MAXGAUSS         (9)  
-/*#define MAXGAUSS         (72)*/
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
@@ -377,10 +375,11 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | fluid                                                              |
  *----------------------------------------------------------------------*/
-#define MAXQINTC (6)   /* max. number of implemented integration cases for QUADS */
-#define MAXQINTP (6)   /* max. number of integration parameters  for QUADS */ 
-#define MAXTINTC (11)  /* max. number of implemented integration cases for TRIS */
-#define MAXTINTP (13)  /* max. number of integration parameters  for TRIS */
+#define MAXQINTC (6)      /* max. number of implemented integration cases for QUADS */
+#define MAXQINTP (6)      /* max. number of integration parameters  for QUADS */ 
+#define MAXTINTC (11)     /* max. number of implemented integration cases for TRIS */
+#define MAXTINTP (13)     /* max. number of integration parameters  for TRIS */
+#define FLUID_NUM_LD (4)  /* number of lift and drag conditions */
 /*----------------------------------------------------------------------*
  | fluid2                                                               |
  *----------------------------------------------------------------------*/
