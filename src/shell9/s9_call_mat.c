@@ -50,21 +50,21 @@ element.
 
 *----------------------------------------------------------------------*/
 void s9_call_mat(ELEMENT    *ele,
-                 MULTIMAT   *multimat,    /* material of actual material layer */
+                 MULTIMAT   *multimat,  /*!< material of actual material layer */
                  DOUBLE      stress[6],
                  DOUBLE      strain[6],
-                 DOUBLE    **C,
+                 DOUBLE    **C,         /*!< constitutive matrix               */
                  DOUBLE    **gmkovc,
                  DOUBLE    **gmkovr,
                  DOUBLE    **gmkonr,
                  DOUBLE    **gkovr,
                  DOUBLE    **gkonr,
-                 INT         rot_axis,
-                 DOUBLE      phi,
-                 INT         ip,
-                 INT         actlay,
-                 INT         istore,/* controls storing of new stresses to wa */
-                 INT         newval)/* controls evaluation of new stresses    */
+                 INT         rot_axis,  /*!< rotation axis of laminat          */
+                 DOUBLE      phi,       /*!< angle of rotation about rot_axis  */
+                 INT         ip,        /*!< the actual integration point      */
+                 INT         actlay,    /*!< the actual layer                  */
+                 INT         istore,    /*!< controls storing of new stresses to wa */
+                 INT         newval)    /*!< controls evaluation of new stresses    */
 {
 DOUBLE g1[3],g2[3],g3[3];
 DOUBLE T[6][6];
@@ -222,6 +222,7 @@ case m_pl_dp:/*------------------- drucker prager material law ---*/
                    multimat->m.pl_dp->possionratio,      
                    multimat->m.pl_dp->Sigy,     
                    multimat->m.pl_dp->Hard,       
+                   multimat->m.pl_dp->GF,
                    multimat->m.pl_dp->betah,    
                    multimat->m.pl_dp->PHI,      
                    ele,      

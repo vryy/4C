@@ -26,15 +26,17 @@ Maintainer: Stefan Hartmann
 /*!----------------------------------------------------------------------
 \brief  shell9 element: consitutive matrix for 'Drucker Prager'-Plasticity                                    
 
-<pre>                                                            sh 03/03
+<pre>                                                            sh 09/03
 This routine calculates the constitutive matrix and forces for a 'Drucker Prager'
 Plasticity with a combined linear isotropic/kinematic hardening law.
 </pre>
 \param  DOUBLE     ym        (i)  young's modulus              
 \param  DOUBLE     pv        (i)  poisson's ratio              
 \param  DOUBLE     sigy      (i)  yield stress                 
-\param  DOUBLE     eh      (i)  hardening modulus            
+\param  DOUBLE     eh        (i)  hardening modulus            
+\param  DOUBLE     gf        (i)  fracture energy              
 \param  DOUBLE     betah     (i)  controls the iso/kin hard.   
+\param  DOUBLE     phi       (i)  angle of friction  
 \param  ELEMENT   *ele       (i)  actual element               
 \param  INT        ip        (i)  integration point Id         
 \param  INT        actlay    (i)  actual layer                 
@@ -49,21 +51,21 @@ Plasticity with a combined linear isotropic/kinematic hardening law.
 \sa calling: ---; called by: s9_call_mat()     [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_mat_plast_dp(
-                 DOUBLE     ym,        /*!< young's modulus              */
-                 DOUBLE     pv,        /*!< poisson's ratio              */
-                 DOUBLE     sigy,      /*!< yield stress                 */
-                 DOUBLE     eh,        /*!< hardening modulus            */
-                 DOUBLE     betah,     /*!< controls the iso/kin hard.   */
-                 DOUBLE     phi,       /*!< friction angle               */
-                 ELEMENT   *ele,       /*!< actual element               */
-                 INT        ip,        /*!< integration point Id         */
-                 INT        actlay,    /*!< actual layer                 */
-                 DOUBLE     stress[6], /*!< vector of stresses [11,22,33,12,23,13]  */
-                 DOUBLE     strain[6], /*!< vector of strains  [11,22,33,12,23,13]  */
-                 DOUBLE   **d,         /*!< constitutive matrix          */
-                 INT        istore,    /*!< controls storing of stresses */
-                 INT        newval)    /*!< controls eval. of stresses   */
+void s9_mat_plast_dp(DOUBLE     ym,        
+                     DOUBLE     pv,        
+                     DOUBLE     sigy,      
+                     DOUBLE     eh,        
+                     DOUBLE     gf,        
+                     DOUBLE     betah,     
+                     DOUBLE     phi,       
+                     ELEMENT   *ele,       
+                     INT        ip,        
+                     INT        actlay,    
+                     DOUBLE     stress[6], 
+                     DOUBLE     strain[6], 
+                     DOUBLE   **d,         
+                     INT        istore,    
+                     INT        newval)    
 {
 INT i;
 DOUBLE sig[6];     /*stresses from last update -> WA [11,22,33,12,23,13]*/
@@ -72,10 +74,13 @@ DOUBLE qn[6];      /*backstress vector from last update -> WA [11,22,33,12,23,13
 INT iupd=0;
 INT yip;
 DOUBLE epstn;
+DOUBLE dia;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_mat_plast_dp");
 #endif
+/*----------------------------------------------------------------------*/
+  dia     = ele->e.s9->dia;
 /*----------------------------- get old values -> sig, eps,epstn,yip ---*/
   for (i=0; i<6; i++)
   {
@@ -96,11 +101,11 @@ dstrc_enter("s9_mat_plast_dp");
   if(newval!=1)  /*Check of yield criteria with possible return*/
   {
    /*Aufruf der Materialroutine, allg. 3D*/
-   mat_pl_dp_lin_main(
-                      ym,
+   mat_pl_dp_lin_main(ym,
                       pv,
                       sigy,
                       eh,
+                      gf,
                       betah,
                       phi,
                       stress,   /*stress*/
@@ -111,7 +116,8 @@ dstrc_enter("s9_mat_plast_dp");
                       &epstn,   /*to be modified*/
                       sig,
                       eps,
-                      qn);
+                      qn,
+                      dia);
   }
 
 /*----------------------------- put new values -> sig, eps,epstn,yip ---*/
