@@ -8,16 +8,19 @@
 //
 // #define MAXNOD                (4)
 // #define MAXELE                (4)
-// #define MAXDOFPERNODE         (18)
-// #define MAXGAUSS              (72)
+// #define MAXDOFPERNODE         (18)     /*5 kinematic layers*/
+// #define MAXGAUSS              (72)     /*tot. 9 Layers with 2x2x2 GPs*/
 // #define MAXRECORDPERELE       (6)
-// #define MAXNODESTRESS_SHELL9  (72)
+//
+// #define MAXLAY_SHELL9         (9)      /* max. total number of layers */
+// #define MAXKLAY_SHELL9        (5)      /* max. number of kin layers */
+// #define MAXNODESTRESS_SHELL9  (72)     /* Numnod*lt*numlay (Numnod=4 for Quad4 | Numnod=9 for Quad8/9)
 //
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-unregel
+SHELL9_7P_el_lay
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           4 
 NODES              9
@@ -31,11 +34,14 @@ TIMETYP      Static
 TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   Yes
-STRUCT_STRESS_FILE Yes
-STRUCT_DISP_GID    Yes
-STRUCT_STRESS_GID  Yes
-FLUID_SOL_FILE     No
+STRUCT_DISP_FILE         No
+STRUCT_STRESS_FILE       No
+STRUCT_DISP_GID          Yes
+STRUCT_STRESS_GID        Yes
+STRUCT_STRESS_GID_SMO    No
+FLUID_SOL_FILE           No
+FLUID_SOL_GID            No
+FLUID_VIS_FILE           No
 ------------------------------------------------------------STATIC
 LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
