@@ -765,7 +765,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read type of neumann condition */
    frchk("Live",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_live;
-   frchk("PredescrDomainLoad",&ierr);
+   frchk("Dead",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_dead;
+   frchk("PredescrDomainLoad",&ierr);   
    if (ierr) actdsurf->neum->neum_type = pres_domain_load;
    frchk("constHydro_z",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_consthydro_z;
@@ -856,6 +858,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdvol->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
    for (i=0; i<MAXDOFPERNODE; i++)
    actdvol->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+   /*----------------------------------- read type of neumann condition */
+   frchk("Dead",&ierr);
+   if (ierr) actdvol->neum->neum_type = neum_dead;   
    /*--------------------------------------------------- read next line */
    frread();
 }
