@@ -156,6 +156,7 @@ if (*length < EPS14) dserror("edge or diagonal of element has zero length");
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+return;
 }
 
 /*!----------------------------------------------------------------------
