@@ -39,7 +39,9 @@ stored.
 ------------------------------------------------------------------------*/
 typedef struct _FLUID_DYN_CALC                
 {
-DOUBLE dta;      /*!< actual time increment */
+DOUBLE dta;      /*!< actual time increment dt(n)			*/
+DOUBLE dtp;	 /*!< previous time increment dt(n-1)			*/
+DOUBLE dt_prop;	 /*!< proposed new time increment dt(n+1)		*/
 DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS */
 DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS */
 DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS  */
@@ -62,14 +64,15 @@ INT    iprerhs;  /*!< treatment of pressure in time discr. */
 INT    surftens; /*!< include surface tension effects */
 INT    fsstnif; 
 INT    fsstnii;
-INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)*/
-INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE       */
-INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION	     */
-INT    nie;	 /*!< EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY  */
-INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)  */
-INT    nif;	 /*!< EVALUATION OF "TIME - RHS"           	     */
-INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"		     */
-INT    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)       */
+INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)	*/
+INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE		*/
+INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION		*/
+INT    nie;	 /*!< EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY	*/
+INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)	*/
+INT    nif;	 /*!< EVALUATION OF "TIME - RHS"			*/
+INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"			*/
+INT    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)		*/
+INT    nim;	 /*!< EVALUATION OF "TIME - RHS" in mass form 		*/
 /*------------------------------------------------ projection method */
 INT    pro_calmat;  /*!< a flag that switches matrix calc.           */
 INT    pro_calrhs;  /*!< a flag that switches rhs calculation        */
@@ -132,14 +135,20 @@ INT                viscstr;      /*!< flag for calculation of viscos stresses */
 INT                freesurf;     /*!< treatment of free surface */
 INT                surftens;     /*!< include surface tension effects */
 INT                checkarea;    /*!< check total area of fluid field */
+INT                liftdrag;     /*!< calculate lift&drag */
 INT                turbu;        /*!< the type of turbulence-model */
 INT                dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
+INT		   adaptive;	 /*!< flag if adaptive time stepping 	*/
+INT		   time_rhs;	 /*!< flag if classic or mass time rhs	*/
 DOUBLE             lenght;       /*!< internal lenght of problem */
 DOUBLE             rought;       /*!< roughtness of solid boundaries */
 DOUBLE      coord_scale[2];      /*!< coordinates for scaling the turbulence variables */   
 DOUBLE             maxtime;      /*!< maximal simulation time */
 DOUBLE             time;         /*!< actual time */
 DOUBLE             dt;           /*!< time increment */
+DOUBLE		   max_dt;	 /*!< maximal time increment for adaptive */
+DOUBLE		   lte;		 /*!< local truncation error for adaptive */
+DOUBLE             alpha;        /*!< time integration constant */
 DOUBLE             theta;        /*!< time integration constant */
 DOUBLE             alpha_m;      /*!< time integration constant */
 DOUBLE             alpha_f;      /*!< time integration constant */
