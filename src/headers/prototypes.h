@@ -103,13 +103,18 @@ void inp_read_curve(char *string);
  *----------------------------------------------------------------------*/
 void inpdesign();
 void inp_dnode();
+void read_1_dnode(DNODE *dnode, int readId);
 void inp_dline();
+void read_1_dline(DLINE *dline, int readId);
 void inp_dsurface();
+void read_1_dsurf(DSURF *dsurf, int readId);
 void inp_dvolume();
+void read_1_dvol(DVOL *dvol, int readId);
 /*----------------------------------------------------------------------*
  |  input_design_top.c                                  m.gee 11/01    |
  *---------------------------------------------------------------------*/
-void inpdesign_topology();
+void inpdesign_topology_design();
+void inpdesign_topology_fe();
 /*----------------------------------------------------------------------*
  |  input_material.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
