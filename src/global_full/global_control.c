@@ -59,6 +59,7 @@ void ntam(int argc, char *argv[])
 int ierr;
 int handle;
 /*---------------------------------------- init devices, tracing, etc...*/
+/* test commentar */
 ntaini(argc,argv);
 /*--------------------------------input phase, input of all information */
 ntainp();
