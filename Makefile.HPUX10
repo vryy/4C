@@ -57,7 +57,7 @@ include ./Makefile.personal_path
 #PFL     = -DD_SHELL8 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK
 #AZTEC   = -laztec_seriell21
 #UMFPACK = -lumfpack40_hpux10_32
-#--------------------------------------------------------------------
+##--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
@@ -65,7 +65,7 @@ PROGRAM_NAME  = cca_par_10.20.exe
 FXX     = /opt/mpi/bin/mpif77
 CCX     = /opt/mpi/bin/mpicc
 LDX     = /opt/mpi/bin/mpicc
-PFL     = -DPARALLEL  -DD_FLUID2  -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+PFL     = -DPARALLEL  -DD_FLUID2  -DD_SHELL8 -DD_WALL1 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
           -DAZTEC_PACKAGE -DUMFPACK
 AZTEC   = -laztec_par21
 UMFPACK = -lumfpack40_hpux10_32
@@ -252,7 +252,29 @@ OBJS6	      = ${SRC}/shell8/s8_main.o \
                 ${SRC}/shell8/s8_xint.o \
                 ${SRC}/shell8/s8_init.o 
 #                ale
-OBJS7	      = ${SRC}/ale/ale_inpele.o 
+OBJS7         = ${SRC}/ale3/ale3_inpele.o \
+                ${SRC}/ale3/ale3_intg.o \
+                ${SRC}/ale3/ale3_static_ke.o \
+                ${SRC}/ale3/ale3_funcderiv.o \
+                ${SRC}/ale3/ale3_bop.o \
+                ${SRC}/ale3/ale3_jaco.o \
+                ${SRC}/ale3/ale3_mat_linel.o \
+                ${SRC}/ale3/ale3_call_stiff.o \
+                ${SRC}/ale3/ale3_hourglass.o \
+                ${SRC}/ale3/ale3_main.o \
+                ${SRC}/ale3/ale3_calelm.o \
+                ${SRC}/ale3/ale3_rhs.o \
+                ${SRC}/ale3/ale3_dirich.o \
+                ${SRC}/ale3/ale3_dyn_control.o \
+                ${SRC}/ale2/ale2_inpele.o \
+                ${SRC}/ale2/ale2_intg.o \
+                ${SRC}/ale2/ale2_static_ke.o \
+                ${SRC}/ale2/ale2_funcderiv.o \
+                ${SRC}/ale2/ale2_bop.o \
+                ${SRC}/ale2/ale2_jaco.o \
+                ${SRC}/ale2/ale2_mat_linel.o \
+                ${SRC}/ale2/ale2_hourglass.o \
+                ${SRC}/ale2/ale2_main.o
 #                parallel
 OBJS8	      = ${SRC}/parallel/par_initmetis.o \
                 ${SRC}/parallel/par_make_comm.o \
