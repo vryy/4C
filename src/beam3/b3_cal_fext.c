@@ -276,6 +276,8 @@ ea=emod*area;
 eiy=emod*iy;
 eiz=emod*iz;
 
+if (ele->g.gline->neum != NULL)
+{
 /*----------------- element load dependent on load case ----------------*/
 switch(ele->g.gline->neum->neum_type)
 {
@@ -408,6 +410,7 @@ break;
 
 /*----------------------------------------------------------------------*/
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
+}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -468,7 +471,8 @@ emod=mat->m.stvenant->youngs;
 /*alfat=mat->m.stvenant->alphat;*/
 
 
-
+if (ele->g.gline->neum != NULL)
+{
 switch(ele->g.gline->neum->neum_type)
 {
 case neum_none:
@@ -570,6 +574,7 @@ break;
 /*----------------------------------------------------------------------*/
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
+}
 #ifdef DEBUG 
 dstrc_exit();
 #endif
