@@ -188,8 +188,11 @@ container.global_numeq = 0;
 container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 /*----------------------------------- call rhs-routines to assemble rhs */
-/*-------------------------- the approbiate action is set inside calrhs */
+/*------------------------------------ set action before call of calrhs */
 container.kstep = 0;
+container.inherit = 1;
+container.point_neum = 1;
+*action = calc_struct_eleload;
 calrhs(actfield,actsolv,actpart,actintra,actsysarray,
        &(actsolv->rhs[actsysarray]),action,&container);
 /*--------------------------------------------------------- call solver */

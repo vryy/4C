@@ -242,8 +242,11 @@ if (par.myrank==0)
 if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
    out_gid_msh();
 /*-------------------------------------- create the original rhs vector */
-/*-------------------------- the approbiate action is set inside calrhs */
+/*-------------------------- set action before of calrhs --- genk 10/02 */
 container.kstep = 0;
+container.inherit = 1;
+container.point_neum = 1;
+*action = calc_struct_eleload;
 calrhs(actfield,actsolv,actpart,actintra,actsysarray,
         &(actsolv->rhs[actsysarray]),action,&container);
 /*--------------------------------------------------copy the rhs vector */

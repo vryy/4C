@@ -519,8 +519,11 @@ solserv_result_resid(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_arr
 /*---------------------- this vector holds loads due to external forces */
 solserv_zero_vec(&(actsolv->rhs[1]));
 container.kstep = 0;
-calrhs(actfield,actsolv,actpart,actintra,stiff_array,&(actsolv->rhs[1]),action,&container);
-
+container.inherit = 1;
+container.point_neum = 1;
+*action = calc_struct_eleload;
+calrhs(actfield,actsolv,actpart,actintra,stiff_array,
+       &(actsolv->rhs[1]),action,&container);
 /*------------------------------------------------ get factor at time t */
 dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 

@@ -349,6 +349,9 @@ if (damp_array>0)
 /*-------------------------- the approbiate action is set inside calrhs */
 /*---------------------- this vector holds loads due to external forces */
 container.kstep = 0;
+container.inherit = 1;
+container.point_neum = 1;
+*action = calc_struct_eleload;
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
        &(actsolv->rhs[1]),action,&container);
 /*------------------------------------------------- copy the rhs vector */
@@ -507,6 +510,9 @@ solserv_copy_vec(&(actsolv->rhs[1]),&(actsolv->rhs[2]));
 /*--------------------------------------- make load at time t in rhs[1] */
 solserv_zero_vec(&(actsolv->rhs[1]));
 container.kstep = 0;
+container.inherit = 1;
+container.point_neum = 1;
+*action = calc_struct_eleload;
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
        &(actsolv->rhs[1]),action,&container);
 dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
