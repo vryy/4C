@@ -61,7 +61,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = mlib_d_sp;
          solv->mlvar = (MLVAR*)CCACALLOC(1,sizeof(MLVAR));
-         if (!(solv->mlvar)) dserror("Allocation of MLVAR failed");
          mlvar = solv->mlvar;
       }
       /*-------------------------------------------------- Aztec solver */
@@ -72,7 +71,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = aztec_msr;
          solv->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
-         if (!(solv->azvar)) dserror("Allocation of AZVAR failed");
          azvar = solv->azvar;
       }
       /*---------------------------------------- HYPRE solver BoomerAMG */
@@ -83,7 +81,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = hypre_amg;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
-         if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
       /*---------------------------------------------- HYPRE solver PCG */
@@ -94,7 +91,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = hypre_pcg;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
-         if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
       /*-------------------------------------------- HYPRE solver Gmres */
@@ -105,7 +101,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = hypre_gmres;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
-         if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
       /*----------------------------------------- HYPRE solver BiCGstab */
@@ -116,7 +111,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = hypre_bicgstab;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
-         if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
       /*------------------------------------------------ solver SuperLU */
@@ -127,7 +121,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = parsuperlu;
          solv->psuperluvars = (PSUPERLUVARS*)CCACALLOC(1,sizeof(PSUPERLUVARS));
-         if (!(solv->psuperluvars)) dserror("Allocation of PSUPERLUVARS failed");
          psuperluvars = solv->psuperluvars;
       }
       /*------------------------------------------------- solver Lapack */
@@ -135,7 +128,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
          solv->solvertyp = lapack_sym;
          solv->lapackvars = (LAPACKVARS*)CCACALLOC(1,sizeof(LAPACKVARS));
-         if (!(solv->lapackvars)) dserror("Allocation of LAPACKVARS failed");
          lapackvars = solv->lapackvars;
       }
       /*------------------------------------------------- solver Lapack */
@@ -143,7 +135,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
          solv->solvertyp = lapack_nonsym;
          solv->lapackvars = (LAPACKVARS*)CCACALLOC(1,sizeof(LAPACKVARS));
-         if (!(solv->lapackvars)) dserror("Allocation of LAPACKVARS failed");
          lapackvars = solv->lapackvars;
       }
       /*-------------------------------------------------- solver Mumps */
@@ -154,7 +145,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = mumps_sym;
          solv->mumpsvars = (MUMPSVARS*)CCACALLOC(1,sizeof(MUMPSVARS));
-         if (!(solv->mumpsvars)) dserror("Allocation of MUMPSVARS failed");
          mumpsvars = solv->mumpsvars;
       }
       /*-------------------------------------------------- solver Mumps */
@@ -165,7 +155,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
          solv->solvertyp = mumps_nonsym;
          solv->mumpsvars = (MUMPSVARS*)CCACALLOC(1,sizeof(MUMPSVARS));
-         if (!(solv->mumpsvars)) dserror("Allocation of MUMPSVARS failed");
          mumpsvars = solv->mumpsvars;
       }
       /*------------------------------------------------ solver Umfpack */
@@ -181,7 +170,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
          solv->solvertyp = colsol_solver;
          solv->colsolvars = (COLSOLVARS*)CCACALLOC(1,sizeof(COLSOLVARS));
-         if (!(solv->colsolvars)) dserror("Allocation of COLSOLVARS failed");
          colsolvars = solv->colsolvars;
       }
       /*------------------------------------------------- solver Spooles */
@@ -205,7 +193,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
          solv->solvertyp = MLPCG;
          solv->mlpcgvars = (MLPCGVARS*)CCACALLOC(1,sizeof(MLPCGVARS));
-         if (!(solv->mlpcgvars)) dserror("Alloction of MLPCGVARS failed");
          mlpcgvars = solv->mlpcgvars;
       }
    }/* end of (ierr==1) */
@@ -444,6 +431,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frint("POSTSWEEP"   ,&(mlpcgvars->postsweep),&ierr);
       frint("MAXITER"     ,&(mlpcgvars->maxiter)  ,&ierr);
       frint("COARSENUMDF" ,&(mlpcgvars->numdf)    ,&ierr);
+      frint("OVERLAP"     ,&(mlpcgvars->overlap)    ,&ierr);
 
       frdouble("PROLONGSMODAMP",&(mlpcgvars->p_omega),&ierr);
       frdouble("TOLERANCE"     ,&(mlpcgvars->tol)    ,&ierr);
@@ -474,6 +462,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (strncmp("bckGS",buffer,5)==0)  mlpcgvars->postsmoother = post_bckGS;
          if (strncmp("Jacobi",buffer,6)==0) mlpcgvars->postsmoother = post_Jacobi;
          if (strncmp("ILU",buffer,3)==0)    mlpcgvars->postsmoother = post_ilu;
+      }
+      frchar("TYPE" ,buffer,&ierr);
+      if (ierr==1)
+      {
+         if (strncmp("Vanek",buffer,5)==0)  mlpcgvars->typ=2;
+         if (strncmp("Fish",buffer,4)==0)   mlpcgvars->typ=1;
       }
    break;
    default:/*-------------------------------------------- reading error */

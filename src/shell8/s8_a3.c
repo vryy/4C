@@ -167,7 +167,7 @@ for (i=1; i<numa3; i++)
    normal[0] = averdir[1]*dir_list[2][i] - averdir[2]*dir_list[1][i];
    normal[1] = averdir[2]*dir_list[0][i] - averdir[0]*dir_list[2][i];
    normal[2] = averdir[0]*dir_list[1][i] - averdir[1]*dir_list[0][i];
-   lenght = DSQR(normal[0])+DSQR(normal[1])+DSQR(normal[2]);
+   lenght = normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2];
    if (lenght <= EPS12)/*----------------------- directors are parallel */
    {
       davn[0] = 0.5*(averdir[0]+dir_list[0][i]);
@@ -202,9 +202,6 @@ for (i=1; i<numa3; i++)
    a3[1] = davn[1];
    a3[2] = davn[2];
 }
-
-
-
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

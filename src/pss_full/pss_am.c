@@ -328,29 +328,23 @@ switch (a->Typ)
 {
 case cca_DA: /* -------------------------------------------double array */
 a->a.da    = (double**)CCAMALLOC((fdim*sizeof(double*)));
-if (!(a->a.da))    dserror("Allocation of memory failed");
 a->a.da[0] = (double*) CCAMALLOC((fdim*sdim*sizeof(double)));
-if (!(a->a.da[0])) dserror("Allocation of memory failed");
 for (i=1; i<fdim; i++) a->a.da[i] = &(a->a.da[0][i*sdim]);
 break;
 
 
 case cca_IA: /* ------------------------------------------integer array */
 a->a.ia    = (int**)CCAMALLOC((fdim*sizeof(int*)));
-if (!(a->a.ia))    dserror("Allocation of memory failed");
 a->a.ia[0] = (int*) CCAMALLOC((fdim*sdim*sizeof(int)));
-if (!(a->a.ia[0])) dserror("Allocation of memory failed");
 for (i=1; i<fdim; i++) a->a.ia[i] = &(a->a.ia[0][i*sdim]);
 break;
 
 case cca_DV: /* ------------------------------------------double vector */
 a->a.dv = (double*)CCAMALLOC((fdim*sdim*sizeof(double)));
-if (!(a->a.dv)) dserror("Allocation of memory failed");
 break;
 
 case cca_IV: /* -----------------------------------------integer vector */
 a->a.iv = (int*)CCAMALLOC((fdim*sdim*sizeof(int)));
-if (!(a->a.iv)) dserror("Allocation of memory failed");
 break;
 
 default:
@@ -1118,11 +1112,8 @@ switch (a->Typ)
 case cca_D3: /* --------------------------------------------double D3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
 a->a.d3       = (double***)CCAMALLOC((fdim*sizeof(double**)));
-if (!(a->a.d3))       dserror("Allocation of memory failed");
 a->a.d3[0]    = (double**) CCAMALLOC((fdim*sdim*sizeof(double*)));
-if (!(a->a.d3[0]))    dserror("Allocation of memory failed");
 a->a.d3[0][0] = (double*)  CCAMALLOC((fdim*sdim*tdim*sizeof(double)));
-if (!(a->a.d3[0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.d3[i]    = &(a->a.d3[0][i*sdim]);
 endloop=fdim*sdim;
@@ -1132,11 +1123,8 @@ break;
 case cca_I3: /* ----------------------------------------------int I3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
 a->a.i3       = (int***)CCAMALLOC((fdim*sizeof(int**)));
-if (!(a->a.i3))       dserror("Allocation of memory failed");
 a->a.i3[0]    = (int**) CCAMALLOC((fdim*sdim*sizeof(int*)));
-if (!(a->a.i3[0]))    dserror("Allocation of memory failed");
 a->a.i3[0][0] = (int*)  CCAMALLOC((fdim*sdim*tdim*sizeof(int)));
-if (!(a->a.i3[0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.i3[i]    = &(a->a.i3[0][i*sdim]);
 endloop=fdim*sdim;
@@ -1145,13 +1133,9 @@ break;
 
 case cca_D4: /* --------------------------------------------double D4 array */
 a->a.d4          = (double****)CCAMALLOC((fdim*sizeof(double***)));
-if (!(a->a.d4))          dserror("Allocation of memory failed");
 a->a.d4[0]       = (double***) CCAMALLOC((fdim*sdim*sizeof(double**)));
-if (!(a->a.d4[0]))       dserror("Allocation of memory failed");
 a->a.d4[0][0]    = (double**)  CCAMALLOC((fdim*sdim*tdim*sizeof(double*)));
-if (!(a->a.d4[0][0]))    dserror("Allocation of memory failed");
 a->a.d4[0][0][0] = (double*)   CCAMALLOC((fdim*sdim*tdim*fodim*sizeof(double)));
-if (!(a->a.d4[0][0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.d4[i]       = &(a->a.d4[0][i*sdim]);
 endloop=fdim*sdim;
@@ -1162,13 +1146,9 @@ break;
 
 case cca_I4: /* ----------------------------------------------int I4 array */
 a->a.i4          = (int****)CCAMALLOC((fdim*sizeof(int***)));
-if (!(a->a.i4))          dserror("Allocation of memory failed");
 a->a.i4[0]       = (int***) CCAMALLOC((fdim*sdim*sizeof(int**)));
-if (!(a->a.i4[0]))       dserror("Allocation of memory failed");
 a->a.i4[0][0]    = (int**)  CCAMALLOC((fdim*sdim*tdim*sizeof(int*)));
-if (!(a->a.i4[0][0]))    dserror("Allocation of memory failed");
 a->a.i4[0][0][0] = (int*)   CCAMALLOC((fdim*sdim*tdim*fodim*sizeof(int)));
-if (!(a->a.i4[0][0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.i4[i]       = &(a->a.i4[0][i*sdim]);
 endloop=fdim*sdim;

@@ -85,7 +85,6 @@ for (j=0; j<genprob.numfld; j++)
 #else
    /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
    actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
-   if (!actintra) dserror("Allocation of INTRA failed");
    actintra->intra_fieldtyp = actfield->fieldtyp;
    actintra->intra_rank   = 0;
    actintra->intra_nprocs   = 1;
@@ -180,13 +179,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = mds;
          actsolv->sysarray[i].mds = (ML_ARRAY_MDS*)CCACALLOC(1,sizeof(ML_ARRAY_MDS));
-         if (actsolv->sysarray[i].mds==NULL) dserror("Allocation of ML_ARRAY_MDS failed");
       }
       strcpy(actsolv->sysarray[0].mds->arrayname,"gstif1");
       mask_mds(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].mds); 
@@ -198,14 +194,11 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actndis=i;
 	 actsolv->sysarray_typ[i] = msr;
          actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
-         if (actsolv->sysarray[i].msr==NULL) dserror("Allocation of AZ_ARRAY_MSR failed");
          actsolv->sysarray[i].msr->bins=NULL;      
          mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,actndis);
       }
@@ -218,13 +211,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = spoolmatrix;
          actsolv->sysarray[i].spo = (SPOOLMAT*)CCACALLOC(1,sizeof(SPOOLMAT));
-         if (actsolv->sysarray[i].spo==NULL) dserror("Allocation of SPOOLMAT failed");
       }
       mask_spooles(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].spo);
       isspooles=0;
@@ -236,13 +226,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = parcsr;
          actsolv->sysarray[i].parcsr = (H_PARCSR*)CCACALLOC(1,sizeof(H_PARCSR));
-         if (actsolv->sysarray[i].parcsr==NULL) dserror("Allocation of H_PARCSR failed");
       }
       mask_parcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].parcsr);
       ishypre=0;
@@ -254,13 +241,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = ucchb;
          actsolv->sysarray[i].ucchb = (UCCHB*)CCACALLOC(1,sizeof(UCCHB));
-         if (actsolv->sysarray[i].ucchb==NULL) dserror("Allocation of UCCHB failed");
       }
       mask_ucchb(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ucchb);
       isucchb=0;
@@ -272,13 +256,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = dense;
          actsolv->sysarray[i].dense = (DENSE*)CCACALLOC(1,sizeof(DENSE));
-         if (actsolv->sysarray[i].dense==NULL) dserror("Allocation of DENSE failed");
       }
       mask_dense(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].dense);
       isdense=0;
@@ -290,13 +271,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = rc_ptr;
          actsolv->sysarray[i].rc_ptr = (RC_PTR*)CCACALLOC(1,sizeof(RC_PTR));
-         if (actsolv->sysarray[i].rc_ptr==NULL) dserror("Allocation of RC_PTR failed");
       }
       mask_rc_ptr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].rc_ptr);
       isrc_ptr=0;
@@ -308,13 +286,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = ccf;
          actsolv->sysarray[i].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
-         if (actsolv->sysarray[i].ccf==NULL) dserror("Allocation of CCF failed");
       }
       mask_ccf(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ccf);
       isumfpack=0;
@@ -326,13 +301,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = skymatrix;
          actsolv->sysarray[i].sky = (SKYMATRIX*)CCACALLOC(1,sizeof(SKYMATRIX));
-         if (actsolv->sysarray[i].sky==NULL) dserror("Allocation of SKY failed");
       }
       mask_skyline(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].sky);
       iscolsol=0;
@@ -343,13 +315,10 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->nsysarray = 1;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = bdcsr;
          actsolv->sysarray[i].bdcsr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
-         if (actsolv->sysarray[i].bdcsr==NULL) dserror("Allocation of DBCSR_ROOT failed");
       }
       mask_bdcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].bdcsr);
       actsolv->mlpcgvars->fielddis = &(actfield->dis[0]);

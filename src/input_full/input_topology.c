@@ -37,7 +37,6 @@ for (i=0; i<actdis->numele; i++)
    actele = &(actdis->element[i]);
 /*--------------------------------- allocate the ELEMENTs node-pointers */
    actele->node = (NODE**)CCACALLOC(actele->numnp,sizeof(NODE*));
-   if (actele->node==NULL) dserror("Allocation of node pointers failed");
    
    for (j=0; j<actele->numnp; j++)
    {
@@ -70,7 +69,6 @@ for (i=0; i<actdis->numnp; i++)
 {
    actnode = &(actdis->node[i]);
    actnode->element = (ELEMENT**)CCACALLOC(actnode->numele,sizeof(ELEMENT*));
-   if (actnode->element==NULL) dserror("Allocation of element pointers failed");
    for (j=0; j<actnode->numele; j++) actnode->element[j]=NULL;
 }
 /*---------------- loop elements and point from their nodes to themself */
@@ -193,7 +191,6 @@ dstrc_enter("inp_detailed_topology");
 */
 actdis->ngnode = actdis->numnp;
 actdis->gnode = (GNODE*)CCACALLOC(actdis->ngnode,sizeof(GNODE));
-if (!actdis->gnode) dserror("Allocation of memory failed");
 #ifdef DEBUG 
 for (i=0; i<actdis->ngnode; i++) actdis->gnode[i].Id = i;
 #endif
@@ -228,7 +225,6 @@ for (i=0; i<actdis->numele; i++)
 }
 actdis->ngvol=counter;
 actdis->gvol = (GVOL*)CCACALLOC(actdis->ngvol,sizeof(GVOL));
-if (!actdis->gvol) dserror("Allocation of memory failed");
 #ifdef DEBUG 
 for (i=0; i<actdis->ngvol; i++) actdis->gvol[i].Id = i;
 #endif
@@ -262,7 +258,6 @@ for (i=0; i<actdis->numele; i++)
       actele->g.gvol                = &(actdis->gvol[counter]);
       actdis->gvol[counter].ngsurf  = 6;
       actdis->gvol[counter].gsurf   = (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
-      if (!(actdis->gvol[counter].gsurf)) dserror("Allocation of memory failed");
       nsurftovol += actdis->gvol[counter].ngsurf;
       counter++; 
    break;
@@ -272,7 +267,6 @@ for (i=0; i<actdis->numele; i++)
       actele->g.gvol                = &(actdis->gvol[counter]);
       actdis->gvol[counter].ngsurf  = 4;
       actdis->gvol[counter].gsurf   = (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
-      if (!(actdis->gvol[counter].gsurf)) dserror("Allocation of memory failed");
       nsurftovol += actdis->gvol[counter].ngsurf;
       counter++; 
    break;
@@ -302,7 +296,6 @@ for (i=0; i<actdis->numele; i++)
 /* allocate (temporarily) some surfaces */
 actdis->ngsurf = nsurftovol+nsurfelement;
 actdis->gsurf = (GSURF*)CCACALLOC(actdis->ngsurf,sizeof(GSURF));
-if (!actdis->gsurf) dserror("Allocation of memory failed");
 #ifdef DEBUG 
 for (i=0; i<actdis->ngsurf; i++) actdis->gsurf[i].Id = i;
 #endif
@@ -357,7 +350,6 @@ for (i=0; i<actdis->ngvol; i++)
           dsassert(actdis->gsurf[counter].ngvol==0,"surfaces of volumetric elements got mixed up");
           actdis->gsurf[counter].ngvol = 2;
           actdis->gsurf[counter].gvol = (GVOL**)CCACALLOC(actdis->gsurf[counter].ngvol,sizeof(GVOL*));
-          if (!actdis->gsurf[counter].gvol)           dserror("Allocation of memory failed");
           actdis->gsurf[counter].gvol[0] = actgvol;
           actdis->gsurf[counter].gvol[1] = otherele->g.gvol;
           /* increment gsurf, check whether we still have space in the initial guess */
@@ -376,7 +368,6 @@ for (i=0; i<actdis->ngvol; i++)
           dsassert(actdis->gsurf[counter].ngvol==0,"surfaces of volumetric elements got mixed up");
           actdis->gsurf[counter].ngvol = 1;
           actdis->gsurf[counter].gvol = (GVOL**)CCACALLOC(actdis->gsurf[counter].ngvol,sizeof(GVOL*));
-          if (!actdis->gsurf[counter].gvol)           dserror("Allocation of memory failed");
           actdis->gsurf[counter].gvol[0] = actgvol;
           /* increment gsurf, check whether we still have space in the initial guess */
           dsassert(counter<actdis->ngsurf,"Initial guess of ngsurf too small");
@@ -419,7 +410,6 @@ dsassert(counter-nsurftovol==nsurfelement,"surfaces of 2D elements got mixed up 
 actdis->ngsurf = counter;
 tmpgsurf       = actdis->gsurf;
 actdis->gsurf  = (GSURF*)CCAREALLOC(actdis->gsurf,(actdis->ngsurf)*sizeof(GSURF));
-if (!actdis->gsurf) dserror("Allocation of memory failed");
 /*---- if the realloc moved the gsurf to another place, adjust pointers */
 if (actdis->gsurf != tmpgsurf) 
 {
@@ -478,14 +468,12 @@ for (i=0; i<actdis->numele; i++)
       actgsurf         = actele->g.gsurf;
       actgsurf->ngline = 4;
       actgsurf->gline = (GLINE**)CCACALLOC(actgsurf->ngline,sizeof(GLINE*));
-      if (!actgsurf->gline) dserror("Allocation of memory failed");
    break; 
    case tri3:  
    case tri6:  
       actgsurf         = actele->g.gsurf;
       actgsurf->ngline = 3;
       actgsurf->gline = (GLINE**)CCACALLOC(actgsurf->ngline,sizeof(GLINE*));
-      if (!actgsurf->gline) dserror("Allocation of memory failed");
    break; 
    case hex8: 
    case hex20:
@@ -493,13 +481,11 @@ for (i=0; i<actdis->numele; i++)
       actgvol  = actele->g.gvol;
       actgvol->ngline = 12;
       actgvol->gline = (GLINE**)CCACALLOC(actgvol->ngline,sizeof(GLINE*));
-      if (!actgvol->gline) dserror("Allocation of memory failed");
       for (j=0; j<actgvol->ngsurf; j++) 
       {
          actgvol->gsurf[j]->ngline = 4;
          if (!actgvol->gsurf[j]->gline)
          actgvol->gsurf[j]->gline = (GLINE**)CCACALLOC(actgvol->gsurf[j]->ngline,sizeof(GLINE*));
-         if (!actgvol->gsurf[j]->gline) dserror("Allocation of memory failed");
       }
    break;
    case tet4: 
@@ -507,13 +493,11 @@ for (i=0; i<actdis->numele; i++)
       actgvol  = actele->g.gvol;
       actgvol->ngline = 6;
       actgvol->gline = (GLINE**)CCACALLOC(actgvol->ngline,sizeof(GLINE*));
-      if (!actgvol->gline) dserror("Allocation of memory failed");
       for (j=0; j<actgvol->ngsurf; j++) 
       {
          actgvol->gsurf[j]->ngline = 3;
          if (!actgvol->gsurf[j]->gline)
          actgvol->gsurf[j]->gline = (GLINE**)CCACALLOC(actgvol->gsurf[j]->ngline,sizeof(GLINE*));
-         if (!actgvol->gsurf[j]->gline) dserror("Allocation of memory failed");
       }
    break;
    default:
@@ -534,7 +518,6 @@ for (i=0; i<actdis->ngsurf; i++)
 /*-------------------------------------------- allocate vector of glines */
 actdis->ngline = counter;
 actdis->gline = (GLINE*)CCACALLOC(actdis->ngline,sizeof(GLINE));
-if (!actdis->gline) dserror("Allocation of memory failed");
 #ifdef DEBUG 
 for (i=0; i<actdis->ngline; i++) actdis->gline[i].Id = i;
 #endif
@@ -634,7 +617,6 @@ for (i=0; i<actdis->numele; i++)
 actdis->ngline = counter;
 tmpgline = actdis->gline;
 actdis->gline = (GLINE*)CCAREALLOC(actdis->gline,(actdis->ngline)*sizeof(GLINE));
-if (!actdis->gline) dserror("Allocation of memory failed");
 /* if the realloc moved the lines to another place, adjust the pointers */
 if (tmpgline != actdis->gline)
 {
@@ -801,7 +783,6 @@ for (i=0; i<actdis->ngline; i++)
    actgline = &(actdis->gline[i]);
    dsassert(actgline->ngsurf!=0,"Error in gline<->gsurf connectivity");
    actgline->gsurf = (GSURF**)CCACALLOC(actgline->ngsurf,sizeof(GSURF*));
-   if (!actgline->gsurf) dserror("Allocation of memory failed");
 }
 /*----------------- loop all surfaces and make pointer glines -> gsurfs */
 for (i=0; i<actdis->ngsurf; i++)
@@ -851,7 +832,6 @@ for (i=0; i<actdis->numele; i++)
          actgvol->gline[j]->ngnode =  nnodeperline;
          if (!actgvol->gline[j]->gnode)
          actgvol->gline[j]->gnode = (GNODE**)CCACALLOC(nnodeperline,sizeof(GNODE*));
-         if (!actgvol->gline[j]->gnode) dserror("Allocation of memory failed");
       }
    }
    else
@@ -863,7 +843,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf->gline[j]->ngnode =  nnodeperline;
          if (!actgsurf->gline[j]->gnode)
          actgsurf->gline[j]->gnode = (GNODE**)CCACALLOC(nnodeperline,sizeof(GNODE*));
-         if (!actgsurf->gline[j]->gnode) dserror("Allocation of memory failed");
       }
    }
    
@@ -1220,7 +1199,6 @@ for (i=0; i<actdis->ngline; i++)
       dsassert(actgnode->ngline!=0,"gnode <-> gline topology mixed up");
       if (!actgnode->gline)
       actgnode->gline = (GLINE**)CCACALLOC(actgnode->ngline,sizeof(GLINE*));
-      if (!actgnode->gline) dserror("Allocation of memory failed");
       for (k=0; k<actgnode->ngline; k++)
       if (actgnode->gline[k]==NULL) break;
       dsassert(k!=actgnode->ngline,"gnode <-> gline topology mixed up");
@@ -1239,7 +1217,6 @@ for (i=0; i<actdis->numele; i++)
       actgsurf = actele->g.gsurf;
       actgsurf->ngnode = 4;
       actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-      if (!actgsurf->gnode) dserror("Allocation of memory failed");
       for (j=0; j<actele->numnp; j++) 
       actgsurf->gnode[j] = actele->node[j]->gnode;
    break; 
@@ -1247,7 +1224,6 @@ for (i=0; i<actdis->numele; i++)
       actgsurf = actele->g.gsurf;
       actgsurf->ngnode = 8;
       actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-      if (!actgsurf->gnode) dserror("Allocation of memory failed");
       for (j=0; j<actele->numnp; j++) 
       actgsurf->gnode[j] = actele->node[j]->gnode;
    break;
@@ -1255,7 +1231,6 @@ for (i=0; i<actdis->numele; i++)
       actgsurf = actele->g.gsurf;
       actgsurf->ngnode = 9;
       actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-      if (!actgsurf->gnode) dserror("Allocation of memory failed");
       for (j=0; j<actele->numnp; j++) 
       actgsurf->gnode[j] = actele->node[j]->gnode;
    break; 
@@ -1263,7 +1238,6 @@ for (i=0; i<actdis->numele; i++)
       actgsurf = actele->g.gsurf;
       actgsurf->ngnode = 3;
       actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-      if (!actgsurf->gnode) dserror("Allocation of memory failed");
       for (j=0; j<actele->numnp; j++) 
       actgsurf->gnode[j] = actele->node[j]->gnode;
    break; 
@@ -1271,7 +1245,6 @@ for (i=0; i<actdis->numele; i++)
       actgsurf = actele->g.gsurf;
       actgsurf->ngnode = 6;
       actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-      if (!actgsurf->gnode) dserror("Allocation of memory failed");
       for (j=0; j<actele->numnp; j++) 
       actgsurf->gnode[j] = actele->node[j]->gnode;
    break; 
@@ -1282,7 +1255,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[0];
          actgsurf->ngnode = 4;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[2]->gnode;
@@ -1293,7 +1265,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[1];
          actgsurf->ngnode = 4;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[5]->gnode;
@@ -1304,7 +1275,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[2];
          actgsurf->ngnode = 4;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[1]->gnode;
          actgsurf->gnode[1] = actele->node[2]->gnode;
          actgsurf->gnode[2] = actele->node[6]->gnode;
@@ -1315,7 +1285,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[3];
          actgsurf->ngnode = 4;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[2]->gnode;
          actgsurf->gnode[1] = actele->node[3]->gnode;
          actgsurf->gnode[2] = actele->node[7]->gnode;
@@ -1326,7 +1295,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[4];
          actgsurf->ngnode = 4;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[3]->gnode;
          actgsurf->gnode[1] = actele->node[0]->gnode;
          actgsurf->gnode[2] = actele->node[4]->gnode;
@@ -1337,7 +1305,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[5];
          actgsurf->ngnode = 4;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[4]->gnode;
          actgsurf->gnode[1] = actele->node[5]->gnode;
          actgsurf->gnode[2] = actele->node[6]->gnode;
@@ -1351,7 +1318,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[0];
          actgsurf->ngnode = 8;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[2]->gnode;
@@ -1366,7 +1332,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[1];
          actgsurf->ngnode = 8;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[5]->gnode;
@@ -1381,7 +1346,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[2];
          actgsurf->ngnode = 8;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[1]->gnode;
          actgsurf->gnode[1] = actele->node[2]->gnode;
          actgsurf->gnode[2] = actele->node[6]->gnode;
@@ -1396,7 +1360,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[3];
          actgsurf->ngnode = 8;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[2]->gnode;
          actgsurf->gnode[1] = actele->node[3]->gnode;
          actgsurf->gnode[2] = actele->node[7]->gnode;
@@ -1411,7 +1374,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[4];
          actgsurf->ngnode = 8;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[3]->gnode;
          actgsurf->gnode[1] = actele->node[0]->gnode;
          actgsurf->gnode[2] = actele->node[4]->gnode;
@@ -1426,7 +1388,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[5];
          actgsurf->ngnode = 8;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[4]->gnode;
          actgsurf->gnode[1] = actele->node[5]->gnode;
          actgsurf->gnode[2] = actele->node[6]->gnode;
@@ -1444,7 +1405,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[0];
          actgsurf->ngnode = 9;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[2]->gnode;
@@ -1460,7 +1420,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[1];
          actgsurf->ngnode = 9;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[5]->gnode;
@@ -1476,7 +1435,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[2];
          actgsurf->ngnode = 9;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[1]->gnode;
          actgsurf->gnode[1] = actele->node[2]->gnode;
          actgsurf->gnode[2] = actele->node[6]->gnode;
@@ -1492,7 +1450,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[3];
          actgsurf->ngnode = 9;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[2]->gnode;
          actgsurf->gnode[1] = actele->node[3]->gnode;
          actgsurf->gnode[2] = actele->node[7]->gnode;
@@ -1508,7 +1465,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[4];
          actgsurf->ngnode = 9;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[3]->gnode;
          actgsurf->gnode[1] = actele->node[0]->gnode;
          actgsurf->gnode[2] = actele->node[4]->gnode;
@@ -1524,7 +1480,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[5];
          actgsurf->ngnode = 9;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[4]->gnode;
          actgsurf->gnode[1] = actele->node[5]->gnode;
          actgsurf->gnode[2] = actele->node[6]->gnode;
@@ -1543,7 +1498,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[0];
          actgsurf->ngnode = 3;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[2]->gnode;
@@ -1553,7 +1507,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[1];
          actgsurf->ngnode = 3;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[3]->gnode;
@@ -1563,7 +1516,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[2];
          actgsurf->ngnode = 3;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[2]->gnode;
          actgsurf->gnode[1] = actele->node[0]->gnode;
          actgsurf->gnode[2] = actele->node[3]->gnode;
@@ -1573,7 +1525,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[3];
          actgsurf->ngnode = 3;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[1]->gnode;
          actgsurf->gnode[1] = actele->node[2]->gnode;
          actgsurf->gnode[2] = actele->node[3]->gnode;
@@ -1586,7 +1537,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[0];
          actgsurf->ngnode = 6;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[2]->gnode;
@@ -1599,7 +1549,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[1];
          actgsurf->ngnode = 6;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[0]->gnode;
          actgsurf->gnode[1] = actele->node[1]->gnode;
          actgsurf->gnode[2] = actele->node[3]->gnode;
@@ -1612,7 +1561,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[2];
          actgsurf->ngnode = 6;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[2]->gnode;
          actgsurf->gnode[1] = actele->node[0]->gnode;
          actgsurf->gnode[2] = actele->node[3]->gnode;
@@ -1625,7 +1573,6 @@ for (i=0; i<actdis->numele; i++)
          actgsurf = actgvol->gsurf[3];
          actgsurf->ngnode = 6;
          actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-         if (!actgsurf->gnode) dserror("Allocation of memory failed");
          actgsurf->gnode[0] = actele->node[1]->gnode;
          actgsurf->gnode[1] = actele->node[2]->gnode;
          actgsurf->gnode[2] = actele->node[3]->gnode;

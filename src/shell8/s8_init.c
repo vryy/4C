@@ -6,7 +6,7 @@
  *----------------------------------------------------------------------*/
 void s8init(FIELD *actfield)
 {
-int          i,j,k;
+int          i,j,k,l;
 ELEMENT     *actele;
 NODE        *actnode;
 S8_DATA      data;
