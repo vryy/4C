@@ -116,10 +116,10 @@ for (i=0; i<actdis->ngnode; i++)
    {
    case ondnode:    actgnode->fsicouple = actgnode->d.dnode->fsicouple;   break;
    case ondline:    actgnode->fsicouple = actgnode->d.dline->fsicouple;   break;
-   case ondsurf:    actgnode->fsicouple = NULL;                           break;
-/*   case ondsurf:    actgnode->fsicouple = actgnode->d.dsurf->fsicouple;   break; */
-   case ondnothing: dserror("GNODE not owned by any design object");break;
-   default: dserror("Cannot inherit dirichlet condition");          break;
+   case ondsurf:    actgnode->fsicouple = actgnode->d.dsurf->fsicouple;   break; 
+   case ondvol:     actgnode->fsicouple = NULL;                           break;
+   case ondnothing: dserror("GNODE not owned by any design object");      break;
+   default: dserror("Cannot inherit dirichlet condition");                break;
    }
 }
 /*----------------------------------------------------------------------*/
@@ -153,11 +153,10 @@ for (i=0; i<actdis->ngnode; i++)
    {
    case ondnode:    actgnode->freesurf = actgnode->d.dnode->freesurf;   break;
    case ondline:    actgnode->freesurf = actgnode->d.dline->freesurf;   break;
-   case ondsurf:    actgnode->freesurf = NULL;                           break;
-   case ondvol:     actgnode->freesurf = NULL;                           break;
-/*   case ondsurf:    actgnode->freesurf = actgnode->d.dsurf->freesurf;   break; */
-   case ondnothing: dserror("GNODE not owned by any design object");break;
-   default: dserror("Cannot inherit dirichlet condition");          break;
+   case ondsurf:    actgnode->freesurf = actgnode->d.dsurf->freesurf;   break; 
+   case ondvol:     actgnode->freesurf = NULL;                          break;
+   case ondnothing: dserror("GNODE not owned by any design object");    break;
+   default: dserror("Cannot inherit dirichlet condition");              break;
    }
 }
 /*-------------------------------------- GLINE inherits from its DLINE */
@@ -169,6 +168,17 @@ for (i=0; i<actdis->ngline; i++)
    else
    actdis->gline[i].freesurf = NULL;
 }
+/*-------------------------------------- GSURF inherits from its DSURF */
+for (i=0; i<actdis->ngsurf; i++)
+{
+   /*------------------------------- check whether gline is on a dline */
+   if (actdis->gsurf[i].dsurf)
+   actdis->gsurf[i].freesurf = actdis->gsurf[i].dsurf->freesurf;
+   else
+   actdis->gsurf[i].freesurf = NULL;
+}
+
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -176,6 +186,44 @@ dstrc_exit();
 #endif
 return;
 } /* end of inherit_design_dis_freesurf */
+
+/*----------------------------------------------------------------------*
+ | inherit BCs from design to GNODEs & GLINES                genk 01/03 |
+ *----------------------------------------------------------------------*/
+void inherit_design_dis_slipdirich(DISCRET *actdis)
+{
+#ifdef D_FSI
+INT     i;
+GNODE  *actgnode;
+
+#ifdef DEBUG 
+dstrc_enter("inherit_design_dis_slipdirich");
+#endif
+
+/*-------------------------------------------------------------- GNODES */
+for (i=0; i<actdis->ngnode; i++)
+{
+   actgnode = &(actdis->gnode[i]);
+   switch(actgnode->ondesigntyp)
+   {
+   case ondnode: break;
+   case ondline:    
+      actgnode->slipdirich = actgnode->d.dline->slipdirich;             break;
+   case ondsurf: break; 
+   case ondvol:  break;
+   case ondnothing: dserror("GNODE not owned by any design object");    break;
+   default: dserror("Cannot inherit dirichlet condition");              break;
+   }
+}
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of inherit_design_dis_slipdirich */
+
 
 #endif
 /*----------------------------------------------------------------------*

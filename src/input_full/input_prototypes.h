@@ -39,6 +39,7 @@ void inherit_design_dis_freesurf(
 void inherit_design_dis_neum(
     DISCRET       *actdis);
 
+void inherit_design_dis_slipdirich(DISCRET *actdis);
 
 /*----------------------------------------------------------------------*
   |  inherit_design_ele.c                                   chfoe 01/04  |
@@ -75,37 +76,9 @@ void inpctr_dyn_ale(
 void inpctr_eig_struct(
     ALLEIG         *alleig);
 
-
-/*!---------------------------------------------------------------------
-  \brief input of the FLUID DYNAMIC block in the input-file
-
-  <pre>                                                         genk 03/02
-
-  In this routine the data in the FLUID DYNAMIC block of the input file
-  are read and stored in fdyn	       
-
-  </pre>
-  \param  *fdyn 	  FLUID_DATA       (o)	   
-  \return void                                                                       
-
-  ------------------------------------------------------------------------*/
 void inpctr_dyn_fluid(
     FLUID_DYNAMIC  *fdyn);
 
-
-/*!---------------------------------------------------------------------
-  \brief input of the FSI DYNAMIC block in the input-file
-
-  <pre>                                                         genk 09/02
-
-  In this routine the data in the FSI DYNAMIC block of the input file
-  are read and stored in fsidyn	       
-
-  </pre>
-  \param  *fsidyn 	  FSI_DATA       (o)	   
-  \return void                                                                       
-
-  ------------------------------------------------------------------------*/
 void inpctr_dyn_fsi(
     FSI_DYNAMIC    *fsidyn);
 
@@ -208,6 +181,11 @@ void inp_ale_field(
   |  input_monitor                                         genk 01/03    |
  *----------------------------------------------------------------------*/
 void inp_monitor(void);
+
+/*----------------------------------------------------------------------*
+  |  input_locsys                                         genk 04/04    |
+ *----------------------------------------------------------------------*/
+void inp_cond_locsys(void);
 
 
 /*----------------------------------------------------------------------*
