@@ -122,12 +122,76 @@ for (i=0; i<actdis->ngnode; i++)
    default: dserror("Cannot inherit dirichlet condition");                break;
    }
 }
+/* addition due to fsi mortar requirements chfoe 08/04 */
+/*-------------------------------------- GLINE inherits from its DLINE */
+for (i=0; i<actdis->ngline; i++)
+{
+   /*------------------------------- check whether gline is on a dline */
+   if (actdis->gline[i].dline)
+   actdis->gline[i].fsicouple = actdis->gline[i].dline->fsicouple;
+   else
+   actdis->gline[i].fsicouple = NULL;
+}
+/*-------------------------------------- GSURF inherits from its DSURF */
+for (i=0; i<actdis->ngsurf; i++)
+{
+   /*------------------------------- check whether gline is on a dline */
+   if (actdis->gsurf[i].dsurf)
+   actdis->gsurf[i].fsicouple = actdis->gsurf[i].dsurf->fsicouple;
+   else
+   actdis->gsurf[i].fsicouple = NULL;
+}
+/* end addition chfoe 08/04 */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of inherit_design_dis_fsicouple */
+
+#endif
+
+
+#ifdef D_SSI
+/*----------------------------------------------------------------------*
+ | inherit boundary conditions from design to GNODEs         genk 10/02 |
+ *----------------------------------------------------------------------*/
+void inherit_design_dis_ssicouple(DISCRET *actdis)
+{
+INT     i;
+GNODE  *actgnode;
+#ifdef DEBUG
+dstrc_enter("inherit_design_dis_ssicouple");
+#endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<actdis->ngnode; i++)
+{
+   actgnode = &(actdis->gnode[i]);
+   switch(actgnode->ondesigntyp)
+   {
+   case ondnode:    actgnode->ssicouple = actgnode->d.dnode->ssicouple;   break;
+   case ondline:    actgnode->ssicouple = actgnode->d.dline->ssicouple;   break;
+/* case ondsurf:    actgnode->ssicouple = actgnode->d.dsurf->ssicouple;   break; */
+   case ondvol:     actgnode->ssicouple = NULL;                           break;
+   case ondnothing: dserror("GNODE not owned by any design object");      break;
+   default: dserror("Cannot inherit ssi-couple condition");               break;
+   }
+}
+/*-------------------------------------- GLINE inherits from its DLINE */
+for (i=0; i<actdis->ngline; i++)
+{
+   /*------------------------------- check whether gline is on a dline */
+   if (actdis->gline[i].dline)
+   actdis->gline[i].ssicouple = actdis->gline[i].dline->ssicouple;
+   else
+   actdis->gline[i].ssicouple = NULL;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+return;
+} /* end of inherit_design_dis_ssicouple */
 
 #endif
 
@@ -279,6 +343,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of inherit_design_dis_neum */
-
-
 
