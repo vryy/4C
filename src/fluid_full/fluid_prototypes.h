@@ -42,8 +42,8 @@ void fluid_caldirich(
 		        DOUBLE          *dforces, 
                         DOUBLE         **estif,   
 		        INT             *hasdirich,
-                        INT              is_relax
-		    ); 		    
+			INT		 readfrom
+		    ); 
 void fluid_pm_caldirich(
                      ELEMENT   *actele,  
 		     DOUBLE   *dforces, 
@@ -119,7 +119,7 @@ void dyn_fluid(void);
  ************************************************************************/
 void fluid_createfreesurf(void);
 void fluid_freesurf_setdofs(void);
-void fluid_modcoor(void); 
+void fluid_modcoor(void);
 /************************************************************************
  | fluid_imp_semimp.c                                                   |
  ************************************************************************/
@@ -147,7 +147,7 @@ void fluid_initmfcoupling(
                            FIELD         *fluidfield,
 			   FIELD         *alefield		
 		         );
-			 			   
+
 /************************************************************************
  | fluid_service.c                                                      |
  ************************************************************************/
@@ -155,9 +155,14 @@ void fluid_startproc(
                           FLUID_DYNAMIC     *fdyn,
 		          INT               *nfrastep 
 		    );
-void fluid_tcons(         
+void fluid_cons(         
                           FLUID_DYNAMIC     *fdyn,
                           FLUID_DYN_CALC    *dynvar
+		);
+void fluid_tcons(         
+                          FLUID_DYNAMIC     *fdyn,
+                          FLUID_DYN_CALC    *dynvar,
+			  INT		     time_prep
 		);
 void fluid_icons(         
                           FLUID_DYNAMIC     *fdyn,
@@ -228,7 +233,28 @@ void fluid_reducestress(
 			  INT                numdf, 
 			  FLUID_STRESS       str
 		       );
-	       
+void fluid_acceleration(	FIELD 		*actfield, 
+				INT 	 	iop, 
+				FLUID_DYN_CALC 	*dynvar,
+				FLUID_DYNAMIC	*fdyn
+			);
+void fluid_prep_rhs(FIELD 		*actfield, 
+		    FLUID_DYN_CALC 	*dynvar,
+		    FLUID_DYNAMIC	*fdyn);
+void fluid_predictor(FIELD *actfield, INT iop, FLUID_DYN_CALC *dynvar);
+void fluid_lte(	FIELD	 	*actfield, 
+		INT 		 iop, 
+		FLUID_DYN_CALC 	*dynvar,
+		FLUID_DYNAMIC	*fdyn );
+void fluid_lte_norm(	
+			PARTITION 	*actpart,
+			INTRA		*actintra,
+			FLUID_DYN_CALC	*dynvar,
+                        FLUID_DYNAMIC	*fdyn,
+			INT		*iststep,
+			INT		*repeat,
+			INT		*repeated
+			);	       
 /************************************************************************
  | fluid_service_tu.c                                                   |
  ************************************************************************/
