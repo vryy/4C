@@ -303,9 +303,9 @@ for (i=0;i<numnp_total;i++)
 {
    actnode  = &(actfield->dis[1].node[i]); 
    actgnode = actnode->gnode;      
-   for (j=0;j<numdf;j++) /* loop dofs */
+   if (actgnode->dirich==NULL) 
    {
-      if (actgnode->dirich->dirich_onoff.a.iv[j]==0 || actgnode->dirich->dirich_onoff.a.iv[j+1]==0)
+      for (j=0;j<numdf;j++) /* loop dofs */
       {
       actnode->sol_increment.a.da[3][j]   = lower_limit_kappa*10000;
       actnode->sol_increment.a.da[1][j]   = actnode->sol_increment.a.da[3][j];
@@ -313,8 +313,23 @@ for (i=0;i<numnp_total;i++)
       actnode->sol_increment.a.da[1][j+2] = actnode->sol_increment.a.da[3][j+2];
       actnode->sol_increment.a.da[3][j+1] = actnode->sol_increment.a.da[3][j]/actnode->sol_increment.a.da[3][j+2];
       actnode->sol_increment.a.da[2][j+1] = actnode->sol_increment.a.da[3][j+1];
-     }
-   } /*end loop over nodes */
+      } /*end loop over nodes */
+   }
+   else
+   {
+      for (j=0;j<numdf;j++) /* loop dofs */
+      {
+         if (actgnode->dirich->dirich_onoff.a.iv[j]==0 || actgnode->dirich->dirich_onoff.a.iv[j+1]==0)
+         {
+         actnode->sol_increment.a.da[3][j]   = lower_limit_kappa*10000;
+         actnode->sol_increment.a.da[1][j]   = actnode->sol_increment.a.da[3][j];
+         actnode->sol_increment.a.da[3][j+2] = lower_limit_omega*10000;
+         actnode->sol_increment.a.da[1][j+2] = actnode->sol_increment.a.da[3][j+2];
+         actnode->sol_increment.a.da[3][j+1] = actnode->sol_increment.a.da[3][j]/actnode->sol_increment.a.da[3][j+2];
+         actnode->sol_increment.a.da[2][j+1] = actnode->sol_increment.a.da[3][j+1];
+         }
+      } /*end loop over nodes */
+   }
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
