@@ -234,9 +234,6 @@ for (lr=0;lr<nir;lr++)
          gradp[0] += derxy[0][i] * epren[i];
          gradp[1] += derxy[1][i] * epren[i];
       }
-      /*----------------------------------------------- evaluate tau ---*/
-/*      f2_get_tau(ele,xjm,xyze,funct,det,velint,visc,0,0);
-      
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2_calmat(estif,eforce,velint,histvec,gridvelint,vderxy,
                 vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
@@ -460,9 +457,6 @@ for (lr=0;lr<nir;lr++)
       }
       /*-------------------------- get pressure at integration point ---*/
       presint = f2_scali(funct,epren,iel);
-      
-      /*-------------------------------- evaluate tau at Gauss Point ---*/
-/*      f2_get_tau(ele,xjm,xyze,funct,det,velint,visc,0,0);
       
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2_calresvec(force,velint,histvec,vderxy,vderxy2,funct,derxy,derxy2,
