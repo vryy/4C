@@ -79,6 +79,7 @@ typedef struct _ELEMENT
      struct _AXISHELL   *saxi;                  /* axisymmetric shell */
      struct _INTERF     *interf;                /* 1D interface */
      struct _WALLGE     *wallge;                /* gradient enhance wall element */
+     struct _LS2        *ls2;                   /* 2D element used for level set calculation */	  
      }                          e;              /* name of union */ 
 
      union
@@ -150,6 +151,11 @@ typedef struct _GNODE
      struct _ARRAY          *ass_index;
      struct _GNODE          *mymasters[2];
      struct _HISTORY        *history;     
+#endif
+
+#ifdef D_LS
+  INT     is_node_active;   /* flag to control node activation */
+  INT     is_node_inside;   /* flag to control node position relative to the interface */
 #endif
 
 } GNODE;

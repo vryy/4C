@@ -17,8 +17,11 @@ typedef union _ALLDYNA
 {
    struct _STRUCT_DYNAMIC    *sdyn;   /* ptr for allocation of structural dynamic data */
    struct _FLUID_DYNAMIC     *fdyn;   /* ptr for allocation of fluid dynamic data */
-   struct _FSI_DYNAMIC       *fsidyn; /*ptr fo allocation of fsi dynamic data */
+   struct _FSI_DYNAMIC       *fsidyn; /* ptr for allocation of fsi dynamic data */
    struct _ALE_DYNAMIC       *adyn;   /* ptr for allocation of ale dynamic data */
+#ifdef D_LS
+  struct _LS_DYNAMIC        *lsdyn;  /* ptr for allocation of ls dynamic data */
+#endif  
 } ALLDYNA;
 
 

@@ -101,6 +101,14 @@ Maintainer: Malte Neumann
  | structures used for bug and time tracing               m.gee 10/02   |
  *----------------------------------------------------------------------*/
 #include "container.h"
+/*----------------------------------------------------------------------*
+ | structures for level set                               irhan 04/04   |
+ *----------------------------------------------------------------------*/
+#include "../ls/ls.h"
+/*----------------------------------------------------------------------*
+ | structures for xfem                                    irhan 04/04   |
+ *----------------------------------------------------------------------*/
+#include "../xfem/xfem.h"
 /*----------------------------------------------------------------------*/
 
 
@@ -254,8 +262,13 @@ INT               visual;        /* flag for visualise mode or not */
 INT               numsf;         /* actual number of struct-field */
 INT               numff;         /* actual number of fluid field */
 INT               numaf;         /* actual number of ale field */
+INT               numls;         /* actual number of ls field */
 INT               graderw;       /* flag is gradient enhanced material model */
 
+#ifdef D_XFEM
+INT               xfem_on_off;    /* flag to switch enriched formulation */
+#endif
+  
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
 
@@ -268,8 +281,6 @@ INT               ngsurf;
 GSURF           **gsurfs;
 INT               ngvol;
 GVOL            **gvols;
-
-
 } GENPROB;
 
 /*---------------------------------------------------------------------*

@@ -311,4 +311,3 @@ static INT iminarg1,iminarg2;
  *----------------------------------------------------------------------*/
 #define VERYLARGEINT     (1000000000)
 #define VERYLARGEREAL    (1000000000.0)
-

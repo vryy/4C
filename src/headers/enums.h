@@ -19,7 +19,8 @@ typedef enum _PROBLEM_TYP
                        prb_structure, /*  structural  problem */
                        prb_fluid,     /*  fluid  problem */
                        prb_opt,       /*  strctural optimization  problem */
-		       prb_ale        /*  pure ale problem */
+		       prb_ale,       /*  pure ale problem */
+                       prb_twophase   /*  two phase fluid flow (used for levelset) */
 } PROBLEM_TYP;
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
@@ -37,7 +38,8 @@ typedef enum _FIELDTYP
                        none,        /* unknown type of mechanical field */
                        fluid,       /* fluid field */
                        ale,         /* pseudo structural field */
-                       structure    /* structural field */
+                       structure,   /* structural field */
+                       levelset     /* levelset field */                       
 } FIELDTYP;
 /*----------------------------------------------------------------------*
  | DISRCETISATION MODES                                   genk 08/02    |
@@ -88,7 +90,9 @@ typedef enum _ELEMENT_TYP
                        el_ale3,        /* 3D pseudo structural ale element */
                        el_axishell,    /* 1D axisymmetrical shell element */
                        el_interf,      /* 1D interface element (combination only with wall) */
-                       el_wallge       /* gradient enhanced wall element */
+                       el_wallge,      /* gradient enhanced wall element */
+                       el_ls2,         /* 2D element for level set calculations */
+                       el_fluid2_xfem  /* 2D element for x-fem calculations */                                              
 } ELEMENT_TYP;                         
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
@@ -203,7 +207,10 @@ typedef enum _CALC_ACTION
                        calc_deriv_self_adj,/*         selfadjoint problem */
                        update_struct_odens,/* updata density in ele wa    */
                        upd_optvar,
-                       put_optvar
+                       put_optvar,
+                       /* levelset */
+                       calc_ls_init,
+                       calc_ls                       
 } CALC_ACTION;                         
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
