@@ -48,6 +48,20 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
 
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
+
 
 
 /*-----------------------------------------------------------------------*/
@@ -102,6 +116,7 @@ void f3fcalelestress(
   INT     icode = 0;           /* flags */
   INT     actmat;              /* actual material number */
   INT     iv;                  /* counter for GAUSS points */
+  INT     velnp;               /* position flag for sol_increment field */
   DOUBLE  preint[LOOPL],det[LOOPL];          /* element values */
   DOUBLE  e1,e2,e3;
   DOUBLE  xgr[MAXGAUSS];       /* local r coords of gauss points */
@@ -136,6 +151,7 @@ void f3fcalelestress(
   visc   = mat[actmat].m.fluid->viscosity*dens; /* here we need dynamic viscosity! */
   typ    = ele[0]->distyp;
 
+  velnp = ipos.velnp;
 
   switch(viscstr)
   {
@@ -146,9 +162,9 @@ void f3fcalelestress(
         for (i=0;i<iel;i++)
         {
           actnode=ele[l]->node[i];
-          ele[l]->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[3][3]*dens;
-          ele[l]->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[3][3]*dens;
-          ele[l]->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[3][3]*dens;
+          ele[l]->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[velnp][3]*dens;
+          ele[l]->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[velnp][3]*dens;
+          ele[l]->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[velnp][3]*dens;
           ele[l]->e.f3->stress_ND.a.da[i][3]= ZERO;
           ele[l]->e.f3->stress_ND.a.da[i][4]= ZERO;
           ele[l]->e.f3->stress_ND.a.da[i][5]= ZERO;
@@ -194,10 +210,10 @@ void f3fcalelestress(
         {
           actnode=ele[j]->node[i];
 
-          evel[LOOPL*i+j]                   = actnode->sol_increment.a.da[3][0];
-          evel[sizevec[0]*LOOPL+LOOPL*i+j]  = actnode->sol_increment.a.da[3][1];
-          evel[2*sizevec[0]*LOOPL+LOOPL*i+j]= actnode->sol_increment.a.da[3][2];
-          epre[LOOPL*i+j]                   = actnode->sol_increment.a.da[3][3]*dens;
+          evel[LOOPL*i+j]                   = actnode->sol_increment.a.da[velnp][0];
+          evel[sizevec[0]*LOOPL+LOOPL*i+j]  = actnode->sol_increment.a.da[velnp][1];
+          evel[2*sizevec[0]*LOOPL+LOOPL*i+j]= actnode->sol_increment.a.da[velnp][2];
+          epre[LOOPL*i+j]                   = actnode->sol_increment.a.da[velnp][3]*dens;
         } /*loop*/
       } /* end of loop over nodes */
 
