@@ -274,6 +274,7 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_cal_trans.o \
                 src/wall1/w1_incompmode.o \
                 src/wall1/w1_math.o \
+                src/wall1/w1_restart.o \
 		src/wall1/wallcontact_init.o \
 		src/wall1/wall_contact_detection.o \
 		src/wall1/wall_contact_update.o \
@@ -389,6 +390,7 @@ OBJS_SHELL9   = src/shell9/s9_main.o \
                 src/shell9/s9_Ccacu_unsym.o\
                 src/shell9/s9_cal_dyn.o\
                 src/shell9/s9_call_mat.o \
+                src/shell9/s9_cdia.o \
                 src/shell9/s9_eas.o \
                 src/shell9/s9_eps.o \
                 src/shell9/s9_EStrans.o \
