@@ -11,6 +11,8 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef D_AXISHELL
+
 #include "../headers/standardtypes.h"
 #include "axishell.h"
 #include "axishell_prototypes.h"
@@ -48,97 +50,114 @@ vector.
     called by: global_calelm();
 
 *----------------------------------------------------------------------*/
-void axishell(PARTITION   *actpart,
-              INTRA       *actintra,
-              ELEMENT     *ele,
-              ARRAY       *estif_global,
-              ARRAY       *intforce_global,
-              CALC_ACTION *action,
-              CONTAINER   *container) 
+void axishell(
+    PARTITION   *actpart,
+    INTRA       *actintra,
+    ELEMENT     *ele,
+    ARRAY       *estif_global,
+    ARRAY       *intforce_global,
+    CALC_ACTION *action,
+    CONTAINER   *container
+    )
 {
-#ifdef D_AXISHELL
-SAXI_DATA    actdata;
-MATERIAL    *actmat;
 
-INT          imyrank;
-DOUBLE      *intforce;
+  SAXI_DATA    actdata;
+  MATERIAL    *actmat;
+
+  INT          imyrank;
+  DOUBLE      *intforce = NULL;
 
 #ifdef DEBUG 
-dstrc_enter("axishell");
+  dstrc_enter("axishell");
 #endif
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-if (intforce_global)
-intforce = intforce_global->a.dv;
-/*------------------------------------------------- switch to do option */
-switch (*action)
-{
-/*------------------------------------------- init the element routines */
-case calc_struct_init:
-   saxiinit(actpart);
-   saxistatic_ke(NULL,NULL,NULL,NULL,1);
-   saxi_cal_stress(NULL,NULL,NULL,1); 
-   saxi_eleload(ele,&actdata,intforce,1);         
-break;/*----------------------------------------------------------------*/
-/*----------------------------------- calculate linear stiffness matrix */
-case calc_struct_linstiff:
-   actmat = &(mat[ele->mat-1]);
-   saxistatic_ke(ele,&actdata,actmat,estif_global,0);
-break;/*----------------------------------------------------------------*/
-/*-------------------------------- calculate stresses in a certain step */
-case calc_struct_stress:
-   actmat = &(mat[ele->mat-1]);
-   saxi_cal_stress(ele,&actdata,actmat,0);
-break;/*----------------------------------------------------------------*/
-/*------------------------------ calculate load vector of element loads */
-case calc_struct_eleload:
-   imyrank = actintra->intra_rank;
-   if (imyrank==ele->proc) 
-   {
+
+  if (intforce_global)
+    intforce = intforce_global->a.dv;
+
+  /* switch to do option */
+  switch (*action)
+  {
+
+    /* init the element routines */
+    case calc_struct_init:
+      saxiinit(actpart);
+      saxistatic_ke(NULL,NULL,NULL,NULL,1);
+      saxi_cal_stress(NULL,NULL,NULL,1); 
+      saxi_eleload(ele,&actdata,intforce,1);         
+      break;
+
+    /* calculate linear stiffness matrix */
+    case calc_struct_linstiff:
       actmat = &(mat[ele->mat-1]);
-      saxi_eleload(ele,&actdata,intforce,0);
-   }
-break;/*----------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case calc_struct_update_istep:
-  break;/*--------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case write_restart:
-  break;/*--------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case  read_restart:
-  break;/*--------------------------------------------------------------*/
+      saxistatic_ke(ele,&actdata,actmat,estif_global,0);
+      break;
+
+    /* calculate stresses in a certain step */
+    case calc_struct_stress:
+      actmat = &(mat[ele->mat-1]);
+      saxi_cal_stress(ele,&actdata,actmat,0);
+      break;
+
+    /* calculate load vector of element loads */
+    case calc_struct_eleload:
+      imyrank = actintra->intra_rank;
+      if (imyrank==ele->proc) 
+      {
+        actmat = &(mat[ele->mat-1]);
+        saxi_eleload(ele,&actdata,intforce,0);
+      }
+      break;
+
+    /* do nothig */
+    case calc_struct_update_istep:
+      break;
+
+    /* do nothig */
+    case write_restart:
+      break;
+
+    /* do nothig */
+    case  read_restart:
+      break;
+
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
-/*----------------------------------------------------------- do nothig */
-case calc_struct_opt_init:
-  break;/*--------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case calc_struct_ste:
-  break;/*--------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case calc_struct_stm:
-  break;/*--------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case calc_struct_dee:
-  break;/*--------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case calc_struct_dmc:
-  break;/*--------------------------------------------------------------*/
-/*----------------------------------------------------------- do nothig */
-case update_struct_odens:
-  break;/*--------------------------------------------------------------*/
+      /* do nothig */
+    case calc_struct_opt_init:
+      break;
+
+    /* do nothig */
+    case calc_struct_ste:
+      break;
+
+    /* do nothig */
+    case calc_struct_stm:
+      break;
+
+    /* do nothig */
+    case calc_struct_dee:
+      break;
+
+    /* do nothig */
+    case calc_struct_dmc:
+      break;
+
+    /* do nothig */
+    case update_struct_odens:
+      break;
 #endif                   /* stop including optimization code to ccarat :*/
-/*------------------------------------------------------------- default */
-default:
-   dserror("action unknown");
-break;
-}
-/*----------------------------------------------------------------------*/
+
+    /* default */
+    default:
+      dserror("action unknown");
+      break;
+  }
+
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
-#endif /*D_AXISHELL*/
-return; 
+
+  return; 
 } /* end of axishell */
-/*----------------------------------------------------------------------*/
+
 /*! @} (documentation module close)*/
+#endif /*D_AXISHELL*/

@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #ifdef D_AXISHELL
+
 #include "../headers/standardtypes.h"
 #include "axishell.h"
 #include "axishell_prototypes.h"
@@ -36,27 +37,34 @@ vector.
     called by: axishell();
 
 *----------------------------------------------------------------------*/
-void saxiinit(PARTITION *actpart)
+void saxiinit(
+    PARTITION *actpart
+    )
 {
-INT          i;
-ELEMENT     *actele;
-SAXI_DATA      data;
 
-for (i=0; i<actpart->pdis[0].numele; i++)
-{
-  actele = actpart->pdis[0].element[i];
-  if (actele->eltyp != el_axishell) continue;
-  /*---------------------------------------- init integration points ---*/
-  saxiintg(&data);
-  /*-------------------------------- allocate the space for stresses ---*/
-  am4def("stress_GP",&(actele->e.saxi->stress_GP),1,5,1,0,"D3");
-  am4def("stress_ND",&(actele->e.saxi->stress_ND),1,5,1,0,"D3");
-}
+  INT          i;
+  ELEMENT     *actele;
+  SAXI_DATA      data;
+
+  for (i=0; i<actpart->pdis[0].numele; i++)
+  {
+    actele = actpart->pdis[0].element[i];
+    if (actele->eltyp != el_axishell) continue;
+
+    /* init integration points */
+    saxiintg(&data);
+
+    /* allocate the space for stresses */
+    am4def("stress_GP",&(actele->e.saxi->stress_GP),1,5,1,0,"D3");
+    am4def("stress_ND",&(actele->e.saxi->stress_ND),1,5,1,0,"D3");
+  }
+
 #ifdef DEBUG 
-dstrc_enter("saxiinit");
+  dstrc_enter("saxiinit");
 #endif
-return;
+
+  return;
 } /* end of saxiinit */
-/*----------------------------------------------------------------------*/
-#endif /*D_AXISHELL*/
+
 /*! @} (documentation module close)*/
+#endif /*D_AXISHELL*/

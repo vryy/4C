@@ -72,9 +72,11 @@ void ale_rhs(FIELD        *actfield,     /* active field */
 INT               i,j,k;
 INT               hasdirich;
 ELEMENT          *actele;
-ASSEMBLE_ACTION   assemble_action;
 GNODE            *actgnode;
 
+#ifdef PARALLEL
+ASSEMBLE_ACTION   assemble_action;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("ale_rhs");

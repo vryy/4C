@@ -79,12 +79,34 @@ number of time curves for ale elements
 /*----------------------------------------------------------------------*
  | ale3_bop.c                                                 mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_bop(DOUBLE **b, DOUBLE **deriv, DOUBLE **xjm, DOUBLE det, INT iel);
+void ale3_bop(
+    DOUBLE      b[6][6*MAXNOD_BRICK1],
+    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      xjm[3][3],
+    DOUBLE      det,
+    INT         iel
+    );
 /*----------------------------------------------------------------------*
  | ale_call_stiff.c                                          mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_keku(DOUBLE **s, DOUBLE **bs, DOUBLE **d,
-	      DOUBLE fac, INT nd, INT neps);
+void ale3_keku(
+    DOUBLE  **s, 
+    DOUBLE    bs[6][6*MAXNOD_BRICK1], 
+    DOUBLE    d[6][6], 
+    DOUBLE    fac, 
+    INT       nd
+    );
+/*----------------------------------------------------------------------*
+ | ale2_call_stiff.c                                          mn 06/02  |
+ *----------------------------------------------------------------------*/
+void ale2_keku(
+    DOUBLE  **s, 
+    DOUBLE  **bs, 
+    DOUBLE  **d, 
+    DOUBLE    fac, 
+    INT       nd,
+    INT       neps
+    );
 /*----------------------------------------------------------------------*
  | ale_dirich.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
@@ -118,8 +140,15 @@ void ale_init(
 /*----------------------------------------------------------------------*
  | ale3_funct_deriv.c                                         mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_funct_deriv(DOUBLE *funct, DOUBLE **deriv, DOUBLE r, DOUBLE s,
-		     DOUBLE t, DIS_TYP typ, INT option);
+void ale3_funct_deriv(
+    DOUBLE      funct[MAXNOD_BRICK1], 
+    DOUBLE      deriv[3][MAXNOD_BRICK1], 
+    DOUBLE      r, 
+    DOUBLE      s,
+    DOUBLE      t,
+    DIS_TYP     typ,
+    INT         option
+    );
 /*----------------------------------------------------------------------*
  | ale3_inpele.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
@@ -133,8 +162,13 @@ void ale3_intg(const ELEMENT *ele, ALE3_DATA  *data);
 /*----------------------------------------------------------------------*
  | ale3_jaco.c                                                mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_jaco(DOUBLE **deriv, DOUBLE **xjm, DOUBLE *det, ELEMENT *ele,
-	      INT iel);
+void ale3_jaco(
+    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      xjm[3][3],
+    DOUBLE     *det,
+    ELEMENT    *ele,
+    INT         iel
+    );
 /*----------------------------------------------------------------------*
  | ale3_main.c                                                mn 06/02  |
  *----------------------------------------------------------------------*/
@@ -143,12 +177,20 @@ void ale3(PARTITION *actpart, INTRA *actintra, ELEMENT *ele,
 /*----------------------------------------------------------------------*
  | ale3_mat_linel.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_mat_linel(STVENANT *mat, DOUBLE **d);
+void ale3_mat_linel(
+    STVENANT   *mat,
+    DOUBLE      d[6][6]
+    );
 /*----------------------------------------------------------------------*
  | ale3_static_ke.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_static_ke(ELEMENT *ele, ALE3_DATA *data, MATERIAL *mat,
-		   ARRAY *estif_global, INT init);
+void ale3_static_ke(
+    ELEMENT   *ele, 
+    ALE3_DATA  *data, 
+    MATERIAL  *mat,
+    ARRAY     *estif_global, 
+    INT        init
+    );
 /*----------------------------------------------------------------------*
  | ale3_hourglass.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/

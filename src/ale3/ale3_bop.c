@@ -27,9 +27,9 @@ This routine calcuates the operator matrix b at the given point r,s,t
 for an 3D-ale-element.
 
 </pre>
-\param **b       DOUBLE  (o)   the calculated operator matrix
-\param **deriv   DOUBLE  (i)   the derivatives of the shape functions
-\param **xjm     DOUBLE  (i)   the Jacobian matrix
+\param b         DOUBLE[][]  (o)   the calculated operator matrix
+\param deriv     DOUBLE[][]  (i)   the derivatives of the shape functions
+\param xjm       DOUBLE[][]  (i)   the Jacobian matrix
 \param det       DOUBLE  (i)   the determinant of the Jacobian matrix
 \param iel       INT     (i)   number of nodes per element
 
@@ -38,23 +38,27 @@ for an 3D-ale-element.
 \sa calling: ---; called by: ale3_static_ke()
 
 *----------------------------------------------------------------------*/
-void ale3_bop(DOUBLE    **b,
-             DOUBLE    **deriv,
-             DOUBLE    **xjm,
-             DOUBLE      det,
-             INT         iel)
+void ale3_bop(
+    DOUBLE      b[6][6*MAXNOD_BRICK1],
+    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      xjm[3][3],
+    DOUBLE      det,
+    INT         iel
+    )
 {
-/*----------------------------------------------------------------------*/
-INT i,node_start;
-DOUBLE dum;
-DOUBLE x1r, x2r, x3r, x1s, x2s, x3s, x1t, x2t, x3t;
-DOUBLE xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
-DOUBLE hr, hs, ht;
-DOUBLE h1, h2, h3;
+
+  INT    i,node_start;
+  DOUBLE dum;
+  DOUBLE x1r, x2r, x3r, x1s, x2s, x3s, x1t, x2t, x3t;
+  DOUBLE xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
+  DOUBLE hr, hs, ht;
+  DOUBLE h1, h2, h3;
+
 #ifdef DEBUG 
-dstrc_enter("ale3_bop");
+  dstrc_enter("ale3_bop");
 #endif
-/*---------------------------------------------- inverse of jacobian ---*/
+
+  /* inverse of jacobian */
   x1r = xjm[0][0];
   x2r = xjm[0][1];
   x3r = xjm[0][2];
@@ -64,7 +68,7 @@ dstrc_enter("ale3_bop");
   x1t = xjm[2][0];
   x2t = xjm[2][1];
   x3t = xjm[2][2];
- 
+
   dum=1.0/det;
 
   xi11=dum*(x2s*x3t - x2t*x3s);
@@ -76,11 +80,12 @@ dstrc_enter("ale3_bop");
   xi31=dum*(x1s*x2t - x1t*x2s);
   xi32=dum*(x2r*x1t - x1r*x2t);
   xi33=dum*(x1r*x2s - x2r*x1s);
-/*----------------------------- get operator b of global derivatives ---*/
+
+  /* get operator b of global derivatives */
   for (i=0; i<iel; i++)         
   {
     node_start = i*3;
-  
+
     hr   = deriv[0][i];
     hs   = deriv[1][i];
     ht   = deriv[2][i];
@@ -108,12 +113,13 @@ dstrc_enter("ale3_bop");
     b[5][node_start+1] = 0.0;
     b[5][node_start+2] = h1 ;
   } /* end of loop over nodes */
-/*----------------------------------------------------------------------*/
+
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
 } /* end of ale3_bop */
-/*----------------------------------------------------------------------*/
+
 #endif
 /*! @} (documentation module close)*/

@@ -26,32 +26,36 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 void ale_init(
-		    FIELD *actfield
-             )     
+    FIELD *actfield
+    )     
 {
-INT i;
-INT numnp_total;
-NODE *actnode;
+
+  INT i;
+  INT numnp_total;
+  NODE *actnode;
 
 #ifdef DEBUG 
-dstrc_enter("ale_init");
+  dstrc_enter("ale_init");
 #endif  
 
-/*---------------------------------------------------- set some values */
-numnp_total  = actfield->dis[0].numnp;
-/*-------------------------------- allocate space for solution history */
-for (i=0;i<numnp_total;i++)
-{
-      actnode=&(actfield->dis[0].node[i]);
-      amredef(&(actnode->sol_increment),2,actnode->sol_increment.sdim,"DA");
-      amzero(&(actnode->sol_increment));
-}
+  /* set some values */
+  numnp_total  = actfield->dis[0].numnp;
 
-/*----------------------------------------------------------------------*/
+  /* allocate space for solution history */
+  for (i=0;i<numnp_total;i++)
+  {
+    actnode=&(actfield->dis[0].node[i]);
+    amredef(&(actnode->sol_increment),2,actnode->sol_increment.sdim,"DA");
+    amzero(&(actnode->sol_increment));
+  }
+
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
 } /* end of ale_init*/ 
+
+
 #endif
 /*! @} (documentation module close)*/

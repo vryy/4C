@@ -28,8 +28,8 @@ This routine calcuates the shape functions and their derivatives at a
 point r,s,t for 3D hex and tet ale-elements.
 
 </pre>
-\param *funct  DOUBLE  (o)   shape functions
-\param **deriv DOUBLE  (o)   the derivatives of the shape functions
+\param funct   DOUBLE[]   (o)   shape functions
+\param deriv   DOUBLE[][] (o)   the derivatives of the shape functions
 \param r       DOUBLE  (i)   r coordinate
 \param s       DOUBLE  (i)   s coordinate
 \param t       DOUBLE  (i)   t coordinate
@@ -42,182 +42,186 @@ point r,s,t for 3D hex and tet ale-elements.
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
-void ale3_funct_deriv(DOUBLE     *funct, 
-                       DOUBLE    **deriv, 
-                       DOUBLE      r, 
-                       DOUBLE      s,
-                       DOUBLE      t,
-                       DIS_TYP     typ,
-                       INT         option)
+void ale3_funct_deriv(
+    DOUBLE      funct[MAXNOD_BRICK1], 
+    DOUBLE      deriv[3][MAXNOD_BRICK1], 
+    DOUBLE      r, 
+    DOUBLE      s,
+    DOUBLE      t,
+    DIS_TYP     typ,
+    INT         option
+    )
 {
-const DOUBLE   q18 = 1.0/8.0;
-DOUBLE         rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
-DOUBLE         t1,t2,t3,t4;
+
+  const DOUBLE   q18 = 1.0/8.0;
+  DOUBLE         rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
+  DOUBLE         t1,t2,t3,t4;
+  
 #ifdef DEBUG 
-dstrc_enter("ale3_funct_deriv");
+  dstrc_enter("ale3_funct_deriv");
 #endif
-/*----------------------------------------------------------------------*/
-/* if option ==0 only funtion evaluation, if option==1 also derivatives */
-/*----------------------------------------------------------------------*/
-rp  = 1.0+r;
-rm  = 1.0-r;
-sp  = 1.0+s;
-sm  = 1.0-s;
-tp  = 1.0+t;
-tm  = 1.0-t;
-rrm = 1.0-r*r;
-ssm = 1.0-s*s;
-ttm = 1.0-t*t;
 
-switch(typ)
-{
-/*----------------------------------------------------------------------*
- |  L I N E A r     sHAPE FUNCtIONs AND tHEIr NAtUrAL DErIVAtIVEs       |
- |  sErENDIPItY     ( 8-NODED ELEMENt )                                 |
- *---------------------------------------------------------------------*/
-case hex8:
-   funct[0]=q18*rp*sm*tm;
-   funct[1]=q18*rp*sp*tm;
-   funct[2]=q18*rm*sp*tm;
-   funct[3]=q18*rm*sm*tm;
-   funct[4]=q18*rp*sm*tp;
-   funct[5]=q18*rp*sp*tp;
-   funct[6]=q18*rm*sp*tp;
-   funct[7]=q18*rm*sm*tp;
-   if (option==1)              /*--- check for derivative evaluation ---*/
-   {
-      deriv[0][0]= q18*sm*tm  ;
-      deriv[0][1]= q18*sp*tm  ;
-      deriv[0][2]=-deriv[0][1];
-      deriv[0][3]=-deriv[0][0];
-      deriv[0][4]= q18*sm*tp  ;
-      deriv[0][5]= q18*sp*tp  ;
-      deriv[0][6]=-deriv[0][5];
-      deriv[0][7]=-deriv[0][4];
-      deriv[1][0]=-q18*tm*rp  ;
-      deriv[1][1]=-deriv[1][0];
-      deriv[1][2]= q18*tm*rm  ;
-      deriv[1][3]=-deriv[1][2];
-      deriv[1][4]=-q18*tp*rp  ;
-      deriv[1][5]=-deriv[1][4];
-      deriv[1][6]= q18*tp*rm  ;
-      deriv[1][7]=-deriv[1][6];
-      deriv[2][0]=-q18*rp*sm  ;
-      deriv[2][1]=-q18*rp*sp  ;
-      deriv[2][2]=-q18*rm*sp  ;
-      deriv[2][3]=-q18*rm*sm  ;
-      deriv[2][4]=-deriv[2][0];
-      deriv[2][5]=-deriv[2][1];
-      deriv[2][6]=-deriv[2][2];
-      deriv[2][7]=-deriv[2][3];
-   }
-break;
-case tet4: /* LINEAR shape functions and their natural derivatives -----*/
-/*--------------------------------------------------- form basic values */
-   t1=r;
-   t2=s;
-   t3=t;
-   t4=ONE-r-s-t;
-      
-   funct[0]= t1;
-   funct[1]= t2;
-   funct[2]= t3;
-   funct[3]= t4;
-   
-   if(option==1) /* --> first derivative evaluation */
-   {         
-      deriv[0][0]= ONE;
-      deriv[0][1]= ZERO;
-      deriv[0][2]= ZERO;
-      deriv[0][3]=-ONE;
+  /* if option ==0 only funtion evaluation, if option==1 also derivatives */
+  rp  = 1.0+r;
+  rm  = 1.0-r;
+  sp  = 1.0+s;
+  sm  = 1.0-s;
+  tp  = 1.0+t;
+  tm  = 1.0-t;
+  rrm = 1.0-r*r;
+  ssm = 1.0-s*s;
+  ttm = 1.0-t*t;
 
-      deriv[1][0]= ZERO;
-      deriv[1][1]= ONE;
-      deriv[1][2]= ZERO;
-      deriv[1][3]=-ONE;
+  switch(typ)
+  {
+    /*  LINEAR SHAPE FUNCTIONS  SERENDIPITY (8-NODED ELEMENT) */
+    case hex8:
+      funct[0]=q18*rp*sm*tm;
+      funct[1]=q18*rp*sp*tm;
+      funct[2]=q18*rm*sp*tm;
+      funct[3]=q18*rm*sm*tm;
+      funct[4]=q18*rp*sm*tp;
+      funct[5]=q18*rp*sp*tp;
+      funct[6]=q18*rm*sp*tp;
+      funct[7]=q18*rm*sm*tp;
 
-      deriv[2][0]= ZERO;
-      deriv[2][1]= ZERO;
-      deriv[2][2]= ONE;
-      deriv[2][3]=-ONE;
-   } /* endif (option==1) */  
-break;
-   
-case tet10: /*  QUADRATIC shape functions and their natural derivatives */
-			 
-   dserror("shape functions for tet10 not yet implemented \n"); 
-/*--------------------------------------------------- form basic values */
+      if (option==1)  /* check for derivative evaluation */
+      {
+        deriv[0][0]= q18*sm*tm  ;
+        deriv[0][1]= q18*sp*tm  ;
+        deriv[0][2]=-deriv[0][1];
+        deriv[0][3]=-deriv[0][0];
+        deriv[0][4]= q18*sm*tp  ;
+        deriv[0][5]= q18*sp*tp  ;
+        deriv[0][6]=-deriv[0][5];
+        deriv[0][7]=-deriv[0][4];
+        deriv[1][0]=-q18*tm*rp  ;
+        deriv[1][1]=-deriv[1][0];
+        deriv[1][2]= q18*tm*rm  ;
+        deriv[1][3]=-deriv[1][2];
+        deriv[1][4]=-q18*tp*rp  ;
+        deriv[1][5]=-deriv[1][4];
+        deriv[1][6]= q18*tp*rm  ;
+        deriv[1][7]=-deriv[1][6];
+        deriv[2][0]=-q18*rp*sm  ;
+        deriv[2][1]=-q18*rp*sp  ;
+        deriv[2][2]=-q18*rm*sp  ;
+        deriv[2][3]=-q18*rm*sm  ;
+        deriv[2][4]=-deriv[2][0];
+        deriv[2][5]=-deriv[2][1];
+        deriv[2][6]=-deriv[2][2];
+        deriv[2][7]=-deriv[2][3];
+      }
+      break;
+
+    case tet4: /* LINEAR SHAPE FUNCTIONS */
+      t1=r;
+      t2=s;
+      t3=t;
+      t4=ONE-r-s-t;
+
+      funct[0]= t1;
+      funct[1]= t2;
+      funct[2]= t3;
+      funct[3]= t4;
+
+      if(option==1) /* first derivative evaluation */
+      {         
+        deriv[0][0]= ONE;
+        deriv[0][1]= ZERO;
+        deriv[0][2]= ZERO;
+        deriv[0][3]=-ONE;
+
+        deriv[1][0]= ZERO;
+        deriv[1][1]= ONE;
+        deriv[1][2]= ZERO;
+        deriv[1][3]=-ONE;
+
+        deriv[2][0]= ZERO;
+        deriv[2][1]= ZERO;
+        deriv[2][2]= ONE;
+        deriv[2][3]=-ONE;
+      } /* endif (option==1) */  
+      break;
+
+    case tet10: /*  QUADRATIC SHAPE FUNCTIONS */
+
+      dserror("shape functions for tet10 not yet implemented \n"); 
+      /* form basic values */
 #if 0
-   t1=r;
-   t2=s;
-   t3=t;
-   t4=ONE-r-s-t;
-   
-   funct[0] =  ;
-   funct[1] =  ;
-   funct[2] = ;
-   funct[3] = ;
-   funct[4] = ;
-   funct[5] = ;
-   funct[6] = ;
-   funct[7] = ;
-   funct[8] = ;
-   funct[9] = ;
+      t1=r;
+      t2=s;
+      t3=t;
+      t4=ONE-r-s-t;
+
+      funct[0] =  ;
+      funct[1] =  ;
+      funct[2] = ;
+      funct[3] = ;
+      funct[4] = ;
+      funct[5] = ;
+      funct[6] = ;
+      funct[7] = ;
+      funct[8] = ;
+      funct[9] = ;
 
 
-   if(option==1) /* --> first derivative evaluation */
-   {
-      deriv[0][0] = ;
-      deriv[1][0] = ;
-      deriv[2][0] = ;
+      if(option==1) /* first derivative evaluation */
+      {
+        deriv[0][0] = ;
+        deriv[1][0] = ;
+        deriv[2][0] = ;
 
-      deriv[0][1] = ;
-      deriv[1][1] = ;
-      deriv[2][1] = ;
-		
-      deriv[0][2] = ;
-      deriv[1][2] = ;
-      deriv[2][2] = ;
+        deriv[0][1] = ;
+        deriv[1][1] = ;
+        deriv[2][1] = ;
 
-      deriv[0][3] = ;
-      deriv[1][3] = ;
-      deriv[2][3] = ;
+        deriv[0][2] = ;
+        deriv[1][2] = ;
+        deriv[2][2] = ;
 
-      deriv[0][4] = ;
-      deriv[1][4] = ;
-      deriv[2][4] = ;
+        deriv[0][3] = ;
+        deriv[1][3] = ;
+        deriv[2][3] = ;
 
-      deriv[0][5] = ;
-      deriv[1][5] = ;
-      deriv[2][5] = ;
+        deriv[0][4] = ;
+        deriv[1][4] = ;
+        deriv[2][4] = ;
 
-      deriv[0][6] = ;
-      deriv[1][6] = ;
-      deriv[2][6] = ;
+        deriv[0][5] = ;
+        deriv[1][5] = ;
+        deriv[2][5] = ;
 
-      deriv[0][7] = ;
-      deriv[1][7] = ;
-      deriv[2][7] = ;
+        deriv[0][6] = ;
+        deriv[1][6] = ;
+        deriv[2][6] = ;
 
-      deriv[0][8] = ;
-      deriv[1][8] = ;
-      deriv[2][8] = ;
+        deriv[0][7] = ;
+        deriv[1][7] = ;
+        deriv[2][7] = ;
 
-      deriv[0][9] = ;
-      deriv[1][9] = ;
-      deriv[2][9] = ;
-   }
-break;
+        deriv[0][8] = ;
+        deriv[1][8] = ;
+        deriv[2][8] = ;
+
+        deriv[0][9] = ;
+        deriv[1][9] = ;
+        deriv[2][9] = ;
+      }
+      break;
 #endif
-default:
-   dserror("unknown typ of interpolation");
-break;
-} /* end of switch typ */
-/*----------------------------------------------------------------------*/
+
+    default:
+      dserror("unknown typ of interpolation");
+      break;
+  } /* end of switch typ */
+
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
 } /* end of ale3_funct_deriv */
+
 #endif
 /*! @} (documentation module close)*/

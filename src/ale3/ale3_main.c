@@ -43,46 +43,55 @@ according to the action.
 \sa calling: ale3_static_ke; called by: ale_calelm(), ale_rhs()
 
 *----------------------------------------------------------------------*/
-void ale3(     PARTITION   *actpart,
-               INTRA       *actintra,
-               ELEMENT     *ele,
-               ARRAY       *estif_global,
-               CALC_ACTION *action,
-               CONTAINER   *container)
+void ale3(
+    PARTITION   *actpart,
+    INTRA       *actintra,
+    ELEMENT     *ele,
+    ARRAY       *estif_global,
+    CALC_ACTION *action,
+    CONTAINER   *container
+    )
 {
+
 #ifdef D_ALE
-ALE3_DATA     actdata;
-MATERIAL    *actmat;
+  ALE3_DATA     actdata;
+  MATERIAL    *actmat;
 
 #ifdef DEBUG 
-dstrc_enter("ale1");
+  dstrc_enter("ale1");
 #endif
-/*----------------------------------------------------------------------*/
-/*------------------------------------------------- switch to do option */
-switch (*action)
-{
-/*------------------------------------------- init the element routines */
-case calc_ale_init:
-   ale3_static_ke(NULL,NULL,NULL,NULL,1);
-break;
-/*----------------------------------- calculate linear stiffness matrix */
-case calc_ale_stiff:
-   actmat = &(mat[ele->mat-1]);
-   ale3_static_ke(ele,&actdata,actmat,estif_global,0);
-break;
-/*----------------------------------------------------------- do nothig */
-case calc_ale_rhs:
-break;
-/*-------------------------------------------------------------- defaul */
-default:
-   dserror("action unknown");
-break;
-}
-/*----------------------------------------------------------------------*/
+
+  /* switch to do option */
+  switch (*action)
+  {
+    /* init the element routines */
+    case calc_ale_init:
+      ale3_static_ke(NULL,NULL,NULL,NULL,1);
+      break;
+
+    /* calculate linear stiffness matrix */
+    case calc_ale_stiff:
+      actmat = &(mat[ele->mat-1]);
+      ale3_static_ke(ele,&actdata,actmat,estif_global,0);
+      break;
+
+    /* do nothig */
+    case calc_ale_rhs:
+      break;
+
+    /* default */
+    default:
+      dserror("action unknown");
+      break;
+  }
+
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
+
 #endif
-return; 
+  return; 
 } /* end of ale3 */
+
+
 /*! @} (documentation module close)*/
