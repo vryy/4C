@@ -21,6 +21,10 @@
 #include "../../../lib_sun/aztec21/lib/az_aztec.h"
 #endif
 
+#ifdef SUSE73
+#include "../../../lib_linux/aztec21/lib/az_aztec.h"
+#endif
+
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
 #ifdef HPUX11
@@ -72,6 +76,10 @@
 
 #ifdef AZUSA
 #include "../../../../lib_ita1/spooles/MPI/spoolesMPI.h"
+#endif
+
+#ifdef SUSE73
+#include "../../../lib_linux/spooles/MPI/spoolesMPI.h"
 #endif
 
 #endif
@@ -647,3 +655,47 @@ struct _ARRAY           vec;             /* local piece of distr. vector */
  | is defined in solver_control.c
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
+
+
+/*!------------------------------------------------------------------OLL---
+\brief a OLL Matrix (orthogonal linked list)
+
+mn 02/03  
+
+-------------------------------------------------------------------------*/
+typedef struct _OLL
+{
+int                     is_init;       /*!< was this matrix initialized ? */
+int                     is_factored;   /*!< is this matrix already factored ? */
+int                     ncall;         /*!< how often was this matrix solved */
+
+int                     numeq_total;   /*!< total number of unknowns */
+int                     numeq;         /*!< number of unknowns updated on this proc */ 
+int                     nnz;           /*!< number of nonzeros on this proc */
+
+struct _ARRAY           update;        /*!< list of dofs updated on this proc */
+
+int                     rdim;          /*!< the local row dimension */
+int                     cdim;          /*!< the local col dimension */
+struct _MATENTRY      **row;           /*!< pointer vectore to the rows */
+struct _MATENTRY      **col;           /*!< pointer vectore to the rows */
+
+
+struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive 
+                                            gdofrecv.a.ia[0..fdim-1]    = dof numbers of external dofs needed 
+                                            sorted in ascending order */
+struct _ARRAY           recvbuff;
+struct _ARRAY           computebuff;   /*!< after receiving all messages they are sorted to computebuff */
+#ifdef PARALLEL
+MPI_Status             *status;        /*!< receive status */
+#endif
+struct _ARRAY           gdofsend;      /*!< ghost dof list to send to other procs (3D integer)
+                                            gdofsend.a.ia[proc][0] = number of values to send to proc proc 
+                                            gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] = 
+                                            dof numbers to be send to proc proc in ascending order */
+struct _ARRAY           sendbuff;
+#ifdef PARALLEL
+MPI_Request            *request;       /*!< send request */
+#endif
+
+} OLL;

@@ -31,39 +31,69 @@ SRC       =  /home/<name>/wdir/ccarat/
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
 # 
-PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE
+#--------------------------------------------------------------------
 #
-# utilities
+# SEQUENTIELL PART
 #
-CC	 = gcc
-F77      = g77
-LD       = $(CC)
+#--------------------------------------------------------------------
+#PROGRAM_NAME  = cca_seq_linux.
+#FXX      = g77
+#CCX	 = gcc
+#LDX      = $(CC)
+#PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE
+#AZTEC      = -laztec_seq
+#SPOOLES  = -lspooles
+#--------------------------------------------------------------------
+#
+# PARALLEL PART
+#
+#--------------------------------------------------------------------
+PROGRAM_NAME  = cca_par_linux.
+FXX      = /usr/local/mpich-1.2.4/bin/mpif77
+CCX	 = /usr/local/mpich-1.2.4/bin/mpicc
+LDX      = /usr/local/mpich-1.2.4/bin/mpicc
+PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE -DSPOOLES_PACKAGE
+AZTEC      = -laztec_par
+SPOOLES  = -lspoolesMPI -lspooles
+#
+#
+# --------------------------------------------------------------------
+CC	 = $(CCX)
+F77      = $(FXX)
+LD       = $(CCX)
 RM	 = /bin/rm -f
+# -------------------------------------------------------------------
 # this is debug
+# -------------------------------------------------------------------
+PROGRAM  = $(PROGRAM_NAME)debg 
 CFLAGS  = -v -g -ansi $(PFL) -DDEBUG
-FFLAGS  = -g
-PROGRAM  = cca_seq_debglinux.exe
+FFLAGS  = -g -I/usr/local/mpich-1.2.5/include/
+# -------------------------------------------------------------------
 # this is fast 
+# -------------------------------------------------------------------
+#PROGRAM  = $(PROGRAM_NAME)fast 
 #CFLAGS   = -v -O -ansi $(PFL)
-#FFLAGS   = -O
-#PROGRAM  = cca_seq_fastlinux.exe
-#
+#FFLAGS   = -O -I/usr/local/mpich-1.2.5/include/
+# -------------------------------------------------------------------
 LDFLAGS	 = -Xlinker -defsym -Xlinker MAIN__=main
 OPENGL   = /opt/graphics/OpenGL
-INCLUDES = -I/usr/include/  
-
+INCLUDES = -I/usr/include/ \
+           -I/usr/local/mpich-1.2.5/include/
+#
 LDOPTS   = -a archive -v -W1 -M
-
-
+#
+#
 LIBS	 =  -L/usr/lib -lc -lm -lF77ext -lf2c \
             -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -lg2c  \
             -L../lib_linux/lapack/lib -llapack \
 	    -L../lib_linux/blas/lib -lblas \
 	    -L../lib_linux/metis/lib -lmetis \
-	    -L../lib_linux/aztec21/lib -laztec
-                
-
-
+	    -L../lib_linux/aztec21/lib/ $(AZTEC) \
+	    -L../lib_linux/spooles/lib/ $(SPOOLES) \
+	    -L/usr/local/mpich-1.2.5/lib/ -lmpich
+#               
+#
+#
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects
 #--------------------------------------------------------------------
@@ -76,10 +106,10 @@ include ./Makefile.objects
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15)
-		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) -o $(PROGRAM)"
+		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) $(INCLUDES) -o $(PROGRAM)"
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-		$(OBJS15) $(LIBS) -o $(PROGRAM)
+		$(OBJS15) $(LIBS)  $(INCLUDES) -o $(PROGRAM)
 
 
 		@echo "done"
