@@ -133,7 +133,6 @@ void dyn_ale_nln(void);
 void dyn_ale_2step(void);
 void dyn_ale_spring(void);
 void dyn_ale_laplace(void);
-void dyn_ale_modes(void);
 /*----------------------------------------------------------------------*
  | ale_service.c                                            genk 03/03  |
  *----------------------------------------------------------------------*/
