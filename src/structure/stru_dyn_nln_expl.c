@@ -630,7 +630,7 @@ restart_write_nlnstructdyn(sdyn,
                            &container   /* contains variables defined in container.h */
                            );
 /*----------------------------------------------------- print time step */
-if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,0);
+if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,0,sdyn->dt);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 fprintf(allfiles.out_err,"TIME for step %d is %f sec\n",sdyn->step,t1-t0);

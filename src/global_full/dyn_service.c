@@ -318,10 +318,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyne */
-
-
-
-
 /*----------------------------------------------------------------------*
  |  compute system energy                                    m.gee 02/02|
      ******************************************************************
@@ -361,6 +357,159 @@ dstrc_exit();
 return;
 } /* end of dyne */
 
+/*----------------------------------------------------------------------*
+ |                                                           m.gee 04/03|
+ |  make incremental potential energy                                   |
+ *----------------------------------------------------------------------*/
+void dyn_epot(FIELD *actfield, int disnum, INTRA *actintra, STRUCT_DYN_CALC *dynvar, double *deltaepot)
+{
+int               i,j;
+int               myrank;
+ARRAY            *array;
+NODE             *actnode;
+DISCRET          *actdis;
+double            fint[MAXDOFPERNODE];
+double            send;
+#ifdef DEBUG 
+dstrc_enter("dyn_epot");
+#endif
+/*----------------------------------------------------------------------*/
+actdis     = &(actfield->dis[disnum]);
+myrank     = actintra->intra_rank;
+*deltaepot = 0.0;
+send       = 0.0;
+/*----------------------------------------------------------------------*/
+for (i=0; i<actdis->numnp; i++)
+{
+   actnode = &(actdis->node[i]);
+   if (actnode->proc != myrank) continue;
+   array   = &(actnode->sol_increment);
+   for (j=0; j<actnode->numdf; j++)
+   fint[j] = 0.5*(array->a.da[1][j] + array->a.da[2][j]);
+   for (j=0; j<actnode->numdf; j++)
+      send += fint[j] * array->a.da[0][j];
+}
+#ifdef PARALLEL
+MPI_Allreduce(&send,deltaepot,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#else
+*deltaepot = send;
+#endif
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_epot */
+
+/*----------------------------------------------------------------------*
+ |                                                           m.gee 04/03|
+ |  make kinetic energy                                                 |
+ *----------------------------------------------------------------------*/
+void dyn_ekin(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, INTRA *actintra, CALC_ACTION *action,
+             CONTAINER *container, int stiff_array, int mass_array)
+{
+double send;
+#ifdef DEBUG 
+dstrc_enter("dyn_ekin");
+#endif
+/*----------------------------------------------------------------------*/
+*action = calc_struct_update_istep;
+container->dvec          = NULL;
+container->dirich        = NULL;
+container->global_numeq  = 0;
+container->dirichfacs    = NULL;
+container->kstep         = 0;
+container->ekin          = 0.0;
+calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,container,action);
+#ifdef PARALLEL
+send = container->ekin;
+MPI_Allreduce(&send,&(container->ekin),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_ekin */
+
+
+/*----------------------------------------------------------------------*
+ |                                                           m.gee 04/03|
+ |  make incremental kinetic energy at element level energy             |
+ | all velocities are in node->sol.a.da[1][j] (including prescribed dofs)|
+ | ekin = 0.5 * v^T * M * v                                             |
+ *----------------------------------------------------------------------*/
+void dyn_ekin_local(ELEMENT *actele,ARRAY *emass, CONTAINER  *container)
+{
+int               i,j,nd;
+double            deltaekin = 0.0;
+double          **mass;
+double            sum;
+double            vel[MAXDOFPERELE];
+double            work[MAXDOFPERELE];
+int               counter=0;
+#ifdef DEBUG 
+dstrc_enter("dyn_ekin_local");
+#endif
+/*----------------------------------------------------------------------*/
+mass = emass->a.da;
+nd   = actele->numnp * actele->node[0]->numdf;
+/*-------------------------------------------- get velocity to a vector */
+for (i=0; i<actele->numnp; i++)
+for (j=0; j<actele->node[i]->numdf; j++)
+   vel[counter++] = actele->node[i]->sol.a.da[1][j];
+/*---------------------------------------------------------- work = M*v */   
+for (i=0; i<nd; i++)
+{
+   sum = 0.0;
+   for (j=0; j<nd; j++) 
+      sum += mass[i][j] * vel[j];
+   work[i] = sum;
+}
+/*----------------------------------------- make deltaekin = vel * work */
+for (i=0; i<nd; i++) deltaekin += vel[i]*work[i];
+/*-------------------------------- add deltaekin to the container->ekin */
+deltaekin *= 0.5;
+container->ekin += deltaekin;
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_ekin_local */
+/*----------------------------------------------------------------------*
+ |                                                           m.gee 04/03|
+ |  make incremental external energy  eout = 0.5*(rhs(t)+rhs(t-dt))*dispi|
+ *----------------------------------------------------------------------*/
+void dyn_eout(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
+              DIST_VECTOR *dispi, /* converged incremental displacements */
+              DIST_VECTOR *rhs1,  /* load at time t                      */ 
+              DIST_VECTOR *rhs2,  /* load at time t-dt                   */ 
+              DIST_VECTOR *work0)
+           
+{
+double deltae;
+double deltaa;
+#ifdef DEBUG 
+dstrc_enter("dyn_eout");
+#endif
+/*----------------------------------------------------------------------*/
+/*------------------------------------------------- work0 = rhs1 + rhs2 */
+solserv_zero_vec(work0);
+solserv_add_vec(rhs1,work0,1.0);
+solserv_add_vec(rhs2,work0,1.0);
+/*------------------------------------------ deltaa = (rhs1+rhs2)*dispi */
+solserv_dot_vec(actintra,work0,dispi,&deltaa);
+deltaa /= 2.0;
+/*------------------------------------------- increment external energy */
+dynvar->eout += deltaa;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_eout */
 
 
 
@@ -445,18 +594,6 @@ return;
  | new accelerations at time t                                          |
  | new velocities    at time t                                          |
  |                                                                      |
- | in node->sol[place][0..numdf-1] is stored:                           |
- |                                                                      |
- | in the nodes the results are stored the following way:               |
- | place 0 holds total displacements of free dofs at time t             |
- | place 1 holds velocities at time t                                   |
- | place 2 holds accels at time t                                       |
- | place 3 holds prescribed displacements at time t-dt                  |
- | place 4 holds prescribed displacements at time t                     |
- | place 5 holds place 4 - place 3                                      |
- | place 6 holds the  velocities of prescribed dofs                     |
- | place 7 holds the  accels of prescribed dofs                         |
- | place 8 is working space                                             |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar, 
@@ -504,11 +641,11 @@ solserv_add_vec(work1,acc,a3);
 /*--------------------------------------- for prescribed displacements: */
 /*  sol[7] = a1*(sol[4]-sol[3])+a2*sol[6]+a3*sol[7] */
 /*----------------------------------------------------------------------*/
-solserv_cpdirich(actfield,0,7,8);               /* make a copy of sol[7] in sol[8] */              
-solserv_zerodirich(actfield,0,7);               /* init sol[7] to zero             */              
-solserv_assdirich_fac(actfield,0,4,3,7,a1,-a1); /* sol[7]+=a1*sol[4]-a1*sol[3]     */
-solserv_assdirich_fac(actfield,0,6,0,7,a2,0.0); /* sol[7]+=a2*sol[6]               */
-solserv_assdirich_fac(actfield,0,8,0,7,a3,0.0); /* sol[7]+=a3*sol[8]               */
+solserv_cpdirich(actfield,0,0,7,8);               /* make a copy of sol[7] in sol[8] */              
+solserv_zerodirich(actfield,0,0,7);               /* init sol[7] to zero             */              
+solserv_assdirich_fac(actfield,0,0,4,3,7,a1,-a1); /* sol[7]+=a1*sol[4]-a1*sol[3]     */
+solserv_assdirich_fac(actfield,0,0,6,0,7,a2,0.0); /* sol[7]+=a2*sol[6]               */
+solserv_assdirich_fac(actfield,0,0,8,0,7,a3,0.0); /* sol[7]+=a3*sol[8]               */
 
 /*--------------- make new vel = a4*(sol_new-sol_old)+a5*vel+a6*acc_old */
 /* this is equiv. to       vel = a4*work0            +a5*work2+a6*work1 */
@@ -521,17 +658,20 @@ solserv_add_vec(work1,vel,a6);
 /*--------------------------------------- for prescribed displacements: */
 /* sol[6] = a4*(sol[4]-sol[3])+a5*sol[6]+a6*sol[7]_old */
 /*----------------------------------------------------------------------*/
-solserv_adddirich(actfield,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */ 
-solserv_assdirich_fac(actfield,0,4,3,6,a4,-a4); /* sol[6] += a4 * sol[4] + -a4 * sol[3] */
-solserv_assdirich_fac(actfield,0,8,0,6,a6,0.0); /* sol[6] += a6 * sol[8] (=sol[7]_old)  */
+solserv_adddirich(actfield,0,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */ 
+solserv_assdirich_fac(actfield,0,0,4,3,6,a4,-a4); /* sol[6] += a4 * sol[4] + -a4 * sol[3] */
+solserv_assdirich_fac(actfield,0,0,8,0,6,a6,0.0); /* sol[6] += a6 * sol[8] (=sol[7]_old)  */
 
 /*--------------------------------------- zero the working place sol[8] */
-solserv_zerodirich(actfield,0,8);  
+solserv_zerodirich(actfield,0,0,8);  
 
 /*--------------------------------- update the prescribed displacements */
-solserv_adddirich(actfield,0,4,0,3,1.0,0.0);  
-solserv_zerodirich(actfield,0,4);
-
+/*------------------------------------------------ copy u(t) -> u(t-dt) */
+/*                                                copy sol[4] to sol[3] */
+solserv_adddirich(actfield,0,0,4,0,3,1.0,0.0);  
+/*----------------------------------------------------------- zero u(t) */
+/*                                                          zero sol[4] */
+solserv_zerodirich(actfield,0,0,4);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -615,17 +755,17 @@ return;
 /*----------------------------------------------------------------------*
  |  print head of nln structural dynamics                    m.gee 02/02|
  *----------------------------------------------------------------------*/
-void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter)
+void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter, double dt)
 {
 #ifdef DEBUG 
 dstrc_enter("dyn_nlnstruct_outstep");
 #endif
 /*----------------------------------------------------------------------*/
-printf("STEP=%6d | NSTEP=%6d | TIME=%-14.8E | NUMITER=%3d | ETOT=%-14.8E | \n",
-       sdyn->step,sdyn->nstep,sdyn->time,numiter+1,dynvar->etot);
+printf("STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | NUMITER=%3d | ETOT=%-14.8E | \n",
+       sdyn->step,sdyn->nstep,sdyn->time,dt,numiter,dynvar->etot);
 /*----------------------------------------------------------------------*/
-fprintf(allfiles.out_err,"STEP=%6d | NSTEP=%6d | TIME=%-14.8E | NUMITER=%3d | ETOT=%-14.8E | EPOT=%-14.8E | EKIN=%-14.8E | EOUT=%-14.8E\n",
-                         sdyn->step,sdyn->nstep,sdyn->time,numiter+1,dynvar->etot,dynvar->epot,dynvar->ekin,dynvar->eout);
+fprintf(allfiles.out_err,"STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | NUMITER=%3d | ETOT=%-14.8E | EPOT=%-14.8E | EKIN=%-14.8E | EOUT=%-14.8E\n",
+                         sdyn->step,sdyn->nstep,sdyn->time,dt,numiter,dynvar->etot,dynvar->epot,dynvar->ekin,dynvar->eout);
 /*----------------------------------------------------------------------*/
 fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
@@ -705,12 +845,6 @@ for (i=0; i<actele->numnp; i++)
 /*--------------------- there are no dirichlet conditions here so leave */
 if (hasdirich==0) goto end;
 /*--------------------------------------- check for presence of damping */
-/*if (ABS(facs[7]) > EPS13 || ABS(facs[8]) > EPS13) 
-{
-   idamp=1;
-   mdamp = facs[7];
-   kdamp = facs[8];
-}*/
 if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS13) 
 {
    idamp=1;

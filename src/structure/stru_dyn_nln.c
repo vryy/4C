@@ -89,7 +89,7 @@ int             counter=0;
 int             numeq;              /* number of equations on this proc */
 int             numeq_total;        /* total number of equations */
 int             init;               /* flag for solver_control call */
-int             itnum;              /* counter for NR-Iterations */
+int             itnum,itstore;      /* counter for NR-Iterations */
 int             convergence;        /* convergence flag */
 int             mod_disp,mod_stress;
 int             mod_res_write;
@@ -100,6 +100,7 @@ double          t0_res,t1_res;
 
 double          dt;
 int             nstep;
+double          deltaepot=0.0;
 
 double          t0,t1;
 
@@ -138,6 +139,20 @@ double         *cforce;
 DIST_VECTOR    *con;                /*  contact forces */              
 int             augon=0;
 int             actaug;
+double          contactdt;
+
+int             timeadapt;          /* flag to switch time adaption on/off */
+int             itwant;
+double          maxdt;
+double          resultdt;
+double          newdt;
+double          olddt;
+double          eta;
+double          lowtime,uptime,writetime;
+double          remain;
+double          low,up;
+int             ilow,iup;
+double          tau,tau2,tau3,fac;
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
@@ -155,6 +170,11 @@ action             = &(calc_action[0]);
 sdyn               = alldyn[0].sdyn;
 contact            = sdyn->contact;
 container.fieldtyp = actfield->fieldtyp;
+timeadapt          = sdyn->timeadapt;
+itwant             = sdyn->itwant;
+maxdt              = sdyn->maxdt;
+resultdt           = sdyn->resultdt;
+sdyn->writecounter = 0;
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
@@ -170,14 +190,14 @@ actintra->intra_nprocs   = 1;
 /* intracommunicator (in case of nonlinear struct. dyn., this should be all) */
 if (actintra->intra_fieldtyp != structure) goto end;
 /*-------------------------------- init the variables in dynvar to zero */
-dynvar.rldfac = 0.0;
-dynvar.rnorm  = 0.0;
-dynvar.epot   = 0.0;
-dynvar.eout   = 0.0;
-dynvar.etot   = 0.0;
-dynvar.ekin   = 0.0;
-dynvar.dinorm = 0.0;
-dynvar.dnorm  = 0.0;
+dynvar.rldfac       = 0.0;
+dynvar.rnorm        = 0.0;
+dynvar.epot         = 0.0;
+dynvar.eout         = 0.0;
+dynvar.etot         = 0.0;
+dynvar.ekin         = 0.0;
+dynvar.dinorm       = 0.0;
+dynvar.dnorm        = 0.0;
 for (i=0; i<20; i++) dynvar.constants[i] = 0.0;
 acttime=0.0;
 /*------------------------------------ check presence of damping matrix */
@@ -225,19 +245,11 @@ solserv_alloc_cp_sparsemask(  actintra,
 
 /*------------------------------- init the dist sparse matrices to zero */
 for (i=0; i<actsolv->nsysarray; i++)
-solserv_zero_mat(
-                 actintra,
-                 &(actsolv->sysarray[i]),
-                 &(actsolv->sysarray_typ[i])
-                );
+solserv_zero_mat(actintra,&(actsolv->sysarray[i]),&(actsolv->sysarray_typ[i]));
 
 /*---------------------------- get global and local number of equations */
-solserv_getmatdims(actsolv->sysarray[stiff_array],
-                   actsolv->sysarray_typ[stiff_array],
-                   &numeq,
-                   &numeq_total
-                   );
-
+solserv_getmatdims(actsolv->sysarray[stiff_array],actsolv->sysarray_typ[stiff_array],
+                   &numeq,&numeq_total);
 
 /*---------------------------------------allocate 4 dist. vectors 'rhs' */
 /*  these hold original load vector, load vector at time t and t-dt and */
@@ -297,25 +309,15 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,
-               &(actsolv->sysarray_typ[stiff_array]),
-               &(actsolv->sysarray[stiff_array]),
-               &(dispi[0]),
-               &(actsolv->rhs[0]),
-               init);
-solver_control(actsolv, actintra,
-               &(actsolv->sysarray_typ[mass_array]),
-               &(actsolv->sysarray[mass_array]),
-               &work[0],
-               &work[1],
-               init);
+solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+               &(dispi[0]),&(actsolv->rhs[0]),init);
+
+solver_control(actsolv, actintra,&(actsolv->sysarray_typ[mass_array]),&(actsolv->sysarray[mass_array]),
+               &work[0],&work[1],init);
+
 if (damp_array>0)
-solver_control(actsolv, actintra,
-               &(actsolv->sysarray_typ[damp_array]),
-               &(actsolv->sysarray[damp_array]),
-               &work[0],
-               &work[1],
-               init);
+solver_control(actsolv, actintra, &(actsolv->sysarray_typ[damp_array]),&(actsolv->sysarray[damp_array]),
+               &work[0],&work[1],init);
 /*----------------- init the assembly for stiffness and for mass matrix */
 /*                                           (damping is not assembled) */
 init_assembly(actpart,actsolv,actintra,actfield,stiff_array,0);
@@ -361,45 +363,22 @@ if (damp_array>0)
                    &(actsolv->sysarray[mass_array]),
                    sdyn->m_damp);  
 }
-/*-------------------------------------- create the original rhs vector */
-/*-------------------------- the approbiate action is set inside calrhs */
-/*---------------------- this vector holds loads due to external forces */
-container.kstep = 0;
-calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-       &(actsolv->rhs[2]),action,&container);
-/*------------------------------------------------- copy the rhs vector */
-solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[3]));
 /*----------------------- init the time curve applied to the loads here */
 /*-------------- this control routine at the moment always uses curve 0 */
 /*-------------------------------------------------- init the timecurve */
 actcurve = 0;
 dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
 
-/* put a zero the the place 7 in node->sol to init the velocities and accels */
+/* put a zero to the place 11 in node->sol to init the velocities and accels */
 /* of prescribed displacements */
-solserv_putdirich_to_dof(actfield,0,0.0,8);
+solserv_putdirich_to_dof(actfield,0,0,0.0,12);
 
-/*---------------------------------- get factor at a certain time t=0.0 */
-dyn_facfromcurve(actcurve,0.0,&(dynvar.rldfac));
+/*-------------------- put a zero to the place 1 and 2 in sol_increment */
+/*------------------ later this will hold internal forces at t and t-dt */
+solserv_sol_zero(actfield,0,1,2);
+solserv_sol_zero(actfield,0,1,1);
 
-/*-------------------------------------- multiply load vector by rldfac */
-solserv_scalarprod_vec(&(actsolv->rhs[2]),dynvar.rldfac);
-
-/*---------------- put the scaled prescribed displacements to the nodes */
-/*             in field sol at place 0 together with free displacements */
-solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,0);
-
-
-/*----- also put prescribed displacements to the nodes in field sol at  */
-/*                                  place 3 separate from the free dofs */
-solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,3);
-
-/*-------------------------------------------- make norm of initial rhs */
-solserv_vecnorm_euclid(actintra,&(actsolv->rhs[2]),&(dynvar.rnorm));
-
-/*---------------------------------------------- compute initial energy */
-dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
-
+/*------------------------------------------- set initial step and time */
 sdyn->step = -1;
 sdyn->time = 0.0;
 
@@ -411,6 +390,7 @@ if (par.myrank==0)
 }
 /*------------------------------------------------------- printout head */
 if (par.myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);
+
 /*----------------------------------------------------------------------*/
 /*                     START LOOP OVER ALL STEPS                        */
 /*----------------------------------------------------------------------*/
@@ -487,13 +467,7 @@ if (restart)
    mod_res_write = sdyn->res_write_evry;
    updevry_disp  = sdyn->updevry_disp;
    /*----------------------------------- the step to read in is restart */
-   restart_read_nlnstructdyn(restart,
-                             sdyn,
-                             &dynvar,
-                             actfield,
-                             actpart,
-                             actintra,
-                             action,
+   restart_read_nlnstructdyn(restart,sdyn,&dynvar,actfield,actpart,actintra,action,
                              actsolv->nrhs, actsolv->rhs,
                              actsolv->nsol, actsolv->sol,
                              1            , dispi       ,
@@ -524,7 +498,8 @@ if (restart)
 }
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
-/*------------------- modifications to time steps siye can be done here */
+/*------------------- modifications to time steps size can be done here */
+adapt_top:
 /*------------------------------------------------ set new absolue time */
 sdyn->time += sdyn->dt;
 /*--- put time to global variable for time-dependent load distributions */
@@ -536,9 +511,7 @@ dyn_setconstants(&dynvar,sdyn,sdyn->dt);
 solserv_zero_vec(&dispi[0]);
 
 /*------------------------- set residual displacements in nodes to zero */
-solserv_result_resid(actfield,actintra,&dispi[0],0,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+solserv_result_resid(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*----------------------------------------------------------------------*/
 /*                     PREDICTOR                                        */
@@ -546,8 +519,8 @@ solserv_result_resid(actfield,actintra,&dispi[0],0,
 /*---------------------- this vector holds loads due to external forces */
 solserv_zero_vec(&(actsolv->rhs[1]));
 container.kstep = 0;
-calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-       &(actsolv->rhs[1]),action,&container);
+calrhs(actfield,actsolv,actpart,actintra,stiff_array,&(actsolv->rhs[1]),action,&container);
+
 /*------------------------------------------------ get factor at time t */
 dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 
@@ -556,14 +529,14 @@ solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
 /*---------------- put the scaled prescribed displacements to the nodes */
 /*             in field sol at place 0 together with free displacements */
-solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,0);
+solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
 
 /* put the prescribed scaled displacements to the nodes in field sol at */
 /*                                  place 4 separate from the free dofs */
-solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,4);
+solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,4);
 
 /*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
-solserv_adddirich(actfield,0,3,4,5,-1.0,1.0);
+solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
 
 /*----- set factors needed for prescribed displacement terms on rhs eff */
 /*
@@ -606,7 +579,7 @@ if (contact)
    s8_contact_searchupdate(actintra,sdyn->dt);
    amzero(&contactforce_a);
    augon = 0;
-   s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon);
+   s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon,&contactdt);
 }
 #endif
 /*-------------------------------------------------------- call elements */
@@ -617,10 +590,10 @@ container.global_numeq  = numeq_total;
 container.dirichfacs    = dirichfacs;
 container.kstep         = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
+
 /*---------------------------- store positive internal forces on fie[1] */
 solserv_zero_vec(&fie[1]);
-assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
-             &(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
 
 /*-------------------------------- put contact forces to internal forces */
 #ifdef S8CONTACT
@@ -637,8 +610,7 @@ solserv_add_vec(&(actsolv->rhs[1]),&(actsolv->rhs[0]),(1.0-sdyn->alpha_f));
 solserv_add_vec(&(fie[1]),&(actsolv->rhs[0]),-1.0);
 
 /*------------------------ add rhs from prescribed displacements to rhs */
-assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
-             &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
 
 /*--------------------- create effective load vector (rhs[0]-fie[2])eff */
 /*
@@ -654,8 +626,7 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
     a6 =  (gamma/beta)/2.0 - 1.0) * dt * (1.0-alphaf)
 */
 /*----------------------------------------------------------------------*/
-pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
-              mass_array,damp_array);
+pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,mass_array,damp_array);
 
 /*----------------------------------- create effective stiffness matrix */
 /*
@@ -665,24 +636,20 @@ pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
          constants[3] =  (1.0-alphaf) * ((gamma/beta)/dt)
 */  
 /*----------------------------------------------------------------------*/
-kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,
-              damp_array);
+kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,damp_array);
 /*------------- call for solution of system dispi[0] = Keff^-1 * rhs[0] */
 init=0;
-solver_control(actsolv, actintra,
-               &(actsolv->sysarray_typ[stiff_array]),
-               &(actsolv->sysarray[stiff_array]),
-               &(dispi[0]),
-               &(actsolv->rhs[0]),
-               init);
+solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+               &(dispi[0]),&(actsolv->rhs[0]),init);
+
 /*------------------------------------------------ update displacements */
 /*------------------------------------------ sol[1] = sol[0] + dispi[0] */
 solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
+
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+
 /*--------------------------------------- make testprintout for contact */
 /*if (par.myrank==0 && ioflags.struct_disp_gid) 
 {
@@ -690,9 +657,8 @@ solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
    counter++;
 }
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
 /*----------------------------------------------------------------------*/
 /*                     AUGMENTATION FOR CONTACT                         */
@@ -731,29 +697,29 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_
 solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
 amzero(&intforce_a);
 amzero(&dirich_a);
-
 /*------------------------------------------------------ detect contact */
 #ifdef S8CONTACT
 if (contact)
 {
    amzero(&contactforce_a);
    augon = 0;
-   s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon);
+   s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon,&contactdt);
 }
 #endif
 
 /* call element routines for calculation of tangential stiffness and intforce */
 *action = calc_struct_nlnstiffmass;
+solserv_sol_zero(actfield,0,1,2);
 container.dvec          = intforce;
 container.dirich        = dirich;
 container.global_numeq  = numeq_total;
 container.dirichfacs    = dirichfacs;
 container.kstep         = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
+
 /*---------------------------- store positive internal forces on fie[2] */
 solserv_zero_vec(&fie[2]);
-assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
-             &(actsolv->sysarray[stiff_array]),&(fie[2]),intforce,1.0);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[2]),intforce,1.0);
 
 /*-------------------------------- put contact forces to internal forces */
 #ifdef S8CONTACT
@@ -779,30 +745,22 @@ solserv_add_vec(&fie[1],&fie[0],sdyn->alpha_f);
 solserv_add_vec(&fie[0],&(actsolv->rhs[0]),-1.0);
 
 /*------------------ add dirichlet forces from prescribed displacements */
-assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
-             &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
+
 /*--------------------- create effective load vector (rhs[0]-fie[0])eff */
-pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
-              mass_array,damp_array);
+pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,mass_array,damp_array);
 
 /*----------------------------------- create effective stiffness matrix */
-kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,
-              damp_array);
+kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,damp_array);
 
 /*---------------------------------------- solve keff * rsd[0] = rhs[0] */
 /* solve for residual displacements to correct incremental displacements*/
 init=0;
-solver_control(actsolv, actintra,
-               &(actsolv->sysarray_typ[stiff_array]),
-               &(actsolv->sysarray[stiff_array]),
-               &(work[0]),
-               &(actsolv->rhs[0]),
-               init);
+solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+               &(work[0]),&(actsolv->rhs[0]),init);
 
 /*-------------------------- return residual displacements to the nodes */
-solserv_result_resid(actfield,actintra,&work[0],0,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+solserv_result_resid(actfield,actintra,&work[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*-- update the incremental displacements by the residual displacements */
 solserv_add_vec(&work[0],&dispi[0],1.0);
@@ -811,10 +769,10 @@ solserv_add_vec(&work[0],&dispi[0],1.0);
 /*------------------------------------------ sol[1] = sol[0] + dispi[0] */
 solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
+
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+
 /*--------------------------------------- make testprintout for contact */
 /*if (par.myrank==0 && ioflags.struct_disp_gid)
 {
@@ -822,9 +780,7 @@ solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
    counter++;
 }
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*----------------------------------------------- check for convergence */
 convergence = 0;
@@ -835,14 +791,21 @@ solserv_vecnorm_Linf(actintra,&(work[0]),&dmax);
 if (par.myrank==0) printf("                                                   Residual %10.5E\n",dynvar.dinorm);fflush(stdout);
 if (dynvar.dinorm < sdyn->toldisp ||
     dynvar.dnorm  < EPS14 ||
-    (dynvar.dinorm < EPS14 && dmax < EPS12) )
+   (dynvar.dinorm < EPS14 && dmax < EPS12) )
 {
+   itnum++;
    convergence = 1;
 }    
 else
 {
    itnum++;
-   if (itnum==sdyn->maxiter) dserror("No convergence in maxiter steps");
+   if (itnum==sdyn->maxiter && timeadapt)
+   { 
+      if (par.myrank==0) printf("No convergence in maxiter steps - repeat step\n");
+      goto adapt_bot;
+   }
+   if (itnum==sdyn->maxiter && !timeadapt)
+      dserror("No convergence in maxiter steps");
    goto iterloop;
 }
 /*----------------------------------------------------------------------*/
@@ -857,74 +820,130 @@ if (contact)
    s8_contact_updlagr(actfield,actpart,actintra);
    if (augon)
    {
+      /* store number of iterations for Newton iteration */
+      if (actaug==0) itstore = itnum;
       /* the lagrange mutlipliers have to be updated either for next augmentation */
       /* or for the next predictor, which also uses the correct multipliers */
       actaug++;
       /* make augmentation for actaug = 0,1,2, where 0 is penalty method */
-      if (actaug<3)
+      if (actaug<4)
       { 
          if (par.myrank==0) printf("\nAUGMENTATION %d\n",actaug);fflush(stdout);
          augon = 0;
          goto augstart;
       }
+      itnum = itstore;
    }
 /*---------------------------- make contact history for frictional case */
-s8_contact_history(actintra);
+/*s8_contact_history(actintra);
 /*------------------------ write contact forces to the nodes in place 9 */
 solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*-------------------------------- set the augmenation flag back to off */
 augon = 0;
 }/* end of if (contact) */
 #endif
+/*----------------------- make time adaption with xie (1991) indicator */
+#if 1
+adapt_bot:
+if (timeadapt)
+{
+   eta    = ((double)itwant)/((double)itnum); 
+   olddt  = sdyn->dt;
+   newdt  = sdyn->dt * pow(eta,0.3333333);
+   if (newdt>1.5*(sdyn->dt)) 
+      newdt = 1.5*(sdyn->dt);
+   if (newdt>maxdt)
+      newdt = maxdt;
+   /* repeat step, if maxiter was reached */
+   if (itnum==sdyn->maxiter)
+   {
+      sdyn->time -= sdyn->dt;
+      sdyn->dt    = newdt;
+      solserv_result_total(actfield,actintra, &(actsolv->sol[0]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+      goto adapt_top;
+   }
+   sdyn->dt = newdt;
+}
+#endif
+/*----------------------------------------------------------------------*/
+/*                     AUGMENTATION FOR CONTACT                         */
+/*----------------------------------------------------------------------*/
+#ifdef S8CONTACT
+/*----------------------------------------------- make contact history  */
+if (contact)
+s8_contact_history(actintra);
+#endif
 /*----------- make temporary copy of actsolv->rhs[2] to actsolv->rhs[0] */
 /*                                   (load at t-dt)                     */
 /* because in  dyn_nlnstructupd actsolv->rhs[2] is overwritten but is   */
-/* still needed to compute energies in dynnle                           */
+/* still needed to compute energies                                     */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
+/*------------------------------ copy disp from sol place 0 to place 10 */
+solserv_sol_copy(actfield,0,0,0,0,10);
+/*------------------------------ copy vels from sol place 1 to place 10 */
+solserv_sol_copy(actfield,0,0,0,1,11);
+/*------------------------------ copy accs from sol place 2 to place 11 */
+solserv_sol_copy(actfield,0,0,0,2,12);
 /*------------------ update displacements, velocities and accelerations */
 dyn_nlnstructupd(actfield,
                  &dynvar,sdyn,actsolv,
-                 &(actsolv->sol[0]),   /* total displacements at time t-dt */
-                 &(actsolv->sol[1]),   /* total displacements at time t    */
-                 &(actsolv->rhs[1]),   /* load vector         at time t    */
-                 &(actsolv->rhs[2]),   /* load vector         at time t-dt */
-                 &vel[0],              /* velocities          at time t    */
-                 &acc[0],              /* accelerations       at time t    */
-                 &work[0],             /* working arrays                   */
-                 &work[1],             /* working arrays                   */
-                 &work[2]);            /* working arrays                   */
-
-/* 
-in the nodes the results are stored the following way: 
-place 0 holds total displacements of free dofs at time t 
-place 1 holds velocities at time t
-place 2 holds accels at time t
-place 3 holds prescribed displacements at time t-dt 
-place 4 holds prescribed displacements at time t
-place 5 holds place 4 - place 3
-place 6 holds the  velocities of prescribed dofs
-place 7 holds the  accels of prescribed dofs
-place 8 is working space
-*/
+                 &(actsolv->sol[0]),/* total displacements at time t-dt */
+                 &(actsolv->sol[1]),/* total displacements at time t    */
+                 &(actsolv->rhs[1]),/* load vector         at time t    */
+                 &(actsolv->rhs[2]),/* load vector         at time t-dt */
+                 &vel[0],           /* velocities          at time t    */
+                 &acc[0],           /* accelerations       at time t    */ 
+                 &work[0],          /* working arrays                   */
+                 &work[1],          /* working arrays                   */
+                 &work[2]);         /* working arrays                   */
 /*-------------------------------------- return velocities to the nodes */
-solserv_result_total(actfield,actintra, &vel[0],1,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
-/*---------------------------------------velocities for prescribed dofs */
-solserv_adddirich(actfield,0,6,0,1,1.0,0.0);
+solserv_result_total(actfield,actintra, &vel[0],1,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+/*-------------------------velocities for prescribed dofs to velocities */
+solserv_adddirich(actfield,0,0,6,0,1,1.0,0.0);
 /*------------------------------------------ return accel. to the nodes */
-solserv_result_total(actfield,actintra, &acc[0],2,
-                     &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
-
+solserv_result_total(actfield,actintra, &acc[0],2,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*-------------------------------------------accel. for prescribed dofs */
-solserv_adddirich(actfield,0,7,0,2,1.0,0.0);
-/*------------------------------------------ make all types of energies */
-dynnle(&dynvar,sdyn,actintra,actsolv,&dispi[0],&fie[1],&fie[2],
-       &(actsolv->rhs[1]),&(actsolv->rhs[0]),&work[0]);
-dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
-dynvar.etot = dynvar.epot + dynvar.ekin;
+solserv_adddirich(actfield,0,0,7,0,2,1.0,0.0);
+/* 
+It is a bit messed up, but anyway:
+in the nodes the results are stored the following way: 
 
+in ARRAY sol.a.da[place][0..numdf-1]:
+place 0  holds total displacements  time t      (free/prescr) 
+place 1  holds velocities           time t      (free/prescr) 
+place 2  holds accels               time t      (free/prescr) 
+place 3  holds displacements        time t-dt   (prescr only) 
+place 4  holds displacements        time t      (prescr only) 
+place 5  holds place 4 - place 3
+place 6  holds velocities           time t      (prescr only)
+place 7  holds accels               time t      (prescr only)
+place 8  is working space
+place 9  holds contact forces       time t      (free only) 
+place 10 holds total displacements  time t-dt   (free/prescr) 
+place 11 holds velocities           time t-dt   (free/prescr) 
+place 12 holds accels               time t-dt   (free/prescr) 
+
+in ARRAY sol_increment.a.da[place][0..numdf-1]
+place 0 holds converged incremental displacments (without prescribed dofs) 
+place 1 holds converged internal forces at time t-dt 
+place 2 holds converged internal forces at time t
+
+in ARRAY sol_residual
+place 0 holds residual displacements during iteration (without prescribed dofs)
+*/
+/*---------------------- make incremental potential energy at the nodes */
+dyn_epot(actfield,0,actintra,&dynvar,&deltaepot);
+dynvar.epot += deltaepot;
+/*-------------------------------- make kinetic energy at element level */
+dyn_ekin(actfield,actsolv,actpart,actintra,action,&container,stiff_array,mass_array);
+dynvar.ekin = container.ekin;
+/*------------------------------------------------ make external energy */
+dyn_eout(&dynvar,sdyn,actintra,actsolv,&dispi[0],&(actsolv->rhs[1]),&(actsolv->rhs[0]),&work[0]);
+/*--------------------------------------------------- make total energy */
+dynvar.etot = dynvar.epot + dynvar.ekin;
+/*------------------------- update the internal forces in sol_increment */
+/*       copy from sol_increment.a.da[2][i] to sol_increment.a.da[1][i] */
+solserv_sol_copy(actfield,0,1,1,2,1);
 /*------------------------------- check whether to write results or not */
 mod_disp      = sdyn->step % sdyn->updevry_disp;
 mod_stress    = sdyn->step % sdyn->updevry_stress;
@@ -952,33 +971,65 @@ if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
 {
   out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
-/*--------------------------------------------- printout results to gid */
+/*-------------------------- printout results to gid no time adaptivity */
+if (timeadapt==0)
 if (par.myrank==0) 
 {
    if (mod_disp==0)
    if (ioflags.struct_disp_gid==1)
    {
-      out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
-      out_gid_sol("velocity",actfield,actintra,sdyn->step,1);
-      out_gid_sol("accelerations",actfield,actintra,sdyn->step,2);
+      out_gid_soldyn("displacement",actfield,actintra,sdyn->step,0,sdyn->time);
+      /*out_gid_soldyn("velocity",actfield,actintra,sdyn->step,1,sdyn->time);*/
+      /*out_gid_soldyn("accelerations",actfield,actintra,sdyn->step,2,sdyn->time);*/
       if (contact)
-      out_gid_sol("contact",actfield,actintra,sdyn->step,9);
+      out_gid_soldyn("contact",actfield,actintra,sdyn->step,9,sdyn->time);
    }
    if (mod_stress==0)
    if (ioflags.struct_stress_gid==1)
    {
-   out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0);
+      out_gid_soldyn("stress"      ,actfield,actintra,sdyn->step,0,sdyn->time);
+   }
+}
+/*----------------------------- printout results to gid time adaptivity */
+if (timeadapt)
+{
+   lowtime = sdyn->time - olddt;
+   uptime  = sdyn->time;
+   low     = lowtime / resultdt;
+   up      =  uptime / resultdt;
+   ilow    = (int)floor(low);
+   iup     = (int)ceil(up);
+   remain  = fmod(uptime,iup*resultdt);
+   if (remain<EPS12) iup++;
+   for (i=ilow+1; i<iup; i++) 
+   {
+       writetime = i*resultdt; 
+       tau       = writetime - lowtime;
+       tau2      = tau*tau;
+       tau3      = tau2*tau;
+       /* u_write = u_old */
+       solserv_sol_copy(actfield,0,0,0,10,8);
+       /* u_write += udot_old * tau */
+       solserv_sol_add (actfield,0,0,0,11,8,tau);
+       /* u_write += udotdot_old * fac */
+       fac = 0.5*tau2 - (sdyn->beta/olddt)*tau3;
+       solserv_sol_add (actfield,0,0,0,12,8,fac);
+       /* u_write += udotdot_new * fac */
+       fac = (sdyn->beta/olddt)*tau3;
+       solserv_sol_add (actfield,0,0,0,2,8,fac);
+       /* write displacements u_write */
+       if (par.myrank==0)
+       out_gid_soldyn("displacement",actfield,actintra,sdyn->writecounter,8,writetime);
+       /* write contact forces */
+       if (contact && par.myrank==0)
+       out_gid_soldyn("contact",actfield,actintra,sdyn->writecounter,9,writetime);
+       sdyn->writecounter++;
    }
 }
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)
 {
-restart_write_nlnstructdyn(sdyn,
-                           &dynvar,
-                           actfield,
-                           actpart,
-                           actintra,
-                           action,
+restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
                            1            , dispi       ,
@@ -995,8 +1046,8 @@ if (contact)
 #endif
 }                           
 /*----------------------------------------------------- print time step */
-if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
-
+if (par.myrank==0 &&  timeadapt)  dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,olddt);
+if (par.myrank==0 && !timeadapt) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,sdyn->dt);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 fprintf(allfiles.out_err,"TIME for step %d is %f sec\n",sdyn->step,t1-t0);
