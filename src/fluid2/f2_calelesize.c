@@ -107,7 +107,6 @@ extern struct _MATERIAL  *mat;
 </pre>
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *eleke   ELEMENT	       (i)   actual element (only for turbulence)
-\param  *data    FLUID_DATA	       (i)
 \param **xzye    DOUBLE                (-)   nodal coordinates
 \param  *funct   DOUBLE 	       (-)   shape functions
 \param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
@@ -126,7 +125,6 @@ extern struct _MATERIAL  *mat;
 void f2_calelesize(			     
                      ELEMENT         *ele,    
                      ELEMENT         *eleke,    
-                     FLUID_DATA      *data, 
                      DOUBLE         **xyze,
                      DOUBLE          *funct,  
                      DOUBLE         **deriv,  
@@ -162,6 +160,7 @@ DOUBLE  velint[2];
 DIS_TYP typ;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 FLUID_DYNAMIC *fdyn;
+FLUID_DATA      *data; 
 #ifdef D_FLUID2TU
 DOUBLE  eddyint;        /* eddy-viscosity                               */
 #endif
@@ -173,6 +172,7 @@ dstrc_enter("f2_calelesize");
 
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f2->stabi.gls;

@@ -28,7 +28,6 @@ This routine controls the element evaluation:
 -element load vector due to dirichlet conditions is calculated				      
 			     
 </pre>
-\param  *data	       FLUID_DATA         (i)
 \param  *eleke	       ELEMENT	        (i)   actual element
 \param  *elev	       ELEMENT	        (i)   actual element for velocity
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
@@ -44,7 +43,6 @@ This routine controls the element evaluation:
                                  
 ------------------------------------------------------------------------*/
 void f2_calele_tu(
-                  FLUID_DATA     *data, 
                   ELEMENT        *eleke,             
                   ELEMENT        *elev,          
                   ARRAY          *estif_global,   
@@ -169,16 +167,16 @@ amzero(eproforce_global);
 *hasext=0;
 
 /*---------------------------------------------------- set element data */
-f2_calset_tu(data,eleke,elev,kapepsn,kapepsg,kapepspro,eddyg,eddypro,
+f2_calset_tu(eleke,elev,kapepsn,kapepsg,kapepspro,eddyg,eddypro,
              kappa,kappan,epsilon,evel,xyze);
 
 /*-------------- calculate stab-parameter and parameter for DISC. CAPT. */
-f2_calelesize_tu(eleke,elev,data,funct,deriv,deriv2,evel,eddyg,velint,
+f2_calelesize_tu(eleke,elev,funct,deriv,deriv2,evel,eddyg,velint,
                  velint_dc,kapepsn,xjm,xyze,derxy,kapepsderxy,wa1);
 
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-f2_calint_tu(data,eleke,elev,estif,emass,etforce,eiforce,eproforce,
+f2_calint_tu(eleke,elev,estif,emass,etforce,eiforce,eproforce,
 	       funct,deriv,deriv2,xjm,xyze,derxy,derxy2,kapepsn,kapepsg,eddyg,eddypro,
              kappa,kappan,epsilon,kapepspro,kapepsderxy,kapepsderxy2,velint,
              velint_dc,evel,vderxy,vderxy2,wa1,wa2);

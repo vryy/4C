@@ -47,10 +47,6 @@ extern struct _GENPROB     genprob;
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
-/*----------------------------------------------------------------------*
- | global dense matrices for element routines             genk 04/02    |
- *----------------------------------------------------------------------*/
-static FLUID_DATA      *data;
 
 /*!---------------------------------------------------------------------                                         
 \brief main fluid3 control routine
@@ -114,12 +110,11 @@ switch (*action)
 case calc_fluid_init:
 /* ----------------------------------------- find number of fluid field */
    fdyn   = alldyn[genprob.numff].fdyn;
-   data   = alldyn[genprob.numff].fdyn->data;
    viscstr= alldyn[genprob.numff].fdyn->viscstr;
 
 /*------------------------------------------- init the element routines */   
-  f3_intg(data,0);
-  f3_calele(data,NULL,estif_global,emass_global,etforce_global,
+  f3_intg(0);
+  f3_calele(NULL,estif_global,emass_global,etforce_global,
             eiforce_global,edforce_global,NULL,NULL,1);
 /*---------------------------------------------------- multi-level FEM? */   
 #ifdef FLUID3_ML
@@ -141,7 +136,7 @@ case calc_fluid_init:
       f3_pdsubmesh(ssmesh,xele,yele,zele,mlvar->ssmorder,1);
     }
 /*----------------------- init the element routines for multi-level FEM */   
-    f3_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+    f3_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
           etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
   }     	    
 #endif
@@ -163,12 +158,12 @@ if (fdyn->mlfem==1)
 /* create element sub-submesh if not yet done */   
     if (mlvar->smsgvi>2) f3_elesubmesh(ele,ssmesh,1);
   }  
-  f3_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+  f3_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
            etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
 }	      
 else  
 #endif
-  f3_calele(data,ele,estif_global,emass_global,etforce_global,
+  f3_calele(ele,estif_global,emass_global,etforce_global,
                  eiforce_global,edforce_global,hasdirich,hasext,0);
 break;
 
@@ -176,7 +171,7 @@ break;
 case calc_fluid_stress:
    /*------ calculate stresses only for elements belonging to this proc */
    if (par.myrank==ele->proc)
-      f3_stress(container->str,viscstr,data,ele,container->is_relax);
+      f3_stress(container->str,viscstr,ele,container->is_relax);
 break;
 
 /* calculate fluid stresses for lift&drag calculation */
@@ -197,21 +192,21 @@ case calc_fluid_liftdrag:
     }
     if (ldflag>0)
     {
-      f3_stress(container->str,viscstr,data,ele,container->is_relax);
-      f3_liftdrag(ele,data,container);
+      f3_stress(container->str,viscstr,ele,container->is_relax);
+      f3_liftdrag(ele,container);
     }
   }
 break;
 
 /*--------------------------------- calculate height function matrices */
 case calc_fluid_heightfunc:
-   f3_heightfunc(data,ele,estif_global,
+   f3_heightfunc(ele,estif_global,
                  eiforce_global,container);
 break;
 
 /*--------------------------- calculate element stabilisation parameter */
 case calc_fluid_stab:
-   f3_calstab(ele,data);
+   f3_calstab(ele);
 break;
 
 /*----------------------------------------------------------------------*/

@@ -20,6 +20,19 @@ static DOUBLE Q12 = ONE/TWO;
 static DOUBLE Q13 = ONE/THREE;
 static DOUBLE Q16 = ONE/SIX;
 static DOUBLE Q23 = TWO/THREE;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 /*!---------------------------------------------------------------------                                         
 \brief integration parameters for fluid2 element
 
@@ -30,13 +43,11 @@ different. ALL paramters are stored in FLUID_DATA, so that this
 routine has to be (hopefully) called only once!!!	       
 
 </pre>
-\param  *data 	  FLUID_DATA       (o)	   
 \param   option	  INT              (i)     flag (not used at the moment 
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_intg(FLUID_DATA         *data,
-             INT                option  
+void f2_intg(INT                option  
 	    )
 {
 INT     i, k;                          /* simply some counters          */
@@ -45,10 +56,15 @@ DOUBLE  xgs[MAXTINTP][MAXTINTC];       /* coord. of integr. points QUAD */
 DOUBLE  wgtt[MAXTINTP][MAXTINTC];      /* integr. weights QUAD          */
 DOUBLE  xg[MAXQINTP][MAXQINTC];        /* coord. of integr. points TRI  */
 DOUBLE  wgt[MAXQINTP][MAXQINTC];       /* integr. weights TRI    	*/
+static FLUID_DYNAMIC   *fdyn;
+static FLUID_DATA      *data;
 
 #ifdef DEBUG 
 dstrc_enter("f2_intg");
 #endif
+
+fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 
 /*----------------------------------------------------------------------*/
 if (option==0)

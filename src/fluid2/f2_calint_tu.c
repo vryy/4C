@@ -49,7 +49,6 @@ In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2 element is calculated
       
 </pre>
-\param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	 ELEMENT	   (i)    actual element
 \param  *elev	 ELEMENT	   (i)    actual rans-element
 \param **estif     DOUBLE	   (o)    element stiffness matrix
@@ -85,7 +84,6 @@ time-RHS for one fluid2 element is calculated
 
 ------------------------------------------------------------------------*/
 void f2_calint_tu(
-               FLUID_DATA      *data,     
 	         ELEMENT         *ele,     
 	         ELEMENT         *elev, 
                DOUBLE         **estif,   
@@ -146,6 +144,7 @@ DOUBLE    kapepsint;
 DOUBLE    kapepsnint;
 DOUBLE    eps_proint;
 DIS_TYP   typ;	    /* element type                                   */
+FLUID_DATA  *data;     
 
 #ifdef DEBUG 
 dstrc_enter("f2_calint_tu");
@@ -159,6 +158,7 @@ visc = mat[actmat].m.fluid->viscosity;
 typ  = ele->distyp;
 
 fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 
 /*------- get integraton data and check if elements are "higher order" */
 switch (typ)

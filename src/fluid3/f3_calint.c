@@ -49,7 +49,6 @@ In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid3 element is calculated
       
 </pre>
-\param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
@@ -79,7 +78,6 @@ time-RHS for one fluid3 element is calculated
 
 ------------------------------------------------------------------------*/
 void f3_calint(
-               FLUID_DATA      *data, 
                ELEMENT         *ele,
                INT             *hasext,
                DOUBLE         **estif,
@@ -125,6 +123,7 @@ DOUBLE   covint[3];
 DIS_TYP  typ;         /* element type                                   */
 
 FLUID_DYNAMIC   *fdyn;
+FLUID_DATA      *data; 
 
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
@@ -134,6 +133,7 @@ dstrc_enter("f3_calint");
 
 /*----------------------------------------------------- initialisation -*/
 fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 gls    = ele->e.f3->stabi.gls;
 iel=ele->numnp;
 actmat=ele->mat-1;
@@ -406,7 +406,6 @@ time-RHS for one fluid3 element is calculated
 
 ------------------------------------------------------------------------*/
 void f3_calinta(     	
-                  FLUID_DATA      *data, 
                   ELEMENT         *ele,
                   INT             *hasext,
                   DOUBLE         **estif,
@@ -466,12 +465,15 @@ STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 DOUBLE  akov[3][3];
 DOUBLE  h[3],da;
 FLUID_DYNAMIC *fdyn;
+FLUID_DATA      *data; 
+
 #ifdef DEBUG 
 dstrc_enter("f3_calinta");
 #endif
 
 /*----------------------------------------------------- initialisation */
 fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 gls    = ele->e.f3->stabi.gls;
 iel=ele->numnp;
 actmat=ele->mat-1;
@@ -739,14 +741,14 @@ if (ele->e.f3->fs_on==2)  /* element at free surface (local lagrange)   */
       /*--------------- get values of  shape functions and their derivatives */
       switch(typ)  
       {
-      case hex8: case hex20: case hex27:   /* --> hex - element */
+      case quad4: case quad8: case quad9:   /* --> hex - element */
          e1   = data->qxg[lr][nil-1];
          facr = data->qwgt[lr][nil-1];
          e2   = data->qxg[ls][nil-1];
          facs = data->qwgt[ls][nil-1];
          f3_rec(funct,deriv,deriv2,e1,e2,typ,icode);
       break;
-      case tet4: case tet10:   /* --> tet - element */		  	
+      case tri3: case tri6:   /* --> tet - element */		  	
          dserror("implicit tri free surface not implemented yet!\n");              
          e1   = data->txgr[lr][intc];
          facr = data->twgt[lr][intc];

@@ -30,7 +30,19 @@ Maintainer: Malte Neumann
   </pre>
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
 
 
 /*!---------------------------------------------------------------------
@@ -43,7 +55,6 @@ extern struct _FILES  allfiles;
   </pre>
 
   \param  *ele        ELMENT      (i/o)  actual element
-  \param  *data       FLUID_DATA  (i)
   \param  *container       CONTAINER    (i)    container
 
   \return void
@@ -51,7 +62,6 @@ extern struct _FILES  allfiles;
   ----------------------------------------------------------------------*/
 void f3_liftdrag(
     ELEMENT       *ele,
-    FLUID_DATA    *data,
     CONTAINER     *container
     )
 {
@@ -82,6 +92,8 @@ void f3_liftdrag(
   INT  gpr, gps, gpt;
   DOUBLE e1, e2, e3, facr, facs, fact, fac;
   DOUBLE det0;
+  FLUID_DATA     *data; 
+  FLUID_DYNAMIC  *fdyn;
 
   static INT shnod[6][8] = {
     {0, 1, 2, 3,  8,  9, 10, 11},  /* 1st surf nodes */
@@ -100,7 +112,8 @@ void f3_liftdrag(
 
 
   /* integration parameters */
-  f3_intg(data,0);
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
   nir     = ele->e.f3->nGP[0];
   nis     = ele->e.f3->nGP[1];
   nit     = ele->e.f3->nGP[2];

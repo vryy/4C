@@ -61,7 +61,6 @@ This routine controls the element evaluation:
                                  
 ------------------------------------------------------------------------*/
 void f2pro_calele(
-                FLUID_DATA     *data, 
 	        ELEMENT        *elev, 
 	        ELEMENT        *elep,            
                 ARRAY          *estif_global,   
@@ -167,7 +166,7 @@ if (fdyn->pro_calveln==1)
    f2pro_calset(elev,elep,xyze,eveln,epren);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-f2pro_calint(data,elev,elep,
+f2pro_calint(elev,elep,
              estif,emass,gradopr,etforce,eiforce,
              xyze,funct,functpr,deriv,derivpr,xjm,derxy,derxypr,
              eveln,epren,
@@ -194,6 +193,10 @@ if (fdyn->pro_caldirich==1)
       dserror("unknown velocity profile!\n");
    } /*end of switch (fdyn->pro_profile)*/
 }/*end of if (fdyn->pro_kvv==1)*/
+
+/*----------------------------------------------------- local co-system */
+dsassert(elev->locsys==locsys_no,"locsys not implemented for this element!\n");
+
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

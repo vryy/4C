@@ -21,6 +21,19 @@ Maintainer: Thomas Hettich
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*!---------------------------------------------------------------------
 \brief routine to calculate stabilisation parameter per element at center
@@ -30,7 +43,6 @@ extern struct _MATERIAL  *mat;
 </pre>
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *elev    ELEMENT	       (i)   actual element for vel.
-\param  *data    FLUID_DATA	       (i)
 \param  *funct   DOUBLE 	       (-)   shape functions
 \param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
 \param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
@@ -50,7 +62,6 @@ extern struct _MATERIAL  *mat;
 void f2_calelesize_tu_1(			     
 	           ELEMENT         *ele,    
 		     ELEMENT         *elev,    
-		     FLUID_DATA      *data, 
 	           DOUBLE          *funct,  
 	           DOUBLE         **deriv,  
 	           DOUBLE         **deriv2,  		 
@@ -76,12 +87,16 @@ DOUBLE  eddyint;
 DOUBLE  facr,facs,det;
 DOUBLE  gcoor[2];       /* global coordinates                           */
 DIS_TYP typ;
+FLUID_DYNAMIC  *fdyn;
+FLUID_DATA    *data; 
 
 #ifdef DEBUG 
 dstrc_enter("f2_calelesize_tu_1");
 #endif		
 
 /*---------------------------------------------------------- initialise */
+fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 actmat = ele->mat-1;
 visc   = mat[actmat].m.fluid->viscosity;
 iel    = ele->numnp;

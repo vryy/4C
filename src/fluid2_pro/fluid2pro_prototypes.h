@@ -33,7 +33,6 @@ void f2pro_calbdt(
 | f2pro_calint.c                                                        |
  ************************************************************************/
 void f2pro_calint(
-               FLUID_DATA      *data,     
 	       ELEMENT         *elev,
 	       ELEMENT         *elep, 
                DOUBLE         **estif,   
@@ -65,7 +64,6 @@ void f2pro_calint(
  | f2pro_calele.c                                                       |
  ************************************************************************/
 void f2pro_calele(
-                FLUID_DATA     *data, 
 	        ELEMENT        *elev, 
 	        ELEMENT        *elep,            
                 ARRAY          *estif_global,   

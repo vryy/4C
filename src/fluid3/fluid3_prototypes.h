@@ -21,7 +21,6 @@ Maintainer: Steffen Genkinger
  ************************************************************************/
 
 void f3_calele(
-                FLUID_DATA     *data, 
 	        ELEMENT        *ele,
                 ARRAY          *estif_global,
                 ARRAY          *emass_global, 
@@ -34,24 +33,21 @@ void f3_calele(
 	       );
 void f3_stress(FLUID_STRESS  str, 
                INT           viscstr,
-	       FLUID_DATA   *data, 
 	       ELEMENT      *ele,
 	       INT           is_relax  );               
 void f3_heightfunc(                                 
-                   FLUID_DATA           *data,  
                    ELEMENT              *ele,
                    ARRAY                *estif_global,   
 		   ARRAY                *eiforce_global,  
 		   CONTAINER            *container		   
 		   );
-void f3_calstab(ELEMENT *ele, FLUID_DATA *data);
+void f3_calstab(ELEMENT *ele);
                    
 /************************************************************************
  | f3_calelesize.c                                                      |
  ************************************************************************/
 void f3_calelesize(
                      ELEMENT         *ele,
-                     FLUID_DATA      *data,
                      DOUBLE         **xyze,
                      DOUBLE          *funct,
                      DOUBLE         **deriv,
@@ -244,7 +240,6 @@ void f3_calkgedge(
  ************************************************************************/
 void f3_calint_hfsep(
                      ELEMENT           *ele,
-                     FLUID_DATA        *data,
                      DOUBLE            *funct,
                      DOUBLE           **deriv,
                      DOUBLE           **xjm,
@@ -312,7 +307,6 @@ void f3_caltimerhs_vhf_sep(
  | f3_calint.c                                                          |
  ************************************************************************/
 void f3_calint(
-               FLUID_DATA      *data, 
                ELEMENT         *ele,
                INT             *hasext,
                DOUBLE         **estif,
@@ -338,7 +332,6 @@ void f3_calint(
                DOUBLE         **wa2
                );      	      	      	     	     	    	   	   
 void f3_calinta(     	
-                  FLUID_DATA      *data, 
                   ELEMENT         *ele,
                   INT             *hasext,
                   DOUBLE         **estif,
@@ -633,7 +626,7 @@ void f3inp(ELEMENT *ele, INT counter);
 /************************************************************************
  | f3_intg.c                                                            |
  ************************************************************************/
-void f3_intg(FLUID_DATA      *data,
+void f3_intg(
              INT              option);
 
 /************************************************************************
@@ -663,13 +656,11 @@ void f3_massrhs(ELEMENT *ele, DOUBLE **emass, DOUBLE **eaccn, DOUBLE *eiforce);
 void f3_stress(
     FLUID_STRESS  str, 
     INT           viscstr,
-    FLUID_DATA   *data, 
     ELEMENT      *ele,
     INT           is_relax);
 
 void f3_calelestress(
     INT             viscstr,
-    FLUID_DATA     *data, 
     ELEMENT        *ele,
     DOUBLE        **evel, 
     DOUBLE         *epre,
@@ -788,7 +779,7 @@ void f3inp(ELEMENT *ele, INT counter);
 /************************************************************************
  | f3_intg.c                                                            |
  ************************************************************************/
-void f3_intg(FLUID_DATA      *data,
+void f3_intg(
              INT              option);
 
 /************************************************************************
@@ -796,7 +787,6 @@ void f3_intg(FLUID_DATA      *data,
  ************************************************************************/
 void f3_liftdrag(
     ELEMENT       *ele,
-    FLUID_DATA    *data,
     CONTAINER     *container
     );
 void f3_hex2(
@@ -841,7 +831,6 @@ void f3_massrhs(ELEMENT *ele, DOUBLE **emass, DOUBLE **eaccn, DOUBLE *eiforce);
 
 void f3_liftdrag(
     ELEMENT       *ele,
-    FLUID_DATA    *data,
     CONTAINER     *container
     );
 

@@ -46,7 +46,6 @@ void f2_calq8curv( GLINE                        **actgline,
  | f2_calele.c                                                          |
  ************************************************************************/
 void f2_calele(
-                FLUID_DATA     *data, 
 	        ELEMENT        *ele,             
                 ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
@@ -60,28 +59,25 @@ void f2_calele(
                 INT             is_relax,
                 INT             init            
 	       );
-void f2_stress(FLUID_STRESS str, INT viscstr ,FLUID_DATA     *data, 
+void f2_stress(FLUID_STRESS str, INT viscstr , 
                ELEMENT *ele, INT is_relax );
 void f2_curvature(
-                     FLUID_DATA     *data,
                      ELEMENT        *ele,
                      INT             imyrank
 		                );
 void f2_heightfunc(                                 
-                   FLUID_DATA           *data,  
                    ELEMENT              *ele,
                    ARRAY                *estif_global,   
 		   ARRAY                *eiforce_global,  
 		   CONTAINER            *container		   
 		   );
-void f2_calstab(ELEMENT *ele, FLUID_DATA *data);
-void f2_calnormal(ELEMENT *ele, FLUID_DATA *data);
+void f2_calstab(ELEMENT *ele);
+void f2_calnormal(ELEMENT *ele);
 
 /************************************************************************
  | f2_calele_tu.c                                                       |
  ************************************************************************/
 void f2_calele_tu(
-                  FLUID_DATA     *data, 
 	          ELEMENT        *eleke,             
                   ELEMENT        *elev,          
                   ARRAY          *estif_global,   
@@ -99,7 +95,6 @@ void f2_calele_tu(
  | f2_calele_tu_1.c                                                     |
  ************************************************************************/
 void f2_calele_tu_1(
-                     FLUID_DATA     *data, 
                      ELEMENT        *eleke,             
                      ELEMENT        *elev,          
                      ARRAY          *estif_global,   
@@ -118,7 +113,6 @@ void f2_calele_tu_1(
 void f2_calelesize(			     
                      ELEMENT         *ele,    
                      ELEMENT         *eleke,    
-                     FLUID_DATA      *data, 
                      DOUBLE         **xyze,
                      DOUBLE          *funct,  
                      DOUBLE         **deriv,  
@@ -157,7 +151,6 @@ void f2_calstrlen(
 void f2_calelesize_tu(			     
                         ELEMENT         *ele,    
                         ELEMENT         *elev,    
-                        FLUID_DATA      *data, 
                         DOUBLE          *funct,  
                         DOUBLE         **deriv,  
                         DOUBLE         **deriv2,  
@@ -187,7 +180,6 @@ void f2_calstrlen_tu(
 void f2_calelesize_tu_1(			     
                         ELEMENT         *ele,    
                         ELEMENT         *elev,    
-                        FLUID_DATA      *data, 
                         DOUBLE          *funct,  
                         DOUBLE         **deriv,  
                         DOUBLE         **deriv2,  		 
@@ -410,7 +402,6 @@ void f2_calgfskgedge(
  ************************************************************************/
 void f2_calliftdrag(
     ELEMENT       *ele,
-    FLUID_DATA    *data,
     CONTAINER     *container);
 
 /************************************************************************
@@ -432,7 +423,6 @@ void f2_stabpar_hfsep(
                      );
 void f2_calint_hfsep(
                      ELEMENT           *ele,
-                     FLUID_DATA        *data,
                      DOUBLE            *funct,
                      DOUBLE           **deriv,
                      DOUBLE           **xjm,
@@ -603,7 +593,6 @@ void f2_calmkapome(
  | f2_calint.c                                                          |
  ************************************************************************/
 void f2_calint(
-               FLUID_DATA      *data,     
 	       ELEMENT         *ele,     
                INT             *hasext,
                DOUBLE         **estif,   
@@ -630,7 +619,6 @@ void f2_calint(
                DOUBLE           visc      
 	            );	      	      	      	     	     	    	   	   
 void f2_calinta(
-                  FLUID_DATA      *data,     
                   ELEMENT         *ele,     
                   INT             *hasext,
                   INT              imyrank,
@@ -670,7 +658,6 @@ void f2_calinta(
  | f2_calint_tu.c                                                       |
  ************************************************************************/
 void f2_calint_tu(
-                  FLUID_DATA      *data,     
                   ELEMENT         *eleke,     
                   ELEMENT         *elev, 
                   DOUBLE         **estif,   
@@ -708,7 +695,6 @@ void f2_calint_tu(
  | f2_calint_tu_1.c                                                     |
  ************************************************************************/
 void f2_calint_tu_1(
-                     FLUID_DATA      *data,     
                      ELEMENT         *ele,     
                      ELEMENT         *elev, 
                      DOUBLE         **estif,   
@@ -955,7 +941,6 @@ void f2_iedg(
 | f2_calservice_tu.c                                                    |
 ************************************************************************/
 void f2_calset_tu( 
-                     FLUID_DATA      *data,     
                      ELEMENT         *ele,     
                      ELEMENT         *elev,
                      DOUBLE          *kapepsn,    
@@ -1080,7 +1065,6 @@ void f2_estifadd_tu(
 ************************************************************************/
 void f2_calset_tu_1( 
 
-                     FLUID_DATA      *data,     
                      ELEMENT         *ele,     
                      ELEMENT         *elev,
                      DOUBLE          *kapomen,    
@@ -1381,7 +1365,6 @@ void f2_calstabpar_tu_1(
  ************************************************************************/
 void f2_calelestress(
                       INT             viscstr,
-		      FLUID_DATA     *data, 
        	              ELEMENT        *ele,
 		      DOUBLE        **evel, 
 		      DOUBLE         *epre,
@@ -1614,7 +1597,6 @@ DOUBLE f2_calvisc(
  | f2_calvort.c                                                         |
  ************************************************************************/
 void f2_calvort(
-                  FLUID_DATA     *data, 
                   ELEMENT        *ele,                
        	          INT             init            
                );
@@ -1636,8 +1618,7 @@ void f2tu_dis(
 /************************************************************************
  | f2_intg.c                                                            |
  ************************************************************************/
-void f2_intg(FLUID_DATA         *data,
-             INT                option  
+void f2_intg(INT                option  
 	    );
 DOUBLE f2_rsn(
                INT            node,     

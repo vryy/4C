@@ -31,7 +31,19 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*---------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*!---------------------------------------------------------------------
 \brief calculation of Lift and drag total loads
@@ -49,7 +61,6 @@ stress values calculated
 
 void f2_calliftdrag(
     ELEMENT       *ele,
-    FLUID_DATA    *data,
     CONTAINER     *container)
 {
 INT		lr;		/* INTegration directions		*/
@@ -75,6 +86,8 @@ INT             ld_id;
 GLINE		*actgline;
 DIS_TYP		typ;		/* element type				*/
 NODE		*actnode;
+FLUID_DYNAMIC *fdyn;
+FLUID_DATA    *data;
 
 static DOUBLE	*funct;		/* ansatz-functions			*/
 static ARRAY	funct_a;
@@ -89,6 +102,8 @@ dstrc_enter("f2_calliftdrag");
 #endif
 
 /*--------------------------------------------------- initialization ---*/
+fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 funct   = amdef("funct"  ,&funct_a ,MAXNOD_F2 ,1         ,"DV");       
 deriv   = amdef("deriv"  ,&deriv_a ,2         ,MAXNOD_F2 ,"DA");       
 xjm     = amdef("xjm_a"  ,&xjm_a   ,numdf     ,numdf     ,"DA");
@@ -98,10 +113,6 @@ amzero(&deriv_a);
 amzero(&xjm_a);
 
 /*-------------------------------------------- init the gaussian points */
-#if 0
-f2_intg(data,1);
-#endif
-
 nir    = ele->e.f2->nGP[0];
 nir    = IMAX(nir,2);
 

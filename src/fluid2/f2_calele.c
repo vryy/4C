@@ -135,7 +135,6 @@ This routine controls the element evaluation:
 -element load vector due to dirichlet conditions is calculated				      
 			     
 </pre>
-\param  *data	         FLUID_DATA     (i)
 \param  *ele	         ELEMENT	(i)   actual element
 \param  *eleke	         ELEMENT	(i)   element for turbulence-model
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
@@ -152,7 +151,6 @@ This routine controls the element evaluation:
                                  
 ------------------------------------------------------------------------*/
 void f2_calele(
-                FLUID_DATA     *data, 
 	        ELEMENT        *ele,             
                 ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
@@ -231,11 +229,11 @@ case 0:
    f2_calset(ele,xyze,eveln,evelng,epren,edeadn,edeadng,hasext);
 
 /*-------------------------- calculate element size and stab-parameter: */
-   f2_calelesize(ele,eleke,data,xyze,funct,deriv,deriv2,xjm,derxy,
+   f2_calelesize(ele,eleke,xyze,funct,deriv,deriv2,xjm,derxy,
                  vderxy,evelng,ephin,ephing,eddy,&visc,0);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-   f2_calint(data,ele,hasext,
+   f2_calint(ele,hasext,
              estif,emass,etforce,eiforce,
              xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
 	     eveln,evelng,epren,edeadn,edeadng,
@@ -248,11 +246,11 @@ case 1:
               ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,
 	      ephin,ephing,evnng,evnn,hasext,is_relax);
 /*-------------------------- calculate element size and stab-parameter: */   
-   f2_calelesize(ele,eleke,data,xyze,funct,deriv,deriv2,xjm,derxy,
+   f2_calelesize(ele,eleke,xyze,funct,deriv,deriv2,xjm,derxy,
                  vderxy,ealecovng,ephin,ephing,eddy,&visc,0);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-   f2_calinta(data,ele,hasext,imyrank,
+   f2_calinta(ele,hasext,imyrank,
               estif,emass,etforce,eiforce,
 	      xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
 	      eveln,evelng,ealecovn,ealecovng,egridv,epren,edeadn,edeadng,
@@ -309,9 +307,9 @@ if (is_relax)			/* calculation for relaxation parameter	*/
 else				/* standard case			*/
    readfrom = 3;		
 
-/*------------------------------------------------- condensation of DBCs
-   NOTE: this has to be done after the locsys transformation, since
-         DBCs are given in the xyz* co-system                           */
+/*------------------------------------------------ condensation of DBCs */
+/* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
+   tranformed before condensing the dofs                                */
 fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
    
 /*------------------------- calculate emass * vel(n) for BDF2 method ---*/
@@ -335,7 +333,6 @@ return;
 
 \param     str       FLUID_STRESS   (i)    flag for stress calculation
 \param     viscstr   INT            (i)    viscose stresses yes/no?
-\param    *data      FLUID_DATA     (i)
 \param    *ele       ELEMENt        (i)    actual element 
 \param     is_relax  INT            (i)    flag
 \return void                                               
@@ -343,7 +340,6 @@ return;
 ------------------------------------------------------------------------*/
 void f2_stress(FLUID_STRESS  str, 
                INT           viscstr,
-	       FLUID_DATA   *data, 
 	       ELEMENT      *ele,
 	       INT           is_relax  )
 {
@@ -357,6 +353,7 @@ INT       ldflag;
 GSURF    *actgsurf;
 GLINE    *actgline;
 DLINE    *actdline;
+FLUID_DATA   *data; 
 
 #ifdef DEBUG 
 dstrc_enter("f2_stress");
@@ -380,7 +377,7 @@ case str_fsicoupling:
       break;    
    }
    if (coupled==1) 
-   f2_calelestress(viscstr,data,ele,eveln,epren,funct,
+   f2_calelestress(viscstr,ele,eveln,epren,funct,
                    deriv,derxy,vderxy,xjm,xyze,sigmaint,is_relax);      
 break;
 #endif
@@ -399,7 +396,7 @@ case str_liftdrag:
    }
    if (ldflag>0)
    /* calculate element stresses for selected elements */
-   f2_calelestress(viscstr,data,ele,eveln,epren,funct,
+   f2_calelestress(viscstr,ele,eveln,epren,funct,
                    deriv,derxy,vderxy,xjm,xyze,sigmaint,is_relax);      
 break;
 case str_all:
@@ -530,14 +527,12 @@ return;
 <pre>                                                         genk 02/03  
 			     			
 </pre>
-\param    *data    FLUID_DATA     (i)
 \param    *ele     ELEMENt        (i)    actual element 
 \param     imyrank INT            (i)    proc number
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
 void f2_curvature(
-	           FLUID_DATA     *data,
 	           ELEMENT        *ele,
 		   INT             imyrank
 		 )
@@ -612,7 +607,6 @@ in this routine the height function is solved for the position of the
 free surface
 			     
 </pre>
-\param   *data             FLUID_DATA           integration data
 \param   *ele              ELEMENT              actual element
 \param   *estif_global     ARRAY                ele stiffness matrix
 \param   *eiforce_global   ARRAY                ele rhs
@@ -621,7 +615,6 @@ free surface
                                  
 ------------------------------------------------------------------------*/
 void f2_heightfunc(                                 
-                   FLUID_DATA           *data,  
                    ELEMENT              *ele,
                    ARRAY                *estif_global,   
 		   ARRAY                *eiforce_global,  
@@ -709,7 +702,7 @@ for (line=0; line<ngline; line++)
    f2_stabpar_hfsep(ele,xyze,evelng,funct,velint,ZERO,ZERO,ZERO,ZERO,
    iedgnod,ngnode,typ);
    /*--------------------------------- integration loop on actual gline */
-   f2_calint_hfsep(ele,data,funct,deriv,wa1,xyze,ngnode,nil,
+   f2_calint_hfsep(ele,funct,deriv,wa1,xyze,ngnode,nil,
                    iedgnod,velint,vel2int,evelng,eveln,ephing,ephin,derxy,typ,
                    estif,eiforce);
 } /* end of loop over glines */
@@ -736,11 +729,10 @@ them as tau_? at time (n)
 			     			
 </pre>
 /param      *ele     ELEMENT        the actual element
-/param      *data    FLUID_DATA     integration parameter
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_calstab(ELEMENT *ele, FLUID_DATA *data)
+void f2_calstab(ELEMENT *ele)
 {
 INT             i;
 NODE           *actfnode;
@@ -772,7 +764,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 }
    
 /*-------------------------- calculate element size and stab-parameter: */
-f2_calelesize(ele,NULL,data,xyze,funct,deriv,deriv2,xjm,derxy,
+f2_calelesize(ele,NULL,xyze,funct,deriv,deriv2,xjm,derxy,
               vderxy,evelng,NULL,NULL,NULL,&visc,1);
 
 /*----------------------------------------------------------------------*/
@@ -793,12 +785,11 @@ See Gresho & Sani pp.450
 			     			
 </pre>
 /param      *ele     ELEMENT        the actual element
-/param      *data    FLUID_DATA     integration parameter
 
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_calnormal(ELEMENT *ele, FLUID_DATA *data)
+void f2_calnormal(ELEMENT *ele)
 {
 INT      i,k;
 INT      iel;
@@ -807,12 +798,14 @@ DOUBLE    e1,e2,facr,facs,fac,det;
 NODE    *actnode;
 DIS_TYP  typ;
 FLUID_DYNAMIC *fdyn;
+FLUID_DATA    *data;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calnormal");
 #endif
 
 fdyn = alldyn[genprob.numff].fdyn;
+data = fdyn->data;
 
 /*--------------------------------------------- get actual co-ordinates */
 if (ele->e.f2->is_ale==0)

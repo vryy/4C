@@ -44,7 +44,6 @@ element integration of height function evaluation
 			     
 </pre>
 \param   *ele        ELEMENT           actual element
-\param   *data       FLUID_DATA        integr. data
 \param   *funct      DOUBLE            shape funcs
 \param  **deriv      DOUBLE            nat. deriv. of shape funcs
 \param  **xjm        DOUBLE            jacobian matrix
@@ -67,7 +66,6 @@ element integration of height function evaluation
 ------------------------------------------------------------------------*/
 void f3_calint_hfsep(
                      ELEMENT           *ele,
-                     FLUID_DATA        *data,
                      DOUBLE            *funct,
                      DOUBLE           **deriv,
                      DOUBLE           **xjm,
@@ -94,12 +92,14 @@ INT    intc;
 DOUBLE phiderxy[2],e1,e2,facr,facs,fac,det;
 DOUBLE phiintn, phiintng;
 FLUID_DYNAMIC *fdyn;
+FLUID_DATA    *data;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calint_hfsep");
 #endif
 
 fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 
 for (lr=0;lr<nil;lr++)
 {

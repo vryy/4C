@@ -86,7 +86,6 @@ void fluid2(PARTITION   *actpart,
 /*----------------------------------------------------------------------*/
 
 static INT              viscstr;
-static FLUID_DATA      *data;      
 static FLUID_DYNAMIC   *fdyn;
 #ifdef FLUID2_ML
 static FLUID_DYN_ML    *mlvar;
@@ -107,11 +106,10 @@ switch (*action)
 /*------------------------------------------------------ initialization */
 case calc_fluid_init:
    fdyn   = alldyn[genprob.numff].fdyn;
-   data   = alldyn[genprob.numff].fdyn->data;
    viscstr= alldyn[genprob.numff].fdyn->viscstr;
 /*------------------------------------------- init the element routines */   
-   f2_intg(data,0);
-   f2_calele(data,NULL,NULL,
+   f2_intg(0);
+   f2_calele(NULL,NULL,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
 	     NULL,NULL,0,0,1);
@@ -136,18 +134,16 @@ case calc_fluid_init:
       f2_pdsubmesh(ssmesh,xele,yele,mlvar->ssmorder,1);
     }
 /*----------------------- init the element routines for multi-level FEM */   
-    f2_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+    f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
              etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
   }     	    
 #endif
 break;
 
 case calc_fluid_initvort:
-/* ----------------------------------------- find number of fluid field */
-   data   = alldyn[genprob.numff].fdyn->data;
 /*------------------------------------------- init the element routines */
-   f2_intg(data,0); 
-   f2_calvort(data,ele,1);  
+   f2_intg(0); 
+   f2_calvort(ele,1);  
 break;
 
 /*------------------------------------------- call the element routines */
@@ -164,12 +160,12 @@ if (fdyn->mlfem==1)
 /*-------------------------- create element sub-submesh if not yet done */   
     if (mlvar->smsgvi>2) f2_elesubmesh(ele,ssmesh,1);
   }  
-  f2_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+  f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
            etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
 }	      
 else  
 #endif
-   f2_calele(data,ele,eleke,
+   f2_calele(ele,eleke,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
 	     hasdirich,hasext,actintra->intra_rank,container->is_relax,0);
@@ -177,33 +173,33 @@ break;
 
 /*------------------------------------------- calculate fluid vorticity */
 case calc_fluid_vort:
-   f2_calvort(data,ele,0);
+   f2_calvort(ele,0);
 break;
 
 /*-------------------------------------------- calculate fluid stresses */
 case calc_fluid_stress:
    /*------ calculate stresses only for elements belonging to this proc */
    if (par.myrank==ele->proc)
-      f2_stress(container->str,viscstr,data,ele,container->is_relax);
+      f2_stress(container->str,viscstr,ele,container->is_relax);
 break;
 
 /*------------------- calculate fluid stresses for lift&drag calculation */
 case calc_fluid_liftdrag:
    if (ele->proc == actintra->intra_rank)
    {
-      f2_stress(container->str,viscstr,data,ele,container->is_relax);
-      f2_calliftdrag(ele,data,container);
+      f2_stress(container->str,viscstr,ele,container->is_relax);
+      f2_calliftdrag(ele,container);
    }
 break;
 
 /*--------------------------------- calculate curvature at free surface */
 case calc_fluid_curvature:
-   f2_curvature(data,ele,actintra->intra_rank);
+   f2_curvature(ele,actintra->intra_rank);
 break;
 
 /*--------------------------------- calculate height function matrices */
 case calc_fluid_heightfunc: 
-   f2_heightfunc(data,ele,estif_global,
+   f2_heightfunc(ele,estif_global,
                  eiforce_global,container);
 break;
 
@@ -214,11 +210,11 @@ break;
 
 /*--------------------------- calculate element stabilisation parameter */
 case calc_fluid_stab:
-   f2_calstab(ele,data);
+   f2_calstab(ele);
 break;
 
 case calc_fluid_normal:
-   f2_calnormal(ele,data);
+   f2_calnormal(ele);
 break;
 
 /*------------------------------------------------------- write restart */

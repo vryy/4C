@@ -31,6 +31,13 @@ extern struct _MATERIAL  *mat;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
 
 /*!--------------------------------------------------------------------- 
   \brief calculation of fluid stresses for fluid3
@@ -44,7 +51,6 @@ extern struct _GENPROB     genprob;
   </pre>
 
   \param    viscstr    INT         (i)    include viscose stresses yes/no
-  \param   *data       FLUID_DATA  (i)
   \param   *ele        ELMENT      (i/o)  actual element
   \param  **evel       DOUBLE      (-)    element velocities
   \param   *epre       DOUBLE      (-)    element pressure
@@ -62,7 +68,6 @@ extern struct _GENPROB     genprob;
   ------------------------------------------------------------------------*/
 void f3_calelestress(
     INT             viscstr,
-    FLUID_DATA     *data, 
     ELEMENT        *ele,
     DOUBLE        **evel, 
     DOUBLE         *epre,
@@ -93,7 +98,8 @@ void f3_calelestress(
   NODE   *actfnode;             /* actual node */
   NODE   *actanode;             /* actual node */
   GNODE  *actfgnode;             /* actual node */
-
+  FLUID_DATA     *data; 
+  FLUID_DYNAMIC  *fdyn;
 
 #ifdef DEBUG 
   dstrc_enter("f3_calelestress");
@@ -101,6 +107,8 @@ void f3_calelestress(
 
 
   /* initialisation */
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
   iel=ele->numnp;
   actmat=ele->mat-1;
   dens = mat[actmat].m.fluid->density;

@@ -52,7 +52,6 @@ In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2pro element is calculated
       
 </pre>
-\param  *data      FLUID_DATA	   (i)	  integration data
 \param  *elev	   ELEMENT	   (i)    actual element for velocity
 \param  *elep	   ELEMENT	   (i)    actual element for pressure
 \param **estif     DOUBLE	   (o)    element stiffness matrix
@@ -82,7 +81,6 @@ time-RHS for one fluid2pro element is calculated
 
 ------------------------------------------------------------------------*/
 void f2pro_calint(
-               FLUID_DATA      *data,     
 	       ELEMENT         *elev,
 	       ELEMENT         *elep, 
                DOUBLE         **estif,   
@@ -128,13 +126,14 @@ DIS_TYP   typ1;	        /* element type 1 (quad9)                         */
 DIS_TYP   typ2;	        /* element type 2 (quad4)                         */
 DISMODE   mode;         /* element discretization mode q2q1 or none       */
 FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables             */
+static FLUID_DATA    *data;      
 #ifdef DEBUG 
 dstrc_enter("f2pro_calint");
 #endif
 
 /*----------------------------------------------------- initialisation */
 fdyn = alldyn[genprob.numff].fdyn;
-
+data = fdyn->data;
 iel =elev->numnp;
 ielp=elep->numnp;                             
 actmat=elev->mat-1;

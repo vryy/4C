@@ -48,14 +48,12 @@ static DOUBLE Q12=(ONE/TWO);
    smaller elements = better values!     
 </pre>
 
-\param  *data	            FLUID_DATA       (i)
 \param  *ele	            ELEMENT	     (i)   actual element
 \param   init	            INT              (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
 void f2_calvort(
-                FLUID_DATA     *data, 
 	        ELEMENT        *ele,                
        	        INT             init            
                )
@@ -96,6 +94,7 @@ DOUBLE f;                    /* vorticity value at the nodes              */
 DOUBLE fpar[MAXGAUSS];
 NODE *actnode;               /* actual node                               */
 DIS_TYP typ;                 /* element type                              */
+static FLUID_DATA     *data; 
 
 #ifdef DEBUG 
 dstrc_enter("f2_calvort");
@@ -113,6 +112,7 @@ if (init==1) /* allocate working arrays and set pointers */
    xyze    = amdef("xyze"   ,&xyze_a   ,2,MAXNOD_F2,"DA");
    
    fdyn    = alldyn[genprob.numff].fdyn;
+   data    = fdyn->data;
    goto end;
 } /* endif (init==1) */
 

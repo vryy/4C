@@ -43,7 +43,6 @@ static FLUID_DYNAMIC *fdyn;
 
 				      
 </pre>
-\param   *data     FLUID_DATA	     (i)
 \param   *ele      ELEMENT	     (i)    actual element
 \param   *elev     ELEMENT	     (i)    actual element for velocity
 \param   *kapepsn    DOUBLE	     (o)    kapeps at time n
@@ -60,7 +59,6 @@ static FLUID_DYNAMIC *fdyn;
 
 ------------------------------------------------------------------------*/
 void f2_calset_tu( 
-                  FLUID_DATA      *data,     
 	            ELEMENT         *ele,     
                   ELEMENT         *elev,
                   DOUBLE          *kapepsn,    
@@ -78,11 +76,15 @@ void f2_calset_tu(
 INT i,j;            /* simply a counter                                 */
 INT kap_eps;
 NODE  *actnode;     /* actual node                                      */
+FLUID_DATA      *data;     
+
 #ifdef DEBUG 
 dstrc_enter("f2_calset_tu");
 #endif
 
 fdyn = alldyn[genprob.numff].fdyn;
+data = fdyn->data;
+
 /*-------------------------------------------- set element coordinates */
 for(i=0;i<ele->numnp;i++)
 {

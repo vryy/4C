@@ -81,7 +81,6 @@ void fluid2_tu(
 
 static INT              numff;      /* actual number of fluid field     */
 MATERIAL               *actmat;     /* actual material                  */
-static FLUID_DATA      *data;      
 FLUID_DYNAMIC          *fdyn;
 FIELD                  *actfield;   /* actual field                     */
 INT                    start;
@@ -105,17 +104,16 @@ case calc_fluid_init:
       if (actfield->fieldtyp==fluid)
       break;
    } /* end loop over numff */
-   data   = alldyn[numff].fdyn->data;
 /*------------------------------------------- init the element routines */   
-   f2_intg(data,0);
-   f2_calele_tu(data,NULL,NULL,
+   f2_intg(0);
+   f2_calele_tu(NULL,NULL,
                 estif_global,emass_global,
 	        etforce_global,eiforce_global,edforce_global,eproforce_global,
 	        NULL,NULL,1);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid:
-   f2_calele_tu(data,eleke,elev,
+   f2_calele_tu(eleke,elev,
                 estif_global,emass_global,
 	          etforce_global,eiforce_global,edforce_global,eproforce_global,
 	          hasdirich,hasext,0);
@@ -145,17 +143,16 @@ case calc_fluid_init:
       if (actfield->fieldtyp==fluid)
       break;
    } /* end loop over numff */
-   data   = alldyn[numff].fdyn->data; 
 /*------------------------------------------- init the element routines */   
-   f2_intg(data,0);
-   f2_calele_tu_1(data,NULL,NULL,
+   f2_intg(0);
+   f2_calele_tu_1(NULL,NULL,
                   estif_global,emass_global,
 	            etforce_global,eiforce_global,edforce_global,eproforce_global,
 	            NULL,NULL,1);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid:
-   f2_calele_tu_1(data,eleke,elev,
+   f2_calele_tu_1(eleke,elev,
                   estif_global,emass_global,
 	            etforce_global,eiforce_global,edforce_global,eproforce_global,
 	            hasdirich,hasext,0);

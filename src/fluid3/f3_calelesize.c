@@ -94,7 +94,6 @@ extern struct _MATERIAL  *mat;
    fdyn->tau[2]: stability parameter continuity (tau_c)
 </pre>
 \param  *ele     ELEMENT         (i)   actual element
-\param  *data    FLUID_DATA      (i)
 \param **xzye    DOUBLE          (-)   nodal coordinates
 \param  *funct   DOUBLE          (-)   shape functions
 \param **deriv   DOUBLE          (-)   deriv. of shape funcs
@@ -108,7 +107,6 @@ extern struct _MATERIAL  *mat;
 ------------------------------------------------------------------------*/			     
 void f3_calelesize(
                      ELEMENT         *ele,
-                     FLUID_DATA      *data,
                      DOUBLE         **xyze,
                      DOUBLE          *funct,
                      DOUBLE         **deriv,
@@ -141,6 +139,7 @@ DOUBLE velint[3];
 DIS_TYP typ;
 STAB_PAR_GLS *gls;   /* pointer to GLS stabilisation parameters	        */
 FLUID_DYNAMIC *fdyn;
+FLUID_DATA    *data;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calelesize");
@@ -151,6 +150,7 @@ iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f3->stabi.gls;
 fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 
 dsassert(ele->e.f3->stab_type == stab_gls,
         "routine with no or wrong stabilisation called");

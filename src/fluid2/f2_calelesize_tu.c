@@ -21,6 +21,19 @@ Maintainer: Thomas Hettich
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*!---------------------------------------------------------------------
 \brief routine to calculate stabilisation parameter per element at center
@@ -50,7 +63,6 @@ extern struct _MATERIAL  *mat;
 void f2_calelesize_tu(			     
 	           ELEMENT         *ele,    
 		     ELEMENT         *elev,    
-		     FLUID_DATA      *data, 
 	           DOUBLE          *funct,  
 	           DOUBLE         **deriv,  
 	           DOUBLE         **deriv2,  
@@ -76,12 +88,16 @@ DOUBLE  eddyint;
 DOUBLE  facr,facs,det;
 DOUBLE  gcoor[2];       /* global coordinates                           */
 DIS_TYP typ;
+FLUID_DYNAMIC *fdyn;
+FLUID_DATA    *data;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calelesize_tu");
 #endif		
 
 /*---------------------------------------------------------- initialise */
+fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 actmat = ele->mat-1;
 visc   = mat[actmat].m.fluid->viscosity;
 iel    = ele->numnp;

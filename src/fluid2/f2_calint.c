@@ -52,7 +52,6 @@ In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2 element is calculated
       
 </pre>
-\param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
@@ -81,7 +80,6 @@ time-RHS for one fluid2 element is calculated
 
 ------------------------------------------------------------------------*/
 void f2_calint(
-               FLUID_DATA      *data,     
 	       ELEMENT         *ele,     
                INT             *hasext,
                DOUBLE         **estif,   
@@ -126,6 +124,7 @@ DOUBLE    covint[2];
 DOUBLE    preint;     /* pressure at integration point                  */
 DIS_TYP   typ;	      /* element type                                   */
 STAB_PAR_GLS *gls;    /* pointer to GLS stabilisation parameters        */
+FLUID_DATA   *data;     
 
 #ifdef DEBUG 
 dstrc_enter("f2_calint");
@@ -138,7 +137,7 @@ dens = mat[actmat].m.fluid->density;
 typ  = ele->distyp;
 gls  = ele->e.f2->stabi.gls;
 fdyn   = alldyn[genprob.numff].fdyn;
-
+data   = fdyn->data;
 if (ele->e.f2->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
@@ -352,7 +351,6 @@ In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2 element is calculated
       
 </pre>
-\param  *data      FLUID_DATA       (i)	   integration data
 \param  *ele       ELEMENT          (i)    actual element
 \param  *hasext    INT              (i)    element flag
 \param   imyrank   INT              (i)    proc number
@@ -386,7 +384,6 @@ time-RHS for one fluid2 element is calculated
 
 ------------------------------------------------------------------------*/
 void f2_calinta(
-                  FLUID_DATA      *data,     
                   ELEMENT         *ele,     
                   INT             *hasext,
                   INT              imyrank,
@@ -460,6 +457,7 @@ INT       line,ngnode;
 GLINE    *gline[4];
 FLUID_FREESURF_CONDITION *linefs[4];
 STAB_PAR_GLS *gls;      /* pointer to GLS stabilisation parameters      */
+FLUID_DATA   *data;     
 
 #ifdef DEBUG 
 dstrc_enter("f2_calinta");
@@ -475,6 +473,7 @@ typ  = ele->distyp;
 
 gls    = ele->e.f2->stabi.gls;
 fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 
 if (ele->e.f2->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");

@@ -185,41 +185,6 @@ if (actgsurf->neum!=NULL)
    }
 }
 
-/*------------------------------------------- local co-ordinate system:
-  the values in sol_increment are given in the xyz* co-system, however
-  calculation is done in the XYZ co-system. So we have to tranform the
-  velocities from xyz* to XYZ */
-#if 0
-if (ele->locsys==locsys_yes)
-{
-   /*----------------------------------------------- loop element nodes */
-   for (i=0;i<ele->numnp;i++)
-   {
-      actnode=ele->node[i];
-      ilocsys=actnode->locsysId-1;
-      if(ilocsys>=0)
-      {
-         /*------------------- transform values at n+g from xyz* to XYZ */
-         val[0] = evelng[0][i];
-         val[1] = evelng[1][i];
-         locsys_trans_nodval(ele,&(val[0]),3,ilocsys,1);
-         evelng[0][i]=val[0];
-         evelng[1][i]=val[1];
-         /*-------------------------- transform values at n xyz* to XYZ */
-         if (fdyn->nif!=0)
-         {
-            val[0] = eveln[0][i];
-            val[1] = eveln[1][i];
-            locsys_trans_nodval(ele,&(val[0]),3,ilocsys,1);
-            eveln[0][i]=val[0];
-            eveln[1][i]=val[1];         
-         }
-         if (fdyn->nim!=0)
-            dserror("no locsys for computaton with mass-rhs!\n");  
-      } /* endif (ilocsys>=0) */
-   } /* end loop over element nodes */
-} /* endif (ele->locsys==locsys_yes) */
-#endif
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -450,48 +415,6 @@ if (ele->e.f2->fs_on)
       evnn[1][i]=actfnode->oldn[1];
    }
 }
-
-/*------------------------------------------- local co-ordinate system:
-  the values in sol_increment are given in the xyz* co-system, however
-  calculation is done in the XYZ co-system. So we have to tranform the
-  velocities from xyz* to XYZ 
-  THIS MAY BE FUCKIN' SLOW!!!                                
-
-   NOTE: the fluid velocities in sol_increment are given the alternative
-         xyz* co-system. However, grid velocity and ALE-conv. velocity
-         are given in the XYZ co-system.                                */
-
-#if 0
-if (ele->locsys==locsys_yes)
-{
-   /*----------------------------------------------- loop element nodes */
-   for (i=0;i<ele->numnp;i++)
-   {
-      actfnode=ele->node[i];
-      ilocsys=actfnode->locsysId-1;
-      if(ilocsys>=0)
-      {
-         /*----------------- transform velocity at n+g from xyz* to XYZ */
-         val[0] = evelng[0][i];
-         val[1] = evelng[1][i];
-         locsys_trans_nodval(ele,&(val[0]),3,ilocsys,1);
-         evelng[0][i]=val[0];
-         evelng[1][i]=val[1];
-         if(fdyn->nif!=0)         
-         {
-            /*--------------------- transform velocity at n xyz* to XYZ */
-            val[0] = eveln[0][i];
-            val[1] = eveln[1][i];
-            locsys_trans_nodval(ele,&(val[0]),3,ilocsys,1);
-            eveln[0][i]=val[0];
-            eveln[1][i]=val[1];         
-         }
-         if (fdyn->nim!=0)
-            dserror("no locsys for computaton with mass-rhs!\n");  
-      } /* endif (ilocsys>=0) */
-   } /* end loop over element nodes */
-} /* endif (ele->locsys==locsys_yes) */
-#endif
 
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG 

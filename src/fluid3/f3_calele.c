@@ -104,7 +104,6 @@ This routine controls the element evaluation:
 -element load vector due to dirichlet conditions is calculated				      
 			     
 </pre>
-\param  *data	         FLUID_DATA     (i)
 \param  *ele	         ELEMENT	(i)   actual element
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
@@ -118,7 +117,6 @@ This routine controls the element evaluation:
                                  
 ------------------------------------------------------------------------*/
 void f3_calele(
-                FLUID_DATA     *data, 
 	        ELEMENT        *ele,
                 ARRAY          *estif_global,
                 ARRAY          *emass_global, 
@@ -187,11 +185,11 @@ case 0:
    f3_calset(ele,xyze,eveln,evelng,epren,edeadn,edeadng,hasext);
 
 /*------------------------- calculate element size and stab-parameter: */
-   f3_calelesize(ele,data,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
+   f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
 
 /*------------------------------- calculate element stiffness matrices */
 /*                                           and element force vectors */
-   f3_calint(data,ele,hasext,
+   f3_calint(ele,hasext,
              estif,emass,etforce,eiforce,
              xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
              eveln,evelng,epren,edeadn,edeadng,
@@ -203,10 +201,10 @@ case 1:
    f3_calseta(ele,xyze,eveln,evelng,ealecovn,
               ealecovng,egridv,epren,edeadn,edeadng,hasext);
 /*------------------------- calculate element size and stab-parameter: */
-   f3_calelesize(ele,data,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
+   f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
 /*------------------------------- calculate element stiffness matrices */
 /*                                           and element force vectors */
-   f3_calinta(data,ele,hasext,
+   f3_calinta(ele,hasext,
               estif,emass,etforce,eiforce,
               xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
               eveln,evelng,ealecovn,ealecovng,egridv,epren,edeadn,edeadng,
@@ -216,6 +214,11 @@ break;
 default:
    dserror("parameter is_ale not 0 or 1!\n");
 }
+
+#ifdef PERF
+  perf_begin(21);
+#endif
+
 switch(ele->e.f3->fs_on)
 {
 case 0: case 1: case 3: /* no or explict free surface */
@@ -243,11 +246,17 @@ default:
    dserror("parameter fs_on out of range!\n");
 }
 
+#ifdef PERF
+  perf_end(21);
+#endif
+
 /*-------------------------------------------- local co-ordinate system */
 if(ele->locsys==locsys_yes)
    locsys_trans(ele,estif,NULL,etforce,eiforce); 
 
-/*------------------------------- calculate element load vector edforce */
+/*------------------------------------------------ condensation of DBCs */
+/* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
+   tranformed before condensing the dofs                                */
 fluid_caldirich(ele,edforce,estif,hasdirich,3);
 
 /*----------------------------------------- calculate emass * vec(n) ---*/
@@ -273,7 +282,6 @@ return;
 
 \param     str       FLUID_STRESS   (i)    flag for stress calculation
 \param     viscstr   INT            (i)    viscose stresses yes/no?
-\param    *data      FLUID_DATA     (i)
 \param    *ele       ELEMENt        (i)    actual element 
 \param     is_relax  INT            (i)    flag
 \return void                                               
@@ -281,7 +289,6 @@ return;
 ------------------------------------------------------------------------*/
 void f3_stress(FLUID_STRESS  str, 
                INT           viscstr,
-	       FLUID_DATA   *data, 
 	       ELEMENT      *ele,
 	       INT           is_relax  )
 {
@@ -314,13 +321,13 @@ case str_fsicoupling:
       break;    
    }
    if (coupled==1) 
-   f3_calelestress(viscstr,data,ele,eveln,epren,funct,
+   f3_calelestress(viscstr,ele,eveln,epren,funct,
                    deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);      
 break;
 #endif
 case str_liftdrag:
 case str_all:
-   f3_calelestress(viscstr,data,ele,eveln,epren,funct,
+   f3_calelestress(viscstr,ele,eveln,epren,funct,
                   deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);      
 break;
 default:
@@ -342,7 +349,6 @@ default:
 evaluation of heightfunction
 			     
 </pre>
-\param   *data             FLUID_DATA        integration parameter
 \param   *ele              ELEMENT           the actual element
 \param   *estif_global     DOUBLE            element stiffness matrix
 \param   *eiforce_global   DOUBLE            ele RHS
@@ -351,14 +357,12 @@ evaluation of heightfunction
                                  
 ------------------------------------------------------------------------*/
 void f3_heightfunc(                                 
-                   FLUID_DATA           *data,  
                    ELEMENT              *ele,
                    ARRAY                *estif_global,   
 		   ARRAY                *eiforce_global,  
 		   CONTAINER            *container		   
 		   )
 {
-#if 0
 #ifdef D_FSI
 INT       i,surf;
 INT       nir ,nil;  
@@ -374,7 +378,7 @@ FLUID_FREESURF_CONDITION *surffs[6];
 #ifdef DEBUG 
 dstrc_enter("f3_heightfunc");
 #endif
-#endif
+
 
 fdyn   = alldyn[genprob.numff].fdyn;
 
@@ -437,7 +441,7 @@ for (surf=0; surf<ngsurf; surf++)
    /*--------------------------------------------------- get edge nodes */
    f3_iedg(iedgnod,ele,surf);
    /*--------------------------------- integration loop on actual gline */
-   f3_calint_hfsep(ele,data,funct,deriv,wa1,wa2,xyze,ngnode,nil,
+   f3_calint_hfsep(ele,funct,deriv,wa1,wa2,xyze,ngnode,nil,
                    iedgnod,velint,vel2int,evelng,eveln,ephing,ephin,derxy,typ,
                    estif,eiforce);
 }
@@ -465,11 +469,10 @@ evaluation of stabilisation parameter at the end of a time step
 			     			
 </pre>
 \param   *ele     ELEMENT        the acutal element
-\param   *data    FLUID_DATA     integration parameter
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f3_calstab(ELEMENT *ele, FLUID_DATA *data)
+void f3_calstab(ELEMENT *ele)
 {
 INT      i;
 NODE    *actfnode;
@@ -501,7 +504,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 }
    
 /*-------------------------- calculate element size and stab-parameter: */
-f3_calelesize(ele,data,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,1);
+f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,1);
 
 
 /*----------------------------------------------------------------------*/

@@ -21,24 +21,42 @@ static DOUBLE Q124 = ONE/SIX/FOUR;
 static DOUBLE Q430 = FOUR/FIVE/SIX;
 static DOUBLE Q9120= NINE/FOUR/FIVE/SIX;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
  | integration points                                      genk 03/02   |
  | this routine is a try to organise the integration parameters         |
  | different. ALL paramters are saved in FLUID_DATA, so that this       |
  | routine has to be (hopefully) called only once!!!                    |
  *----------------------------------------------------------------------*/
-void f3_intg(FLUID_DATA      *data,
+void f3_intg(
              INT              option)
 {
 INT i, k;
-
 DOUBLE  xgr[MAXTINTP][MAXTINTC],xgs[MAXTINTP][MAXTINTC],xgt[MAXTINTP][MAXTINTC];
 DOUBLE  wgtt[MAXTINTP][MAXTINTC]; 
 DOUBLE  xg[MAXQINTP][MAXQINTC],wgt[MAXQINTP][MAXQINTC];
 DOUBLE  palpha, pbeta;
+FLUID_DATA     *data; 
+FLUID_DYNAMIC  *fdyn;
 
 #ifdef DEBUG 
 dstrc_enter("f3_intg");
 #endif
+
+fdyn   = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
+
 /*----------------------------------------------------------------------*/
 if (option==0)
 {                                                  /* initialize arrays */
