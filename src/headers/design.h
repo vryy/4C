@@ -33,6 +33,12 @@ typedef struct _DNODE
    struct _NEUM_CONDITION   *neum;         /* neumann conditions to this DNODE, else NULL */
    struct _DIRICH_CONDITION *dirich;       /* dirichlet conditions to this DNODE, else NULL */
    struct _COUPLE_CONDITION *couple;       /* coupling conditions to this DNODE, else NULL */
+#ifdef D_FSI
+   struct _FSI_COUPLE_CONDITION *fsicouple;
+#endif
+#ifdef D_FLUID
+   struct _FLUID_FREESURF_CONDITION *freesurf;
+#endif
 } DNODE;
 
 
@@ -59,6 +65,12 @@ typedef struct _DLINE
    struct _NEUM_CONDITION   *neum;          /* neumann conditions to this DLINE, else NULL */
    struct _DIRICH_CONDITION *dirich;        /* dirichlet conditions to this DLINE, else NULL */
    struct _COUPLE_CONDITION *couple;        /* coupling conditions to this DLINE, else NULL */
+#ifdef D_FSI
+   struct _FSI_COUPLE_CONDITION *fsicouple;
+#endif
+#ifdef D_FLUID
+   struct _FLUID_FREESURF_CONDITION *freesurf;
+#endif
 } DLINE;
 
 

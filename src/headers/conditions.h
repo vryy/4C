@@ -17,6 +17,7 @@ typedef struct _NEUM_CONDITION
      neum_none,
      neum_live,
      neum_dead,
+     neum_FSI,
      pres_domain_load,
      neum_consthydro_z,
      neum_increhydro_z
@@ -43,7 +44,12 @@ typedef struct _DIRICH_CONDITION
 
      struct _ARRAY             dirich_onoff; /* array of on-off flags */
      struct _ARRAY             dirich_val;   /* values of this condition */    
-
+     enum
+     {
+     dirich_none,
+     dirich_FSI,
+     dirich_freesurf
+     }                         dirich_type;                       
 
 } DIRICH_CONDITION;
 /*----------------------------------------------------------------------*
@@ -55,8 +61,25 @@ typedef struct _DIRICH_CONDITION
 typedef struct _COUPLE_CONDITION
 {
      enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
-
      struct _ARRAY             couple;          /* array of the coupling conditions */
-     int                       fsi_iscoupled;   /* flag for fsi coupling */
-
 } COUPLE_CONDITION;
+/*----------------------------------------------------------------------*
+ | fsi coupling condition                                 genk 10/02    |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+typedef struct _FSI_COUPLE_CONDITION
+{
+     enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
+     int                       fsi_coupleId;
+     enum _FSI_MESH            fsi_mesh;
+     
+} FSI_COUPLE_CONDITION;
+/*----------------------------------------------------------------------*
+ | fluid freesurface condition                            genk 10/02    |
+ |                                                                      |        
+ *----------------------------------------------------------------------*/
+typedef struct _FLUID_FREESURF_CONDITION
+{
+     enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
+     struct _ARRAY             fixed_onoff;     /* flags for local slippage model */     
+} FLUID_FREESURF_CONDITION;

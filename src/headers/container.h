@@ -10,7 +10,6 @@ to the 'Elementroutinen'
 typedef struct _CONTAINER
 {
 /*------------------------------------------------------------- file I/O */
-
 enum _FIELDTYP fieldtyp;     /*!< typ of field */
 int            handsize;     /*!< has to do with restart */
 long int      *handles;      /*!< has to do with restart */                         
@@ -22,16 +21,21 @@ int            isdyn;        /*!< flag for dynamic or static calculation */
                             /*!< isdyn = 0 for static calculation */
                             /*!< isdyn = 1 for dynamic calculation */
 double         ekin;         /*!< kinetic energy, calculated at element level */
-int            kstep;        /*!< time in increment step we are in */
 int            kintyp;      /*!< kinematic to be used */
                              /*!< kintyp = 0: linear kinematic */
                              /*!< kintyp = 1: updated lagrange */
                              /*!< kintyp = 2: total lagrange */
+int            kstep;        /*!< time in increment step we are in */
+int            inherit;
+int            point_neum;
 
+#ifdef D_FLUID
 double        *ftimerhs;     /*!< ab hier fuer fluid */   
 double        *fiterhs;
 int            nii;
 int            nif;
+enum _FLUID_STRESS str;         
+#endif
 
 #ifdef D_OPTIM                /* include optimization code to ccarat        */
 double         getvalue ;     /*!< optimization */   

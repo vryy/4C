@@ -15,7 +15,7 @@ typedef struct _NODE
      struct _ARRAY              sol;           /* my solution history */
      struct _ARRAY              sol_increment; /* my incremental solution */
      struct _ARRAY              sol_residual ; /* my residual solution */
-
+     struct _ARRAY              sol_mf;        /* my multifield coupling values */
      int                        numdf;         /* my number of degrees of freedom */
      int                       *dof;           /* my dof-numbers  */
 
@@ -108,6 +108,11 @@ typedef struct _GNODE
      struct _DIRICH_CONDITION     *dirich;      /* a dirichlet condition on this gnode, else NULL */
      struct _COUPLE_CONDITION     *couple;      /* a coupling conditions on this gnode, else NULL */
      struct _NEUM_CONDITION       *neum;        /* a neumann condition on this gnode, else NULL */
+#ifdef D_FSI
+     struct _FSI_COUPLE_CONDITION *fsicouple;
+     struct _FLUID_FREESURF_CONDITION *freesurf;
+     struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
+#endif
 } GNODE;
 
 
@@ -119,6 +124,7 @@ typedef struct _GLINE
 #ifdef DEBUG 
      int                        Id;             /* for debugging only, do not use in code !*/
 #endif
+     int                        proc;           /* my owner intra-proc */
    /*------------fe topology section */
      int                        ngnode;         /* number of gnodes on me */
      struct _GNODE            **gnode;          /* vector of ptrs to these gnodes */
@@ -131,6 +137,10 @@ typedef struct _GLINE
 
    /*----------- boundary conditions */
      struct _NEUM_CONDITION       *neum;        /* neumann conditions to this GLINE, else NULL */
+#ifdef D_FSI
+     struct _FSI_COUPLE_CONDITION *fsicouple;
+     struct _FLUID_FREESURF_CONDITION *freesurf;
+#endif
 } GLINE;
 /*----------------------------------------------------------------------*
  | 1 GSURF                                                 m.gee 3/02   |

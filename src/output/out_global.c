@@ -233,6 +233,7 @@ fprintf(out,"NODE glob_Id %6d loc_Id %6d    %-18.5f %-18.5f %-18.5f \n",
         actnode->Id,actnode->Id_loc,actnode->x[0],actnode->x[1],actnode->x[2]);
 }
 fprintf(out,"________________________________________________________________________________\n\n");
+#ifdef DEBUG
 fprintf(out,"Degrees of Freedom:\n");
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
@@ -263,6 +264,7 @@ switch (actnode->numdf)
 case 2:
 fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
         actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
+break;
 case 3:
 fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
         actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
@@ -270,6 +272,10 @@ break;
 case 4:
 fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d\n",
         actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3]);
+break;
+case 5:
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d\n",
+        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4]);
 break;
 case 6:
 fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d\n",
@@ -280,7 +286,7 @@ break;
 }
 }
 fprintf(out,"________________________________________________________________________________\n\n");
-
+#endif
 /* .... other stuff */
 
 
@@ -354,65 +360,91 @@ fprintf(out,"===================================================================
 fprintf(out,"Converged Solution in step %d\n",step); 
 fprintf(out,"================================================================================\n");
 /*-------------------------------------------------- print nodal values */
-if (ioflags.struct_disp_file==1)
-for (j=0; j<actfield->dis[0].numnp; j++)
+switch(actfield->fieldtyp)
 {
-   actnode = &(actfield->dis[0].node[j]);
-
-   /* check if actnode belongs to a shell9 element */
-   #ifdef D_SHELL9
-      is_shell9 = 0;
-      for (k=0; k<actnode->numele; k++)
-      {
-        switch(actnode->element[k]->eltyp)
-        {
-        case el_shell9:
-          is_shell9 = 1;
-        break;
-        }
-      }
-      /* print nodal values for shell9 */
-      if (is_shell9 == 1)
-      {
-        if(actnode->numdf == 6) /*only one kinematic layer*/
-        {
-          fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-          for (k=0; k<actnode->numdf; k++)
-          {
-             if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-             fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
-          }
-          fprintf(out,"\n");
-        }
-        else
-          s9out_nodal_dis(actnode,place);
-          continue;
-      }
-   #endif /*D_SHELL9*/
-
-   fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-   for (k=0; k<actnode->numdf; k++) 
+case structure:
+   if (ioflags.struct_disp_file==1)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-      fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
+      actnode = &(actfield->dis[0].node[j]);
+
+      /* check if actnode belongs to a shell9 element */
+      #ifdef D_SHELL9
+         is_shell9 = 0;
+         for (k=0; k<actnode->numele; k++)
+         {
+           switch(actnode->element[k]->eltyp)
+           {
+           case el_shell9:
+             is_shell9 = 1;
+           break;
+           }
+         }
+         /* print nodal values for shell9 */
+         if (is_shell9 == 1)
+         {
+           if(actnode->numdf == 6) /*only one kinematic layer*/
+           {
+             fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+             for (k=0; k<actnode->numdf; k++)
+             {
+                if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+                fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
+             }
+             fprintf(out,"\n");
+           }
+           else
+             s9out_nodal_dis(actnode,place);
+             continue;
+         }
+      #endif /*D_SHELL9*/
+
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+      for (k=0; k<actnode->numdf; k++) 
+      { 
+         if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+         fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+      }
+      fprintf(out,"\n");     
    }
-   fprintf(out,"\n");
-}
-fprintf(out,"________________________________________________________________________________\n\n");
-if (ioflags.fluid_sol_file==1)
-for (j=0; j<actfield->dis[0].numnp; j++)
-{
-   actnode = &(actfield->dis[0].node[j]);
-   fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-   for (k=0; k<actnode->numdf; k++) 
+   fprintf(out,"________________________________________________________________________________\n\n");  
+break;
+case fluid:
+   if (ioflags.fluid_sol_file==1)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-      fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
+      actnode = &(actfield->dis[0].node[j]);
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+      for (k=0; k<actnode->numdf; k++) 
+      {
+   	 if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+   	 fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+      }
+      fprintf(out,"\n");
    }
-   fprintf(out,"\n");
+   fprintf(out,"________________________________________________________________________________\n\n");
+break;
+case ale:
+   if (ioflags.ale_disp_file==1)
+   for (j=0; j<actfield->dis[0].numnp; j++)
+   {
+      actnode = &(actfield->dis[0].node[j]);
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+      for (k=0; k<actnode->numdf; k++) 
+      { 
+   	 if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+   	 fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+      }
+      fprintf(out,"\n");
+   }
+   fprintf(out,"________________________________________________________________________________\n\n");
+break;
+default: dserror("Cannot print fieldtype");
 }
-fprintf(out,"________________________________________________________________________________\n\n");
 /*------------------------------------------------ print element values */
+switch(actfield->fieldtyp)
+{
+case structure:
 if (ioflags.struct_stress_file==1)
 for (j=0; j<actfield->dis[0].numele; j++)
 {
@@ -603,8 +635,17 @@ for (j=0; j<actfield->dis[0].numele; j++)
    break;
    }
 }
+break;
+case fluid:
+break;
+case ale:
+break;
+} /* end switch(actfield->fieldtyp) */
+
 fprintf(out,"\n");
 fprintf(out,"\n");
+
+#if 0
 
 for (j=0; j<actfield->dis[0].numele; j++)
 {
@@ -651,6 +692,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
    }
 }
 
+#endif
 /*----------------------------------------------------------------------*/  
 
 
@@ -663,4 +705,188 @@ if (myrank==0 && imyrank==0) fflush(out);
 dstrc_exit();
 #endif
 return;
-} /* end of out_sol */
+} /* end of out_general */
+
+/*!---------------------------------------------------------------------
+\brief print fsi coupling informations
+
+<pre>                                                         genk 01/03
+		     
+</pre>
+
+\param *fluidfield    FIELD   (i)    
+
+\return void                                                                             
+
+------------------------------------------------------------------------*/
+void out_fsi(FIELD *fluidfield)
+{
+int        i,j,k,l;
+FILE      *out = allfiles.out_out;
+NODE      *actfnode, *actanode, *actsnode;
+GNODE     *actfgnode;
+int        myrank;
+int        nprocs;
+int        imyrank;
+int        inprocs;
+int	   numnp;
+int        numaf,numsf;
+
+#ifdef DEBUG 
+dstrc_enter("out_fsi");
+#endif
+
+#ifdef D_FSI
+/*----------------------------------------------------------------------*/
+myrank = par.myrank;
+nprocs = par.nprocs;
+numaf  = genprob.numaf;
+numsf  = genprob.numsf;
+/*----------------------------------------------------------------------*/
+if (myrank==0)
+{
+fprintf(out,"================================================================================\n");
+fprintf(out,"FSI node connectivity global Ids:\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"\n");
+fprintf(out,"FLUID          ALE          STRUCTURE\n");
+for (i=0;i<fluidfield->dis[0].numnp;i++)
+{
+   actfnode  = &(fluidfield->dis[0].node[i]);
+   actfgnode = actfnode->gnode;
+   actsnode  = actfgnode->mfcpnode[numsf];
+   actanode  = actfgnode->mfcpnode[numaf];
+   if (actsnode==NULL && actanode!=NULL)
+   fprintf(out,"%-6d         %-6d       ------\n",actfnode->Id,actanode->Id);
+   else if (actanode==NULL && actsnode!=NULL)
+   fprintf(out,"%-6d         ------       %-6d\n",actfnode->Id,actsnode->Id);
+   else if (actanode!=NULL && actsnode!=NULL)
+   fprintf(out,"%-6d         %-6d       %-6d\n",actfnode->Id,actanode->Id,actsnode->Id); 
+   else
+   fprintf(out,"%-6d         ------       ------\n",actfnode->Id);    
+
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"FSI node connectivity local Ids:\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"\n");
+fprintf(out,"FLUID          ALE          STRUCTURE\n");
+for (i=0;i<fluidfield->dis[0].numnp;i++)
+{
+   actfnode  = &(fluidfield->dis[0].node[i]);
+   actfgnode = actfnode->gnode;
+   actsnode  = actfgnode->mfcpnode[numsf];
+   actanode  = actfgnode->mfcpnode[numaf];
+   if (actsnode==NULL && actanode!=NULL)
+   fprintf(out,"%-6d         %-6d       ------\n",actfnode->Id_loc,actanode->Id_loc);
+   else if (actanode==NULL && actsnode!=NULL)
+   fprintf(out,"%-6d         ------       %-6d\n",actfnode->Id_loc,actsnode->Id_loc);
+   else if (actanode!=NULL && actsnode!=NULL)
+   fprintf(out,"%-6d         %-6d       %-6d\n",actfnode->Id_loc,actanode->Id,actsnode->Id_loc); 
+   else
+   fprintf(out,"%-6d         ------       ------\n",actfnode->Id_loc);    
+
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+/*----------------------------------------------------------------------*/
+} /* end of if (myrank==0 && imyrank==0) */
+/*----------------------------------------------------------------------*/
+if (myrank==0) fflush(out);
+/*----------------------------------------------------------------------*/
+#else
+dserror("FSI functions not compiled in\n");
+#endif
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_fsi */
+
+/*!---------------------------------------------------------------------
+\brief  print fluid multifield coupling informations
+
+<pre>                                                         genk 01/03
+		     
+</pre>
+
+\param *fluidfield    FIELD   (i)    
+
+\return void                                                                             
+
+------------------------------------------------------------------------*/
+void out_fluidmf(FIELD *fluidfield)
+{
+int        i,j,k,l;
+FILE      *out = allfiles.out_out;
+NODE      *actfnode, *actanode;
+GNODE     *actfgnode;
+int        myrank;
+int        nprocs;
+int        imyrank;
+int        inprocs;
+int	   numnp;
+int        numff;
+int        numaf;
+
+#ifdef DEBUG 
+dstrc_enter("out_fluidmf");
+#endif
+
+#ifdef D_FSI
+/*----------------------------------------------------------------------*/
+myrank = par.myrank;
+nprocs = par.nprocs;
+numff  = genprob.numff;
+numaf  = genprob.numaf;
+/*----------------------------------------------------------------------*/
+if (myrank==0)
+{
+fprintf(out,"================================================================================\n");
+fprintf(out,"Fluid multiefield node connectivity global Ids:\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"\n");
+fprintf(out,"FLUID          ALE          \n");
+for (i=0;i<fluidfield->dis[0].numnp;i++)
+{
+   actfnode  = &(fluidfield->dis[0].node[i]);
+   actfgnode = actfnode->gnode;
+   actanode  = actfgnode->mfcpnode[numaf];
+   if (actanode!=NULL)
+   fprintf(out,"%-6d         %-6d       \n",actfnode->Id,actanode->Id); 
+   else
+   fprintf(out,"%-6d         ------       \n",actfnode->Id);    
+
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"Fluid multiefield node connectivity global Ids:\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"\n");
+fprintf(out,"FLUID          ALE          \n");
+for (i=0;i<fluidfield->dis[0].numnp;i++)
+{
+   actfnode  = &(fluidfield->dis[0].node[i]);
+   actfgnode = actfnode->gnode;
+   actanode  = actfgnode->mfcpnode[numaf];
+   if (actanode!=NULL)
+   fprintf(out,"%-6d         %-6d       \n",actfnode->Id_loc,actanode->Id_loc);
+   else
+   fprintf(out,"%-6d         ------       \n",actfnode->Id_loc);    
+
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+/*----------------------------------------------------------------------*/
+} /* end of if (myrank==0 && imyrank==0) */
+/*----------------------------------------------------------------------*/
+if (myrank==0) fflush(out);
+/*----------------------------------------------------------------------*/
+#else
+dserror("FSI functions not compiled in\n");
+#endif
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_fluidmf */
+

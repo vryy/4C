@@ -3,7 +3,6 @@
 \brief fluid dynamic data
 
 ------------------------------------------------------------------------*/
-
 /*!----------------------------------------------------------------------
 \brief integration parameters                                              
 
@@ -45,12 +44,18 @@ double thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS */
 double thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS */
 double thpl;     /*!< theta-p,l: const. for "pressure" terms LHS  */
 double thpr;     /*!< theta-p,r: const. for "pressure" terms RHS  */
+double omt;      /*!< ONE-theta                                   */
+double acttime;  /*!< actual time */
 double velmax;   /*!< max. velocity, needed for stabilisaton parameter */
 double tau[3];   /*!< array for stabilitity parameter */
 double sigma;    /*!< const. for nonlinear iteration */   
+double totarea;  /*!< total area of fluid field */
 int    itwost;   /*!< control variable for element evaluation */
 int    isemim;   /*!< control variable for element evaluation */
 int    iprerhs;  /*!< treatment of pressure in time discr. */
+int    surftens; /*!< include surface tension effects */
+int    fsstnif; 
+int    fsstnii;
 int    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)*/
 int    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE       */
 int    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION	     */
@@ -60,6 +65,7 @@ int    nif;	 /*!< EVALUATION OF "TIME - RHS"           	     */
 int    nii;	 /*!< EVALUATION OF "ITERATION - RHS"		     */
 int    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)       */
 int    ishape;   /*!< flag for new element shape                     */
+int    ncols;        /*!< number of columns in solution history */
 struct  _FLUID_DATA data;
 } FLUID_DYN_CALC;
 
@@ -81,7 +87,7 @@ int                numdf;        /*!< number of dofs of the fluid elements */
 int                iop;          /* !<time integration method */
 int                numcont;      /*!< number of continuation steps */
 int                uppss;        /*!< update pss file every n steps */
-int                idisp;        /*!< store results every n steps */      
+int                upout;        /*!< store results every n steps */      
 int                nstep;        /*!< number of timesteps */
 int                step;         /*!< the actual step */
 int                ite;          /*!< nonlinear iteration scheme */
@@ -94,6 +100,10 @@ int                iops;         /*!< starting algorithm */
 int                nums;         /*!< number of starting algorithm steps */
 int                init;         /*!< initialisation of starting field */
 int                iprerhs;      /*!< treatment of pressure in time discr. */
+int                viscstr;      /*!< flag for calculation of viscos stresses */
+int                freesurf;     /*!< treatment of free surface */
+int                surftens;     /*!< include surface tension effects */
+int                checkarea;    /*!< check total area of fluid field */
 double             maxtime;      /*!< maximal simulation time */
 double             time;         /*!< actual time */
 double             dt;           /*!< time increment */
