@@ -23,6 +23,7 @@
 #include "/bau/stat33/users/statik/lib/METIS/metis.h"
 #endif
 #endif
+static int MAXNODPERGLINE=3;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -76,13 +77,17 @@ int      i,j,k,l,m,n,kk;
 int      counter;
 int      adjcounter;
 long int max,min;
-int      proc;
+int      proc, proc2;
+int      sameproc;
+int      ngline;
 
 INTRA   *actintra;
 int      imyrank;
 int      inprocs;
 NODE    *actnode;
 FIELD   *actfield;
+GNODE   *actgnode;
+GLINE   *actgline;
 ELEMENT *actele;
 #if D_FLUID2_PRO
 ELEMENT *actvele, *actpele;
@@ -102,6 +107,10 @@ int      nparts;
 ARRAY    part;
 ARRAY    part_proc;
 ARRAY    ele_per_proc;
+ARRAY    gl_per_proc_a;
+int     *gl_per_proc;
+ARRAY    lineproc_a;
+int     *lineproc;
 #ifdef DEBUG 
 dstrc_enter("part_fields");
 #endif
@@ -369,6 +378,57 @@ for (i=0; i<genprob.numfld; i++)
    amdel(&(xadj[i]));
    amdel(&(adjncy[i]));
    amdel(&(vwgt[i]));
+   /*--------------------------------------------- assign gline to proc */   
+   gl_per_proc = amdef("gl_per_proc",&gl_per_proc_a,nparts,1,"IV");
+   amzero(&gl_per_proc_a);
+   lineproc = amdef("lineproc",&lineproc_a,MAXNODPERGLINE,1,"IV");
+   ngline=actfield->dis[0].ngline;
+   for (j=0;j<ngline;j++)
+   {
+      actgline = &(actfield->dis[0].gline[j]);
+      actgline->proc = -1;
+   }
+   /* loop all glines and assign proc to these glines where all nodes 
+      belong to the same domain                                          */          
+   for (j=0;j<ngline;j++)
+   {
+      actgline = &(actfield->dis[0].gline[j]);
+      dsassert(actgline->ngnode<=3,"number of nodes at a gline > 3 not possible!\n");
+      counter=0;
+      for (k=0;k<actgline->ngnode;k++)
+      {
+         actgnode = actgline->gnode[k];
+         lineproc[k]=actgnode->node->proc;
+      }
+      /* ----------------------- check if gline belongs only to one proc */
+      proc = lineproc[0];
+      sameproc = 0;
+      for (k=1;k<actgline->ngnode;k++)
+      if (proc != lineproc[k]) sameproc=1;
+      if (sameproc==0) 
+      {
+         actgline->proc=proc;
+	 gl_per_proc[proc]+=1;
+      }
+   }
+   /*-------- now loop again all glines and assign the procs to the rest */
+   for (j=0;j<ngline;j++)
+   {
+      actgline = &(actfield->dis[0].gline[j]);
+      if (actgline->proc>-1) continue;
+      actgnode = actgline->gnode[0];
+      proc = actgnode->node->proc;
+      for (k=1;k<actgline->ngnode;k++)
+      {
+         actgnode=actgline->gnode[k];
+	 proc2 = actgnode->node->proc;
+	 if (gl_per_proc[proc2]<gl_per_proc[proc]) proc = proc2;	 
+      }
+      actgline->proc=proc;
+      gl_per_proc[proc]+=1;
+   }
+   amdel(&gl_per_proc_a);
+   amdel(&lineproc_a);
 }/*-------------------------------------------- end of loop over fields */
 /*---------------------------------------- assign procs to ale elements */
 /* NOTICE: This is not ideal, as there is not an ale element to every fluid,
