@@ -240,6 +240,26 @@ void math_matmattrndense(double **R,
 void math_sym_inv(double **A, int dim);
 void math_unsym_inv(double **A, int dimr, int dimc);
 void math_sppr(double *spat, double *a, double *b, double *c);
+/*!---------------------------------------------------------------------                                         
+\brief extract digits from integer number
+
+<pre>                                                         genk 04/02		     
+</pre>   
+\param  num	 int   (i)    integer number
+\param *it	 int   (o)    integer on position "thousand"
+\param *ih       int   (o)    integer on position "hundred"
+\param *id       int   (o)    integer on position "ten"
+\param *id       int   (o)    integer on position "one"
+\return void 
+
+------------------------------------------------------------------------*/
+void math_intextract(
+                    int num,    
+                    int *it,    
+		    int *ih,    
+		    int *id,    
+		    int *io     
+	            );
 /*----------------------------------------------------------------------*
  |  sort_find.c                                          m.gee 11/01    |
  *----------------------------------------------------------------------*/
