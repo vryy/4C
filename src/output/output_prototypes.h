@@ -1,3 +1,20 @@
+/*!---------------------------------------------------------------------
+\file
+\brief 
+
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
+---------------------------------------------------------------------*/
+
+
+#ifndef OUTPUT_PROTOTYPES_H
+#define OUTPUT_PROTOTYPES_H
+
 /*----------------------------------------------------------------------*
  |  out_global.c                                         m.gee 12/01    |
  *----------------------------------------------------------------------*/
@@ -55,3 +72,7 @@ void plot_ale_quality(FIELD *field,INT step, INTRA *actintra,
 void out_gid_sol_fsi(
     FIELD     *fluidfield,
     FIELD     *structfield);
+
+
+#endif
+

@@ -1,3 +1,20 @@
+/*!---------------------------------------------------------------------
+\file
+\brief 
+
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
+---------------------------------------------------------------------*/
+
+
+#ifndef MATH_PROTOTYPES_H
+#define MATH_PROTOTYPES_H
+
 /*----------------------------------------------------------------------*
  |  math1.c                                               m.gee 11/01   |
  *----------------------------------------------------------------------*/
@@ -80,4 +97,7 @@ void mg_sort(INT list[], INT N, INT list2[], DOUBLE list3[]);
 INT quick_find(INT key, INT list[], INT length, INT shift, INT bins[]);
 void init_quick_find(INT list[], INT length, INT *shift, INT *bins);
 INT find_index(INT key, INT list[], INT length);
+
+
+#endif
 
