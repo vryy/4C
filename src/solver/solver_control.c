@@ -12,6 +12,11 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+
+#ifdef TRAP_FE
+#include <fenv.h>
+#endif
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -130,6 +135,22 @@ fflush(allfiles.out_err);
 
 #ifdef PERF
   perf_end(20);
+#endif
+
+  /*
+   * Test for floating point exceptions. (Those that don't result in a
+   * core dump.) */
+#ifdef TRAP_FE
+  if (fetestexcept(FE_OVERFLOW)) {
+    printf(RED_LIGHT "overflow exception in solver_control" END_COLOR "\n");
+    fprintf(allfiles.out_err, "overflow exception in solver_control\n");
+    feclearexcept(FE_OVERFLOW);
+  }
+  if (fetestexcept(FE_UNDERFLOW)) {
+    printf(RED_LIGHT "underflow exception in solver_control" END_COLOR "\n");
+    fprintf(allfiles.out_err, "underflow exception in solver_control\n");
+    feclearexcept(FE_UNDERFLOW);
+  }
 #endif
 
 #ifdef DEBUG
