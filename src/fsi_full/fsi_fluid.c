@@ -697,9 +697,6 @@ if (fdyn->liftdrag>0)
                   actsolv,actpart,actintra);
 }
 
-/*get_pressure(actfield);
-if (fabs(fdyn->acttime-1.0) < EPS12) write_coords(actfield);*/
-
 /*---------------------------------------------- update acceleration ---*/
 if (fdyn->iop==4) /* for step theta */
 {
