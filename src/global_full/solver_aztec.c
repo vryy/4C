@@ -283,6 +283,9 @@ case 0:
         am_alloc_copy(&(msr_array->bindx),&(msr_array->bindx_backup));
       }
       else {
+        dsassert((msr_array->bindx.fdim == msr_array->bindx_backup.fdim) &&
+                 (msr_array->bindx.sdim == msr_array->bindx_backup.sdim),
+                 "bindx backup with wrong size");
         amcopy(&(msr_array->bindx),&(msr_array->bindx_backup));
       }
       
