@@ -70,7 +70,7 @@ typedef enum _CONTACTTYPE
 
 
 
-typedef struct _HISTORY  /*!< History structure used to keep track of some variables*/
+typedef struct _HISTORY  /* History structure used to keep track of some variables */
 {
 DOUBLE           cr_local_coord;     /*!< Current closest point projection (local coordinate)*/
 DOUBLE           pr_local_coord;     /*!< Previous(time step) closest point projection (local coordinate)*/

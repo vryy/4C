@@ -20,7 +20,6 @@ This structure contains the working array at the Gaussian points for the
 </pre>
 
 *----------------------------------------------------------------------*/
-
 typedef struct _IF_IP_WA
 {
 INT          yip;         /* displacement jump normal  */              

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
-\file controlling lift&drag calculation
-\brief 
+\file
+\brief controlling lift&drag calculation
 
 <pre>
 Maintainer: Steffen Genkinger
