@@ -35,6 +35,20 @@ extern struct _GENPROB     genprob;
 extern ALLDYNA      *alldyn;
 
 static FLUID_DYNAMIC *fdyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
+
 /*!---------------------------------------------------------------------
 \brief routine to set dirichlet boundary conditions at time <time>
 
@@ -44,9 +58,9 @@ in this routine the dirichlet boundary conditions for fluid2 and fluid3
 elements are set at time <T=fdyn->time>.
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[3][j]
-                                 |
-                            time (n+1)
+    'actnode->sol_increment.a.da[ipos.velnp][j]
+                                      |
+                                  time (n+1)
 
 </pre>
 \param *actfield    FIELD         (i)  actual field (fluid)
@@ -107,26 +121,26 @@ for (i=0;i<numnp_total;i++)
       if (actgnode->dirich->dirich_onoff.a.iv[j]==0 || actgnode->dirich->dirich_onoff.a.iv[j+1]==0)
          continue;
       else
-      k_2 = 0.0000375*(pow(actnode2->sol_increment.a.da[3][j],2)+pow(actnode2->sol_increment.a.da[3][j+1],2));
+      k_2 = 0.0000375*(pow(actnode2->sol_increment.a.da[ipos.velnp][j],2)+pow(actnode2->sol_increment.a.da[ipos.velnp][j+1],2));
 
-      actnode->sol_increment.a.da[3][j]   = k_2 ;
-      actnode->sol_increment.a.da[1][j]   = actnode->sol_increment.a.da[3][j];
-      *lower_limit_kappa = DMAX(*lower_limit_kappa,actnode->sol_increment.a.da[3][j]*0.0001);
+      actnode->sol_increment.a.da[ipos.velnp][j]   = k_2 ;
+      actnode->sol_increment.a.da[ipos.veln][j]   = actnode->sol_increment.a.da[ipos.velnp][j];
+      *lower_limit_kappa = DMAX(*lower_limit_kappa,actnode->sol_increment.a.da[ipos.velnp][j]*0.0001);
 
-      if (actnode2->sol_increment.a.da[3][j] == 0.0 && actnode2->sol_increment.a.da[3][j+1] == 0.0)
+      if (actnode2->sol_increment.a.da[ipos.velnp][j] == 0.0 && actnode2->sol_increment.a.da[ipos.velnp][j+1] == 0.0)
       {
-       actnode->sol_increment.a.da[3][j+2] = 2500*visc/pow(roughtness,2);
-       actnode->sol_increment.a.da[1][j+2] = actnode->sol_increment.a.da[3][j+2];
+       actnode->sol_increment.a.da[ipos.velnp][j+2] = 2500*visc/pow(roughtness,2);
+       actnode->sol_increment.a.da[ipos.veln][j+2] = actnode->sol_increment.a.da[ipos.velnp][j+2];
       }
-      if (actnode2->sol_increment.a.da[3][j] != 0.0 || actnode2->sol_increment.a.da[3][j+1] != 0.0)
+      if (actnode2->sol_increment.a.da[ipos.velnp][j] != 0.0 || actnode2->sol_increment.a.da[ipos.velnp][j+1] != 0.0)
       {
-       actnode->sol_increment.a.da[3][j+2] = sqrt(actnode->sol_increment.a.da[3][j])/(0.005*int_lenght);
-       actnode->sol_increment.a.da[1][j+2] = actnode->sol_increment.a.da[3][j+2];
-      *lower_limit_omega = DMAX(*lower_limit_omega,actnode->sol_increment.a.da[3][j+2]*0.0001);
+       actnode->sol_increment.a.da[ipos.velnp][j+2] = sqrt(actnode->sol_increment.a.da[ipos.velnp][j])/(0.005*int_lenght);
+       actnode->sol_increment.a.da[ipos.veln][j+2] = actnode->sol_increment.a.da[ipos.velnp][j+2];
+      *lower_limit_omega = DMAX(*lower_limit_omega,actnode->sol_increment.a.da[ipos.velnp][j+2]*0.0001);
       }
 
-      actnode->sol_increment.a.da[3][j+1] = actnode->sol_increment.a.da[3][j]/actnode->sol_increment.a.da[3][j+2];
-      actnode->sol_increment.a.da[2][j+1] = actnode->sol_increment.a.da[3][j+1];
+      actnode->sol_increment.a.da[ipos.velnp][j+1] = actnode->sol_increment.a.da[ipos.velnp][j]/actnode->sol_increment.a.da[ipos.velnp][j+2];
+      actnode->sol_increment.a.da[ipos.eddy][j+1] = actnode->sol_increment.a.da[ipos.velnp][j+1];
    } /*end loop over nodes */
 }
 /*----------------------------------------------------------------------*/
@@ -143,7 +157,7 @@ return;
 
 in this routine the element load vector due to dirichlet conditions
 is calcluated. The prescribed values are taken from the node solution
-history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[3][j]'.
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos.velnp][j]'.
 the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
@@ -218,9 +232,9 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
           actgnode->dirich->dirich_onoff.a.iv[1]==0) continue;
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
       if(fdyn->kapomega_flag==0)
-      dirich[i*numdf+j] = actnode->sol_increment.a.da[3][j];
+      dirich[i*numdf+j] = actnode->sol_increment.a.da[ipos.velnp][j];
       if(fdyn->kapomega_flag==1)
-      dirich[i*numdf+j] = actnode->sol_increment.a.da[3][j+2];
+      dirich[i*numdf+j] = actnode->sol_increment.a.da[ipos.velnp][j+2];
    } /* end loop over dofs */
 } /* end loop over nodes */
 /*----------------------------------------- loop rows of element matrix */

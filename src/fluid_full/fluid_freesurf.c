@@ -63,6 +63,19 @@ extern struct _DESIGN *design;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief create free surface condition
 
@@ -814,7 +827,7 @@ case -1: /* predict coordinates at the very beginning */
          for (k=0;k<dim;k++)
          {
             actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[1][k]
-	                      + actfnode->sol_increment.a.da[3][k]*dt;
+	                      + actfnode->sol_increment.a.da[ipos.velnp][k]*dt;
          }
       }
    break;
@@ -828,7 +841,7 @@ case -1: /* predict coordinates at the very beginning */
          actfgnode = actfnode->gnode;
          actanode = actfgnode->mfcpnode[genprob.numaf];
          actfnode->xfs[phipos] = actfnode->x[phipos] + actanode->sol_mf.a.da[1][phipos]
-	                       + actfnode->sol_increment.a.da[3][phipos]*dt;
+	                       + actfnode->sol_increment.a.da[ipos.velnp][phipos]*dt;
       }
    break;
    default:
@@ -849,7 +862,7 @@ case 0: /* predict coordinates for the next step                         */
          for (k=0;k<dim;k++)
          {
             actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[1][k]
-	                      + actfnode->sol_increment.a.da[3][k]*dt;
+	                      + actfnode->sol_increment.a.da[ipos.velnp][k]*dt;
          }
       }
    break;
@@ -866,15 +879,15 @@ case 0: /* predict coordinates for the next step                         */
             /*------------------- correct ALE solution at free surface */
             actanode->sol_mf.a.da[1][k] = actfnode->xfs[k]-actfnode->x[k];
             /*------- predict free surface position for next time step */
-	    actfnode->xfs[k] += actfnode->sol_increment.a.da[3][k+numdf]*dt;
+	    actfnode->xfs[k] += actfnode->sol_increment.a.da[ipos.velnp][k+numdf]*dt;
 
 /*------------------------------------------------------------- old stuff
 #if 0
              actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[1][k]
-	                     + actfnode->sol_increment.a.da[3][k+numdf]*dt;
+	                     + actfnode->sol_increment.a.da[ipos.velnp][k+numdf]*dt;
 #endif
 #if 0
-            actfnode->xfs[k] += actfnode->sol_increment.a.da[3][k+numdf]*dt;
+            actfnode->xfs[k] += actfnode->sol_increment.a.da[ipos.velnp][k+numdf]*dt;
 #endif
 */
          }
@@ -896,16 +909,16 @@ case 0: /* predict coordinates for the next step                         */
          /*------------- precitor based on fluid velocity leads to local instabilities in the
             velocity field if the velocity at the free surface is tangential to the
             heightfunction */
-	 actfnode->xfs[phipos] += actfnode->sol_increment.a.da[3][phipos]*dt;
+	 actfnode->xfs[phipos] += actfnode->sol_increment.a.da[ipos.velnp][phipos]*dt;
 
          /* better: predictor based on phi, however this only reduces the effect */
-         actfnode->xfs[phipos] += (actfnode->sol_increment.a.da[3][numdf]-
-                                   actfnode->sol_increment.a.da[1][numdf]);
+         actfnode->xfs[phipos] += (actfnode->sol_increment.a.da[ipos.velnp][numdf]-
+                                   actfnode->sol_increment.a.da[ipos.veln][numdf]);
 #endif
          /* predictor of second order: */
-         pred = (THREE/TWO*actfnode->sol_increment.a.da[3][numdf]
-               - TWO*actfnode->sol_increment.a.da[1][numdf]
-               +ONE/TWO*actfnode->sol_increment.a.da[0][numdf]);
+         pred = (THREE/TWO*actfnode->sol_increment.a.da[ipos.velnp][numdf]
+               - TWO*actfnode->sol_increment.a.da[ipos.veln][numdf]
+               +ONE/TWO*actfnode->sol_increment.a.da[ipos.velnm][numdf]);
          actfnode->xfs[phipos] += pred;
 
       }
@@ -931,13 +944,13 @@ case 1: /* update coordinates: correction during the fluid iteration */
 #if 0
             ---------- first order correction of free surface position
             actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[0][k]
-	                  + actfnode->sol_increment.a.da[3][k+numdf]*dt;
+	                  + actfnode->sol_increment.a.da[ipos.velnp][k+numdf]*dt;
 #endif
 */
              /*------ second order correction of free surface position */
              actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[0][k]
-	                + (actfnode->sol_increment.a.da[3][k+numdf]
-	                +  actfnode->sol_increment.a.da[1][k+numdf])/TWO*dt;
+	                + (actfnode->sol_increment.a.da[ipos.velnp][k+numdf]
+	                +  actfnode->sol_increment.a.da[ipos.veln][k+numdf])/TWO*dt;
          }
       }
    break;
@@ -949,7 +962,7 @@ case 1: /* update coordinates: correction during the fluid iteration */
          if (actfnode->xfs==NULL) continue;
          dsassert(actfnode->locsysId==0,
           "no local co-system at free surface allowed!\n");
-	 actfnode->xfs[phipos] = actfnode->sol_increment.a.da[3][numdf];
+	 actfnode->xfs[phipos] = actfnode->sol_increment.a.da[ipos.velnp][numdf];
       }
    break;
    default:
