@@ -53,8 +53,7 @@ time t to actnode->sol.a.da[0][j].
 
 </pre>
 \param *actfield  FIELD          (i)  my field
-\param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
-\param  actpos    INT            (i)  actual position in solution history
+\param *adyn      ALE_DYNAMIK    (i)  structure containing time information
 \param  readstructpos INT        (i)  position, where to read FSI structural
                                       displacement from
 
@@ -160,18 +159,39 @@ for (i=0;i<numnp_total;i++)
 
 #ifdef D_FSI
    case dirich_FSI: /* dirichvalues = displacements of structure -------*/
-      dsassert(actanode->locsysId==0,"no locsys for ALE dirich_FSI!\n");
-      actsnode = actagnode->mfcpnode[numsf];
-      for (j=0;j<actanode->numdf;j++)
+      if(adyn->coupmethod == 1) /* conforming */
       {
-         actanode->sol_increment.a.da[0][j] =
-	    actsnode->sol_mf.a.da[readstructpos][j];
-      } /* readstructpos = 0 for 'ordinary' calculation *
-                         = 6 for calculation for Relaxation parameter via
+        dsassert(actanode->locsysId==0,"no locsys for ALE dirich_FSI!\n");
+        actsnode = actagnode->mfcpnode[numsf];
+        for (j=0;j<actanode->numdf;j++)
+        {
+          actanode->sol_increment.a.da[0][j] =
+	            actsnode->sol_mf.a.da[readstructpos][j];
+
+        } /* readstructpos = 0 for 'ordinary' calculation *
+                           = 6 for calculation for Relaxation parameter via
+	  		       steepest descent method */
+      }
+      else if(adyn->coupmethod == 0) /* mortar method */
+      {
+        for (j=0;j<actanode->numdf;j++)
+        {
+	   if (readstructpos != 6) /* 'ordinary' calculation */
+             actanode->sol_increment.a.da[0][j] =
+  	               actanode->sol_mf.a.da[3][j]; 
+           else if(readstructpos == 6) /* steepest descent method */
+             actanode->sol_increment.a.da[0][j] =
+  	               actanode->sol_mf.a.da[3][j] - 
+                       actanode->sol_mf.a.da[0][j];  
+           else dserror("parameter readstructpos not known in ale_setdirich()!!!\n");
+        } /* readstructpos = 0 for 'ordinary' calculation *
+                           = 6 for calculation for Relaxation parameter via
 			     steepest descent method */
+      }
+      else dserror("adyn->couptyp not known in ale_setdirich()!!!");
    break;
    case dirich_freesurf: /* dirichvalues = displacement of fluid
-                               free surface                             */
+                            free surface                                */
       if (actanode->locsysId==0)
       {
          actfnode = actagnode->mfcpnode[numff];
