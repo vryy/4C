@@ -18,17 +18,25 @@ extern struct _GENPROB     genprob;
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | global variable *partition, vector of lenght numfld of structures    |
- | PARTITION is defined in global_control.c                             |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief one proc's info about his partition
+
+<pre>                                                         m.gee 8/00
+-the partition of one proc (all discretizations)
+-the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  |  calculate the storage mask of the global matrices    m.gee 5/01     |

@@ -1,3 +1,8 @@
+/*!---------------------------------------------------------------------
+\file
+\brief domain decomposition and metis routines
+
+---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
 #include "../ale3/ale3.h"
@@ -19,19 +24,42 @@ extern struct _FIELD      *field;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup PARALLEL 
+*/
+
+/*! @{ (documentation module open)*/
+
+
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
 
-/*----------------------------------------------------------------------*
- |  do initial partitioning of fields                    m.gee 5/01     |
- |  the paritioning of all fields is performed on all procs,            |
- |  so at least veryone nows which piece of every field is owned by who |
- |  -> this routine lives in theMPI_COMM_WORLD space                    |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief initial partitioning of fields                                              
+
+<pre>                                                        m.gee 5/01  
+the partitioning of all fields is performed on all procs,
+so at least everyone nows which piece of every field is owned by who
+this routine lives in the MPI_COMM_WORLD space
+it uses the sequentiell metis lib to do graph partitioning
+every field is partitioned separately, except for ale, that inherits it's
+partition from the corresponding fluid elements. This feature is switched
+off by malte neumann at the moment (Aug/2002)
+</pre>
+
+\return void                                               
+\sa part_assignfield()                                    
+
+------------------------------------------------------------------------*/
 void part_fields()
 {
 int  i,j,k,l,m,n;
@@ -356,3 +384,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of part_fields */
+
+/*! @} (documentation module close)*/

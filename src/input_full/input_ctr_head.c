@@ -1,15 +1,21 @@
 #include "../headers/standardtypes.h"
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure allfiles, which holds all file pointers                    |
- | is defined in input_control_global.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | tracing variables                                                    |
- | defined in pss_ds.c                                                  |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief the tracing variable
+
+<pre>                                                         m.gee 8/00
+defined in pss_ds.c, declared in tracing.h                                                  
+</pre>
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 extern struct _TRACE         trace;
 #endif

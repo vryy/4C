@@ -1,13 +1,31 @@
+/*!---------------------------------------------------------------------
+\file
+\brief main routine
+
+---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 struct _PAR     par;
-/*----------------------------------------------------------------------*
- | main                                                   m.gee 8/00    |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+
+\brief main routine                                              
+
+<pre>                                                        m.gee 8/00 
+main is only printing the ccarat head and the finish
+</pre>
+\param argc     int     (i)   number of arguments on command line including exe                                
+\param argv     *char[] (i)   array of arguments from command line
+\return void                                               
+
+------------------------------------------------------------------------*/
 void main(int argc, char *argv[])
 {
 #ifdef PARALLEL 

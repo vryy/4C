@@ -1,9 +1,14 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure which holds all file pointers                              |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
 struct _FILES           allfiles;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

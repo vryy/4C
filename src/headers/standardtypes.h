@@ -68,39 +68,51 @@
 
 
 
-/*----------------------------------------------------------------------*
- | file I/O variables & fr-system                         m.gee 8/00    |
- *----------------------------------------------------------------------*/
+/*! 
+\addtogroup FRSYSTEM 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+
+*----------------------------------------------------------------------*/
 typedef struct _FILES
 {
 /*------------------------------------------------------------- file I/O */
-char             *inputfile_name;         /* input file name             */
+char             *inputfile_name;         /*!< input file name             */
 
-char             *outputfile_kenner;      /* output file kenner          */
-char              outputfile_name[100];   /* output file name            */
-size_t            outlenght;              /* lenght of output file kenner*/
-int               num_outputfiles;        /* number of output files      */
-int               pss_counter;            /* number of records on pss-file */
+char             *outputfile_kenner;      /*!< output file kenner          */
+char              outputfile_name[100];   /*!< output file name            */
+size_t            outlenght;              /*!< lenght of output file kenner*/
+int               num_outputfiles;        /*!< number of output files      */
+int               pss_counter;            /*!< number of records on pss-file */
 
-FILE             *in_input;               /* file-pointer input file     */
-FILE             *out_out;                /* file-pointer .out  file     */
-FILE             *out_err;                /* file-pointer .err  file     */
-FILE             *out_pss;                /* file ptr to restart-pss file */
-FILE             *in_pss;                 /* file-pointer .pss  file     */
+FILE             *in_input;               /*!< file-pointer input file     */
+FILE             *out_out;                /*!< file-pointer .out  file     */
+FILE             *out_err;                /*!< file-pointer .err  file     */
+FILE             *out_pss;                /*!< file ptr to restart-pss file */
+FILE             *in_pss;                 /*!< file-pointer .pss  file     */
 
-FILE             *gidmsh;                 /* file pointer .flavia.msh    */
-FILE             *gidres;                 /* file pointer .flavia.res    */
+FILE             *gidmsh;                 /*!< file pointer .flavia.msh    */
+FILE             *gidres;                 /*!< file pointer .flavia.res    */
 
 /*---------------------- variables needed by the free-field-input system */
-char              title[5][500];          /* problem title                */
-char              line[500];              /* linebuffer for reading       */
-char            **input_file;             /* copy of the input file in rows and columns */
-char             *input_file_hook;        /* ptr the copy of the input file is allocated to */
-int               numcol;                 /* number of cols in inputfile  */
-int               numrows;                /* number of rows in inputfile  */
-int               actrow;                 /* rowpointer used by fr        */
-char             *actplace;               /* pointer to actual place in input-file */
+char              title[5][500];          /*!< problem title                */
+char              line[500];              /*!< linebuffer for reading       */
+char            **input_file;             /*!< copy of the input file in rows and columns */
+char             *input_file_hook;        /*!< ptr the copy of the input file is allocated to */
+int               numcol;                 /*!< number of cols in inputfile  */
+int               numrows;                /*!< number of rows in inputfile  */
+int               actrow;                 /*!< rowpointer used by fr        */
+char             *actplace;               /*!< pointer to actual place in input-file */
 } FILES;
+/*! @} (documentation module close)*/
 
 
 
@@ -215,12 +227,19 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
  |                                                                      |
  |                                                        m.gee 8/00    |
  *----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- extern struct _PAR   par;                      
- *----------------------------------------------------------------------*/
+
+
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of partitions, size numfld                                    |
@@ -231,12 +250,19 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
  | general problem data                                                 |
  | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure allfiles, which holds all file pointers                    |
- | is defined in input_control_global.c                                 |
- | struct _FILES  allfiles;                                             |
- *----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 06/01
+This structure struct _PAR par; is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+
+
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
@@ -251,14 +277,13 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
  | defined globally in global_calelm.c                                  |
  | enum _CALC_ACTION calc_action[MAXFIELD];                             |
  *----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | tracing variables                                                    |
- | defined in pss_ds.c                                                  |
- | #ifdef DEBUG                                                         |
- | extern struct _TRACE         trace;                                  |
- | #endif                                                               |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief the tracing variable
+
+<pre>                                                         m.gee 8/00
+defined in pss_ds.c, declared in tracing.h                                                  
+</pre>
+*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate design if needed                                 |

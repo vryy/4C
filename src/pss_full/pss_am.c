@@ -1,67 +1,115 @@
+/*!---------------------------------------------------------------------
+\file
+\brief contains memory managing functions
+
+---------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief the header of everything
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | tracing variables                                                    |
- | defined in pss_ds.c                                                  |
- *----------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief the tracing variable
+
+<pre>                                                         m.gee 8/00
+defined in pss_ds.c, declared in tracing.h                                                  
+</pre>
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 extern struct _TRACE         trace;
 #endif
-/*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | global variable  num_byte_allocated                                  |
- | long int num_byte_allocated                                          |
- *----------------------------------------------------------------------*/
+
+
+/*! 
+\addtogroup AMSYSTEM 
+*//*! @{ (documentation module open)*/
+
+
+/*!----------------------------------------------------------------------
+\brief counter of memory in byte
+
+<pre>                                                         m.gee 02/02    
+defined in pss_am.c
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 long int num_byte_allocated;
 #endif
-/*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | in debug mode all memory is allocated one double bigger then         |
- | asked for, so the size of what was allocated can be stored           |
- *----------------------------------------------------------------------*/
+
 #ifdef DEBUG
-#define DWORD  (sizeof(double)) /* Be sure it's not smaller than double */
-#define MYBYTE (sizeof(unsigned char)) /*  exactly one byte (hopefully) */ 
+
+/*!----------------------------------------------------------------------
+\brief size of a double in byte
+                                                      
+<pre>                                                         m.gee 02/02   
+in debug mode all memory is allocated one double bigger then
+asked for, so the size of what was allocated can be stored
+</pre>
+\sa ShiftPointer() , MYBYTE
+
+*----------------------------------------------------------------------*/
+#define DWORD  (sizeof(double)) 
+
+/*!----------------------------------------------------------------------
+\brief exactly one byte
+                                                      
+<pre>                                                         m.gee 02/02    
+in debug mode all memory is allocated one double bigger then
+asked for, so the size of what was allocated can be stored
+This variable is used by the function ShiftPointer
+</pre>
+\sa ShiftPointer() , DWORD
+
+*----------------------------------------------------------------------*/
+#define MYBYTE (sizeof(unsigned char)) 
 #endif
 
-/*----------------------------------------------------------------------*
- | shift a pointer by a certain distance                      m.gee 3/02|
- | NOTE:                                                                |
- | This routine is usefull when data is moved in the memory (e.g.) by a |
- | call to REALLOC, and there are pointers which used to point to this  |
- | data. After moving the data these pointers do no longer point to the |
- | correct adresses, but they can be moved to the new location of the   |
- | data by using this function.                                         |
- | The correct functionality of this routine is dependent on the proper |
- | definition of the data type PTRSIZE amde in definitions.h:           |
- |#ifdef SIXTYFOUR                a 64 bit pointer is of size long int  |
- |typedef long int PTRSIZE;                                             |
- |#else                                a 32 bit pointer is of size int  |
- |typedef int PTRSIZE;                                                  |
- |#endif                                                                |
- | This function takes as argument                                      |
- | - the adress of the pointer to be moved                              |
- | - the relative difference between the new and the old adress of the  |
- |   data which was pointed to                                          |
- | EXAMPLE:                                                             |
- | i=5;                                                                 |
- | j=12;                                                                |
- | iptr = &i;                                                           |
- | now move iptr from i to j:                                           |
- | ShiftPointer((void**)&iptr,(PTRSIZE)&j-(PTRSIZE)&i);                 |
- | result:                                                              |
- | *ptr = 12 now                                                        |
- | WARNING:                                                             |
- | This is an extremely power and helpfull little routine, but when using
- | this you should be REALLY sure what you are doing, 'cause misuse     |
- | leads to a very nasty type of error, which can be hardly detected by |
- | debugging!                                                           |
- |                                                                      |
- |                                                                      |
- | This routine appears courtesy of                                     |
- | Dr. Ralf Diekmann, Hilti AG, Fuerstentum Liechtenstein               |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief shift a pointer by a certain distance
+                                                      
+<pre>                                                          m.gee 3/02 
+This routine is usefull when data is moved in the memory (e.g.) by a 
+call to REALLOC, and there are pointers which used to point to this  
+data. After moving the data these pointers do no longer point to the 
+correct adresses, but they can be moved to the new location of the   
+data by using this function.                                         
+The correct functionality of this routine is dependent on the proper 
+definition of the data type PTRSIZE defined in definitions.h:        
+#ifdef SIXTYFOUR                a 64 bit pointer is of size long int  
+typedef long int PTRSIZE;                                             
+#else                           a 32 bit pointer is of size int  
+typedef int PTRSIZE;                                                  
+#endif                                                                
+ This function takes as argument                                      
+ -the adress of the pointer to be moved                              
+ -the relative difference between the new and the old adress of the  
+  data which was pointed to                                         
+
+EXAMPLE:                                                        
+\code
+ i=5;                                                        
+ j=12;                                                       
+ iptr = &i;                                                  
+ now move iptr from i to j:                                  
+ ShiftPointer((void**)&iptr,(PTRSIZE)&j-(PTRSIZE)&i);        
+\endcode
+ result:                                                     
+ *ptr = 12 now                                               
+\warning                                                             
+ This is an extremely power and helpfull little routine, but when using
+ this you should be REALLY sure what you are doing, 'cause misuse     
+ leads to a very nasty type of error, which can be hardly detected by 
+ debugging!                                                           
+
+ This routine appears courtesy of                                     
+ Dr. Ralf Diekmann, Hilti AG, Fuerstentum Liechtenstein               
+</pre>  
+\param ptr  (i/o) void**    ptr to be shifted
+\param diff (i)   PTRSIZE   offset the ptr shall be shifted
+
+----------------------------------------------------------------------*/
 void ShiftPointer(void **ptr, PTRSIZE diff)
 {
 PTRSIZE tmp;
@@ -74,10 +122,16 @@ return;
 }
 
 
-/*----------------------------------------------------------------------*
- | redefinition of malloc DEBUG version                       m.gee 2/02|
- | bhaves exactly like malloc conform to ansi c standard                |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief redefinition of malloc DEBUG version
+                                                      
+<pre>                                                         m.gee 2/02    
+bhaves exactly like malloc conform to ansi c standard
+if compiled with DEBUG define, it counts the allocated memory
+</pre>
+\sa CALLOC() , REALLOC() , FREE()
+
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 void *MALLOC(int size)
 {
@@ -107,10 +161,16 @@ return (void*)(buf);
 
 
 
-/*----------------------------------------------------------------------*
- | redefinition of calloc DEBUG version                   m.gee 2/02    |
- | bhaves exactly like calloc conform to ansi c standard                |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief redefinition of calloc DEBUG version
+                                                      
+<pre>                                                         m.gee 2/02    
+bhaves exactly like calloc conform to ansi c standard
+if compiled with DEBUG define, it counts the allocated memory
+</pre>
+\sa MALLOC() , REALLOC() , FREE()
+
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 void *CALLOC(int num, int size)
 {
@@ -140,10 +200,16 @@ return (void *)(buf);
 
 
 
-/*----------------------------------------------------------------------*
- | redefinition of realloc DEBUG version                  m.gee 2/02    |
- | bhaves exactly like realloc conform to ansi c standard               |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief redefinition of realloc DEBUG version
+                                                      
+<pre>                                                         m.gee 2/02    
+bhaves exactly like realloc conform to ansi c standard
+if compiled with DEBUG define, it counts the allocated memory
+</pre>
+\sa CALLOC() , MALLOC() , FREE()
+
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 void *REALLOC(void *oldptr, int size)
 {
@@ -178,10 +244,16 @@ return (void*)(buf);
 
 
 
-/*----------------------------------------------------------------------*
- | redefinition of free DEBUG version                     m.gee 2/02    |
- | bhaves exactly like free conform to ansi c standard                  |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief redefinition of free DEBUG version
+                                                      
+<pre>                                                         m.gee 2/02    
+bhaves exactly like free conform to ansi c standard
+if compiled with DEBUG define, it counts the allocated memory
+</pre>
+\sa CALLOC() , MALLOC() , REALLOC()
+
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 void *FREE(void *oldptr)
 {
@@ -211,23 +283,40 @@ return (oldptr=NULL);
 
 
 
-/*----------------------------------------------------------------------*
- | define array                                           m.gee 8/00    |
- | allocate a 1 or 2 - D vector of type INT or DOUBLE in the structure  |
- | ARRAY *a. See also am.h for the structure ARRAY                      |
- | char *namstr  (input)   name of array                                |
- | ARRAY *a      (input)   adress of structure ARRAY the vector lives in|
- | int fdim      (input)   first dimension of 2D vector                 |
- |                         dimension of 1D vector                       |
- | int sdim      (input)   scnd dimension of 2D vector                  |
- | char typstr[] (input)   type of array to allocate                    |
- |               ="IV"     allocate integer vector in a->a.iv           |
- |               ="IA"     allocate double array  in a->a.ia            |
- |               ="DV"     allocate integer vector in a->a.dv           |
- |               ="DA"     allocate double array  in a->a.da            |
- | return value:                                                        |
- | void pointer to allocated memory                                     |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief define a 1 or 2 dimensional array in structure ARRAY                                              
+
+<pre>                                                        m.gee 8/00 
+allocate a 1 or 2 - D vector of type INT or DOUBLE in the structure  
+memory is allocted and pointed to in the following style:
+
+1D arrays:
+ptr[0 1 2..........................................]
+
+2d arrays (e.g. ptr[3][5]):
+ptr[0][0 1 2 3 4 5 6 7 8 9 10 11 12 13 14]
+                |          |
+   [1]----------           |
+                           |
+   [2]---------------------
+
+This means, that the SECOND (or last) indize is continous in contrast to
+fortran, where the first indize is continous. Fortran routines called on
+am-allocated 2D arrays therefore operate on the transpose of the array.
+</pre>
+\param namstr   char*   (i)   name of array                                
+\param a        ARRAY*  (i)   adress of structure ARRAY the vector lives in
+\param fdim     int     (i)   first dimension of 2D vector dimension of 1D vector                       
+\param sdim     int     (i)   scnd dimension of 2D vector                  
+\param typstr   char[]  (i)   type of array to allocate                    
+              ="IV"     allocate integer vector in a->a.iv           
+              ="IA"     allocate double array  in a->a.ia            
+              ="DV"     allocate integer vector in a->a.dv           
+              ="DA"     allocate double array  in a->a.da            
+\return void pointer to allocated memory                                               
+\sa am4def()                                    
+
+------------------------------------------------------------------------*/
 void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[])
 {
 register int i=0;
@@ -289,36 +378,47 @@ return((void*)(a->a.iv));
 
 
 
-/*----------------------------------------------------------------------*
- | redefine array                                         m.gee 8/00    |
- | changes an already allocated array a in dimensions                   |
- | a typecast of the values in the array is not possible                |
- | (no int to double or vice versa transformation)                      |
- |                                                                      |
- | if the new dimension of an the array is larger then the old one,     |
- | the values inside the array are kept, the new entries are initialized|
- | with zero                                                            |
- |                                                                      |
- | if the new dimension of the  array is smaller then the old one,      |
- | values outside the new dimension are dropped                         |
- |                                                                      |
- | this routine handles every dimension (fdim and sdim) separately,     |
- | that means, it does NOT behave like a fortran array                  |
- |                                                                      |
- | a cast from iv to ia and from dv to da and vice versa is allowed     |
- |                                                                      |
- | ARRAY *a      (input)   adress of structure ARRAY the vector lives in|
- | int newfdim   (input)   new first dimension of 2D vector             |
- |                         new dimension of 1D vector                   |
- | int newsdim   (input)   new scnd dimension of 2D vector              |
- | char newtypstr[] (input)   type of array to allocate                 |
- |               ="IV"     allocate integer vector in a->a.iv           |
- |               ="IA"     allocate double array  in a->a.ia            |
- |               ="DV"     allocate integer vector in a->a.dv           |
- |               ="DA"     allocate double array  in a->a.da            |
- | return value:                                                        |
- | void pointer to allocated memory                                     |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+
+\brief redefine a 1 or 2 dimensional array in structure ARRAY                                              
+
+
+<pre>                                                        m.gee 8/00 
+changes an already allocated array a in dimensions
+a typecast of the values in the array is not possible              
+(no int to double or vice versa transformation)                    
+
+a cast from iv to ia and from dv to da and vice versa is allowed     
+
+if the new dimension of an the array is larger then the old one,     
+the values inside the array are kept, the new entries are initialized
+with zero                                                            
+                                                                     
+if the new dimension of the  array is smaller then the old one,      
+values outside the new dimension are dropped                         
+                                                                     
+this routine handles every dimension (fdim and sdim) separately,     
+that means, it does NOT behave like a fortran array. If a dimesnion gets 
+smaller, it does NOT brak the spare values to the next line of the other
+dimension.
+it does NOT: array[3][3] ->redefine-> array[9] all values kept
+it does    : array[3][3] ->redefine-> array[9] 
+             values array[0][0..2] kept in array[0..2]
+             values array[1..2][0..2] dropped, array[3..8]=0.0
+</pre>
+\param a         ARRAY* (i) adress of structure ARRAY the vector lives in
+\param newfdim   int    (i) new first dimension of 2D vector dimension of 1D vector                       
+\param newsdim   int    (i) new scnd dimension of 2D vector                  
+\param newtypstr char[] (i) type the array shall be reallocated to                    
+                 ="IV"  convert existing iv or ia to iv              
+                 ="IA"  convert existing iv or ia to ia 
+                 ="DV"  convert existing dv or da to dv              
+                 ="DA"  convert existing dv or da to da              
+\warning This routine is very expensive
+\return void pointer to reallocated and reorganized memory                                               
+\sa am4redef()                                    
+
+------------------------------------------------------------------------*/
 void* amredef(ARRAY *a,int newfdim, int newsdim, char newtypstr[])      
 {
 int i, j;
@@ -495,11 +595,22 @@ return((void*)(a->a.iv));
 
 
 
-/*----------------------------------------------------------------------*
- | delete         array                                   m.gee 8/00    |
- | frees the vector or array located in the ARRAY                       |
- | *array (input) the adress of the structure holding the vector/array  |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief delete array allocated via am system
+                                                      
+<pre>                                                         m.gee 8/00    
+frees the vector or array located in the ARRAY
+sets 
+array->name     = "DELETED"
+array->Typ      = cca_XX
+array->a.iv     = NULL;
+array->mytracer = NULL
+</pre>
+\param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
+\return void
+\sa amdef() , amredef() , am_alloc_copy()
+
+*----------------------------------------------------------------------*/
 void amdel(ARRAY *array)
 {
 int i=0;
@@ -551,12 +662,18 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | initialize an array by zero                            m.gee 8/00    |
- | initializes the content of the ARRAY array to zero                   |
- | put 0 to integer fields, 0.0 to double fields                        |
- | ARRAY *array (input) adress of the ARRAY array                       |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief initialize an array by zero
+                                                      
+<pre>                                                         m.gee 8/00    
+initializes the content of the ARRAY array to zero
+put 0 to integer fields, 0.0 to double fields
+</pre>
+\param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
+\return void
+\sa aminit() , amscal()
+
+*----------------------------------------------------------------------*/
 void amzero(ARRAY *array)
 {
 register int i;
@@ -600,15 +717,23 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | multiply an array by a scalar                          m.gee 6/01    |
- | scales the contents of a field by a given value                      |
- | ARRAY *array (input) adress of the ARRAY array                       |
- | *value (input) adress of the scaling parameter, this may be of type  |
- |                int* or double* and must be casted to void* in the    |
- |                parameter list                                        |
- |                example: amscal(&val,(void*)(&ione));                 |        
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief multiply an array by a scalar
+                                                      
+<pre>                                                         m.gee 6/01    
+scales the contents of a field by a given value 
+to avoid warnings in compilation, the call has to take the form
+amscal(&val,(void*)(&int_one));
+or
+amscal(&val,(void*)(&double_one));
+depending on whether val holds an int or double array
+</pre>
+\param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
+\param value  void*  (i)   adress of scaling value casted to void
+\return void
+\sa aminit() , amzero()
+
+*----------------------------------------------------------------------*/
 void amscal(ARRAY *array, void *value)
 {
 register int     i;
@@ -655,15 +780,23 @@ return;
 } /* end of amscal */
 
 
-/*----------------------------------------------------------------------*
- | initialize an array by value                           m.gee 6/01    |
- | inits the contents of a field by a given value                       |
- | ARRAY *array (input) adress of the ARRAY array                       |
- | *value (input) adress of the initvalues, this may be of type         |
- |                int* or double* and must be casted to void* in the    |
- |                parameter list                                        |
- |                example: aminit(&val,(void*)(&ione));                 |        
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief initialize an array by value
+                                                      
+<pre>                                                         m.gee 6/01    
+sets the contents of a field to a given value
+to avoid warnings in compilation, the call has to take the form
+aminit(&val,(void*)(&int_one));
+or
+aminit(&val,(void*)(&double_one));
+depending on whether val holds an int or double array
+</pre>
+\param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
+\param value  void*  (i)   adress of value casted to void
+\return void
+\sa amscal() , amzero() , am4zero()
+
+*----------------------------------------------------------------------*/
 void aminit(ARRAY *array, void *value)
 {
 register int     i;
@@ -711,15 +844,20 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | allocate and make a copy of ARRAY                      m.gee 8/00    |
- | alocates a new field in array_to of the same size and type as        |
- | in array_from. Then copies the contents from array_from to array_to  |
- | ARRAY *array_from (input) the adress of the field one wants to copy  |
- | ARRAY *array_to   (in/out) the adress of the structure where the new |
- |                            field is allocated in                     |
- | return value: adress of the new field                                |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief allocate and make a copy of ARRAY *array_from
+                                                      
+<pre>                                                         m.gee 8/00    
+alocates a new field in array_to of the same size and type as        
+in array_from. Then copies the contents from array_from to array_to  .
+user must provide an previously NOT allocted structure array_to
+</pre>
+\param array_from  ARRAY* (i)   adress of existing structure to be copied
+\param array_to    ARRAY* (i/o) adress of non-existing structure to be copied to
+\return void*      startadress of new array
+\sa amcopy() , am4_alloc_copy()
+
+*----------------------------------------------------------------------*/
 void* am_alloc_copy(ARRAY *array_from, ARRAY *array_to)
 {
 register int i;
@@ -771,15 +909,19 @@ return((void*)(array_to->a.iv));
 
 
 
-/*----------------------------------------------------------------------*
- | make a copy of ARRAY,                                  m.gee 6/01    |
- | Copies the contents from array_from to array_to                      |
- | ARRAY *array_from (input) the adress of the field one wants to copy  |
- | ARRAY *array_to   (in/out) the adress of the field values are copied |
- |                            to                                        |
- | user must provide fields of matching type and size!                  |
- | return value: array_to->a.iv                                         |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief make a copy of ARRAY *array_from to *array_to
+                                                      
+<pre>                                                         m.gee 6/01    
+Copies the contents from array_from to array_to                      
+user must provide exisiting arrays of matching type and size!                  
+</pre>
+\param array_from  ARRAY* (i)   adress of existing structure to be copied from
+\param array_to    ARRAY* (i/o) adress of existing structure to be copied to
+\return void*      array_to->a.iv
+\sa am_alloc_copy() , am4copy()
+
+*----------------------------------------------------------------------*/
 void* amcopy(ARRAY *array_from, ARRAY *array_to)
 {
 register int i;
@@ -832,22 +974,23 @@ return((void*)(array_to->a.iv));
 
 
 
-/*----------------------------------------------------------------------*
- |                                                        m.gee 2/02    |
- | makes array_to += array_from * factor                                |
- | if init==1 array_to is initialized to zero                           |
- | user must provide matching array-types and sufficient space in       |
- | array_to                                                             |
- | ARRAY *array_to   (output) adress of structure values are added to   |
- | ARRAY *array_from (input)  adress of structure values are taken from |
- | DOUBLE factor     (input)  scaling factor, must be casted to         |
- |                            DOUBLE in the call to this routine,       |
- |                            but also operates on integer fields       |
- |                            (this is a bit dirty I know....)          |
- | INT init          (input)  flag                                      |
- | ==1 array_to is initialized to zero                                  |
- | else values are assembled to array_to                                |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief makes array_to = or += array_from * factor
+                                                      
+<pre>                                                         m.gee 2/02    
+if init==1 array_to = array_from * factor  
+if init==0 array_to = array_to + array_from * factor        
+user must provide matching array-types and sufficient space in array_to                                                             
+</pre>
+\param array_from  ARRAY* (i)   adress of existing structure to be added from
+\param array_to    ARRAY* (i/o) adress of existing structure to be added to
+\param factor      double (i)   scaling factor of array_from
+\param init        int    (i)   init flag
+\return void
+\warning In the case of int-arrays round_off takes place !
+\sa aminit() , amscal() , amcopy() , am_alloc_copy()
+
+*----------------------------------------------------------------------*/
 void amadd(ARRAY *array_to, ARRAY *array_from, double factor, int init)
 {
 register int i,j;
@@ -915,26 +1058,45 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | define 4D array                                       m.gee 12/01    |
- | similar to amdef, but for 3D and 4D fields                           |
- | the field is NOT initialized                                         |
- |                                                                      |
- | char *namstr  (input)   name of array                                |
- | ARRAY4D *a    (input)   adress of structure ARRAY4D                  |
- | int fdim      (input)   first dimension of 3D or 4D array            |
- | int sdim      (input)   scnd dimension of 3D or 4D array             |
- | int tdim      (input)   third dimension of 3D or 4D array            |
- | int fodim     (input)   fourth dimension of 4D array,                |
- |                         ==0 of array is 3D                           |
- | char typstr[] (input)   type of field to allocate                    |
- |                         ="I3" 3D integer field                       |
- |                         ="I4" 4D integer field                       |
- |                         ="D3" 3D double  field                       |
- |                         ="D4" 4D double  field                       |
- | return value:                                                        |
- | void pointer to allocated memory                                     |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+
+\brief define a 3 or 4 dimensional array in structure ARRAY4D                                              
+
+<pre>                                                        m.gee 12/01
+allocate a 3 or 4 - D vector of type INT or DOUBLE in the structure  
+In the case of 3D arrays, the fourth dimension fodim must be zero.
+
+memory is allocted and pointed to in the following style:
+3d arrays (e.g. ptr[2][3][3]):
+ptr[0][0][0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]
+      [1]--------
+      [2]--------------
+   [1]-
+      [0]--------------------
+      [1]----------------------------
+      [2]-------------------------------------
+
+(same logic for 4d arrays)
+
+This means, that the LAST indize is continous in contrast to
+fortran, where the first indize is continous. Fortran routines called on
+am-allocated 3/4D arrays therefore operate on the transpose of the array.
+</pre>
+\param namstr    char*    (i)   name of array                                
+\param a         ARRAY4D* (i/o) adress of structure ARRAY4D the vector lives in
+\param fdim      int      (i)   first dimension of 2D vector dimension of 1D vector                       
+\param sdim      int      (i)   scnd dimension of 2D vector                  
+\param tdim      int      (i)   thrd dimension of 2D vector                  
+\param fodim     int      (i)   fourth dimension of 2D vector                  
+\param typstr    char[]   (i)   type of array to allocate                    
+                 ="I3"     allocate integer vector in a->a.i3           
+                 ="I4"     allocate double array  in a->a.i4            
+                 ="D3"     allocate integer vector in a->a.d3           
+                 ="D4"     allocate double array  in a->a.d4            
+\return void pointer to allocated memory                                               
+\sa amdef() , am4redef                                   
+
+------------------------------------------------------------------------*/
 void* am4def(char    *namstr,
              ARRAY4D *a,
              int      fdim, 
@@ -1038,12 +1200,21 @@ return((void*)(a->a.d3));
 
 
 
-/*----------------------------------------------------------------------*
- | delete 4dimensional array                             m.gee 12/01    |
- | frees all field memory in array                                      |
- | ARRAY4D *array    (input)                adress of array-structure   |
- | no return value                                                      |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief delete 3/4D array
+                                                      
+<pre>                                                         m.gee 12/01    
+frees all field memory in array
+sets 
+array->name     = "DELETED"
+array->a.iv     = NULL;
+array->mytracer = NULL
+</pre>
+\param array  ARRAY4D* (i/o) adress of structure ARRAY the vector lives in
+\return void
+\sa am4def() , am4redef() , amdel()
+
+*----------------------------------------------------------------------*/
 void am4del(ARRAY4D *array)
 {
 /*----------------------------------------------------------------------*/
@@ -1098,10 +1269,18 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | initialize an 4D array by zero                           m.gee 12/01 |
- | see head to amzero                                                   |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief initialize an ARRAY4D array by zero
+                                                      
+<pre>                                                         m.gee 12/01    
+initializes the content of the ARRAY4D array to zero
+put 0 to integer fields, 0.0 to double fields
+</pre>
+\param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
+\return void
+\sa amzero()
+
+*----------------------------------------------------------------------*/
 void am4zero(ARRAY4D *array)
 {
 register int i;
@@ -1147,10 +1326,23 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | initialize a 4D array by value                         m.gee 6/01    |
- | see head of aminit                                                   |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief initialize an ARRAY4D array by value
+                                                      
+<pre>                                                         m.gee 6/01    
+sets the contents of a field to a given value
+to avoid warnings in compilation, the call has to take the form
+am4init(&val,(void*)(&int_one));
+or
+am4init(&val,(void*)(&double_one));
+depending on whether val holds an int or double array
+</pre>
+\param array  ARRAY4D* (i/o) adress of structure ARRAY4D the vector lives in
+\param value  void*  (i)   adress of value casted to void
+\return void
+\sa aminit() , am4zero()
+
+*----------------------------------------------------------------------*/
 void am4init(ARRAY4D *array, void *value)
 {
 register int     i;
@@ -1201,10 +1393,20 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | allocate and make a copy of ARRAY4D                     m.gee 12/01  |
- | see head of am_alloc_copy                                            |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief allocate and make a copy of ARRAY4D *array_from
+                                                      
+<pre>                                                         m.gee 12/01    
+alocates a new field in array_to of the same size and type as        
+in array_from. Then copies the contents from array_from to array_to  .
+user must provide an previously NOT allocted structure array_to
+</pre>
+\param array_from  ARRAY4D* (i)   adress of existing structure to be copied
+\param array_to    ARRAY4D* (i/o) adress of non-existing structure to be copied to
+\return void*      startadress of new array
+\sa am_alloc_copy() , am4copy() , amcopy()
+
+*----------------------------------------------------------------------*/
 void* am4_alloc_copy(ARRAY4D *array_from, ARRAY4D *array_to)
 {
 register int i;
@@ -1282,11 +1484,19 @@ return((void*)(array_to->a.d3));
 
 
 
-/*----------------------------------------------------------------------*
- | make a copy of ARRAY4D                                  m.gee 12/01  |
- | the given arrays must be of equal type and size                      |
- | see head of amcopy                                                   |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief make a copy of ARRAY4D *array_from to *array_to
+                                                      
+<pre>                                                         m.gee 12/01    
+Copies the contents from array_from to array_to                      
+user must provide exisiting arrays of matching type and size!                  
+</pre>
+\param array_from  ARRAY4D* (i)   adress of existing structure to be copied from
+\param array_to    ARRAY4D* (i/o) adress of existing structure to be copied to
+\return void*      array_to->a.i3
+\sa am_alloc_copy() , am4_alloc_copy() , amcopy()
+
+*----------------------------------------------------------------------*/
 void* am4copy(ARRAY4D *array_from, ARRAY4D *array_to)
 {
 register int i;
@@ -1347,15 +1557,43 @@ return((void*)(array_to->a.d3));
 
 
 
-/*----------------------------------------------------------------------*
- | redefine of ARRAY4D                                     m.gee 12/01  |
- | NOTE:  - a dimension cast like it is possible with ARRAY doesn't work|
- |        - 4-dimensional arrays with fodim=0 are not allowed           |
- |        - remember, this routine can be VERY expensive !              |
- |        - aditional space in the redefined array is set to zero       |
- |          (unlike in am4def which does NOT initialize)                |
- |        usage similar to amredef                                      |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+
+\brief redefine a 3 or 4 dimensional array in structure ARRAY4D                                              
+
+
+<pre>                                                        m.gee 12/01 
+changes an already allocated array a in dimensions
+a typecast of the values in the array is not possible              
+(no int to double or vice versa transformation)                    
+
+a cast between 3D and 4D arrays is NOT allowed     
+
+if the new dimension of an the array is larger then the old one,     
+the values inside the array are kept, the new entries are initialized
+with zero                                                            
+                                                                     
+if the new dimension of the  array is smaller then the old one,      
+values outside the new dimension are dropped                         
+                                                                     
+this routine handles every dimension (fdim and sdim) separately,     
+that means, it does NOT behave like a fortran array. If a dimension gets 
+smaller, it does NOT break the spare values to the next line of the other
+dimension.
+
+Additional memory in in redefined array is set to zero
+
+</pre>
+\param a         ARRAY4D* (i/o) adress of structure ARRAY the vector lives in
+\param newfdim   int      (i)   new first dimension of 3/4D array dimension                       
+\param newsdim   int      (i)   new scnd dimension of 3/4D array                  
+\param newtdim   int      (i)   new thrd dimension of 3/4D array                  
+\param newfodim  int      (i)   new fourth dimension of 3/4D array                  
+\warning This routine can be very expensive
+\return void pointer to reallocated and reorganized memory                                               
+\sa amredef()                                    
+
+------------------------------------------------------------------------*/
 void* am4redef(ARRAY4D *array, 
                int newfdim, 
                int newsdim, 
@@ -1443,5 +1681,5 @@ return((void*)(array->a.d3));
 } /* end of am4redef */
 
 
-
+/*! @} (documentation module close)*/
 

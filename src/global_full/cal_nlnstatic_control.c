@@ -5,11 +5,15 @@
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure allfiles, which holds all file pointers                    |
- | is defined in input_control_global.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -24,11 +28,15 @@ extern struct _GENPROB     genprob;
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | global variable *partition, vector of lenght numfld of structures    |
- | PARTITION is defined in global_control.c                             |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief one proc's info about his partition
+
+<pre>                                                         m.gee 8/00
+-the partition of one proc (all discretizations)
+-the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -42,11 +50,15 @@ extern struct _STATIC_VAR  *statvar;
  | defined in out_global.c                                              |
  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |

@@ -1,0 +1,259 @@
+---------------------------------------------------------------------ALLGEMEINES
+
+ccarat wird dokumentiert mithilfe von doxygen
+(www.doxygen.org), einem automatischen Code-Dokumentationsprogramm.
+Doxygen erstellt eine Dokumentation in latex und in html
+aus den Kommentaren im Code, die mir einigen Sonderzeichen versehen 
+werden.
+
+----------------------------------------------------------------DOXYGEN AUFRUFEN
+
+das Verzeichnis doc legt man ins ccarat-Verzeichnis.
+Dann:
+
+cd doc
+doxygen documentation.conf
+
+doxygen erstellt dann Verzeichnisse html und latex. Die html-Version 
+bekommt man mit html/index.html im Browser
+Fuer die latex version wechselt man ins Verzeichnis latex und editiert dort
+das generierte Makefile:
+
+nachstehende Zeilen:
+	while egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $latex_count -gt 0 ] ;\
+	    do \
+	      echo "Rerunning latex...." ;\
+	      latex refman.tex ;\
+	      latex_count=`expr $latex_count - 1` ;\
+	    done
+ersetzen durch:
+	makeindex refman.idx
+	echo "Rerunning latex...."
+	latex refman.tex
+	makeindex refman.idx
+	echo "Rerunning latex...."
+	latex refman.tex
+
+Dann make und make ps ausfuehren. Achtung, hierzu unbedingt das Latex in 
+/bau/statik/text/teTeX/bin 
+und NICHT das in 
+/bau/statik/text/lyxtex/teTeX/bin
+verwenden (Kontrolle mit which latex)
+Sollte ein Fehler im Latex auftauchen, so hat man beim kommentieren 
+einen Fehler gemacht!
+
+-------------------------------------------------------DOKUMENTIEREN MIT DOXYGEN      
+
+- doxygen verwendet spezielle Sonderzeichen in Kommentaren im Code
+
+- doxygen kennt den Pfad ../src und ./, daher sollte das doc-Verzeichnis
+  im gleichen Verzeichnis wie das src-Verzeichnis liegen. Es durchkaemmt
+  diese Verzeichnisse selbststaendig nach *.c und *.h, jedoch nicht nach *.f
+
+- doxygen schlachtet jeweils den Kommentar aus, der vor einem Objekt
+  (Funktion, Variable, Struktur etc) steht, sofern der Kommentar durch
+  ein '!' doxygen-wirksam gemacht wurde
+  Bsp.: /*! doxygen-wirksamer Kommentar */
+
+- doxygen-wirksame Kommentare koennen VOR einem Objekt oder ALLEINE stehen,
+  jedoch nie IN einem Object (Ausnahme Strukturen)
+  
+- doxygen kennt eine sehr grosse Anzahl an eigenen Steuerzeichen, es
+  reichen jedoch ca. 5-10 verschiedene, um gut zu dokumentieren. ausserdem
+  kann es html lesen, d.h. man kann html-tags verwenden, um seine
+  Dokumentation zu gestalten
+  
+
+
+
+===========FILES=============  
+  
+Jeder sourcecode-file (auch header) muss mit 
+ 
+/*!---------------------------------------------------------------------
+\file
+\brief dies ist die kurzbeschreibung zur datei
+
+---------------------------------------------------------------------*/
+
+beginnen. Dies ist Bedingung dafuer, dass der Inhalt des Files 
+korrekt beruecksichtigt wird. (die Leerzeile nach \brief ist absicht!)
+
+
+
+
+
+
+
+===========GLOBALE VARIABLEN=============
+vor einer globalen Variablen sollte etwas wie
+
+/*!----------------------------------------------------------------------
+\brief kurzbeschreibung der Variablen
+
+<pre>                                                         name/datum
+defined in xxx.c, declared in xxx.h, etc                                                  
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _TRACE         trace;
+
+stehen, wobei darauf zu achten ist, dass dieser Kopf bei JEDEM auftauchen 
+dieser Variablen (auch in den headern!) identisch ist
+  
+  
+
+
+
+
+
+
+ ===========DEFINES=============
+ traegt ein file ein spezielles define, so kommt davor ein
+ 
+/*!----------------------------------------------------------------------
+\brief kurzbeschreibung
+                                                      
+<pre>                                                         name/datum   
+Langbeschreibung
+</pre>
+
+*----------------------------------------------------------------------*/
+#define DWORD  (sizeof(double)) 
+
+  
+
+
+
+
+
+
+===========FUNKTIONEN=============
+/*!---------------------------------------------------------------------
+\brief kurzbeschreibung                                              
+
+<pre>                                                        name/datum
+aufuehrliche Beschreibung mit z.B. ASCII-Skizze
+1D arrays:
+ptr[0 1 2..........................................]
+
+2d arrays (e.g. ptr[3][5]):
+ptr[0][0 1 2 3 4 5 6 7 8 9 10 11 12 13 14]
+                |          |
+   [1]----------           |
+                           |
+   [2]---------------------
+</pre>
+\code
+ein stueck examplarischer c-code
+\endcode
+\param variable1   variablentyp1   (i)   beschreibung der variablen1                               
+\param variable2   variablentyp2   (o)   beschreibung der variablen2                               
+\param variable3   variablentyp3   (i/o) beschreibung der variablen3                               
+\param variable4   variablentyp4   (i)   beschreibung der variablen4                               
+\param variable5   variablentyp5   (i)   beschreibung der variablen5                               
+\return rueckgabewert                                               
+\warning besondere anmerkungen, z.B. verdacht auf Fehler
+\sa other_routine1() , other_routine2() , variable_n , variable_m <-querverweis                                   
+
+------------------------------------------------------------------------*/
+
+der Funktionskopf muss, wenn er bei der deklaration (prototyp) und bei der
+definition (eigentliche routine) vorkommt, identisch sein!
+
+Schluesselwoerter:
+\brief kurzbeschreibung (gefolgt von einer Leerzeile!)
+
+<pre>
+preformated block, wird inklusive ausrichtung und umbruechen uebernommen
+</pre
+  
+\code
+ein stueck quelltext, was als solches mit syntaxhighlighting uebernommen wird
+\endcode  
+  
+\param beschreibung von uebergabewerten
+\return  rueckgabewertbeschreibung
+\warning wie der Name sagt
+\sa see also... wird in querverweisen und links uebersetzt  
+  
+  
+
+
+
+
+
+===========STRUKTUREN=============
+  
+/*!------------------------------------------------------------------------
+\brief kurzbeschreibung
+
+<pre>                                                        name/datum
+aufuehrliche Beschreibung
+</pre>
+
+-------------------------------------------------------------------------*/
+typedef struct _ARRAY
+{
+char                name[9];           /*!< name of the field  */
+int                 fdim;              /*!< first dimension of field  */
+int                 sdim;              /*!< scnd dimension of field   */
+enum         
+   {
+    cca_XX,                            /*!< not defined    */
+    cca_DA,                            /*!< double array   */
+    cca_DV,                            /*!< double vector  */
+    cca_IA,                            /*!< integer array  */
+    cca_IV                             /*!< integer vector */
+   }                Typ;               /*!< enum type of field */
+union
+   {
+    int     *iv;                       /*!< integer vector */
+    double  *dv;                       /*!< double vector  */
+    int    **ia;                       /*!< integer array  */
+    double **da;                       /*!< double array   */
+   }                a;                 /*!< ptr used for calculations */
+#ifdef DEBUG 
+struct _TRACEARRAY  *mytracer;         /*!< bugtracing information */
+#endif
+} ARRAY;
+ 
+Kommentare, die mit /*!< beginnen, beschreiben die einzelnen Variablen einer
+Struktur oder union oder enum  
+
+
+
+
+===========MODULE=============
+Mehrere Files, Routinen, Strukturen, Variablen lassen sich zu sogenannten
+Modulen zusammenfassen. Beispiele fuer sinnvolle Module:
+AM-System, FR-System, Shell8 ....
+
+/*! 
+\addtogroup MODULNAME 
+*//*! @{ (documentation module open)*/
+
+Alle Objekte in source und headerfiles hier gehoeren zum Modul MODULNAME
+
+/*! @} (documentation module close)*/
+
+
+Diese Anweisung kann in mehreren *.c und *.h vorkommen, doxygen
+kreiert daraus ein zusammenhaengendes Dokumentationsmodul
+Objekte koennen theoretisch zu verschiedenen Modulen gehoeren, wobei
+dies bei meinen Versuchen nur zu ausgesprochenen Problemen gefuehrt hat!!!
+Daher lieber jedes Objekt nur einem Modul zugruppieren.
+(auch meine Experimente mit \defgroup \weakgroup \ingroup etc waren 
+ausgesprochen negativ)
+
+
+
+
+
+
+===========SONSTIGES=============
+unter www.doxygen.org kann man ziemlich viele seiten von manuals
+durcharbeiten, um alles noch besser und perfekter zu machen.....
+
+doxygen ist relativ empfindlich bei der Einhaltung der Syntax, daher sollte man
+es nachdem man ein Stueck dokumentiert hat laufen lassen, sonst sucht man die
+spaeter endlos Fehler

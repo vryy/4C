@@ -4,11 +4,13 @@
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | tracing variables                                                    |
- | defined in pss_ds.c                                                  |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief the tracing variable
+
+<pre>                                                         m.gee 8/00
+defined in pss_ds.c, declared in tracing.h                                                  
+</pre>
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 extern struct _TRACE         trace;
 #endif

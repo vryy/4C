@@ -11,11 +11,15 @@ extern struct _IO_FLAGS     ioflags;
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | global variable *partition, vector of lenght numfld of structures    |
- | PARTITION is defined in global_control.c                             |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief one proc's info about his partition
+
+<pre>                                                         m.gee 8/00
+-the partition of one proc (all discretizations)
+-the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
@@ -30,11 +34,15 @@ extern struct _SOLVAR  *solv;
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _STATIC_VAR  *statvar;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |

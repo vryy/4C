@@ -1,5 +1,12 @@
+/*!---------------------------------------------------------------------
+\file
+\brief assign mesh to fields and procs
+
+---------------------------------------------------------------------*/
+
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -18,22 +25,49 @@ extern struct _GENPROB     genprob;
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | global variable *partition, vector of lenght numfld of structures    |
- | PARTITION is defined in global_control.c                             |
- *----------------------------------------------------------------------*/
-extern struct _PARTITION  *partition;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
 
-/*----------------------------------------------------------------------*
- |  do initial partitioning of fields                    m.gee 5/01     |
- *----------------------------------------------------------------------*/
+/*! 
+\addtogroup PARALLEL 
+*/
+/*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief one procs info about his partition
+
+<pre>                                                         m.gee 8/00
+the partition of one proc (all discretizations)
+the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+extern struct _PARTITION  *partition;
+
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+extern struct _PAR   par;                      
+
+/*!---------------------------------------------------------------------
+
+\brief assign fields to procs                                             
+
+<pre>                                                        m.gee 5/01 
+-allocates variable partition
+-allocates variable pdis in partition
+fills nodes and elements to the pdis variable in two different styles
+-cuts are through elements, every node is exactly on 1 proc
+-cuts are through nodes, every element is exactly on 1 proc (not used yet)
+</pre>
+
+\return void                                               
+
+------------------------------------------------------------------------*/
 void part_assignfield()
 {
 int        i,j,k,l;
@@ -353,3 +387,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of part_assignfield */
+
+/*! @} (documentation module close)*/

@@ -1,35 +1,62 @@
+/*!---------------------------------------------------------------------
+\file
+\brief contains bug and time tracing routines
+
+---------------------------------------------------------------------*/
+
 #include "../headers/standardtypes.h"
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | tracing variables                                                    |
- | defined in pss_ds.c                                                  |
- *----------------------------------------------------------------------*/
-#ifdef DEBUG
-struct _TRACE         trace;
-#endif
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure allfiles, which holds all file pointers                    |
- | is defined in input_control_global.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
-/*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | global variable  num_byte_allocated                                  |
- | long int num_byte_allocated                                          |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief counter of memory in byte
+
+<pre>                                                         m.gee 02/02    
+defined in pss_am.c
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef DEBUG
 extern long int num_byte_allocated;
 #endif
-/*----------------------------------------------------------------------*
- * global variables for time tracing                       genk 05/02   |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup DSSYSTEM 
+*//*! @{ */
+
+/*!----------------------------------------------------------------------
+\brief the tracing variable
+
+<pre>                                                         m.gee 8/00
+defined in pss_ds.c, declared in tracing.h                                                  
+</pre>
+*----------------------------------------------------------------------*/
+#ifdef DEBUG
+struct _TRACE         trace;
+#endif
+/*!----------------------------------------------------------------------
+\brief global variables for time tracing
+<pre>                                                          genk 05/02
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef PARALLEL
 double par_start;
 #else
@@ -39,9 +66,29 @@ double seq_start;
 time_t seq_start;
 #endif
 #endif
-/*----------------------------------------------------------------------*
- | Initialize bugtracing systems                          m.gee 8/00    |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief Initialize bugtracing systems                                              
+
+<pre>                                                        m.gee 8/00 
+-sets num_byte_allocted to zero
+-checks for type unsigned char to be exactly one byte
+ (Needed for ptr-shifting)
+-for ARRAY tracing the start of a linear chained list of unknown length
+ is allocated and a ptr is set to the last element in this list.
+ With every ARRAY defined, another chain element is attached, with an
+ ARRAY deleted, the corresponding chain element is also deleted.
+-for routine tracing a chained list closed ring is allocated inside a
+ linear vector, which ends are connected. These ring has 100 elements and
+ is therefore able to trace routine calls upto a deepness of 100 before it 
+ starts overriding itself.
+ Everytime a subroutine is entered a ptr is set forward (like on a clock)
+ in this chain ring and the name of the routine and status 'dsin' is set.
+ On exit of this routine, the ptr is set anticlockwis back to the calling
+ routine
+</pre>
+\return void                                                
+
+------------------------------------------------------------------------*/
 void dsinit()
 {
 #ifdef DEBUG 
@@ -102,10 +149,18 @@ return;
 } /* end of dsinit */
 
 
-/*----------------------------------------------------------------------*
- | report intrance to routine named string to the tracing system  m.gee |
- | is empty is DEBUG is not defined                               8/00  |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief report entrance to routine                                              
+
+<pre>                                                        m.gee 8/00 
+This routine reports the entry to a subroutine the the ds-system
+see dsinit()
+</pre>
+\param string   char[]   (i)  name of routine                                
+\return void                                               
+\sa dstrc_exit() , dsinit()                                    
+
+------------------------------------------------------------------------*/
 void dstrc_enter(char string[])
 {
 #ifdef DEBUG 
@@ -120,10 +175,18 @@ trace.deepness++;
 return;
 } /* end of dstrc_enter */
 
-/*----------------------------------------------------------------------*
- | report exit to routine to the tracing system           m.gee 8/00    |
- | is empty is DEBUG is not defined                                     |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief report exit to routine                                              
+
+<pre>                                                        m.gee 8/00 
+This routine reports the exit of a subroutine the the ds-system
+see dsinit()
+</pre>
+\param string   char[]   (i)  name of routine                                
+\return void                                               
+\sa dstrc_enter() , dsinit()                                    
+
+------------------------------------------------------------------------*/
 void dstrc_exit()
 {
 #ifdef DEBUG 
@@ -141,10 +204,21 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | report a new double array to the bugtracing system     m.gee 8/00    |    
- | this routine is called by the am-system only !                       | 
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief report a new array to the bugtracing system                                              
+
+<pre>                                                        m.gee 8/00 
+This routine reports the creation of an ARRAY to the ds-system
+It creates a new chain element in the list of ARRAY-tracing structures
+this routine is called by the am-system only !
+see dsinit()
+</pre>
+\param string   char[]   (i)  name of routine                                
+\param typ      int      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
+\return void                                               
+\sa dsinit()                                    
+
+------------------------------------------------------------------------*/
 void dsreportarray(void *array, int typ)
 {
 #ifdef DEBUG
@@ -181,10 +255,22 @@ return;
 } /* end of dstracereport */
 
 
-/*----------------------------------------------------------------------*
- | report a new double array to the bugtracing system     m.gee 8/00    |    
- | this routine is called by the am-system only !                       |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief report a deletion of an array to the bugtracing system                                              
+
+<pre>                                                        m.gee 8/00 
+This routine reports the deletion of an ARRAY to the ds-system
+It deleted the correponding chain element in the list of ARRAY-tracing 
+structures
+this routine is called by the am-system only !
+see dsinit()
+</pre>
+\param string   char[]   (i)  name of routine                                
+\param typ      int      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
+\return void                                               
+\sa dsinit() ,  dstracereport()                                  
+
+------------------------------------------------------------------------*/
 void dsdeletearray(void *array, int typ)
 {
 #ifdef DEBUG
@@ -239,12 +325,19 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | write a report about all arrays to the .err file       m.gee 8/00    |    
- | does nothing if DEBUG is not defined                                 |
- | writes a list of all ARRAY and ARRAY4D structure generated           |
- | by the am-System to the *.err file                                   |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief write a report about all arrays                                              
+
+<pre>                                                        m.gee 8/00 
+-write a report about all arrays to the .err file
+-does nothing if DEBUG is not defined 
+-writes a list of all ARRAY and ARRAY4D structure generated
+see dsinit()
+</pre>
+\return void                                               
+\sa dsinit() ,  dstracereport() , dsdeletearray()                                 
+
+------------------------------------------------------------------------*/
 void dstrace_to_err()
 {
 int         i=0;
@@ -380,10 +473,20 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | report the amount of actual allocated memory           m.gee 2/02    |
- | only works if DEBUG is defined                                       |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief report the amount of actual allocated memory                                              
+
+<pre>                                                        m.gee 2/02 
+-write a report about all memory allocated to the
+ .err file. Memory has to be allocated using the MALLOC CALLOC REALLOC
+ and FREE functions
+-does nothing if DEBUG is not defined 
+see dsinit()
+</pre>
+\return void                                               
+\sa dsinit()  MALLOC() , CALLOC() , REALLOC() , FREE()                              
+
+------------------------------------------------------------------------*/
 void dsmemreport()
 {
 #ifdef DEBUG 
@@ -427,17 +530,22 @@ return;
 } /* end of dsmemreport */
 
 
-/*----------------------------------------------------------------------*
- |                                                        m.gee 3/02    |
- | this routine does nothing if the boolean criterium is true           |
- | but aborts the programm, if it is not                                |
- | The routine is empty in an optimezed (not DEBUG) compilation and     |
- | can therefor be excessively used to develop a secure code, without   |
- | making it slow when running as fast-exe                              |
- | parameter list                                                       |
- | true - (input) boolean criterium                                     |
- | string - (input) error message                                       |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief asserts a boolean criterium                                              
+
+<pre>                                                        m.gee 3/02 
+this routine does nothing if the boolean criterium is true           
+but aborts the programm, if it is not                                
+The routine is empty in an optimezed (not DEBUG) compilation and     
+can therefor be excessively used to develop a secure code, without   
+making it slow when running as fast-exe                              
+</pre>
+\param true     int     (i)   boolean value                       
+\param string   char[]  (i)   error message, if true==0                    
+\return void                                                
+\sa dserror()                                    
+
+------------------------------------------------------------------------*/
 void dsassert(int true, char string[])
 {
 #ifdef DEBUG 
@@ -448,16 +556,24 @@ dserror(string);
 /*----------------------------------------------------------------------*/
 #endif
 return;
-} /* end of dsmemreport */
+} /* end of dsassert */
 
 
 
-/*----------------------------------------------------------------------*
- | report an error and stop program                       m.gee 8/00    |
- | prints error message string to console and *.err                     |
- | prints call tree, if DEBUG was defined                               |
- | aborts parallel and sequentiell programm                             |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief report an error and stop program                                              
+
+<pre>                                                        m.gee 8/00 
+-report an error and stop program                       
+-prints error message string to console and *.err       
+-prints call tree, if DEBUG was defined                 
+-aborts parallel and sequentiell programm               
+</pre>
+\param string   char[]  (i)   error message to be printed                    
+\return void                                                
+\sa dsassert()                                    
+
+------------------------------------------------------------------------*/
 void dserror(char string[])
 {
 int i=0;
@@ -519,9 +635,17 @@ exit(EXIT_FAILURE);
 #endif
 return;
 } /* end of dserror */
-/*----------------------------------------------------------------------*
- | routine to initialise the cpu - time                  genk 05/02     |
- *----------------------------------------------------------------------*/
+
+
+/*!---------------------------------------------------------------------
+\brief routine to initialise the cpu - time                                              
+
+<pre>                                                        genk 05/02 
+routine to initialise the cpu - time
+</pre>
+\return void                                                
+
+------------------------------------------------------------------------*/
 void ds_cputime_init()
 {
 #ifndef SUSE73
@@ -562,9 +686,15 @@ return;
 }
 
 
-/*----------------------------------------------------------------------*
- | routine to meassure the cpu - time                    genk 05/02     |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief routine to meassure the cpu - time                                              
+
+<pre>                                                        genk 05/02 
+routine to meassure the cpu - time
+</pre>
+\return void                                                
+
+------------------------------------------------------------------------*/
 double ds_cputime()
 {
 #ifndef SUSE73
@@ -609,3 +739,6 @@ dstrc_exit();
 return ((double)(diff)); 
 #endif
 }
+
+
+/*! @} (documentation module close)*/

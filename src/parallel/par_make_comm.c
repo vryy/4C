@@ -1,3 +1,8 @@
+/*!---------------------------------------------------------------------
+\file
+\brief domain decomposition and metis routines
+
+---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -10,32 +15,59 @@ extern struct _FIELD      *field;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | ranks and communicators                                              |
- | This structure struct _PAR par; is defined in main_ccarat.c
- *----------------------------------------------------------------------*/
+
+
+/*! 
+\addtogroup PARALLEL 
+*/
+
+/*! @{ (documentation module open)*/
+
+
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
 
-/*----------------------------------------------------------------------*
- |  do initial partitioning of fields                    m.gee 9/01     |
- |                                                                      |
- | at the moment there is a communicator created for each field.        |
- | All of these n communicators are identical to MPI_COMM_WORLD,        |
- | but the code now uses the field specific communicator for            |
- | all calculations & communications inside a field.                    |
- | For Inter-field communcations the communicator MPI_COMM_WORLD        |
- | is used.                                                             |
- | This opens the opportunity to have parallel execution of different   |
- | fields in future.                                                    |
- | Example:                                                             |
- | While solving the structure in the                                   |
- | structure's communicator with 2 procs, the other 14 procs are        |
- | doing the fluid field in their own communicating space. None         |
- | of both groups gets disturbed by the other one. They only get        |
- | synchronized through MPI_COMM_WORLD at the moment of the             |
- | fluid-structure-coupling.                                            |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+
+\brief create field-specific intra-communicators                                              
+
+
+<pre>                                                        m.gee 9/01 
+at the moment there is a communicator created for each field.        
+All of these n communicators are identical to MPI_COMM_WORLD,        
+but the code now uses the field specific communicator for            
+all calculations & communications inside a field.                    
+For Inter-field communcations the communicator MPI_COMM_WORLD        
+is used.                                                             
+This opens the opportunity to have parallel execution of different   
+fields in future.                                                    
+Example:                                                             
+While solving the structure in the                                   
+structure's communicator with 2 procs, the other 14 procs are        
+doing the fluid field in their own communicating space. None         
+of both groups gets disturbed by the other one. They only get        
+synchronized through MPI_COMM_WORLD at the moment of the             
+fluid-structure-coupling.                                            
+
+To create the intra-communicators the followin gsteps are done:
+-MPI_WORLD_GROUP is extracted from MPI_COMM_WORLD
+-numfield copies of this MPI_WORLD_GROUP are created named MPI_INTRA_GROUP
+-communicators MPI_INTRA_COMM are created from these MPI_INTRA_GROUP
+-MPI_INTRA_GROUPs are kept, because I'am not sure whether the 
+ MPI_INTRA_COMM gets damaged when the corresponding GROUP is freed
+</pre>
+
+\return void                                               
+
+------------------------------------------------------------------------*/
 void create_communicators()
 {
 int         i,j;
@@ -112,3 +144,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of create_communicators */
+
+/*! @} (documentation module close)*/
