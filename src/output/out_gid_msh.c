@@ -319,7 +319,7 @@ for (i=0; i<genprob.numfld; i++)
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actnode = &(actfield->dis[0].node[j]);
-      fprintf(out,"%6d %-18.5#f %-18.5#f %-18.5#f\n",
+      fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",
                                                      actnode->Id+1,
                                                      actnode->x[0],
                                                      actnode->x[1],

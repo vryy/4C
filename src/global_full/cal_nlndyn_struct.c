@@ -42,7 +42,11 @@ extern struct _IO_FLAGS     ioflags;
  | dedfined in global_control.c                                         |
  | struct _DYNAMIC      *dyn;                                           |
  *----------------------------------------------------------------------*/
+#ifdef SUSE73
+extern DYNAMIC *dyn;   
+#else
 extern struct _DYNAMIC *dyn;   
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |

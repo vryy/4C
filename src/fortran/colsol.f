@@ -37,14 +37,13 @@ c the fortran90 parameter statement causes the dde debugger to
 c crash the globally defined structures, do not use!!!! m.gee 01/02
 c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 c      PARAMETER (ZERO=0.0D0,ONE=1.0D0)
-      real*8 zero,one
-      REAL*8 A(NWA),V(NRR,NRC)
-      INTEGER MAXA(NQM)
-      INTEGER PRTDEB
       INTEGER NN,NRR,NRC,NWA,NQM,NR1,NR2,KKK,ISC,NSCH,IPR
       INTEGER INFO,ICOMP,IRED,IERR,N,NDI,INC,KN,KL,KU,KH,K,IC
       INTEGER KLT,J,KI,ND,KK,L,KIL,KLTL,M,NRA
       REAL*8  DET,C,B,TT,T1,T2,T3,T4
+      REAL*8 A(NWA),V(NRR,NRC)
+      INTEGER MAXA(NQM)
+      INTEGER PRTDEB
       DATA IRED/0/, ICOMP/0/ 
       SAVE ICOMP,IRED
 C
@@ -228,7 +227,6 @@ C
       real*8 det,ad,dmin,dmax,zero
       integer isc,nsch
 c      PARAMETER (DMIN=1.0D-25,DMAX=1.0D+25,ZERO=0.0D0)
-      real*8 dmin, dmax, zero
       dmin = 1.0D-25
       dmax = 1.0D+25
       zero = 0.0

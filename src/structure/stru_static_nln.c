@@ -984,10 +984,10 @@ void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
 dstrc_enter("conequ_printiter");
 #endif
 /*----------------------------------------------------------------------*/
-    printf("%4d %-12.5#E %-12.5#E %-12.5#E %-12.5#E %-12.5#E %-12.5#E %-12.5#E\n",
+    printf("%4d %-12.5E %-12.5E %-12.5E %-12.5E %-12.5E %-12.5E %-12.5E\n",
    itnum,disval,rlnew,dinorm,renorm,energy,dnorm,rrnorm);
 /*----------------------------------------------------- printout to err */
-   fprintf(allfiles.out_err,"%4d %-12.5#E %-12.5#E %-12.5#E %-12.5#E %-12.5#E %-12.5#E %-12.5#E\n",
+   fprintf(allfiles.out_err,"%4d %-12.5E %-12.5E %-12.5E %-12.5E %-12.5E %-12.5E %-12.5E\n",
    itnum,disval,rlnew,dinorm,renorm,energy,dnorm,rrnorm);
    fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/

@@ -11,7 +11,11 @@ struct _IO_FLAGS        ioflags;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC  *dyn;
+#ifdef SUSE73
+extern DYNAMIC *dyn;   
+#else
+extern struct _DYNAMIC *dyn;   
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -198,7 +202,7 @@ fprintf(out,"Nodal Coordinates:\n");
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
 actnode = &(actfield->dis[0].node[j]);
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %-18.5#f %-18.5#f %-18.5#f \n",
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %-18.5f %-18.5f %-18.5f \n",
         actnode->Id,actnode->Id_loc,actnode->x[0],actnode->x[1],actnode->x[2]);
 }
 fprintf(out,"________________________________________________________________________________\n\n");

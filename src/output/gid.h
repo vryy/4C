@@ -6,7 +6,7 @@ typedef struct _GIDSET
      FIELDTYP                   fieldtyp;               /* type of field */
      int                        fieldnamelenght;        /* lenght of fieldname */
      char                      *fieldname;              /* name of the field in characters */
-     char                      *standardrangetable;     /* name of standardrangetable */
+     char                       standardrangetable[18]; /* name of standardrangetable */
 
      int                        is_shell8_22;           /* 4-noded shell8 2x2 GP */
      char                      *shell8_22_name;

@@ -10,16 +10,20 @@ extern struct _FILES  allfiles;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC  *dyn;
+#ifdef SUSE73
+extern DYNAMIC *dyn;   
+#else
+extern struct _DYNAMIC *dyn;   
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
  | int                   numcurve;                                      |
- | struct _CURVE        *curve;                                         |
+ | struct _DYNAMIC      *curve;                                         |
  *----------------------------------------------------------------------*/
-int    numcurve;
+int            numcurve;
 struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | input of curves                                        m.gee 4/01    |

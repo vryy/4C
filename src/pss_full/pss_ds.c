@@ -136,6 +136,7 @@ return;
  *----------------------------------------------------------------------*/
 void dsreportarray(void *array, int typ)
 {
+#ifdef DEBUG
 /*--------------------- count total number of active ARRAYs or ARRAY4Ds */
 trace.num_arrays++;
 /*--------------------------------- switch for ARRAY (1) or ARRAY4D (2) */
@@ -164,6 +165,7 @@ if (!trace.endarraychain->next) dserror("Allocation of memory failed");
 trace.endarraychain->next->prev = trace.endarraychain;
 /*------------------------------------- set endarraychain to new piece */
 trace.endarraychain = trace.endarraychain->next;
+#endif
 return;
 } /* end of dstracereport */
 
@@ -173,6 +175,7 @@ return;
  *----------------------------------------------------------------------*/
 void dsdeletearray(void *array, int typ)
 {
+#ifdef DEBUG
 TRACEARRAY *acttracearray;
 /*------------------------------ decrease number of ARRAYs and ARRAY4Ds */
 trace.num_arrays--;
@@ -216,6 +219,7 @@ else
 /*---------- delete the actual piece which now is taken out of the chain */
 FREE(acttracearray);
 /*-----------------------------------------------------------------------*/
+#endif
 return;
 } /* end of dsdeletearray */
 

@@ -23,7 +23,11 @@ extern struct _SOLVAR  *solv;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC  *dyn;
+#ifdef SUSE73
+extern DYNAMIC *dyn;   
+#else
+extern struct _DYNAMIC *dyn;   
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |

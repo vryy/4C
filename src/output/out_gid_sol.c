@@ -71,7 +71,7 @@ for (i=0; i<genprob.numfld; i++)
    break;
    }
    /*------------------------------------------------- set range tables */
-   actgid->standardrangetable = "standard_         ";
+   strncpy(actgid->standardrangetable,"standard_         ",18);
    charptr = actgid->standardrangetable + 9;
    strncpy(charptr,actgid->fieldname,actgid->fieldnamelenght);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -303,9 +303,9 @@ if (actgid->is_shell8_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -323,9 +323,9 @@ if (actgid->is_shell8_33)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -343,9 +343,9 @@ if (actgid->is_brick1_222)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_brick1 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -363,9 +363,9 @@ if (actgid->is_brick1_333)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_brick1 || (actele->numnp != 20 || actele->numnp != 27)) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<27; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -383,9 +383,9 @@ if (actgid->is_fluid3_222)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_fluid3 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -403,9 +403,9 @@ if (actgid->is_fluid3_333)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_fluid3 || (actele->numnp != 20 || actele->numnp != 27)) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<27; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -423,9 +423,9 @@ if (actgid->is_ale_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -443,9 +443,9 @@ if (actgid->is_ale_222)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5#E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -549,7 +549,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
-      fprintf(out," %6d %18.5#E %18.5#E %18.5#E\n",
+      fprintf(out," %6d %18.5E %18.5E %18.5E\n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[0][0],
                                                    actnode->sol.a.da[0][1],
@@ -599,7 +599,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
                              forces[0][gaussperm4[0]],
                              forces[1][gaussperm4[0]],
@@ -609,7 +609,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[3][gaussperm4[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              forces[0][gaussperm4[j]],
                              forces[1][gaussperm4[j]],
                              forces[9][gaussperm4[j]],
@@ -645,7 +645,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
                              forces[5] [gaussperm4[0]],
                              forces[6] [gaussperm4[0]],
@@ -655,7 +655,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[10][gaussperm4[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              forces[5] [gaussperm4[j]],
                              forces[6] [gaussperm4[j]],
                              forces[15][gaussperm4[j]],
@@ -703,7 +703,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
                              forces[0][gaussperm9[0]],
                              forces[1][gaussperm9[0]],
@@ -713,7 +713,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[3][gaussperm9[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              forces[0][gaussperm9[j]],
                              forces[1][gaussperm9[j]],
                              forces[9][gaussperm9[j]],
@@ -749,7 +749,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
                              forces[5] [gaussperm9[0]],
                              forces[6] [gaussperm9[0]],
@@ -759,7 +759,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[10][gaussperm9[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
+         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              forces[5] [gaussperm9[j]],
                              forces[6] [gaussperm9[j]],
                              forces[15][gaussperm9[j]],
