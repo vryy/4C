@@ -21,7 +21,7 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_restart_control.o \
                 src/global_full/global_open_files.o \
 		src/global_full/global_check_max.o \
-		src/global_full/element_info.o
+		src/global_full/global_element_info.o
 #                structure
 OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
                 src/structure/stru_dyn_nln_expl.o \
@@ -248,9 +248,9 @@ OBJS_OUTPUT   = src/output/out_global.o \
                 src/output/out_checkfilesize.o \
                 src/output/out_plt.o
 #                io
-OBJS_IO       = src/io/bin_singlefile.o \
-                src/io/bin_restart.o \
-                src/io/bin_packing.o
+OBJS_IO       = src/io/io_singlefile.o \
+                src/io/io_restart.o \
+                src/io/io_packing.o
 #                wall1
 OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_b_barop.o \

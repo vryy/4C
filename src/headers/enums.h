@@ -28,7 +28,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential or the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","twophase","levelset", NULL };
+#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","twophase","levelset", NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/

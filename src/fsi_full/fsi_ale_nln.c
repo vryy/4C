@@ -156,7 +156,9 @@ static SPARSE_TYP    array_typ;   /* type of psarse system matrix               
 static FSI_DYNAMIC      *fsidyn;
 static ALE_DYNAMIC      *adyn;
 
+#ifdef BINIO
 static BIN_OUT_FIELD out_context;
+#endif
 
 #ifdef DEBUG
 dstrc_enter("fsi_ale_nln");
@@ -298,6 +300,8 @@ calinit(actfield,actpart,action,&container);
 /*--------------------------------------------------- init ale field ---*/
 fsi_init_ale(actfield,2);
 
+#ifdef BINIO
+
 /* initialize binary output
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
@@ -305,11 +309,12 @@ init_bin_out_field(&out_context,
                    &(actsolv->sysarray_typ[actsysarray]),
                    &(actsolv->sysarray[actsysarray]),
                    actfield, actpart, actintra, 0);
+#endif
 
 /*--------------------------------------------------- check for restart */
 if (genprob.restart!=0)
 {
-#ifdef NEW_RESTART_READ
+#if defined(BINIO) && defined(NEW_RESTART_READ)
    restart_read_bin_aledyn(adyn,
                            &(actsolv->sysarray_typ[i]),
                            &(actsolv->sysarray[i]),
@@ -512,7 +517,9 @@ if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_aledyn(adyn,actfield,actpart,actintra);
+#ifdef BINIO
    restart_write_bin_aledyn(&out_context, adyn);
+#endif
 }
 
 /*--------------------------------------- do mesh quality statistics ---*/
@@ -599,7 +606,9 @@ break;
                             Binary Output
  *======================================================================*/
 case 98:
+#ifdef BINIO
   out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+#endif
   break;
 
 /*======================================================================*
@@ -633,8 +642,9 @@ if (par.myrank==0) amdel(&time_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 
 #ifndef PARALLEL
 CCAFREE(actintra);

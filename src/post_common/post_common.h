@@ -49,7 +49,7 @@ functions.
 
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
-#include "../io/bin_packing.h"
+#include "../io/io_packing.h"
 
 extern CHAR* fieldnames[];
 

@@ -197,7 +197,9 @@ DOUBLE         *fiterhs;	    /* iteration - RHS  		*/
 CONTAINER       container;          /* contains variables defined in container.h */
 FILE           *out = allfiles.out_out;
 
+#ifdef BINIO
 BIN_OUT_FIELD   out_context;
+#endif
 
 #ifdef DEBUG
 dstrc_enter("fluid_isi");
@@ -366,6 +368,8 @@ alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
 *action = calc_fluid_init;
 calinit(actfield,actpart,action,&container);
 
+#ifdef BINIO
+
 /* initialize binary output
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
@@ -373,6 +377,8 @@ init_bin_out_field(&out_context,
                    &(actsolv->sysarray_typ[actsysarray]),
                    &(actsolv->sysarray[actsysarray]),
                    actfield, actpart, actintra, 0);
+
+#endif
 
 /*--------------------------------------------- calculate nodal normals */
 fluid_cal_normal(actfield,1,action);
@@ -670,7 +676,9 @@ if (restartstep==fdyn->uprestart)
 {
    restartstep=0;
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
+#ifdef BINIO
    restart_write_bin_fluiddyn(&out_context,fdyn);
+#endif
 }
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
@@ -700,6 +708,7 @@ if (resstep==fdyn->upres && par.myrank==0)
 }
 
 /*--------------------------------------- write solution to binary */
+#ifdef BINIO
 if (resstep==fdyn->upres) {
   resstep=0;
 
@@ -710,6 +719,7 @@ if (resstep==fdyn->upres) {
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_STRESS);
   }
 }
+#endif
 
 /*---------------------------------------------- write solution to .out */
 if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
@@ -774,8 +784,9 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 end:
 
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 
 /*--------------------------------------------------- cleaning up phase */
 amdel(&ftimerhs_a);

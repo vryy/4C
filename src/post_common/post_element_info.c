@@ -15,4 +15,4 @@ Maintainer: Ulrich Kuettler
 */
 
 #include "post_common.h"
-#include "../global_full/element_info.c"
+#include "../global_full/global_element_info.c"

@@ -49,7 +49,7 @@
                     # requires a lot of memory !!!
 #FAST_ASS2          # use a faster procedure for assembling
                     # requires allmost no extra memory
-
+#BINIO              # binary io
 
 # tools
 #RESULTTEST         # defines defines result testing

@@ -139,7 +139,9 @@ static ARRAY         time_a;      /* stored time                                
 static FSI_DYNAMIC  *fsidyn;
 static ALE_DYNAMIC  *adyn;
 
+#ifdef BINIO
 static BIN_OUT_FIELD out_context;
+#endif
 
 #ifdef DEBUG
 dstrc_enter("fsi_ale_LAS");
@@ -205,6 +207,8 @@ for (i=0;i<numnp_total;i++)
    if (index[i]==mone)
       dserror ("something went wrong!\n");
 
+#ifdef BINIO
+
 /* initialize binary output
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
@@ -212,6 +216,7 @@ init_bin_out_field(&out_context,
                    NULL,
                    NULL,
                    actfield, actpart, actintra, 0);
+#endif
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
@@ -310,7 +315,9 @@ break;
                             Binary Output
  *======================================================================*/
 case 98:
+#ifdef BINIO
   out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+#endif
   break;
 
 
@@ -341,8 +348,9 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
 /*------------------------------------------------------------- tidy up */
 amdel(&index_a);
 
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 
 break;
 default:

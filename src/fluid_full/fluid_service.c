@@ -799,7 +799,7 @@ if (fdyn->init>=1)
       inp_fluid_start_data(actfield);
 
    if (fdyn->init==2) { /*------------------ initial data from pss file */
-#ifdef NEW_RESTART_READ
+#if defined(BINIO) && defined(NEW_RESTART_READ)
      restart_read_bin_fluiddyn(fdyn, NULL, NULL, actfield, actpart, 0, actintra, fdyn->resstep);
 #else
       restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,

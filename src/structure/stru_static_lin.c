@@ -121,7 +121,9 @@ CONTAINER     container;        /* contains variables defined in container.h */
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
+#ifdef BINIO
 BIN_OUT_FIELD out_context;
+#endif
 
 container.isdyn   = 0;           /* static calculation */
 container.kintyp  = 0;           /* kintyp  = 0: geo_lin*/
@@ -197,12 +199,15 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 *action = calc_struct_init;
 calinit(actfield,actpart,action,&container);
 
+#ifdef BINIO
+
 /* initialize binary output
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
 init_bin_out_field(&out_context,
                    &(actsolv->sysarray_typ[actsysarray]), &(actsolv->sysarray[actsysarray]),
                    actfield, actpart, actintra, 0);
+#endif
 
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
@@ -262,6 +267,7 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    out_sol(actfield,actpart,actintra,0,0);
 }
 
+#ifdef BINIO
   if (ioflags.struct_disp_gid==1) {
     out_results(&out_context, 0, 0, 0, OUTPUT_DISPLACEMENT);
 
@@ -274,6 +280,7 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
   if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) {
     out_results(&out_context, 0, 0, 0, OUTPUT_STRESS);
   }
+#endif
 
 /*--------------------------------------------- printout results to gid */
 if (ioflags.struct_disp_gid==1 && par.myrank==0)
@@ -293,8 +300,9 @@ if ( (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) && par.myra
 /*----------------------------------------------------------------------*/
 end:
 
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 
 #ifndef PARALLEL
 CCAFREE(actintra);

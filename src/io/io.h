@@ -18,11 +18,14 @@ file, all that's really here are further includes.
 
 */
 
+#ifdef BINIO
+
 #ifndef IO_H
 #define IO_H
 
-#include "bin_packing.h"
-#include "bin_singlefile.h"
-#include "bin_restart.h"
+#include "io_packing.h"
+#include "io_singlefile.h"
+#include "io_restart.h"
 
+#endif
 #endif

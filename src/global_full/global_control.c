@@ -129,6 +129,8 @@ void ntam(INT argc, char *argv[])
   create_communicators();
 #endif
 
+#ifdef BINIO
+
   /* The functions to initialize binary io are quite complex. They make
    * use of some standard ccarat facilities. In particular the error
    * logs must already be available. The parallel version makes use of
@@ -144,6 +146,8 @@ void ntam(INT argc, char *argv[])
   /* This can only be done after the (normal) input is read because
    * here some values are already written. */
   init_bin_out_main(allfiles.outputfile_kenner);
+
+#endif
 
   /*--------------------------------------------------calculation phase */
   t0=ds_cputime();

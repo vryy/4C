@@ -186,7 +186,9 @@ DOUBLE          low,up;
 INT             ilow,iup;
 DOUBLE          tau,tau2,tau3,fac;
 
+#ifdef BINIO
 BIN_OUT_FIELD   out_context;
+#endif
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
@@ -432,12 +434,15 @@ solserv_putdirich_to_dof(actfield,0,0,0.0,12);
 solserv_sol_zero(actfield,0,node_array_sol_increment,2);
 solserv_sol_zero(actfield,0,node_array_sol_increment,1);
 
+#ifdef BINIO
+
 /* initialize binary output
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
 init_bin_out_field(&out_context,
                    &(actsolv->sysarray_typ[stiff_array]), &(actsolv->sysarray[stiff_array]),
                    actfield, actpart, actintra, 0);
+#endif
 
 /*------------------------------------------- set initial step and time */
 sdyn->step = -1;
@@ -528,7 +533,7 @@ if (restart)
    mod_res_write = sdyn->res_write_evry;
    updevry_disp  = sdyn->updevry_disp;
    /*----------------------------------- the step to read in is restart */
-#ifdef NEW_RESTART_READ
+#if defined(BINIO) && defined(NEW_RESTART_READ)
    restart_read_bin_nlnstructdyn(sdyn, &dynvar,
                                  &(actsolv->sysarray_typ[stiff_array]),
                                  &(actsolv->sysarray[stiff_array]),
@@ -1098,6 +1103,7 @@ if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
   out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*-------------------------- printout results to gid no time adaptivity */
+#ifdef BINIO
 if (timeadapt==0) {
   if (mod_disp==0)
     if (ioflags.struct_disp_gid==1) {
@@ -1112,6 +1118,7 @@ if (timeadapt==0) {
       out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
     }
 }
+#endif
 
 if (timeadapt==0)
 if (par.myrank==0)
@@ -1186,6 +1193,7 @@ restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
                            &intforce_a,
                            &dirich_a,
                            &container);     /* contains variables defined in container.h */
+#ifdef BINIO
 restart_write_bin_nlnstructdyn(&out_context,
                                sdyn, &dynvar,
                                actsolv->nrhs, actsolv->rhs,
@@ -1195,6 +1203,7 @@ restart_write_bin_nlnstructdyn(&out_context,
                                1            , acc         ,
                                3            , fie         ,
                                3            , work);
+#endif
 }
 /*----------------------------------------------------- print time step */
 #if 0
@@ -1221,8 +1230,9 @@ solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
 
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL

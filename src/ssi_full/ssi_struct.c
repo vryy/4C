@@ -531,7 +531,7 @@ if (restart)
    maxtime = sdyn->maxtime;
    /*----------------------------------- the step to read in is restart */
 #if 0
-/*#ifdef NEW_RESTART_READ*/
+/*#if defined(BINIO) && defined(NEW_RESTART_READ)*/
    restart_read_bin_nlnstructdyn(sdyn,
                                  &dynvar,
                                  &(actsolv->sysarray_typ[stiff_array]),
@@ -1275,8 +1275,9 @@ solserv_del_vec(&work,3);
 /*----------------------------------------------------------------------*/
 
 #if 0
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 #endif
 
 #ifndef PARALLEL

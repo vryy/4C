@@ -147,7 +147,9 @@ static FLUID_STRESS    str;
 static FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
 static FSI_DYNAMIC    *fsidyn;             /* fsi dynamic variables     */
 
+#ifdef BINIO
 static BIN_OUT_FIELD out_context;
+#endif
 
 #ifdef DEBUG
 dstrc_enter("fsi_fluid");
@@ -353,6 +355,7 @@ fluid_cons();
   solserv_sol_zero(actfield, 0, node_array_sol_mf, 3);
 #endif
 
+#ifdef BINIO
   /* initialize binary output
    * It's important to do this only after all the node arrays are set
    * up because their sizes are used to allocate internal memory. */
@@ -360,6 +363,7 @@ fluid_cons();
                      &(actsolv->sysarray_typ[actsysarray]),
                      &(actsolv->sysarray[actsysarray]),
                      actfield, actpart, actintra, 0);
+#endif
 
 break;
 
@@ -686,7 +690,9 @@ if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
+#ifdef BINIO
    restart_write_bin_fluiddyn(&out_context, fdyn);
+#endif
 }
 
 /*---------------------------------------------------------- monitoring */
@@ -853,10 +859,12 @@ break;
                             Binary Output
  *======================================================================*/
 case 98:
+#ifdef BINIO
   if (ioflags.fluid_sol_gid==1) {
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY);
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_PRESSURE);
   }
+#endif
   break;
 
 /*======================================================================*
@@ -915,8 +923,9 @@ if (fdyn->checkarea>0) amdel(&totarea_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 
 #ifndef PARALLEL
 CCAFREE(actintra);

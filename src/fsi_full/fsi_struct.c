@@ -164,7 +164,9 @@ static CONTAINER       container;        /* contains variables defined in contai
 static FSI_DYNAMIC       *fsidyn;
 static STRUCT_DYNAMIC    *sdyn;
 
+#ifdef BINIO
 static BIN_OUT_FIELD out_context;
+#endif
 
 #ifdef DEBUG
 dstrc_enter("fsi_struct");
@@ -458,6 +460,8 @@ else {
   solserv_sol_zero(actfield, 0, node_array_sol, 9);
 }
 
+#ifdef BINIO
+
 /* initialize binary output
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
@@ -465,6 +469,7 @@ init_bin_out_field(&out_context,
                    &(actsolv->sysarray_typ[stiff_array]),
                    &(actsolv->sysarray[stiff_array]),
                    actfield, actpart, actintra, 0);
+#endif
 
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
@@ -484,7 +489,7 @@ if (restart)
    nstep = sdyn->nstep;
    maxtime = sdyn->maxtime;
    /*----------------------------------- the step to read in is restart */
-#ifdef NEW_RESTART_READ
+#if defined(BINIO) && defined(NEW_RESTART_READ)
    restart_read_bin_nlnstructdyn(sdyn,
                                  &dynvar,
                                  &(actsolv->sysarray_typ[stiff_array]),
@@ -1055,6 +1060,7 @@ if (restartstep==fsidyn->uprestart)
                               &intforce_a,
                               &dirich_a,
                               &container);  /* contains variables defined in container.h */
+#ifdef BINIO
    restart_write_bin_nlnstructdyn(&out_context,
                                   sdyn,
                                   &dynvar,
@@ -1065,6 +1071,7 @@ if (restartstep==fsidyn->uprestart)
                                   1            , acc         ,
                                   3            , fie         ,
                                   3            , work);
+#endif
 }
 
 /*----------------------------------------------------- print time step */
@@ -1083,6 +1090,7 @@ break;
                             Binary Output
  *======================================================================*/
 case 98:
+#ifdef BINIO
   out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
 
   /* This was not implemented before. I doubt it works. */
@@ -1094,6 +1102,7 @@ case 98:
   if (ioflags.struct_stress_gid==1) {
     out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
   }
+#endif
   break;
 
 /*======================================================================*
@@ -1135,8 +1144,9 @@ solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
 
-/* finalize output */
+#ifdef BINIO
 destroy_bin_out_field(&out_context);
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL
