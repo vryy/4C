@@ -154,31 +154,45 @@ for (i=0; i<counter; i++)
    if (ierr!=1) dserror("cannot read CURVE");
 /*--------------------------------------------------- read typ of curve */   
    frchk("Polygonal",&ierr);
-   if (ierr==1) actcurve->curvetyp = curve_polygonal;
+   if (ierr==1) 
+   {
+      actcurve->curvetyp = curve_polygonal;
 /*-------------------------------------------- read bystep or byabstime */
-   if (actcurve->bystep==1)
+      if (actcurve->bystep==1)
+      {
+          colpointer = strstr(allfiles.actplace,"BYSTEP");
+          colpointer += 10;
+          actcurve->time.a.ia[i][0] = strtol(colpointer,&colpointer,10);
+          actcurve->time.a.ia[i][1] = strtol(colpointer,&colpointer,10);
+          colpointer = strstr(allfiles.actplace,"FACTOR");
+          colpointer += 6;
+          actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
+          actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
+      }
+      else
+      {
+          colpointer = strstr(allfiles.actplace,"BYABSTIME");
+          colpointer += 13;
+          actcurve->time.a.da[i][0] = strtod(colpointer,&colpointer);
+          actcurve->time.a.da[i][1] = strtod(colpointer,&colpointer);
+          colpointer = strstr(allfiles.actplace,"FACTOR");
+          colpointer += 6;
+          actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
+          actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
+      }
+      frdouble("T",&(actcurve->T),&ierr);
+   }   
+   frchk("Explicit",&ierr);
+   if (ierr==1) 
    {
-       colpointer = strstr(allfiles.actplace,"BYSTEP");
-       colpointer += 10;
-       actcurve->time.a.ia[i][0] = strtol(colpointer,&colpointer,10);
-       actcurve->time.a.ia[i][1] = strtol(colpointer,&colpointer,10);
-       colpointer = strstr(allfiles.actplace,"FACTOR");
-       colpointer += 6;
-       actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
-       actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
+      actcurve->curvetyp = curve_explicit;
+      frint("NUMEX",&(actcurve->numex),&ierr);
+      if (ierr!=1) dserror("cannot read CURVE");
+      frdouble("C1",&(actcurve->c1),&ierr);
+      if (ierr!=1) dserror("cannot read CURVE");  
+      frdouble("C2",&(actcurve->c2),&ierr); 
+      if (ierr!=1) dserror("cannot read CURVE");                
    }
-   else
-   {
-       colpointer = strstr(allfiles.actplace,"BYABSTIME");
-       colpointer += 13;
-       actcurve->time.a.da[i][0] = strtod(colpointer,&colpointer);
-       actcurve->time.a.da[i][1] = strtod(colpointer,&colpointer);
-       colpointer = strstr(allfiles.actplace,"FACTOR");
-       colpointer += 6;
-       actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
-       actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
-   }
-   frdouble("T",&(actcurve->T),&ierr);
 } /* end of loop over curve lines */
 /*----------------------------------------------------------------------*/
 end:
