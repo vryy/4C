@@ -234,16 +234,33 @@ break;
 case -3: /* f(t)=1-cos(C1*PI*t) */
    val1 = c1*PI*T;
    fac  = ONE - cos(val1);
-break;   
-   
-case -4: /* Beltrami-Flow */
+break; 
+case -4: /* f(t)=(sin(PI(t:C1-0.5))+1)*0.5 */
+   if (T<=c1)
+   { 
+      val1 = PI*(T/c1-ONE/TWO);
+      fac = (sin(val1)+ONE)/TWO;
+   }
+   else
+      fac = ONE;
+break;      
+case -5: /* f(t)=(sin(2PI*C1(t-C2)_for_t>C2_else_ZERO */
+   if (T>=c2)
+   { 
+      val1 = TWO*PI*c1*(T-c2); 
+      fac = sin(val1);
+   }
+   else
+      fac = ZERO;
+break; 
+case -6: /* Beltrami-Flow */
    visc = mat[0].m.fluid->viscosity;
    d = PI/TWO;
    val1 = -c1*visc*d*d*T;
    fac = exp(val1);
 break;
-   
-case -5: /* Kim-Moin-Flow */
+/* Maltes "-5" auf "-7" geaendert */
+case -7: /* Kim-Moin-Flow */
    visc = mat[0].m.fluid->viscosity;
    a = 2.0;
    val1 = -c1*a*a*PI*PI*visc*T;

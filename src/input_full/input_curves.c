@@ -213,11 +213,15 @@ for (i=0; i<counter; i++)
       else if (strncmp(buffer,"f(t)=exp(1-1:t)_for_t<C1_else_const.",36)==0)
          actcurve->numex=-2;
       else if (strncmp(buffer,"f(t)=1-cos(C1*PI*t)",19)==0)
-          actcurve->numex=-3;
-     else if (strncmp(buffer,"BELTRAMI",8)==0)
+         actcurve->numex=-3;
+      else if (strncmp(buffer,"f(t)=(sin(PI(t:C1-0.5))+1)*0.5",30)==0)
          actcurve->numex=-4;
-     else if (strncmp(buffer,"KIM-MOIN",8)==0)
+      else if (strncmp(buffer,"f(t)=(sin(2PI*C1(t-C2)_for_t>C2_else_ZERO",41)==0)
          actcurve->numex=-5;
+      else if (strncmp(buffer,"BELTRAMI",8)==0)
+         actcurve->numex=-6;
+      else if (strncmp(buffer,"KIM-MOIN",8)==0)
+         actcurve->numex=-7;
       else
          dserror("cannot read function of CURVE\n");
       if (ierr!=1) dserror("cannot read CURVE");
