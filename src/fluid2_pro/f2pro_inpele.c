@@ -30,8 +30,6 @@ void f2pro_inp(ELEMENT *ele)
 {
 INT        i;             /* simply a counter                           */
 INT        ierr=0;        /* error flag                                 */
-long int   topology[100];
-char      *colpointer;
 char       buffer[50]; 
  
 #ifdef DEBUG 

@@ -110,12 +110,9 @@ void f2pro_calint(
 	       INT             *dirich_onoff
                )
 { 
-INT       i,j;          /* simply a counter                               */
 INT       iel;          /* number of nodes                                */
 INT       ielp;         /* number of nodes for pressure element           */
 INT       ntyp;         /* element type: 1 - quad; 2 - tri                */
-INT       intc;         /* "integration case" for tri for further infos
-                          see f2_inpele.c and f2_intg.c              */
 INT       nir,nis;      /* number of integration nodesin r,s direction    */
 INT       actmat;       /* material number of the element                 */
 INT       icode=2;      /* flag for eveluation of shape functions         */     
@@ -184,7 +181,7 @@ for (lr=0;lr<nir;lr++)
       /*---------- compute global derivates for velocity shape function */
       f2_gder(derxy,deriv,xjm,det,iel);
       /*----------------------- get the velocities at integration point */
-      f2_veli(velint,funct,eveln,iel);
+      f2_veci(velint,funct,eveln,iel);
       /*----------- get velocity (n,i) derivatives at integration point */
       f2_vder(vderxy,derxy,eveln,iel);
       /*----------------------------------------------------------------*/
@@ -206,15 +203,15 @@ for (lr=0;lr<nir;lr++)
 	 f2_calmvv(emass,funct,fac,iel);         
          /*---- end of Galerkin matrices calculation for left hand side * 
 	  |                           (M+dt*K)u~(n+1)                   | 
-         /*-------------------------------------------------------------*/
+         /--------------------------------------------------------------*/
       }/*end of if(cal_mat==1)*/
       /*----------------------------------------------------------------*/
       if (fdyn->pro_calrhs==1) 
       {
          /*---------------------- get pressure (n) at integration point */
-         f2_prei(&preint,functpr,epren,ielp);
+         preint=f2_scali(functpr,epren,ielp);
          /*-------------------- get velocities (n) at integration point */
-	 f2_veli(velint,funct,eveln,iel);
+	 f2_veci(velint,funct,eveln,iel);
          /*---------------------------- get global velocity derivatives */
          f2_vder(vderxy,derxy,eveln,iel);
          /*--------- get convective velocities (n) at integration point */

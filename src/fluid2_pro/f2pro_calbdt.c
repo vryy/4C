@@ -68,7 +68,7 @@ void f2pro_calbdt(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn;
 DOUBLE taumu;
 DOUBLE c;

@@ -18,7 +18,6 @@ Maintainer: Steffen Genkinger
 #include "fluid2_prototypes.h"
 static DOUBLE Q12 = ONE/TWO;
 static DOUBLE Q14 = ONE/FOUR;
-static DOUBLE Q16 = ONE/SIX;
 static DOUBLE Q52 = FIVE/TWO;
 static DOUBLE C23 = FIVE*FOUR+THREE;
 /*----------------------------------------------------------- prototype */
@@ -55,13 +54,13 @@ Numbering of the nodes:
               2     6     3
 
 </pre>
-\param  *funct     DOUBLE   (o)    shape functions
-\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
-\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
-\param   r 	   DOUBLE   (i)    coordinate
-\param   s 	   DOUBLE   (i)    coordinate
-\param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   INT	    (i)    evaluation flag
+\param  *funct    DOUBLE   (o)    shape functions
+\param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2   DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r        DOUBLE   (i)    coordinate
+\param   s        DOUBLE   (i)    coordinate
+\param   typ      DIS_TYP  (i)    element type
+\param   icode    INT      (i)    evaluation flag
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -69,7 +68,7 @@ void f2_rec(
             DOUBLE     *funct,     
             DOUBLE    **deriv,    
             DOUBLE    **deriv2,   
-	    DOUBLE      r,        
+            DOUBLE      r,        
             DOUBLE      s,        
             DIS_TYP     typ,      
             INT         icode     
@@ -373,13 +372,13 @@ the element nodes.
 \return  void                                                                      
 ------------------------------------------------------------------------*/
 void f2_recex(
-	      DOUBLE           *funval,     
-	      DOUBLE           *fpar,
-	      DOUBLE            r,    
-	      DOUBLE            s,
-              DOUBLE           *fval,         
-	      INT               igauss,
-	      INT               icode
+               DOUBLE           *funval,     
+               DOUBLE           *fpar,
+               DOUBLE            r,    
+               DOUBLE            s,
+               DOUBLE           *fval,         
+               INT               igauss,
+               INT               icode
             )
 {
 DOUBLE p1,p2,p3,p4,p5,p6,p7,p8,p9;
@@ -497,13 +496,13 @@ derivatives with respect to r/s are evaluated for
 T R I A N G L E S 
 		     
 </pre>
-\param  *funct     DOUBLE   (o)    shape functions
-\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
-\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
-\param   r 	   DOUBLE   (i)    coordinate
-\param   s 	   DOUBLE   (i)    coordinate
-\param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   INT	    (i)    evaluation flag
+\param  *funct    DOUBLE   (o)    shape functions
+\param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2   DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r        DOUBLE   (i)    coordinate
+\param   s        DOUBLE   (i)    coordinate
+\param   typ      DIS_TYP  (i)    element type
+\param   icode    INT      (i)    evaluation flag
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -511,7 +510,7 @@ void f2_tri(
             DOUBLE     *funct,      
             DOUBLE    **deriv,    
             DOUBLE    **deriv2,   
-	    DOUBLE      r,        
+            DOUBLE      r,        
             DOUBLE      s,	  
             DIS_TYP     typ,	  
             INT         icode	  
@@ -644,13 +643,13 @@ the element nodes.
 \return  void                                                                      
 ------------------------------------------------------------------------*/
 void f2_triex(
-	      DOUBLE           *funval,     
-	      DOUBLE           *fpar,
-	      DOUBLE            r,    
-	      DOUBLE            s,
-              DOUBLE           *fval,         
-	      INT               igauss,
-	      INT               icode
+               DOUBLE           *funval,     
+               DOUBLE           *fpar,
+               DOUBLE            r,    
+               DOUBLE            s,
+               DOUBLE           *fval,         
+               INT               igauss,
+               INT               icode
             )
 {
 
@@ -805,9 +804,9 @@ edges.
 \param  *funct     DOUBLE   (o)    shape functions
 \param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
 \param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
-\param   r 	   DOUBLE   (i)    coordinate
-\param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   INT	    (i)    evaluation flag
+\param   r 	       DOUBLE   (i)    coordinate
+\param   typ 	     DIS_TYP  (i)    element type
+\param   icode	    INT	     (i)    evaluation flag
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -893,10 +892,14 @@ void f2_jaco(DOUBLE    **xyze,
              DOUBLE     *det,          
              INT         iel,        
              ELEMENT    *ele
-	    )
+            )
 
 {
 INT k;
+char stringr[100]="Stopping regular - Negative jacobian determinant element          \n";
+#if defined (PARALLEL) || defined (D_FSI)
+char stringn[100]="Stopping not regular - Negative jacobian determinant element          \n";
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("f2_jaco");
@@ -921,27 +924,30 @@ for (k=0; k<iel; k++) /* loop all nodes of the element */
     
 if(*det<ZERO)
 {   
-   printf("\n");
-   printf("GLOBAL ELEMENT %i\n",ele->Id);
-   printf("NEGATIVE JACOBIAN DETERMINANT\n");
-   printf("STOPPING ...");
 #ifdef PARALLEL
-   dserror("not regulary!\n");
+   sprintf(&stringn[61] ,"%-d" ,ele->Id);
+   dserror(stringn);
 #else
    if (genprob.probtyp==prb_fluid && genprob.numfld==2) 
    {
       fluid_mf(99);
-      dserror("regulary!\n");
+      sprintf(&stringr[57] ,"%-d" ,ele->Id);
+      dserror(stringr);
    }
 #ifdef D_FSI
    else if (genprob.probtyp==prb_fsi) 
    {
       dyn_fsi(99);
-      dserror("regulary!\n");
+      sprintf(&stringr[57] ,"%-d" ,ele->Id);
+      dserror(stringr);
    }
-#endif
-   else dserror("not regulary!\n");
-#endif
+   else    
+   {
+      sprintf(&stringn[61] ,"%-d" ,ele->Id);
+      dserror(stringn);
+   }
+#endif /* endif D_FSI */
+#endif /* endif PARALLEL */
 }
    
 /*----------------------------------------------------------------------*/
@@ -978,7 +984,7 @@ void f2_jaco2(DOUBLE    **xyze,
              DOUBLE     *det,          
              INT         iel,        
              ELEMENT    *ele
-	    )
+            )
 
 {
 INT k;
@@ -1038,7 +1044,7 @@ void f2_edgejaco(
                  DOUBLE     *det,          
                  INT         iel,
                  INT        *iedgnod
-	        )
+               )
 
 {
 INT k;
@@ -1091,11 +1097,11 @@ calculated.
 
 ------------------------------------------------------------------------*/
 void f2_gder(
-              DOUBLE   **derxy,     
-	      DOUBLE   **deriv,    
-	      DOUBLE   **xjm,      
-	      DOUBLE     det,      
-	      INT        iel       
+               DOUBLE   **derxy,     
+               DOUBLE   **deriv,    
+               DOUBLE   **xjm,      
+               DOUBLE     det,      
+               INT        iel       
 	    )
 {
 INT    k;
@@ -1104,20 +1110,10 @@ INT    k;
 dstrc_enter("f2_gder");
 #endif
 
-/*------------------------------------------------------- initialistion */
-for(k=0;k<iel;k++) /* loop all nodes of the element */
-{
-   derxy[0][k]=ZERO;
-   derxy[1][k]=ZERO;
-} /* end loop over iel */
-
-/* NOTE: calculation of inversion is skipped 
-         --> change of subscripts and signs in loop!! -----------------*/
-
 for (k=0;k<iel;k++) /* loop all nodes of the element */
 {
-   derxy[0][k] +=(  xjm[1][1]*deriv[0][k]  + (-xjm[0][1]*deriv[1][k]))/det;
-   derxy[1][k] +=((-xjm[1][0]*deriv[0][k]) +   xjm[0][0]*deriv[1][k] )/det;
+   derxy[0][k] =(  xjm[1][1]*deriv[0][k]  + (-xjm[0][1]*deriv[1][k]))/det;
+   derxy[1][k] =((-xjm[1][0]*deriv[0][k]) +   xjm[0][0]*deriv[1][k] )/det;
 } /* end of loop over iel */
 
 /*----------------------------------------------------------------------*/
@@ -1127,6 +1123,49 @@ dstrc_exit();
 
 return;
 } /* end of f2_gder */
+
+/*!---------------------------------------------------------------------
+\brief global derivates
+
+<pre>                                                         genk 05/03
+
+In this routine the global derivatives w.r.t. x at point r 
+along the element edge are calculated.
+		     
+</pre>
+\param **deriv     DOUBLE   (i)    natural derivatives of shape funcs
+\param **derxy     DOUBLE   (o)    global derivatives wrt. x/y
+\param **xjm       DOUBLE   (i)    jacobian matrix
+\param   ngnode    INT      (i)    number of nodes on actual edge
+\return void                                                                       
+\warning only derivative w.r.t. x is calculated!!!
+
+------------------------------------------------------------------------*/
+void f2_edgegder(                 
+                  DOUBLE   **deriv,
+                  DOUBLE   **derxy,     
+                  DOUBLE   **xjm,
+                  INT        ngnode       
+	        )
+{
+INT    k;
+
+#ifdef DEBUG 
+dstrc_enter("f2_edgegder");
+#endif
+
+for (k=0;k<ngnode;k++) /* loop all nodes of the edge */
+{
+   derxy[0][k] = deriv[0][k]/xjm[0][0];
+} /* end of loop over ngnode */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_gderedge */
 
 /*!---------------------------------------------------------------------
 \brief global coordinates
@@ -1145,11 +1184,11 @@ are set.
 
 ------------------------------------------------------------------------*/
 void f2_gcoor(
-              DOUBLE    **xyze,
-	      DOUBLE     *funct,            
-	      INT         iel,      
-	      DOUBLE     *gcoor     
-	     )
+               DOUBLE    **xyze,
+               DOUBLE     *funct,            
+               INT         iel,      
+               DOUBLE     *gcoor     
+             )
 {
 INT i;
 
@@ -1183,28 +1222,26 @@ In this routine the second global derivatives w.r.t x/y at point r,s
 are calculated.
 		     
 </pre>
-\param  *ele 	   ELEMENT  (i)    actual element
-\param **xyze      DOUBLE   (i)    element coordinates
-\param **xjm 	   DOUBLE   (i)    jacobian matrix
-\param **bi 	   DOUBLE   (-)    working array
-\param **xder2     DOUBLE   (-)    working array
-\param **derxy     DOUBLE   (i)    glob. coord.. deriv.
-\param **derxy2    DOUBLE   (o)    2nd. glob. coord. deriv.
-\param **deriv2    DOUBLE   (i)    2nd. nat. deriv. of shape funcs
-\param   iel	   INT	    (i)    number of nodes of actual ele
+\param **xyze     DOUBLE   (i)    element coordinates
+\param **xjm      DOUBLE   (i)    jacobian matrix
+\param **bi       DOUBLE   (-)    working array
+\param **xder2    DOUBLE   (-)    working array
+\param **derxy    DOUBLE   (i)    glob. coord.. deriv.
+\param **derxy2   DOUBLE   (o)    2nd. glob. coord. deriv.
+\param **deriv2   DOUBLE   (i)    2nd. nat. deriv. of shape funcs
+\param   iel      INT      (i)    number of nodes of actual ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_gder2(
-               ELEMENT     *ele,
-	       DOUBLE     **xyze,     
-	       DOUBLE     **xjm,      
+               DOUBLE     **xyze,     
+               DOUBLE     **xjm,      
                DOUBLE     **bi,     
-	       DOUBLE     **xder2,  
-	       DOUBLE     **derxy,  
-	       DOUBLE     **derxy2, 
+               DOUBLE     **xder2,  
+               DOUBLE     **derxy,  
+               DOUBLE     **derxy2, 
                DOUBLE     **deriv2, 
-	       INT          iel     
+               INT          iel     
 	     )
 {
 INT i;

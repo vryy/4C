@@ -40,7 +40,7 @@ void f2pro_calset(
 	        DOUBLE          *epren    
 	      )
 {
-INT i,j,irow;        /* simply some counters                            */
+INT i ;              /* simply some counters                            */
 NODE *actnode;       /* actual node for element                         */
                              
 #ifdef DEBUG 
@@ -79,7 +79,7 @@ for(i=0;i<elevel->numnp;i++)
  | element and velocity element have different number of nodes and      |
  | different shape functions. Therefore below loop runs up to 4 nodes.  |
  | Where it runs up to 9 in the upper loop.                             |
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
       for(i=0;i<elepre->numnp;i++) /* loop nodes of element for pressure  */
       {
          actnode=elepre->node[i];

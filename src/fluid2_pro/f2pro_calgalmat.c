@@ -53,9 +53,9 @@ void f2pro_calkvv(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |  
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
-DOUBLE  c,aux;
+DOUBLE  c;
 
 #ifdef DEBUG 
 dstrc_enter("f2pro_calkvv");

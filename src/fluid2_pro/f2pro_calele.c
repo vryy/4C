@@ -117,7 +117,7 @@ static DOUBLE  *edforce;       /* pointer to RHS due to dirichl. conditions  */
 static FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables         */
 DOUBLE  dirich[MAXDOFPERELE];  /* dirichlet values of act. ele               */
 INT dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele               */ 
-INT i,j,iel;
+INT iel;
 
 #ifdef DEBUG 
 dstrc_enter("f2pro_calele");

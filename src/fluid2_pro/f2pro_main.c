@@ -79,9 +79,7 @@ void fluid2_pro(     PARTITION     *actpart,
 /*----------------------------------------------------------------------*/
 #ifdef D_FLUID2_PRO 
 /*----------------------------------------------------------------------*/
-MATERIAL              *actmat;     /* actual material                   */
 static FLUID_DATA      *data;      
-FIELD                 *actfield;   /* actual field                      */
 
 #ifdef DEBUG 
 dstrc_enter("fluid2_pro");

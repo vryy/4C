@@ -52,13 +52,12 @@ void f2_calliftdrag(
     FLUID_DATA    *data,
     CONTAINER     *container)
 {
-INT		lr,ls;		/* INTegration directions		*/
-INT		i,j,jj,k;	/* some loopers				*/
+INT		lr;		/* INTegration directions		*/
+INT		i,j;	        /* some loopers				*/
 INT		nir;		/* number of GP's in r direction 	*/
 INT		ngline;		/* number of geometrylines at element 	*/   
 INT		line;		/* looper over lines			*/
 INT		ngnode;		/* number of geometry-nodes on g-line	*/
-INT		ngr,ngs;	/* number of GP for line-integration	*/
 INT		iegnod[MAXNOD_F2]; /* (o)   edge nodes*/
 const INT	numdf  = 3;	/* dof per node				*/
 
@@ -69,15 +68,12 @@ DOUBLE		nsigma[3][MAXNOD_F2]; /* nodal fluid stresses		*/
 DOUBLE		xyzl[2][MAXNOD_F2]; /* nodal coordinates		*/
 DOUBLE		e1;		/* GP-koordinates in r-s-system		*/
 DOUBLE		facr;		/* integration factor  GP-info		*/
-DOUBLE		det;		/* det of jacobian matrix		*/
 DOUBLE          xy[2];		/* GP-global coordinates		*/
 DOUBLE		center[2];	/* center of body in fluid		*/
 INT             ld_id;
 
-GLINE		*gline[4];	/* geometrylines of the element		*/
 GLINE		*actgline;
 DIS_TYP		typ;		/* element type				*/
-GNODE		gnode;
 NODE		*actnode;
 
 static DOUBLE	*funct;		/* ansatz-functions			*/
@@ -102,7 +98,9 @@ amzero(&deriv_a);
 amzero(&xjm_a);
 
 /*-------------------------------------------- init the gaussian points */
+#if 0
 f2_intg(data,1);
+#endif
 
 nir    = ele->e.f2->nGP[0];
 nir    = IMAX(nir,2);
