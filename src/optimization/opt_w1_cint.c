@@ -65,7 +65,7 @@ void w1_oint(
 {
 
 /*----------------------------------------------------------------------*/
-int                 i,j,k;                              /* some loopers */
+int                 i;                                /* some loopers */
 int                 nir,nis;          /* num GP in r/s/t direction */
 int                 lr, ls;           /* loopers over GP */
 int                 iel;              /* numnp to this element */
@@ -74,7 +74,7 @@ int                 ip;
 int                 istore, newval;
 const int           numdf  = 2;
 const int           numeps = 3;
-double              fac,facm;         /* integration factors            */
+double              fac;              /* integration factors            */
 double              stifac;           /* thickness                      */
 double              e1,e2;            /* GP-coords                      */
 double              facr,facs;        /* weights at GP                  */

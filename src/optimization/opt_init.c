@@ -73,7 +73,7 @@ CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 CONTAINER     container;        /* contains variables defined in container.h */
 MATERIAL    *actmat;
 /*----------------------------------------------------------------------*/
-  int i, j, k;
+  int i, j;
   int numvar;                       /* number of optimization variables */
   double dens;
   ELEMENT *actele;                  /* active element                   */

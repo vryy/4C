@@ -42,8 +42,6 @@ defined in opt_cal_main.c
 void caloptmain()
 {
 /*----------------------------------------------------------------------*/
-  int  i;            /* a counter */
-/*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("caloptmain");
   #endif

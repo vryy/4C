@@ -123,7 +123,7 @@ return;
 void og_write_mesh(int nmesh)
 {
 /*----------------------------------------------------------------------*/
-int i, j, k, l , m;
+int j, k, l;
 int dof, bnodeflag, lnodeflag;
 double lval;
 /*----------------------------------------------------------------------*/
@@ -359,12 +359,10 @@ void og_write_eledens(int ndataofmesh)
   static  double *sveh;   /* necsessary for allreducing element values  */
 #endif
 /*----------------------------------------------------------------------*/
-  SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
   PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
   INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
   FIELD        *actfield;         /* pointer to the structural FIELD  */
   ELEMENT      *actele;           /* active element                   */
-  NODE         *actnode;          /* active node                      */
 /*----------------------------------------------------------------------*/
 FILE    *fp_out;
 FILE    *fp_tmp;

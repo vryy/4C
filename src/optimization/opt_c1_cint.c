@@ -46,13 +46,12 @@ void c1_oint(
              int        init     /* ==2 calc.strain energy */
              )
 {
-int                 i,j,k;            /* some loopers */
+int                 i,j;              /* some loopers */
 int                 nir,nis,nit;      /* num GP in r/s/t direction */
 int                 lr, ls, lt;       /* loopers over GP */
 int                 ip;
 int                 iel;              /* numnp to this element */
 int                 nd;
-int                 dof;
 int                 istore = 0;/* controls storing of new stresses to wa */
 int                 newval = 0;/* controls evaluation of new stresses    */
 const int           numdf =3;
@@ -120,7 +119,7 @@ if (init==1)
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
-c1intg(ele,data,1);
+c1intg(ele,data);
 /*------------------------------------------- integration parameters ---*/
   nir     = ele->e.c1->nGP[0];
   nis     = ele->e.c1->nGP[1];
@@ -310,7 +309,7 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------- get actual strains -> strain ---*/
       c1_eps (disd,strain,iform);
       /*------------------------------------------ call material law ---*/
-      c1_call_mat(ele, mat,bop,xjm,ip,F,strain,D,disd,g,gi,istore,newval);
+      c1_call_mat(ele, mat,ip,F,strain,D,disd,g,gi,istore,newval);
       /*------------------------------------ calculate strain energy ---*/
       if (init==2)
       {
@@ -324,7 +323,7 @@ for (lr=0; lr<nir; lr++)
       if(init==4)
       {
         for (i=0;i<6;i++) DF[i] = 0.;
-        c1_call_matd(ele, mat,bop,xjm,ip,DF,strain,DD,disd,g,gi,istore,newval);
+        c1_call_matd(ele, mat,DF,strain,DD,g);
         dste -= (DF[0]*strain[0] + DF[1]*strain[1] + DF[2]*strain[2] +
                  DF[3]*strain[3] + DF[4]*strain[4] + DF[5]*strain[5])
                  *fac*0.5;

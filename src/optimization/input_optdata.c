@@ -218,8 +218,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   {
     opt->numvar = iloop; /* store n.of.variables    */
     /* allocate memory */
-    opt->ovar = (OBTV*)calloc(opt->numvar,sizeof(OBTV));
-    if (opt->ovar==NULL) dserror("Allocation for OPT.VARIABLES failed");
+    opt->ovar = (OBTV*)CCACALLOC(opt->numvar,sizeof(OBTV));
     
     for (i=0;i<iloop;i++)
     {
@@ -247,8 +246,7 @@ OC_ECO 1                  : global equality constraints
     opt->numeqc = iloop;           /* store  global equality constraints */
     
     /* allocate memory */
-    opt->oeqc = (OEQC*)calloc(opt->numeqc,sizeof(OEQC));
-    if (opt->oeqc==NULL) dserror("Allocation for GLOB.EQU.CON. failed");
+    opt->oeqc = (OEQC*)CCACALLOC(opt->numeqc,sizeof(OEQC));
     
     for (i=0; i<iloop; i++)
     {

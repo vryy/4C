@@ -86,7 +86,6 @@ extern struct _FIELD      *field;
 void func(int *m, double *f, double *g)
 {
 /*----------------------------------------------------------------------*/
-int i, j, k;
 int indcon;
 /*----------------------------------------------------------------------*/
 double objective;
@@ -95,6 +94,8 @@ double constraint;
 #ifdef DEBUG 
 dstrc_enter("func");
 #endif
+/*----------------------------------------------------------------------*/
+(*m)=0;
 /*---------------- update all arrays with actual values of variables ---*/
   optupd(0);
 /*-------------------------------------------------- linear analysis ---*/
@@ -129,7 +130,6 @@ return;
 void opteqc(double *constraint,int init)
 {
 /*----------------------------------------------------------------------*/
-int i, j, k;
 int ione=1;
 static double refvolu; /* reference or initial volume */
 static double refmass; /* reference or initial mass   */
@@ -204,6 +204,7 @@ dstrc_enter("opteqc");
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
+    container.actndis      = 0;            /* only one discretisation */
     
     container.getvalue     = 0.;
     
@@ -246,8 +247,7 @@ return;
 void optupd(int init)
 {
 /*----------------------------------------------------------------------*/
-  int i, j, k, nel, cc;
-  double dens;
+  int i, j, cc;
   static  double *svec;   /* vector with values for element level */
 /*----------------------------------------------------------------------*/
 int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
@@ -310,6 +310,7 @@ dstrc_enter("optupd");
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
+    container.actndis      = 0;            /* only one discretisation */
     
     container.getvalue      = 0.;
     container.getvector     = svec;
@@ -361,11 +362,8 @@ void updvar(void)
 {
 /*----------------------------------------------------------------------*/
 OSNLP *nlp;
-OSFSD *fsd;
 /*----------------------------------------------------------------------*/
-int i, j, k, li, cc, vpos, lio;
 int iscvar;
-double va,varx0, vara, rsca;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("updvar");
@@ -392,7 +390,6 @@ return;
 void optobj(double *objective)
 {
 /*----------------------------------------------------------------------*/
-int i, j, k;
 int ione=1;
 double tmpobj;
 /*----------------------------------------------------------------------*/
@@ -439,6 +436,7 @@ dstrc_enter("optobj");
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
+    container.actndis      = 0;            /* only one discretisation */
     
     container.getvalue     = 0.;
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);

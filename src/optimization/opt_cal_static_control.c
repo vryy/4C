@@ -200,6 +200,7 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
   *action = calc_struct_linstiff;
   container.dvec         = NULL;
   container.dirich       = NULL;
+  container.actndis      = 0;
   container.global_numeq = 0;
   container.kstep        = 0;
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
@@ -208,7 +209,9 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
 /*-------------------------- the approbiate action is set inside calrhs */
 if(stalact==calsta_init_solve || stalact==calsta_solve)
 {
-  container.kstep = 0;
+  *action = calc_struct_eleload; 
+  container.kstep   = 0;
+  container.inherit = 1;
   calrhs(actfield,actsolv,actpart,actintra,actsysarray,
        &(actsolv->rhs[actsysarray]),action,&container);
 }

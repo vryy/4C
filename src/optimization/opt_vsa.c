@@ -74,7 +74,7 @@ defined in opt_cal_main.c
 void optvsa(double *grdobj, double *grdcon,int init)
 {
 /*----------------------------------------------------------------------*/
-  int    i, j, iloc, cc;               /* a counter */
+  int    i, iloc, cc;               /* a counter */
   static  double *svec;   /* vector with sensitivities on element level */
   static  double *sveh;   /* necsessary for allreducing element values  */
 /*----------------------------------------------------------------------*/
@@ -108,6 +108,7 @@ void optvsa(double *grdobj, double *grdcon,int init)
   #endif
   container.fieldtyp  = actfield->fieldtyp;
   container.isdyn = 0;            /* static calculation */
+  container.actndis      = 1;
 /*--------------------------- initialize evaluation of sensitivities ---*/
   if(init==1)
   {
@@ -128,7 +129,7 @@ void optvsa(double *grdobj, double *grdcon,int init)
   container.dirich       = NULL;
   container.global_numeq = 0;
   container.kstep        = 0;
-  
+  container.actndis      = 0;
   container.getvalue      = 0.;
   container.getvector     = svec;
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
