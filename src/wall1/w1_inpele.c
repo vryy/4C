@@ -119,6 +119,17 @@ if (ierr)
    if (strncmp(buffer,"RS",2)==0)       ele->e.w1->stresstyp = w1_rs;
 }
 if (ierr!=1) ele->e.w1->stresstyp = w1_xy;
+/*---------------------------------------------------- read SSI couptyp */
+#ifdef D_SSI
+frchar("SSI_COUPTYP",buffer,&ierr);
+if (ierr)
+{
+   if (strncmp(buffer,"Master",6)==0) ele->e.w1->ssi_couptyp = ssi_master;
+   if (strncmp(buffer,"Slave",5)==0)  ele->e.w1->ssi_couptyp = ssi_slave;
+}
+else
+   ele->e.w1->ssi_couptyp = ssi_none;
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
