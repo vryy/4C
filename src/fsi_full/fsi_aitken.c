@@ -14,6 +14,12 @@
 static DOUBLE done = 1.0E20;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB       genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
@@ -44,7 +50,8 @@ see also Dissertation of D.P.MOK, chapter 6.4
 void fsi_aitken(  
                  FIELD          *structfield, 
                  FSI_DYNAMIC    *fsidyn, 
-		 INT             itnum
+		 INT             itnum,
+                 INT             init
 	       )
 {
 INT            i,j;           /* some counters                          */
@@ -66,56 +73,55 @@ NODE          *actsnode;      /* actual structural node                 */
 dstrc_enter("fsi_aitken");
 #endif
 
-if (itnum==0)
+switch (init)
 {
-   if (fsidyn->step==1)   
-   { 
-      nu          = ZERO; 
-      numnp_total = structfield->dis[0].numnp;
-      sid         = fsidyn->sid.a.iv;
-      numdf_total = fsidyn->sid.fdim;
-      del         = amdef("del",&del_a,numdf_total,1,"DV");
-      aminit(&del_a,&done);
-   }
-   else 
+case 0: /* initialisation */
+   if (genprob.restart==0)
+      nu       = ZERO;
+   else      
+      nu       = ONE - fsidyn->relax; 
+   numnp_total = structfield->dis[0].numnp;
+   sid         = fsidyn->sid.a.iv;
+   numdf_total = fsidyn->sid.fdim;
+   del         = amdef("del",&del_a,numdf_total,1,"DV");
+break;
+case 1: /* calculation */
+   if (itnum==0)
       aminit(&del_a,&done);  
-}
+   /*-------------------- the solution history sol_mf of the structfield:
+   - sol_mf[0][j] holds the latest struct-displacements
+   - sol_mf[1][j] holds the (relaxed) displacements of the last iteration step
 
-/*----------------------- the solution history sol_mf of the structfield:
-- sol_mf[0][j] holds the latest struct-displacements
-- sol_mf[1][j] holds the (relaxed) displacements of the last iteration step
-
-/*---------------------------------------------------------- loop nodes */
-for (i=0;i<numnp_total;i++)
-{
-   actsnode  = &(structfield->dis[0].node[i]);
-   numdf = actsnode->numdf; 
-   sol_mf = actsnode->sol_mf.a.da;
-   /*--------------------------------- loop dofs and check for coupling */
-   for (j=0;j<numdf;j++)
+   /*------------------------------------------------------- loop nodes */
+   for (i=0;i<numnp_total;i++)
    {
-      dof = actsnode->dof[j];      
-      dsassert(dof<numdf_total,"dofnumber not valid!\n");
-      if (sid[dof]==0) continue;
-      del2     = del[dof]; 
-      del[dof] = sol_mf[1][j] - sol_mf[0][j];
-      del2     = del2 - del[dof];
-      top     += del2*del[dof];
-      den     += del2*del2;        
-   } /* end of loop over dofs */   
-} /* end of loop over nodes */
+      actsnode  = &(structfield->dis[0].node[i]);
+      numdf = actsnode->numdf; 
+      sol_mf = actsnode->sol_mf.a.da;
+      /*------------------------------ loop dofs and check for coupling */
+      for (j=0;j<numdf;j++)
+      {
+         dof = actsnode->dof[j];      
+         dsassert(dof<numdf_total,"dofnumber not valid!\n");
+         if (sid[dof]==0) continue;
+         del2     = del[dof]; 
+         del[dof] = sol_mf[1][j] - sol_mf[0][j];
+         del2     = del2 - del[dof];
+         top     += del2*del[dof];
+         den     += del2*del2;        
+      } /* end of loop over dofs */   
+   } /* end of loop over nodes */
 
-nu = nu + (nu - ONE)*top/den;
+   nu = nu + (nu - ONE)*top/den;
 
-/*---------------------------------------------------------- finalising */
-fsidyn->relax = ONE - nu;
-/*------------------------------------------------- output to the screen */
-if (par.myrank==0)
-{
-printf("\n");
-printf("AITKEN ITERATION: RELAX = %.5lf\n",fsidyn->relax);
-printf("\n");
+   /*------------------------------------------------------- finalising */
+   fsidyn->relax = ONE - nu;
+   /*---------------------------------------------- output to the screen */
+   if (par.myrank==0)
+   printf("\nAITKEN ITERATION: RELAX = %.5lf\n\n",fsidyn->relax);
+break;
 }
+
 
 #ifdef DEBUG 
 dstrc_exit();
