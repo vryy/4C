@@ -29,9 +29,8 @@
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
 #
 # 
-#PFL	   =  -DAZUSA -DSIXTYFOUR -DPARALLEL -DD_SHELL8 -DD_BRICK1 -DD_FLUID \
-#	       -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1 -DSPOOLES_PACKAGE
-PFL	  =  -DAZUSA -DSIXTYFOUR -DD_SHELL8 -DPARALLEL -DSPOOLES_PACKAGE
+PFL	   =  -DAZUSA -DSIXTYFOUR -DPARALLEL -DD_SHELL8 -DD_BRICK1 -DD_FLUID \
+	      -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1 -DSPOOLES_PACKAGE
 #
 # set correct HOMEDIR to the directory where you placed ccarat 
 #place the com director from lib_azusa.tar.gz into your home
