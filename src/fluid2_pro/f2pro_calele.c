@@ -105,7 +105,7 @@ static DOUBLE  *edforce;       /* pointer to RHS due to dirichl. conditions  */
 DOUBLE  dirich[MAXDOFPERELE];  /* dirichlet values of act. ele               */
 INT dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele               */ 
 INT i,j,iel;
-iel=elev->numnp;
+
 #ifdef DEBUG 
 dstrc_enter("f2pro_calele");
 #endif
@@ -136,6 +136,8 @@ if (init==1) /* allocate working arrays and set pointers */
    edforce = edforce_global->a.dv;
    goto end;
 } /* endif (init==1) */
+
+iel=elev->numnp;
 /*------------------------------------------------ initialise with ZERO */
 amzero(estif_global);
 amzero(emass_global);
