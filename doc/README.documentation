@@ -65,7 +65,9 @@ einen Fehler gemacht!
   kann es html lesen, d.h. man kann html-tags verwenden, um seine
   Dokumentation zu gestalten
   
-
+- ueber die PREDEFINED option in documentation.conf koennen aehnlich der 
+  bedingten Kompilierung gezielt Programmteile in die Dokumentation aufgenommen
+  bzw. weggelassen werden. 
 
 
 ===========FILES=============  
