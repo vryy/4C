@@ -44,6 +44,8 @@ DOUBLE         min_stiff;
 DOUBLE         max_stiff;
 
 INT            pos;          /*<! sol_increment[pos] contains dbc in ale */
+INT            coupl_typ;    /*!< conforming or non-conf. discretization */
+DOUBLE         relax_param;  /*!< the relaxation parameter omega */
 
 #ifdef D_FLUID               /* ab hier fuer fluid */
 DOUBLE        *ftimerhs;
