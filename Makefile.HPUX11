@@ -36,6 +36,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/map_node_find.o \
                 ${SRC}/global_full/global_mask_matrices.o \
                 ${SRC}/global_full/global_mask_msr.o \
+                ${SRC}/global_full/global_mask_vbr.o \
                 ${SRC}/global_full/global_mask_mds.o \
                 ${SRC}/global_full/global_dofconnect.o \
                 ${SRC}/global_full/global_mask_parcsr.o \
@@ -92,6 +93,7 @@ OBJS4	      = ${SRC}/input_full/input_control_global.o \
 OBJS5	      = ${SRC}/fluid3/f3_inpele.o 
 #                shell8
 OBJS6	      = ${SRC}/shell8/s8_main.o \
+                ${SRC}/shell8/s8_restart.o \
                 ${SRC}/shell8/s8_inpele.o \
                 ${SRC}/shell8/s8_intg.o \
                 ${SRC}/shell8/s8_jaco.o \
@@ -192,11 +194,11 @@ OBJS15        = ${SRC}/fluid_full/cal_fluid.o \
                 ${SRC}/fluid_full/fluid_service.o \
 		${SRC}/fluid_full/inp_fluid_start_data.o
 #  fortran sequentiell              
-#OBJS13        = ${SRC}/fortran/colsol.o
+OBJS13        = ${SRC}/fortran/colsol.o
 #  fortran parallel             
-OBJS13         = ${SRC}/fortran/mumps_interface.o \
-                 ${SRC}/fortran/bi_f77_get_constants.o \
-                 ${SRC}/fortran/colsol.o
+#OBJS13         = ${SRC}/fortran/mumps_interface.o \
+#                 ${SRC}/fortran/bi_f77_get_constants.o \
+#                 ${SRC}/fortran/colsol.o
 #                
 #
 #

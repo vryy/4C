@@ -34,13 +34,13 @@ F77      = g77
 LD       = $(CC)
 RM	 = /bin/rm -f
 # this is debug
-#CFLAGS  = -v -g -ansi $(PFL) -DDEBUG
-#FFLAGS  = -g
-#PROGRAM  = cca_seq_debglinux.exe
+CFLAGS  = -v -g -ansi $(PFL) -DDEBUG
+FFLAGS  = -g
+PROGRAM  = cca_seq_debglinux.exe
 # this is fast 
-CFLAGS   = -v -O -ansi $(PFL)
-FFLAGS   = -O
-PROGRAM  = cca_seq_fastlinux.exe
+#CFLAGS   = -v -O -ansi $(PFL)
+#FFLAGS   = -O
+#PROGRAM  = cca_seq_fastlinux.exe
 #
 LDFLAGS	 = -Xlinker -defsym -Xlinker MAIN__=main
 OPENGL   = /opt/graphics/OpenGL
@@ -75,6 +75,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/map_node_find.o \
                 ${SRC}/global_full/global_mask_matrices.o \
                 ${SRC}/global_full/global_mask_msr.o \
+                ${SRC}/global_full/global_mask_vbr.o \
                 ${SRC}/global_full/global_mask_mds.o \
                 ${SRC}/global_full/global_dofconnect.o \
                 ${SRC}/global_full/global_mask_parcsr.o \
@@ -131,6 +132,7 @@ OBJS4	      = ${SRC}/input_full/input_control_global.o \
 OBJS5	      = ${SRC}/fluid3/f3_inpele.o 
 #                shell8
 OBJS6	      = ${SRC}/shell8/s8_main.o \
+                ${SRC}/shell8/s8_restart.o \
                 ${SRC}/shell8/s8_inpele.o \
                 ${SRC}/shell8/s8_intg.o \
                 ${SRC}/shell8/s8_jaco.o \

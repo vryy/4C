@@ -53,7 +53,7 @@ PROGRAM_NAME  = cca_seq_10.20.exe
 FXX   = f77
 CCX   = cc
 LDX   = cc
-PFL   = -DD_SHELL8 -DD_FLUID2 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE
+PFL   = -DD_SHELL8 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE
 AZTEC = -laztec_seriell21
 #--------------------------------------------------------------------
 #
@@ -63,8 +63,8 @@ AZTEC = -laztec_seriell21
 #FXX   = /opt/mpi/bin/mpif77
 #CCX   = /opt/mpi/bin/mpicc
 #LDX   = /opt/mpi/bin/mpicc
-#PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-#        -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
+#PFL   = -DPARALLEL  -DD_FLUID2  -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+#        -DAZTEC_PACKAGE 
 #AZTEC = -laztec_par21
 #
 #--------------------------------------------------------------------
@@ -77,11 +77,11 @@ RM	 = /bin/rm -f
 # switch between fast and debug compilation by uncommenting 
 # the approbiate flags:
 #------------------------------------------------ this is debug-32bit
-#CFLAGS        = -D__HP__ +w1 +e -Aa -Ae -v -g ${PFL} -DDEBUG
-#FFLAGS        = -g -I/opt/mpi/include/
+CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
+FFLAGS        = -g -I/opt/mpi/include/
 #------------------------------------------------- this is fast-32bit
-CFLAGS       = -D__HP__  +e -Ae +w1 -v -OAa +Onolimit ${PFL}
-FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
+#CFLAGS       = -D__HP__  +e -Ae +w1  -OAa +Onolimit ${PFL}
+#FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
 INCLUDES = -I/opt/mpi/include/ \
@@ -153,6 +153,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/map_node_find.o \
                 ${SRC}/global_full/global_mask_matrices.o \
                 ${SRC}/global_full/global_mask_msr.o \
+                ${SRC}/global_full/global_mask_vbr.o \
                 ${SRC}/global_full/global_mask_mds.o \
                 ${SRC}/global_full/global_dofconnect.o \
                 ${SRC}/global_full/global_mask_parcsr.o \
@@ -209,6 +210,7 @@ OBJS4	      = ${SRC}/input_full/input_control_global.o \
 OBJS5	      = ${SRC}/fluid3/f3_inpele.o 
 #                shell8
 OBJS6	      = ${SRC}/shell8/s8_main.o \
+                ${SRC}/shell8/s8_restart.o \
                 ${SRC}/shell8/s8_inpele.o \
                 ${SRC}/shell8/s8_intg.o \
                 ${SRC}/shell8/s8_jaco.o \
