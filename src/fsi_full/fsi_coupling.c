@@ -17,6 +17,8 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+#include "../fluid2/fluid2.h"
+#include "../fluid3/fluid3.h"
 #include "fsi_prototypes.h"    
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -165,9 +167,13 @@ INT     numaf,numsf,numff;
 INT     i,j;                                 /* simply some counters    */
 INT     ierr;                                /* flag                    */
 INT     sfound,afound;                       /* flag                    */          
+INT     is_ale;
 DOUBLE  tol=EPS8;                            /* tolerance for node dist */
 NODE   *actfnode, *actsnode, *actanode;      /* actual nodes            */
 GNODE  *actfgnode,*actsgnode,*actagnode;     /* actual gnodes           */
+ELEMENT *actele;
+ARRAY   aindex_a, sindex_a;
+INT    *aindex, *sindex;
 
 #ifdef DEBUG 
 dstrc_enter("fsi_initcoupling");
@@ -253,31 +259,65 @@ for (i=0;i<numanp;i++)
 
 /* find fsi coupled nodes and set ptrs to the corresponding nodes of 
    the other fields --------------------------------------------------*/
+
+/*------------------------------- create and initialsise index arrays */
+aindex = amdef("aindex",&aindex_a,numanp,1,"IV");
+sindex = amdef("sindex",&sindex_a,numsnp,1,"IV");
+for (i=0;i<numanp;i++) aindex[i]=1;
+for (i=0;i<numsnp;i++) sindex[i]=1;
+
 /*------------------------------------------------- loop fluid nodes  */    
 for (i=0;i<numfnp;i++)
 {
    actfnode  = &(fluidfield->dis[0].node[i]);
    actfgnode = actfnode->gnode;
+   is_ale=0;
+   for (j=0;j<actfnode->numele;j++)
+   {
+      actele= actfnode->element[j];
+      switch (actele->eltyp)
+      {
+#ifdef D_FLUID2
+      case el_fluid2:
+         if (actele->e.f2->is_ale>0) is_ale++;
+      break;
+#endif
+#ifdef D_FLUID3      
+      case el_fluid3:
+         if (actele->e.f3->is_ale>0) is_ale++;
+      break;
+#endif      
+      default:
+         dserror("eltyp unknow\n");
+      }
+      if (is_ale>0) break;
+   }
    sfound=0;
    afound=0;
-   /*------------------ loop struct nodes and find corresponding node */
+   /*----- loop struct nodes at interface and find corresponding node */
+   if (actfgnode->fsicouple!=NULL)
    for (j=0;j<numsnp;j++)
    {
+      if (sindex[j]==0) continue;
       actsnode   = &(structfield->dis[0].node[j]);
       cheque_distance(&(actfnode->x[0]),&(actsnode->x[0]),tol,&ierr);
       if(ierr==0) continue;
       sfound++;
       actsgnode = actsnode->gnode;
+      sindex[j]=0;
       break;      
    } /* end of loop over structnodes */  
-   /*--------------------- loop ale nodes and find corresponding node */
+   /*--------------------- loop ale nodes and find corresponding node */   
+   if (is_ale>0)
    for (j=0;j<numanp;j++)
    {
+      if (aindex[j]==0) continue;
       actanode  = &(alefield->dis[0].node[j]);
       cheque_distance(&(actfnode->x[0]),&(actanode->x[0]),tol,&ierr);
       if(ierr==0) continue;
       afound++;
       actagnode = actanode->gnode;
+      aindex[j]=0;
       break;          
    } /* end of loop over ale nodes */      
 
@@ -292,6 +332,11 @@ for (i=0;i<numfnp;i++)
    if(afound>0)   actagnode->mfcpnode[numff]=actfnode;
    if(afound>0)   actagnode->mfcpnode[numaf]=actanode;  	   
 }/* end of loop over fluidnodes */
+
+amdel(&aindex_a);
+amdel(&sindex_a);
+
+if (genprob.visual>0) goto end;
 
 /*------------------------------------------------ plausibility checks */
 for (i=0;i<numfnp;i++)
@@ -333,10 +378,11 @@ for (i=0;i<numanp;i++)
    for (j=2;j<MAXDOFPERNODE;j++)
    dsassert(actagnode->dirich->dirich_onoff.a.iv[j]==0,"wrong onoff() at ale node!\n");       
 }
+
 /*------------------------------------------------ print out coupling */
-if (genprob.visual==0)
 out_fsi(fluidfield);
 
+end:
 /*--------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
