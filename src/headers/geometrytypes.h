@@ -62,7 +62,15 @@ typedef struct _ELEMENT
 
      enum _ELEMENT_TYP          eltyp;          /* my element type */
      enum _DIS_TYP              distyp;         /* my actual discretization type */
-                                                 
+
+     /* for faster assembling */
+     INT                        nd;             /* size of estiff */
+     INT                       *locm;
+     INT                      **index;
+#ifdef PARALLEL
+     INT                       *owner;
+#endif
+
      union                                      /* union pointer to elementformulation */
      {
      struct _SHELL9     *s9;                    /* shell9 element */
