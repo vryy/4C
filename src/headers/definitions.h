@@ -234,6 +234,12 @@ static INT iminarg1,iminarg2;
  | maximum numberof fields                                              |
  *----------------------------------------------------------------------*/
 #define MAXTIMECURVE         (5)
+
+/*----------------------------------------------------------------------*
+ | maximum numberof restart records per element in dynamic and nonlinear|
+ | static restarting from and to pss file
+ *----------------------------------------------------------------------*/
+#define MAXRECORDPERELE  (5)
 /*----------------------------------------------------------------------*
  | numbers                                                              |
  *----------------------------------------------------------------------*/
