@@ -164,9 +164,11 @@ return;
  | int    arrayfrom (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
+ |                                           3 = sol_mf                 |
  | int    arrayto   (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
+ |                                           3 = sol_mf                 |
  | int    from    (i) row in ARRAY sol to be set to zero                | 
  *----------------------------------------------------------------------*/
 void solserv_sol_add(FIELD *actfield, int disnum, int arrayfrom, int arrayto, 
