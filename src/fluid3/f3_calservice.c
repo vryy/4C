@@ -14,6 +14,7 @@ Maintainer: Steffen Genkinger
 #ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
+#include "fluid3.h"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -28,12 +29,6 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
 
 static INT PREDOF = 3;
 static FLUID_DYNAMIC   *fdyn;
@@ -49,29 +44,35 @@ NOTE: in contradiction to the old programm the kinematic pressure
       transformation in every time step 			 
 				      
 </pre>
-\param   *ele      ELEMENT	   (i)    actual element
-\param  **eveln    DOUBLE	   (o)    ele vels at time n
-\param  **evelng   DOUBLE	   (o)    ele vels at time n+g
-\param   *epren    DOUBLE	   (o)    ele pres at time n
-\param   *edeadn   DOUBLE          (o)    ele dead load at n (selfweight)
-\param   *edeadng  DOUBLE          (o)    ele dead load at n+g (selfweight)
-\param   *hasext   INT             (o)    flag for external loads
+\param   *ele      ELEMENT          (i)    actual element
+\param  **xyze     DOUBLE           (o)    nodal coordinates
+\param  **eveln    DOUBLE           (o)    ele vels at time n
+\param  **evelng   DOUBLE           (o)    ele vels at time n+g
+\param   *epren    DOUBLE           (o)    ele pres at time n
+\param   *edeadn   DOUBLE           (o)    ele dead load at n (selfweight)
+\param   *edeadng  DOUBLE           (o)    ele dead load at n+g (selfweight)
+\param   *hasext   INT              (o)    flag for external loads
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calset( 
-	        ELEMENT         *ele,
-                DOUBLE         **eveln,
-	        DOUBLE         **evelng,
-	        DOUBLE          *epren,
-		DOUBLE          *edeadn,
-		DOUBLE          *edeadng,
-		INT             *hasext		
+               ELEMENT         *ele,
+               DOUBLE         **xyze,
+               DOUBLE         **eveln,
+               DOUBLE         **evelng,
+               DOUBLE          *epren,
+               DOUBLE          *edeadn,
+               DOUBLE          *edeadng,
+               INT             *hasext		
 	      )
 {
 INT    i;
-INT    actmat  ;    /* material number of the element                   */
-DOUBLE dens;        /* density                                          */
+INT    actcurve;    /* actual time curve                                */
+INT    ilocsys;     /* index of locsys                                  */
+DOUBLE acttime;
+DOUBLE acttimefac;  /* time factor from actual curve                    */
+DOUBLE acttimefacn; /* time factor at time (n)                          */
+DOUBLE val[MAXDOFPERNODE];
 NODE  *actnode;     /* actual node                                      */
 GVOL  *actgvol;
 
@@ -80,6 +81,16 @@ dstrc_enter("f3_calset");
 #endif
 
 fdyn    = alldyn[genprob.numff].fdyn;
+
+/*-------------------------------------------- set element coordinates */
+for(i=0;i<ele->numnp;i++)
+{
+   xyze[0][i]=ele->node[i]->x[0];
+   xyze[1][i]=ele->node[i]->x[1];
+   xyze[2][i]=ele->node[i]->x[2];
+}
+
+
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
@@ -108,8 +119,8 @@ if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
          actnode=ele->node[i];
 /*------------------------------------- set element velocities at (n) */	 
          eveln[0][i]=actnode->sol_increment.a.da[1][0];
-	 eveln[1][i]=actnode->sol_increment.a.da[1][1];    
-	 eveln[2][i]=actnode->sol_increment.a.da[1][2]; 
+         eveln[1][i]=actnode->sol_increment.a.da[1][1];    
+         eveln[2][i]=actnode->sol_increment.a.da[1][2]; 
 /*------------------------------------------------- set pressures (n) */   
          epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
       } /* end of loop over nodes */
@@ -134,24 +145,74 @@ if(fdyn->nim!=0) /* -> computation of mass rhs "on" ------------------
 actgvol = ele->g.gvol;
 if (actgvol->neum!=NULL)
 {
-   actmat=ele->mat-1;
-   dens = mat[actmat].m.fluid->density;
+   actcurve = actgvol->neum->curve-1;
+   if (actcurve<0) 
+   {
+      acttimefac =ONE;
+      acttimefacn=ONE;
+   } 
+   else     
+   {
+      acttime = fdyn->acttime;
+      dyn_facfromcurve(actcurve,acttime,&acttimefac) ;    
+      acttime = fdyn->acttime-fdyn->dta;
+      dyn_facfromcurve(actcurve,acttime,&acttimefacn) ;        
+   }
    for (i=0;i<3;i++)     
    {
       if (actgvol->neum->neum_onoff.a.iv[i]==0)
       {
          edeadn[i]  = ZERO;
-	 edeadng[i] = ZERO;
+         edeadng[i] = ZERO;
       }
       if (actgvol->neum->neum_type==neum_dead  &&
           actgvol->neum->neum_onoff.a.iv[i]!=0)
       {
-         edeadn[i]  = actgvol->neum->neum_val.a.dv[i]*dens;
-	 edeadng[i] = actgvol->neum->neum_val.a.dv[i]*dens;
-	 (*hasext)++;
+         edeadn[i]  = actgvol->neum->neum_val.a.dv[i]*acttimefacn;
+         edeadng[i] = actgvol->neum->neum_val.a.dv[i]*acttimefac;
+         (*hasext)++;
       }
    }
 }
+
+/*------------------------------------------- local co-ordinate system:
+  the values in sol_increment are given in the xyz* co-system, however
+  calculation is done in the XYZ co-system. So we have to tranform the
+  velocities from xyz* to XYZ */
+if (ele->locsys==locsys_yes)
+{
+   /*----------------------------------------------- loop element nodes */
+   for (i=0;i<ele->numnp;i++)
+   {
+      actnode=ele->node[i];
+      ilocsys=actnode->locsysId-1;
+      if(ilocsys>=0)
+      {
+         /*------------------- transform values at n+g from xyz* to XYZ */
+         val[0] = evelng[0][i];
+         val[1] = evelng[1][i];
+         val[2] = evelng[2][i];
+         locsys_trans_nodval(ele,&(val[0]),4,ilocsys,1);
+         evelng[0][i]=val[0];
+         evelng[1][i]=val[1];
+         evelng[2][i]=val[2];
+         /*-------------------------- transform values at n xyz* to XYZ */
+         if (fdyn->nif!=0)
+         {
+            val[0] = eveln[0][i];
+            val[1] = eveln[1][i];
+            val[2] = eveln[2][i];
+            locsys_trans_nodval(ele,&(val[0]),4,ilocsys,1);
+            eveln[0][i]=val[0];
+            eveln[1][i]=val[1];         
+            eveln[2][i]=val[2];         
+         }
+         if (fdyn->nim!=0)
+            dserror("no locsys for computaton with mass-rhs!\n");  
+      } /* endif (ilocsys>=0) */
+   } /* end loop over element nodes */
+} /* endif (ele->locsys==locsys_yes) */
+
 
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -161,38 +222,326 @@ dstrc_exit();
 return; 
 } /* end of f3_calset */
 
+/*!---------------------------------------------------------------------
+\brief set all arrays for element calculation
+
+<pre>                                                         genk 02/04
+
+get the element velocities and the pressure at different times 
+
+NOTE: in contradiction to the old programm the kinematic pressure
+      is stored in the solution history; so one can avoid the	 
+      transformation in every time step 			 
+				      
+</pre>
+\param   *ele       ELEMENT         (i)    actual element
+\param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
+\param  **eveln     DOUBLE          (o)    ele vels at time n
+\param  **evelng    DOUBLE          (o)    ele vels at time n+g
+\param  **ealecovn  DOUBLE          (o)    ALE-convective vels at time n
+\param  **ealecovng DOUBLE          (o)    ALE-convective vels at time n+g
+\param  **egridv    DOUBLE          (o)    element grid velocity
+\param   *epren     DOUBLE          (o)    ele pres at time n
+\param   *edeadn    DOUBLE          (o)    ele dead load at n (selfweight)
+\param   *edeadng   DOUBLE          (o)    ele dead load at n+g (selfweight)
+\param   *hasext    INT             (o)    flag for external loads
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_calseta( 
+                  ELEMENT         *ele,
+                  DOUBLE         **xyze,
+                  DOUBLE         **eveln,
+                  DOUBLE         **evelng,
+                  DOUBLE         **ealecovn,
+                  DOUBLE         **ealecovng,
+                  DOUBLE         **egridv,
+                  DOUBLE          *epren,
+                  DOUBLE          *edeadn,
+                  DOUBLE          *edeadng,
+                  INT             *hasext		
+               )
+{
+INT    i;
+INT    actcurve;    /* actual time curve                                */
+INT    ilocsys;     /* index of locdsys                                 */
+DOUBLE acttimefac;  /* time factor from actual curve                    */
+DOUBLE acttimefacn; /* time factor at time (n)                          */
+DOUBLE acttime;
+DOUBLE val[MAXDOFPERNODE];
+NODE  *actnode;     /* actual node                                      */
+GVOL  *actgvol;
+
+#ifdef DEBUG 
+dstrc_enter("f3_calseta");
+#endif
+
+fdyn    = alldyn[genprob.numff].fdyn;
+
+/*-------------------------------------------- set element coordinates */ 
+f3_alecoor(ele,xyze);
+
+
+/*---------------------------------------------------------------------*
+ | position of the different solutions:                                |
+ | node->sol_incement: solution history used for calculations          |
+ |       sol_increment[0][i]: solution at (n-1)                        |
+ |	 sol_increment[1][i]: solution at (n)                          |
+ |	 sol_increment[2][i]: solution at (n+g)                        |
+ |	 sol_increment[3][i]: solution at (n+1)                        |
+ *---------------------------------------------------------------------*/
+
+
+for(i=0;i<ele->numnp;i++) /* loop nodes */
+{
+   actnode=ele->node[i];
+/*----------------------------------- set element velocities (n+gamma) */      
+   evelng[0][i]   =actnode->sol_increment.a.da[3][0];
+   evelng[1][i]   =actnode->sol_increment.a.da[3][1]; 
+   evelng[2][i]   =actnode->sol_increment.a.da[3][2];
+   ealecovng[0][i]=actnode->sol_increment.a.da[6][0];
+   ealecovng[1][i]=actnode->sol_increment.a.da[6][1];
+   ealecovng[2][i]=actnode->sol_increment.a.da[6][2];
+   egridv[0][i]   =actnode->sol_increment.a.da[4][0];
+   egridv[1][i]   =actnode->sol_increment.a.da[4][1];	  
+   egridv[2][i]   =actnode->sol_increment.a.da[4][2];	  
+} /* end of loop over nodes */
+   
+
+if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
+                      -> velocities and pressure at (n) are needed ----*/
+{
+      for(i=0;i<ele->numnp;i++) /* loop nodes */
+      {
+         actnode=ele->node[i];
+/*------------------------------------- set element velocities at (n) */	 
+         eveln[0][i]   =actnode->sol_increment.a.da[1][0];
+         eveln[1][i]   =actnode->sol_increment.a.da[1][1];    
+         eveln[2][i]   =actnode->sol_increment.a.da[1][2]; 
+         ealecovn[0][i]=actnode->sol_increment.a.da[5][0];
+         ealecovn[1][i]=actnode->sol_increment.a.da[5][1];  
+         ealecovn[2][i]=actnode->sol_increment.a.da[5][2];  
+/*------------------------------------------------- set pressures (n) */   
+         epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
+      } /* end of loop over nodes */
+} /* endif (fdyn->nif!=0) */
+
+/*------------------------------------------------ check for dead load */
+actgvol = ele->g.gvol;
+if (actgvol->neum!=NULL)
+{
+   if (actgvol->neum->neum_type==neum_LAS)
+   {
+      actcurve = actgvol->neum->curve-1;
+      if (actcurve<0)
+         dserror("No Time curve given for neum_LAS!\n");
+      acttime = fdyn->acttime;
+      dyn_facfromcurve(actcurve,acttime,&acttimefac) ;    
+      acttime=fdyn->acttime-fdyn->dta;
+      dyn_facfromcurve(actcurve,acttime,&acttimefacn) ;    
+      edeadn[0]  = actgvol->neum->neum_val.a.dv[0]*acttimefacn;
+      edeadng[0] = actgvol->neum->neum_val.a.dv[0]*acttimefac;
+      edeadn[1]  = ZERO;
+      edeadng[1] = ZERO;
+      edeadn[2]  = actgvol->neum->neum_val.a.dv[2];
+      edeadng[2] = actgvol->neum->neum_val.a.dv[2];
+      (*hasext)++;
+   }
+   else
+   {
+      actcurve = actgvol->neum->curve-1;
+      if (actcurve<0) 
+      {
+         acttimefac =ONE;
+         acttimefacn=ONE;
+      }   
+      else     
+      {
+         acttime = fdyn->acttime;
+         dyn_facfromcurve(actcurve,acttime,&acttimefac) ;    
+         acttime = fdyn->acttime-fdyn->dta;
+         dyn_facfromcurve(actcurve,acttime,&acttimefacn) ;        
+      }
+      for (i=0;i<3;i++)     
+      {
+         if (actgvol->neum->neum_onoff.a.iv[i]==0)
+         {
+            edeadn[i]  = ZERO;
+            edeadng[i] = ZERO;
+         }
+         if (actgvol->neum->neum_type==neum_dead  &&
+             actgvol->neum->neum_onoff.a.iv[i]!=0)
+         {
+            edeadn[i]  = actgvol->neum->neum_val.a.dv[i]*acttimefacn;
+            edeadng[i] = actgvol->neum->neum_val.a.dv[i]*acttimefac;
+            (*hasext)++;
+         }
+      }
+   }
+}
+
+/*------------------------------------------- local co-ordinate system:
+  the values in sol_increment are given in the xyz* co-system, however
+  calculation is done in the XYZ co-system. So we have to tranform the
+  velocities from xyz* to XYZ 
+  THIS MAY BE FUCKIN' SLOW!!!                                
+
+   NOTE: the fluid velocities in sol_increment are given the alternative
+         xyz* co-system. However, grid velocity and ALE-conv. velocity
+         are given in the XYZ co-system.                                */
+if (ele->locsys==locsys_yes)
+{
+   /*----------------------------------------------- loop element nodes */
+   for (i=0;i<ele->numnp;i++)
+   {
+      actnode=ele->node[i];
+      ilocsys=actnode->locsysId-1;
+      if(ilocsys>=0)
+      {
+         /*----------------- transform velocity at n+g from xyz* to XYZ */
+         val[0] = evelng[0][i];
+         val[1] = evelng[1][i];
+         val[2] = evelng[2][i];
+         locsys_trans_nodval(ele,&(val[0]),4,ilocsys,1);
+         evelng[0][i]=val[0];
+         evelng[1][i]=val[1];
+         evelng[2][i]=val[2];
+         if(fdyn->nif!=0)         
+         {
+            /*--------------------- transform velocity at n xyz* to XYZ */
+            val[0] = eveln[0][i];
+            val[1] = eveln[1][i];
+            val[2] = eveln[2][i];
+            locsys_trans_nodval(ele,&(val[0]),4,ilocsys,1);
+            eveln[0][i]=val[0];
+            eveln[1][i]=val[1];         
+            eveln[2][i]=val[2];         
+         }
+         if (fdyn->nim!=0)
+            dserror("no locsys for computaton with mass-rhs!\n");  
+      } /* endif (ilocsys>=0) */
+   } /* end loop over element nodes */
+} /* endif (ele->locsys==locsys_yes) */
+
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_calseta */
+
+/*!--------------------------------------------------------------------- 
+\brief set element coordinates during ALE calculations
+
+<pre>                                                         genk 02/04
+
+   nodal coordinates of actual element are evaluated. since nodes at the
+   free surface have changing coordinates during the nonlin. iteration
+   one has to treat them separately.
+				      
+</pre>
+\param   *ele       ELEMENT         (i)    actual element
+\param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_alecoor( 
+                  ELEMENT         *ele,     
+                  DOUBLE         **xyze
+	       )
+{
+#ifdef D_FSI
+INT i,j;
+DOUBLE omt,theta;
+DOUBLE xy,xyn,xyng;
+DOUBLE dt;
+NODE  *actfnode;    /* actual fluid node                                */
+NODE  *actanode;    /* actual ale node                                  */
+GNODE *actfgnode;   /* actual fluid gnode                               */
+
+
+#ifdef DEBUG 
+dstrc_enter("f3_alecoor");
+#endif
+
+fdyn    = alldyn[genprob.numff].fdyn;
+theta = fdyn->theta;
+omt   = ONE-theta;
+dt = fdyn->dta;
+
+/*-------------------------------------------- set element coordinates */ 
+for(i=0;i<ele->numnp;i++)
+{
+   actfnode = ele->node[i];
+   actfgnode = actfnode->gnode;
+   actanode = actfgnode->mfcpnode[genprob.numaf];
+   if(actfnode->xfs==NULL) /* no free surface */
+   {
+      for (j=0;j<3;j++)
+      {
+         xy     = actfnode->x[j];
+         xyng   = xy + actanode->sol_mf.a.da[1][j];
+         xyn    = xy + actanode->sol_mf.a.da[0][j];
+         xyze[j][i] =  theta*(xyng)+omt*(xyn); 
+      }
+   }
+   else /* free surface */
+   {
+      for (j=0;j<3;j++)
+      {
+         xy     = actfnode->x[j];
+         xyn    = xy + actanode->sol_mf.a.da[0][j];
+         xyng   = actfnode->xfs[j];
+         xyze[j][i] =  theta*(xyng)+omt*(xyn); 
+      }
+   }  
+}
+
+#else
+dserror("FSI-functions not compiled in!\n");
+#endif
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_alecoor */
+
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate velocities at integration point
 
 <pre>                                                         genk 05/02
 				      
 </pre>
-\param   *velint   DOUBLE        (o)   velocities at integration point
+\param   *vecint   DOUBLE        (o)   vector at integration point
 \param   *funct    DOUBLE        (i)   shape functions
-\param  **evel     DOUBLE        (i)   velocites at element nodes
-\param    iel	   INT           (i)   number of nodes in this element
+\param  **ecel     DOUBLE        (i)   vector at element nodes
+\param    iel      INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_veli(
-             DOUBLE  *velint,    
+void f3_veci(
+             DOUBLE  *vecint,    
              DOUBLE  *funct,    
-	     DOUBLE **evel,     
-	     INT      iel       
-	    ) 
+             DOUBLE **evec,     
+             INT      iel       
+            ) 
 {
 INT     i,j;
 
 #ifdef DEBUG 
-dstrc_enter("f3_veli");
+dstrc_enter("f3_veci");
 #endif
 
 for (i=0;i<3;i++)
 {
-   velint[i]=ZERO;
+   vecint[i]=ZERO;
    for (j=0;j<iel;j++)
    {
-      velint[i] += funct[j]*evel[i][j];
+      vecint[i] += funct[j]*evec[i][j];
    } /* end of loop over j */
 } /* end of loop over i */
 
@@ -205,36 +554,43 @@ return;
 } /* end of f3_veli */
 
 /*!--------------------------------------------------------------------- 
-\brief routine to calculate pressure at integration point
+\brief routine to calculate velocities at integration point on edge
 
-<pre>                                                         genk 05/02
+<pre>                                                         genk 04/04
 				      
 </pre>
-\param  *preint    DOUBLE        (o)   pressure at integration point
-\param  *funct     DOUBLE        (i)   shape functions
-\param  *epre      DOUBLE        (i)   pressure at element nodes
-\param   iel	   INT           (i)   number of nodes in this element
+\param   *velint   DOUBLE        (o)   velocities at integration point
+\param   *funct    DOUBLE        (i)   shape functions
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    ngnode   INT           (i)   number of nodes on this edge
+\param   *iedgnod  INT           (i)   edge node numbers
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_prei(
-             DOUBLE  *preint,    
-             DOUBLE  *funct,    
-	     DOUBLE  *epre,     
-	     INT      iel       
-	    ) 
+void f3_edgeveli(
+                  DOUBLE  *velint,     
+                  DOUBLE  *funct,    
+                  DOUBLE **evel,     
+                  INT      ngnode,       
+                  INT     *iedgnod
+               )
 {
-INT     j;
+INT     i,j;
+INT     node;
 
 #ifdef DEBUG 
-dstrc_enter("f3_prei");
+dstrc_enter("f3_edgeveli");
 #endif
 
-*preint = ZERO;
-for (j=0;j<iel;j++)
+for (i=0;i<3;i++) /* loop directions i */
 {
-   *preint += funct[j] * epre[j];
-} /* end of loop over j */
+   velint[i]=ZERO; 
+   for (j=0;j<ngnode;j++) /* loop over all nodes j of the edge */
+   {
+      node=iedgnod[j];
+      velint[i] += funct[j]*evel[i][node];
+   } /* end loop over j */
+} /* end loop over i */
 
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -242,7 +598,86 @@ dstrc_exit();
 #endif
 
 return; 
+} /* end of f3_edgeveli */
+
+/*!--------------------------------------------------------------------- 
+\brief routine to calculate pressure at integration point
+
+<pre>                                                         genk 05/02
+				      
+</pre>
+\param  *funct     DOUBLE        (i)   shape functions
+\param  *epre      DOUBLE        (i)   pressure at element nodes
+\param   iel       INT           (i)   number of nodes in this element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+DOUBLE f3_scali(
+               DOUBLE  *funct,    
+               DOUBLE  *epre,     
+               INT      iel       
+            ) 
+{
+INT     j;
+DOUBLE scalint=ZERO;
+
+#ifdef DEBUG 
+dstrc_enter("f3_scali");
+#endif
+
+for (j=0;j<iel;j++)
+{
+   scalint += funct[j] * epre[j];
+} /* end of loop over j */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return (scalint); 
 } /* end of f3_prei */
+
+/*!--------------------------------------------------------------------- 
+\brief routine to calculate height function at integration point
+
+<pre>                                                         genk 05/03
+				      
+</pre>
+\param  *funct     DOUBLE        (i)   shape functions
+\param  *ephi      DOUBLE        (i)   nodal phi
+\param   iedgnod   INT           (i)   local node numbers of actual line
+\param   ngnode	   INT           (i)   number of nodes on actual line
+\return double                                                                       
+   
+------------------------------------------------------------------------*/
+DOUBLE f3_phii(  
+                  DOUBLE  *funct,    
+                  DOUBLE  *ephi,  
+                  INT     *iedgnod,   
+                  INT      ngnode       
+               )
+{
+INT     j;
+DOUBLE  phiint = ZERO;
+
+#ifdef DEBUG 
+dstrc_enter("f3_phii");
+#endif
+
+for (j=0;j<ngnode;j++)
+{
+   phiint += funct[j] * ephi[iedgnod[j]];
+}
+  
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return (phiint); 
+} /* end of f3_phii */
+
 
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate velocity derivatives at integration point
@@ -256,16 +691,16 @@ vderxy[0][2] = Ux,z
 \param  **vderxy   DOUBLE        (o)   velocity derivativs
 \param  **derxy    DOUBLE        (i)   globael derivatives
 \param  **evel     DOUBLE        (i)   velocites at element nodes
-\param    iel	   INT           (i)   number of nodes in this element
+\param    iel      INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_vder(
-             DOUBLE **vderxy,     
-             DOUBLE **derxy,    
-	     DOUBLE **evel,     
-	     INT      iel       
-	    ) 
+               DOUBLE **vderxy,     
+               DOUBLE **derxy,    
+               DOUBLE **evel,     
+               INT      iel       
+            ) 
 {
 INT     i,j;
 
@@ -310,16 +745,16 @@ w.r.t x/y/z are calculated
 \param  **vderxy2  DOUBLE        (o)   2nd velocity derivativs
 \param  **derxy2   DOUBLE        (i)   2nd global derivatives
 \param  **evel     DOUBLE        (i)   velocites at element nodes
-\param    iel	   INT           (i)   number of nodes in this element
+\param    iel      INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_vder2(
-             DOUBLE **vderxy2,   
-             DOUBLE **derxy2,   
-	     DOUBLE **evel,     
-	     INT      iel       
-	    ) 
+               DOUBLE **vderxy2,   
+               DOUBLE **derxy2,   
+               DOUBLE **evel,     
+               INT      iel       
+               ) 
 {
 INT     i,j;
 
@@ -359,16 +794,16 @@ In this routine derivatives of the pressure w.r.t x/y/z are calculated
 \param   *pderxy   DOUBLE        (o)   pressure derivativs
 \param  **derxy    DOUBLE        (i)   globael derivatives
 \param   *epre     DOUBLE        (i)   pressure at element nodes
-\param    iel	   INT           (i)   number of nodes in this element
+\param    iel      INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_pder(
-             DOUBLE  *pderxy,    
-             DOUBLE **derxy,    
-	     DOUBLE  *epre,     
-	     INT      iel       
-	    ) 
+               DOUBLE  *pderxy,    
+               DOUBLE **derxy,    
+               DOUBLE  *epre,     
+               INT      iel       
+            ) 
 {
 INT     i,j;
 
@@ -394,6 +829,54 @@ return;
 } /* end of f3_pder */
 
 /*!--------------------------------------------------------------------- 
+\brief routine to calculate height function derivatives at integration 
+       point
+
+<pre>                                                         genk 04/04
+
+In this routine derivative of the height function w.r.t x is calculated
+				      
+</pre>
+\param  **derxy      DOUBLE        (i)   globael derivatives
+\param   *ephi       DOUBLE        (i)   height funct at edge nodes
+\param    iel        INT           (i)   number of nodes in this element
+\param  *iedgnod     INT           (i)    edge node numbers
+\return void                           
+
+------------------------------------------------------------------------*/
+void f3_phider(
+                  DOUBLE  *phiderxy,
+                  DOUBLE **derxy,
+                  DOUBLE  *ephi,     
+                  INT      ngnode,        
+                  INT     *iedgnod
+	        ) 
+{
+INT    i,j;
+INT    node;
+
+#ifdef DEBUG 
+dstrc_enter("f3_phider");
+#endif
+
+phiderxy[0]=phiderxy[1]=ZERO;
+
+for (i=0;i<2;i++)
+{
+   for (j=0;j<ngnode;j++)
+   {
+      node=iedgnod[j];
+      phiderxy[i] += derxy[0][j]*ephi[node];
+   }
+}
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return; 
+} /* end of f3_phider */
+
+/*!--------------------------------------------------------------------- 
 \brief convective velocities 
 
 <pre>                                                         genk 05/02		 
@@ -411,10 +894,10 @@ integration point:
 
 ------------------------------------------------------------------------*/
 void f3_covi(
-             DOUBLE **vderxy,    
-             DOUBLE  *velint,   
-	     DOUBLE  *covint    
-	    ) 
+               DOUBLE **vderxy,    
+               DOUBLE  *velint,   
+               DOUBLE  *covint    
+            ) 
 {
 INT     i,j;      
 #ifdef DEBUG 
@@ -454,15 +937,15 @@ is not possible any more!!!!
 </pre>
 \param   *eforce   DOUBLE        (i/o) element force vector
 \param  **tmp      DOUBLE        (i)   working array
-\param    iel	   DOUBLE        (i)   number of nodes in this ele
+\param    iel      DOUBLE        (i)   number of nodes in this ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_permeforce(
-		   DOUBLE    *eforce,
-		   DOUBLE   **tmp,
-		   INT        iel		   		   
-	          ) 
+                  DOUBLE    *eforce,
+                  DOUBLE   **tmp,
+                  INT        iel		   		   
+                  ) 
 {
 INT i,irow;
 INT nvdof;      /* number of vel dofs                                   */
@@ -508,6 +991,91 @@ return;
 } /* end of f3_permeforce */
 
 /*!--------------------------------------------------------------------- 
+\brief permutation of element force vector for implicit free surface
+
+<pre>                                                         genk 02/04		 
+
+routine to rearrange the entries of the element force vector	  
+this is necessary since we would like to use the existing assembly
+routines for the RHS						  
+hence a splitting of vel- and pre dof in the element force vector 
+is not possible any more!!!!					  
+
+
+</pre>
+\param   *eforce   DOUBLE        (i/o) element force vector
+\param  **tmp      DOUBLE        (i)   working array
+\param   *ele      ELEMENT       (i)   actual element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_permeforce_ifs( 
+                        DOUBLE   *eforce,  
+                        DOUBLE  **tmp,    
+                        ELEMENT  *ele     
+	              ) 
+{
+INT i,irow;
+INT iel;
+INT nvdof;      /* number of vel dofs                                   */
+INT nvpdof;
+INT rdist;
+INT posr;
+
+#ifdef DEBUG 
+dstrc_enter("f3_permeforce_ifs");
+#endif
+
+/*----------------------------------------------------- set some values */
+iel    = ele->numnp;
+nvdof  = NUM_F3_VELDOF*iel;
+nvpdof = NUMDOF_FLUID3*iel;
+
+irow=0;
+rdist=nvdof;
+for(i=0;i<iel;i++)
+{
+   posr=NUM_F3_VELDOF*i;
+   switch(ele->node[i]->numdf)
+   {
+   case 4:
+      tmp[irow][0]   = eforce[posr];
+      tmp[irow+1][0] = eforce[posr+1];
+      tmp[irow+2][0] = eforce[posr+2];
+      tmp[irow+3][0] = eforce[posr+rdist];
+      irow+=4;
+      rdist-=2;
+   break;
+   case 7:
+      tmp[irow][0]   = eforce[posr];
+      tmp[irow+1][0] = eforce[posr+1];
+      tmp[irow+2][0] = eforce[posr+2];
+      tmp[irow+3][0] = eforce[posr+rdist];
+      tmp[irow+4][0] = eforce[posr+nvpdof];
+      tmp[irow+5][0] = eforce[posr+nvpdof+1];
+      tmp[irow+6][0] = eforce[posr+nvpdof+2];
+      irow+=7;
+      rdist-=2;
+   break;
+   }
+}
+
+/*------------------------------------------------- copy back to eforce */
+for (i=0;i<irow;i++)
+{
+   eforce[i] = tmp[i][0];
+}
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_permeforce_ifs */
+
+
+/*!--------------------------------------------------------------------- 
 \brief permutation of element stiffness matrix
 
 <pre>                                                         genk 05/02		 
@@ -534,10 +1102,10 @@ void f3_permestif(
 	          ) 
 {
 INT i,j,icol,irow;          /* simply some counters  	        	*/
-INT nvdof;                  /* number of vel dofs 			*/
-INT npdof;                  /* number of pre dofs 			*/
-INT totdof;                 /* total number of dofs			*/
-DOUBLE thsl;	            /* factor for LHS (THETA*DT)		*/
+INT nvdof;                  /* number of vel dofs                       */
+INT npdof;                  /* number of pre dofs                       */
+INT totdof;                 /* total number of dofs                     */
+DOUBLE thsl;	            /* factor for LHS (THETA*DT)                */
 
 #ifdef DEBUG 
 dstrc_enter("f3_permestif");
@@ -643,7 +1211,276 @@ dstrc_exit();
 return; 
 } /* end of f3_permestif */
 
+/*!--------------------------------------------------------------------- 
+\brief permutation of element stiffness matrix for implict free surface
+       (via local lagrange)
+       
+<pre>                                                         genk 01/03
+				
+routine to add galerkin and stabilisation parts of the elment	   
+stiffness matrix and to rearrange its entries!  		   
+this is necessary since we would like to use the existing assembly 
+routines for the stiffness matrix				   
+hence a splitting of vel- pre-  and grid/height function dofs is 
+not possible any more!!!!
 
+</pre>
+\param  **estif   DOUBLE            (i/o) ele stiffnes matrix
+\param  **emass   DOUBLE            (i)   ele mass matrix
+\param  **tmp     DOUBLE            (-)   working array		
+\param	 *ele     ELEMENT           (i)   actual element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_permestif_ifs(                  
+                        DOUBLE         **estif,   
+                        DOUBLE         **emass, 
+                        DOUBLE         **tmp,   
+                        ELEMENT         *ele
+                     ) 
+{
+INT    i,j,icol,irow;     /* simply some counters                       */
+INT    nvdof;             /* number of vel dofs                         */
+INT    rdist,cdist;
+INT    totdof;            /* total number of dofs                       */
+INT    iel;               /* actuel number of element nodes             */
+INT    nvpdof;            /* number of vel+pres dofs                    */
+INT    posc,posr;         /* positions in matrix                        */
+DOUBLE thsl;              /* factor for LHS (THETA*DT)                  */
+
+#ifdef DEBUG 
+dstrc_enter("f3_permestif_ifs");
+#endif
+
+/*----------------------------------------------------- set some values */
+fdyn    = alldyn[genprob.numff].fdyn;
+iel    = ele->numnp;
+nvdof  = NUM_F3_VELDOF*iel;
+nvpdof = NUMDOF_FLUID3*iel;
+thsl   = fdyn->thsl;
+
+switch (ele->e.f3->fs_on)
+{
+case 2:
+   totdof = (NUMDOF_FLUID3+NUM_F3_VELDOF)*iel;
+break;
+default:
+   dserror("FLUID3 element parameter fs_on out of range!\n");
+}
+
+/*--------------------------------------------- copy estif to tmp-array *
+                           and mutlitply stiffniss matrix with THETA*DT 
+                           and add mass matrix                          */
+for (i=0;i<totdof;i++)
+{
+   for (j=0;j<totdof;j++)
+   {
+      tmp[i][j] = estif[i][j] * thsl + emass[i][j];
+      estif[i][j]=ZERO;
+   } /* end of loop over j */
+} /* end of loop over i */
+
+/*--------------------------------------------------------------------- */
+icol=0;
+cdist=nvdof;
+for(i=0;i<iel;i++)
+{
+   irow=0;      
+   posc=NUM_F3_VELDOF*i;
+   rdist=nvdof;
+   switch(ele->node[i]->numdf)
+   {
+   case 4:
+      for (j=0;j<iel;j++)
+      {
+         posr=NUM_F3_VELDOF*j;
+         switch(ele->node[j]->numdf)
+         {
+         case 4:
+            estif[irow][icol]     = tmp[posr][posc]; 
+            estif[irow][icol+1]   = tmp[posr][posc+1];
+            estif[irow][icol+2]   = tmp[posr][posc+2];
+            estif[irow][icol+3]   = tmp[posr][posc+cdist];
+
+            estif[irow+1][icol]   = tmp[posr+1][posc];	 
+            estif[irow+1][icol+1] = tmp[posr+1][posc+1];
+            estif[irow+1][icol+2] = tmp[posr+1][posc+2];
+            estif[irow+1][icol+3] = tmp[posr+1][posc+cdist];
+
+            estif[irow+2][icol]   = tmp[posr+2][posc];	 
+            estif[irow+2][icol+1] = tmp[posr+2][posc+1];
+            estif[irow+2][icol+2] = tmp[posr+2][posc+2];
+            estif[irow+2][icol+3] = tmp[posr+2][posc+cdist];
+
+            estif[irow+3][icol]   = tmp[posr+rdist][posc];
+            estif[irow+3][icol+1] = tmp[posr+rdist][posc+1];
+            estif[irow+3][icol+2] = tmp[posr+rdist][posc+2];
+            estif[irow+3][icol+3] = tmp[posr+rdist][posc+cdist];
+            irow += 4;
+            rdist-=2;
+         break;
+         case 7:
+            estif[irow][icol]     = tmp[posr][posc]; 
+            estif[irow][icol+1]   = tmp[posr][posc+1];
+            estif[irow][icol+2]   = tmp[posr][posc+2];
+            estif[irow][icol+3]   = tmp[posr][posc+cdist];
+
+            estif[irow+1][icol]   = tmp[posr+1][posc];	 
+            estif[irow+1][icol+1] = tmp[posr+1][posc+1];
+            estif[irow+1][icol+2] = tmp[posr+1][posc+2];
+            estif[irow+1][icol+3] = tmp[posr+1][posc+cdist];
+
+            estif[irow+2][icol]   = tmp[posr+2][posc];	 
+            estif[irow+2][icol+1] = tmp[posr+2][posc+1];
+            estif[irow+2][icol+2] = tmp[posr+2][posc+2];
+            estif[irow+2][icol+3] = tmp[posr+2][posc+cdist];
+
+            estif[irow+3][icol]   = tmp[posr+rdist][posc];
+            estif[irow+3][icol+1] = tmp[posr+rdist][posc+1];
+            estif[irow+3][icol+2] = tmp[posr+rdist][posc+2];
+            estif[irow+3][icol+3] = tmp[posr+rdist][posc+cdist];
+
+            estif[irow+4][icol]   = tmp[posr+nvpdof][posc];
+            estif[irow+4][icol+1] = tmp[posr+nvpdof][posc+1];
+            estif[irow+4][icol+2] = tmp[posr+nvpdof][posc+2];
+            estif[irow+4][icol+3] = tmp[posr+nvpdof][posc+cdist];
+
+            estif[irow+5][icol]   = tmp[posr+nvpdof+1][posc];
+            estif[irow+5][icol+1] = tmp[posr+nvpdof+1][posc+1];
+            estif[irow+5][icol+2] = tmp[posr+nvpdof+1][posc+2];
+            estif[irow+5][icol+3] = tmp[posr+nvpdof+1][posc+cdist];
+
+            estif[irow+6][icol]   = tmp[posr+nvpdof+2][posc];
+            estif[irow+6][icol+1] = tmp[posr+nvpdof+2][posc+1];
+            estif[irow+6][icol+2] = tmp[posr+nvpdof+2][posc+2];
+            estif[irow+6][icol+3] = tmp[posr+nvpdof+2][posc+cdist];
+            irow += 7;	 
+            rdist-=2;
+         break;
+         default:
+            dserror("numdf invalid!\n");
+         }
+      }
+      icol+=4;
+   break;
+   case 7:
+      for (j=0;j<iel;j++)
+      {
+         posr=NUM_F3_VELDOF*j;
+         switch(ele->node[j]->numdf)
+         {
+         case 4:
+            estif[irow][icol]     = tmp[posr][posc]; 
+            estif[irow][icol+1]   = tmp[posr][posc+1];
+            estif[irow][icol+2]   = tmp[posr][posc+2];
+            estif[irow][icol+3]   = tmp[posr][posc+cdist];
+            estif[irow][icol+4]   = tmp[posr][posc+nvpdof];
+            estif[irow][icol+5]   = tmp[posr][posc+nvpdof+1];
+            estif[irow][icol+6]   = tmp[posr][posc+nvpdof+2];
+
+            estif[irow+1][icol]   = tmp[posr+1][posc]; 
+            estif[irow+1][icol+1] = tmp[posr+1][posc+1];
+            estif[irow+1][icol+2] = tmp[posr+1][posc+2];
+            estif[irow+1][icol+3] = tmp[posr+1][posc+cdist];
+            estif[irow+1][icol+4] = tmp[posr+1][posc+nvpdof];
+            estif[irow+1][icol+5] = tmp[posr+1][posc+nvpdof+1];
+            estif[irow+1][icol+6] = tmp[posr+1][posc+nvpdof+2];
+
+            estif[irow+2][icol]   = tmp[posr+2][posc]; 
+            estif[irow+2][icol+1] = tmp[posr+2][posc+1];
+            estif[irow+2][icol+2] = tmp[posr+2][posc+2];
+            estif[irow+2][icol+3] = tmp[posr+2][posc+cdist];
+            estif[irow+2][icol+4] = tmp[posr+2][posc+nvpdof];
+            estif[irow+2][icol+5] = tmp[posr+2][posc+nvpdof+1];
+            estif[irow+2][icol+6] = tmp[posr+2][posc+nvpdof+2];
+
+            estif[irow+3][icol]   = tmp[posr+rdist][posc]; 
+            estif[irow+3][icol+1] = tmp[posr+rdist][posc+1];
+            estif[irow+3][icol+2] = tmp[posr+rdist][posc+2];
+            estif[irow+3][icol+3] = tmp[posr+rdist][posc+cdist];
+            estif[irow+3][icol+4] = tmp[posr+rdist][posc+nvpdof];
+            estif[irow+3][icol+5] = tmp[posr+rdist][posc+nvpdof+1];
+            estif[irow+3][icol+6] = tmp[posr+rdist][posc+nvpdof+2];
+            irow += 4;
+            rdist-=2;
+         break;
+         case 7:
+            estif[irow][icol]     = tmp[posr][posc]; 
+            estif[irow][icol+1]   = tmp[posr][posc+1];
+            estif[irow][icol+2]   = tmp[posr][posc+2];
+            estif[irow][icol+3]   = tmp[posr][posc+cdist];
+            estif[irow][icol+4]   = tmp[posr][posc+nvpdof];
+            estif[irow][icol+5]   = tmp[posr][posc+nvpdof+1];
+            estif[irow][icol+6]   = tmp[posr][posc+nvpdof+2];
+
+            estif[irow+1][icol]   = tmp[posr+1][posc]; 
+            estif[irow+1][icol+1] = tmp[posr+1][posc+1];
+            estif[irow+1][icol+2] = tmp[posr+1][posc+2];
+            estif[irow+1][icol+3] = tmp[posr+1][posc+cdist];
+            estif[irow+1][icol+4] = tmp[posr+1][posc+nvpdof];
+            estif[irow+1][icol+5] = tmp[posr+1][posc+nvpdof+1];
+            estif[irow+1][icol+6] = tmp[posr+1][posc+nvpdof+2];
+
+            estif[irow+2][icol]   = tmp[posr+2][posc]; 
+            estif[irow+2][icol+1] = tmp[posr+2][posc+1];
+            estif[irow+2][icol+2] = tmp[posr+2][posc+2];
+            estif[irow+2][icol+3] = tmp[posr+2][posc+cdist];
+            estif[irow+2][icol+4] = tmp[posr+2][posc+nvpdof];
+            estif[irow+2][icol+5] = tmp[posr+2][posc+nvpdof+1];
+            estif[irow+2][icol+6] = tmp[posr+2][posc+nvpdof+2];
+
+            estif[irow+3][icol]   = tmp[posr+rdist][posc];
+            estif[irow+3][icol+1] = tmp[posr+rdist][posc+1];
+            estif[irow+3][icol+2] = tmp[posr+rdist][posc+2];
+            estif[irow+3][icol+3] = tmp[posr+rdist][posc+cdist];
+            estif[irow+3][icol+4] = tmp[posr+rdist][posc+nvpdof];
+            estif[irow+3][icol+5] = tmp[posr+rdist][posc+nvpdof+1];
+            estif[irow+3][icol+6] = tmp[posr+rdist][posc+nvpdof+2];
+
+            estif[irow+4][icol]   = tmp[posr+nvpdof][posc]; 
+            estif[irow+4][icol+1] = tmp[posr+nvpdof][posc+1];
+            estif[irow+4][icol+2] = tmp[posr+nvpdof][posc+2];
+            estif[irow+4][icol+3] = tmp[posr+nvpdof][posc+cdist];
+            estif[irow+4][icol+4] = tmp[posr+nvpdof][posc+nvpdof];
+            estif[irow+4][icol+5] = tmp[posr+nvpdof][posc+nvpdof+1];
+            estif[irow+4][icol+6] = tmp[posr+nvpdof][posc+nvpdof+2];
+
+            estif[irow+5][icol]   = tmp[posr+nvpdof+1][posc]; 
+            estif[irow+5][icol+1] = tmp[posr+nvpdof+1][posc+1];
+            estif[irow+5][icol+2] = tmp[posr+nvpdof+1][posc+2];
+            estif[irow+5][icol+3] = tmp[posr+nvpdof+1][posc+cdist];
+            estif[irow+5][icol+4] = tmp[posr+nvpdof+1][posc+nvpdof];
+            estif[irow+5][icol+5] = tmp[posr+nvpdof+1][posc+nvpdof+1];
+            estif[irow+5][icol+6] = tmp[posr+nvpdof+1][posc+nvpdof+2];
+
+            estif[irow+6][icol]   = tmp[posr+nvpdof+2][posc]; 
+            estif[irow+6][icol+1] = tmp[posr+nvpdof+2][posc+1];
+            estif[irow+6][icol+2] = tmp[posr+nvpdof+2][posc+2];
+            estif[irow+6][icol+3] = tmp[posr+nvpdof+2][posc+cdist];
+            estif[irow+6][icol+4] = tmp[posr+nvpdof+2][posc+nvpdof];
+            estif[irow+6][icol+5] = tmp[posr+nvpdof+2][posc+nvpdof+1];
+            estif[irow+6][icol+6] = tmp[posr+nvpdof+2][posc+nvpdof+2];
+            irow += 7;
+            rdist-=2;
+            break;
+            default:
+            dserror("numdf invalid!\n");
+         }
+      }
+      icol+=7;   
+   break;
+   default:
+      dserror("numdf invalid!\n");
+   }
+   cdist-=2;
+}
+
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_permestif_ifs */
 
 /*!--------------------------------------------------------------------- 
   \brief get edgnodes for element line
@@ -667,7 +1504,7 @@ void f3_iedg(
 {
 
   INT i;
-  static INT iegh[2][6][8] =
+  const INT iegh[2][6][8] =
    {{{ 0, 1, 2, 3, 0, 0, 0, 0 },  /* surf 0                   */ 
      { 0, 1, 5, 4, 0, 0, 0, 0 },  /* surf 1                   */ 
      { 1, 2, 6, 5, 0, 0, 0, 0 },  /* surf 2 for hex 8 element */ 
