@@ -222,6 +222,15 @@ void c1_call_matd(ELEMENT   *ele,
                  DOUBLE **d,
                  DOUBLE g[6][6]);
 /*----------------------------------------------------------------------*
+ | derivative of internal force vector                   al    9/01     |
+ *----------------------------------------------------------------------*/
+void c1dfi(double  *F,  /*  force vector integral (stress-resultants)  */
+           double   fac, /*  multiplier for numerical integration       */
+           double **bop, /*  b-operator matrix                          */
+           double *disd, /* displacement derivatives               */
+           int      nd,  /*  total number degrees of freedom of element */
+           double  *fie);/*  internal force vector                      */
+/*----------------------------------------------------------------------*
  | program for evaluation of principal stresses at given gauss  al 9/01 |
  | point for isoparametric brick element                                |
  |----------------------------------------------------------------------|
@@ -422,6 +431,11 @@ void c1_matd_stvpor(MATERIAL  *mat,
 void c1mefm(DOUBLE *strain, /* global strains                           */
             DOUBLE **d,     /* material matrices                        */
             DOUBLE *stress);/* forces/moments/additional terms          */
+void c1_mat_neohook(DOUBLE youngs,     /* young's modulus              */
+                    DOUBLE possionratio, /* poisson's ratio            */
+                    DOUBLE *disd,      /* displacement derivatives     */
+                    DOUBLE *stress,  /* ele stress (-resultant) vector */      
+                    DOUBLE **d);     /* material matrix                */
 /*----------------------------------------------------------------------*
  | constitutive matrix - forces - linear elastic- von Mises - 3D al 9/01|
  *----------------------------------------------------------------------*/
@@ -527,6 +541,7 @@ void c1_cint(
              C1_DATA   *data, 
              MATERIAL  *mat,
              ARRAY     *estif_global, 
+             ARRAY      *emass_global,
              DOUBLE    *force,  /* global vector for internal forces (initialized!) */
              INT        init
              );
@@ -599,6 +614,12 @@ void c1_mat_mfoc(  MATERIAL  *mat,
 void c1_mat_mfcc(  MATERIAL  *mat,
                    DOUBLE *matdata,
                    DOUBLE **d);
+void c1_mat_nhmfcc( MATERIAL  *mat,     /* material data ...           */
+                    DOUBLE *matdata,    /* variable mat. data, opti.   */
+                    DOUBLE *disd,      /* displacement derivatives     */
+                    DOUBLE *stress,  /* ele stress (-resultant) vector */      
+                    DOUBLE **d,         /* material matrix             */
+                    DOUBLE *ste);      
 /*----------------------------------------------------------------------*
  | calculate derivative of constitutive matrix                  al 9/01 |
  *----------------------------------------------------------------------*/
@@ -655,6 +676,18 @@ void c1_oint(
  *----------------------------------------------------------------------*/
 void c1_getdensity(MATERIAL   *mat, DOUBLE *density);
 /*----------------------------------------------------------------------*
+ | mass matrix for brick1                                   al 08/02    |
+ *----------------------------------------------------------------------*/
+void c1cptp(
+            DOUBLE     *funct, 
+            DOUBLE     *lmass, 
+            DOUBLE     *cmass, 
+            DOUBLE     *emasdg,
+            INT         iel,   
+            INT         ilmp,  
+            DOUBLE      fac
+            );  
+/*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/
 void fortranpow (DOUBLE *V,DOUBLE *R,DOUBLE *RE);
@@ -667,6 +700,7 @@ void mxmatb (DOUBLE *A,DOUBLE *B,DOUBLE *R,INT *NZA,INT *NSA,
 void c1jacb (DOUBLE *A,DOUBLE *V);
 void solveq (DOUBLE *A,DOUBLE *B,INT *NN,INT *LL);
 void c1inv6(DOUBLE *A,DOUBLE *B,INT *IRC);
+void c1inv3(DOUBLE *A);
 void c1invf (DOUBLE *FN,DOUBLE *FNI,DOUBLE *DETF);
 void c1ab (DOUBLE *A,DOUBLE *B,DOUBLE *R,INT *NZA,INT *NSA,INT *NSB,
            DOUBLE *XNULL);                                 
