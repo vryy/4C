@@ -468,6 +468,14 @@ solver_control(actsolv, actintra,
                sol_v,
                rhs_v,
                init);
+/* the matrix vector multiplication demands the matrix to be setup
+ * properly */
+solver_control(actsolv, actintra,
+               &(actsolv->sysarray_typ[m_array]),
+               &(actsolv->sysarray[m_array]),
+               sol_v,
+               rhs_v,
+               init);
 solver_control(presolv, actintra,
                &(presolv->sysarray_typ[0]),
                &(presolv->sysarray[0]),
