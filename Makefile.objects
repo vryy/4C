@@ -224,8 +224,10 @@ OBJS12	      = src/wall1/w1_bop.o \
                 src/wall1/w1_cal_fint.o \
                 src/wall1/w1_cal_fext.o \
                 src/wall1/w1_mat_trans.o \
-                src/wall1/w1_cal_trans.o
-#                fluid2
+                src/wall1/w1_cal_trans.o \
+                src/wall1/w1_incompmode.o \
+                src/wall1/w1_math.o
+               #                fluid2
 OBJS14        = src/fluid2/f2_calelesize.o \
                 src/fluid2/f2_calele.o \
                 src/fluid2/f2_calextrhs.o \
