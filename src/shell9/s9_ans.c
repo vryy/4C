@@ -513,6 +513,20 @@ for (jlay=0; jlay<num_klay; jlay++)
    zeta = s9con(zeta,num_klay,klay,jlay,condfac);
    if (zeta != 0.0)  /*---- interpolation -------- g1,g2 (kov.) -------*/
    {
+      b11c=0.0;
+      b12c=0.0;
+      b21c=0.0;
+      b22c=0.0;
+      b31c=0.0;
+      b32c=0.0;
+
+      b11r=0.0;
+      b12r=0.0;
+      b21r=0.0;
+      b22r=0.0;
+      b31r=0.0;
+      b32r=0.0;
+
       for (i=0; i<3; i++) b11c += akovc[i][0][0]   *a3kvpc[i][0][jlay];
       for (i=0; i<3; i++) b12c += akovc[i][0][0]   *a3kvpc[i][1][jlay];
       for (i=0; i<3; i++) b21c += akovc[i][1][0]   *a3kvpc[i][0][jlay];
