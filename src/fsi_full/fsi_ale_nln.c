@@ -15,6 +15,12 @@
 #include "fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB       genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
@@ -134,6 +140,7 @@ static INT      numsys;           /* number of system matrices				*/
 static INT      actpos;           /* actual position in nodal solution history          */
 static INT      outstep;          /* counter for output to .out                         */
 static INT      pssstep;          /* counter for output to .pss                         */
+static INT      restartstep;      /* counter for output of restart data                 */
 static SOLVAR       *actsolv;     /* pointer to the fields SOLVAR structure             */
 static PARTITION    *actpart;     /* pointer to the fields PARTITION structure          */
 static INTRA        *actintra;    /* pointer to the fields intra-communicator structure */
@@ -165,6 +172,7 @@ container.pos     = 0;
 actpos=1;
 outstep=0;
 pssstep=0;
+restartstep=0;
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=0;
 numsys = 1;  /* the number of system matrices */
@@ -224,6 +232,8 @@ solserv_getmatdims(actsolv->sysarray[actsysarray],
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
+for (i=0;i<par.nprocs;i++)
+if (par.myrank==i)
 printf("PROC  %3d | FIELD ALE       | number of equations      : %10d \n", 
         par.myrank,numeq);
 #ifdef PARALLEL
@@ -278,6 +288,12 @@ calinit(actfield,actpart,action,&container);
 /*--------------------------------- init sol_increment[1][j] to zero ---*/
 solserv_sol_zero(actfield,0,1,1); 
 
+/*--------------------------------------------------- check for restart */
+if (genprob.restart!=0)
+{
+   restart_read_aledyn(genprob.restart,adyn,actfield,actpart,actintra);
+}
+
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
 monitoring(actfield,numfa,0,0,adyn->time);
@@ -330,8 +346,6 @@ if (fsidyn->ifsi<3) solserv_sol_copy(actfield,0,3,3,1,0);
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
    
-/*------------------------------------------------------ increment step */
-adyn->step++;
 /*------------------------------ init the created dist. vectors to zero */
 solserv_zero_vec(&(actsolv->rhs[actsysarray]));
 solserv_zero_vec(&(actsolv->sol[actsysarray]));
@@ -438,6 +452,8 @@ ale_setdirich_increment_fsi(actfield,adyn,actpos);
 /*------------------------------------------- print out results to .out */
 outstep++;
 pssstep++;
+restartstep++;
+
 if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
 { 
     outstep=0;
@@ -457,8 +473,16 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
    time_a.a.dv[actpos] = adyn->time;   
    actpos++;
 } 
+
+/*------------------------------------------------- write restart data */
+if (restartstep==fsidyn->res_write_evry)
+{
+   restartstep=0;
+   restart_write_aledyn(adyn,actfield,actpart,actintra);
+} 
+
 /*--------------------------------------- do mesh quality statistics ---*/
-if (container.quality) ale_quality(actfield,fsidyn->step);
+if (container.quality) ale_quality(actfield,fsidyn->step,actintra,actpart);
 /*--------------------------------------------------------------------- */   
 
 break;

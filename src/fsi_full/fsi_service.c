@@ -707,23 +707,20 @@ case 1:
    {
       printf("|| g(i) || / sqrt(neq) = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
-      printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n");
-     printf("\n");
+      printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
    if (converged==1)
    {
       printf("|| g(i) || / sqrt(neq) = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
-      printf("                ***** CONTINUING ****\n");
-      printf("\n");
+      printf("                ***** CONTINUING ****\n\n");
    }    	
    if (converged>=2)
    {
       printf("|| g(i) || / sqrt(neq) = %10.3E < TOL = %10.3E \n",
               grat,fsidyn->convtol);
-      printf("CONVERGENCE OF ITERATION OVER FIELDS!\n");
-      printf("\n");
+      printf("CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
 break;
 case 2:   
@@ -731,23 +728,20 @@ case 2:
    {
       printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
-      printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n");
-      printf("\n");
+      printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
    if (converged==1)
    {
       printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
-      printf("                ***** CONTINUING ****\n");
-      printf("\n");
+      printf("                ***** CONTINUING ****\n\n");
    }    	
    if (converged>=2)
    {
       printf("|| g(i) || / || g(0) || = %10.3E < TOL = %10.3E \n",
               grat,fsidyn->convtol);
-      printf("CONVERGENCE OF ITERATION OVER FIELDS!\n");
-      printf("\n");
+      printf("CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
 break;
 default:

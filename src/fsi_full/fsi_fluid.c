@@ -12,7 +12,12 @@
 #include "../headers/solution.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fsi_prototypes.h"
-
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
@@ -108,13 +113,16 @@ static INT             numeq_total;        /* total number of equations        *
 INT                    init;               /* flag for solver_control call     */
 static INT             nsysarray=1;        /* one system matrix                */
 static INT             actsysarray=0;      /* number of actual sysarray        */
-static INT             outstep;            /* counter for time integration     */
-static INT             pssstep;
+static INT             outstep;            /* counter for output control       */
+static INT             pssstep;            /* counter for output control       */
+static INT             restartstep;        /* counter for restart control      */
 static INT             nfrastep;           /* number of steps for fractional-
                                               step-theta procedure             */
+static INT             restart;
 INT                    calstress=1;        /* flag for stress calculation      */
 INT                    converged=0;        /* convergence flag                 */
 INT                    steady=0;           /* flag for steady state            */
+INT                    step_s;
 static INT             actpos;             /* actual position in sol. history  */
 DOUBLE                 vrat,prat;
 static DOUBLE          grat;               /* convergence ratios               */
@@ -156,17 +164,20 @@ dsassert(fdyn->iop==4,"TIMEINTEGR for fluid: only ONE-STEP-THETA implemented!\n"
 /*------------------------------------------ initialiase some counters */
 outstep=0;
 pssstep=0;  
+restartstep=0;
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
 actsolv     = &(solv[numff]);
 actpart     = &(partition[numff]);
 action      = &(calc_action[numff]);
 dynvar      = &(fdyn->dynvar);
+restart     = genprob.restart;
 container.fieldtyp = actfield->fieldtyp;
 container.actndis  = 0;
 container.turbu    = fdyn->turbu;
 str         = str_fsicoupling;
 dynvar->acttime=ZERO;
+
 /*---------------- if we are not parallel, we have to allocate an alibi * 
   ---------------------------------------- intra-communicator structure */
 #ifdef PARALLEL 
@@ -223,7 +234,17 @@ if (fdyn->checkarea>0)
    amzero(&totarea_a);
 }
 /*--------------------------------------------- initialise fluid field */
-fluid_init(actfield,fdyn,7,str);		     
+if (restart>0)
+{
+   if (fdyn->init>0)
+      dserror("Initial field either by restart, or by function or from file ...\n");
+   else
+   {
+      fdyn->resstep=genprob.restart;
+      fdyn->init=2;
+   }
+}
+fluid_init(actpart,actintra,actfield,fdyn,action,&container,7,str);		     
 actpos=0;   
 
 /*-------------------------------------- init the dirichlet-conditions */
@@ -261,6 +282,8 @@ if (par.myrank==0) printf("\n\n");
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
+for (i=0;i<par.nprocs;i++)
+if (par.myrank==i)
 printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n", 
         par.myrank,numeq);
 #ifdef PARALLEL
@@ -270,8 +293,8 @@ if (par.myrank==0)
 printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
 if (par.myrank==0) printf("\n\n");
 
-/*-------------------------------- calculate curvature at the beginning */
-if (fdyn->surftens!=0)
+/*----------------------------------------- calculate initial curvature */
+if (fdyn->surftens!=0 && restart==0)
 {
    fluid_tcons(fdyn,dynvar);
    *action = calc_fluid_curvature;
@@ -283,7 +306,6 @@ if (ioflags.monitor==1)
 monitoring(actfield,numff,actpos,0,fdyn->time);
 /*-------------------------------------- print out initial data to .out */
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-actpos++;
 break;
 
 /*======================================================================*
@@ -310,6 +332,14 @@ if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,1,1,1,3);
 /* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
 if (actintra->intra_fieldtyp != fluid) break;
 /*------------------------------------------ check (starting) algorithm */
+if (restart!=0)
+{
+   step_s=fdyn->step;
+   fdyn->step=1;
+   fluid_startproc(fdyn,&nfrastep);
+   restart=0; 
+   fdyn->step = step_s;
+}
 if (fdyn->step<=(fdyn->nums+1))
    fluid_startproc(fdyn,&nfrastep);
 
@@ -505,6 +535,17 @@ solserv_sol_copy(actfield,0,1,1,3,1);
 /*---------------------------------------------- finalise this timestep */
 outstep++;
 pssstep++;
+restartstep++;
+
+if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
+{
+   pssstep=0;
+   /*--------------------------------------------- store time in time_a */
+   if (actpos >= time_a.fdim)
+      amredef(&(time_a),time_a.fdim+100,1,"DV");
+   time_a.a.dv[actpos] = fdyn->time;   
+   actpos++;
+} 
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
            and transform kinematic to real pressure --------------------*/
@@ -522,15 +563,13 @@ monitoring(actfield,numff,actpos,fdyn->step,fdyn->time);
 
 fsidyn->actpos = actpos;
 
-if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
+/*------------------------------------------- write restart to pss file */
+if (restartstep==fsidyn->res_write_evry)
 {
-   pssstep=0;
-   /*--------------------------------------------- store time in time_a */
-   if (actpos >= time_a.fdim)
-      amredef(&(time_a),time_a.fdim+100,1,"DV");
-   time_a.a.dv[actpos] = fdyn->time;   
-   actpos++;
-} 
+   restartstep=0;
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,container);   
+}
+
 /*--------------------------------------------------------------------- */
 break;   
 

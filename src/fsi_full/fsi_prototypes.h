@@ -17,7 +17,8 @@
 void fsi_aitken(  
                  FIELD          *structfield, 
                  FSI_DYNAMIC    *fsidyn, 
-		 INT             itnum
+		 INT             itnum,
+                 INT             init
 	       );
  
 /************************************************************************

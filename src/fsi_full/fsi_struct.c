@@ -128,7 +128,8 @@ static INT           mod_disp,mod_stress;
 static INT           mod_res_write;
 static INT           restart;
 static INT           nstep;
-static INT           outstep;
+static INT           outstep;            /* counter for output control                          */
+static INT           restartstep;        /* counter for restart control                         */ 
 static DOUBLE        maxtime;
 static DOUBLE        t0_res,t1_res;
 static DOUBLE        dt;
@@ -177,6 +178,7 @@ sdyn->nstep=fsidyn->nstep;
 container.isdyn   = 1;    
 container.actndis = 0;    
 outstep=0;
+restartstep=0;
 
 /*----------------------------------------------------------------------*/
 restart = genprob.restart;
@@ -276,6 +278,8 @@ solserv_getmatdims(actsolv->sysarray[stiff_array],
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
+for (i=0;i<par.nprocs;i++)
+if (par.myrank==i)
 printf("PROC  %3d | FIELD STRUCTURE | number of equations      : %10d \n", 
         par.myrank,numeq);
 #ifdef PARALLEL
@@ -441,6 +445,40 @@ if (par.myrank==0)
 {
    out_gid_domains(actfield);
 }
+
+/*--------------------------------------------------- check for restart */
+if (restart)
+{
+/*   dserror("restart not implemented yet for fsi-problems!\n"); */
+   t0_res = ds_cputime();
+   /*-------------- save the stepsize as it will be overwritten in sdyn */
+   dt    = sdyn->dt;
+   /*------ save the number of steps, as it will be overwritten in sdyn */
+   nstep = sdyn->nstep;
+   maxtime = sdyn->maxtime;
+   /*----------------------------------- the step to read in is restart */
+   restart_read_nlnstructdyn(restart,sdyn,&dynvar,actfield,actpart,actintra,action,
+                             actsolv->nrhs, actsolv->rhs,
+                             actsolv->nsol, actsolv->sol,
+                             1            , dispi       ,
+                             1            , vel         ,
+                             1            , acc         ,
+                             3            , fie         ,
+                             3            , work        ,
+                             &intforce_a,
+                             &dirich_a,
+                             &container);     /* contains variables defined in container.h */
+   /*-------------------------------------- put the dt to the structure */
+   sdyn->dt = dt;
+   /*--------------------------------------- put nstep to the structure */
+   sdyn->nstep = nstep;
+   sdyn->maxtime = maxtime;
+   /*------------------------------------------- switch the restart off */
+   restart=0;
+   /*----------------------------------------------------- measure time */
+   t1_res = ds_cputime();
+   fprintf(allfiles.out_err,"TIME for restart reading is %f sec\n",t1_res-t0_res);
+}
 /*------------------------------------------------------- printout head */
 /* if (par.myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);*/
 break;
@@ -537,11 +575,6 @@ if (par.myrank==0)
 {   
    printf("Solving STRUCTURE ...\n"); 
    printf("---------------------------------------------------------------- \n");
-}
-/*--------------------------------------------------- check for restart */
-if (restart)
-{
-   dserror("restart not implemented yet for fsi-problems!\n");
 }
 
 /*--------------------------- copy solution from sol[9][j] to sol[0][j] */
@@ -941,7 +974,22 @@ if (outstep==sdyn->updevry_disp)
       out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*-------------------------------------- write restart data to pss file */
-/* not implemented at the moment */
+restartstep++;
+if (restartstep==fsidyn->res_write_evry)
+{
+   restartstep=0;
+   restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
+                              actsolv->nrhs, actsolv->rhs,
+                              actsolv->nsol, actsolv->sol,
+                              1            , dispi       ,
+                              1            , vel         ,
+                              1            , acc         ,
+                              3            , fie         ,
+                              3            , work        ,
+                              &intforce_a,
+                              &dirich_a,
+                              &container);  /* contains variables defined in container.h */
+}
 /*----------------------------------------------------- print time step */
 /*if (par.myrank==0) 
 {

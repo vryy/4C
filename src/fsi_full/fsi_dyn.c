@@ -75,6 +75,8 @@ static INT      numfld;       /* number of fiels                        */
 static INT      numsf;        
 static INT      numff;
 static INT      numaf;        /* actual number of fields                */
+static INT      resstep=0;    /* counter for output control             */
+static INT      restartstep=0;/* counter for restart control            */
 const  INT      mctrlpre=4;   /* control flag                           */
 INT             actcurve;     /* actual curve                           */
 INT             itnum=0;      /* iteration counter                      */
@@ -108,6 +110,7 @@ fluidfield  = &(field[1]);
 numff       = 1;
 alefield    = &(field[2]);
 numaf       = 2;
+
 /*-------------------------------------------------- plausibility check */
 dsassert(structfield->fieldtyp==structure,"FIELD 0 has to be structure\n");
 dsassert(fluidfield->fieldtyp==fluid,"FIELD 1 has to be fluid\n");
@@ -122,6 +125,7 @@ adyn= alldyn[2].adyn;
 fsidyn= alldyn[3].fsidyn;
 fsidyn->time=ZERO;
 fsidyn->step=0;
+
 /*---------------------------------- initialise fsi coupling conditions */
 fsi_initcoupling(structfield,fluidfield,alefield);
 /*--------------------------------- determine structural interface dofs */
@@ -136,9 +140,32 @@ fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
 fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
 /*------------------------------------------------------ initialise ale */
 fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
- 
+
+if (genprob.restart!=0)
+{
+   restart_read_fsidyn(genprob.restart,fsidyn);
+   /*----------------------------------------------- plausibility check */
+   if (fsidyn->time != adyn->time ||
+       fsidyn->time != fdyn->time ||
+       fsidyn->time != sdyn->time   )
+       dserror("Restart problem: Time not identical in fields!\n");
+   if (fsidyn->step != fdyn->step ||
+       fsidyn->step != adyn->step || 
+       fsidyn->step != sdyn->step   )
+       dserror("Restart problem: Step not identical in fields!\n");
+}
+
+/*----------------------------------------- initialise AITKEN iteration */
+if (fsidyn->ifsi==5)
+{
+   fsi_aitken(structfield,fsidyn,itnum,0);   
+}
+    
 /*----------------------------------------------------------------------*/
-out_gid_msh();
+if (par.myrank==0) out_gid_msh();
+/*--------------------------------------- write initial solution to gid */
+/*----------------------------- print out solution to 0.flavia.res file */
+if (par.myrank==0) out_gid_sol_fsi(fluidfield,structfield);
 /*======================================================================*
                               T I M E L O O P
  *======================================================================*/
@@ -205,7 +232,7 @@ if (fsidyn->ifsi>=4)
    /*----------------------------- compute optimal relaxation parameter */
       if (fsidyn->ifsi==5)
       {
-         fsi_aitken(structfield,fsidyn,itnum);   
+         fsi_aitken(structfield,fsidyn,itnum,1);   
       }
       else if (fsidyn->ifsi==6)
       {
@@ -234,8 +261,23 @@ if (fsidyn->ifsi>=4)
 }
 /*--------------------------------------- write current solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
-if (par.myrank==0)
-  out_gid_sol_fsi(fluidfield,structfield);
+resstep++;
+restartstep++;
+
+if (resstep==fsidyn->upres && par.myrank==0)
+{
+   resstep=0;
+   out_checkfilesize(1);
+   out_gid_sol_fsi(fluidfield,structfield);
+}
+
+/*---------------------------------------------- write fsi-restart data */
+if (restartstep==fsidyn->res_write_evry)
+{
+   restartstep=0;
+   restart_write_fsidyn(fsidyn);
+}
+
 /*-------------------------------------------------------- energy check */
 if (fsidyn->ichecke>0) fsi_energycheck(fsidyn);
 
