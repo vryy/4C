@@ -439,7 +439,7 @@ ngauss = ele->e.b3->nGP[0];
 switch(ele->distyp)
 {
 /*----constant interpolation of internal forces: F(x)=a------------------------------*/
-case lin2:
+case line2:
 for (i=0; i<iel; i++)
 {
   for (j=0; j<numdf; j++) 
@@ -451,7 +451,7 @@ for (i=0; i<iel; i++)
 }   
 break;
 /*----linear interpolation of internal forces: F(x)=a+b*(x-x0)-----------------------*/
-case lin3:
+case line3:
 r[0]=-1.;
 r[1]=+1.;
 r[2]=0.;
@@ -466,31 +466,6 @@ for (i=0; i<iel; i++)
       a=fval[0];
       b=(fval[1]-fval[0])/g10;
       ele->e.b3->force_ND.a.d3[place][j][i] = a+b*(r[i]-g[0]);
-   }
-}
-break;
-/*----quadratic interpolation of internal forces: F(x)=a+b*(x-x0)+c*(x-x0)*(x-x1)----*/
-case lin4:
-r[0]=-1.;
-r[1]=+1.;
-r[2]=-1./3.0;
-r[3]=-r[2];
-g[0]=data->xgrr[0];
-g[1]=data->xgrr[1];
-g[2]=data->xgrr[2];
-g10=g[1]-g[0];
-g20=g[2]-g[0];
-g21=g[2]-g[1];
-for (i=0; i<iel; i++)
-{
-   for (j=0; j<numdf; j++)
-   {
-      for (k=0; k<ngauss; k++) fval[k]=ele->e.b3->force_GP.a.d3[place][j][k];          
-      a=fval[0];
-      b=(fval[1]-fval[0])/g10;
-      b1=(fval[2]-fval[1])/g21;
-      c=(b1-b)/g20;     
-      ele->e.b3->force_ND.a.d3[place][j][i] = a+b*(r[i]-g[0])+c*(r[i]-g[0])*(r[i]-g[1]);
    }
 }
 break;
