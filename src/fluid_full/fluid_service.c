@@ -516,7 +516,7 @@ void fluid_init(
 INT    i,j,k;           /* simply counters                              */
 INT    actmat;          /* number of actual material                    */
 INT    numdf;           /* number of dofs in this discretisation        */
-INT    numnp_total;     /* total number of nodes in this discretisation */
+INT    numnp_total=0;   /* total number of nodes in this discretisation */
 INT    numele_total;    /* total number of elements in this discr.      */
 INT    numnp=0;         /* number of nodes at actual element            */
 INT    ldflag;
@@ -565,7 +565,7 @@ numele_total = actfield->dis[0].numele;
 
 /*---------------------------------------------------------------------*
                       INITIALISE NODAL ARRAYS
-/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
 /*-------------------------------- allocate space for solution history */
 for (k=0;k<actfield->ndis;k++)
 {
@@ -643,7 +643,7 @@ for (i=0;i<actfield->dis[0].numnp;i++)
 
 /*---------------------------------------------------------------------*
                      INITIALISE ELEMENT ARRAYS
-/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
 /*------------- allocate array for stabilisation parameter (only pdis) */
 if (fdyn->dyntyp==0)
 for (i=0;i<actpart->pdis[0].numele;i++)
@@ -683,7 +683,12 @@ case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nod
       {
          actnode=actele->node[j];
 	 actgnode = actnode->gnode;
-	 if (actgnode->mfcpnode[0]!=NULL) found=1;
+         /* this approach does not work with a nonconforming discretization
+            of the interface, thus it is replaced by the second one */
+         /*
+	    if (actgnode->mfcpnode[0]!=NULL) found=1;
+         */
+         if (actgnode->fsicouple != NULL) found = 1;
       }
       if (found==1)
       {
