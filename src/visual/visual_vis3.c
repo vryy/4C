@@ -85,12 +85,9 @@ static INT      DSTEP;                /* increment of visualised steps  */
 static INT      INCRE;                /* increment of visualised steps  */
 static INT      NUMA;                 /* number of ALE-FIELD            */
 static INT      CMUNIT=99;            /* see VISUAL3 manual             */
-static INT      NKEYS=7;              /* see VISUAL3 manual             */
-static INT      IKEYS[]={120,121,122,112,102,97,109};
-static INT      FKEYS[]={1,1,1,1,2,1,1};             
-static float    FLIMS[7][2];          /* data limits                    */
 /*------------------------------- variables needed for own calculations */
 static INT     numnp;	        /* number of nodes of actual field	*/
+static INT     numnp_struct;
 static INT     numele;	        /* number of elements of actual field	*/
 static INT     ncols=1;         /* number of sol steps stored in sol	*/
 static INT     nacols=1;        /* number of sol steps of ALE field     */
@@ -103,16 +100,6 @@ static INT     false=0;         /* flag for v2_cursor			*/
 static INT     STSTEP=-2;       /* stopping step                        */
 static INT     IMOVIE=0;        /* counter to slow down for movie creat.*/
 static INT     bgcolour;        /* background colour                    */
-static DOUBLE  velx;	        /*					*/
-static DOUBLE  vely;	        /*					*/
-static DOUBLE  velz;	        /*					*/
-static DOUBLE  pres;	        /*					*/
-static DOUBLE  absv;	        /*					*/
-static DOUBLE  minpre,maxpre;   /*					*/
-static DOUBLE  minvx,maxvx;     /*					*/
-static DOUBLE  minvy,maxvy;     /*					*/
-static DOUBLE  minvz,maxvz;     /*					*/
-static DOUBLE  minabsv,maxabsv; /*					*/
 static DOUBLE  FACX,FACY,FACZ;
 ELEMENT       *actele;          /* actual element			*/
 NODE          *actnode;         /* actual node				*/
@@ -139,6 +126,20 @@ void vis3caf(INT numff, INT numaf, INT numsf)
 {
 
 INT iscan, i,j,k;
+static INT      NKEYS=7;              /* see VISUAL3 manual             */
+static INT      IKEYS[]={120,121,122,112,102,97,109};
+static INT      FKEYS[]={1,1,1,1,2,1,1};             
+static float    FLIMS[7][2];          /* data limits                    */
+static DOUBLE  velx;	        /*					*/
+static DOUBLE  vely;	        /*					*/
+static DOUBLE  velz;	        /*					*/
+static DOUBLE  pres;	        /*					*/
+static DOUBLE  absv;	        /*					*/
+static DOUBLE  minpre,maxpre;   /*					*/
+static DOUBLE  minvx,maxvx;     /*					*/
+static DOUBLE  minvy,maxvy;     /*					*/
+static DOUBLE  minvz,maxvz;     /*					*/
+static DOUBLE  minabsv,maxabsv; /*					*/
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 PARTITION      *actpart;            /* pointer to active partition      */
@@ -440,7 +441,276 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of vis2caf */
+} /* end of vis3caf */
+
+
+/*!---------------------------------------------------------------------                                         
+\brief call of visual3 for fluid 
+
+<pre>                                                         genk 12/03      
+</pre>  
+\param  numf   INT      (i)       actual number of fluid field
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void vis3cas(INT numff, INT numaf, INT numsf) 
+{
+
+INT iscan, i,j,k;
+static INT      NKEYS=5;              /* see VISUAL3 manual             */
+static INT      IKEYS[]={120,121,122,97,109};
+static INT      FKEYS[]={1,1,1,1,1};             
+static float    FLIMS[5][2];          /* data limits                    */
+static DOUBLE   disx;	        /*					*/
+static DOUBLE   disy;	        /*					*/
+static DOUBLE   disz;	        /*					*/
+static DOUBLE   absd;	        /*					*/
+static DOUBLE   mindx,maxdx;     /*					*/
+static DOUBLE   mindy,maxdy;     /*					*/
+static DOUBLE   mindz,maxdz;     /*					*/
+static DOUBLE   minabsd,maxabsd; /*					*/
+static DOUBLE   fsix,fsiy,fsiz;
+static DOUBLE   minabsfsi,maxabsfsi,absfsi;
+CALC_ACTION    *action;             /* pointer to the cal_action enum   */
+INTRA          *actintra;           /* pointer to active intra-communic.*/
+PARTITION      *actpart;            /* pointer to active partition      */
+CONTAINER       container;          /* contains variables defined in container.h */
+STRUCT_DYNAMIC  *sdyn;              /* pointer to struct dyn. inp.data   */
+INT             screen;
+INT             dummy;
+
+#ifdef DEBUG 
+dstrc_enter("vis3cas");
+#endif
+
+actfield=&(field[numsf]);
+actfieldtyp=structure;
+sdyn = alldyn[genprob.numsf].sdyn;
+
+actpart= &(partition[numff]);
+action = &(calc_action[numff]);
+NUMA=numaf;
+
+/*--------------------------------------------------- set some values */
+numele = actfield->dis[0].numele;
+numnp_struct  = actfield->dis[0].numnp;
+actele = &(actfield->dis[0].element[0]);
+distyp = actele->distyp;
+
+/*------------------------------------------------------- modify numnp:
+  VIS3 expects HEX elements, so we have to double the nodes!          */
+numnp=2*numnp_struct;
+
+/*------------------------- check if all elements are the same distyp */
+for (i=1;i<numele;i++) /* loop all elements */
+{
+   actele=&(actfield->dis[0].element[i]);
+   if (actele->distyp!=distyp)
+      dserror ("up to now, all elements have to be the same distyp!\n");
+} /* end loop over all elements */
+
+switch (distyp)
+{
+case quad4:
+   KCEL1=0;
+   KCEL2=0;
+   KCEL3=0;
+   KCEL4=numele;
+   KSURF=numele*8;
+break;
+default:
+   dserror("distyp not implemented yet!\n");         
+} /* end switch(distyp) */
+
+/*-------------------- read solution data from flavia.res-file of proc 0 */
+visual_readflaviares(actfield,&ncols,&time_a,&step_a,
+                     &FIRSTSTEP,&LASTSTEP,&DSTEP);
+INCRE=1;
+
+
+/*------------------------------------------ only structural dynamics! */
+IOPT=2;
+if (genprob.probtyp!=prb_fsi)
+dserror("only FSI-problems possible to visualise!\n");
+
+/*----------------------------------------------------- get window size */
+input2:
+printf("\n");
+printf("     Size of Windows:\n");
+printf("     [0]: 3D window bigger than 2D window\n");
+printf("      1 : 2D window bigger than 3D window\n");
+
+screen=getchar();
+switch(screen)
+{
+case 10: WIN3D=0; break;
+case 48: WIN3D=0; dummy=getchar(); break;
+case 49: WIN3D=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input2;
+}
+
+
+/*----------------------------------------------------- get mirror flag */
+input3:
+printf("\n");
+printf("     Mirroring:\n");
+printf("     [0]: no mirroring\n");
+printf("      1 : mirroring about the plane x=0.0\n");
+printf("      2 : mirroring about the plane y=0.0\n");
+printf("      3 : mirroring about the plane z=0.0\n");
+
+screen=getchar();
+switch(screen)
+{
+case 10: MIRROR=0; break;
+case 48: MIRROR=0; dummy=getchar(); break;
+case 49: MIRROR=1; dummy=getchar(); break;
+case 50: MIRROR=2; dummy=getchar(); break;
+case 51: MIRROR=3; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input3;
+}
+/* --------------------------------------------------- get scaling facs */
+input4:
+printf("\n");
+printf("     Scaling Geometry?\n");
+printf("     [0]: no \n");
+printf("      1 : yes\n");
+
+screen=getchar();
+switch(screen)
+{
+case 10: SCAL=0; break;
+case 48: SCAL=0; dummy=getchar(); break;
+case 49: SCAL=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input4;
+}
+
+if (SCAL==1)
+{
+   printf("\n");
+   printf("     Scaling Factors:\n\n");
+   printf("     factor in x-direction:\n");
+   scanf("%lf",&FACX);
+   printf("     factor in y-direction:\n");
+   scanf("%lf",&FACY);
+   printf("     factor in z-direction:\n");
+   scanf("%lf",&FACZ);
+   dummy=getchar();
+}
+else
+   FACX=FACY=FACZ=ONE;
+
+
+/*------------------------------------------------- background colour */
+input5:
+printf("\n");
+printf("     Colours? \n");
+printf("     [0]: colours    - black background\n");
+printf("      1 : colours    - white background\n");
+printf("      2 : grey scale - white background\n");
+screen=getchar();
+switch(screen)
+{
+case 10: bgcolour=0; break;
+case 48: bgcolour=0; dummy=getchar(); break;
+case 49: bgcolour=1; dummy=getchar(); break;
+case 50: bgcolour=2; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input5;
+}
+#ifdef SUSE73
+bgcolour+=10;
+#endif
+
+/*----------------------------------------------- get the data limits */
+actnode=&(actfield->dis[0].node[0]);
+disx    = actnode->sol.a.da[0][0];
+disy    = actnode->sol.a.da[0][1];
+disz    = actnode->sol.a.da[0][2];
+absd    = sqrt(disx*disx+disy*disy+disz*disz);
+
+mindx     = disx;
+maxdx     = disx;
+mindy     = disy;
+maxdy     = disy; 
+mindz     = disz;
+maxdz     = disz; 
+minabsd   = absd;
+maxabsd   = absd;
+
+for (i=0;i<numnp;i++) /* loop nodes */
+{
+   actnode=&(actfield->dis[0].node[i]);
+   for (j=0;j<ncols;j++) /* loop columns in sol-history */
+   {
+      disx      = actnode->sol.a.da[j][0];
+      disy      = actnode->sol.a.da[j][1];
+      disz      = actnode->sol.a.da[j][2];
+      absd      = sqrt(disx*disx+disy*disy+disz*disz);  
+      mindx     = DMIN(mindx  ,disx);
+      maxdx     = DMAX(maxdx  ,disx);
+      mindy     = DMIN(mindy  ,disy);
+      maxdy     = DMAX(maxdy  ,disy); 
+      mindz     = DMIN(mindz  ,disz);
+      maxdz     = DMAX(maxdz  ,disz); 
+      minabsd   = DMIN(minabsd,absd);
+      maxabsd   = DMAX(maxabsd,absd);
+   } /* end of loop over columns */
+} /* end of loop over nodes */
+
+/*--------------------------------------- store max/min data in FLIMS */
+FLIMS[0][0]=mindx;
+FLIMS[0][1]=maxdx;
+
+FLIMS[1][0]=mindy;
+FLIMS[1][1]=maxdy;
+
+FLIMS[2][0]=mindz;
+FLIMS[2][1]=maxdz;
+
+FLIMS[3][0]=minabsd;
+FLIMS[3][1]=maxabsd;
+
+FLIMS[5][0]=ZERO;
+FLIMS[5][1]=ZERO;
+
+/*------------------------------------------------------ check limits */
+for (i=0;i<NKEYS;i++)
+{
+   for (j=0;j<2;j++)
+   {
+      if (FABS(FLIMS[i][j])<EPS9) 
+      {
+         if (FLIMS[i][j]<ZERO) FLIMS[i][j] = -0.000000001;
+         else                  FLIMS[i][j] =  0.000000001;
+      }      
+   }
+   if (FLIMS[i][0]==FLIMS[i][1]) FLIMS[i][1] += ONE;
+}
+
+/*-------------------------------------- set real number of last step */
+LASTSTEP=step_a.a.iv[ncols-1];
+
+/*-------------------------- call Fortran routine which calls VISUAL2 */
+v3call_struct(&IOPT,&WIN3D,&CMUNIT,
+       &NKEYS,IKEYS,FKEYS,FLIMS,
+       &MIRROR,&numnp,&KCEL1,&KCEL2,&KCEL3,&KCEL4,
+       &KSURF,&bgcolour);
+
+
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of vis3cas */
 
 /*!---------------------------------------------------------------------                                         
 \brief return nodes to VISUAL3
@@ -460,23 +730,48 @@ INT i,j;
 dstrc_enter("v3cell");
 #endif
 
-for (i=0;i<numele;i++) /* loop all elements */
+switch (actfieldtyp)
 {
-   actele=&(actfield->dis[0].element[i]);
-   switch (actele->distyp)
+case fluid:
+   for (i=0;i<numele;i++) /* loop all elements */
    {
-   case hex8:
-      for (j=0;j<8;j++)
+      actele=&(actfield->dis[0].element[i]);
+      switch (actele->distyp)
       {
-         actnode = actele->node[j];
-	 cel4[i][j]=actnode->Id_loc+1;
+      case hex8:
+         for (j=0;j<8;j++)
+         {
+            actnode = actele->node[j];
+	    cel4[i][j]=actnode->Id_loc+1;
+         }
+      break;      
+      default:
+         dserror("distyp not implemented yet!\n");         
       }
-   break;      
-   default:
-      dserror("distyp not implemented yet!\n");         
-   }
-} /* end loop over all elements */
-
+   } /* end loop over all elements */
+break;
+case structure:
+   for (i=0;i<numele;i++) /* loop all elements */
+   {
+      actele=&(actfield->dis[0].element[i]);
+      switch (actele->distyp)
+      {
+      case quad4:
+         for (j=0;j<4;j++)
+         {
+            actnode = actele->node[j];
+	    cel4[i][j]=actnode->Id_loc+1;
+	    cel4[i][j+4]=actnode->Id_loc+1+numnp_struct;            
+         }
+      break;      
+      default:
+         dserror("distyp not implemented yet!\n");         
+      }
+   } /* end loop over all elements */
+break;
+default:
+   dserror("fieldtyp unknown!\n");
+}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -585,7 +880,17 @@ case fluid:
    }
 break;
 case structure:
-   dserror("fieldtyp not implemented yet!");
+   for (i=0;i<numnp_struct;i++)
+   {
+      actnode=&(actfield->dis[0].node[i]);
+      XYZ[i][0] = (actnode->x[0]+actnode->sol.a.da[icol][0])*FACX;
+      XYZ[i][1] = (actnode->x[1]+actnode->sol.a.da[icol][1])*FACY;
+      XYZ[i][2] = (actnode->x[2]+actnode->sol.a.da[icol][2])*FACZ;
+      XYZ[i+numnp_struct][0] = (actnode->x[0]+actnode->sol.a.da[icol][0])*FACX;
+      XYZ[i+numnp_struct][1] = (actnode->x[1]+actnode->sol.a.da[icol][1])*FACY;
+      XYZ[i+numnp_struct][2] = (actnode->x[2]+actnode->sol.a.da[icol][2])*FACZ;
+   }
+break;
 case ale:
    dserror("fieldtyp not implemented yet!");
 } /* end switch(actfieldtyp) */
@@ -622,6 +927,7 @@ void v3scal(INT *JKEY, float *S)
 
 INT i;
 float vx,vy,vz;
+float dx,dy,dz;
 
 #ifdef DEBUG 
 dstrc_enter("v3scal");
@@ -709,7 +1015,61 @@ case fluid:
    } /* end switch(*JKEY) */
 break;
 case structure:
-   dserror("fieldtyp not implemented yet!\n");
+   /*-------------------------------------------------- get scalar data */
+   switch(*JKEY)
+   {
+   /*-------------------------------------------------------------------*/   
+   case 1: /* Dx */
+      for (i=0;i<numnp_struct;i++)
+      {
+         actnode=&(actfield->dis[0].node[i]);
+	 S[i]=actnode->sol.a.da[icol][0];
+	 S[i+numnp_struct]=actnode->sol.a.da[icol][0];
+      }      
+   break;
+   /*-------------------------------------------------------------------*/   
+   case 2: /* Dy */
+      for (i=0;i<numnp;i++)
+      {
+         actnode=&(actfield->dis[0].node[i]);
+	 S[i]=actnode->sol.a.da[icol][1];
+	 S[i+numnp_struct]=actnode->sol.a.da[icol][1];
+      }        
+   break;
+   /*-------------------------------------------------------------------*/   
+   case 3: /* Dz */
+      for (i=0;i<numnp;i++)
+      {
+         actnode=&(actfield->dis[0].node[i]);
+	 S[i]=actnode->sol.a.da[icol][2];
+	 S[i+numnp_struct]=actnode->sol.a.da[icol][2];
+      }        
+   break;
+   /*-------------------------------------------------------------------*/  
+   case 4: /* absolute displacement */
+      for (i=0;i<numnp;i++)
+      {
+         actnode=&(actfield->dis[0].node[i]);
+	 dx=actnode->sol.a.da[icol][0];
+	 dy=actnode->sol.a.da[icol][1];
+	 dz=actnode->sol.a.da[icol][2];
+	 S[i] = sqrt(dx*dx+dy*dy+dz*dz);
+	 S[i+numnp_struct] = sqrt(dx*dx+dy*dy+dz*dz);
+      }       
+   break;
+   /*-------------------------------------------------------------------*/
+   case 5:
+      if (IMOVIE==0)
+      {
+         printf("\n");
+         printf("   Starting movie creation at time 0.0\n");
+	 printf("\n");
+         IMOVIE=1;
+      }      
+   break;
+   /*-------------------------------------------------------------------*/                 
+   } /* end switch(*JKEY) */
+break;
 case ale:
    dserror("fieldtyp not implemented yet!\n");
 default:
@@ -769,7 +1129,9 @@ case fluid:
    
 break;
 case structure:
-   dserror("fieldtyp not implemented yet!\n");
+   /*-------------------------------------------------- get vector data */
+     printf("NO VECTOR DATA AVAILABLE !!!!!!\n");
+   break;
 case ale:
    dserror("fieldtyp not implemented yet!\n");
 } /* end switch(actfieldtyp) */
@@ -841,7 +1203,18 @@ case fluid:
    *TIME = time_a.a.dv[icol];
 break;   
 case structure:
-   dserror("fieldtyp not implemented yet!\n");
+   if (icol==-1 || icol+INCRE > ncols-1) 
+   {
+      icol=0;
+      ACTSTEP=step_a.a.iv[icol];
+   }
+   else
+   { 
+      icol+=INCRE;
+      ACTSTEP=step_a.a.iv[icol];
+   }
+   *TIME = time_a.a.dv[icol];
+break;
 case ale:
    dserror("fieldtyp not implemented yet!\n");
 } /* end switch(actfieldtyp) */
@@ -897,7 +1270,21 @@ case fluid:
    strcpy(charpointer,"                                             ");      
 break;   
 case structure:
-   dserror("fieldtyp not implemented yet!\n");
+   t=time_a.a.dv[icol];  
+   strcpy(STRING,"Time: ");
+   charpointer=STRING+strlen(STRING);
+   sprintf(charpointer,"%8.4f",t);
+   charpointer=STRING+strlen(STRING);
+   strcpy(charpointer,"    Step: ");
+   charpointer=STRING+strlen(STRING);
+   sprintf(charpointer,"%5d",ACTSTEP);  
+   charpointer=STRING+strlen(STRING); 
+   strcpy(charpointer,"/");
+   charpointer=STRING+strlen(STRING); 
+   sprintf(charpointer,"%-5d",LASTSTEP); 
+   charpointer=STRING+strlen(STRING);      
+   strcpy(charpointer,"                                             ");      
+break;
 case ale:
    dserror("fieldtyp not implemented yet!\n");
 } /* end switch(actfieldtyp) */
@@ -917,7 +1304,7 @@ return;
 <pre>                                                         genk 07/02      
 
 since VISUAL3 is called by a fortran routine, this one is necessary, if
-VIS2-routines are not compiled into the program
+VIS3-routines are not compiled into the program
 
 </pre>  		 
 \return void                                                                       
