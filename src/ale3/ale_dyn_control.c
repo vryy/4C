@@ -283,7 +283,8 @@ if (ioflags.ale_disp_gid==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem linear\n\n");
+
+if (par.myrank==0) printf("Performing pure ALE problem linear\n\n");
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
 /*===================================================================== */
@@ -335,8 +336,12 @@ if (par.myrank==0 && ioflags.ale_disp_gid==1)
 /*--------------------------------------------------------------------- */
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
-fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
-printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+if (par.myrank==0)
+{
+   fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+   printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+}
+
 /*-------------------------------------- check time and number of steps */
 if (adyn->step < adyn->nstep-1 && adyn->time <= adyn->maxtime)
 goto timeloop;
@@ -481,7 +486,7 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem nonlinear and stiffened\n\n");
+if (par.myrank==0) printf("Performing pure ALE problem nonlinear and stiffened\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
@@ -575,8 +580,11 @@ if (ioflags.ale_disp_file==1)
 ale_quality(actfield,adyn->step);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
-fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
-printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+if (par.myrank==0)
+{
+   fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+   printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+}
 /*-------------------------------------- check time and number of steps */
 if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
 goto timeloop;
@@ -732,7 +740,7 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem in two steps\n\n");
+if (par.myrank==0) printf("Performing pure ALE problem in two steps\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
@@ -867,8 +875,11 @@ if (ioflags.ale_disp_file==1)
 ale_quality(actfield,adyn->step);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
-fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
-printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+if (par.myrank==0)
+{
+   fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+   printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+}
 /*-------------------------------------- check time and number of steps */
 if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
 goto timeloop;
@@ -1013,7 +1024,8 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem with springs\n\n");
+
+if (par.myrank==0) printf("Performing pure ALE problem with springs\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
@@ -1104,8 +1116,11 @@ if (ioflags.ale_disp_file==1)
 ale_quality(actfield,adyn->step);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
-fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
-printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+if (par.myrank==0)
+{
+   fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+   printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+}
 /*-------------------------------------- check time and number of steps */
 if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
 goto timeloop;
@@ -1253,7 +1268,7 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem with Laplace smoothing\n\n");
+if (par.myrank==0) printf("Performing pure ALE problem with Laplace smoothing\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
@@ -1344,8 +1359,11 @@ if (ioflags.ale_disp_file==1)
 ale_quality(actfield,adyn->step);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
-fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
-printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+if (par.myrank==0)
+{
+   fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+   printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+}
 /*-------------------------------------- check time and number of steps */
 if (adyn->step < adyn->nstep && adyn->time < adyn->maxtime)
 goto timeloop;
