@@ -115,6 +115,7 @@ OBJS5	      = src/fluid3/f3_calele.o \
 		src/fluid3/f3_calstabmat.o \
                 src/fluid3/f3_calstabpar.o \
                 src/fluid3/f3_caltimerhs.o \
+                src/fluid3/f3_calvelgrad.o \
                 src/fluid3/f3_inpele.o \
                 src/fluid3/f3_intg.o \
                 src/fluid3/f3_main.o 
@@ -315,6 +316,7 @@ OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_caltimerhspro_tu.o \
                 src/fluid2/f2_caltimerhspro_tu_1.o \
                 src/fluid2/f2_caltuvisc.o \
+                src/fluid2/f2_calvelgrad.o \
                 src/fluid2/f2_calvort.o \
                 src/fluid2/f2_inpele.o \
                 src/fluid2/f2_inpele_tu.o \
@@ -339,11 +341,13 @@ OBJS15        = src/fluid_full/fluid_curvature.o \
                 src/fluid_full/fluid_imp_semimp_tu_1.o\
                 src/fluid_full/fluid_mf.o \
                 src/fluid_full/fluid_mfcoupling.o \
+                src/fluid_full/fluid_mlservice.o \
                 src/fluid_full/fluid_stationary.o \
                 src/fluid_full/fluid_service.o \
 		src/fluid_full/fluid_pm_service.o \
                 src/fluid_full/fluid_service_tu.o\
                 src/fluid_full/fluid_service_tu_1.o\
+                src/fluid_full/fluid_statistics.o \
 		src/fluid_full/inp_fluid_start_data.o
 #                fsi_full
 OBJS16        = src/fsi_full/fsi_aitken.o \
@@ -419,6 +423,32 @@ OBJS18        = src/beam3/b3_bop.o \
                 src/beam3/b3_mat_linel.o \
                 src/beam3/b3_mat_plast_mises.o \
                 src/beam3/b3_restart.o 
+#                fluid2ml
+OBJS19        = src/fluid2ml/f2_mlbubmat.o \
+                src/fluid2ml/f2_mlele.o \
+                src/fluid2ml/f2_mlelesize.o \
+                src/fluid2ml/f2_mlfuncderiv.o \
+                src/fluid2ml/f2_mlgalmat.o \
+                src/fluid2ml/f2_mlint.o \
+                src/fluid2ml/f2_mlservice.o \
+                src/fluid2ml/f2_mlstabmat.o \
+                src/fluid2ml/f2_mlstabpar.o \
+                src/fluid2ml/f2_mlsubmesh.o \
+                src/fluid2ml/f2_mltimerhs.o \
+                src/fluid2ml/f2_mlvmmrhs.o 
+#                fluid3ml
+OBJS20        = src/fluid3ml/f3_mlbubmat.o \
+                src/fluid3ml/f3_mlele.o \
+                src/fluid3ml/f3_mlelesize.o \
+                src/fluid3ml/f3_mlfuncderiv.o \
+                src/fluid3ml/f3_mlgalmat.o \
+                src/fluid3ml/f3_mlint.o \
+                src/fluid3ml/f3_mlservice.o \
+                src/fluid3ml/f3_mlstabmat.o \
+                src/fluid3ml/f3_mlstabpar.o \
+                src/fluid3ml/f3_mlsubmesh.o \
+                src/fluid3ml/f3_mltimerhs.o \
+                src/fluid3ml/f3_mlvmmrhs.o 
 #                optimization
 OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/input_optdata.o \
