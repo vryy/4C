@@ -114,11 +114,25 @@ extern struct _FILES  allfiles;
 this routine conrols the implicit and semi-implicit algorithms for fluid
 problems combined with different nonlinear iteration schemes.
 
+Some features have been added:                               chfoe 01/04
+Generalised Alpha time integration and BDF2 as well as adaptive time 
+stepping has been implemented
+There is now a choice for two different ways of treating the time rhs.
+a) fdyn->time_rhs == 1: -> use 'classic' time rhs term as described in
+                           the dissertation of W.A. Wall, time rhs is
+                           calculated ONCE per time step
+b) fdyn->time_rhs == 0: -> 'time rhs' is calculated by means of the 
+                           elemental mass matrices and reduces to an 
+                           assembled matrix vector product. It is 
+                           calculated newly within every iteration.
+
 time-discretisation:
-fdyn->iop=2: Semi-Implicit-One-Step Method
-fdyn->iop=3: Semi-Implicit-Two-Step Method
+fdyn->iop=1: Generalised Alpha time integration
+fdyn->iop=2: Semi-Implicit-One-Step Method \  not implemented
+fdyn->iop=3: Semi-Implicit-Two-Step Method /
 fdyn->iop=4: One-Step-Theta Scheme
 fdyn->iop=5: Fractional-Step-Theta Scheme 
+fdyn->iop=7: BDF2 (2nd order backward differencing)
 
 see dissertation of W.A. Wall chapter 4.2 'Zeitdiskretisierung'
 
@@ -169,8 +183,8 @@ DOUBLE          tes=0.0;            /*					*/
 DOUBLE          tss=0.0;            /*					*/
 DOUBLE          tts=0.0;            /*					*/
 FLUID_STRESS    str;           
-DOUBLE		liftdrag[2];	    /* array with lift & drag coeff.	*/
-DOUBLE		recv[2];
+DOUBLE		liftdrag[3];	    /* array with lift & drag coeff.	*/
+DOUBLE		recv[3];
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
 PARTITION      *actpart;            /* pointer to active partition      */
@@ -204,9 +218,10 @@ actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 dynvar      = &(fdyn->dynvar);
 restart     = genprob.restart;
-container.actndis  = 0;
-container.turbu    = fdyn->turbu;
-container.fieldtyp = actfield->fieldtyp;
+container.actndis   = 0;
+container.turbu     = fdyn->turbu;
+container.fieldtyp  = actfield->fieldtyp;
+container.gen_alpha = dynvar->gen_alpha;
 if (fdyn->liftdrag==0)
 str         = str_none;
 else
@@ -294,18 +309,19 @@ amdef("time",&time_a,1000,1,"DV");
 /*--------------------------------------------- initialise fluid field */
 if (restart>0)
 {
-   if (fdyn->init>0)
-      dserror("Initial field either by restart, or by function or from file ...\n");
-   else
-   {
-      fdyn->resstep=genprob.restart;
-      fdyn->init=2;
-   }
+  if (fdyn->init>0)
+    dserror("Initial field either by restart, or by function or from file ...\n");
+  else
+  {
+    fdyn->resstep=genprob.restart;
+    fdyn->init=2;
+  }
 }
+
 if (fdyn->adaptive==0 && fdyn->time_rhs)
-   num_sol = 4;
+  num_sol = 4;
 else
-   num_sol = 8;
+  num_sol = 8;
 fluid_init(actpart,actintra,actfield,fdyn,action,&container,num_sol,str);
 actpos=0;
 
@@ -316,7 +332,7 @@ if (fdyn->mlfem==1) fluid_ml_init(actfield,fdyn);
 
 /*--------------------------------------- init all applied time curves -*/
 for (actcurve=0; actcurve<numcurve; actcurve++)
-dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);   
+  dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);   
 
 /*-------------------------------------- init the dirichlet-conditions -*/
 fluid_initdirich(actfield, fdyn);
@@ -351,13 +367,12 @@ out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 /*------------------------------- print out initial data to .flavia.res */
 if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
 {
-   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
-   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+  out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
+  out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
 }
 
 /*---------- calculate time independent constants for time algorithm ---*/
 fluid_cons(fdyn,dynvar);
-container.gen_alpha	= dynvar->gen_alpha;
 
 /*======================================================================* 
  |                         T I M E L O O P                              |
@@ -383,20 +398,21 @@ iststep++;
 /*------------------------------------------ check (starting) algorithm */
 if (restart!=0)
 {
-   step_s=fdyn->step;
-   fdyn->step=1;
-   fluid_startproc(fdyn,&nfrastep);
-   restart=0; 
-   fdyn->step = step_s;
+  step_s=fdyn->step;
+  fdyn->step=1;
+  fluid_startproc(fdyn,&nfrastep);
+  restart=0; 
+  fdyn->step = step_s;
 }
 if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
 
 /*------------------------------ calculate constants for time algorithm */
-fluid_tcons(fdyn,dynvar);	
+fluid_tcons(fdyn,dynvar);
+/*-------------------------------------------- set new absolute time ---*/
 if (fdyn->iop == 1)/* generalised alpha is solved for time n+alpha_f 	*/
-   fdyn->time += dynvar->dta * fdyn->alpha_f;
+  fdyn->time += dynvar->dta * fdyn->alpha_f;
 else
-   fdyn->time += dynvar->dta; 
+  fdyn->time += dynvar->dta; 
 dynvar->acttime=fdyn->time;
 
 /*------------------------------------------------ output to the screen */
@@ -405,10 +421,10 @@ if (par.myrank==0) fluid_algoout(fdyn,dynvar);
 /*------------------------ predictor step for adaptive time stepping ---*/
 if (fdyn->adaptive && fdyn->step > 1) 
 {
-   fluid_predictor(actfield,fdyn->iop,dynvar);
+  fluid_predictor(actfield,fdyn->iop,dynvar);
 }
 
-/*--------------------- set dirichlet boundary conditions for  timestep */
+/*------------ set dirichlet boundary conditions to sol_increment[3] ---*/
 fluid_setdirich(actfield,fdyn,3);
 
 /*-------------------------------------------------- initialise timerhs */
@@ -461,7 +477,7 @@ tes+=te;
 
 /*--------------------------------------------------------------------- *
  | build the actual rhs-vector:                                         |
- |        rhs = ftimerhs + fiterhs 				|
+ |        rhs = ftimerhs + fiterhs 				        |
  *----------------------------------------------------------------------*/
 /* add time-rhs: */
 if (fdyn->time_rhs)
@@ -508,8 +524,8 @@ converged = fluid_convcheck(fdyn,vrat,prat,ZERO,itnum,te,ts);
 /*--------------------- check if nonlinear iteration has to be finished */
 if (converged==0)
 {
-   itnum++;
-   goto nonlniter;
+  itnum++;
+  goto nonlniter;
 }
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration                                      |
@@ -517,103 +533,77 @@ if (converged==0)
 /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
 if (fdyn->iop == 1)
 {
-   solserv_sol_zero(actfield,0,1,2);
-   solserv_sol_add(actfield,0,1,1,3,2,1.0/fdyn->alpha_f);
-   solserv_sol_add(actfield,0,1,1,1,2,1.0-1.0/fdyn->alpha_f);
-   solserv_sol_copy(actfield,0,1,1,2,3);   
-   
-   fdyn->time += dynvar->dta * (1.0 - fdyn->alpha_f);
+  solserv_sol_zero(actfield,0,1,2);
+  solserv_sol_add(actfield,0,1,1,3,2,1.0/fdyn->alpha_f);
+  solserv_sol_add(actfield,0,1,1,1,2,1.0-1.0/fdyn->alpha_f);
+  solserv_sol_copy(actfield,0,1,1,2,3);   
+
+  fdyn->time += dynvar->dta * (1.0 - fdyn->alpha_f);
 }
 /*-------------------------- check time step size in adaptive regime ---*/
 if(fdyn->adaptive)
 {
-   if (fdyn->step > 1)
-   {
-      /*---------------------- evaluate local truncation error (LTE) ---*/
-      fluid_lte(actfield,fdyn->iop,dynvar,fdyn);
-   
-      /*---------------- evaluate norm of LTE and new time step size ---*/
-      fluid_lte_norm(actpart,actintra,dynvar,fdyn,
-                     &iststep,&repeat,&repeated);
-      if (repeat) 
-      {
-         repeated++;
-         goto timeloop;
-      }
-   }
-   
-   else
-   {
-      repeated = 0;
-      dynvar->dt_prop = dynvar->dta;
-   }
+  if (fdyn->step > 1)
+  {
+    /*------------------------ evaluate local truncation error (LTE) ---*/
+    fluid_lte(actfield,fdyn->iop,dynvar,fdyn);
+
+    /*------------------ evaluate norm of LTE and new time step size ---*/
+    fluid_lte_norm(actpart,actintra,dynvar,fdyn,
+                   &iststep,&repeat,&repeated,itnum);
+    if (repeat)
+    {
+      repeated++;
+      goto timeloop;
+    }
+  }
+
+  else
+  {
+    repeated = 0;
+    dynvar->dt_prop = dynvar->dta;
+  }
 }
-   
+
 /*---------------------------------------------- update acceleration ---*/
 if (fdyn->adaptive || (fdyn->time_rhs==0 && fdyn->iop==4) )
 {
-   /*---- copy solution from sol_increment[5][j] to sol_increment[4][j] */
-   /*-- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/
-   if (fdyn->step > 1) solserv_sol_copy(actfield,0,1,1,5,4);
-   /*----------------------- evaluate acceleration in this time step ---*
-    *------------------------------- depending on integration method ---*/
-   if (fdyn->step == 1)
-   {
-      solserv_sol_zero(actfield,0,1,5);
-      solserv_sol_add(actfield,0,1,1,3,5, 1.0/dynvar->dta);
-      solserv_sol_add(actfield,0,1,1,1,5,-1.0/dynvar->dta);
-      solserv_sol_copy(actfield,0,1,1,5,4);
-   }
-   else 
-      fluid_acceleration(actfield,fdyn->iop,dynvar,fdyn);
+  /*----- copy solution from sol_increment[5][j] to sol_increment[4][j] */
+  /*--- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/
+  if (fdyn->step > 1) solserv_sol_copy(actfield,0,1,1,5,4);
+  /*------------------------ evaluate acceleration in this time step ---*
+   *-------------------------------- depending on integration method ---*/
+  if (fdyn->step == 1)
+  { /* do just a linear interpolation within the first timestep */
+    solserv_sol_zero(actfield,0,1,5);
+    solserv_sol_add(actfield,0,1,1,3,5, 1.0/dynvar->dta);
+    solserv_sol_add(actfield,0,1,1,1,5,-1.0/dynvar->dta);
+    solserv_sol_copy(actfield,0,1,1,5,4);
+  }
+  else
+    fluid_acceleration(actfield,fdyn->iop,dynvar,fdyn);
 }
 
-/*--------------------------------------------- update time stepping ---*/
+/*------------------------------------------- update time step sizes ---*/
 dynvar->dtp = dynvar->dta;
 if (fdyn->adaptive)
 {
-   dynvar->dta = dynvar->dt_prop;
+  dynvar->dta = dynvar->dt_prop;
 }
 
 /*-------------------------------------------------- steady state check */
 if (fdyn->stchk==iststep)
 {
-   iststep=0;
-   steady = fluid_steadycheck(fdyn,actfield,numeq_total);
+  iststep=0;
+  steady = fluid_steadycheck(fdyn,actfield,numeq_total);
 }
 
 /*----------------------------------------------- lift&drag computation */
 if (fdyn->liftdrag>0)
 {
-   /*---------------- initialise lift- and drag- coefficient to zero ---*/
-   liftdrag[0] = liftdrag[1] = 0.0;
-   
-   /*------------------------- get fluid stresses and integrate them ---*/
-   *action = calc_fluid_liftdrag;
-   container.nii= 0;
-   container.nif= 0;
-   container.str=str;
-   container.liftdrag = liftdrag;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
-          &container,action);
-
-/*-------------- distribute lift- and drag- coefficient to all procs ---*/
-#ifdef PARALLEL
-MPI_Reduce(liftdrag,recv,2,MPI_DOUBLE,MPI_SUM,0,actintra->MPI_INTRA_COMM);
-for (i=0; i<2; i++)
-   liftdrag[i] = recv[i];
-#endif
-
-   /*-------------------------------------------------------- output ---*/
-#ifdef D_Fluid2
-   if(par.myrank == 0)
-   {
-      printf("Drag (global x-direction) = %lf\n",   liftdrag[0]);
-      printf("Lift (global y-direction) = %lf\n\n", liftdrag[1]);
-   }
-   if (par.myrank == 0)
-      f2_plot_liftdrag(fdyn->time, liftdrag);
-#endif
+  *action = calc_fluid_liftdrag;
+  fluid_liftdrag(1,action,container,actfield,
+                 actsolv,actpart,actintra,fdyn);
 }
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
@@ -633,7 +623,7 @@ restartstep++;
 /*---------------------------------------------- write solution to .pss */
 if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1)
 {
-   pssstep=0;   
+   pssstep=0;
    /*--------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim)
    amredef(&(time_a),time_a.fdim+1000,1,"DV");
@@ -696,14 +686,14 @@ out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 /*------------------------------------ print out solution to 0.pss file */
 if (ioflags.fluid_vis_file==1)
 {
-   if (pssstep!=0)
-   {
-      /*------------------------------------------ store time in time_a */
-      if (actpos >= time_a.fdim)
-      amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = fdyn->time;   
-   }   
-   if (par.myrank==0) visual_writepss(actfield,actpos+1,&time_a);
+  if (pssstep!=0)
+  {
+    /*----------------------------------------- store time in time_a ---*/
+    if (actpos >= time_a.fdim)
+    amredef(&(time_a),time_a.fdim+1000,1,"DV");
+    time_a.a.dv[actpos] = fdyn->time;   
+  }   
+  if (par.myrank==0) visual_writepss(actfield,actpos+1,&time_a);
 }
 
 
