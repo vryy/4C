@@ -43,7 +43,7 @@ if (ierr==1)
 {
    ele->distyp = line2;
    ele->numnp=2;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    frint_n("LIN2",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
@@ -52,7 +52,7 @@ if (ierr==1)
 {
    ele->distyp = line3;
    ele->numnp=3;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    frint_n("LIN3",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }

@@ -482,7 +482,7 @@ void b3_trans_stf(DOUBLE **K,
 		  INT	   calcstep)  	   	     	     	     	     	     	   	     
 {
 static ARRAY stiff_a; static DOUBLE **stiff;  /* stiffness vector */
-const int max = MAXDOFPERNODE*MAXNOD_BEAM3;
+const INT max = MAXDOFPERNODE*MAXNOD_BEAM3;
 
 #ifdef DEBUG 
 dstrc_enter("b3_trans_stf");

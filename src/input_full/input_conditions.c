@@ -2205,11 +2205,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_contact()
 {
-int    i,j,counter=0;
-int    ierr;
-int    ndline;
-int    dlineId;
-int    foundit;
+INT    i,j,counter=0;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;

@@ -1220,9 +1220,9 @@ if (actgid->is_beam3_21)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1240,9 +1240,9 @@ if (actgid->is_beam3_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1258,9 +1258,9 @@ if (actgid->is_beam3_32)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1278,9 +1278,9 @@ if (actgid->is_beam3_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }

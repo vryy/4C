@@ -60,8 +60,8 @@ currently in contact). These nodes are stored in the contact structure.
 ---------------------------------------------------------------------*/
 void wall_contact_set()
 {
-int    i,j,k;
-int myrank;
+INT    i,j,k;
+INT myrank;
 #ifdef PARALLEL
 MPI_Status status;
 #endif

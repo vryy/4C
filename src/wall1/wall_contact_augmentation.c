@@ -73,13 +73,13 @@ extern struct _WALL_CONTACT contact;
 ---------------------------------------------------------------------*/
 void wall_contact_augmentation(INTRA *actintra)
 {
-int    i,j,k;
-int    myrank;
-double pen_par, tan_pen_par;
-double lamda_n, lamda_t_trial, norm_lamda_t_trial, phi_trial, del_gama;
-double g, M11;
-double friction;
-double dist_1, dist_2;
+INT    i,j,k;
+INT    myrank;
+DOUBLE pen_par, tan_pen_par;
+DOUBLE lamda_n, lamda_t_trial, norm_lamda_t_trial, phi_trial, del_gama;
+DOUBLE g, M11;
+DOUBLE friction;
+DOUBLE dist_1, dist_2;
 DISCRET *dis;
 #ifdef PARALLEL
 MPI_Status status;

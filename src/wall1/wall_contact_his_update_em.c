@@ -1,7 +1,7 @@
 /*!---------------------------------------------------------------------
 \file
 \brief contains wall_contact_history_update_em routine used to update some
-history variables of 2-D contact interfaces with E-M conserving int. schm.
+history variables of 2-D contact interfaces with E-M conserving INT. schm.
 
 ---------------------------------------------------------------------*/
 #ifdef WALLCONTACT
@@ -47,7 +47,7 @@ extern struct _WALL_CONTACT contact;
                                                       
 <pre>                                                         m.gee 10/02    
 This routine is used to update the history variable (closest point projection)
-of 2-D contact interfaces in case of Energy-Momentum conserving int. scheme.
+of 2-D contact interfaces in case of Energy-Momentum conserving INT. scheme.
 </pre>
 \return void
 
@@ -55,8 +55,8 @@ of 2-D contact interfaces in case of Energy-Momentum conserving int. scheme.
 ----------------------------------------------------------------------*/
 void wall_contact_his_update_em(INTRA *actintra)
 {
-int   i;
-int   myrank;
+INT   i;
+INT   myrank;
 #ifdef DEBUG 
 dstrc_enter("wall_contact_his_update_em");
 #endif

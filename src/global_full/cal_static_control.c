@@ -97,7 +97,7 @@ INT           init;             /* init flag for solver */
 INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
 static ARRAY   dirich_a;
-static double *dirich;
+static DOUBLE *dirich;
 
 SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
 PARTITION    *actpart;          /* pointer to the fields PARTITION structure */

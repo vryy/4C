@@ -68,14 +68,14 @@ DOUBLE             eout;            /* external energy */
 DOUBLE             etot;            /* total energy */
 DOUBLE             ekin;            /* kinetic energy */
 #ifdef D_WALL1
-double             total_linmom[2];
-double             total_angular_momentum;
-double             total_strain_energy;
-double             total_kinetic_energy;
-double             local_linmom[2];
-double             local_angular_momentum;
-double             local_strain_energy;
-double             local_kinetic_energy;
+DOUBLE             total_linmom[2];
+DOUBLE             total_angular_momentum;
+DOUBLE             total_strain_energy;
+DOUBLE             total_kinetic_energy;
+DOUBLE             local_linmom[2];
+DOUBLE             local_angular_momentum;
+DOUBLE             local_strain_energy;
+DOUBLE             local_kinetic_energy;
 #endif
 DOUBLE             dinorm;  /* square of the L2-norm of the residual displacements */
 DOUBLE             dnorm;   /* square of the L2-norm of the displacements increment */

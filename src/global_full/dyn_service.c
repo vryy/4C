@@ -727,11 +727,11 @@ return;
 #ifdef GEMM
 void dyn_nlngemm_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn)
 {
-double  beta;
-double  gamma;
-double  alpham;
-double  alphaf;
-double  xsi;
+DOUBLE  beta;
+DOUBLE  gamma;
+DOUBLE  alpham;
+DOUBLE  alphaf;
+DOUBLE  xsi;
 #ifdef DEBUG 
 dstrc_enter("dyn_nlngemm_outhead");
 #endif

@@ -58,7 +58,7 @@ with design oblects.(d_lines and d_nodes)
 ----------------------------------------------------------------------*/
 void wallcontact_init(FIELD *actfield)
 {
-int   i,j,k,l,m,n,p,q,r,s,t;
+INT   i,j,k,l,m,n,p,q,r,s,t;
 DISCRET *dis;
 k = l = m = n = p = q = r = s = t = 0;
 #ifdef DEBUG 

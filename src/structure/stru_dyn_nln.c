@@ -136,28 +136,28 @@ DOUBLE          dirichfacs[10];     /* factors needed for dirichlet-part of rhs 
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
-int             contactflag = 0;    /* flag for contact onoff */
+INT             contactflag = 0;    /* flag for contact onoff */
 ARRAY           contactforce_a;     /* redundant vector of full length for contact forces */
 DOUBLE         *cforce;
 DIST_VECTOR    *con;                /*  contact forces */              
-int             augon=0;
-int             actaug=0;
-int             aug_number=5;       /*  # of augmentation loops */
-double          contactdt;
+INT             augon=0;
+INT             actaug=0;
+INT             aug_number=5;       /*  # of augmentation loops */
+DOUBLE          contactdt;
 
-int             timeadapt;          /* flag to switch time adaption on/off */
-int             itwant;
-double          maxdt;
-double          resultdt;
-double          newdt;
-double          olddt;
-double          eta;
-int             repeatcount;
-double          lowtime,uptime,writetime;
-double          remain;
-double          low,up;
-int             ilow,iup;
-double          tau,tau2,tau3,fac;
+INT             timeadapt;          /* flag to switch time adaption on/off */
+INT             itwant;
+DOUBLE          maxdt;
+DOUBLE          resultdt;
+DOUBLE          newdt;
+DOUBLE          olddt;
+DOUBLE          eta;
+INT             repeatcount;
+DOUBLE          lowtime,uptime,writetime;
+DOUBLE          remain;
+DOUBLE          low,up;
+INT             ilow,iup;
+DOUBLE          tau,tau2,tau3,fac;
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn   = 1;                /* dynamic calculation */

@@ -32,8 +32,8 @@ ARRAY    xjm_a_h;    /* jacobian matrix */
 DOUBLE **xjm_h;         
 
 #ifdef GEMM
-double ***b_bar_history; /* previous B_hat operator*/
-double ***PK_history; /* previous 2nd PK stresses*/
+DOUBLE ***b_bar_history; /* previous B_hat operator*/
+DOUBLE ***PK_history; /* previous 2nd PK stresses*/
 #endif
 
 #ifdef DEBUG 

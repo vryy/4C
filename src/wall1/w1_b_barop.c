@@ -21,14 +21,14 @@ extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  | calc b_bar operator at Gaussian point r,s                            |
  *----------------------------------------------------------------------*/
-void w1_b_barop(ELEMENT *ele, double **b_bar,double **int_b_bar, double **boplin,
-                double *F, int numeps, int nd, int ip)
+void w1_b_barop(ELEMENT *ele, DOUBLE **b_bar,DOUBLE **int_b_bar, DOUBLE **boplin,
+                DOUBLE *F, INT numeps, INT nd, INT ip)
 {
-int i, j, k;
-double Fmatrix[4][4];
+INT i, j, k;
+DOUBLE Fmatrix[4][4];
 #ifdef GEMM
 STRUCT_DYNAMIC *sdyn;       
-double alpha_f;
+DOUBLE alpha_f;
 #endif
 /*------------------------------------------------------------*/
 #ifdef DEBUG 

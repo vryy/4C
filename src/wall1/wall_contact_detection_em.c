@@ -49,17 +49,17 @@ extern struct _WALL_CONTACT contact;
 #endif
 /*-----------------------------------------------------------------------*/
 /*MacAuley Bracket function*/
-double Mac(double a);
-double Mac(double a){
+DOUBLE Mac(DOUBLE a);
+DOUBLE Mac(DOUBLE a){
 if(a>=0.0) return a;
 else return 0.0;
 }
 
 /*Inner product function*/
-double inner_pr(double *a , double *b);
+DOUBLE inner_pr(DOUBLE *a , DOUBLE *b);
 
 /*Heaviside function*/
-double Heaviside(double a);
+DOUBLE Heaviside(DOUBLE a);
 /*---------------------------------------------------------------------*/
 
 /*!----------------------------------------------------------------------
@@ -74,45 +74,45 @@ algorithms.
 \param actintra   INTRA*             (i) the intra-communicator of this field                  
 \param matrix SPARSE_ARRAY*          (i) tangent stiffness
 \param matrix_type SPARSE_TYP*       (i) type of tangent stiffness storage format   
-\param con_force double*             (i) contact forces
+\param con_force DOUBLE*             (i) contact forces
 \return void
 
 
 ---------------------------------------------------------------------*/
-void wall_contact_detection_em(FIELD *actfield, INTRA *actintra, SPARSE_ARRAY *matrix, SPARSE_TYP *matrix_type, double *con_force)
+void wall_contact_detection_em(FIELD *actfield, INTRA *actintra, SPARSE_ARRAY *matrix, SPARSE_TYP *matrix_type, DOUBLE *con_force)
 {
-int    i,j,k,l,m,n,p,q,r,s,t,tt,qq;
-int    ii,jj,nn;
-int    myrank,nproc,index,master_owner[3];
+INT    i,j,k,l,m,n,p,q,r,s,t,tt,qq;
+INT    ii,jj,nn;
+INT    myrank,nproc,index,master_owner[3];
 ARRAY  con_flag_s,con_flag_r;
 SPOOLMAT *K;
-int    numeq;
-int    numeq_total;
-double distance;
-double pr_d;
-double temp1, temp2;
-double dist1, dist2;
-double local_coordinate;
-double pen_par;
-double t_n, t_aux;
-double g, g_aux;
-double value;
-double M11, m11;
-double norm_1, norm_2;
-double unit_norm_1, unit_norm_2;
-double sl_length_1, sl_length_2;
-double cr_length;
-double unit_v1[3], unit_v2[3], unit_v3[3], unit_v3_aux[3], *tangent, relative_pos[3];
-double pos_ybar1[3], pos_ybar2[3]; 
-double norm_vec_1[3], norm_vec_2[3];
-double cr_length_vec[3];
-double sl_length_vec1[3], sl_length_vec2[3];
-double rel_pos_ybar1[3], rel_pos_ybar2[3];
-double N[6], N_1[6], T[6], D_1[6];
-double kc_n[6][6];
-double delta_tau[3];
-double dt, multiplier_1, multiplier_2;
-double jacobian;
+INT    numeq;
+INT    numeq_total;
+DOUBLE distance;
+DOUBLE pr_d;
+DOUBLE temp1, temp2;
+DOUBLE dist1, dist2;
+DOUBLE local_coordinate;
+DOUBLE pen_par;
+DOUBLE t_n, t_aux;
+DOUBLE g, g_aux;
+DOUBLE value;
+DOUBLE M11, m11;
+DOUBLE norm_1, norm_2;
+DOUBLE unit_norm_1, unit_norm_2;
+DOUBLE sl_length_1, sl_length_2;
+DOUBLE cr_length;
+DOUBLE unit_v1[3], unit_v2[3], unit_v3[3], unit_v3_aux[3], *tangent, relative_pos[3];
+DOUBLE pos_ybar1[3], pos_ybar2[3]; 
+DOUBLE norm_vec_1[3], norm_vec_2[3];
+DOUBLE cr_length_vec[3];
+DOUBLE sl_length_vec1[3], sl_length_vec2[3];
+DOUBLE rel_pos_ybar1[3], rel_pos_ybar2[3];
+DOUBLE N[6], N_1[6], T[6], D_1[6];
+DOUBLE kc_n[6][6];
+DOUBLE delta_tau[3];
+DOUBLE dt, multiplier_1, multiplier_2;
+DOUBLE jacobian;
 DISCRET *dis;
 NODE *closestptr;
 NODE *neigbour_nodes[2];

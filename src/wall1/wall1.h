@@ -119,10 +119,10 @@ INT           nGP[4];
 DOUBLE        thick;
 
 #ifdef GEMM
-double strain_energy;
-double kinetic_energy;
-double angular_momentum;
-double linmom[2];
+DOUBLE strain_energy;
+DOUBLE kinetic_energy;
+DOUBLE angular_momentum;
+DOUBLE linmom[2];
 #endif
 
 W1_ELE_WA     *elewa;                         /* element working array */

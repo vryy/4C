@@ -23,23 +23,23 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 void w1_fint(
 	     ELEMENT *ele,        /*active element pointer*/
-	     double **stress,     /* 2.PK stresses        */ 
-             double  *F,          /* Deformation gradient */ 
-             double **int_b_bar,      
-             double  *fint,       /* internal forces      */ 
-             double   fac,        /* detJ*wr*ws*thickness */ 
-             int      nd,         /* Element-DOF          */	     
-	     int      ip          /*Integration point     */
+	     DOUBLE **stress,     /* 2.PK stresses        */ 
+             DOUBLE  *F,          /* Deformation gradient */ 
+             DOUBLE **int_b_bar,      
+             DOUBLE  *fint,       /* internal forces      */ 
+             DOUBLE   fac,        /* detJ*wr*ws*thickness */ 
+             INT      nd,         /* Element-DOF          */	     
+	     INT      ip          /*Integration point     */
 	     )
 	              
 {
 /*----------------------------------------------------------------------*/
-int i, j, k;
-double st[4];
-double int_stress[4][4];
+INT i, j, k;
+DOUBLE st[4];
+DOUBLE int_stress[4][4];
 #ifdef GEMM
 STRUCT_DYNAMIC *sdyn;
-double alpha_f, xsi;       
+DOUBLE alpha_f, xsi;       
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -15,46 +15,46 @@ void w1_update_history (ELEMENT   *ele,
                         W1_DATA   *data,
 			MATERIAL  *mat)                   
 {
-int                 i,j,k,a,b;        /* some loopers              */
-int                 nir,nis;          /* num GP in r/s/t direction */
-int                 lr, ls;           /* loopers over GP           */
-int                 iel;              /* numnp to this element     */
-int                 nd;               /* dof of this element       */
-int                 ip;
-int                 istore;
-const int           numdf  = 2;       /* number dof per node          */
-const int           numeps = 4;       /* number of strain components  */
+INT                 i,j,k,a,b;        /* some loopers              */
+INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 lr, ls;           /* loopers over GP           */
+INT                 iel;              /* numnp to this element     */
+INT                 nd;               /* dof of this element       */
+INT                 ip;
+INT                 istore;
+const INT           numdf  = 2;       /* number dof per node          */
+const INT           numeps = 4;       /* number of strain components  */
 
-double              fac,facm;         /* integration factor             */
-double              e1,e2,e3;         /*GP-coords                       */
-double              facr,facs,fact;   /* weights at GP                  */
-double              thick,density;    /* for calculation of mass matrix */
-double det;
+DOUBLE              fac,facm;         /* integration factor             */
+DOUBLE              e1,e2,e3;         /*GP-coords                       */
+DOUBLE              facr,facs,fact;   /* weights at GP                  */
+DOUBLE              thick,density;    /* for calculation of mass matrix */
+DOUBLE det;
 
 static ARRAY    D_a;      /* material matrix */     
-static double **D; 
+static DOUBLE **D; 
 static ARRAY    stress_a; /* stress matrix (2.PK for total lagr.) */     
-static double  **stress; 
+static DOUBLE  **stress; 
 static ARRAY    xcure_a;  /* coords in current config. */     
-static double **xcure; 
+static DOUBLE **xcure; 
 static ARRAY    xrefe_a;  /* coords in referenz config. */     
-static double **xrefe; 
+static DOUBLE **xrefe; 
 static ARRAY    funct_a;  /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    boplin_a; /* linear B-operator */   
-static double **boplin;
+static DOUBLE **boplin;
 static ARRAY    b_bar_a;  /* B_bar operator*/
-static double **b_bar; 
+static DOUBLE **b_bar; 
 static ARRAY    mass_a;   /* Mass matrix*/
-static double **mass;
+static DOUBLE **mass;
 static ARRAY    F_a;      /* deformation gradient */   
-static double  *F; 
+static DOUBLE  *F; 
 static ARRAY    strain_a; /* strain (Green-Lagr for total lagr.) */   
-static double  *strain; 
+static DOUBLE  *strain; 
 
 
 /*----------------------------------------------------------------------*/

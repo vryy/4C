@@ -31,20 +31,20 @@ extern ALLDYNA      *alldyn;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void w1_keu(    
-	    double  **keu, 
-            double  **b_bar,
-            double  **int_b_bar,
-	    double  **D,
-            double   *F,
-            double    fac, 
-            int       nd,
-            int       neps)
+	    DOUBLE  **keu, 
+            DOUBLE  **b_bar,
+            DOUBLE  **int_b_bar,
+	    DOUBLE  **D,
+            DOUBLE   *F,
+            DOUBLE    fac, 
+            INT       nd,
+            INT       neps)
 {
 
-int       i, j, k, m;          /*New format*/
+INT       i, j, k, m;          /*New format*/
 #ifdef GEMM
 STRUCT_DYNAMIC *sdyn;    
-double    alpha_f, xsi;
+DOUBLE    alpha_f, xsi;
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

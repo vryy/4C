@@ -175,7 +175,7 @@ INT          iel;                /* number of nodes per element     */
 const INT    numdf  = 6;         /* dof per node                    */
 const INT    max = MAXDOFPERNODE*MAXNOD_BEAM3;
 
-static ARRAY dummy_a; static double *dummy;  /* dummy load vector */
+static ARRAY dummy_a; static DOUBLE *dummy;  /* dummy load vector */
 
 #ifdef DEBUG 
 dstrc_enter("b3_load");

@@ -1131,7 +1131,7 @@ This routine writes all the data needed to restart the beam element
     called by: beam3()
 
 *----------------------------------------------------------------------*/
-void b3_write_restart(ELEMENT *actele, int nhandle, long int *handles);
+void b3_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
 
 /*!----------------------------------------------------------------------
 \brief reads the data needed to restart the beam element
@@ -1151,7 +1151,7 @@ This routine reads all the data needed to restart the beam element
     called by: beam3()
 
 *----------------------------------------------------------------------*/
-void b3_read_restart(ELEMENT *actele, int nhandle, long int *handles);
+void b3_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
 
 #endif
 /*! @} (documentation module close)*/		   

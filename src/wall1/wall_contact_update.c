@@ -48,10 +48,10 @@ extern struct _WALL_CONTACT contact;
 #endif
 
 /*Inner product function which is frequently used in the code.*/
-double inner_pr(double *a , double *b);
+DOUBLE inner_pr(DOUBLE *a , DOUBLE *b);
 
 /*Heaviside function*/
-double Heaviside(double a);
+DOUBLE Heaviside(DOUBLE a);
 
 /*!----------------------------------------------------------------------
 \brief short description
@@ -68,31 +68,31 @@ Newton iteration which is mainly necessary for frictional problems.
 ---------------------------------------------------------------------*/
 void wall_contact_update(FIELD *actfield, INTRA *actintra)
 {
-int    i,j,k,l,m,n,p,q,r,s,t,tt,qq;
-int    ii,jj;
-int    fr_flag, cet_flag;
-int    myrank,nproc,index,master_owner[3];
+INT    i,j,k,l,m,n,p,q,r,s,t,tt,qq;
+INT    ii,jj;
+INT    fr_flag, cet_flag;
+INT    myrank,nproc,index,master_owner[3];
 ARRAY  con_flag_s,con_flag_r;
 SPOOLMAT *K;
-int    numeq;
-int    numeq_total;
-double distance;
-double pr_d;
-double temp1, temp2;
-double dist1, dist2;
-double local_coordinate;
-double cr_length, rf_length;
-double pen_par, tan_pen_par;
-double t_n, t_aux, t_tan, t_trial, norm_t_trial, phi_trial, del_gama;
-double g, g_aux;
-double value;
-double M11, m11, friction;
-double norm_1 , norm_2;
-double unit_norm_1 , unit_norm_2;
-double unit_v1[3], unit_v2[3], unit_v3[3], unit_v3_aux[3], *tangent, relative_pos[3], cr_length_vec[3], rf_length_vec[3];
-double pos_ybar1[3], pos_ybar2[3]; 
-double norm_vec_1[3], norm_vec_2[3];
-double rel_pos_ybar1[3], rel_pos_ybar2[3];
+INT    numeq;
+INT    numeq_total;
+DOUBLE distance;
+DOUBLE pr_d;
+DOUBLE temp1, temp2;
+DOUBLE dist1, dist2;
+DOUBLE local_coordinate;
+DOUBLE cr_length, rf_length;
+DOUBLE pen_par, tan_pen_par;
+DOUBLE t_n, t_aux, t_tan, t_trial, norm_t_trial, phi_trial, del_gama;
+DOUBLE g, g_aux;
+DOUBLE value;
+DOUBLE M11, m11, friction;
+DOUBLE norm_1 , norm_2;
+DOUBLE unit_norm_1 , unit_norm_2;
+DOUBLE unit_v1[3], unit_v2[3], unit_v3[3], unit_v3_aux[3], *tangent, relative_pos[3], cr_length_vec[3], rf_length_vec[3];
+DOUBLE pos_ybar1[3], pos_ybar2[3]; 
+DOUBLE norm_vec_1[3], norm_vec_2[3];
+DOUBLE rel_pos_ybar1[3], rel_pos_ybar2[3];
 DISCRET *dis;
 NODE *closestptr;
 NODE *neigbour_nodes[2];

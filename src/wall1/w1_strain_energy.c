@@ -11,12 +11,12 @@ of an element
 /*--------------------------------------------------------------------------*
  | Calculation of strain energy for an element                              |
  *-------------------------------------------------------------------------*/
-void w1_strain_energy(ELEMENT *ele, double **stress, double *strain, double fac)
+void w1_strain_energy(ELEMENT *ele, DOUBLE **stress, DOUBLE *strain, DOUBLE fac)
 
 {
 
-double strain_matrix[4][4];
-int i, j, k, m;
+DOUBLE strain_matrix[4][4];
+INT i, j, k, m;
 
 for(i=0; i<4; i++)
   for(j=0; j<4; j++)

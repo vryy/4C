@@ -64,8 +64,8 @@ This routine is used to set the global contact flag. If any one of the
 void wall_contact_flag(INTRA *actintra)
 {
 
-int    i,j;
-int    myrank,nproc;
+INT    i,j;
+INT    myrank,nproc;
 ARRAY  con_flag_s,con_flag_r;
 DISCRET *dis;
 #ifdef PARALLEL

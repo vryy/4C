@@ -49,10 +49,10 @@ extern struct _WALL_CONTACT contact;
 #endif
 
 /*Inner product function*/
-double inner_pr(double *a , double *b);
+DOUBLE inner_pr(DOUBLE *a , DOUBLE *b);
 
 /*Heaviside function*/
-double Heaviside(double a);
+DOUBLE Heaviside(DOUBLE a);
 
 /*!----------------------------------------------------------------------
 \brief short description
@@ -61,7 +61,7 @@ double Heaviside(double a);
 
 This routine is used to determine the closest point projection and some other
 quantites at the mid-configuration which is related with the treatment of contact
-interfaces within the E-M conserving int. scheme.
+interfaces within the E-M conserving INT. scheme.
 
 </pre>
 \param actfield   FIELD*       (i)   the discretization
@@ -72,27 +72,27 @@ interfaces within the E-M conserving int. scheme.
 ---------------------------------------------------------------------*/
 void wall_contact_mid(FIELD *actfield, INTRA *actintra)
 {
-int    i,j,k,l,m,n,p,q,r,s,t,tt,qq;
-int    ii,jj,nn;
-int    myrank,nproc;
-double distance;
-double pr_d;
-double temp1, temp2;
-double dist1, dist2;
-double local_coordinate;
-double mid_length;
-double g_mid, g_aux, g_tilda;
-double m11_mid;
-double norm_1, norm_2;
-double unit_norm_1, unit_norm_2;
-double unit_v1_mid[3], unit_v2_mid[3], unit_v3_mid[3], unit_v3_aux[3], *tangent_mid;
-double relative_pos_mid[3], mid_length_vec[3];
-double pos_ybar1[3], pos_ybar2[3]; 
-double norm_vec_1[3], norm_vec_2[3];
-double rel_pos_ybar1[3], rel_pos_ybar2[3];
-double N[6];
-double mid_velocity[6];
-double dt;
+INT    i,j,k,l,m,n,p,q,r,s,t,tt,qq;
+INT    ii,jj,nn;
+INT    myrank,nproc;
+DOUBLE distance;
+DOUBLE pr_d;
+DOUBLE temp1, temp2;
+DOUBLE dist1, dist2;
+DOUBLE local_coordinate;
+DOUBLE mid_length;
+DOUBLE g_mid, g_aux, g_tilda;
+DOUBLE m11_mid;
+DOUBLE norm_1, norm_2;
+DOUBLE unit_norm_1, unit_norm_2;
+DOUBLE unit_v1_mid[3], unit_v2_mid[3], unit_v3_mid[3], unit_v3_aux[3], *tangent_mid;
+DOUBLE relative_pos_mid[3], mid_length_vec[3];
+DOUBLE pos_ybar1[3], pos_ybar2[3]; 
+DOUBLE norm_vec_1[3], norm_vec_2[3];
+DOUBLE rel_pos_ybar1[3], rel_pos_ybar2[3];
+DOUBLE N[6];
+DOUBLE mid_velocity[6];
+DOUBLE dt;
 DISCRET *dis;
 NODE *closestptr;
 NODE *neigbour_nodes_mid[2];

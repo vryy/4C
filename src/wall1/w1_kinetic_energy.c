@@ -11,25 +11,25 @@ linear and angular momentum of a wall element
 /*----------------------------------------------------------------------------*
  | Calculation of kinetic energy and lin. and angular momentum for an element /                              |
  *---------------------------------------------------------------------------*/
-void w1_kinetic_energy(ELEMENT *ele, double **mass)
+void w1_kinetic_energy(ELEMENT *ele, DOUBLE **mass)
 
 {
-const int           numdf  = 2;     /* number dof per node          */
-const int           numeps = 4;     /* number of strain components  */
-int                 iel;            /* numnp to this element        */
-int                 nd;             /* dof of this element          */
+const INT           numdf  = 2;     /* number dof per node          */
+const INT           numeps = 4;     /* number of strain components  */
+INT                 iel;            /* numnp to this element        */
+INT                 nd;             /* dof of this element          */
 ARRAY      velocity_components_a;
-double    *velocity_components;
+DOUBLE    *velocity_components;
 ARRAY      linear_momentum_a;
-double    *linear_momentum;
+DOUBLE    *linear_momentum;
 ARRAY      angular_momentum_a;
-double    *angular_momentum;
+DOUBLE    *angular_momentum;
 ARRAY      auxilliary_a;
-double   **auxilliary;
+DOUBLE   **auxilliary;
 ARRAY      xcure_a;
-double   **xcure;
-double    ang_momentum, kinetic_energy;
-int       i,j,k;
+DOUBLE   **xcure;
+DOUBLE    ang_momentum, kinetic_energy;
+INT       i,j,k;
 
 
 /*----------------------------------------------------------------------*/

@@ -730,24 +730,24 @@ void w1_getdensity(MATERIAL  *mat,        /* actual material            */
 /*  w1_boplin.c                                           ah 06/02      */
 /* evaluation of linear B-operator                                      */
 /*----------------------------------------------------------------------*/
-void w1_boplin(double    **boplin,        /* Blin                       */
-               double    **deriv,     /* derivatives of ansatzfunctions */
-               double    **xjm,           /* jacobian matrix            */
-               double      det,           /* det of jacobian matrix     */
-               int         iel);          /* nodenumber of element      */
+void w1_boplin(DOUBLE    **boplin,        /* Blin                       */
+               DOUBLE    **deriv,     /* derivatives of ansatzfunctions */
+               DOUBLE    **xjm,           /* jacobian matrix            */
+               DOUBLE      det,           /* det of jacobian matrix     */
+               INT         iel);          /* nodenumber of element      */
 
 /*----------------------------------------------------------------------*/
 /*  w1_b_barop.c                                                        */
 /* evaluation of B_bar operator                                         */
 /*----------------------------------------------------------------------*/
 void w1_b_barop(ELEMENT *ele,                          /* actual element*/
-                double **b_bar,                        /* b_bar operator*/
-		double **int_b_bar, /*interpolated b-bar op.(E-M scheme)*/    
-		double **boplin,                       /*boplin operator*/
-                double *F,                        /*Deformation gradient*/
-		int numeps,               /* number of strain components*/
-		int nd,       /* total number degrees of freedom of ele.*/
-		int ip);                     /*Integration point counter*/
+                DOUBLE **b_bar,                        /* b_bar operator*/
+		DOUBLE **int_b_bar, /*interpolated b-bar op.(E-M scheme)*/    
+		DOUBLE **boplin,                       /*boplin operator*/
+                DOUBLE *F,                        /*Deformation gradient*/
+		INT numeps,               /* number of strain components*/
+		INT nd,       /* total number degrees of freedom of ele.*/
+		INT ip);                     /*Integration point counter*/
 /*----------------------------------------------------------------------*/
 /*  w1_defgrad.c                                          ah 06/02      */
 /*  evaluation of deformation gradient F                                */
@@ -791,27 +791,27 @@ void w1_mat_linelgeonon(DOUBLE ym,       /* Young's modulus             */
 void w1_kg(
            
 	   ELEMENT  *ele,                /* active element pointer      */ 	   
-           double  **kg,                 /* geometric stiffness matrix  */
-           double  **boplin,             /* linear B-operator           */
-           double  **stress,             /*stress at act. gaussian point*/
-           double    fac,                /* integration factor          */
-           int       nd,                 /* dof's of element            */
-           int       neps,               /* number of strain components */ 
-	   int       ip);                /* active Gauss point          */
+           DOUBLE  **kg,                 /* geometric stiffness matrix  */
+           DOUBLE  **boplin,             /* linear B-operator           */
+           DOUBLE  **stress,             /*stress at act. gaussian point*/
+           DOUBLE    fac,                /* integration factor          */
+           INT       nd,                 /* dof's of element            */
+           INT       neps,               /* number of strain components */ 
+	   INT       ip);                /* active Gauss point          */
 	                
 /*-----------------------------------------------------------------------*
 |  w1_cal_keu.c                                              ah 06/02    |
 |  evaluation of elast+init. disp. part of stiffness in geononl. case    |
 *-----------------------------------------------------------------------*/
 void w1_keu(
-	    double  **keu,    /* elastic + initial deformation stiffness*/
-            double  **b_bar,             /* b_bar operator              */            
-            double  **int_b_bar,         /* interpolated b_bar(for GEMM)*/
-            double  **D,                 /* material tangente           */
-            double   *F,                 /* deformation gradient        */
-            double    fac,               /* integration factor          */
-            int       nd,                /* dof's of element            */
-            int       neps);             /* number of strain components */
+	    DOUBLE  **keu,    /* elastic + initial deformation stiffness*/
+            DOUBLE  **b_bar,             /* b_bar operator              */            
+            DOUBLE  **int_b_bar,         /* interpolated b_bar(for GEMM)*/
+            DOUBLE  **D,                 /* material tangente           */
+            DOUBLE   *F,                 /* deformation gradient        */
+            DOUBLE    fac,               /* integration factor          */
+            INT       nd,                /* dof's of element            */
+            INT       neps);             /* number of strain components */
 	                 
  /*----------------------------------------------------------------------*
  |  w1_cal_fint.c                                              ah 06/02   |
@@ -819,13 +819,13 @@ void w1_keu(
  *----------------------------------------------------------------------*/
 void w1_fint( 
 	      ELEMENT *ele,             /* active element pointer       */
-              double **stress,          /* 2.PK stresses                */ 
-              double  *F,               /* Deformation gradient         */ 
-              double **int_b_bar,       /* interpolated b_bar (for GEMM)*/ 
-              double  *fint,            /* internal forces              */ 
-              double   fac,             /* detJ*wr*ws*thickness         */ 
-              int      nd,              /* Element-DOF                  */
-	      int      ip);             /* Active Gauss point           */  
+              DOUBLE **stress,          /* 2.PK stresses                */ 
+              DOUBLE  *F,               /* Deformation gradient         */ 
+              DOUBLE **int_b_bar,       /* interpolated b_bar (for GEMM)*/ 
+              DOUBLE  *fint,            /* internal forces              */ 
+              DOUBLE   fac,             /* detJ*wr*ws*thickness         */ 
+              INT      nd,              /* Element-DOF                  */
+	      INT      ip);             /* Active Gauss point           */  
 /*----------------------------------------------------------------------*
  | Transform stress and strain local-global                  fh 7/02    |
  | Local 3-direction is zero                                            |
@@ -1134,15 +1134,15 @@ void w1_matrix_switch(DOUBLE **mat,   /* matrix do be modified          */
 /*  Calculation of strain energy of an element                          */
 /*----------------------------------------------------------------------*/
 void w1_strain_energy(ELEMENT *ele,                   /* actual element */
-                      double **stress,   /* 2PK str. at act. Gauss point*/
-		      double *strain,   /* Strains at actual Gauss point*/
-		      double  fac);        /* Int. factor at Gauss point*/		      		                                                                       
+                      DOUBLE **stress,   /* 2PK str. at act. Gauss point*/
+		      DOUBLE *strain,   /* Strains at actual Gauss point*/
+		      DOUBLE  fac);        /* Int. factor at Gauss point*/		      		                                                                       
 /*----------------------------------------------------------------------*/
 /*  w1_kinetic_energy.c                                                 */
 /*  Calculation of kinetic energy of an element                         */
 /*----------------------------------------------------------------------*/                                                           
 void w1_kinetic_energy(ELEMENT *ele,                  /* actual element */
-                       double **mass);                   /* mass matrix */                    		      		                                                                       
+                       DOUBLE **mass);                   /* mass matrix */                    		      		                                                                       
 /*----------------------------------------------------------------------*/		      
 /*  w1_update_history.c                                                 */
 /*  Update of state variables for E-M Int. Scheme                       */
@@ -1156,13 +1156,13 @@ void w1_update_history(ELEMENT *ele,                   /* actual element*/
 /* (called by w1_update_history)                                        */
 /*----------------------------------------------------------------------*/                                                           
 void w1_history(ELEMENT *ele,                           /*actual element*/
-           double **b_bar,                              /*b_bar operator*/
-	   double **boplin,                            /*boplin operator*/
-	   double **stress,              /* 2PK str. at act. Gauss point*/
-	   double  *F,                     /*Deformation gradient tensor*/
-	   int      numeps,               /* number of strain components*/
-	   int      nd,       /* total number degrees of freedom of ele.*/
-	   int      ip);                     /*Integration point counter*/	   
+           DOUBLE **b_bar,                              /*b_bar operator*/
+	   DOUBLE **boplin,                            /*boplin operator*/
+	   DOUBLE **stress,              /* 2PK str. at act. Gauss point*/
+	   DOUBLE  *F,                     /*Deformation gradient tensor*/
+	   INT      numeps,               /* number of strain components*/
+	   INT      nd,       /* total number degrees of freedom of ele.*/
+	   INT      ip);                     /*Integration point counter*/	   
 /*----------------------------------------------------------------------*/                                             
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/

@@ -59,8 +59,8 @@ gets out of contact.
 ----------------------------------------------------------------------*/
 void wall_contact_history_update(INTRA *actintra)
 {
-int   i;
-int   myrank;
+INT   i;
+INT   myrank;
 #ifdef DEBUG 
 dstrc_enter("wall_contact_his_update");
 #endif

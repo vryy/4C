@@ -12,14 +12,14 @@
 \addtogroup WALL1 
 *//*! @{ (documentation module open)*/
 /*----------------------------------------------------------------------*
- | Update B_bar operator and 2_nd PK stresses at each int. point ip     |
+ | Update B_bar operator and 2_nd PK stresses at each INT. point ip     |
  *----------------------------------------------------------------------*/
-void w1_history(ELEMENT *ele, double **b_bar, double **boplin,
-                double **stress, double *F, int numeps, int nd, int ip)
+void w1_history(ELEMENT *ele, DOUBLE **b_bar, DOUBLE **boplin,
+                DOUBLE **stress, DOUBLE *F, INT numeps, INT nd, INT ip)
 {
 
-double Fmatrix[4][4];
-int i, j, k, m;
+DOUBLE Fmatrix[4][4];
+INT i, j, k, m;
 #ifdef DEBUG 
 dstrc_enter("w1_history");
 #endif

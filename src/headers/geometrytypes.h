@@ -27,8 +27,8 @@ typedef struct _NODE
      struct _FLUID_VARIA       *fluid_varia;   /* ptr to my fluid_varia */
 #endif
 #ifdef WALLCONTACT  
-     double                     x_cr[3];       /* current coordinates (for contact only) */     
-     double                     x_mid[3];      /* mid_configuration  coordinates(contact and EM Int. Scheme)*/  
+     DOUBLE                     x_cr[3];       /* current coordinates (for contact only) */     
+     DOUBLE                     x_mid[3];      /* mid_configuration  coordinates(contact and EM Int. Scheme)*/  
 #endif
 } NODE;
 

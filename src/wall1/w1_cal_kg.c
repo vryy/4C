@@ -30,21 +30,21 @@ extern ALLDYNA      *alldyn;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void w1_kg(ELEMENT *ele,
-           double  **kg, 
-           double  **boplin, 
-           double  **stress,
-           double    fac, 
-           int       nd,
-           int       neps,
-	   int       ip	   
+           DOUBLE  **kg, 
+           DOUBLE  **boplin, 
+           DOUBLE  **stress,
+           DOUBLE    fac, 
+           INT       nd,
+           INT       neps,
+	   INT       ip	   
 	   )
 {
-int i, j, r, m;
-double int_stress[4][4];
-double local[4][4];
+INT i, j, r, m;
+DOUBLE int_stress[4][4];
+DOUBLE local[4][4];
 #ifdef GEMM
 STRUCT_DYNAMIC *sdyn;
-double alpha_f, xsi;       
+DOUBLE alpha_f, xsi;       
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

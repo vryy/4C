@@ -58,11 +58,11 @@ static DOUBLE **deriv;
 static ARRAY    xjm_a;    /* jacobian matrix */     
 static DOUBLE **xjm;         
 static ARRAY    boplin_a; /* linear B-operator */   
-static double **boplin; 
+static DOUBLE **boplin; 
 static ARRAY    b_bar_a;     /* B_bar operator */ 
-static double **b_bar; 
+static DOUBLE **b_bar; 
 static ARRAY    int_b_bar_a; /* Interpolated B_bar operator   */
-static double **int_b_bar;
+static DOUBLE **int_b_bar;
 static ARRAY    F_a;      /* deformation gradient */   
 static DOUBLE  *F; 
 static ARRAY    strain_a; /* strain (Green-Lagr for total lagr.) */   

@@ -44,8 +44,8 @@ extern struct _PARTITION  *partition;
  *----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
 /*-----------------------------------------------------------------------*/
-double Heaviside(double a);
-double Mac(double a);
+DOUBLE Heaviside(DOUBLE a);
+DOUBLE Mac(DOUBLE a);
 /*-----------------------------------------------------------------------*/
 
 /*! 
@@ -78,10 +78,10 @@ considered normal component of Lagrange Multiplier is to be updated.
 ---------------------------------------------------------------------*/
 void wall_contact_augmentation_em(INTRA *actintra)
 {
-int    i,j,k;
-int myrank;
-double pen_par;
-double lamda_n;
+INT    i,j,k;
+INT myrank;
+DOUBLE pen_par;
+DOUBLE lamda_n;
 /*--------------------------------------------------------------*/
 pen_par     = contact.n_pen_par; /*-----Normal penalty parameter*/
 /*--------------------------------------------------------------*/
