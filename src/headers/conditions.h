@@ -178,3 +178,22 @@ typedef struct _STAB_PAR_GLS
    INT	idiaxy;		/*!< flags for tau_? calculation 
 			     	  (-1: before; 1: during)		*/
 } STAB_PAR_GLS;
+
+
+
+/*!----------------------------------------------------------------------
+\brief FLUID lift and drag condition
+
+<pre>                                                              mn 03/04
+FLUID lift and drag conditio
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef struct _FLUID_LIFTDRAG_CONDITION
+{
+  INT                       liftdrag;           /* flag */
+  DOUBLE                    ld_center[3];	/* center of body */
+  INT                       alenode;            /* id of alenode corresp. to center */
+  INT                       aledline;
+} FLUID_LIFTDRAG_CONDITION;
+
