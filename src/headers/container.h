@@ -22,6 +22,10 @@ int            isdyn;        /*!< flag for dynamic or static calculation */
                             /*!< isdyn = 0 for static calculation */
                             /*!< isdyn = 1 for dynamic calculation */
 int            kstep;        /*!< time in increment step we are in */
+int            kintyp;      /*!< kinematic to be used */
+                             /*!< kintyp = 0: linear kinematic */
+                             /*!< kintyp = 1: updated lagrange */
+                             /*!< kintyp = 2: total lagrange */
 
 double        *ftimerhs;     /*!< ab hier fuer fluid */   
 double        *fiterhs;
