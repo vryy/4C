@@ -28,30 +28,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 
-#if 0
-#ifdef DEBUG
-
-static void out_ivector(INTRA* actintra, INT* vector, INT size, CHAR* vname)
-{
-  INT i;
-  FILE* f;
-  CHAR name[256];
-  static INT count = 0;
-
-  sprintf(name, "ivector.%s.%d.%d", vname, actintra->intra_rank, count);
-  f = fopen(name, "w");
-  for (i=0; i<size; ++i) {
-    fprintf(f, "%d: %d\n", i, vector[i]);
-  }
-  fclose(f);
-
-  count++;
-}
-
-#endif
-#endif
-
-
 /*----------------------------------------------------------------------*
  |  control solver lib AZTEC                             m.gee 9/01     |
  *----------------------------------------------------------------------*/
@@ -213,9 +189,6 @@ break;
 /*                                                    calculation phase */
 /*----------------------------------------------------------------------*/
 case 0:
-#ifdef PERF
-  perf_begin(31);
-#endif
 /*--------------------------------------------- check the reuse feature */
 /*
  * Lets assume we need different reuse information for every
@@ -299,14 +272,6 @@ case 0:
                    NULL,
                    AZ_MSR_MATRIX);
 
-#if 0
-#ifdef DEBUG
-      out_ivector(actintra, msr_array->update_index, msr_array->update.fdim, "update_index");
-      out_ivector(actintra, msr_array->external, msr_array->data_org[AZ_N_external], "external");
-      out_ivector(actintra, msr_array->extern_index, msr_array->data_org[AZ_N_external], "extern_index");
-#endif
-#endif
-
       /* create Aztec structure AZ_MATRIX */
       msr_array->Amat = AZ_matrix_create(msr_array->data_org[AZ_N_internal]+
                                          msr_array->data_org[AZ_N_border]);
@@ -367,12 +332,6 @@ msr_array->data_org[AZ_name]=azname;
       }
     }
 /*--------------------------------------------------------- call solver */
-#ifdef PERF
-  perf_end(31);
-#endif
-#ifdef PERF
-  perf_begin(32);
-#endif
 /* Let's try several times. Normally the first try should succeed. But
  * there are issues with BiCGSTAB and fluid fields. In case of a
  * breakdown we simply start again and use the current solution as
@@ -403,12 +362,6 @@ else {
   break;
 }
 }
-#ifdef PERF
-  perf_end(32);
-#endif
-#ifdef PERF
-  perf_begin(33);
-#endif
 /*------------------------------------------------ delete temporary rhs */
 amdel(&tmprhs_a);
 /*-------------------------------------------- recover unpermuted bindx */
@@ -475,9 +428,6 @@ if (actintra->intra_rank==0)
 /*----------------------------------------------------------- set flags */
 msr_array->ncall++;
 msr_array->is_factored=1;
-#ifdef PERF
-  perf_end(33);
-#endif
 break;
 /*----------------------------------------------------------------------*/
 /*                                             end of calculation phase */

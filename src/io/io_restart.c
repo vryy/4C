@@ -24,7 +24,10 @@ understand. Feel free to add your own.
 \addtogroup IO
 *//*! @{ (documentation module open)*/
 
-#include "io_restart.h"
+#include "../headers/standardtypes.h"
+
+#include "io_packing.h"
+#include "io_singlefile.h"
 
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
@@ -122,6 +125,14 @@ void restart_write_bin_nlnstructdyn(struct _BIN_OUT_FIELD *context,
   dstrc_enter("restart_write_bin_nlnstructdyn");
 #endif
 
+#ifdef PERF
+  perf_begin(72);
+#endif
+
+  /* It's crucial to make sure everything that's written will go to
+   * the restart files (not the result ones). */
+  out_activate_restart(context);
+
   if (rank == 0) {
     out_main_group_head(context, "restart");
     fprintf(bin_out_main.control_file,
@@ -130,6 +141,15 @@ void restart_write_bin_nlnstructdyn(struct _BIN_OUT_FIELD *context,
             "\n",
             sdyn->step, sdyn->time);
   }
+
+  /* If we've reached the number of steps to put into one file
+   * open a new one. */
+  if ((context->restart_count % bin_out_main.steps_per_file) == 0)
+  {
+    out_open_data_files(context, context->out, "restart", context->restart_count);
+  }
+
+  context->restart_count += 1;
 
   /*--------------------------------------------------------------------*/
   /* Write the control structures. */
@@ -266,6 +286,15 @@ void restart_write_bin_nlnstructdyn(struct _BIN_OUT_FIELD *context,
     fflush(bin_out_main.control_file);
   }
 
+#ifndef PARALLEL
+  fflush(context->out_restart.value_file);
+  fflush(context->out_restart.size_file);
+#endif
+
+#ifdef PERF
+  perf_end(72);
+#endif
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -314,7 +343,7 @@ void restart_read_bin_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
   /*--------------------------------------------------------------------*/
   /* find the describtion of the restart data in the control file */
 
-  result_info = in_find_restart_group(actfield, disnum, step);
+  result_info = in_find_restart_group(&context, disnum, step);
 
   /*--------------------------------------------------------------------*/
   /* additional values that must be read */
@@ -455,6 +484,14 @@ void restart_write_bin_nlnstructstat(struct _BIN_OUT_FIELD *context,
   dstrc_enter("restart_write_bin_nlnstructstat");
 #endif
 
+#ifdef PERF
+  perf_begin(72);
+#endif
+
+  /* It's crucial to make sure everything that's written will go to
+   * the restart files (not the result ones). */
+  out_activate_restart(context);
+
   if (rank == 0) {
     out_main_group_head(context, "restart");
     fprintf(bin_out_main.control_file,
@@ -463,6 +500,15 @@ void restart_write_bin_nlnstructstat(struct _BIN_OUT_FIELD *context,
             "\n",
             kstep, 0.0);
   }
+
+  /* If we've reached the number of steps to put into one file
+   * open a new one. */
+  if ((context->restart_count % bin_out_main.steps_per_file) == 0)
+  {
+    out_open_data_files(context, context->out, "restart", context->restart_count);
+  }
+
+  context->restart_count += 1;
 
   /*--------------------------------------------------------------------*/
   /* Write the control structures. */
@@ -588,6 +634,15 @@ void restart_write_bin_nlnstructstat(struct _BIN_OUT_FIELD *context,
     fflush(bin_out_main.control_file);
   }
 
+#ifndef PARALLEL
+  fflush(context->out_restart.value_file);
+  fflush(context->out_restart.size_file);
+#endif
+
+#ifdef PERF
+  perf_end(72);
+#endif
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -632,7 +687,7 @@ void restart_read_bin_nlnstructstat(STATIC_VAR      *statvar,
   /*--------------------------------------------------------------------*/
   /* find the describtion of the restart data in the control file */
 
-  result_info = in_find_restart_group(actfield, disnum, step);
+  result_info = in_find_restart_group(&context, disnum, step);
 
   /*--------------------------------------------------------------------*/
   /* additional values that must be read */
@@ -772,6 +827,14 @@ void restart_write_bin_fluiddyn(struct _BIN_OUT_FIELD   *context,
   dstrc_enter("restart_write_bin_fluiddyn");
 #endif
 
+#ifdef PERF
+  perf_begin(72);
+#endif
+
+  /* It's crucial to make sure everything that's written will go to
+   * the restart files (not the result ones). */
+  out_activate_restart(context);
+
   if (rank == 0) {
     out_main_group_head(context, "restart");
     fprintf(bin_out_main.control_file,
@@ -780,6 +843,15 @@ void restart_write_bin_fluiddyn(struct _BIN_OUT_FIELD   *context,
             "\n",
             fdyn->step, fdyn->acttime);
   }
+
+  /* If we've reached the number of steps to put into one file
+   * open a new one. */
+  if ((context->restart_count % bin_out_main.steps_per_file) == 0)
+  {
+    out_open_data_files(context, context->out, "restart", context->restart_count);
+  }
+
+  context->restart_count += 1;
 
   out_node_arrays(context, node_array_sol);
   out_node_arrays(context, node_array_sol_increment);
@@ -801,6 +873,15 @@ void restart_write_bin_fluiddyn(struct _BIN_OUT_FIELD   *context,
   if (rank == 0) {
     fflush(bin_out_main.control_file);
   }
+
+#ifndef PARALLEL
+  fflush(context->out_restart.value_file);
+  fflush(context->out_restart.size_file);
+#endif
+
+#ifdef PERF
+  perf_end(72);
+#endif
 
 #ifdef DEBUG
   dstrc_exit();
@@ -840,7 +921,7 @@ void restart_read_bin_fluiddyn(FLUID_DYNAMIC   *fdyn,
   /*--------------------------------------------------------------------*/
   /* find the describtion of the restart data in the control file */
 
-  result_info = in_find_restart_group(actfield, disnum, step);
+  result_info = in_find_restart_group(&context, disnum, step);
 
   /*--------------------------------------------------------------------*/
   /* additional values that must be read */
@@ -892,6 +973,14 @@ void restart_write_bin_aledyn(struct _BIN_OUT_FIELD *context,
   dstrc_enter("restart_write_bin_aledyn");
 #endif
 
+#ifdef PERF
+  perf_begin(72);
+#endif
+
+  /* It's crucial to make sure everything that's written will go to
+   * the restart files (not the result ones). */
+  out_activate_restart(context);
+
   if (rank == 0) {
     out_main_group_head(context, "restart");
     fprintf(bin_out_main.control_file,
@@ -900,6 +989,15 @@ void restart_write_bin_aledyn(struct _BIN_OUT_FIELD *context,
             "\n",
             adyn->step, adyn->time);
   }
+
+  /* If we've reached the number of steps to put into one file
+   * open a new one. */
+  if ((context->restart_count % bin_out_main.steps_per_file) == 0)
+  {
+    out_open_data_files(context, context->out, "restart", context->restart_count);
+  }
+
+  context->restart_count += 1;
 
   out_node_arrays(context, node_array_sol);
   out_node_arrays(context, node_array_sol_increment);
@@ -912,6 +1010,15 @@ void restart_write_bin_aledyn(struct _BIN_OUT_FIELD *context,
   if (rank == 0) {
     fflush(bin_out_main.control_file);
   }
+
+#ifndef PARALLEL
+  fflush(context->out_restart.value_file);
+  fflush(context->out_restart.size_file);
+#endif
+
+#ifdef PERF
+  perf_end(72);
+#endif
 
 #ifdef DEBUG
   dstrc_exit();
@@ -951,7 +1058,7 @@ void restart_read_bin_aledyn(ALE_DYNAMIC     *adyn,
   /*--------------------------------------------------------------------*/
   /* find the describtion of the restart data in the control file */
 
-  result_info = in_find_restart_group(actfield, disnum, step);
+  result_info = in_find_restart_group(&context, disnum, step);
 
   /*--------------------------------------------------------------------*/
   /* additional values that must be read */
@@ -996,6 +1103,14 @@ void restart_write_bin_fsidyn(FSI_DYNAMIC *fsidyn)
   dstrc_enter("restart_write_bin_fsidyn");
 #endif
 
+#ifdef PERF
+  perf_begin(72);
+#endif
+
+  /* It's crucial to make sure everything that's written will go to
+   * the restart files (not the result ones). */
+  /*out_activate_restart(context);*/
+
   /*
    * We take the topmost rank here because there is no field to ask
    * for a local rank. Actually the current implementation silently
@@ -1013,9 +1128,25 @@ void restart_write_bin_fsidyn(FSI_DYNAMIC *fsidyn)
             fsidyn->step, fsidyn->time, fsidyn->relax);
   }
 
+  /* No binary data is written here. Don't count this. */
+#if 0
+  /* If we've reached the number of steps to put into one file
+   * open a new one. */
+  if ((context->restart_count % bin_out_main.steps_per_file) == 0)
+  {
+    out_open_data_files(context, context->out, "restart", context->restart_count);
+  }
+
+  context->restart_count += 1;
+#endif
+
   if (par.myrank == 0) {
     fflush(bin_out_main.control_file);
   }
+
+#ifdef PERF
+  perf_end(72);
+#endif
 
 #ifdef DEBUG
   dstrc_exit();

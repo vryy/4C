@@ -330,6 +330,7 @@ void perfendf_ (INT *index)
   Print the results for one timer.
   </pre>
 
+  \param  out           (i)   file stream to write to
   \param  index   INT   (i)   index of the counter to use
   \param  string  char  (i)   name of this counter
   \param  bezug   INT   (i)   calculate percentage relative to this counter
@@ -337,12 +338,12 @@ void perfendf_ (INT *index)
   \return void
 
   ------------------------------------------------------------------------*/
-void perf_print (INT index, char string[], INT bezug, INT ops)
+void perf_print (FILE* out, INT index, char string[], INT bezug, INT ops)
 {
 
   if (ops!=1)
   {
-    printf("%2d %25s: %7d %12.6e %5.1f %2d %8d %8.3f\n",
+    fprintf(out, "%2d %25s: %7d %12.6e %5.1f %2d %8d %8.3f\n",
         index,
         string,
         counter[index],
@@ -355,7 +356,7 @@ void perf_print (INT index, char string[], INT bezug, INT ops)
   }
   else
   {
-    printf("%2d %25s: %7d %12.6e %5.1f %2d \n",
+    fprintf(out, "%2d %25s: %7d %12.6e %5.1f %2d \n",
         index,
         string,
         counter[index],
@@ -377,16 +378,17 @@ void perf_print (INT index, char string[], INT bezug, INT ops)
   Print the results for all timers.
   </pre>
 
+  \param  out           (i)   file stream to write to
   \return void
 
   ------------------------------------------------------------------------*/
-void perf_out ()
+void perf_out (FILE* out)
 {
   INT i;
   INT user_perf;
 
   /* --------------- print out time counters */
-  printf("%2s %25s: %7s %12s %5s%3s %8s %8s\n",
+  fprintf(out, "%2s %25s: %7s %12s %5s%3s %8s %8s\n",
       "ID",
       "Functionname",
       "Count",
@@ -397,86 +399,91 @@ void perf_out ()
       "MFLOPS"
       );
 
-  printf("%77s\n","-----------------------------------------------------------------------------");
-  perf_print( 1,"INPUT",                   0,1);
-  perf_print( 2,"CALCULATION",             0,1);
-  perf_print( 0,"TOTAL",                   0,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
-  perf_print( 3,"input control",           1,1);
-  perf_print( 4,"input design",            1,1);
-  perf_print( 5,"input design topology",   1,1);
-  perf_print( 6,"input material",          1,1);
-  perf_print( 7,"input fields",            1,1);
-  perf_print( 8,"input detailed topology", 1,1);
-  perf_print( 9,"input topology fe",       1,1);
-  perf_print(10,"input conditions",        1,1);
-  perf_print(11,"input inherit",           1,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
-  perf_print(12,"part fields",             0,1);
-  perf_print(13,"assign dofs",             0,1);
-  perf_print(14,"part assign field",       0,1);
-  perf_print(15,"mask global mat",         0,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
-  perf_print(16,"calc matrices",           0,1);
-  perf_print(17,"assemble matrices",       0,1);
-  perf_print(18,"assemble rhs vectors",    0,1);
-  perf_print(19,"exchange dofs",           0,1);
-  perf_print(20,"solve system",            0,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out,  1,"INPUT",                   0,1);
+  perf_print(out,  2,"CALCULATION",             0,1);
+  perf_print(out,  0,"TOTAL",                   0,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out,  3,"input control",           1,1);
+  perf_print(out,  4,"input design",            1,1);
+  perf_print(out,  5,"input design topology",   1,1);
+  perf_print(out,  6,"input material",          1,1);
+  perf_print(out,  7,"input fields",            1,1);
+  perf_print(out,  8,"input detailed topology", 1,1);
+  perf_print(out,  9,"input topology fe",       1,1);
+  perf_print(out, 10,"input conditions",        1,1);
+  perf_print(out, 11,"input inherit",           1,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out, 12,"part fields",             0,1);
+  perf_print(out, 13,"assign dofs",             0,1);
+  perf_print(out, 14,"part assign field",       0,1);
+  perf_print(out, 15,"mask global mat",         0,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out, 16,"calc matrices",           0,1);
+  perf_print(out, 17,"assemble matrices",       0,1);
+  perf_print(out, 18,"assemble rhs vectors",    0,1);
+  perf_print(out, 19,"exchange dofs",           0,1);
+  perf_print(out, 20,"solve system",            0,1);
   if (counter[21]+counter[22]>0)
-  printf("%77s\n","-----------------------------------------------------------------------------");
+    fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
   if (counter[21]>0)
-  perf_print(21,"permute fluid matrices",  2,1);
+    perf_print(out, 21,"permute fluid matrices",  2,1);
   if (counter[22]>0)
-  perf_print(22,"local co-ord. system",    2,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
+    perf_print(out, 22,"local co-ord. system",    2,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
   user_perf = 0;
   for (i=30; i<40; ++i) {
     if (counter[i] > 0) {
-      perf_print(i, "temp perf slot", 0, 1);
+      perf_print(out, i, "temp perf slot", 0, 1);
       user_perf = 1;
     }
   }
   if (user_perf)
-    printf("-----------------------------------------------------------------------------\n");
-  perf_print(40,"calc matrices fast", 0,1);
-  perf_print(41,"assemble_fast", 0,1);
-  perf_print(42,"init element", 0,1);
-  perf_print(43,"calele", 0,1);
-  printf("-----------------------------------------------------------------------------\n");
-  perf_print(44,"calset", 43,1);
-  perf_print(45,"elecord", 43,1);
-  perf_print(46,"elesize", 43,1);
-  perf_print(47,"calint", 43,1);
-  perf_print(48,"make_estif", 43,1);
-  perf_print(49,"caldirich", 43,1);
-  perf_print(50,"massrhs", 43,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
-  perf_print(51,"functderiv", 47,1);
-  perf_print(52,"jacob", 47,1);
-  perf_print(53,"gder", 47,1);
-  perf_print(54,"gder2", 47,1);
-  perf_print(55,"veli", 47,1);
-  perf_print(56,"vder", 47,1);
-  perf_print(57,"elesize_2", 47,1);
-  perf_print(58,"gal_mat", 47,1);
-  perf_print(59,"stab_mat", 47,1);
-  perf_print(60,"iter_rhs", 47,1);
-  perf_print(61,"ext_rhs", 47,1);
-  perf_print(62,"time_rhs", 47,1);
-  perf_print(63,"ext_rhs", 47,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
-  perf_print(64,"invupdate", 41,1);
-  perf_print(65,"invbindx", 41,1);
-  perf_print(66,"make lm", 41,1);
-  perf_print(67,"faddmsr", 41,1);
-  perf_print(68,"copy rhs", 41,1);
-  perf_print(69,"assemble rhs", 41,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
-  perf_print(95,"amdef",                   0,1);
-  perf_print(94,"amredef",                 0,1);
-  perf_print(93,"amdel",                   0,1);
-  perf_print(92,"amzero",                  0,1);
-  printf("%77s\n","-----------------------------------------------------------------------------");
+    fprintf(out, "-----------------------------------------------------------------------------\n");
+  perf_print(out, 40,"calc matrices fast", 0,1);
+  perf_print(out, 41,"assemble_fast", 0,1);
+  perf_print(out, 42,"init element", 0,1);
+  perf_print(out, 43,"calele", 0,1);
+  fprintf(out, "-----------------------------------------------------------------------------\n");
+  perf_print(out, 44,"calset", 43,1);
+  perf_print(out, 45,"elecord", 43,1);
+  perf_print(out, 46,"elesize", 43,1);
+  perf_print(out, 47,"calint", 43,1);
+  perf_print(out, 48,"make_estif", 43,1);
+  perf_print(out, 49,"caldirich", 43,1);
+  perf_print(out, 50,"massrhs", 43,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out, 51,"functderiv", 47,1);
+  perf_print(out, 52,"jacob", 47,1);
+  perf_print(out, 53,"gder", 47,1);
+  perf_print(out, 54,"gder2", 47,1);
+  perf_print(out, 55,"veli", 47,1);
+  perf_print(out, 56,"vder", 47,1);
+  perf_print(out, 57,"elesize_2", 47,1);
+  perf_print(out, 58,"gal_mat", 47,1);
+  perf_print(out, 59,"stab_mat", 47,1);
+  perf_print(out, 60,"iter_rhs", 47,1);
+  perf_print(out, 61,"ext_rhs", 47,1);
+  perf_print(out, 62,"time_rhs", 47,1);
+  perf_print(out, 63,"ext_rhs", 47,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out, 64,"invupdate", 41,1);
+  perf_print(out, 65,"invbindx", 41,1);
+  perf_print(out, 66,"make lm", 41,1);
+  perf_print(out, 67,"faddmsr", 41,1);
+  perf_print(out, 68,"copy rhs", 41,1);
+  perf_print(out, 69,"assemble rhs", 41,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out, 71,"out_results", 0,1);
+  perf_print(out, 72,"restart_write_bin", 0,1);
+  perf_print(out, 73,"out_gid", 0,1);
+  perf_print(out, 74,"restart_write", 0,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+  perf_print(out, 95,"amdef",                   0,1);
+  perf_print(out, 94,"amredef",                 0,1);
+  perf_print(out, 93,"amdel",                   0,1);
+  perf_print(out, 92,"amzero",                  0,1);
+  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
 
   /*----------------------------------------------------------------------*/
   return;

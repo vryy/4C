@@ -129,7 +129,7 @@ typedef struct _VISCOHYPER
  *----------------------------------------------------------------------*/
 typedef struct _FLUID
 {
-     DOUBLE                    viscosity;
+     DOUBLE                    viscosity; /* kinematic viscosity */
      DOUBLE                    density;
      DOUBLE                    gamma;     /* surface tension coeficient */
 } FLUID;
@@ -467,17 +467,17 @@ typedef struct _IFMAT
  *----------------------------------------------------------------------*/
 typedef struct _INTERF_THERM
 {
-     DOUBLE                    emod;         
-     DOUBLE                    nu;         
-     DOUBLE                    dick;         
+     DOUBLE                    emod;
+     DOUBLE                    nu;
+     DOUBLE                    dick;
      INT                       equival;
      INT                       damtyp;
-     DOUBLE                    kappa0_n;         
-     DOUBLE                    alpha_n;         
-     DOUBLE                    beta_n;         
-     DOUBLE                    kappa0_t;         
-     DOUBLE                    alpha_t;         
-     DOUBLE                    beta_t;         
+     DOUBLE                    kappa0_n;
+     DOUBLE                    alpha_n;
+     DOUBLE                    beta_n;
+     DOUBLE                    kappa0_t;
+     DOUBLE                    alpha_t;
+     DOUBLE                    beta_t;
 } INTERF_THERM;
 /*----------------------------------------------------------------------*
  | isotropic damage material (mazars-pijadier-cabot)        ah 10/03    |

@@ -52,6 +52,14 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
+/*------------------------ global variable needed by gid postprocessing */
+GIDSET *gid;
+
+#ifdef D_MLSTRUCT
+/*----------------------------- the same for submesh gid postprocessing */
+GIDSET *sm_gid;
+#endif /* D_MLSTRUCT */
+
 /*----------------------------------------------------------------------*
  |  routine to write all fields to gid - meshes          m.gee 12/01    |
  *----------------------------------------------------------------------*/
@@ -1159,7 +1167,7 @@ INT           GlobalID;       /* pseudo global element number of submesh element
 
 INT           is_firstmesh;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_submesh");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1245,7 +1253,7 @@ if (actsmgid->is_wall1_33)
      }
    }
    fprintf(out,"END ELEMENTS\n");
-}  
+}
 /*----------------------------------------------------------------------*/
 if (actsmgid->is_interf_22)
 {
@@ -1318,7 +1326,7 @@ if (actsmgid->is_interf_33)
 }
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1387,7 +1395,7 @@ INT           GlobalID;        /* pseudo global node number of submesh nodes */
 DOUBLE        translation[2];/* x/y Translations of submesh-prototyp
                               (prototyp has always x=0/y=0 at left down corner) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_allsmcoords");
 #endif
 /*----------------------------------------------------------------- */
@@ -1403,7 +1411,7 @@ for (i=0; i<actmafield->dis[0].numele; i++)
   /*----------------------- find coord. of nodes with lowest values */
   for (k=0; k<ielema; k++)
   {
-    if (actmafield->dis[0].element[i].node[k]->x[0]<=translation[0] && 
+    if (actmafield->dis[0].element[i].node[k]->x[0]<=translation[0] &&
         actmafield->dis[0].element[i].node[k]->x[1]<=translation[1])
     {
       translation[0] = actmafield->dis[0].element[i].node[k]->x[0];
@@ -1423,7 +1431,7 @@ for (i=0; i<actmafield->dis[0].numele; i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

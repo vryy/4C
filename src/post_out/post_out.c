@@ -84,7 +84,8 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
   fprintf(out, UNDERLINE);
   numnp = 0;
   numele = 0;
-  for (i=0; i<problem->num_discr; ++i) {
+  for (i=0; i<problem->num_discr; ++i)
+  {
     FIELD_DATA* field = &(problem->discr[i]);
     numnp += field->numnp;
     numele += field->numele;
@@ -94,7 +95,8 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
   fprintf(out,"Total number of Nodes           : %d\n", numnp);
   /*fprintf(out,"Total number of Materials       : %d\n", genprob.nmat);*/
 
-  switch (problem->type) {
+  switch (problem->type)
+  {
   case prb_fsi:
     fprintf(out,"Type of Problem                 : Fluid-Structure-Interaction\n");
     break;
@@ -120,11 +122,15 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
 
   fprintf(out,UNDERLINE);
 
-  for (i=0; i<problem->num_discr; ++i) {
+  /* Iterate all discretizations */
+
+  for (i=0; i<problem->num_discr; ++i)
+  {
     FIELD_DATA* field = &(problem->discr[i]);
     fprintf(out,DBLLINE);
 
-    switch (field->type) {
+    switch (field->type)
+    {
     case fluid:
       fprintf(out,"FIELD: fluid\n");
       break;
@@ -149,175 +155,142 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
 
 #ifdef DEBUG
 
+    fprintf(out,"Element connectivity in global Ids:\n");
+    for (j=0; j<field->numele; j++)
     {
-      INT* mesh;
-      DOUBLE* coords;
-      INT* node_ids;
+      INT numnp;
+      INT Id;
 
-      CHUNK_DATA mesh_chunk;
-      CHUNK_DATA coords_chunk;
+      /* read the element's data */
+      chunk_read_size_entry(&(field->ele_param), j);
+      chunk_read_size_entry(&(field->mesh), j);
 
-      if (!read_chunk_group(&mesh_chunk, field->table, "mesh")) {
-        dserror("no mesh chunk found");
+      Id    = field->ele_param.size_buf[element_variables.ep_size_Id];
+      numnp = field->ele_param.size_buf[element_variables.ep_size_numnp];
+
+      fprintf(out,"glob_Id %6d Nnodes %2d Nodes: ", Id, numnp);
+      for (k=0; k<numnp; k++)
+      {
+        /* read the global node ids */
+        chunk_read_size_entry(&(field->coords), field->mesh.size_buf[k]);
+        fprintf(out,"%6d ",field->coords.size_buf[node_variables.coords_size_Id]);
       }
+      fprintf(out,"\n");
+    }
 
-      /*
-       * Have the whole mesh in memory at once: We are not going to
-       * use this filter with very huge (gigantic) meshes anyway. */
-      mesh = (INT*)CCACALLOC(mesh_chunk.size_entry_length*field->numele, sizeof(INT));
+    fprintf(out,UNDERLINE);
+    fprintf(out,"Element connectivity in field-local Ids:\n");
+    for (j=0; j<field->numele; j++)
+    {
+      INT numnp;
 
-      fseek(field->size_file, mesh_chunk.size_offset, SEEK_SET);
-      if (fread(mesh, sizeof(INT),
-                mesh_chunk.size_entry_length*field->numele,
-                field->size_file) != mesh_chunk.size_entry_length*field->numele) {
-        dserror("reading mesh of discretization %s failed", field->name);
+      /* read the element's data */
+      chunk_read_size_entry(&(field->ele_param), j);
+      chunk_read_size_entry(&(field->mesh), j);
+
+      numnp = field->ele_param.size_buf[element_variables.ep_size_numnp];
+
+      fprintf(out,"loc_Id %6d Nnodes %2d Nodes: ",j,numnp);
+      for (k=0; k<numnp; k++)
+        fprintf(out,"%6d ", field->mesh.size_buf[k]);
+      fprintf(out,"\n");
+    }
+
+    fprintf(out,UNDERLINE);
+    fprintf(out,"Element types:\n");
+    for (j=0; j<field->numele; j++)
+    {
+      INT el_type;
+      INT Id;
+
+      /* read the element's data */
+      chunk_read_size_entry(&(field->ele_param), j);
+
+      Id      = field->ele_param.size_buf[element_variables.ep_size_Id];
+      el_type = field->ele_param.size_buf[element_variables.ep_size_eltyp];
+
+      /* translate to internal value */
+      el_type = problem->element_type.table[el_type];
+
+      switch (el_type)
+      {
+      case el_shell8:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL8\n",Id,j);
+        break;
+      case el_shell9:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL9\n",Id,j);
+        break;
+      case el_brick1:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d BRICK1\n",Id,j);
+        break;
+      case el_wall1:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d WALL1\n",Id,j);
+        break;
+      case el_fluid3:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3\n",Id,j);
+        break;
+      case el_fluid2:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",Id,j);
+        break;
+      case el_fluid2_pro:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_PRO\n",Id,j);
+        break;
+      case el_ale3:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",Id,j);
+        break;
+      case el_ale2:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE2\n",Id,j);
+        break;
+      case el_beam3:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d BEAM3\n",Id,j);
+        break;
+      case el_axishell:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d AXISHELL\n",Id,j);
+        break;
+      case el_interf:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d INTERFACE\n",Id,j);
+        break;
+      case el_wallge:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",Id,j);
+        break;
+      default:
+        dserror("Cannot print elementtype");
+        break;
       }
+    }
 
-      fprintf(out,"Element connectivity in global Ids:\n");
-      for (j=0; j<field->numele; j++) {
-        INT numnp;
-        INT major;
-        INT minor;
-        INT* ele = &(mesh[j*mesh_chunk.size_entry_length]);
+    fprintf(out,UNDERLINE);
 
-        /* take the internal type numbers */
-        major = field->element_type[j].major;
-        minor = field->element_type[j].minor;
+    fprintf(out,"Nodal Coordinates:\n");
+    for (j=0; j<field->numnp; j++)
+    {
+      DOUBLE x[3];
 
-        numnp = element_info[major].variant[minor].node_number;
-        fprintf(out,"glob_Id %6d Nnodes %2d Nodes: ", ele[0], numnp);
-        for (k=0; k<numnp; k++)
-          fprintf(out,"%6d ",field->node_ids[ele[3+k]]);
-        fprintf(out,"\n");
+      chunk_read_size_entry(&(field->coords), j);
+      chunk_read_value_entry(&(field->coords), j);
+
+      x[0] = field->coords.value_buf[0];
+      x[1] = field->coords.value_buf[1];
+      if (field->coords.value_entry_length==3)
+      {
+        x[2] = field->coords.value_buf[2];
       }
-
-      fprintf(out,UNDERLINE);
-      fprintf(out,"Element connectivity in field-local Ids:\n");
-      for (j=0; j<field->numele; j++) {
-        INT numnp;
-        INT major;
-        INT minor;
-        INT* ele = &(mesh[j*mesh_chunk.size_entry_length]);
-
-        /* take the internal type numbers */
-        major = field->element_type[j].major;
-        minor = field->element_type[j].minor;
-
-        numnp = element_info[major].variant[minor].node_number;
-        fprintf(out,"loc_Id %6d Nnodes %2d Nodes: ",j,numnp);
-        for (k=0; k<numnp; k++)
-          fprintf(out,"%6d ",ele[3+k]);
-        fprintf(out,"\n");
+      else
+      {
+        x[2] = 0;
       }
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    % 18.5f % 18.5f % 18.5f \n",
+              field->coords.size_buf[node_variables.coords_size_Id],
+              j,x[0],x[1],x[2]);
+    }
 
-      fprintf(out,UNDERLINE);
-      fprintf(out,"Element types:\n");
-      for (j=0; j<field->numele; j++) {
-        INT major;
-        INT minor;
-        INT* ele = &(mesh[j*mesh_chunk.size_entry_length]);
-
-        /* take the internal type numbers */
-        major = field->element_type[j].major;
-        minor = field->element_type[j].minor;
-
-        switch (major) {
-        case el_shell8:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL8\n",ele[0],j);
-          break;
-        case el_shell9:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL9\n",ele[0],j);
-          break;
-        case el_brick1:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d BRICK1\n",ele[0],j);
-          break;
-        case el_wall1:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d WALL1\n",ele[0],j);
-          break;
-        case el_fluid3:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3\n",ele[0],j);
-          break;
-        case el_fluid2:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",ele[0],j);
-          break;
-        case el_fluid2_pro:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_PRO\n",ele[0],j);
-          break;
-        case el_ale3:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",ele[0],j);
-          break;
-        case el_ale2:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE2\n",ele[0],j);
-          break;
-        case el_beam3:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d BEAM3\n",ele[0],j);
-          break;
-        case el_axishell:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d AXISHELL\n",ele[0],j);
-          break;
-        case el_interf:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d INTERFACE\n",ele[0],j);
-          break;
-        case el_wallge:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",ele[0],j);
-          break;
-        default:
-          dserror("Cannot print elementtype");
-          break;
-        }
-      }
-
-      fprintf(out,UNDERLINE);
-
-      if (!read_chunk_group(&coords_chunk, field->table, "coords")) {
-        dserror("no coords chunk found");
-      }
-
-      /* Again, read everything at once. */
-      coords = (DOUBLE*)CCACALLOC(coords_chunk.value_entry_length*field->numnp, sizeof(DOUBLE));
-
-      fseek(field->value_file, coords_chunk.value_offset, SEEK_SET);
-      if (fread(coords, sizeof(DOUBLE),
-                coords_chunk.value_entry_length*field->numnp,
-                field->value_file) != coords_chunk.value_entry_length*field->numnp) {
-        dserror("reading node coordinates of discretization %s failed", field->name);
-      }
-
-      node_ids = (INT*)CCACALLOC(coords_chunk.size_entry_length*field->numnp, sizeof(INT));
-
-      fseek(field->size_file, coords_chunk.size_offset, SEEK_SET);
-      if (fread(node_ids, sizeof(INT),
-                coords_chunk.size_entry_length*field->numnp,
-                field->size_file) != coords_chunk.size_entry_length*field->numnp) {
-        dserror("reading node ids of discretization %s failed", field->name);
-      }
-
-      fprintf(out,"Nodal Coordinates:\n");
-      for (j=0; j<field->numnp; j++) {
-        DOUBLE x[3];
-        x[0] = coords[j*coords_chunk.value_entry_length];
-        x[1] = coords[j*coords_chunk.value_entry_length+1];
-        if (coords_chunk.value_entry_length==3) {
-          x[2] = coords[j*coords_chunk.value_entry_length+2];
-        }
-        else {
-          x[2] = 0;
-        }
-        fprintf(out,"NODE glob_Id %6d loc_Id %6d    % 18.5f % 18.5f % 18.5f \n",
-                node_ids[j],j,x[0],x[1],x[2]);
-      }
-
-      fprintf(out,UNDERLINE);
+    fprintf(out,UNDERLINE);
 
 #if 0
-      /* No way to know them here. Right? */
-      fprintf(out,"Degrees of Freedom:\n");
+    /* No way to know them here. Right? */
+    fprintf(out,"Degrees of Freedom:\n");
 #endif
 
-      CCAFREE(coords);
-      CCAFREE(node_ids);
-      CCAFREE(mesh);
-    }
     fprintf(out,UNDERLINE);
 
 #endif /*ifdef DEBUG */
@@ -339,12 +312,16 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
   \date 10/04
 */
 /*----------------------------------------------------------------------*/
-static void post_out_sol(FILE* out,
-                         PROBLEM_DATA* problem,
-                         FIELD_DATA* field,
-                         MAP* result_group)
+static void post_out_sol(FILE* out, RESULT_DATA* result)
 {
   INT j;
+  FIELD_DATA* field;
+
+#ifdef DEBUG
+  dstrc_enter("post_out_sol");
+#endif
+
+  field = result->field;
 
   /* print header */
   fprintf(out, DBLLINE);
@@ -364,137 +341,138 @@ static void post_out_sol(FILE* out,
   }
 
   /* print nodal values */
-  switch (field->type) {
-  case structure: {
+  switch (field->type)
+  {
+  case structure:
+  {
     CHUNK_DATA chunk;
-    if (read_chunk_group(&chunk, result_group, "displacement")) {
-      DOUBLE disp[3];
 
-      if ((chunk.value_entry_length != 2) && (chunk.value_entry_length != 3)) {
-        dserror("illegal displacement entry length %d", chunk.value_entry_length);
-      }
+    init_chunk_data(result, &chunk, "displacement");
 
-      fprintf(out,DBLLINE);
-      fprintf(out,"Converged Solution of Discretisation %d in step %d \n",
-              field->disnum, map_read_int(result_group, "step"));
-      fprintf(out,DBLLINE);
-
-      fseek(field->value_file, chunk.value_offset, SEEK_SET);
-      for (j=0; j<field->numnp; j++) {
-        INT k;
-
-        if (fread(disp, sizeof(DOUBLE),
-                  chunk.value_entry_length,
-                  field->value_file) != chunk.value_entry_length) {
-          dserror("reading node displacements of discretization %s failed", field->name);
-        }
-
-        fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",field->node_ids[j],j);
-        for (k=0; k<chunk.value_entry_length; k++) {
-          fprintf(out,"%20.7E ", disp[k]);
-        }
-        fprintf(out,"\n");
-      }
-      fprintf(out,UNDERLINE);
+    if ((chunk.value_entry_length != 2) && (chunk.value_entry_length != 3))
+    {
+      dserror("illegal displacement entry length %d", chunk.value_entry_length);
     }
+
+    fprintf(out,DBLLINE);
+    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",
+            result->field->disnum, map_read_int(result->group, "step"));
+
+    fprintf(out,DBLLINE);
+
+    for (j=0; j<field->numnp; j++)
+    {
+      INT k;
+      INT Id;
+
+      /* again the global node id is needed */
+      chunk_read_size_entry(&(field->coords), j);
+      Id = field->coords.size_buf[node_variables.coords_size_Id];
+
+      /* read the displacements to this node */
+      chunk_read_value_entry(&chunk, j);
+
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ", Id, j);
+      for (k=0; k<chunk.value_entry_length; k++)
+      {
+        fprintf(out,"%20.7E ", chunk.value_buf[k]);
+      }
+      fprintf(out,"\n");
+    }
+    fprintf(out,UNDERLINE);
+
+    destroy_chunk_data(&chunk);
     break;
   }
-  case fluid: {
+  case fluid:
+  {
     CHUNK_DATA vel_chunk;
     CHUNK_DATA press_chunk;
 
-    /* This needs to be changed if we want to read velocities witout
-     * pressure. I put both together here because that's how it's done
-     * in the old output routines. */
-    if (read_chunk_group(&vel_chunk, result_group, "velocity") &&
-        read_chunk_group(&press_chunk, result_group, "pressure")) {
-      DOUBLE vel[3];
-      DOUBLE pressure;
+    init_chunk_data(result, &vel_chunk, "velocity");
+    init_chunk_data(result, &press_chunk, "pressure");
 
-      if ((vel_chunk.value_entry_length != 2) && (vel_chunk.value_entry_length != 3)) {
-        dserror("illegal velocity entry length %d", vel_chunk.value_entry_length);
+    if ((vel_chunk.value_entry_length != 2) && (vel_chunk.value_entry_length != 3))
+    {
+      dserror("illegal velocity entry length %d", vel_chunk.value_entry_length);
+    }
+
+    if (press_chunk.value_entry_length != 1)
+    {
+      dserror("illegal pressure entry length %d", press_chunk.value_entry_length);
+    }
+
+    fprintf(out,DBLLINE);
+    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",
+            field->disnum, map_read_int(result->group, "step"));
+    fprintf(out,DBLLINE);
+
+    for (j=0; j<field->numnp; j++)
+    {
+      INT k;
+      INT Id;
+
+      /* again the global node id is needed */
+      chunk_read_size_entry(&(field->coords), j);
+      Id = field->coords.size_buf[node_variables.coords_size_Id];
+
+      /* read velocity */
+      chunk_read_value_entry(&vel_chunk, j);
+
+      /* read pressure */
+      chunk_read_value_entry(&press_chunk, j);
+
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ", Id, j);
+      for (k=0; k<vel_chunk.value_entry_length; k++)
+      {
+        fprintf(out,"%20.7E ", vel_chunk.value_buf[k]);
       }
-
-      if (press_chunk.value_entry_length != 1) {
-        dserror("illegal pressure entry length %d", press_chunk.value_entry_length);
-      }
-
-      fprintf(out,DBLLINE);
-      fprintf(out,"Converged Solution of Discretisation %d in step %d \n",
-              field->disnum, map_read_int(result_group, "step"));
-      fprintf(out,DBLLINE);
-
-      for (j=0; j<field->numnp; j++) {
-        INT k;
-
-        /* read velocity */
-        /*
-         * We need to fseek all the time because we are reading at two
-         * places within one loop. */
-        fseek(field->value_file,
-              vel_chunk.value_offset + j*vel_chunk.value_entry_length*sizeof(DOUBLE),
-              SEEK_SET);
-        if (fread(vel, sizeof(DOUBLE),
-                  vel_chunk.value_entry_length,
-                  field->value_file) != vel_chunk.value_entry_length) {
-          dserror("reading node velocity of discretization %s failed", field->name);
-        }
-
-        /* read pressure */
-        fseek(field->value_file,
-              press_chunk.value_offset + j*press_chunk.value_entry_length*sizeof(DOUBLE),
-              SEEK_SET);
-        if (fread(&pressure, sizeof(DOUBLE),
-                  1,
-                  field->value_file) != 1) {
-          dserror("reading node pressure of discretization %s failed", field->name);
-        }
-
-        fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",field->node_ids[j],j);
-        for (k=0; k<vel_chunk.value_entry_length; k++) {
-          fprintf(out,"%20.7E ", vel[k]);
-        }
-        fprintf(out,"%20.7E ", pressure);
-        fprintf(out,"\n");
-      }
+      fprintf(out,"%20.7E ", press_chunk.value_buf[0]);
+      fprintf(out,"\n");
     }
     fprintf(out,UNDERLINE);
+
+    destroy_chunk_data(&vel_chunk);
+    destroy_chunk_data(&press_chunk);
     break;
   }
 
     /* This is just like the structure case. We could merge both. */
   case ale: {
     CHUNK_DATA chunk;
-    if (read_chunk_group(&chunk, result_group, "displacement")) {
-      DOUBLE disp[3];
 
-      if ((chunk.value_entry_length != 2) && (chunk.value_entry_length != 3)) {
-        dserror("illegal displacement entry length %d", chunk.value_entry_length);
-      }
+    init_chunk_data(result, &chunk, "displacement");
 
-      fprintf(out,DBLLINE);
-      fprintf(out,"Converged Solution of Discretisation %d in step %d \n",
-              field->disnum, map_read_int(result_group, "step"));
-      fprintf(out,DBLLINE);
-
-      fseek(field->value_file, chunk.value_offset, SEEK_SET);
-      for (j=0; j<field->numnp; j++) {
-        INT k;
-
-        if (fread(disp, sizeof(DOUBLE),
-                  chunk.value_entry_length,
-                  field->value_file) != chunk.value_entry_length) {
-          dserror("reading node displacements of discretization %s failed", field->name);
-        }
-
-        fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",field->node_ids[j],j);
-        for (k=0; k<chunk.value_entry_length; k++) {
-          fprintf(out,"%20.7E ", disp[k]);
-        }
-        fprintf(out,"\n");
-      }
-      fprintf(out,UNDERLINE);
+    if ((chunk.value_entry_length != 2) && (chunk.value_entry_length != 3))
+    {
+      dserror("illegal displacement entry length %d", chunk.value_entry_length);
     }
+
+    fprintf(out,DBLLINE);
+    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",
+            field->disnum, map_read_int(result->group, "step"));
+    fprintf(out,DBLLINE);
+
+    for (j=0; j<field->numnp; j++) {
+      INT k;
+      INT Id;
+
+      /* again the global node id is needed */
+      chunk_read_size_entry(&(field->coords), j);
+      Id = field->coords.size_buf[node_variables.coords_size_Id];
+
+      /* read the displacements to this node */
+      chunk_read_value_entry(&chunk, j);
+
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ", Id, j);
+      for (k=0; k<chunk.value_entry_length; k++) {
+        fprintf(out,"%20.7E ", chunk.value_buf[k]);
+      }
+      fprintf(out,"\n");
+    }
+    fprintf(out,UNDERLINE);
+
+    destroy_chunk_data(&chunk);
     break;
   }
   default:
@@ -506,48 +484,53 @@ static void post_out_sol(FILE* out,
 #ifdef D_SHELL8
   /* If there are shell8 elements it must be a discretization with
    * shell8 elements only. */
-  if (map_symbol_count(field->table, "shell8_minor") > 0) {
+  if (map_has_string(field->group, "shell8_problem", "yes"))
+  {
     CHUNK_DATA chunk;
 
     /* This is interessting for the stress output. */
-    if (read_chunk_group(&chunk, result_group, "stress")) {
-      CHAR* forcetype[] = S8_FORCETYPE;
-      CHAR* ft;
+    if (map_has_map(result->group, "stress"))
+    {
+      CHAR* forcetypenames[] = S8_FORCETYPE;
       INT i;
-      INT force;
-      INT minor;
-      INT ngauss;
-      DOUBLE* stress;
+      TRANSLATION_TABLE forcetype;
 
-      minor = map_read_int(field->table, "shell8_minor");
-      ngauss = element_info[el_shell8].variant[minor].gauss_number;
+      /* We want to interpret the forces in the right way. */
+      init_translation_table(&forcetype,
+                             map_read_map(field->group, "shell8_forcetype"),
+                             forcetypenames);
 
-      /* find the force type */
-      ft = map_read_string(field->table, "shell8_forcetype");
-      for (force=0; forcetype[force]!=NULL; ++force) {
-        if (strcmp(ft, forcetype[force])==0) {
-          break;
-        }
-      }
-      if (forcetype[force]==NULL) {
-        dserror("unknown force type '%s'", ft);
-      }
-
-      /* the memory for one chunk entry */
-      stress = (DOUBLE*)CCACALLOC(chunk.value_entry_length, sizeof(DOUBLE));
+      /* The chunk we are going to read. */
+      init_chunk_data(result, &chunk, "stress");
 
       /* loop all elements */
-      fseek(field->value_file, chunk.value_offset, SEEK_SET);
-      for (j=0; j<field->numele; j++) {
+      for (j=0; j<field->numele; j++)
+      {
+        INT Id;
+        INT nGP[3];
+        INT ngauss;
+        INT force;
 
-        if (fread(stress, sizeof(DOUBLE),
-                  chunk.value_entry_length,
-                  field->value_file) != chunk.value_entry_length) {
-          dserror("reading shell8 stesses of discretization %s failed", field->name);
-        }
+        /* we need the element parameters here */
+        chunk_read_size_entry(&(field->ele_param), j);
+
+        Id     = field->ele_param.size_buf[element_variables.ep_size_Id];
+
+        nGP[0] = field->ele_param.size_buf[shell8_variables.ep_size_nGP0];
+        nGP[1] = field->ele_param.size_buf[shell8_variables.ep_size_nGP1];
+        nGP[2] = field->ele_param.size_buf[shell8_variables.ep_size_nGP2];
+        ngauss = nGP[0]*nGP[1]*nGP[2];
+
+        force  = field->ele_param.size_buf[shell8_variables.ep_size_forcetyp];
+
+        /* translate to internal */
+        force = forcetype.table[force];
+
+        /* finally read the stresses */
+        chunk_read_value_entry(&chunk, j);
 
         fprintf(out,UNDERLINE);
-        fprintf(out,"Element glob_Id %d loc_Id %d                SHELL8\n",field->element_type[j].Id,j);
+        fprintf(out,"Element glob_Id %d loc_Id %d                SHELL8\n", Id, j);
         switch (force) {
         case s8_xyz:
           fprintf(out,"Gaussian     Force-xx     Force-xy     Force-yx      Force-yy     Force-xz     Force-zx      Force-yz    Force-zy     Force-zz\n");
@@ -566,15 +549,15 @@ static void post_out_sol(FILE* out,
           /* There are 18 values to one gauss point */
           fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                   i,
-                  stress[ 0+18*i],
-                  stress[ 2+18*i],
-                  stress[ 8+18*i],
-                  stress[ 1+18*i],
-                  stress[ 3+18*i],
-                  stress[16+18*i],
-                  stress[ 4+18*i],
-                  stress[17+18*i],
-                  stress[ 9+18*i]
+                  chunk.value_buf[ 0+18*i],
+                  chunk.value_buf[ 2+18*i],
+                  chunk.value_buf[ 8+18*i],
+                  chunk.value_buf[ 1+18*i],
+                  chunk.value_buf[ 3+18*i],
+                  chunk.value_buf[16+18*i],
+                  chunk.value_buf[ 4+18*i],
+                  chunk.value_buf[17+18*i],
+                  chunk.value_buf[ 9+18*i]
             );
         }
 
@@ -596,20 +579,21 @@ static void post_out_sol(FILE* out,
           /* There are 18 values to one gauss point */
           fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                   i,
-                  stress[ 5+18*i],
-                  stress[ 7+18*i],
-                  stress[14+18*i],
-                  stress[ 6+18*i],
-                  stress[10+18*i],
-                  stress[12+18*i],
-                  stress[11+18*i],
-                  stress[13+18*i],
-                  stress[15+18*i]
+                  chunk.value_buf[ 5+18*i],
+                  chunk.value_buf[ 7+18*i],
+                  chunk.value_buf[14+18*i],
+                  chunk.value_buf[ 6+18*i],
+                  chunk.value_buf[10+18*i],
+                  chunk.value_buf[12+18*i],
+                  chunk.value_buf[11+18*i],
+                  chunk.value_buf[13+18*i],
+                  chunk.value_buf[15+18*i]
             );
         }
       }
 
-      CCAFREE(stress);
+      destroy_chunk_data(&chunk);
+      destroy_translation_table(&forcetype);
     }
 
     goto end;
@@ -619,7 +603,8 @@ static void post_out_sol(FILE* out,
 #ifdef D_SHELL9
   /* If there are shell9 elements it must be a discretization with
    * shell9 elements only. */
-  if (map_symbol_count(field->table, "shell9_minor") > 0) {
+  if (map_has_string(field->group, "shell9_problem", "yes"))
+  {
 
 /*NOTE: It does not seem to be very interesting to write the forces of each kinematic layer; it is more
   usefull to look at the stresses. These are writen to the flavia.res-File, so that they could be
@@ -633,50 +618,105 @@ static void post_out_sol(FILE* out,
   {
     CHUNK_DATA chunk;
 
-    if (read_chunk_group(&chunk, result_group, "stress")) {
-      DOUBLE* stress;
+    if (map_has_map(result->group, "stress"))
+    {
+#ifdef D_WALL1
+      CHAR* w1_stresstypenames[] = WALL1_STRESSTYPE;
+      TRANSLATION_TABLE w1_stresstype;
+#endif
+#ifdef D_BRICK1
+      CHAR* c1_stresstypenames[] = BRICK1_STRESSTYPE;
+      TRANSLATION_TABLE c1_stresstype;
+#endif
+#ifdef D_INTERF
+      CHAR* interf_stresstypenames[] = INTERF_STRESSTYPE;
+      TRANSLATION_TABLE interf_stresstype;
+#endif
+#ifdef D_WALLGE
+      CHAR* wallge_stresstypenames[] = WALLGE_STRESSTYPE;
+      TRANSLATION_TABLE wallge_stresstype;
+#endif
 
-      /* the memory for one chunk entry */
-      stress = (DOUBLE*)CCACALLOC(chunk.value_entry_length, sizeof(DOUBLE));
+
+#ifdef D_WALL1
+      init_translation_table(&w1_stresstype,
+                             map_read_map(field->group, "w1_stresstypes"),
+                             w1_stresstypenames);
+#endif
+#ifdef D_BRICK1
+      init_translation_table(&c1_stresstype,
+                             map_read_map(field->group, "c1_stresstypes"),
+                             c1_stresstypenames);
+#endif
+#ifdef D_INTERF
+      init_translation_table(&interf_stresstype,
+                             map_read_map(field->group, "interf_stresstypes"),
+                             interf_stresstypenames);
+#endif
+#ifdef D_WALLGE
+      init_translation_table(&wallge_stresstype,
+                             map_read_map(field->group, "wallge_stresstypes"),
+                             wallge_stresstypenames);
+#endif
+
+
+      /* The chunk we are going to read. */
+      init_chunk_data(result, &chunk, "stress");
 
       /* loop all elements */
-      fseek(field->value_file, chunk.value_offset, SEEK_SET);
-      for (j=0; j<field->numele; j++) {
-        INT major;
-        INT minor;
-        INT ngauss;
+      for (j=0; j<field->numele; j++)
+      {
+        INT Id;
+        INT el_type;
 
-        major = field->element_type[j].major;
-        minor = field->element_type[j].minor;
+        chunk_read_value_entry(&chunk, j);
 
-        /*
-         * Read the current stress entry. Independent of the element type. */
-        if (fread(stress, sizeof(DOUBLE),
-                  chunk.value_entry_length,
-                  field->value_file) != chunk.value_entry_length) {
-          dserror("reading stesses of discretization %s failed", field->name);
-        }
+        /* we need the element parameters here */
+        chunk_read_size_entry(&(field->ele_param), j);
 
-        switch (major) {
+        Id      = field->ele_param.size_buf[element_variables.ep_size_Id];
+        el_type = field->ele_param.size_buf[element_variables.ep_size_eltyp];
+
+        /* translate to internal */
+        el_type = field->problem->element_type.table[el_type];
+
+        switch (el_type)
+        {
 #ifdef D_WALL1
-        case el_wall1: {
+        case el_wall1:
+        {
           INT i;
 
-          ngauss = element_info[el_wall1].variant[minor].gauss_number;
+          INT nGP[4];           /* why that large? */
+          INT stresstype;
+          INT ngauss;
+
+          nGP[0] = field->ele_param.size_buf[wall1_variables.ep_size_nGP0];
+          nGP[1] = field->ele_param.size_buf[wall1_variables.ep_size_nGP1];
+          ngauss = nGP[0]*nGP[1];
+
           dsassert(ngauss == 4, "only four gauss point versions supported currently");
 
+          /*
+           * get the element's stress type and translate in to
+           * internal */
+          stresstype = field->ele_param.size_buf[wall1_variables.ep_size_stresstyp];
+          stresstype = w1_stresstype.table[stresstype];
+
           fprintf(out,DBLLINE);
-          fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n",field->element_type[j].Id,j);
+          fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n", Id, j);
           fprintf(out,"\n");
 
-          /* check whether stresses at Gauss Points are presented in
-           * global xy- or local rs-coordinate system and write stress type */
-          if ((map_symbol_count(chunk.group, "wall1_stresstype")>0) &&
-              (strcmp(map_read_string(chunk.group, "wall1_stresstype"), "w1_rs")==0)) {
+          switch (stresstype)
+          {
+          case w1_xy:
             fprintf(out,"Gaussian     Stress-rr    Stress-ss    Stress-rs    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
-          }
-          else {
+            break;
+          case w1_rs:
             fprintf(out,"Gaussian     Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+            break;
+          default:
+            dserror("stress type %d unknown", stresstype);
           }
 
           for (i=0; i<ngauss; i++) {
@@ -686,13 +726,13 @@ static void post_out_sol(FILE* out,
              * using GiD. The wall element needs to be cleaned up! */
             fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                     i,
-                    stress[0*9+i],
-                    stress[1*9+i],
-                    stress[2*9+i],
-                    stress[3*9+i],
-                    stress[4*9+i],
-                    stress[5*9+i],
-                    stress[6*9+i]
+                    chunk.value_buf[0*9+i],
+                    chunk.value_buf[1*9+i],
+                    chunk.value_buf[2*9+i],
+                    chunk.value_buf[3*9+i],
+                    chunk.value_buf[4*9+i],
+                    chunk.value_buf[5*9+i],
+                    chunk.value_buf[6*9+i]
               );
           }
           break;
@@ -700,42 +740,41 @@ static void post_out_sol(FILE* out,
 #endif /*D_WALL1*/
 
 #ifdef D_BRICK1
-        case el_brick1: {
+        case el_brick1:
+        {
           INT i;
-          CHAR* stresstype[] = BRICK1_STRESSTYPE;
-          CHAR* st;
-          INT stress_type;
 
-          ngauss = element_info[el_brick1].variant[minor].gauss_number;
+          INT stresstype;
+          INT ngauss;
 
-          /* Find the stress type's number. */
-          st = map_read_string(chunk.group, "brick1_stresstype");
-          for (stress_type=0; stresstype[stress_type]!=NULL; ++stress_type) {
-            if (strcmp(stresstype[stress_type], st)==0) {
-              break;
-            }
-          }
+          /*
+           * get the element's stress type and translate in to
+           * internal */
+          stresstype = field->ele_param.size_buf[brick1_variables.ep_size_stresstyp];
+          stresstype = c1_stresstype.table[stresstype];
 
           fprintf(out,UNDERLINE);
-          fprintf(out,"Element glob_Id %d loc_Id %d                BRICK1\n",field->element_type[j].Id,j);
+          fprintf(out,"Element glob_Id %d loc_Id %d                BRICK1\n", Id, j);
           fprintf(out,"\n");
 
-          switch (stress_type) {
+          switch (stresstype)
+          {
           case c1_gpxyz:
             fprintf(out,"INT.point   x-coord.     y-coord.     z-coord.     stress-xx    stress-yy    stress-zz    stress-xy    stress-xz    stress-yz\n");
-            for (i=0; i<ngauss; i++) {
+            for (i=0; i<ngauss; i++)
+            {
               /* There are 27 values to one gauss point */
               fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                       i,
-                      stress[24+27*i],
-                      stress[25+27*i],
-                      stress[26+27*i],
-                      stress[ 6+27*i],
-                      stress[ 7+27*i],
-                      stress[ 8+27*i],
-                      stress[ 9+27*i],
-                      stress[10+27*i],
-                      stress[11+27*i]
+                      chunk.value_buf[24+27*i],
+                      chunk.value_buf[25+27*i],
+                      chunk.value_buf[26+27*i],
+                      chunk.value_buf[ 6+27*i],
+                      chunk.value_buf[ 7+27*i],
+                      chunk.value_buf[ 8+27*i],
+                      chunk.value_buf[ 9+27*i],
+                      chunk.value_buf[10+27*i],
+                      chunk.value_buf[11+27*i]
                 );
             }
             break;
@@ -748,15 +787,15 @@ static void post_out_sol(FILE* out,
               /* There are 27 values to one gauss point */
               fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                       i,
-                      stress[24+27*i],
-                      stress[25+27*i],
-                      stress[26+27*i],
-                      stress[ 0+27*i],
-                      stress[ 1+27*i],
-                      stress[ 2+27*i],
-                      stress[ 3+27*i],
-                      stress[ 4+27*i],
-                      stress[ 5+27*i]
+                      chunk.value_buf[24+27*i],
+                      chunk.value_buf[25+27*i],
+                      chunk.value_buf[26+27*i],
+                      chunk.value_buf[ 0+27*i],
+                      chunk.value_buf[ 1+27*i],
+                      chunk.value_buf[ 2+27*i],
+                      chunk.value_buf[ 3+27*i],
+                      chunk.value_buf[ 4+27*i],
+                      chunk.value_buf[ 5+27*i]
                 );
             }
             break;
@@ -770,18 +809,18 @@ static void post_out_sol(FILE* out,
               /* There are 27 values to one gauss point */
               fprintf(out,"  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
                       i,
-                      stress[12+27*i],
-                      stress[13+27*i],
-                      stress[14+27*i],
-                      stress[15+27*i],
-                      stress[16+27*i],
-                      stress[17+27*i],
-                      stress[18+27*i],
-                      stress[19+27*i],
-                      stress[20+27*i],
-                      stress[21+27*i],
-                      stress[22+27*i],
-                      stress[23+27*i]
+                      chunk.value_buf[12+27*i],
+                      chunk.value_buf[13+27*i],
+                      chunk.value_buf[14+27*i],
+                      chunk.value_buf[15+27*i],
+                      chunk.value_buf[16+27*i],
+                      chunk.value_buf[17+27*i],
+                      chunk.value_buf[18+27*i],
+                      chunk.value_buf[19+27*i],
+                      chunk.value_buf[20+27*i],
+                      chunk.value_buf[21+27*i],
+                      chunk.value_buf[22+27*i],
+                      chunk.value_buf[23+27*i]
                 );
             }
             break;
@@ -847,23 +886,27 @@ static void post_out_sol(FILE* out,
 #endif /*D_BRICK1*/
 
 #ifdef D_BEAM3
-        case el_beam3: {
+        case el_beam3:
+        {
           INT i;
-          ngauss = element_info[el_beam3].variant[minor].gauss_number;
+          INT ngauss;
+
+          ngauss = field->ele_param.size_buf[beam3_variables.ep_size_nGP0];
+
           fprintf(out,UNDERLINE);
-          fprintf(out,"Element glob_Id %d loc_Id %d                BEAM3\n",field->element_type[j].Id,j);
+          fprintf(out,"Element glob_Id %d loc_Id %d                BEAM3\n", Id, j);
           fprintf(out,"\n");
           fprintf(out,"Gaussian         Nx           Vy           Vz           Mx           My           Mz\n");
           for (i=0; i<ngauss; i++) {
             /* There are 6 values to one gauss point */
             fprintf(out,"Gauss %d       %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                     i,
-                    stress[0+6*i],
-                    stress[1+6*i],
-                    stress[2+6*i],
-                    stress[3+6*i],
-                    stress[4+6*i],
-                    stress[5+6*i]
+                    chunk.value_buf[0+6*i],
+                    chunk.value_buf[1+6*i],
+                    chunk.value_buf[2+6*i],
+                    chunk.value_buf[3+6*i],
+                    chunk.value_buf[4+6*i],
+                    chunk.value_buf[5+6*i]
               );
           }
           break;
@@ -871,51 +914,83 @@ static void post_out_sol(FILE* out,
 #endif /*D_BEAM3*/
 
 #ifdef D_INTERF
-        case el_interf: {
+        case el_interf:
+        {
           INT i;
-          ngauss = element_info[el_interf].variant[minor].gauss_number;
-          fprintf(out,UNDERLINE);
-          fprintf(out,"Element glob_Id %d loc_Id %d                INTERF\n",field->element_type[j].Id,j);
+          INT ngauss;
+          INT stresstype;
 
-          if ((map_symbol_count(chunk.group, "interf_orient")>0) &&
-              (strcmp(map_read_string(chunk.group, "interf_orient"), "local")==0)) {
-            fprintf(out,"Gaussian     stresses-tangential     stresses-normal\n");
-          }
-          else {
+          ngauss = field->ele_param.size_buf[interf_variables.ep_size_nGP];
+
+          /*
+           * get the element's stress type and translate in to
+           * internal */
+          stresstype = field->ele_param.size_buf[interf_variables.ep_size_stresstyp];
+          stresstype = interf_stresstype.table[stresstype];
+
+          fprintf(out,UNDERLINE);
+          fprintf(out,"Element glob_Id %d loc_Id %d                INTERF\n", Id, j);
+
+          switch (stresstype)
+          {
+          case if_xy:
             fprintf(out,"Gaussian     stresses-xx     stresses-yy    stresses-xy\n");
+            break;
+          case if_tn:
+            fprintf(out,"Gaussian     stresses-tangential     stresses-normal\n");
+            break;
+          default:
+            dserror("stress type %d unknown", stresstype);
           }
 
           for (i=0; i<ngauss; i++) {
             /* There are 5 values to one gauss point */
             fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E\n",
                     i,
-                    stress[0+5*i],
-                    stress[1+5*i],
-                    stress[2+5*i] );
+                    chunk.value_buf[0+5*i],
+                    chunk.value_buf[1+5*i],
+                    chunk.value_buf[2+5*i] );
           }
           break;
         }
 #endif /*D_INTERF*/
 
 #ifdef D_WALLGE
-        case el_wallge: {
+        case el_wallge:
+        {
           INT i;
-          ngauss = element_info[el_wallge].variant[minor].gauss_number;
+          INT nGP[2];
+          INT ngauss;
+          INT stresstype;
+
+          nGP[0] = field->ele_param.size_buf[wallge_variables.ep_size_nGP0];
+          nGP[1] = field->ele_param.size_buf[wallge_variables.ep_size_nGP1];
+          ngauss = nGP[0]*nGP[1];
+
           fprintf(out,UNDERLINE);
-          fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n",field->element_type[j].Id,j);
+          fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n", Id, j);
           fprintf(out,"\n");
 
-          /* check wether stresses at Gauss Points are presented in
-           * global xy- or local rs-coordinate system and write stress type */
-          if ((map_symbol_count(chunk.group, "wallge_stresstype")>0) &&
-              (strcmp(map_read_string(chunk.group, "wallge_stresstype"), "wge_rs")==0)) {
-            fprintf(out,"Gaussian     Stress-rr    Stress-ss    Stress-rs    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
-          }
-          else {
+          /*
+           * get the element's stress type and translate in to
+           * internal */
+          stresstype = field->ele_param.size_buf[wallge_variables.ep_size_stresstyp];
+          stresstype = wallge_stresstype.table[stresstype];
+
+          switch (stresstype)
+          {
+          case wge_xy:
             fprintf(out,"Gaussian     Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+            break;
+          case wge_rs:
+            fprintf(out,"Gaussian     Stress-rr    Stress-ss    Stress-rs    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+            break;
+          default:
+            dserror("stress type %d unknown", stresstype);
           }
 
-          for (i=0; i<ngauss; i++) {
+          for (i=0; i<ngauss; i++)
+          {
 #if 0
             /* These stresses are never exported! Do we need them? */
             fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
@@ -938,8 +1013,22 @@ static void post_out_sol(FILE* out,
           dserror("unknown type of element");
           break;
         }
-
       }
+
+      destroy_chunk_data(&chunk);
+
+#ifdef D_WALLGE
+      destroy_translation_table(&wallge_stresstype);
+#endif
+#ifdef D_INTERF
+      destroy_translation_table(&interf_stresstype);
+#endif
+#ifdef D_BRICK1
+      destroy_translation_table(&c1_stresstype);
+#endif
+#ifdef D_WALL1
+      destroy_translation_table(&w1_stresstype);
+#endif
     }
   }
 
@@ -947,6 +1036,10 @@ end:
 
   fprintf(out,"\n");
   fprintf(out,"\n");
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -970,6 +1063,10 @@ static void post_out_fsi(FILE* out, PROBLEM_DATA* problem)
   INT* fluid_struct_connect;
   INT* fluid_ale_connect;
 
+#ifdef DEBUG
+  dstrc_enter("post_out_fsi");
+#endif
+
   fprintf(out,DBLLINE);
   fprintf(out,"FSI node connectivity global Ids:\n");
   fprintf(out,DBLLINE);
@@ -977,17 +1074,22 @@ static void post_out_fsi(FILE* out, PROBLEM_DATA* problem)
   fprintf(out,"FLUID          ALE          STRUCTURE\n");
 
   /* Find the corresponding discretizations. We don't rely on any order. */
-  for (i=0; i<problem->num_discr; ++i) {
-    if (problem->discr[i].type == structure) {
+  for (i=0; i<problem->num_discr; ++i)
+  {
+    if (problem->discr[i].type == structure)
+    {
       struct_field = &(problem->discr[i]);
     }
-    else if (problem->discr[i].type == fluid) {
+    else if (problem->discr[i].type == fluid)
+    {
       fluid_field = &(problem->discr[i]);
     }
-    else if (problem->discr[i].type == ale) {
+    else if (problem->discr[i].type == ale)
+    {
       ale_field = &(problem->discr[i]);
     }
-    else {
+    else
+    {
       dserror("unknown field type %d", problem->discr[i].type);
     }
   }
@@ -996,32 +1098,41 @@ static void post_out_fsi(FILE* out, PROBLEM_DATA* problem)
                          struct_field, fluid_field, ale_field,
                          &fluid_struct_connect, &fluid_ale_connect);
 
-  for (i=0; i<fluid_field->numnp; i++) {
-    if ((fluid_ale_connect[i]!=-1) && (fluid_struct_connect[i]==-1)) {
+  for (i=0; i<fluid_field->numnp; i++)
+  {
+    chunk_read_size_entry(&(fluid_field->ele_param), i);
+    if ((fluid_ale_connect[i]!=-1) && (fluid_struct_connect[i]==-1))
+    {
+      chunk_read_size_entry(&(ale_field->ele_param),    fluid_ale_connect[i]);
       fprintf(out,"%-6d         %-6d       ------\n",
-              fluid_field->node_ids[i],
-              ale_field->node_ids[fluid_ale_connect[i]]);
+              fluid_field->ele_param.size_buf[element_variables.ep_size_Id],
+              ale_field->ele_param.size_buf[element_variables.ep_size_Id]);
     }
-    else if ((fluid_ale_connect[i]==-1) && (fluid_struct_connect[i]!=-1)) {
+    else if ((fluid_ale_connect[i]==-1) && (fluid_struct_connect[i]!=-1))
+    {
+      chunk_read_size_entry(&(struct_field->ele_param), fluid_struct_connect[i]);
       fprintf(out,"%-6d         ------       %-6d\n",
-              fluid_field->node_ids[i],
-              struct_field->node_ids[fluid_struct_connect[i]]);
+              fluid_field->ele_param.size_buf[element_variables.ep_size_Id],
+              struct_field->ele_param.size_buf[element_variables.ep_size_Id]);
     }
-    else if ((fluid_ale_connect[i]!=-1) && (fluid_struct_connect[i]!=-1)) {
+    else if ((fluid_ale_connect[i]!=-1) && (fluid_struct_connect[i]!=-1))
+    {
+      chunk_read_size_entry(&(ale_field->ele_param),    fluid_ale_connect[i]);
+      chunk_read_size_entry(&(struct_field->ele_param), fluid_struct_connect[i]);
       fprintf(out,"%-6d         %-6d       %-6d\n",
-              fluid_field->node_ids[i],
-              ale_field->node_ids[fluid_ale_connect[i]],
-              struct_field->node_ids[fluid_struct_connect[i]]);
+              fluid_field->ele_param.size_buf[element_variables.ep_size_Id],
+              ale_field->ele_param.size_buf[element_variables.ep_size_Id],
+              struct_field->ele_param.size_buf[element_variables.ep_size_Id]);
     }
     else
       fprintf(out,"%-6d         ------       ------\n",
-              fluid_field->node_ids[i]);
+              fluid_field->ele_param.size_buf[element_variables.ep_size_Id]);
 
   }
   fprintf(out,UNDERLINE);
 
 #if 0
-  /* No worth it (?) */
+  /* Not worth it (?) */
   fprintf(out,DBLLINE);
   fprintf(out,"FSI node connectivity local Ids:\n");
   fprintf(out,DBLLINE);
@@ -1045,6 +1156,10 @@ static void post_out_fsi(FILE* out, PROBLEM_DATA* problem)
   }
   fprintf(out,UNDERLINE);
 #endif
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 #endif
@@ -1060,29 +1175,14 @@ static void post_out_fsi(FILE* out, PROBLEM_DATA* problem)
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
-  CHAR basename[100];
   CHAR filename[100];
-  MAP control_table;
   PROBLEM_DATA problem;
   FILE* f;
   INT i;
 
-  if (argc != 2) {
-    printf("usage: %s control-file\n", argv[0]);
-    return 1;
-  }
+  init_problem_data(&problem, argc, argv);
 
-  setup_filter(argv[1], &control_table, basename);
-
-  dsassert(map_has_string(&control_table, "version", "0.1"),
-           "expect version 0.1 control file");
-
-  /* Debug output */
-  /*map_print(stdout, &control_table, 0);*/
-
-  init_problem_data(&problem, &control_table);
-
-  sprintf(filename, "%s.out", basename);
+  sprintf(filename, "%s.out", problem.basename);
   f = fopen(filename, "wb");
 
   post_out_general(f, &problem);
@@ -1092,28 +1192,27 @@ int main(int argc, char** argv)
    * little harder to discover a fluid-ale problem, but the function
    * is supposed to work the same way. Maybe we could find a new
    * problemtype for fluid-ale? */
-  if (strcmp(map_read_string(&control_table, "problem_type"), "fsi")==0) {
+  if (strcmp(map_read_string(&(problem.control_table), "problem_type"), "fsi")==0) {
     post_out_fsi(f, &problem);
   }
 #endif
 
   /* Iterate all discretizations. */
   for (i=0; i<problem.num_discr; ++i) {
-    INT res;
     FIELD_DATA* field;
+    RESULT_DATA result;
+
     field = &(problem.discr[i]);
 
     /* Iterate all results. */
-    for (res=0; res<problem.num_results; ++res) {
-      MAP* result_group;
-      result_group = problem.result_group[res];
+    init_result_data(field, &result);
 
-      /* We iterate the list of all results. Here we are interested in
-       * the results of this discretization. */
-      if (match_field_result(field, result_group)) {
-        post_out_sol(f, &problem, field, result_group);
-      }
+    while (next_result(&result))
+    {
+      post_out_sol(f, &result);
     }
+
+    destroy_result_data(&result);
   }
 
   fclose(f);

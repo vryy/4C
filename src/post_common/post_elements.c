@@ -1,6 +1,6 @@
 /*!
 \file
-\brief Dummy file to bring in the element_info module.
+\brief Dummy file to bring in the io_elements module.
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -10,9 +10,9 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 \author u.kue
-\date 09/04
+\date 11/04
 
 */
 
 #include "post_common.h"
-#include "../global_full/global_element_info.c"
+#include "../io/io_elements.c"

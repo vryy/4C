@@ -972,6 +972,9 @@ char          sign='"';
 #ifdef DEBUG
 dstrc_enter("out_gid_domains");
 #endif
+#ifdef PERF
+  perf_begin(73);
+#endif
 /*----------------------------------------------------------------------*/
 /*-------------------------------------- find the correct gid structure */
 for (i=0; i<genprob.numfld; i++)
@@ -1500,7 +1503,7 @@ if (actgid->is_beam3_21)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<4; j++)
+      for (j=1; j<1; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
@@ -1520,7 +1523,7 @@ if (actgid->is_beam3_22)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<9; j++)
+      for (j=1; j<2; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
@@ -1538,14 +1541,14 @@ if (actgid->is_beam3_32)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<4; j++)
+      for (j=1; j<2; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
 
 
-if (actgid->is_beam3_22)
+if (actgid->is_beam3_33)
 {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->beam3_33_name);
@@ -1558,7 +1561,7 @@ if (actgid->is_beam3_22)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<9; j++)
+      for (j=1; j<3; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
@@ -1566,6 +1569,9 @@ if (actgid->is_beam3_22)
 #endif
 /*----------------------------------------------------------------------*/
 fflush(out);
+#ifdef PERF
+  perf_end(73);
+#endif
 #ifdef DEBUG
 dstrc_exit();
 #endif
@@ -1695,6 +1701,10 @@ INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
 #ifdef DEBUG
 dstrc_enter("out_gid_sol");
 #endif
+#ifdef PERF
+  perf_begin(73);
+#endif
+
 /*----------------------------------------------------------------------*/
 /*-------------------------------------- find the correct gid structure */
 for (i=0; i<genprob.numfld; i++)
@@ -1734,7 +1744,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
                                             sign,actgid->standardrangetable,sign
                                             );
 #if 0
-   /* This is a sin! Never change such a cruical global variable!
+   /* This is a sin! Never change such a crucial global variable!
     * Everybody depends on it!
     * (It breaks the new io module in a non-obvious way!) */
 #ifdef D_AXISHELL
@@ -3659,6 +3669,9 @@ if (strncmp(string,"axi_loads",stringlenght)==0)
 #endif
 /*----------------------------------------------------------------------*/
 fflush(out);
+#ifdef PERF
+  perf_end(73);
+#endif
 #ifdef DEBUG
 dstrc_exit();
 #endif

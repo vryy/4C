@@ -181,7 +181,10 @@ void ntam(INT argc, char *argv[])
   perf_end(0);
   /* print out time counters */
   if (par.myrank==0)
-    perf_out();
+  {
+    perf_out(stdout);
+    perf_out(allfiles.out_err);
+  }
 #endif
 
 

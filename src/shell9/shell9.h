@@ -110,6 +110,7 @@ enum
     s9_rst,
     s9_rst_ortho
     }            forcetyp;    /*!< -> forces and stresses in same coordinate system*/
+#define S9_FORCETYPE { "s9_xyz", "s9_rst", "s9_rst_ortho", NULL }
 struct _ARRAY4D  forces;      /*!< stress resultants at GPs -> mid surface */
 struct _ARRAY4D  stresses;    /*!< physical stresses at GPs*/
 struct _ARRAY    gp_stress;   /*!< physical stresses at GPs*/

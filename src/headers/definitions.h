@@ -50,6 +50,26 @@ typedef double    DOUBLE;
 typedef char      CHAR;
 
 /*----------------------------------------------------------------------*
+ | our binary files are big endian                                      |
+ *----------------------------------------------------------------------*/
+
+#ifdef SUSE73
+#define IS_LITTLE_ENDIAN
+#endif
+
+#ifdef WIN
+#define IS_LITTLE_ENDIAN
+#endif
+
+#ifdef LINUX_MUENCH
+#define IS_LITTLE_ENDIAN
+#endif
+
+#ifdef WIN_MUENCH
+#define IS_LITTLE_ENDIAN
+#endif
+
+/*----------------------------------------------------------------------*
  | special definitions for special compilers.....                       |
  *----------------------------------------------------------------------*/
 /* append underslashs, if necessary */
@@ -140,6 +160,7 @@ typedef char      CHAR;
 #define v2update            v2update_
 #define qat2v2              qat2v2_
 #define v3call              v3call_
+#define v3call_struct       v3call_struct_
 #define v3grid              v3grid_
 #define v3surface           v3surface_
 #define v3scal              v3scal_

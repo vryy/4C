@@ -87,6 +87,7 @@ enum
     wge_xy,                         /*!< stresses in global orientaion */
     wge_rs                          /*!< stresses in local orientaion */
     } stresstyp;
+#define WALLGE_STRESSTYPE { "wge_xy", "wge_rs", NULL }
 struct _ARRAY4D  stress_GP;
 struct _ARRAY4D  stress_ND;
 } WALLGE;

@@ -58,125 +58,8 @@ All io is done using chunks.
 #ifndef BIN_SINGLEFILE_H
 #define BIN_SINGLEFILE_H
 
-#include "../pss_full/pss_table.h"
-
+#include "io.h"
 #include "io_packing.h"
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The central structure used for output.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-typedef struct _BIN_OUT_MAIN {
-  CHAR name[256];
-  FILE* control_file;
-} BIN_OUT_MAIN;
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The central structure used for input.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-typedef struct _BIN_IN_MAIN {
-  MAP table;
-} BIN_IN_MAIN;
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The structure that is used to write one field (discretization).
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-typedef struct _BIN_OUT_FIELD {
-
-  /* The solver attached to this discretization. This allows us to
-   * store distributed vectors. */
-  SPARSE_TYP* sysarray_typ;
-  SPARSE_ARRAY* sysarray;
-
-  /* identify me */
-  FIELD *actfield;
-  PARTITION *actpart;
-  INTRA *actintra;
-  INT disnum;
-
-#ifdef PARALLEL
-  /* the numbers of nodes to send and receive in this field */
-  INT* send_numnp;
-  INT* recv_numnp;
-
-  /* the numbers of elements to send and receive in this field */
-  INT* send_numele;
-  INT* recv_numele;
-
-  /* the numbers of dofs to send and receive in this field */
-  INT* send_numdof;
-  INT* recv_numdof;
-#endif
-
-  /* the biggest node array sizes in this discretization */
-  INT max_size[4];
-
-  /* flags whether an element type is used in this discretization */
-  ELEMENT_FLAGS element_flag;
-
-  /* the files to write to */
-#ifdef PARALLEL
-  MPI_File value_file;
-  MPI_File size_file;
-#else
-  FILE* value_file;
-  FILE* size_file;
-#endif
-
-  /* the position where to write new chunks */
-  INT value_file_offset;
-  INT size_file_offset;
-
-#ifdef D_SHELL8
-  INT is_shell8_problem;
-  INT s8_minor;
-#endif
-
-#ifdef D_SHELL9
-  INT is_shell9_problem;
-  INT s9_layers;
-  INT s9_minor;
-#endif
-
-} BIN_OUT_FIELD;
-
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The type this chunk stores.
-
-  We can store values that live in nodes or values that live in
-  elements. A third possibility is the storage of distributed vectors.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-typedef enum _CHUNK_TYPE {
-  chunk_node,
-  chunk_element,
-  chunk_dist_vec
-} CHUNK_TYPE;
-
-#define CHUNK_TYPE_NAMES { "node","element","dist_vec", NULL };
 
 
 /*----------------------------------------------------------------------*/
@@ -209,74 +92,17 @@ typedef struct _BIN_OUT_CHUNK {
   INT value_entry_length;       /* number of doubles per item */
   INT size_entry_length;        /* number of ints per item */
 
-  INT value_count;              /* total number of doubles */
-  INT size_count;               /* total number of ints */
+  INT value_count;              /* total number of doubles on this proc */
+  INT size_count;               /* total number of ints on this proc */
 
-  DOUBLE* out_values;           /* double values */
-  INT* out_sizes;               /* int values */
+  DOUBLE* out_values;           /* all double values we write */
+  INT* out_sizes;               /* all int values we write */
 
-  MAP group;                    /* the group of this chunk */
+  MAP group;                    /* the group that describes this chunk */
 
   DIST_VECTOR* vectors;         /* in case we store distributed vectors */
 
 } BIN_OUT_CHUNK;
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The structure that is used to read one field (discretization).
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-typedef struct _BIN_IN_FIELD {
-
-  SPARSE_TYP *sysarray_typ;
-  SPARSE_ARRAY *sysarray;
-
-  /* identify me */
-  FIELD *actfield;
-  PARTITION *actpart;
-  INTRA *actintra;
-  INT disnum;
-
-#ifdef PARALLEL
-  /* For all types of chunks we can read we need to know which
-   * items have to go to which processors. Therefore we need the
-   * number of items to be send and the item ids themselves. */
-
-  INT* send_numnp;
-  INT* recv_numnp;
-
-  INT* send_numele;
-  INT* recv_numele;
-
-  INT* send_numdof;
-  INT* recv_numdof;
-
-  INT** send_node_ids;
-  INT** recv_node_ids;
-
-  INT** send_element_ids;
-  INT** recv_element_ids;
-
-  /* dof numbers are ids by themselves. But we stick to the naming
-   * scheme. */
-  INT** send_dof_ids;
-  INT** recv_dof_ids;
-#endif
-
-#ifdef PARALLEL
-  MPI_File value_file;
-  MPI_File size_file;
-#else
-  FILE* value_file;
-  FILE* size_file;
-#endif
-
-  MAP* field_info;
-} BIN_IN_FIELD;
 
 
 /*----------------------------------------------------------------------*/
@@ -317,110 +143,25 @@ typedef struct _BIN_IN_CHUNK {
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Init the main (static) data structure that is needed for
-  writing.
+  \brief Open the data files for output.
 
-  Open the control file and write the first lines. To open the file
-  its name must be known. In case of restart we have to adjust it.
+  \param context      (i) pointer to a context variable during setup.
+  \param files        (o) the pair of files to be opened.
+  \param variant      (i) tag to distinguish different pairs. Might be
+                          NULL if files is already initialized.
+  \param step         (i) first time step to be written to this file
 
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void init_bin_out_main(CHAR* outputname);
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Init the main (static) data structure that is needed for
-  reading.
-
-  Read the control file and put its content in a map.
+  \warning \a variant must be a static string. A pointer to it is
+  kept.
 
   \author u.kue
-  \date 08/04
+  \date 10/04
 */
 /*----------------------------------------------------------------------*/
-void init_bin_in_main(CHAR* inputname);
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Init the data structure to write the arrays of one
-  disctretization.
-
-  Initialize a \a context variable that can be used to write restart
-  data and results of one discretization. Write some general
-  information about the discretization as well as node coordinates and
-  connectivity.
-
-  You need to call this once before you can output any results,
-  however when you call it the discretization must be set up
-  already. The node arrays in particular must have their final sizes.
-
-  \param context      (o) pointer to a unoccupied context variable.
-  \param sysarray_typ (i) type of system matrix. might be NULL.
-  \param sysarray     (i) the matrx itself. might be NULL, too.
-  \param actfield     (i) the field
-  \param actpart      (i) the partition
-  \param actintra     (i) the communicator
-  \param disnum       (i) the discretization number
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void init_bin_out_field(BIN_OUT_FIELD* context,
-                        SPARSE_TYP* sysarray_typ,
-                        SPARSE_ARRAY* sysarray,
-                        FIELD *actfield,
-                        PARTITION *actpart,
-                        INTRA *actintra,
-                        INT disnum);
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Clean up.
-
-  The output field context's destructor.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void destroy_bin_out_field(BIN_OUT_FIELD* context);
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Init the data struture to read node arrays from one
-  particular field.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void init_bin_in_field(BIN_IN_FIELD* context,
-                       SPARSE_TYP *sysarray_typ,
-                       SPARSE_ARRAY *sysarray,
-                       FIELD *actfield,
-                       PARTITION *actpart,
-                       INTRA *actintra,
-                       INT disnum);
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Clean up.
-
-  The input field context's destructor.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void destroy_bin_in_field(BIN_IN_FIELD* data);
+void out_open_data_files(BIN_OUT_FIELD *context,
+                         BIN_DATA_FILES *files,
+                         CHAR *variant,
+                         INT step);
 
 
 /*----------------------------------------------------------------------*/
@@ -477,6 +218,34 @@ void out_gather_values(BIN_OUT_FIELD* context,
                        BIN_OUT_CHUNK* chunk,
                        CHUNK_CONTENT_TYPE type,
                        INT array);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Switch to the result files.
+
+  This sets the output context to write anything to the result
+  files. The setting remains active until it's changed explicitly.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void out_activate_result(BIN_OUT_FIELD *context);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Switch to the restart files.
+
+  This sets the output context to write anything to the restart
+  files. The setting remains active until it's changed explicitly.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void out_activate_restart(BIN_OUT_FIELD *context);
 
 
 /*----------------------------------------------------------------------*/
@@ -627,7 +396,7 @@ void in_distvec_chunk(BIN_IN_FIELD* context,
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-MAP *in_find_restart_group(FIELD *actfield, INT disnum, INT step);
+MAP *in_find_restart_group(BIN_IN_FIELD* context, INT disnum, INT step);
 
 #endif
 

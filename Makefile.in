@@ -144,8 +144,3 @@ $(OBJS_F3F_F):
 
 clean:
 	rm -f	src/*/*.o
-
-pack:
-	find . -type f| sed -e 's/^\.//' -e 's/^\///' -e 's/.*~$$//' -e 's/^cca_.*//' -e 's/^post_.*//' -e 's/^Makefile$$//' -e 's/^files$$//' -e 's/.*\.o$$//' -e 's/^\.#.*$$//' -e '/^$$/d' | sort -u > files
-	tar cjf ../ccarat-current.tar.bz2 -T files
-

@@ -896,7 +896,7 @@ void post_v2cell(FIELD_DATA *field, POST_DISCRETIZATION* discret, DIS_TYP distyp
 /*----------------------------------------------------------------------*/
 void v2movie()
 {
-  char string[100]=("xwd -name Visual2X -out vis          ");
+  char string[100]=("xwd -name Visual2  -out vis          ");
   char *charpointer;
 
   char convert[100]=("convert vis                         ");
@@ -958,45 +958,62 @@ end:
 /*!
   \brief Read the node displacements and put them to the node arrays.
 
+  \param discret (o) discretization to be read
+  \param result  (i) current result description
+  \param place   (i) row in the node array where values go
+  \param nsteps  (i) maximum number of steps
+
   \author u.kue
   \date 10/04
 */
 /*----------------------------------------------------------------------*/
-static void post_read_displacement(FIELD_DATA* field,
-                                   POST_DISCRETIZATION* discret,
-                                   MAP* result_group,
-                                   INT place)
+static void post_read_displacement(POST_DISCRETIZATION* discret,
+                                   RESULT_DATA* result,
+                                   INT place,
+                                   INT nsteps)
 {
   CHUNK_DATA chunk;
   DOUBLE **array;
   INT i;
+  INT j;
 
-  if (!read_chunk_group(&chunk, result_group, "displacement")) {
-    dserror("no displacement chunk found");
-  }
+#ifdef DEBUG
+  dstrc_enter("post_read_displacement");
+#endif
+
+  init_chunk_data(result, &chunk, "displacement");
 
   dsassert(chunk.value_entry_length==2, "2d problem expected");
 
-  fseek(field->value_file, chunk.value_offset, SEEK_SET);
-  for (i=0; i<field->numnp; ++i) {
-    if (discret->node[i].sol.Typ == cca_XX) {
-      array = amdef("sol", &(discret->node[i].sol), MAX(place, 3), 2, "DA");
+  dsassert(place < nsteps, "nsteps exceeded");
+
+  for (i=0; i<result->field->numnp; ++i)
+  {
+    if (discret->node[i].sol.Typ == cca_XX)
+    {
+      array = amdef("sol", &(discret->node[i].sol), nsteps, 2, "DA");
     }
-    else if (place >= discret->node[i].sol.fdim) {
-      array = amredef(&(discret->node[i].sol), place+3, discret->node[i].sol.sdim, "DA");
+    else if (place >= discret->node[i].sol.fdim)
+    {
+      array = amredef(&(discret->node[i].sol), nsteps, discret->node[i].sol.sdim, "DA");
     }
-    else {
+    else
+    {
       array = discret->node[i].sol.a.da;
     }
 
-    /* read directly into the node array */
-    if (fread(array[place],
-              sizeof(DOUBLE),
-              chunk.value_entry_length,
-              field->value_file) != chunk.value_entry_length) {
-      dserror("reading value file of discretization %s failed", field->name);
+    chunk_read_value_entry(&chunk, i);
+    for (j=0; j<chunk.value_entry_length; ++j)
+    {
+      array[place][j] = chunk.value_buf[j];
     }
   }
+
+  destroy_chunk_data(&chunk);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -1008,69 +1025,81 @@ static void post_read_displacement(FIELD_DATA* field,
   We have to read two chunks here. We do this one after the other, but
   we put all values of one step into one node array row.
 
+  \param discret (o) discretization to be read
+  \param result  (i) current result description
+  \param place   (i) row in the node array where values go
+  \param nsteps  (i) maximum number of steps
+
   \author u.kue
   \date 10/04
 */
 /*----------------------------------------------------------------------*/
-static void post_read_vel_pres(FIELD_DATA* field,
-                               POST_DISCRETIZATION* discret,
-                               MAP* result_group,
-                               INT place)
+static void post_read_vel_pres(POST_DISCRETIZATION* discret,
+                               RESULT_DATA* result,
+                               INT place,
+                               INT nsteps)
 {
   CHUNK_DATA chunk;
   DOUBLE **array;
   INT i;
+  INT j;
+
+#ifdef DEBUG
+  dstrc_enter("post_read_vel_pres");
+#endif
 
   /*--------------------------------------------------------------------*/
   /* read the velocity */
 
-  if (!read_chunk_group(&chunk, result_group, "velocity")) {
-    dserror("no velocity chunk found");
-  }
+  init_chunk_data(result, &chunk, "velocity");
 
   dsassert(chunk.value_entry_length==2, "2d problem expected");
 
-  fseek(field->value_file, chunk.value_offset, SEEK_SET);
-  for (i=0; i<field->numnp; ++i) {
-    if (discret->node[i].sol.Typ == cca_XX) {
-      array = amdef("sol", &(discret->node[i].sol), MAX(place, 3), 3, "DA");
+  dsassert(place < nsteps, "nsteps exceeded");
+
+  for (i=0; i<result->field->numnp; ++i)
+  {
+    if (discret->node[i].sol.Typ == cca_XX)
+    {
+      array = amdef("sol", &(discret->node[i].sol), nsteps, 3, "DA");
     }
-    else if (place >= discret->node[i].sol.fdim) {
-      array = amredef(&(discret->node[i].sol), place+3, discret->node[i].sol.sdim, "DA");
+    else if (place >= discret->node[i].sol.fdim)
+    {
+      array = amredef(&(discret->node[i].sol), nsteps, discret->node[i].sol.sdim, "DA");
     }
-    else {
+    else
+    {
       array = discret->node[i].sol.a.da;
     }
 
-    /* read directly into the node array */
-    if (fread(array[place],
-              sizeof(DOUBLE),
-              chunk.value_entry_length,
-              field->value_file) != chunk.value_entry_length) {
-      dserror("reading value file of discretization %s failed", field->name);
+    chunk_read_value_entry(&chunk, i);
+    for (j=0; j<chunk.value_entry_length; ++j)
+    {
+      array[place][j] = chunk.value_buf[j];
     }
   }
+
+  destroy_chunk_data(&chunk);
 
   /*--------------------------------------------------------------------*/
   /* read the pressure */
 
-  if (!read_chunk_group(&chunk, result_group, "pressure")) {
-    dserror("no pressure chunk found");
-  }
+  init_chunk_data(result, &chunk, "pressure");
 
   dsassert(chunk.value_entry_length==1, "there must be just one pressure value");
-  fseek(field->value_file, chunk.value_offset, SEEK_SET);
-  for (i=0; i<field->numnp; ++i) {
 
-    /* No need to check the array size here. We did this above. */
-    /* read directly into the node array */
-    if (fread(&(array[place][2]),
-              sizeof(DOUBLE),
-              chunk.value_entry_length,
-              field->value_file) != chunk.value_entry_length) {
-      dserror("reading value file of discretization %s failed", field->name);
-    }
+  for (i=0; i<result->field->numnp; ++i)
+  {
+    chunk_read_value_entry(&chunk, i);
+    array = discret->node[i].sol.a.da;
+    array[place][2] = chunk.value_buf[0];
   }
+
+  destroy_chunk_data(&chunk);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -1102,18 +1131,26 @@ static INT user_question(CHAR* question,
   INT i;
   INT len;
 
+#ifdef DEBUG
+  dstrc_enter("user_question");
+#endif
+
   len = strlen(keys);
-  for (;;) {
+  for (;;)
+  {
 
     /* prepare screen */
     printf(question);
     printf("\n");
-    for (i=0; i<len; ++i) {
+    for (i=0; i<len; ++i)
+    {
       printf("    ");
-      if (keys[i] == default_option) {
+      if (keys[i] == default_option)
+      {
         printf("[%c]", keys[i]);
       }
-      else {
+      else
+      {
         printf(" %c ", keys[i]);
       }
       printf(": %s\n", options[i]);
@@ -1121,20 +1158,25 @@ static INT user_question(CHAR* question,
     printf("\n");
 
     /* handle input */
-    while (isblank(ch = getchar())) {
+    while (isblank(ch = getchar()))
+    {
       /* ignore spaces and tabs */
     }
 
-    if ((ch == '\n') || (ch == EOF)) {
+    if ((ch == '\n') || (ch == EOF))
+    {
       return default_option;
     }
 
-    while (((c = getchar()) != '\n') && (c != EOF)) {
+    while (((c = getchar()) != '\n') && (c != EOF))
+    {
       /* consume the rest of this line */
     }
 
-    for (i=0; i<len; ++i) {
-      if (keys[i] == ch) {
+    for (i=0; i<len; ++i)
+    {
+      if (keys[i] == ch)
+      {
         /* found it */
         return ch;
       }
@@ -1142,6 +1184,10 @@ static INT user_question(CHAR* question,
     printf("\nDon't know how to handle '%c'.\nTry again\n\n", ch);
   }
   /* never reached */
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -1165,6 +1211,10 @@ static void post_visual2()
                             "colours    - white background",
                             "grey scale - white background",
                             NULL };
+
+#ifdef DEBUG
+  dstrc_enter("post_visual2");
+#endif
 
   /*---------------------------------------------------------------------*
    * input from the screen                                               *
@@ -1245,8 +1295,10 @@ static void post_visual2()
 #endif
   } /* endif (IVORT==1) */
 
-  for (;;) {
-    static CHAR* run_mode_options[] = {
+  for (;;)
+  {
+    static CHAR* run_mode_options[] =
+      {
       "steady data structure, grid and variables",
       "steady data structure and grid, unsteady variables",
       "steady data structure, unsteady grid and variables",
@@ -1259,7 +1311,8 @@ static void post_visual2()
     /* let's trust the user_question function and use the shortcut */
     IOPT = ch - '0';
 
-    if (IOPT==3) {
+    if (IOPT==3)
+    {
       printf("   sorry, mode not implemented yet - new input!\n");
       continue;
     }
@@ -1269,7 +1322,8 @@ static void post_visual2()
   if (IOPT==0)
     icol++;
 
-  if ((IOPT==2) && (ale_field == NULL)) {
+  if ((IOPT==2) && (ale_field == NULL))
+  {
     printf("Without ale there's nothing unsteady in the grid.\n"
            "Switching back to option 1.\n\n");
     IOPT = 1;
@@ -1311,7 +1365,8 @@ bgcolour+=20;
 
   /* all element types are cut to 3- or 4-node elements */
   distype = discret[fluid_idx].element[0].distyp;
-  switch (distype) {
+  switch (distype)
+  {
   case tri3:
     KCELL = fluid_field->numele;
     break;
@@ -1344,7 +1399,8 @@ bgcolour+=20;
   amzero(&CEDGE_A);
 
   /* check if all elements are the same distyp */
-  for (i=1; i<fluid_field->numele; i++) {
+  for (i=1; i<fluid_field->numele; i++)
+  {
     ELEMENT* actele = &(discret[fluid_idx].element[i]);
     if (actele->distyp!=distype)
       dserror ("up to now, all elements have to be the same distyp!\n");
@@ -1357,14 +1413,17 @@ bgcolour+=20;
   /* get the x/y limits */
 
   /* find maximum x-coordinate */
-  if (IOPT>=2) {
+  if (IOPT>=2)
+  {
 #ifdef D_FSI
     NODE* actnode = &(discret[fluid_idx].node[0]);
     minxy = actnode->x[0];
     maxxy = actnode->x[0];
-    for (i=0;i<fluid_field->numnp;i++) {
+    for (i=0;i<fluid_field->numnp;i++)
+    {
       actnode = &(discret[fluid_idx].node[i]);
-      if (fluid_ale_connect[i] == -1) {
+      if (fluid_ale_connect[i] == -1)
+      {
         minxy = MIN(minxy, actnode->x[0]);
         maxxy = MAX(maxxy, actnode->x[0]);
       }
@@ -1641,6 +1700,10 @@ bgcolour+=20;
          &NKEYS,IKEYS,FKEYS,FLIMS,
          &MNODE,&MPTRI,&MPPTRI,
          &MFACE,&MPFACE,&MEDGE,&MPEDGE,&bgcolour);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -1654,52 +1717,41 @@ bgcolour+=20;
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
-  CHAR basename[100];
-  MAP control_table;
   PROBLEM_DATA problem;
   INT i;
-  INT res;
   INT res_count;
   INT counter1;
-  INT counter2;
+  RESULT_DATA result;
 
-  if (argc != 2) {
-    printf("usage: %s control-file\n", argv[0]);
-    return 1;
-  }
+  init_problem_data(&problem, argc, argv);
 
-  setup_filter(argv[1], &control_table, basename);
-
-  if (!map_has_string(&control_table, "version", "0.1")) {
-    dserror("expect version 0.1 control file");
-  }
-
-  if (!map_has_int(&control_table, "ndim", 2)) {
+  if (!map_has_int(&(problem.control_table), "ndim", 2))
+  {
     dserror("two dimensional problem expected");
   }
-
-  /* Debug output */
-  /*map_print(stdout, &control_table, 0);*/
-
-  init_problem_data(&problem, &control_table);
 
   /*--------------------------------------------------------------------*/
   /* Find the corresponding discretizations. We don't rely on any order. */
 
-  for (i=0; i<problem.num_discr; ++i) {
-    if (problem.discr[i].type == structure) {
+  for (i=0; i<problem.num_discr; ++i)
+  {
+    if (problem.discr[i].type == structure)
+    {
       struct_field = &(problem.discr[i]);
       struct_idx = i;
     }
-    else if (problem.discr[i].type == fluid) {
+    else if (problem.discr[i].type == fluid)
+    {
       fluid_field = &(problem.discr[i]);
       fluid_idx = i;
     }
-    else if (problem.discr[i].type == ale) {
+    else if (problem.discr[i].type == ale)
+    {
       ale_field = &(problem.discr[i]);
       ale_idx = i;
     }
-    else {
+    else
+    {
       dserror("unknown field type %d", problem.discr[i].type);
     }
   }
@@ -1707,29 +1759,37 @@ int main(int argc, char** argv)
   /*--------------------------------------------------------------------*/
   /* some tests */
 
-  switch (problem.type) {
+  switch (problem.type)
+  {
 #ifdef D_FSI
   case prb_fsi:
-    if (problem.num_discr != 3) {
+    if (problem.num_discr != 3)
+    {
       dserror("expect 3 discretizations for fsi not %d", problem.num_discr);
     }
-    if ((fluid_field == NULL) || (ale_field == NULL) || (struct_field == NULL)) {
+    if ((fluid_field == NULL) || (ale_field == NULL) || (struct_field == NULL))
+    {
       dserror("structure, fluid and ale field expected");
     }
     break;
 #endif
   case prb_fluid:
-    if (problem.num_discr == 1) {
-      if (problem.discr[0].type != fluid) {
+    if (problem.num_discr == 1)
+    {
+      if (problem.discr[0].type != fluid)
+      {
         dserror("fluid discretization expected");
       }
     }
-    else if (problem.num_discr == 2) {
-      if ((fluid_field == NULL) || (ale_field == NULL) || (struct_field != NULL)) {
+    else if (problem.num_discr == 2)
+    {
+      if ((fluid_field == NULL) || (ale_field == NULL) || (struct_field != NULL))
+      {
         dserror("fluid and ale field expected");
       }
     }
-    else {
+    else
+    {
       dserror("invalid number of discretizations for fluid problem (%d)", problem.num_discr);
     }
     break;
@@ -1744,7 +1804,8 @@ int main(int argc, char** argv)
                                             sizeof(POST_DISCRETIZATION));
 
   /* Iterate all discretizations. */
-  for (i=0; i<problem.num_discr; ++i) {
+  for (i=0; i<problem.num_discr; ++i)
+  {
     init_post_discretization(&(discret[i]), &problem, &(problem.discr[i]));
   }
 
@@ -1752,10 +1813,11 @@ int main(int argc, char** argv)
   /* Find the number of steps. We assume that there's one result group
    * for every discretization and every step. */
 
-  res_count = map_symbol_count(&control_table, "result");
+  res_count = map_symbol_count(&(problem.control_table), "result");
   nsteps = res_count / problem.num_discr;
   INCRE=1;
-  if ((res_count % problem.num_discr) != 0) {
+  if ((res_count % problem.num_discr) != 0)
+  {
     dserror("the number of result groups (%d) doesn't match the number of discretizations (%d)",
             res_count, problem.num_discr);
   }
@@ -1765,15 +1827,19 @@ int main(int argc, char** argv)
    * visualize. */
 
   printf("There are %d sets of results\n", nsteps);
+#if 0
   if (user_question("Do you want to see all results?",
-                    yesno_options, "01", '1') == '0') {
-    for (;;) {
-      printf("     At which step shall the visualisation start? (min = 0) \n");
+                    yesno_options, "01", '1') == '0')
+  {
+    for (;;)
+    {
+      printf("     min = 0, max = %d\n", nsteps-1);
+      printf("     At which step shall the visualisation start?\n");
       scanf("%d",&FIRSTSTEP);
-      printf("     At which step shall the visualisation end? (max = %d)\n",
-             nsteps-1);
+      printf("     At which step shall the visualisation end?\n");
       scanf("%d",&LASTSTEP);
-      if (LASTSTEP<=FIRSTSTEP || FIRSTSTEP<0 || LASTSTEP >= nsteps) {
+      if (LASTSTEP<=FIRSTSTEP || FIRSTSTEP<0 || LASTSTEP >= nsteps)
+      {
         printf("   Input out of range --> try again!\n");
         continue;
       }
@@ -1783,11 +1849,13 @@ int main(int argc, char** argv)
     nsteps = LASTSTEP - FIRSTSTEP + 1;
 
     /* increment */
-    for (;;) {
+    for (;;)
+    {
       printf("\n");
       printf("     Increment step number by ...? (<%d)\n",nsteps-1);
       scanf("%d",&DSTEP);
-      if (DSTEP > nsteps-1 || DSTEP==0) {
+      if (DSTEP > nsteps-1 || DSTEP==0)
+      {
         printf("   Increment out of range --> Try again!\n");
         continue;
       }
@@ -1799,11 +1867,41 @@ int main(int argc, char** argv)
     /* eat the final newline */
     getchar();
   }
-  else {
+  else
+  {
     FIRSTSTEP  = 0;
     LASTSTEP = nsteps-1;
     DSTEP    = 1;
   }
+#endif
+
+  if (problem.start > nsteps)
+  {
+    printf("Start step %d requested but only %d steps available. Corrected.\n", problem.start, nsteps);
+    problem.start = nsteps;
+  }
+
+  if (problem.end > nsteps)
+  {
+    printf("End step %d requested but only %d steps available. Corrected.\n", problem.end, nsteps);
+    problem.end = nsteps;
+  }
+
+  FIRSTSTEP = problem.start;
+  DSTEP     = problem.step;
+  if (problem.end > -1)
+  {
+    LASTSTEP  = problem.end;
+    nsteps    = (problem.end - problem.start) / problem.step;
+  }
+  else
+  {
+    LASTSTEP  = nsteps;
+    nsteps    = (nsteps - problem.start) / problem.step;
+  }
+
+  printf("Visualize step %d to step %d with %d steps\n",
+         FIRSTSTEP, LASTSTEP, nsteps);
 
   /* create time array */
   amdef("time",&time_a,nsteps,1,"DV");
@@ -1816,87 +1914,55 @@ int main(int argc, char** argv)
    * results. There must be exactly one result group for the fluid
    * field per step*/
 
-  counter1 = 0;
-  counter2 = 0;
-  for (res=0; res<problem.num_results; ++res) {
-    MAP* result_group;
-    result_group = problem.result_group[res];
-
-    if (match_field_result(fluid_field, result_group)) {
-
-      if (FIRSTSTEP + DSTEP*counter1 == counter2) {
-        dsassert(counter1 < nsteps, "step counting failed");
-        time_a.a.dv[counter1] = map_read_real(result_group, "time");
-        step_a.a.iv[counter1] = map_read_int(result_group, "step");
-        counter1++;
-      }
-      counter2++;
-    }
+  /* Iterate all results. */
+  init_result_data(fluid_field, &result);
+  for (counter1 = 0; next_result(&result); counter1++)
+  {
+    time_a.a.dv[counter1] = map_read_real(result.group, "time");
+    step_a.a.iv[counter1] = map_read_int(result.group, "step");
   }
+  destroy_result_data(&result);
 
   /*--------------------------------------------------------------------*/
   /* Now read the selected steps' results. */
 
-  if (struct_field != NULL) {
-
-    counter1 = 0;
-    counter2 = 0;
-    for (res=0; res<problem.num_results; ++res) {
-      MAP* result_group;
-      result_group = problem.result_group[res];
-
-      /* We iterate the list of all results. Here we are interested in
-       * the results of this discretization. */
-      if (match_field_result(struct_field, result_group)) {
-        if (FIRSTSTEP + DSTEP*counter1 == counter2) {
-          post_read_displacement(struct_field, &(discret[struct_idx]), result_group, counter1);
-          counter1++;
-        }
-        counter2++;
-      }
-    }
-  }
-
-  if (ale_field != NULL) {
-
-    counter1 = 0;
-    counter2 = 0;
-    for (res=0; res<problem.num_results; ++res) {
-      MAP* result_group;
-      result_group = problem.result_group[res];
-
-      /* We iterate the list of all results. Here we are interested in
-       * the results of this discretization. */
-      if (match_field_result(ale_field, result_group)) {
-        if (FIRSTSTEP + DSTEP*counter1 == counter2) {
-          post_read_displacement(ale_field, &(discret[ale_idx]), result_group, counter1);
-          counter1++;
-        }
-        counter2++;
-      }
-    }
-  }
-
-  counter1 = 0;
-  counter2 = 0;
-  for (res=0; res<problem.num_results; ++res) {
-    MAP* result_group;
-    result_group = problem.result_group[res];
+  if (struct_field != NULL)
+  {
 
     /* We iterate the list of all results. Here we are interested in
      * the results of this discretization. */
-    if (match_field_result(fluid_field, result_group)) {
-      if (FIRSTSTEP + DSTEP*counter1 == counter2) {
-        post_read_vel_pres(fluid_field, &(discret[fluid_idx]), result_group, counter1);
-        counter1++;
-      }
-      counter2++;
+    init_result_data(struct_field, &result);
+    for (counter1 = 0; next_result(&result); counter1++)
+    {
+      post_read_displacement(&(discret[struct_idx]), &result, counter1, nsteps);
     }
+    destroy_result_data(&result);
   }
+
+  if (ale_field != NULL)
+  {
+
+    /* We iterate the list of all results. Here we are interested in
+     * the results of this discretization. */
+    init_result_data(ale_field, &result);
+    for (counter1 = 0; next_result(&result); counter1++)
+    {
+      post_read_displacement(&(discret[ale_idx]), &result, counter1, nsteps);
+    }
+    destroy_result_data(&result);
+  }
+
+  init_result_data(fluid_field, &result);
+  for (counter1 = 0; next_result(&result); counter1++)
+  {
+    post_read_vel_pres(&(discret[fluid_idx]), &result, counter1, nsteps);
+  }
+  destroy_result_data(&result);
 
 #ifdef D_FSI
   /* Find coupled nodes. If there's at least an ale field. */
-  if (ale_field != NULL) {
+  if (ale_field != NULL)
+  {
     post_find_fsi_coupling(&problem,
                            struct_field, fluid_field, ale_field,
                            &fluid_struct_connect, &fluid_ale_connect);

@@ -11,6 +11,9 @@ Maintainer: Malte Neumann
 
 ------------------------------------------------------------------------*/
 
+#ifndef GID_H
+#define GID_H
+
 /*----------------------------------------------------------------------*
  | structure for gid output data                         m.gee 12/01    |
  *----------------------------------------------------------------------*/
@@ -102,9 +105,11 @@ typedef struct _GIDSET
 
 } GIDSET;
 /*------------------------ global variable needed by gid postprocessing */
-GIDSET *gid;
+extern GIDSET *gid;
 
 #ifdef D_MLSTRUCT
 /*----------------------------- the same for submesh gid postprocessing */
-GIDSET *sm_gid;
+extern GIDSET *sm_gid;
 #endif /* D_MLSTRUCT */
+
+#endif

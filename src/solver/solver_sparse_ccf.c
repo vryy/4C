@@ -99,6 +99,7 @@ void mask_ccf(
   amdef("Ap_loc",&(ccf->Ap),ccf->numeq_total+1 ,1,"IV");
   amdef("Ai_loc",&(ccf->Ai),ccf->nnz_total     ,1,"IV");
   amdef("Ax",&(ccf->Ax),ccf->nnz_total     ,1,"DV");
+  amzero(&(ccf->Ax));
   /*------------------------------------------------------ allocate bindx */
   bindx = amdef("bindx",&(bindx_a),(ccf->nnz_total+1),1,"IV");
   /*---------------------------------------------------------- make bindx */

@@ -81,27 +81,20 @@ static CHAR*** group_names;
 int main(int argc, char** argv)
 {
   CHAR basename[100];
-  MAP control_table;
   MAP monitor_table;
   PROBLEM_DATA problem;
   INT i;
   SYMBOL* sym_monitor;
   INT mone = -1;
 
-  if (argc != 3) {
-    printf("usage: %s control-file monitor-descr-file\n", argv[0]);
+  if (argc < 3)
+  {
+    printf("usage: %s [options] control-file monitor-descr-file\n", argv[0]);
     return 1;
   }
 
-  setup_filter(argv[1], &control_table, basename);
-
-  dsassert(map_has_string(&control_table, "version", "0.1"),
-           "expect version 0.1 control file");
-
-  /* Debug output */
-  /*map_print(stdout, &control_table, 0);*/
-
-  init_problem_data(&problem, &control_table);
+  /* Lie about the last argument. Is this a good idea? */
+  init_problem_data(&problem, argc-1, argv);
 
   /* We use the number of discretizations here. Maybe this will be a
    * problem once there are more discretizations per field. */
@@ -118,22 +111,26 @@ int main(int argc, char** argv)
    * field the request will be ignored. */
   parse_control_file(&monitor_table, argv[2]);
   sym_monitor = map_find_symbol(&monitor_table, "monitor");
-  while (sym_monitor != NULL) {
+  while (sym_monitor != NULL)
+  {
     MAP* monitor;
     monitor = symbol_map(sym_monitor);
 
-    for (i=0; i<problem.num_discr; ++i) {
+    for (i=0; i<problem.num_discr; ++i)
+    {
       FIELD_DATA* field;
       field = &(problem.discr[i]);
 
-      if (match_field_result(field, monitor)) {
+      if (match_field_result(field, monitor))
+      {
         moni[i].numnp++;
         moni[i].numval += map_symbol_count(monitor, "dof");
         break;
       }
     }
 
-    if (i==problem.num_discr) {
+    if (i==problem.num_discr)
+    {
       printf("%s: %s: Unknown field. Ignore request.\n", argv[0], argv[2]);
     }
 
@@ -144,7 +141,8 @@ int main(int argc, char** argv)
   /*
    * Now that the number of nodes to be watched is known we initialize
    * some auxiliary arrays and open the output files. */
-  for (i=0; i<problem.num_discr; ++i) {
+  for (i=0; i<problem.num_discr; ++i)
+  {
     CHAR buf[100];
 
     amdef("monnodes",&(moni[i].monnodes),moni[i].numnp,2,"IA");
@@ -154,7 +152,8 @@ int main(int argc, char** argv)
 
     group_names[i] = (CHAR**)CCACALLOC(moni[i].numnp, sizeof(CHAR*));
 
-    switch (problem.discr[i].type) {
+    switch (problem.discr[i].type)
+    {
       case structure:
         sprintf(buf, "%s.structure.%d.mon", basename, problem.discr[i].field_pos);
         if ( (allfiles.out_smoni=fopen(buf,"w"))==NULL)
@@ -176,13 +175,15 @@ int main(int argc, char** argv)
   }
 
   /* read in global node Ids */
-  for (i=0; i<problem.num_discr; ++i) {
+  for (i=0; i<problem.num_discr; ++i)
+  {
     INT j = 0;
     FIELD_DATA* field;
     field = &(problem.discr[i]);
 
     sym_monitor = map_find_symbol(&monitor_table, "monitor");
-    while (sym_monitor != NULL) {
+    while (sym_monitor != NULL)
+    {
       MAP* monitor;
       monitor = symbol_map(sym_monitor);
 
@@ -198,11 +199,13 @@ int main(int argc, char** argv)
 
         /* mark the dof */
         sym_dof = map_find_symbol(monitor, "dof");
-        while (sym_dof != NULL) {
+        while (sym_dof != NULL)
+        {
           INT dof;
 
           dof = symbol_int(sym_dof);
-          if ((dof < 0) || (dof >= MAXDOFPERNODE)) {
+          if ((dof < 0) || (dof >= MAXDOFPERNODE))
+          {
             dserror("dof out of range");
           }
           moni[i].onoff.a.ia[j][dof] = 1;
@@ -219,7 +222,8 @@ int main(int argc, char** argv)
   }
 
   /* determine local node Ids */
-  for (i=0; i<problem.num_discr; ++i) {
+  for (i=0; i<problem.num_discr; ++i)
+  {
     FIELD actfield;
     INT j;
     INT k;
@@ -230,29 +234,38 @@ int main(int argc, char** argv)
     amdef("val",&(moni[i].val),moni[i].numval,1,"DA");
 
     /* find the local ids */
-    for (k=0;k<moni[i].numnp;k++) {
-      for (j=0;j<field->numnp;j++) {
-        if (moni[i].monnodes.a.ia[k][0] == field->node_ids[j]) {
+    for (k=0;k<moni[i].numnp;k++)
+    {
+      for (j=0;j<field->numnp;j++)
+      {
+        chunk_read_size_entry(&(field->coords), j);
+        if (moni[i].monnodes.a.ia[k][0] == field->coords.size_buf[node_variables.coords_size_Id])
+        {
           moni[i].monnodes.a.ia[k][1] = j;
           break;
         }
       }
-      if (j == field->numnp) {
+      if (j == field->numnp)
+      {
         dserror("no node %d in field", moni[i].monnodes.a.ia[k][0]);
       }
     }
 
     /* plausibility check */
-    for (j=0;j<moni[i].numnp;j++) {
+    for (j=0;j<moni[i].numnp;j++)
+    {
       if (moni[i].monnodes.a.ia[j][1]==-1)
         dserror("Monitoring Id not existing in field!");
     }
 
     /* give each watched dof an internal number */
     counter = 0;
-    for (k=0;k<moni[i].numnp; k++) {
-      for (j=0;j<MAXDOFPERNODE; j++) {
-        if (moni[i].onoff.a.ia[k][j] != -1) {
+    for (k=0;k<moni[i].numnp; k++)
+    {
+      for (j=0;j<MAXDOFPERNODE; j++)
+      {
+        if (moni[i].onoff.a.ia[k][j] != -1)
+        {
           moni[i].onoff.a.ia[k][j] = counter;
           counter++;
         }
@@ -271,70 +284,65 @@ int main(int argc, char** argv)
   /* read the data and write it */
 
   /* Visit all discretizations and all results to those. */
-  for (i=0; i<problem.num_discr; ++i) {
-    INT res;
+  for (i=0; i<problem.num_discr; ++i)
+  {
+    RESULT_DATA result;
     FIELD_DATA* field;
     field = &(problem.discr[i]);
 
     /* Iterate all results. */
-    for (res=0; res<problem.num_results; ++res) {
-      MAP* result_group;
-      result_group = problem.result_group[res];
+    init_result_data(field, &result);
+    while (next_result(&result))
+    {
+      FIELD actfield;
+      INT l;
+      DOUBLE time;
 
-      /* We iterate the list of all results. Here we are interested in
-       * the results of this discretization. */
-      if (match_field_result(field, result_group)) {
-        FIELD actfield;
+      time = map_read_real(result.group, "time");
+
+      /* This is fake! But needed for now. */
+      actfield.fieldtyp = field->type;
+
+      /*
+       * For each result search the nodes to watch and check whether
+       * there are watched nodes in here. */
+      for (l=0;l<moni[i].numnp;l++)
+      {
+        INT k;
         CHUNK_DATA chunk;
-        INT l;
-        DOUBLE time;
 
-        time = map_read_real(result_group, "time");
-
-        /* This is fake! But needed for now. */
-        actfield.fieldtyp = field->type;
+        /* The chunk we are going to read. */
+        init_chunk_data(&result, &chunk, group_names[i][l]);
 
         /*
-         * For each result search the nodes to watch and check whether
-         * there are watched nodes in here. */
-        for (l=0;l<moni[i].numnp;l++) {
-          INT k;
+         * Collect the values to each dof by reading them directly
+         * into the appropriate array location. */
+        for (k=0;k<MAXDOFPERNODE;k++)
+        {
+          INT numr;
+          INT nodepos;
 
-          if (!read_chunk_group(&chunk, result_group, group_names[i][l])) {
-            dserror("no group '%s' in result", group_names[i][l]);
+          numr = moni[i].onoff.a.ia[l][k];
+          if (numr==-1)
+            continue;
+          nodepos = moni[i].monnodes.a.ia[l][1];
+
+          if (k >= chunk.value_entry_length)
+          {
+            dserror("dof %d does not exist", k);
           }
 
-          /*
-           * Collect the values to each dof by reading them directly
-           * into the appropriate array location. */
-          for (k=0;k<MAXDOFPERNODE;k++) {
-            INT numr;
-            INT nodepos;
+          /* we need the element parameters here */
+          chunk_read_value_entry(&chunk, nodepos);
 
-            numr = moni[i].onoff.a.ia[l][k];
-            if (numr==-1)
-              continue;
-            nodepos = moni[i].monnodes.a.ia[l][1];
-
-            if (k >= chunk.value_entry_length) {
-              dserror("dof %d does not exist", k);
-            }
-
-            fseek(field->value_file,
-                  chunk.value_offset + (nodepos*chunk.value_entry_length + k)*sizeof(DOUBLE),
-                  SEEK_SET);
-            if (fread(&(moni[i].val.a.dv[numr]),
-                      sizeof(DOUBLE),
-                      1,
-                      field->value_file) != 1) {
-              dserror("reading value file of discretization %s failed", field->name);
-            }
-          }
+          moni[i].val.a.dv[numr] = chunk.value_buf[k];
         }
 
-        /* output this time step */
-        out_monitor(&actfield,i,time,0);
+        destroy_chunk_data(&chunk);
       }
+
+      /* output this time step */
+      out_monitor(&actfield,i,time,0);
     }
   }
 

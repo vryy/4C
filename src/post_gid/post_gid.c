@@ -33,6 +33,25 @@ possible). You might want to start reading the file from there.
 
 #include "post_gid.h"
 
+#include "post_ale2.h"
+#include "post_ale3.h"
+#include "post_axishell.h"
+#include "post_beam3.h"
+#include "post_brick1.h"
+#include "post_fluid2.h"
+#include "post_fluid2_pro.h"
+#include "post_fluid3.h"
+#include "post_fluid3_fast.h"
+#include "post_interf.h"
+#include "post_shell8.h"
+#include "post_shell9.h"
+#include "post_wall1.h"
+#include "post_wallge.h"
+
+#include "../output/gid.h"
+
+
+#if 0
 /* map from DIS_TYP to GiD_ElementType */
 static GiD_ElementType gid_type_map[] = {
   GiD_NoElement,                /* dis_none,       -- unknown dis type */
@@ -49,6 +68,51 @@ static GiD_ElementType gid_type_map[] = {
   GiD_Linear,                   /* line2,          -- 2 noded line */
   GiD_Linear                    /* line3           -- 3 noded line */
 };
+#endif
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Convert an array of field local node ids to global node ids
+  in GiD (fortran) style.
+
+  This is an utility function called when meshes are written. There we
+  read the mesh chunk that contains the field local node ids. But we
+  have to give global node ids to GiD. Furthermore the internal ids
+  are counted from zero but GiD requires ids to be counted from one.
+
+  \param field      (i) the field we write
+  \param local_ids  (i) array of known field local ids
+  \param global_ids (o) array of gid ids to be found
+  \param numnp      (i) number of node ids in these arrays
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+void get_gid_node_ids(FIELD_DATA* field, INT* local_ids, INT* global_ids, INT numnp)
+{
+  INT k;
+
+#ifdef DEBUG
+  dstrc_enter("get_gid_node_ids");
+#endif
+
+  for (k=0; k<numnp; ++k)
+  {
+    INT node_id;
+    node_id = local_ids[k];
+
+    chunk_read_size_entry(&(field->coords), node_id);
+    global_ids[k] = field->coords.size_buf[node_variables.coords_size_Id] + 1;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -58,25 +122,15 @@ static GiD_ElementType gid_type_map[] = {
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_coords(PROBLEM_DATA* problem, INT num)
+void write_coords(FIELD_DATA* field, GIDSET* gid)
 {
   INT i;
-  FIELD_DATA* field;
-  MAP* coords_group;
-  INT value_entry_length;
-  INT value_offset;
+  INT j;
   DOUBLE x[3];
 
-  field = &(problem->discr[num]);
-
-  /* figure out the elements used in this discretization */
-  fprintf(allfiles.out_err, "%s: Write node coordinates\n", field->name);
-  coords_group = map_read_map(field->table, "coords");
-
-  value_entry_length = map_read_int(coords_group, "value_entry_length");
-  value_offset = map_read_int(coords_group, "value_offset");
-
-  dsassert(value_entry_length == problem->ndim, "dimension mismatch");
+#ifdef DEBUG
+  dstrc_enter("write_coords");
+#endif
 
   GiD_BeginCoordinates();
 
@@ -85,86 +139,28 @@ static void write_coords(PROBLEM_DATA* problem, INT num)
    * two dimensional problem just set the last component to zero. */
   x[2] = 0;
 
-  fseek(field->value_file, value_offset, SEEK_SET);
-  for (i=0; i<field->numnp; ++i) {
+  for (i=0; i<field->numnp; ++i)
+  {
+    INT Id;
 
-    if (fread(x, sizeof(DOUBLE), value_entry_length, field->value_file)!=value_entry_length) {
-      dserror("reading value file of discretization %s failed", field->name);
+    chunk_read_value_entry(&(field->coords), i);
+    for (j=0; j<field->problem->ndim; ++j)
+    {
+      x[j] = field->coords.value_buf[j];
     }
 
+    chunk_read_size_entry(&(field->coords), i);
+    Id = field->coords.size_buf[node_variables.coords_size_Id];
+
     /* All GiD ids are one based. */
-    GiD_WriteCoordinates(field->node_ids[i]+1, x[0], x[1], x[2]);
+    GiD_WriteCoordinates(Id+1, x[0], x[1], x[2]);
   }
 
   GiD_EndCoordinates();
-}
 
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Write elements.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-static void write_elements(PROBLEM_DATA* problem, INT num, INT element, INT nodes)
-{
-  INT i;
-  FIELD_DATA* field;
-  MAP* mesh_group;
-  INT size_entry_length;
-  INT size_offset;
-  INT* mesh_entry;
-
-  field = &(problem->discr[num]);
-
-  fprintf(allfiles.out_err, "%s: Write element %s with %d nodes\n",
-         field->name, element_info[element].name, nodes);
-
-  mesh_group = map_read_map(field->table, "mesh");
-  size_entry_length = map_read_int(mesh_group, "size_entry_length");
-  size_offset = map_read_int(mesh_group, "size_offset");
-
-  dsassert(size_entry_length >= nodes+3, "node count mismatch");
-
-  mesh_entry = (INT*)CCACALLOC(size_entry_length, sizeof(INT));
-
-  GiD_BeginElements();
-
-  fseek(field->size_file, size_offset, SEEK_SET);
-  for (i=0; i<field->numele; ++i) {
-    INT major;
-    INT minor;
-
-    if (fread(mesh_entry, sizeof(INT), size_entry_length, field->size_file)!=size_entry_length) {
-      dserror("reading size file of discretization %s failed", field->name);
-    }
-
-    major = mesh_entry[1];
-    minor = mesh_entry[2];
-
-    /* convert from file major/minor to internal major/minor */
-    minor = field->internal_minors[major][minor];
-    major = field->internal_majors[major];
-
-    /* Write the element if major number and numbers of nodes match. */
-    if ((element == major) &&
-        (element_info[element].variant[minor].node_number == nodes)) {
-      INT j;
-      /* All GiD ids are one based. */
-      /* Additionally we have to convert discretization local ids to
-       * global ids. */
-      for (j=0; j<nodes; ++j) {
-        mesh_entry[j+3] = field->node_ids[mesh_entry[j+3]] + 1;
-      }
-      GiD_WriteElement(field->element_type[i].Id+1, mesh_entry+3);
-    }
-  }
-
-  GiD_EndElements();
-
-  CCAFREE(mesh_entry);
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -176,63 +172,69 @@ static void write_elements(PROBLEM_DATA* problem, INT num, INT element, INT node
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_domain(FIELD_DATA *field, MAP* group)
+static void write_domain(FIELD_DATA *field, GIDSET* gid)
 {
-  INT j;
-  INT k;
-  GiD_ElementType EType;
-  INT NNode;
-  INT el;
+  CHUNK_DATA chunk;
+
+#ifdef DEBUG
+  dstrc_enter("write_domain");
+#endif
 
   fprintf(allfiles.out_err, "%s: Write domain\n", field->name);
+  init_chunk_data(&(field->head), &chunk, "domain");
 
-  dsassert(map_read_int(group, "size_entry_length") == 1, "domain size mismatch");
+#ifdef D_SHELL8
+  shell8_write_domain(field, gid, &chunk);
+#endif
 
-  /* Find all types of elements in this field. */
-  for (el=0; el<el_count; ++el) {
-    ELEMENT_INFO* info;
-    info = &(element_info[el]);
+  /*--------------------------------------------------------------------*/
 
-    /* Check the minor numbers. */
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (field->element_flags[el][j]) {
-        INT GP_number;
-        CHAR GP_name[30];
+#ifdef D_SHELL9
+  shell9_write_domain(field, gid, &chunk);
+#endif /*D_SHELL9*/
 
-        NNode = info->variant[j].node_number;
-        EType = gid_type_map[info->variant[j].dis_type];
-        GP_number = info->variant[j].gauss_number;
+  /*--------------------------------------------------------------------*/
 
-        sprintf(GP_name, "%s_%d", info->name, GP_number);
-        GiD_BeginResult("Domain", "ccarat", 0.0, GiD_Scalar, GiD_OnGaussPoints,
-                        GP_name, NULL, 0, NULL);
+#ifdef D_BRICK1
+  brick1_write_domain(field, gid, &chunk);
+#endif
 
-        fseek(field->size_file, map_read_int(group, "size_offset"), SEEK_SET);
+  /*--------------------------------------------------------------------*/
 
-        /* Iterate all elements and write those with the current type. */
-        for (k = 0; k < field->numele; ++k) {
-          INT domain;
+#ifdef D_FLUID3
+  fluid3_write_domain(field, gid, &chunk);
+#endif
 
-          /* Read the data even if this element has the wrong
-           * type. We rely on the file pointer beeing set. */
-          if (fread(&domain, sizeof(INT), 1, field->size_file) != 1) {
-            dserror("failed to read domain number of element %d", k);
-          }
+  /*--------------------------------------------------------------------*/
 
-          if ((field->element_type[k].major == el) &&
-              (field->element_type[k].minor == j)) {
-            INT i;
+#ifdef D_FLUID3_F
+  fluid3_fast_write_domain(field, gid, &chunk);
+#endif
 
-            for (i = 0; i < GP_number; ++i) {
-              GiD_WriteScalar(field->element_type[k].Id+1, domain);
-            }
-          }
-        }
+  /*--------------------------------------------------------------------*/
 
-        GiD_EndResult();
-      }
-    }
-  }
+#ifdef D_ALE
+  ale2_write_domain(field, gid, &chunk);
+  ale3_write_domain(field, gid, &chunk);
+#endif
+
+  /*--------------------------------------------------------------------*/
+
+#ifdef D_WALL1
+  wall1_write_domain(field, gid, &chunk);
+#endif
+
+  /*--------------------------------------------------------------------*/
+
+#ifdef D_BEAM3
+  beam3_write_domain(field, gid, &chunk);
+#endif
+
+  destroy_chunk_data(&chunk);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -244,52 +246,72 @@ static void write_domain(FIELD_DATA *field, MAP* group)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_displacement(FIELD_DATA *field, MAP* group)
+static void write_displacement(FIELD_DATA *field, RESULT_DATA* result)
 {
-  INT k;
-  MAP* disp_group;
-  INT value_entry_length;
-  DOUBLE x[3];
-  CHAR* componentnames[] = { "x-displ", "y-displ", "z-displ" };
-  DOUBLE time;
-  INT step;
-  CHAR buf[100];
+#ifdef DEBUG
+  dstrc_enter("write_displacement");
+#endif
 
-  disp_group = map_read_map(group, "displacement");
+#ifdef D_SHELL8
+  if (field->is_shell8_problem)
+  {
+    shell8_write_displacement(field, result);
+  }
+  else
+#endif
+#ifdef D_SHELL9
+  if (field->is_shell9_problem)
+  {
+    shell9_write_displacement(field, result);
+  }
+  else
+#endif
+  {
+    INT k;
+    DOUBLE x[3];
+    CHAR* componentnames[] = { "x-displ", "y-displ", "z-displ" };
+    DOUBLE time;
+    INT step;
+    CHAR buf[100];
+    CHUNK_DATA chunk;
 
-  dsassert(map_read_int(disp_group, "size_entry_length") == 0,
-           "displacement size mismatch");
+    init_chunk_data(result, &chunk, "displacement");
 
-  /* This is supposed to equal the number of dimensions. */
-  value_entry_length = map_read_int(disp_group, "value_entry_length");
-  dsassert((value_entry_length==2) || (value_entry_length==3),
-           "displacement vector length corrupt");
+    time = map_read_real(result->group, "time");
+    step = map_read_int(result->group, "step");
 
-  time = map_read_real(group, "time");
-  step = map_read_int(group, "step");
+    fprintf(allfiles.out_err, "%s: Write displacement of step %d\n", field->name, step);
 
-  fprintf(allfiles.out_err, "%s: Write displacement of step %d\n", field->name, step);
+    sprintf(buf, "%s_displacement", fieldnames[field->type]);
+    GiD_BeginResult(buf, "ccarat", step, GiD_Vector, GiD_OnNodes,
+                    NULL, NULL, chunk.value_entry_length, componentnames);
 
-  sprintf(buf, "%s_displacement", fieldnames[field->type]);
-  GiD_BeginResult(buf, "ccarat", step, GiD_Vector, GiD_OnNodes,
-                  NULL, NULL, value_entry_length, componentnames);
+    /* In case this is a 2d problem. */
+    x[2] = 0;
 
-  fseek(field->value_file, map_read_int(disp_group, "value_offset"), SEEK_SET);
+    /* Iterate all nodes. */
+    for (k = 0; k < field->numnp; ++k)
+    {
+      INT i;
+      chunk_read_value_entry(&chunk, k);
+      for (i=0; i<chunk.value_entry_length; ++i)
+      {
+        x[i] = chunk.value_buf[i];
+      }
 
-  /* In case this is a 2d problem. */
-  x[2] = 0;
+      chunk_read_size_entry(&(field->coords), k);
 
-  /* Iterate all nodes. */
-  for (k = 0; k < field->numnp; ++k) {
-
-    if (fread(x, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-      dserror("failed to read displacement of node %d", k);
+      GiD_WriteVector(field->coords.size_buf[node_variables.coords_size_Id]+1,
+                      x[0], x[1], x[2]);
     }
 
-    GiD_WriteVector(field->node_ids[k]+1, x[0], x[1], x[2]);
+    GiD_EndResult();
+    destroy_chunk_data(&chunk);
   }
 
-  GiD_EndResult();
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -301,52 +323,56 @@ static void write_displacement(FIELD_DATA *field, MAP* group)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_velocity(FIELD_DATA *field, MAP* group)
+static void write_velocity(FIELD_DATA *field, RESULT_DATA* result)
 {
   INT k;
-  MAP* velocity_group;
-  INT value_entry_length;
   DOUBLE velocity[3];
   CHAR* componentnames[] = { "x-vel", "y-vel", "z-vel" };
   DOUBLE time;
   INT step;
   CHAR buf[100];
+  CHUNK_DATA chunk;
 
-  velocity_group = map_read_map(group, "velocity");
+#ifdef DEBUG
+  dstrc_enter("write_velocity");
+#endif
 
-  dsassert(map_read_int(velocity_group, "size_entry_length") == 0,
-           "velocity size mismatch");
+  init_chunk_data(result, &chunk, "velocity");
 
-  /* This is supposed to equal the number of dimensions. */
-  value_entry_length = map_read_int(velocity_group, "value_entry_length");
-  dsassert((value_entry_length==2) || (value_entry_length==3),
-           "velocity vector length corrupt");
-
-  time = map_read_real(group, "time");
-  step = map_read_int(group, "step");
+  time = map_read_real(result->group, "time");
+  step = map_read_int(result->group, "step");
 
   fprintf(allfiles.out_err, "%s: Write velocity of step %d\n", field->name, step);
 
   sprintf(buf, "%s_velocity", fieldnames[field->type]);
   GiD_BeginResult(buf, "ccarat", step, GiD_Vector, GiD_OnNodes,
-                  NULL, NULL, value_entry_length, componentnames);
-
-  fseek(field->value_file, map_read_int(velocity_group, "value_offset"), SEEK_SET);
+                  NULL, NULL, chunk.value_entry_length, componentnames);
 
   /* In case this is a 2d problem. */
   velocity[2] = 0;
 
   /* Iterate all nodes. */
-  for (k = 0; k < field->numnp; ++k) {
-
-    if (fread(velocity, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-      dserror("failed to read velocity of node %d", k);
+  for (k = 0; k < field->numnp; ++k)
+  {
+    INT i;
+    chunk_read_value_entry(&chunk, k);
+    for (i=0; i<chunk.value_entry_length; ++i)
+    {
+      velocity[i] = chunk.value_buf[i];
     }
 
-    GiD_WriteVector(field->node_ids[k]+1, velocity[0], velocity[1], velocity[2]);
+    chunk_read_size_entry(&(field->coords), k);
+
+    GiD_WriteVector(field->coords.size_buf[node_variables.coords_size_Id]+1,
+                    velocity[0], velocity[1], velocity[2]);
   }
 
   GiD_EndResult();
+  destroy_chunk_data(&chunk);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -358,47 +384,45 @@ static void write_velocity(FIELD_DATA *field, MAP* group)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_pressure(FIELD_DATA *field, MAP* group)
+static void write_pressure(FIELD_DATA *field, RESULT_DATA* result)
 {
   INT k;
-  MAP* pressure_group;
-  INT value_entry_length;
-  DOUBLE pressure;
   CHAR* componentnames[] = { "pressure" };
   DOUBLE time;
   INT step;
   CHAR buf[100];
+  CHUNK_DATA chunk;
 
-  pressure_group = map_read_map(group, "pressure");
+#ifdef DEBUG
+  dstrc_enter("write_pressure");
+#endif
 
-  dsassert(map_read_int(pressure_group, "size_entry_length") == 0,
-           "pressure size mismatch");
+  init_chunk_data(result, &chunk, "pressure");
 
-  value_entry_length = map_read_int(pressure_group, "value_entry_length");
-  dsassert(value_entry_length==1, "pressure item length corrupt");
-
-  time = map_read_real(group, "time");
-  step = map_read_int(group, "step");
+  time = map_read_real(result->group, "time");
+  step = map_read_int(result->group, "step");
 
   fprintf(allfiles.out_err, "%s: Write pressure of step %d\n", field->name, step);
 
   sprintf(buf, "%s_pressure", fieldnames[field->type]);
   GiD_BeginResult(buf, "ccarat", step, GiD_Scalar, GiD_OnNodes,
-                  NULL, NULL, value_entry_length, componentnames);
-
-  fseek(field->value_file, map_read_int(pressure_group, "value_offset"), SEEK_SET);
+                  NULL, NULL, chunk.value_entry_length, componentnames);
 
   /* Iterate all nodes. */
-  for (k = 0; k < field->numnp; ++k) {
-
-    if (fread(&pressure, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-      dserror("failed to read pressure of node %d", k);
-    }
-
-    GiD_WriteScalar(field->node_ids[k]+1, pressure);
+  for (k = 0; k < field->numnp; ++k)
+  {
+    chunk_read_value_entry(&chunk, k);
+    chunk_read_size_entry(&(field->coords), k);
+    GiD_WriteScalar(field->coords.size_buf[node_variables.coords_size_Id]+1,
+                    chunk.value_buf[0]);
   }
 
   GiD_EndResult();
+  destroy_chunk_data(&chunk);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -412,302 +436,447 @@ static void write_pressure(FIELD_DATA *field, MAP* group)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_stress(FIELD_DATA *field, MAP* group)
+static void write_stress(FIELD_DATA *field, GIDSET* gid, RESULT_DATA* result)
 {
-  INT i;
-  INT j;
-  INT k;
-  MAP* stress_group;
-  INT value_entry_length;
-  DOUBLE* stress;
   DOUBLE time;
   INT step;
+  CHUNK_DATA chunk;
 
-/*
-   gausspoint permutation :
-   On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
-   have to be written
-*/
+#ifdef DEBUG
+  dstrc_enter("write_stress");
+#endif
 
-  INT           gaussperm4[4] = {3,1,0,2};
-  /*INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};*/
-  INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-  /*INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};*/
+  init_chunk_data(result, &chunk, "stress");
 
-  stress_group = map_read_map(group, "stress");
-
-  dsassert(map_read_int(stress_group, "size_entry_length") == 0,
-           "stress size mismatch");
-
-  value_entry_length = map_read_int(stress_group, "value_entry_length");
-  stress = (DOUBLE*)CCACALLOC(value_entry_length, sizeof(DOUBLE));
-
-  time = map_read_real(group, "time");
-  step = map_read_int(group, "step");
+  time = map_read_real(result->group, "time");
+  step = map_read_int(result->group, "step");
 
   fprintf(allfiles.out_err, "%s: Write stress of step %d\n", field->name, step);
 
-  for (i=0; i<el_count; ++i) {
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (field->element_flags[i][j]) {
-
-        ELEMENT_INFO* info;
-        INT GP_number;
-        CHAR GP_name[30];
-        GiD_ElementType EType;
-        INT NNode;
-
-        info = &(element_info[i]);
-
-        NNode = info->variant[j].node_number;
-        EType = gid_type_map[info->variant[j].dis_type];
-        GP_number = info->variant[j].gauss_number;
-        sprintf(GP_name, "%s_%d", info->name, GP_number);
-
-        dsassert(value_entry_length >= element_info[i].variant[j].stress_matrix_size,
-                 "stress too short for element type");
-
-        switch (i) {
+#ifdef D_SHELL8
+  shell8_write_stress(field, gid, &chunk, time, step);
+#endif
+#ifdef D_SHELL9
+  shell9_write_stress(field, gid, &chunk, time, step);
+#endif
 #ifdef D_WALL1
-        case el_wall1: {        /* 2D plane stress - plane strain element */
-          CHAR* componentnames[] = { "Stress-xx", "Stress-yy", "Stress-xy",
-                                     "Stress-zz", "damage", "||u||" };
-          GiD_BeginResult("wall1_forces", "ccarat", step, GiD_Matrix, GiD_OnGaussPoints,
-                          NULL, NULL, 6, componentnames);
-          fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
-
-          switch (j) {
-#if 0                           /* not yet... */
-          case MINOR_WALL1_11: { /* 3-noded wall1 1x1 GP */
-
-            /* Iterate all elements, choose the ones with matching type */
-            for (k=0; k<field->numele; ++k) {
-              if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-                dserror("failed to read stress of element %d", k);
-              }
-              if ((field->element_type[k].major == i) &&
-                  (field->element_type[k].minor == j)) {
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[0], stress[1], stress[2],
-                                  stress[3], 0, 0);
-              }
-            }
-            break;
-          }
+  wall1_write_stress(field, gid, &chunk, time, step);
 #endif
-          case MINOR_WALL1_22:  /* 4-noded wall1 2x2 GP */
-
-#if 0                           /* not yet... */
-          case MINOR_WALL1_8_33: /* 8-noded wall1 3x3 GP */
-          case MINOR_WALL1_9_33: /* 9-noded wall1 3x3 GP */
+#ifdef D_BRICK1
+  brick1_write_stress(field, gid, &chunk, time, step);
 #endif
-
-            /* Iterate all elements, choose the ones with matching type */
-            for (k=0; k<field->numele; ++k) {
-              if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-                dserror("failed to read stress of element %d", k);
-              }
-              if ((field->element_type[k].major == i) &&
-                  (field->element_type[k].minor == j)) {
-                INT l;
-                for (l=0; l<element_info[i].variant[j].gauss_number; ++l) {
-                  INT p;
-                  p = gaussperm4[l];
-                  GiD_Write3DMatrix(field->node_ids[k]+1,
-                                    stress[9*p+0], stress[9*p+1], stress[9*p+2],
-                                    stress[9*p+3], stress[9*p+7], stress[9*p+8]);
-                }
-              }
-            }
-            break;
-          default:
-            dserror("unknown minor type %d for wall element", j);
-          }
-
-          GiD_EndResult();
-          break;
-        }
+#ifdef D_FLUID3
+  fluid3_write_stress(field, gid, &chunk, time, step);
 #endif
-#ifdef D_BEAM3
-        case el_beam3: {        /* structural 3D-beam element */
-          CHAR* componentnames[] = { "N-x", "V-y", "V-z", "M-x", "M-y", "M-z" };
-          GiD_BeginResult("beam3_forces", "ccarat", step, GiD_Matrix, GiD_OnGaussPoints,
-                          NULL, NULL, 6, componentnames);
-          fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
-
-          /* Iterate all elements, choose the ones with matching type */
-          for (k=0; k<field->numele; ++k) {
-            if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-              dserror("failed to read stress of element %d", k);
-            }
-            if ((field->element_type[k].major == i) &&
-                (field->element_type[k].minor == j)) {
-              INT l;
-              for (l=0; l<element_info[i].variant[j].gauss_number; ++l) {
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[6*l+0], stress[6*l+1], stress[6*l+2],
-                                  stress[6*l+3], stress[6*l+4], stress[6*l+5]);
-              }
-            }
-          }
-
-          GiD_EndResult();
-          break;
-        }
-#endif
-#ifdef D_INTERF
-        case el_interf: {       /* 1D interface element (combination only with wall) */
-          CHAR* tn_componentnames[] = { "stress-tang","stress-normal","dummy","D-nomal","D-tang","dummy" };
-          CHAR* xy_componentnames[] = { "stress-sxx","stress-syy","stress-sxy","D-nomal","D-tang","dummy" };
-          CHAR** componentnames;
-
-          if (map_has_string(stress_group, "interf_orient", "global")) {
-            componentnames = xy_componentnames;
-          }
-          else {
-            componentnames = tn_componentnames;
-          }
-
-          GiD_BeginResult("interface_stresses", "ccarat", step, GiD_Matrix, GiD_OnGaussPoints,
-                          NULL, NULL, 6, componentnames);
-          fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
-
-          /* Iterate all elements, choose the ones with matching type */
-          for (k=0; k<field->numele; ++k) {
-            if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-              dserror("failed to read stress of element %d", k);
-            }
-            if ((field->element_type[k].major == i) &&
-                (field->element_type[k].minor == j)) {
-              INT l;
-              /*
-               * This is fake. The interface element pretends to be of
-               * higher dimension. */
-              if (j == MINOR_INTERF_22) {
-                l = 0;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 1;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 0;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-              }
-              else if (j == MINOR_INTERF_33) {
-                l = 0;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 2;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 0;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 1;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 2;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 1;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 0;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-                l = 1;
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[5*l+0], stress[5*l+1], stress[5*l+2],
-                                  stress[5*l+3], stress[5*l+4], 0);
-              }
-              else {
-                dserror("ups. impossible: j=%d", j);
-              }
-            }
-          }
-
-          GiD_EndResult();
-          break;
-        }
-#endif
-#ifdef D_WALLGE
-        case el_wallge: {       /* gradient enhanced wall element */
-          CHAR* componentnames[] = { "Stress-xx","Stress-yy","Stress-xy","damage","loc_aequiv_strain","nonloc_aequiv_strain" };
-          GiD_BeginResult("wallge_forces", "ccarat", step, GiD_Matrix, GiD_OnGaussPoints,
-                          NULL, NULL, 6, componentnames);
-          fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
-
-          /* Iterate all elements, choose the ones with matching type */
-          for (k=0; k<field->numele; ++k) {
-            if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-              dserror("failed to read stress of element %d", k);
-            }
-            if ((field->element_type[k].major == i) &&
-                (field->element_type[k].minor == j)) {
-              INT l;
-              for (l=0; l<element_info[i].variant[j].gauss_number; ++l) {
-                INT p;
-                p = gaussperm4[l];
-                GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[6*p+0], stress[6*p+1], stress[6*p+2],
-                                  stress[6*p+3], stress[6*p+4], stress[6*p+5]);
-              }
-            }
-          }
-
-          GiD_EndResult();
-          break;
-        }
+#ifdef D_FLUID3_F
+  fluid3_fast_write_stress(field, gid, &chunk, time, step);
 #endif
 #ifdef D_AXISHELL
-        case el_axishell: {     /* 1D axisymmetrical shell element */
-          CHAR* componentnames[] = { "n_s","n_theta","m_s","m_theta","q_s","unused" };
-          GiD_BeginResult("axishell_forces", "ccarat", step, GiD_Matrix, GiD_OnGaussPoints,
-                          NULL, NULL, 6, componentnames);
-          fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
-
-          /* Iterate all elements, choose the ones with matching type */
-          for (k=0; k<field->numele; ++k) {
-            if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-              dserror("failed to read stress of element %d", k);
-            }
-            if ((field->element_type[k].major == i) &&
-                (field->element_type[k].minor == j)) {
-              GiD_Write3DMatrix(field->node_ids[k]+1,
-                                stress[0], stress[1], stress[2],
-                                stress[3], stress[4], 0);
-            }
-          }
-
-          GiD_EndResult();
-          break;
-        }
+  axishell_write_stress(field, gid, &chunk, time, step);
 #endif
-        default:
-          dserror("stress output not supported for element type %d", i);
+#ifdef D_BEAM3
+  beam3_write_stress(field, gid, &chunk, time, step);
+#endif
+#ifdef D_INTERF
+  interf_write_stress(field, gid, &chunk, time, step);
+#endif
+#ifdef D_WALLGE
+  wallge_write_stress(field, gid, &chunk, time, step);
+#endif
+
+  destroy_chunk_data(&chunk);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Find out what types of elements there are in this discretization.
+
+  This is the most primitive way of handling element variants. So it's
+  probably the best.
+
+  This function is based on \a out_gid_sol_init of the original ccarat
+  output.
+
+  \author u.kue
+  \date 11/04
+  \sa out_gid_sol_init
+*/
+/*----------------------------------------------------------------------*/
+static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
+{
+  INT i;
+#ifdef DEBUG
+  dstrc_enter("setup_gid_flags");
+#endif
+
+  memset(gid, 0, sizeof(GIDSET));
+  for (i=0; i<field->numele; ++i)
+  {
+    INT numnp;
+    INT dis;
+    INT el_type;
+    INT Id;
+    INT* size_ptr;
+
+    /* read the element's data */
+    get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+    size_ptr = field->ele_param.size_buf;
+
+    switch (el_type)
+    {
+#ifdef D_SHELL8
+    case el_shell8:
+    {
+      if (numnp==4)
+      {
+        gid->is_shell8_22   = 1;
+        gid->shell8_22_name = "shell8_22";
+      }
+      if (numnp==8 || numnp==9)
+      {
+        gid->is_shell8_33   = 1;
+        gid->shell8_33_name = "shell8_33";
+      }
+      break;
+    }
+#endif
+#ifdef D_SHELL9
+    case el_shell9:
+    {
+      INT nGP[2];
+
+      nGP[0] = size_ptr[shell9_variables.ep_size_nGP0];
+      nGP[1] = size_ptr[shell9_variables.ep_size_nGP1];
+
+      if (numnp==4)
+      {
+        if (nGP[0]==2 && nGP[1]==2)
+        {
+          gid->is_shell9_4_22   = 1;
+          gid->shell9_4_22_name = "shell9_4_22";
+        }
+        if (nGP[0]==3 && nGP[1]==3)
+        {
+          gid->is_shell9_4_33   = 1;
+          gid->shell9_4_33_name = "shell9_4_33";
         }
       }
+      if (numnp==8)
+      {
+        if (nGP[0]==2 && nGP[1]==2)
+        {
+          gid->is_shell9_8_22   = 1;
+          gid->shell9_8_22_name = "shell9_8_22";
+        }
+        if (nGP[0]==3 && nGP[1]==3)
+        {
+          gid->is_shell9_8_33   = 1;
+          gid->shell9_8_33_name = "shell9_8_33";
+        }
+      }
+      if (numnp==9)
+      {
+        if (nGP[0]==2 && nGP[1]==2)
+        {
+          gid->is_shell9_9_22   = 1;
+          gid->shell9_9_22_name = "shell9_9_22";
+        }
+        if (nGP[0]==3 && nGP[1]==3)
+        {
+          gid->is_shell9_9_33   = 1;
+          gid->shell9_9_33_name = "shell9_9_33";
+        }
+      }
+      break;
+    }
+#endif
+#ifdef D_BRICK1
+    case el_brick1:
+    {
+      if (numnp==8)
+      {
+        gid->is_brick1_222   = 1;
+        gid->brick1_222_name = "brick1_222";
+      }
+      if (numnp==20 || numnp==27)
+      {
+        gid->is_brick1_333   = 1;
+        gid->brick1_333_name = "brick1_333";
+      }
+      break;
+    }
+#endif
+#ifdef D_FLUID2
+    case el_fluid2:
+    {
+      if (numnp==4)
+      {
+        gid->is_fluid2_22    = 1;
+        gid->fluid2_22_name  = "fluid2_22";
+      }
+      if (numnp==8  || numnp==9)
+      {
+        gid->is_fluid2_33    = 1;
+        gid->fluid2_33_name  = "fluid2_33";
+      }
+      break;
+    }
+#endif
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+    {
+      if (numnp==4)
+      {
+        gid->is_fluid2_pro_22    = 1;
+        gid->fluid2_pro_22_name  = "fluid2_pro_22";
+      }
+      if (numnp==8  || numnp==9)
+      {
+        gid->is_fluid2_pro_33    = 1;
+        gid->fluid2_pro_33_name  = "fluid2_pro_33";
+      }
+      break;
+    }
+#endif
+#ifdef D_FLUID2TU
+    case el_fluid2_tu:
+    {
+      dserror("no output of el_fluid2_tu yet");
+      break;
+    }
+#endif
+#ifdef D_FLUID3
+    case el_fluid3:
+    {
+      if (numnp==8)
+      {
+        gid->is_fluid3_222   = 1;
+        gid->fluid3_222_name = "fluid3_222";
+      }
+      if (numnp==20 || numnp==27)
+      {
+        gid->is_fluid3_333   = 1;
+        gid->fluid3_333_name = "fluid3_333";
+      }
+      break;
+    }
+#endif
+#ifdef D_FLUID3_F
+    case el_fluid3_fast:
+    {
+      if (numnp==8)
+      {
+        gid->is_f3f_222   = 1;
+        gid->f3f_222_name = "f3f_222";
+      }
+      if (numnp==20 || numnp==27)
+      {
+        gid->is_f3f_333   = 1;
+        gid->f3f_333_name = "f3f_333";
+      }
+      break;
+    }
+#endif
+#ifdef D_ALE
+    case el_ale2:
+    {
+      INT nGP[2];
+
+      nGP[0] = size_ptr[ale2_variables.ep_size_nGP0];
+      nGP[1] = size_ptr[ale2_variables.ep_size_nGP1];
+
+      if (numnp==4)
+      {
+        if (nGP[0]==1 && nGP[1]==1)
+        {
+          gid->is_ale_11    = 1;
+          gid->ale_11_name  = "ale_11";
+        }
+        else if (nGP[0]==2 && nGP[1]==2 )
+        {
+          gid->is_ale_22    = 1;
+          gid->ale_22_name  = "ale_22";
+        }
+      }
+      if (numnp==3)
+      {
+        if (nGP[0] == 1)
+        {
+          gid->is_ale_tri_1    = 1;
+          gid->ale_tri_1_name  = "ale_tri_1";
+        }
+        else if (nGP[0] == 3)
+        {
+          gid->is_ale_tri_3    = 1;
+          gid->ale_tri_3_name  = "ale_tri_3";
+        }
+      }
+      break;
+    }
+#endif
+#ifdef D_ALE
+    case el_ale3:
+    {
+      INT nGP[3];
+
+      nGP[0] = size_ptr[ale3_variables.ep_size_nGP0];
+      nGP[1] = size_ptr[ale3_variables.ep_size_nGP1];
+      nGP[2] = size_ptr[ale3_variables.ep_size_nGP2];
+
+      if (numnp==8)
+      {
+        if (nGP[0]==1 && nGP[1]==1 && nGP[2]==1 )
+        {
+          gid->is_ale_111   = 1;
+          gid->ale_111_name = "ale_111";
+        }
+        else if (nGP[0]==2 && nGP[1]==2 && nGP[2]==2 )
+        {
+          gid->is_ale_222   = 1;
+          gid->ale_222_name = "ale_222";
+        }
+      }
+      if (numnp==4)
+      {
+        if (nGP[0] == 1)
+        {
+          gid->is_ale_tet_1    = 1;
+          gid->ale_tet_1_name  = "ale_tet_1";
+        }
+        else if (nGP[0] == 4)
+        {
+          gid->is_ale_tet_4    = 1;
+          gid->ale_tet_4_name  = "ale_tet_4";
+        }
+      }
+      break;
+    }
+#endif
+#ifdef D_WALL1
+    case el_wall1:
+    {
+      INT nGP[2];
+
+      nGP[0] = size_ptr[wall1_variables.ep_size_nGP0];
+      nGP[1] = size_ptr[wall1_variables.ep_size_nGP1];
+
+      if (nGP[0]==1)
+      {
+        gid->is_wall1_11    = 1;
+        gid->wall1_11_name  = "wall1_11";
+      }
+      if (nGP[0]==2)
+      {
+        gid->is_wall1_22    = 1;
+        gid->wall1_22_name  = "wall1_22";
+      }
+      if (nGP[0]==3)
+      {
+        gid->is_wall1_33   = 1;
+        gid->wall1_33_name = "wall1_33";
+      }
+      break;
+    }
+#endif
+#ifdef D_BEAM3
+    case el_beam3:
+    {
+      INT nGP[1];
+
+      nGP[0] = size_ptr[beam3_variables.ep_size_nGP0];
+
+      if (numnp==2)
+      {
+        if (nGP[0]==1)
+        {
+          gid->is_beam3_21 = 1;
+          gid->beam3_21_name  = "beam3_21";
+        }
+        if (nGP[0]==2)
+        {
+          gid->is_beam3_22 = 1;
+          gid->beam3_22_name  = "beam3_22";
+        }
+      }
+      if (numnp==3)
+      {
+        if (nGP[0]==2)
+        {
+          gid->is_beam3_32 = 1;
+          gid->beam3_32_name  = "beam3_32";
+        }
+        if (nGP[0]==3)
+        {
+          gid->is_beam3_33 = 1;
+          gid->beam3_33_name  = "beam3_33";
+        }
+      }
+      break;
+    }
+#endif
+#ifdef D_AXISHELL
+    case el_axishell:
+    {
+      gid->is_axishell    = 1;
+      gid->axishell_name  = "axishell";
+      break;
+    }
+#endif
+#ifdef D_INTERF
+    case el_interf:
+    {
+      INT nGP;
+
+      nGP = size_ptr[interf_variables.ep_size_nGP];
+
+      if (nGP==2)
+      {
+        gid->is_interf_22    = 1;
+        gid->interf_22_name  = "interf_22";
+      }
+      if (nGP==3)
+      {
+        gid->is_interf_33    = 1;
+        gid->interf_33_name  = "interf_33";
+      }
+      break;
+    }
+#endif
+#ifdef D_WALLGE
+    case el_wallge:
+    {
+      INT nGP[2];
+
+      nGP[0] = size_ptr[wallge_variables.ep_size_nGP0];
+      nGP[1] = size_ptr[wallge_variables.ep_size_nGP1];
+
+      if (nGP[0]==2)
+      {
+        gid->is_wallge_22    = 1;
+        gid->wallge_22_name  = "wallge_22";
+      }
+      if (nGP[0]==3)
+      {
+        gid->is_wallge_33    = 1;
+        gid->wallge_33_name  = "wallge_33";
+      }
+      break;
+    }
+#endif
+    default:
+      dserror("element type %d unknown", el_type);
     }
   }
 
-  CCAFREE(stress);
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -719,105 +888,111 @@ static void write_stress(FIELD_DATA *field, MAP* group)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_mesh(PROBLEM_DATA *problem, INT num)
+static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 {
-  INT i, j, k;
-  GiD_ElementType EType;
-  INT NNode;
-  CHAR mesh_name[100];
-  FIELD_DATA* field;
   INT first_mesh = 1;
 
-  field = &(problem->discr[num]);
+#ifdef DEBUG
+  dstrc_enter("write_mesh");
+#endif
 
-  /* There are different meshes for different element types. However,
-   * the number of gauss points is of no importance here. So elements
-   * with different minor numbers but the same number of nodes live in
-   * one mesh. */
+  /* Ok, we have the most primitive description possible. No way to
+   * loop this data. We have to do each case by hand. (Not such a big
+   * improvement after all.) */
 
-  for (i=0; i<el_count; ++i) {
-    ELEMENT_INFO* info;
-
-    /* We keep all node numbers that we've handled in an array. */
-    INT node_numbers[MAX_EL_MINOR];
-    GiD_ElementType gid_type[MAX_EL_MINOR];
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      node_numbers[j] = 0;
-      gid_type[j] = GiD_NoElement;
-    }
-
-    info = &(element_info[i]);
-
-    /* Check the minor numbers. */
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (field->element_flags[i][j]) {
-        NNode = info->variant[j].node_number;
-        EType = gid_type_map[info->variant[j].dis_type];
-
-        dsassert((NNode > 0) && (EType != GiD_NoElement),
-                 "non-existing element variant selected");
-
-        for (k=0; k<MAX_EL_MINOR; ++k) {
-          if (node_numbers[k] == NNode) {
-            /* This type of element with this node number has already
-             * been done. */
-            dsassert(gid_type[k] == EType,
-                     "node numbers match but it's not the same type of element");
-            break;
-          }
-          if (node_numbers[k] == 0) {
-            /* Store all these elements */
-
-            /* encode all information in the mesh name */
-            sprintf(mesh_name, "%s_%s_%d", field->name, info->name, NNode);
-
-            /* do the writing */
-            GiD_BeginMesh(mesh_name, problem->ndim, EType, NNode);
-            if (first_mesh) {
-              first_mesh = 0;
-              write_coords(problem, num);
-            }
-            write_elements(problem, num, i, NNode);
-            GiD_EndMesh();
-
-            /* mark node number as done */
-            node_numbers[k] = NNode;
-            gid_type[k] = EType;
-            break;
-          }
-        }
-      }
-    }
-  }
+#ifdef D_SHELL8
+  shell8_write_gauss(gid);
+#endif
+#ifdef D_SHELL9
+  shell9_write_gauss(gid);
+#endif
+#ifdef D_BRICK1
+  brick1_write_gauss(gid);
+#endif
+#ifdef D_FLUID2
+  fluid2_write_gauss(gid);
+#endif
+#ifdef D_FLUID2_PRO
+  fluid2_pro_write_gauss(gid);
+#endif
+#ifdef D_FLUID3
+  fluid3_write_gauss(gid);
+#endif
+#ifdef D_FLUID3_F
+  fluid3_fast_write_gauss(gid);
+#endif
+#ifdef D_ALE
+  ale2_write_gauss(gid);
+  ale3_write_gauss(gid);
+#endif
+#ifdef D_WALL1
+  wall1_write_gauss(gid);
+#endif
+#ifdef D_BEAM3
+  beam3_write_gauss(gid);
+#endif
+#ifdef D_AXISHELL
+  axishell_write_gauss(gid);
+#endif
+#ifdef D_INTERF
+  interf_write_gauss(gid);
+#endif
+#ifdef D_WALLGE
+  wallge_write_gauss(gid);
+#endif
 
   /*--------------------------------------------------------------------*/
-  /* Tell GiD about our element's gauss points. */
+  /* Write a mesh for each element variant */
 
-  for (i=0; i<el_count; ++i) {
-    ELEMENT_INFO* info;
-    info = &(element_info[i]);
-
-    /* Check the minor numbers. */
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (field->element_flags[i][j]) {
-        INT GP_number;
-        CHAR GP_name[30];
-
-        NNode = info->variant[j].node_number;
-        EType = gid_type_map[info->variant[j].dis_type];
-        GP_number = info->variant[j].gauss_number;
-
-        /* The gauss point definition is meant just for this
-         * discretizations meshes.  */
-        sprintf(mesh_name, "%s_%s_%d", field->name, info->name, NNode);
-
-        sprintf(GP_name, "%s_%d", info->name, GP_number);
-
-        GiD_BeginGaussPoint(GP_name, EType, mesh_name, GP_number, 0, 1);
-        GiD_EndGaussPoint();
-      }
-    }
+  if (field->mesh.size_entry_length > MAXNOD)
+  {
+    dserror("MAXNOD overflow");
   }
+
+#ifdef D_SHELL8
+  shell8_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_SHELL9
+  shell9_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_BRICK1
+  brick1_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_FLUID2
+  fluid2_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_FLUID2_PRO
+  fluid2_pro_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_FLUID3
+  fluid3_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_FLUID3_F
+  fluid3_fast_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_ALE
+  ale2_write_mesh(field, gid, &first_mesh);
+  ale3_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_WALL1
+  wall1_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_BEAM3
+  beam3_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_AXISHELL
+  axishell_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_INTERF
+  interf_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_WALLGE
+  wallge_write_mesh(field, gid, &first_mesh);
+#endif
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -831,15 +1006,23 @@ static void write_mesh(PROBLEM_DATA *problem, INT num)
 /*----------------------------------------------------------------------*/
 static void write_field(PROBLEM_DATA* problem, INT num)
 {
-  INT i;
   FIELD_DATA* field;
+  GIDSET gid;
+  RESULT_DATA result;
+
+#ifdef DEBUG
+  dstrc_enter("write_field");
+#endif
 
   field = &(problem->discr[num]);
+
+  /* find the element variants that are used in this discretization */
+  setup_gid_flags(field, &gid);
 
   /*--------------------------------------------------------------------*/
   /* Write connectivity and node coordinates. */
 
-  write_mesh(problem, num);
+  write_mesh(field, &gid);
 
   /*--------------------------------------------------------------------*/
   /* Now we could define a few range tables. Maybe it's nice to have
@@ -855,39 +1038,45 @@ static void write_field(PROBLEM_DATA* problem, INT num)
   /*--------------------------------------------------------------------*/
   /* Optionally there is one domain table per field. It's the first result. */
 
-  if (map_has_map(field->table, "domain")) {
-    write_domain(field, map_read_map(field->table, "domain"));
+  if (map_has_map(field->group, "domain"))
+  {
+    write_domain(field, &gid);
   }
 
   /*--------------------------------------------------------------------*/
   /* Now it's time to write the time dependend results. */
 
-  for (i=0; i<problem->num_results; ++i) {
-    MAP* result_group;
-    result_group = problem->result_group[i];
+  /* Iterate all results. */
+  init_result_data(field, &result);
 
-    /* We iterate the list of all results. Here we are interested in
-     * the results of this discretization. */
-    if (match_field_result(field, result_group)) {
+  while (next_result(&result))
+  {
+    /* nodal result are written independent of the elements in this
+     * discretization */
+    if (map_has_map(result.group, "displacement"))
+    {
+      write_displacement(field, &result);
+    }
+    if (map_has_map(result.group, "velocity"))
+    {
+      write_velocity(field, &result);
+    }
+    if (map_has_map(result.group, "pressure"))
+    {
+      write_pressure(field, &result);
+    }
 
-      /* nodal result are written independent of the elements in this
-       * discretization */
-      if (map_has_map(result_group, "displacement")) {
-        write_displacement(field, result_group);
-      }
-      if (map_has_map(result_group, "velocity")) {
-        write_velocity(field, result_group);
-      }
-      if (map_has_map(result_group, "pressure")) {
-        write_pressure(field, result_group);
-      }
-
-      /* element dependend results */
-      if (map_has_map(result_group, "stress")) {
-        write_stress(field, result_group);
-      }
+    /* element dependend results */
+    if (map_has_map(result.group, "stress"))
+    {
+      write_stress(field, &gid, &result);
     }
   }
+  destroy_result_data(&result);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -915,18 +1104,32 @@ static void write_fsi(PROBLEM_DATA* problem)
 
   INT* fluid_ale_connect;
 
+  GIDSET struct_gid;
+  GIDSET fluid_gid;
+
+  RESULT_DATA result;
+
+#ifdef DEBUG
+  dstrc_enter("write_fsi");
+#endif
+
   /* Find the corresponding discretizations. We don't rely on any order. */
-  for (i=0; i<problem->num_discr; ++i) {
-    if (problem->discr[i].type == structure) {
+  for (i=0; i<problem->num_discr; ++i)
+  {
+    if (problem->discr[i].type == structure)
+    {
       struct_field = &(problem->discr[i]);
     }
-    else if (problem->discr[i].type == fluid) {
+    else if (problem->discr[i].type == fluid)
+    {
       fluid_field = &(problem->discr[i]);
     }
-    else if (problem->discr[i].type == ale) {
+    else if (problem->discr[i].type == ale)
+    {
       ale_field = &(problem->discr[i]);
     }
-    else {
+    else
+    {
       dserror("unknown field type %d", problem->discr[i].type);
     }
   }
@@ -934,9 +1137,16 @@ static void write_fsi(PROBLEM_DATA* problem)
   /*--------------------------------------------------------------------*/
   /* Write connectivity and node coordinates. */
 
-  write_mesh(problem, fluid_field - problem->discr);
-  if (struct_field != NULL) {
-    write_mesh(problem, struct_field - problem->discr);
+  /* find the element variants that are used in the fluid discretization */
+  setup_gid_flags(fluid_field, &fluid_gid);
+
+  write_mesh(fluid_field, &fluid_gid);
+  if (struct_field != NULL)
+  {
+    /* find the element variants that are used in the struct discretization */
+    setup_gid_flags(struct_field, &struct_gid);
+
+    write_mesh(struct_field, &struct_gid);
   }
 
   /*--------------------------------------------------------------------*/
@@ -965,7 +1175,8 @@ static void write_fsi(PROBLEM_DATA* problem)
     /*
      * We don't need the connection to the structure field here. Free
      * it immediately. */
-    if (struct_field != NULL) {
+    if (struct_field != NULL)
+    {
       CCAFREE(fluid_struct_connect);
     }
   }
@@ -973,114 +1184,117 @@ static void write_fsi(PROBLEM_DATA* problem)
   /*--------------------------------------------------------------------*/
   /* Now it's time to write the time dependend results. */
 
-  /* We iterate the list of all results. */
-  for (i=0; i<problem->num_results; ++i) {
-    MAP* result_group;
-    result_group = problem->result_group[i];
-
-    /* The ale field.
-     *
-     * We are interested in the displacements. But we'll write them
-     * to the fluid nodes. */
-    if (match_field_result(ale_field, result_group)) {
-
-      if (map_has_map(result_group, "displacement")) {
-        INT k;
-        MAP* disp_group;
-        INT value_entry_length;
-        INT value_offset;
-        DOUBLE x[3];
-        CHAR* componentnames[] = { "x-displ", "y-displ", "z-displ" };
-        DOUBLE time;
-        INT step;
-
-        disp_group = map_read_map(result_group, "displacement");
-
-        dsassert(map_read_int(disp_group, "size_entry_length") == 0,
-                 "displacement size mismatch");
-
-        value_offset = map_read_int(disp_group, "value_offset");
-        value_entry_length = map_read_int(disp_group, "value_entry_length");
-        dsassert(value_entry_length==problem->ndim,
-                 "displacement vector length corrupt");
-
-        time = map_read_real(result_group, "time");
-        step = map_read_int(result_group, "step");
-
-        fprintf(allfiles.out_err, "%s: Write displacement of step %d\n", ale_field->name, step);
-
-        GiD_BeginResult("fluid_displacement", "ccarat", step, GiD_Vector, GiD_OnNodes,
-                        NULL, NULL, value_entry_length, componentnames);
-
-        /* In case this is a 2d problem. */
-        x[2] = 0;
-
-        /* Iterate all fluid nodes. */
-        for (k = 0; k < fluid_field->numnp; ++k) {
-
-          if (fluid_ale_connect[k] != -1) {
-
-            /* We have to seek each time. This is not efficient. */
-            fseek(ale_field->value_file,
-                  value_offset + sizeof(DOUBLE)*fluid_ale_connect[k]*value_entry_length,
-                  SEEK_SET);
-            if (fread(x, sizeof(DOUBLE), value_entry_length, ale_field->value_file) != value_entry_length) {
-              dserror("failed to read displacement of node %d", k);
-            }
-
-            GiD_WriteVector(fluid_field->node_ids[k]+1, x[0], x[1], x[2]);
-          }
-          else {
-            GiD_WriteVector(fluid_field->node_ids[k]+1, 0, 0, 0);
-          }
-        }
-
-        GiD_EndResult();
-      }
+  /* Do the fluid results. */
+  init_result_data(fluid_field, &result);
+  while (next_result(&result))
+  {
+    if (map_has_map(result.group, "velocity"))
+    {
+      write_velocity(fluid_field, &result);
     }
-
-    /* The fluid field */
-    if (match_field_result(fluid_field, result_group)) {
-
-      if (map_has_map(result_group, "velocity")) {
-        write_velocity(fluid_field, result_group);
-      }
-      if (map_has_map(result_group, "pressure")) {
-        write_pressure(fluid_field, result_group);
-      }
+    if (map_has_map(result.group, "pressure"))
+    {
+      write_pressure(fluid_field, &result);
+    }
 
 #if 0
-      /* No fluid stresses yet? */
+    /* No fluid stresses yet? */
 
-      /* element dependend results */
-      if (map_has_map(result_group, "stress")) {
-        write_stress(fluid_field, result_group);
-      }
+    /* element dependend results */
+    if (map_has_map(result_group, "stress")) {
+      write_stress(fluid_field, result_group);
+    }
 #endif
-    }
+  }
+  destroy_result_data(&result);
 
-    /* The structure field */
-    if (struct_field != NULL) {
-      if (match_field_result(struct_field, result_group)) {
 
-        if (map_has_map(result_group, "displacement")) {
-          write_displacement(struct_field, result_group);
-        }
-        if (map_has_map(result_group, "velocity")) {
-          write_velocity(struct_field, result_group);
-        }
-        if (map_has_map(result_group, "pressure")) {
-          write_pressure(struct_field, result_group);
-        }
+  /* Do the structure results. */
+  if (struct_field != NULL)
+  {
+    init_result_data(struct_field, &result);
+    while (next_result(&result))
+    {
+      if (map_has_map(result.group, "displacement"))
+      {
+        write_displacement(struct_field, &result);
+      }
+      if (map_has_map(result.group, "velocity"))
+      {
+        write_velocity(struct_field, &result);
+      }
 
-        if (map_has_map(result_group, "stress")) {
-          write_stress(struct_field, result_group);
-        }
+      if (map_has_map(result.group, "stress"))
+      {
+        write_stress(struct_field, &struct_gid, &result);
       }
     }
+    destroy_result_data(&result);
   }
 
+  /* Do the ale results. */
+  init_result_data(ale_field, &result);
+  while (next_result(&result))
+  {
+    /* We read the displacements of the ale elements and write fluid
+     * displacments. That's why this is special and not treated by the
+     * normal function. */
+    if (map_has_map(result.group, "displacement"))
+    {
+      INT k;
+      DOUBLE x[3];
+      CHAR* componentnames[] = { "x-displ", "y-displ", "z-displ" };
+      DOUBLE time;
+      INT step;
+      CHUNK_DATA chunk;
+
+      init_chunk_data(&result, &chunk, "displacement");
+
+      time = map_read_real(result.group, "time");
+      step = map_read_int(result.group, "step");
+
+      fprintf(allfiles.out_err, "%s: Write displacement of step %d\n", ale_field->name, step);
+
+      GiD_BeginResult("fluid_displacement", "ccarat", step, GiD_Vector, GiD_OnNodes,
+                      NULL, NULL, chunk.value_entry_length, componentnames);
+
+      /* In case this is a 2d problem. */
+      x[2] = 0;
+
+      /* Iterate all fluid nodes. */
+      for (k = 0; k < fluid_field->numnp; ++k)
+      {
+        chunk_read_size_entry(&(fluid_field->coords), k);
+        if (fluid_ale_connect[k] != -1)
+        {
+          INT i;
+          chunk_read_value_entry(&chunk, fluid_ale_connect[k]);
+          for (i=0; i<chunk.value_entry_length; ++i)
+          {
+            x[i] = chunk.value_buf[i];
+          }
+
+          GiD_WriteVector(fluid_field->coords.size_buf[node_variables.coords_size_Id]+1,
+                          x[0], x[1], x[2]);
+        }
+        else
+        {
+          GiD_WriteVector(fluid_field->coords.size_buf[node_variables.coords_size_Id]+1,
+                          0, 0, 0);
+        }
+      }
+
+      GiD_EndResult();
+      destroy_chunk_data(&chunk);
+    }
+  }
+  destroy_result_data(&result);
+
   CCAFREE(fluid_ale_connect);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 #endif
@@ -1096,33 +1310,19 @@ static void write_fsi(PROBLEM_DATA* problem)
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
-  CHAR basename[100];
   CHAR filename[100];
-  MAP control_table;
   PROBLEM_DATA problem;
   INT i;
 
-  if (argc != 2) {
-    printf("usage: %s control-file\n", argv[0]);
-    return 1;
-  }
+  init_problem_data(&problem, argc, argv);
 
-  setup_filter(argv[1], &control_table, basename);
-
-  dsassert(map_has_string(&control_table, "version", "0.1"),
-           "expect version 0.1 control file");
-
-  /* Debug output */
-  /*map_print(stdout, &control_table, 0);*/
-
-  init_problem_data(&problem, &control_table);
-
-  sprintf(filename, "%s.flavia.res", basename);
+  sprintf(filename, "%s.flavia.res", problem.basename);
   GiD_OpenPostResultFile(filename);
 
   /* Some problem types have to be handled in a special way. The
    * default is to simply write the results as they are. */
-  switch (problem.type) {
+  switch (problem.type)
+  {
 #ifdef D_FSI
   case prb_fsi:
     /*
@@ -1133,12 +1333,14 @@ int main(int argc, char** argv)
     write_fsi(&problem);
     break;
   case prb_fluid:
-    if (problem.num_discr==2) {
+    if (problem.num_discr==2)
+    {
       /*
        * So we have two discretizations. If these are two fields we
        * have a fluid-ale problem. Otherwise it might be the infamous
        * projection method or something. */
-      if (map_symbol_count(&control_table, "field") == 2) {
+      if (map_symbol_count(&(problem.control_table), "field") == 2)
+      {
         write_fsi(&problem);
         break;
       }
@@ -1147,12 +1349,16 @@ int main(int argc, char** argv)
     /* No break here! The simple fluid case is done by the default
      * code. */
   default:
-    for (i=0; i<problem.num_discr; ++i) {
+    for (i=0; i<problem.num_discr; ++i)
+    {
+#if 0
 #ifdef D_SHELL9
-      if (problem.discr[i].is_shell9_problem) {
+      if (problem.discr[i].is_shell9_problem)
+      {
         write_shell9_field(&problem, i);
       }
       else
+#endif
 #endif
         write_field(&problem, i);
     }

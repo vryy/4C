@@ -50,7 +50,7 @@ functions.
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 #include "../io/io_packing.h"
-#include "../global_full/global_element_info.h"
+#include "../io/io_elements.h"
 
 
 extern struct _FILES           allfiles;
@@ -68,20 +68,80 @@ extern CHAR* fieldnames[];
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Element type specification.
+  \brief The data necessary to access one result.
 
-  This struct stores the internal major and minor numbers, that is the
-  converted ones not the ones read from the file.
+  The point is that each result might define it's own input files. If
+  it doesn't do so it inherits it's files from the previous result of
+  the discretization.
 
   \author u.kue
-  \date 09/04
+  \date 11/04
 */
 /*----------------------------------------------------------------------*/
-typedef struct _ELEMENT_TYPE {
-  INT Id;
-  INT major;
-  INT minor;
-} ELEMENT_TYPE;
+typedef struct _RESULT_DATA {
+  FILE* value_file;
+  FILE* size_file;
+
+  /* position of this result in the global result array */
+  INT pos;
+
+  /* the field this result belongs to */
+  struct _FIELD_DATA* field;
+
+  MAP* group;
+
+} RESULT_DATA;
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief The data necessary to access one chunk.
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+typedef struct _CHUNK_DATA {
+
+  /* the result this chunk belongs to */
+  RESULT_DATA* result;
+
+  MAP* group;
+
+  INT value_entry_length;
+  INT value_offset;
+  INT size_entry_length;
+  INT size_offset;
+
+  /* Buffers that contain the data of the current entry. */
+  /* Never write to these buffers! */
+  INT* size_buf;
+  DOUBLE* value_buf;
+
+#ifndef LOWMEM
+  /* Internal memory that holds the whole chunk. Ignore it. Never
+   * access it directly. It's a performance hack. It's for internal
+   * use only. If the chunks don't fit into the memory we do it
+   * without these buffers. You have been warned. */
+  INT* size_data;
+  DOUBLE* value_data;
+#endif
+} CHUNK_DATA;
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief The translation from external numbers to internal enums.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+typedef struct _TRANSLATION_TABLE {
+  INT* table;
+  MAP* group;
+  INT length;
+} TRANSLATION_TABLE;
 
 
 /*----------------------------------------------------------------------*/
@@ -93,6 +153,8 @@ typedef struct _ELEMENT_TYPE {
 */
 /*----------------------------------------------------------------------*/
 typedef struct _FIELD_DATA {
+  struct _PROBLEM_DATA* problem;
+
   FIELDTYP type;
 
   INT field_pos;
@@ -101,42 +163,27 @@ typedef struct _FIELD_DATA {
   INT numnp;
   INT numdf;
 
-  FILE* value_file;
-  FILE* size_file;
+  MAP* group;
+  CHAR* name;
 
-  MAP* table;
-  CHAR name[100];
+  /* the mesh files */
+  /* a fake to be able to use the chunk data structure */
+  RESULT_DATA head;
 
-  /* The internal major type numbers that correspond to the major
-   * numbers found in the file. We rely on the ccarat never to loose
-   * elements. That is ``el_count`` must never shrink.
-   *
-   * We need this and the next variable in order to maintain
-   * readability of our binary files. */
-  INT internal_majors[el_count];
+  /* Support structures to read the field chunks. */
+  /* This makes it easy to access the mesh data. */
+  CHUNK_DATA ele_param;
+  CHUNK_DATA mesh;
+  CHUNK_DATA coords;
 
-  /* The internal minor type numbers that correspond to the major
-   * numbers found in the file. */
-  ELEMENT_FLAGS internal_minors;
-
-  /* The knowledge which types of elements are used. This table is
-   * accessed by internal major/minor numbers. */
-  ELEMENT_FLAGS element_flags;
-
-  /*
-   * The types of all elements in this discretization. This can became
-   * big. But it frees us from reading the mesh over and over again. */
-  ELEMENT_TYPE* element_type;
-
-  /* The real ids of all nodes. Another big and convenient array. */
-  INT* node_ids;
+#ifdef D_SHELL8
+  INT is_shell8_problem;
+#endif
 
 #ifdef D_SHELL9
   INT is_shell9_problem;
   INT s9_smooth_results;
-  INT s9_minor;
   INT s9_layers;
-  CHAR* s9_forcetype;
 #endif
 } FIELD_DATA;
 
@@ -155,27 +202,27 @@ typedef struct _PROBLEM_DATA {
   INT num_discr;
   FIELD_DATA* discr;
 
+  CHAR basename[100];
+  MAP control_table;
+
+  /* start, stop and step numbers. a python like slice. */
+  /* We don't have to read each result. This is set by command line
+   * arguments. */
+  INT start;
+  INT end;
+  INT step;
+
   INT num_results;
   MAP** result_group;
+
+  /* translation tables from external to internal numbers */
+  TRANSLATION_TABLE element_type;
+  TRANSLATION_TABLE distype;
+
+  CHAR input_dir[100];
+
 } PROBLEM_DATA;
 
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The data necessary to access one chunk.
-
-  \author u.kue
-  \date 10/04
-*/
-/*----------------------------------------------------------------------*/
-typedef struct _CHUNK_DATA {
-  INT value_entry_length;
-  INT value_offset;
-  INT size_entry_length;
-  INT size_offset;
-  MAP* group;
-} CHUNK_DATA;
 
 
 /*----------------------------------------------------------------------*/
@@ -191,24 +238,62 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename);
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief Init a translation table.
+
+  The purpose of these tables is to find the internal enum value to an
+  external number read from the data file. We need to translate each
+  enum value we read. Otherwise the number written would be an
+  implementation detail, thus we could not change our implementation
+  once we had some binary files.
+
+  \param table (o) table to be initialized
+  \param group (i) control file group that defines the external values
+  \param names (i) list of names ordered by internal number, NULL terminated
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void init_translation_table(TRANSLATION_TABLE* table,
+                            MAP* group,
+                            CHAR** names);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Clear the memory occupied by the translation table.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void destroy_translation_table(TRANSLATION_TABLE* table);
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief Extract one discretization's data.
 
   \author u.kue
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-void init_field_data(FIELD_DATA* field, MAP* field_info);
+void init_field_data(PROBLEM_DATA* problem, FIELD_DATA* field, MAP* field_info);
 
 
 /*----------------------------------------------------------------------*/
 /*!
   \brief Extract the problem's data.
 
+  \param problem       (o) problem object to be initialized
+  \param argc          (i) number of command line arguments
+  \param argv          (i) command line arguments
+
   \author u.kue
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-void init_problem_data(PROBLEM_DATA* problem, MAP* control_table);
+void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv);
 
 
 /*----------------------------------------------------------------------*/
@@ -224,20 +309,107 @@ INT match_field_result(FIELD_DATA *field, MAP *result_group);
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Read the control data of one chunk.
-
-  \param chunk         (o) The structure that is filled
-  \param result_group  (i) The control file's group that contains the
-                           group to be read.
-  \param name          (i) The name of the group to be read
-
-  \return Whether a group with the name asked for was found.
+  \brief Initialize the result data.
 
   \author u.kue
-  \date 10/04
+  \date 11/04
 */
 /*----------------------------------------------------------------------*/
-INT read_chunk_group(CHUNK_DATA* chunk, MAP* result_group, CHAR* name);
+void init_result_data(FIELD_DATA* field, RESULT_DATA* result);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Cleanup result data.
+
+  Please note that there must not be any chunk data on this result
+  after this function has been called.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void destroy_result_data(RESULT_DATA* result);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Go to the next result of this discretization.
+
+  \param result (i/o) on input the current result data
+
+  \return zero if there is no further result. non-zero otherwise.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+INT next_result(RESULT_DATA* result);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Set up the chunk structure to iterate the chunk's entries.
+
+  \param result (i) on input the current result data
+  \param chunk  (o) the chunk to be initialized
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Free the chunk data.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void destroy_chunk_data(CHUNK_DATA* chunk);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Read one size entry form the file and store it to this
+  chunk_data's internal buffer.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void chunk_read_size_entry(CHUNK_DATA* chunk, INT id);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Read one value entry form the file and store it to this
+  chunk_data's internal buffer.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void chunk_read_value_entry(CHUNK_DATA* chunk, INT id);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Read the element parameters common to all elements.
+
+  This is just a service to make life easier and yet to do extensive
+  error checking.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+void get_element_params(FIELD_DATA* field,
+                        INT i,
+                        INT* Id, INT* el_type, INT* dis, INT* numnp);
 
 
 #ifdef D_FSI

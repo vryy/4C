@@ -22,7 +22,6 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_restart_control.o \
                 src/global_full/global_open_files.o \
 		src/global_full/global_check_max.o \
-		src/global_full/global_element_info.o \
                 src/global_full/global_divide_fast.o
 #               structure
 OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
@@ -260,7 +259,9 @@ OBJS_OUTPUT   = src/output/out_global.o \
 #                io
 OBJS_IO       = src/io/io_singlefile.o \
                 src/io/io_restart.o \
-                src/io/io_packing.o
+                src/io/io_result.o \
+                src/io/io_packing.o \
+                src/io/io_elements.o
 #                wall1
 OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_b_barop.o \
@@ -609,13 +610,26 @@ OBJS_POST_COMMON = src/post_common/post_common.o \
                 src/post_common/post_ds.o \
                 src/post_common/post_perf.o \
                 src/post_common/post_table.o \
-                src/post_common/post_element_info.o
+                src/post_common/post_elements.o
 
 #                post_gid
 OBJS_POST_GID_COMMON = src/post_gid/post_gid.o \
-                src/post_gid/shell9_out.o \
                 src/post_gid/shell9_intg.o \
-                src/post_gid/shell9_funcderiv.o
+                src/post_gid/shell9_funcderiv.o \
+                src/post_gid/post_ale2.o \
+                src/post_gid/post_ale3.o \
+                src/post_gid/post_axishell.o \
+                src/post_gid/post_beam3.o \
+                src/post_gid/post_brick1.o \
+                src/post_gid/post_fluid2.o \
+                src/post_gid/post_fluid2_pro.o \
+                src/post_gid/post_fluid3.o \
+                src/post_gid/post_fluid3_fast.o \
+                src/post_gid/post_interf.o \
+                src/post_gid/post_shell8.o \
+                src/post_gid/post_shell9.o \
+                src/post_gid/post_wall1.o \
+                src/post_gid/post_wallge.o
 
 OBJS_POST_GID_BIN = src/post_gid/gid_out.o \
                 src/post_gid/zlibint1.o \

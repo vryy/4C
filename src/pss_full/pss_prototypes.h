@@ -708,6 +708,7 @@ void perf_end (
   \return void
   ------------------------------------------------------------------------*/
 void perf_print (
+    FILE      *out,
     INT        index,
     char       string[],
     INT        bezug,
@@ -722,7 +723,7 @@ void perf_print (
   </pre>
   \return void
   ------------------------------------------------------------------------*/
-void perf_out (void);
+void perf_out (FILE* out);
 
 
 #endif

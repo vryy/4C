@@ -74,19 +74,19 @@ typedef enum _DIS_TYP
                        tet4,           /* 4 noded tetrahedra */
                        tet10,          /* 4 noded tetrahedra */
                        line2,          /* 2 noded line */
-                       line3           /* 3 noded line */
+                       line3,          /* 3 noded line */
+                       max_distype     /*  end marker. must be the last entry */
 } DIS_TYP;
 
+/* Mapping from dis type numbers to printable names. To be used to
+ * initialize static variables. Keep in sync! */
+#define DISTYPENAMES { "dis_none", "quad4", "quad8", "quad9", "tri3", "tri6", "hex8", "hex20", "hex27", "tet4", "tet10", "line2", "line3", NULL }
 
 /*----------------------------------------------------------------------*/
 /*!
   \brief type of element formulation
 
-  Please be careful with this enum. Don't delete any element
-  types. New names might only be added at the end just before \a
-  el_count, which must always be the last entry (and does not refer to
-  an element). The reason for this is that the numbers defined here
-  are indices to the element info table.
+  Please keep in sync with the define flag below.
 
   \author m.gee
   \date 07/01
@@ -116,6 +116,9 @@ typedef enum _ELEMENT_TYP
                                         * last entry! */
 } ELEMENT_TYP;
 
+/* Mapping from element type numbers to printable names. To be used to
+ * initialize static variables. Keep in sync! */
+#define ELEMENTNAMES { "none", "shell1", "shell8", "shell9", "brick1", "wall1", "beam3", "fluid2", "fluid2_pro", "fluid2_tu", "fluid3", "fluid3_fast", "ale2", "ale3", "axishell", "interf", "wallge", NULL  }
 
 
 #ifdef D_FLUID3_F

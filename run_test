@@ -54,10 +54,18 @@ function cleanup
 
     # remove hook
     trap "echo" 0 1 2 15
-    #exit
 }
 
-trap "cleanup" 0 1 2 15
+function exittrap
+{
+    cleanup
+
+    # If we exit here something went wrong.
+    # (It might have been a user interupt.)
+    exit 1
+}
+
+trap "exittrap" 0 1 2 15
 
 
 # remove all output files from previous runs
@@ -224,6 +232,9 @@ fi
 printf $fail2'  |\n'
 echo '-----------------------------'
 echo
+
+# We are done. Clean up and remove the exit trap.
+cleanup
 
 # exit with non-zero return code if something went wrong
 if [ $fail1 -ge 1 ]; then

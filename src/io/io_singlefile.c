@@ -52,11 +52,12 @@ All io is done using chunks.
 #ifdef BINIO
 
 /*!
-\addtogroup IO
+  \addtogroup IO
 *//*! @{ (documentation module open)*/
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <strings.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
@@ -68,6 +69,7 @@ All io is done using chunks.
 
 #include "io_singlefile.h"
 #include "io_packing.h"
+#include "io_elements.h"
 
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
@@ -84,57 +86,91 @@ All io is done using chunks.
 #include "../wallge/wallge.h"
 
 
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Version of newly written files.
+
+  This flag represents the version number of the file format written
+  here. Please adjust it whenever you change something fundamental and
+  please make sure all filters are able to read the new and the old
+  version.
+
+  Version history:
+
+  <pre>
+
+  Version 0.1
+  ===========
+
+  - Original approach
+
+  Version 0.2
+  ===========
+
+  - Element variants removed
+  - Element parameter chunk introduced
+
+  </pre>
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+#define BINIO_VERSION "0.2"
+
+
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
+  |                                                       m.gee 06/01    |
+  | general problem data                                                 |
+  | global variable GENPROB genprob is defined in global_control.c       |
+  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
 /*!----------------------------------------------------------------------
-\brief file pointers
+  \brief file pointers
 
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
+  <pre>                                                         m.gee 8/00
+  This structure struct _FILES allfiles is defined in input_control_global.c
+  and the type is in standardtypes.h
+  It holds all file pointers and some variables needed for the FRSYSTEM
+  </pre>
+  *----------------------------------------------------------------------*/
 extern struct _FILES           allfiles;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
+  |                                                       m.gee 06/01    |
+  | structure of flags to control output                                 |
+  | defined in out_global.c                                              |
+  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
 
 /*!----------------------------------------------------------------------
-\brief ranks and communicators
+  \brief ranks and communicators
 
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h
-</pre>
+  <pre>                                                         m.gee 8/00
+  This structure struct _PAR par; is defined in main_ccarat.c
+  and the type is in partition.h
+  </pre>
 
-*----------------------------------------------------------------------*/
+  *----------------------------------------------------------------------*/
 extern struct _PAR   par;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
+  |                                                       m.gee 06/01    |
+  | vector of numfld FIELDs, defined in global_control.c                 |
+  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
 
 /*!----------------------------------------------------------------------
-\brief one proc's info about his partition
+  \brief one proc's info about his partition
 
-<pre>                                                         m.gee 8/00
--the partition of one proc (all discretizations)
--the type is in partition.h
-</pre>
+  <pre>                                                         m.gee 8/00
+  -the partition of one proc (all discretizations)
+  -the type is in partition.h
+  </pre>
 
-*----------------------------------------------------------------------*/
+  *----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
 
 
@@ -212,14 +248,31 @@ static CHAR* nodearraynames[] = NODEARRAYNAMES;
 /*----------------------------------------------------------------------*/
 void init_bin_out_main(CHAR* outputname)
 {
+  INT i;
+
 #ifdef DEBUG
   dstrc_enter("init_bin_out_main");
 #endif
 
+  /* default value */
+#ifdef DEBUG
+  bin_out_main.steps_per_file = 30;
+#else
+  bin_out_main.steps_per_file = 1000;
+#endif
+
+  /* explizit initialization. */
+  for (i=0; i<MAXFIELD; ++i)
+  {
+    bin_out_main.fields[i] = NULL;
+  }
+
   /* If this is a restarted run we don't want to overwrite the results
    * already written. Instead we try to find a new file name. */
-  if (genprob.restart) {
-    if (par.myrank == 0) {
+  if (genprob.restart)
+  {
+    if (par.myrank == 0)
+    {
       CHAR tmpbuf[256];
       INT len;
       INT number = 0;
@@ -227,41 +280,50 @@ void init_bin_out_main(CHAR* outputname)
 
       /* remove any trailing number */
       /* Hmm. This might hurt some people. Do we want this? */
-      for (len = strlen(tmpbuf)-1; (len > 0) && isdigit(tmpbuf[len]); --len) {}
-      if ((len < strlen(tmpbuf)-1) && (len > 0) && (tmpbuf[len] == '-')) {
+      for (len = strlen(tmpbuf)-1; (len > 0) && isdigit(tmpbuf[len]); --len)
+      {}
+      if ((len < strlen(tmpbuf)-1) && (len > 0) && (tmpbuf[len] == '-'))
+      {
         tmpbuf[len] = '\0';
         number = atoi(&(tmpbuf[len+1]));
       }
 
-      for (;;) {
+      for (;;)
+      {
 	/*INT id;*/
 	FILE* f;
         number += 1;
         sprintf(bin_out_main.name, "%s-%d.control", tmpbuf, number);
-        /*if ((id = open(bin_out_main.name, O_CREAT|O_EXCL, 0660)) != -1) {*/
-	if ((f = fopen(bin_out_main.name, "rb")) != NULL) {
+        /*if ((id = open(bin_out_main.name, O_CREAT|O_EXCL, 0660)) != -1)
+          {*/
+	if ((f = fopen(bin_out_main.name, "rb")) == NULL)
+        {
           /*close(id);*/
-          fclose(f);
           bin_out_main.name[strlen(bin_out_main.name)-8] = '\0';
           break;
         }
+        fclose(f);
       }
     }
 #ifdef PARALLEL
-    if (par.nprocs > 1) {
+    if (par.nprocs > 1)
+    {
       INT err;
       err = MPI_Bcast(bin_out_main.name, sizeof(bin_out_main.name), MPI_CHAR, 0, MPI_COMM_WORLD);
-      if (err != 0) {
+      if (err != 0)
+      {
         dserror("MPI_Bcast failed: %d", err);
       }
     }
 #endif
   }
-  else {
+  else
+  {
     strcpy(bin_out_main.name, outputname);
   }
 
-  if (par.myrank == 0) {
+  if (par.myrank == 0)
+  {
     static CHAR* problem_names[] = PROBLEMNAMES;
     CHAR name[256];
     time_t time_value;
@@ -279,8 +341,9 @@ void init_bin_out_main(CHAR* outputname)
 #endif
     time_value = time(NULL);
     fprintf(bin_out_main.control_file, "# ccarat output control file\n"
-            "# created by %s on %s at %s\n"
-            "version = \"0.1\"\n"
+            "# created by %s on %s at %s"
+            "# using io version: $Id$ \n\n"
+            "version = \"" BINIO_VERSION "\"\n"
             "input_file = \"%s\"\n"
             "problem_type = \"%s\"\n"
             "ndim = %d\n"
@@ -297,14 +360,54 @@ void init_bin_out_main(CHAR* outputname)
             genprob.ndim);
 
     /* insert back reference */
-    if (genprob.restart) {
+    if (genprob.restart)
+    {
       fprintf(bin_out_main.control_file,
               "restarted_run = \"%s\"\n\n",
               outputname);
     }
 
+    /* Write some internal enums. Afterwards we are free to use the
+     * enum values (integer) in the binary files. It will always be
+     * possible to restore their meaning. */
+    {
+      CHAR* element_names[] = ELEMENTNAMES;
+      CHAR* distype_names[] = DISTYPENAMES;
+      INT j;
+
+      /* Write the element names and type numbers that are currently in use. */
+      /* The first enum is nothing. Don't write it here. */
+      fprintf(bin_out_main.control_file, "# The element type numbers used in this file\n");
+      fprintf(bin_out_main.control_file, "element_names:\n");
+      for (j=1; j<el_count; ++j)
+      {
+        fprintf(bin_out_main.control_file, "    %s = %d\n", element_names[j], j);
+      }
+      fprintf(bin_out_main.control_file, "\n");
+
+      /* Write the dis type names and type numbers that are currently in use. */
+      /* The first enum is nothing. Don't write it here. */
+      fprintf(bin_out_main.control_file, "# The dis type numbers used in this file\n");
+      fprintf(bin_out_main.control_file, "distype_names:\n");
+      for (j=1; j<max_distype; ++j)
+      {
+        fprintf(bin_out_main.control_file, "    %s = %d\n", distype_names[j], j);
+      }
+      fprintf(bin_out_main.control_file, "\n");
+
+      /* element versions */
+      /* This gives the reader all information reqired to interpret
+       * element chunks. */
+      out_print_element_versions(bin_out_main.control_file);
+    }
+
     fflush(bin_out_main.control_file);
   }
+
+  /*--------------------------------------------------------------------*/
+  /* define the meaning of the elements' chunks */
+  setup_element_variables_current();
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -342,10 +445,180 @@ void init_bin_in_main(CHAR* inputname)
 
 
 /*======================================================================*/
+/* Now here are utility functions that are concerned with the proper
+ * cleanup in case of an emergency. We have to keep track of the
+ * output contexts in use and have to close the open files. */
+/*======================================================================*/
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Close the pair of files.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+static void close_data_files(BIN_DATA_FILES* files)
+{
+#ifdef PARALLEL
+  INT err;
+#endif
+
+#ifdef DEBUG
+  dstrc_enter("close_data_files");
+#endif
+
+#ifdef PARALLEL
+  if (files->value_file != MPI_FILE_NULL)
+  {
+    err = MPI_File_close(&(files->value_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_close failed: %d", err);
+    }
+  }
+
+  if (files->size_file != MPI_FILE_NULL)
+  {
+    err = MPI_File_close(&(files->size_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_close failed: %d", err);
+    }
+  }
+#else
+  if (files->value_file != NULL)
+    fclose(files->value_file);
+  if (files->size_file != NULL)
+    fclose(files->size_file);
+#endif
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Register output field context.
+
+  This allows us to close all files in case of an emergency.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+static void register_out_field(BIN_OUT_FIELD* context)
+{
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("register_out_field");
+#endif
+
+  for (i=0; i<MAXFIELD; ++i)
+  {
+    if (bin_out_main.fields[i] == NULL)
+    {
+      bin_out_main.fields[i] = context;
+      break;
+    }
+  }
+  if (i==MAXFIELD)
+  {
+    dserror("overflow: more contexts than fields");
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Unregister output field context.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+static void unregister_out_field(BIN_OUT_FIELD* context)
+{
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("unregister_out_field");
+#endif
+
+  for (i=0; i<MAXFIELD; ++i)
+  {
+    if (bin_out_main.fields[i] == context)
+    {
+      bin_out_main.fields[i] = NULL;
+      break;
+    }
+  }
+  if (i==MAXFIELD)
+  {
+    dserror("context not registered");
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Close all output files currently open.
+
+  We don't bother whether there are still writing chunks. This is
+  supposed to be called by dserror only.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+void io_emergency_close_files()
+{
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("io_emergency_close_files");
+#endif
+
+  for (i=0; i<MAXFIELD; ++i)
+  {
+    if (bin_out_main.fields[i] != NULL)
+    {
+      close_data_files(&(bin_out_main.fields[i]->out_result));
+      close_data_files(&(bin_out_main.fields[i]->out_restart));
+    }
+  }
+
+  if (par.myrank == 0)
+  {
+    fclose(bin_out_main.control_file);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*======================================================================*/
 /* Let's have the destructors next. These functions are called
  * whenever an object has to be destroyd. They free the memory and
  * close the files. Nothing special here. */
 /*======================================================================*/
+
 
 
 /*----------------------------------------------------------------------*/
@@ -360,13 +633,11 @@ void init_bin_in_main(CHAR* inputname)
 /*----------------------------------------------------------------------*/
 void destroy_bin_out_field(BIN_OUT_FIELD* context)
 {
-#ifdef PARALLEL
-  INT err;
-#endif
-
 #ifdef DEBUG
   dstrc_enter("destroy_bin_out_field");
 #endif
+
+  unregister_out_field(context);
 
 #ifdef PARALLEL
 
@@ -376,24 +647,15 @@ void destroy_bin_out_field(BIN_OUT_FIELD* context)
   CCAFREE(context->send_numele);
   CCAFREE(context->recv_numele);
 
-  if (context->sysarray_typ != NULL) {
+  if (context->sysarray_typ != NULL)
+  {
     CCAFREE(context->send_numdof);
     CCAFREE(context->recv_numdof);
   }
-
-  err = MPI_File_close(&(context->value_file));
-  if (err != 0) {
-    dserror("MPI_File_close failed: %d", err);
-  }
-
-  err = MPI_File_close(&(context->size_file));
-  if (err != 0) {
-    dserror("MPI_File_close failed: %d", err);
-  }
-#else
-  fclose(context->value_file);
-  fclose(context->size_file);
 #endif
+
+  close_data_files(&(context->out_result));
+  close_data_files(&(context->out_restart));
 
 #ifdef DEBUG
   dstrc_exit();
@@ -453,7 +715,8 @@ void destroy_bin_in_field(BIN_IN_FIELD* context)
 #endif
 
 #ifdef PARALLEL
-  for (i=0; i<nproc; ++i) {
+  for (i=0; i<nproc; ++i)
+  {
     CCAFREE(context->send_node_ids[i]);
     CCAFREE(context->recv_node_ids[i]);
 
@@ -473,7 +736,8 @@ void destroy_bin_in_field(BIN_IN_FIELD* context)
   CCAFREE(context->send_numele);
   CCAFREE(context->recv_numele);
 
-  if (context->sysarray_typ != NULL) {
+  if (context->sysarray_typ != NULL)
+  {
     CCAFREE(context->send_dof_ids);
     CCAFREE(context->recv_dof_ids);
 
@@ -482,12 +746,14 @@ void destroy_bin_in_field(BIN_IN_FIELD* context)
   }
 
   err = MPI_File_close(&(context->value_file));
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_close failed: %d", err);
   }
 
   err = MPI_File_close(&(context->size_file));
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_close failed: %d", err);
   }
 #else
@@ -587,14 +853,17 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
   fullarrays = nprocs - (nprocs*max_num - (numeq_total));
 
 #define boilerplate_code                                        \
+                                                                \
   {                                                             \
     INT proc;                                                   \
                                                                 \
     /* Find the processor this dof has to be sent to. */        \
-    if (dof < max_num*fullarrays) {                             \
+    if (dof < max_num*fullarrays)                               \
+    {                                                           \
       proc = dof / max_num;                                     \
     }                                                           \
-    else {                                                      \
+    else                                                        \
+    {                                                           \
       INT Id = dof - max_num*fullarrays;                        \
       proc = Id / (max_num-1) + fullarrays;                     \
     }                                                           \
@@ -604,12 +873,14 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
   }
 
   /* Find out how many dofs we have to send to which processor. */
-  switch (*sysarray_typ) {
+  switch (*sysarray_typ)
+  {
 
 #ifdef AZTEC_PACKAGE
   case msr:
     calc_max_number(sysarray->msr->numeq_total);
-    for (i=0; i<sysarray->msr->numeq; ++i) {
+    for (i=0; i<sysarray->msr->numeq; ++i)
+    {
       INT dof = sysarray->msr->update.a.iv[i];
       boilerplate_code;
     }
@@ -617,10 +888,12 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 #endif
 
 #ifdef HYPRE_PACKAGE
-  case parcsr: {
+  case parcsr:
+  {
     INT rank = chunk->field->actintra->intra_rank;
     calc_max_number(sysarray->parcsr->numeq_total);
-    for (i=0; i<sysarray->parcsr->numeq; ++i) {
+    for (i=0; i<sysarray->parcsr->numeq; ++i)
+    {
       INT dof = sysarray->parcsr->update.a.ia[rank][i];
       boilerplate_code;
     }
@@ -631,7 +904,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 #ifdef PARSUPERLU_PACKAGE
   case ucchb:
     calc_max_number(sysarray->ucchb->numeq_total);
-    for (i=0; i<sysarray->ucchb->numeq; ++i) {
+    for (i=0; i<sysarray->ucchb->numeq; ++i)
+    {
       INT dof = sysarray->ucchb->update.a.iv[i];
       boilerplate_code;
     }
@@ -640,7 +914,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 
   case dense:
     calc_max_number(sysarray->dense->numeq_total);
-    for (i=0; i<sysarray->dense->numeq; ++i) {
+    for (i=0; i<sysarray->dense->numeq; ++i)
+    {
       INT dof = sysarray->dense->update.a.iv[i];
       boilerplate_code;
     }
@@ -649,7 +924,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 #ifdef MLIB_PACKAGE
   case mds:
     calc_max_number(sysarray->mds->numeq_total);
-    for (i=0; i<sysarray->mds->numeq; ++i) {
+    for (i=0; i<sysarray->mds->numeq; ++i)
+    {
       INT dof = i;
       boilerplate_code;
     }
@@ -659,7 +935,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 #ifdef MUMPS_PACKAGE
   case rc_ptr:
     calc_max_number(sysarray->rc_ptr->numeq_total);
-    for (i=0; i<sysarray->rc_ptr->numeq; ++i) {
+    for (i=0; i<sysarray->rc_ptr->numeq; ++i)
+    {
       INT dof = sysarray->rc_ptr->update.a.iv[i];
       boilerplate_code;
     }
@@ -669,7 +946,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 #ifdef SPOOLES_PACKAGE
   case spoolmatrix:
     calc_max_number(sysarray->spo->numeq_total);
-    for (i=0; i<sysarray->spo->numeq; ++i) {
+    for (i=0; i<sysarray->spo->numeq; ++i)
+    {
       INT dof = sysarray->spo->update.a.iv[i];
       boilerplate_code;
     }
@@ -679,7 +957,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 #ifdef UMFPACK
   case ccf:
     calc_max_number(sysarray->ccf->numeq_total);
-    for (i=0; i<sysarray->ccf->numeq; ++i) {
+    for (i=0; i<sysarray->ccf->numeq; ++i)
+    {
       INT dof = sysarray->ccf->update.a.iv[i];
       boilerplate_code;
     }
@@ -688,7 +967,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 
   case skymatrix:
     calc_max_number(sysarray->sky->numeq_total);
-    for (i=0; i<sysarray->sky->numeq; ++i) {
+    for (i=0; i<sysarray->sky->numeq; ++i)
+    {
       INT dof = sysarray->sky->update.a.iv[i];
       boilerplate_code;
     }
@@ -697,7 +977,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 #ifdef MLPCG
   case bdcsr:
     calc_max_number(sysarray->bdcsr->numeq_total);
-    for (i=0; i<sysarray->bdcsr->numeq; ++i) {
+    for (i=0; i<sysarray->bdcsr->numeq; ++i)
+    {
       INT dof = sysarray->bdcsr->update.a.iv[i];
       boilerplate_code;
     }
@@ -706,7 +987,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 
   case oll:
     calc_max_number(sysarray->oll->numeq_total);
-    for (i=0; i<sysarray->oll->numeq; ++i) {
+    for (i=0; i<sysarray->oll->numeq; ++i)
+    {
       INT dof = sysarray->oll->update.a.iv[i];
       boilerplate_code;
     }
@@ -722,7 +1004,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 
   /* The information how many dofs we have to receive can only be
    * found by communication. */
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     MPI_Status status;
     INT dst;
     INT src;
@@ -734,7 +1017,8 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
     err = MPI_Sendrecv(&(context->send_numdof[dst]), 1, MPI_INT, dst, tag_base-i-1,
                        &(context->recv_numdof[src]), 1, MPI_INT, src, tag_base-i-1,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
   }
@@ -784,16 +1068,19 @@ static void out_setup_element_transfer(BIN_OUT_FIELD *context)
   fullarrays = nprocs - (nprocs*max_num - actdis->numele);
 
   /* Find out how many elements we have to send to which processor. */
-  for (j=0; j<actpdis->numele; ++j) {
+  for (j=0; j<actpdis->numele; ++j)
+  {
     ELEMENT* actele = actpdis->element[j];
 
     INT proc;
 
     /* Find the processor this element has to be sent to. */
-    if (actele->Id_loc < max_num*fullarrays) {
+    if (actele->Id_loc < max_num*fullarrays)
+    {
       proc = actele->Id_loc / max_num;
     }
-    else {
+    else
+    {
       INT Id = actele->Id_loc - max_num*fullarrays;
       proc = Id / (max_num-1) + fullarrays;
     }
@@ -804,7 +1091,8 @@ static void out_setup_element_transfer(BIN_OUT_FIELD *context)
 
   /* The information how many elements we have to receive can only be
    * found by communication. */
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     MPI_Status status;
     INT dst;
     INT src;
@@ -816,7 +1104,8 @@ static void out_setup_element_transfer(BIN_OUT_FIELD *context)
     err = MPI_Sendrecv(&(context->send_numele[dst]), 1, MPI_INT, dst, tag_base-i-1,
                        &(context->recv_numele[src]), 1, MPI_INT, src, tag_base-i-1,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
   }
@@ -864,16 +1153,19 @@ static void out_setup_node_transfer(BIN_OUT_FIELD *context)
   fullarrays = nprocs - (nprocs*max_num - actdis->numnp);
 
   /* Find out how many nodes we have to send to which processor. */
-  for (j=0; j<actpdis->numnp; ++j) {
+  for (j=0; j<actpdis->numnp; ++j)
+  {
     NODE* actnode = actpdis->node[j];
 
     INT proc;
 
     /* Find the processor this node has to be sent to. */
-    if (actnode->Id_loc < max_num*fullarrays) {
+    if (actnode->Id_loc < max_num*fullarrays)
+    {
       proc = actnode->Id_loc / max_num;
     }
-    else {
+    else
+    {
       INT Id = actnode->Id_loc - max_num*fullarrays;
       proc = Id / (max_num-1) + fullarrays;
     }
@@ -889,7 +1181,8 @@ static void out_setup_node_transfer(BIN_OUT_FIELD *context)
    * in a round robin style as well because the amount of data is
    * rather small. If this loop turns out to be a bottleneck we can
    * change it (and hope for improvements.) */
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     MPI_Status status;
     INT dst;
     INT src;
@@ -901,7 +1194,8 @@ static void out_setup_node_transfer(BIN_OUT_FIELD *context)
     err = MPI_Sendrecv(&(context->send_numnp[dst]), 1, MPI_INT, dst, tag_base-i-1,
                        &(context->recv_numnp[src]), 1, MPI_INT, src, tag_base-i-1,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
   }
@@ -923,59 +1217,22 @@ static void out_setup_node_transfer(BIN_OUT_FIELD *context)
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Write information about all element variants used in this
-  discretization to the control file.
-
-  The "mesh" chunk specifies the type of each element by its major and
-  minor number, so the meaning of these numbers is a crucial
-  information and it's hardly possible to guarantee that these number
-  never change inside ccarat. Therefore we write out what these
-  numbers mean.
-
-  \param context      (i) pointer to a context variable during setup.
-
-  \author u.kue
-  \date 10/04
-*/
-/*----------------------------------------------------------------------*/
-static void out_element_variants(BIN_OUT_FIELD *context)
-{
-  INT ele;
-
-#ifdef DEBUG
-  dstrc_enter("out_element_variants");
-#endif
-
-  fprintf(bin_out_main.control_file,
-          "    # the element variants used in this discretization\n");
-  for (ele=0; ele<el_count; ++ele) {
-    if (count_element_variants(context, ele) > 0) {
-      INT var;
-      for (var=0; var<MAX_EL_MINOR; ++var) {
-        if (context->element_flag[ele][var]) {
-          write_variant_group(bin_out_main.control_file, ele, var);
-        }
-      }
-    }
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
   \brief Open the data files for output.
 
   \param context      (i) pointer to a context variable during setup.
+  \param files        (o) the pair of files to be opened.
+  \param variant      (i) tag to distinguish different pairs. Might be
+                          NULL if files is already initialized.
+  \param step         (i) first time step to be written to this file
 
   \author u.kue
   \date 10/04
 */
 /*----------------------------------------------------------------------*/
-static void out_open_data_files(BIN_OUT_FIELD *context)
+void out_open_data_files(BIN_OUT_FIELD *context,
+                         BIN_DATA_FILES *files,
+                         CHAR *variant,
+                         INT step)
 {
 #ifdef PARALLEL
   INT err;
@@ -991,10 +1248,15 @@ static void out_open_data_files(BIN_OUT_FIELD *context)
   dstrc_enter("out_open_data_files");
 #endif
 
+  files->value_file_offset = 0;
+  files->size_file_offset = 0;
+
   actfield = context->actfield;
   actintra = context->actintra;
   disnum = context->disnum;
   rank = actintra->intra_rank;
+
+  close_data_files(files);
 
   /*
    * The file names must be unique even in (future) problems with
@@ -1003,36 +1265,40 @@ static void out_open_data_files(BIN_OUT_FIELD *context)
 
   field_pos = get_field_position(context);
 
-  sprintf(filename, "%s.%s.%d.%d.values", bin_out_main.name,
-          fieldnames[actfield->fieldtyp], field_pos, disnum);
+  sprintf(filename, "%s.%s.%s.f%d.d%d.s%d.values", bin_out_main.name, variant,
+          fieldnames[actfield->fieldtyp], field_pos, disnum, step);
 #ifdef PARALLEL
   err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
                       MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
-                      &(context->value_file));
-  if (err != 0) {
+                      &(files->value_file));
+  if (err != 0)
+  {
     dserror("MPI_File_open failed for file '%s': %d", filename, err);
   }
 #else
-  context->value_file = fopen(filename, "wb");
+  files->value_file = fopen(filename, "wb");
 #endif
-  if (rank == 0) {
-    fprintf(bin_out_main.control_file, "    value_file = \"%s\"\n", filename);
+  if (rank == 0)
+  {
+    fprintf(bin_out_main.control_file, "    %s_value_file = \"%s\"\n", variant, filename);
   }
 
-  sprintf(filename, "%s.%s.%d.%d.sizes", bin_out_main.name,
-          fieldnames[actfield->fieldtyp], field_pos, disnum);
+  sprintf(filename, "%s.%s.%s.f%d.d%d.s%d.sizes", bin_out_main.name, variant,
+          fieldnames[actfield->fieldtyp], field_pos, disnum, step);
 #ifdef PARALLEL
   err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
                       MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
-                      &(context->size_file));
-  if (err != 0) {
+                      &(files->size_file));
+  if (err != 0)
+  {
     dserror("MPI_File_open failed for file '%s': %d", filename, err);
   }
 #else
-  context->size_file = fopen(filename, "wb");
+  files->size_file = fopen(filename, "wb");
 #endif
-  if (rank == 0) {
-    fprintf(bin_out_main.control_file, "    size_file = \"%s\"\n", filename);
+  if (rank == 0)
+  {
+    fprintf(bin_out_main.control_file, "    %s_size_file = \"%s\"\n\n", variant, filename);
   }
 #ifdef DEBUG
   dstrc_exit();
@@ -1115,20 +1381,42 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   context->actintra = actintra;
   context->disnum = disnum;
 
-  context->value_file_offset = 0;
-  context->size_file_offset = 0;
+  context->result_count = 0;
+  context->restart_count = 0;
+
+  register_out_field(context);
 
   /*--------------------------------------------------------------------*/
   /* add new field to control file */
 
-  if (rank == 0) {
+  if (rank == 0)
+  {
     out_main_group_head(context, "field");
+    fprintf(bin_out_main.control_file, "\n");
   }
 
   /*--------------------------------------------------------------------*/
-  /* open file to write this field */
+  /* open files to write this field */
 
-  out_open_data_files(context);
+#ifdef PARALLEL
+  context->out_result.value_file = MPI_FILE_NULL;
+  context->out_result.size_file = MPI_FILE_NULL;
+
+  context->out_restart.value_file = MPI_FILE_NULL;
+  context->out_restart.size_file = MPI_FILE_NULL;
+#else
+  context->out_result.value_file = NULL;
+  context->out_result.size_file = NULL;
+
+  context->out_restart.value_file = NULL;
+  context->out_restart.size_file = NULL;
+#endif
+
+  out_open_data_files(context, &(context->out_result), "mesh", 0);
+
+  /* Mesh and connectivity go to the mesh file. (We abuse the result
+   * file slot here.) */
+  out_activate_result(context);
 
 #ifdef PARALLEL
 
@@ -1143,7 +1431,8 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   context->send_numele = (INT*)CCACALLOC(nprocs, sizeof(INT));
   context->recv_numele = (INT*)CCACALLOC(nprocs, sizeof(INT));
 
-  if (sysarray_typ != NULL) {
+  if (sysarray_typ != NULL)
+  {
     /* the numbers of dofs we need to send and receive per processor */
     context->send_numdof = (INT*)CCACALLOC(nprocs, sizeof(INT));
     context->recv_numdof = (INT*)CCACALLOC(nprocs, sizeof(INT));
@@ -1156,7 +1445,8 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   max_size[2] = 0;
   max_size[3] = 0;
 
-  for (j=0; j<actpdis->numnp; ++j) {
+  for (j=0; j<actpdis->numnp; ++j)
+  {
     NODE* actnode = actpdis->node[j];
 
     max_size[0] = MAX(max_size[0], actnode->sol.fdim*actnode->sol.sdim);
@@ -1188,43 +1478,57 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   /*--------------------------------------------------------------------*/
   /* find number of dofs that need to be communicated */
 
-  if (sysarray_typ != NULL) {
+  if (sysarray_typ != NULL)
+  {
     out_setup_dof_transfer(context);
   }
 
 #endif
 
-  if (sysarray_typ != NULL) {
+  if (sysarray_typ != NULL)
+  {
     INT numeq;
     solserv_getmatdims(sysarray, *sysarray_typ, &numeq, &ndof);
   }
 
   /*--------------------------------------------------------------------*/
-  /* Now check for different types of elements. */
-
-  out_find_element_types(context, actintra, actpdis);
-
-  /*--------------------------------------------------------------------*/
   /* store additional size information */
 
-  if (rank == 0) {
+  if (rank == 0)
+  {
     fprintf(bin_out_main.control_file,
             "    numnp = %d\n"
             "    numele = %d\n"
             "    numdof = %d\n"
             "\n",
             actdis->numnp, actdis->numele, ndof);
-
-    /* Give explicit details about all used variants. */
-    out_element_variants(context);
   }
+
+  /*--------------------------------------------------------------------*/
+  /* store any element parameters */
+
+  find_ele_param_item_length(context, &value_length, &size_length);
+  out_element_chunk(context, "ele_param", cc_ele_params, value_length, size_length, 0);
 
   /*--------------------------------------------------------------------*/
   /* store the mesh connectivity and node coordinates */
 
   find_mesh_item_length(context, &value_length, &size_length);
   out_element_chunk(context, "mesh", cc_mesh, value_length, size_length, 0);
-  out_node_chunk(context, "coords", cc_coords, genprob.ndim, 1, 0);
+
+  find_coords_item_length(context, &value_length, &size_length);
+  out_node_chunk(context, "coords", cc_coords, value_length, size_length, 0);
+
+  /*--------------------------------------------------------------------*/
+  /* see what element types there are and output element specific
+   * control information */
+
+  out_find_element_types(context, actintra, actpdis);
+
+  if (rank == 0)
+  {
+    out_element_control(context, bin_out_main.control_file);
+  }
 
   /*
    * Some element specific code has to go here because some elements
@@ -1242,7 +1546,8 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   out_element_chunk(context, "domain", cc_domain, 0, 1, 0);
 #endif
 
-  if (rank == 0) {
+  if (rank == 0)
+  {
     fflush(bin_out_main.control_file);
   }
 
@@ -1269,7 +1574,7 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
   INT nprocs = context->actintra->intra_nprocs;
   INT rank = context->actintra->intra_rank;
   DISCRET* actdis = &(context->actfield->dis[context->disnum]);
-  INT num;
+  INT num = 0;
 
 #ifdef DEBUG
   dstrc_enter("init_bin_out_chunk");
@@ -1278,7 +1583,8 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
   chunk->field = context;
   init_map(&(chunk->group));
 
-  switch (type) {
+  switch (type)
+  {
   case chunk_node:
     num = actdis->numnp;
     chunk->type = chunk_node;
@@ -1308,7 +1614,8 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
   /* The Id_loc of the first node/element of this processor. */
   chunk->first_id = chunk->num*rank;
 
-  if (rank >= chunk->fullarrays) {
+  if (rank >= chunk->fullarrays)
+  {
     chunk->num -= 1;
     chunk->first_id -= rank - chunk->fullarrays;
   }
@@ -1322,19 +1629,23 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
 
   chunk->value_entry_length = value_entry_length;
   chunk->value_count = value_entry_length*chunk->num;
-  if (chunk->value_count > 0) {
+  if (chunk->value_count > 0)
+  {
     chunk->out_values = (DOUBLE*)CCACALLOC(chunk->value_count, sizeof(DOUBLE));
   }
-  else {
+  else
+  {
     chunk->out_values = NULL;
   }
 
   chunk->size_entry_length = size_entry_length;
   chunk->size_count = size_entry_length*chunk->num;
-  if (chunk->size_count > 0) {
+  if (chunk->size_count > 0)
+  {
     chunk->out_sizes = (INT*)CCACALLOC(chunk->size_count, sizeof(INT));
   }
-  else {
+  else
+  {
     chunk->out_sizes = NULL;
   }
 
@@ -1386,13 +1697,14 @@ void out_gather_values(BIN_OUT_FIELD* context,
   INT i;
   DISCRET* actdis = &(context->actfield->dis[context->disnum]);
   PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
-  INT num;
+  INT num = 0;
 
 #ifdef DEBUG
   dstrc_enter("out_gather_values");
 #endif
 
-  switch (chunk->type) {
+  switch (chunk->type)
+  {
   case chunk_node:
     num = actdis->numnp;
     break;
@@ -1409,7 +1721,8 @@ void out_gather_values(BIN_OUT_FIELD* context,
     dserror("unknown chunk type %d", type);
   }
 
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
 #ifdef PARALLEL
     MPI_Status status;
     DOUBLE* recv_buf;
@@ -1438,13 +1751,15 @@ void out_gather_values(BIN_OUT_FIELD* context,
     /* we need to known what nodes our destination expects */
     dst_num = (num + nprocs - 1) / nprocs;
     dst_first_id = dst_num*dst;
-    if (dst >= chunk->fullarrays) {
+    if (dst >= chunk->fullarrays)
+    {
       dst_num -= 1;
       dst_first_id -= dst - chunk->fullarrays;
     }
 
 #ifdef PARALLEL
-    switch (chunk->type) {
+    switch (chunk->type)
+    {
     case chunk_node:
       send_num = context->send_numnp[dst];
       recv_num = context->recv_numnp[src];
@@ -1461,7 +1776,8 @@ void out_gather_values(BIN_OUT_FIELD* context,
       dserror("unknown chunk type %d", type);
     }
 
-    if (chunk->value_entry_length > 0) {
+    if (chunk->value_entry_length > 0)
+    {
       send_count = send_num*chunk->value_entry_length;
       recv_count = recv_num*chunk->value_entry_length;
 
@@ -1499,15 +1815,18 @@ void out_gather_values(BIN_OUT_FIELD* context,
     err = MPI_Sendrecv(send_size_buf, send_size_count, MPI_INT, dst, tag_base-i-1,
                        recv_size_buf, recv_size_count, MPI_INT, src, tag_base-i-1,
                        context->actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
 
-    if (chunk->value_entry_length > 0) {
+    if (chunk->value_entry_length > 0)
+    {
       err = MPI_Sendrecv(send_buf, send_count, MPI_DOUBLE, dst, tag_base+i,
                          recv_buf, recv_count, MPI_DOUBLE, src, tag_base+i,
                          context->actintra->MPI_INTRA_COMM, &status);
-      if (err != 0) {
+      if (err != 0)
+      {
         dserror("mpi sendrecv error %d", err);
       }
     }
@@ -1517,7 +1836,8 @@ void out_gather_values(BIN_OUT_FIELD* context,
 
     /* copy received values into the output buffers */
 
-    for (j=0; j<recv_num; ++j) {
+    for (j=0; j<recv_num; ++j)
+    {
       INT k;
       INT Id;
       DOUBLE *src_ptr;
@@ -1532,13 +1852,15 @@ void out_gather_values(BIN_OUT_FIELD* context,
       /* we don't store the id which is always transfered first */
       src_int_ptr = &(recv_size_buf[(size_len+1)*j+1]);
       dst_int_ptr = &(chunk->out_sizes[size_len*(Id-chunk->first_id)]);
-      for (k=0; k<size_len; ++k) {
+      for (k=0; k<size_len; ++k)
+      {
         *dst_int_ptr++ = *src_int_ptr++;
       }
 
       dst_ptr = &(chunk->out_values[value_len*(Id-chunk->first_id)]);
       src_ptr = &(recv_buf[value_len*j]);
-      for (k=0; k<value_len; ++k) {
+      for (k=0; k<value_len; ++k)
+      {
         *dst_ptr++ = *src_ptr++;
       }
     }
@@ -1547,7 +1869,8 @@ void out_gather_values(BIN_OUT_FIELD* context,
     CCAFREE(recv_size_buf);
     CCAFREE(send_size_buf);
 
-    if (chunk->value_entry_length > 0) {
+    if (chunk->value_entry_length > 0)
+    {
       CCAFREE(recv_buf);
       CCAFREE(send_buf);
     }
@@ -1557,6 +1880,40 @@ void out_gather_values(BIN_OUT_FIELD* context,
 #ifdef DEBUG
   dstrc_exit();
 #endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Switch to the result files.
+
+  This sets the output context to write anything to the result
+  files. The setting remains active until it's changed explicitly.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void out_activate_result(BIN_OUT_FIELD *context)
+{
+  context->out = &(context->out_result);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Switch to the restart files.
+
+  This sets the output context to write anything to the restart
+  files. The setting remains active until it's changed explicitly.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void out_activate_restart(BIN_OUT_FIELD *context)
+{
+  context->out = &(context->out_restart);
 }
 
 
@@ -1572,6 +1929,8 @@ void out_write_chunk(BIN_OUT_FIELD *context,
                      BIN_OUT_CHUNK* chunk,
                      CHAR* entry_name)
 {
+  INT i;
+
 #ifdef PARALLEL
   MPI_Status status;
   INT err;
@@ -1590,58 +1949,99 @@ void out_write_chunk(BIN_OUT_FIELD *context,
   dstrc_enter("out_write_chunck");
 #endif
 
+  /* on little endian machines we have to convert */
+  /* We have 8 byte doubles and 4 byte integer by definition. Nothing
+   * else. */
+
+#ifdef IS_LITTLE_ENDIAN
+
+  /* very specific swap macro */
+#define SWAP_CHAR(c1,c2) { CHAR t; t=c1; c1=c2; c2=t; }
+
+  for (i=0; i<chunk->value_count; ++i)
+  {
+    CHAR* ptr;
+
+    ptr = (CHAR*)&(chunk->out_values[i]);
+    SWAP_CHAR(ptr[0], ptr[7]);
+    SWAP_CHAR(ptr[1], ptr[6]);
+    SWAP_CHAR(ptr[2], ptr[5]);
+    SWAP_CHAR(ptr[3], ptr[4]);
+  }
+
+  for (i=0; i<chunk->size_count; ++i)
+  {
+    CHAR* ptr;
+
+    ptr = (CHAR*)&(chunk->out_sizes[i]);
+    SWAP_CHAR(ptr[0], ptr[3]);
+    SWAP_CHAR(ptr[1], ptr[2]);
+  }
+
+#undef SWAP_CHAR
+
+#endif
+
   /*MPI_File_get_position(fh, &my_current_offset);*/
 
 #ifdef PARALLEL
-  err = MPI_File_seek(context->value_file,
-                      context->value_file_offset +
+  err = MPI_File_seek(context->out->value_file,
+                      context->out->value_file_offset +
                       chunk->first_id*chunk->value_entry_length*sizeof(DOUBLE),
                       MPI_SEEK_SET);
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_seek failed: %d", err);
   }
-  err = MPI_File_write(context->value_file, chunk->out_values,
+  err = MPI_File_write(context->out->value_file, chunk->out_values,
                        chunk->value_count, MPI_DOUBLE, &status);
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_write failed: %d", err);
   }
 
-  if (chunk->size_entry_length > 0) {
-    err = MPI_File_seek(context->size_file,
-                        context->size_file_offset +
+  if (chunk->size_entry_length > 0)
+  {
+    err = MPI_File_seek(context->out->size_file,
+                        context->out->size_file_offset +
                         chunk->first_id*chunk->size_entry_length*sizeof(INT),
                         MPI_SEEK_SET);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("MPI_File_seek failed: %d", err);
     }
-    err = MPI_File_write(context->size_file, chunk->out_sizes,
+    err = MPI_File_write(context->out->size_file, chunk->out_sizes,
                          chunk->size_count, MPI_INT, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("MPI_File_write failed: %d", err);
     }
   }
 #else
-  fseek(context->value_file, context->value_file_offset, SEEK_SET);
+  fseek(context->out->value_file, context->out->value_file_offset, SEEK_SET);
   if (fwrite(chunk->out_values,
              sizeof(DOUBLE),
              chunk->value_count,
-             context->value_file) != chunk->value_count) {
+             context->out->value_file) != chunk->value_count)
+  {
     dserror("failed to write value file");
   }
-  fseek(context->size_file, context->size_file_offset, SEEK_SET);
+  fseek(context->out->size_file, context->out->size_file_offset, SEEK_SET);
   if (fwrite(chunk->out_sizes,
              sizeof(INT),
              chunk->size_count,
-             context->size_file) != chunk->size_count) {
+             context->out->size_file) != chunk->size_count)
+  {
     dserror("failed to write size file");
   }
 #endif
 
-  if (rank == 0) {
+  if (rank == 0)
+  {
     CHAR* names[] = CHUNK_TYPE_NAMES;
     fprintf(bin_out_main.control_file, "    %s:\n", entry_name);
-    map_insert_int_cpy(&chunk->group, context->value_file_offset, "value_offset");
-    map_insert_int_cpy(&chunk->group, context->size_file_offset, "size_offset");
+    map_insert_int_cpy(&chunk->group, context->out->value_file_offset, "value_offset");
+    map_insert_int_cpy(&chunk->group, context->out->size_file_offset, "size_offset");
     map_insert_string_cpy(&chunk->group, names[chunk->type], "type");
     map_print(bin_out_main.control_file, &chunk->group, 8);
   }
@@ -1654,8 +2054,8 @@ void out_write_chunk(BIN_OUT_FIELD *context,
 #ifdef PARALLEL
   MPI_Allreduce(local_sizes, global_sizes, 2, MPI_INT, MPI_SUM, context->actintra->MPI_INTRA_COMM);
 #endif
-  context->value_file_offset += global_sizes[0];
-  context->size_file_offset += global_sizes[1];
+  context->out->value_file_offset += global_sizes[0];
+  context->out->size_file_offset += global_sizes[1];
 
 #ifdef DEBUG
   dstrc_exit();
@@ -1783,7 +2183,8 @@ void out_distvec_chunk(BIN_OUT_FIELD* context,
   dstrc_enter("out_distvec_chunk");
 #endif
 
-  if (context->sysarray_typ == NULL) {
+  if (context->sysarray_typ == NULL)
+  {
     dserror("cannot write distributed vectors without solver information");
   }
 
@@ -1861,15 +2262,18 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
   max_num = (actdis->numnp + nprocs - 1) / nprocs;
   fullarrays = nprocs - (nprocs*max_num - actdis->numnp);
 
-  for (j=0; j<actpdis->numnp; ++j) {
+  for (j=0; j<actpdis->numnp; ++j)
+  {
     INT proc;
     NODE* actnode = actpdis->node[j];
 
     /* Find the processor this node has to be received from. */
-    if (actnode->Id_loc < max_num*fullarrays) {
+    if (actnode->Id_loc < max_num*fullarrays)
+    {
       proc = actnode->Id_loc / max_num;
     }
-    else {
+    else
+    {
       INT Id = actnode->Id_loc - max_num*fullarrays;
       proc = Id / (max_num-1) + fullarrays;
     }
@@ -1878,7 +2282,8 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
 
   /* allocate memory for the node numbers we have to receive */
 
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     context->recv_node_ids[i] = (INT*)CCACALLOC(2*context->recv_numnp[i], sizeof(INT));
   }
 
@@ -1889,15 +2294,18 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
    * need the per partition id that allows to access the receiving
    * node inside its partition. */
   memset(counters, 0, nprocs*sizeof(INT));
-  for (j=0; j<actpdis->numnp; ++j) {
+  for (j=0; j<actpdis->numnp; ++j)
+  {
     INT proc;
     NODE* actnode = actpdis->node[j];
 
     /* Find the processor this node has to be received from. */
-    if (actnode->Id_loc < max_num*fullarrays) {
+    if (actnode->Id_loc < max_num*fullarrays)
+    {
       proc = actnode->Id_loc / max_num;
     }
-    else {
+    else
+    {
       INT Id = actnode->Id_loc - max_num*fullarrays;
       proc = Id / (max_num-1) + fullarrays;
     }
@@ -1906,13 +2314,15 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
     context->recv_node_ids[proc][2*counters[proc]+1] = j; /* actnode->Id_part; */
     counters[proc]++;
   }
-  for (j=0; j<nprocs; ++j) {
+  for (j=0; j<nprocs; ++j)
+  {
     dsassert(counters[j] == context->recv_numnp[j], "node send count mismatch");
   }
 
   /* The information how many nodes we have to send can only be
    * found by communication. */
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     MPI_Status status;
     INT dst;
     INT src;
@@ -1926,7 +2336,8 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
     err = MPI_Sendrecv(&(context->recv_numnp[src]), 1, MPI_INT, src, tag_base-i-1,
                        &(context->send_numnp[dst]), 1, MPI_INT, dst, tag_base-i-1,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
 
@@ -1936,7 +2347,8 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
     err = MPI_Sendrecv(context->recv_node_ids[src], 2*context->recv_numnp[src], MPI_INT, src, tag_base+i,
                        context->send_node_ids[dst], 2*context->send_numnp[dst], MPI_INT, dst, tag_base+i,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
   }
@@ -1974,15 +2386,18 @@ static void in_setup_element_transfer(BIN_IN_FIELD *context,
   max_num = (actdis->numele + nprocs - 1) / nprocs;
   fullarrays = nprocs - (nprocs*max_num - actdis->numele);
 
-  for (j=0; j<actpdis->numele; ++j) {
+  for (j=0; j<actpdis->numele; ++j)
+  {
     INT proc;
     ELEMENT* actele = actpdis->element[j];
 
     /* Find the processor this element has to be received from. */
-    if (actele->Id_loc < max_num*fullarrays) {
+    if (actele->Id_loc < max_num*fullarrays)
+    {
       proc = actele->Id_loc / max_num;
     }
-    else {
+    else
+    {
       INT Id = actele->Id_loc - max_num*fullarrays;
       proc = Id / (max_num-1) + fullarrays;
     }
@@ -1991,21 +2406,25 @@ static void in_setup_element_transfer(BIN_IN_FIELD *context,
 
   /* allocate memory for the element numbers we have to receive */
 
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     context->recv_element_ids[i] = (INT*)CCACALLOC(2*context->recv_numele[i], sizeof(INT));
   }
 
   /* collect the elements */
   memset(counters, 0, nprocs*sizeof(INT));
-  for (j=0; j<actpdis->numele; ++j) {
+  for (j=0; j<actpdis->numele; ++j)
+  {
     INT proc;
     ELEMENT* actele = actpdis->element[j];
 
     /* Find the processor this element has to be received from. */
-    if (actele->Id_loc < max_num*fullarrays) {
+    if (actele->Id_loc < max_num*fullarrays)
+    {
       proc = actele->Id_loc / max_num;
     }
-    else {
+    else
+    {
       INT Id = actele->Id_loc - max_num*fullarrays;
       proc = Id / (max_num-1) + fullarrays;
     }
@@ -2014,12 +2433,14 @@ static void in_setup_element_transfer(BIN_IN_FIELD *context,
     context->recv_element_ids[proc][2*counters[proc]+1] = j;
     counters[proc]++;
   }
-  for (j=0; j<nprocs; ++j) {
+  for (j=0; j<nprocs; ++j)
+  {
     dsassert(counters[j] == context->recv_numele[j], "element send count mismatch");
   }
 
   /* the element send counts have to be communicated */
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     MPI_Status status;
     INT dst;
     INT src;
@@ -2033,7 +2454,8 @@ static void in_setup_element_transfer(BIN_IN_FIELD *context,
     err = MPI_Sendrecv(&(context->recv_numele[src]), 1, MPI_INT, src, tag_base-i-1,
                        &(context->send_numele[dst]), 1, MPI_INT, dst, tag_base-i-1,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
 
@@ -2043,7 +2465,8 @@ static void in_setup_element_transfer(BIN_IN_FIELD *context,
     err = MPI_Sendrecv(context->recv_element_ids[src], 2*context->recv_numele[src], MPI_INT, src, tag_base+i,
                        context->send_element_ids[dst], 2*context->send_numele[dst], MPI_INT, dst, tag_base+i,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
   }
@@ -2093,10 +2516,12 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
     INT proc;                                                   \
                                                                 \
     /* Find the processor this dof has to be sent to. */        \
-    if ((dof) < max_num*fullarrays) {                           \
+    if ((dof) < max_num*fullarrays)                             \
+    {                                                           \
       proc = (dof) / max_num;                                   \
     }                                                           \
-    else {                                                      \
+    else                                                        \
+    {                                                           \
       INT Id = (dof) - max_num*fullarrays;                      \
       proc = Id / (max_num-1) + fullarrays;                     \
     }                                                           \
@@ -2105,12 +2530,14 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
   }
 
   /* Find out how many dofs we have to send to which processor. */
-  switch (*sysarray_typ) {
+  switch (*sysarray_typ)
+  {
 
 #ifdef AZTEC_PACKAGE
   case msr:
     calc_max_number(sysarray->msr->numeq_total);
-    for (i=0; i<sysarray->msr->numeq; ++i) {
+    for (i=0; i<sysarray->msr->numeq; ++i)
+    {
       INT dof = sysarray->msr->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2118,10 +2545,12 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #endif
 
 #ifdef HYPRE_PACKAGE
-  case parcsr: {
+  case parcsr:
+  {
     INT rank = context->actintra->intra_rank;
     calc_max_number(sysarray->parcsr->numeq_total);
-    for (i=0; i<sysarray->parcsr->numeq; ++i) {
+    for (i=0; i<sysarray->parcsr->numeq; ++i)
+    {
       INT dof = sysarray->parcsr->update.a.ia[rank][i];
       boilerplate_code(dof);
     }
@@ -2132,7 +2561,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #ifdef PARSUPERLU_PACKAGE
   case ucchb:
     calc_max_number(sysarray->ucchb->numeq_total);
-    for (i=0; i<sysarray->ucchb->numeq; ++i) {
+    for (i=0; i<sysarray->ucchb->numeq; ++i)
+    {
       INT dof = sysarray->ucchb->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2141,7 +2571,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
   case dense:
     calc_max_number(sysarray->dense->numeq_total);
-    for (i=0; i<sysarray->dense->numeq; ++i) {
+    for (i=0; i<sysarray->dense->numeq; ++i)
+    {
       INT dof = sysarray->dense->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2150,7 +2581,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #ifdef MLIB_PACKAGE
   case mds:
     calc_max_number(sysarray->mds->numeq_total);
-    for (i=0; i<sysarray->mds->numeq; ++i) {
+    for (i=0; i<sysarray->mds->numeq; ++i)
+    {
       INT dof = i;
       boilerplate_code(dof);
     }
@@ -2160,7 +2592,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #ifdef MUMPS_PACKAGE
   case rc_ptr:
     calc_max_number(sysarray->rc_ptr->numeq_total);
-    for (i=0; i<sysarray->rc_ptr->numeq; ++i) {
+    for (i=0; i<sysarray->rc_ptr->numeq; ++i)
+    {
       INT dof = sysarray->rc_ptr->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2170,7 +2603,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #ifdef SPOOLES_PACKAGE
   case spoolmatrix:
     calc_max_number(sysarray->spo->numeq_total);
-    for (i=0; i<sysarray->spo->numeq; ++i) {
+    for (i=0; i<sysarray->spo->numeq; ++i)
+    {
       INT dof = sysarray->spo->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2180,7 +2614,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #ifdef UMFPACK
   case ccf:
     calc_max_number(sysarray->ccf->numeq_total);
-    for (i=0; i<sysarray->ccf->numeq; ++i) {
+    for (i=0; i<sysarray->ccf->numeq; ++i)
+    {
       INT dof = sysarray->ccf->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2189,7 +2624,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
   case skymatrix:
     calc_max_number(sysarray->sky->numeq_total);
-    for (i=0; i<sysarray->sky->numeq; ++i) {
+    for (i=0; i<sysarray->sky->numeq; ++i)
+    {
       INT dof = sysarray->sky->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2198,7 +2634,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #ifdef MLPCG
   case bdcsr:
     calc_max_number(sysarray->bdcsr->numeq_total);
-    for (i=0; i<sysarray->bdcsr->numeq; ++i) {
+    for (i=0; i<sysarray->bdcsr->numeq; ++i)
+    {
       INT dof = sysarray->bdcsr->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2207,7 +2644,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
   case oll:
     calc_max_number(sysarray->oll->numeq_total);
-    for (i=0; i<sysarray->oll->numeq; ++i) {
+    for (i=0; i<sysarray->oll->numeq; ++i)
+    {
       INT dof = sysarray->oll->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2221,13 +2659,14 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #undef boilerplate_code
 #undef calc_max_number
 
-  /* allocate memory for the dofs we have to receive */
+/* allocate memory for the dofs we have to receive */
 
-  for (i=0; i<nprocs; ++i) {
+  for (i=0; i<nprocs; ++i)
+  {
     context->recv_dof_ids[i] = (INT*)CCACALLOC(2*context->recv_numdof[i], sizeof(INT));
   }
 
-  /* collect the dofs */
+/* collect the dofs */
   memset(counters, 0, nprocs*sizeof(INT));
 
 #define boilerplate_code(dof)                                   \
@@ -2235,10 +2674,12 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
     INT proc;                                                   \
                                                                 \
     /* Find the processor this dof has to be received from. */  \
-    if ((dof) < max_num*fullarrays) {                           \
+    if ((dof) < max_num*fullarrays)                             \
+    {                                                           \
       proc = (dof) / max_num;                                   \
     }                                                           \
-    else {                                                      \
+    else                                                        \
+    {                                                           \
       INT Id = (dof) - max_num*fullarrays;                      \
       proc = Id / (max_num-1) + fullarrays;                     \
     }                                                           \
@@ -2248,11 +2689,13 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
     counters[proc]++;                                           \
   }
 
-  switch (*sysarray_typ) {
+  switch (*sysarray_typ)
+  {
 
 #ifdef AZTEC_PACKAGE
   case msr:
-    for (i=0; i<sysarray->msr->numeq; ++i) {
+    for (i=0; i<sysarray->msr->numeq; ++i)
+    {
       INT dof = sysarray->msr->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2260,9 +2703,11 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #endif
 
 #ifdef HYPRE_PACKAGE
-  case parcsr: {
+  case parcsr:
+  {
     INT rank = context->actintra->intra_rank;
-    for (i=0; i<sysarray->parcsr->numeq; ++i) {
+    for (i=0; i<sysarray->parcsr->numeq; ++i)
+    {
       INT dof = sysarray->parcsr->update.a.ia[rank][i];
       boilerplate_code(dof);
     }
@@ -2272,7 +2717,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
 #ifdef PARSUPERLU_PACKAGE
   case ucchb:
-    for (i=0; i<sysarray->ucchb->numeq; ++i) {
+    for (i=0; i<sysarray->ucchb->numeq; ++i)
+    {
       INT dof = sysarray->ucchb->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2280,7 +2726,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #endif
 
   case dense:
-    for (i=0; i<sysarray->dense->numeq; ++i) {
+    for (i=0; i<sysarray->dense->numeq; ++i)
+    {
       INT dof = sysarray->dense->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2288,7 +2735,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
 #ifdef MLIB_PACKAGE
   case mds:
-    for (i=0; i<sysarray->mds->numeq; ++i) {
+    for (i=0; i<sysarray->mds->numeq; ++i)
+    {
       INT dof = i;
       boilerplate_code(dof);
     }
@@ -2297,7 +2745,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
 #ifdef MUMPS_PACKAGE
   case rc_ptr:
-    for (i=0; i<sysarray->rc_ptr->numeq; ++i) {
+    for (i=0; i<sysarray->rc_ptr->numeq; ++i)
+    {
       INT dof = sysarray->rc_ptr->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2306,7 +2755,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
 #ifdef SPOOLES_PACKAGE
   case spoolmatrix:
-    for (i=0; i<sysarray->spo->numeq; ++i) {
+    for (i=0; i<sysarray->spo->numeq; ++i)
+    {
       INT dof = sysarray->spo->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2315,7 +2765,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
 #ifdef UMFPACK
   case ccf:
-    for (i=0; i<sysarray->ccf->numeq; ++i) {
+    for (i=0; i<sysarray->ccf->numeq; ++i)
+    {
       INT dof = sysarray->ccf->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2323,7 +2774,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #endif
 
   case skymatrix:
-    for (i=0; i<sysarray->sky->numeq; ++i) {
+    for (i=0; i<sysarray->sky->numeq; ++i)
+    {
       INT dof = sysarray->sky->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2331,7 +2783,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
 #ifdef MLPCG
   case bdcsr:
-    for (i=0; i<sysarray->bdcsr->numeq; ++i) {
+    for (i=0; i<sysarray->bdcsr->numeq; ++i)
+    {
       INT dof = sysarray->bdcsr->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2339,7 +2792,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #endif
 
   case oll:
-    for (i=0; i<sysarray->oll->numeq; ++i) {
+    for (i=0; i<sysarray->oll->numeq; ++i)
+    {
       INT dof = sysarray->oll->update.a.iv[i];
       boilerplate_code(dof);
     }
@@ -2352,12 +2806,14 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
 #undef boilerplate_code
 
-  for (j=0; j<nprocs; ++j) {
+  for (j=0; j<nprocs; ++j)
+  {
     dsassert(counters[j] == context->recv_numdof[j], "dof send count mismatch");
   }
 
-  /* the dof send counts have to be communicated */
-  for (i=0; i<nprocs; ++i) {
+/* the dof send counts have to be communicated */
+  for (i=0; i<nprocs; ++i)
+  {
     MPI_Status status;
     INT dst;
     INT src;
@@ -2371,7 +2827,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
     err = MPI_Sendrecv(&(context->recv_numdof[src]), 1, MPI_INT, src, tag_base-i-1,
                        &(context->send_numdof[dst]), 1, MPI_INT, dst, tag_base-i-1,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
 
@@ -2381,7 +2838,8 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
     err = MPI_Sendrecv(context->recv_dof_ids[src], 2*context->recv_numdof[src], MPI_INT, src, tag_base+i,
                        context->send_dof_ids[dst], 2*context->send_numdof[dst], MPI_INT, dst, tag_base+i,
                        actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
   }
@@ -2392,6 +2850,95 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 }
 
 #endif
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Open the pair of restart data files.
+
+  We are just going to read restart information here. Thus all we
+  need is to open the restart files. The result files are not needed
+  at all.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+static void in_open_data_files(BIN_IN_FIELD *context,
+                               INTRA *actintra,
+                               MAP* field_info)
+{
+#ifdef PARALLEL
+  INT err;
+#endif
+  CHAR *filename;
+  CHAR buf[100];
+  CHAR input_dir[100];
+  CHAR* separator;
+
+#ifdef DEBUG
+  dstrc_enter("in_open_data_files");
+#endif
+
+  separator = rindex(bin_out_main.name, '/');
+  if (separator == NULL)
+  {
+    input_dir[0] = '\0';
+  }
+  else
+  {
+    INT n;
+
+    /* 'separator-bin_out_main.name' gives the number of chars before
+     * the separator. But we want to copy the separator as well. */
+    n = separator-bin_out_main.name+1;
+    dsassert(n < 100, "file name overflow");
+    strncpy(input_dir, bin_out_main.name, n);
+    input_dir[n] = '\0';
+  }
+
+  filename = map_read_string(field_info, "restart_value_file");
+  strcpy(buf, input_dir);
+  strcat(buf, filename);
+#ifdef PARALLEL
+  err = MPI_File_open(actintra->MPI_INTRA_COMM, buf,
+                      MPI_MODE_RDONLY, MPI_INFO_NULL,
+                      &(context->value_file));
+  if (err != 0)
+  {
+    dserror("MPI_File_open failed for file '%s': %d", buf, err);
+  }
+#else
+  context->value_file = fopen(buf, "rb");
+  if (context->value_file == NULL)
+  {
+    dserror("restart file '%s' not found", buf);
+  }
+#endif
+
+  filename = map_read_string(field_info, "restart_size_file");
+  strcpy(buf, input_dir);
+  strcat(buf, filename);
+#ifdef PARALLEL
+  err = MPI_File_open(actintra->MPI_INTRA_COMM, buf,
+                      MPI_MODE_RDONLY, MPI_INFO_NULL,
+                      &(context->size_file));
+  if (err != 0)
+  {
+    dserror("MPI_File_open failed for file '%s': %d", buf, err);
+  }
+#else
+  context->size_file = fopen(buf, "rb");
+  if (context->size_file == NULL)
+  {
+    dserror("restart file '%s' not found", buf);
+  }
+#endif
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
 
 
 /*======================================================================*/
@@ -2419,13 +2966,11 @@ void init_bin_in_field(BIN_IN_FIELD* context,
 #ifdef PARALLEL
   INT nprocs = actintra->intra_nprocs;
   INT rank = actintra->intra_rank;
-  INT err;
   PARTDISCRET* actpdis = &(actpart->pdis[disnum]);
   INT* counters;
 #endif
   DISCRET* actdis = &(actfield->dis[disnum]);
   SYMBOL* dir;
-  CHAR* filename;
   INT field_pos;
 
 #ifdef DEBUG
@@ -2444,24 +2989,30 @@ void init_bin_in_field(BIN_IN_FIELD* context,
   /*--------------------------------------------------------------------*/
   /* find the description of this field in the control file */
 
-  for (field_pos=0; field_pos<genprob.numfld; ++field_pos) {
-    if (actfield == &(field[field_pos])) {
+  for (field_pos=0; field_pos<genprob.numfld; ++field_pos)
+  {
+    if (actfield == &(field[field_pos]))
+    {
       break;
     }
   }
 
-  if (field_pos==genprob.numfld) {
+  if (field_pos==genprob.numfld)
+  {
     dserror("unregistered field object");
   }
 
   dir = map_find_symbol(&(bin_in_main.table), "field");
-  while (dir != NULL) {
-    if (symbol_is_map(dir)) {
+  while (dir != NULL)
+  {
+    if (symbol_is_map(dir))
+    {
       MAP* map;
       symbol_get_map(dir, &map);
       if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
           map_has_int(map, "field_pos", field_pos) &&
-          map_has_int(map, "discretization", disnum)) {
+          map_has_int(map, "discretization", disnum))
+      {
         /* The group entry that contains the distinguishing
          * definitions. This group contains information we need to know. */
         context->field_info = map;
@@ -2470,36 +3021,18 @@ void init_bin_in_field(BIN_IN_FIELD* context,
     }
     dir = dir->next;
   }
-  if (dir == NULL) {
+  if (dir == NULL)
+  {
     dserror("No field entry in symbol table. Control file corrupt?");
   }
 
   /*--------------------------------------------------------------------*/
   /* open file to read */
 
-  filename = map_read_string(context->field_info, "value_file");
-#ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
-                      MPI_MODE_RDONLY, MPI_INFO_NULL,
-                      &(context->value_file));
-  if (err != 0) {
-    dserror("MPI_File_open failed for file '%s': %d", filename, err);
-  }
-#else
-  context->value_file = fopen(filename, "rb");
-#endif
+  /*in_open_data_files(context, actintra, context->field_info);*/
 
-  filename = map_read_string(context->field_info, "size_file");
-#ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
-                      MPI_MODE_RDONLY, MPI_INFO_NULL,
-                      &(context->size_file));
-  if (err != 0) {
-    dserror("MPI_File_open failed for file '%s': %d", filename, err);
-  }
-#else
-  context->size_file = fopen(filename, "rb");
-#endif
+  /*--------------------------------------------------------------------*/
+  /* simple consistency check */
 
   {
     INT numnp;
@@ -2529,7 +3062,8 @@ void init_bin_in_field(BIN_IN_FIELD* context,
   context->send_element_ids = (INT**)CCACALLOC(nprocs, sizeof(INT*));
   context->recv_element_ids = (INT**)CCACALLOC(nprocs, sizeof(INT*));
 
-  if (sysarray_typ != NULL) {
+  if (sysarray_typ != NULL)
+  {
     context->send_numdof = (INT*)CCACALLOC(nprocs, sizeof(INT));
     context->recv_numdof = (INT*)CCACALLOC(nprocs, sizeof(INT));
 
@@ -2554,7 +3088,8 @@ void init_bin_in_field(BIN_IN_FIELD* context,
 
   /* If there is no solver we won't be able to load distributed
    * vectors. */
-  if (sysarray_typ != NULL) {
+  if (sysarray_typ != NULL)
+  {
     in_setup_dof_transfer(context, rank, nprocs, counters, actpdis, actdis);
   }
 
@@ -2589,7 +3124,7 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
   INT nprocs = context->actintra->intra_nprocs;
   INT rank = context->actintra->intra_rank;
   DISCRET* actdis = &(context->actfield->dis[context->disnum]);
-  INT num;
+  INT num = 0;
 
 #ifdef DEBUG
   dstrc_enter("init_bin_in_chunk");
@@ -2597,7 +3132,8 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
 
   chunk->field = context;
 
-  switch (type) {
+  switch (type)
+  {
   case chunk_node:
     num = actdis->numnp;
     chunk->type = chunk_node;
@@ -2625,7 +3161,8 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
   chunk->value_entry_length = map_read_int(chunk->group_info, "value_entry_length");
   chunk->size_entry_length  = map_read_int(chunk->group_info, "size_entry_length");
 
-  if ((chunk->value_entry_length < 0) || (chunk->size_entry_length < 0)) {
+  if ((chunk->value_entry_length < 0) || (chunk->size_entry_length < 0))
+  {
     dserror("illegal item sites: %d, %d",
             chunk->value_entry_length, chunk->size_entry_length);
   }
@@ -2642,24 +3179,29 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
   /* The Id_loc of the first node of this processor. */
   chunk->first_id = chunk->num*rank;
 
-  if (rank >= chunk->fullarrays) {
+  if (rank >= chunk->fullarrays)
+  {
     chunk->num -= 1;
     chunk->first_id -= rank - chunk->fullarrays;
   }
 
   chunk->value_count = chunk->value_entry_length*chunk->num;
   chunk->size_count = chunk->size_entry_length*chunk->num;
-  if (chunk->value_count > 0) {
+  if (chunk->value_count > 0)
+  {
     chunk->in_values = (DOUBLE*)CCACALLOC(chunk->value_count, sizeof(DOUBLE));
   }
-  else {
+  else
+  {
     chunk->in_values = NULL;
   }
 
-  if (chunk->size_count > 0) {
+  if (chunk->size_count > 0)
+  {
     chunk->in_sizes = (INT*)CCACALLOC(chunk->size_count, sizeof(INT));
   }
-  else {
+  else
+  {
     chunk->in_sizes = NULL;
   }
 
@@ -2700,7 +3242,8 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
   dstrc_enter("in_node_arrays");
 #endif
 
-  switch (chunk->type) {
+  switch (chunk->type)
+  {
   case chunk_node:
     num = context->actfield->dis[context->disnum].numnp;
     break;
@@ -2718,7 +3261,8 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
   }
 
   /* distribute */
-  for (proc=0; proc<nprocs; ++proc) {
+  for (proc=0; proc<nprocs; ++proc)
+  {
     INT src = 0;
 #ifdef PARALLEL
     INT dst;
@@ -2743,7 +3287,8 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
     dst = (rank + proc + 1) % nprocs;
     src = (nprocs + rank - proc - 1) % nprocs;
 
-    switch (chunk->type) {
+    switch (chunk->type)
+    {
     case chunk_node:
       send_num = context->send_numnp[dst];
       recv_num = context->recv_numnp[src];
@@ -2765,7 +3310,8 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
       dserror("unknown chunk type %d", chunk->type);
     }
 
-    if (chunk->value_entry_length > 0) {
+    if (chunk->value_entry_length > 0)
+    {
       send_count = send_num*chunk->value_entry_length;
       recv_count = recv_num*chunk->value_entry_length;
 
@@ -2784,7 +3330,8 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
     value_len = chunk->value_entry_length;
 
     /* pack data to be sent */
-    for (j=0; j<send_num; ++j) {
+    for (j=0; j<send_num; ++j)
+    {
       INT k;
       INT Id;
       DOUBLE *src_ptr;
@@ -2803,13 +3350,15 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
       /* we don't store the id which is always transfered first */
       src_int_ptr = &(chunk->in_sizes[size_len*(Id-chunk->first_id)]);
       dst_int_ptr = &(send_size_buf[(size_len+1)*j+1]);
-      for (k=0; k<size_len; ++k) {
+      for (k=0; k<size_len; ++k)
+      {
         *dst_int_ptr++ = *src_int_ptr++;
       }
 
       dst_ptr = &(send_buf[value_len*j]);
       src_ptr = &(chunk->in_values[value_len*(Id-chunk->first_id)]);
-      for (k=0; k<value_len; ++k) {
+      for (k=0; k<value_len; ++k)
+      {
         *dst_ptr++ = *src_ptr++;
       }
     }
@@ -2818,15 +3367,18 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
     err = MPI_Sendrecv(send_size_buf, send_size_count, MPI_INT, dst, tag_base-proc-1,
                        recv_size_buf, recv_size_count, MPI_INT, src, tag_base-proc-1,
                        context->actintra->MPI_INTRA_COMM, &status);
-    if (err != 0) {
+    if (err != 0)
+    {
       dserror("mpi sendrecv error %d", err);
     }
 
-    if (chunk->value_entry_length > 0) {
+    if (chunk->value_entry_length > 0)
+    {
       err = MPI_Sendrecv(send_buf, send_count, MPI_DOUBLE, dst, tag_base+proc,
                          recv_buf, recv_count, MPI_DOUBLE, src, tag_base+proc,
                          context->actintra->MPI_INTRA_COMM, &status);
-      if (err != 0) {
+      if (err != 0)
+      {
         dserror("mpi sendrecv error %d", err);
       }
     }
@@ -2845,7 +3397,8 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
 
 #ifdef PARALLEL
 
-    if (chunk->value_entry_length > 0) {
+    if (chunk->value_entry_length > 0)
+    {
       CCAFREE(recv_buf);
       CCAFREE(send_buf);
     }
@@ -2886,6 +3439,7 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
 void in_read_chunk(BIN_IN_FIELD *context,
                    BIN_IN_CHUNK *chunk)
 {
+  INT i;
   INT offset;
 #ifdef PARALLEL
   INT err;
@@ -2902,12 +3456,14 @@ void in_read_chunk(BIN_IN_FIELD *context,
   err = MPI_File_seek(context->value_file,
                       offset+chunk->first_id*sizeof(DOUBLE)*chunk->value_entry_length,
                       MPI_SEEK_SET);
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_seek failed: %d", err);
   }
   err = MPI_File_read(context->value_file, chunk->in_values,
                       chunk->value_count, MPI_DOUBLE, &status);
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_read failed: %d", err);
   }
 #else
@@ -2915,7 +3471,8 @@ void in_read_chunk(BIN_IN_FIELD *context,
   if (fread(chunk->in_values,
             sizeof(DOUBLE),
             chunk->value_count,
-            context->value_file) != chunk->value_count) {
+            context->value_file) != chunk->value_count)
+  {
     dserror("failed to read value file");
   }
 #endif
@@ -2926,12 +3483,14 @@ void in_read_chunk(BIN_IN_FIELD *context,
   err = MPI_File_seek(context->size_file,
                       offset+chunk->first_id*sizeof(INT)*chunk->size_entry_length,
                       MPI_SEEK_SET);
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_seek failed: %d", err);
   }
   err = MPI_File_read(context->size_file, chunk->in_sizes,
                       chunk->size_count, MPI_INT, &status);
-  if (err != 0) {
+  if (err != 0)
+  {
     dserror("MPI_File_read failed: %d", err);
   }
 #else
@@ -2939,9 +3498,43 @@ void in_read_chunk(BIN_IN_FIELD *context,
   if (fread(chunk->in_sizes,
             sizeof(INT),
             chunk->size_count,
-            context->size_file) != chunk->size_count) {
+            context->size_file) != chunk->size_count)
+  {
     dserror("failed to read size file");
   }
+#endif
+
+  /* on little endian machines we have to convert */
+  /* We have 8 byte doubles and 4 byte integer by definition. Nothing
+   * else. */
+
+#ifdef IS_LITTLE_ENDIAN
+
+  /* very specific swap macro */
+#define SWAP_CHAR(c1,c2) { CHAR t; t=c1; c1=c2; c2=t; }
+
+  for (i=0; i<chunk->value_count; ++i)
+  {
+    CHAR* ptr;
+
+    ptr = (CHAR*)&(chunk->in_values[i]);
+    SWAP_CHAR(ptr[0], ptr[7]);
+    SWAP_CHAR(ptr[1], ptr[6]);
+    SWAP_CHAR(ptr[2], ptr[5]);
+    SWAP_CHAR(ptr[3], ptr[4]);
+  }
+
+  for (i=0; i<chunk->size_count; ++i)
+  {
+    CHAR* ptr;
+
+    ptr = (CHAR*)&(chunk->in_sizes[i]);
+    SWAP_CHAR(ptr[0], ptr[3]);
+    SWAP_CHAR(ptr[1], ptr[2]);
+  }
+
+#undef SWAP_CHAR
+
 #endif
 
 #ifdef DEBUG
@@ -3062,7 +3655,8 @@ void in_distvec_chunk(BIN_IN_FIELD* context,
   dstrc_enter("in_distvec_chunk");
 #endif
 
-  if (context->sysarray_typ == NULL) {
+  if (context->sysarray_typ == NULL)
+  {
     dserror("no solver set, cannot load distributed vector");
   }
 
@@ -3091,48 +3685,106 @@ void in_distvec_chunk(BIN_IN_FIELD* context,
 /*!
   \brief Find the description of the restart data in the control file
 
+  Find the restart group in the control file that describes the given
+  step. Additionally the files that contain the data are searched and
+  opened.
+
   \author u.kue
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-MAP *in_find_restart_group(FIELD *actfield, INT disnum, INT step)
+MAP *in_find_restart_group(BIN_IN_FIELD* context, INT disnum, INT step)
 {
   MAP *result_info = NULL;
   SYMBOL *symbol;
   INT field_pos;
 
+  FIELD *actfield;
+  INTRA *actintra;
+
 #ifdef DEBUG
   dstrc_enter("in_find_restart_group");
 #endif
 
+  actfield = context->actfield;
+  actintra = context->actintra;
 
-  for (field_pos=0; field_pos<genprob.numfld; ++field_pos) {
-    if (actfield == &(field[field_pos])) {
+  for (field_pos=0; field_pos<genprob.numfld; ++field_pos)
+  {
+    if (actfield == &(field[field_pos]))
+    {
       break;
     }
   }
 
-  if (field_pos==genprob.numfld) {
+  if (field_pos==genprob.numfld)
+  {
     dserror("unregistered field object");
   }
 
+  /*
+   * Iterate all symbols under the name "restart" and get the one that
+   * matches the given step. Note that this iteration starts from the
+   * last restart group and goes backward. */
+
   symbol = map_find_symbol(&(bin_in_main.table), "restart");
-  while (symbol != NULL) {
-    if (symbol_is_map(symbol)) {
+  while (symbol != NULL)
+  {
+    if (symbol_is_map(symbol))
+    {
       MAP* map;
       symbol_get_map(symbol, &map);
       if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
           map_has_int(map, "field_pos", field_pos) &&
           map_has_int(map, "discretization", disnum) &&
-          map_has_int(map, "step", step)) {
+          map_has_int(map, "step", step))
+      {
         result_info = map;
         break;
       }
     }
     symbol = symbol->next;
   }
-  if (symbol == NULL) {
+  if (symbol == NULL)
+  {
     dserror("No restart entry for step %d in symbol table. Control file corrupt?", step);
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* open file to read */
+
+  /* We have a symbol and its map that corresponds to the step we are
+   * interessted in. Now we need to continue our search to find the
+   * step that defines the output file used for our step. */
+
+  while (symbol != NULL)
+  {
+    if (symbol_is_map(symbol))
+    {
+      MAP* map;
+      symbol_get_map(symbol, &map);
+      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
+          map_has_int(map, "field_pos", field_pos) &&
+          map_has_int(map, "discretization", disnum))
+      {
+        /*
+         * If one of these files is here the other one has to be
+         * here, too. If it's not, it's a bug in the input. */
+        if ((map_symbol_count(map, "restart_value_file") > 0) ||
+            (map_symbol_count(map, "restart_size_file") > 0))
+        {
+          in_open_data_files(context, actintra, map);
+          break;
+        }
+      }
+    }
+    symbol = symbol->next;
+  }
+
+  /* No restart files defined? */
+  if (symbol == NULL)
+  {
+    dserror("no restart file definitions found in control file");
   }
 
 #ifdef DEBUG

@@ -31,11 +31,12 @@ function calls.
 #ifdef BINIO
 
 /*!
-\addtogroup IO
+  \addtogroup IO
 *//*! @{ (documentation module open)*/
 
 #include "io_packing.h"
 #include "io_singlefile.h"
+#include "io_elements.h"
 
 #include "../pss_full/pss_table.h"
 
@@ -45,6 +46,7 @@ function calls.
 #include "../brick1/brick1.h"
 #include "../beam3/beam3.h"
 #include "../fluid2/fluid2.h"
+#include "../fluid2_pro/fluid2pro.h"
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "../ale2/ale2.h"
@@ -55,49 +57,60 @@ function calls.
 
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
+  |                                                       m.gee 06/01    |
+  | general problem data                                                 |
+  | global variable GENPROB genprob is defined in global_control.c       |
+  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
+  |                                                       m.gee 06/01    |
+  | vector of numfld FIELDs, defined in global_control.c                 |
+  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
 
+/*!----------------------------------------------------------------------
+  \brief ranks and communicators
+
+  <pre>                                                         m.gee 8/00
+  This structure struct _PAR par; is defined in main_ccarat.c
+  and the type is in partition.h
+  </pre>
+
+  *----------------------------------------------------------------------*/
+extern struct _PAR   par;
+
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
+  |                                                       m.gee 06/01    |
+  | structure of flags to control output                                 |
+  | defined in out_global.c                                              |
+  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-struct _MATERIAL     *mat;
+  |                                                       m.gee 06/01    |
+  | vector of material laws                                              |
+  | defined in global_control.c
+  *----------------------------------------------------------------------*/
+extern struct _MATERIAL     *mat;
 
 /*!----------------------------------------------------------------------
-\brief vector of multilayer material law
+  \brief vector of multilayer material law
 
-<pre>                                                            sh 10/02
-This structure struct _MULTIMAT  *multimat is defined in global_control.c
-and the type is in materials.h
-It holds all information about the layered section data
-</pre>
-*----------------------------------------------------------------------*/
+  <pre>                                                            sh 10/02
+  This structure struct _MULTIMAT  *multimat is defined in global_control.c
+  and the type is in materials.h
+  It holds all information about the layered section data
+  </pre>
+  *----------------------------------------------------------------------*/
 extern struct _MULTIMAT  *multimat;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | struct _ALLDYNA       *alldyn;                                       |
- *----------------------------------------------------------------------*/
+  |                                                       m.gee 06/01    |
+  | pointer to allocate dynamic variables if needed                      |
+  | dedfined in global_control.c                                         |
+  | struct _ALLDYNA       *alldyn;                                       |
+  *----------------------------------------------------------------------*/
 extern ALLDYNA *alldyn;
 
 /*----------------------------------------------------------------------*/
@@ -138,19 +151,13 @@ extern BIN_IN_MAIN bin_in_main;
 extern CHAR* fieldnames[];
 
 
-/*======================================================================*/
-/* Let's start this file with element dependent code that's needed by
- * the discretization output constructor. */
-/*======================================================================*/
-
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief Mark all element types that are used in this discretization.
 
   Here the context's element_flag table is set up. That is all
-  elements are checked and the corresponding entry (selected by
-  major/minor type number) in the flag table gets a tic.
+  elements are checked and the corresponding entry in the flag table
+  gets a tic.
 
   The result is allreduced.
 
@@ -167,107 +174,177 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
                             PARTDISCRET *actpdis)
 {
   INT i;
-  ELEMENT_FLAGS element_flag;
+  INT element_flag[el_count];
 
 #ifdef DEBUG
   dstrc_enter("out_find_element_types");
 #endif
 
-  memset(element_flag, 0, ELEMENT_FLAGS_SIZE);
+  memset(element_flag, 0, el_count*sizeof(INT));
 
-  for (i=0; i<actpdis->numele; ++i) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
     ELEMENT* actele = actpdis->element[i];
-
-    switch (actele->eltyp) {
-#ifdef D_SHELL8
-    case el_shell8:
-      element_flag[el_shell8][find_shell8_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_SHELL9
-    case el_shell9:
-      element_flag[el_shell9][find_shell9_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_BRICK1
-    case el_brick1:
-      element_flag[el_brick1][find_brick1_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_FLUID2
-    case el_fluid2:
-      element_flag[el_fluid2][find_fluid2_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_FLUID2_PRO
-    case el_fluid2_pro:
-      element_flag[el_fluid2_pro][find_fluid2_pro_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_FLUID2TU
-    case el_fluid2_tu:
-      element_flag[el_fluid2_tu][find_fluid2_tu_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_FLUID3
-    case el_fluid3:
-      element_flag[el_fluid3][find_fluid3_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_FLUID3_F
-    case el_fluid3_fast:
-      element_flag[el_fluid3_fast][find_fluid3_fast_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_ALE
-    case el_ale2:
-      element_flag[el_ale2][find_ale2_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_ALE
-    case el_ale3:
-      element_flag[el_ale3][find_ale3_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_WALL1
-    case el_wall1:
-      element_flag[el_wall1][find_wall1_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_BEAM3
-    case el_beam3:
-      element_flag[el_beam3][find_beam3_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_AXISHELL
-    case el_axishell:
-      element_flag[el_axishell][find_axishell_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_INTERF
-    case el_interf:
-      element_flag[el_interf][find_interf_minor_type(actele)] = 1;
-      break;
-#endif
-#ifdef D_WALLGE
-    case el_wallge:
-      element_flag[el_wallge][find_wallge_minor_type(actele)] = 1;
-      break;
-#endif
-    default:
-      dserror("Unknown type %d of element", actele->eltyp);
-      break;
-    }
+    element_flag[actele->eltyp] = 1;
   }
 
   /* memcpy takes the buffer length in bytes. MPI asks for the number
    * of entries. */
 #ifdef PARALLEL
-  MPI_Allreduce(element_flag, context->element_flag, el_count*MAX_EL_MINOR, MPI_INT,
+  MPI_Allreduce(element_flag, context->element_flag, el_count, MPI_INT,
                 MPI_MAX, actintra->MPI_INTRA_COMM);
 #else
-  memcpy(context->element_flag, element_flag, ELEMENT_FLAGS_SIZE);
+  memcpy(context->element_flag, element_flag, el_count*sizeof(INT));
 #endif
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Write element specific control information to the given file.
+
+  This is only called if rank==0.
+
+  The purpose is to write all kinds of information that are needed to
+  interpret the elements' results. Everything is to the group that
+  describes the discretization the elements belong to.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void out_element_control(struct _BIN_OUT_FIELD *context,
+                         FILE* file)
+{
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("out_element_control");
+#endif
+
+  for (i=0; i<el_count; ++i)
+  {
+    if (context->element_flag[i])
+    {
+      switch (i)
+      {
+#ifdef D_SHELL8
+      case el_shell8:
+        break;
+#endif
+#ifdef D_SHELL9
+      case el_shell9:
+        break;
+#endif
+#ifdef D_BRICK1
+      case el_brick1:
+      {
+        INT j;
+        CHAR* c1_stresstype[] = BRICK1_STRESSTYPE;
+
+        fprintf(file, "    c1_stresstypes:\n");
+        for (j=0; c1_stresstype[j] != NULL; ++j)
+        {
+          fprintf(file, "        %s = %d\n", c1_stresstype[j], j);
+        }
+        fprintf(file, "\n");
+
+        break;
+      }
+#endif
+#ifdef D_FLUID2
+      case el_fluid2:
+        break;
+#endif
+#ifdef D_FLUID2_PRO
+      case el_fluid2_pro:
+        break;
+#endif
+#ifdef D_FLUID2TU
+      case el_fluid2_tu:
+        break;
+#endif
+#ifdef D_FLUID3
+      case el_fluid3:
+        break;
+#endif
+#ifdef D_FLUID3_F
+      case el_fluid3_fast:
+        break;
+#endif
+#ifdef D_ALE
+      case el_ale2:
+        break;
+#endif
+#ifdef D_ALE
+      case el_ale3:
+        break;
+#endif
+#ifdef D_WALL1
+      case el_wall1:
+      {
+        INT j;
+        CHAR* w1_stresstype[] = WALL1_STRESSTYPE;
+
+        fprintf(file, "    w1_stresstypes:\n");
+        for (j=0; w1_stresstype[j] != NULL; ++j)
+        {
+          fprintf(file, "        %s = %d\n", w1_stresstype[j], j);
+        }
+        fprintf(file, "\n");
+
+        break;
+      }
+#endif
+#ifdef D_BEAM3
+      case el_beam3:
+        break;
+#endif
+#ifdef D_AXISHELL
+      case el_axishell:
+        break;
+#endif
+#ifdef D_INTERF
+      case el_interf:
+      {
+        INT j;
+        CHAR* interf_stresstype[] = INTERF_STRESSTYPE;
+
+        fprintf(file, "    interf_stresstypes:\n");
+        for (j=0; interf_stresstype[j] != NULL; ++j)
+        {
+          fprintf(file, "        %s = %d\n", interf_stresstype[j], j);
+        }
+        fprintf(file, "\n");
+
+        break;
+      }
+#endif
+#ifdef D_WALLGE
+      case el_wallge:
+      {
+        INT j;
+        CHAR* wallge_stresstype[] = WALLGE_STRESSTYPE;
+
+        fprintf(file, "    wallge_stresstypes:\n");
+        for (j=0; wallge_stresstype[j] != NULL; ++j)
+        {
+          fprintf(file, "        %s = %d\n", wallge_stresstype[j], j);
+        }
+        fprintf(file, "\n");
+
+        break;
+      }
+#endif
+      default:
+        dserror("element type %d unsupported", i);
+      }
+    }
+  }
 
 #ifdef DEBUG
   dstrc_exit();
@@ -305,50 +382,42 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
 void out_shell8_setup(struct _BIN_OUT_FIELD *context)
 {
   INT rank = context->actintra->intra_rank;
-  INT shell8_count;
+  ELEMENT* actele;
 
 #ifdef DEBUG
   dstrc_enter("out_shell8_setup");
 #endif
 
-  shell8_count = count_element_variants(context, el_shell8);
-  if (shell8_count > 0) {
-    ELEMENT* actele;
+  actele = context->actpart->pdis[context->disnum].element[0];
+  if (actele->eltyp == el_shell8)
+  {
     SHELL8* s8;
     INT numnp;
-
-    if (shell8_count != count_element_types(context)) {
-      dserror("shell8 is supposed to be the only element in the mesh");
-    }
-    if (shell8_count != 1) {
-      dserror("there must be only one shell8 variant");
-    }
 
     /*
      * OK. We have a shell8 problem.  */
     context->is_shell8_problem = 1;
-
-    actele = context->actpart->pdis[context->disnum].element[0];
-    dsassert(actele->eltyp == el_shell8, "shell8 expected");
-
     s8 = actele->e.s8;
-    context->s8_minor = find_shell8_minor_type(actele);
 
     /*
      * Mark this discretization. The filter will know that it is a
      * special one. */
-    if (rank == 0) {
+    if (rank == 0)
+    {
+      INT j;
       CHAR* forcetype[] = S8_FORCETYPE;
       fprintf(bin_out_main.control_file,
-              "    shell8_minor = %d\n"
-              "    shell8_scal = %f\n"
-              "    shell8_sdc = %f\n"
-              "    shell8_forcetype = \"%s\"\n"
-              "\n",
-              context->s8_minor, 1.0, s8->sdc, forcetype[s8->forcetyp]);
+              "    shell8_problem = \"yes\"\n\n"
+              "    s8_forcetypes:\n");
+      for (j=0; forcetype[j] != NULL; ++j)
+      {
+        fprintf(bin_out_main.control_file,
+                "        %s = %d\n", forcetype[j], j);
+      }
+      fprintf(bin_out_main.control_file, "\n");
     }
 
-    numnp = element_info[el_shell8].variant[context->s8_minor].node_number;
+    numnp = actele->numnp;
 
     /* There is a director at each node. Furthermore we need the
      * element thickness. Let's play it save and output one thickness
@@ -356,7 +425,8 @@ void out_shell8_setup(struct _BIN_OUT_FIELD *context)
      * ccarat's input though. */
     out_element_chunk(context, "shell8_director", cc_shell8_director, (3+1)*numnp, 0, 0);
   }
-  else {
+  else
+  {
     context->is_shell8_problem = 0;
   }
 
@@ -390,74 +460,72 @@ void out_shell8_setup(struct _BIN_OUT_FIELD *context)
 void out_shell9_setup(struct _BIN_OUT_FIELD *context)
 {
   INT rank = context->actintra->intra_rank;
-  INT shell9_count;
+  ELEMENT* actele;
 
 #ifdef DEBUG
   dstrc_enter("out_shell9_setup");
 #endif
 
-  shell9_count = count_element_variants(context, el_shell9);
-  if (shell9_count > 0) {
-    ELEMENT* actele;
+  actele = context->actpart->pdis[context->disnum].element[0];
+  if (actele->eltyp == el_shell9)
+  {
     SHELL9* s9;
     INT klay;
-
-    INT numnp;
     INT layer_count;
-
-    if (shell9_count != count_element_types(context)) {
-      dserror("shell9 is supposed to be the only element in the mesh");
-    }
-    if (shell9_count != 1) {
-      dserror("there must be only one shell9 variant");
-    }
 
     /*
      * OK. We have a shell9 problem.  */
     context->is_shell9_problem = 1;
 
-    actele = context->actpart->pdis[context->disnum].element[0];
-    dsassert(actele->eltyp == el_shell9, "shell9 expected");
-
     s9 = actele->e.s9;
-    context->s9_minor = find_shell9_minor_type(actele);
 
     context->s9_layers = 0;
-    for (klay=0; klay<s9->num_klay; klay++) {
+    for (klay=0; klay<s9->num_klay; klay++)
+    {
       context->s9_layers += s9->kinlay[klay].num_mlay;
     }
 
     /*
      * Mark this discretization. The filter will know that it is a
      * special one. */
-    if (rank == 0) {
+    if (rank == 0)
+    {
+      INT j;
+      CHAR* forcetype[] = S9_FORCETYPE;
       fprintf(bin_out_main.control_file,
+              "    shell9_problem = \"yes\"\n"
               "    shell9_smoothed = \"%s\"\n"
-              "    shell9_minor = %d\n"
               "    shell9_layers = %d\n"
-              "    shell9_forcetype = \"%s\"\n"
-              "\n",
+              "\n"
+              "    s9_forcetypes:\n",
               (ioflags.struct_stress_gid_smo ? "yes" : "no"),
-              context->s9_minor, context->s9_layers,
-              (s9->forcetyp==s9_xyz) ? "xyz" : ((s9->forcetyp==s9_rst) ? "rst" : "rst_ortho"));
+              context->s9_layers);
+      for (j=0; forcetype[j] != NULL; ++j)
+      {
+        fprintf(bin_out_main.control_file,
+                "        %s = %d\n", forcetype[j], j);
+      }
+      fprintf(bin_out_main.control_file, "\n");
     }
 
     /* We need space for three values per artificial node. */
 
-    numnp = element_info[el_shell9].variant[context->s9_minor].node_number;
+    context->s9_numnp = actele->numnp;
 
-    if ((context->s9_minor == MINOR_SHELL9_4_22) ||
-        (context->s9_minor == MINOR_SHELL9_4_33)) {
+    if (context->s9_numnp == 4)
+    {
       layer_count = 1;
     }
-    else {
+    else
+    {
       layer_count = 2;
     }
 
     out_element_chunk(context, "shell9_coords", cc_shell9_coords,
-                      3*numnp*(layer_count*context->s9_layers+1), 0, 0);
+                      3*context->s9_numnp*(layer_count*context->s9_layers+1), 0, 0);
   }
-  else {
+  else
+  {
     context->is_shell9_problem = 0;
   }
 
@@ -508,23 +576,25 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
 
 #ifdef PARALLEL
 #define pack_send_size_buf(node_array)                          \
-      send_size_buf[3*counter  ] = actnode->Id_loc;             \
-      send_size_buf[3*counter+1] = actnode->node_array.fdim;    \
-      send_size_buf[3*counter+2] = actnode->node_array.sdim;
+  send_size_buf[3*counter  ] = actnode->Id_loc;                 \
+  send_size_buf[3*counter+1] = actnode->node_array.fdim;        \
+  send_size_buf[3*counter+2] = actnode->node_array.sdim;
 #else
 #define pack_send_size_buf(node_array)                          \
-      send_size_buf[2*counter  ] = actnode->node_array.fdim;    \
-      send_size_buf[2*counter+1] = actnode->node_array.sdim;
+  send_size_buf[2*counter  ] = actnode->node_array.fdim;        \
+  send_size_buf[2*counter+1] = actnode->node_array.sdim;
 #endif
 
   /* gather the nodes to be send to processor i */
   counter = 0;
 #define call_gather_nodes(node_array)                                   \
   dsassert(chunk->size_entry_length == 2, "invalid size entry length"); \
-  for (j=0; j<actpdis->numnp; ++j) {                                    \
+  for (j=0; j<actpdis->numnp; ++j)                                      \
+  {                                                                     \
     NODE* actnode = actpdis->node[j];                                   \
     if ((actnode->Id_loc >= dst_first_id) &&                            \
-        (actnode->Id_loc < dst_first_id+dst_num)) {                     \
+        (actnode->Id_loc < dst_first_id+dst_num))                       \
+    {                                                                   \
       DOUBLE *src_ptr;                                                  \
       DOUBLE *dst_ptr;                                                  \
       INT k;                                                            \
@@ -534,7 +604,8 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
       src_ptr = actnode->node_array.a.da[0];                            \
       dst_ptr = &(send_buf[chunk->value_entry_length*counter]);         \
       pack_send_size_buf(node_array);                                   \
-      for (k=0; k<size; ++k) {                                          \
+      for (k=0; k<size; ++k)                                            \
+      {                                                                 \
         *dst_ptr++ = *src_ptr++;                                        \
       }                                                                 \
       counter += 1;                                                     \
@@ -544,7 +615,8 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
            "node pack count mismatch");
 
 
-  switch (array) {
+  switch (array)
+  {
   case node_array_sol:
     call_gather_nodes(sol);
     break;
@@ -596,16 +668,18 @@ static void out_pack_mesh(BIN_OUT_CHUNK *chunk,
   dstrc_enter("out_pack_mesh");
 #endif
 
-  dsassert(chunk->size_entry_length > 3, "invalid size entry length");
+  dsassert(chunk->size_entry_length > 1, "invalid size entry length");
   dsassert(chunk->value_entry_length == 0, "invalid value entry length");
 
   len = chunk->size_entry_length;
 
   counter = 0;
-  for (i=0; i<actpdis->numele; ++i) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_num)) {
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
       INT* ptr;
       INT j;
 
@@ -616,13 +690,10 @@ static void out_pack_mesh(BIN_OUT_CHUNK *chunk,
       ptr = &(send_size_buf[len*counter]);
 #endif
 
-      *ptr++ = actele->Id;
-      *ptr++ = actele->eltyp;
-      *ptr++ = find_minor_type(actele);
+      dsassert(actele->numnp <= len, "size entry too short");
 
-      dsassert(actele->numnp+3 <= len, "size entry too short");
-
-      for (j=0; j<actele->numnp; ++j) {
+      for (j=0; j<actele->numnp; ++j)
+      {
         /* We have to store the local Id here, of course. */
         *ptr++ = actele->node[j]->Id_loc;
       }
@@ -657,34 +728,53 @@ static void out_pack_coords(BIN_OUT_CHUNK *chunk,
 {
   INT i;
   INT len;
+  INT slen;
   INT counter;
 
 #ifdef DEBUG
   dstrc_enter("out_pack_coords");
 #endif
 
-  dsassert(chunk->size_entry_length == 1, "invalid size entry length");
+  dsassert(chunk->size_entry_length > 1, "invalid size entry length");
   dsassert(chunk->value_entry_length == genprob.ndim, "invalid value entry length");
 
   len = chunk->value_entry_length;
+  slen = chunk->size_entry_length;
 
   counter = 0;
-  for (i=0; i<actpdis->numnp; ++i) {
+  for (i=0; i<actpdis->numnp; ++i)
+  {
     NODE* actnode = actpdis->node[i];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_num)) {
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
       DOUBLE* ptr;
+      INT* size_ptr;
       INT j;
 
 #ifdef PARALLEL
-      send_size_buf[2*counter  ] = actnode->Id_loc;
-      send_size_buf[2*counter+1] = actnode->Id;
+      send_size_buf[(slen+1)*counter] = actnode->Id_loc;
+      size_ptr = &(send_size_buf[(slen+1)*counter+1]);
 #else
-      send_size_buf[counter] = actnode->Id;
+      size_ptr = &(send_size_buf[slen*counter]);
 #endif
 
+      /* first store the global node Id */
+      size_ptr[node_variables.coords_size_Id] = actnode->Id;
+
+      /* then store the number of elements to this node */
+      size_ptr[node_variables.coords_size_numele] = actnode->numele;
+
+      /* afterwards the local Ids of the elements connected to this node */
+      for (j=0; j<actnode->numele; ++j)
+      {
+        size_ptr[j+node_variables.coords_size_eleid] = actnode->element[j]->Id_loc;
+      }
+
+      /* and finally store the node coordinates */
       ptr = &(send_buf[len*counter]);
-      for (j=0; j<len; ++j) {
+      for (j=0; j<len; ++j)
+      {
         *ptr++ = actnode->x[j];
       }
 
@@ -693,6 +783,294 @@ static void out_pack_coords(BIN_OUT_CHUNK *chunk,
   }
 
   dsassert(counter*len == send_count, "node pack count mismatch");
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Pack any element specific parameters.
+
+  We wanted to avoid to number our element variants. Thus there is not
+  way to compare to elements and group them. Each element is an object
+  and has to store all element parameters.
+
+  The first entry in the integer chunk is the (global) element id. The
+  second one is the ordinary ccarat element type. Then there is the
+  dis type number and the number of nodes. All remaining entries are
+  element type dependent.
+
+  \author u.kue
+  \date 11/04
+  \sa out_pack_items
+  \sa find_ele_param_item_length
+*/
+/*----------------------------------------------------------------------*/
+static void out_pack_ele_params(BIN_OUT_CHUNK *chunk,
+                                PARTDISCRET *actpdis,
+                                DOUBLE *send_buf,
+                                INT send_count,
+                                INT *send_size_buf,
+                                INT dst_first_id,
+                                INT dst_num)
+{
+  INT i;
+  INT size_len;
+  INT len;
+  INT counter;
+
+#ifdef DEBUG
+  dstrc_enter("out_pack_ele_params");
+#endif
+
+  dsassert(chunk->size_entry_length >= 4, "invalid size entry length");
+  dsassert(chunk->value_entry_length >= 0, "invalid value entry length");
+
+  len = chunk->value_entry_length;
+  size_len = chunk->size_entry_length;
+
+  counter = 0;
+  for (i=0; i<actpdis->numele; ++i)
+  {
+    ELEMENT* actele = actpdis->element[i];
+    if ((actele->Id_loc >= dst_first_id) &&
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
+      DOUBLE* ptr;
+      INT* size_ptr;
+      ELEMENT_VARIABLES* el_vars = &element_variables;
+
+#ifdef PARALLEL
+      send_size_buf[(size_len+1)*counter] = actele->Id_loc;
+      size_ptr = &(send_size_buf[(size_len+1)*counter+1]);
+#else
+      size_ptr = &(send_size_buf[size_len*counter]);
+#endif
+      ptr = &(send_buf[len*counter]);
+
+      /* This is commen to all elements */
+      size_ptr[el_vars->ep_size_Id]     = actele->Id;
+      size_ptr[el_vars->ep_size_eltyp]  = actele->eltyp;
+      size_ptr[el_vars->ep_size_distyp] = actele->distyp;
+      size_ptr[el_vars->ep_size_numnp]  = actele->numnp;
+
+      switch (actele->eltyp)
+      {
+#ifdef D_SHELL8
+      case el_shell8:
+      {
+        SHELL8* s8 = actele->e.s8;
+        SHELL8_VARIABLES* vars = &shell8_variables;
+
+        size_ptr[vars->ep_size_nGP0] = s8->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = s8->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = s8->nGP[2];
+        size_ptr[vars->ep_size_nGP_tri] = s8->nGP_tri;
+        size_ptr[vars->ep_size_forcetyp] = s8->forcetyp;
+
+        ptr[vars->ep_value_sdc] = s8->sdc;
+
+        break;
+      }
+#endif
+#ifdef D_SHELL9
+      case el_shell9:
+      {
+        SHELL9* s9 = actele->e.s9;
+        SHELL9_VARIABLES* vars = &shell9_variables;
+
+        size_ptr[vars->ep_size_nGP0] = s9->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = s9->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = s9->nGP[2];
+        size_ptr[vars->ep_size_nGP_tri] = s9->nGP_tri;
+        size_ptr[vars->ep_size_forcetyp] = s9->forcetyp;
+
+        break;
+      }
+#endif
+#ifdef D_BRICK1
+      case el_brick1:
+      {
+        BRICK1* c1 = actele->e.c1;
+        BRICK1_VARIABLES* vars = &brick1_variables;
+
+        size_ptr[vars->ep_size_nGP0] = c1->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = c1->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = c1->nGP[2];
+        size_ptr[vars->ep_size_stresstyp] = c1->stresstyp;
+
+        break;
+      }
+#endif
+#ifdef D_FLUID2
+      case el_fluid2:
+      {
+        FLUID2* f2 = actele->e.f2;
+        FLUID2_VARIABLES* vars = &fluid2_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f2->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f2->nGP[1];
+
+        break;
+      }
+#endif
+#ifdef D_FLUID2_PRO
+      case el_fluid2_pro:
+      {
+        FLUID2_PRO* f2pro = actele->e.f2pro;
+        FLUID2_PRO_VARIABLES* vars = &fluid2_pro_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f2pro->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f2pro->nGP[1];
+
+        break;
+      }
+#endif
+#ifdef D_FLUID2TU
+      case el_fluid2_tu:
+      {
+        FLUID2* f2 = actele->e.f2;
+        FLUID2TU_VARIABLES* vars = &fluid2tu_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f2->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f2->nGP[1];
+
+        break;
+      }
+#endif
+#ifdef D_FLUID3
+      case el_fluid3:
+      {
+        FLUID3* f3 = actele->e.f3;
+        FLUID3_VARIABLES* vars = &fluid3_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f3->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f3->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = f3->nGP[2];
+
+        break;
+      }
+#endif
+#ifdef D_FLUID3_F
+      case el_fluid3_fast:
+      {
+        FLUID3* f3 = actele->e.f3;
+        FLUID3_FAST_VARIABLES* vars = &fluid3_fast_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f3->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f3->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = f3->nGP[2];
+
+        break;
+      }
+#endif
+#ifdef D_ALE
+      case el_ale2:
+      {
+        ALE2* ale2 = actele->e.ale2;
+        ALE2_VARIABLES* vars = &ale2_variables;
+
+        size_ptr[vars->ep_size_nGP0] = ale2->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = ale2->nGP[1];
+
+        break;
+      }
+#endif
+#ifdef D_ALE
+      case el_ale3:
+      {
+        ALE3* ale3 = actele->e.ale3;
+        ALE3_VARIABLES* vars = &ale3_variables;
+
+        size_ptr[vars->ep_size_nGP0] = ale3->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = ale3->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = ale3->nGP[2];
+
+        break;
+      }
+#endif
+#ifdef D_WALL1
+      case el_wall1:
+      {
+        WALL1* w1 = actele->e.w1;
+        WALL1_VARIABLES* vars = &wall1_variables;
+
+        size_ptr[vars->ep_size_nGP0] = w1->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = w1->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = w1->nGP[2];
+        size_ptr[vars->ep_size_nGP3] = w1->nGP[3];
+        size_ptr[vars->ep_size_stresstyp] = w1->stresstyp;
+
+        ptr[vars->ep_value_thick] = w1->thick;
+
+        break;
+      }
+#endif
+#ifdef D_BEAM3
+      case el_beam3:
+      {
+        BEAM3* b3 = actele->e.b3;
+        BEAM3_VARIABLES* vars = &beam3_variables;
+
+        size_ptr[vars->ep_size_nGP0] = b3->nGP[0];
+
+        break;
+      }
+#endif
+#ifdef D_AXISHELL
+      case el_axishell:
+      {
+        AXISHELL* saxi = actele->e.saxi;
+        AXISHELL_VARIABLES* vars = &axishell_variables;
+
+        /* Is this an element parameter? Not really... */
+        ptr[vars->ep_value_thick0] = saxi->thick[0];
+        ptr[vars->ep_value_thick1] = saxi->thick[1];
+
+        break;
+      }
+#endif
+#ifdef D_INTERF
+      case el_interf:
+      {
+        INTERF* interf = actele->e.interf;
+        INTERF_VARIABLES* vars = &interf_variables;
+
+        size_ptr[vars->ep_size_nGP] = interf->nGP;
+        size_ptr[vars->ep_size_stresstyp] = interf->stresstyp;
+
+        ptr[vars->ep_value_thick] = interf->thick;
+
+        break;
+      }
+#endif
+#ifdef D_WALLGE
+      case el_wallge:
+      {
+        WALLGE* wallge = actele->e.wallge;
+        WALLGE_VARIABLES* vars = &wallge_variables;
+
+        size_ptr[vars->ep_size_nGP0] = wallge->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = wallge->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = wallge->nGP[2];
+        size_ptr[vars->ep_size_nGP3] = wallge->nGP[3];
+        size_ptr[vars->ep_size_stresstyp] = wallge->stresstyp;
+
+        ptr[vars->ep_value_thick] = wallge->thick;
+
+        break;
+      }
+#endif
+      default:
+        dserror("element type %d unsupported", actele->eltyp);
+      }
+
+      counter += 1;
+    }
+  }
 
 #ifdef DEBUG
   dstrc_exit();
@@ -726,23 +1104,15 @@ static void out_pack_displacement(BIN_OUT_CHUNK *chunk,
 
   ndim = chunk->value_entry_length;
 
-#if 0
-#ifdef D_AXISHELL
-  /* An ugly hack! The old out_gid_sol used to change genprob.ndim
-   * itself which is very much worse. We won't do this here. However,
-   * this way we might miss some side effects the old version was
-   * relying on. We'll see... */
-  ndim = MAX(ndim, 3);
-#endif
-#endif
-
   /* gather the nodes to be send to processor i */
   counter = 0;
   dsassert(chunk->size_entry_length == 0, "invalid size entry length");
-  for (j=0; j<actpdis->numnp; ++j) {
+  for (j=0; j<actpdis->numnp; ++j)
+  {
     NODE* actnode = actpdis->node[j];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_num)) {
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
       INT k;
       DOUBLE *ptr = actnode->sol.a.da[place];
 
@@ -753,7 +1123,8 @@ static void out_pack_displacement(BIN_OUT_CHUNK *chunk,
       send_size_buf[counter] = actnode->Id_loc;
 #endif
 
-      for (k=0; k<ndim; ++k) {
+      for (k=0; k<ndim; ++k)
+      {
         send_buf[ndim*counter+k] = *ptr++;
       }
       counter += 1;
@@ -805,28 +1176,28 @@ static void out_pack_shell8_director(BIN_OUT_CHUNK *chunk,
   len = chunk->value_entry_length;
 
   counter = 0;
-  for (i=0; i<actpdis->numele; ++i) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_num)) {
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
       SHELL8* s8;
-      INT minor;
       DOUBLE *dst_ptr;
       INT numnp;
 
       s8 = actele->e.s8;
-      minor = find_shell8_minor_type(actele);
-      numnp = element_info[el_shell8].variant[minor].node_number;
+      numnp = actele->numnp;
 
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
 
-      for (k=0; k<numnp; ++k) {
+      for (k=0; k<numnp; ++k)
+      {
         *dst_ptr++ = s8->a3ref.a.da[0][k];
         *dst_ptr++ = s8->a3ref.a.da[1][k];
         *dst_ptr++ = s8->a3ref.a.da[2][k];
-      }
-      for (k=0; k<numnp; ++k) {
+
         /*
          * We could read the per node thickness here as well but this
          * is what the old ccarat output does. */
@@ -883,27 +1254,26 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
   len = chunk->value_entry_length;
 
   counter = 0;
-  for (i=0; i<actpdis->numele; ++i) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_num)) {
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
       SHELL9* s9;
-      INT minor;
       DOUBLE *dst_ptr;
 
       s9 = actele->e.s9;
-      minor = find_shell9_minor_type(actele);
 
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
 
       /* this is ``s9_out_gid_allcoords_unsmo`` in disguise */
 
-      switch (minor) {
-      case MINOR_SHELL9_4_22:   /* 4-noded shell9 2x2 GP */
-      case MINOR_SHELL9_4_33:   /* 4-noded shell9 3x3 GP */
-
-        for (k=0; k<actele->numnp; k++) {
+      if (actele->numnp == 4)
+      {
+        for (k=0; k<actele->numnp; k++)
+        {
           NODE *actnode;
           INT klay;
           INT jlay;
@@ -934,7 +1304,8 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
             x[l] = actnode->x[l];
 
           /* continuity matrix for current kin layer at bot */
-          for (jlay=0; jlay<s9->num_klay; jlay++) {
+          for (jlay=0; jlay<s9->num_klay; jlay++)
+          {
             DOUBLE klayhgt;
             DOUBLE hl;
             DOUBLE e3;
@@ -962,7 +1333,8 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
             x_u[l] = x[l];
 
           /* calculate the coordinates of the top surface of the each kin layer */
-          for (klay=0; klay<s9->num_klay; klay++) {
+          for (klay=0; klay<s9->num_klay; klay++)
+          {
             INT num_mlay;
             DOUBLE* mlayhgt;
             DOUBLE sum_hgt;
@@ -973,7 +1345,8 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
               x[l] = actnode->x[l];
 
             /* continuity matrix for aktual kin layer at top */
-            for (jlay=0; jlay<s9->num_klay; jlay++) {
+            for (jlay=0; jlay<s9->num_klay; jlay++)
+            {
               DOUBLE klayhgt;
               DOUBLE hl;
               DOUBLE e3;
@@ -1005,7 +1378,8 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
             sum_hgt  = 0.0; /*initialize the total hgt*/
 
             /* only if more than one material layer to this kinematic layer */
-            for (mlay=1; mlay<num_mlay; mlay++) {
+            for (mlay=1; mlay<num_mlay; mlay++)
+            {
               sum_hgt += mlayhgt[mlay-1];
               for (l=0; l<3; l++)
                 x[l] = x_u[l] + (sum_hgt/100.)*(x_o[l]-x_u[l]);
@@ -1025,13 +1399,11 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
               x_u[l] = x_o[l];
           }
         }
-        break;
-      case MINOR_SHELL9_8_22:   /* 8-noded shell9 2x2 GP */
-      case MINOR_SHELL9_8_33:   /* 8-noded shell9 3x3 GP */
-      case MINOR_SHELL9_9_22:   /* 9-noded shell9 2x2 GP */
-      case MINOR_SHELL9_9_33:   /* 9-noded shell9 3x3 GP */
-
-        for (k=0; k<actele->numnp; k++) {
+      }
+      else if ((actele->numnp == 8) || (actele->numnp == 9))
+      {
+        for (k=0; k<actele->numnp; k++)
+        {
           NODE *actnode;
           INT klay;
           INT jlay;
@@ -1062,7 +1434,8 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
             x[l] = actnode->x[l];
 
           /* continuity matrix for aktual kin layer at bot */
-          for (jlay=0; jlay<s9->num_klay; jlay++) {
+          for (jlay=0; jlay<s9->num_klay; jlay++)
+          {
             DOUBLE klayhgt;
             DOUBLE hl;
             DOUBLE e3;
@@ -1091,7 +1464,8 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
 
           /* calculate the coordinates of the top surface of the each
              kin layer */
-          for (klay=0; klay<s9->num_klay; klay++) {
+          for (klay=0; klay<s9->num_klay; klay++)
+          {
             INT num_mlay;
             DOUBLE* mlayhgt;
             DOUBLE sum_hgt;
@@ -1103,7 +1477,8 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
               x[l] = actnode->x[l];
 
             /* continuity matrix for aktual kin layer at top */
-            for (jlay=0; jlay<s9->num_klay; jlay++) {
+            for (jlay=0; jlay<s9->num_klay; jlay++)
+            {
               DOUBLE klayhgt;
               DOUBLE hl;
               DOUBLE e3;
@@ -1134,10 +1509,12 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
              * kinematic layer */
             sum_hgt     = 0.0; /*initialize the total hgt*/
             sum_hgt_mid = 0.0; /*initialize the hgt to a midnode*/
-            for (mlay=0; mlay<num_mlay; mlay++) {
+            for (mlay=0; mlay<num_mlay; mlay++)
+            {
 
               /* if more than one material layer to this kinematic layer */
-              if (mlay > 0) {
+              if (mlay > 0)
+              {
                 sum_hgt += mlayhgt[mlay-1];
                 for (l=0; l<3; l++)
                   x[l] = x_u[l] + (sum_hgt/100.)*(x_o[l]-x_u[l]);
@@ -1167,10 +1544,9 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
               x_u[l] = x_o[l];
           }
         }
-
-        break;
-      default:
-        dserror("unknown minor type %d for shell9 element", minor);
+      }
+      else {
+        dserror("unknown element type for shell9 element");
       }
 
 #ifdef PARALLEL
@@ -1220,12 +1596,13 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
   counter = 0;
   dsassert(chunk->size_entry_length == 0, "invalid size entry length");
 
-  for (i=0; i<actpdis->numele; ++i) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_num)) {
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
       SHELL9* s9;
-      INT minor;
       DOUBLE *dst_ptr;
       DOUBLE dis[3], dis_u[3], dis_o[3]; /* displacement x,y,z */
       INT j;
@@ -1234,7 +1611,6 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
       INT klay;
 
       s9 = actele->e.s9;
-      minor = find_shell9_minor_type(actele);
 
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
@@ -1252,11 +1628,10 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
        * to the filter to bring inner nodes of consecutive elements
        * together (smoothed view) or not (unconnected view). */
 
-      switch (minor) {
-      case MINOR_SHELL9_4_22:   /* 4-noded shell9 2x2 GP */
-      case MINOR_SHELL9_4_33:   /* 4-noded shell9 3x3 GP */
-
-        for (k=0; k<actele->numnp; k++) {
+      if (actele->numnp == 4)
+      {
+        for (k=0; k<actele->numnp; k++)
+        {
           NODE *actnode;
 
           actnode = actele->node[k];
@@ -1270,7 +1645,8 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
             dis[l]=0.0;
 
           /* calculate the relative displacements of this layer */
-          for (j=0; j<s9->num_klay; j++) {
+          for (j=0; j<s9->num_klay; j++)
+          {
             DOUBLE e3 = -1.0; /*bottom*/
             DOUBLE zeta = s9con(e3,s9->num_klay,klay,j,1.0);
             for (l=0; l<3; l++)
@@ -1293,7 +1669,8 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
 
           /* calculate the displacements of the top surface of the
            * each kin layer */
-          for (klay=0; klay<s9->num_klay; klay++) {
+          for (klay=0; klay<s9->num_klay; klay++)
+          {
             DOUBLE sum_hgt;
             INT mlay;
             INT num_mlay;
@@ -1304,7 +1681,8 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
               dis[l]=0.0;
 
             /* calculate the relative displacements of this layer */
-            for (j=0; j<s9->num_klay; j++) {
+            for (j=0; j<s9->num_klay; j++)
+            {
               DOUBLE e3 = +1.0; /*top*/
               DOUBLE zeta = s9con(e3,s9->num_klay,klay,j,1.0);
               for (l=0; l<3; l++)
@@ -1332,7 +1710,8 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
             sum_hgt = 0.0;
 
             /* only if more than one material layer to this kinematic layer */
-            for (mlay=1; mlay<num_mlay; mlay++) {
+            for (mlay=1; mlay<num_mlay; mlay++)
+            {
               sum_hgt += mlayhgt[mlay-1];
               for (l=0; l<3; l++)
                 dis[l] = dis_u[l] + (sum_hgt/100.)*(dis_o[l]-dis_u[l]);
@@ -1352,13 +1731,11 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
               dis_u[l] = dis_o[l];
           }
         }
-        break;
-      case MINOR_SHELL9_8_22:   /* 8-noded shell9 2x2 GP */
-      case MINOR_SHELL9_8_33:   /* 8-noded shell9 3x3 GP */
-      case MINOR_SHELL9_9_22:   /* 9-noded shell9 2x2 GP */
-      case MINOR_SHELL9_9_33:   /* 9-noded shell9 3x3 GP */
-
-        for (k=0; k<actele->numnp; k++) {
+      }
+      else if ((actele->numnp == 8) || (actele->numnp == 9))
+      {
+        for (k=0; k<actele->numnp; k++)
+        {
           NODE *actnode;
           INT jlay;
 
@@ -1373,7 +1750,8 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
             dis[l]=0.0;
 
           /* calculate the relative displacements of this layer */
-          for (jlay=0; jlay<s9->num_klay; jlay++) {
+          for (jlay=0; jlay<s9->num_klay; jlay++)
+          {
             DOUBLE e3   = -1.0; /*bottom*/
             DOUBLE zeta = s9con(e3,s9->num_klay,klay,jlay,1.0);
             for (l=0; l<3; l++)
@@ -1396,7 +1774,8 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
 
           /* calculate the displacements of the top surface of the
            * each kin layer */
-          for (klay=0; klay<s9->num_klay; klay++) {
+          for (klay=0; klay<s9->num_klay; klay++)
+          {
             DOUBLE sum_hgt;
             DOUBLE sum_hgt_mid;
             INT mlay;
@@ -1408,7 +1787,8 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
               dis[l]=0.0;
 
             /* calculate the relative displacements of this layer */
-            for (jlay=0; jlay<s9->num_klay; jlay++) {
+            for (jlay=0; jlay<s9->num_klay; jlay++)
+            {
               DOUBLE e3   = +1.0; /*top*/
               DOUBLE zeta = s9con(e3,s9->num_klay,klay,jlay,1.0);
               for (l=0; l<3; l++)
@@ -1434,18 +1814,20 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
             sum_hgt     = 0.0; /*initialize the total hgt*/
             sum_hgt_mid = 0.0; /*initialize the hgt to a midnode*/
 
-            for (mlay=0; mlay<num_mlay; mlay++) {
+            for (mlay=0; mlay<num_mlay; mlay++)
+            {
 
               /* if more than one material layer to this kinematic layer */
-              if (mlay > 0) {
-                 sum_hgt += mlayhgt[mlay-1];
-                 for (l=0; l<3; l++)
-                   dis[l] = dis_u[l] + (sum_hgt/100.)*(dis_o[l]-dis_u[l]);
+              if (mlay > 0)
+              {
+                sum_hgt += mlayhgt[mlay-1];
+                for (l=0; l<3; l++)
+                  dis[l] = dis_u[l] + (sum_hgt/100.)*(dis_o[l]-dis_u[l]);
 
-                 /* write the bottom displacement of this material layer */
-                 *dst_ptr++ = dis[0];
-                 *dst_ptr++ = dis[1];
-                 *dst_ptr++ = dis[2];
+                /* write the bottom displacement of this material layer */
+                *dst_ptr++ = dis[0];
+                *dst_ptr++ = dis[1];
+                *dst_ptr++ = dis[2];
               }
 
               /* the displacement at midnode has to be calculated */
@@ -1468,10 +1850,10 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
               dis_u[l] = dis_o[l];
           }
         }
-
-        break;
-      default:
-          dserror("unknown minor type %d for shell9 element", minor);
+      }
+      else
+      {
+        dserror("unknown element type for shell9 element");
       }
 
 #ifdef PARALLEL
@@ -1523,10 +1905,12 @@ static void out_pack_velocity(BIN_OUT_CHUNK *chunk,
   /* gather the nodes to be send to processor i */
   counter = 0;
   dsassert(chunk->size_entry_length == 0, "invalid size entry length");
-  for (j=0; j<actpdis->numnp; ++j) {
+  for (j=0; j<actpdis->numnp; ++j)
+  {
     NODE* actnode = actpdis->node[j];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_num)) {
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
       INT k;
       DOUBLE *ptr = actnode->sol.a.da[place];
 
@@ -1537,7 +1921,8 @@ static void out_pack_velocity(BIN_OUT_CHUNK *chunk,
       send_size_buf[counter] = actnode->Id_loc;
 #endif
 
-      for (k=0; k<ndim; ++k) {
+      for (k=0; k<ndim; ++k)
+      {
         send_buf[ndim*counter+k] = *ptr++;
       }
       counter += 1;
@@ -1586,10 +1971,12 @@ static void out_pack_pressure(BIN_OUT_CHUNK *chunk,
   /* gather the nodes to be send to processor i */
   counter = 0;
   dsassert(chunk->size_entry_length == 0, "invalid size entry length");
-  for (j=0; j<actpdis->numnp; ++j) {
+  for (j=0; j<actpdis->numnp; ++j)
+  {
     NODE* actnode = actpdis->node[j];
     if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_num)) {
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
 
       dsassert((actnode->sol.fdim > place) &&
                (actnode->sol.sdim > ndim), "sol array too small");
@@ -1647,27 +2034,21 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
   INT len;
   INT counter;
 
-/*
-   gausspoint permutation :
-   On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
-   have to be written
-*/
-
 #ifdef DEBUG
   dstrc_enter("out_pack_stress");
 #endif
 
   dsassert(chunk->size_entry_length == 0, "invalid size entry length");
-/*   dsassert(chunk->value_entry_length == 0, "invalid value entry length"); */
 
   len = chunk->value_entry_length;
 
   counter = 0;
-  for (i=0; i<actpdis->numele; ++i) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_num)) {
-      INT minor;
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
       DOUBLE **stress;
       DOUBLE *dst_ptr;
       INT rows;
@@ -1676,64 +2057,41 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
 
-      minor = find_minor_type(actele);
-
-      /* What needs to be done depends on major and minor element
-       * number. */
-
-      switch (actele->eltyp) {
+      switch (actele->eltyp)
+      {
 #ifdef D_WALL1
       case el_wall1:            /* 2D plane stress - plane strain element */
-
-        /*
-         * The first element on proc 0 decides what kind of stresses
-         * we get. Of course it's undefined in a parallel setting
-         * which elements will be on proc 0. Thus this is only valid
-         * if all wall elements are the same. But this flag just
-         * determines how these stresses are labeled anyway.
-         *
-         * What do we do if there happen to be no wall elements on
-         * proc 0? */
-        if (map_symbol_count(&chunk->group, "wall1_stresstype") == 0) {
-          if (actele->e.w1->stresstyp == w1_rs) {
-            map_insert_string_cpy(&chunk->group, "wall1_stresstype", "w1_rs");
-          }
-          else {
-            map_insert_string_cpy(&chunk->group, "wall1_stresstype", "w1_xy");
-          }
-        }
 
         /* there is just one source for all variants of wall elements */
         stress = actele->e.w1->stress_GP.a.d3[place];
 
-        /*
-         * The triangle version needs special treatment. And no
-         * thought has been spend about the D_SSI issue. */
-
-        dsassert(minor == MINOR_WALL1_22, "unsupported wall1 variant for stress calculations");
-
-        switch (minor) {
-        case MINOR_WALL1_11:    /* 3-noded wall1 1x1 GP */
-          rows = 1;
-          cols = 4;
-          for (k=0; k<cols; ++k) {
-            *dst_ptr++ = stress[k][0];
-          }
-          break;
-        case MINOR_WALL1_22:    /* 4-noded wall1 2x2 GP */
-        case MINOR_WALL1_8_33:  /* 8-noded wall1 3x3 GP */
-        case MINOR_WALL1_9_33:  /* 9-noded wall1 3x3 GP */
-        case MINOR_WALL1_8_22:  /* 8-noded wall1 2x2 GP */
+        if (actele->distyp == tri3)
+        {
+          *dst_ptr++ = stress[0][0];
+          *dst_ptr++ = stress[1][0];
+          *dst_ptr++ = stress[2][0];
+          *dst_ptr++ = stress[3][0];
+        }
+        else if (actele->distyp == tri6)
+        {
+          dserror("yet to be done");
+        }
+        else if ((actele->distyp == quad4) ||
+                 (actele->distyp == quad8) ||
+                 (actele->distyp == quad9))
+        {
+          rows = actele->e.w1->nGP[0]*actele->e.w1->nGP[1];
+          cols = 9;
 
           /*
            * This is bad. Only the first four values are stresses
            * (only a four gauss point version is supported here). The
            * remaining values would better be put to their own
            * chunk. */
-          rows = element_info[el_wall1].variant[minor].gauss_number;
-          cols = 9;
-          if (actele->e.w1->elewa != NULL) {
-            for (j=0; j<rows; j++) {
+          if (actele->e.w1->elewa != NULL)
+          {
+            for (j=0; j<rows; j++)
+            {
               *dst_ptr++ = stress[0][j];
               *dst_ptr++ = stress[1][j];
               *dst_ptr++ = stress[2][j];
@@ -1745,8 +2103,10 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
               *dst_ptr++ = actele->e.w1->elewa[0].ipwa[j].aequistrain;
             }
           }
-          else {
-            for (j=0; j<rows; j++) {
+          else
+          {
+            for (j=0; j<rows; j++)
+            {
               *dst_ptr++ = stress[0][j];
               *dst_ptr++ = stress[1][j];
               *dst_ptr++ = stress[2][j];
@@ -1758,10 +2118,12 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
               *dst_ptr++ = 0;
             }
           }
-          break;
-        default:
-          dserror("unknown minor type %d for wall element", minor);
         }
+        else
+        {
+          dserror("distyp %d unsupported", actele->distyp);
+        }
+
         break;
 #endif
 #ifdef D_BEAM3
@@ -1770,23 +2132,11 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         stress = actele->e.b3->force_GP.a.d3[place];
         cols = 6;
 
-        switch (minor) {
-        case MINOR_BEAM3_21:    /* 2-noded beam3 1 GP */
-          rows = 1;
-          break;
-        case MINOR_BEAM3_22:    /* 2-noded beam3 2 GP */
-        case MINOR_BEAM3_32:    /* 3-noded beam3 2 GP */
-          rows = 2;
-          break;
-        case MINOR_BEAM3_33:    /* 3-noded beam3 3 GP */
-          rows = 3;
-          break;
-        default:
-          dserror("unknown minor type %d for beam3 element", minor);
-        }
+        rows = actele->e.b3->nGP[0];
 
         /* copy the values */
-        for (j=0; j<rows; j++) {
+        for (j=0; j<rows; j++)
+        {
           *dst_ptr++ = stress[0][j];
           *dst_ptr++ = stress[1][j];
           *dst_ptr++ = stress[2][j];
@@ -1800,39 +2150,13 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
 #ifdef D_INTERF
       case el_interf:           /* 1D interface element (combination only with wall) */
 
-        /*
-         * The first element on proc 0 decides what kind of stresses
-         * we get. Of course it's undefined in a parallel setting
-         * which elements will be on proc 0. Thus this is only valid
-         * if all interf elements are the same. But this flag just
-         * determines how these stresses are labeled anyway.
-         *
-         * What do we do when there happen to be no interf elements on
-         * proc 0? */
-        if (map_symbol_count(&chunk->group, "interf_orient") == 0) {
-          if (actele->e.interf->stresstyp == if_tn) {
-            map_insert_string_cpy(&chunk->group, "interf_orient", "local");
-          }
-          else {
-            map_insert_string_cpy(&chunk->group, "interf_orient", "global");
-          }
-        }
-
         stress = actele->e.interf->stress_GP.a.d3[place];
         cols = 5;
-        switch (minor) {
-        case MINOR_INTERF_22:   /* interface 2x2 GP */
-          rows = 2;
-          break;
-        case MINOR_INTERF_33:   /* interface 3x3 GP */
-          rows = 3;
-          break;
-        default:
-          dserror("unknown minor type %d for interface element", minor);
-        }
+        rows = actele->e.interf->nGP;
 
         /* copy the values */
-        for (j=0; j<rows; j++) {
+        for (j=0; j<rows; j++)
+        {
           *dst_ptr++ = stress[0][j];
           *dst_ptr++ = stress[1][j];
           *dst_ptr++ = stress[2][j];
@@ -1846,38 +2170,24 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       case el_wallge:           /* gradient enhanced wall element */
         /*stress = actele->e.wallge->stress_GP.a.d3[place];*/
 
-        /*
-         * The first element on proc 0 decides what kind of stresses
-         * we get. Of course it's undefined in a parallel setting
-         * which elements will be on proc 0. Thus this is only valid
-         * if all wallge elements are the same. But this flag just
-         * determines how these stresses are labeled anyway.
-         *
-         * What do we do if there happen to be no wallge elements on
-         * proc 0? */
-        if (map_symbol_count(&chunk->group, "wallge_stresstype") == 0) {
-          if (actele->e.wallge->stresstyp == wge_rs) {
-            map_insert_string_cpy(&chunk->group, "wallge_stresstype", "wge_rs");
-          }
-          else {
-            map_insert_string_cpy(&chunk->group, "wallge_stresstype", "wge_xy");
-          }
+        if ((actele->distyp == tri3) || (actele->distyp == tri6))
+        {
+          dserror("yet to be done");
         }
-
-        switch (minor) {
-        case MINOR_WALLGE_22:   /* gradient enhanced wall 2x2 GP */
-          rows = 4;
-          break;
-        case MINOR_WALLGE_8_33: /* gradient enhanced wall 3x3 GP */
-        case MINOR_WALLGE_9_33: /* gradient enhanced wall 3x3 GP */
-          rows = 9;
-          break;
-        default:
-          dserror("unknown minor type %d for wallge element", minor);
+        else if ((actele->distyp == quad4) ||
+                 (actele->distyp == quad8) ||
+                 (actele->distyp == quad9))
+        {
+          rows = actele->e.wallge->nGP[0]*actele->e.wallge->nGP[1];
+        }
+        else
+        {
+          dserror("distyp %d unsupported", actele->distyp);
         }
 
         /* copy the values */
-        for (j=0; j<rows; j++) {
+        for (j=0; j<rows; j++)
+        {
           *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].sig[0];
           *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].sig[1];
           *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].sig[2];
@@ -1897,7 +2207,8 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         stress = actele->e.saxi->stress_GP.a.d3[place];
         rows = 5;
 
-        for (j=0; j<rows; j++) {
+        for (j=0; j<rows; j++)
+        {
           *dst_ptr++ = stress[j][0];
         }
         break;
@@ -1908,7 +2219,8 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         break;
 #endif
 #ifdef D_SHELL9
-      case el_shell9: {         /* multi layer shell element */
+      case el_shell9:
+      {         /* multi layer shell element */
         SHELL9* s9 = actele->e.s9;
 
         stress = s9->gp_stress.a.da;
@@ -1926,8 +2238,10 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         /*
          * This is special! We keep the memory layout of the internal
          * ccarat array. The filters seem to be easier that way. */
-        for (j=0; j<rows; j++) {
-          for (k=0; k<cols; k++) {
+        for (j=0; j<rows; j++)
+        {
+          for (k=0; k<cols; k++)
+          {
             *dst_ptr++ = stress[j][k];
           }
         }
@@ -1935,7 +2249,8 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       }
 #endif
 #ifdef D_SHELL8
-      case el_shell8: {         /* 7 parameter shell element */
+      case el_shell8:
+      {         /* 7 parameter shell element */
         SHELL8* s8 = actele->e.s8;
 
         /*
@@ -1959,8 +2274,10 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         /*
          * The inner loop must loop the rows in order to keep the
          * values of one gauss point together. */
-        for (k=0; k<cols; k++) {
-          for (j=0; j<rows; j++) {
+        for (k=0; k<cols; k++)
+        {
+          for (j=0; j<rows; j++)
+          {
             *dst_ptr++ = stress[j][k];
           }
         }
@@ -1968,23 +2285,9 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       }
 #endif
 #ifdef D_BRICK1
-      case el_brick1: {         /* structural brick element */
-        CHAR* stresstype[] = BRICK1_STRESSTYPE;
+      case el_brick1:
+      {         /* structural brick element */
         BRICK1* c1 = actele->e.c1;
-
-        /*
-         * The first element on proc 0 decides what kind of stresses
-         * we get. Of course it's undefined in a parallel setting
-         * which elements will be on proc 0. Thus this is only valid
-         * if all brick1 elements are the same.
-         *
-         * What do we do when there happen to be no brick1 elements on
-         * proc 0? */
-        if (map_symbol_count(&chunk->group, "brick1_stresstype") == 0) {
-          map_insert_string_cpy(&chunk->group,
-                                "brick1_stresstype",
-                                stresstype[c1->stresstyp]);
-        }
 
         /*
          * We rely on the fact that the first index is not used. It
@@ -2007,8 +2310,10 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         /*
          * The inner loop must loop the rows in order to keep the
          * values of one gauss point together. */
-        for (k=0; k<cols; k++) {
-          for (j=0; j<rows; j++) {
+        for (k=0; k<cols; k++)
+        {
+          for (j=0; j<rows; j++)
+          {
             *dst_ptr++ = stress[j][k];
           }
         }
@@ -2066,10 +2371,12 @@ static void out_pack_domain(BIN_OUT_CHUNK *chunk,
   dsassert(chunk->value_entry_length == 0, "invalid value entry length");
 
   counter = 0;
-  for (i=0; i<actpdis->numele; ++i) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
     ELEMENT* actele = actpdis->element[i];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_num)) {
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
 
 #ifdef PARALLEL
       send_size_buf[2*counter  ] = actele->Id_loc;
@@ -2134,11 +2441,13 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #define boilerplate_copying_code                        \
   if ((dof >= dst_first_id) &&                          \
-      (dof < dst_first_id+dst_num)) {                   \
+      (dof < dst_first_id+dst_num))                     \
+  {                                                     \
     INT j;                                              \
     DOUBLE* dst_ptr;                                    \
     dst_ptr = &(send_buf[len*counter]);                 \
-    for (j=0; j<len; ++j) {                             \
+    for (j=0; j<len; ++j)                               \
+    {                                                   \
       *dst_ptr++ = chunk->vectors[j].vec.a.dv[i];       \
     }                                                   \
     pack_send_size_buf;                                 \
@@ -2149,11 +2458,13 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
   /* Here we have the solver dependency. This is
    * ``solserv_reddistvec`` in disguise. */
-  switch (sysarray_typ) {
+  switch (sysarray_typ)
+  {
 
 #ifdef AZTEC_PACKAGE
   case msr:
-    for (i=0; i<sysarray.msr->numeq; ++i) {
+    for (i=0; i<sysarray.msr->numeq; ++i)
+    {
       INT dof = sysarray.msr->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2161,9 +2472,11 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 #endif
 
 #ifdef HYPRE_PACKAGE
-  case parcsr: {
+  case parcsr:
+  {
     INT rank = chunk->field->actintra->intra_rank;
-    for (i=0; i<sysarray.parcsr->numeq; ++i) {
+    for (i=0; i<sysarray.parcsr->numeq; ++i)
+    {
       INT dof = sysarray.parcsr->update.a.ia[rank][i];
       boilerplate_copying_code;
     }
@@ -2173,7 +2486,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #ifdef PARSUPERLU_PACKAGE
   case ucchb:
-    for (i=0; i<sysarray.ucchb->numeq; ++i) {
+    for (i=0; i<sysarray.ucchb->numeq; ++i)
+    {
       INT dof = sysarray.ucchb->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2181,7 +2495,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 #endif
 
   case dense:
-    for (i=0; i<sysarray.dense->numeq; ++i) {
+    for (i=0; i<sysarray.dense->numeq; ++i)
+    {
       INT dof = sysarray.dense->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2189,7 +2504,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #ifdef MLIB_PACKAGE
   case mds:
-    for (i=0; i<sysarray.mds->numeq; ++i) {
+    for (i=0; i<sysarray.mds->numeq; ++i)
+    {
       INT dof = i;
       boilerplate_copying_code;
     }
@@ -2198,7 +2514,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #ifdef MUMPS_PACKAGE
   case rc_ptr:
-    for (i=0; i<sysarray.rc_ptr->numeq; ++i) {
+    for (i=0; i<sysarray.rc_ptr->numeq; ++i)
+    {
       INT dof = sysarray.rc_ptr->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2207,7 +2524,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #ifdef SPOOLES_PACKAGE
   case spoolmatrix:
-    for (i=0; i<sysarray.spo->numeq; ++i) {
+    for (i=0; i<sysarray.spo->numeq; ++i)
+    {
       INT dof = sysarray.spo->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2216,7 +2534,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #ifdef UMFPACK
   case ccf:
-    for (i=0; i<sysarray.ccf->numeq; ++i) {
+    for (i=0; i<sysarray.ccf->numeq; ++i)
+    {
       INT dof = sysarray.ccf->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2224,7 +2543,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 #endif
 
   case skymatrix:
-    for (i=0; i<sysarray.sky->numeq; ++i) {
+    for (i=0; i<sysarray.sky->numeq; ++i)
+    {
       INT dof = sysarray.sky->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2232,7 +2552,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 
 #ifdef MLPCG
   case bdcsr:
-    for (i=0; i<sysarray.bdcsr->numeq; ++i) {
+    for (i=0; i<sysarray.bdcsr->numeq; ++i)
+    {
       INT dof = sysarray.bdcsr->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2240,7 +2561,8 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
 #endif
 
   case oll:
-    for (i=0; i<sysarray.oll->numeq; ++i) {
+    for (i=0; i<sysarray.oll->numeq; ++i)
+    {
       INT dof = sysarray.oll->update.a.iv[i];
       boilerplate_copying_code;
     }
@@ -2302,14 +2624,15 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
   slen = chunk->size_entry_length;
 
   counter = 0;
-  for (el=0; el<actpdis->numele; ++el) {
+  for (el=0; el<actpdis->numele; ++el)
+  {
     ELEMENT* actele = actpdis->element[el];
     if ((actele->Id_loc >= dst_first_id) &&
-        (actele->Id_loc < dst_first_id+dst_num)) {
+        (actele->Id_loc < dst_first_id+dst_num))
+    {
       DOUBLE* dst_ptr;
       INT* size_dst_ptr;
       INT j;
-      INT minor;
 
 #ifdef PARALLEL
       send_size_buf[(slen+1)*counter] = actele->Id_loc;
@@ -2321,47 +2644,56 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
       dst_ptr = &(send_buf[len*counter]);
 
       /* Now here we have all the different elements. */
-      switch (actele->eltyp) {
+      switch (actele->eltyp)
+      {
 
 #ifdef D_SHELL8
-      case el_shell8: {
+      case el_shell8:
+      {
         INT arr_length;
         SHELL8* s8;
         DOUBLE* src_ptr;
 
         s8 = actele->e.s8;
-        if (s8->nhyb) {
+        if (s8->nhyb)
+        {
 
           arr_length = s8->alfa.fdim * s8->alfa.sdim;
           src_ptr = s8->alfa.a.da[0];
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
 
           arr_length = s8->Dtildinv.fdim * s8->Dtildinv.sdim;
           src_ptr = s8->Dtildinv.a.da[0];
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
 
           arr_length = s8->Lt.fdim * s8->Lt.sdim;
           src_ptr = s8->Lt.a.da[0];
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
 
           arr_length = s8->Rtilde.fdim * s8->Rtilde.sdim;
           src_ptr = s8->Rtilde.a.dv;
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
         }
-        if (mat[actele->mat-1].mattyp==m_viscohyper) {
+        if (mat[actele->mat-1].mattyp==m_viscohyper)
+        {
           ARRAY4D *a;
           a = s8->his1;
           arr_length = a->fdim * a->sdim * a->tdim * a->fodim;
           src_ptr = a->a.d4[0][0][0];
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
         }
@@ -2371,53 +2703,63 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
 #endif
 
 #ifdef D_SHELL9
-      case el_shell9: {
+      case el_shell9:
+      {
         INT arr_length;
         SHELL9* s9;
         DOUBLE* src_ptr;
 
         s9 = actele->e.s9;
-        if (s9->nhyb) {
+        if (s9->nhyb)
+        {
 
           arr_length = s9->alfa.fdim * s9->alfa.sdim;
           src_ptr = s9->alfa.a.da[0];
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
 
           arr_length = s9->Dtildinv.fdim * s9->Dtildinv.sdim;
           src_ptr = s9->Dtildinv.a.da[0];
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
 
           arr_length = s9->L.fdim * s9->L.sdim;
           src_ptr = s9->L.a.da[0];
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
 
           arr_length = s9->Rtilde.fdim * s9->Rtilde.sdim;
           src_ptr = s9->Rtilde.a.dv;
-          for (j=0; j<arr_length; ++j) {
+          for (j=0; j<arr_length; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
         }
 
-        if (s9->elewa != NULL) {
+        if (s9->elewa != NULL)
+        {
           INT kl;
 
-          for (kl=0; kl<s9->num_klay; kl++) {
+          for (kl=0; kl<s9->num_klay; kl++)
+          {
             INT num_mlay;
             INT ml;
             INT actlay = 0;
 
             num_mlay = s9->kinlay[kl].num_mlay;
-            for (ml=0; ml<num_mlay; ml++) {
+            for (ml=0; ml<num_mlay; ml++)
+            {
               S9_IP_WA *ipwa = s9->elewa[actlay].ipwa;
 
               /* check if there is a ipwa for this layer */
-              if (ipwa != NULL) {
+              if (ipwa != NULL)
+              {
                 INT k;
                 INT ngauss;
                 MULTIMAT *actmultimat;
@@ -2427,13 +2769,16 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
                 /* number of gausspoints in one layer*/
                 ngauss = s9->nGP[0]*s9->nGP[1]*s9->nGP[2];
 
-                switch (actmultimat->mattyp) {
+                switch (actmultimat->mattyp)
+                {
                 case m_pl_mises:
                 case m_pl_dp:
-                  for (k=0; k<ngauss; k++) {
+                  for (k=0; k<ngauss; k++)
+                  {
                     *size_dst_ptr++ = ipwa[k].yip;
                     *dst_ptr++ = ipwa[k].epstn;
-                    for (j=0; j<6; j++) {
+                    for (j=0; j<6; j++)
+                    {
                       *dst_ptr++ = ipwa[k].sig[j];
                       *dst_ptr++ = ipwa[k].eps[j];
                       *dst_ptr++ = ipwa[k].qn[j];
@@ -2441,27 +2786,32 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
                   }
                   break;
                 case m_pl_epc:
-                  for (k=0; k<ngauss; k++) {
+                  for (k=0; k<ngauss; k++)
+                  {
                     *size_dst_ptr++ = ipwa[k].yip;
                     *dst_ptr++ = ipwa[k].kappa_t;
                     *dst_ptr++ = ipwa[k].kappa_c;
-                    for (j=0; j<6; j++) {
+                    for (j=0; j<6; j++)
+                    {
                       *dst_ptr++ = ipwa[k].sig[j];
                       *dst_ptr++ = ipwa[k].eps[j];
                     }
                   }
                   break;
                 case m_pl_hoff:
-                  for (k=0; k<ngauss; k++) {
+                  for (k=0; k<ngauss; k++)
+                  {
                     *size_dst_ptr++ = ipwa[k].yip;
                     *dst_ptr++ = ipwa[k].dhard;
-                    for (j=0; j<6; j++) {
+                    for (j=0; j<6; j++)
+                    {
                       *dst_ptr++ = ipwa[k].sig[j];
                       *dst_ptr++ = ipwa[k].eps[j];
                       *dst_ptr++ = ipwa[k].dkappa[j];
                       *dst_ptr++ = ipwa[k].gamma[j];
                     }
-                    for (j=0; j<9; j++) {
+                    for (j=0; j<9; j++)
+                    {
                       *dst_ptr++ = ipwa[k].rkappa[j];
                     }
                   }
@@ -2481,23 +2831,31 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
 #endif
 
 #ifdef D_WALL1
-      case el_wall1: {
+      case el_wall1:
+      {
         W1_ELE_WA* elewa = actele->e.w1->elewa;
-        if (elewa != NULL) {
+        if (elewa != NULL)
+        {
           INT k;
           INT ngauss;
 
-          minor = find_wall1_minor_type(actele);
-          ngauss = element_info[el_wall1].variant[minor].gauss_number;
+          dsassert((actele->distyp == quad4) ||
+                   (actele->distyp == quad8) ||
+                   (actele->distyp == quad9), "only quads supported up to now");
+
+          ngauss = actele->e.w1->nGP[0]*actele->e.w1->nGP[1];
 
           /* This is w1_write_restart. Disguised as usual. */
-          switch (mat[actele->mat-1].mattyp) {
+          switch (mat[actele->mat-1].mattyp)
+          {
           case m_pl_mises:
             dsassert(len >= ngauss*(1+4*3), "value entry too short");
-            for (k=0; k<ngauss; ++k) {
+            for (k=0; k<ngauss; ++k)
+            {
               *size_dst_ptr++ = elewa->ipwa[k].yip;
               *dst_ptr++ = elewa->ipwa[k].epstn;
-              for (j=0; j<4; j++) {
+              for (j=0; j<4; j++)
+              {
                 *dst_ptr++ = elewa->ipwa[k].sig[j];
                 *dst_ptr++ = elewa->ipwa[k].eps[j];
                 *dst_ptr++ = elewa->ipwa[k].qn[j];
@@ -2506,10 +2864,12 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
             break;
           case m_pl_mises_3D:
             dsassert(len >= ngauss*(1+4*7), "value entry too short");
-            for (k=0; k<ngauss; k++) {
+            for (k=0; k<ngauss; k++)
+            {
               *size_dst_ptr++ = elewa->ipwa[k].yip;
               *dst_ptr++ = elewa->ipwa[k].epstn;
-              for (j=0; j<4; j++) {
+              for (j=0; j<4; j++)
+              {
                 *dst_ptr++ = elewa->ipwa[k].sig[j];
                 *dst_ptr++ = elewa->ipwa[k].eps[j];
                 *dst_ptr++ = elewa->ipwa[k].qn[j];
@@ -2523,11 +2883,13 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
           case m_pl_epc3D: /* ???
                             * (mat[actele->mat-1].mattyp == m_pl_epc3D ) */
             dsassert(len >= ngauss*(2+4*7), "value entry too short");
-            for (k=0; k<ngauss; k++) {
+            for (k=0; k<ngauss; k++)
+            {
               *size_dst_ptr++ = elewa->ipwa[k].yip;
               *dst_ptr++ = elewa->ipwa[k].dlam[0];
               *dst_ptr++ = elewa->ipwa[k].dlam[1];
-              for (j=0; j<4; j++) {
+              for (j=0; j<4; j++)
+              {
                 *dst_ptr++ = elewa->ipwa[k].sig[j];
                 *dst_ptr++ = elewa->ipwa[k].eps[j];
                 *dst_ptr++ = elewa->ipwa[k].sigc[j];
@@ -2551,7 +2913,8 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
       case el_beam3:
         if (mat[actele->mat-1].mattyp == m_pl_mises ||
             mat[actele->mat-1].mattyp == m_pl_dp ||
-            mat[actele->mat-1].mattyp == m_pl_epc) {
+            mat[actele->mat-1].mattyp == m_pl_epc)
+        {
           INT j;
           INT size;
           DOUBLE* src_ptr;
@@ -2560,7 +2923,8 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
           src_ptr = actele->e.b3->elewa.a.da[0];
           size = actele->e.b3->elewa.fdim*actele->e.b3->elewa.sdim;
           dsassert(size <= len, "value entry too small");
-          for (j=0; j<size; ++j) {
+          for (j=0; j<size; ++j)
+          {
             *dst_ptr++ = *src_ptr++;
           }
         }
@@ -2568,18 +2932,19 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
 #endif
 
 #ifdef D_INTERF
-      case el_interf: {
+      case el_interf:
+      {
         IF_ELE_WA* elewa = actele->e.interf->elewa;
-        if (elewa != NULL) {
+        if (elewa != NULL)
+        {
           INT k;
           INT ngauss;
 
-          /*minor = find_interf_minor_type(actele);*/
-          /*ngauss = element_info[el_interf].variant[minor].gauss_number;*/
           ngauss = actele->e.interf->nGP;
 
           dsassert(len >= ngauss*10, "value entry too short");
-          for (k=0; k<ngauss; ++k) {
+          for (k=0; k<ngauss; ++k)
+          {
             *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Tt;
             *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Tn;
             *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].dt;
@@ -2597,13 +2962,14 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
 #endif
 
 #ifdef D_WALLGE
-        /* There's nothing to be saved for wallge elements, right? */
+      /* There's nothing to be saved for wallge elements, right? */
       case el_wallge:
         break;
 #endif
 
 #ifdef D_FLUID2
-      case el_fluid2: {
+      case el_fluid2:
+      {
         FLUID_DYNAMIC *fdyn;
         DOUBLE* src_ptr;
 
@@ -2614,14 +2980,18 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
         dsassert(len >= 3, "value item too small");
 
         src_ptr = &(actele->e.f2->tau_old.a.dv[0]);
-        for (j=0; j<3; ++j) {
+        for (j=0; j<3; ++j)
+        {
           *dst_ptr++ = *src_ptr++;
         }
-        if (fdyn->surftens > 0) {
+        if (fdyn->surftens > 0)
+        {
           dsassert(len >= 3+2*actele->numnp, "value item too small");
           src_ptr = &(actele->e.f2->kappa_ND.a.dv[0]);
-          if (actele->e.f2->fs_on>0) {
-            for (j=0; j<2*actele->numnp; ++j) {
+          if (actele->e.f2->fs_on>0)
+          {
+            for (j=0; j<2*actele->numnp; ++j)
+            {
               *dst_ptr++ = *src_ptr++;
             }
           }
@@ -2631,31 +3001,35 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
 #endif
 
 #ifdef D_FLUID3
-      case el_fluid3: {
+      case el_fluid3:
+      {
         DOUBLE* src_ptr;
 
         dsassert(len >= 3, "value item too small");
         src_ptr = &(actele->e.f3->tau_old.a.dv[0]);
-        for (j=0; j<3; ++j) {
+        for (j=0; j<3; ++j)
+        {
           *dst_ptr++ = *src_ptr++;
         }
         break;
       }
 #endif
 
-      default: {
+      default:
+      {
         static CHAR warning[el_count];
-        if (!warning[actele->eltyp]) {
+        if (!warning[actele->eltyp])
+        {
           warning[actele->eltyp] = 1;
           printf(RED_LIGHT
                  "restart for element type '"
                  GREEN_LIGHT
-                 "%s"
+                 "%d"
                  RED_LIGHT
                  "' not supported"
                  END_COLOR
                  "\n",
-                 element_info[actele->eltyp].name);
+                 actele->eltyp);
         }
       }
       }
@@ -2691,14 +3065,14 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
   \param *chunk          (i)  the chunk that's going to be written
   \param  type           (i)  what kind of values are to be collected
   \param  array          (i)  the row of the node array that
-                              interesting; is ignored for some types
+  interesting; is ignored for some types
   \param *actpdis        (i)  the partition's discretization
   \param *send_buf       (o)  buffer to collect double values
   \param  send_count     (i)  number of double values to be collected
   \param *send_size_buf  (o)  buffer to collect integer values
   \param  dst_first_id   (i)  the id (Id_loc) of the first item to be written
   \param  dst_num        (i)  the number of (consecutive) items to be
-                              written on the receiving processor in total
+  written on the receiving processor in total
 
   \author u.kue
   \date 08/04
@@ -2718,7 +3092,8 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
   dstrc_enter("out_pack_items");
 #endif
 
-  switch (type) {
+  switch (type)
+  {
   case cc_node_array:
     out_pack_node_arrays(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
@@ -2729,6 +3104,10 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
   case cc_coords:
     /* array flag unused here */
     out_pack_coords(chunk, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
+    break;
+  case cc_ele_params:
+    /* array flag unused here */
+    out_pack_ele_params(chunk, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
   case cc_displacement:
     out_pack_displacement(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
@@ -2845,7 +3224,8 @@ static void in_unpack_node_arrays(BIN_IN_FIELD *context,
 
   /* scatter received data to the nodes */
 #define call_scatter_values(node_array)                                 \
-  for (j=0; j<get_recv_numnp; ++j) {                                    \
+  for (j=0; j<get_recv_numnp; ++j)                                      \
+  {                                                                     \
     INT k;                                                              \
     INT Id_part;                                                        \
     NODE* actnode;                                                      \
@@ -2863,18 +3243,21 @@ static void in_unpack_node_arrays(BIN_IN_FIELD *context,
                                                                         \
     dsassert(sdim == actnode->node_array.sdim,                          \
              "node array sdim mismatch");                               \
-    if (fdim > actnode->node_array.fdim) {                              \
+    if (fdim > actnode->node_array.fdim)                                \
+    {                                                                   \
       amredef(&(actnode->node_array),fdim,sdim,"DA");                   \
     }                                                                   \
     ptr = actnode->node_array.a.da[0];                                  \
     dsassert(chunk->value_entry_length*j+fdim*sdim <= recv_count,       \
              "receive buffer overrun");                                 \
-    for (k=0; k<fdim*sdim; ++k) {                                       \
+    for (k=0; k<fdim*sdim; ++k)                                         \
+    {                                                                   \
       *ptr++ = recv_buf[chunk->value_entry_length*j+k];                 \
     }                                                                   \
   }
 
-  switch (array) {
+  switch (array)
+  {
   case node_array_sol:
     call_scatter_values(sol);
     break;
@@ -2943,7 +3326,8 @@ static void in_unpack_dist_vector(BIN_IN_FIELD *context,
   len = chunk->value_entry_length;
 
   /* scatter received data to the nodes */
-  for (j=0; j<get_recv_numdof; ++j) {
+  for (j=0; j<get_recv_numdof; ++j)
+  {
     INT k;
     INT Id_part;
     DOUBLE* src_ptr;
@@ -2951,7 +3335,8 @@ static void in_unpack_dist_vector(BIN_IN_FIELD *context,
     Id_part = get_id_part(j);
 
     src_ptr = &(recv_buf[len*j]);
-    for (k=0; k<len; ++k) {
+    for (k=0; k<len; ++k)
+    {
       chunk->vectors[k].vec.a.dv[Id_part] = *src_ptr++;
     }
   }
@@ -3018,7 +3403,8 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
   slen = chunk->size_entry_length;
 
   /* scatter received data to the nodes */
-  for (el=0; el<get_recv_numele; ++el) {
+  for (el=0; el<get_recv_numele; ++el)
+  {
     INT Id_part;
     ELEMENT* actele;
     DOUBLE* src_ptr;
@@ -3039,183 +3425,217 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 
     src_ptr = &(recv_buf[len*el]);
 
-    switch (actele->eltyp) {
+    switch (actele->eltyp)
+    {
 
 #ifdef D_SHELL8
-      case el_shell8: {
-        INT arr_length;
-        SHELL8* s8;
-        DOUBLE* dst_ptr;
+    case el_shell8:
+    {
+      INT arr_length;
+      SHELL8* s8;
+      DOUBLE* dst_ptr;
 
-        s8 = actele->e.s8;
-        if (s8->nhyb) {
+      s8 = actele->e.s8;
+      if (s8->nhyb)
+      {
 
-          arr_length = s8->alfa.fdim * s8->alfa.sdim;
-          dst_ptr = s8->alfa.a.da[0];
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
-
-          arr_length = s8->Dtildinv.fdim * s8->Dtildinv.sdim;
-          dst_ptr = s8->Dtildinv.a.da[0];
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
-
-          arr_length = s8->Lt.fdim * s8->Lt.sdim;
-          dst_ptr = s8->Lt.a.da[0];
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
-
-          arr_length = s8->Rtilde.fdim * s8->Rtilde.sdim;
-          dst_ptr = s8->Rtilde.a.dv;
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
-        }
-        if (mat[actele->mat-1].mattyp==m_viscohyper) {
-          ARRAY4D *a;
-          a = s8->his1;
-          arr_length = a->fdim * a->sdim * a->tdim * a->fodim;
-          dst_ptr = a->a.d4[0][0][0];
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
+        arr_length = s8->alfa.fdim * s8->alfa.sdim;
+        dst_ptr = s8->alfa.a.da[0];
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
         }
 
-        break;
+        arr_length = s8->Dtildinv.fdim * s8->Dtildinv.sdim;
+        dst_ptr = s8->Dtildinv.a.da[0];
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
+        }
+
+        arr_length = s8->Lt.fdim * s8->Lt.sdim;
+        dst_ptr = s8->Lt.a.da[0];
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
+        }
+
+        arr_length = s8->Rtilde.fdim * s8->Rtilde.sdim;
+        dst_ptr = s8->Rtilde.a.dv;
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
+        }
       }
+      if (mat[actele->mat-1].mattyp==m_viscohyper)
+      {
+        ARRAY4D *a;
+        a = s8->his1;
+        arr_length = a->fdim * a->sdim * a->tdim * a->fodim;
+        dst_ptr = a->a.d4[0][0][0];
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
+        }
+      }
+
+      break;
+    }
 #endif
 
 #ifdef D_SHELL9
-      case el_shell9: {
-        INT arr_length;
-        SHELL9* s9;
-        DOUBLE* dst_ptr;
+    case el_shell9:
+    {
+      INT arr_length;
+      SHELL9* s9;
+      DOUBLE* dst_ptr;
 
-        s9 = actele->e.s9;
-        if (s9->nhyb) {
+      s9 = actele->e.s9;
+      if (s9->nhyb)
+      {
 
-          arr_length = s9->alfa.fdim * s9->alfa.sdim;
-          dst_ptr = s9->alfa.a.da[0];
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
-
-          arr_length = s9->Dtildinv.fdim * s9->Dtildinv.sdim;
-          dst_ptr = s9->Dtildinv.a.da[0];
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
-
-          arr_length = s9->L.fdim * s9->L.sdim;
-          dst_ptr = s9->L.a.da[0];
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
-
-          arr_length = s9->Rtilde.fdim * s9->Rtilde.sdim;
-          dst_ptr = s9->Rtilde.a.dv;
-          for (el=0; el<arr_length; ++el) {
-            *dst_ptr++ = *src_ptr++;
-          }
+        arr_length = s9->alfa.fdim * s9->alfa.sdim;
+        dst_ptr = s9->alfa.a.da[0];
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
         }
 
-        if (s9->elewa != NULL) {
-          INT kl;
-
-          for (kl=0; kl<s9->num_klay; kl++) {
-            INT num_mlay;
-            INT ml;
-            INT actlay = 0;
-
-            num_mlay = s9->kinlay[kl].num_mlay;
-            for (ml=0; ml<num_mlay; ml++) {
-              S9_IP_WA *ipwa = s9->elewa[actlay].ipwa;
-
-              /* check if there is a ipwa for this layer */
-              if (ipwa != NULL) {
-                INT k;
-                INT ngauss;
-                MULTIMAT *actmultimat;
-
-                actmultimat = &(multimat[s9->kinlay[kl].mmatID[ml]-1]);
-
-                /* number of gausspoints in one layer*/
-                ngauss = s9->nGP[0]*s9->nGP[1]*s9->nGP[2];
-
-                switch (actmultimat->mattyp) {
-                case m_pl_mises:
-                case m_pl_dp:
-                  for (k=0; k<ngauss; k++) {
-                    ipwa[k].yip = *size_src_ptr++;
-                    ipwa[k].epstn = *src_ptr++;
-                    for (el=0; el<6; el++) {
-                      ipwa[k].sig[el] = *src_ptr++;
-                      ipwa[k].eps[el] = *src_ptr++;
-                      ipwa[k].qn[el] = *src_ptr++;
-                    }
-                  }
-                  break;
-                case m_pl_epc:
-                  for (k=0; k<ngauss; k++) {
-                    ipwa[k].yip = *size_src_ptr++;
-                    ipwa[k].kappa_t = *src_ptr++;
-                    ipwa[k].kappa_c = *src_ptr++;
-                    for (el=0; el<6; el++) {
-                      ipwa[k].sig[el] = *src_ptr++;
-                      ipwa[k].eps[el] = *src_ptr++;
-                    }
-                  }
-                  break;
-                case m_pl_hoff:
-                  for (k=0; k<ngauss; k++) {
-                    ipwa[k].yip = *size_src_ptr++;
-                    ipwa[k].dhard = *src_ptr++;
-                    for (el=0; el<6; el++) {
-                      ipwa[k].sig[el] = *src_ptr++;
-                      ipwa[k].eps[el] = *src_ptr++;
-                      ipwa[k].dkappa[el] = *src_ptr++;
-                      ipwa[k].gamma[el] = *src_ptr++;
-                    }
-                    for (el=0; el<9; el++) {
-                      ipwa[k].rkappa[el] = *src_ptr++;
-                    }
-                  }
-                  break;
-                default:
-                  printf("unsupported material %d for shell9 element",
-                         actmultimat->mattyp);
-                }
-              }
-              actlay += 1;
-            }
-          }
+        arr_length = s9->Dtildinv.fdim * s9->Dtildinv.sdim;
+        dst_ptr = s9->Dtildinv.a.da[0];
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
         }
-        break;
+
+        arr_length = s9->L.fdim * s9->L.sdim;
+        dst_ptr = s9->L.a.da[0];
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
+        }
+
+        arr_length = s9->Rtilde.fdim * s9->Rtilde.sdim;
+        dst_ptr = s9->Rtilde.a.dv;
+        for (el=0; el<arr_length; ++el)
+        {
+          *dst_ptr++ = *src_ptr++;
+        }
       }
+
+      if (s9->elewa != NULL)
+      {
+        INT kl;
+
+        for (kl=0; kl<s9->num_klay; kl++)
+        {
+          INT num_mlay;
+          INT ml;
+          INT actlay = 0;
+
+          num_mlay = s9->kinlay[kl].num_mlay;
+          for (ml=0; ml<num_mlay; ml++)
+          {
+            S9_IP_WA *ipwa = s9->elewa[actlay].ipwa;
+
+            /* check if there is a ipwa for this layer */
+            if (ipwa != NULL)
+            {
+              INT k;
+              INT ngauss;
+              MULTIMAT *actmultimat;
+
+              actmultimat = &(multimat[s9->kinlay[kl].mmatID[ml]-1]);
+
+              /* number of gausspoints in one layer*/
+              ngauss = s9->nGP[0]*s9->nGP[1]*s9->nGP[2];
+
+              switch (actmultimat->mattyp)
+              {
+              case m_pl_mises:
+              case m_pl_dp:
+                for (k=0; k<ngauss; k++)
+                {
+                  ipwa[k].yip = *size_src_ptr++;
+                  ipwa[k].epstn = *src_ptr++;
+                  for (el=0; el<6; el++)
+                  {
+                    ipwa[k].sig[el] = *src_ptr++;
+                    ipwa[k].eps[el] = *src_ptr++;
+                    ipwa[k].qn[el] = *src_ptr++;
+                  }
+                }
+                break;
+              case m_pl_epc:
+                for (k=0; k<ngauss; k++)
+                {
+                  ipwa[k].yip = *size_src_ptr++;
+                  ipwa[k].kappa_t = *src_ptr++;
+                  ipwa[k].kappa_c = *src_ptr++;
+                  for (el=0; el<6; el++)
+                  {
+                    ipwa[k].sig[el] = *src_ptr++;
+                    ipwa[k].eps[el] = *src_ptr++;
+                  }
+                }
+                break;
+              case m_pl_hoff:
+                for (k=0; k<ngauss; k++)
+                {
+                  ipwa[k].yip = *size_src_ptr++;
+                  ipwa[k].dhard = *src_ptr++;
+                  for (el=0; el<6; el++)
+                  {
+                    ipwa[k].sig[el] = *src_ptr++;
+                    ipwa[k].eps[el] = *src_ptr++;
+                    ipwa[k].dkappa[el] = *src_ptr++;
+                    ipwa[k].gamma[el] = *src_ptr++;
+                  }
+                  for (el=0; el<9; el++)
+                  {
+                    ipwa[k].rkappa[el] = *src_ptr++;
+                  }
+                }
+                break;
+              default:
+                printf("unsupported material %d for shell9 element",
+                       actmultimat->mattyp);
+              }
+            }
+            actlay += 1;
+          }
+        }
+      }
+      break;
+    }
 #endif
 
 #ifdef D_WALL1
-    case el_wall1: {
+    case el_wall1:
+    {
       W1_ELE_WA* elewa = actele->e.w1->elewa;
-      if (elewa != NULL) {
+      if (elewa != NULL)
+      {
         INT k;
         INT ngauss;
-        INT minor;
 
-        minor = find_wall1_minor_type(actele);
-        ngauss = element_info[el_wall1].variant[minor].gauss_number;
+        dsassert((actele->distyp == quad4) ||
+                 (actele->distyp == quad8) ||
+                 (actele->distyp == quad9), "only quads supported up to now");
+
+        ngauss = actele->e.w1->nGP[0]*actele->e.w1->nGP[1];
 
         /* This is w1_write_restart. Disguised as usual. */
-        switch (mat[actele->mat-1].mattyp) {
+        switch (mat[actele->mat-1].mattyp)
+        {
         case m_pl_mises:
           dsassert(len >= ngauss*(1+4*3), "value entry too short");
-          for (k=0; k<ngauss; ++k) {
+          for (k=0; k<ngauss; ++k)
+          {
             elewa->ipwa[k].yip = *size_src_ptr++;
             elewa->ipwa[k].epstn = *src_ptr++;
-            for (el=0; el<4; el++) {
+            for (el=0; el<4; el++)
+            {
               elewa->ipwa[k].sig[el] = *src_ptr++;
               elewa->ipwa[k].eps[el] = *src_ptr++;
               elewa->ipwa[k].qn[el] = *src_ptr++;
@@ -3224,10 +3644,12 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
           break;
         case m_pl_mises_3D:
           dsassert(len >= ngauss*(1+4*7), "value entry too short");
-          for (k=0; k<ngauss; k++) {
+          for (k=0; k<ngauss; k++)
+          {
             elewa->ipwa[k].yip = *size_src_ptr++;
             elewa->ipwa[k].epstn = *src_ptr++;
-            for (el=0; el<4; el++) {
+            for (el=0; el<4; el++)
+            {
               elewa->ipwa[k].sig[el] = *src_ptr++;
               elewa->ipwa[k].eps[el] = *src_ptr++;
               elewa->ipwa[k].qn[el] = *src_ptr++;
@@ -3241,11 +3663,13 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
         case m_pl_epc3D: /* ???
                           * (mat[actele->mat-1].mattyp == m_pl_epc3D ) */
           dsassert(len >= ngauss*(2+4*7), "value entry too short");
-          for (k=0; k<ngauss; k++) {
+          for (k=0; k<ngauss; k++)
+          {
             elewa->ipwa[k].yip = *size_src_ptr++;
             elewa->ipwa[k].dlam[0] = *src_ptr++;
             elewa->ipwa[k].dlam[1] = *src_ptr++;
-            for (el=0; el<4; el++) {
+            for (el=0; el<4; el++)
+            {
               elewa->ipwa[k].sig[el] = *src_ptr++;
               elewa->ipwa[k].eps[el] = *src_ptr++;
               elewa->ipwa[k].sigc[el] = *src_ptr++;
@@ -3269,7 +3693,8 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
     case el_beam3:
       if (mat[actele->mat-1].mattyp == m_pl_mises ||
           mat[actele->mat-1].mattyp == m_pl_dp ||
-          mat[actele->mat-1].mattyp == m_pl_epc) {
+          mat[actele->mat-1].mattyp == m_pl_epc)
+      {
         INT j;
         INT size;
         DOUBLE* dst_ptr;
@@ -3278,7 +3703,8 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
         dst_ptr = actele->e.b3->elewa.a.da[0];
         size = actele->e.b3->elewa.fdim*actele->e.b3->elewa.sdim;
         dsassert(size <= len, "value entry too small");
-        for (j=0; j<size; ++j) {
+        for (j=0; j<size; ++j)
+        {
           *dst_ptr++ = *src_ptr++;
         }
       }
@@ -3286,18 +3712,19 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 #endif
 
 #ifdef D_INTERF
-    case el_interf: {
+    case el_interf:
+    {
       IF_ELE_WA* elewa = actele->e.interf->elewa;
-      if (elewa != NULL) {
+      if (elewa != NULL)
+      {
         INT k;
         INT ngauss;
 
-        /*minor = find_interf_minor_type(actele);*/
-        /*ngauss = element_info[el_interf].variant[minor].gauss_number;*/
         ngauss = actele->e.interf->nGP;
 
         dsassert(len >= ngauss*10, "value entry too short");
-        for (k=0; k<ngauss; ++k) {
+        for (k=0; k<ngauss; ++k)
+        {
           actele->e.interf->elewa[0].ipwa[k].Tt = *src_ptr++;
           actele->e.interf->elewa[0].ipwa[k].Tn = *src_ptr++;
           actele->e.interf->elewa[0].ipwa[k].dt = *src_ptr++;
@@ -3315,13 +3742,14 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 #endif
 
 #ifdef D_WALLGE
-      /* There's nothing to be restored for wallge elements, right? */
+    /* There's nothing to be restored for wallge elements, right? */
     case el_wallge:
       break;
 #endif
 
 #ifdef D_FLUID2
-    case el_fluid2: {
+    case el_fluid2:
+    {
       FLUID_DYNAMIC *fdyn;
       DOUBLE* dst_ptr;
       INT k;
@@ -3334,15 +3762,19 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       dsassert(actele->e.f2->tau_old.Typ == cca_DV &&
                actele->e.f2->tau_old.fdim == 3, "uninitialized array");
       dst_ptr = &(actele->e.f2->tau_old.a.dv[0]);
-      for (k=0; k<3; ++k) {
+      for (k=0; k<3; ++k)
+      {
         *dst_ptr++ = *src_ptr++;
       }
-      if (fdyn->surftens > 0) {
+      if (fdyn->surftens > 0)
+      {
         dsassert(len >= 3+2*actele->numnp, "value item too small");
         dsassert(actele->e.f2->kappa_ND.Typ == cca_DA, "uninitialized array");
         dst_ptr = &(actele->e.f2->kappa_ND.a.dv[0]);
-        if (actele->e.f2->fs_on>0) {
-          for (k=0; k<2*actele->numnp; ++k) {
+        if (actele->e.f2->fs_on>0)
+        {
+          for (k=0; k<2*actele->numnp; ++k)
+          {
             *dst_ptr++ = *src_ptr++;
           }
         }
@@ -3352,7 +3784,8 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 #endif
 
 #ifdef D_FLUID3
-    case el_fluid3: {
+    case el_fluid3:
+    {
       DOUBLE* dst_ptr;
       INT k;
 
@@ -3360,7 +3793,8 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       dsassert(actele->e.f3->tau_old.Typ == cca_DV &&
                actele->e.f3->tau_old.fdim == 3, "uninitialized array");
       dst_ptr = &(actele->e.f3->tau_old.a.dv[0]);
-      for (k=0; k<3; ++k) {
+      for (k=0; k<3; ++k)
+      {
         *dst_ptr++ = *src_ptr++;
       }
       break;
@@ -3401,7 +3835,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
   \param *chunk           (i) the chunk that's read
   \param  type            (i) what kind of values are to be spread
   \param  array           (i) the row of the node array the value are
-                              to go to; is ignored for some types
+  to go to; is ignored for some types
   \param *recv_buf        (i) buffer of double values
   \param  recv_count      (i) number of double values to be spread
   \param *recv_size_buf   (i) buffer of integer values
@@ -3432,7 +3866,8 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
   value_length = chunk->value_entry_length;
   size_length  = chunk->size_entry_length;
 
-  switch (type) {
+  switch (type)
+  {
   case cc_node_array:
     in_unpack_node_arrays(context, chunk, array, recv_buf, recv_count, recv_size_buf, recv_size_count, src);
     break;
@@ -3457,80 +3892,147 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
  * task. To tell the required sizes. Most of the time these functions
  * are needed to provide the space to pack the elements for
  * writing. When we read elements we the control file tells the
- * required sizes.
- *
- * There are two strategies. To iterate all elements and check each
- * one, finding the highest demand, or to look up element information
- * by element type. We use the later one whenever possible and fall
- * back to the former when needed. */
+ * required sizes. */
 /*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Find the number of different element types in this field.
-
-  This simply counts the different types. That's particularly easy
-  (and quick) because each field context knows what kinds of elements
-  there are.
+  \brief Find the number of double and integer values that are needed
+  to store the element parameters.
 
   \author u.kue
-  \date 09/04
+  \date 11/04
+  \sa out_pack_ele_params
 */
 /*----------------------------------------------------------------------*/
-INT count_element_types(struct _BIN_OUT_FIELD* field)
+void find_ele_param_item_length(struct _BIN_OUT_FIELD* context,
+                                INT* value_length,
+                                INT* size_length)
 {
+  INT vlen = 0;
+  INT slen = 0;
   INT i;
-  INT j;
-  INT counter = 0;
+  PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
 
 #ifdef DEBUG
-  dstrc_enter("count_element_types");
+  dstrc_enter("find_ele_param_item_length");
 #endif
 
-  for (i=1; i<el_count; ++i) {
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (field->element_flag[i][j]) {
-        counter++;
-      }
+  /* element specific parameter length */
+
+  for (i=0; i<actpdis->numele; ++i)
+  {
+    ELEMENT* actele = actpdis->element[i];
+
+    switch (actele->eltyp)
+    {
+#ifdef D_SHELL8
+    case el_shell8:
+      slen = MAX(slen, shell8_variables.ep_size_length);
+      vlen = MAX(vlen, shell8_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_SHELL9
+    case el_shell9:
+      slen = MAX(slen, shell9_variables.ep_size_length);
+      vlen = MAX(vlen, shell9_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_BRICK1
+    case el_brick1:
+      slen = MAX(slen, brick1_variables.ep_size_length);
+      vlen = MAX(vlen, brick1_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_FLUID2
+    case el_fluid2:
+      slen = MAX(slen, fluid2_variables.ep_size_length);
+      vlen = MAX(vlen, fluid2_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+      slen = MAX(slen, fluid2_pro_variables.ep_size_length);
+      vlen = MAX(vlen, fluid2_pro_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_FLUID2TU
+    case el_fluid2_tu:
+      slen = MAX(slen, fluid2tu_variables.ep_size_length);
+      vlen = MAX(vlen, fluid2tu_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_FLUID3
+    case el_fluid3:
+      slen = MAX(slen, fluid3_variables.ep_size_length);
+      vlen = MAX(vlen, fluid3_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_FLUID3_F
+    case el_fluid3_fast:
+      slen = MAX(slen, fluid3_fast_variables.ep_size_length);
+      vlen = MAX(vlen, fluid3_fast_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_ALE
+    case el_ale2:
+      slen = MAX(slen, ale2_variables.ep_size_length);
+      vlen = MAX(vlen, ale2_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_ALE
+    case el_ale3:
+      slen = MAX(slen, ale3_variables.ep_size_length);
+      vlen = MAX(vlen, ale3_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_WALL1
+    case el_wall1:
+      slen = MAX(slen, wall1_variables.ep_size_length);
+      vlen = MAX(vlen, wall1_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_BEAM3
+    case el_beam3:
+      slen = MAX(slen, beam3_variables.ep_size_length);
+      vlen = MAX(vlen, beam3_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_AXISHELL
+    case el_axishell:
+      slen = MAX(slen, axishell_variables.ep_size_length);
+      vlen = MAX(vlen, axishell_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_INTERF
+    case el_interf:
+      slen = MAX(slen, interf_variables.ep_size_length);
+      vlen = MAX(vlen, interf_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_WALLGE
+    case el_wallge:
+      slen = MAX(slen, wallge_variables.ep_size_length);
+      vlen = MAX(vlen, wallge_variables.ep_value_length);
+      break;
+#endif
+    default:
+      dserror("element type %d unsupported", actele->eltyp);
     }
   }
+
+#ifdef PARALLEL
+  MPI_Allreduce(&slen, size_length, 1, MPI_INT, MPI_MAX, context->actintra->MPI_INTRA_COMM);
+  MPI_Allreduce(&vlen, value_length, 1, MPI_INT, MPI_MAX, context->actintra->MPI_INTRA_COMM);
+#else
+  *size_length = slen;
+  *value_length = vlen;
+#endif
 
 #ifdef DEBUG
   dstrc_exit();
 #endif
-  return counter;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Find the number of different element variants to the given
-  type (major number) in this field.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-INT count_element_variants(struct _BIN_OUT_FIELD* field, ELEMENT_TYP type)
-{
-  INT j;
-  INT counter = 0;
-
-#ifdef DEBUG
-  dstrc_enter("count_element_variants");
-#endif
-
-  for (j=0; j<MAX_EL_MINOR; ++j) {
-    if (field->element_flag[type][j]) {
-      counter++;
-    }
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return counter;
 }
 
 
@@ -3540,11 +4042,11 @@ INT count_element_variants(struct _BIN_OUT_FIELD* field, ELEMENT_TYP type)
   to store the mesh connectivity.
 
   The mesh connectivity consists of all the ids of those nodes that
-  are connected to one particular element. So the main task here is to
-  find the maximum number of nodes per element. This a done without
-  looping all elements, instead the used element types are looped. To
-  each element type (major/minor) the number of nodes are known,
-  thanks to the global \a element_info .
+  are connected to one particular element. So the task here is to find
+  the maximum number of nodes per element. This a done looping all
+  elements.
+
+  In the parallel case we need to communicate.
 
   \author u.kue
   \date 09/04
@@ -3555,7 +4057,8 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
                            INT* size_length)
 {
   INT i;
-  INT j;
+  INT numnp = 0;
+  PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
 
 #ifdef DEBUG
   dstrc_enter("find_mesh_item_length");
@@ -3567,18 +4070,74 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
   /* We simply need to find the maximum element node number in the
    * discretization. */
 
-  /* skip el_none==0. */
-  for (i=1; i<el_count; ++i) {
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (context->element_flag[i][j]) {
-        *size_length = MAX(*size_length, element_info[i].variant[j].node_number);
-      }
-    }
+  for (i=0; i<actpdis->numele; ++i)
+  {
+    ELEMENT* actele;
+
+    actele = actpdis->element[i];
+    numnp = MAX(numnp, actele->numnp);
   }
 
-  /* And there are three more integer values: The element id and both
-   * major and minor element type. */
-  *size_length += 2 + 1;
+#ifdef PARALLEL
+  MPI_Allreduce(&numnp, size_length, 1, MPI_INT, MPI_MAX, context->actintra->MPI_INTRA_COMM);
+#else
+  *size_length = numnp;
+#endif
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Find the number of double and integer values that are needed
+  to store the node coordinates.
+
+  The number of coordinates per node equals the number of
+  dimensions. The value entry length is therefore easy to
+  determine. But the size entry contains (a) the node's global Id and
+  (b) the number of elements connected to this node and (c) their
+  local Ids.
+
+  In the parallel case we need to communicate.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+void find_coords_item_length(struct _BIN_OUT_FIELD* context,
+                             INT* value_length,
+                             INT* size_length)
+{
+  INT i;
+  INT numele = 0;
+  PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
+
+#ifdef DEBUG
+  dstrc_enter("find_coords_item_length");
+#endif
+
+  *value_length = genprob.ndim;
+  *size_length = 0;
+
+  for (i=0; i<actpdis->numnp; ++i)
+  {
+    NODE* actnode;
+
+    actnode = actpdis->node[i];
+    numele = MAX(numele, actnode->numele);
+  }
+
+#ifdef PARALLEL
+  MPI_Allreduce(&numele, size_length, 1, MPI_INT, MPI_MAX, context->actintra->MPI_INTRA_COMM);
+#else
+  *size_length = numele;
+#endif
+
+  /* plus one for the global node Id and one for the number of elements */
+  *size_length += 2;
 
 #ifdef DEBUG
   dstrc_exit();
@@ -3594,9 +4153,7 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
   We want to store the real stress array for each
   element. Postprocessing can be done later.
 
-  For many element types it's sufficient to lookup the \a element_info
-  table to find the stress array's size. But dynamic elements like
-  shell9 have to be treated specially.
+  In the parallel case we need to communicate.
 
   \author u.kue
   \date 09/04
@@ -3607,7 +4164,8 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
                              INT* size_length)
 {
   INT i;
-  INT j;
+  INT length = 0;
+  PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
 
 #ifdef DEBUG
   dstrc_enter("find_stress_item_length");
@@ -3616,49 +4174,156 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
   *value_length = 0;
   *size_length = 0;
 
-  /* We need to find the maximum size of the stress array. */
-  for (i=1; i<el_count; ++i) {
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (context->element_flag[i][j]) {
+  for (i=0; i<actpdis->numele; ++i)
+  {
+    ELEMENT* actele;
+    actele = actpdis->element[i];
 
-        /* element based stresses */
-        if (element_info[i].variant[j].stress_matrix_size != -1) {
-          *value_length = MAX(*value_length,
-                              element_info[i].variant[j].stress_matrix_size);
-        }
-        else {
-          switch (i) {
-#ifdef D_SHELL9
-          case el_shell9: {     /* multi layer shell element */
-            ELEMENT* actele;
-            SHELL9* s9;
+    switch (actele->eltyp)
+    {
+#ifdef D_SHELL8
+    case el_shell8:
+    {
+      INT rows;
+      INT cols;
+      SHELL8* s8;
+      s8 = actele->e.s8;
 
-            /*
-             * If there are shell9 elements there are only shell9
-             * elements. Additionally we expect all elements to have
-             * the same dimension parameters. We take the values we
-             * find in the first element.
-             *
-             * (We know that there's at least one element on each
-             * processor.) */
-            actele = context->actpart->pdis[context->disnum].element[0];
-            dsassert(actele->eltyp == el_shell9, "shell9 expected");
+      rows = s8->forces.sdim;
+      cols = s8->nGP[0]*s8->nGP[1]*s8->nGP[2];
 
-            s9 = actele->e.s9;
-
-            /* There are 6 stress components. */
-            *value_length = MAX(*value_length,
-                                   6*context->s9_layers*s9->nGP[0]*s9->nGP[1]*s9->nGP[2]);
-            break;
-          }
+      length = MAX(length, rows*cols);
+      break;
+    }
 #endif
-          default:
-            dserror("no specific treatment of element type %d", i);
-          }
-        }
+#ifdef D_SHELL9
+    case el_shell9:             /* multi layer shell element */
+    {
+      SHELL9* s9;
+      s9 = actele->e.s9;
+
+      /* There are 6 stress components. */
+      length = MAX(length, 6*context->s9_layers*s9->nGP[0]*s9->nGP[1]*s9->nGP[2]);
+      break;
+    }
+#endif
+#ifdef D_BRICK1
+    case el_brick1:
+    {
+      INT rows;
+      INT cols;
+      BRICK1* c1 = actele->e.c1;
+
+      rows = c1->stress_GP.sdim;
+      cols = c1->nGP[0]*c1->nGP[1]*c1->nGP[2];
+      length = MAX(length, rows*cols);
+      break;
+    }
+#endif
+#ifdef D_FLUID2
+    case el_fluid2:
+      break;
+#endif
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+      break;
+#endif
+#ifdef D_FLUID2TU
+    case el_fluid2_tu:
+      break;
+#endif
+#ifdef D_FLUID3
+    case el_fluid3:
+      break;
+#endif
+#ifdef D_FLUID3_F
+    case el_fluid3_fast:
+      break;
+#endif
+#ifdef D_ALE
+    case el_ale2:
+      break;
+#endif
+#ifdef D_ALE
+    case el_ale3:
+      break;
+#endif
+#ifdef D_WALL1
+    case el_wall1:
+    {
+      WALL1* w1 = actele->e.w1;
+      if (actele->distyp == tri3)
+      {
+        length = MAX(length, 4);
       }
+      else if (actele->distyp == tri6)
+      {
+        dserror("yet to be done");
+      }
+      else if ((actele->distyp == quad4) ||
+               (actele->distyp == quad8) ||
+               (actele->distyp == quad9))
+      {
+        length = MAX(length, 9*w1->nGP[0]*w1->nGP[1]);
+      }
+      else
+      {
+        dserror("distyp %d unsupported", actele->distyp);
+      }
+      break;
+    }
+#endif
+#ifdef D_BEAM3
+    case el_beam3:
+    {
+      BEAM3* b3 = actele->e.b3;
+      length = MAX(length, 6*b3->nGP[0]);
+      break;
+    }
+#endif
+#ifdef D_AXISHELL
+    case el_axishell:
+      break;
+#endif
+#ifdef D_INTERF
+    case el_interf:
+    {
+      INTERF* interf = actele->e.interf;
+      length = MAX(length, 5*interf->nGP);
+      break;
+    }
+#endif
+#ifdef D_WALLGE
+    case el_wallge:
+    {
+      WALLGE* wallge = actele->e.wallge;
+      if ((actele->distyp == tri3) || (actele->distyp == tri6))
+      {
+        dserror("yet to be done");
+      }
+      else if ((actele->distyp == quad4) ||
+               (actele->distyp == quad8) ||
+               (actele->distyp == quad9))
+      {
+        length = MAX(length, 6*wallge->nGP[0]*wallge->nGP[1]);
+      }
+      else
+      {
+        dserror("distyp %d unsupported", actele->distyp);
+      }
+      break;
+    }
+#endif
+    default:
+      dserror("element type %d not supported", actele->eltyp);
     }
   }
+
+#ifdef PARALLEL
+  MPI_Allreduce(&length, value_length, 1, MPI_INT, MPI_MAX, context->actintra->MPI_INTRA_COMM);
+#else
+  *value_length = length;
+#endif
 
 #ifdef DEBUG
   dstrc_exit();
@@ -3678,11 +4343,6 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
   This is a collective call, that is there's communication involved
   here. This way we can loop all the elements and find the sizes we
   need.
-
-  Normally we'll try to avoid such element loops. That's what the
-  element_flag variable is about. But here we have to. We can neither
-  encode all possible element variants in one gigantic array nor can
-  we stick to the most space consuming version for lack of knowledge.
 
   There are three functions that do the element handling during
   restart. These are ``out_pack_restart_element``,
@@ -3708,12 +4368,14 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
                               INT* value_length,
                               INT* size_length)
 {
+  INT i;
   INT local_lengths[2];
 #ifdef PARALLEL
   INT global_lengths[2];
 #else
   INT* global_lengths = local_lengths;
 #endif
+  PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
 
 #ifdef DEBUG
   dstrc_enter("find_restart_item_length");
@@ -3723,235 +4385,247 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
   *value_length = 0;
   *size_length  = 0;
 
+  for (i=0; i<actpdis->numele; ++i)
+  {
+    ELEMENT* actele;
+    actele = actpdis->element[i];
+
+    switch (actele->eltyp)
+    {
 #ifdef D_SHELL8
-  if (context->is_shell8_problem) {
-    INT i;
-    PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
-    for (i=0; i<actpdis->numele; ++i) {
-      ELEMENT* actele;
+    case el_shell8:
+    {
+      INT len = 0;
+      SHELL8* s8;
 
-      actele = actpdis->element[i];
-      if (actele->eltyp == el_shell8) {
-        INT len = 0;
-        SHELL8* s8;
+      s8 = actele->e.s8;
 
-        s8 = actele->e.s8;
-
-        /* collect the array sizes */
-        if (s8->nhyb) {
-          len += s8->alfa.fdim * s8->alfa.sdim;
-          len += s8->Dtildinv.fdim * s8->Dtildinv.sdim;
-          len += s8->Lt.fdim * s8->Lt.sdim;
-          len += s8->Rtilde.fdim * s8->Rtilde.sdim;
-        }
-        if (mat[actele->mat-1].mattyp==m_viscohyper) {
-          ARRAY4D *a;
-          a = s8->his1;
-          len += a->fdim * a->sdim * a->tdim * a->fodim;
-        }
-
-        *value_length = MAX(*value_length, len);
+      /* collect the array sizes */
+      if (s8->nhyb)
+      {
+        len += s8->alfa.fdim * s8->alfa.sdim;
+        len += s8->Dtildinv.fdim * s8->Dtildinv.sdim;
+        len += s8->Lt.fdim * s8->Lt.sdim;
+        len += s8->Rtilde.fdim * s8->Rtilde.sdim;
       }
-    }
+      if (mat[actele->mat-1].mattyp==m_viscohyper)
+      {
+        ARRAY4D *a;
+        a = s8->his1;
+        len += a->fdim * a->sdim * a->tdim * a->fodim;
+      }
 
-    /* It's a shell8 problem. There are no other elements. */
-    goto end;
-  }
+      *value_length = MAX(*value_length, len);
+      break;
+    }
 #endif
 
 #ifdef D_SHELL9
-  /*count_element_variants(context, el_shell9);*/
-  if (context->is_shell9_problem) {
-    INT i;
-    PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
-    for (i=0; i<actpdis->numele; ++i) {
-      ELEMENT* actele;
+    case el_shell9:             /* multi layer shell element */
+    {
+      INT len = 0;
+      INT slen = 0;
+      SHELL9* s9;
 
-      actele = actpdis->element[i];
-      if (actele->eltyp == el_shell9) {
-        INT len = 0;
-        INT slen = 0;
-        SHELL9* s9;
+      s9 = actele->e.s9;
 
-        s9 = actele->e.s9;
+      /* collect the array sizes */
+      if (s9->nhyb)
+      {
+        len += s9->alfa.fdim * s9->alfa.sdim;
+        len += s9->Dtildinv.fdim * s9->Dtildinv.sdim;
+        len += s9->L.fdim * s9->L.sdim;
+        len += s9->Rtilde.fdim * s9->Rtilde.sdim;
+      }
+      if (s9->elewa != NULL)
+      {
+        INT kl;
+        INT actlay = 0;
 
-        /* collect the array sizes */
-        if (s9->nhyb) {
-          len += s9->alfa.fdim * s9->alfa.sdim;
-          len += s9->Dtildinv.fdim * s9->Dtildinv.sdim;
-          len += s9->L.fdim * s9->L.sdim;
-          len += s9->Rtilde.fdim * s9->Rtilde.sdim;
-        }
-        if (s9->elewa != NULL) {
-          INT kl;
-          INT actlay = 0;
+        for (kl=0; kl<s9->num_klay; kl++)
+        {
+          INT num_mlay;
+          INT ml;
 
-          for (kl=0; kl<s9->num_klay; kl++) {
-            INT num_mlay;
-            INT ml;
+          num_mlay = s9->kinlay[kl].num_mlay;
+          for (ml=0; ml<num_mlay; ml++)
+          {
 
-            num_mlay = s9->kinlay[kl].num_mlay;
-            for (ml=0; ml<num_mlay; ml++) {
+            /* check if there is a ipwa for this layer */
+            if (s9->elewa[actlay].ipwa != NULL)
+            {
+              INT ngauss;
+              MULTIMAT *actmultimat;
 
-              /* check if there is a ipwa for this layer */
-              if (s9->elewa[actlay].ipwa != NULL) {
-                INT ngauss;
-                MULTIMAT *actmultimat;
+              actmultimat = &(multimat[s9->kinlay[kl].mmatID[ml]-1]);
 
-                actmultimat = &(multimat[s9->kinlay[kl].mmatID[ml]-1]);
+              /* number of gausspoints in one layer*/
+              ngauss = s9->nGP[0]*s9->nGP[1]*s9->nGP[2];
 
-                /* number of gausspoints in one layer*/
-                ngauss = s9->nGP[0]*s9->nGP[1]*s9->nGP[2];
-
-                switch (actmultimat->mattyp) {
-                case m_pl_mises:
-                case m_pl_dp:
-                  len += ngauss*(1+6*3);
-                  slen += ngauss;
-                  break;
-                case m_pl_epc:
-                  len += ngauss*(2+6*2);
-                  slen += ngauss;
-                  break;
-                case m_pl_hoff:
-                  len += ngauss*(1+6*4+9);
-                  slen += ngauss;
-                  break;
-                default:
-                  printf("unsupported material %d for shell9 element",
-                         actmultimat->mattyp);
-                }
+              switch (actmultimat->mattyp)
+              {
+              case m_pl_mises:
+              case m_pl_dp:
+                len += ngauss*(1+6*3);
+                slen += ngauss;
+                break;
+              case m_pl_epc:
+                len += ngauss*(2+6*2);
+                slen += ngauss;
+                break;
+              case m_pl_hoff:
+                len += ngauss*(1+6*4+9);
+                slen += ngauss;
+                break;
+              default:
+                printf("unsupported material %d for shell9 element",
+                       actmultimat->mattyp);
               }
-              actlay += 1;
             }
-          }
-        }
-        *value_length = MAX(*value_length, len);
-        *size_length  = MAX(*size_length, slen);
-      }
-    }
-
-    /* It's a shell9 problem. There are no other elements. */
-    goto end;
-  }
-#endif
-
-#ifdef D_WALL1
-  /* if there are wall1 elements */
-  /*
-   * There are huge differences depending on the material. This forces
-   * us to iterate the elements. */
-  if (count_element_variants(context, el_wall1) > 0) {
-    INT i;
-    PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
-    for (i=0; i<actpdis->numele; ++i) {
-      ELEMENT* actele;
-
-      actele = actpdis->element[i];
-      if (actele->eltyp == el_wall1) {
-        WALL1* w1;
-
-        w1 = actele->e.w1;
-        if (w1->elewa != NULL) {
-          INT ngauss;
-          ngauss = w1->nGP[0]*w1->nGP[1];
-          switch (mat[actele->mat-1].mattyp) {
-          case m_pl_mises:
-            *value_length = MAX(*value_length, ngauss*(1+4*3));
-            *size_length  = MAX(*size_length,  ngauss*(1));
-            break;
-          case m_pl_mises_3D:
-            *value_length = MAX(*value_length, ngauss*(1+4*7));
-            *size_length  = MAX(*size_length,  ngauss*(1));
-            break;
-          case m_pl_epc3D:
-            *value_length = MAX(*value_length, ngauss*(2+4*7));
-            *size_length  = MAX(*size_length,  ngauss*(1));
-            break;
-          default:
-            /*
-             * This is strange. Do we want these messages when we
-             * restart wall meshed with linear material? */
-            printf("unsupported material %d for wall1 element",
-                   mat[actele->mat-1].mattyp);
+            actlay += 1;
           }
         }
       }
+      *value_length = MAX(*value_length, len);
+      *size_length  = MAX(*size_length, slen);
+      break;
     }
-  }
 #endif
 
-#ifdef D_BEAM3
-  /* if there are beam3 elements */
-  /* Again the material matters. */
-  if (count_element_variants(context, el_beam3) > 0) {
-    INT i;
-
-    PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
-    for (i=0; i<actpdis->numele; ++i) {
-      ELEMENT* actele;
-
-      actele = actpdis->element[i];
-      if (actele->eltyp == el_beam3) {
-        if(mat[actele->mat-1].mattyp == m_pl_mises ||
-           mat[actele->mat-1].mattyp == m_pl_dp ||
-           mat[actele->mat-1].mattyp == m_pl_epc) {
-          *value_length = MAX(*value_length, actele->e.b3->nGP[0]*5*5*40);
-        }
-      }
+#ifdef D_BRICK1
+    case el_brick1:
+    {
+      /* nothing? */
+      break;
     }
-  }
-#endif
-
-#ifdef D_INTERF
-  if (count_element_variants(context, el_interf) > 0) {
-    INT j;
-
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (context->element_flag[el_fluid2][j]) {
-        INT ngauss;
-        ngauss = element_info[el_fluid2].variant[j].gauss_number;
-        *value_length = MAX(*value_length, ngauss*10);
-      }
-    }
-  }
-#endif
-
-#ifdef D_WALLGE
-  /* There's nothing to be saved for wallge elements, right? */
 #endif
 
 #ifdef D_FLUID2
-  if (count_element_variants(context, el_fluid2) > 0) {
-    INT j;
-    INT len = 3;
-    FLUID_DYNAMIC *fdyn;
+    case el_fluid2:
+    {
+      INT len = 3;
+      FLUID_DYNAMIC *fdyn;
 
-    /* only valid for single field problem (?) */
-    /* I don't think so. */
-    fdyn = alldyn[genprob.numff].fdyn;
+      /* only valid for single field problem (?) */
+      /* I don't think so. */
+      fdyn = alldyn[genprob.numff].fdyn;
 
-    /* We have the stabilization parameter history (tau) and maybe kappa. */
-    if (fdyn->surftens > 0) {
-      for (j=0; j<MAX_EL_MINOR; ++j) {
-        if (context->element_flag[el_fluid2][j]) {
-          INT numnp;
-          numnp = element_info[el_fluid2].variant[j].node_number;
-          len = MAX(len, 3+2*numnp);
+      /* We have the stabilization parameter history (tau) and maybe kappa. */
+      if (fdyn->surftens > 0)
+      {
+        len = MAX(len, 3+2*actele->numnp);
+      }
+
+      *value_length = MAX(*value_length, len);
+      break;
+    }
+#endif
+
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+      break;
+#endif
+#ifdef D_FLUID2TU
+    case el_fluid2_tu:
+      break;
+#endif
+#ifdef D_FLUID3
+    case el_fluid3:
+      *value_length = MAX(*value_length, 3);
+      break;
+#endif
+#ifdef D_FLUID3_F
+    case el_fluid3_fast:
+      *value_length = MAX(*value_length, 3);
+      break;
+#endif
+#ifdef D_ALE
+    case el_ale2:
+      break;
+#endif
+#ifdef D_ALE
+    case el_ale3:
+      break;
+#endif
+
+#ifdef D_WALL1
+    case el_wall1:
+    {
+      WALL1* w1 = actele->e.w1;
+
+      /* There are huge differences depending on the material. */
+
+      if (w1->elewa != NULL)
+      {
+        INT ngauss;
+        ngauss = w1->nGP[0]*w1->nGP[1];
+        switch (mat[actele->mat-1].mattyp)
+        {
+        case m_pl_mises:
+          *value_length = MAX(*value_length, ngauss*(1+4*3));
+          *size_length  = MAX(*size_length,  ngauss*(1));
+          break;
+        case m_pl_mises_3D:
+          *value_length = MAX(*value_length, ngauss*(1+4*7));
+          *size_length  = MAX(*size_length,  ngauss*(1));
+          break;
+        case m_pl_epc3D:
+          *value_length = MAX(*value_length, ngauss*(2+4*7));
+          *size_length  = MAX(*size_length,  ngauss*(1));
+          break;
+        default:
+          /*
+           * This is strange. Do we want these messages when we
+           * restart wall meshed with linear material? */
+          printf("unsupported material %d for wall1 element",
+                 mat[actele->mat-1].mattyp);
         }
       }
+      break;
     }
-    *value_length = MAX(*value_length, len);
-  }
 #endif
 
-#ifdef D_FLUID3
-  if (count_element_variants(context, el_fluid3) > 0) {
-    /* tau. The stabilization parameter history. */
-    *value_length = MAX(*value_length, 3);
-  }
+#ifdef D_BEAM3
+    case el_beam3:
+    {
+      BEAM3* b3 = actele->e.b3;
+      if(mat[actele->mat-1].mattyp == m_pl_mises ||
+         mat[actele->mat-1].mattyp == m_pl_dp ||
+         mat[actele->mat-1].mattyp == m_pl_epc)
+      {
+        *value_length = MAX(*value_length, b3->nGP[0]*5*5*40);
+      }
+      break;
+    }
+#endif
+#ifdef D_AXISHELL
+    case el_axishell:
+      break;
 #endif
 
+#ifdef D_INTERF
+    case el_interf:
+    {
+      INTERF* interf = actele->e.interf;
+      INT ngauss = interf->nGP;
+      *value_length = MAX(*value_length, ngauss*10);
+      break;
+    }
+#endif
+
+#ifdef D_WALLGE
+    case el_wallge:
+    {
+      /*WALLGE* wallge = actele->e.wallge;*/
+      /* There's nothing to be saved for wallge elements, right? */
+      break;
+    }
+#endif
+
+    default:
+      dserror("element type %d unsupported", actele->eltyp);
+    }
+  }
 
   /* Finally communicate what we've found. We need to do this because
    * there's no guarantee that the most demanding element type is used
@@ -3964,7 +4638,6 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
   *value_length = global_lengths[0];
   *size_length  = global_lengths[1];
 
-end:
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -4000,13 +4673,16 @@ INT get_field_position(struct _BIN_OUT_FIELD  *context)
   dstrc_enter("get_field_position");
 #endif
 
-  for (field_pos=0; field_pos<genprob.numfld; ++field_pos) {
-    if (context->actfield == &(field[field_pos])) {
+  for (field_pos=0; field_pos<genprob.numfld; ++field_pos)
+  {
+    if (context->actfield == &(field[field_pos]))
+    {
       break;
     }
   }
 
-  if (field_pos==genprob.numfld) {
+  if (field_pos==genprob.numfld)
+  {
     dserror("unregistered field object");
   }
 
@@ -4050,154 +4726,6 @@ void out_main_group_head(struct _BIN_OUT_FIELD  *context, CHAR* name)
 #endif
 }
 
-
-/*======================================================================*/
-/* The final one. The big public result output function. */
-/*======================================================================*/
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Write all results for one step.
-
-  Write results for potprocessing. All algorithms call this function
-  (if they support binary output).
-
-  This function can be called many times in a row per time step. But
-  be careful not to mix calls of this function with calls to output
-  restart data.
-
-  \param context  pointer to an already set up output context
-  \param time     current time
-  \param step     current step count
-  \param place    node array row that contains the results
-  \param flags    the type of output needed; flags might be or'ed together
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void out_results(struct _BIN_OUT_FIELD* context,
-                 DOUBLE time,
-                 INT step,
-                 INT place,
-                 OUT_FLAGS flags)
-{
-  INT rank = context->actintra->intra_rank;
-
-#ifdef DEBUG
-  dstrc_enter("out_results");
-#endif
-
-  dsassert(flags != 0, "no output flags; I've got nothing to write");
-
-  if (rank == 0) {
-    static DOUBLE last_time = -1;
-    static INT last_step = -1;
-    static INT last_discr = -1;
-    static INT last_field_pos = -1;
-
-    INT field_pos;
-
-    field_pos = get_field_position(context);
-
-    /* Only start a new group if we have a new time step. This way
-     * out_results can be called more often that once per step. Be
-     * careful, however, not to mix it with restart output
-     * calls. Restart starts a new group as well and everything will
-     * be added to the latest group no matter who created it. */
-
-    if ((last_step != step) || (last_time != time) ||
-        (last_field_pos != field_pos) || (last_discr != context->disnum)) {
-      out_main_group_head(context, "result");
-      fprintf(bin_out_main.control_file,
-              "    time = %f\n"
-              "    step = %d\n"
-              "\n",
-              time, step);
-      last_step = step;
-      last_time = time;
-      last_field_pos = field_pos;
-      last_discr = context->disnum;
-    }
-  }
-
-  if (flags & OUTPUT_DISPLACEMENT) {
-
-#ifdef D_SHELL8
-    /* shell8 elements have three additional dofs, all six living in
-     * one node array's row. Thus we only need one call to output
-     * them. */
-    if (context->is_shell8_problem) {
-      out_node_chunk(context, "displacement", cc_displacement, 6, 0, place);
-    }
-    else
-#endif
-
-      /* Displacement of normal nodes. */
-      out_node_chunk(context, "displacement", cc_displacement, genprob.ndim, 0, place);
-
-#ifdef D_SHELL9
-    /* shell9 elements have layers with their own displacements. */
-    if (context->is_shell9_problem) {
-      INT numnp;
-      INT layer_count;
-
-      numnp = element_info[el_shell9].variant[context->s9_minor].node_number;
-
-      if ((context->s9_minor == MINOR_SHELL9_4_22) ||
-          (context->s9_minor == MINOR_SHELL9_4_33)) {
-        layer_count = 1;
-      }
-      else {
-        layer_count = 2;
-      }
-
-      out_element_chunk(context, "shell9_displacement", cc_shell9_displacement,
-                        3*numnp*(layer_count*context->s9_layers+1), 0,
-                        place);
-    }
-#endif
-  }
-
-  if (flags & OUTPUT_VELOCITY) {
-    out_node_chunk(context, "velocity", cc_velocity, genprob.ndim, 0, place);
-  }
-
-  if (flags & OUTPUT_PRESSURE) {
-    out_node_chunk(context, "pressure", cc_pressure, 1, 0, place);
-  }
-
-  if (flags & OUTPUT_STRESS) {
-    INT value_length;
-    INT size_length;
-
-    find_stress_item_length(context, &value_length, &size_length);
-    if ((value_length > 0) || (size_length > 0)) {
-      out_element_chunk(context, "stress", cc_stress, value_length, size_length, 0);
-    }
-  }
-
-  if (flags & OUTPUT_CONTACT) {
-    printf(RED_LIGHT "binary output of " GREEN_LIGHT "contact" RED_LIGHT " not yet supported\n" END_COLOR);
-  }
-
-  if (flags & OUTPUT_EIGENMODES) {
-    printf(RED_LIGHT "binary output of " GREEN_LIGHT "eigenmodes" RED_LIGHT " not yet supported\n" END_COLOR);
-  }
-
-  if (flags & OUTPUT_THICKNESS) {
-    printf(RED_LIGHT "binary output of " GREEN_LIGHT "thickness" RED_LIGHT " not yet supported\n" END_COLOR);
-  }
-
-  if (flags & OUTPUT_AXI_LOADS) {
-    printf(RED_LIGHT "binary output of " GREEN_LIGHT "axishell" RED_LIGHT " loads not yet supported\n" END_COLOR);
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}
 
 /*! @} (documentation module close)*/
 #endif

@@ -96,6 +96,9 @@ ELEMENT             *actele;
 #ifdef DEBUG
 dstrc_enter("restart_write_nlnstructdyn");
 #endif
+#ifdef PERF
+  perf_begin(74);
+#endif
 /*----------------------------------------------------------------------*/
 out = allfiles.out_pss;
 /*-------- check the step we are in and create the name "res<step>" */
@@ -338,6 +341,9 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(74);
+#endif
 #ifdef DEBUG
 dstrc_exit();
 #endif
@@ -731,6 +737,9 @@ ELEMENT             *actele;                 /*------------------------- actual 
 #ifdef DEBUG
 dstrc_enter("restart_write_nlnstructstat");
 #endif
+#ifdef PERF
+  perf_begin(74);
+#endif
 /*----------------------------------------------------------------------*/
 out = allfiles.out_pss;
 /*--------- check the step we are in and create the name "res<step>" ---*/
@@ -939,6 +948,9 @@ if (res.step != 0)
 
 
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(74);
+#endif
 #ifdef DEBUG
 dstrc_exit();
 #endif
@@ -1264,6 +1276,9 @@ ELEMENT             *actele;
 #ifdef DEBUG
 dstrc_enter("restart_write_fluiddyn");
 #endif
+#ifdef PERF
+  perf_begin(74);
+#endif
 /*----------------------------------------------------------------------*/
 out = allfiles.out_pss;
 /*-------- check the step we are in and create the name "res<step>" */
@@ -1433,6 +1448,9 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(74);
+#endif
 #ifdef DEBUG
 dstrc_exit();
 #endif
@@ -1713,6 +1731,9 @@ NODE                *actnode;
 #ifdef DEBUG
 dstrc_enter("restart_write_aledyn");
 #endif
+#ifdef PERF
+  perf_begin(74);
+#endif
 /*----------------------------------------------------------------------*/
 out = allfiles.out_pss;
 /*-------- check the step we are in and create the name "res<step>" */
@@ -1801,6 +1822,9 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(74);
+#endif
 #ifdef DEBUG
 dstrc_exit();
 #endif
@@ -2008,6 +2032,9 @@ RESTART_DYNFSI       res;
 #ifdef DEBUG
 dstrc_enter("restart_write_fsidyn");
 #endif
+#ifdef PERF
+  perf_begin(74);
+#endif
 /*----------------------------------------------------------------------*/
 out = allfiles.out_pss;
 /*-------- check the step we are in and create the name "res<step>" */
@@ -2049,6 +2076,9 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(74);
+#endif
 #ifdef DEBUG
 dstrc_exit();
 #endif

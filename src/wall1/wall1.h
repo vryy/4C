@@ -170,6 +170,7 @@ enum
     w1_xy,
     w1_rs
     }            stresstyp;
+#define WALL1_STRESSTYPE { "w1_xy", "w1_rs", NULL }
 
 struct _ARRAY4D  stress_GP;
 struct _ARRAY4D  stress_ND;

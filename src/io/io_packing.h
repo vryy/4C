@@ -48,41 +48,17 @@ out), how the values are collected and how they are put pack.
 #define BIN_PACKING_H
 
 #include "../headers/standardtypes.h"
-#include "../global_full/global_element_info.h"
-
+#include "io.h"
 
 
 /*
  * Structures defined in another place. We need to introduce them here
  * because we have functions that expect pointers to them as
  * arguments. */
-struct _BIN_OUT_FIELD;
 struct _BIN_OUT_CHUNK;
 
-struct _BIN_IN_FIELD;
 struct _BIN_IN_CHUNK;
 
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The results that are to be written are indicated by a flag.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-typedef INT OUT_FLAGS;
-
-/* possible flags */
-#define OUTPUT_DISPLACEMENT 0x0001
-#define OUTPUT_VELOCITY     0x0002
-#define OUTPUT_PRESSURE     0x0004
-#define OUTPUT_STRESS       0x0008
-#define OUTPUT_CONTACT      0x0010
-#define OUTPUT_EIGENMODES   0x0020
-#define OUTPUT_THICKNESS    0x0040
-#define OUTPUT_AXI_LOADS    0x0080
-#define OUTPUT_ACCELERATION 0x0100 /* not implemented */
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -114,6 +90,7 @@ typedef enum _CHUNK_CONTENT_TYPE {
   /* general output */
   cc_mesh,
   cc_coords,
+  cc_ele_params,
   cc_node_array
 } CHUNK_CONTENT_TYPE;
 
@@ -122,6 +99,16 @@ typedef enum _CHUNK_CONTENT_TYPE {
 /*!
   \brief Mark all element types that are used in this discretization.
 
+  Here the context's element_flag table is set up. That is all
+  elements are checked and the corresponding entry in the flag table
+  gets a tic.
+
+  The result is allreduced.
+
+  \param context  (i/o) pointer to an output context in the setup phase
+  \param actintra (i)   the communicator
+  \param actpdis  (i)   the partitions discretization
+
   \author u.kue
   \date 09/04
 */
@@ -129,6 +116,23 @@ typedef enum _CHUNK_CONTENT_TYPE {
 void out_find_element_types(struct _BIN_OUT_FIELD *context,
                             INTRA *actintra,
                             PARTDISCRET *actpdis);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Write element specific control information to the given file.
+
+  This is only called if rank==0.
+
+  The purpose is to write all kinds of information that are needed to
+  interpret the elements' results.
+
+  \author u.kue
+  \date 11/04
+*/
+/*----------------------------------------------------------------------*/
+void out_element_control(struct _BIN_OUT_FIELD *context,
+                         FILE* file);
 
 
 #ifdef D_SHELL8
@@ -176,44 +180,25 @@ void out_shell9_setup(struct _BIN_OUT_FIELD *context);
 
 #endif
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Find the number of different element types in this field.
-
-  This simply counts the different types. That's particularly easy
-  (and quick) because each field context knows what kinds of elements
-  there are.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-INT count_element_types(struct _BIN_OUT_FIELD* field);
-
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Find the number of different element variants to the given
-  type (major number) in this field.
+  \brief Find the number of double and integer values that are needed
+  to store the element parameters.
 
   \author u.kue
-  \date 09/04
+  \date 11/04
 */
 /*----------------------------------------------------------------------*/
-INT count_element_variants(struct _BIN_OUT_FIELD* field, ELEMENT_TYP type);
+void find_ele_param_item_length(struct _BIN_OUT_FIELD* context,
+                                INT* value_length,
+                                INT* size_length);
 
 
 /*----------------------------------------------------------------------*/
 /*!
   \brief Find the number of double and integer values that are needed
   to store the mesh connectivity.
-
-  The mesh connectivity consists of all the ids of those nodes that
-  are connected to one particular element. So the main task here is to
-  find the maximum number of nodes per element. This a done without
-  looping all elements, instead the used element types are looped. To
-  each element type (major/minor) the number of nodes are known,
-  thanks to the global \a element_info .
 
   \author u.kue
   \date 09/04
@@ -222,6 +207,28 @@ INT count_element_variants(struct _BIN_OUT_FIELD* field, ELEMENT_TYP type);
 void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
                            INT* value_length,
                            INT* size_length);
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Find the number of double and integer values that are needed
+  to store the node coordinates.
+
+  The number of coordinates per node equals the number of
+  dimensions. The value entry length is therefore easy to
+  determine. But the size entry contains (a) the node's global Id and
+  (b) the number of elements connected to this node and (c) their
+  local Ids.
+
+  In the parallel case we need to communicate.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+void find_coords_item_length(struct _BIN_OUT_FIELD* context,
+                             INT* value_length,
+                             INT* size_length);
 
 
 /*----------------------------------------------------------------------*/
@@ -257,11 +264,6 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
   This is a collective call, that is there's communication involved
   here. This way we can loop all the elements and find the sizes we
   need.
-
-  Normally we'll try to avoid such element loops. That's what the
-  element_flag variable is about. But here we have to. We can neither
-  encode all possible element variants in one gigantic array nor can
-  we stick to the most space consuming version for lack of knowledge.
 
   \param context      (i) pointer to an already set up output context
   \param value_length (o) the number of double to store per element
@@ -388,34 +390,6 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
                      INT *recv_size_buf,
                      INT recv_size_count,
                      INT src);
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Write all results for one step.
-
-  Write results for potprocessing. All algorithms call this function
-  (if they support binary output).
-
-  This function can be called many times in a row per time step. But
-  be careful not to mix calls of this function with calls to output
-  restart data.
-
-  \param context  pointer to an already set up output context
-  \param time     current time
-  \param step     current step count
-  \param place    node array row that contains the results
-  \param flags    the type of output needed; flags might be or'ed together
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void out_results(struct _BIN_OUT_FIELD* context,
-                 DOUBLE time,
-                 INT step,
-                 INT place,
-                 OUT_FLAGS flags);
 
 
 #endif

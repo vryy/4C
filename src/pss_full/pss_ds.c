@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
 ---------------------------------------------------------------------*/
 #include <stdarg.h>
 #include "../headers/standardtypes.h"
+#include "../io/io.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -609,7 +610,7 @@ void dserror(char string[], ...)
 
 
   /* write warnings */
-  /* No! This might cause death locks as it's not guaranteed that all
+  /* No! This might cause dead locks as it's not guaranteed that all
    * processes call dserror and these stupid warnings cause
    * communication. */
   /*dswarning(2,0);*/
@@ -663,6 +664,10 @@ void dserror(char string[], ...)
 #endif
   fflush(stdout);
   fflush(allfiles.out_err);
+
+#ifdef BINIO
+  io_emergency_close_files();
+#endif
 
 #ifdef DSERROR_DUMP
   /* Hehehe! */
