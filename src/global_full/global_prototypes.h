@@ -32,6 +32,24 @@ void calstatserv_findcontroldof(FIELD     *actfield,
  *----------------------------------------------------------------------*/
 void ntam(int argc, char *argv[]);
 /*----------------------------------------------------------------------*
+ | global_visual.c                                       genk  07/02    |
+ *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------                                         
+\brief call of Visualisation tools
+
+<pre>                                                         genk 07/02       
+
+This routine checks the type of problem and based on the program  options
+a visualisation tool is called.
+At the moment implemented:
+VISUAL2
+
+</pre>  
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void ntavisual(void); 
+/*----------------------------------------------------------------------*
  | global_init_control.c                                 m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void ntaini(int argc, char *argv[]);
@@ -72,6 +90,8 @@ void dyn_init_curve(int actcurve,
 void dyn_facfromcurve(int actcurve,
                    double T,
                    double *fac);
+double dyn_facexplcurve(int actcurve,
+                      double T);		   
 /*----------------------------------------------------------------------*
  |  out_global.c                                         m.gee 12/01    |
  *----------------------------------------------------------------------*/
@@ -112,6 +132,19 @@ void inpctrprob(void);
 void inpctrdyn(void);
 void inpctrstat(void);
 void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn);
+/*!---------------------------------------------------------------------                                         
+\brief input of the FLUID DYNAMIC block in the input-file
+
+<pre>                                                         genk 03/02
+
+In this routine the data in the FLUID DYNAMIC block of the input file
+are read and stored in fdyn	       
+
+</pre>
+\param  *data 	  FLUID_DATA       (o)	   
+\return void                                                                       
+
+------------------------------------------------------------------------*/
 void inpctr_dyn_fluid(FLUID_DYNAMIC *fdyn);
 /*----------------------------------------------------------------------*
  |  input_ctr_head.c                                  m.gee 11/01       |
@@ -205,6 +238,7 @@ void math_matmattrndense(double **R,
                             int      init,
                             double   factor);
 void math_sym_inv(double **A, int dim);
+void math_unsym_inv(double **A, int dimr, int dimc);
 void math_sppr(double *spat, double *a, double *b, double *c);
 /*----------------------------------------------------------------------*
  |  sort_find.c                                          m.gee 11/01    |
@@ -543,6 +577,14 @@ void dsdeletearray(void *array, int typ);
  *----------------------------------------------------------------------*/
 void dstrace_to_err(void);
 /*----------------------------------------------------------------------*
+ | routine to initialise the cpu - time                  genk 05/02     |
+ *----------------------------------------------------------------------*/
+void ds_cputime_init(void);
+/*----------------------------------------------------------------------*
+ | routine to meassure the cpu - time                    genk 05/02     |
+ *----------------------------------------------------------------------*/
+double ds_cputime(void);
+/*----------------------------------------------------------------------*
  |  pss_fr.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -684,10 +726,39 @@ void pss_getdims_name_handle(char       *name,
                              int	*ierr);
 void pss_status_to_err(FILE *inout);
 /*----------------------------------------------------------------------*
- | routine to initialise the cpu - time                  genk 05/02     |
+ | ccarat_visual2.c                                        genk 07/02   |
  *----------------------------------------------------------------------*/
-void ds_cputime_init(void);
-/*----------------------------------------------------------------------*
- | routine to meassure the cpu - time                    genk 05/02     |
- *----------------------------------------------------------------------*/
-double ds_cputime(void);
+/*!---------------------------------------------------------------------                                         
+\brief call of visual2 for fluid 
+
+<pre>                                                         genk 07/02      
+</pre>  
+\param  numf   int      (i)       actual number of fluid field
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void vis2caf(int numf);
+/*!---------------------------------------------------------------------                                         
+\brief  compute the array WCELL for use in QAT2V2 
+
+<pre>                                                         genk 07/02      
+</pre>  
+\param  *actfield     FIELD    (i)  actual field		 
+\return void                                                                       
+\warning QAT2V2 requires FORTRAN numbering, so increase node-numbers by one!!
+
+------------------------------------------------------------------------*/
+void v2cell(FIELD *actfield);
+/*!---------------------------------------------------------------------                                         
+\brief dummy routine 
+
+<pre>                                                         genk 07/02      
+
+since VISUAL2 is called by a fortran routine, this one is necessary, if
+VIS2-routines are not compiled into the program
+
+</pre>  		 
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void v2_init(void);

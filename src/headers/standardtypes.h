@@ -60,6 +60,10 @@
  *----------------------------------------------------------------------*/
 #include "dynamic.h"
 /*----------------------------------------------------------------------*
+ | structures used for fluid dynamic analysis             genk 05/02    |
+ *----------------------------------------------------------------------*/
+#include "fluid.h"
+/*----------------------------------------------------------------------*
  | structures used for bug and time tracing               m.gee 2/02    |
  *----------------------------------------------------------------------*/
 #include "tracing.h"
@@ -85,32 +89,35 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 typedef struct _FILES
 {
 /*------------------------------------------------------------- file I/O */
-char             *inputfile_name;         /*!< input file name             */
+char             *inputfile_name;         /* input file name             */
 
-char             *outputfile_kenner;      /*!< output file kenner          */
-char              outputfile_name[100];   /*!< output file name            */
-size_t            outlenght;              /*!< lenght of output file kenner*/
-int               num_outputfiles;        /*!< number of output files      */
-int               pss_counter;            /*!< number of records on pss-file */
+char             *outputfile_kenner;      /* output file kenner          */
+char              outputfile_name[100];   /* output file name            */
+char             *vispssfile_kenner;
+char              vispssfile_name[100];
+size_t            outlenght;              /* lenght of output file kenner*/
+size_t            vispsslength;
+int               num_outputfiles;        /* number of output files      */
+int               pss_counter;            /* number of records on pss-file */
 
-FILE             *in_input;               /*!< file-pointer input file     */
-FILE             *out_out;                /*!< file-pointer .out  file     */
-FILE             *out_err;                /*!< file-pointer .err  file     */
-FILE             *out_pss;                /*!< file ptr to restart-pss file */
-FILE             *in_pss;                 /*!< file-pointer .pss  file     */
+FILE             *in_input;               /* file-pointer input file     */
+FILE             *out_out;                /* file-pointer .out  file     */
+FILE             *out_err;                /* file-pointer .err  file     */
+FILE             *out_pss;                /* file ptr to restart-pss file */
+FILE             *in_pss;                 /* file-pointer .pss  file     */
 
-FILE             *gidmsh;                 /*!< file pointer .flavia.msh    */
-FILE             *gidres;                 /*!< file pointer .flavia.res    */
+FILE             *gidmsh;                 /* file pointer .flavia.msh    */
+FILE             *gidres;                 /* file pointer .flavia.res    */
 
 /*---------------------- variables needed by the free-field-input system */
-char              title[5][500];          /*!< problem title                */
-char              line[500];              /*!< linebuffer for reading       */
-char            **input_file;             /*!< copy of the input file in rows and columns */
-char             *input_file_hook;        /*!< ptr the copy of the input file is allocated to */
-int               numcol;                 /*!< number of cols in inputfile  */
-int               numrows;                /*!< number of rows in inputfile  */
-int               actrow;                 /*!< rowpointer used by fr        */
-char             *actplace;               /*!< pointer to actual place in input-file */
+char              title[5][500];          /* problem title                */
+char              line[500];              /* linebuffer for reading       */
+char            **input_file;             /* copy of the input file in rows and columns */
+char             *input_file_hook;        /* ptr the copy of the input file is allocated to */
+int               numcol;                 /* number of cols in inputfile  */
+int               numrows;                /* number of rows in inputfile  */
+int               actrow;                 /* rowpointer used by fr        */
+char             *actplace;               /* pointer to actual place in input-file */
 } FILES;
 /*! @} (documentation module close)*/
 
@@ -129,6 +136,7 @@ int               struct_stress_file;  /* write structural stress to .out */
 int               struct_disp_gid;     /* write structural displacements to .flavia.res */
 int               struct_stress_gid;   /* write structural stresses to .flavia.res */
 int               fluid_sol_file;      /* write vel/pre to .out */
+int               fluid_vis_file;      /* write solution to pss-file for VISUAL2 */
 } IO_FLAGS;
 
 
@@ -189,6 +197,7 @@ int               nmat;          /* total number of material laws */
 int               numfld;        /* number of fields */
 int               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
 int               restart;       /* is restart or not */
+int               visual;        /* flag for visualise mode or not */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
