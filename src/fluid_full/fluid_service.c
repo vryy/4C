@@ -351,8 +351,12 @@ these data are copied to sol_increment.
 
 ------------------------------------------------------------------------*/
 void fluid_init(
-		          FIELD             *actfield,  
+                          PARTITION	    *actpart,
+                          INTRA	            *actintra,
+			  FIELD             *actfield,  
                           FLUID_DYNAMIC     *fdyn,
+                          CALC_ACTION       *action,
+			  CONTAINER         *container,
 		          INT                numr,
 		          FLUID_STRESS       str	
 	       )      
@@ -366,6 +370,7 @@ INT    numnp=0;      /* number of nodes at actual element               */
 INT    predof;       /* pressure dof number                             */
 INT    numveldof;    /* number of veld dofs                             */
 INT    found;
+INT    num;
 DOUBLE dens;         /* density                                         */
 NODE  *actnode;      /* the actual node                                 */
 GNODE *actgnode;     /* the actual gnode                                */
@@ -406,12 +411,92 @@ for (i=0;i<numnp_total;i++)
       amzero(&(actnode->sol_increment));
 }
 
+/*-------------------- check for stress calculation and allocate arrays */
+switch (str)
+{
+case str_none: /* do nothing */
+break;
+#ifdef D_FSI
+case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nodes */
+   for (i=0;i<numele_total;i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      numnp=actele->numnp;
+      found=0;
+      for (j=0;j<numnp;j++)
+      {
+         actnode=actele->node[j];
+	 actgnode = actnode->gnode;
+	 if (actgnode->mfcpnode[0]!=NULL) found=1;
+      }
+      if (found==1)
+      {
+#ifdef D_FLUID2
+         if (numdf==3)    
+            amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
+#endif
+#ifdef D_FLUID3
+         if (numdf==4)
+            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+#endif	 
+      }
+   }
+break;   
+#endif
+case str_all: /* allocate stress field for all elements */
+   for (i=0;i<numele_total;i++)
+   {
+      actele = &(actfield->dis[0].element[i]);   
+#ifdef D_FLUID2
+      if (numdf==3)    
+         amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
+#endif
+#ifdef D_FLUID3
+      if (numdf==4)
+         amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+#endif	 
+   }
+break;   
+default:
+   dserror("option for 'str' not implemented yet!\n");
+}
+
+/*--------------- allocate curvature field for elements at free surface */
+if (fdyn->surftens>0)
+{
+   for (i=0;i<numele_total;i++)
+   {
+      actele = &(actfield->dis[0].element[i]);      
+#ifdef D_FLUID2
+      if (numdf==3)
+      {             
+	 if (actele->e.f2->fs_on==0) continue;
+	 {
+	    amdef("kappa_ND",&(actele->e.f2->kappa_ND),numnp,2,"DA");
+            amzero(&(actele->e.f2->kappa_ND));
+         }
+      }
+#endif
+#ifdef D_FLUID3
+      if (numdf==4)
+         dserror("curvature not implemented for 3D fluid elements!\n");
+#endif
+   }
+}
+
 /*--------- inherit the neuman conditions from design to discretization */
 for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
 
-/*---------------------- check if there are data from fluid_start_data */
+/*-------------------------------------------- create the initial field */
 if (fdyn->init>=1)
 {
+   if (fdyn->init==1) /*------------ initial data from fluid_start.data */
+      inp_fluid_start_data(actfield,fdyn);
+
+   if (fdyn->init==2) /*-------------------- initial data from pss file */
+      restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,
+                            container);
+			    
    if (fdyn->init==6) /*--------------------------------- solitary wave */
    {
       actele = &(actfield->dis[0].element[0]);
@@ -487,82 +572,7 @@ if (fdyn->init>=1)
 	 actnode->sol_increment.a.da[3][0] = u1;  
 	 actnode->sol_increment.a.da[3][1] = u2;  
 	 actnode->sol_increment.a.da[3][2] = p ;
-
       }    
-   }
-}
-
-
-/*-------------------- check for stress calculation and allocate arrays */
-switch (str)
-{
-case str_none: /* do nothing */
-break;
-#ifdef D_FSI
-case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nodes */
-   for (i=0;i<numele_total;i++)
-   {
-      actele = &(actfield->dis[0].element[i]);
-      numnp=actele->numnp;
-      found=0;
-      for (j=0;j<numnp;j++)
-      {
-         actnode=actele->node[j];
-	 actgnode = actnode->gnode;
-	 if (actgnode->mfcpnode[0]!=NULL) found=1;
-      }
-      if (found==1)
-      {
-#ifdef D_FLUID2
-         if (numdf==3)    
-            amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
-#endif
-#ifdef D_FLUID3
-         if (numdf==4)
-            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-#endif	 
-      }
-   }
-break;   
-#endif
-case str_all: /* allocate stress field for all elements */
-   for (i=0;i<numele_total;i++)
-   {
-      actele = &(actfield->dis[0].element[i]);   
-#ifdef D_FLUID2
-      if (numdf==3)    
-         amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
-#endif
-#ifdef D_FLUID3
-      if (numdf==4)
-         amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-#endif	 
-   }
-break;   
-default:
-   dserror("option for 'str' not implemented yet!\n");
-}
-
-/*--------------- allocate curvature field for elements at free surface */
-if (fdyn->surftens>0)
-{
-   for (i=0;i<numele_total;i++)
-   {
-      actele = &(actfield->dis[0].element[i]);      
-#ifdef D_FLUID2
-      if (numdf==3)
-      {             
-	 if (actele->e.f2->fs_on==0) continue;
-	 {
-	    amdef("kappa_ND",&(actele->e.f2->kappa_ND),numnp,2,"DA");
-            amzero(&(actele->e.f2->kappa_ND));
-         }
-      }
-#endif
-#ifdef D_FLUID3
-      if (numdf==4)
-         dserror("curvature not implemented for 3D fluid elements!\n");
-#endif
    }
 }
 

@@ -13,6 +13,12 @@
 #include "fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
@@ -124,8 +130,10 @@ INT             init;               /* flag for solver_control call     */
 INT             calstress=0;        /* flag for stress calculation      */
 INT             nsysarray=1;        /* one system matrix                */
 INT             actsysarray=0;      /* number of actual sysarray        */
-INT             outstep=0;          /* counter for time integration     */
-INT             pssstep=0;
+INT             outstep=0;          /* counter for output control       */
+INT             resstep=0;          /* counter for output control       */
+INT             pssstep=0;	    /* counter for output control	*/
+INT             restartstep=0;
 INT             iststep=0;          /* counter for time integration     */
 INT             nfrastep;           /* number of steps for fractional-
                                        step-theta procedure             */
@@ -133,6 +141,8 @@ INT             actcurve;           /* actual timecurve                 */
 INT             converged=0;        /* convergence flag                 */
 INT             steady=0;           /* flag for steady state            */
 INT             actpos;             /* actual position in sol. history  */
+INT             restart;
+INT             step_s;
 DOUBLE          vrat,prat;          /* convergence ratios               */
 DOUBLE          t1,ts,te;	    /*					*/
 DOUBLE          tes=0.0;            /*					*/
@@ -169,11 +179,13 @@ actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 dynvar      = &(fdyn->dynvar);
+restart     = genprob.restart;
 container.actndis  = 0;
 container.turbu    = fdyn->turbu;
 container.fieldtyp = actfield->fieldtyp;
 str         = str_none;
 dynvar->acttime=ZERO;
+
 /*---------------- if we are not parallel, we have to allocate an alibi * 
   ---------------------------------------- intra-communicator structure */
 #ifdef PARALLEL 
@@ -207,6 +219,8 @@ solserv_getmatdims(actsolv->sysarray[actsysarray],
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
+for (i=0;i<par.nprocs;i++)
+if (par.myrank==i)
 printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n", 
         par.myrank,numeq);
 #ifdef PARALLEL
@@ -239,7 +253,17 @@ if (par.myrank==0 && ioflags.fluid_vis_file==1 )
 amdef("time",&time_a,1000,1,"DV");
 
 /*--------------------------------------------- initialise fluid field */
-fluid_init(actfield,fdyn,4,str);		     
+if (restart>0)
+{
+   if (fdyn->init>0)
+      dserror("Initial field either by restart, or by function or from file ...\n");
+   else
+   {
+      fdyn->resstep=genprob.restart;
+      fdyn->init=2;
+   }
+}
+fluid_init(actpart,actintra,actfield,fdyn,action,&container,4,str);		     
 actpos=0;
 
 /*--------------------------------------- init all applied time curves */
@@ -275,7 +299,11 @@ calinit(actfield,actpart,action,&container);
 
 /*-------------------------------------- print out initial data to .out */
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-actpos++;
+if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
+{
+   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
+   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+}
 
 
 /*======================================================================* 
@@ -294,6 +322,14 @@ fdyn->step++;
 iststep++;
 
 /*------------------------------------------ check (starting) algorithm */
+if (restart!=0)
+{
+   step_s=fdyn->step;
+   fdyn->step=1;
+   fluid_startproc(fdyn,&nfrastep);
+   restart=0; 
+   fdyn->step = step_s;
+}
 if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
 
 /*------------------------------ calculate constants for time algorithm */
@@ -415,16 +451,10 @@ solserv_sol_copy(actfield,0,1,1,3,1);
 /*---------------------------------------------- finalise this timestep */
 outstep++;
 pssstep++;
+resstep++;
+restartstep++;
 
-/*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
-           and transform kinematic to real pressure --------------------*/
-fluid_sol_copy(actfield,0,1,0,3,actpos,fdyn->numdf);
-
-if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
-{
-   outstep=0;
-   out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-}
+/*---------------------------------------------- write solution to .pss */
 if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 {
    pssstep=0;   
@@ -435,9 +465,36 @@ if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
    actpos++;
 }
 
+/*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
+           and transform kinematic to real pressure --------------------*/
+fluid_sol_copy(actfield,0,1,0,3,actpos,fdyn->numdf);
+
+/*--------------------------------------- write solution to .flavia.res */
+if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0) 
+{
+   resstep=0;
+   out_checkfilesize(1);
+   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
+   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+}
+
+/*---------------------------------------------- write solution to .out */
+if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
+{
+   outstep=0;
+   out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+}
+
+/*------------------------------------------- write restart to pss file */
+if (restartstep==fdyn->res_write_evry)
+{
+   restartstep=0;
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,container);   
+}
+
 /*--------------------- check time and number of steps and steady state */
 if (fdyn->step < fdyn->nstep && fdyn->time <= fdyn->maxtime && steady==0)
-   goto timeloop;
+   goto timeloop; 
 /*----------------------------------------------------------------------*
  | -->  end of timeloop                                                 |
  *----------------------------------------------------------------------*/
@@ -449,16 +506,6 @@ if (pssstep==0) actpos--;
 /*------------------------------------- print out solution to .out file */
 if (outstep!=0 && ioflags.fluid_sol_file==1)
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-
-/*----------------------------- print out solution to 0.flavia.res file */
-if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
-{
-    for(i=0;i<=actpos;i++)
-    {
-        out_gid_sol("velocity",actfield,actintra,i,i);
-        out_gid_sol("pressure",actfield,actintra,i,i);
-    }
-}
 
 /*------------------------------------ print out solution to 0.pss file */
 if (ioflags.fluid_vis_file==1 && par.myrank==0)

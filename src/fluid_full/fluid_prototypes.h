@@ -137,13 +137,15 @@ void fluid_icons(
 		          INT                itnum           
 		);
 void fluid_init(
-		          FIELD             *actfield,  
+                          PARTITION	    *actpart,
+                          INTRA	            *actintra,
+			  FIELD             *actfield,  
                           FLUID_DYNAMIC     *fdyn,
+                          CALC_ACTION       *action,
+			  CONTAINER         *container,
 		          INT                numr,
 		          FLUID_STRESS       str	
 	       );
-
-
 void fluid_norm(          
                           FLUID_DYNAMIC     *fdyn, 	     
                           FIELD             *actfield,    
@@ -264,6 +266,9 @@ void fluid_stat(void);
 /************************************************************************
  | inp_fluid_start_data.c                                               |
  ************************************************************************/
-void inp_fluid_start_data(void);
+void inp_fluid_start_data( FIELD   *actfield,
+                           FLUID_DYNAMIC *fdyn
+			 )
+;
 
 /*! @} (documentation module close)*/
