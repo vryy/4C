@@ -63,19 +63,20 @@ DOUBLE acttime;
  *----------------------------------------------------------------------*/
 void dyn_nln_structural() 
 {
-INT             i;                  /* simply a counter */
-INT             numeq;              /* number of equations on this proc */
-INT             numeq_total;        /* total number of equations */
-INT             init;               /* flag for solver_control call */
-INT             itnum;              /* counter for NR-Iterations */
-INT             convergence;        /* convergence flag */
-DOUBLE          dmax;               /* infinity norm of residual displacements */
+int             i;                  /* simply a counter */
+int             numeq;              /* number of equations on this proc */
+int             numeq_total;        /* total number of equations */
+int             init;               /* flag for solver_control call */
+int             itnum;              /* counter for NR-Iterations */
+int             convergence;        /* convergence flag */
+int             mod_disp,mod_stress;
+double          dmax;               /* infinity norm of residual displacements */
 
-INT             stiff_array;        /* indice of the active system sparse matrix */
-INT             mass_array;         /* indice of the active system sparse matrix */
-INT             damp_array;         /* indice of the active system sparse matrix */
-INT             num_array;          /* indice of global stiffness matrices */
-INT             actcurve;           /* indice of active time curve */
+int             stiff_array;        /* indice of the active system sparse matrix */
+int             mass_array;         /* indice of the active system sparse matrix */
+int             damp_array;         /* indice of the active system sparse matrix */
+int             num_array;          /* indice of global stiffness matrices */
+int             actcurve;           /* indice of active time curve */
 
 SOLVAR         *actsolv;            /* pointer to active solution structure */
 PARTITION      *actpart;            /* pointer to active partition */
@@ -91,10 +92,10 @@ DIST_VECTOR    *dispi;              /* distributed vector to hold incremental di
 DIST_VECTOR    *work;               /* working vectors */
 
 ARRAY           intforce_a;         /* redundant vector of full length for internal forces */
-DOUBLE         *intforce;
+double         *intforce;
 ARRAY           dirich_a;           /* redundant vector of full length for dirichlet-part of rhs */
-DOUBLE         *dirich;
-DOUBLE          dirichfacs[10];      /* factors needed for dirichlet-part of rhs */
+double         *dirich;
+double          dirichfacs[10];      /* factors needed for dirichlet-part of rhs */
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
@@ -734,7 +735,11 @@ dynnle(&dynvar,sdyn,actintra,actsolv,&dispi[0],&fie[1],&fie[2],
 dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
 dynvar.etot = dynvar.epot + dynvar.ekin;
 
+/*------------------------------- check whether to write results or not */
+mod_disp   = sdyn->step % sdyn->updevry_disp;
+mod_stress = sdyn->step % sdyn->updevry_stress;
 /*------------------------------------------ perform stress calculation */
+if (mod_stress==0 || mod_disp==0)
 if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 {
    *action = calc_struct_stress;
@@ -744,6 +749,7 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    calreduce(actfield,actpart,actintra,action,0);
 }
 /*-------------------------------------------- print out results to out */
+if (mod_stress==0 || mod_disp==0)
 if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
 {
   out_sol(actfield,actpart,actintra,sdyn->step,0);
@@ -751,12 +757,14 @@ if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
 /*--------------------------------------------- printout results to gid */
 if (par.myrank==0) 
 {
+   if (mod_disp==0)
    if (ioflags.struct_disp_gid==1)
    {
       out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
       out_gid_sol("velocities",actfield,actintra,sdyn->step,1);
       out_gid_sol("accelerations",actfield,actintra,sdyn->step,2);
    }
+   if (mod_stress==0)
    if (ioflags.struct_stress_gid==1)
    out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0);
 }

@@ -481,7 +481,7 @@ case 0:
 /*--------------------------------------------------------------------*/
 /*
    --------------------------------------------------------
-   STEP 15: permute the solution into the original ordering
+   STEP 16: permute the solution into the original ordering
             and assemble the solution onto processor zero
    --------------------------------------------------------
 */
