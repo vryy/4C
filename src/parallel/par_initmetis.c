@@ -14,21 +14,27 @@ Maintainer: Malte Neumann
 #include "../fluid3/fluid3.h"
 #include "../ale3/ale3.h"
 #ifdef PARALLEL 
-#ifdef SUN
-#include "../../../lib_sun/metis-4.0/Lib/metis.h"
+
+#ifdef HPUX10
+#include "metis/metis.h"
 #endif
+
+#ifdef HPUX11
+#include "metis/metis.h"
+#endif
+
+#ifdef HPUXITA
+#include "metis/metis.h"
+#endif
+
 #ifdef AZUSA
 #include "../../../../lib_ita1/metis/metis.h"
 #endif
-#ifdef HPUX10
-#include "/bau/stat33/users/statik/lib/METIS/metis.h"
+
+#ifdef SUN
+#include "../../../lib_sun/metis-4.0/Lib/metis.h"
 #endif
-#ifdef HPUX11
-#include "/bau/stat33/users/statik/lib/METIS/metis.h"
-#endif
-#ifdef HPUXITA
-#include "/bau/stat33/users/statik/lib/METIS/metis.h"
-#endif
+
 #endif
 static INT MAXNODPERGLINE=3;
 /*----------------------------------------------------------------------*

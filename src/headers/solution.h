@@ -17,28 +17,32 @@ Maintainer: Malte Neumann
 #ifdef PARALLEL 
 /*-------------------------------- with mpi parallel version of aztec2.1*/
 
-#ifdef HPUXITA
-#include </bau/stat16/users/statik/lib/AZTEC21_MPI/az_aztec.h>
+#ifdef HPUX10
+#include <aztec21/az_aztec.h>
 #endif
 
 #ifdef HPUX11
-#include </bau/stat33/users/statik/lib/AZTEC21_MPI/az_aztec.h>
+#include <aztec21/az_aztec.h>
 #endif
 
-#ifdef HPUX10
-#include </bau/stat33/users/statik/lib/AZTEC21_MPI/az_aztec.h>
-#endif
-
-#ifdef SUN
-#include "../../../lib_sun/aztec21/lib/az_aztec.h"
+#ifdef HPUXITA
+#include <aztec21/az_aztec.h>
 #endif
 
 #ifdef SUSE73
-#include "../../../lib_linux/aztec21/lib/az_aztec.h"
+#include <aztec21/az_aztec.h>
+#endif
+
+#ifdef BULL
+#include <aztec21/az_aztec.h>
 #endif
 
 #ifdef AZUSA
 #include "../../../../lib_ita1/aztec21/lib/az_aztec.h"
+#endif
+
+#ifdef SUN
+#include "../../../lib_sun/aztec21/lib/az_aztec.h"
 #endif
 
 #ifdef LINUX_MUENCH
@@ -49,26 +53,26 @@ Maintainer: Malte Neumann
 #include <aztec21/lib/az_aztec.h>
 #endif
 
-#ifdef BULL
-#include "../../../../lib_bull/aztec21/lib/az_aztec.h"
-#endif
-
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
-#ifdef HPUXITA
-#include </bau/stat16/users/statik/lib/AZTEC21/az_aztec.h>
+#ifdef HPUX10
+#include <aztec21/az_aztec.h>
 #endif
 
 #ifdef HPUX11
-#include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
+#include <aztec21/az_aztec.h>
 #endif
 
-#ifdef HPUX10
-#include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
+#ifdef HPUXITA
+#include <aztec21/az_aztec.h>
 #endif
 
 #ifdef SUSE73
-#include "../../../lib_linux/aztec21/lib/az_aztec.h"
+#include <aztec21/az_aztec.h>
+#endif
+
+#ifdef BULL
+#include <aztec21/az_aztec.h>
 #endif
 
 #ifdef LINUX_MUENCH
@@ -102,28 +106,28 @@ Maintainer: Malte Neumann
 #ifdef PARALLEL 
 #ifdef SPOOLES_PACKAGE
 
-#ifdef SUN
-#include "../../../lib_sun/spooles/MPI/spoolesMPI.h"
-#endif
-
 #ifdef HPUX10
-#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#include <spooles/MPI/spoolesMPI.h>
 #endif
 
 #ifdef HPUX11
-#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#include <spooles/MPI/spoolesMPI.h>
 #endif
 
 #ifdef HPUXITA
-#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#include <spooles/MPI/spoolesMPI.h>
+#endif
+
+#ifdef SUSE73
+#include <spooles/MPI/spoolesMPI.h>
 #endif
 
 #ifdef AZUSA
 #include "../../../../lib_ita1/spooles/MPI/spoolesMPI.h"
 #endif
 
-#ifdef SUSE73
-#include "../../../lib_linux/spooles/MPI/spoolesMPI.h"
+#ifdef SUN
+#include "../../../lib_sun/spooles/MPI/spoolesMPI.h"
 #endif
 
 #ifdef LINUX_MUENCH
@@ -138,18 +142,18 @@ Maintainer: Malte Neumann
 #endif
 
 /*----------------------------------------------------------------------*
- | includes for solver package UMFPACK              s.offermanns 5/02    |
+ | includes for solver package UMFPACK                      mn 05/02    |
  *----------------------------------------------------------------------*/
 #ifdef UMFPACK
 
 #ifdef SUSE73
-#include "../../../lib_linux/umfpack/include/umfpack.h"
+#include <umfpack/umfpack.h>
 #elif defined(LINUX_MUENCH)
 #include <umfpack.h>
 #elif defined(HPUX_MUENCH)
 #include <umfpack.h>
 #else
-#include "/bau/stat16/users/statik/lib/UMFPACK/include/umfpack.h"
+#include <umfpack/umfpack.h>
 #endif
 
 #endif

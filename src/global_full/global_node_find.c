@@ -11,19 +11,28 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#ifdef PARALLEL
-#ifdef SUN
-#include "../../../lib_sun/metis-4.0/Lib/metis.h"
+#ifdef PARALLEL 
+
+#ifdef HPUX10
+#include "metis/metis.h"
 #endif
+
+#ifdef HPUX11
+#include "metis/metis.h"
+#endif
+
+#ifdef HPUXITA
+#include "metis/metis.h"
+#endif
+
 #ifdef AZUSA
 #include "../../../../lib_ita1/metis/metis.h"
 #endif
-#ifdef HPUX10
-#include "/bau/stat33/users/statik/lib/METIS/metis.h"
+
+#ifdef SUN
+#include "../../../lib_sun/metis-4.0/Lib/metis.h"
 #endif
-#ifdef HPUX11
-#include "/bau/stat33/users/statik/lib/METIS/metis.h"
-#endif
+
 #endif
 /*----------------------------------------------------------------------*
  | find a partner coupling compatible node                m.gee 8/00    |
