@@ -139,8 +139,20 @@ for (line=0; line<ngline; line++)
 	 nsigma[i][j] = ele->e.f2->stress_ND.a.da[iegnod[j]][i];
 
       actnode=ele->node[iegnod[j]];	/* coordinates			*/
-      xyzl[0][j] = actnode->x[0];
-      xyzl[1][j] = actnode->x[1];
+      if (genprob.numfld == 1) /* single field problem                  */
+      {
+         xyzl[0][j] = actnode->x[0];
+         xyzl[1][j] = actnode->x[1];
+      }
+      else                     /* multi field problem                   */
+      {
+         GNODE *actfgnode;
+         NODE  *actanode;
+         actfgnode = actnode->gnode;
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         xyzl[0][j] = actnode->x[0] + actanode->sol_mf.a.da[1][0];
+         xyzl[1][j] = actnode->x[1] + actanode->sol_mf.a.da[1][1];
+      }
    }
 
    /*--------------------- get center of area exposed to lift & drag ---*/
