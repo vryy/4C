@@ -13,6 +13,10 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
+#ifdef D_SSI
+#include "../ssi_full/ssi_prototypes.h"
+#endif
+
 #ifdef D_SHELL9
    #include "../shell9/shell9.h"
 #endif /*D_SHELL9*/
@@ -74,6 +78,23 @@ if (container->inherit>0)
 for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
 /*---------------------------------- calculate point neumann conditions */
 if (container->point_neum>0) rhs_point_neum(rhs,rhs1->numeq_total,actpart);
+/*-------------------------------- assemble rhs for ssi coupling forces */
+#ifdef D_SSI
+if (*action == calc_struct_ssiload) 
+{  
+  ssiserv_rhs_point_neum(rhs,rhs1->numeq_total,actpart);
+  *action = calc_struct_eleload;
+}
+#endif
+#ifdef D_MORTAR
+#ifdef D_FSI
+if (*action == calc_struct_fsiload_mtr) 
+{  
+  fsiserv_rhs_point_neum(rhs,rhs1->numeq_total,actpart);
+  *action = calc_struct_eleload;
+}
+#endif
+#endif
 /*--- line/surface/volume loads are a matter of element integration and */
 /*                                            different in each element */
 #if 0
