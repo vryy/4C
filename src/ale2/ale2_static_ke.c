@@ -37,7 +37,7 @@ This routine integrates the linear stiffness for the 2d ale element
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
-             ale2_mat_linel(), ale_keku(), ale2_hourglass(); 
+             ale2_mat_linel(), ale2_keku(), ale2_hourglass(); 
              called by: ale2()
 
 *----------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------------- call material law ---*/
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
-     ale_keku(estif,bop,D,fac,nd,numeps);
+     ale2_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
      if(ele->distyp==quad4 && nir == 1 && nis == 1)
        ale2_hourglass(ele,estif);
@@ -207,7 +207,7 @@ determinant
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
-             ale2_mat_linel(), ale_keku(), ale2_hourglass(),
+             ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
 	     ale2_min_jaco(), write_element_quality(); 
              called by: ale2()
 
@@ -345,7 +345,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------------- call material law ---*/
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
-     ale_keku(estif,bop,D,fac,nd,numeps);
+     ale2_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
 /*     if(nir == 1 && nis == 1)
        ale2_hourglass(ele,estif); */
@@ -387,7 +387,7 @@ distortion
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
-             ale2_mat_linel(), ale_keku(), ale2_hourglass(),
+             ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
 	     ale2_min_jaco(), write_element_quality(); 
              called by: ale2()
 
@@ -563,7 +563,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------------- call material law ---*/
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
-     ale_keku(estif,bop,D,fac,nd,numeps);
+     ale2_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
      if(nir == 1 && nis == 1)
        ale2_hourglass(ele,estif);
@@ -634,7 +634,7 @@ the results of a test step [see Chiandussi et al. 2000]
 \return void                                               
 \sa calling: ale2_min_jaco(), ale2_el_area(), ale2_intg(), 
              ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
-	     ale2_mat_linel(), ale_keku(), ale2_hourglass(), 
+	     ale2_mat_linel(), ale2_keku(), ale2_hourglass(), 
 	     ale2_min_jaco(), write_element_quality();
              called by: ale2()
 
@@ -828,7 +828,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------------- call material law ---*/
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
-     ale_keku(estif,bop,D,fac,nd,numeps);
+     ale2_keku(estif,bop,D,fac,nd,numeps);
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
 end:
@@ -1002,7 +1002,7 @@ the element which is represented by the minimal Jacobian determinant.
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
-             ale2_mat_linel(), ale_keku(), ale2_hourglass(),
+             ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
 	     ale2_min_jaco(), write_element_quality(); 
              called by: ale2()
 
