@@ -114,12 +114,14 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   dstrc_enter("out_gid_sol_fsi");
 #endif
   /*----------------------------------------------------------------------*/
-  sdyn= alldyn[0].sdyn;
-  fdyn= alldyn[1].fdyn;
-  fsidyn= alldyn[3].fsidyn;
+  if (structfield!=NULL)
+  sdyn= alldyn[genprob.numsf].sdyn;
+  fdyn= alldyn[genprob.numff].fdyn;
+  fsidyn= alldyn[genprob.numfld].fsidyn;
   /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
   actintraf    = &(par.intra[genprob.numff]);
+  if (structfield!=NULL)
   actintras    = &(par.intra[genprob.numsf]);
 #else
   actintraf   = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -127,14 +129,17 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   actintraf->intra_fieldtyp = fluid;
   actintraf->intra_rank     = 0;
   actintraf->intra_nprocs   = 1;
+  if (structfield!=NULL)
+  {
   actintras   = (INTRA*)CCACALLOC(1,sizeof(INTRA));
   if (!actintras) dserror("Allocation of INTRA failed");
   actintras->intra_fieldtyp = structure;
   actintras->intra_rank     = 0;
   actintras->intra_nprocs   = 1;
+  }
 #endif
 
-
+  if (structfield!=NULL)
   if ( sdyn->step != fdyn->step)
     dserror("Something is wrong!!");
 
@@ -156,11 +161,12 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     /*-------------------------------------------------------------------*/
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"# RESULT DISPLACEMENTS on FIELD FSI\n");
+    fprintf(out,"# TIME %18.5E \n",fsidyn->time);   
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"RESULT %cdisplacement%c %cccarat%c %d %s %s\n",
         sign,sign,
         sign,sign,
-        sdyn->step,
+        fdyn->step,
         resulttype,
         resultplace
         );
@@ -190,7 +196,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     /*-------------------------------------------------------------------*/
     fprintf(out,"VALUES\n");
   }
-  if (ioflags.struct_disp_gid==1)
+  if (ioflags.struct_disp_gid==1 && structfield!=NULL)
   {
     for (i=0; i<structfield->dis[0].numnp; i++)
     {
@@ -282,19 +288,19 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   /* write velocities and pressure of fluid field */
   if (ioflags.fluid_sol_gid==1) 
   {
-    out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos);
-    out_gid_sol("pressure",fluidfield,actintraf,fdyn->step,fsidyn->actpos);
+    out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
+    out_gid_sol("pressure",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
   }
 
 
   /* write velocities, accelerations and stresses of structure field */
-  if (ioflags.struct_disp_gid==1)
+  if (ioflags.struct_disp_gid==1 && structfield!=NULL)
   {
-    out_gid_sol("velocities",structfield,actintras,sdyn->step,1);
-    out_gid_sol("accelerations",structfield,actintras,sdyn->step,2);
+    out_gid_sol("velocities",structfield,actintras,sdyn->step,1,fsidyn->time);
+    out_gid_sol("accelerations",structfield,actintras,sdyn->step,2,fsidyn->time);
   }
-  if (ioflags.struct_stress_gid==1)
-    out_gid_sol("stress"      ,structfield,actintras,sdyn->step,0);
+  if (ioflags.struct_stress_gid==1 && structfield!=NULL)
+    out_gid_sol("stress"      ,structfield,actintras,sdyn->step,0,fsidyn->time);
 
 
   /*----------------------------------------------------------------------*/
