@@ -22,6 +22,13 @@ typedef struct _NEUM_CONDITION
      neum_increhydro_z
      }                         neum_type;
 
+     enum
+     {
+     mid,  /*nsurf=1*/
+     top,  /*nsurf=2*/
+     bot   /*nsurf=3*/
+     }                         neum_surf;    /* load applied on top, bottom or middle surface of shell element */
+
 } NEUM_CONDITION;
 /*----------------------------------------------------------------------*
  | dirichlet condition                                    m.gee 3/02    |
