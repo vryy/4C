@@ -625,7 +625,7 @@ case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nod
 #endif
 #ifdef D_FLUID3
          if (numdf==4)
-            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,12,"DA");
 #endif	 
       }
    }
@@ -642,7 +642,7 @@ case str_all: /* allocate stress field for all elements */
 #endif
 #ifdef D_FLUID3
       if (numdf==4)
-         amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+         amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,12,"DA");
 #endif	 
    }
 break;   
@@ -683,7 +683,7 @@ case str_liftdrag:
 	    break;
          }  
          if (ldflag>0)
-            amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+            amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,12,"DA");
       }
 #endif	
    }
