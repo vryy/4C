@@ -129,6 +129,8 @@ INT    *velpointer;	 /* index vector to old velocity dofs          */
 dstrc_enter("fluid_pm_calamatrix");
 #endif
 
+#ifdef MLPCG
+
 /*-------------------------- allocate the lumped mass matrix CSR-format */
 lumpedmass_csr=(DBCSR*)CCACALLOC(1,sizeof(DBCSR));
 
@@ -307,6 +309,10 @@ amdel(&prepointer_a);
 #endif
 
 /*----------------------------------------------------------------------*/
+#else
+  dserror("MLPCG needed, but not defined!!");
+#endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -560,6 +566,8 @@ NODE    *actnode;             /* actual node                            */
 dstrc_enter("assemble_fluid_amatrix");
 #endif
 
+#ifdef MLPCG
+
 /*---------------------------------------- set some values and pointers */
 /*  ATTENTION: lmass_global and gradopr_global are external global
                ARRAYS in this file                                      */
@@ -642,6 +650,10 @@ for (i=0;i<ndv;i++)
 }
 
 /*----------------------------------------------------------------------*/
+#else
+  dserror("MLPCG needed, but not defined!!");
+#endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
