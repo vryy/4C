@@ -323,6 +323,13 @@ for (n=0; n<nproc; n++)
    if (n==myrank) continue;
    nrecv += sendtor[n][myrank];
 }
+/*
+for (n=0; n<nproc; n++)
+{
+   printf("myrank %d send to %d : %d\n",myrank,n,sendtor[myrank][n]);
+   printf("myrank %d recv fr %d : %d\n",myrank,n,sendtor[n][myrank]);
+}
+*/
 /*------------------------------- loop sendtor and allocate sendbuffers */
 for (n=0; n<nproc; n++)
 {
@@ -394,6 +401,8 @@ request = (MPI_Request*)CALLOC(2*nsend,sizeof(MPI_Request));
 if (!request) dserror("Allocation of memory failed");
 /*-------------------------------------------------- now make the sends */
 counter=0;
+if (2*nsend>=10000) dserror("Processors unique tag range too small");
+tag = myrank*10000;
 for (n=0; n<nproc; n++)
 {
    if (myrank==n) continue;
@@ -401,10 +410,10 @@ for (n=0; n<nproc; n++)
    {
       isend = &(isbuff[n].a.ia[k][0]);
       dsend = &(dsbuff[n].a.da[k][0]);
-      MPI_Isend(isend,isend[0]+1,MPI_INT,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
-      counter++;
-      MPI_Isend(dsend,isend[0]+1,MPI_DOUBLE,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
-      counter++;
+      MPI_Isend(isend,isend[0]+1,MPI_INT,n,tag,actintra->MPI_INTRA_COMM,&(request[counter]));
+      counter++;tag++;
+      MPI_Isend(dsend,isend[0]+1,MPI_DOUBLE,n,tag,actintra->MPI_INTRA_COMM,&(request[counter]));
+      counter++;tag++;
    }
 }
 dsassert(counter==2*nsend,"number of sends wrong");
@@ -454,13 +463,19 @@ if (myrank==0) printf("work = Pt*incsr local    : %20.10f\n",t2-t1);
 t1 = ds_cputime();
 irecv = amdef("irbuff",&irbuff,1000,1,"IV");
 drecv = amdef("drbuff",&drbuff,1000,1,"IV");
-while (nrecv!=0)
+for (n=0; n<nproc; n++)
 {
+   if (n==myrank)
+      continue;
+   for (k=0; k<sendtor[n][myrank]; k++)
+   {
+
    flag = 0;
    while(!flag)
-      MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,actintra->MPI_INTRA_COMM,&flag,&status);
+      MPI_Iprobe(n,MPI_ANY_TAG,actintra->MPI_INTRA_COMM,&flag,&status);
    /*--------------------------------------------------- get the sender */
-   n = status.MPI_SOURCE;
+   if (n != status.MPI_SOURCE)
+     dserror("Sender not as expected\n");
    /*-------------------------------------------------------- check tag */
    tag = status.MPI_TAG;
    /*------------------------------------------------- get message size */
@@ -470,8 +485,8 @@ while (nrecv!=0)
    {
       amdel(&irbuff);
       amdel(&drbuff);
-      irecv = amdef("irbuff",&irbuff,ilength,1,"IV");
-      drecv = amdef("drbuff",&drbuff,ilength,1,"IV");
+      irecv = amdef("irbuff",&irbuff,ilength+10,1,"IV");
+      drecv = amdef("drbuff",&drbuff,ilength+10,1,"IV");
    }
    /*-------------------------------------- receive the integer message */
    MPI_Recv(irecv,ilength,MPI_INT,n,tag,actintra->MPI_INTRA_COMM,&status);
@@ -482,13 +497,27 @@ while (nrecv!=0)
    /*---------------------------------------------- check for right row */
    actrow = (int)drecv[0];
    owner = mlpcg_getowner(actrow,work->owner,nproc);
-   if (owner != myrank) dserror("Received message does not fit my piece of matrix");
+/*
+   printf("myrank %d : received from %4d row %4.1f tag %6d myowner from %d to %d\n",
+   myrank,n,drecv[0],tag,work->owner[myrank][0],work->owner[myrank][1]);
+*/
+   if (owner != myrank) 
+   {
+      printf("myrank %d message from %d row %f tag %d myowner from %d to %d!!!!!!!!!!!!!!!!!!!!!\n",
+             myrank,n,drecv[0],tag,work->owner[myrank][0],work->owner[myrank][1]);
+      dserror("Received message does not fit my piece of matrix");
+   }
    /*------------------------------------ put row to my piece of matrix */
    ncol = irecv[0];
    mlpcg_csr_addrow(work,actrow,&(drecv[1]),&(irecv[1]),ncol,actintra);
+
+
+   }
 }
+if (nrecv != 0) dserror("Numer of receives wrong");
 /*------------------------------------------ wait for all sent messages */
-for (i=0; i<2*nsend; i++) MPI_Wait(&(request[i]),&status);
+for (i=0; i<2*nsend; i++) 
+   MPI_Wait(&(request[i]),&status);
 /*======================================================================*/
 /*                                                       tidy up        */
 /*======================================================================*/
