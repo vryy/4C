@@ -89,28 +89,33 @@ dstrc_enter("stanln");
 #endif
 /*----------------------------------------------------------------------*/
 /*--------------------------------------------------- check for restart */
-res_control();
+res_control();/* There is not much inside yet... */
 /*------------ the distributed system matrix, which is used for solving */
 /* 
-   NOTE: This routine only uses 1 global sparse matrix, which was created
-         in global_mask_matrices. If You need more, it is necessary to allocate
-         more matrices in actsolv->sysarray.
-         Then one has to either copy the sparisty mask from 
-         actsolv->actsysarray[0] to the others if using the same matrix format,
-         or one has to call global mask matrices again for another type of 
-         sparsity mask.
-         Normally a control routine should not mix up different storage formats
-         for system matrices
+NOTE: This routine only uses 1 global sparse matrix, which was created
+      in global_mask_matrices. If You need more, it is necessary to allocate
+      more matrices in actsolv->sysarray.
+      Then one has to either copy the sparisty mask from 
+      actsolv->actsysarray[0] to the others if using the same matrix format,
+      or one has to call global mask matrices again for another type of 
+      sparsity mask.
+      Normally a control routine should not mix up different storage formats
+      for system matrices
 */         
+/*---- indize in the vector actsolv->sysarray[] of the stiffness matrix */
+/*   the sparse matrix actsolv->sysarray[actsysarray] is used as system */
+/*                                                               matrix */
+/*              the sparsity type is actsolv->sysarray_typ[actsysarray] */
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
-actfield    = &(field[0]);
-actsolv     = &(solv[0]);
-actpart     = &(partition[0]);
-action      = &(calc_action[0]);
+actfield    = &(field[0]);                      /* the structural field */
+actsolv     = &(solv[0]);         /* the corresponednt SOLVAR structure */
+actpart     = &(partition[0]);    /*     the partitioning of this field */
+action      = &(calc_action[0]);  /*        the calculation action enum */
 #ifdef PARALLEL 
-actintra    = &(par.intra[0]);
-/* if we are not parallel, we have to allocate an alibi intra-communicator structure */
+actintra    = &(par.intra[0]);    /*     the field's intra-communicator */
+/*---------------- if we are not parallel, we have to allocate a pseudo */
+/*                                         intra-communicator structure */
 #else
 actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
@@ -125,17 +130,21 @@ if (actintra->intra_fieldtyp != structure) goto end;
 /*------------------------------------------------ typ of global matrix */
 array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
+/*   numeq equations are on this proc, the total number of equations is */
+/*                                                          numeq_total */
 solserv_getmatdims(actsolv->sysarray[actsysarray],
                    actsolv->sysarray_typ[actsysarray],
                    &numeq,
                    &numeq_total);
 /*--------------------------------------------------- find control node */
+/*---- cdof is the dof number of the degree of freedom to be controlled */
 calstatserv_findcontroldof(actfield,
                            statvar->control_node_global,
                            statvar->control_dof,
                            &(statvar->controlnode),
                            &cdof); 
 /*------------------------------------------------- get type of control */
+/*              type of control algorithm (displacement, arclenght ...) */
 controltyp = statvar->nr_controltyp;
 /*------------------------------------------------- get number of steps */
 nstep      = statvar->nstep; 
@@ -169,35 +178,28 @@ solserv_zero_vec(&(dispi[0]));
 solserv_zero_vec(&(dispi[1]));
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(  
-                    actsolv,
-                    actintra,
-                  &(actsolv->sysarray_typ[actsysarray]),
-                  &(actsolv->sysarray[actsysarray]),
-                  &(actsolv->sol[actsysarray]),
-                  &(actsolv->rhs[actsysarray]),
-                    init
-              );
+solver_control(actsolv, actintra,
+               &(actsolv->sysarray_typ[actsysarray]),
+               &(actsolv->sysarray[actsysarray]),
+               &(actsolv->sol[actsysarray]),
+               &(actsolv->rhs[actsysarray]),
+                init);
 /*----------------------------- init the assembly for ONE sparse matrix */
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
 calinit(actfield,actpart,action);
 /*-------------------------------------- create the original rhs vector */
-*action = calc_struct_eleload;
-calrhs(
-          actfield,
-          actsolv,
-          actpart,
-          actintra,
-          actsysarray,
-          &(actsolv->rhs[actsysarray]),
-          &(actsolv->rhs[actsysarray+1]),
-          0,
-          action
-      );
-/*--------------------------------------------- add the two rhs vectors */
-solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]),1.0);
+/*-------------------------- the approbiate action is set inside calrhs */
+calrhs(actfield,
+       actsolv,
+       actpart,
+       actintra,
+       actsysarray,
+       &(actsolv->rhs[actsysarray]),
+       0,
+       action);
+/*--------------------------------------------------copy the rhs vector */
 solserv_copy_vec(&(actsolv->rhs[actsysarray]),&(actsolv->rhs[actsysarray+1]));
 /*----------------------------------------------------------------------*/
 /*          The original rhs vector is now on actsolv->rhs[actsysarray] */
@@ -207,6 +209,7 @@ solserv_copy_vec(&(actsolv->rhs[actsysarray]),&(actsolv->rhs[actsysarray+1]));
 /*------------------ calculate euclidian vector norm of external forces */
 solserv_vecnorm_euclid(actintra,&(actsolv->rhs[actsysarray+1]),&(nln_data.rinorm));
 /*----------------------------------------------------------------------*/
+/*--------------------------------------- set working variables to zero */
 nln_data.sp1   = 0.0;
 nln_data.csp   = 0.0;
 nln_data.rlold = 0.0;
@@ -218,61 +221,62 @@ amzero(&(nln_data.arcfac));
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
 if (par.myrank==0) 
 {
+   /* colors the partitions in the postprocessing, if this is sequentiell*/
+   /*              the picture of the partitions can be quite boring... */
    out_gid_domains(actfield);
 }
-/*----------------------------------------------------------------------*/
+/*======================================================================*/
 /*                     START LOOP OVER ALL STEPS                        */
-/*----------------------------------------------------------------------*/
+/*======================================================================*/
 for (kstep=0; kstep<nstep; kstep++)
 {
    /*---------------------------------------------- write memory report */
    if (par.myrank==0) dsmemreport();
-   dstrace_to_err();
+   /*---------- write report about all ARRAYs and ARRAY4Ds to .err file */
+   /*dstrace_to_err();*/
    /*--------------------------------------------------- make predictor */
-   conpre(
-           actfield,
-           actsolv,
-           actpart,
-           actintra,
-           action,
-           kstep,
-           actsysarray,
-           rsd,
-           dispi,
-           cdof,
-          &nln_data,
-           controltyp
-         );
+   conpre(actfield,
+          actsolv,
+          actpart,
+          actintra,
+          action,
+          kstep,
+          actsysarray,
+          rsd,
+          dispi,
+          cdof,
+         &nln_data,
+          controltyp);
    /*-------------------------------------- make equillibrium iteration */  
-   conequ(
-           actfield,
-           actsolv,
-           actpart,
-           actintra,
-           action,
-           kstep,
+   conequ(actfield,
+          actsolv,
+          actpart,
+          actintra,
+          action,
+          kstep,
           &itnum,
-           actsysarray,
-           rsd,
-           dispi,
-           re,
-           cdof,
+          actsysarray,
+          rsd,
+          dispi,
+          re,
+          cdof,
           &nln_data,
-           controltyp
-         );    
+          controltyp);    
    /*-- update for nonlinear material models - new stress/strain values */  
    *action = calc_struct_update_istep;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,action);
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
     /*-------------------------------------- perform stress calculation */
     if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
     {
        *action = calc_struct_stress;
-       calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,action);
+       calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
        /*---------------------- reduce stresses, so they can be written */
+       /*- this makes the result of the stress calculation redundant on */
+       /*                                                         procs */
        *action = calc_struct_stressreduce;
        calreduce(actfield,actpart,actintra,action,0);
     }
-    /*---------------------------------------- print out results to out */
+    /*--------------------------------------- print out results to .out */
     if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
     {
       out_sol(actfield,actpart,actintra,kstep,0);
@@ -286,6 +290,13 @@ for (kstep=0; kstep<nstep; kstep++)
        out_gid_sol("stress"      ,actfield,actintra,kstep,0);
     }
 } /* end of (kstep=0; kstep<nstep; kstep++) */
+/*----------------------------------------------------------------------*/
+/*---------------------------------------------------- make cleaning up */
+solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
+solserv_del_vec(&(actsolv->sol),actsolv->nsol);
+solserv_del_vec(&(re),1);
+solserv_del_vec(&(rsd),3);
+solserv_del_vec(&(dispi),2);
 /*----------------------------------------------------------------------*/
 end:
 #ifndef PARALLEL 
@@ -323,6 +334,7 @@ double               controldisp;      /* displacment value at controled dof */
 double               rldiff;           /* forgot.... */
 double               spi;              /* forgot.... */
 
+
 #ifdef DEBUG 
 dstrc_enter("conpre");
 #endif
@@ -335,8 +347,19 @@ solserv_zero_mat(
                  &(actsolv->sysarray_typ[actsysarray])
                 );
 /*----------------------- calculate tangential stiffness in actsysarray */
+/*----- calculate the rhs resulting from dirichlet conditions in dirich */
 *action = calc_struct_nlnstiff;
-calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,kstep,action);
+calelm(actfield,
+       actsolv,
+       actpart,
+       actintra,
+       actsysarray,
+       -1,
+       NULL,
+       NULL,
+       0,
+       kstep,
+       action);
 /*----- copy original load vector from [actsysarray+1] to [actsysarray] */
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
 /*------------------------------------------ solve for incremental load */
@@ -409,7 +432,6 @@ solserv_scalarprod_vec(&(rsd[0]),rldiff);
 solserv_copy_vec(&(rsd[0]),&(dispi[0]));
 /*---------------------------------------- make new norm of load vector */
 nln_data->rrnorm = nln_data->rinorm * nln_data->rlnew;
-
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -460,7 +482,6 @@ double               rsd2;
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 double              *intforce;               /* pointer to intforce_a.a.dv */
-
 #ifdef DEBUG 
 dstrc_enter("conequ");
 #endif
@@ -554,6 +575,7 @@ calelm(actfield,
        actsysarray,
        -1,
        intforce,
+       NULL,
        actsolv->sol[0].numeq_total,
        kstep,
        action);
@@ -570,28 +592,24 @@ assemble_vec(actintra,
 /*                                                initial guess is zero */
 init=0;
 solserv_zero_vec(&(rsd[2]));
-solver_control(  
-                 actsolv,
+solver_control(  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(rsd[2]),
                &(re[0]),
-                 init
-              );
+                 init);
 /*-------------------------------------- solve for original load vector */
 /*                                                          K * du1 = P */
-/*                                initial guess is values of last solve */
+/*                                 initial guess is value of last solve */
 init=0;
-solver_control(  
-                 actsolv,
+solver_control(  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(rsd[1]),
-               &(actsolv->rhs[actsysarray+1]),
-                 init
-              );
+               &(actsolv->rhs[actsysarray]),
+                 init);
 /*===============================make increment of load and displacment */
 switch(controltyp)
 {
@@ -636,7 +654,7 @@ nln_data->renorm = renorm;
 nln_data->rrnorm = nln_data->rinorm * rlnew;
 /*------------------------------------- calculate norm of displacements */
 solserv_vecnorm_euclid(actintra,&(dispi[0]),&dnorm);
-/*----------------- calculate norm of updated incremental displacements */
+/*----------------------- calculate norm of updated incr. displacements */
 solserv_vecnorm_euclid(actintra,&(rsd[0]),&dinorm);
 /*----------------------------------------------- check for convergence */
 told=0.0;
@@ -746,7 +764,7 @@ double               rli1,rli2;
 double               valcos1,valcos2;
 
 #ifdef DEBUG 
-dstrc_enter("increment_controldisp");
+dstrc_enter("increment_controlarc");
 #endif
 /*----------------------------------------------------------------------*/
 val1 = val2 = val3 = val4 = val5 = val6 = 0.0;
@@ -825,7 +843,7 @@ solserv_add_vec(&(rsd[2]),&(dispi[0]),1.0);
 dstrc_exit();
 #endif
 return;
-} /* end of increment_controldisp */
+} /* end of increment_controlarc */
 
 
 

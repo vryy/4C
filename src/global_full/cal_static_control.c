@@ -178,9 +178,9 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 calinit(actfield,actpart,action);
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_struct_linstiff;
-calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,action);
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
 /*----------------------------------- call rhs-routines to assemble rhs */
-*action = calc_struct_eleload;
+/*-------------------------- the approbiate action is set inside calrhs */
 calrhs(
           actfield,
           actsolv,
@@ -188,12 +188,8 @@ calrhs(
           actintra,
           actsysarray,
           &(actsolv->rhs[actsysarray]),
-          &(actsolv->rhs[actsysarray+1]),
           0,
-          action
-         );
-/*--------------------------------------------- add the two rhs vectors */
-solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]),1.0);
+          action);
 /*--------------------------------------------------------- call solver */
 init=0;
 solver_control(
