@@ -255,8 +255,8 @@ for (kstep=0; kstep<nstep; kstep++)
 {
    /*---------------------------------------------- write memory report */
    dsmemreport(actintra);
+   dstrace_to_err();
    /*--------------------------------------------------- make predictor */
-   /*dstrace_to_err();*/
    conpre(
            actfield,
            actsolv,
