@@ -9,6 +9,12 @@
 #include "../axishell/axishell.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
@@ -1221,7 +1227,10 @@ if (strncmp(string,"displacement",stringlenght)==0)
                                                        sign,componentnames[1],sign,
                                                        sign,componentnames[2],sign
                                                        );
-       s9_out_gid_sol_dis(out,actfield,place);          
+         
+       if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_sol_dis_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
+       if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_sol_dis(out,actfield,place);          /*  smoothed stresses to gid*/
+
     goto next;
    }
 #endif /*D_SHELL9*/
@@ -1740,7 +1749,9 @@ if (strncmp(string,"stress",stringlenght)==0)
   /*NOTE: it is assumed that there is no coupling of different element types      sh 01/03 */
      
       /*write stresses at gp*/
-      s9_out_gid_sol_str(out,actfield,place);          
+         
+      if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_sol_str_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
+      if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_sol_str(out,actfield,place);          /*  smoothed stresses to gid*/
 
       fprintf(out,"END VALUES\n");
    }

@@ -8,6 +8,12 @@
 #endif /*D_SHELL9*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
@@ -205,7 +211,10 @@ for (i=0; i<genprob.numfld; i++)
          is_firstmesh=0;
          fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
          fprintf(out,"COORDINATES\n");
-         s9_out_gid_allcoords(out,4);
+         
+         if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_allcoords_unsmo(out,4);    /*unsmoothed stresses to gid*/
+         if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_allcoords(out,4);          /*  smoothed stresses to gid*/
+
          fprintf(out,"END COORDINATES\n");
       }
       /*------------------------------------------------ print elements */
@@ -214,7 +223,10 @@ for (i=0; i<genprob.numfld; i++)
       {
          actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_shell9 || actele->numnp !=4) continue;
-         s9_out_gid_eletop(out,4,actele);
+
+         if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_eletop_unsmo(out,4,j);    /*unsmoothed stresses to gid*/
+         if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_eletop(out,4,actele);     /*  smoothed stresses to gid*/
+
       }
       fprintf(out,"END ELEMENTS\n");
    }
@@ -241,7 +253,10 @@ for (i=0; i<genprob.numfld; i++)
          is_firstmesh=0;
          fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
          fprintf(out,"COORDINATES\n");
-         s9_out_gid_allcoords(out,8);
+
+         if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_allcoords_unsmo(out,8);   /*unsmoothed stresses to gid*/
+         if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_allcoords(out,8);         /*  smoothed stresses to gid*/
+
          fprintf(out,"END COORDINATES\n");
       }
       /*------------------------------------------------ print elements */
@@ -250,7 +265,10 @@ for (i=0; i<genprob.numfld; i++)
       {
          actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_shell9 || actele->numnp !=8) continue;
-         s9_out_gid_eletop(out,8,actele);
+
+         if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_eletop_unsmo(out,8,j);    /*unsmoothed stresses to gid*/
+         if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_eletop(out,8,actele);     /*  smoothed stresses to gid*/
+
       }
       fprintf(out,"END ELEMENTS\n");
    }
@@ -277,7 +295,10 @@ for (i=0; i<genprob.numfld; i++)
          is_firstmesh=0;
          fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
          fprintf(out,"COORDINATES\n");
-         s9_out_gid_allcoords(out,9);
+
+         if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_allcoords_unsmo(out,9); /*unsmoothed stresses to gid*/
+         if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_allcoords(out,9);       /*  smoothed stresses to gid*/
+
          fprintf(out,"END COORDINATES\n");
       }
       /*------------------------------------------------ print elements */
@@ -286,7 +307,10 @@ for (i=0; i<genprob.numfld; i++)
       {
          actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_shell9 || actele->numnp !=9) continue;
-         s9_out_gid_eletop(out,9,actele);
+
+         if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_eletop_unsmo(out,9,j);    /*unsmoothed stresses to gid*/
+         if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_eletop(out,9,actele);     /*  smoothed stresses to gid*/
+
       }
       fprintf(out,"END ELEMENTS\n");
    }
