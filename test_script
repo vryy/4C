@@ -108,6 +108,7 @@ if [ "x$PARALLEL" = "xno" ]; then
   w1_incompmode.dat
   w1_mises.dat
   w1dyn.dat
+  struct2ml_ifvers.dat
   '
 else
   # parallel test
