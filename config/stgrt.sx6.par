@@ -1,0 +1,43 @@
+# -*- shell-script -*-
+PLATFORM=SX6
+PARALLEL=yes
+
+F77=sxmpif90
+CC=sxmpic++
+LD=sxmpif90
+
+
+BASEDIR="/gdata0/rus/rus/stati/lib"
+
+
+INCLUDEDIRS="-I/gdata0/rus/rus/stati/include"
+LIBDIRS="-L$BASEDIR/metis" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_par"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-L$BASEDIR/spooles -lspooles"
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB=""
+
+
+LIBS="-lmetis -lc -lm -llapack  -lblas"
+
+# FAST
+PROGRAMNAME=cca_sx6_par
+CFLAGS_OPT="-O nooverlap -alias nopointer"
+FFLAGS_OPT=""
+CFLAGS="-Xc -DSIXTYFOUR -pvctl,loopcnt=500000"
+FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl,loopcnt=500000\""
+LDFLAGS=""
+
+#CFLAGS="-Xc -DSIXTYFOUR -ftrace -loopprof -pvctl,loopcnt=500000"
+#FFLAGS="-DSIXTYFOUR -ftrace -loopprof -Wf,\"-pvctl,loopcnt=500000\""
+#LDFLAGS="-ftrace -loopprof"
+
+#FFLAGS="-DSIXTYFOUR -ftrace -Wf,\"-pvctl,loopcnt=500000\" -Wf,\"-L fmtlist map summary transform\" "
