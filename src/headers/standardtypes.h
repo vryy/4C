@@ -14,6 +14,10 @@
    #include "mpi.h"
 #endif
 /*----------------------------------------------------------------------*
+ | check_defines file                                       mn 01/04    |
+ *----------------------------------------------------------------------*/
+#include "check_defines.h"
+/*----------------------------------------------------------------------*
  | definitions file                                       m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "definitions.h"
@@ -225,6 +229,8 @@ typedef struct _GENPROB
 {
 INT               nele;          /* total number of elements over all fields */
 INT               nnode;         /* total number of nodes over all fields*/
+INT               maxnode;       /* largest node id in the problem */
+INT               nodeshift;     /* shift of node ids for second dis */
 INT               ndim;          /* dimension of problem (2 or 3) */
 INT               nmat;          /* total number of material laws */
 INT               numfld;        /* number of fields */
@@ -237,6 +243,17 @@ INT               numaf;         /* actual number of ale field */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
+
+NODE            **nodes;
+INT               ngnode;
+GNODE           **gnodes;
+INT               ngline;
+GLINE           **glines;
+INT               ngsurf;
+GSURF           **gsurfs;
+INT               ngvol;
+GVOL            **gvols;
+
 
 } GENPROB;
 
