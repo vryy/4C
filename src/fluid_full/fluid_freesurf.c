@@ -149,7 +149,6 @@ for (i=0; i<design->ndsurf; i++)
    {
    case fluid:
       /*------------------ just check if this is really a free surface! */
-      dsassert(hasdirich==0,"dirich- and freesurface condition defined on same DSURF\n");
       dsassert(hascouple==0,"coupling- and freesurface condition defined on same DSURF\n");   
       dsassert(hasfsi==0,"fsi- and freesurface condition defined on same DSURF\n");
       dsassert(hasneum==0,"neumann- and freesurface condition defined on same DSURF\n");
@@ -162,11 +161,13 @@ for (i=0; i<design->ndsurf; i++)
       /*-------- allocate space for a dirichlet condition in this dsurf */
       actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
-      amzero(&(actdsurf->dirich->dirich_onoff));
       amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
       amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("function",&(actdsurf->dirich->funct),MAXDOFPERNODE,1,"IV");
+      amzero(&(actdsurf->dirich->dirich_onoff));
       amzero(&(actdsurf->dirich->dirich_val));
       amzero(&(actdsurf->dirich->curve));
+      amzero(&(actdsurf->dirich->funct));
       /*----------------------------------- initialise for free surface */
       for (j=0;j<dim;j++)
          actdsurf->dirich->dirich_onoff.a.iv[j]=1;
@@ -217,7 +218,6 @@ for (i=0; i<design->ndline; i++)
    {
    case fluid:
       /*------------------ just check if this is really a free surface! */
-      dsassert(hasdirich==0,"dirich- and freesurface condition defined on same DLINE\n");
       dsassert(hascouple==0,"coupling- and freesurface condition defined on same DLINE\n");   
       dsassert(hasfsi==0,"fsi- and freesurface condition defined on same DLINE\n");
       dsassert(hasneum==0,"neumann- and freesurface condition defined on same DLINE\n");
@@ -288,7 +288,6 @@ for (i=0; i<design->ndnode; i++)
    {
    case fluid:
       /*------------------ just check if this is really a free surface! */
-      dsassert(hasdirich==0,"dirich- and freesurface condition defined on same DNODE\n");
       dsassert(hascouple==0,"coupling- and freesurface condition defined on same DNODE\n");   
       dsassert(hasfsi==0,"fsi- and freesurface condition defined on same DNODE\n");
       dsassert(hasneum==0,"neumann- and freesurface condition defined on same DNODE\n");
