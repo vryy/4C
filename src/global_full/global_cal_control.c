@@ -135,7 +135,7 @@ if (par.myrank==0)
        ||ioflags.ale_disp_gid||ioflags.fluid_stress_gid) 
    {
       out_gid_sol_init();
-      if (genprob.probtyp != prb_structure)
+      if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi)
          out_gid_msh();
    }
 }
