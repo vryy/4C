@@ -504,43 +504,64 @@ for (i=0;i<numfnp;i++)
    actfnode  = &(fluidfield->dis[0].node[i]);
    actfgnode = actfnode->gnode;
    if (actfgnode->fsicouple==NULL) continue;
-   if(actfgnode->fsicouple->fsi_mesh == conforming)
-   {
-     actsnode = actfgnode->mfcpnode[numsf];
-     actanode = actfgnode->mfcpnode[numaf];
-     actsgnode = actsnode->gnode;
-     actagnode = actanode->gnode;
-     dsassert(actfnode->locsysId==0,"No locsys at FSI coupling node!\n");
-     dsassert(actsnode->locsysId==0,"No locsys at FSI coupling node!\n");
-     dsassert(actanode->locsysId==0,"No locsys at FSI coupling node!\n");
-     dsassert(actsgnode->fsicouple!=NULL,"FSI Coupling Condition Fluid-Struct not the same!\n");
-     dsassert(actagnode->fsicouple!=NULL,"FSI Coupling Condition Fluid-Ale not the same!\n");
-     dsassert(actfgnode->fsicouple->fsi_coupleId==actsgnode->fsicouple->fsi_coupleId,
-            "FSI Coupling Condition Fluid-Struct: wrong coupleId\n");
-   dsassert(actfgnode->fsicouple->fsi_coupleId==actagnode->fsicouple->fsi_coupleId,
-            "FSI Coupling Condition Fluid-Ale: wrong coupleId\n");
-   dsassert(actfgnode->fsicouple->fsi_mesh==actsgnode->fsicouple->fsi_mesh,
-            "FSI Coupling Condition Fluid-Struct: wrong mesh\n");
-   dsassert(actfgnode->fsicouple->fsi_mesh==actagnode->fsicouple->fsi_mesh,
-            "FSI Coupling Condition Fluid-Ale: wrong mesh\n");
-     dsassert(actfgnode->dirich!=NULL,"No dirich condition for fsi-coupling fluid node!\n");
-     if(actfgnode->dirich->dirich_type!=dirich_FSI) continue;
-     dsassert(actfnode->numdf==dim+1,"numdf not possible for fluid node at FSI interface!\n");
-     for (j=0;j<dim;j++)
-     dsassert(actfgnode->dirich->dirich_onoff.a.iv[j]==1,"wrong onoff() at fluid node!\n");
-     dsassert(actfgnode->dirich->dirich_onoff.a.iv[dim]==0,"wrong onoff() at fluid node!\n");
-   }
+   actsnode = actfgnode->mfcpnode[numsf];
+   actanode = actfgnode->mfcpnode[numaf];
+   actsgnode = actsnode->gnode;
+   actagnode = actanode->gnode;
+   /*--------------------------------------------------- check locsys */
+   if (actfnode->locsysId!=0)
+      dserror("No locsys at FSI coupling node: #%d", actfnode->Id);
+   if (actsnode->locsysId!=0)
+      dserror("No locsys at FSI coupling node: #%d", actsnode->Id);
+   if (actanode->locsysId!=0)
+      dserror("No locsys at FSI coupling node: #%d", actanode->Id);
+   
+   /*-------------------------------------- check coupling conditions */
+   if (actsgnode->fsicouple==NULL)
+      dserror("FSI Coupling Condition Fluid-Struct not the same: struct node #%d",actsnode->Id);
+   if (actagnode->fsicouple==NULL)
+      dserror("FSI Coupling Condition Fluid-Ale not the same: ale node #%d",actanode->Id);
+   
+   /*--------------------------------------------- check coupling Ids */
+   if (actfgnode->fsicouple->fsi_coupleId!=actsgnode->fsicouple->fsi_coupleId)
+      dserror("FSI Coupling Condition Fluid-Struct: wrong coupleId, fluid #%d, struct #%d",
+      actfnode->Id, actsnode->Id);
+   if (actfgnode->fsicouple->fsi_coupleId!=actagnode->fsicouple->fsi_coupleId)
+      dserror("FSI Coupling Condition Fluid-Ale: wrong coupleId, fluid #%d, ale #%d",
+      actfnode->Id, actsnode->Id);	
+   
+   /*----------------------------------------------------- check mesh */
+   if (actfgnode->fsicouple->fsi_mesh!=actsgnode->fsicouple->fsi_mesh)
+      dserror("FSI Coupling Condition Fluid-Struct: wrong mesh, fluid #%d, struct #%d",
+      actfnode->Id, actsnode->Id); 
+   if (actfgnode->fsicouple->fsi_mesh!=actagnode->fsicouple->fsi_mesh)
+      dserror("FSI Coupling Condition Fluid-Ale: wrong mesh, fluid #%d, ale #%d",
+      actfnode->Id, actanode->Id);
+   
+   /*-------------------------------- check dirich conds of fluid node */
+   if (actfgnode->dirich==NULL)
+      dserror("No dirich condition for fsi-coupling fluid node #%d",actfnode->Id);
+   if(actfgnode->dirich->dirich_type!=dirich_FSI) continue;
+   if (actfnode->numdf!=dim+1)
+      dserror("numdf not possible for fluid node #%d at FSI interface!", actfnode->Id);
+   for (j=0;j<dim;j++)
+      if (actfgnode->dirich->dirich_onoff.a.iv[j]!=1)
+         dserror("wrong onoff() at fluid node #%d",actfnode->Id);
+   if (actfgnode->dirich->dirich_onoff.a.iv[dim]!=0)
+      dserror("wrong onoff() at fluid node #%d",actfnode->Id);
 } /* end of loop over fluid nodes */
 
 for (i=0;i<numanp;i++)
 {
    actanode  = &(alefield->dis[0].node[i]);
    actagnode = actanode->gnode;
-   if (actagnode->fsicouple==NULL) continue;
-   dsassert(actagnode->dirich!=NULL,"No dirich condition for fsi-coupling ale node!\n");
+   if (actagnode->fsicouple==NULL) continue; 
+   if (actagnode->dirich==NULL)
+      dserror("No dirich condition for fsi-coupling ale node #%d",actanode->Id); 
    if(actagnode->dirich->dirich_type!=dirich_FSI) continue;
    for(j=0;j<actanode->numdf;j++)
-   dsassert(actagnode->dirich->dirich_onoff.a.iv[j]==1,"wrong onoff() at ale node!\n");
+      if(actagnode->dirich->dirich_onoff.a.iv[j]!=1)
+         dserror("wrong onoff() at ale node #%d",actanode->Id);
    for (j=actanode->numdf;j<MAXDOFPERNODE;j++)
       actagnode->dirich->dirich_onoff.a.iv[j]=0;
 }
@@ -608,7 +629,8 @@ for (i=0;i<numnp_total;i++)
    if (actanode==NULL) continue;
    actagnode = actanode->gnode;
    /*----------------------------------------- check for coupling nodes */
-   dsassert(actagnode->dirich!=NULL,"no dirich condition for coupled ALE node\n");
+   if(actagnode->dirich==NULL)
+      dserror("no dirich condition for coupled ALE node #%d",actanode->Id);
    if (actagnode->dirich->dirich_type!=dirich_FSI) continue;
    for (j=0;j<actanode->numdf;j++)
    {
