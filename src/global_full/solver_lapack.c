@@ -146,7 +146,7 @@ case 0:
       }
       info=1;
       trans[0]='N';
-#ifndef SUN
+#ifndef AZTEC_PACKAGE
       dgetrs(
               trans,
               &(dense->numeq_total),
@@ -158,6 +158,8 @@ case 0:
               &(dense->numeq_total),
               &info
             );
+#else
+   dserror("solver Lapack conflicts with compilation with -DAZTEC_PACKAGE");
 #endif
       if (info!=0) dserror("Lapack solve failed");
    break;
