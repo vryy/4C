@@ -972,7 +972,7 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
    ilocsys=actnode->locsysId-1;
    if (ilocsys>=0) /* local co-sys */
    {
-      /*----------------------- transform values at from XYZ to xyz* */
+      /*--------------------- transform values at node from XYZ to xyz* */
       for (j=0;j<numdf;j++) 
          val[j]=actnode->sol_increment.a.da[readfrom][j];
       locsys_trans_nodval(actele,&(val[0]),numdf,ilocsys,0);
