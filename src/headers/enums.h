@@ -28,6 +28,14 @@ typedef enum _FIELDTYP
                        structure    /* structural field */
 } FIELDTYP;
 /*----------------------------------------------------------------------*
+ | DISRCETISATION MODES                                   genk 08/02    |
+ *----------------------------------------------------------------------*/
+typedef enum _DISMODE
+{
+                      dm_none,        /* unknown type of discretisation */
+                      dm_q2q1 
+} DISMODE;
+/*----------------------------------------------------------------------*
  | enum DIS_TYP                                           m.gee 6/01    |
  | type of discretization                                               |
  *----------------------------------------------------------------------*/
@@ -57,6 +65,7 @@ typedef enum _ELEMENT_TYP
                        el_brick1,      /* structural brick element */
                        el_wall1,       /* 2D plane stress - plane strain element */
                        el_fluid2,      /* 2D fluid element */
+                       el_fluid2_pro,  /* 2D fluid element */
                        el_fluid3,      /* 3D fluid element */
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3         /* 3D pseudo structural ale element */
@@ -126,7 +135,9 @@ typedef enum _CALC_ACTION
                        write_restart,
                        read_restart,
 		       calc_fluid_init,
+		       calc_fluid_initvort,
 		       calc_fluid,
+		       calc_fluid_amatrix,
                        calc_fluid_vort,
 		       calc_ale_init,
 		       calc_ale_stiff,

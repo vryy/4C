@@ -43,16 +43,17 @@ typedef struct _ELEMENT
 
      enum _ELEMENT_TYP          eltyp;          /* my element type */
      enum _DIS_TYP              distyp;         /* my actual discretization type */
-
+                                                 
      union                                      /* union pointer to elementformulation */
      {
-     struct _SHELL8   *s8;                      /* shell8 element */
-     struct _BRICK1   *c1;                      /* structural hexaeder element */
-     struct _WALL1    *w1;                      /* 2D plane stress - plane strain element */
-     struct _FLUID2   *f2;                      /* 2D fluid element */
-     struct _FLUID3   *f3;                      /* 3D fluid element */
-     struct _ALE2     *ale2;                    /* pseudo structural 2D ale element */
-     struct _ALE3     *ale3;                    /* pseudo structural 3D ale element */
+     struct _SHELL8     *s8;                    /* shell8 element */
+     struct _BRICK1     *c1;                    /* structural volume element */
+     struct _WALL1      *w1;                    /* 2D plane stress - plane strain element */
+     struct _FLUID2     *f2;                    /* 2D fluid element */
+     struct _FLUID2_PRO *f2pro;                 /* 2D fluid element projection method */
+     struct _FLUID3     *f3;                    /* 3D fluid element */
+     struct _ALE2       *ale2;                  /* pseudo structural 2D ale element */
+     struct _ALE3       *ale3;                  /* pseudo structural 3D ale element */
      }                          e;              /* name of union */ 
 
      union
