@@ -153,7 +153,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param   *covint   DOUBLE	   (i)    conv. vels at INT. point
 \param   *velint   DOUBLE	   (i)    vel at integr. point
-\param	 *funct    DOUBLE	   (i)	  nat. shape funcs
 \param  **derxy    DOUBLE	   (i)	  global derivative
 \param  **derxy2   DOUBLE	   (i)    2nd global derivative
 \param    fac 	   DOUBLE	   (i)    weighting factor
@@ -169,7 +168,6 @@ void f3_calstabifv(
                      DOUBLE          *eforce,
                      DOUBLE          *covint,
                      DOUBLE          *velint,
-                     DOUBLE          *funct,
                      DOUBLE         **derxy,
                      DOUBLE         **derxy2,
                      DOUBLE           fac,
