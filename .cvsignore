@@ -1,0 +1,12 @@
+Makefile
+cca_*.debg
+cca_*.fast
+*.dat.scr
+*.err
+*.flavia.msh
+*.flavia.res
+*.mon
+*.out
+*.plt
+*.pss
+*.tur
