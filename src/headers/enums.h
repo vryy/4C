@@ -112,6 +112,8 @@ typedef enum _CALC_ACTION
                        calc_struct_stressreduce,
                        calc_struct_eleload,
                        calc_struct_update_istep,
+                       write_restart,
+                       read_restart,
 		       calc_fluid_init,
 		       calc_fluid
 } CALC_ACTION;                         
@@ -135,6 +137,7 @@ typedef enum _SOLVER_TYP
 {
                        mlib_d_sp,     /* solver package, hp's mlib, direct-sparse-symmetric-unsymmetric*/
                        aztec_msr,     /* solver package aztec 2.1, matrix in dmsr format */
+                       aztec_vbr,     /* solver package aztec 2.1, matrix in dvbr format */
                        hypre_amg,     /* solver package hypre, amg-solver, matrix in parcsr format */
                        hypre_pcg,     /* solver package hypre, cg, matrix in parcsr format */
                        hypre_gmres,   /* solver package hypre, gmres, matrix in parcsr format */
@@ -176,7 +179,7 @@ typedef enum _AZPRECTYP
                        azprec_SymmGaussSeidel,   /* symmetric n-step gauss-seidel preconditioner */
                        azprec_LU,                /* ? */
                        azprec_RILU,              /* relaxed incomplete LU */
-                       azprec_BILU,              /* block incomplete LU (only with matrix in DVBR format, not impl.) */
+                       azprec_BILU,              /* block incomplete LU (only with matrix in DVBR format*/
                        azprec_ICC                /* ? */
 } AZPRECTYP;                         
 /*----------------------------------------------------------------------*
