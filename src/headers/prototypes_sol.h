@@ -115,6 +115,43 @@ void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int nu
 void assemble_dirich_dyn(ELEMENT *actele, double *fullvec, int dim,
                          ARRAY *estif_global, ARRAY *emass_global, double *facs);
 /*----------------------------------------------------------------------*
+ | fluid_service.c                                         genk 04/02   |
+ *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------                                         
+\brief storing results in solution history
+
+<pre>                                                         genk 05/02
+
+in this routine the results in the DIST_VECTOR are put to the nodes in
+a certain place in ARRAY sol_increment.
+Result has to be allreduced and is put to the whole field on each proc.
+If necassary the norms for the iteration check of the nonlinear iteration
+scheme are calculated	   
+			     
+</pre>   
+\param **actfield      FIELD	      (i)    actual field       
+\param  *actintra      INTRA	      (i)    actual intra comm.
+\param	*sol 	       DIST_VECTOR    (i)    solution vector
+\param	 place         int	      (i)    place in sol_incr.
+\param	*sysarray      SPARSE_ARRAY   (i)
+\param	*sysarray_typ  SPARSE_TYP     (i)
+\param	*vrat          double	      (o)    vel.  conv. ratio
+\param	*prat          double	      (o)    pre.  conv. ratio
+\param	*fdyn	       FLUID_DYNAMIC	     	
+\return void 
+
+------------------------------------------------------------------------*/
+void fluid_result_incre(FIELD         *actfield,    
+                        INTRA         *actintra,   
+			DIST_VECTOR   *sol,        
+                        int            place,      
+			SPARSE_ARRAY  *sysarray,      
+			SPARSE_TYP    *sysarray_typ,
+			double        *vrat,        
+			double        *prat,       
+			FLUID_DYNAMIC *fdyn           
+		       ); 
+/*----------------------------------------------------------------------*
  | global_calelm.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void calelm(FIELD        *actfield,     /* active field */        
