@@ -411,10 +411,10 @@ f3_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
 f3_bubele(data,mlvar,submesh,ele);
 
 /*- calculate charact. l-s element length and stab. param. if necessary */
-if (ele->e.f3->stab_type != stab_gls)
-    dserror("wrong stabilisation within muli level context");
-if (ele->e.f3->stabi.gls->istabi!=0)
-  f3_mlcalelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,
+dsassert(ele->e.f3->stab_type == stab_gls,
+        "wrong stabilisation within muli level context");
+
+f3_mlcalelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,
                 vderxy,wa1);
 
 /*------ calculate large-scale part of element stiffness matrices and 
