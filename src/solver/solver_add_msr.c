@@ -16,14 +16,6 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 
 
-/*----------------------------------------------------------------------*
-  | global dense matrices for element routines             m.gee 9/01  |
-  | (defined in global_calelm.c, so they are extern here)              |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
-
-
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -51,7 +43,9 @@ void  add_msr(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _AZ_ARRAY_MSR  *msr1,
-    struct _AZ_ARRAY_MSR  *msr2)
+    struct _AZ_ARRAY_MSR  *msr2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2)
 {
 
   INT         i,j,counter;          /* some counter variables */
@@ -93,8 +87,8 @@ void  add_msr(
   /* set some pointers and variables */
   myrank     = actintra->intra_rank;
   nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  if (msr2) emass = emass_global.a.da;
+  estif      = elearray1->a.da;
+  if (msr2) emass = elearray2->a.da;
   else      emass = NULL;
   nd         = actele->numnp * actele->node[0]->numdf;
   ndnd       = nd*nd;
@@ -278,7 +272,9 @@ void  add_msr_fast(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _AZ_ARRAY_MSR  *msr1,
-    struct _AZ_ARRAY_MSR  *msr2)
+    struct _AZ_ARRAY_MSR  *msr2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2)
 {
 
   INT         i,j;           /* some counter variables */
@@ -304,8 +300,8 @@ void  add_msr_fast(
   /* set some pointers and variables */
   myrank     = actintra->intra_rank;
   nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  if (msr2) emass = emass_global.a.da;
+  estif      = elearray1->a.da;
+  if (msr2) emass = elearray2->a.da;
   else      emass = NULL;
   nd         = actele->nd;
   val1       = msr1->val.a.dv;
@@ -401,7 +397,9 @@ void  add_msr_fast2(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _AZ_ARRAY_MSR  *msr1,
-    struct _AZ_ARRAY_MSR  *msr2)
+    struct _AZ_ARRAY_MSR  *msr2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2)
 {
 
   INT         i,j,k,counter;        /* some counter variables */
@@ -446,8 +444,8 @@ void  add_msr_fast2(
   /* set some pointers and variables */
   myrank     = actintra->intra_rank;
   nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  if (msr2) emass = emass_global.a.da;
+  estif      = elearray1->a.da;
+  if (msr2) emass = elearray2->a.da;
   else      emass = NULL;
   nd         = actele->numnp * actele->node[0]->numdf;
   ndnd       = nd*nd;

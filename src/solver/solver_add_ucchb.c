@@ -17,12 +17,6 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
-/*----------------------------------------------------------------------*
  |  routine to assemble element array to global UCCHB-matrix            |
  |  in parallel,taking care of coupling conditions                      |
  |                                                                      |
@@ -33,7 +27,8 @@ void  add_ucchb(struct _PARTITION     *actpart,
                   struct _SOLVAR        *actsolv,
                   struct _INTRA         *actintra,
                   struct _ELEMENT       *actele,
-                  struct _UCCHB         *ucchb)
+                  struct _UCCHB         *ucchb,
+                  struct _ARRAY         *elearray1)
 {
 INT         i,j,counter;              /* some counter variables */
 INT         ii,jj;                    /* counter variables for system matrix */
@@ -63,7 +58,7 @@ dstrc_enter("add_ucchb");
 /*------------------------------------- set some pointers and variables */
 myrank     = actintra->intra_rank;
 nprocs     = actintra->intra_nprocs;
-estif      = estif_global.a.da;
+estif      = elearray1->a.da;
 nd         = actele->numnp * actele->node[0]->numdf;
 nnz        = ucchb->nnz;
 numeq_total= ucchb->numeq_total;

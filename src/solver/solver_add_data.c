@@ -12,12 +12,6 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
 
 /*----------------------------------------------------------------------*
  |  routine to assemble element arrays to global sparse arrays m.gee 9/01|
@@ -84,15 +78,15 @@ if (assemble_action==assemble_two_matrix)
 #ifdef AZTEC_PACKAGE
    case msr:
 #if defined(FAST_ASS2) && !defined(FAST_ASS)
-       add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+      add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr,elearray1,elearray2);
 #endif
 
 #if defined(FAST_ASS) && !defined(FAST_ASS2)
-      add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+      add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr,elearray1,elearray2);
 #endif
 
 #if !defined(FAST_ASS) && !defined(FAST_ASS2)
-       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+      add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr,elearray1,elearray2);
 #endif
    break;
 #endif
@@ -110,47 +104,47 @@ if (assemble_action==assemble_two_matrix)
 #endif
 
    case dense:
-      add_dense(actpart,actsolv,actintra,actele,sysa1->dense,sysa2->dense);
+      add_dense(actpart,actsolv,actintra,actele,sysa1->dense,sysa2->dense,elearray1,elearray2);
    break;
 
 #ifdef MUMPS_PACKAGE
    case rc_ptr:
-      add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,sysa2->rc_ptr);
+      add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,sysa2->rc_ptr,elearray1,elearray2);
    break;
 #endif
 
 #ifdef UMFPACK
    case ccf:
 #ifdef FAST_ASS
-      add_ccf_fast(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf);
+      add_ccf_fast(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf,elearray1,elearray2);
 #else
-      add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf);
+      add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf,elearray1,elearray2);
 #endif
    break;
 #endif
 
    case skymatrix:
-      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,sysa2->sky);
+      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,sysa2->sky,elearray1,elearray2);
    break;
 
 #ifdef SPOOLES_PACKAGE
    case spoolmatrix:
 #ifdef FAST_ASS
-      add_spo_fast(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo);
+      add_spo_fast(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo,elearray1,elearray2);
 #else
-      add_spo(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo);
+      add_spo(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo,elearray1,elearray2);
 #endif
    break;
 #endif
 
 #ifdef MLPCG
    case bdcsr:
-      add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,sysa2->bdcsr);
+      add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,sysa2->bdcsr,elearray1,elearray2);
    break;
 #endif
 
    case oll:
-      add_oll(actpart,actintra,actele,sysa1->oll,sysa2->oll);
+      add_oll(actpart,actintra,actele,sysa1->oll,sysa2->oll,elearray1,elearray2);
    break;
 
    case sparse_none:
@@ -170,80 +164,80 @@ if (assemble_action==assemble_one_matrix)
 
 #ifdef MLIB_PACKAGE
    case mds:
-      add_mds(actpart,actsolv,actele,sysa1->mds);
+      add_mds(actpart,actsolv,actele,sysa1->mds,elearray1);
    break;
 #endif
 
 #ifdef AZTEC_PACKAGE
    case msr:
 #if defined(FAST_ASS2) && !defined(FAST_ASS)
-      add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
+      add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,NULL,elearray1,NULL);
 #endif
 
 #if defined(FAST_ASS) && !defined(FAST_ASS2)
-      add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
+      add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,NULL,elearray1,NULL);
 #endif
 
 #if !defined(FAST_ASS) && !defined(FAST_ASS2)
-      add_msr(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
+      add_msr(actpart,actsolv,actintra,actele,sysa1->msr,NULL,elearray1,NULL);
 #endif
    break;
 #endif
 
 #ifdef HYPRE_PACKAGE
    case parcsr:
-      add_parcsr(actpart,actsolv,actintra,actele,sysa1->parcsr);
+      add_parcsr(actpart,actsolv,actintra,actele,sysa1->parcsr,elearray1);
    break;
 #endif
 
 #ifdef PARSUPERLU_PACKAGE
    case ucchb:
-      add_ucchb(actpart,actsolv,actintra,actele,sysa1->ucchb);
+      add_ucchb(actpart,actsolv,actintra,actele,sysa1->ucchb,elearray1);
    break;
 #endif
 
    case dense:
-      add_dense(actpart,actsolv,actintra,actele,sysa1->dense,NULL);
+      add_dense(actpart,actsolv,actintra,actele,sysa1->dense,NULL,elearray1,NULL);
    break;
 
 #ifdef MUMPS_PACKAGE
    case rc_ptr:
-      add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,NULL);
+      add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,NULL,elearray1,NULL);
    break;
 #endif
 
 #ifdef UMFPACK
    case ccf:
 #ifdef FAST_ASS
-      add_ccf_fast(actpart,actsolv,actintra,actele,sysa1->ccf,NULL);
+      add_ccf_fast(actpart,actsolv,actintra,actele,sysa1->ccf,NULL,elearray1,NULL);
 #else
-      add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,NULL);
+      add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,NULL,elearray1,NULL);
 #endif
    break;
 #endif
 
    case skymatrix:
-      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,NULL);
+      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,NULL,elearray1,NULL);
    break;
 
 #ifdef SPOOLES_PACKAGE
    case spoolmatrix:
 #ifdef FAST_ASS
-      add_spo_fast(actpart,actsolv,actintra,actele,sysa1->spo,NULL);
+      add_spo_fast(actpart,actsolv,actintra,actele,sysa1->spo,NULL,elearray1,NULL);
 #else
-      add_spo(actpart,actsolv,actintra,actele,sysa1->spo,NULL);
+      add_spo(actpart,actsolv,actintra,actele,sysa1->spo,NULL,elearray1,NULL);
 #endif
    break;
 #endif
 
 #ifdef MLPCG
    case bdcsr:
-      add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,NULL);
+      add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,NULL,elearray1,NULL);
    break;
 #endif
 
    case oll:
-      add_oll(actpart,actintra,actele,sysa1->oll,NULL);
+      add_oll(actpart,actintra,actele,sysa1->oll,NULL,elearray1,NULL);
    break;
 
    case sparse_none:

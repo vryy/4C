@@ -16,14 +16,6 @@ Maintainer: Malte Neumann
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
-
-
 /*----------------------------------------------------------------------*/
 /*!
  \brief assemble into a ccf matrix (original version)
@@ -51,7 +43,9 @@ void  add_ccf(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _CCF           *ccf1,
-    struct _CCF           *ccf2)
+    struct _CCF           *ccf2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2)
 {
 
   INT         i,j,counter;        /* some counter variables */
@@ -94,8 +88,9 @@ void  add_ccf(
   /* set some pointers and variables */
   myrank     = actintra->intra_rank;
   nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  emass      = emass_global.a.da;
+  estif      = elearray1->a.da;
+  if (istwo)
+    emass      = elearray2->a.da;
   nd         = actele->numnp * actele->node[0]->numdf;
   ndnd       = nd*nd;
   nnz        = ccf1->nnz;
@@ -221,7 +216,9 @@ void  add_ccf_fast(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _CCF           *ccf1,
-    struct _CCF           *ccf2)
+    struct _CCF           *ccf2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2)
 {
 
   INT         i,j;                      /* some counter variables */
@@ -262,8 +259,9 @@ void  add_ccf_fast(
   /* set some pointers and variables */
   myrank     = actintra->intra_rank;
   nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  emass      = emass_global.a.da;
+  estif      = elearray1->a.da;
+  if (istwo)
+    emass      = elearray2->a.da;
   nd         = actele->nd;
   nnz        = ccf1->nnz;
   numeq_total= ccf1->numeq_total;

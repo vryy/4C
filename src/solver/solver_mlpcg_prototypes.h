@@ -70,13 +70,14 @@ void mlpcg_solver_create(
     DIST_VECTOR *sol,
     DIST_VECTOR *rhs,
     MLPCGVARS   *mlpcgvars);
-void  add_bdcsr(
-    struct _PARTITION     *actpart,
-    struct _SOLVAR        *actsolv,
-    struct _INTRA         *actintra,
-    struct _ELEMENT       *actele,
-    struct _DBCSR         *bdcsr1,
-    struct _DBCSR         *bdcsr2);
+void  add_bdcsr(struct _PARTITION     *actpart,
+                struct _SOLVAR        *actsolv,
+                struct _INTRA         *actintra,
+                struct _ELEMENT       *actele,
+                struct _DBCSR         *bdcsr1,
+                struct _DBCSR         *bdcsr2,
+                struct _ARRAY         *elearray1,
+                struct _ARRAY         *elearray2);
 void solver_mlpcg(struct _SOLVAR         *actsolv,
                   struct _INTRA          *actintra,
                   struct _DBCSR          *bdcsr,

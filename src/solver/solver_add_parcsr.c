@@ -17,12 +17,6 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 10/01   |
- | (defined in global_calelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
-/*----------------------------------------------------------------------*
  |  routine to assemble element array to global PARCSR-matrix           |
  |  in parallel and sequentiell,taking care of coupling conditions      |
  |                                                                      |
@@ -33,7 +27,8 @@ void  add_parcsr(struct _PARTITION     *actpart,
                    struct _SOLVAR        *actsolv,
                    struct _INTRA         *actintra,
                    struct _ELEMENT       *actele,
-                   struct _H_PARCSR      *parcsr)
+                   struct _H_PARCSR      *parcsr,
+                   struct _ARRAY         *elearray1)
 {
 INT         i,j,counter;
 
@@ -85,7 +80,7 @@ dstrc_enter("add_parcsr");
 myrank           = actintra->intra_rank;
 nprocs           = actintra->intra_nprocs;
 
-estif            = estif_global.a.da;
+estif            = elearray1->a.da;
 nd               = actele->numnp * actele->node[0]->numdf;
 numeq_total      = parcsr->numeq_total;
 numeq            = parcsr->numeq;

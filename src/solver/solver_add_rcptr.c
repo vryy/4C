@@ -17,12 +17,6 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
-/*----------------------------------------------------------------------*
  |  routine to assemble element array to global rcptr-matrix            |
  |  in parallel,taking care of coupling conditions                      |
  |                                                                      |
@@ -34,7 +28,9 @@ void  add_rc_ptr(struct _PARTITION     *actpart,
                 struct _INTRA         *actintra,
                 struct _ELEMENT       *actele,
                 struct _RC_PTR        *rc_ptr1,
-                struct _RC_PTR        *rc_ptr2)
+                struct _RC_PTR        *rc_ptr2,
+                struct _ARRAY         *elearray1,
+                struct _ARRAY         *elearray2)
 {
 
 INT         i,j,k,l,counter;          /* some counter variables */
@@ -77,8 +73,11 @@ if (rc_ptr2) istwo=1;
 /*------------------------------------- set some pointers and variables */
 myrank     = actintra->intra_rank;
 nprocs     = actintra->intra_nprocs;
-estif      = estif_global.a.da;
-emass      = emass_global.a.da;
+estif      = elearray1->a.da;
+if (istwo)
+  emass      = elearray1->a.da;
+else
+ emass      = NULL;
 nd         = actele->numnp * actele->node[0]->numdf;
 ndnd       = nd*nd;
 nnz        = rc_ptr1->nnz;
@@ -87,7 +86,7 @@ numeq      = rc_ptr1->numeq;
 update     = rc_ptr1->update.a.iv;
 A_loc      = rc_ptr1->A_loc.a.dv;
 if (istwo)
-B_loc      = rc_ptr2->A_loc.a.dv;
+ B_loc      = rc_ptr2->A_loc.a.dv;
 irn        = rc_ptr1->irn_loc.a.iv;
 jcn        = rc_ptr1->jcn_loc.a.iv;
 rowptr     = rc_ptr1->rowptr.a.iv;

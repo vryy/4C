@@ -18,12 +18,6 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 #include "/opt/mlib/include/veclib.h"
 /*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 9/01    |
- | (defined in globcalelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
-/*----------------------------------------------------------------------*
  |  routine to assemble element array to global                         |
  |  column pointer, row index sparse  matrix                            |
  |  sequentiell for hp's mlib solver                                    |
@@ -34,7 +28,8 @@ extern struct _ARRAY emass_global;
 INT  add_mds(struct _PARTITION     *actpart,
              struct _SOLVAR        *actsolv,
              struct _ELEMENT       *actele,
-             struct _ML_ARRAY_MDS  *mds)
+             struct _ML_ARRAY_MDS  *mds,
+             struct _ARRAY         *elearray1)
 {
   INT         i,j,counter; /* some counter variables */
   INT         ii,jj;           /* counter variables for system matrix */
@@ -54,7 +49,7 @@ INT  add_mds(struct _PARTITION     *actpart,
   dstrc_enter("add_mds");
   #endif
 /*------------------------------------- set some pointers and variables */
-  estif      = estif_global.a.da;
+  estif      = elearray1->a.da;
   nd         = actele->numnp * actele->node[0]->numdf;
   numeq      = mds->numeq;
 /*---------------------------------------------- make location vector lm*/

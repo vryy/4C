@@ -511,7 +511,9 @@ void  add_dense(struct _PARTITION     *actpart,
                   struct _INTRA         *actintra,
                   struct _ELEMENT       *actele,
                   struct _DENSE         *dense1,
-                  struct _DENSE         *dense2);
+                  struct _DENSE         *dense2,
+                  struct _ARRAY         *elearray1,
+                  struct _ARRAY         *elearray2);
 void redundant_dense(
                         PARTITION     *actpart,
                         SOLVAR        *actsolv,
@@ -522,12 +524,33 @@ void redundant_dense(
 /*----------------------------------------------------------------------*
  |  solver_add_msr.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void  add_msr(struct _PARTITION     *actpart,
-                struct _SOLVAR        *actsolv,
-                struct _INTRA         *actintra,
-                struct _ELEMENT       *actele,
-                struct _AZ_ARRAY_MSR  *msr1,
-                struct _AZ_ARRAY_MSR  *msr2);
+void  add_msr(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _AZ_ARRAY_MSR  *msr1,
+    struct _AZ_ARRAY_MSR  *msr2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
+void  add_msr_fast(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _AZ_ARRAY_MSR  *msr1,
+    struct _AZ_ARRAY_MSR  *msr2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
+void  add_msr_fast2(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _AZ_ARRAY_MSR  *msr1,
+    struct _AZ_ARRAY_MSR  *msr2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
 void add_msr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,
                            INT *isowner, INT nprocs);
 void add_msr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
@@ -540,12 +563,11 @@ void exchange_coup_msr(
 /*----------------------------------------------------------------------*
  |  solver_add_mlib.c                                    m.gee 11/01    |
  *----------------------------------------------------------------------*/
-INT  add_mds(
-    struct _PARTITION     *actpart,
-    struct _SOLVAR        *actsolv,
-    struct _ELEMENT       *actele,
-    struct _ML_ARRAY_MDS  *mds);
-
+INT  add_mds(struct _PARTITION     *actpart,
+             struct _SOLVAR        *actsolv,
+             struct _ELEMENT       *actele,
+             struct _ML_ARRAY_MDS  *mds,
+             struct _ARRAY         *elearray1);
 /*----------------------------------------------------------------------*
  | solver_add_parcsr.c                                   m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -553,7 +575,8 @@ void  add_parcsr(struct _PARTITION     *actpart,
                    struct _SOLVAR        *actsolv,
                    struct _INTRA         *actintra,
                    struct _ELEMENT       *actele,
-                   struct _H_PARCSR      *parcsr);
+                   struct _H_PARCSR      *parcsr,
+                   struct _ARRAY         *elearray1);
 void add_parcsr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                     DOUBLE **dsend,DOUBLE **estif, INT numsend);
 void add_parcsr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,INT *isowner, INT nprocs);
@@ -570,7 +593,8 @@ void  add_ucchb(struct _PARTITION     *actpart,
                   struct _SOLVAR        *actsolv,
                   struct _INTRA         *actintra,
                   struct _ELEMENT       *actele,
-                  struct _UCCHB         *ucchb);
+                  struct _UCCHB         *ucchb,
+                  struct _ARRAY         *elearray1);
 void redundant_ucchb(
                         PARTITION     *actpart,
                         SOLVAR        *actsolv,
@@ -580,12 +604,15 @@ void redundant_ucchb(
 /*----------------------------------------------------------------------*
  |  solver_add_skyline.c                                 m.gee 09/01    |
  *----------------------------------------------------------------------*/
-void  add_skyline(struct _PARTITION     *actpart,
-                  struct _SOLVAR        *actsolv,
-                  struct _INTRA         *actintra,
-                  struct _ELEMENT       *actele,
-                  struct _SKYMATRIX     *sky1,
-                  struct _SKYMATRIX     *sky2);
+void  add_skyline(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _SKYMATRIX     *sky1,
+    struct _SKYMATRIX     *sky2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
 void redundant_skyline(
                         PARTITION     *actpart,
                         SOLVAR        *actsolv,
@@ -601,7 +628,9 @@ void  add_rc_ptr(struct _PARTITION     *actpart,
                 struct _INTRA         *actintra,
                 struct _ELEMENT       *actele,
                 struct _RC_PTR        *rc_ptr1,
-                struct _RC_PTR        *rc_ptr2);
+                struct _RC_PTR        *rc_ptr2,
+                struct _ARRAY         *elearray1,
+                struct _ARRAY         *elearray2);
 
 void add_rcptr_checkcouple(
     INT         ii,
@@ -622,17 +651,29 @@ void exchange_coup_rc_ptr(
 /*----------------------------------------------------------------------*
  |  solver_add_ccf.c                              s.offermanns 02/02    |
  *----------------------------------------------------------------------*/
-void  add_ccf(struct _PARTITION       *actpart,
-                struct _SOLVAR        *actsolv,
-                struct _INTRA         *actintra,
-                struct _ELEMENT       *actele,
-                struct _CCF           *ccf,
-                struct _CCF           *ccf2);
+void  add_ccf(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _CCF           *ccf1,
+    struct _CCF           *ccf2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
 void redundant_ccf(struct _PARTITION *actpart,
                    struct _SOLVAR    *actsolv,
                    struct _INTRA     *actintra,
                    struct _CCF       *ccf1,
                    struct _CCF       *ccf2);
+void  add_ccf_fast(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _CCF           *ccf1,
+    struct _CCF           *ccf2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
 /*----------------------------------------------------------------------*
  |  solver_add_spooles.c                                 m.gee 05/02    |
  *----------------------------------------------------------------------*/
@@ -642,7 +683,9 @@ void  add_spo(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _SPOOLMAT      *spo1,
-    struct _SPOOLMAT      *spo2);
+    struct _SPOOLMAT      *spo2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
 
 void add_spo_checkcouple(
     INT         ii,
@@ -666,6 +709,15 @@ void set_val_spo(INT ii,INT index, INT jj, struct _SPOOLMAT *spo, DOUBLE val, IN
 void close_spooles_matrix(struct _SPOOLMAT *spo, INTRA *actintra);
 void add_spooles_matrix(struct _SPOOLMAT *to, struct _SPOOLMAT *from,
                        DOUBLE factor, INT init, INTRA *actintra);
+void  add_spo_fast(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _SPOOLMAT      *spo1,
+    struct _SPOOLMAT      *spo2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
 /*----------------------------------------------------------------------*
  |  solver_colsol.c                                       m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -1327,7 +1379,9 @@ void  add_oll(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _OLL           *oll1,
-    struct _OLL           *oll2);
+    struct _OLL           *oll2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2);
 void exchange_coup_oll(
     PARTITION             *actpart,
     INTRA                 *actintra,
@@ -1469,9 +1523,14 @@ void oll_copy(
 
 
 /*----------------------------------------------------------------------*
-  | global_mask_matrices.c                              m.gee 11/01    |
+  | solver_mask_matrices.c                              m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void mask_global_matrices(void);
+
+/*----------------------------------------------------------------------*
+  | solver_mask_matrices.c                                   ah 4/04    |
+ *----------------------------------------------------------------------*/
+void mask_submesh_matrices(void);
 
 
 /*----------------------------------------------------------------------*

@@ -12,12 +12,6 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
 /*!
 \addtogroup MLPCG
 *//*! @{ (documentation module open)*/
@@ -40,7 +34,9 @@ void  add_bdcsr(struct _PARTITION     *actpart,
                 struct _INTRA         *actintra,
                 struct _ELEMENT       *actele,
                 struct _DBCSR         *bdcsr1,
-                struct _DBCSR         *bdcsr2)
+                struct _DBCSR         *bdcsr2,
+                struct _ARRAY         *elearray1,
+                struct _ARRAY         *elearray2)
 {
 INT         i,j,counter;          /* some counter variables */
 INT         start,index,lenght;       /* some more special-purpose counters */
@@ -69,8 +65,8 @@ dstrc_enter("add_bdcsr");
 /*------------------------------------- set some pointers and variables */
 myrank     = actintra->intra_rank;
 nprocs     = actintra->intra_nprocs;
-estif      = estif_global.a.da;
-if (bdcsr2) emass = emass_global.a.da;
+estif      = elearray1->a.da;
+if (bdcsr2) emass = elearray2->a.da;
 else        emass = NULL;
 nd         = actele->numnp * actele->node[0]->numdf;
 ndnd       = nd*nd;

@@ -14,14 +14,6 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
-/*----------------------------------------------------------------------*
- | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |
- *----------------------------------------------------------------------*/
-extern struct _ARRAY estif_global;
-extern struct _ARRAY emass_global;
-
-
 /*----------------------------------------------------------------------*/
 /*!
  \brief assemble into a skyline matrix (original version)
@@ -47,7 +39,9 @@ void  add_skyline(
     struct _INTRA         *actintra,
     struct _ELEMENT       *actele,
     struct _SKYMATRIX     *sky1,
-    struct _SKYMATRIX     *sky2)
+    struct _SKYMATRIX     *sky2,
+    struct _ARRAY         *elearray1,
+    struct _ARRAY         *elearray2)
 {
 
   INT               i,j,counter;           /* some counter variables */
@@ -80,8 +74,9 @@ void  add_skyline(
   /* set some pointers and variables */
   myrank     = actintra->intra_rank;
   nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  emass      = emass_global.a.da;
+  estif      = elearray1->a.da;
+  if (sky2)
+    emass      = elearray2->a.da;
   nd         = actele->numnp * actele->node[0]->numdf;
   numeq_total= sky1->numeq_total;
   numeq      = sky1->numeq;
