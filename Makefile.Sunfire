@@ -41,7 +41,7 @@ PFL       =  -DSUN -DD_SHELL8 -DD_BRICK1 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1
 # tar -xvf lib_sun.tar
 # compile on the andromeda !!!!!!!!!!!!!!!!!!!!
 # set correct HOMEDIR to the directory where you placed ccarat and lib_sun
-HOMEDIR      =  /users/stgt/<name>
+HOMEDIR      =  /users/stgt/gee
 SRC          =  $(HOMEDIR)/ccarat/src
 METISDIR     =  $(HOMEDIR)/lib_sun/metis-4.0/Lib
 SPOOLESDIR   =  $(HOMEDIR)/lib_sun/spooles
@@ -71,25 +71,25 @@ RM	 = /bin/rm -f
 #----------------------------------------------------------------
 #                                             this is fast 32 bit
 #----------------------------------------------------------------
-#CFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s $(PFL)
-#FFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
-#LDFLAGS  = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s
-#LDOPTS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
-#NAGCDIR  = $(NAGCDIR32)
-#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-#LIBS     = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -laztec_sun_par21_32 -lnagc -lm -mt -lmpi
-#PROGRAM  = cca_sun_fast32.exe
+CFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s $(PFL)
+FFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
+LDFLAGS  = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s
+LDOPTS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
+NAGCDIR  = $(NAGCDIR32)
+LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
+LIBS	 = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -laztec_sun_par21_32 -lnagc -lm -mt -lmpi
+PROGRAM  = cca_sun_fast32.exe
 #----------------------------------------------------------------
 #                                             this is fast 64 bit
 #----------------------------------------------------------------
-CFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s $(PFL)
-FFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector
-LDFLAGS  = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s
-LDOPTS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector=s
-NAGCDIR  = $(NAGCDIR64)
-LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-LIBS	 = $(LIBPATHS) -lm -lmetis_sun64 -lspoolesMPI_sun64 -lspooles_sun64 -laztec_sun_par21_64 -lnagc -lm -mt -lmpi
-PROGRAM  = cca_sun_fast64.exe
+#CFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s $(PFL)
+#FFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector
+#LDFLAGS  = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s
+#LDOPTS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector=s
+#NAGCDIR  = $(NAGCDIR64)
+#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) 
+#LIBS	  = $(LIBPATHS) -lm -lmetis_sun64 -lspoolesMPI_sun64 -lspooles_sun64 -lnagc -lm -mt -lmpi
+#PROGRAM  = cca_sun_fast64.exe
 #
 #
 #
