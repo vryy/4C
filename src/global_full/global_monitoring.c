@@ -106,6 +106,7 @@ void monitoring(
                   DOUBLE         time
                )
 {
+#ifndef NO_TEXT_OUTPUT
 INT i,j;
 INT numnp;
 INT numr;
@@ -153,4 +154,5 @@ end:
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of monitoring */

@@ -12,6 +12,10 @@
 # enable reading restart data the new way
 #NEW_RESTART_READ
 
+# if you are content with binary io you'd want to suppress to
+# write results to text files
+#NO_TEXT_OUTPUT
+
 # crash ccarat if a nan of inf occurs
 #TRAP_FE
 

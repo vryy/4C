@@ -65,6 +65,7 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 void out_gid_sol_init()
 {
+#ifndef NO_TEXT_OUTPUT
 INT               i,j;
 FIELD            *actfield;
 GIDSET           *actgid;
@@ -953,6 +954,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_sol_init */
 
 
@@ -962,6 +964,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_domains(FIELD *actfield)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j;
 
 FILE         *out = allfiles.gidres;
@@ -1576,6 +1579,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_domains */
 
 /*----------------------------------------------------------------------*
@@ -1583,6 +1587,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_domains_ssi(FIELD *actfield, INT numaf)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j;
 
 FILE         *out = allfiles.gidres;
@@ -1641,6 +1646,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_domains */
 
 
@@ -1654,6 +1660,7 @@ return;
 void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, INT step,
                  INT place, DOUBLE time)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j;
 
 FILE         *out = allfiles.gidres;
@@ -3676,6 +3683,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_sol */
 
 #ifdef D_MLSTRUCT
@@ -3684,6 +3692,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_smsol_init()
 {
+#ifndef NO_TEXT_OUTPUT
 INT               j;
 FIELD            *actsmfield;
 GIDSET           *actsmgid;
@@ -3854,6 +3863,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_smsol_init */
 #endif /* D_MLSTRUCT */
 
@@ -3865,6 +3875,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_smdisp(char string[], INT step)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j;
 FILE         *out = allfiles.gidmicrores;
 FIELD        *actsmfield;     /* the submesh-field */
@@ -3944,6 +3955,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_smdisp */
 #endif /* D_MLSTRUCT */
 
@@ -3954,6 +3966,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_smstress(char string[], INT step)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j,a,b;
 
 FILE         *out = allfiles.gidmicrores;
@@ -4312,6 +4325,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_smstress */
 
 #endif /* D_MLSTRUCT */

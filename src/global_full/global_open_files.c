@@ -139,6 +139,7 @@ if (par.myrank==0)
 /*---------------------------------------------------- open .gemm file*/
 if (par.myrank==0)
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".gemm",5);
      if ( (allfiles.out_gemm=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
@@ -149,6 +150,7 @@ if (par.myrank==0)
         exit(1);
      }
     printf("Gemm output is written to  %s\n",allfiles.outputfile_name);
+#endif /* NO_TEXT_OUTPUT */
 }
 
 #endif
@@ -168,6 +170,7 @@ if (par.myrank==0)
 /*------------------------------------------------------open .cur file */
 if (par.myrank==0)
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".cur",4);
      if ( (allfiles.out_cur=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
@@ -178,10 +181,12 @@ if (par.myrank==0)
         exit(1);
      }
     printf("load/displacements are reported to     %s\n",allfiles.outputfile_name);
+#endif /* NO_TEXT_OUTPUT */
 }
 /*------------------------------------------------------open .tur file */
 if (par.myrank==0)
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".tur",4);
      if ( (allfiles.out_tur=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
@@ -192,6 +197,7 @@ if (par.myrank==0)
         exit(1);
      }
     printf("turbulence is written to   %s\n",allfiles.outputfile_name);
+#endif /* NO_TEXT_OUTPUT */
 }
 
 /*------------------------------------------------------open .pss file */
@@ -212,6 +218,7 @@ if (par.myrank==0)
 */
 if (genprob.restart)
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".pss",4);
      if ( (allfiles.in_pss=fopen(allfiles.outputfile_name,"a+b"))==NULL)
      {
@@ -240,9 +247,11 @@ if (genprob.restart)
     /*----------------------- set file pointer to the end of pss file */
     fseek(allfiles.out_pss,0,SEEK_END);
     /*---------------- write status report about pss-file to err file */
+#endif /* NO_TEXT_OUTPUT */
 }
 else/*------------------------------- no restart, open a new pss-file */
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".pss",4);
      if ( (allfiles.out_pss=fopen(allfiles.outputfile_name,"w+b"))==NULL)
      {
@@ -255,10 +264,12 @@ else/*------------------------------- no restart, open a new pss-file */
     if (par.myrank==0)
     printf("binary is written   to     %s\n",allfiles.outputfile_name);
     allfiles.in_pss=NULL;
+#endif /* NO_TEXT_OUTPUT */
 }
 /*------------------------------------------------------open .plt file */
 if (par.myrank==0)
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".plt",4);
      if ( (allfiles.gnu=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
@@ -269,10 +280,12 @@ if (par.myrank==0)
         exit(1);
      }
     printf("output is written to       %s\n",allfiles.outputfile_name);
+#endif /* NO_TEXT_OUTPUT */
 }
 /*-----------------------------------------------open .flavia.msh file */
 if (par.myrank==0)
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".flavia.msh",11);
      if ( (allfiles.gidmsh=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
@@ -283,10 +296,12 @@ if (par.myrank==0)
         exit(1);
      }
     printf("output is written to       %s\n",allfiles.outputfile_name);
+#endif /* NO_TEXT_OUTPUT */
 }
 /*-----------------------------------------------open .flavia.res file */
 if (par.myrank==0)
 {
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".flavia.res",11);
      if ( (allfiles.gidres=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
@@ -298,37 +313,42 @@ if (par.myrank==0)
      }
     allfiles.num_flaviaresfiles = 1;
     printf("output is written to       %s\n",allfiles.outputfile_name);
+#endif /* NO_TEXT_OUTPUT */
 }
 /*-------------------------------------------------open .submesh file */
 #ifdef D_MLSTRUCT
 if (par.myrank==0)
-{     
+{
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".submesh",11);
      if ( (allfiles.gidsubmesh=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
         printf("Opening of output file .submesh failed\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
         MPI_Finalize();
-#endif 
+#endif
         exit(1);
      }
     printf("submesh is written to   %s" ,allfiles.outputfile_name);
     printf("-> this name needs to be changed to newname.flavia.msh! \n" );
-}     
+#endif /* NO_TEXT_OUTPUT */
+}
 /*-------------------------------------------------open .microres file */
 if (par.myrank==0)
-{     
+{
+#ifndef NO_TEXT_OUTPUT
      strncpy(charpointer,".microres",11);
      if ( (allfiles.gidmicrores=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
         printf("Opening of output file .microres failed\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
         MPI_Finalize();
-#endif 
+#endif
         exit(1);
      }
     printf("submeshresults are written to  %s" ,allfiles.outputfile_name);
     printf("-> this name needs to be changed to newname.flavia.res! \n" );
+#endif /* NO_TEXT_OUTPUT */
 }
 #endif /*ifdef D_MLSTRUCT*/
 /*--------------------------to open any other file just add block here */

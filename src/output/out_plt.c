@@ -62,6 +62,7 @@ void plot_liftdrag(
     DOUBLE  *liftdrag
     )
 {
+#ifndef NO_TEXT_OUTPUT
 
   INT            i;
 
@@ -94,6 +95,7 @@ dstrc_exit();
 #endif
 
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of plot_liftdrag */
 
 
@@ -122,6 +124,7 @@ void plot_lte(	DOUBLE 	time,
 			DOUBLE 	dt,
 			INT 	itnum)
 {
+#ifndef NO_TEXT_OUTPUT
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("plot_lte");
@@ -150,6 +153,7 @@ end:
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of plot_lte */
 
 #endif /* D_FLUID */
@@ -177,6 +181,7 @@ element quality statistics
 void plot_ale_quality(FIELD *field,INT step, INTRA *actintra,
                       PARTITION *actpart)
 {
+#ifndef NO_TEXT_OUTPUT
 INT i;      /* a counter */
 INT numel;  /* number of elements in this discretisation */
 INT numele_total;
@@ -247,6 +252,7 @@ dstrc_exit();
 #endif
 
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end plot_ale_quality */
 #endif /* ALE */
 

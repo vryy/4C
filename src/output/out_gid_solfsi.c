@@ -93,6 +93,7 @@ extern struct _CURVE *curve;
   ------------------------------------------------------------------------*/
 void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
 {
+#ifndef NO_TEXT_OUTPUT
   INT           i;
 
   static FLUID_DYNAMIC  *fdyn;
@@ -399,6 +400,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   dstrc_exit();
 #endif
   return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_sol_fsi */
 
 #endif

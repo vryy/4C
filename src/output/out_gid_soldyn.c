@@ -47,6 +47,7 @@ extern struct _FILES  allfiles;
 void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, INT step,
                    INT place, DOUBLE totaltime)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j;
 
 FILE         *out = allfiles.gidres;
@@ -662,6 +663,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_soldyn */
 
 

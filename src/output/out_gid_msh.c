@@ -65,6 +65,7 @@ GIDSET *sm_gid;
  *----------------------------------------------------------------------*/
 void out_gid_msh()
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j,k;
 FILE         *out = allfiles.gidmsh;
 FIELD        *actfield;
@@ -1147,6 +1148,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_msh */
 
 
@@ -1156,6 +1158,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_submesh()
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j,k;
 FILE         *out = allfiles.gidsubmesh;
 FIELD        *actsmfield;     /* the submesh-field */
@@ -1330,6 +1333,7 @@ fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_submesh */
 #endif /* D_MLSTRUCT */
 
@@ -1338,6 +1342,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_allcoords(FILE *out)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j;
 FIELD        *actfield;
 NODE         *actnode;
@@ -1377,6 +1382,7 @@ for (i=0; i<genprob.numfld; i++)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_allcoords */
 
 
@@ -1386,6 +1392,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_allsmcoords(FILE *out)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i,j,k;
 FIELD        *actmafield;
 FIELD        *actsmfield;
@@ -1435,6 +1442,7 @@ for (i=0; i<actmafield->dis[0].numele; i++)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_allsmcoords */
 
 #endif /*D_MLSTRUCT*/

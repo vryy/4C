@@ -78,6 +78,7 @@ extern struct _MONITOR *moni;
 ------------------------------------------------------------------------*/
 void out_monitor(FIELD *actfield, INT numf,DOUBLE time,INT init)
 {
+#ifndef NO_TEXT_OUTPUT
 INT       i,j;
 INT       myrank;
 INT       numval;
@@ -206,6 +207,7 @@ end:
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_monitor */
 
 /*!---------------------------------------------------------------------
@@ -223,6 +225,7 @@ return;
 ------------------------------------------------------------------------*/
 void out_area(ARRAY totarea_a, DOUBLE time, INT itnum, INT init)
 {
+#ifndef NO_TEXT_OUTPUT
 INT        i;
 INT        myrank;
 DOUBLE    *totarea;
@@ -276,4 +279,5 @@ end:
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_monitor */

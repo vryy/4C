@@ -102,6 +102,7 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void out_general()
 {
+#ifndef NO_TEXT_OUTPUT
   INT        i,j,k;
 #ifdef D_SHELL9
   INT        is_shell9;
@@ -379,6 +380,7 @@ void out_general()
   dstrc_exit();
 #endif
   return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_general */
 
 
@@ -389,6 +391,7 @@ void out_general()
 void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
              INT step, INT place)
 {
+#ifndef NO_TEXT_OUTPUT
 INT        i,j,k,kk;
 #ifdef D_SHELL9
 INT        is_shell9;    /*->shell9*/
@@ -1031,6 +1034,7 @@ if (myrank==0 && imyrank==0) fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_general */
 
 /*!---------------------------------------------------------------------
@@ -1047,6 +1051,7 @@ return;
 ------------------------------------------------------------------------*/
 void out_fsi(FIELD *fluidfield)
 {
+#ifndef NO_TEXT_OUTPUT
 
 #ifdef D_FSI
 INT        i;
@@ -1125,6 +1130,7 @@ dserror("FSI functions not compiled in\n");
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_fsi */
 
 /*!---------------------------------------------------------------------
@@ -1141,6 +1147,7 @@ return;
 ------------------------------------------------------------------------*/
 void out_ssi(FIELD *masterfield)
 {
+#ifndef NO_TEXT_OUTPUT
 INT        i;
 FILE      *out = allfiles.out_out;
 NODE      *actmnode, *actsnode;
@@ -1208,6 +1215,7 @@ dserror("SSI functions not compiled in\n");
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_ssi */
 
 /*!---------------------------------------------------------------------
@@ -1224,6 +1232,7 @@ return;
 ------------------------------------------------------------------------*/
 void out_fluidmf(FIELD *fluidfield)
 {
+#ifndef NO_TEXT_OUTPUT
 
 #ifdef D_FSI
 INT        i;
@@ -1293,6 +1302,7 @@ dserror("FSI functions not compiled in\n");
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_fluidmf */
 
 /*----------------------------------------------------------------------*
@@ -1300,6 +1310,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_fluidtu(FIELD *actfield, INTRA *actintra, INT step, INT place)
 {
+#ifndef NO_TEXT_OUTPUT
 INT        i,j,k;
 FILE      *out = allfiles.out_tur;
 NODE      *actnode;
@@ -1403,4 +1414,5 @@ if (myrank==0 && imyrank==0) fflush(out);
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_fluidmtu */

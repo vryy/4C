@@ -80,6 +80,7 @@ void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
                                 ARRAY *dirich_a,
                                 CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;
 INT                  ierr;
 INT                  numnp;
@@ -348,6 +349,7 @@ if (res.step != 0)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_write_nlnstructdyn */
 
 
@@ -375,6 +377,7 @@ void restart_read_nlnstructdyn(INT restart,
                                ARRAY *dirich_a,
                                CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;
 INT                  ierr;
 long int             reshandle;
@@ -685,6 +688,7 @@ for (i=0; i<numnp; i++)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_read_nlnstructdyn */
 
 
@@ -721,6 +725,7 @@ void restart_write_nlnstructstat(STATIC_VAR     *statvar, /*-------------- stati
                 INT ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
                 CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;                      /*-------------------------------- counter --*/
 INT                  ierr;                   /*----------------------------- error-flag --*/
 INT                  numnp;                  /*----------------- number of nodal points --*/
@@ -955,6 +960,7 @@ if (res.step != 0)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_write_nlnstructstat*/
 
 
@@ -976,6 +982,7 @@ void restart_read_nlnstructstat(INT restart,   /* restart step */
                 INT ndis,  DIST_VECTOR *dispi, /* displacement processorpart  --"--      */
                 CONTAINER    *container)       /*!< contains variables defined in container.h */
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;                      /* counters */
 INT                  ierr;                     /* error-flag */
 long int             reshandle;                /* restart handle */
@@ -1234,6 +1241,7 @@ for (i=0; i<numnp; i++)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /*end of restart_read_nlnstructstat */
 /*!---------------------------------------------------------------------
 \brief write restart data of fluid field
@@ -1260,6 +1268,7 @@ void restart_write_fluiddyn(FLUID_DYNAMIC   *fdyn,
 			    CALC_ACTION     *action,
 			    CONTAINER       *container)
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;
 INT                  ierr;
 INT                  numnp;
@@ -1455,6 +1464,7 @@ if (res.step != 0)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_write_fluiddyn */
 
 /*!---------------------------------------------------------------------
@@ -1484,6 +1494,7 @@ void restart_read_fluiddyn(INT restart,
 			   CALC_ACTION     *action,
 			   CONTAINER       *container)
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;
 INT                  ierr;
 long int             reshandle;
@@ -1695,6 +1706,7 @@ for (i=0; i<numnp; i++)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_read_fluiddyn */
 
 /*!---------------------------------------------------------------------
@@ -1718,6 +1730,7 @@ void restart_write_aledyn(ALE_DYNAMIC       *adyn,
                             PARTITION	    *actpart,
                             INTRA	    *actintra)
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;
 INT                  ierr;
 INT                  numnp;
@@ -1829,6 +1842,7 @@ if (res.step != 0)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_write_fluiddyn */
 
 /*!---------------------------------------------------------------------
@@ -1853,6 +1867,7 @@ void restart_read_aledyn(INT          restart,
                          PARTITION   *actpart,
                          INTRA	     *actintra)
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i;
 INT                  ierr;
 long int             reshandle;
@@ -2005,6 +2020,7 @@ for (i=0; i<numnp; i++)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_read_aledyn */
 
 /*!---------------------------------------------------------------------
@@ -2022,6 +2038,7 @@ write some specific parameters for restart of FSI-problems
 ------------------------------------------------------------------------*/
 void restart_write_fsidyn(FSI_DYNAMIC       *fsidyn)
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  ierr;
 long int             longdummy;
 char                 resname[100];
@@ -2083,6 +2100,7 @@ if (res.step != 0)
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_write_fsidyn */
 
 /*!---------------------------------------------------------------------
@@ -2101,6 +2119,7 @@ read some specific parameters for restart of FSI-problems
 void restart_read_fsidyn(INT restart,
                          FSI_DYNAMIC   *fsidyn)
 {
+#ifndef NO_TEXT_OUTPUT
 INT                  i,ierr;
 long int             reshandle;
 INT                  byte;
@@ -2129,4 +2148,5 @@ fsidyn->relax=res.relax;
 dstrc_exit();
 #endif
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of restart_read_fsidyn */

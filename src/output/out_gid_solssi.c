@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
   \addtogroup SSI
   *//*! @{ (documentation module open)*/
 #ifdef D_SSI
@@ -38,7 +38,7 @@ extern struct _GENPROB     genprob;
 
   <pre>                                                         m.gee 8/00
   This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h                                                  
+  and the type is in standardtypes.h
   It holds all file pointers and some variables needed for the FRSYSTEM
   </pre>
  *----------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ extern struct _FILES  allfiles;
   | dedfined in global_control.c                                         |
   | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
   |                                                          mn 06/02    |
   | structure of flags to control output                                 |
@@ -61,17 +61,17 @@ extern struct _IO_FLAGS     ioflags;
 
   <pre>                                                         m.gee 8/00
   This structure struct _PAR par; is defined in main_ccarat.c
-  and the type is in partition.h                                                  
+  and the type is in partition.h
   </pre>
 
  *----------------------------------------------------------------------*/
-extern struct _PAR   par;                      
+extern struct _PAR   par;
 
 extern struct _CURVE *curve;
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to control output og ssi to gid
 
 <pre>                                               mfirl / genk 02/04
@@ -82,7 +82,7 @@ output-file for gid.  The output includes:
 - slave stresses
 - structure displacements
 - structure stresses
-- structure velocities    (not yet implemented) 
+- structure velocities    (not yet implemented)
 - structure accelerations (not yet implemented)
 </pre>
 
@@ -94,6 +94,7 @@ output-file for gid.  The output includes:
 ------------------------------------------------------------------------*/
 void out_gid_sol_ssi(FIELD *slavefield, FIELD *masterfield)
 {
+#ifndef NO_TEXT_OUTPUT
 INT           i;
 
 static STRUCT_DYNAMIC *sdyn_s;
@@ -116,7 +117,7 @@ char         *componentnames[18];
 char          sign='"';
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_sol_ssi");
 #endif
 
@@ -127,7 +128,7 @@ sdyn_s= alldyn[0].sdyn;
 ssidyn= alldyn[genprob.numfld].ssidyn;
 
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintras    = &(par.intra[genprob.numff]);
 if (masterfield!=NULL)
 actintram    = &(par.intra[genprob.numsf]);
@@ -171,7 +172,7 @@ if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
   /*-------------------------------------------------------------------*/
   fprintf(out,"#-------------------------------------------------------------------------------\n");
   fprintf(out,"# RESULT DISPLACEMENTS on FIELD SSI\n");
-  fprintf(out,"# TIME %20.10f \n",ssidyn->time);   
+  fprintf(out,"# TIME %20.10f \n",ssidyn->time);
   fprintf(out,"#-------------------------------------------------------------------------------\n");
   fprintf(out,"RESULT %cdisplacement%c %cccarat%c %d %s %s\n",
       sign,sign,
@@ -243,7 +244,7 @@ if (ioflags.struct_disp_gid==1)
   for (i=0; i<slavefield->dis[0].numnp; i++)
   {
     actnode = &(slavefield->dis[0].node[i]);
-    if (actnode != NULL)      
+    if (actnode != NULL)
     {
       switch (genprob.ndim)
       {
@@ -282,11 +283,12 @@ if (ioflags.struct_stress_gid==1 && slavefield!=NULL)
 fflush(out);
 
 /*--------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
+#endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_sol_ssi */
 
 #endif
