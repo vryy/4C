@@ -6,9 +6,9 @@ F77=g77
 CC=gcc
 LD=gcc
 
-BASEDIR="../lib/linux"
+BASEDIR="/home/ccarat/lib"
 
-INCLUDEDIRS="-I../include"
+INCLUDEDIRS="-I/home/ccarat/include"
 LIBDIRS="-L/usr/lib -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -L$BASEDIR/lapack -L$BASEDIR/blas" 
 
 # aztec
