@@ -129,7 +129,7 @@ for (lr=0; lr<nir; lr++)
       /*----------------------------------------------------------------*/
       if(istore==0)
       {
-      /*-------------------------------- elastic stiffness matrix ke ---*/
+      /*-------------------------------- element stiffness matrix ke ---*/
         w1_keku(estif,bop,D,fac,nd,numeps);
       /*--------------- nodal forces fi from integration of stresses ---*/
         if (force) w1fi (F,fac,bop,nd,force);                    
