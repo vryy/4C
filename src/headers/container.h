@@ -39,28 +39,33 @@ INT            point_neum;
 
 INT            quality;      /*!< element quality measure */
 
+#ifdef D_ALE
 DOUBLE         min, max;     /*<! scaling parameters for ale two_step */
 DOUBLE         min_stiff;
 DOUBLE         max_stiff;
+#endif
 
 INT            pos;          /*<! sol_increment[pos] contains dbc in ale */
 INT            coupl_typ;    /*!< conforming or non-conf. discretization */
 DOUBLE         relax_param;  /*!< the relaxation parameter omega */
 
 #ifdef D_FLUID               /* ab hier fuer fluid */
-DOUBLE        *ftimerhs;
-DOUBLE        *fiterhs;
+DOUBLE        *frhs;
 DOUBLE        *liftdrag;
 DOUBLE        *fidrichrhs;   /*!< for storing the pressure rhs values */
 DOUBLE        *ftimerhs_pro;
 INT            nii;
-INT            nif;
-INT            nim;
+#ifdef D_FLUID2_PRO
 struct _DBCSR *gradmatrix;   /*!< gradient matrix Projection Method */
 struct _DBCSR *lumpedmass;   /*!< gradient matrix Projection Method */
+DOUBLE        *fvelrhs2;     /*!< pointer to second right hand side */
+#endif
 INT            turbu;
+#ifdef D_FLUID2TU
 INT            niturbu_pro;
 INT            niturbu_n;
+DOUBLE        *ftimerhs;     /* used within turbulence (only??) */
+#endif
 enum _FLUID_STRESS str;
 INT           *iedgnod;
 INT            ngnode;
