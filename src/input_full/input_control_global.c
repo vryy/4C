@@ -764,6 +764,7 @@ fdyn->itnorm=2;
 fdyn->stchk=0;
 fdyn->init=0;
 fdyn->viscstr=0;
+fdyn->liftdrag=0;
 fdyn->numdf=genprob.ndim+1;  
 fdyn->numcont=0;
 fdyn->uppss=1;  
@@ -781,6 +782,11 @@ fdyn->theta=0.5;
 fdyn->ittol=EPS6; 
 fdyn->sttol=EPS6; 
 fdyn->turbu=0;
+fdyn->adaptive=0;	/* default: no adaptive time stepping */
+fdyn->time_rhs=1;	/* default: build time rhs as W.A. Wall describes */
+fdyn->lte = 1.0e-03;	/* default: local truncation error for adapt. time*/
+fdyn->max_dt = 1.0;	/* default: maximal time step size to 1.0 */
+
  
 if (frfind("-FLUID DYNAMIC")==0) goto end;
 frread();
@@ -801,9 +807,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (strncmp(buffer,"Stationary",10)==0) 
-         fdyn->iop=0;
-      else if (strncmp(buffer,"One_Step_Theta",18)==0) 
-         fdyn->iop=4;                  
+         fdyn->iop=0; 
+      else if (strncmp(buffer,"Gen_Alfa",8)==0) 
+         fdyn->iop=1; 
+      else if (strncmp(buffer,"Gen_Alpha",9)==0) 
+         fdyn->iop=1;     
+      else if (strncmp(buffer,"One_Step_Theta",14)==0) 
+         fdyn->iop=4;    
+      else if (strncmp(buffer,"BDF2",4)==0) 
+         fdyn->iop=7;  
       else
          dserror("TIMEINTEGR-Type unknown");
    }
@@ -945,6 +957,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("CHECKAREA unknown!\n");	 
    }
+   frchar("LIFTDRAG"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"yes",3)==0 ||
+          strncmp(buffer,"YES",3)==0 ||                 
+	  strncmp(buffer,"Yes",3)==0    )
+         fdyn->liftdrag=1;
+      else if (strncmp(buffer,"No",2)==0 ||
+               strncmp(buffer,"NO",2)==0 ||
+	       strncmp(buffer,"no",2)==0   )
+         fdyn->liftdrag=0;
+      else
+         dserror("LIFTDRAG unknown!\n");	 
+   }
    frchar("TURBULENCE"  ,buffer    ,&ierr);
    if (ierr==1)
    {
@@ -972,7 +998,29 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->dis_capt=1;
       else
          dserror("DISC_CAPT unknown!");
-   }   
+   }
+   frchar("ADAPT_TIME"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"No",2)==0 ||
+          strncmp(buffer,"NO",2)==0 ||
+	  strncmp(buffer,"no",2)==0   ) 
+         fdyn->adaptive=0;
+      else if (strncmp(buffer,"Yes",3)==0 ||
+               strncmp(buffer,"YES",3)==0 ||
+	       strncmp(buffer,"yes",3)==0   ) 
+         fdyn->adaptive=1;
+      else
+         dserror("ADAPT_TIME can not be read (yes/no)!");     
+   }
+   frchar("TIME_RHS"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"mass",4)==0) 
+         fdyn->time_rhs=0;
+      else
+         dserror("TIME_RHS unknown!");     
+   }
 
 /*--------------read INT */
    frint("NUMCONT"    ,&(fdyn->numcont)       ,&ierr);
@@ -997,21 +1045,26 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    frint("IPRERHS",&(fdyn->iprerhs),&ierr); 
    frint("ITEMAX" ,&(fdyn->itemax) ,&ierr);  
+   
 /*--------------read DOUBLE */
    frdouble("TIMESTEP" ,&(fdyn->dt)     ,&ierr);
    frdouble("MAXTIME"  ,&(fdyn->maxtime),&ierr);
+   frdouble("ALPHA_M"  ,&(fdyn->alpha_m),&ierr);
+   frdouble("ALPHA_F"  ,&(fdyn->alpha_f),&ierr);
    if (thetafound==0)
    {
       frdouble("THETA"    ,&(fdyn->theta)  ,&ierr);
       if (ierr==1) thetafound++;
    }
-   frdouble("CONVTOL"  ,&(fdyn->ittol)  ,&ierr);
-   frdouble("STEADYTOL",&(fdyn->sttol) ,&ierr);
-   frdouble("START_THETA",&(fdyn->thetas),&ierr);
-   frdouble("INT_LENGHT",&(fdyn->lenght),&ierr);
-   frdouble("ROUGHTNESS",&(fdyn->rought),&ierr);
-   frdouble("SC_COORD_X",&(fdyn->coord_scale[0]),&ierr);
-   frdouble("SC_COORD_Y",&(fdyn->coord_scale[1]),&ierr);
+   frdouble("CONVTOL"     ,&(fdyn->ittol)  ,&ierr);
+   frdouble("STEADYTOL"   ,&(fdyn->sttol) ,&ierr);
+   frdouble("START_THETA" ,&(fdyn->thetas),&ierr);
+   frdouble("INT_LENGHT"  ,&(fdyn->lenght),&ierr);
+   frdouble("ROUGHTNESS"  ,&(fdyn->rought),&ierr);
+   frdouble("SC_COORD_X"  ,&(fdyn->coord_scale[0]),&ierr);
+   frdouble("SC_COORD_Y"  ,&(fdyn->coord_scale[1]),&ierr);
+   frdouble("MAX_DT"      ,&(fdyn->max_dt),&ierr);
+   frdouble("LOC_TRUN_ERR",&(fdyn->lte)   ,&ierr);
 
    frread();
 }
@@ -1194,11 +1247,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("UPRES"      ,&(fsidyn->upres)            ,&ierr);
    frint("RESTARTEVRY",&(fsidyn->res_write_evry)   ,&ierr);
 /*--------------read DOUBLE */
-   frdouble("TIMESTEP"   ,&(fsidyn->dt)     ,&ierr);
-   frdouble("MAXTIME"    ,&(fsidyn->maxtime),&ierr);
-   frdouble("TOLENCHECK" ,&(fsidyn->entol)  ,&ierr);
-   frdouble("RELAX"      ,&(fsidyn->relax)  ,&ierr);
-   frdouble("CONVTOL"    ,&(fsidyn->convtol),&ierr);      
+   frdouble("TIMESTEP"    ,&(fsidyn->dt)     ,&ierr);
+   frdouble("MAXTIME"     ,&(fsidyn->maxtime),&ierr);
+   frdouble("TOLENCHECK"  ,&(fsidyn->entol)  ,&ierr);
+   frdouble("RELAX"       ,&(fsidyn->relax)  ,&ierr);
+   frdouble("CONVTOL"     ,&(fsidyn->convtol),&ierr);  
    frread();
 }
 frrewind();
@@ -1272,7 +1325,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else if (strncmp(buffer,"MIN_J",5)==0) adyn->measure_quality = min_detF;
       else if (strncmp(buffer,"none",4)==0) adyn->measure_quality = no_quality;
       else if (strncmp(buffer,"NONE",4)==0) adyn->measure_quality = no_quality;
-      else dserror("unknown ALE_TYPE");
+      else dserror("unknown QUALITY in ALE DYNAMIC");
    }
 /*--------------read INT */
    frint("NUMSTEP" ,   &(adyn->nstep) ,       &ierr);
