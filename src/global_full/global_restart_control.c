@@ -1376,8 +1376,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = 5;
       container->handles  = ele_handles[i];
       fluid2(actpart,actintra,actele,NULL,
-             NULL,NULL,
-             NULL,NULL,NULL,
+             NULL,NULL,NULL,NULL,
              action,NULL,NULL,container);
    break;
 #endif
@@ -1387,8 +1386,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = 5;
       container->handles  = ele_handles[i];
       fluid3(actpart,actintra,actele,
-             NULL,NULL,
-             NULL,NULL,NULL,
+             NULL,NULL,NULL,NULL,
              action,NULL,NULL,container);
    break;
 #endif
@@ -1399,7 +1397,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handles  = ele_handles[i];
       fluid3_fast(actpart,actintra,&actele,
              NULL,NULL,
-             NULL,NULL,NULL,
+             NULL,NULL,
              action,NULL,NULL,container,1);
    break;
 #endif
@@ -1638,8 +1636,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = 5;
       container->handles  = ele_handles[i];
       fluid2(actpart,actintra,actele,NULL,
-             NULL,NULL,
-             NULL,NULL,NULL,
+             NULL,NULL,NULL,NULL,
              action,NULL,NULL,container);
 #endif
    break;
@@ -1648,8 +1645,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = 5;
       container->handles  = ele_handles[i];
       fluid3(actpart,actintra,actele,
-             NULL,NULL,
-             NULL,NULL,NULL,
+             NULL,NULL,NULL,NULL,
              action,NULL,NULL,container);
 #endif
    break;
