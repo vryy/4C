@@ -171,17 +171,8 @@ c2=curve[actcurve].c2;
 /*----------------------------------------------------------------------*/
 switch (numex)
 {
-case -1:
-   if (T <= ONE)
-   {
-      val1 = T*PI/2;
-      fac = sin(val1);      
-   }
-   else
-      fac = ONE;
-   break;
    
-case -2:
+case -1:
    if (T <= c1)
    {
       val1 = T/c1*PI/2;
@@ -191,7 +182,7 @@ case -2:
       fac = ONE;         
    break;
    
-case -3:
+case -2:
    if (T < EPS6) 
    {
       fac = ZERO;
