@@ -169,6 +169,7 @@ if (assemble_action==assemble_two_exchange)
       case spoolmatrix:
          exchange_coup_spo(actpart,actsolv,actintra,sysa1->spo);
          exchange_coup_spo(actpart,actsolv,actintra,sysa2->spo);
+      break;
       case ccf:
          redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,sysa2->ccf);
       break;
