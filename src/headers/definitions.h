@@ -111,7 +111,6 @@ typedef char      CHAR;
 #define iveczero            iveczero_
 #define fsdoc               fsdoc_
 #define sspace              sspace_
-#define v2_init             v2_init__
 #define v2call              v2call_
 #define v2data              v2data_
 #define v2grid              v2grid_
@@ -120,7 +119,6 @@ typedef char      CHAR;
 #define v2_cursor           v2_cursor_
 #define v2update            v2update_
 #define qat2v2              qat2v2_
-#define v3_init             v3_init__
 #define v3call              v3call_
 #define v3grid              v3grid_
 #define v3surface           v3surface_
