@@ -369,7 +369,7 @@ alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
 calinit(actfield,actpart,action,&container);
 
 /*--------------------------------------------- calculate nodal normals */
-fluid_cal_normal(actfield,fdyn,1,action);
+fluid_cal_normal(actfield,1,action);
 
 /*------------------------------------------------- define local co-sys */
 fluid_locsys(actfield,fdyn);
@@ -450,7 +450,7 @@ if(fdyn->time_rhs==0)
    fluid_prep_rhs(actfield);
 
 /*------------------------------------- start time step on the screen---*/
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf("----------------------------------------------------------------\n");
    printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error -| \n");
@@ -667,14 +667,6 @@ fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 if (fdyn->mlfem==1) fluid_smcopy(actpart);		     
 #endif
 
-/*------------------------------------------- local co-ordinate system:
-  the values in sol are given in the xyz* co-system, however
-  output is done in the XYZ co-system. So we have to tranform the
-  values from xyz* to XYZ */
-#if 0
-locsys_trans_sol(actfield,0,0,actpos,1); 
-#endif
-
 /*--------------------------------------- write solution to .flavia.res */
 if (resstep==fdyn->upres && par.myrank==0) 
 {
@@ -700,7 +692,7 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 }
 
 /*------------------------------------------- write restart to pss file */
-if (restartstep==fdyn->res_write_evry)
+if (restartstep==fdyn->uprestart)
 {
    restartstep=0;
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   

@@ -442,7 +442,7 @@ fluid_setdirich(actfield,3);
 /*-------------------------------------------------- initialise timerhs */
 amzero(&ftimerhs_a);
 
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf("----------------------------------------------------------------\n");
    printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error -| \n");
@@ -578,7 +578,7 @@ kappa:
 fdyn->kapomega_flag=0;
 itnum1=1;
 
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf(" ______________________________________________________________ \n");
    printf(" __________________________________________________ \n");
@@ -596,7 +596,7 @@ fdyn->kapomega_flag=1;
 itnum1=1;
 /*----------------------------------------------------------------------*/
 
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf(" __________________________________________________ \n");
    printf("|- step/max -|-  tol     [norm] -|- omega  error -| \n");
@@ -721,14 +721,14 @@ itnum_n++;
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration  for turbulence (kappa || epsilon)   |
  *----------------------------------------------------------------------*/
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf("|____________|___________________|________________| \n");
    printf("\n"); 
 }   
 
 /*--------------- iteration convergence check for characteristic lenght */
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf(" __________________________________________________ \n");
    printf("|- step/max -|-  tol     [norm] -|- lenght error -| \n");
@@ -749,7 +749,7 @@ if (converged==0)
 /*----------------- write eddy (n) to eddy (n+g) due to production-term */
 fluid_eddy_pro(actfield);
 
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf("|____________|___________________|________________| \n");
    printf(" ______________________________________________________________ \n");

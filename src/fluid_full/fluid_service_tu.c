@@ -734,7 +734,7 @@ numdf       = fdyn->numdf;
          {
           switch (fdyn->itnorm) /* switch to norm */
           {
-           case 0: /* L_infinity norm */
+           case fncc_Linf: /* L_infinity norm */
            if (j==predof) /* pressure dof */
 	     {
             dpnorm = DMAX(dpnorm,FABS(actnode->sol_increment.a.da[3][j]-actnode->sol_increment.a.da[3][j+numdf])); 
@@ -746,7 +746,7 @@ numdf       = fdyn->numdf;
 	      vnorm  = DMAX(vnorm, FABS(actnode->sol_increment.a.da[3][j]));
 	     } /* endif vel dof */
            break; 
-            case 1: /* L_1 norm */
+            case fncc_L1: /* L_1 norm */
             if (j==predof) /* pressure dof */
 	      {
              dpnorm += FABS(actnode->sol_increment.a.da[3][j]-actnode->sol_increment.a.da[3][j+numdf]);
@@ -758,7 +758,7 @@ numdf       = fdyn->numdf;
 	       vnorm  += FABS(actnode->sol_increment.a.da[3][j]);
 	      } /* endif vel dof */
            break; 
-            case 2: /* L_2 norm */
+            case fncc_L2: /* L_2 norm */
             if (j==predof) /* pressure dof */
 	      {
              dpnorm += pow(actnode->sol_increment.a.da[3][j]-actnode->sol_increment.a.da[3][j+numdf],2);
@@ -769,11 +769,15 @@ numdf       = fdyn->numdf;
 	       dvnorm += pow(actnode->sol_increment.a.da[3][j]-actnode->sol_increment.a.da[3][j+numdf],2);
 	       vnorm  += pow(actnode->sol_increment.a.da[3][j],2);
 	      } /* endif vel dof */
+           case fncc_no:
+           break;
+           default:
+             dserror("norm not known!\n");
            } /* end of switch */  
          } /* end of loop over dofs */  
       } /* end of loop over nodes */      
 
-       if (fdyn->itnorm==2)
+       if (fdyn->itnorm==fncc_L2)
        {
         dvnorm = sqrt(dvnorm);
          vnorm = sqrt(vnorm);

@@ -559,7 +559,6 @@ dstrc_enter("fluid_init");
 fdyn = alldyn[genprob.numff].fdyn;
 
 fdyn->ishape = 1;
-fdyn->iprerhs= fdyn->iprerhs;
   
 numdf = fdyn->numdf;
 numele_total = actfield->dis[0].numele;
@@ -1042,8 +1041,8 @@ DOUBLE    vnorm=ZERO;
 DOUBLE    pnorm=ZERO;  /* values for norm calculation                  */
 DOUBLE    gnorm=ZERO;
 NODE    *actnode;      /* actual node                                  */
-ARRAY    result_a;
-DOUBLE  *result;       /* redundandent result vector                   */
+static ARRAY    result_a;
+static DOUBLE  *result;       /* redundandent result vector                   */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_result_incre");
@@ -1055,8 +1054,9 @@ numeq_total = sol->numeq_total;
 predof      = fdyn->numdf-1;
 
 /*------------------------- allocate space to allreduce the DIST_VECTOR */
-result = amdef("result",&result_a,numeq_total,1,"DV");
-         amzero(&result_a);
+if(result_a.Typ==cca_XX)
+   result = amdef("result",&result_a,numeq_total,1,"DV");
+amzero(&result_a);
 
 /*------------------ copy distributed result to redundant result vector */
 solserv_reddistvec(
@@ -1072,8 +1072,12 @@ solserv_reddistvec(
    so we have to tranform sol_increment for the convergence check       */
 locsys_trans_sol(actfield,0,1,place,0);   
 
-if (fdyn->itchk==0) /* no iteration convergence check */
+switch (fdyn->itnorm) /* switch to norm */
 {
+case fncc_no:
+   dvnorm=ONE;
+   dpnorm=ONE;
+   dgnorm=ONE;
    /*--------  loop nodes and put the result back to the node structure */
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
@@ -1094,177 +1098,165 @@ if (fdyn->itchk==0) /* no iteration convergence check */
       } /* end of loop over dofs */
      
    } /* end of loop over nodes */
-} /* end if no iteration check */
+break;
 /*----------------------------------------------------------------------*/   
-else if (fdyn->itchk==1) /* convergence check  */
-{
-   switch (fdyn->itnorm) /* switch to norm */
+case fncc_Linf: /* L_infinity norm */
+   /*-----  loop nodes and put the result back to the node structure */
+   for (i=0; i<actfield->dis[0].numnp; i++)
    {
-   case 0: /* L_infinity norm */
-      /*-----  loop nodes and put the result back to the node structure */
-      for (i=0; i<actfield->dis[0].numnp; i++)
+      actnode = &(actfield->dis[0].node[i]);
+      /*------------------------ enlarge sol_increment, if necessary */
+      if (place >= actnode->sol_increment.fdim)
       {
-         actnode = &(actfield->dis[0].node[i]);
-         /*------------------------ enlarge sol_increment, if necessary */
-         if (place >= actnode->sol_increment.fdim)
-         {
-            diff = place - actnode->sol_increment.fdim;
-            max  = IMAX(diff,5);
-            amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max,
-	              actnode->sol_increment.sdim,"DA");
-         } /* endif enlargement */
-         for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
-         {
-	    dof = actnode->dof[j];
-            if (dof>=numeq_total) continue;
-            if (j==predof) /* pressure dof */
-	    {
-               dpnorm = DMAX(dpnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
-	       pnorm  = DMAX(pnorm, FABS(result[dof]));
-	       actnode->sol_increment.a.da[place][j] = result[dof];
-	    } /* endif pressure dof */
-	    else if (j>predof) /* grid velocity or height function dof */
-	    {
-	       dgnorm = DMAX(dgnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
-	       gnorm  = DMAX(gnorm,FABS(result[dof]));
-	       actnode->sol_increment.a.da[place][j] = result[dof];
-	    }
-	    else /* vel - dof */
-	    {	       
-	       dvnorm = DMAX(dvnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
-	       vnorm  = DMAX(vnorm, FABS(result[dof]));
-               actnode->sol_increment.a.da[place][j] = result[dof];
-	    } /* endif vel dof */
-         } /* end of loop over dofs */        
-      } /* end of loop over nodes */      
-   break; 
-   /*-------------------------------------------------------------------------*/   
-   case 1: /* L_1 norm */
-      /*-----------  loop nodes and put the result back to the node structure */
-      for (i=0; i<actfield->dis[0].numnp; i++)
+         diff = place - actnode->sol_increment.fdim;
+         max  = IMAX(diff,5);
+         amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max,
+                   actnode->sol_increment.sdim,"DA");
+      } /* endif enlargement */
+      for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
       {
-         actnode = &(actfield->dis[0].node[i]);
-         /*------------------------------ enlarge sol_increment, if necessary */
-         if (place >= actnode->sol_increment.fdim)
+         dof = actnode->dof[j];
+         if (dof>=numeq_total) continue;
+         if (j==predof) /* pressure dof */
          {
-            diff = place - actnode->sol_increment.fdim;
-            max  = IMAX(diff,5);
-            amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max,
-	              actnode->sol_increment.sdim,"DA");
-         } /* endif enlargement */
-         for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
+            dpnorm = DMAX(dpnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
+            pnorm  = DMAX(pnorm, FABS(result[dof]));
+            actnode->sol_increment.a.da[place][j] = result[dof];
+         } /* endif pressure dof */
+         else if (j>predof) /* grid velocity or height function dof */
          {
-	    dof = actnode->dof[j];
-            if (dof>=numeq_total) continue;
-            if (j==predof) /* pressure dof */
-	    {
-               dpnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
-	       pnorm  += FABS(result[dof]);
-	       actnode->sol_increment.a.da[place][j] = result[dof];
-	    } /* endif pressure dof */
-            else if (j>predof) /* grid velocity or height function dof */
-	    {
-               dgnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
-	       gnorm  += FABS(result[dof]);
-	       actnode->sol_increment.a.da[place][j] = result[dof];	       
-	    } /* endif grid velocity dofs */
-	    else /* vel - dof */
-	    {	       
-	       dvnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
-	       vnorm  += FABS(result[dof]);
-               actnode->sol_increment.a.da[place][j] = result[dof];
-	    } /* endif vel dof */
-         } /* end of loop over dofs */        
-      } /* end of loop over nodes */ 
-   break; 
-   /*-------------------------------------------------------------------------*/   
-   case 2: /* L_2 norm */
-      /*-----------  loop nodes and put the result back to the node structure */
-      for (i=0; i<actfield->dis[0].numnp; i++)
-      {
-         actnode = &(actfield->dis[0].node[i]);
-         /*------------------------------ enlarge sol_increment, if necessary */
-         if (place >= actnode->sol_increment.fdim)
-         {
-            diff = place - actnode->sol_increment.fdim;
-            max  = IMAX(diff,5);
-            amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max,
-	              actnode->sol_increment.sdim,"DA");
+            dgnorm = DMAX(dgnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
+            gnorm  = DMAX(gnorm,FABS(result[dof]));
+            actnode->sol_increment.a.da[place][j] = result[dof];
          }
-         for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
+         else /* vel - dof */
+         {          
+            dvnorm = DMAX(dvnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
+            vnorm  = DMAX(vnorm, FABS(result[dof]));
+            actnode->sol_increment.a.da[place][j] = result[dof];
+         } /* endif vel dof */
+      } /* end of loop over dofs */        
+   } /* end of loop over nodes */      
+break; 
+/*-------------------------------------------------------------------------*/   
+case fncc_L1: /* L_1 norm */
+   /*-----------  loop nodes and put the result back to the node structure */
+   for (i=0; i<actfield->dis[0].numnp; i++)
+   {
+      actnode = &(actfield->dis[0].node[i]);
+      /*------------------------------ enlarge sol_increment, if necessary */
+      if (place >= actnode->sol_increment.fdim)
+      {
+         diff = place - actnode->sol_increment.fdim;
+         max  = IMAX(diff,5);
+         amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max,
+                   actnode->sol_increment.sdim,"DA");
+      } /* endif enlargement */
+      for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
+      {
+         dof = actnode->dof[j];
+         if (dof>=numeq_total) continue;
+         if (j==predof) /* pressure dof */
          {
-	    dof = actnode->dof[j];
-            if (dof>=numeq_total) continue;
-            if (j==predof) /* pressure dof */
-	    {
-               dpnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
-	       pnorm  += DSQR(result[dof]);
-	       actnode->sol_increment.a.da[place][j] = result[dof];
-	    } /* endif pressure dof */
-	    else if (j>predof) /* grid velocity or height function dof */
-	    {
-               dgnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
-	       gnorm  += DSQR(result[dof]);
-	       actnode->sol_increment.a.da[place][j] = result[dof];	    
-	    } /* endif grid velocity dofs */
-	    else /* vel - dof */
-	    {	       
-	       dvnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
-	       vnorm  += DSQR(result[dof]);
-               actnode->sol_increment.a.da[place][j] = result[dof];
-	    } /* endif vel dof */
-         } /* end of loop over dofs */        
-      } /* end of loop over nodes */
-      dvnorm = sqrt(dvnorm);
-       vnorm = sqrt( vnorm);
-      dpnorm = sqrt(dpnorm);
-       pnorm = sqrt( pnorm);  
-      dgnorm = sqrt(dgnorm);
-       gnorm = sqrt( gnorm);
-   break; 
-   /*-------------------------------------------------------------------*/   
-   default:
-      dserror("unknown norm for convergence check!\n");
-   } /* end of switch(fdyn->itnorm) */  
-   /*------------------------------------------- check for "ZERO-field" */
-   if (vnorm<EPS5)
+            dpnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
+            pnorm  += FABS(result[dof]);
+            actnode->sol_increment.a.da[place][j] = result[dof];
+         } /* endif pressure dof */
+         else if (j>predof) /* grid velocity or height function dof */
+         {
+            dgnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
+            gnorm  += FABS(result[dof]);
+            actnode->sol_increment.a.da[place][j] = result[dof];            
+         } /* endif grid velocity dofs */
+         else /* vel - dof */
+         {          
+            dvnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
+            vnorm  += FABS(result[dof]);
+            actnode->sol_increment.a.da[place][j] = result[dof];
+         } /* endif vel dof */
+      } /* end of loop over dofs */        
+   } /* end of loop over nodes */ 
+break; 
+/*-------------------------------------------------------------------------*/   
+case fncc_L2: /* L_2 norm */
+   /*-----------  loop nodes and put the result back to the node structure */
+   for (i=0; i<actfield->dis[0].numnp; i++)
    {
-      vnorm = ONE;
-#ifdef DEBUG
-      printf("ATTENTION: zero vel field - norm <= 1.0e-5 set to 1.0!! \n");
-#endif
-   }
-   if (pnorm<EPS5)
-   {
-      pnorm = ONE;
-#ifdef DEBUG
-      printf("ATTENTION: zero pre field - norm <= 1.0e-5 set to 1.0!! \n");
-#endif
-   }
-   if (gnorm<EPS5)
-   {
-      gnorm = ONE;
-   }
-   /*------------------------------------- set final convergence ratios */
-   *vrat = dvnorm/vnorm;
-   *prat = dpnorm/pnorm;
-   if (fdyn->freesurf==2 || fdyn->freesurf==5 || fdyn->freesurf==6) 
-      *grat = dgnorm/gnorm;   
-} /* endif convergence check */   
-/*----------------------------------------------------------------------*/
-else
+      actnode = &(actfield->dis[0].node[i]);
+      /*------------------------------ enlarge sol_increment, if necessary */
+      if (place >= actnode->sol_increment.fdim)
+      {
+         diff = place - actnode->sol_increment.fdim;
+         max  = IMAX(diff,5);
+         amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max,
+                   actnode->sol_increment.sdim,"DA");
+      }
+      for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
+      {
+         dof = actnode->dof[j];
+         if (dof>=numeq_total) continue;
+         if (j==predof) /* pressure dof */
+         {
+            dpnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
+            pnorm  += DSQR(result[dof]);
+            actnode->sol_increment.a.da[place][j] = result[dof];
+         } /* endif pressure dof */
+         else if (j>predof) /* grid velocity or height function dof */
+         {
+            dgnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
+            gnorm  += DSQR(result[dof]);
+            actnode->sol_increment.a.da[place][j] = result[dof];         
+         } /* endif grid velocity dofs */
+         else /* vel - dof */
+         {          
+            dvnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
+            vnorm  += DSQR(result[dof]);
+            actnode->sol_increment.a.da[place][j] = result[dof];
+         } /* endif vel dof */
+      } /* end of loop over dofs */        
+   } /* end of loop over nodes */
+   dvnorm = sqrt(dvnorm);
+    vnorm = sqrt( vnorm);
+   dpnorm = sqrt(dpnorm);
+    pnorm = sqrt( pnorm);  
+   dgnorm = sqrt(dgnorm);
+    gnorm = sqrt( gnorm);
+break; 
+/*-------------------------------------------------------------------*/   
+default:
+   dserror("unknown norm for convergence check!\n");
+} /* end of switch(fdyn->itnorm) */  
+
+/*------------------------------------------- check for "ZERO-field" */
+if (vnorm<EPS5)
 {
-   dserror("parameter itchk out of range!\n");
+   vnorm = ONE;
+#ifdef DEBUG
+    printf("ATTENTION: zero vel field - norm <= 1.0e-5 set to 1.0!! \n");
+#endif
 }
+if (pnorm<EPS5)
+{
+   pnorm = ONE;
+#ifdef DEBUG
+   printf("ATTENTION: zero pre field - norm <= 1.0e-5 set to 1.0!! \n");
+#endif
+}
+if (gnorm<EPS5)
+{
+   gnorm = ONE;
+}
+/*------------------------------------- set final convergence ratios */
+*vrat = dvnorm/vnorm;
+*prat = dpnorm/pnorm;
+if (fdyn->freesurf==2 || fdyn->freesurf==5 || fdyn->freesurf==6) 
+   *grat = dgnorm/gnorm;   
 
 /*------------------------------------------- local co-ordinate system:
   the values in sol_increment[3][] are given in the xyz* co-system, 
   however everything else is in the XYZ co-system. So we have to 
   tranform them from xyz* to XYZ                                        */
 locsys_trans_sol(actfield,0,1,place,1); 
-
-/*----------------------------------------------------------------------*/
-amdel(&result_a);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1327,7 +1319,9 @@ numvel       = numdf-1;
 
 switch (fdyn->stnorm)
 {
-case 0: /* L_infinity norm */
+case fnst_no: /* do nothing */
+break;
+case fnst_Linf: /* L_infinity norm */
    /*-------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
@@ -1348,7 +1342,7 @@ case 0: /* L_infinity norm */
    } /* end of loop over nodes */
 break; 
 /*----------------------------------------------------------------------*/
-case 1: /* L_1 norm */   
+case fnst_L1: /* L_1 norm */   
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
@@ -1369,7 +1363,7 @@ case 1: /* L_1 norm */
    } /* end of loop over nodes */
 break; 
 /*----------------------------------------------------------------------*/
-case 2: /* L_2 norm */   
+case fnst_L2: /* L_2 norm */   
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
@@ -1671,6 +1665,7 @@ dstrc_enter("fluid_steadycheck");
 #endif
 
 fdyn = alldyn[genprob.numff].fdyn;
+if (fdyn->stnorm==fnst_no) goto end;
 /*------------------------------------------ determine the conv. ratios */
 fluid_norm(actfield,numeq_total,&vrat,&prat);
 
@@ -1680,17 +1675,19 @@ if (par.myrank==0)
    fprintf(out,"---------------------------------------------------\n");
    switch (fdyn->stnorm) 
    {  
-   case 0:
+   case fnst_Linf:
       printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_in] \n",  
 	        fdyn->sttol);
    break;
-   case 1:
+   case fnst_L1:
       printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_1 ] \n",
 	        fdyn->sttol);
    break;
-   case 2:
+   case fnst_L2:
       printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_2 ] \n",
 	        fdyn->sttol);
+   break;
+   case fnst_no: /* do nothing */
    break;
    default:
       dserror("Norm for steady state check unknwon!\n");
@@ -1714,6 +1711,7 @@ if (par.myrank==0)
   fprintf(out,"---------------------------------------------------\n");
 
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1757,21 +1755,21 @@ dstrc_enter("fluid_convcheck");
 
 fdyn = alldyn[genprob.numff].fdyn;
 
-if (fdyn->itchk!=0)
+if (fdyn->itnorm!=fncc_no)
 {
    if (par.myrank==0) /* output to the screen */
    { 
       switch(fdyn->itnorm)
       {
-      case 0: /* infinity norm */
+      case fncc_Linf: /* infinity norm */
          printf("|  %3d/%3d   | %10.3E[L_in]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
       break;
-      case 1: /* L_1 norm */
+      case fncc_L1: /* L_1 norm */
          printf("|  %3d/%3d   | %10.3E[L_1 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
               itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
       break;
-      case 2: /* L_2 norm */
+      case fncc_L2: /* L_2 norm */
          if (fdyn->freesurf>1)    
          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,grat,te,ts);

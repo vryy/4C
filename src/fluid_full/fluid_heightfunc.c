@@ -283,7 +283,7 @@ for (i=0;i<numnp_total;i++)
 /*-------------------------------------------------- check convergence */
 switch (fdyn->itnorm)
 {
-case 2:
+case fncc_L2:
    for (i=0;i<numeq_total;i++)
    {
       dgnorm += DSQR(result[i]-result_old[i]);
