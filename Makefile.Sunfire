@@ -22,6 +22,7 @@
 # -DD_WALL1      defines element wall1
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
+# -DD_XFEM       defines for enriched fluid element
 #
 #  PROBLEMTYPES:
 #  =============
@@ -29,6 +30,7 @@
 # -DD_FSI        defines general FSI problem
 # -DD_OPTIM      defines optimization
 # -DD_CONTACT    defines contact algorithms
+# -DD_LS         defines for level set problem
 #
 #  ADDITIONAL FEATURES:
 #  ====================

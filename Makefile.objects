@@ -501,6 +501,35 @@ OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
                 src/fluid2_pro/f2pro_caltimerhs.o \
                 src/fluid2_pro/f2pro_calservice.o \
                 src/fluid2_pro/f2pro_main.o
+#                ls
+OBJS_LS       = src/ls/ls_init.o \
+	      	src/ls/ls_dirich.o \
+		src/ls/ls_algout.o \
+		src/ls/ls2_inpele.o \
+		src/ls/ls2_main.o \
+		src/ls/ls2_calfuncderiv.o \
+		src/ls/ls2_calset.o \
+		src/ls/ls_result_incre.o \
+		src/ls/ls_convcheck.o \
+		src/ls/ls_steadycheck.o \
+                src/ls/ls_update.o \
+                src/ls/ls_dyn.o \
+                src/ls/ls_levelset.o \
+                src/ls/ls_fluid.o \
+                src/ls/ls2_intg.o
+#                xfem
+OBJS_XFEM     = src/xfem/xfem_polygon.o \
+                src/xfem/xfem_calfuncderiv.o \
+                src/xfem/xfem_calgalmat.o \
+                src/xfem/xfem_calstabmat.o \
+                src/xfem/xfem_f2_calint.o \
+		src/xfem/xfem_f2_calele.o \
+                src/xfem/xfem_f2_main.o \
+                src/xfem/xfem_f2_calset.o \
+                src/xfem/xfem_f2_calelesize.o \
+                src/xfem/xfem_f2_caltimerhs.o \
+                src/xfem/xfem_f2_calextrhs.o \
+                src/xfem/xfem_f2_intg.o
 #
 #                interf
 OBJS_IF       = src/interf/if_inpele.o \

@@ -14,7 +14,9 @@
 # use the following config-file
 #------------------------------
 #conf="stgrt.hpux11.cc.seq"
-conf="stgrt.hpux11.cc.par"
+#conf="stgrt.hpux11.cc.par"
+conf="muench.linux.gcc.par"
+#conf="muench.linux.gcc.seq"
 #
 # do a parallel test
 #-------------------
@@ -24,7 +26,9 @@ para=1
 # use the following name for the executable
 #------------------------------------------
 #exe="cca_11_seq32.fast"
-exe="cca_11_par32.fast"
+#exe="cca_11_par32.fast"
+exe="cca_par_linux.fast"
+#exe="cca_seq_linux.fast"
 #
 #
 #
@@ -40,11 +44,30 @@ total=0
 # Remember current working directory
 apwd=`pwd`
 
+# prepare clean up
+function cleanup()
+{
+    echo cleanup
+    mv -f src/headers/define_sizes.h_tmp src/headers/define_sizes.h
+    make clean >/dev/null
+    rm -f test.tmp test_out_* Makefile config/defines.test $exe
+
+    # keep the logfile in case of failtures
+    #rm -f make.log
+
+    # remove hook
+    trap "echo" 0 1 2 15
+    exit
+}
+
+trap "cleanup" 0 1 2 15
+
+
 # copy define_sizes.h to define_sizes.h_tmp
 cp src/headers/define_sizes.h src/headers/define_sizes.h_tmp
 
 # remove all *.dat.scr files
-rm *.dat.scr
+rm -f *.dat.scr
 
 
 # create a list with all commented Input files
@@ -82,6 +105,8 @@ if [ $para -eq 0 ]; then
   w1_incompmode.dat
   w1_mises.dat
   w1dyn.dat
+  xfem_ls_risingbubble.dat
+  xfem_ls_joggedchannel.dat
   '
 else
   # parallel test
@@ -113,6 +138,8 @@ else
   w1_gemm_contact_emconserv.dat
   w1_mises.dat
   w1dyn.dat
+  xfem_ls_risingbubble.dat
+  xfem_ls_joggedchannel.dat
   '
 fi
  
@@ -134,7 +161,7 @@ for file in $liste; do
   cp src/headers/define_sizes.h_tmp src/headers/define_sizes.h
 
   # remove executable
-  rm $exe
+  rm -f $exe
 
   # for each #define in the input file 
   # - append an according string to PFL1
@@ -156,22 +183,24 @@ for file in $liste; do
   # write them to config/defines.test
   pfl3=`awk '/necessary defines:/ {print $0}' Input/$file `
   pfl4=`echo $pfl3 | sed 's/\/\/ necessary defines: //g'`
-  `echo $pfl4 |awk '{for (i=1; i<=NF; i++) printf("%s\n",$i) }' > config/defines.test`
+  echo $pfl4 |awk '{for (i=1; i<=NF; i++) printf("%s\n",$i) }' > config/defines.test
 
    
   # create Makefile
   echo
   echo '  Making Makefile ...'
   echo '  NODEPS=yes ./configure config/'$conf' config/defines.test "'$pfl'"'
-  failc=`NODEPS=yes ./configure config/$conf config/defines.test "$pfl"`
+  #failc=`NODEPS=yes ./configure config/$conf config/defines.test "$pfl"`
+  NODEPS=yes ./configure config/$conf config/defines.test "$pfl"
 
 
   # make the executable
   echo
   echo '  Making executable ...'
-  make clean 2>&- 1>&-
-  make 2>&- >/dev/null
-
+  #make clean 2>&- 1>&-
+  #make 2>&- >/dev/null
+  (make clean 2>&1 | cat >> make.log) || cleanup
+  (make 2>&1 | cat >> make.log) || cleanup 
 
   # check the success of the make
   # (look for the executable)
@@ -189,7 +218,7 @@ for file in $liste; do
     # run the executable with the inputfile
     echo
     echo '  Running Input-file...'
-    $exe Input/$file test_out_ >test.tmp 
+    ./$exe Input/$file test_out_ >test.tmp 
   else
     # parallel run
     echo
@@ -253,17 +282,7 @@ fi
 printf $fail2'  |\n'
 echo '-----------------------------'
 echo
-  
-
-# clean up
-mv src/headers/define_sizes.h_tmp src/headers/define_sizes.h
-make clean >/dev/null
-rm test.tmp
-rm test_out_*
-rm Makefile
-rm config/defines.test
-rm $exe
-
 
 # change back to the current working directory
-cd $apwd
+# that doesn't have any effect
+#cd $apwd
