@@ -32,24 +32,29 @@ INT            point_neum;
 
 INT            quality;      /*!< element quality measure */
 
-DOUBLE         min, max, min_stiff, max_stiff; /*! scaling parameters for 
-                                                   ale two_step */
-INT            pos;          /*! sol_increment[pos] contains dbc in ale */
+DOUBLE         min, max;     /*<! scaling parameters for ale two_step */
+DOUBLE         min_stiff;
+DOUBLE         max_stiff; 
+                                                   
+INT            pos;          /*<! sol_increment[pos] contains dbc in ale */
 
-#ifdef D_FLUID
-DOUBLE        *ftimerhs;     /*!< ab hier fuer fluid */   
-DOUBLE        *fiterhs;
-DOUBLE        *ftimerhs_pro;
-INT            nii;
-INT            nif;
-INT            turbu;
-INT            niturbu_pro;
-INT            niturbu_n;
+#ifdef D_FLUID               /*!< ab hier fuer fluid */ 
+double        *ftimerhs;       
+double        *fiterhs;
+double        *fidrichrhs;   /*!< for storing the pressure rhs values */
+double        *ftimerhs_pro;
+int            nii;
+int            nif;
+struct _DBCSR *gradmatrix;   /*!< gradient matrix Projection Method */
+struct _DBCSR *lumpedmass;   /*!< gradient matrix Projection Method */
+int            turbu;
+int            niturbu_pro;
+int            niturbu_n;
 enum _FLUID_STRESS str;         
 INT            is_relax;      /*!< flag, if calculation is for relaxation parameter */
                               /*!< is_relax = 0 -> fluid results are read from sol_increment[3][i] */
 			      /*!< is_relax = 1 -> fluid results are read from sol_increment[7][i] */
-INT		gen_alpha;	/*!< generalised alpha time integration algorithm flag */
+INT		gen_alpha;    /*!< generalised alpha time integration algorithm flag */
 #endif
 
 #ifdef D_OPTIM                /* include optimization code to ccarat        */

@@ -53,25 +53,34 @@ DOUBLE tau[3];   /*!< array for stabilitity parameter */
 DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
 DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
 DOUBLE sigma;    /*!< const. for nonlinear iteration */   
+DOUBLE theta;    /*  a parameter for integration used by f2pro */
 DOUBLE washvel;  /*!< wall shear velocity */   
 DOUBLE totarea;  /*!< total area of fluid field */
 DOUBLE coord_scale[2];  /*!<coordinates for scaling the turbulence variables */   
-INT    itwost;   /*!< control variable for element evaluation */
-INT    isemim;   /*!< control variable for element evaluation */
 INT    gen_alpha; /*!< general alpha time integration */
 INT    iprerhs;  /*!< treatment of pressure in time discr. */
 INT    surftens; /*!< include surface tension effects */
 INT    fsstnif; 
 INT    fsstnii;
-INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)	*/
-INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE		*/
-INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION		*/
-INT    nie;	 /*!< EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY	*/
-INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)	*/
-INT    nif;	 /*!< EVALUATION OF "TIME - RHS"			*/
-INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"			*/
-INT    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)		*/
-INT    nim;	 /*!< EVALUATION OF "MASS-RHS" for BDF2			*/
+INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)*/
+INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE       */
+INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION	     */
+INT    nie;	 /*!< EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY  */
+INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)  */
+INT    nif;	 /*!< EVALUATION OF "TIME - RHS"           	     */
+INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"		     */
+INT    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)       */
+/*------------------------------------------------ projection method */
+INT    pro_calmat;  /*!< a flag that switches matrix calc.           */
+INT    pro_calrhs;  /*!< a flag that switches rhs calculation        */
+INT    pro_calveln; /*!< a flag that switches calculation of vel at time level n     */
+INT    pro_kvv;     /*!< a flag that switches calculation of Kvv     */
+INT    pro_mvv;     /*!< a flag that switches calculation of Mvv     */
+INT    pro_gra;     /*!< a flag that switches calculation of C       */
+INT    pro_lum;     /*!< a flag that switches lumping of Mvv         */
+INT    pro_gra_opt; /*!< a flag that switches for grad. calculation  */
+INT    pro_profile; /*!< a flag that switches for velocity profile   */
+INT    pro_caldirich;
 INT    niturbu_pro;  /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
 INT    niturbu_n;    /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
 INT    kapeps_flag;  /*!< kappa or epsilon equation                       */
@@ -89,14 +98,14 @@ struct  _FLUID_DATA data;
 <pre>                                                         genk 03/02  
 
 In this structure all fluid-dynamic variables from the input file are
-stored.
+stored. 
 
 </pre>
 
 ------------------------------------------------------------------------*/
 typedef struct _FLUID_DYNAMIC               
 {
-char               dyntyp[50];   /*!< dynamictype */
+INT                dyntyp;       /*!< dynamictype */
 INT                numdf;        /*!< number of dofs of the fluid elements */
 INT                iop;          /* !<time integration method */
 INT                numcont;      /*!< number of continuation steps */
@@ -131,9 +140,7 @@ DOUBLE      coord_scale[2];      /*!< coordinates for scaling the turbulence var
 DOUBLE             maxtime;      /*!< maximal simulation time */
 DOUBLE             time;         /*!< actual time */
 DOUBLE             dt;           /*!< time increment */
-DOUBLE             alpha;        /*!< time integration constant */
 DOUBLE             theta;        /*!< time integration constant */
-DOUBLE             gamma;        /*!< time integration constant */
 DOUBLE             alpha_m;      /*!< time integration constant */
 DOUBLE             alpha_f;      /*!< time integration constant */
 DOUBLE             ittol;        /*!< tolerance for iteration convergence check */
@@ -156,3 +163,4 @@ typedef struct _FLUID_VARIA
 {
 DOUBLE             c_f_shear;     /*!< dim. shearstress c_f of node     */
 } FLUID_VARIA;
+
