@@ -2,6 +2,13 @@
   \file
   \brief contains performance measuring routines
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
   ---------------------------------------------------------------------*/
 
 #include "../headers/standardtypes.h"
@@ -21,7 +28,7 @@ static INT    counter[100];
   <pre>                                                        mn 01/04 
   Gets the current system time.
   </pre>
-  \return void                                                
+  \return void
 
   ------------------------------------------------------------------------*/
 DOUBLE perf_time ()
@@ -93,7 +100,8 @@ DOUBLE perf_time ()
   <pre>                                                        mn 01/04 
   Initializes all counters with 0.
   </pre>
-  \return void                                                
+
+  \return void
 
   ------------------------------------------------------------------------*/
 void perf_init_all ()
@@ -117,7 +125,9 @@ void perf_init_all ()
   <pre>                                                        mn 01/04 
   Initializes one counters with 0.
   </pre>
-  \return void                                                
+
+  \param  index   INT   (i)   index of the counter to initialize
+  \return void
 
   ------------------------------------------------------------------------*/
 void perf_init (INT index)
@@ -138,7 +148,9 @@ void perf_init (INT index)
   <pre>                                                        mn 01/04 
   start of the region for one timer.
   </pre>
-  \return void                                                
+
+  \param  index   INT   (i)   index of the counter to use
+  \return void
 
   ------------------------------------------------------------------------*/
 void perf_begin (INT index)
@@ -159,7 +171,9 @@ void perf_begin (INT index)
   <pre>                                                        mn 01/04 
   end of the region for one timer.
   </pre>
-  \return void                                                
+
+  \param  index   INT   (i)   index of the counter to use
+  \return void
 
 
   ------------------------------------------------------------------------*/
@@ -187,7 +201,12 @@ void perf_end (INT index)
   <pre>                                                        mn 01/04 
   Print the results for one timer.
   </pre>
-  \return void                                                
+
+  \param  index   INT   (i)   index of the counter to use
+  \param  string  char  (i)   name of this counter
+  \param  bezug   INT   (i)   calculate percentage relative to this counter
+  \param  ops     INT   (i)   number of FLOP in this counter region
+  \return void
 
   ------------------------------------------------------------------------*/
 void perf_print (INT index, char string[], INT bezug, INT ops)
@@ -229,7 +248,8 @@ void perf_print (INT index, char string[], INT bezug, INT ops)
   <pre>                                                        mn 01/04 
   Print the results for all timers.
   </pre>
-  \return void                                                
+
+  \return void
 
   ------------------------------------------------------------------------*/
 void perf_out ()
