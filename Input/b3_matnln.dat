@@ -113,7 +113,7 @@ AZPOLY         5
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
-NDLINE  6
+NDLINE  3
 NDSURF  0
 NDVOL   0
 -----------------------------------------------------DESIGN POINTS
@@ -149,69 +149,6 @@ Num: 3 HigherEntity: 0 conditions: 2 material: 2
 Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=1 Meshing=Default
 Points: 3 4
 END STLINE
-NURBLINE
-Num: 4 HigherEntity: 0 conditions: 1 material: 2
-Meshing Info: (num=5,NOE=1) Elemtype=1 IsStructured=1 size=1 Meshing=Default
-Points: 1 2
-Number of Control Points= 4 Degree= 3
-Point 1 coords:0.000000,0.000000,0.000000
-Point 2 coords:0.000000,0.000000,-2.400000
-Point 3 coords:0.000000,0.000000,-3.600000
-Point 4 coords:0.000000,0.000000,-6.000000
-Number of knots= 8
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=0.000000
-knot 4 value=0.000000
-knot 5 value=1.000000
-knot 6 value=1.000000
-knot 7 value=1.000000
-knot 8 value=1.000000
-Non rational
-TotalLength= 6.000000
-END NURBLINE
-NURBLINE
-Num: 5 HigherEntity: 0 conditions: 1 material: 2
-Meshing Info: (num=6,NOE=1) Elemtype=1 IsStructured=1 size=1 Meshing=Default
-Points: 2 3
-Number of Control Points= 4 Degree= 3
-Point 1 coords:0.000000,0.000000,-6.000000
-Point 2 coords:3.200000,0.000000,-6.000000
-Point 3 coords:4.800000,0.000000,-6.000000
-Point 4 coords:8.000000,0.000000,-6.000000
-Number of knots= 8
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=0.000000
-knot 4 value=0.000000
-knot 5 value=1.000000
-knot 6 value=1.000000
-knot 7 value=1.000000
-knot 8 value=1.000000
-Non rational
-TotalLength= 8.000000
-END NURBLINE
-NURBLINE
-Num: 6 HigherEntity: 0 conditions: 1 material: 2
-Meshing Info: (num=7,NOE=1) Elemtype=1 IsStructured=1 size=1 Meshing=Default
-Points: 3 4
-Number of Control Points= 4 Degree= 3
-Point 1 coords:8.000000,0.000000,-6.000000
-Point 2 coords:8.000000,0.000000,-3.600000
-Point 3 coords:8.000000,0.000000,-2.400000
-Point 4 coords:8.000000,0.000000,0.000000
-Number of knots= 8
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=0.000000
-knot 4 value=0.000000
-knot 5 value=1.000000
-knot 6 value=1.000000
-knot 7 value=1.000000
-knot 8 value=1.000000
-Non rational
-TotalLength= 6.000000
-END NURBLINE
 ---------------------------------------------------DESIGN SURFACES
 ----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS 
@@ -266,12 +203,6 @@ NODE       2 DLINE 2
 NODE       4 DLINE 2
 NODE       4 DLINE 3
 NODE       3 DLINE 3
-NODE       1 DLINE 4
-NODE       2 DLINE 4
-NODE       2 DLINE 5
-NODE       4 DLINE 5
-NODE       4 DLINE 6
-NODE       3 DLINE 6
 -----------------------------------------------DSURF-NODE TOPOLOGY
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
