@@ -300,7 +300,7 @@ fiterhs_ke = amdef("fiterhs_ke",&fiterhs_ke_a,numeq_total[kapeps],1,"DV");
 amdef("time",&time_a,1000,1,"DV");
 
 /*--------------------------------------------- initialise fluid field */
-fluid_init(actfield, fdyn, 4, str);		     
+fluid_init(actpart,actintra,actfield,fdyn,action,&container,4,str);		     
 fluid_init_tu(actfield, fdyn);	
 actpos=0;
 
@@ -828,8 +828,8 @@ if (ioflags.fluid_sol_gid==1 && par.myrank==0)
 {
     for(i=0;i<actpos+1;i++)
     {
-        out_gid_sol("velocity",actfield,actintra,i,i);
-        out_gid_sol("pressure",actfield,actintra,i,i);
+        out_gid_sol("velocity",actfield,actintra,i,i,ZERO);
+        out_gid_sol("pressure",actfield,actintra,i,i,ZERO);
     }
 }
 
