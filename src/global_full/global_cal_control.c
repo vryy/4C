@@ -79,6 +79,7 @@ if (par.myrank==0)
 if(genprob.probtyp==prb_opt)
 {
   caloptmain();
+  goto end;
 }   
 #endif
 /*------------------ call control programs of static or dynamic control */
@@ -90,6 +91,8 @@ if (genprob.timetyp==time_dynamic)
 {
      caldyn(); 
 }
+/*----------------------------------------------------------------------*/
+end:;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
