@@ -169,4 +169,50 @@ typedef enum _FRONTLSFLAG
   front_ls_write,
   front_ls_finalize
 } FRONTLSFLAG;
+
+
+/* prototypes */
+
+void ls2(
+  PARTITION   *actpart,
+  INTRA       *actintra,
+  ELEMENT     *ele,             
+  ARRAY       *estif_global,   
+  ARRAY       *emass_global,   
+  ARRAY       *etforce_global,
+  ARRAY       *eiforce_global,
+  CALC_ACTION *action
+  );
+
+void ls2_init();
+
+void ls2_calc(
+  ELEMENT* ele
+  );
+
+void ls2_calc_nonlocalized(
+  ELEMENT* ele
+  );
+
+void ls2_calc_reinitialized(
+  ELEMENT* ele
+  );
+
+void ls2_calc_localized(
+  ELEMENT* ele
+  );
+
+void ls2_setfluidvel(
+  ELEMENT* ele
+  );
+
+void ls2_setfluidvel_byuser(
+  INT iel,
+  INT flag
+  );
+
+void ls2_setfluidvel_byfluid(
+  ELEMENT* ele
+  );
+
 #endif
