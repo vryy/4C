@@ -211,6 +211,7 @@ if (sysarray2 != -1)
 }
 #endif
 /* =======================================================call elements */
+
 /*---------------------------------------------- loop over all elements */
 for (i=0; i<actpart->pdis[0].numele; i++)
 {
@@ -228,6 +229,11 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        continue;
       else
       {
+	if (actgnode->dirich->dirich_type==dirich_freesurf)
+	{
+	   hasdirich=1;
+	   goto out;
+	}
 	for(k=0; k<actele->node[j]->numdf; k++)
 	{
 	  if (actgnode->dirich->dirich_val.a.dv[k]!=0.0)
@@ -235,6 +241,11 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              hasdirich=1;
 	     goto out;
           }
+	  else if (actgnode->dirich->dirich_type==dirich_FSI)
+	  {
+             hasdirich=1;
+	     goto out;
+          }	  
         }
       }
    }   					  

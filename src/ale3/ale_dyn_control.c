@@ -212,7 +212,7 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);   
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL 
-if (ioflags.struct_disp_file==1)
+if (ioflags.ale_disp_gid==1)
 {
   if (par.myrank==0)  out_gid_domains(actfield);
 }
@@ -232,7 +232,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich(actfield,sdyn);
+ale_setdirich(actfield,sdyn,0);
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
 ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,numeq_total,0,&container,action);
@@ -260,14 +260,20 @@ solserv_result_total(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                     );
+/*---------------------allreduce the result and put it to sol_increment */
+solserv_result_incre(
+                     actfield,
+                     actintra,
+                     &(actsolv->sol[actsysarray]),
+                     0,
+                     &(actsolv->sysarray[actsysarray]),
+                     &(actsolv->sysarray_typ[actsysarray])
+                    );
 /*------------------------------------------- print out results to .out */
-if (ioflags.struct_disp_file==1)
-{
-    out_sol(actfield,actpart,actintra,sdyn->step,0);
-/*    out_gid_sol_init(); */
-/*    out_gid_msh();*/
-    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
-}
+if (ioflags.ale_disp_file==1)
+   out_sol(actfield,actpart,actintra,sdyn->step,0);
+if (par.myrank==0 && ioflags.ale_disp_gid==1) 
+   out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
 /*--------------------------------------------------------------------- */
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
