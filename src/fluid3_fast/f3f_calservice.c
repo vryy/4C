@@ -1235,11 +1235,11 @@ void f3falecord(
   dt      = fdyn->dta;
 
   /* set element coordinates */
-  for (i=0; i<sizevec[1]; i++)
+  for (l=0; l<sizevec[1]; l++)
   {
-    for(l=0;l<sizevec[4];l++)
+    for(i=0;i<sizevec[4];i++)
     {
-      actfnode  = ele[l]->node[i];
+      actfnode  = ele[i]->node[l];
       actfgnode = actfnode->gnode;
       actanode  = actfgnode->mfcpnode[genprob.numaf];
 

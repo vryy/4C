@@ -285,7 +285,7 @@ void f3fcalele(
 #endif
       /*A "C-function", but elecord[3,8] used in fortran this can be out of
         the gauss point loop*/
-      f3fcalelecord(ele,elecord,sizevec);
+      f3falecord(ele,elecord,sizevec);
 #ifdef PERF
     perf_end(45);
 #endif
