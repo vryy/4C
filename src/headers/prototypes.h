@@ -672,7 +672,7 @@ void dsassert(INT true, char string[]);
  | prints call tree, if DEBUG was defined                               |
  | aborts parallel and sequentiell programm                             |
  *----------------------------------------------------------------------*/
-void dserror(char string[]);
+void dserror(char string[], ...);
 /*----------------------------------------------------------------------*
  | collects warnings during running process                  ck 07/03   |
  | and writes them to the screen at the end                             |

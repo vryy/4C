@@ -13,6 +13,7 @@ Maintainer: Malte Neumann
 #ifdef DEBUG 
 #include <assert.h>
 #endif
+#include <stdarg.h>
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -581,69 +582,71 @@ return;
 \sa dsassert()                                    
 
 ------------------------------------------------------------------------*/
-void dserror(char string[])
+void dserror(char string[], ...)
 {
-INT i=0;
-char message[300];
-char *colptr=NULL;
-TRACEROUT *routhis = NULL;
+  va_list ap;
+  INT i=0;
+  TRACEROUT *routhis = NULL;
+  char line[] = "=========================================================================\n";
+  
 #ifdef DEBUG 
-if (trace.trace_on==1)
-{
-strcpy(message,"PROC ");
-colptr = message + strlen(message); 
-sprintf(colptr,"%d",par.myrank);
-colptr = message + strlen(message);
-strcpy(colptr," ERROR IN ");
-colptr = message + strlen(message);
-strcpy(colptr,trace.actroutine->name);
-colptr = message + strlen(message); 
-strcpy(colptr," : ");
-colptr = message + strlen(message); 
-strcpy(colptr,string);
+  if (trace.trace_on==1)
+  {
+    char message[300];
+    char *colptr=NULL;
+    
+    va_start(ap, string);
+    sprintf(message,"PROC %d ERROR IN %s : ", par.myrank, trace.actroutine->name);
+    colptr = message + strlen(message); 
+    vsprintf(colptr,string,ap);
 
-fprintf(allfiles.out_err,"================================================================\n");
-fprintf(allfiles.out_err,"%s\n",message); 
-printf("=========================================================================\n");
-printf("%s\n",message); 
+    fprintf(allfiles.out_err,line);
+    fprintf(allfiles.out_err,"%s\n",message); 
+    printf(line);
+    printf("%s\n",message); 
 
-fprintf(allfiles.out_err,"This routine was called by:\n");
-printf("This routine was called by:\n");
-routhis = trace.actroutine;
-for (i=0; i<trace.deepness; i++)
-{
-routhis = routhis->prev;
-fprintf(allfiles.out_err,"%s\n",routhis->name);
-printf("%s\n",routhis->name);
-}
+    fprintf(allfiles.out_err,"This routine was called by:\n");
+    printf("This routine was called by:\n");
+    routhis = trace.actroutine;
+    for (i=0; i<trace.deepness; i++)
+    {
+      routhis = routhis->prev;
+      fprintf(allfiles.out_err,"%s\n",routhis->name);
+      printf("%s\n",routhis->name);
+    }
 
-fprintf(allfiles.out_err,"================================================================\n");
-printf("=========================================================================\n");
-}
-else
-{
+    fprintf(allfiles.out_err,line);
+    printf(line);
+    va_end(ap);
+  }
+  else
+  {
 #endif
-fprintf(allfiles.out_err,"================================================================\n");
-fprintf(allfiles.out_err,"%s\n",string); 
-printf("=========================================================================\n");
-printf("%s\n",string); 
-fprintf(allfiles.out_err,"================================================================\n");
-printf("=========================================================================\n");
+    va_start(ap, string);
+    fprintf(allfiles.out_err,line);
+    vfprintf(allfiles.out_err,string,ap); 
+    fprintf(allfiles.out_err,"\n"); 
+    printf(line);
+    vprintf(string,ap); 
+    printf("\n"); 
+    fprintf(allfiles.out_err,line);
+    printf(line);
+    va_end(ap);
 #ifdef DEBUG 
-}
+  }
 #endif
-fflush(stdout);
-fflush(allfiles.out_err);
+  fflush(stdout);
+  fflush(allfiles.out_err);
 
 #ifdef PARALLEL 
-MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+  MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
 #ifdef DEBUG 
-assert(0);
+  assert(0);
 #endif
-exit(EXIT_FAILURE);
+  exit(EXIT_FAILURE);
 #endif
-return;
+  return;
 } /* end of dserror */
 
 /*!-----------------------------------------------------------------------
@@ -703,11 +706,11 @@ switch (task)
 {
   /*------------------------------------------------- initialisation ---*/
   case 0:
-    called = NULL;
-    ale_quality_min_J_triangles = NULL;
-    ale_quality_ar = NULL;
-    ale_quality_ca = NULL;
-    ale_quality_Je = NULL;
+    called = 0;
+    ale_quality_min_J_triangles = 0;
+    ale_quality_ar = 0;
+    ale_quality_ca = 0;
+    ale_quality_Je = 0;
     funct_range = 0;
     funct_line  = 0;
     /* INITIALISE your new warning here!!! */

@@ -62,6 +62,7 @@ INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
 {
   CHAR* lp;
   INT name_length;
+  INT ret = -1234567890;
 
 #ifdef DEBUG 
   dstrc_enter("parse_position_descr");
@@ -90,15 +91,16 @@ INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
     if (rp == NULL) {
       dserror("Missing right parenthesis in position description");
     }
-    return 1;
+    ret = 1;
   }
   else {
-    return 0;
+    ret = 0;
   }
 
 #ifdef DEBUG 
   dstrc_exit();
 #endif
+  return ret;
 }
 
 
@@ -108,6 +110,7 @@ INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
 DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 {
   INT args[2];
+  DOUBLE ret = -1234567890;
   
 #ifdef DEBUG 
   dstrc_enter("get_node_result_value");
@@ -128,30 +131,32 @@ DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
   */
     
   if (parse_position_descr(position, "sol", 2, args) == 1) {
-    return actnode->sol.a.da[args[0]][args[1]];
+    ret = actnode->sol.a.da[args[0]][args[1]];
   }
   else if (parse_position_descr(position, "sol_increment", 2, args) == 1) {
-    return actnode->sol_increment.a.da[args[0]][args[1]];
+    ret = actnode->sol_increment.a.da[args[0]][args[1]];
   }
   else if (parse_position_descr(position, "sol_residual", 2, args) == 1) {
-    return actnode->sol_residual.a.da[args[0]][args[1]];
+    ret = actnode->sol_residual.a.da[args[0]][args[1]];
   }
   else if (parse_position_descr(position, "sol_mf", 2, args) == 1) {
-    return actnode->sol_mf.a.da[args[0]][args[1]];
+    ret = actnode->sol_mf.a.da[args[0]][args[1]];
   }
   else {
-    dserror("Unknown position specifier");
-    return 1234567890;
+    dserror("Unknown position specifier: %s", position);
   }
   
 #ifdef DEBUG 
   dstrc_exit();
 #endif
+  return ret;
 }
 
 
 static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESULTDESCR *res)
 {
+  INT ret = 0;
+  
 #ifdef DEBUG 
   dstrc_enter("compare_values");
 #endif
@@ -159,17 +164,17 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
   fprintf(err,"actual = %24.16f, given = %24.16f\n", actresult, givenresult);
   if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult))) {
     printf("RESULTCHECK: %s is NAN!\n", res->name);
-    return 1;
+    ret = 1;
   }
-  if (FABS(actresult-givenresult) > res->tolerance) {
+  else if (FABS(actresult-givenresult) > res->tolerance) {
     printf("RESULTCHECK: %s not correct!\n", res->name);
-    return 1;
+    ret = 1;
   }
 
 #ifdef DEBUG 
   dstrc_exit();
 #endif
-  return 0;
+  return ret;
 }
 
 
@@ -182,11 +187,8 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
 Before checking in the latest version it's necessery to check the whole
 program. In this context it seems to be useful to check the numerical
 results, too.
-Based on the problem titel one can add verified results to this function.
 
 </pre>  
-\return void                                                              
-\warning Titel must not be longer than one line!
 
 ------------------------------------------------------------------------*/
 void global_result_test() 
