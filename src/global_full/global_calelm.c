@@ -56,17 +56,22 @@ struct _ARRAY estif_global;    /* element stiffness matrix                */
 struct _ARRAY emass_global;    /* element mass matrix                     */
 struct _ARRAY lmass_global;    /* element mass matrix                     */
 struct _ARRAY gradopr_global;  /* gradient operator                       */
-struct _ARRAY etforce_global;  /* element Time RHS                        */
-struct _ARRAY eiforce_global;  /* element Iteration RHS                   */
+struct _ARRAY eforce_global;   /* element RHS (within fluid)              */
 struct _ARRAY edforce_global;  /* element dirichlet RHS                   */
-struct _ARRAY gforce_global;   /* element dirich for pressure  RHS (g_n+1)*/
 struct _ARRAY intforce_global;
+#if defined(D_FLUID2TU) || defined(D_FLUID2_PRO)
+struct _ARRAY etforce_global;  /* element Time RHS                        */
+#endif
+#ifdef D_FLUID2_PRO
+struct _ARRAY gforce_global;   /* element dirich for pressure  RHS (g_n+1)*/
+#endif
+#ifdef D_FLUID2TU
 struct _ARRAY eproforce_global;
+#endif
 
 struct _ARRAY estif_fast; /* element stiffness matrix(fortran)    */
 struct _ARRAY emass_fast; /* element mass matrix (fortran)    */
-struct _ARRAY etforce_fast; /* element Time RHS	(fortran)    */
-struct _ARRAY eiforce_fast; /* element Iteration RHS(fortran)    */
+struct _ARRAY eforce_fast;  /* element RHS(fortran)              */
 struct _ARRAY edforce_fast; /* element dirichlet RHS(fortran)    */
 
 /*----------------------------------------------------------------------*
@@ -314,17 +319,17 @@ dstrc_enter("calelm");
         fluid2(
             actpart,actintra,actele,actele2,
             &estif_global,&emass_global,
-            &etforce_global,&eiforce_global,&edforce_global,
+            &eforce_global,&edforce_global,
             action,&hasdirich,&hasext,container);
         break;
 #endif
 
-#ifdef D_FLUID2
+#ifdef D_FLUID2TU
       case el_fluid2_tu:
         actele2 = actpart->pdis[0].element[i];
         fluid2_tu(actpart,actintra,actele,actele2,
             &estif_global,&emass_global,
-            &etforce_global,&eiforce_global,&edforce_global,&eproforce_global,
+            &etforce_global,&eforce_global,&edforce_global,&eproforce_global,
             action,&hasdirich,&hasext,container);
         break;
 #endif
@@ -334,7 +339,7 @@ dstrc_enter("calelm");
         actele2 = actpart->pdis[1].element[i];
         fluid2_pro(actpart,actintra,actele,actele2,
             &estif_global,&emass_global,&lmass_global,&gradopr_global,
-            &etforce_global,&eiforce_global,
+            &etforce_global,&eforce_global,
             &edforce_global,&gforce_global,action,&hasdirich);
         break;
 #endif
@@ -343,7 +348,7 @@ dstrc_enter("calelm");
       case el_fluid3:
         fluid3(actpart,actintra,actele,
             &estif_global,&emass_global,
-            &etforce_global,&eiforce_global,&edforce_global,
+            &eforce_global,&edforce_global,
             action,&hasdirich,&hasext,container);
         break;
 #endif
@@ -404,7 +409,7 @@ dstrc_enter("calelm");
         wallge(actpart,actintra,actele,
             &estif_global,&emass_global,&intforce_global,
             action, container);
-        break;
+   break;
 #endif
 
    case el_none:
@@ -449,8 +454,8 @@ dstrc_enter("calelm");
    case calc_ale_stiff_laplace      : assemble_action = assemble_one_matrix; break;
    case calc_fluid                  : assemble_action = assemble_one_matrix; break;
    case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_stressprojection : assemble_action = assemble_one_matrix; break;
    case calc_fluid_vort             : assemble_action = assemble_do_nothing; break;
-   case calc_fluid_stab             : assemble_action = assemble_do_nothing; break;
    case calc_fluid_normal           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_stress           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing; break;
@@ -505,27 +510,29 @@ dstrc_enter("calelm");
    break;
 #ifdef D_FLUID
    case fluid:
-      if (container->nif!=0)
+   /*-------------- assemble the vector eforce_global to iteration rhs */
+      if (container->nii+hasext!=0)
       {
-         container->dvec = container->ftimerhs;
-         assemble_intforce(actele,&etforce_global,container,actintra);
-      }
-   /*-------------- assemble the vector eiforce_global to iteration rhs */
-      if (container->nii+hasext!=0 || container->nim!=0)
-      {
-         container->dvec = container->fiterhs;
-         assemble_intforce(actele,&eiforce_global,container,actintra);
+         container->dvec = container->frhs;
+         assemble_intforce(actele,&eforce_global,container,actintra);
       }
    /*-------------- assemble the vector edforce_global to iteration rhs */
       if (hasdirich!=0)
       {
-         container->dvec = container->fiterhs;
+         container->dvec = container->frhs;
          assemble_intforce(actele,&edforce_global,container,actintra);
       }
 #ifdef D_FLUID2_PRO
       if (*action==calc_fluid_amatrix)
-      assemble_fluid_amatrix(container,actele,actele2,actintra);
+         assemble_fluid_amatrix(container,actele,actele2,actintra);
+      
+      if (*action==calc_fluid_f2pro_rhs_both)
+      {
+         container->dvec = container->fvelrhs2;
+         assemble_intforce(actele,&etforce_global,container,actintra);
+      }
 #endif
+#ifdef D_FLUID2TU
       if (container->actndis==1 && (container->turbu==2 || container->turbu==3))
       {
          if (container->niturbu_pro!=0)
@@ -537,10 +544,11 @@ dstrc_enter("calelm");
          {
           container->dvec = container->ftimerhs;
           assemble_intforce(actele,&etforce_global,container,actintra);
-         }
-         container->dvec = container->fiterhs;
-         assemble_intforce(actele,&eiforce_global,container,actintra);
+         } 
+         container->dvec = container->frhs;
+         assemble_intforce(actele,&eforce_global,container,actintra);
       }
+#endif
       container->dvec=NULL;
    break;
 #endif
@@ -614,7 +622,6 @@ case calc_ale_rhs                : assemble_action = assemble_do_nothing;   brea
 case calc_fluid                  : assemble_action = assemble_one_exchange; break;
 case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
-case calc_fluid_stab             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_normal           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
@@ -682,7 +689,6 @@ case calc_ale_stiff_laplace      : assemble_action = assemble_close_1matrix; bre
 case calc_fluid                  : assemble_action = assemble_close_1matrix; break;
 case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
-case calc_fluid_stab             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_normal           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
@@ -734,7 +740,6 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
                                          actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
       case calc_fluid_liftdrag:
       case calc_fluid_vort:
-      case calc_fluid_stab:
       case calc_fluid_normal:
       case calc_fluid_stress:
       case calc_fluid_f2pro:
@@ -792,12 +797,18 @@ amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("lmass",&lmass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("gradopr",&gradopr_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
-amdef("etforce",&etforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
+#if defined(D_FLUID2TU) || defined(D_FLUID2_PRO)
+amdef("etforce",  &etforce_global,  (MAXNOD*MAXDOFPERNODE),1,"DV");
+#endif
+#ifdef D_FLUID2TU
 amdef("eproforce",&eproforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
-amdef("eiforce",&eiforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
-amdef("edforce",&edforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
-amdef("inforce",&intforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
-amdef("gforce",&gforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
+#endif
+amdef("eforce",   &eforce_global,   (MAXNOD*MAXDOFPERNODE),1,"DV");
+amdef("edforce",  &edforce_global,  (MAXNOD*MAXDOFPERNODE),1,"DV");
+amdef("inforce",  &intforce_global, (MAXNOD*MAXDOFPERNODE),1,"DV");
+#ifdef D_FLUID2_PRO
+amdef("gforce",   &gforce_global,   (MAXNOD*MAXDOFPERNODE),1,"DV");
+#endif
 }
 /*--------------------what kind of elements are there in this example ? */
 for (kk=0;kk<actfield->ndis;kk++)
@@ -913,7 +924,7 @@ container->kstep = 0;
     fluid2(
         actpart,NULL,NULL,NULL,
         &estif_global,&emass_global,
-        &etforce_global,&eiforce_global,&edforce_global,
+        &eforce_global,&edforce_global,
         action,NULL,NULL,container
         );
   }
@@ -924,17 +935,17 @@ container->kstep = 0;
   {
     fluid2_pro(actpart,NULL,NULL,NULL,
         &estif_global,&emass_global,&lmass_global,&gradopr_global,
-        &etforce_global,&eiforce_global,
+        &etforce_global,&eforce_global,
         &edforce_global,&gforce_global,action,NULL);
   }
 #endif
   /*------------------------------ init all kind of routines for fluid2_tu */
-#ifdef D_FLUID2
+#ifdef D_FLUID2TU
   if (is_fluid2_tu==1)
   {
     fluid2_tu(actpart,NULL,NULL,NULL,
         &estif_global,&emass_global,
-        &etforce_global,&eiforce_global,&edforce_global,
+        &etforce_global,&eforce_global,&edforce_global,
         &eproforce_global,action,NULL,NULL,container);
   }
 #endif
@@ -944,7 +955,7 @@ container->kstep = 0;
   {
     fluid3(actpart,NULL,NULL,
         &estif_global,&emass_global,
-        &etforce_global,&eiforce_global,&edforce_global,
+        &eforce_global,&edforce_global,
         action,NULL,NULL,container);
   }
 #endif
@@ -958,16 +969,14 @@ container->kstep = 0;
       amdef("estif_f",&estif_fast,(LOOPL*MAXNOD*MAXDOFPERNODE*MAXNOD*MAXDOFPERNODE),1,"DV");
     if (emass_fast.Typ != cca_DV)
       amdef("emass_f",&emass_fast,(LOOPL*MAXNOD*MAXDOFPERNODE*MAXNOD*MAXDOFPERNODE),1,"DV");
-    if (etforce_fast.Typ != cca_DV)
-      amdef("etforce_f",&etforce_fast,(LOOPL*MAXNOD*MAXDOFPERNODE),1,"DV");
-    if (eiforce_fast.Typ != cca_DV)
-      amdef("eiforce_f",&eiforce_fast,(LOOPL*MAXNOD*MAXDOFPERNODE),1,"DV");
+    if (eforce_fast.Typ != cca_DV)
+      amdef("eforce_f",&eforce_fast,(LOOPL*MAXNOD*MAXDOFPERNODE),1,"DV");
     if (edforce_fast.Typ != cca_DV)
       amdef("edforce_f",&edforce_fast,(LOOPL*MAXNOD*MAXDOFPERNODE),1,"DV");
 
 
     fluid3_fast(actpart,NULL,NULL, &estif_fast,&emass_fast,
-        &etforce_fast,&eiforce_fast,&edforce_fast,action,NULL,NULL,container,LOOPL);
+        &eforce_fast,&edforce_fast,action,NULL,NULL,container,LOOPL);
   }
 #endif
   /*----------------------------------- init all kind of routines for ale */
@@ -994,7 +1003,7 @@ container->kstep = 0;
         action,container);
   }
 #endif
-  /*----------------------------- init all kind of routines for interface */
+/*----------------------------- init all kind of routines for interface */
 #ifdef D_INTERF
   if (is_interf==1)
   {
@@ -1036,75 +1045,73 @@ void calreduce(FIELD       *actfield, /* the active field */
                CALC_ACTION *action,   /* action for element routines */
                CONTAINER   *container)/* contains variables defined in container.h */
 {
-  INT i;
-  INT is_axishell=0;
-  INT is_shell8=0;
-  INT is_shell9=0;
-  INT is_brick1=0;
-  INT is_wall1 =0;
-  INT is_fluid1=0;
-  INT is_fluid3=0;
-  INT is_ale3=0;
-  INT is_beam3=0;
-  INT is_interf=0;
-  INT is_wallge=0;
+INT i;
+INT is_axishell=0;
+INT is_shell8=0;
+INT is_shell9=0;
+INT is_brick1=0;
+INT is_wall1 =0;
+INT is_fluid1=0;
+INT is_fluid3=0;
+INT is_ale3=0;
+INT is_beam3=0;
+INT is_interf=0;
+INT is_wallge=0;
 
   ELEMENT *actele;
 #ifdef DEBUG
   dstrc_enter("calreduce");
 #endif
-
-
-  /*----------------------------------------------------------------------*/
-  /*--------------------what kind of elements are there in this example ? */
-  for (i=0; i<actfield->dis[0].numele; i++)
-  {
-    actele = &(actfield->dis[0].element[i]);
-    switch(actele->eltyp)
-    {
-      case el_axishell:
-        is_axishell=1;
-        break;
-      case el_shell8:
-        is_shell8=1;
-        break;
-      case el_shell9:
-        is_shell9=1;
-        break;
-      case el_brick1:
-        is_brick1=1;
-        break;
-      case el_wall1:
-        is_wall1=1;
-        break;
-      case el_fluid2:
-        is_fluid1=1;
-        break;
-      case el_fluid3:
-        is_fluid3=1;
-        break;
-      case el_ale3:
-        is_ale3=1;
-        break;
-      case el_beam3:
-        is_beam3=1;
-        break;
-      case el_interf:
-        is_interf=1;
-        break;
-      case el_wallge:
-        is_wallge=1;
-        break;
-      default:
-        dserror("Unknown typ of element");
-        break;
-    }
-  }/* end of loop over all elements */
-  /*-----------------------------------------reduce results for axishell  */
-  if (is_axishell==1)
-  {
-  }
-  /*-------------------------------------------reduce results for shell8  */
+/*----------------------------------------------------------------------*/
+/*--------------------what kind of elements are there in this example ? */
+for (i=0; i<actfield->dis[0].numele; i++)
+{
+   actele = &(actfield->dis[0].element[i]);
+   switch(actele->eltyp)
+   {
+   case el_axishell:
+      is_axishell=1;
+   break;
+   case el_shell8:
+      is_shell8=1;
+   break;
+   case el_shell9:
+      is_shell9=1;
+   break;
+   case el_brick1:
+      is_brick1=1;
+   break;
+   case el_wall1:
+      is_wall1=1;
+   break;
+   case el_fluid2:
+      is_fluid1=1;
+   break;
+   case el_fluid3:
+      is_fluid3=1;
+   break;
+   case el_ale3:
+      is_ale3=1;
+   break;
+   case el_beam3:
+      is_beam3=1;
+   break;
+   case el_interf:
+      is_interf=1;
+   break;
+   case el_wallge:
+      is_wallge=1;
+   break;
+   default:
+      dserror("Unknown typ of element");
+   break;
+   }
+}/* end of loop over all elements */
+/*-----------------------------------------reduce results for axishell  */
+if (is_axishell==1)
+{
+}
+/*-------------------------------------------reduce results for shell8  */
 #ifdef D_SHELL8
   if (is_shell8==1)
   {
@@ -1123,39 +1130,39 @@ void calreduce(FIELD       *actfield, /* the active field */
     shell9(actfield,actintra,NULL,NULL,NULL,NULL,action,container);
   }
 #endif
-  /*--------------------------------------------reduce results for brick1 */
-  if (is_brick1==1)
-  {
-  }
-  /*---------------------------------------------reduce results for wall1 */
-  if (is_wall1==1)
-  {
-  }
-  /*--------------------------------------------reduce results for fluid1 */
-  if (is_fluid1==1)
-  {
-  }
-  /*--------------------------------------------reduce results for fluid3 */
-  if (is_fluid3==1)
-  {
-  }
-  /*-----------------------------------------------reduce results for ale */
-  if (is_ale3==1)
-  {
-  }
-  /*---------------------------------------- reduce results for interface */
-  if (is_interf==1)
-  {
-  }
-  /*---------------------------------------------- reduce results for wge */
-  if (is_wallge==1)
-  {
-  }
-  /*---------------------------------------------reduce results for beam3 */
-  if (is_beam3==1)
-  {
-  }
-  /*----------------------------------------------------------------------*/
+/*--------------------------------------------reduce results for brick1 */
+if (is_brick1==1)
+{
+}
+/*---------------------------------------------reduce results for wall1 */
+if (is_wall1==1)
+{
+}
+/*--------------------------------------------reduce results for fluid1 */
+if (is_fluid1==1)
+{
+}
+/*--------------------------------------------reduce results for fluid3 */
+if (is_fluid3==1)
+{
+}
+/*-----------------------------------------------reduce results for ale */
+if (is_ale3==1)
+{
+}
+/*---------------------------------------- reduce results for interface */
+if (is_interf==1)
+{
+}
+/*---------------------------------------------- reduce results for wge */
+if (is_wallge==1)
+{
+}
+/*---------------------------------------------reduce results for beam3 */
+if (is_beam3==1)
+{
+}
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
