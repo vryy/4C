@@ -109,6 +109,7 @@ FILE             *out_out;                /* file-pointer .out  file     */
 FILE             *out_err;                /* file-pointer .err  file     */
 FILE             *out_pss;                /* file ptr to restart-pss file */
 FILE             *in_pss;                 /* file-pointer .pss  file     */
+FILE             *out_mon;               /* file-pointer .mon file     */
 
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
 FILE             *gidres;                 /* file pointer .flavia.res    */
@@ -142,6 +143,9 @@ int               struct_stress_gid;   /* write structural stresses to .flavia.r
 int               fluid_sol_file;      /* write vel/pre to .out */
 int               fluid_sol_gid;       /* write vel/pre to .flavia.res */
 int               fluid_vis_file;      /* write solution to pss-file for VISUAL2 */
+int               ale_disp_file;       /* write ale displacements to .out */
+int               ale_disp_gid;        /* write ale displacement to .flavia.res */
+int               monitor;
 } IO_FLAGS;
 
 
@@ -204,14 +208,28 @@ int               numdf;         /* maximum number of dofs to one node (not used
 int               restart;       /* is restart or not */
 int               visual;        /* flag for visualise mode or not */
 int               multidis;      /* flag for multi-discretisation problem */
+int               numsf;         /* actual number of struct-field */
+int               numff;         /* actual number of fluid field */
+int               numaf;         /* actual number of ale field */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
 
 } GENPROB;
 
-
-
+/*---------------------------------------------------------------------*
+ | monotoring informations                                  genk 01/03 |
+ *---------------------------------------------------------------------*/
+typedef struct _MONITOR
+{
+int              numnp;
+int              numval;
+int              numstep;
+ARRAY            onoff;
+ARRAY            monnodes;
+ARRAY            val;
+ARRAY            time;
+} MONITOR;
 
 
 
