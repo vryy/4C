@@ -290,6 +290,7 @@ OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calextrhs.o \
                 src/fluid2/f2_calfuncderiv.o \
                 src/fluid2/f2_calint.o \
+                src/fluid2/f2_calint_gen_alpha.o \
                 src/fluid2/f2_calint_tu.o \
                 src/fluid2/f2_calint_tu_1.o \
                 src/fluid2/f2_caliterrhs.o \
@@ -321,6 +322,8 @@ OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_intg.o \
                 src/fluid2/f2_main.o \
                 src/fluid2/f2_main_tu.o \
+                src/fluid2/f2_massrhs.o \
+                src/fluid2/f2_calliftdrag.o \
                 src/fluid2/f2_ass_dof_ndis_tu.o \
                 src/fluid2/f2_restart.o 
 #                fluid_full
