@@ -72,6 +72,11 @@ INT                 lr, ls, lt;                             /* loopers over GP *
 INT                 iel;                                    /* numnp to this element */
 INT                 nd;                                     /* ndofs to this element (=numdf*numnp) */
 
+INT                 istore = 0;                             /* controls storing of new stresses to wa */
+INT                 newval = 0;                             /* controls evaluation of new stresses    */
+
+INT                 ip;                                     /* actual integration point */
+INT                 actlay;                                 /* actual layer */
 INT                 num_mlay;                               /* number of material layers to actual kinematic layer */  
 INT                 num_klay;                               /* number of kinematic layers to this element*/
 INT                 numdf;                                  /* ndofs per node to this element */
@@ -148,21 +153,20 @@ static ARRAY        gmkonc_a;    static DOUBLE **gmkonc;    /* kontravar.-------
 
 static ARRAY        bop_a;       static DOUBLE **bop;       /* B-Operator for compatible strains */
                                  static DOUBLE **estif;     /* element stiffness matrix ke */
-                                 static DOUBLE **emass;     /* element mass matrix */
+                               /*  static DOUBLE **emass;*/     /* element mass matrix */
 static ARRAY        work_a;      static DOUBLE **work;      /* working array to do Bt*D*B */
 
 /* arrays for eas */
-DOUBLE              fac;                                    /* factor for residual displacements -> alfa values*/
 DOUBLE              detr0[MAXKLAY_SHELL9];                  /* jacobian determinant in ref conf. at mid point*/
 INT                 nhyb;                                   /* scnd dim of P */
-DOUBLE              epsh[12];                               /* transformed eas strains */
+DOUBLE              epsh[12];                               /* transformed eas strains  */
 DOUBLE              mlhgt_eas[1];                           /* hight of material layer in percent of adjacent kinematic layer*/
 
 static ARRAY        alfa_a[MAXKLAY_SHELL9]; static DOUBLE  *alfa[MAXKLAY_SHELL9];    /* alfa-values for each kinematic layer */
 static ARRAY        eashelp_a;              static DOUBLE  *eashelp;                 /* working vector for eas */
 
 DOUBLE            **oldDtildinv;
-DOUBLE            **oldLt;
+DOUBLE            **oldL;
 DOUBLE             *oldRtild;
 
 static ARRAY        P_a;         static DOUBLE **P;         /* eas matrix M */
@@ -171,9 +175,10 @@ static ARRAY        T_a;         static DOUBLE **T;         /* transformation ma
 static ARRAY        workeas_a;   static DOUBLE **workeas;   /* eas working array */
 static ARRAY        workeas2_a;  static DOUBLE **workeas2;  /* eas working array */
 
+static ARRAY   LKl_a[MAXKLAY_SHELL9];        static DOUBLE **L_kl[MAXKLAY_SHELL9];        /* eas matrix L                 -> one kinematic Layer*/
 static ARRAY   LtKl_a[MAXKLAY_SHELL9];       static DOUBLE **Lt_kl[MAXKLAY_SHELL9];       /* eas matrix L transposed      -> one kinematic Layer*/
 static ARRAY   DtildKl_a[MAXKLAY_SHELL9];    static DOUBLE **Dtild_kl[MAXKLAY_SHELL9];    /* eas matrix Dtilde            -> one kinematic Layer*/
-static ARRAY   DtildinvKl_a[MAXKLAY_SHELL9]; static DOUBLE **Dtildinv_kl[MAXKLAY_SHELL9]; /* eas matrix Dtilde            -> one kinematic Layer*/
+static ARRAY   DtildinvKl_a[MAXKLAY_SHELL9]; static DOUBLE **Dtildinv_kl[MAXKLAY_SHELL9]; /* eas matrix Dtilde inv        -> one kinematic Layer*/
 static ARRAY   RtildKl_a[MAXKLAY_SHELL9];    static DOUBLE  *Rtild_kl[MAXKLAY_SHELL9];    /* eas part of internal forces  -> one kinematic Layer*/
 
 
@@ -278,13 +283,15 @@ D         = amdef("D"      ,&D_a   ,12,12                   ,"DA");
 work      = amdef("work"   ,&work_a,12,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA"); 
 
 /* for eas */
-P         = amdef("P"      ,&P_a       ,12                   ,MAXHYB_SHELL9        ,"DA");                 
-transP    = amdef("transP" ,&transP_a  ,12                   ,MAXHYB_SHELL9        ,"DA");       
-T         = amdef("T"      ,&T_a       ,12                   ,12                   ,"DA");
-workeas   = amdef("workeas", &workeas_a ,MAXHYB_SHELL9        ,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");
+P         = amdef("P"      ,&P_a       ,12           ,MAXHYB_SHELL9                ,"DA");         
+transP    = amdef("transP" ,&transP_a  ,12           ,MAXHYB_SHELL9                ,"DA"); 
+T         = amdef("T"      ,&T_a       ,12           ,12                           ,"DA");
+workeas   = amdef("workeas",&workeas_a ,12           ,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");
+/*workeas   = amdef("workeas", &workeas_a ,MAXHYB_SHELL9        ,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");*/
 workeas2  = amdef("workeas2",&workeas2_a,(MAXNOD_SHELL9*NUMDOF_SHELL9),MAXHYB_SHELL9        ,"DA");
 
 for (i=0; i<MAXKLAY_SHELL9; i++) alfa[i]       = amdef("alfa"      ,&alfa_a[i]       ,MAXHYB_SHELL9     ,1                ,"DV"); 
+for (i=0; i<MAXKLAY_SHELL9; i++) L_kl[i]       = amdef("L_kl"      ,&LKl_a[i]        ,(MAXNOD_SHELL9*NUMDOF_SHELL9),MAXHYB_SHELL9     ,"DA");
 for (i=0; i<MAXKLAY_SHELL9; i++) Lt_kl[i]      = amdef("Lt_kl"     ,&LtKl_a[i]       ,MAXHYB_SHELL9     ,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");
 for (i=0; i<MAXKLAY_SHELL9; i++) Dtild_kl[i]   = amdef("Dtild_kl"  ,&DtildKl_a[i]    ,MAXHYB_SHELL9     ,MAXHYB_SHELL9    ,"DA");
 for (i=0; i<MAXKLAY_SHELL9; i++) Dtildinv_kl[i]= amdef("Dtildi_kl" ,&DtildinvKl_a[i] ,MAXHYB_SHELL9     ,MAXHYB_SHELL9    ,"DA");
@@ -386,6 +393,7 @@ for (i=0; i<MAXKLAY_SHELL9; i++) amdel(&akonr0_a[i]);
 for (i=0; i<MAXKLAY_SHELL9; i++) amdel(&amkovr0_a[i]);
 for (i=0; i<MAXKLAY_SHELL9; i++) amdel(&amkonr0_a[i]);
 
+for (i=0; i<MAXKLAY_SHELL9; i++) amdel(&LKl_a[i]);
 for (i=0; i<MAXKLAY_SHELL9; i++) amdel(&LtKl_a[i]);
 for (i=0; i<MAXKLAY_SHELL9; i++) amdel(&DtildKl_a[i]);
 for (i=0; i<MAXKLAY_SHELL9; i++) amdel(&DtildinvKl_a[i]);
@@ -425,6 +433,14 @@ for (i=0; i<nsansmax; i++) am4del( &(a3kvpc2q_a[i]));
 goto end;  
 }
 /*----------------------------------------------------------------------*/
+/* update phase  for material nonlinearity      (init=2)                */
+/*----------------------------------------------------------------------*/
+else if(init==2)
+{
+  istore = 1;             /*-- material law is called with this flag----*/
+}
+
+/*----------------------------------------------------------------------*/
 /* calculation phase                                                    */
 /*----------------------------------------------------------------------*/
 num_klay = ele->e.s9->num_klay;         /* number of kinematic layers to this element*/
@@ -453,6 +469,7 @@ if (nhyb>0)
 {   
    for (kl=0; kl<num_klay; kl++) 
    { 
+     amzero(&LKl_a[kl]);       /* array, that holds the information for ONE kinematic layers*/
      amzero(&LtKl_a[kl]);      /* array, that holds the information for ONE kinematic layers*/
      amzero(&DtildKl_a[kl]);   /* array, that holds the information for ONE kinematic layers*/
      amzero(&RtildKl_a[kl]);   /* array, that holds the information for ONE kinematic layers*/
@@ -474,9 +491,9 @@ if (nhyb>0)
       /*---------------------------- set pointer to actual kinematic layer */
       alfa[kl] = ele->e.s9->alfa.a.da[kl];
       /*-------------------- set pointer to storage of old Dtildinv and Lt */
-      oldDtildinv = ele->e.s9->Dtildinv[kl].a.da;
-      oldLt       = ele->e.s9->Lt[kl].a.da;
-      oldRtild    = ele->e.s9->Rtilde[kl].a.dv;
+      oldDtildinv = &ele->e.s9->Dtildinv.a.da[kl*nhyb];
+      oldL        = &ele->e.s9->L.a.da[kl*nd];
+      oldRtild    = &ele->e.s9->Rtilde.a.dv[kl*nhyb];
 
       /*------ set number of "displacement - dofs" to this kinematic layer */
       iel = ele->numnp;
@@ -488,7 +505,7 @@ if (nhyb>0)
          for (k=0; k<numdf; k++)
          {
             l = j*numdf+k;
-            sum += oldLt[i][l]*ele->node[j]->sol_residual.a.da[0][k];
+            sum += oldL[l][i]*ele->node[j]->sol_residual.a.da[0][k];
          }
          eashelp[i] = sum;
       }
@@ -507,11 +524,11 @@ for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
   for (k=0; k<iel; k++)           /*loop over all nodes per layer*/
   {
      hte[k] = ele->e.s9->thick_node.a.dv[k];
-     /*if (ele->e.s9->dfield == 0)      /*Layerthicknes, norm(a3L) = HL */
+     /*if (ele->e.s9->dfield == 0)*/      /*Layerthicknes, norm(a3L) = HL */
      h2 = ele->e.s9->thick_node.a.dv[k] * klayhgt[kl]/100. * condfac;
-     /*h2 = 0.5*h2; /*A3_IST_EINHALB halber Direktor*/
+     /*h2 = 0.5*h2;*/ /*A3_IST_EINHALB halber Direktor*/
      h2 = A3FAC_SHELL9 * h2;
-     /*else if (ele->e.s9->dfield == 1) /*half of shell thickness, norm(a3) = H/2*/
+     /*else if (ele->e.s9->dfield == 1)*/ /*half of shell thickness, norm(a3) = H/2*/
      /*  h2 = ele->e.s9->thick_node.a.dv[k]/2. * condfac;*/
  
      a3r[0][k][kl] = a3ref[0][k] * h2;
@@ -547,7 +564,7 @@ if (ele->e.s9->ans==1)/*------------ querschub_ans */
                        akovr2q,akonr2q,amkovr2q,amkonr2q,a3kvpr2q,
                        akovc2q,akonc2q,amkovc2q,amkonc2q,a3kvpc2q,
                        akovh,akonh,amkovh,amkonh,
-                       num_klay,numdf);
+                       num_klay);
 }
 else
 {
@@ -566,15 +583,14 @@ if (nhyb>0)
    
    for (kl=0; kl<num_klay; kl++)
    {
-      s9_tmtr(xrefe,a3r,0.0,akovr0[kl],akonr0[kl],amkovr0[kl],amkonr0[kl],&detr0[kl],
-                 funct,deriv,iel,akovr,a3kvpr,hgt,klayhgt,mlhgt_eas,
-                 num_klay,1,kl,0,condfac);
+      s9_tmtr(0.0,akovr0[kl],akonr0[kl],amkovr0[kl],amkonr0[kl],&detr0[kl],
+                 akovr,a3kvpr,hgt,klayhgt,mlhgt_eas,num_klay,kl,0,condfac);
    }        
 }
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
-/******** equivalent element length -> CARAT! -> s9tvci
+/******** equivalent element length -> CARAT! -> s9tvci *******************/
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
@@ -593,7 +609,7 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
       /*-------------------- shape functions at gp e1,e2 on mid surface */
       s9_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*----------------------------- shape functions for querschub-ans */
-      if (ansq==1) s9_ansq_funct(frq,fsq,e1,e2,iel,nsansq);
+      if (ansq==1) s9_ansq_funct(frq,fsq,e1,e2,iel);
 /************/
       /*-------- init mid surface material tensor and stress resultants */
 /*      amzero(&D_a);                          */
@@ -616,6 +632,7 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
       math_unvc(&da,h,3);
 /*---------------------------loop over all kinematic layers (num_klay) */
 
+      actlay = 0;
       for (kl=0; kl<num_klay; kl++)   /*loop over all kinematic layers */
       {
          /*-------- init mid surface material tensor and stress resultants */
@@ -627,21 +644,29 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
          /*--------------------------------------- make eas if switched on */
          if (nhyb>0)
          {
-            /*initialize some arrays to zero*/
-            amzero(&P_a);
-            amzero(&T_a);
-            amzero(&transP_a);
+             /*initialize some arrays to zero*/
+             amzero(&P_a);
+             amzero(&T_a);
+             amzero(&transP_a);
 
-            /*------------------- make shape functions for incomp. strains */
-            s9_eas(nhyb,e1,e2,iel,ele->e.s9->eas,P);
-            /*-------------------- transform basis of Eij to Gausian point */
-            s9_transeas(P,transP,T,akovr,akonr0[kl],detr,detr0[kl],nhyb,kl);
-            /*------------------------ transform strains to Gaussian point */
-            math_matvecdense(epsh,transP,alfa[kl],12,nhyb,0,1.0);
+             /*------------------- make shape functions for incomp. strains */
+             s9_eas(nhyb,e1,e2,iel,ele->e.s9->eas,P);
+
+             /*-------------------- transform basis of Eij to Gausian point */
+             s9_transeas(P,transP,T,akovr,akonr0[kl],detr,detr0[kl],nhyb,kl);
+             /*------------------------ transform strains to Gaussian point */
+             math_matvecdense(epsh,transP,alfa[kl],12,nhyb,0,1.0);
          }
          /*------------------------ make B-operator for compatible strains */
          amzero(&bop_a);  /*initialize bop to ZERO */
-         s9_tvbo(e1,e2,bop,funct,deriv,iel,numdf,akovc,a3kvpc,num_klay,kl,condfac,nsansq);
+         if (kintyp > 0) /*geometric nonlinear -> current configuration */
+         {
+            s9_tvbo(bop,funct,deriv,iel,numdf,akovc,a3kvpc,num_klay,kl,condfac,nsansq);
+         }
+         else  /*geometric linear -> reference configuration */
+         {
+            s9_tvbo(bop,funct,deriv,iel,numdf,akovr,a3kvpr,num_klay,kl,condfac,nsansq);
+         }
          /*-------------------------------------- modifications due to ans */
          if (ansq==1) /*Querschub*/
          s9_ans_bbar_q(bop,frq,fsq,funct1q,funct2q,deriv1q,deriv2q,
@@ -656,27 +681,24 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
                e3   = data->xgpt[lt];
                fact = data->wgtt[lt];
                /*-------------------- basis vectors and metrics at shell body */ 
-               s9_tmtr(xrefe,a3r,e3,gkovr,gkonr,gmkovr,gmkonr,&detr,
-                          funct,deriv,iel,akovr,a3kvpr,hgt,klayhgt,mlayhgt,
-                          num_klay,num_mlay,kl,ml,condfac);
+               s9_tmtr(e3,gkovr,gkonr,gmkovr,gmkonr,&detr,akovr,a3kvpr,hgt,
+                       klayhgt,mlayhgt,num_klay,kl,ml,condfac);
 
-               s9_tmtr(xcure,a3c,e3,gkovc,gkonc,gmkovc,gmkonc,&detc,
-                          funct,deriv,iel,akovc,a3kvpc,hgt,klayhgt,mlayhgt,
-                          num_klay,num_mlay,kl,ml,condfac);
+               s9_tmtr(e3,gkovc,gkonc,gmkovc,gmkonc,&detc,akovc,a3kvpc,hgt,
+                       klayhgt,mlayhgt,num_klay,kl,ml,condfac);
 
                /*--------------------------------- metric at gp in shell body */
                if (ansq==0)
                s9_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
                        amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,kintyp,hgt,
-                       klayhgt,mlayhgt,num_klay,num_mlay,kl,ml,condfac);
+                       klayhgt,mlayhgt,num_klay,kl,ml,condfac);
                /*- modifications to metric of shell body due to querschub-ans */
                else
-               s9_ans_tvhe_q(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,amkovc,amkovr,
+               s9_ans_tvhe_q(gmkovr,gmkovc,gmkonr,gmkonc,amkovc,amkovr,
                              akovc,akovr,a3kvpc,a3kvpr,&detr,&detc,
-                             amkovr1q,amkovc1q,akovr1q,akovc1q,a3kvpr1q,a3kvpc1q,
-                             amkovr2q,amkovc2q,akovr2q,akovc2q,a3kvpr2q,a3kvpc2q,
-                             frq,fsq,e3,nsansq,iel,hgt,klayhgt,mlayhgt,
-                             num_klay,num_mlay,kl,ml,condfac);
+                             amkovr1q,amkovc1q,amkovr2q,amkovc2q,
+                             frq,fsq,e3,nsansq,hgt,klayhgt,mlayhgt,
+                             num_klay,kl,ml,condfac);
                /*----------- calc shell shifter and put it in the weight fact */
                /* xnu = (0.5/condfac)*(detr/da); */               
                /* xnu = (1.0/condfac)*(detr/da); */ /*A3_IST_EINHALB*/
@@ -684,19 +706,21 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
                fact *= xnu;
                /*----------------------- change to current metrics due to eas */
                if (nhyb>0) s9_vthv(gmkovc,gmkonc,epsh,&detc,e3,hgt,klayhgt,mlayhgt,
-                                   num_klay,num_mlay,kl,ml,condfac);
+                                   num_klay,kl,ml,condfac);
                /*------------------------------------------ call material law */
                actmultimat = &(multimat[ele->e.s9->kinlay[kl].mmatID[ml]-1]);
                rot_axis = mat->m.multi_layer->kinlay[kl].rot[ml];
                phi = mat->m.multi_layer->kinlay[kl].phi[ml];
 
-               s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
-                           gkovc,gkonc,gkovr,gkonr,rot_axis,phi);
+               ip = 2 * ngauss + lt;
+               s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkovr,gmkonr,
+                           gkovr,gkonr,rot_axis,phi,ip,actlay,istore,newval);
                /*---------------- do thickness integration of material tensor */
                s9_tvma(D,C,stress,stress_r,e3,fact,hgt,klayhgt,mlayhgt,
-                       num_klay,num_mlay,kl,ml,condfac);
+                       num_klay,kl,ml,condfac);
             }/*========================================== end of loop over lt */            
 
+         actlay ++;
          }/*======= end of loop over all material layers of aktual kinematic layer*/
 
          /*------------ product of all weights and jacobian of mid surface */            
@@ -722,21 +746,28 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
          {
             /* one set of matrizes for each kinematic layer !!! */
             /*=============================================================*/
-            /*  Ltrans(nhyb,nd) = Mtrans(nhyb,12) * D(12,12) * B_R(12,nd_kl)
+            /* L(nd,nhyp) = Btrans(nd,12) * D(12,12) * M(12,nhyb)          */
+            /*=============================================================*/
+            /*----------------------------------------------------DM = D*M */
+            math_matmatdense(workeas,D,transP,12,12,nhyb,0,0.0);
+            /*--------------------------------------------- L = Bt * D * M */
+            math_mattrnmatdense(L_kl[kl],bop,workeas,nd,12,nhyb,1,weight);
+            /*=============================================================*/
+            /* Ltrans(nhyb,nd) = Mtrans(nhyb,12) * D(12,12) * B_R(12,nd_kl)*/
             /*=============================================================*/
             /*----------------------------------------------------- DB=D*B */
             math_matmatdense(workeas,D,bop,12,12,nd,0,0.0);
             /*----------------------------------- Ltransposed = Mt * D * B */
             math_mattrnmatdense(Lt_kl[kl],transP,workeas,nhyb,12,nd,1,weight);
             /*=============================================================*/
-            /*  Dtilde(nhyb,nhyb) = Mtrans(nhyb,12) * D(12,12) * M(12,nhyb)
+            /* Dtilde(nhyb,nhyb) = Mtrans(nhyb,12) * D(12,12) * M(12,nhyb) */
             /*=============================================================*/
             /*----------------------------------------------------DM = D*M */
             math_matmatdense(workeas,D,transP,12,12,nhyb,0,0.0);
             /*-------------------------------------------- Dtilde = Mt*D*M */
             math_mattrnmatdense(Dtild_kl[kl],transP,workeas,nhyb,12,nhyb,1,weight);
             /*=============================================================*/
-            /*  Rtilde(nhyb) = Mtrans(nhyb,12) * Forces(12)
+            /* Rtilde(nhyb) = Mtrans(nhyb,12) * Forces(12)                 */
             /*=============================================================*/
             /*------------------------- eas part of internal forces Rtilde */
             math_mattrnvecdense(Rtild_kl[kl],transP,stress_r,nhyb,12,1,weight);
@@ -755,26 +786,38 @@ if (nhyb>0)
    {
      /*------------------------------------ make inverse of matrix Dtilde */
      amcopy(&DtildKl_a[kl],&DtildinvKl_a[kl]);
-     math_sym_inv(Dtildinv_kl[kl],nhyb);
+
+/**** Test the symmetry of Dtildinv ***/
+/*for (i=0; i<nhyb; i++)
+for (j=i+1; j<nhyb; j++)
+if (FABS(Dtildinv_kl[kl][i][j]-Dtildinv_kl[kl][j][i])>EPS9) 
+printf(" Dtild[%d][%d] is not sym with %E\n",   i,j,Dtildinv_kl[kl][i][j]-Dtildinv_kl[kl][j][i]);*/
+/**** Test the symmetry of Dtildinv ***/
+
+     math_unsym_inv(Dtildinv_kl[kl],nhyb,nhyb);  /*for unsymmetric D-Matrixes*/
+     /*math_sym_inv(Dtildinv_kl[kl],nhyb);*/
 
      /*------------------------------------------ put Dtildinv_kl to storage */
      for (i=0; i<nhyb; i++)
-     for (j=0; j<nhyb; j++) ele->e.s9->Dtildinv[kl].a.da[i][j] = Dtildinv_kl[kl][i][j];
-     /*------------------------------------------------ put Lt_kl to storage */
-     for (i=0; i<nhyb; i++)
-     for (j=0; j<nd; j++) ele->e.s9->Lt[kl].a.da[i][j] = Lt_kl[kl][i][j];
+     for (j=0; j<nhyb; j++) ele->e.s9->Dtildinv.a.da[kl*nhyb + i][j] = Dtildinv_kl[kl][i][j];
+     /*------------------------------------------------ put L_kl to storage */
+     for (i=0; i<nd; i++)
+     for (j=0; j<nhyb; j++) ele->e.s9->L.a.da[kl*nd + i][j] = L_kl[kl][i][j];
      /*-------------------------------------------- put Rtilde_kl to storage */
-     for (i=0; i<nhyb; i++) ele->e.s9->Rtilde[kl].a.dv[i] = Rtild_kl[kl][i];
+     for (i=0; i<nhyb; i++) ele->e.s9->Rtilde.a.dv[kl*nhyb + i] = Rtild_kl[kl][i];
 
      /*===================================================================*/
-     /* estif(nd,nd) = estif(nd,nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * L(nd,nhyb)
+     /* estif(nd,nd) = estif(nd,nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * L(nd,nhyb) */
      /*===================================================================*/
+
      /*------------------------------------------- make Ltrans * Dtildinv */
-     math_mattrnmatdense(workeas2,Lt_kl[kl],Dtildinv_kl[kl],nd,nhyb,nhyb,0,0.0);
+     math_matmatdense(workeas2,L_kl[kl],Dtildinv_kl[kl],nd,nhyb,nhyb,0,0.0);
      /*---------------------------------- make estif -= Lt * Dtildinv * L */
      math_matmatdense(estif,workeas2,Lt_kl[kl],nd,nhyb,nd,1,-1.0);
+
+
      /*===================================================================*/
-     /* R(12) = R(12) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb)
+     /* R(12) = R(12) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb) */
      /*===================================================================*/
      /*--------------------------- make intforce -= Lt * Dtildinv * Rtild */
      math_matvecdense(intforce,workeas2,Rtild_kl[kl],nd,nhyb,1,-1.0);
@@ -797,7 +840,7 @@ for (i=0; i<ele->numnp; i++)
 /*for (i=0; i<nd; i++)
 for (j=i+1; j<nd; j++)
 if (FABS(estif[i][j]-estif[j][i])>EPS12) printf("i %d j %d not sym with %E\n",
-                                         i,j,estif[i][j]-estif[j][i]);
+                                         i,j,estif[i][j]-estif[j][i]);*/
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG 
