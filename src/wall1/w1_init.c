@@ -111,7 +111,6 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       actele->e.w1->elewa[0].ipwa[k].sigi = (double*)calloc(4,sizeof(double));
       actele->e.w1->elewa[0].ipwa[k].epsi = (double*)calloc(4,sizeof(double));
       actele->e.w1->elewa[0].ipwa[k].di   = (double*)calloc(4,sizeof(double));
-      }
       
       ncm = mat[actele->mat-1].m.pl_epc->maxreb;
       
@@ -125,6 +124,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
         actele->e.w1->elewa[0].ipwa[k].reps[j]   = 0.;
         actele->e.w1->elewa[0].ipwa[k].repstn[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].ryip[j]   = -1;
+      }
       }
       
       
