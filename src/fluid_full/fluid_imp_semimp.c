@@ -435,7 +435,7 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
 
 /*---------------------------------- print total CPU-time to the screen */
 #ifdef PARALLEL
-MPI_Barrier(MPI_COMM_WORLD);
+MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 for (i=0;i<par.nprocs;i++)
 {
@@ -451,6 +451,9 @@ printf("PROC %3d: TOTAL TIME for steady state check: %10.3#E \n", par.myrank,tst
 printf("PROC %3d: TOTAL TIME finalising of time step: %10.3#E \n", par.myrank,tfs);
 }
 }
+#ifdef PARALLEL
+MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
 end:
 
 /*--------------------------------------------------- cleaning up phase */

@@ -97,9 +97,6 @@ create_communicators();
 t0=ds_cputime();
 ntacal();
 tc=ds_cputime()-t0;
-#ifdef PARALLEL 
-MPI_Barrier(MPI_COMM_WORLD);
-#endif
 if (par.myrank==0)
 {
  printf("\n");

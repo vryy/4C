@@ -7,7 +7,13 @@
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 static int PREDOF = 2;
-/*!---------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+/*!--------------------------------------------------------------------- 
 \brief set all arrays for element calculation
 
 <pre>                                                         genk 04/02
@@ -24,6 +30,9 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param  **eveln    double	   (o)    ele vels at time n
 \param  **evelng   double	   (o)    ele vels at time n+g
 \param   *epren    double	   (o)    ele pres at time n
+\param   *edeadn   double          (o)    ele dead load at n (selfweight)
+\param   *edeadng  double          (o)    ele dead load at n+g (selfweight)
+\param   *hasext   int             (o)    flag for external loads
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -32,11 +41,17 @@ void f2_calset(
 	        ELEMENT         *ele,     
                 double         **eveln,    
 	        double         **evelng, 
-	        double          *epren    
+	        double          *epren,
+		double          *edeadn,
+		double          *edeadng,
+		int             *hasext
 	      )
 {
-int i,j,irow;      /* simply some counters                              */
-NODE *actnode;     /* actual node                                       */
+int i,j,irow;       /* simply some counters                             */
+int    actmat  ;    /* material number of the element                   */
+double dens;        /* density                                          */
+NODE  *actnode;     /* actual node                                      */
+GSURF *actgsurf;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calset");
@@ -119,6 +134,29 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
          epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
       } /* end of loop over nodes of element */  
 } /* endif (dynvar->nif!=0) */		       
+
+/*------------------------------------------------ check for dead load */
+actgsurf = ele->g.gsurf;
+if (actgsurf->neum!=NULL)
+{
+   actmat=ele->mat-1;
+   dens = mat[actmat].m.fluid->density;
+   for (i=0;i<2;i++)     
+   {
+      if (actgsurf->neum->neum_onoff.a.iv[i]==0)
+      {
+         edeadn[i]  = ZERO;
+	 edeadng[i] = ZERO;
+      }
+      if (actgsurf->neum->neum_type==neum_dead  &&
+          actgsurf->neum->neum_onoff.a.iv[i]!=0)
+      {
+         edeadn[i]  = actgsurf->neum->neum_val.a.dv[i]*dens;
+	 edeadng[i] = actgsurf->neum->neum_val.a.dv[i]*dens;
+	 (*hasext)++;
+      }
+   }
+}
 
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -287,7 +325,7 @@ int     i,j;
 dstrc_enter("f2_vder2");
 #endif
 
-for (i=0;i<2;i++)
+for (i=0;i<3;i++)
 {
    vderxy2[0][i]=ZERO;
    vderxy2[1][i]=ZERO;

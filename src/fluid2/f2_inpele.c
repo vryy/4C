@@ -5,11 +5,8 @@
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h" 
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
-#include "../fluid_full/fluid_prototypes.h"
 /*!--------------------------------------------------------------------- 
 \brief read fluid2 element from input-file
 
@@ -347,10 +344,10 @@ itaumu  = 0;
 itaump  = 0;
 itauc	= 0;
 
-intextract(ihelem,&ndum,
-           &(ele->e.f2->ihele[0]),
-	   &(ele->e.f2->ihele[1]),
-	   &(ele->e.f2->ihele[2]));
+math_intextract(ihelem,&ndum,
+               &(ele->e.f2->ihele[0]),
+	       &(ele->e.f2->ihele[1]),
+	       &(ele->e.f2->ihele[2]));
 
 for(i=0;i<3;i++)
 {

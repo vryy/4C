@@ -32,7 +32,8 @@ This routine controls the element evaluation:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
-\param*  hasdirich       int	        (o)   element flag
+\param  *hasdirich       int	        (o)   element flag
+\param  *hasext          int	        (o)   element flag
 \param   init	         int	        (i)   init flag
 \return void                                               
                                  
@@ -45,8 +46,9 @@ void f2_calele(
                 ARRAY          *emass_global,   
 	        ARRAY          *etforce_global,       
 	        ARRAY          *eiforce_global, 
-		ARRAY          *edforce_global,	
+		ARRAY          *edforce_global,		
 		int            *hasdirich,      
+                int            *hasext,
 		int             init            
 	       );
 
@@ -197,6 +199,154 @@ void f2_calstrlen(
 		   int       ntyp      
                  );
 
+/************************************************************************
+ | f2_calelesize.c                                                      |
+ ************************************************************************/
+/*!--------------------------------------------------------------------- 
+\brief galerkin part of external forces for vel dofs
+
+<pre>                                                         genk 09/02
+
+In this routine the galerkin part of the time forces for vel dofs
+is calculated:
+
+                   /
+   + (1-THETA)*dt |  v * b_old   d_omega
+                 /  
+
+               /
+   + THETA*dt |  v * b   d_omega
+             /      	  		      
+
+see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
+     
+      
+</pre>
+\param   *dynvar      FLUID_DYN_CALC  (i)
+\param   *eforce      double	      (i/o)  element force vector
+\param	 *funct       double	      (i)    nat. shape functions      
+\param   *edeadn      double          (i)    ele dead load at n
+\param   *edeadng     double          (i)    ele dead load at n+1
+\param	  fac	      double	      (i)    weighting factor
+\param	  iel	      int	      (i)    num. of nodes in ele
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_calgalexfv(
+                  FLUID_DYN_CALC  *dynvar, 
+                  double          *eforce,     
+		  double          *funct,       
+                  double          *edeadn,
+		  double          *edeadng,
+		  double           fac,      
+		  int              iel       
+              );
+/*!--------------------------------------------------------------------- 
+\brief stabilisation part of external forces for vel dofs
+
+<pre>                                                         genk 09/02
+
+In this routine the stabilisation part of the time forces for vel dofs
+is calculated:
+
+                     /
+   + thetas(l,r)*dt |  taum_mu * u * grad(v) * b^   d_omega
+                   /  
+
+                       /
+   -/+ thetas(l,r)*dt |  tau_mp * 2*nue * div( eps(v) ) * b^  d_omega
+                     /      	  		      
+
+This routine is called twice with different values:
+1. values are added to Iteration RHS (evaluation at n+1):
+    thetas(l,r) = THETA*dt
+    b^ = b = deadng
+2. values are added to Time RHS (evaluation at n):
+   thetas(l,r) = (1-THETA)*dt
+   b^ = b_old = deadn    
+
+see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
+     
+      
+</pre>
+\param   *dynvar      FLUID_DYN_CALC  (i)
+\param   *ele         ELEMENT	      (i)    actual element
+\param   *eforce      double	      (i/o)  element force vector
+\param  **derxy,      double	      (i)    global derivatives
+\param  **derxy2,     double	      (i)    2nd. global derivatives    
+\param   *edead       double          (i)    ele dead load at n or n+1
+\param   *velint      double	      (i)    vel. at integr. point
+\param	  fac	      double	      (i)    weighting factor
+\param	  visc	      double	      (i)    fluid viscosity
+\param	  iel	      int	      (i)    num. of nodes in ele
+\param	  ihoel       int	      (i)    flag for higer ord. ele
+\param	  flag	      int	      (i)    flag for n or n+1
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_calstabexfv(
+                    FLUID_DYN_CALC  *dynvar, 
+                    ELEMENT         *ele,  
+                    double          *eforce,     
+		    double         **derxy,
+		    double         **derxy2,      
+                    double          *edead,
+	 	    double          *velint,  
+		    double           fac,      
+                    double           visc,
+		    int              iel,
+		    int              ihoel,
+		    int              flag      
+                   );
+/*!--------------------------------------------------------------------- 
+\brief stabilisation part of external forces for pre dofs
+
+<pre>                                                         genk 09/02
+
+In this routine the stabilisation part of the time forces for pre dofs
+is calculated:
+
+                      /
+   - thetas(l,r)*dt  |  tau_mp * grad(q) * b^  d_omega
+                    /	  		      
+
+This routine is called twice with different values:
+1. values are added to Iteration RHS (evaluation at n+1):
+    thetas(l,r) = THETA*dt
+    b^ = b = deadng
+2. values are added to Time RHS (evaluation at n):
+   thetas(l,r) = (1-THETA)*dt
+   b^ = b_old = deadn    
+
+see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
+
+NOTE:							
+    there's only one full element force vector  	
+    for pre-dofs the pointer eforce points to the entry 
+    eforce[2*iel]      
+      
+</pre>
+\param   *dynvar      FLUID_DYN_CALC  (i)
+\param   *eforce      double	      (i/o)  element force vector
+\param  **derxy,      double	      (i)    global derivatives    
+\param   *edead       double          (i)    ele dead load at n or n+1
+\param   *velint      double	      (i)    vel. at integr. point
+\param	  fac	      double	      (i)    weighting factor
+\param	  iel	      int	      (i)    num. of nodes in ele
+\param	  flag	      int	      (i)    flag for n or n+1
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_calstabexfp(
+                    FLUID_DYN_CALC  *dynvar, 
+                    double          *eforce,     
+		    double         **derxy,       
+                    double          *edead,  
+		    double           fac,      
+		    int              iel,
+		    int              flag      
+                   );
+		   		    
 /************************************************************************
  | f2_calfuncderiv.c                                                    |
  ************************************************************************/
@@ -482,7 +632,7 @@ void f2_calmvv(
 /************************************************************************
  | f2_calint.c                                                          |
  ************************************************************************/
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief integration loop for one fluid2 element
 
 <pre>                                                         genk 04/02
@@ -494,6 +644,7 @@ time-RHS for one fluid2 element is calculated
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
+\param  *hasext    int             (i)    element flag
 \param **estif     double	   (o)    element stiffness matrix
 \param **emass     double	   (o)    element mass matrix
 \param  *etforce   double	   (o)    element time force vector
@@ -507,6 +658,8 @@ time-RHS for one fluid2 element is calculated
 \param **eveln     double	   (i)    ele vel. at time n
 \param **evelng    double	   (i)    ele vel. at time n+g
 \param  *epren     double	   (-)    ele pres. at time n
+\param  *edeadn    double	   (-)    ele dead load (selfweight) at n 
+\param  *edeadng   double	   (-)    ele dead load (selfweight) at n+1
 \param  *velint    double	   (-)    vel at integration point
 \param  *vel2int   double	   (-)    vel at integration point
 \param  *covint    double	   (-)    conv. vel. at integr. point
@@ -515,13 +668,14 @@ time-RHS for one fluid2 element is calculated
 \param **vderxy2   double	   (-)    2nd global vel. deriv.
 \param **wa1	   double	   (-)    working array
 \param **wa2	   double	   (-)    working array
-\return void                                                                       
+\return void                                                   
 
 ------------------------------------------------------------------------*/
 void f2_calint(
                FLUID_DATA      *data,     
 	       ELEMENT         *ele,     
 	       FLUID_DYN_CALC  *dynvar, 
+               int             *hasext,
                double         **estif,   
 	       double         **emass,   
 	       double          *etforce, 
@@ -535,6 +689,8 @@ void f2_calint(
 	       double         **eveln,   
 	       double         **evelng,  
 	       double          *epren,   
+	       double          *edeadn,
+	       double          *edeadng,	        	       
 	       double          *velint,  
 	       double          *vel2int, 
 	       double          *covint,  
@@ -689,6 +845,9 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param  **eveln    double	   (o)    ele vels at time n
 \param  **evelng   double	   (o)    ele vels at time n+g
 \param   *epren    double	   (o)    ele pres at time n
+\param   *edeadn   double          (o)    ele dead load at n (selfweight)
+\param   *edeadng  double          (o)    ele dead load at n+g (selfweight)
+\param   *hasext   int             (o)    flag for external loads
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -697,7 +856,10 @@ void f2_calset(
 	        ELEMENT         *ele,     
                 double         **eveln,    
 	        double         **evelng, 
-	        double          *epren    
+	        double          *epren,
+		double          *edeadn,
+		double          *edeadng,
+		int             *hasext
 	      );
 /*!---------------------------------------------------------------------                                         
 \brief routine to calculate velocities at integration point
@@ -1475,21 +1637,22 @@ void f2_intg(FLUID_DATA         *data,
  | f2_main.c                                                            |
  ************************************************************************/
 /*!---------------------------------------------------------------------                                         
-\brief main fluid3 control routine
+\brief main fluid2 control routine
 
 <pre>                                                         genk 03/02
 </pre>
 \param  *actpart	 PARTITION    (i)	    
-	*actintra	 INTRA        (i)
-	*ele		 ELEMENT      (i)    actual element
-	*estif_global	 ARRAY        (o)    element stiffness matrix
-	*emass_global	 ARRAY        (o)    element mass matrix
-	*etforce_global  ARRAY        (o)    element time force vector
-	*eiforce_global  ARRAY        (o)    element iter force vecotr
-	*edforce_global  ARRAY        (o)    ele dirichl. force vector
-	*action	         CALC_ACTION  (i)
-	*hasdirich	 int          (o)    flag
-\return
+\param	*actintra	 INTRA        (i)
+\param	*ele		 ELEMENT      (i)    actual element
+\param	*estif_global	 ARRAY        (o)    element stiffness matrix
+\param  *emass_global	 ARRAY        (o)    element mass matrix
+\param	*etforce_global  ARRAY        (o)    element time force vector
+\param  *eiforce_global  ARRAY        (o)    element iter force vecotr
+\param	*edforce_global  ARRAY        (o)    ele dirichl. force vector
+\param	*action	         CALC_ACTION  (i)
+\param	*hasdirich	 int          (o)    flag
+\param  *hasext          int          (o)    flag
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid2(
@@ -1502,6 +1665,7 @@ void fluid2(
 	    ARRAY       *eiforce_global, 
 	    ARRAY       *edforce_global, 
             CALC_ACTION *action,
-	    int         *hasdirich       
+	    int         *hasdirich,
+	    int         *hasext       
 	   );
 	    
