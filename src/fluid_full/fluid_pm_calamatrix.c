@@ -99,6 +99,7 @@ void fluid_pm_calamatrix(
 			  CONTAINER       *container  
 			 )
 {
+#ifdef MLPCG
 INT     firstdof[2];     /* first dofnumber on this proc (vel&pres)    */
 INT     lastdof[2];      /* last dofnumber on this proc  (vel&pres)    */
 INT     nnz_guess;       /* nnz guess for opening CSR-matrix           */
@@ -127,8 +128,6 @@ INT    *velpointer;	 /* index vector to old velocity dofs          */
 #ifdef DEBUG 
 dstrc_enter("fluid_pm_calamatrix");
 #endif
-
-#ifdef MLPCG
 
 /*-------------------------- allocate the lumped mass matrix CSR-format */
 lumpedmass_csr=(DBCSR*)CCACALLOC(1,sizeof(DBCSR));
@@ -309,7 +308,7 @@ amdel(&prepointer_a);
 
 /*----------------------------------------------------------------------*/
 #else
-  dserror("MLPCG needed, but not defined!!");
+  dserror("MLPCG needed for fluid projection method, but not defined!!");
 #endif
 
 #ifdef DEBUG 
@@ -541,6 +540,7 @@ void assemble_fluid_amatrix(
 			     INTRA     *actintra 
 			   ) 
 {
+#ifdef MLPCG
 INT     i,j;                  /* simply some counters                   */  
 INT     ndv,ndp;              /* number of dofs per element             */
 INT     counter;              /* a counter                              */
@@ -565,7 +565,6 @@ NODE    *actnode;             /* actual node                            */
 dstrc_enter("assemble_fluid_amatrix");
 #endif
 
-#ifdef MLPCG
 
 /*---------------------------------------- set some values and pointers */
 /*  ATTENTION: lmass_global and gradopr_global are external global
@@ -650,7 +649,7 @@ for (i=0;i<ndv;i++)
 
 /*----------------------------------------------------------------------*/
 #else
-  dserror("MLPCG needed, but not defined!!");
+  dserror("MLPCG needed for fluid projection method, but not defined!!");
 #endif
 
 #ifdef DEBUG 
