@@ -881,6 +881,7 @@ double  *result;
 #ifdef DEBUG 
 dstrc_enter("solserv_result_incre");
 #endif
+
 /*----------------------------------------------------------------------*/
 numeq_total = sol->numeq_total;
 /*------------------------- allocate space to allreduce the DIST_VECTOR */
@@ -974,88 +975,59 @@ dstrc_exit();
 return;
 } /* end of solserv_result_resid */
 
-/*---------------------------------------------------------------------*
- | routine to find the maximum value of a distributed vector           |
- | ab =  0 absolut maximum value                                       |
- | ab =  1 maxium value                                                |
- | ab = -1 minimum value                                               |
- |                                                         genk 03/02  |
- *---------------------------------------------------------------------*/ 
-/*void solserv_dmax_distvec(
-			  DIST_VECTOR  *distvec,
-			  double *res,   /* result */
-/*			  int ab        /* flag */
-/*			  )
+/*----------------------------------------------------------------------*
+ |  Put the results of a DIST_VECTOR to the nodes in a       genk 01/03 |
+ |  certain place in ARRAY sol_mf                                       |
+ |  Result have to bee allreduced and are put to the whole              |
+ |  field on each proc                                                  |
+ |  Functionality is the same as in solserv_result_total                |
+ *----------------------------------------------------------------------*/
+void solserv_result_mf(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
+                          int place,SPARSE_ARRAY *sysarray,
+                          SPARSE_TYP *sysarray_typ)
 {
-int i;
-int numeq;
-double dm;
+int      i,j;
+int      max;
+int      diff;
+int      dof;
+
+int      numeq_total;
+NODE    *actnode;
+ARRAY    result_a;
+double  *result;
 
 #ifdef DEBUG 
-dstrc_enter("solserv_dmax_distvec");
-#endif
-
-numeq=distvec->numeq;
-
-switch(ab)
-{
-case 1:      /* maximum value */
-/*dm=distvec->vec.a.dv[0];
-for(i=1;i<numeq;i++)
-{
-   dm=DMAX(dm,distvec->vec.a.dv[i]);
-}
-/*------------- get maximum value from all procs to proc 0 */
-/*#ifdef PARALLEL
-MPI_Reduce(*dm,res,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-#else
-*res=dm;
-#endif
-break;
-
-case 0:    /* maximum absolut value */
-/*dm=FABS(distvec->vec.a.dv[0]);
-for(i=1;i<numeq;i++)
-{
-   dm=DMAX(dm,FABS(distvec->vec.a.dv[i]));
-}
-/*------------- get maximum value from all procs to proc 0 */
-/*#ifdef PARALLEL
-MPI_Reduce(*dm,res,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-#else
-*res=dm;
-#endif
-break;
-
-case -1:   /* minimum value */
-/*dm=distvec->vec.a.dv[0];
-for(i=1;i<numeq;i++)
-{
-   dm=DMIN(dm,distvec->vec.a.dv[i]);
-}
-/*------------- get minimum value from all procs to proc 0 */
-/*#ifdef PARALLEL
-MPI_Reduce(*dm,res,1,MPI_DOUBLE,MPI_MIN,0,MPI_COMM_WORLD);
-#else
-*res=dm;
-#endif
-break;
-default:
-   dserror("flag ab wrong!");
-}
-/*--------------------- distribute maximum / minumum value to all procs */
-/*#ifdef PARALLEL
-MPI_Bcast(res,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+dstrc_enter("solserv_result_mf");
 #endif
 /*----------------------------------------------------------------------*/
-/*#ifdef DEBUG 
+numeq_total = sol->numeq_total;
+/*------------------------- allocate space to allreduce the DIST_VECTOR */
+result = amdef("result",&result_a,numeq_total,1,"DV");
+         amzero(&result_a);
+solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
+/*------------ loop nodes and put the result back to the node structure */
+for (i=0; i<actfield->dis[0].numnp; i++)
+{
+   actnode = &(actfield->dis[0].node[i]);
+   /*------------------------------- enlarge sol_residual, if necessary */
+   if (place >= actnode->sol_mf.fdim)
+   {
+      diff = place - actnode->sol_mf.fdim;
+      max  = IMAX(diff,5);
+      amredef(&(actnode->sol_mf),actnode->sol_mf.fdim+max+1,actnode->sol_mf.sdim,"DA");
+   }
+   for (j=0; j<actnode->numdf; j++)
+   {
+      dof = actnode->dof[j];
+      if (dof>=numeq_total) continue;
+      actnode->sol_mf.a.da[place][j] = result[dof];
+   }   
+}
+/*----------------------------------------------------------------------*/
+amdel(&result_a);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-}
-/* end of solverv_dmax_distvec */ 
- 
- 
-
-
-
+} /* end of solserv_result_resid */
