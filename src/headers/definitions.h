@@ -177,7 +177,7 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of nodes to an element                                |
  *----------------------------------------------------------------------*/
-#define MAXNOD           (9)
+#define MAXNOD           (4)
 
 /*----------------------------------------------------------------------*
  | maximum number of elements to a node                                 |
@@ -197,7 +197,7 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
-#define MAXGAUSS         (9)  
+#define MAXGAUSS         (4)  
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
