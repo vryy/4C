@@ -22,10 +22,6 @@ NODES            504
 DIM                2
 MATERIALS          5
 NUMDF        5
-MAXNOD 4
-MAXELE 4
-MAXDOFPERNODE 5
-MAXGAUSS 4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid_Structure_Interaction
 NUMFIELD     3

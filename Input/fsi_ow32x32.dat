@@ -22,10 +22,6 @@ NODES           2244
 DIM                2
 MATERIALS          3
 NUMDF        3
-MAXNOD 4
-MAXELE 4
-MAXDOFPERNODE 3
-MAXGAUSS 4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid_Structure_Interaction
 NUMFIELD     3

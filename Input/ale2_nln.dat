@@ -22,10 +22,6 @@ NODES            438
 DIM                2
 MATERIALS          1
 NUMDF        6
-MAXNOD 4
-MAXELE 4
-MAXDOFPERNODE 2
-MAXGAUSS 4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Ale
 NUMFIELD     1

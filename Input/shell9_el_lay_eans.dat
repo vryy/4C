@@ -27,10 +27,6 @@ NODES              9
 DIM                2
 MATERIALS          1
 NUMDF        15
-MAXNOD 4
-MAXELE 4
-MAXDOFPERNODE 18
-MAXGAUSS 72
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
