@@ -567,6 +567,7 @@ if (strncmp(string,"stress",stringlenght)==0)
    /* these shells have 18 stresses, do 2 x 3D Matrix */
    /* for shell8 stresses permutation: */
    /* ii[18] = {0,2,8,1,3,16,4,17,9,5,7,14,6,10,12,11,13,15};*/
+#ifdef D_SHELL8
    if (actgid->is_shell8_22)
    {
       ngauss=4;
@@ -771,6 +772,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       }
       fprintf(out,"END VALUES\n");
    }
+#endif
    if (actgid->is_brick1_222)/* bricks have 6 stress - use 3D matrix */
    {
       dserror("output for 8-noded brick not yet impl.");

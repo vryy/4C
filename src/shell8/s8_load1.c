@@ -1,3 +1,4 @@
+#ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
 extern DOUBLE acttime;
@@ -477,3 +478,4 @@ dstrc_exit();
 #endif
 return; 
 } /* end of s8loadGP */
+#endif

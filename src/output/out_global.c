@@ -318,6 +318,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
    switch(actele->eltyp)
    {
    case el_shell8:
+#ifdef D_SHELL8
        ngauss = actele->e.s8->nGP[0] * actele->e.s8->nGP[1];
        fprintf(out,"________________________________________________________________________________\n");
        fprintf(out,"Element glob_Id %d loc_Id %d                SHELL8\n",actele->Id,actele->Id_loc);
@@ -379,7 +380,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.s8->forces.a.d3[place][15][i]
        );
        }
-       
+#endif
    break;
    default:
       dserror("unknown type of element");

@@ -1,6 +1,6 @@
+#ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
-
 /*----------------------------------------------------------------------*
  | collocation points, shape functions and derivatives    m.gee 2/02    |
  | and all necessary basis vectors and metrics at these points          |
@@ -541,3 +541,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8_ans_tvkg */
+#endif

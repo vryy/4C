@@ -1,3 +1,4 @@
+#ifdef D_SHELL8
 /*----------------------------------------------------------------------*
  | shell8                                                 m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -442,3 +443,9 @@ void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
                 int numdf,int iel,double weight,double e1,double e2,
                 double frq[], double fsq[],double *funct1q[],double  *funct2q[],
                 double **deriv1q[], double **deriv2q[],int ansq, int nsansq);
+/*----------------------------------------------------------------------*
+ |  s8_restart.c                                         m.gee 05/02    |
+ *----------------------------------------------------------------------*/
+void s8_write_restart(ELEMENT *actele, int nhandle, int *handles);
+void s8_read_restart(ELEMENT *actele, int nhandle, int *handles);
+#endif

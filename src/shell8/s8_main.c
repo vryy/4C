@@ -22,6 +22,7 @@ void shell8(FIELD      *actfield,
             int        *handles,
             CALC_ACTION *action)
 {
+#ifdef D_SHELL8
 int          i;
 int          imyrank;
 int          inprocs;
@@ -131,6 +132,7 @@ break;
 end:
 #ifdef DEBUG 
 dstrc_exit();
+#endif
 #endif
 return; 
 } /* end of shell8 */
