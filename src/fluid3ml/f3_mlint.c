@@ -431,14 +431,15 @@ for (lr=0;lr<nir;lr++)
 
      if (fdyn->nis==0)
       {
+ dserror("time force vector has been removed! Change ML code adequately!");
 /*------- get large-scale pressure derivatives (n) at integration point */
-        if (fdyn->iprerhs>0) f3_pder(pderxyn,derxy,epren,iel);
+/*        if (fdyn->iprerhs>0) f3_pder(pderxyn,derxy,epren,iel);*/
 /*------------------ get large-scale velocities (n) at integraton point */
-        f3_veci(velintn,funct,eveln,iel);
+/*        f3_veci(velintn,funct,eveln,iel);*/
 /*------- get large-scale velocity derivatives (n) at integration point */
-        f3_vder(vderxyn,derxy,eveln,iel);
+/*        f3_vder(vderxyn,derxy,eveln,iel);*/
 /*--- get large-scale 2nd velocity derivatives (n) at integration point */
-        if (ihoel!=0) f3_vder2(vderxy2n,derxy2,eveln,iel);
+/*        if (ihoel!=0) f3_vder2(vderxy2n,derxy2,eveln,iel);*/
 
         if (mlvar->quastabub==0)
         {
@@ -474,11 +475,11 @@ for (lr=0;lr<nir;lr++)
           if (ihoelsm!=0) f3_vder2(smvderxy2n,vbubderxy2n,eveln,iel);
 
 /*----------------- get small-scale 'pressures' (n) at integraton point */
-          f3_smprei (smpreintn,pbubintn,epren,iel);
+/*          f3_smprei (smpreintn,pbubintn,epren,iel);*/
 /*------ get small-scale 'pressure' derivatives (n) at integraton point */
-          f3_smpder (smpderxyn,pbubderxyn,epren,iel);
+/*          f3_smpder (smpderxyn,pbubderxyn,epren,iel);*/
 /*-- get small-scale 2nd 'pressure' derivatives (n) at integraton point */
-          if (ihoelsm!=0) f3_smpder2(smpderxy2n,pbubderxy2n,epren,iel);
+/*          if (ihoelsm!=0) f3_smpder2(smpderxy2n,pbubderxy2n,epren,iel);*/
 	}
 
 /*----- calculate various velocities for "Time" force vector evaluation */
@@ -956,7 +957,6 @@ large-scale element is calculated
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
 \param  *eiforce   DOUBLE	   (o)    element iter force vector
-\param  *etforce   DOUBLE	   (o)    element time force vector
 \param  *funct     DOUBLE	   (-)    natural shape functions
 \param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
 \param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
@@ -987,7 +987,6 @@ void f3_lsint(FLUID_DATA      *data,
               DOUBLE	     **estif,
 	      DOUBLE	     **emass,
 	      DOUBLE	      *eiforce,
-	      DOUBLE	      *etforce,
 	      DOUBLE	      *funct,
 	      DOUBLE	     **deriv,
 	      DOUBLE	     **deriv2,
@@ -1181,29 +1180,31 @@ for (lt=0;lt<nit;lt++)
  *----------------------------------------------------------------------*/
     if (fdyn->nis==0)
     {
- /*------------------------------ get pressure (n) at integration point */
-      if (fdyn->iprerhs>0)
-         preintn=f3_scali(funct,epren,iel);
+      dserror("Time force vector etforce has been removed. \nML code has to be corrected, ask Dr. Gravemeier for further information!");
+/*------------------------------ get pressure (n) at integration point */
+/*      if (fdyn->iprerhs>0)
+         preintn=f3_scali(funct,epren,iel);*/
 /*----------------------------- get velocities (n) at integration point */
-      f3_veci(velintn,funct,eveln,iel);
+/*      f3_veci(velintn,funct,eveln,iel);*/
 /*------------------- get velocity derivatives (n) at integration point */
-      f3_vder(vderxyn,derxy,eveln,iel);
+/*      f3_vder(vderxyn,derxy,eveln,iel);*/
 /*------------------ get convective velocities (n) at integration point */
       f3_covi(vderxyn,velintn,covintn);
+
 /*--------------------- calculate "Time" force vector for velocity dofs */
-      f3_lscalgaltfv(etforce,velintn,velintn,covintn,funct,derxy,
-	             vderxyn,preintn,visc,fac,iel);
+/*      f3_lscalgaltfv(etforce,velintn,velintn,covintn,funct,derxy,
+	             vderxyn,preintn,visc,fac,iel); */
 /*--------------------- calculate "Time" force vector for pressure dofs */
-      if (fdyn->thsr!=ZERO)
-	f3_lscalgaltfp(&(etforce[3*iel]),funct,vderxyn,fac,iel);
+/*      if (fdyn->thsr!=ZERO)
+	f3_lscalgaltfp(&(etforce[3*iel]),funct,vderxyn,fac,iel);*/
       }
 
 /*----------------------------------------------------------------------*
  |         compute "External" Force Vector                              |
  *----------------------------------------------------------------------*/
-    if (*hasext!=0)
+/*    if (*hasext!=0)
 /*----------------- calculate "External" force vector for velocity dofs */
-      f3_lscalgalexfv(etforce,funct,edeadn,edead,fac,iel);
+/*         f3_lscalgalexfv(etforce,funct,edeadn,edead,fac,iel);*/
 }
 }
 } /* end of loop over integration points */
