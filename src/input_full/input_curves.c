@@ -141,15 +141,7 @@ for (i=0; i<counter; i++)
    if (ierr!=1) dserror("cannot read CURVE");
 /*--------------------------------------------------- read typ of curve */   
    frchk("Polygonal",&ierr);
-   if (ierr==1)
-   {
-      strncpy(actcurve->curvetyp,"Polygonal",9);
-   }
-   frchk("Stream1" ,&ierr);
-   if (ierr==1)
-   {
-      strncpy(actcurve->curvetyp,"Stream1",7);
-   }
+   if (ierr==1) actcurve->curvetyp = curve_polygonal;
 /*-------------------------------------------- read bystep or byabstime */
    if (actcurve->bystep==1)
    {
