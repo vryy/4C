@@ -126,7 +126,12 @@ struct _ARRAY           sendbuff;
 MPI_Request            *request;       /*!< send request */
 #endif
 int                     firstcoupledof;/*!< dof number of the first dof that has interproc coupling */
-struct _DBCSR          *csc;
+
+struct _DBCSR          *csc;           /*!< the treansposed matrix in compressed sparse column format */
+struct _DBCSR          *ilu;           /*!< the ilu-decomposed matrix */
+ARRAY                  *dense;         /*!< for dense solve on coarsest grid */
+ARRAY                  *ipiv;          /*!< for dense solve on coarsest grid */
+
 } DBCSR;
 /*!------------------------------------------------------------------------
 \brief one level of the multilevel preconditioner
