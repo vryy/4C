@@ -28,6 +28,7 @@ elements are initialised:
                             time (n)      |         |               
                           initial value from input  |               
                                        factor from timecurve (T=0.0)			     
+
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
 \param *fdyn	 FLUID_DYNAMIC (i)    
@@ -50,6 +51,7 @@ nodes:
                             time (n+1)    |         |               
                           initial value from input  |               
                                        factor from timecurve			     
+
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
 \param *fdyn	 FLUID_DYNAMIC (i)  
@@ -67,6 +69,7 @@ in this routine the element load vector due to dirichlet conditions
 is calcluated. The prescribed values are taken from the node solution
 history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[3][j]'.
 the element load vector 'dforce' is calculated by eveluating
+
 </pre>
 \code
       dforces[i] -= estif[i][j] * dirich[j];
@@ -106,6 +109,7 @@ iop=4: One-Step-Theta Scheme
 iop=5: Fractional-Step-Theta Scheme 
 
 see dissertation of W.A. WALL, chapter 4.2 Zeitdiskretisierung;		     
+
 </pre>
 
 
