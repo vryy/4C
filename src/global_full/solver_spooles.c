@@ -155,11 +155,14 @@ case 0:
    (2) order the graph using multiple minimum degree
    -------------------------------------------------
 */
+   if (spo->ncall==0) 
    spo->graph  = Graph_new();
+   if (spo->ncall==0) 
    spo->adjIVL = InpMtx_MPI_fullAdjacency(spo->mtxA,stats,msglvl,msgFile,
                                           actintra->MPI_INTRA_COMM);
 
    nedges = IVL_tsize(spo->adjIVL);
+   if (spo->ncall==0) 
    Graph_init2(spo->graph,0,numeq_total,0,nedges,numeq_total,nedges,
                spo->adjIVL,NULL,NULL);
    /* debug */
@@ -170,8 +173,7 @@ case 0:
       fflush(msgFile);
    }
    spo->frontETree = orderViaMMD(spo->graph,seed+imyrank,msglvl,msgFile);
-   IVL_free(spo->adjIVL);
-   Graph_free(spo->graph) ;
+ /*  Graph_free(spo->graph);*/
    /* debug */
    if (msglvl)
    {
@@ -494,7 +496,6 @@ case 0:
    free memory
    -----------
 */
-
    FrontMtx_free(spo->frontmtx);
    InpMtx_free(spo->mtxA);
    DenseMtx_free(spo->mtxY);
