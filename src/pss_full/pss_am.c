@@ -156,6 +156,8 @@ return (oldptr=NULL);
 
 
 
+
+
 /*----------------------------------------------------------------------*
  | define array                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -208,15 +210,15 @@ dserror("Unknown type of array given");
 }
 /*------------------- make report about new array to bugtraceing system */
 #ifdef DEBUG 
-if (trace.trace_on==1)
-{
-dstracereport(a);
-}
+if (trace.trace_on==1) dsreportarray(a,1);
+
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 return((void*)(a->a.iv));
 } /* end of amdef */
+
+
 
 
 
@@ -398,6 +400,8 @@ return((void*)(a->a.iv));
 
 
 
+
+
 /*----------------------------------------------------------------------*
  | delete         array                                   m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -440,12 +444,8 @@ array->sdim=0;
 array->Typ = XX;
 /*------------------------- delete the array from the bugtracing system */
 #ifdef DEBUG 
-if (trace.trace_on==1)
-{
-    trace.arrays[array->place_in_trace]=NULL;
-    trace.num_arrays--;
-    array->place_in_trace=0;
-}                     
+if (trace.trace_on==1) dsdeletearray(array,1);
+
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -500,6 +500,8 @@ return;
 
 
 
+
+
 /*----------------------------------------------------------------------*
  | initialize an array by value                           m.gee 6/01    |
  *----------------------------------------------------------------------*/
@@ -547,6 +549,8 @@ dstrc_exit();
 #endif
 return;
 } /* end of aminit */
+
+
 
 
 
@@ -602,6 +606,8 @@ return((void*)(array_to->a.iv));
 
 
 
+
+
 /*----------------------------------------------------------------------*
  | make a copy of ARRAY,                                  m.gee 6/01    |
  | user must provide sufficient space & typ                             |
@@ -654,6 +660,8 @@ dstrc_exit();
 #endif
 return((void*)(array_to->a.iv));
 } /* end of amcopy */
+
+
 
 
 
@@ -753,17 +761,15 @@ dserror("Unknown type of array given");
 }
 /*------------------- make report about new array to bugtraceing system */
 #ifdef DEBUG 
-/* ARRAY4D's cannot be traced yet m.gee
-if (trace.trace_on==1)
-{
-dstracereport(a);
-} 
-*/
+if (trace.trace_on==1) dsreportarray(a,2);
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 return((void*)(a->a.d3));
 } /* end of am4def */
+
+
+
 
 /*----------------------------------------------------------------------*
  | delete 4dimensional array                             m.gee 12/01    |
@@ -813,18 +819,14 @@ dserror("Unknown type of array given");
 array->Typ = XX4D;
 /*------------------------- delete the array from the bugtracing system */
 #ifdef DEBUG 
-/* ARRAY4D cannot be traced yet m.gee 
-if (trace.trace_on==1)
-{
-    trace.arrays[array->place_in_trace]=NULL;
-    trace.num_arrays--;
-    array->place_in_trace=0;
-}                     */
+if (trace.trace_on==1) dsdeletearray(array,2);
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 return;
 } /* end of am4del */
+
+
 
 /*----------------------------------------------------------------------*
  | initialize an 4D array by zero                           m.gee 12/01 |
@@ -870,6 +872,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of am4zero */
+
+
+
 
 /*----------------------------------------------------------------------*
  | initialize an array by value                           m.gee 6/01    |
@@ -921,6 +926,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of am4init */
+
 
 
 /*----------------------------------------------------------------------*
@@ -999,6 +1005,8 @@ dstrc_exit();
 #endif
 return((void*)(array_to->a.d3));
 } /* end of am4_alloc_copy */
+
+
 
 
 /*----------------------------------------------------------------------*

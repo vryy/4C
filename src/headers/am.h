@@ -25,7 +25,7 @@ union
     double **da;                       /* double array   */
    }                a;                 /* ptr used for calculations        */
 #ifdef DEBUG 
-int                 place_in_trace;    /* place in bugtracing system       */
+struct _TRACEARRAY  *mytracer;
 #endif
 } ARRAY;
 
@@ -55,7 +55,6 @@ union
      int     ****i4;                   /* 4D - integer array */
    }                a;                 /* name of union */
 #ifdef DEBUG 
-/*------------------------ the tracing of array4d is not yet implemented ! */
-int                 place_in_trace;    /* place in bugtracing system       */
+struct _TRACEARRAY  *mytracer;
 #endif
 } ARRAY4D;

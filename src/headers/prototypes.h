@@ -240,7 +240,7 @@ void dsinit();
 void dstrc_enter(char string[]);
 void dstrc_exit();
 void dstracesize();
-void dstracereport(ARRAY *array);
+void dsreportarray(void *array, int typ);
 void dstrace_to_err();
 /*----------------------------------------------------------------------*
  |  pss_fr.c                                  m.gee 11/01    |
