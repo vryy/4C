@@ -28,6 +28,8 @@
 # problem types
 #D_FLUID            # defines general fluid problem
 #D_FSI              # defines general FSI problem
+#D_SSI              # defines general SSI problem
+#D_MORTAR           # defines mortar coupling problem (FSI/SSI)
 #D_OPTIM            # defines optimization
 #D_CONTACT          # defines contact problems
 #D_LS               # defines for level set problem
