@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef MUMPS_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
@@ -23,7 +27,6 @@ void solver_mumps(struct _SOLVAR         *actsolv,
                   struct _DIST_VECTOR    *rhs,
                   INT                     option)
 {
-#ifdef MUMPS_PACKAGE
 INT            i;
 INT            dof;
 INT            info;
@@ -239,10 +242,10 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif
 return;
 } /* end of solver_mumps */
 
 
 
+#endif /* ifdef MUMPS_PACKAGE */
 

@@ -283,39 +283,67 @@ vec      = dist_vec->vec.a.dv;
 numeq    = dist_vec->numeq;
 switch(*sysarray_typ)
 {
+ 
+#ifdef AZTEC_PACKAGE
 case msr:
    update = sysarray->msr->update.a.iv;
 break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    update = sysarray->spo->update.a.iv;
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
    update = sysarray->parcsr->update.a.ia[imyrank];
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    update = sysarray->ucchb->update.a.iv;
 break;
+#endif
+
 case dense:
    update = sysarray->dense->update.a.iv;
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    update = sysarray->rc_ptr->update.a.iv;
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
    update = sysarray->ccf->update.a.iv;
 break;
+#endif
+
 case skymatrix:
    update = sysarray->sky->update.a.iv;
 break;
+
+#ifdef MLPCG
 case bdcsr:
    update = sysarray->bdcsr->update.a.iv;
 break;
+#endif
+
+#ifdef MLIB_PACKAGE
 case mds:
    index = indiz;
 break;
+#endif
+
 case oll:
    update = sysarray->oll->update.a.iv;
 break;
+
 default:
    dserror("Unknown typ of system matrix given");
 break;
@@ -494,6 +522,7 @@ inprocs = actintra->intra_nprocs;
 switch(*sysarray_typ)
 {
 
+#ifdef AZTEC_PACKAGE
 case msr:
    for (i=0; i<sysarray->msr->numeq; i++)
    {
@@ -508,9 +537,11 @@ case msr:
    MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
+#endif
 
 
 
+#ifdef HYPRE_PACKAGE
 case parcsr:
    for (i=0; i<sysarray->parcsr->numeq; i++)
    {
@@ -522,9 +553,11 @@ case parcsr:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+#endif
 
 
 
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    for (i=0; i<sysarray->ucchb->numeq; i++)
    {
@@ -536,6 +569,7 @@ case ucchb:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+#endif
 
 
 
@@ -553,15 +587,18 @@ break;
 
 
 
+#ifdef MLIB_PACKAGE
 case mds:
    for (i=0; i<sysarray->mds->numeq; i++)
    {
       fullvec[i] = distvec->vec.a.dv[i];
    }
 break;
+#endif
 
 
 
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    for (i=0; i<sysarray->rc_ptr->numeq; i++)
    {
@@ -573,7 +610,10 @@ case rc_ptr:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+#endif
 
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    for (i=0; i<sysarray->spo->numeq; i++)
    {
@@ -588,8 +628,12 @@ case spoolmatrix:
    MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
+#endif
 
 
+
+
+#ifdef UMFPACK
 case ccf:
    for (i=0; i<sysarray->ccf->numeq; i++)
    {
@@ -601,6 +645,7 @@ case ccf:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+#endif
 
 
 
@@ -617,6 +662,8 @@ case skymatrix:
 break;
 
 
+
+#ifdef MLPCG
 case bdcsr:
    for (i=0; i<sysarray->bdcsr->numeq; i++)
    {
@@ -631,6 +678,8 @@ case bdcsr:
    MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
+#endif
+
 
 
 case oll:
@@ -706,6 +755,7 @@ inprocs = actintra->intra_nprocs;
 switch(*sysarray_typ)
 {
 
+#ifdef AZTEC_PACKAGE
 case msr:
    for (i=0; i<sysarray->msr->numeq; i++)
    {
@@ -713,7 +763,9 @@ case msr:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
+#endif
 
+#ifdef HYPRE_PACKAGE
 case parcsr:
    for (i=0; i<sysarray->parcsr->numeq; i++)
    {
@@ -721,7 +773,9 @@ case parcsr:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
+#endif
 
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    for (i=0; i<sysarray->ucchb->numeq; i++)
    {
@@ -729,6 +783,7 @@ case ucchb:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
+#endif
 
 case dense:
    for (i=0; i<sysarray->dense->numeq; i++)
@@ -738,13 +793,16 @@ case dense:
    }
 break;
 
+#ifdef MLIB_PACKAGE
 case mds:
    for (i=0; i<sysarray->mds->numeq; i++)
    {
       distvec->vec.a.dv[i] = fullvec[i];
    }
 break;
+#endif
 
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    for (i=0; i<sysarray->rc_ptr->numeq; i++)
    {
@@ -752,7 +810,9 @@ case rc_ptr:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
+#endif
 
+#ifdef UMFPACK
 case ccf:
    for (i=0; i<sysarray->ccf->numeq; i++)
    {
@@ -760,7 +820,9 @@ case ccf:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
+#endif
 
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    for (i=0; i<sysarray->spo->numeq; i++)
    {
@@ -768,6 +830,7 @@ case spoolmatrix:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
+#endif
 
 case skymatrix:
    for (i=0; i<sysarray->sky->numeq; i++)

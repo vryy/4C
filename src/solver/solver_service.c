@@ -17,23 +17,44 @@ Maintainer: Malte Neumann
  |                                                           m.gee 03/02|
  | prototypes of functions only visible in this file                    |
  *----------------------------------------------------------------------*/
+#ifdef MUMPS_PACKAGE
 static void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to);
-static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to);
-static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to);
-static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
-static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
-static void solserv_cp_densemask(DENSE *from, DENSE *to);
-static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to);
-static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to);
 static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,DOUBLE *work1,DOUBLE *work2);
-static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,DOUBLE *work1,DOUBLE *work2);
+#endif
+
+#ifdef UMFPACK
+static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to);
 static void solserv_matvec_ccf(INTRA  *actintra,CCF *ccf,DOUBLE *work1,DOUBLE *work2);
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
+static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to);
+#endif
+
+static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
+static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,DOUBLE *work1,DOUBLE *work2);
+
+#ifdef AZTEC_PACKAGE
+static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
 #if 0
 static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,DOUBLE *work1,DOUBLE *work2);
 #endif
-static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,DOUBLE *work1,DOUBLE *work2);
+#endif
+
+static void solserv_cp_densemask(DENSE *from, DENSE *to);
 static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,DOUBLE *work1,DOUBLE *work2);
+
+#ifdef SPOOLES_PACKAGE
+static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to);
+static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,DOUBLE *work1,DOUBLE *work2);
+#endif
+
+#ifdef MLPCG
+static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to);
+#endif
+
 static void oll_matvec(INTRA *actintra, OLL *oll, DOUBLE *work1, DOUBLE *work2);
+
 /*----------------------------------------------------------------------*
  |  make A = A * factor                                      m.gee 02/02|
  | SPARSE_TYP *Atyp (i)        type of sparse matrix                    |
@@ -49,42 +70,71 @@ dstrc_enter("solserv_scal_mat");
 /*----------------------------------------------------------------------*/
 switch (*Atyp)
 {
+
+#ifdef MLIB_PACKAGE
 case mds:
    dserror("not implemented for MLIB yet");
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:
    amscal(&(A->msr->val),&factor);
 break;
+#endif
+
+#ifdef HYPRE_PARCSR
 case parcsr:
    dserror("not implemented for HYPRE yet");
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    amscal(&(A->ucchb->a),&factor);
 break;
+#endif
+
 case dense:
    amscal(&(A->dense->A),&factor);
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    amscal(&(A->rc_ptr->A_loc),&factor);
 break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    amscal(&(A->spo->A_loc),&factor);
 break;
+#endif
+
+#ifdef MLPCG
 case bdcsr:
    amscal(&(A->bdcsr->a),&factor);
 break;
+#endif
+
 case ccf:
+#ifdef UMFPACK
    amscal(&(A->ccf->Ax),&factor);
 break;
+#endif
+
 case skymatrix:
    amscal(&(A->sky->A),&factor);
 break;
+
 case oll:
    oll_scal(A->oll,factor);
 break;
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
+
 default:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -121,24 +171,42 @@ dstrc_enter("solserv_add_mat");
 if (*Atyp != *Btyp) dserror("Incompatible types of sparse matrices");
 switch (*Atyp)
 {
+
+#ifdef MLIB_PACKAGE
 case mds:
    dserror("not implemented for MLIB yet");
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:
    amadd(&(A->msr->val),&(B->msr->val),factor,0);
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
    dserror("not implemented for HYPRE yet");
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    amadd(&(A->ucchb->a),&(B->ucchb->a),factor,0);
 break;
+#endif
+
 case dense:
    amadd(&(A->dense->A),&(B->dense->A),factor,0);
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    amadd(&(A->rc_ptr->A_loc),&(B->rc_ptr->A_loc),factor,0);
 break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
 #ifdef D_CONTACT
    add_spooles_matrix(A->spo,B->spo,factor,0,actintra);
@@ -146,15 +214,24 @@ case spoolmatrix:
    amadd(&(A->spo->A_loc),&(B->spo->A_loc),factor,0);
 #endif
 break;
+#endif
+
+#ifdef MLPCG
 case bdcsr:
    amadd(&(A->bdcsr->a),&(B->bdcsr->a),factor,0);
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
    amadd(&(A->ccf->Ax),&(B->ccf->Ax),factor,0);
 break;
+#endif
+
 case skymatrix:
    amadd(&(A->sky->A),&(B->sky->A),factor,0);
-   break;
+break;
+
 case oll:
    if(B->oll->is_masked==0) break;
    if(A->oll->is_masked==0) 
@@ -167,9 +244,11 @@ case oll:
      oll_add(A->oll,B->oll,factor);
    }
    break;
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
+
 default:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -180,6 +259,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_add_mat */
+
 
 
 /*----------------------------------------------------------------------*
@@ -198,53 +278,82 @@ dstrc_enter("solserv_getmatdims");
 /*----------------------------------------------------------------------*/
 switch (mattyp)
 {
+
+#ifdef MLIB
 case mds:
    *numeq       = mat->mds->numeq;
    *numeq_total = *numeq;
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:
    *numeq       = mat->msr->numeq;
    *numeq_total = mat->msr->numeq_total;
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
    *numeq       = mat->parcsr->numeq;
    *numeq_total = mat->parcsr->numeq_total;
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    *numeq       = mat->ucchb->numeq;
    *numeq_total = mat->ucchb->numeq_total;
 break;
+#endif
+
 case dense:
    *numeq       = mat->dense->numeq;
    *numeq_total = mat->dense->numeq_total;
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    *numeq       = mat->rc_ptr->numeq;
    *numeq_total = mat->rc_ptr->numeq_total;
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
    *numeq       = mat->ccf->numeq;
    *numeq_total = mat->ccf->numeq_total;
 break;
+#endif
+
 case skymatrix:
    *numeq       = mat->sky->numeq;
    *numeq_total = mat->sky->numeq_total;
 break;
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    *numeq       = mat->spo->numeq;
    *numeq_total = mat->spo->numeq_total;
 break;
+#endif
+
+#ifdef MLPCG
 case bdcsr:
    *numeq       = mat->bdcsr->numeq;
    *numeq_total = mat->bdcsr->numeq_total;
 break;
+#endif
+
 case oll:
    *numeq       = mat->oll->numeq;
    *numeq_total = mat->oll->numeq_total;
 break;
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
+
 default:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -288,16 +397,22 @@ inprocs = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
 switch (*mattyp)
 {
+#ifdef MLIB_PACKAGE
 case mds:
    solver_mlib(NULL,NULL,mat->mds,NULL,NULL,2);
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:
    amzero(&(mat->msr->val));
    mat->msr->is_factored=0;
    mat->msr->is_transformed=0;
 break;
-case parcsr:/*---- this stupid package does not have a zero function!!!!*/
+#endif
+
 #ifdef HYPRE_PACKAGE
+case parcsr:/*---- this stupid package does not have a zero function!!!!*/
    err=HYPRE_IJMatrixDestroy(mat->parcsr->ij_matrix);
    if (err) dserror("Cannot destroy PARCSR matrix");
    ilower = jlower = mat->parcsr->perm.a.ia[imyrank][0];
@@ -308,33 +423,49 @@ case parcsr:/*---- this stupid package does not have a zero function!!!!*/
    if (err) dserror("Cannot Set PARCSR matrix object type");
    err=HYPRE_IJMatrixInitialize(mat->parcsr->ij_matrix);
    if (err) dserror("Cannot init PARCSR matrix");
-#endif
    mat->parcsr->is_factored=0;
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    amzero(&(mat->ucchb->a));
    mat->ucchb->is_factored=0;
 break;
+#endif
+
 case dense:
    amzero(&(mat->dense->A));
    mat->dense->is_factored=0;
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    amzero(&(mat->rc_ptr->A_loc));
    mat->rc_ptr->is_factored=0;
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
    amzero(&(mat->ccf->Ax));
    mat->ccf->is_factored=0;
 break;
+#endif
+
 case skymatrix:
    amzero(&(mat->sky->A));
    mat->sky->is_factored=0;
 break;
+
+#ifdef MLPCG
 case bdcsr:
    amzero(&(mat->bdcsr->a));
    mat->bdcsr->is_factored=0;
 break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    amzero(&(mat->spo->A_loc));
 #ifdef D_CONTACT
@@ -342,7 +473,6 @@ case spoolmatrix:
    aminit(&(mat->spo->jcn_loc),&minusone);
 #endif
    mat->spo->is_factored=0;
-#ifdef SPOOLES_PACKAGE
    if (mat->spo->ncall > 0)
    {
       FrontMtx_free(mat->spo->frontmtx);
@@ -359,15 +489,18 @@ case spoolmatrix:
       SolveMap_free(mat->spo->solvemap);
       IVL_free(mat->spo->symbfacIVL);
    }
-#endif
 break;
+#endif
+
 case oll:
    oll_zero(mat->oll);
    /*solserv_zero_mat(actintra,&(mat->oll->sysarray[0]),&(mat->oll->sysarray_typ[0]));*/
 break;
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
+
 default:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -404,53 +537,82 @@ dstrc_enter("solserv_alloc_cp_sparsemask");
 /*----------------------------------------------------------------------*/
 switch (*typfrom)
 {
+
+#ifdef MLIB_PACKAGE
 case mds:
    matto->mds = (ML_ARRAY_MDS*)CCACALLOC(1,sizeof(ML_ARRAY_MDS));
    dserror("Copy of msd matrix not yet implemented ");
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:
    matto->msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
    solserv_cp_msrmask(matfrom->msr,matto->msr);
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
    matto->parcsr = (H_PARCSR*)CCACALLOC(1,sizeof(H_PARCSR));
    dserror("Copy of parcsr matrix not yet implemented ");
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    matto->ucchb = (UCCHB*)CCACALLOC(1,sizeof(UCCHB));
    solserv_cp_ucchbmask(matfrom->ucchb,matto->ucchb);
 break;
+#endif
+
 case dense:
    matto->dense = (DENSE*)CCACALLOC(1,sizeof(DENSE));
    solserv_cp_densemask(matfrom->dense,matto->dense);
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    matto->rc_ptr = (RC_PTR*)CCACALLOC(1,sizeof(RC_PTR));
    solserv_cp_rc_ptrmask(actintra,matfrom->rc_ptr,matto->rc_ptr);
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
    matto->ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
    solserv_cp_ccfmask(actintra,matfrom->ccf,matto->ccf);
 break;
+#endif
+
 case skymatrix:
    matto->sky = (SKYMATRIX*)CCACALLOC(1,sizeof(SKYMATRIX));
    solserv_cp_skymask(matfrom->sky,matto->sky);
 break;
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    matto->spo = (SPOOLMAT*)CCACALLOC(1,sizeof(SPOOLMAT));
    solserv_cp_spomask(matfrom->spo,matto->spo);
 break;
+#endif
+
+#ifdef MLPCG
 case bdcsr:
    matto->bdcsr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    solserv_cp_bdcsrmask(matfrom->bdcsr,matto->bdcsr);
 break;
+#endif
+
 case oll:
    matto->oll = (OLL*)CCACALLOC(1,sizeof(OLL));
    oll_cp_mask(matfrom->oll,matto->oll);
 break;
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
+
 default:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -463,6 +625,7 @@ return;
 } /* end of solserv_alloc_cp_sparsemask */
 
 
+#ifdef MLPCG
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a mlpcg matrix               m.gee 01/03|
  |  for the new sparsity mask, all memory is allocated                  |
@@ -471,7 +634,7 @@ return;
 static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to)
 {
 #ifdef DEBUG 
-dstrc_enter("solserv_cp_spomask");
+dstrc_enter("solserv_cp_bdcsrmask");
 #endif
 /*----------------------------------------------------------------------*/
 /* copy all information, which is directly included in the structure */
@@ -490,9 +653,11 @@ am_alloc_copy(&(from->ia),&(to->ia));
 dstrc_exit();
 #endif
 return;
-} /* end of solserv_cp_spomask */
+} /* end of solserv_cp_bdcsrmask */
+#endif
 
 
+#ifdef SPOOLES_PACKAGE
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a spoole matrix              m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
@@ -523,8 +688,10 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_cp_spomask */
+#endif
 
 
+#ifdef MUMPS_PACKAGE
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a rc_ptr matrix              m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
@@ -571,8 +738,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_cp_rc_ptrmask */
+#endif
 
 
+
+#ifdef UMFPACK
 static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to)
 {
 #ifdef DEBUG 
@@ -600,8 +770,12 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_cp_ccfmask */
+#endif
 
 
+
+
+#ifdef PARSUPERLU_PACKAGE
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a ucchb matrix               m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
@@ -639,6 +813,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_cp_ucchbmask */
+#endif
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -678,6 +855,8 @@ return;
 } /* end of solserv_cp_skymask */
 
 
+
+#ifdef AZTEC_PACKAGE
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a msr matrix                 m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
@@ -715,6 +894,8 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_cp_msrmask */
+#endif
+
 
 
 /*----------------------------------------------------------------------*
@@ -772,6 +953,7 @@ static DOUBLE *work2;
 #ifdef DEBUG 
 dstrc_enter("solserv_sparsematvec");
 #endif
+
 /*----------------------------------------------------------------------*/
 if (*mattyp != msr) {
   if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
@@ -781,12 +963,16 @@ if (*mattyp != msr) {
     amdel(&work2_a); work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
   }
 }
+
 /*----------------------------------------------------------------------*/
 switch (*mattyp)
 {
+#ifdef MLIB_PACKAGE
 case mds:
    dserror("Matrix-Vector Product for MLIB not implemented");
 break;
+#endif
+
 #ifdef AZTEC_PACKAGE
 case msr:
   /*
@@ -903,54 +1089,75 @@ case msr:
 }
 break;
 #endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
    dserror("Matrix-Vector Product for HYPRE not implemented");
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
    dserror("Matrix-Vector Product for SuperLU not implemented");
 break;
+#endif
+
 case dense:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_dense(actintra,mat->dense,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_rc_ptr(actintra,mat->rc_ptr,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_spo(actintra,mat->spo,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+#endif
+
 #ifdef MLPCG
 case bdcsr:
    mlpcg_matvec(result->vec.a.dv,mat->bdcsr,vec->vec.a.dv,1.0,1,actintra);
 break;
 #endif
+
+#ifdef UMFPACK
 case ccf:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_ccf(actintra,mat->ccf,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+#endif
+
 case skymatrix:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_sky(actintra,mat->sky,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+
 case oll:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    oll_matvec(actintra,mat->oll,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
+
 default:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -964,6 +1171,7 @@ return;
 
 
 
+#ifdef SPOOLES_PACKAGE
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with spooles matrix    m.gee 04/02|
  |  called by solserv_sparsematvec only !                               |
@@ -973,7 +1181,6 @@ static void solserv_matvec_spo(INTRA        *actintra,
                                   DOUBLE       *work1,
                                   DOUBLE       *work2)/* work2 is the result */
 {
-#ifdef SPOOLES_PACKAGE
 INT         i,j,dof;
 INT         start,end,lenght,j_index;
 INT         myrank;
@@ -1019,11 +1226,14 @@ for (i=0; i<numeq; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-# endif /* end of #ifdef SPOOLES_PACKAGE */
 return;
 } /* end of solserv_matvec_spo */
+# endif /* ifdef SPOOLES_PACKAGE */
 
 
+
+
+#ifdef MUMPS_PACKAGE
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with rc_ptr matrix     m.gee 04/02|
  |  called by solserv_sparsematvec only !                               |
@@ -1033,7 +1243,6 @@ static void solserv_matvec_rc_ptr(INTRA        *actintra,
                                   DOUBLE       *work1,
                                   DOUBLE       *work2)/* work2 is the result */
 {
-#ifdef MUMPS_PACKAGE
 INT         i,j,dof;
 INT         start,end,lenght,j_index;
 INT         myrank;
@@ -1079,11 +1288,15 @@ for (i=0; i<numeq; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-# endif /* end of #ifdef MUMPS_PACKAGE */
 return;
 } /* end of solserv_matvec_rc_ptr */
+# endif /* ifdef MUMPS_PACKAGE */
 
 
+
+
+
+#ifdef UMFPACK
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with ccf matrix  s.offermanns 05/02|
  |  called by solserv_sparsematvec only !                               |
@@ -1093,7 +1306,6 @@ static void solserv_matvec_ccf(INTRA        *actintra,
                                   DOUBLE       *work1,
                                   DOUBLE       *work2)/* work2 is the result */
 {
-#ifdef UMFPACK
 INT         i,j,dof;
 INT         myrank;
 INT         nprocs;
@@ -1135,14 +1347,15 @@ for (i=0; i<numeq_total; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef UMFPACK */
 return;
 } /* end of solserv_matvec_ccf */
+#endif /* ifdef UMFPACK */
 
 
 
 #if 0
 /* No longer needed. We use aztec's function now. */
+#ifdef AZTEC_PACKAGE
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with msr matrix        m.gee 02/02|
  |  called by solserv_sparsematvec only !                               |
@@ -1153,7 +1366,6 @@ static void solserv_matvec_msr(
     DOUBLE       *work1,
     DOUBLE       *work2)
 {
-#ifdef AZTEC_PACKAGE
 INT         i,j,dof;
 INT         start,end,lenght,j_index;
 INT         myrank;
@@ -1201,9 +1413,9 @@ for (i=0; i<numeq; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-# endif /* end of #ifdef AZTEC_PACKAGE */
 return;
 } /* end of solserv_matvec_msr */
+# endif /* ifdef AZTEC_PACKAGE */
 #endif
 
 

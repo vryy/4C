@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef MUMPS_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
@@ -46,7 +50,7 @@ dstrc_enter("mask_rc_ptr");
 rc_ptr->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
                                                                  matrix */
-msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
+mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 rc_ptr->numeq = numeq;
 /*---------------------------------------------- allocate vector update */
 amdef("update",&(rc_ptr->update),numeq,1,"IV");
@@ -745,3 +749,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of rc_ptr_make_sparsity */
+
+
+#endif /* ifdef MUMPS_PACKAGE */
+

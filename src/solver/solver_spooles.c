@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef SPOOLES_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
@@ -30,7 +34,6 @@ void solver_spooles(
                       INT                     option
                      )
 {
-#ifdef SPOOLES_PACKAGE
 INT        i,j=0;
 INT        imyrank;
 INT        inprocs;
@@ -635,10 +638,10 @@ if (msglvl)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef SPOOLES_PACKAGE */
 return;
 } /* end of solver_spooles */
 
 
 
+#endif /* end of ifdef SPOOLES_PACKAGE */
 

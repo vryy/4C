@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef PARSUPERLU_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*!----------------------------------------------------------------------
@@ -34,7 +38,6 @@ void solver_psuperlu_ucchb(
                       INT                     option
                      )
 {
-#ifdef PARSUPERLU_PACKAGE
 INT            i;
 INT            dof;
 INT            info;
@@ -242,10 +245,10 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef PARSUPERLU_PACKAGE */
 return;
 } /* end of solver_psuperlu_ucchb */
 
 
 
+#endif /* ifdef PARSUPERLU_PACKAGE */
 

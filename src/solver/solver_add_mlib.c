@@ -10,11 +10,13 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef MLIB_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-#ifdef MLIB_PACKAGE
 #include "/opt/mlib/include/veclib.h" 
-#endif
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
  | (defined in globcalelm.c, so they are extern here)                |                
@@ -90,21 +92,15 @@ INT  add_mds(struct _PARTITION     *actpart,
       
         ii++;
         jj++;
-#ifdef MLIB_PACKAGE
         dslev1 (&ii, &jj, &value, mds->global, &mds->ierr);
-#endif
         ii--;
         jj--;
       }
-#ifdef MLIB_PACKAGE
       if(mds->ierr!=0) exit; 
-#endif
     } /* end loop over j */
   }/* end loop over i */
 /*-- print additional information, depends on the stage of execution ---*/
-#ifdef MLIB_PACKAGE
   if(mlvar->msglvl==4) dsleps (mds->global); 
-#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -112,4 +108,6 @@ dstrc_exit();
 return(0);
 } /* end of add_mds */
 
+
+#endif /* ifdef MLIB_PACKAGE */
 

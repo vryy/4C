@@ -75,44 +75,70 @@ if (assemble_action==assemble_two_matrix)
 /*-------------------------------------------- add to 2 system matrices */
    switch(sysa1_typ)
    {
+#ifdef MLIB_PACKAGE
    case mds:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
+#endif
+
+#ifdef AZTEC_PACKAGE
    case msr:
       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
    break;
+#endif
+
+#ifdef HYPRE_PACKAGE
    case parcsr:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
    case ucchb:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
+#endif
+
    case dense:
       add_dense(actpart,actsolv,actintra,actele,sysa1->dense,sysa2->dense);
    break;
+
+#ifdef MUMPS_PACKAGE
    case rc_ptr:
       add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,sysa2->rc_ptr);
    break;
+#endif
+
+#ifdef UMFPACK
    case ccf:
       add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf);
    break;
+#endif
+
    case skymatrix:
       add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,sysa2->sky);
    break;
+
+#ifdef SPOOLES_PACKAGE
    case spoolmatrix:
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo);
    break;
+#endif
+
 #ifdef MLPCG
    case bdcsr:
       add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,sysa2->bdcsr);
    break;
 #endif
+
    case oll:
       add_oll(actpart,actintra,actele,sysa1->oll,sysa2->oll);
    break;
+
    case sparse_none:
       dserror("Unspecified type of system matrix");
    break;
+
    default:
       dserror("Unspecified type of system matrix");
    break;
@@ -123,44 +149,71 @@ if (assemble_action==assemble_one_matrix)
 {
    switch(sysa1_typ)
    {
+
+#ifdef MLIB_PACKAGE
    case mds:
       add_mds(actpart,actsolv,actele,sysa1->mds);
    break;
+#endif
+
+#ifdef AZTEC_PACKAGE
    case msr:
       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
    break;
+#endif
+
+#ifdef HYPRE_PACKAGE
    case parcsr:
       add_parcsr(actpart,actsolv,actintra,actele,sysa1->parcsr);
    break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
    case ucchb:
       add_ucchb(actpart,actsolv,actintra,actele,sysa1->ucchb);
    break;
+#endif
+
    case dense:
       add_dense(actpart,actsolv,actintra,actele,sysa1->dense,NULL);
    break;
+
+#ifdef MUMPS_PACKAGE
    case rc_ptr:
       add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,NULL);
    break;
+#endif
+
+#ifdef UMFPACK
    case ccf:
       add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,NULL);
    break;
+#endif
+
    case skymatrix:
       add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,NULL);
    break;
+
+#ifdef SPOOLES_PACKAGE
    case spoolmatrix:
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,NULL);
    break;
+#endif
+
 #ifdef MLPCG
    case bdcsr:
       add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,NULL);
    break;
 #endif
+
    case oll:
       add_oll(actpart,actintra,actele,sysa1->oll,NULL);
    break;
+
    case sparse_none:
       dserror("Unspecified typ of system matrix");
    break;
+
    default:
       dserror("Unspecified typ of system matrix");
    break;
@@ -171,30 +224,55 @@ if (assemble_action==assemble_close_1matrix)
 {
    switch(sysa1_typ)
    {
+#ifdef MLIB_PACKAGE
    case mds:
    break;
+#endif
+
+#ifdef AZTEC_PACKAGE
    case msr:
    break;
+#endif
+
+#ifdef HYPRE_PACKAGE
    case parcsr:
    break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
    case ucchb:
    break;
+#endif
+
    case dense:
    break;
+
+#ifdef MUMPS_PACKAGE
    case rc_ptr:
    break;
+#endif
+
+#ifdef UMFPACK
    case ccf:
    break;
+#endif
+
    case skymatrix:
    break;
+
+#ifdef SPOOLES_PACKAGE
    case spoolmatrix:
       close_spooles_matrix(sysa1->spo,actintra);
    break;
+#endif
+
    case oll:
    break;
+
    case sparse_none:
       dserror("Unspecified typ of system matrix");
    break;
+
    default:
       dserror("Unspecified typ of system matrix");
    break;
@@ -204,31 +282,57 @@ if (assemble_action==assemble_close_2matrix)
 {
    switch(sysa1_typ)
    {
+#ifdef MLIB_PACKAGE
    case mds:
    break;
+#endif
+
+#ifdef AZTEC_PACKAGE
    case msr:
    break;
+#endif
+
+#ifdef HYPRE_PACKAGE
    case parcsr:
    break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
    case ucchb:
    break;
+#endif
+
    case dense:
    break;
+
+#ifdef MUMPS_PACKAGE
    case rc_ptr:
    break;
+#endif
+
+
+#ifdef UMFPACK
    case ccf:
    break;
+#endif
+
    case skymatrix:
    break;
+
+#ifdef SPOOLES_PACKAGE
    case spoolmatrix:
       close_spooles_matrix(sysa1->spo,actintra);
       close_spooles_matrix(sysa2->spo,actintra);
    break;
+#endif
+
    case oll:
    break;
+   
    case sparse_none:
       dserror("Unspecified typ of system matrix");
    break;
+
    default:
       dserror("Unspecified typ of system matrix");
    break;
@@ -243,42 +347,68 @@ if (assemble_action==assemble_two_exchange)
 /*------------------------------------------------ switch typ of matrix */
       switch(sysa1_typ)
       {
+
+#ifdef AZTEC_PACKAGE
       case msr:
          exchange_coup_msr(actpart,actsolv,actintra,sysa1->msr);
          exchange_coup_msr(actpart,actsolv,actintra,sysa2->msr);
       break;
+#endif
+
+#ifdef HYPRE_PACKAGE
       case parcsr:
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
       break;
+#endif
+
+#ifdef PARALLEL
       case ucchb:
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
       break;
+#endif
+
       case dense:
          redundant_dense(actpart,actsolv,actintra,sysa1->dense,sysa2->dense);
       break;
+
+#ifdef MUMPS_PACKAGE
       case rc_ptr:
          exchange_coup_rc_ptr(actpart,actsolv,actintra,sysa1->rc_ptr);
          exchange_coup_rc_ptr(actpart,actsolv,actintra,sysa2->rc_ptr);
       break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
       case spoolmatrix:
          exchange_coup_spo(actpart,actsolv,actintra,sysa1->spo);
          exchange_coup_spo(actpart,actsolv,actintra,sysa2->spo);
       break;
+#endif
+
+#ifdef UMFPACK
       case ccf:
          redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,sysa2->ccf);
       break;
+#endif
+
       case skymatrix:
          redundant_skyline(actpart,actsolv,actintra,sysa1->sky,sysa2->sky);
       break;
+
+#ifdef MLPCG
       case bdcsr:;
       break;
+#endif
+
       case oll:
          exchange_coup_oll(actpart,actintra,sysa1->oll);
          exchange_coup_oll(actpart,actintra,sysa2->oll);
       break;
+
       case sparse_none:
          dserror("Unspecified type of system matrix");
       break;
+
       default:
          dserror("Unspecified type of system matrix");
       break;
@@ -289,38 +419,64 @@ if (assemble_action==assemble_one_exchange)
 {
       switch(sysa1_typ)
       {
+
+#ifdef AZTEC_PACKAGE
       case msr:
          exchange_coup_msr(actpart,actsolv,actintra,sysa1->msr);
       break;
+#endif
+
+#ifdef HYPRE_PACKAGE
       case parcsr:
          exchange_coup_parcsr(actpart,actsolv,actintra,sysa1->parcsr);
       break;
+#endif
+
+#ifdef PARALLEL
       case ucchb:
          redundant_ucchb(actpart,actsolv,actintra,sysa1->ucchb);
       break;
+#endif
+
       case dense:
          redundant_dense(actpart,actsolv,actintra,sysa1->dense,NULL);
       break;
+
       case skymatrix:
          redundant_skyline(actpart,actsolv,actintra,sysa1->sky,NULL);
       break;
+
+#ifdef MUMPS_PACKAGE
       case rc_ptr:
          exchange_coup_rc_ptr(actpart,actsolv,actintra,sysa1->rc_ptr);
       break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
       case spoolmatrix:
          exchange_coup_spo(actpart,actsolv,actintra,sysa1->spo);
       break;
+#endif
+
+#ifdef UMFPACK
       case ccf:
          redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,NULL);
       break;
+#endif
+
+#ifdef MLPCG
       case bdcsr:;
       break;
+#endif
+
       case oll:
          exchange_coup_oll(actpart,actintra,sysa1->oll);
       break;
+
       case sparse_none:
          dserror("Unspecified type of system matrix");
       break;
+
       default:
          dserror("Unspecified type of system matrix");
       break;
@@ -394,6 +550,8 @@ inprocs = actintra->intra_nprocs;
 sysarraytyp = actsolv->sysarray_typ[actsysarray];
 switch(sysarraytyp)
 {
+
+#ifdef AZTEC_PACKAGE
 case msr:
    numcoupsend       = &(actsolv->sysarray[actsysarray].msr->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].msr->numcouprecv);
@@ -402,6 +560,9 @@ case msr:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].msr->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].msr->couple_i_recv);
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
    numcoupsend       = &(actsolv->sysarray[actsysarray].parcsr->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].parcsr->numcouprecv);
@@ -410,6 +571,9 @@ case parcsr:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].parcsr->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].parcsr->couple_i_recv);
 break;
+#endif
+
+#ifdef PARALLEL
 case ucchb:
    numcoupsend       = &(actsolv->sysarray[actsysarray].ucchb->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].ucchb->numcouprecv);
@@ -418,6 +582,8 @@ case ucchb:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].ucchb->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].ucchb->couple_i_recv);
 break;
+#endif
+
 case dense:
    numcoupsend       = &(actsolv->sysarray[actsysarray].dense->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].dense->numcouprecv);
@@ -426,6 +592,8 @@ case dense:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].dense->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].dense->couple_i_recv);
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
    numcoupsend       = &(actsolv->sysarray[actsysarray].rc_ptr->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].rc_ptr->numcouprecv);
@@ -434,6 +602,9 @@ case rc_ptr:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_i_recv);
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
    numcoupsend       = &(actsolv->sysarray[actsysarray].ccf->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].ccf->numcouprecv);
@@ -442,6 +613,8 @@ case ccf:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].ccf->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].ccf->couple_i_recv);
 break;
+#endif
+
 case skymatrix:
    numcoupsend       = &(actsolv->sysarray[actsysarray].sky->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].sky->numcouprecv);
@@ -450,6 +623,8 @@ case skymatrix:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].sky->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].sky->couple_i_recv);
 break;
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
    numcoupsend       = &(actsolv->sysarray[actsysarray].spo->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].spo->numcouprecv);
@@ -458,6 +633,8 @@ case spoolmatrix:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].spo->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].spo->couple_i_recv);
 break;
+#endif
+
 case oll:
    numcoupsend       = &(actsolv->sysarray[actsysarray].oll->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].oll->numcouprecv);
@@ -466,8 +643,12 @@ case oll:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].oll->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].oll->couple_i_recv);
 break;
+
+#ifdef MLPCG
 case bdcsr:
    goto end; /* coupled dofs are not supported in bdcsr */
+#endif
+
 default:
    dserror("Unknown typ of sparse array");
 break;
@@ -603,16 +784,43 @@ void assemble_vec(INTRA        *actintra,
 INT                   i;
 INT                   dof;
 INT                   imyrank;
+
+#ifdef MLIB_PACKAGE
 ML_ARRAY_MDS         *mds_array;
+#endif
+
+#ifdef AZTEC_PACKAGE
 AZ_ARRAY_MSR         *msr_array;
+#endif
+
+#ifdef HYPRE_PACKAGE
 H_PARCSR             *parcsr_array;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 UCCHB                *ucchb_array;
+#endif
+
 DENSE                *dense_array;
+
+#ifdef MUMPS_PACKAGE
 RC_PTR               *rcptr_array;
+#endif
+
+#ifdef UMFPACK
 CCF                  *ccf_array;
+#endif
+
 SKYMATRIX            *sky_array;
+
+#ifdef SPOOLES_PACKAGE
 SPOOLMAT             *spo;
+#endif
+
+#ifdef MLPCG
 DBCSR                *bdcsr_array;
+#endif
+
 OLL                  *oll_array;
 #ifdef DEBUG 
 dstrc_enter("assemble_vec");
@@ -622,6 +830,8 @@ imyrank = actintra->intra_rank;
 /*----------------------------------------------------------------------*/
 switch(*sysarraytyp)
 {
+
+#ifdef MLIB_PACKAGE
 case mds:
     mds_array = sysarray->mds;
     for (i=0; i<rhs->numeq; i++)
@@ -629,6 +839,9 @@ case mds:
        rhs->vec.a.dv[i] += drhs[i]*factor;
     }
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:
     msr_array = sysarray->msr;
     for (i=0; i<rhs->numeq; i++)
@@ -637,6 +850,9 @@ case msr:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
     parcsr_array = sysarray->parcsr;
     for (i=0; i<rhs->numeq; i++)
@@ -645,6 +861,9 @@ case parcsr:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
     ucchb_array = sysarray->ucchb;
     for (i=0; i<rhs->numeq; i++)
@@ -653,6 +872,8 @@ case ucchb:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+#endif
+
 case dense:
     dense_array = sysarray->dense;
     for (i=0; i<rhs->numeq; i++)
@@ -661,6 +882,7 @@ case dense:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+
 case skymatrix:
     sky_array = sysarray->sky;
     for (i=0; i<rhs->numeq; i++)
@@ -669,6 +891,8 @@ case skymatrix:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
     rcptr_array = sysarray->rc_ptr;
     for (i=0; i<rhs->numeq; i++)
@@ -677,6 +901,9 @@ case rc_ptr:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
     ccf_array = sysarray->ccf;
     for (i=0; i<rhs->numeq; i++)
@@ -685,6 +912,9 @@ case ccf:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
     spo = sysarray->spo;
     for (i=0; i<rhs->numeq; i++)
@@ -693,6 +923,9 @@ case spoolmatrix:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+#endif
+
+#ifdef MLPCG
 case bdcsr:
     bdcsr_array = sysarray->bdcsr;
     for (i=0; i<rhs->numeq; i++)
@@ -701,6 +934,8 @@ case bdcsr:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+#endif
+
 case oll:
     oll_array = sysarray->oll;
     for (i=0; i<rhs->numeq; i++)
@@ -709,6 +944,7 @@ case oll:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+ 
 default:
    dserror("Unknown typ of system matrix");
 break;
@@ -737,15 +973,40 @@ INT                   imyrank;
 #ifdef PARALLEL
 DOUBLE                recv;
 #endif
+
+#ifdef MLIB_PACKAGE
 ML_ARRAY_MDS         *mds_array;
+
+#endif
+
+#ifdef AZTEC_PACKAGE
 AZ_ARRAY_MSR         *msr_array;
+#endif
+
+#ifdef HYPRE_PACKAGE
 H_PARCSR             *parcsr_array;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 UCCHB                *ucchb_array;
+#endif
+
 DENSE                *dense_array;
+
+#ifdef MUMPS_PACKAGE
 RC_PTR               *rcptr_array;
+#endif
+
+#ifdef UMFPACK
 CCF                  *ccf_array;
+#endif
+
 SKYMATRIX            *sky_array;
+
+#ifdef SPOOLES_PACKAGE
 SPOOLMAT             *spo;
+#endif
+
 OLL                  *oll_array;
 #ifdef DEBUG 
 dstrc_enter("sum_vec");
@@ -757,6 +1018,8 @@ imyrank = actintra->intra_rank;
 /*----------------------------------------------------------------------*/
 switch(*sysarraytyp)
 {
+
+#ifdef MLIB_PACKAGE
 case mds:
     mds_array = sysarray->mds;
     for (i=0; i<numeq; i++)
@@ -764,6 +1027,9 @@ case mds:
        *sum += drhs[i];
     }
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:
     msr_array = sysarray->msr;
     for (i=0; i<numeq; i++)
@@ -772,6 +1038,9 @@ case msr:
        *sum += drhs[dof];
     }
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:
     parcsr_array = sysarray->parcsr;
     for (i=0; i<numeq; i++)
@@ -780,6 +1049,9 @@ case parcsr:
        *sum += drhs[dof];
     }
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
     ucchb_array = sysarray->ucchb;
     for (i=0; i<numeq; i++)
@@ -788,6 +1060,8 @@ case ucchb:
        *sum += drhs[dof];
     }
 break;
+#endif
+
 case dense:
     dense_array = sysarray->dense;
     for (i=0; i<numeq; i++)
@@ -796,6 +1070,7 @@ case dense:
        *sum += drhs[dof];
     }
 break;
+
 case skymatrix:
     sky_array = sysarray->sky;
     for (i=0; i<numeq; i++)
@@ -804,6 +1079,8 @@ case skymatrix:
        *sum += drhs[dof];
     }
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:
     rcptr_array = sysarray->rc_ptr;
     for (i=0; i<numeq; i++)
@@ -812,6 +1089,9 @@ case rc_ptr:
        *sum += drhs[dof];
     }
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:
     ccf_array = sysarray->ccf;
     for (i=0; i<numeq; i++)
@@ -820,6 +1100,9 @@ case ccf:
        *sum += drhs[dof];
     }
 break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:
     spo = sysarray->spo;
     for (i=0; i<numeq; i++)
@@ -828,6 +1111,8 @@ case spoolmatrix:
        *sum += drhs[dof];
     }
 break;
+#endif
+
 case oll:
     oll_array = sysarray->oll;
     for (i=0; i<numeq; i++)
@@ -836,6 +1121,7 @@ case oll:
        *sum += drhs[dof];
     }
 break;
+
 default:
    dserror("Unknown typ of system matrix");
 break;
@@ -975,3 +1261,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of assemble_dirich */
+

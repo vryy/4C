@@ -10,8 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -63,17 +65,44 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void mask_global_matrices()
 {
+
 INT i,j;               /* some counters */
+#ifdef AZTEC_PACKAGE
 INT isaztec_msr  =0;       /* flag for a certain sparsity pattern */
+#endif
+
+#ifdef HYPRE
 INT ishypre      =0;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 INT isucchb      =0;
+#endif
+
 INT isdense      =0;
+
+#ifdef MLIB_PACKAGE
 INT ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
+#endif
+
+#ifdef MUMPS_PACKAGE
 INT isrc_ptr     =0;
+#endif
+
 INT iscolsol     =0;
+
+#ifdef SPOOLES_PACKAGE
 INT isspooles    =0;
+#endif
+
+#ifdef UMFPACK
 INT isumfpack    =0;
+#endif
+
+#ifdef MLPCG
 INT ismlpcg      =0;
+#endif
+
 INT nsysarray    =1;
 INT actdis       =0;
 
@@ -84,10 +113,11 @@ FIELD      *actfield;        /* the active field */
 PARTITION  *actpart;         /* my partition of the active field */
 SOLVAR     *actsolv;         /* the active SOLVAR */
 INTRA      *actintra = NULL; /* the field's intra-communicator */
+
 #ifdef DEBUG 
 dstrc_enter("mask_global_matrices");
 #endif
-/*----------------------------------------------------------------------*/
+
 /*------------------------------------------------ loop over all fields */
 for (j=0; j<genprob.numfld; j++)
 {
@@ -127,10 +157,15 @@ for (j=0; j<genprob.numfld; j++)
   /*--------------------------------------------- first check some values */
   /*----------------------------- check solver and typ of partitioning */
   /*-------- column pointer, row index sparse matrix representation ---*/
+
+#ifdef MLIB_PACKAGE
   if (actsolv->solvertyp == mlib_d_sp)
   {
     ismlib_d_sp=1;
   }
+#endif
+
+#ifdef AZTEC_PACKAGE
   /*--------- matrix is distributed modified sparse row DMSR for Aztec */
   if (actsolv->solvertyp==aztec_msr)
   {
@@ -138,6 +173,9 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
     else isaztec_msr=1;
   }
+#endif
+
+#ifdef HYPRE_PACKAGE
   /*------------------------------------------- matrix is hypre_parcsr */
   if (
       actsolv->solvertyp==hypre_amg     ||
@@ -150,6 +188,9 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with Hypre"); 
     else ishypre=1;
   }
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
   /*---- matrix is unsym. column compressed Harwell Boeing for superLU */
   if (actsolv->solvertyp==parsuperlu)
   {
@@ -157,6 +198,8 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with Superlu"); 
     else isucchb=1;
   }
+#endif
+
   /*------------------------ matrix is (non)symmetric dense for Lapack */
   if (actsolv->solvertyp==lapack_nonsym ||
       actsolv->solvertyp==lapack_sym)
@@ -165,6 +208,8 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with LAPACK"); 
     else isdense=1;
   }
+
+#ifdef MUMPS_PACKAGE
   /*-------------------- matrix is row-column pointer format for Mumps */
   if (actsolv->solvertyp==mumps_sym || actsolv->solvertyp==mumps_nonsym)
   {
@@ -172,6 +217,9 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with MUMPS"); 
     else isrc_ptr=1;
   }
+#endif
+
+#ifdef UMFPACK
   /*-------------------- matrix is compressed column format for Umfpack */
   if (actsolv->solvertyp==umfpack)
   {
@@ -179,6 +227,8 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with Umfpack"); 
     else isumfpack=1;
   }
+#endif
+
   /*------------------------------ matrix is skyline format for colsol */
   if (actsolv->solvertyp==colsol_solver)
   {
@@ -186,6 +236,8 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with Colsol"); 
     else iscolsol=1;
   }
+
+#ifdef SPOOLES_PACKAGE
   /*-------------------- matrix is matrix objec for solver lib Spooles */
   if (actsolv->solvertyp==SPOOLES_sym || actsolv->solvertyp==SPOOLES_nonsym)
   {
@@ -193,6 +245,9 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with SPOOLES"); 
     else isspooles=1;
   }
+#endif
+
+#ifdef MLPCG
   /*------------------------------ matrix is block distributed csr format for mlpcg */
   if (actsolv->solvertyp==mlpcg)
   {
@@ -200,12 +255,16 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with MLPCG"); 
     else ismlpcg=1;
   }
+#endif
+
+#ifdef MLIB_PACKAGE
   /*----------------------------------------- determine number of sysarrays */   
   if (ismlib_d_sp==1) nsysarray = 2;
   /* allocate only one sparse matrix for each field. The sparsity
      pattern of the matrices for mass and damping and stiffness are  
      supposed to be the same, so they are calculated only once (expensive!) */
   /*-------------------------- for the lower triangle of the matrix ---*/
+
   if (ismlib_d_sp==1)
   {      
     actsolv->nsysarray = nsysarray;
@@ -220,6 +279,9 @@ for (j=0; j<genprob.numfld; j++)
     mask_mds(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].mds); 
     ismlib_d_sp=0;
   }
+#endif
+
+#ifdef AZTEC_PACKAGE
   /*------------------------- matrix is ditributed modified sparse row */
   if (isaztec_msr==1)
   {      
@@ -236,6 +298,9 @@ for (j=0; j<genprob.numfld; j++)
     }
     isaztec_msr=0;
   }
+#endif
+
+#ifdef SPOOLES_PACKAGE
   /*------------------------------------- matrix is Spooles's matrix  */
   if (isspooles==1)
   {
@@ -251,6 +316,9 @@ for (j=0; j<genprob.numfld; j++)
     mask_spooles(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].spo);
     isspooles=0;
   }
+#endif
+
+#ifdef HYPRE_PACKAGE
   /*------------------------------------------- matrix is hypre_parcsr */
   if (ishypre==1)
   {
@@ -266,6 +334,9 @@ for (j=0; j<genprob.numfld; j++)
     mask_parcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].parcsr);
     ishypre=0;
   }
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
   /*---------------------------------------------------- matrix is ucchb */
   if (isucchb==1)
   {
@@ -281,6 +352,8 @@ for (j=0; j<genprob.numfld; j++)
     mask_ucchb(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ucchb);
     isucchb=0;
   }
+#endif
+
   /*---------------------------------------------------- matrix is dense */
   if (isdense==1)
   {
@@ -296,6 +369,8 @@ for (j=0; j<genprob.numfld; j++)
     mask_dense(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].dense);
     isdense=0;
   }
+
+#ifdef MUMPS_PACKAGE
   /*----------------------------- matrix is row-column pointer format  */
   if (isrc_ptr==1)
   {
@@ -311,6 +386,9 @@ for (j=0; j<genprob.numfld; j++)
     mask_rc_ptr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].rc_ptr);
     isrc_ptr=0;
   }
+#endif
+
+#ifdef UMFPACK
   /*---------------- matrix is row-column pointer format for umfpack solver */
   if (isumfpack==1)
   {
@@ -326,6 +404,8 @@ for (j=0; j<genprob.numfld; j++)
     mask_ccf(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ccf);
     isumfpack=0;
   }
+#endif
+
   /*---------------------------------------- matrix is skyline format  */
   if (iscolsol==1)
   {
@@ -367,9 +447,11 @@ for (j=0; j<genprob.numfld; j++)
 #ifndef PARALLEL 
 CCAFREE(actintra);
 #endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return;
 } /* end of mask_global_matrices */
 

@@ -10,6 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef HYPRE
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
@@ -40,7 +43,7 @@ dstrc_enter("mask_parcsr");
 parcsr->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
                                                                  matrix */
-msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
+mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 parcsr->numeq = numeq;
 /*---------------------------------------------- allocate vector update */
 amdef("update",&(parcsr->update),numeq,1,"IV");
@@ -622,4 +625,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of parcsr_make_bindx */
+
+#endif /* ifdef HYPRE */
 

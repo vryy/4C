@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef PARSUPERLU_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
@@ -31,7 +35,6 @@ void  add_ucchb(struct _PARTITION     *actpart,
                   struct _ELEMENT       *actele,
                   struct _UCCHB         *ucchb)
 {
-#ifdef PARSUPERLU_PACKAGE
 INT         i,j,counter;              /* some counter variables */
 INT         ii,jj;                    /* counter variables for system matrix */
 INT         ii_index;
@@ -126,7 +129,6 @@ for (i=0; i<nd; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef PARSUPERLU_PACKAGE */
 return;
 } /* end of add_ucchb */
 
@@ -197,3 +199,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of redundant_ucchb */
+
+
+#endif /* end of ifdef PARSUPERLU_PACKAGE */
+

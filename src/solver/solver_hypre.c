@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef HYPRE_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*!----------------------------------------------------------------------
@@ -48,7 +52,6 @@ void  solver_hypre_parcsr(struct _SOLVAR         *actsolv,
                           struct _DIST_VECTOR    *rhs,
                           INT                     option)
 {
-#ifdef HYPRE_PACKAGE
 INT                 i;                     /* counter variable */
 INT                 err;                   /* error flag */
 
@@ -612,7 +615,6 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef HYPRE_PACKAGE */
 return;
 } /* end of solver_hypre_parcsr */
 
@@ -620,9 +622,6 @@ return;
 
 
 
-
-
-#ifdef HYPRE_PACKAGE
 /*----------------------------------------------------------------------*
  |  create a vector for HYPRE Package                        m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -652,9 +651,10 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_vector_create */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
 /*----------------------------------------------------------------------*
  |  assemble a HYPRE vector and make it ready for solution   m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -675,9 +675,10 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_vector_assemble */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
 /*----------------------------------------------------------------------*
  |  create a vector for HYPRE Package                        m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -708,9 +709,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_matrix_create */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  assemble a HYPRE matrix and make it ready for solution   m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -731,10 +734,12 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_matrix_assemble */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  set parameters for solver boomeramg                      m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -786,9 +791,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_solver_set_params_boomeramg */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  set parameters for solver gmres                          m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -819,9 +826,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_set_params_gmres_solver */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  set parameters for solver bicgstab                       m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -850,9 +859,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_set_params_bicgstab_solver */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  set parameters for solver pcg                          m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -883,9 +894,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_set_params_pcg_solver */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  create preconditioner euclid and set parameters          m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -937,9 +950,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_create_precond_euclid */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  create preconditioner parasails and set parameters       m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -969,9 +984,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_create_precond_parasails */
-#endif /* end of ifdef HYPRE_PACKAGE */
 
-#ifdef HYPRE_PACKAGE
+
+
+
+
 /*----------------------------------------------------------------------*
  |  create preconditioner boomeramg and set parameters       m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -1018,4 +1035,8 @@ dstrc_exit();
 #endif
 return;
 } /* end of hypre_create_precond_boomeramg */
+
+
+
 #endif /* end of ifdef HYPRE_PACKAGE */
+

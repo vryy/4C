@@ -89,6 +89,8 @@ void solver_oll(
           oll->sysarray[0].sky->is_factored = 0;
 #endif
           break;
+
+#ifdef SPOOLES_PACKAGE
         case SPOOLES_nonsym:/*------------------------------- solver is spooles */
           oll->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(1,sizeof(SPARSE_TYP));
           oll->sysarray     = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
@@ -99,6 +101,9 @@ void solver_oll(
           oll->sysarray[0].spo->ncall      =0;
           oll->sysarray[0].spo->is_factored=0;
           break;
+#endif
+
+#ifdef AZTEC_PACKAGE
         case aztec_msr:/*------------------------------------- solver is aztec */
           oll->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(1,sizeof(SPARSE_TYP));
           oll->sysarray     = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
@@ -117,6 +122,9 @@ void solver_oll(
                 option
                 );*/
           break;
+#endif
+
+#ifdef UMFPACK
         case umfpack: /*-------------------------------------- solver is umfpack */
 #ifdef PARALLEL
           dserror("No UMFPACK for parallel OLL!\n");
@@ -135,6 +143,8 @@ void solver_oll(
 	  amdef("update",&(oll->sysarray[0].ccf->update),oll->numeq,1,"IV");
 	  solver_umfpack(NULL,actintra,oll->sysarray[0].ccf,sol,rhs,option);
 	break;
+#endif
+
         default:
           dserror("Unknown solver typ for oll");
           break;   
@@ -168,15 +178,25 @@ void solver_oll(
             oll_to_sky(oll, &(oll->sysarray[0]));
 #endif
             break;
+
+#ifdef SPOOLES_PACKAGE
           case SPOOLES_nonsym:/*------------------------------- solver is spooles */
             oll_to_spo(oll, &(oll->sysarray[0]));
             break;
+#endif
+
+#ifdef AZTEC_PACKAGE
           case aztec_msr:/*-------------------------------------- solver is aztec */
             oll_to_msr(oll, &(oll->sysarray[0]));
             break;
+#endif
+
+#ifdef UMFPACK
           case umfpack: /*------------------------------------- solver is umfpack */
 	    oll_to_ccf(oll,&(oll->sysarray[0]));
 	  break; 
+#endif
+
           default:
             dserror("Unknown solver typ for oll");
             break;   
@@ -194,18 +214,28 @@ void solver_oll(
       /* dann loesen */
       switch(oll->sysarray_typ[0])
       {
+#ifdef AZTEC_PACKAGE
         case msr:/*-------------------------------- system matrix is msr matrix */
           solver_az_oll(actsolv,actintra,oll->sysarray[0].msr,sol,rhs,option);
           break;
+#endif
+
         case skymatrix:/*---------------------- system matrix is skyline matrix */
           solver_colsol(actsolv,actintra,oll->sysarray[0].sky,sol,rhs,option);
           break;
+
+#ifdef SPOOLES_PACKAGE
         case spoolmatrix:/*-------------------- system matrix is spooles matrix */
           solver_spo_oll(actsolv,actintra,oll,oll->sysarray[0].spo,sol,rhs,option);
           break;
+#endif
+
+#ifdef UMFPACK
         case ccf:
 	  solver_umfpack(actsolv,actintra,oll->sysarray[0].ccf,sol,rhs,option);
 	break;
+#endif
+
         default:
           dserror("Unknown solver typ for oll");
           break;   

@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef UMFPACK 
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*!----------------------------------------------------------------------
@@ -50,21 +54,17 @@ void solver_umfpack(struct _SOLVAR         *actsolv,
                     struct _DIST_VECTOR    *rhs,
                     INT                     option)
 {
-#ifdef UMFPACK 
 INT            i;
 INT            dof;
 INT            imyrank;
 INT            inprocs;
 
-INT            job;
-INT            sym;
 INT            n;
 INT            nz;
 INT            nz_loc;
 INT           *Ap;
 INT           *Ai;
 DOUBLE        *Ax;
-INT           *icntl;
 
 DOUBLE         t;
 INT            status;
@@ -73,8 +73,11 @@ ARRAY          b_a;
 DOUBLE        *b;
 ARRAY          x_a;
 DOUBLE        *x;
+
+#ifdef PARALLEL
 ARRAY          tmp_a;
 DOUBLE        *tmp;
+#endif
 
 /* some umfpack variables see umfpack manual */
 /*DOUBLE        *control = (DOUBLE *) NULL;
@@ -223,6 +226,7 @@ case 0:
    amdel(&tmp_a);
 #endif
 break;
+
 /*----------------------------------------------------------------------*/
 /*                                             end of calculation phase */
 /*----------------------------------------------------------------------*/
@@ -234,6 +238,9 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef UMFPACK */
 return;
 } /* end of solver_umfpack */
+
+
+#endif /* ifdef UMFPACK */
+

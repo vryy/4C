@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef AZTEC_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*!----------------------------------------------------------------------
@@ -60,7 +64,7 @@ void solver_az_msr(
                       INT                     option
                      )
 {
-#ifdef AZTEC_PACKAGE
+
 INT         i;
 INT         dim;
 /* INT         reuse; */
@@ -487,10 +491,11 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef AZTEC_PACKAGE */
+
 return;
 } /* end of solver_az_msr */
 
 
 
+#endif /* end of ifdef AZTEC_PACKAGE */
 

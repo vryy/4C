@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef HYPRE_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
@@ -44,10 +48,8 @@ INT         jj_index;
 INT         jj_iscouple;              /* flag whether ii is a coupled dof */
 INT         jj_owner;                 /* who is owner of dof ii -> procnumber */
 
-#ifdef HYPRE_PACKAGE
 INT         err;
 const INT   nrows=1;
-#endif
 
 INT         rows[1];
 INT         ncols[1];
@@ -206,7 +208,6 @@ for (i=0; i<nd; i++)
       mg_sort(cols,colcounter,NULL,values);
       /*-------------------------------------------------- assemble row */
       /* for detailed description of this assembly format see HYPRE manual */
-#ifdef HYPRE_PACKAGE
       err=HYPRE_IJMatrixAddToValues(
                                     parcsr->ij_matrix,
                                     nrows,
@@ -216,7 +217,6 @@ for (i=0; i<nd; i++)
                                     values
                                    );
       if (err) dserror("Error occured adding to ParCSR matrix");
-#endif
    }/* end of adding myself */
    /*----------------------------- if ii is coupled and I am slave owner */
    /*----- add to the sendbuffer, sendbuffer is initialized in calelm */
@@ -336,9 +336,7 @@ DOUBLE       **drecv;
 INT            imyrank;
 INT            inprocs;
 
-#ifdef HYPRE_PACKAGE
 INT            err;
-#endif
 
 INT            iiperm;
 INT            jjperm;
@@ -466,7 +464,6 @@ for (i=0; i<numrecv; i++)
       colcounter++;
    }
    ncols[0] = colcounter;
-#ifdef HYPRE_PACKAGE
    err=HYPRE_IJMatrixAddToValues(
                                  parcsr->ij_matrix,
                                  nrows,
@@ -476,7 +473,6 @@ for (i=0; i<numrecv; i++)
                                  values
                                 );
    if (err) dserror("Error occured adding to ParCSR matrix");
-#endif
 }/*---------------------------------------------- end of receiving loop */
 /*-------------------------------------------- free allocated MPI-stuff */
 if (numrecv){CCAFREE(irecv_status);CCAFREE(drecv_status);}
@@ -493,3 +489,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of exchange_coup_parcsr */
+
+
+#endif /* ifdef HYPRE_PACKAGE */
+

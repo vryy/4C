@@ -238,35 +238,44 @@ void mask_mds(FIELD        *actfield,
 /*----------------------------------------------------------------------*
  | global_mask_msr.c                                   m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void mask_msr(FIELD         *actfield, 
-              PARTITION     *actpart, 
-              SOLVAR        *actsolv,
-              INTRA         *actintra, 
-              AZ_ARRAY_MSR  *msr,
-	      INT            actdis);
-void msr_numeq(FIELD         *actfield, 
-                  PARTITION    *actpart, 
-                  SOLVAR       *actsolv,
-                  INTRA        *actintra,
-                  INT          *numeq);
-void msr_update(FIELD         *actfield, 
-                   PARTITION     *actpart, 
-                   SOLVAR        *actsolv,
-                   INTRA         *actintra,
-                   AZ_ARRAY_MSR  *msr);
-void msr_nnz_topology(FIELD         *actfield, 
-                         PARTITION    *actpart, 
-                         SOLVAR       *actsolv,
-                         INTRA        *actintra,
-                         AZ_ARRAY_MSR *msr,
-                         INT         **dof_connect);
-void dof_in_coupledofs(INT dof, PARTITION *actpart, INT *iscoupled);
-void dof_find_centernode(INT dof, PARTITION *actpart, NODE **centernode);
-void msr_make_bindx(FIELD         *actfield, 
-                       PARTITION     *actpart, 
-                       SOLVAR        *actsolv,
-                       AZ_ARRAY_MSR  *msr,
-                       INT          **dof_connect);
+void mask_msr(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra, 
+    AZ_ARRAY_MSR  *msr,
+    INT            actdis);
+
+void msr_update(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    AZ_ARRAY_MSR  *msr);
+
+void msr_nnz_topology(
+    FIELD         *actfield, 
+    PARTITION    *actpart, 
+    SOLVAR       *actsolv,
+    INTRA        *actintra,
+    AZ_ARRAY_MSR *msr,
+    INT         **dof_connect);
+
+void msr_make_bindx(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    AZ_ARRAY_MSR  *msr,
+    INT          **dof_connect);
+
+void msr_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _AZ_ARRAY_MSR  *msr1
+    );
+
 /*----------------------------------------------------------------------*
  |  global_mask_ucchb.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -333,37 +342,55 @@ void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr,
 /*----------------------------------------------------------------------*
  |  global_mask_ccf.c                              s.offermanns 04/02    |
  *----------------------------------------------------------------------*/
-void mask_ccf(FIELD         *actfield, 
-              PARTITION     *actpart, 
-              SOLVAR        *actsolv,
-              INTRA         *actintra, 
-              CCF        *ccf);
-void  ccf_red_dof_connect(FIELD        *actfield, 
-                          PARTITION    *actpart,
-                          SOLVAR       *actsolv,
-                          INTRA        *actintra,
-                          CCF          *ccf,
-                          INT         **dof_connect,
-                          ARRAY        *red_dof_connect);
-void  ccf_update(FIELD         *actfield, 
-                 PARTITION     *actpart, 
-                 SOLVAR        *actsolv,
-                 INTRA         *actintra,
-                 CCF           *ccf);
-void  ccf_nnz_topology(FIELD        *actfield, 
-                       PARTITION    *actpart, 
-                       SOLVAR       *actsolv,
-                       INTRA        *actintra,
-                       CCF          *ccf,
-                       INT         **dof_connect);
-void  ccf_make_bindx(FIELD         *actfield, 
-                     PARTITION     *actpart, 
-                     SOLVAR        *actsolv,
-                     CCF           *ccf,
-                     INT           *bindx,
-                     ARRAY         *red_dof_connect);
-void  ccf_make_sparsity(CCF        *ccf,
-                        INT        *bindx);
+void mask_ccf(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra, 
+    CCF        *ccf);
+
+void  ccf_red_dof_connect(
+    FIELD        *actfield, 
+    PARTITION    *actpart,
+    SOLVAR       *actsolv,
+    INTRA        *actintra,
+    CCF          *ccf,
+    INT         **dof_connect,
+    ARRAY        *red_dof_connect);
+
+void  ccf_update(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    CCF           *ccf);
+
+void  ccf_nnz_topology(
+    FIELD        *actfield, 
+    PARTITION    *actpart, 
+    SOLVAR       *actsolv,
+    INTRA        *actintra,
+    CCF          *ccf,
+    INT         **dof_connect);
+
+void  ccf_make_bindx(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    CCF           *ccf,
+    INT           *bindx,
+    ARRAY         *red_dof_connect);
+
+void  ccf_make_sparsity(
+    CCF        *ccf,
+    INT        *bindx);
+
+void ccf_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _CCF           *ccf1);
 /*----------------------------------------------------------------------*
  |  global_mask_skyline.c                                m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -391,6 +418,15 @@ void   skyline_make_red_dof_connect(FIELD         *actfield,
                                    INT          **dof_connect,
                                    ARRAY         *red_dof_connect);
 void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect);
+
+void sky_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _SKYMATRIX     *sky1
+    );
+
 /*----------------------------------------------------------------------*
  |  global_mask_spooles.c                                m.gee 05/02    |
  *----------------------------------------------------------------------*/
@@ -418,6 +454,15 @@ void spo_update(FIELD         *actfield,
                 SOLVAR        *actsolv,
                 INTRA         *actintra,
                 SPOOLMAT      *spo);
+
+void spo_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _SPOOLMAT      *spo1
+    );
+
 /*----------------------------------------------------------------------*
  |  solver_add_data.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -1727,6 +1772,27 @@ void spo_update(
     SOLVAR        *actsolv,
     INTRA         *actintra,
     SPOOLMAT      *spo);
+
+/*----------------------------------------------------------------------*
+  |  solver_mask_service.c                                 mn 07/04    |
+ *----------------------------------------------------------------------*/
+void mask_numeq(
+    FIELD         *actfield, 
+    PARTITION    *actpart, 
+    SOLVAR       *actsolv,
+    INTRA        *actintra,
+    INT          *numeq,
+    INT            actndis);
+
+void dof_in_coupledofs(
+    INT           dof,
+    PARTITION    *actpart,
+    INT          *iscoupled);
+
+void dof_find_centernode(
+    INT          dof, 
+    PARTITION   *actpart,
+    NODE       **centernode);
 
 
 

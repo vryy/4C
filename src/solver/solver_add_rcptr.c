@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef MUMPS_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
@@ -32,7 +36,7 @@ void  add_rc_ptr(struct _PARTITION     *actpart,
                 struct _RC_PTR        *rc_ptr1,
                 struct _RC_PTR        *rc_ptr2)
 {
-#ifdef MUMPS_PACKAGE
+
 INT         i,j,k,l,counter;          /* some counter variables */
 INT         istwo=0;
 INT         start,index,lenght;       /* some more special-purpose counters */
@@ -186,7 +190,6 @@ for (i=0; i<nd; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef MUMPS_PACKAGE */
 return;
 } /* end of add_rc_ptr */
 
@@ -196,7 +199,6 @@ return;
 void add_rcptr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                     DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
-#ifdef MUMPS_PACKAGE
 INT         k,l;
 #ifdef DEBUG 
 dstrc_enter("add_rcptr_sendbuff");
@@ -212,7 +214,6 @@ dsend[k][jj]+= estif[i][j];
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef MUMPS_PACKAGE */
 return;
 } /* end of add_rcptr_sendbuff */
 
@@ -227,7 +228,6 @@ void exchange_coup_rc_ptr(
                          RC_PTR        *rc_ptr
                         )
 {
-#ifdef MUMPS_PACKAGE
 INT            i,j;
 INT            ii,jj,ii_index;
 INT            start;
@@ -352,6 +352,9 @@ MPI_Barrier(*ACTCOMM);
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif /* end of ifdef MUMPS_PACKAGE */
 return;
 } /* end of exchange_coup_rc_ptr */
+
+
+#endif /* end of ifdef MUMPS_PACKAGE */
+

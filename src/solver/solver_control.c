@@ -56,41 +56,67 @@ t0=ds_cputime();
 /*----------------------------------------------------------------------*/
 switch(*sysarray_typ)
 {
+
+#ifdef MLIB_PACKAGE
 case mds:/*-------------------------------- system matrix is msr matrix */
    solver_mlib(actsolv,actintra,sysarray->mds,sol,rhs,option);
 break;
+#endif
+
+#ifdef AZTEC_PACKAGE
 case msr:/*-------------------------------- system matrix is msr matrix */
    solver_az_msr(actsolv,actintra,sysarray->msr,sol,rhs,option);
 break;
+#endif
+
+#ifdef HYPRE_PACKAGE
 case parcsr:/*-------------------------- system matrix is parcsr matrix */
    solver_hypre_parcsr(actsolv,actintra,sysarray->parcsr,sol,rhs,option);
 break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:/*---------------------------- system matrix is ucchb matrix */
    solver_psuperlu_ucchb(actsolv,actintra,sysarray->ucchb,sol,rhs,option);
 break;
+#endif
+
 case dense:/*---------------------------- system matrix is dense matrix */
    solver_lapack_dense(actsolv,actintra,sysarray->dense,sol,rhs,option);
 break;
+
+#ifdef MUMPS_PACKAGE
 case rc_ptr:/*---------------------- system matrix is row/column matrix */
    solver_mumps(actsolv,actintra,sysarray->rc_ptr,sol,rhs,option);
 break;
+#endif
+
+#ifdef UMFPACK
 case ccf:/*------------------ system matrix is compressed column matrix */
    solver_umfpack(actsolv,actintra,sysarray->ccf,sol,rhs,option);
 break;
+#endif
+
 case skymatrix:/*---------------------- system matrix is skyline matrix */
    solver_colsol(actsolv,actintra,sysarray->sky,sol,rhs,option);
 break;
+
+#ifdef SPOOLES_PACKAGE
 case spoolmatrix:/*-------------------- system matrix is spooles matrix */
    solver_spooles(actsolv,actintra,sysarray->spo,sol,rhs,option);
 break;
+#endif
+
 #ifdef MLPCG
 case bdcsr:/*------------------------------ system matrix is csr matrix */
    solver_mlpcg(actsolv,actintra,sysarray->bdcsr,sol,rhs,option);
 break;
 #endif
+
 case oll:/*------------------------------ system matrix is csr matrix */
    solver_oll(actsolv,actintra,sysarray->oll,sol,rhs,option);
 break;
+
 default:
    dserror("Unknown format typ of system matrix");
 break;   
@@ -109,9 +135,8 @@ fflush(allfiles.out_err);
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return;
 } /* end of solver_control */
-
-
 
 
