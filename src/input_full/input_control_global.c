@@ -308,13 +308,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"none",4)==0)
       statvar->nr_controltyp = control_none;
    }
+   /*---------------------------------------- read for arcscaling flag */
+   frchar("IARC"   ,buffer,&ierr);
+   if (ierr)
+   {
+      if (strncmp(buffer,"Yes",3)==0) statvar->iarc=1;
+      else                            statvar->iarc=0;
+   }  
    /*-------------------------------------------------- read variables */
-   frint("NUMSTEP",&(statvar->nstep),&ierr);
+   frint("NUMSTEP",&(statvar->nstep)  ,&ierr);
    frint("MAXITER",&(statvar->maxiter),&ierr);
 
    frdouble("TOLRESID",&(statvar->tolresid),&ierr);
-   frdouble("TOLDISP",&(statvar->toldisp),&ierr);
+   frdouble("TOLDISP" ,&(statvar->toldisp) ,&ierr);
    frdouble("STEPSIZE",&(statvar->stepsize),&ierr);
+   frdouble("ARCSCL"  ,&(statvar->arcscl)  ,&ierr);
    /*-------------------------------------------------------------------*/
    frread();
 }

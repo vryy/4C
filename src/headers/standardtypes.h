@@ -227,6 +227,8 @@ int                 maxiter;            /* max number of iterations in NR */
 double              tolresid;           /* tolerance of residual forces */
 double              toldisp;            /* tolerance of residual displacements */
 double              stepsize;           /* steplenght */
+int                 iarc;               /* flag for arscaling in Crisfields Arclenght control */
+double              arcscl;             /* arc scaling scaling factor of load part of predictor */
 
 struct _NODE       *controlnode;        /* ptr to control node */
 int                 control_node_global;/* global control node Id (redundant) */
