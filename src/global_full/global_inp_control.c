@@ -1,5 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
+#include "../fsi_full/fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -98,6 +99,17 @@ else inpctrstat();
    DVOLS/DSURFS/DLINES/DNODES
 */   
 inp_conditions();
+/*----------- inherit the fsi coupling conditions inside the design 
+   condition is transformed in a dirichlet condition for fluid- and
+   ale-field and into a neumann condition for structure-field           */
+#ifdef D_FSI
+if (genprob.probtyp==prb_fsi) fsi_createfsicoup();  
+#endif
+/*----------------- inherit the freesurface condition inside the design 
+   condition is transformed into a dirichlet condition for ale fiedl    */
+#ifdef D_FLUID
+if (genprob.numff>=0 && genprob.numfld>1) fluid_createfreesurf();
+#endif   
 /*----- inherit the dirichlet and coupling conditions inside the design */
 /* conditions are inherited 'downwards': DVOL->DSURF->DLINE->DNODE      */
 /* BUT: if a 'lower object already has its own condition, it does NOT   */
@@ -111,6 +123,28 @@ inherit_design_dis_dirichlet(&(field[i].dis[j]));
 for (i=0; i<genprob.numfld; i++)
 for (j=0; j<field[i].ndis; j++)
 inherit_design_dis_couple(&(field[i].dis[j]));
+#ifdef D_FSI
+/*--------------------------------------------- do we really need this? 
+  I don't think so - check it!!!                                        */
+if (genprob.probtyp==prb_fsi) 
+{   
+   for (i=0; i<genprob.numfld; i++)
+   for (j=0; j<field[i].ndis; j++)
+   inherit_design_dis_fsicouple(&(field[i].dis[j]));  
+}
+#endif
+/*------ set pointers n the discretisation to the freesurface condition */
+#ifdef D_FLUID
+if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
+{
+   for (i=0; i<genprob.numfld; i++)
+   for (j=0; j<field[i].ndis; j++)
+   inherit_design_dis_freesurf(&(field[i].dis[j]));
+}
+#endif
+
+/*-------------------------------------------- input of monitoring data */
+inp_monitor();
 /*------------------------------------- input of initial data for fluid */
 #ifdef D_FLUID
 inp_fluid_start_data();
