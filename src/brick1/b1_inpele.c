@@ -42,6 +42,7 @@ if (ierr==1)
 frchk("HEX27",&ierr);
 if (ierr==1) 
 {
+   ele->distyp = hex27;
    ele->numnp=27;
    ele->distyp = hex27;
    ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
@@ -52,6 +53,7 @@ if (ierr==1)
 frchk("TET4",&ierr);
 if (ierr==1) 
 {
+   ele->distyp = tet4;
    ele->numnp=4;
    ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
@@ -61,6 +63,7 @@ if (ierr==1)
 frchk("TET10",&ierr);
 if (ierr==1) 
 {
+   ele->distyp = tet10;
    ele->numnp=10;
    ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
