@@ -14,6 +14,7 @@
 \addtogroup BRICK1 
 *//*! @{ (documentation module open)*/
 
+
 /*!----------------------------------------------------------------------
 \brief usual stiffness matrix total lagrangian formulation
 
@@ -75,9 +76,6 @@ dstrc_exit();
 return;
 } /* end of c1_keku */
 
-/*! 
-\addtogroup BRICK1 
-*//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief geometric stiffness matrix (initial stress)
@@ -168,9 +166,6 @@ return;
 } /* end of c1vkg */
 /*----------------------------------------------------------------------*/
 
-/*! 
-\addtogroup BRICK1 
-*//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief reorder stiffness matrix for 'gid'  hex20
@@ -227,9 +222,6 @@ return;
 } /* end of c1kgid */
 /*----------------------------------------------------------------------*/
 
-/*! 
-\addtogroup BRICK1 
-*//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief reorder element force vector for 'gid'  hex20
@@ -272,7 +264,7 @@ return;
 } /* end of c1fgid */
 /*----------------------------------------------------------------------*/
 #endif
-/*! @} (documentation module close)*/
+ /*! @} (documentation module close)*/
 
 
 
