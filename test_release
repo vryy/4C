@@ -1,0 +1,244 @@
+#!/bin/sh
+#==========================================
+# bash script to compile ccarat for each 
+# commented input file, run the file and
+# analyze the output.
+#
+#                           (C) by mn 02/04
+#==========================================
+#
+# 
+# change the following three variables 
+# according to the target machine:
+#
+# use the following config-file
+#------------------------------
+#conf="stgrt.hpux11.gcc.seq"
+conf="stgrt.hpuxita2.cc.seq"
+#conf="muench.linux.gcc.seq"
+#
+#==========================================
+#
+# initialize some counters
+fail2=0
+pass2=0
+total=0
+
+# variables used for creating the makefile
+makefile="Makefile.test"
+#inputfile="Input/$file"
+configfile="config/$conf"
+definefile="config/release_defs"
+#specialargs="$pfl"
+NODEPS=yes
+
+
+# prepare clean up
+function cleanup
+{
+    #echo cleanup
+    make -f $makefile clean >/dev/null
+    rm -f test.tmp test_out_* make.log $makefile
+    #mv $exe ccarat_release.exe
+
+    # remove hook
+    trap "echo" 0 1 2 15
+    exit
+}
+
+trap "cleanup" 0 1 2 15
+
+
+# remove all output files from previous runs
+rm -f *.dat.scr *.dat.make.log
+
+# figure out whether we are parallel or not
+touch "$definefile"
+. "./$configfile"
+
+
+# create a list with all commented Input files
+if [ "x$PARALLEL" = "xno" ]; then
+  # sequentiell test
+  liste='
+  ale2_nln.dat
+  ale_3d_hourg.dat
+  axishell.dat
+  b3_elast.dat
+  b3_matnln.dat
+  c1_elast.dat
+  c1_elast_geonln.dat
+  c1_neum_geonln.dat
+  c1_optfsd.dat
+  c1_plast_mises.dat
+  dyn_shell_dirich.dat
+  dyn_shell_neum.dat
+  f2_drivencavity20x20.dat
+  f2_eq4x4_algebraic.dat
+  f2_eq4x4_keps.dat
+  f2_eq4x4_kome.dat
+  f2_freeosz20x20.dat
+  f2_kim-moin.dat
+  f2pro_channelflow10x10.dat
+  f3_beltrami.dat
+  f3_ew_Q1_27x.dat
+  fsi_ow32x32.dat
+  fsi_tank20x10.dat
+  shell8_lineload.dat
+  shell9_el_lay_eans.dat
+  shell9_kreuz_easnl.dat
+  shell9_matnl.dat
+  w1_Eulerstab.dat
+  w1_incompmode.dat
+  w1_mises.dat
+  w1dyn.dat
+  xfem_ls_risingbubble.dat
+  xfem_ls_joggedchannel.dat
+  '
+else
+  # parallel test
+  liste='
+  ale2_nln.dat
+  b3_elast.dat
+  b3_matnln.dat
+  c1_elast.dat
+  c1_elast_geonln.dat
+  c1_neum_geonln.dat
+  c1_optfsd.dat
+  c1_plast_mises.dat
+  dyn_shell_dirich.dat
+  dyn_shell_neum.dat
+  f2_drivencavity20x20.dat
+  f2_eq4x4_algebraic.dat
+  f2_freeosz20x20.dat
+  f2_kim-moin.dat
+  f3_beltrami.dat
+  f3_ew_Q1_27x.dat
+  fsi_ow32x32.dat
+  fsi_tank20x10.dat
+  shell8_lineload.dat
+  shell9_el_lay_eans.dat
+  shell9_kreuz_easnl.dat
+  shell9_matnl.dat
+  w1_Eulerstab.dat
+  w1_incompmode.dat
+  w1_gemm_contact_emconserv.dat
+  w1_mises.dat
+  w1dyn.dat
+  xfem_ls_risingbubble.dat
+  xfem_ls_joggedchannel.dat
+  '
+fi
+ 
+liste=' ale2_nln.dat '
+
+
+  # create Makefile
+  echo
+  echo '  Making Makefile ...'
+  echo "  NODEPS=$NODEPS ./configure $configfile $definefile"
+
+  #. ./scripts/extract-defines.sh
+  . ./scripts/setup-variables.sh
+  . ./scripts/setup-libraries.sh
+  . ./scripts/setup-objects.sh
+  . ./scripts/build-makefile.sh
+   
+  exe=$PROGRAMNAME
+
+  # remove executable
+  rm -f $exe
+
+
+  # make the executable
+  echo
+  echo '  Making executable ...'
+  make -f $makefile clean 2>&1 | cat > make.log
+  make -f $makefile 2>&1 | cat >> make.log
+
+  # check the success of the make
+  # (look for the executable)
+  if [ -a $exe ]; then
+    echo '    OK'
+    chmod 755 $exe
+  else
+    echo '    Making executable failed!!!'
+    exit
+  fi
+
+
+
+# loop this list
+for file in $liste; do 
+
+  # write time and filename to the srceen
+  echo ' '
+  echo '========================================'
+  date
+  echo ' '
+  echo 'Testing ' $file
+  total=`expr $total + 1`
+
+  inputfile="Input/$file"
+
+
+  if [ "x$PARALLEL" = "xno" ]; then
+    # run the executable with the inputfile
+    echo
+    echo '  Running Input-file...'
+    ./$exe Input/$file test_out_ >test.tmp 
+  else
+    # parallel run
+    echo
+    echo '  Running Input-file in parallel...'
+    mpirun -np 1 ./$exe Input/$file test_out_ >test.tmp 
+  fi
+
+
+  # evaluate the output
+  # (look for the word 'normally' in the output
+  count=`cat test.tmp | grep -c "normally"`
+  if [ $count -ge 1 ]; then
+    echo '    OK'
+    pass2=`expr $pass2 + 1`
+    # copy screen output to $file.scr
+    #cp test.tmp $file.scr
+  else
+    echo '    Failed!!'
+    fail2=`expr $fail2 + 1`
+    # copy screen output to $file.scr
+    cp test.tmp $file.scr
+    continue
+  fi
+
+done
+# end of the loop over all input files
+
+
+# write final time to the screen
+echo 
+echo '========================================'
+date
+echo 
+
+
+# write table with result to the screen
+echo '-----------------------------'
+printf '| '
+printf $total' files    '
+if [ $total -le 9 ]; then
+  printf ' '
+fi
+printf '| pass | fail |\n'
+echo '|-------------|------|------|'
+printf "| running     |  "
+if [ $pass2 -le 9 ]; then
+  printf ' '
+fi
+printf $pass2'  |  '
+if [ $fail2 -le 9 ]; then
+  printf ' '
+fi
+printf $fail2'  |\n'
+echo '-----------------------------'
+echo
