@@ -356,10 +356,13 @@ OBJS17       = src/shell9/s9_main.o \
                 src/shell9/s9_a3.o \
                 src/shell9/s9_ans.o \
                 src/shell9/s9_btdb.o \
-                src/shell9/s9_cal_dyn.o \
+                src/shell9/s9_Ccacu_sym.o\
+                src/shell9/s9_Ccacu_unsym.o\
+                src/shell9/s9_cal_dyn.o\
                 src/shell9/s9_call_mat.o \
                 src/shell9/s9_eas.o \
                 src/shell9/s9_eps.o \
+                src/shell9/s9_EStrans.o \
                 src/shell9/s9_funcderiv.o \
                 src/shell9/s9_init.o   \
                 src/shell9/s9_inpele.o \
@@ -370,8 +373,8 @@ OBJS17       = src/shell9/s9_main.o \
                 src/shell9/s9_load_surf.o \
                 src/shell9/s9_loccoordnode.o \
                 src/shell9/s9_mat_linel.o \
-                src/shell9/s9_mat_linel3D.o \
-                src/shell9/s9_mat_orth3D.o \
+                src/shell9/s9_mat_plast_hoff.o \
+                src/shell9/s9_mat_plast_mises.o \
                 src/shell9/s9_math.o\
                 src/shell9/s9_out.o\
                 src/shell9/s9_out_unsmo.o\
@@ -420,7 +423,7 @@ OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/opt_vsa.o \
                 src/optimization/opt_smo.o \
                 src/optimization/opt_g_out.o
-#                axishell
+#                optimization
 OBJS_AXISHELL = src/axishell/saxi_B.o \
                 src/axishell/saxi_cal_fext.o \
                 src/axishell/saxi_cal_stress.o \
@@ -431,6 +434,11 @@ OBJS_AXISHELL = src/axishell/saxi_B.o \
                 src/axishell/saxi_intg.o \
                 src/axishell/saxi_main.o \
                 src/axishell/saxi_static_ke.o
+#                materials
+OBJS_MAT      = src/materials/mat_el_iso.o \
+                src/materials/mat_el_orth.o \
+                src/materials/mat_pl_hoff.o \
+                src/materials/mat_pl_mises_lin.o
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS13        = src/fortran/colsol.o \
                 src/fortran/mpcg_futils.o \
