@@ -8,8 +8,7 @@ void w1static_ke(ELEMENT   *ele,
                  W1_DATA   *data, 
                  MATERIAL  *mat,
                  ARRAY     *estif_global, 
-                 double    *force,  /* global vector for internal forces (initialized!) */
-                 int        iforce, /* size of force */
+                 double    *force,                      /* for internal forces (initialized!) */
                  int        init)
 {
 int                 i,j,k;            /* some loopers */
@@ -144,16 +143,11 @@ for (lr=0; lr<nir; lr++)
 /*                                                      to this routine */
 if(istore!=0) goto end;
 
-if (force)
+for (i=0; i<ele->numnp; i++)
 {
-   for (i=0; i<ele->numnp; i++)
+   for (j=0; j<ele->node[i]->numdf; j++)
    {
-      for (j=0; j<ele->node[i]->numdf; j++)
-      {
-         dof = ele->node[i]->dof[j];
-         if (dof>=iforce) continue;
-         force[dof] += fie[i*numdf+j];
-      }
+      force[i*numdf+j] += fie[i*numdf+j];
    }
 }
 /*----------------------------------------------------------------------*/
