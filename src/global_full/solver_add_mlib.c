@@ -76,7 +76,9 @@ MLVAR       *mlvar;
       
         ii++;
         jj++;
+#ifdef MLIB_PACKAGE
         dslev1 (&ii, &jj, &value, mds->global, &mds->ierr);
+#endif
         ii--;
         jj--;
       }
@@ -84,7 +86,9 @@ MLVAR       *mlvar;
     } /* end loop over j */
   }/* end loop over i */
 /*-- print additional information, depends on the stage of execution ---*/
+#ifdef MLIB_PACKAGE
   if(mlvar->msglvl==4) dsleps (mds->global); 
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

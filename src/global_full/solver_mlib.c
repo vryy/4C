@@ -43,14 +43,18 @@ case 1:/*========================= INITIALIZE THE SPARSE MATRIX PACKAGE */
   mds->output = 6;
   mds->ierr   = 0;
   
+#ifdef MLIB_PACKAGE
   dslein (&mds->numeq,&mlvar->msglvl,&mds->output,mds->global,&mds->ierr);
+#endif
 
   usymm[0]='S';
   usymm[1]='U';
   
   if(!symm) dslema (usymm,mds->global,&mds->ierr,2);
 /*--------------------------------------- INPUT THE MATRIX STRUCTURE ---*/
+#ifdef MLIB_PACKAGE
   dsleim(&mds->colstr.a.iv[0],&mds->rowind.a.iv[0],mds->global,&mds->ierr);
+#endif
 /*----------------------------------------------- REORDER THE MATRIX ---*/
 /*-------------------------------- optional, kann man auch weglassen ---*/
 switch(mlvar->order)
@@ -88,11 +92,11 @@ default:
    dserror("Unknown typ of ordering");
 break;   
 }
+#ifdef MLIB_PACKAGE
 if(mlvar->order>0)   dsleop (order, mds->global, &mds->ierr,mds->numeq);
 /*      IF ( IER .NE. 0 ) GO TO 8000*/
-
   dsleor (&mlvar->maxzer,mds->global,&mds->ierr);
-
+#endif
 break;
 case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
   vz = (double*)calloc(mds->nnz ,sizeof(double));
@@ -100,25 +104,32 @@ case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
   vzh = vz;
   for (i=0; i<mds->nnz; i++) *(vzh++) = 0.0;
   
+#ifdef MLIB_PACKAGE
   dslevm (&mds->colstr.a.iv[0],&mds->rowind.a.iv[0]  ,
           vz                  ,mds->global,&mds->ierr);
-          
+#endif          
   free(vz);
 break;
 case 0:/*============================================ calculation phase */
 /**/
 /*-------------- FACTOR THE MATRIX AND ESTIMATE ITS CONDITION NUMBER ---*/
+#ifdef MLIB_PACKAGE
   if(!symm) dslefa (&mlvar->pvttol, mds->inrtia, mds->global, &mds->ierr);
   else
   dsleco (&mlvar->pvttol, &mds->cond, mds->inrtia,mds->global,&mds->ierr);
 /*-- print additional information, depends on the stage of execution ---*/
   if(mlvar->msglvl==4) dsleps (mds->global);
+#endif
 /*-------------------------------- SOLVE FOR A GIVEN RIGHT HAND SIDE ---*/
+#ifdef MLIB_PACKAGE
   dslesl(&actsolv->nrhs, &(rhs->vec.a.dv[0]), &mds->numeq,
                                                  mds->global, &mds->ierr);
+#endif
   if(mds->ierr!=0) exit; 
 /*-- print additional information, depends on the stage of execution ---*/
+#ifdef MLIB_PACKAGE
    if(mlvar->msglvl==4) dsleps (mds->global);
+#endif
 /*----------------------------- USE THE SOLUTION STORED IN ARRAY RHS ---*/
    for (i=0; i<rhs->numeq; i++)
    {
