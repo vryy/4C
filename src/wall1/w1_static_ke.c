@@ -1,9 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
-void w1fi( double  *F,
-           double   fac,
-           double **bop,
-           double  *fie);
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  | integration of linear stiffness ke for wall1 element      al 9/01    |
  *----------------------------------------------------------------------*/
@@ -22,11 +19,14 @@ int                 iel;              /* numnp to this element */
 int                 dof;
 int                 nd;
 int                 ip;
-int                 istore = 0;
+int                 lanz, maxreb;
+int                 istore = 0;/* controls storing of new stresses to wa */
+int                 newval = 0;/* controls evaluation of new stresses    */
 const int           numdf  = 2;
 const int           numeps = 3;
 
 double              fac;
+double              stifac;
 double              e1,e2,e3;         /*GP-coords*/
 double              facr,facs,fact;   /* weights at GP */
 double              xnu;              /* value of shell shifter */
@@ -44,7 +44,7 @@ static ARRAY    bop_a;    /* B-operator */
 static double **bop;       
 static double **estif;    /* element stiffness matrix ke */
 double F[4];
-double fie[8];
+double fie[18];
 
 double det;
 
@@ -74,12 +74,21 @@ w1intg(ele,data,1);
 /*-------------- some of the fields have to be reinitialized to zero ---*/
 amzero(estif_global);
 estif     = estif_global->a.da;
-for (i=0; i<8; i++) fie[i] = 0.0;
+for (i=0; i<18; i++) fie[i] = 0.0;
 /*------------------------------------------- integration parameters ---*/
 nir     = ele->e.w1->nGP[0];
 nis     = ele->e.w1->nGP[1];
 iel     = ele->numnp;
 nd      = numdf * iel;
+/*----------------------------------------------------------------------*/
+stifac = ele->e.w1->thick;
+/*------------------------------- loop concrete reinforcement steel ----*/
+if(mat->mattyp==m_pl_epc) maxreb = mat->m.pl_epc->maxreb;
+else                      maxreb = 0;
+
+
+for (lanz=0; lanz<maxreb+1; lanz++)
+{
 /*================================================ integration loops ===*/
 ip = -1;
 for (lr=0; lr<nir; lr++)
@@ -97,22 +106,39 @@ for (lr=0; lr<nir; lr++)
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*------------------------------------ compute jacobian matrix ---*/       
       w1_jaco (funct,deriv,xjm,&det,ele,iel);                         
-      fac = facr * facs * det; 
+      
+      /*--------------------------- thickness rebar  (input rebar %) ---*/       
+      if(lanz>0)
+      {
+        stifac = mat->m.pl_epc->reb_area[lanz-1];
+      }
+      
+      
+      fac = facr * facs * det * stifac; 
       /*--------------------------------------- calculate operator B ---*/
       amzero(&bop_a);
       w1_bop(bop,deriv,xjm,det,iel);
       /*------------------------------------------ call material law ---*/
-      w1_call_mat(ele, mat,ele->e.w1->wtype, bop, ip, F, D, istore);
+      if(lanz==0)
+      {
+        w1_call_mat(ele, mat,ele->e.w1->wtype,bop,xjm,ip, F, D,istore,newval);
+      }
+      else
+      {
+        w1_mat_rebar(ele,mat,bop,xjm,F,D,ip,lanz,istore); 
+      }
       /*----------------------------------------------------------------*/
       if(istore==0)
       {
       /*-------------------------------- elastic stiffness matrix ke ---*/
         w1_keku(estif,bop,D,fac,nd,numeps);
       /*--------------- nodal forces fi from integration of stresses ---*/
-        if (force) w1fi (F,fac,bop,fie);                    
+        if (force) w1fi (F,fac,bop,nd,fie);                    
       }
    }/*============================================= end of loop over ls */ 
 }/*================================================ end of loop over lr */
+}
+/*------------------------------- loop concrete reinforcement steel ----*/
 
 /*- add internal forces to global vector, if a global vector was passed */
 /*                                                      to this routine */
@@ -144,6 +170,7 @@ return;
 void w1fi( double  *F,
            double   fac,
            double **bop,
+           int      nd,
            double  *fie)
 {
 /*----------------------------------------------------------------------*/
@@ -159,7 +186,7 @@ dstrc_enter("w1fi");
   tau12 = F[2]*fac;
   tau33 = F[3]*fac;
 /*----------------------------- updated lagrange or geometric linear ---*/
-  for (j=1; j<8; j+=2)
+  for (j=1; j<nd; j+=2)
   {
     i=j-1;
     fie[i]+=bop[0][i]*tau11 + bop[2][i]*tau12;

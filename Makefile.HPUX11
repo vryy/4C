@@ -144,21 +144,26 @@ OBJS11	      = ${SRC}/output/out_global.o \
                 ${SRC}/output/out_gid_msh.o \
                 ${SRC}/output/out_gid_sol.o
 #                wall1
-OBJS12	      = ${SRC}/wall1/w1_init.o \
-                ${SRC}/wall1/w1_inpele.o \
-                ${SRC}/wall1/w1_intg.o \
-                ${SRC}/wall1/w1_static_ke.o \
-                ${SRC}/wall1/w1_funcderiv.o \
-                ${SRC}/wall1/w1_bop.o \
-                ${SRC}/wall1/w1_jaco.o \
-                ${SRC}/wall1/w1_call_mat.o \
-                ${SRC}/wall1/w1_mat_linel.o \
-                ${SRC}/wall1/w1_mat_plast.o \
-                ${SRC}/wall1/w1_call_stiff.o \
+OBJS12	      = ${SRC}/wall1/w1_bop.o \
                 ${SRC}/wall1/w1_cal_deriv.o \
                 ${SRC}/wall1/w1_cal_eps.o \
-                ${SRC}/wall1/w1_cal_plast.o \
-                ${SRC}/wall1/w1_main.o
+                ${SRC}/wall1/w1_cal_stress.o \
+                ${SRC}/wall1/w1_call_mat.o \
+                ${SRC}/wall1/w1_call_stiff.o \
+                ${SRC}/wall1/w1_funcderiv.o \
+                ${SRC}/wall1/w1_init.o \
+                ${SRC}/wall1/w1_inpele.o \
+                ${SRC}/wall1/w1_intg.o \
+                ${SRC}/wall1/w1_jaco.o \
+                ${SRC}/wall1/w1_main.o \
+                ${SRC}/wall1/w1_mat_linel.o \
+                ${SRC}/wall1/w1_mat_plast_dp.o \
+                ${SRC}/wall1/w1_mat_plast_epc.o \
+                ${SRC}/wall1/w1_mat_plast_epc_serv.o \
+                ${SRC}/wall1/w1_mat_plast_mises.o \
+                ${SRC}/wall1/w1_mat_plast_serv.o \
+                ${SRC}/wall1/w1_mat_serv.o \
+                ${SRC}/wall1/w1_static_ke.o
 #  fortran sequentiell              
 OBJS13        = ${SRC}/fortran/colsol.o
 #  fortran parallel             

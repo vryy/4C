@@ -23,8 +23,8 @@ extern struct _MATERIAL  *mat;
  *----------------------------------------------------------------------*/
 void inp_material()
 {
-int  ierr;
-int  i;
+int  ierr, ierralloc;
+int  i, j, ncm;
 char *colpointer;
 char buffer[50];
 #ifdef DEBUG 
@@ -99,6 +99,81 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("Sigy" ,&(mat[i].m.pl_dp->Sigy)          ,&ierr);
       frdouble("Hard" ,&(mat[i].m.pl_dp->Hard)          ,&ierr);
       frdouble("PHI"  ,&(mat[i].m.pl_dp->PHI)           ,&ierr);
+   }
+   frchk("MAT_ConcretePlastic",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_pl_epc;
+      mat[i].m.pl_epc = (PL_EPC*)calloc(1,sizeof(PL_EPC));
+      if (mat[i].m.pl_epc==NULL) dserror("Allocation of elpl-concrete material failed");
+      /* initialize */
+      mat[i].m.pl_epc->gamma1 = 3.;
+      mat[i].m.pl_epc->gamma2 = 6./5.;
+      
+      
+      frdouble("DENS"    ,&(mat[i].m.pl_epc->dens        )        ,&ierr);
+      /* concrete */
+      frdouble("YOUNG"   ,&(mat[i].m.pl_epc->youngs      )        ,&ierr);
+      frdouble("NUE"     ,&(mat[i].m.pl_epc->possionratio)        ,&ierr);
+      frdouble("ALFAT"   ,&(mat[i].m.pl_epc->alfat       )        ,&ierr);
+      frdouble("XSI"     ,&(mat[i].m.pl_epc->xsi         )        ,&ierr);
+      frdouble("Sigy"    ,&(mat[i].m.pl_epc->sigy        )        ,&ierr);
+      frread();
+      frdouble("FTM"     ,&(mat[i].m.pl_epc->ftm         )        ,&ierr);
+      frdouble("FCM"     ,&(mat[i].m.pl_epc->fcm         )        ,&ierr);
+      frdouble("GT"      ,&(mat[i].m.pl_epc->gt          )        ,&ierr);
+      frdouble("GC"      ,&(mat[i].m.pl_epc->gc          )        ,&ierr);
+      frdouble("GAMMA1"  ,&(mat[i].m.pl_epc->gamma1      )        ,&ierr);
+      if(mat[i].m.pl_epc->gamma1<1.)mat[i].m.pl_epc->gamma1=3.; 
+      frdouble("GAMMA2"  ,&(mat[i].m.pl_epc->gamma2      )        ,&ierr);
+     /* tension stiffening - next line in input file!*/
+      frread();
+      frint(   "NSTIFF"  ,&(mat[i].m.pl_epc->nstiff      )        ,&ierr);
+      /* number of rebars - next line in input file! */
+      frread();
+      frint(   "MAXREB"   ,&(mat[i].m.pl_epc->maxreb     )        ,&ierr);
+      /* allocate memory */
+      ncm       = mat[i].m.pl_epc->maxreb;
+      ierralloc = 0;
+      if ((mat[i].m.pl_epc->rebar=(int*)calloc(ncm,sizeof(int)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_area  =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_ang   =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_so    =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_ds    =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_rgamma=(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_dens  =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_alfat =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_emod  =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_rebnue=(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_sigy  =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      if ((mat[i].m.pl_epc->reb_hard  =(double*)calloc(ncm,sizeof(double)))==NULL) ierralloc=1;
+      
+      if (ierralloc) dserror("Allocation of elpl-concrete material failed");
+      /* rebar data - next line in input file! */
+      if(ncm==0)
+      {
+        frread();
+        frread();
+        frread();
+      }
+      for(j=0;j<ncm;j++)
+      {
+        frread();
+        frint(   "REBAR"   ,&(mat[i].m.pl_epc->rebar[j]     ),&ierr);
+        frdouble("REBAREA" ,&(mat[i].m.pl_epc->reb_area[j]  ),&ierr);
+        frdouble("REBANG"  ,&(mat[i].m.pl_epc->reb_ang[j]   ),&ierr);
+        frdouble("REBSO"   ,&(mat[i].m.pl_epc->reb_so[j]    ),&ierr);
+        frdouble("REBDS"   ,&(mat[i].m.pl_epc->reb_ds[j]    ),&ierr);
+        frdouble("REBGAMMA",&(mat[i].m.pl_epc->reb_rgamma[j]),&ierr);
+        frread();
+        frdouble("REBDENS" ,&(mat[i].m.pl_epc->reb_dens[j]  ),&ierr);
+        frdouble("REBALFAT",&(mat[i].m.pl_epc->reb_alfat[j] ),&ierr);
+        frdouble("REBEMOD" ,&(mat[i].m.pl_epc->reb_emod[j]  ),&ierr);
+        frdouble("REBNUE"  ,&(mat[i].m.pl_epc->reb_rebnue[j]),&ierr);
+        frread();                               
+        frdouble("REBSIGY" ,&(mat[i].m.pl_epc->reb_sigy[j]  ),&ierr);
+        frdouble("REBHARD" ,&(mat[i].m.pl_epc->reb_hard[j]  ),&ierr);
+      }
    }
    frchk("MAT_Porous_MisesPlastic",&ierr);
    if (ierr==1)
