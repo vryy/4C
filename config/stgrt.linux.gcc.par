@@ -12,7 +12,7 @@ F77=mpif77
 CC=mpicc
 LD=mpicc
 
-BASEDIR="/home/ccarat/lib"
+BASEDIR="/home/ccarat/lib/linux"
 
 INCLUDEDIRS="-I/usr/local/mpich-1.2.5/include/ -I/home/ccarat/include"
 LIBDIRS="-L/usr/lib -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -L$BASEDIR/lapack -L$BASEDIR/blas -L$BASEDIR/metis" 
