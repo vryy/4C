@@ -217,6 +217,9 @@ if (sysarray2 != -1)
 kk = container->actndis;
 for (i=0; i<actpart->pdis[kk].numele; i++)
 {
+#ifdef PERF
+   perf_begin(16);
+#endif
    /*------------------------------------ set pointer to active element */
    actele = actpart->pdis[kk].element[i];
    /* if present, init the element vectors intforce_global and dirich_global */
@@ -281,9 +284,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    break;
    case el_fluid3: 
       fluid3(actpart,actintra,actele,
-             &estif_global,&emass_global,
-             &etforce_global,&eiforce_global,&edforce_global,
-	     action,&hasdirich,&hasext,container); 
+          &estif_global,&emass_global,
+          &etforce_global,&eiforce_global,&edforce_global,
+          action,&hasdirich,&hasext,container); 
    break;
 #endif   
    case el_ale3:
@@ -331,6 +334,10 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
       dserror("Typ of element unknown");
    }/* end of calling elements */
 
+#ifdef PERF
+   perf_end(16);
+#endif
+
 
    switch(*action)/*=== call assembly dependent on calculation-flag */
    {
@@ -370,6 +377,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    default: dserror("Unknown type of assembly 1"); break;
    }
    /*--------------------------- assemble one or two system matrices */
+#ifdef PERF
+   perf_begin(17);
+#endif
    assemble(sysarray1,
             &estif_global,
             sysarray2,
@@ -380,7 +390,13 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
             actele,
             assemble_action,
             container);
+#ifdef PERF
+   perf_end(17);
+#endif
    /*----------------------------------- do further assembly operations */
+#ifdef PERF
+   perf_begin(18);
+#endif
    switch(container->fieldtyp)
    {
    case structure:
@@ -451,6 +467,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    default:
       dserror("fieldtyp unknown!");
    }
+#ifdef PERF
+  perf_end(18);
+#endif
 }/* end of loop over elements */
 /*----------------------------------------------------------------------*/
 /*                    in parallel coupled dofs have to be exchanged now */
@@ -495,6 +514,9 @@ case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; brea
 default: dserror("Unknown type of assembly 2"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
+#ifdef PERF
+perf_begin(19);
+#endif
 assemble(sysarray1,
          NULL,
          sysarray2,
@@ -505,6 +527,9 @@ assemble(sysarray1,
          actele,
          assemble_action,
          container);
+#ifdef PERF
+perf_end(19);
+#endif
 #endif
 /*----------------------------------------------------------------------*/
 /* 

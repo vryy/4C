@@ -77,7 +77,13 @@ inptrace();
 #endif
 /*=========================== tracing is active and working from now on */
 /*----------------------- input of not mesh or time based problem data  */
+#ifdef PERF
+  perf_begin(3);
+#endif
 inpctr();
+#ifdef PERF
+  perf_end(3);
+#endif
 #ifdef D_OPTIM
 /*------------------------------------------------input of optimization */
 if (genprob.probtyp == prb_opt) inpctropt();
@@ -86,40 +92,74 @@ if (genprob.probtyp == prb_opt) inpctropt();
 /* read description of design volumes, surfaces, lines and nodes, allocate
    and fill the structures DVOL, DSURF, DLINE and DNODE 
 */
+#ifdef PERF
+  perf_begin(4);
+#endif
 inpdesign();
+#ifdef PERF
+  perf_end(4);
+#endif
 /* build the topology among the design elements, allocate and create the
    pointers connecting DVOL, DSURF, DLINE and DNODE 
 */
+#ifdef PERF
+  perf_begin(5);
+#endif
 inpdesign_topology_design();
+#ifdef PERF
+  perf_end(5);
+#endif
 /*----------------------------------------------------------------------*/
 /* NOTE: the materials have to be read before the input of the elements */
 /*       as these informations are needed for shell9 element            */
 /*                                                             sh 10/02 */
 /*                                                                      */
 /*-------------------------------------------------- input of materials */
+#ifdef PERF
+  perf_begin(6);
+#endif
 inp_material();
 /*---------------- sh 10/02 --- input of multilayer materials -> shell9 */
 inp_multimat();
+#ifdef PERF
+  perf_end(6);
+#endif
 /*------------------------------------------------------input of meshes */
 /* read the fe-nodes in NODE, the fe-elements in ELEMENT and build the 
    topology among ELEMENTs and NODEs. Assign the disctretization to
    the different fields in a multifield problem dependent on type
    of element
 */    
+#ifdef PERF
+  perf_begin(7);
+#endif
 inpfield();
+#ifdef PERF
+  perf_end(7);
+#endif
 /*------------------ built the detailed topology of the discretizations */
 /* for each existing field and discretization build a detailed topology 
    of GNODEs, GLINEs, GSURFs and GVOLs and connect them to the topology
    of NODEs and ELEMENTs
 */   
+#ifdef PERF
+  perf_begin(8);
+#endif
 for (i=0; i<genprob.numfld; i++)
 for (j=0; j<field[i].ndis; j++)
 inp_detailed_topology(&(field[i].dis[j]));
+#ifdef PERF
+  perf_end(8);
+#endif
 /*---------------------------------------------------design-fe topology */
 /* Read which node is on which design object from file.
    For each field and discretization build the pointers among design
    and FE-objects DVOL<->GVOL,DSURF<->GSURF,DLINE<->GLINE,DNODE<->GNODE.
 */   
+#ifdef PERF
+  perf_begin(9);
+#endif
+
   /* count number of gnodes, glines, gsurfs and gvols in whole problem */
   ngnode =0;
   ngline =0;
@@ -169,11 +209,15 @@ inp_detailed_topology(&(field[i].dis[j]));
 
   inpdesign_topology_fe();
 
-  CCAFREE(genprob.nodes);
   CCAFREE(genprob.gnodes);
   CCAFREE(genprob.glines);
   CCAFREE(genprob.gsurfs);
   CCAFREE(genprob.gvols);
+  CCAFREE(genprob.nodes);
+
+#ifdef PERF
+  perf_end(9);
+#endif
 
 /*--------------------------------------- input of general dynamic data */
 if (genprob.timetyp==time_dynamic) inpctrdyn();
@@ -185,7 +229,13 @@ inpctreig();
 /* dirichlet/coupling/neumann conditions are read from file to the
    DVOLS/DSURFS/DLINES/DNODES
 */   
+#ifdef PERF
+  perf_begin(10);
+#endif
 inp_conditions();
+#ifdef PERF
+  perf_end(10);
+#endif
 /*----------- inherit the fsi coupling conditions inside the design 
    condition is transformed in a dirichlet condition for fluid- and
    ale-field and into a neumann condition for structure-field           */
@@ -208,6 +258,9 @@ for (i=0; i<genprob.numfld; i++)
 /* conditions are inherited 'downwards': DVOL->DSURF->DLINE->DNODE      */
 /* BUT: if a 'lower object already has its own condition, it does NOT   */
 /* inherit from above, it does inherit its own condition further down   */
+#ifdef PERF
+  perf_begin(11);
+#endif
 inherit_dirich_coup_indesign();
 /* set pointers in the discretization to the design dirichlet conditions*/
 for (i=0; i<genprob.numfld; i++)
@@ -245,6 +298,10 @@ if (genprob.probtyp==prb_structure)
     interpolate_axishell_conds(&(field[genprob.numsf].dis[j]));
 }
 #endif
+#ifdef PERF
+  perf_end(11);
+#endif
+
 /*-------------------------------------------- input of monitoring data */
 inp_monitor();
 

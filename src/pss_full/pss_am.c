@@ -323,6 +323,10 @@ register INT i=0;
 dstrc_enter("amdef");
 #endif
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_begin(95);
+#endif
+
 strncpy(a->name,namstr,9);
 a->fdim = fdim;
 a->sdim = sdim;
@@ -364,6 +368,9 @@ if (trace.trace_on==1) dsreportarray(a,1);
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(95);
+#endif
 return((void*)(a->a.iv));
 } /* end of amdef */
 
@@ -422,6 +429,9 @@ ARRAY copyarray;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("amredef");
+#endif
+#ifdef PERF
+  perf_begin(94);
 #endif
 /*--------------------------------------- find out the new typ of array */
 if (strncmp("IV",newtypstr,2)==0){ newtyp =  newIV; goto next; }
@@ -580,6 +590,9 @@ end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+#ifdef PERF
+  perf_end(94);
+#endif
 return((void*)(a->a.iv));
 } /* end of amredef */
 
@@ -608,9 +621,13 @@ void amdel(ARRAY *array)
 {
 INT i=0;
 INT size;
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("amdel");
+#endif
+#ifdef PERF
+  perf_begin(93);
 #endif
 /*-------------------------------------------------delete name of array */
 strncpy(array->name,"DELETED",9);
@@ -648,6 +665,9 @@ if (trace.trace_on==1) dsdeletearray(array,1);
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(93);
+#endif
 return;
 } /* end of amdel */
 
@@ -673,8 +693,12 @@ register INT i;
 INT          dim;
 INT         *iptr;
 DOUBLE      *dptr;
+
 #ifdef DEBUG 
 dstrc_enter("amzero");
+#endif
+#ifdef PERF
+  perf_begin(92);
 #endif
 /*----------------------------------------------------------------------*/
 dim = (array->fdim) * (array->sdim);
@@ -702,6 +726,9 @@ default:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
+#endif
+#ifdef PERF
+  perf_end(92);
 #endif
 return;
 } /* end of amzero */

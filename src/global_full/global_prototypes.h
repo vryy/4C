@@ -909,3 +909,91 @@ void inpctropt(void);
 
 ------------------------------------------------------------------------*/
 void caloptmain(void);
+
+
+/* ====================================================================
+ * file: ps_perf.c
+ * ==================================================================== */
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance                                              
+
+  <pre>                                                        mn 01/04 
+  Gets the current cpu tics.
+  </pre>
+  \return void                                                
+
+  ------------------------------------------------------------------------*/
+DOUBLE perf_cpu ();
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance                                              
+
+  <pre>                                                        mn 01/04 
+  Gets the current system time.
+  </pre>
+  \return void                                                
+
+  ------------------------------------------------------------------------*/
+DOUBLE perf_time ();
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance                                              
+
+  <pre>                                                        mn 01/04 
+  Initializes all counters with 0.
+  </pre>
+  \return void                                                
+
+  ------------------------------------------------------------------------*/
+void perf_init_all ();
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance
+
+  <pre>                                                        mn 01/04 
+  Initializes one counters with 0.
+  </pre>
+  \return void                                                
+
+  ------------------------------------------------------------------------*/
+void perf_init (INT index);
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance
+
+  <pre>                                                        mn 01/04 
+  start of the region for one timer.
+  </pre>
+  \return void                                                
+
+  ------------------------------------------------------------------------*/
+void perf_begin (INT index);
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance
+
+  <pre>                                                        mn 01/04 
+  end of the region for one timer.
+  </pre>
+  \return void                                                
+
+
+  ------------------------------------------------------------------------*/
+void perf_end (INT index);
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance
+
+  <pre>                                                        mn 01/04 
+  Print the results for one timer.
+  </pre>
+  \return void                                                
+
+  ------------------------------------------------------------------------*/
+void perf_print (INT index, char string[], INT bezug, INT ops);
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance
+
+  <pre>                                                        mn 01/04 
+  Print the results for all timers.
+  </pre>
+  \return void                                                
+
+  ------------------------------------------------------------------------*/
+void perf_out ();
+
+

@@ -89,49 +89,82 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void ntam(INT argc, char *argv[])
 {
-DOUBLE   t0,ti,tc;
-/*---------------------------------------- init devices, tracing, etc...*/
-ntaini(argc,argv);
-/*--------------------------------input phase, input of all information */
-t0=ds_cputime();
-ntainp();
-ti=ds_cputime()-t0;
-if (par.myrank==0)
-{
- printf("\n");
- printf("Total CPU Time for INPUT:       %10.3E sec \n",ti);
- printf("\n"); 
-}
-/*--------------------------------close the input file, delete the copy */
-/*---------- You cannot read anything from input file beyond this point */
-frend();
-/*---------------------------------------- check for visualisation mode */
-if (genprob.visual!=0) goto visualisation;
-/*--------------------------------- set up field-specific communicators */
-#ifdef PARALLEL 
-create_communicators();
-#endif
-/*----------------------------------------------------calculation phase */
-t0=ds_cputime();
-ntacal();
-tc=ds_cputime()-t0;
-if (par.myrank==0)
-{
- printf("\n");
- printf("Total CPU Time for CALCULATION: %10.3E sec \n",tc);
- printf("\n"); 
-}
-goto endcal;
-/*----------------------------------------------------------------------*/
-visualisation:
-if (genprob.visual==2 || genprob.visual==3)
-ntavisual();
-/*----------------------------------------------------------------------*/
-endcal:
-#ifdef DEBUG 
-dstrc_exit();
+  DOUBLE   t0,ti,tc;
+
+  /* init all time counters */
+#ifdef PERF
+  perf_init_all();
+  perf_begin(0);
 #endif
 
-return;
+  /*-------------------------------------- init devices, tracing, etc...*/
+  ntaini(argc,argv);
+  /*------------------------------input phase, input of all information */
+  t0=ds_cputime();
+#ifdef PERF
+  perf_begin(1);
+#endif
+
+  ntainp();
+
+#ifdef PERF
+  perf_end(1);
+#endif
+  ti=ds_cputime()-t0;
+  if (par.myrank==0)
+  {
+    printf("\n");
+    printf("Total CPU Time for INPUT:       %10.3E sec \n",ti);
+    printf("\n"); 
+  }
+
+  /*------------------------------close the input file, delete the copy */
+  /*-------- You cannot read anything from input file beyond this point */
+  frend();
+  /*-------------------------------------- check for visualisation mode */
+  if (genprob.visual!=0) goto visualisation;
+  /*------------------------------- set up field-specific communicators */
+#ifdef PARALLEL 
+  create_communicators();
+#endif
+  /*--------------------------------------------------calculation phase */
+  t0=ds_cputime();
+#ifdef PERF
+  perf_begin(2);
+#endif
+
+  ntacal();
+
+#ifdef PERF
+  perf_end(2);
+#endif
+  tc=ds_cputime()-t0;
+  if (par.myrank==0)
+  {
+    printf("\n");
+    printf("Total CPU Time for CALCULATION: %10.3E sec \n",tc);
+    printf("\n"); 
+  }
+
+#ifdef PERF
+  perf_end(0);
+  /* print out time counters */
+  if (par.myrank==0)
+    perf_out();
+#endif
+
+
+  goto endcal;
+  /*----------------------------------------------------------------------*/
+visualisation:
+  if (genprob.visual==2 || genprob.visual==3)
+    ntavisual();
+  /*----------------------------------------------------------------------*/
+endcal:
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
 } /* end of ntam */
-    
+

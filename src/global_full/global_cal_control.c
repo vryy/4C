@@ -52,7 +52,13 @@ dstrc_enter("ntacal");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------do initial partitioning of nodes and elements */
-part_fields();
+#ifdef PERF
+  perf_begin(12);
+#endif
+  part_fields();
+#ifdef PERF
+  perf_end(12);
+#endif
 
 #ifdef D_FLUID
 /*---------------------------------- set dofs for implicit free surface */
@@ -66,17 +72,35 @@ if (genprob.graderw>0) wge_setdof();
 #endif
 
 /*------------------------------------------------ assign dofs to nodes */
+#ifdef PERF
+  perf_begin(13);
+#endif
 for(i=0; i<genprob.numfld; i++)
 {
    actfield = &(field[i]); 
    if (actfield->ndis==1) assign_dof(actfield);
    if (actfield->ndis>1) assign_dof_ndis(actfield);
 }
+#ifdef PERF
+  perf_end(13);
+#endif
 /*--------make the procs know their own nodes and elements a bit better */
+#ifdef PERF
+  perf_begin(14);
+#endif
 part_assignfield();
+#ifdef PERF
+  perf_end(14);
+#endif
  
 /*-------------------calculate system matrices parallel storage formats */
+#ifdef PERF
+  perf_begin(15);
+#endif
 mask_global_matrices();
+#ifdef PERF
+  perf_end(15);
+#endif
 /*------------------------------------------------ write general output */
 out_general();
 /*--------------------------------------------------- write mesh to gid */

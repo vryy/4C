@@ -48,6 +48,10 @@ DOUBLE t0,t1;
 dstrc_enter("solver_control");
 #endif
 
+#ifdef PERF
+  perf_begin(20);
+#endif
+
 /*----------------------------------------------------------------------*/
 t0=ds_cputime();
 /*----------------------------------------------------------------------*/
@@ -96,6 +100,11 @@ t1 -= t0;
 fprintf(allfiles.out_err,"Time for this solver call: %f\n",t1);
 fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
+
+#ifdef PERF
+  perf_end(20);
+#endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif

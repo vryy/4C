@@ -819,39 +819,21 @@ routine to initialise the cpu - time
 ------------------------------------------------------------------------*/
 void ds_cputime_init()
 {
-/*#ifdef PARALLEL
-
-#else
-#ifdef DEBUG
-struct timeval tv;
-struct timezone tz;
-DOUBLE sec, usec;
-#endif
-#endif*/
-
 
 #ifdef DEBUG
-dstrc_enter("ds_cputime_init");
+  dstrc_enter("ds_cputime_init");
 #endif
 
 #ifdef PARALLEL
-par_start=MPI_Wtime();
-/*#else
-#ifdef DEBUG  
-gettimeofday(&tv, &tz);   
-sec = (DOUBLE)(tv.tv_sec); 
-usec = (DOUBLE)(tv.tv_usec);
-seq_start=sec+0.000001*usec;*/
-#else
-seq_start=time(NULL);
+  par_start=MPI_Wtime();
 #endif
 
 
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+  return;
 }
 
 
@@ -866,46 +848,28 @@ routine to meassure the cpu - time
 ------------------------------------------------------------------------*/
 DOUBLE ds_cputime()
 {
-#ifndef SUSE73
 #ifdef PARALLEL
-DOUBLE par_end;
-/*#else
-#ifdef DEBUG
-DOUBLE seq_end;
-struct timeval tv;
-struct timezone tz;
-DOUBLE sec, usec;*/
-#else
-time_t seq_end;
+  DOUBLE par_end;
 #endif
-DOUBLE diff;
+
+  DOUBLE diff;
 
 #ifdef DEBUG
-dstrc_enter("ds_cputime");
+  dstrc_enter("ds_cputime");
 #endif
 
 #ifdef PARALLEL
-par_end=MPI_Wtime();
-diff=par_end-par_start;
-/*#else
-#ifdef DEBUG
-gettimeofday(&tv, &tz);   
-sec = (DOUBLE)(tv.tv_sec);
-usec = (DOUBLE)(tv.tv_usec);
-seq_end=sec+0.000001*usec;
-diff=seq_end-seq_start;*/
+  par_end = MPI_Wtime();
+  diff    = par_end-par_start;
 #else
-seq_end=time(NULL);
-diff = difftime(seq_end,seq_start);
+  diff    = perf_time();
 #endif
 
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
-return ((DOUBLE)(diff)); 
-#endif
+  return ((DOUBLE)(diff)); 
 }
-
 
 /*! @} (documentation module close)*/
