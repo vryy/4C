@@ -1,5 +1,6 @@
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
-#include "fluid2_prototypes.h"
+#include "fluid2_prototypes.h" 
 /*----------------------------------------------------------------------*
  |  routine to calculate the element dirichlet load vector              |
  |                                                  genk 04/02          |
@@ -85,3 +86,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of f2_caldirich*/ 
+#endif

@@ -390,19 +390,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       f3inp(&(fluidfield->dis[0].element[counter]));
    }
 #endif
-/*------------------------------------------------ elementtyp is FLUID1 */
-   frchk("FLUID1",&ierr);
+/*------------------------------------------------ elementtyp is FLUID2 */
+   frchk("FLUID2",&ierr);
    if (ierr==1)
    {
-#ifndef D_FLUID1 
-      dserror("FLUID3 needed but not defined in Makefile");
+#ifndef D_FLUID2 
+      dserror("FLUID2 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_FLUID1 
+#ifdef D_FLUID2 
    if (ierr==1) 
    {
-      fluidfield->dis[0].element[counter].eltyp=el_fluid1;
-      /* not implemented reading of one fluid1 line */
+      fluidfield->dis[0].element[counter].eltyp=el_fluid2;
+      f2_inp(&(fluidfield->dis[0].element[counter]));
    }
 #endif
    counter++;

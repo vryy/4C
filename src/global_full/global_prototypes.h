@@ -113,6 +113,7 @@ void inpctrprob(void);
 void inpctrdyn(void);
 void inpctrstat(void);
 void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn);
+void inpctr_dyn_fluid(FLUID_DYNAMIC *fdyn);
 /*----------------------------------------------------------------------*
  |  input_ctr_head.c                                  m.gee 11/01       |
  *----------------------------------------------------------------------*/
@@ -712,3 +713,11 @@ void pss_getdims_name_handle(char *name,
                              int  *handle,
                              int  *ierr);
 void pss_status_to_err(void);
+/*----------------------------------------------------------------------*
+ | routine to initialise the cpu - time                  genk 05/02     |
+ *----------------------------------------------------------------------*/
+void ds_cputime_init();
+/*----------------------------------------------------------------------*
+ | routine to meassure the cpu - time                    genk 05/02     |
+ *----------------------------------------------------------------------*/
+double ds_cputime();

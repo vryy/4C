@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 
@@ -393,5 +394,5 @@ return;
 } /* end of f2_intg */
 
 
-
+#endif
 

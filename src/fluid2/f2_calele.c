@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -131,3 +132,6 @@ dstrc_exit();
 #endif
 return; 
 } /* end of f2_calele */
+
+
+#endif

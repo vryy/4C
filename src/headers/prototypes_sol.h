@@ -883,3 +883,39 @@ void solver_psuperlu_ucchb(
  |  input_sol.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void inpctrsol(SOLVAR *solv);
+
+/*---------------------------------------------------------------------*
+ | routine to find the maximum value of a distributed vector           |
+ | ab =  0 absolut maximum value                                       |
+ | ab =  1 maxium value                                                |
+ | ab = -1 minimum value                                               |
+ |                                                         genk 03/02  |
+ *---------------------------------------------------------------------*/ 
+void solserv_dmax_distvec(
+			  DIST_VECTOR  *distvec,
+			  double *res,   /* result */
+			  int ab        /* flag */
+			  );
+/*---------------------------------------------------------------------*
+ |  global_calelm_fluid.c                              genk 04/02      |
+ *---------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  routine to call fluid elements                       genk 04/02     |
+ *----------------------------------------------------------------------*/
+void calelm_fluid(FIELD        *actfield,     /* active field */        
+                  SOLVAR       *actsolv,      /* active SOLVAR */
+                  PARTITION    *actpart,      /* my partition of this field */
+                  INTRA        *actintra,     /* my intra-communicator */
+                  int           sysarray1,    /* number of first sparse system matrix */
+                  int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+                  double       *ftimerhs,
+		  double       *fiterhs,
+                  int           global_numeq, /* total number of equations on all procs */
+                  int           nii,          /* flag for iteration RHS*/
+		  int           nif,          /* flag for time RHS */
+                  int           kstep,
+                  CALC_ACTION  *action);      /* calculation option passed to element routines */
+		  
+void calinit_fluid(FIELD       *actfield,   /* the active physical field */ 
+                   PARTITION   *actpart,    /* my partition of this field */
+                   CALC_ACTION *action);

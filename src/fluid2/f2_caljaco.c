@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                   genk 04/02  |
@@ -47,3 +48,6 @@ dstrc_exit();
 return;
 } /* end of w1_jaco */
     
+
+
+#endif

@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h" 
 #include "fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -367,3 +368,6 @@ dstrc_exit();
 
 return;
 } /* end of f2inp */
+
+
+#endif

@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #define ZERO  (0.0)
@@ -457,3 +458,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of f2_calstrlen */		  
+#endif

@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #define ONE (1.0)
@@ -571,3 +572,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of f2_calstabtfp */
+
+
+
+#endif

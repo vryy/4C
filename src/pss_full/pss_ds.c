@@ -27,10 +27,18 @@ extern struct _FILES  allfiles;
 #ifdef DEBUG
 extern long int num_byte_allocated;
 #endif
-
-
-
-
+/*----------------------------------------------------------------------*
+ * global variables for time tracing                       genk 05/02   |
+ *----------------------------------------------------------------------*/
+#ifdef PARALLEL
+double par_start;
+#else
+#ifdef DEBUG
+double seq_start;
+#else
+time_t seq_start;
+#endif
+#endif
 /*----------------------------------------------------------------------*
  | Initialize bugtracing systems                          m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -511,3 +519,89 @@ exit(EXIT_FAILURE);
 #endif
 return;
 } /* end of dserror */
+/*----------------------------------------------------------------------*
+ | routine to initialise the cpu - time                  genk 05/02     |
+ *----------------------------------------------------------------------*/
+void ds_cputime_init()
+{
+#ifdef PARALLEL
+
+#else
+#ifdef DEBUG
+struct timeval tv;
+struct timezone tz;
+double sec, usec;
+#endif
+#endif
+
+
+#ifdef DEBUG
+dstrc_enter("ds_cputime_init");
+#endif
+
+#ifdef PARALLEL
+par_start=MPI_Wtime();
+#else
+#ifdef DEBUG  
+gettimeofday(&tv, &tz);   
+sec = (double)(tv.tv_sec); 
+usec = (double)(tv.tv_usec);
+seq_start=sec+0.000001*usec;
+#else
+seq_start=time(NULL);
+#endif
+#endif
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | routine to meassure the cpu - time                    genk 05/02     |
+ *----------------------------------------------------------------------*/
+double ds_cputime()
+{
+#ifdef PARALLEL
+double par_end;
+#else
+#ifdef DEBUG
+double seq_end;
+struct timeval tv;
+struct timezone tz;
+double sec, usec;
+#else
+time_t seq_end;
+#endif
+#endif
+double diff;
+
+#ifdef DEBUG
+dstrc_enter("ds_cputime");
+#endif
+
+#ifdef PARALLEL
+par_end=MPI_Wtime();
+diff=par_end-par_start;
+#else
+#ifdef DEBUG
+gettimeofday(&tv, &tz);   
+sec = (double)(tv.tv_sec);
+usec = (double)(tv.tv_usec);
+seq_end=sec+0.000001*usec;
+diff=seq_end-seq_start;
+#else
+seq_end=time(NULL);
+diff = difftime(seq_end,seq_start);
+#endif
+#endif
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return ((double)(diff)); 
+}

@@ -86,6 +86,14 @@ dstrc_enter("inpctr");
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
    }
+   if (genprob.probtyp == prb_fluid)   /* in progress !!! genk */
+   {
+      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
+      if (!solv) dserror("Allocation of SOLVAR failed");
+      
+      solv[0].fieldtyp = fluid;
+      inpctrsol(&(solv[0]));          
+   }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -120,8 +128,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
    frread();
 }
+/*------------------------------------------------------ check values */
+if (genprob.nmat<=0)
+   dserror ("No Material defined!");
 frrewind();
-
 
 frfind("-PROBLEM TYP");
 frread();
@@ -180,7 +190,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid=1;
       else                            ioflags.struct_stress_gid=0;
    }
-   
+   frchar("FLUID_SOL_FILE",buffer,&ierr);
+   if (ierr)
+   {
+      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_file=1;
+      else                            ioflags.fluid_sol_file=0;
+   }     
 
    frread();
 }
@@ -285,6 +300,7 @@ return;
 
 /*----------------------------------------------------------------------*
  | input of dynamic problem data                          m.gee 2/01    |
+ |                                                         genk 3/01    |
  *----------------------------------------------------------------------*/
 void inpctrdyn()
 {
@@ -305,6 +321,9 @@ for (i=0; i<genprob.numfld; i++)
    switch(actfield->fieldtyp)
    {
    case fluid:
+      alldyn[i].fdyn = (FLUID_DYNAMIC*)CALLOC(1,sizeof(FLUID_DYNAMIC));
+      if (!alldyn[i].fdyn) dserror("Allocation of FLUID_DYNAMIC failed");
+      inpctr_dyn_fluid(alldyn[i].fdyn);   
    break;
    case ale:
    break;
@@ -400,3 +419,163 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctr_dyn_struct */
+
+
+/*----------------------------------------------------------------------*
+ | input of dynamic problem data  for field fluid          genk 3/02    |
+ *----------------------------------------------------------------------*/
+void inpctr_dyn_fluid(FLUID_DYNAMIC *fdyn)
+{
+int    ierr;
+int    i;
+char   buffer[50];
+#ifdef DEBUG 
+dstrc_enter("inpctr_dyn_fluid");
+#endif
+
+frfind("-FLUID DYNAMIC");
+frread();
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+/*--------------read chars */
+   frchar("DYNAMICTYP",fdyn->dyntyp,&ierr);
+   frchar("TIMEINTEGR"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"Stationary",10)==0) 
+         fdyn->iopfsi=0;
+      else if (strncmp(buffer,"PM",2)==0) 
+         fdyn->iopfsi=1;
+      else if (strncmp(buffer,"Semi_Impl_One_Step",18)==0) 
+         fdyn->iopfsi=2;                  
+      else if (strncmp(buffer,"Semi_Impl_Two_Step",18)==0) 
+         fdyn->iopfsi=3;
+      else if (strncmp(buffer,"One_Step_Theta",14)==0) 
+         fdyn->iopfsi=4;
+      else if (strncmp(buffer,"Fract_Step_Theta",16)==0) 
+         fdyn->iopfsi=5;      
+      else
+         dserror("TIMEINTEGR-Type unknown");
+   }
+   frchar("STARTINGALGO"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"Semi_Impl_One_Step",18)==0) 
+         fdyn->iopfss=2;                  
+      else if (strncmp(buffer,"Semi_Impl_Two_Step",18)==0) 
+         fdyn->iopfss=3;
+      else if (strncmp(buffer,"One_Step_Theta",14)==0) 
+         fdyn->iopfss=4;
+      else if (strncmp(buffer,"Fract_Step_Theta",16)==0) 
+         fdyn->iopfss=5;      
+      else
+         dserror("STARTINGALGO unknown");
+   }   
+   frchar("NONLINITER"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"No",2)==0) 
+         fdyn->ite=0;
+      else if (strncmp(buffer,"fixed_point_like",16)==0) 
+         fdyn->ite=1;
+      else if (strncmp(buffer,"Newton",6)==0) 
+         fdyn->ite=2;                  
+      else if (strncmp(buffer,"fixed_point",11)==0) 
+         fdyn->ite=3;
+      else
+         dserror("NONLINITER-Type unknown!");     
+   }
+  frchar("CONVCHECK"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"No",2)==0) 
+      {  
+         fdyn->itchk=0;
+	 fdyn->itnorm=-1;      	  
+      }
+      else
+      {   
+	 fdyn->itchk=1;	       
+         if (strncmp(buffer,"L_infinity_norm",15)==0) 
+            fdyn->itnorm=0;
+         else if (strncmp(buffer,"L_1_norm",8)==0) 
+            fdyn->itnorm=1;                  
+         else if (strncmp(buffer,"L_2_norm",8)==0) 
+            fdyn->itnorm=2;
+         else
+            dserror("Norm for CONVCHECK unknown");   
+      }  
+   }   
+  frchar("STEADYCHECK"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"No",2)==0)
+      { 
+         fdyn->stchk=0;
+	 fdyn->stnorm=-1;	  
+      }
+      else
+      {
+         fdyn->stchk=-1;	       
+         if (strncmp(buffer,"L_infinity_norm",15)==0) 
+            fdyn->stnorm=0;
+         else if (strncmp(buffer,"L_1_norm",8)==0) 
+            fdyn->stnorm=1;                  
+         else if (strncmp(buffer,"L_2_norm",8)==0) 
+            fdyn->stnorm=2;
+         else 	  
+	    dserror("Norm for CONVCHECK unknown");   
+      }
+   }
+  frchar("INITIALFIELD"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"zero_field",10)==0) 
+         fdyn->init=0;
+      else if (strncmp(buffer,"field_from_file",15)==0) 
+         fdyn->init=1;
+      else if (strncmp(buffer,"field_by_function",17)==0) 
+         fdyn->init=-1;                      
+      else
+         dserror("INITIALFIELD unknown!");
+   }   
+/*--------------read int */
+   frint("NUMDF"     ,&(fdyn->numdf)  ,&ierr);
+   frint("NUMCONT"   ,&(fdyn->numcont),&ierr);
+   frint("UPPSS"     ,&(fdyn->uppss)  ,&ierr);
+   frint("SAVESTEP"  ,&(fdyn->idisp)  ,&ierr);
+   frint("NUMSTEP"   ,&(fdyn->nstep)  ,&ierr);
+   frint("STEADYSTEP",&i              ,&ierr);   
+   if (ierr==1)
+   {
+      if (fdyn->stchk==-1)
+          fdyn->stchk=i;
+   }
+   frint("NUMSTASTEPS"  ,&(fdyn->numfss),&ierr);
+   frint("STARTFUNCNO"  ,&i             ,&ierr);
+   if (ierr==1)
+   {
+      if (fdyn->init==-1)
+          fdyn->init=i;
+   }
+   frint("IPRERHS",&(fdyn->iprerhs),&ierr); 
+   frint("ITEMAX" ,&(fdyn->itemax) ,&ierr);  
+/*--------------read double */
+   frdouble("TIMESTEP" ,&(fdyn->dt)     ,&ierr);
+   frdouble("MAXTIME"  ,&(fdyn->maxtime),&ierr);
+   frdouble("ALPHA"    ,&(fdyn->alpha)  ,&ierr);
+   frdouble("GAMMA"    ,&(fdyn->gamma)  ,&ierr);
+   frdouble("THETA"    ,&(fdyn->theta)  ,&ierr);
+   frdouble("CONVTOL"  ,&(fdyn->ittol)  ,&ierr);
+   frdouble("STEADYTOL",&(fdyn->sttol) ,&ierr);
+   frdouble("FLUID_START1",&(fdyn->thetas),&ierr);
+
+   frread();
+}
+frrewind();
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpctr_dyn_fluid */

@@ -138,7 +138,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
    colptr++;
    /*----------------------------------- read the curvenumber or "none" */
-   ierr=sscanf(colptr," %s ",buffer);
+/*   ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
    if (strncmp(buffer,"none",4)==0) 
    {
@@ -153,15 +153,36 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
-   }
+   }  */
    /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
    /*----------------------------- and the MAXDOFPERNODE values of them */
    amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
+   amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
    for (i=0; i<MAXDOFPERNODE; i++)
    actdnode->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
    for (i=0; i<MAXDOFPERNODE; i++)
    actdnode->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
+   /*---------------------------------- read the curvenumbers or "none" */
+   for (i=0; i<MAXDOFPERNODE; i++)
+   {
+      ierr=sscanf(colptr," %s ",buffer);   
+      dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
+      if (strncmp(buffer,"none",4)==0) 
+      {
+         actdnode->dirich->curve.a.iv[i] = 0;
+         colptr = strstr(allfiles.actplace,"none");
+         dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
+         colptr += 4;
+      }
+      else
+      {
+         ierr=sscanf(colptr," %d ",&(actdnode->dirich->curve.a.iv[i]));
+         dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
+         colptr = strpbrk(colptr,"1234567890");
+         colptr++;
+      }   
+   }
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -223,7 +244,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
    colptr++;
    /*----------------------------------- read the curvenumber or "none" */
-   ierr=sscanf(colptr," %s ",buffer);
+/*   ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
    if (strncmp(buffer,"none",4)==0) 
    {
@@ -238,15 +259,36 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
-   }
+   }         */
    /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
    /*----------------------------- and the MAXDOFPERNODE values of them */
    amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
+   amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
    for (i=0; i<MAXDOFPERNODE; i++)
    actdline->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
    for (i=0; i<MAXDOFPERNODE; i++)
    actdline->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
+   /*---------------------------------- read the curvenumbers or "none" */
+   for (i=0; i<MAXDOFPERNODE; i++)
+   {
+      ierr=sscanf(colptr," %s ",buffer);
+      dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
+      if (strncmp(buffer,"none",4)==0) 
+      {
+         actdline->dirich->curve.a.iv[i] = 0;
+         colptr = strstr(allfiles.actplace,"none");
+         dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
+         colptr += 4;
+      }
+      else
+      {
+         ierr=sscanf(colptr," %d ",&(actdline->dirich->curve.a.iv[i]));
+         dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
+         colptr = strpbrk(colptr,"1234567890");
+         colptr++;
+      }
+   }           
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -308,7 +350,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-surf dirichlet conditions");
    colptr++;
    /*----------------------------------- read the curvenumber or "none" */
-   ierr=sscanf(colptr," %s ",buffer);
+/*   ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-surf dirichlet conditions");
    if (strncmp(buffer,"none",4)==0) 
    {
@@ -323,15 +365,36 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       dsassert(ierr==1,"Cannot read design-surf dirichlet conditions");
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
-   }
+   }   */
    /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
    /*----------------------------- and the MAXDOFPERNODE values of them */
    amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
+   amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
    for (i=0; i<MAXDOFPERNODE; i++)
    actdsurf->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
    for (i=0; i<MAXDOFPERNODE; i++)
-   actdsurf->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
+   actdsurf->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
+   /*----------------------------------- read the curvenumber or "none" */
+   for (i=0; i<MAXDOFPERNODE; i++)
+   {
+      ierr=sscanf(colptr," %s ",buffer);
+      dsassert(ierr==1,"Cannot read design-surf dirichlet conditions");
+      if (strncmp(buffer,"none",4)==0) 
+      {
+         actdsurf->dirich->curve.a.iv[i] = 0;
+         colptr = strstr(allfiles.actplace,"none");
+         dsassert(colptr!=NULL,"Cannot read design-surf dirichlet conditions");
+         colptr += 4;
+      }
+      else
+      {
+         ierr=sscanf(colptr," %d ",&(actdsurf->dirich->curve.a.iv[i]));
+         dsassert(ierr==1,"Cannot read design-surf dirichlet conditions");
+         colptr = strpbrk(colptr,"1234567890");
+         colptr++;
+      }
+   }
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -393,7 +456,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-vol dirichlet conditions");
    colptr++;
    /*----------------------------------- read the curvenumber or "none" */
-   ierr=sscanf(colptr," %s ",buffer);
+/*   ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-vol dirichlet conditions");
    if (strncmp(buffer,"none",4)==0) 
    {
@@ -408,15 +471,36 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       dsassert(ierr==1,"Cannot read design-vol dirichlet conditions");
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
-   }
+   }  */
    /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
    /*----------------------------- and the MAXDOFPERNODE values of them */
    amdef("onoff",&(actdvol->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
+   amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV"); 
    for (i=0; i<MAXDOFPERNODE; i++)
    actdvol->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
    for (i=0; i<MAXDOFPERNODE; i++)
-   actdvol->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
+   actdvol->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
+   /*----------------------------------- read the curvenumber or "none" */
+   for (i=0; i<MAXDOFPERNODE; i++)
+   {
+        ierr=sscanf(colptr," %s ",buffer);
+        dsassert(ierr==1,"Cannot read design-vol dirichlet conditions");
+        if (strncmp(buffer,"none",4)==0) 
+        {
+           actdvol->dirich->curve.a.iv[i] = 0;
+           colptr = strstr(allfiles.actplace,"none");
+           dsassert(colptr!=NULL,"Cannot read design-vol dirichlet conditions");
+           colptr += 4;
+        }
+        else
+        {
+           ierr=sscanf(colptr," %d ",&(actdvol->dirich->curve.a.iv[i]));
+           dsassert(ierr==1,"Cannot read design-vol dirichlet conditions");
+           colptr = strpbrk(colptr,"1234567890");
+           colptr++;
+        }  
+    }
    /*--------------------------------------------------- read next line */
    frread();
 }

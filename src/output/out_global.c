@@ -185,6 +185,9 @@ break;
 case el_fluid3:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3\n",actele->Id,actele->Id_loc);
 break;
+case el_fluid2:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",actele->Id,actele->Id_loc);
+break;
 case el_ale:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE\n",actele->Id,actele->Id_loc);
 break;
@@ -200,6 +203,14 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 actnode = &(actfield->dis[0].node[j]);
 fprintf(out,"NODE glob_Id %6d loc_Id %6d    %-18.5f %-18.5f %-18.5f \n",
         actnode->Id,actnode->Id_loc,actnode->x[0],actnode->x[1],actnode->x[2]);
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+fprintf(out,"Degrees of Freedom:\n");
+for (j=0; j<actfield->dis[0].numnp; j++)
+{
+actnode = &(actfield->dis[0].node[j]);
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
+        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
 }
 fprintf(out,"________________________________________________________________________________\n\n");
 
@@ -274,6 +285,19 @@ fprintf(out,"Converged Solution in step %d\n",step);
 fprintf(out,"================================================================================\n");
 /*-------------------------------------------------- print nodal values */
 if (ioflags.struct_disp_file==1)
+for (j=0; j<actfield->dis[0].numnp; j++)
+{
+   actnode = &(actfield->dis[0].node[j]);
+   fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+   for (k=0; k<actnode->numdf; k++) 
+   {
+      if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+      fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+   }
+   fprintf(out,"\n");
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+if (ioflags.fluid_sol_file==1)
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
    actnode = &(actfield->dis[0].node[j]);

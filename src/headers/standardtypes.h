@@ -6,6 +6,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"
+#include "time.h"
 /*----------------------------------------------------------------------*
  | includes of mpi of C                                   m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -114,6 +115,7 @@ int               struct_disp_file;    /* write displacements to .out */
 int               struct_stress_file;  /* write structural stress to .out */
 int               struct_disp_gid;     /* write structural displacements to .flavia.res */
 int               struct_stress_gid;   /* write structural stresses to .flavia.res */
+int               fluid_sol_file;      /* write vel/pre to .out */
 } IO_FLAGS;
 
 

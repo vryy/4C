@@ -54,7 +54,7 @@ typedef enum _ELEMENT_TYP
                        el_shell8,      /* 7 parameter shell element */
                        el_brick1,      /* structural brick element */
                        el_wall1,       /* 2D plane stress - plane strain element */
-                       el_fluid1,      /* 2D fluid element */
+                       el_fluid2,      /* 2D fluid element */
                        el_fluid3,      /* 3D fluid element */
                        el_ale          /* pseudo structural ale element, can be 2D or 3D */
 } ELEMENT_TYP;                         
@@ -111,7 +111,9 @@ typedef enum _CALC_ACTION
                        calc_struct_stress,
                        calc_struct_stressreduce,
                        calc_struct_eleload,
-                       calc_struct_update_istep
+                       calc_struct_update_istep,
+		       calc_fluid_init,
+		       calc_fluid
 } CALC_ACTION;                         
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |

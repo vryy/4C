@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #define TWO (2.0)
@@ -240,3 +241,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of f2_calmvv */
+
+
+
+#endif

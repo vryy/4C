@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #define PREDOF (2)
@@ -487,4 +488,4 @@ return;
 
 
 
-
+#endif

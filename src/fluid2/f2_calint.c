@@ -1,3 +1,4 @@
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 # define ONE (1.0)
@@ -340,7 +341,7 @@ dstrc_exit();
 return; 
 } /* end of f2_calint */
 
-
+#ifdef DEBUG
 /* TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST */
 /* output to the screen for testing */
 void genkout(double **matrix, double *vector, char *title, int ntitle,
@@ -379,3 +380,6 @@ printf("\n");
 return; 
 }
 /* TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST */
+#endif
+
+#endif
