@@ -61,7 +61,7 @@ dstrc_enter("ale2");
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
-/*------------------------------------------- init the element routines */
+/*------------------------------------ init the linear element routines */
 case calc_ale_init:
    ale2_static_ke(NULL,NULL,NULL,NULL,1);
 break;
@@ -70,9 +70,7 @@ case calc_ale_stiff:
    actmat = &(mat[ele->mat-1]);
    ale2_static_ke(ele,&actdata,actmat,estif_global,0);
 break;
-/*----------------------------------------------------------- do nothig */
-case calc_ale_rhs:
-break;  
+
 /*---------------------------------- init nonlinear element routines ---*/
 case calc_ale_init_nln:
    ale2_static_ke_stiff(NULL,NULL,NULL,NULL,1,container->quality);
@@ -84,6 +82,7 @@ case calc_ale_stiff_nln:
    ale2_static_ke_stiff(ele,&actdata,actmat,estif_global,0,
 			container->quality); 
 break;
+
 /*------------- calculate stiffness with prestress for initial steps ---*/
 case calc_ale_stiff_stress:  
    actmat = &(mat[ele->mat-1]);
@@ -91,6 +90,7 @@ case calc_ale_stiff_stress:
                             container->dirich,container->global_numeq
 			    ,container->quality); 
 break;
+
 /*-------------------------- init element routines for two step calc ---*/
 case calc_ale_init_step2:  /* init element routines for both steps */
    ale2_static_ke(NULL,NULL,NULL,NULL,1);
@@ -105,6 +105,7 @@ case calc_ale_stiff_step2:
 		       &container->max_stiff,&container->min,
 		       &container->max); 
 break;
+
 /*--------------------- init element routines for spring stiffnesses ---*/
 case calc_ale_init_spring:
    ale2_static_ke_spring(NULL,NULL,0,1);
@@ -114,6 +115,7 @@ case calc_ale_stiff_spring:
    actmat = &(mat[ele->mat-1]);
    ale2_static_ke_spring(ele,estif_global,container->quality,0);
 break;
+
 /*-------------------- init element routines for laplace stiffnesses ---*/
 case calc_ale_init_laplace:
    ale2_static_ke_laplace(NULL,NULL,NULL,1,
@@ -124,6 +126,11 @@ case calc_ale_stiff_laplace:
    ale2_static_ke_laplace(ele,&actdata,estif_global,0,
 			container->quality);
 break;
+
+/*----------------------------------------------------------- do nothig */
+case calc_ale_rhs:
+break;
+
 /*------------------------------------------------------------- default */
 default:
    dserror("action unknown");

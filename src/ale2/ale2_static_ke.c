@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale2_static_ke' which integrates the 
-linear stiffness for the 2d ale element
+\brief contains classic routines which integrate the stiffness for the 2d 
+ale element
 
 <pre>
 Maintainer: Christiane Foerster
@@ -348,8 +348,8 @@ for (lr=0; lr<nir; lr++)
      /*--------------------------------- elastic stiffness matrix ke ---*/
      ale_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
-     if(nir == 1 && nis == 1)
-       ale2_hourglass(ele,estif);
+/*     if(nir == 1 && nis == 1)
+       ale2_hourglass(ele,estif); */
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
@@ -886,7 +886,6 @@ static DOUBLE **estif;    /* element stiffness matrix ke */
       
 static ARRAY    xyz_a;    /* actual element coordiantes */
 static DOUBLE **xyz;  
-
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("ale2_static_ke_spring");
@@ -1165,8 +1164,6 @@ dstrc_exit();
 return; 
 } /* end of ale2_static_ke_laplace */
 /*----------------------------------------------------------------------*/
-
-
 
 
 /*! @} (documentation module close)*/
