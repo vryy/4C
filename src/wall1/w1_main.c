@@ -1,5 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -9,14 +10,14 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  | main wall1  control routine                               al 6/01    |
  *----------------------------------------------------------------------*/
-void wall1(       PARTITION   *actpart,
-                  INTRA       *actintra,
-                  ELEMENT     *ele,
-                  ARRAY       *estif_global,
-                  ARRAY       *emass_global,
-                  double      *global_vec,
-                  int          global_numeq,
-                  CALC_ACTION *action)
+void wall1(PARTITION   *actpart,
+           INTRA       *actintra,
+           ELEMENT     *ele,
+           ARRAY       *estif_global,
+           ARRAY       *emass_global,
+           double      *global_vec,
+           int          global_numeq,
+           CALC_ACTION *action)
 {
 int  i;
 W1_DATA      actdata;
@@ -33,6 +34,7 @@ switch (*action)
 case calc_struct_init:
    w1init(actpart, mat);
    w1static_ke(NULL,NULL,NULL,NULL,NULL,0,1);
+   w1_cal_stress(NULL,NULL,NULL,NULL,NULL,0,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
@@ -52,6 +54,8 @@ case calc_struct_nlnstiffmass:
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
+   actmat = &(mat[ele->mat-1]);
+   w1_cal_stress(ele,&actdata,actmat,estif_global,global_vec,global_numeq,0);
 break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
 case calc_struct_eleload:

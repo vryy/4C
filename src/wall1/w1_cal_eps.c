@@ -1,5 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  | evaluates linear/nonlinear strains from               al    9/01     |
  | displacement derivatives                                             |
@@ -26,6 +27,11 @@ dstrc_enter("w1_eps");
   eps[1] = u22;
   eps[2] = u12 + u21;
 
+  if(wtype==plane_strain)
+  {
+    eps[3] = 0.;
+  }
+  
   if(wtype==rotat_symmet)
   {
     u33 = disd[4];

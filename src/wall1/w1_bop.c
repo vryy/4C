@@ -1,12 +1,14 @@
 #include "../headers/standardtypes.h"
+#include "wall1.h"
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
 void w1_bop(double    **bop,
-               double    **deriv,
-               double    **xjm,
-               double      det,
-               int         iel)
+            double    **deriv,
+            double    **xjm,
+            double      det,
+            int         iel)
 {
 /*----------------------------------------------------------------------*/
 int inode, node_start;

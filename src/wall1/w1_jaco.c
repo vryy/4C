@@ -1,13 +1,15 @@
 #include "../headers/standardtypes.h"
+#include "wall1.h"
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
 void w1_jaco(double     *funct,
-                double    **deriv,
-                double    **xjm,
-                double     *det,
-                ELEMENT    *ele,
-                int         iel)
+             double    **deriv,
+             double    **xjm,
+             double     *det,
+             ELEMENT    *ele,
+             int         iel)
 {
 /*----------------------------------------------------------------------*/
 int k;

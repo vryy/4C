@@ -1,14 +1,16 @@
 #include "../headers/standardtypes.h"
+#include "wall1.h"
+#include "wall1_prototypes.h"
 
 /*----------------------------------------------------------------------*
  | shape functions and derivatives                               al 9/01|
  *----------------------------------------------------------------------*/
 void w1_funct_deriv(double     *funct, 
-                       double    **deriv, 
-                       double      r, 
-                       double      s,
-                       ELEMENT_TYP typ,
-                       int         option)
+                    double    **deriv, 
+                    double      r, 
+                    double      s,
+                    DIS_TYP   typ,
+                    int         option)
 {
 int            i, ii;
 const double   q12 = 1.0/2.0;
@@ -70,19 +72,19 @@ case quad8:/*------------- quadratic interpolation without central node */
       deriv[1][1]= q14*rm;
       deriv[1][2]=-q14*rm;
       deriv[1][3]=-q14*rp;
-      deriv[2][4]=-1.0*r*sp;
-      deriv[2][5]=-q12*  s2;
-      deriv[2][6]=-1.0*r*sm;
-      deriv[2][7]= q12*  s2;
-      deriv[3][8]= q12*r2  ;
-      deriv[3][5]=-1.0*rm*s;
-      deriv[3][6]=-q12*r2  ;
-      deriv[3][7]=-1.0*rp*s;
+      deriv[0][4]=-1.0*r*sp;
+      deriv[0][5]=-q12*  s2;
+      deriv[0][6]=-1.0*r*sm;
+      deriv[0][7]= q12*  s2;
+      deriv[1][4]= q12*r2  ;
+      deriv[1][5]=-1.0*rm*s;
+      deriv[1][6]=-q12*r2  ;
+      deriv[1][7]=-1.0*rp*s;
       
-      deriv[1][1]=deriv[1][1] - q12*(deriv[1][5] + deriv[1][8]);                   
-      deriv[2][1]=deriv[2][1] - q12*(deriv[2][5] + deriv[2][8]);                   
+      deriv[0][0]=deriv[0][0] - q12*(deriv[0][4] + deriv[0][7]);                   
+      deriv[1][0]=deriv[1][0] - q12*(deriv[1][4] + deriv[1][7]);                   
    }
-   for (i=1; i<3; i++)
+   for (i=1; i<=3; i++)
    {
       ii=i + 3;                                                                
       funct[i]=funct[i] - q12*(funct[ii] + funct[ii+1]);

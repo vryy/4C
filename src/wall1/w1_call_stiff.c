@@ -1,4 +1,6 @@
 #include "../headers/standardtypes.h"
+#include "wall1.h"
+#include "wall1_prototypes.h"
 
 /*----------------------------------------------------------------------*
  | usual stiffness matrix total lagrangian formulation           al 9/01|

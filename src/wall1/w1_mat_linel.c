@@ -1,5 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  | constitutive matrix - linear elastic - 2D              al    9/01    |
  | plane stress, plane strain, rotational symmetry                      |
@@ -13,19 +14,19 @@ dstrc_enter("w1_mat_linel");
 /*----------------------------------------------------- plane stress ---*/
   switch(wtype)
   {
-  case plain_stress:
-    e1=ym/(1.0 - pv*pv);
+  case plane_stress:
+    e1=ym/(1. - pv*pv);
     e2=pv*e1;
-    e3=e1*(1.0 - pv)/2.0;
+    e3=e1*(1. - pv)/2.;
 
     d[0][0]=e1;
     d[0][1]=e2;
-    d[0][2]=0.0;
+    d[0][2]=0.;
     d[1][0]=e2;
     d[1][1]=e1;
-    d[1][2]=0.0;
-    d[2][0]=0.0;
-    d[2][1]=0.0;
+    d[1][2]=0.;
+    d[2][0]=0.;
+    d[2][1]=0.;
     d[2][2]=e3;
   break;
   default:
@@ -36,14 +37,22 @@ dstrc_enter("w1_mat_linel");
 
     d[0][0]=a1;
     d[0][1]=b1;
+    d[0][2]=0.;
+    d[0][3]=b1;
+    
     d[1][0]=b1;
     d[1][1]=a1;
-    d[2][2]=c1/2.0;
-
-    d[0][3]=b1;
+    d[1][2]=0.;
     d[1][3]=b1;
+
+    d[2][0]=0.;
+    d[2][1]=0.;
+    d[2][2]=c1/2.;
+    d[2][3]=0.;
+    
     d[3][0]=b1;
     d[3][1]=b1;
+    d[3][2]=0.;
     d[3][3]=a1;
   break;
   }

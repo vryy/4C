@@ -1,5 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  | read wall element                                         al 9/01    |
  *----------------------------------------------------------------------*/
@@ -24,6 +25,26 @@ if (ierr==1)
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
+frchk("QUAD8",&ierr);
+if (ierr==1) 
+{
+   ele->distyp = quad8;
+   ele->numnp=8;
+   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+   frint_n("QUAD8",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
+}
+frchk("QUAD9",&ierr);
+if (ierr==1) 
+{
+   ele->distyp = quad9;
+   ele->numnp=9;
+   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+   frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
+}
 /*------------------------------------------ reduce node numbers by one */
 for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 /*-------------------------------------------- read the material number */
@@ -36,11 +57,11 @@ if (ierr!=1) dserror("Reading of WALL1 element failed");
 frint_n("GP",&(ele->e.w1->nGP[0]),2,&ierr);
 if (ierr!=1) dserror("Reading of WALL1 element failed");
 /*---------------------------------------------- read 2D problem type */
-ele->e.w1->wtype = plain_stress; /* default */
-frchk("PLAIN_STRESS",&ierr);
-if (ierr==1) ele->e.w1->wtype = plain_stress;
-frchk("PLAIN_STRAIN",&ierr);
-if (ierr==1) ele->e.w1->wtype = plain_strain;
+ele->e.w1->wtype = plane_stress; /* default */
+frchk("PLANE_STRESS",&ierr);
+if (ierr==1) ele->e.w1->wtype = plane_stress;
+frchk("PLANE_STRAIN",&ierr);
+if (ierr==1) ele->e.w1->wtype = plane_strain;
 frchk("ROTATIONAL_SYMMETRY",&ierr);
 if (ierr==1) ele->e.w1->wtype = rotat_symmet;
     

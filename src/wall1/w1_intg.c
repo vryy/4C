@@ -4,22 +4,22 @@
 /*----------------------------------------------------------------------*
  | integration points                                        al 6/01    |
  -----------------------------------------------------------------------|
- |     nGP[0] --> NUMBER OF INTEGRATION POINTS R-DIRECTION              |
- |                FOR TRIANGULAR ELEMENTS :                             |
- |                NUMBER OF OVER ALL INTEGRATION POINTS                 |
- |     nGP[1] --> NUMBER OF INTEGRATION POINTS S-DIRECTION              |
- |                FOR TRIANGULAR ELEMENTS :                             |
- |                PARAMETER FOR ALTERNATIVE INTEGRATION                 |
- |                0 = STANDARD    1 = GAUSS-RADAU                       |
- |     NTYP   --> 1 = TRIANGULAR, 0 = RECTANGULAR  ELEMENT              |
- |     XGRR   --> GAUSS SAMPLING POINTS        R-DIRECTION              |
- |     XGSS   --> GAUSS SAMPLING POINTS        S-DIRECTION              |
- |     WGTR   --> WEIGHTING FACTORS            R-DIRECTION              |
- |     WGTS   --> WEIGHTING FACTORS            S-DIRECTION              |
+ |     ngp[0] --> number of integration points r-direction              |
+ |                for triangular elements :                             |
+ |                number of over all integration points                 |
+ |     ngp[1] --> number of integration points s-direction              |
+ |                for triangular elements :                             |
+ |                parameter for alternative integration                 |
+ |                0 = standard    1 = gauss-radau                       |
+ |     ntyp   --> 1 = triangular, 0 = rectangular  element              |
+ |     xgrr   --> gauss sampling points        r-direction              |
+ |     xgss   --> gauss sampling points        s-direction              |
+ |     wgtr   --> weighting factors            r-direction              |
+ |     wgts   --> weighting factors            s-direction              |
  *----------------------------------------------------------------------*/
-void w1intg(const ELEMENT   *ele,
-               W1_DATA         *data,
-               int              option)
+void w1intg(ELEMENT   *ele,
+            W1_DATA   *data,
+            int        option)
 {
 int i, k;
 
@@ -37,6 +37,23 @@ dstrc_enter("w1intg");
 /*----------------------------------------------------------------------*/
 if (option==0)
 {                                                  /* initialize arrays */
+  for (i=0; i<13; i++)
+  {
+    for (k=0; k<8; k++)
+    {
+       xgr[i][k] = 0.;
+       xgs[i][k] = 0.;
+      wgtt[i][k] = 0.;
+    }
+  }
+  for (i=0; i<6; i++)
+  {
+    for (k=0; k<6; k++)
+    {
+       xg[i][k] = 0.;
+       wgt[i][k] = 0.;
+    }
+  }
 /*----------------------------------------------------------------------*  
  |     INTEGRATION PARAMETERS FOR    R E C T A N G U L A R   ELEMENTS   |        
  |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |      

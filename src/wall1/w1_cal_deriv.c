@@ -1,10 +1,11 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
+#include "wall1_prototypes.h"
 /*----------------------------------------------------------------------*
  | compute displacement derivatives                          al 9/01    |
  *----------------------------------------------------------------------*/
 void w1_disd(ELEMENT   *ele,
-             double   **bop,
+             double   **bop, 
              WALL_TYPE wtype,
              double   *disd)
 {
@@ -35,14 +36,6 @@ dstrc_enter("w1_disd");
       disd[4] += bop[3][node_start+0]*ele->node[inode]->sol.a.da[0][1];
     } /* end of loop over nodes */
   }
-  
-/*
-      DO 100 I=1,IEL
-        DISD(1)=DISD(1) + B(1,1,I)*EDIS(1,I)
-        DISD(2)=DISD(2) + B(2,2,I)*EDIS(2,I)
-        DISD(3)=DISD(3) + B(3,1,I)*EDIS(1,I)
-        DISD(4)=DISD(4) + B(3,2,I)*EDIS(2,I)
-  100 CONTINUE                              
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
