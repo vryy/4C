@@ -1,6 +1,13 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
+ | define the global structure solv                                     |
+ |                                                                      |
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+ struct _SOLVAR  *solv;
+/*----------------------------------------------------------------------*
  |  routine to control all solver calls                  m.gee 9/01     |
  *----------------------------------------------------------------------*/
 void solver_control(

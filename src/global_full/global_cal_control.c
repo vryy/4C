@@ -1,5 +1,18 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+/*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()

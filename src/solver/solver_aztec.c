@@ -1,6 +1,12 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
  |  control solver lib AZTEC                             m.gee 9/01     |
  *----------------------------------------------------------------------*/
 void solver_az_msr( 

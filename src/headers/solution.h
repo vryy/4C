@@ -437,13 +437,9 @@ struct _ARRAY           vec;             /* local piece of distr. vector */
  *----------------------------------------------------------------------*/
 #include "prototypes_sol.h"
 /*----------------------------------------------------------------------*
- | define the global structure solv                                     |
+ | define the global structure pointer *solv                            |
  |                                                                      |
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | is defined in solver_control.c
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
-SOLVAR            *solv;
-
-
-
-

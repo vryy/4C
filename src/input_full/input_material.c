@@ -1,4 +1,22 @@
 #include "../headers/standardtypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
 
 /*----------------------------------------------------------------------*
  | input of materials                                     m.gee 4/01    |

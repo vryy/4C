@@ -1,4 +1,16 @@
 #include "../headers/standardtypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate design if needed                                 |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _DESIGN *design;
 
 /*----------------------------------------------------------------------*
  | input of design                                        m.gee 4/01    |

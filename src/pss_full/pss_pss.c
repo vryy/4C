@@ -1,4 +1,10 @@
 #include "../headers/standardtypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  | write a record to pss-file                            m.gee 11/00    |

@@ -1,6 +1,24 @@
 #include "../headers/standardtypes.h"
 #include "gid.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+/*----------------------------------------------------------------------*
  |  routine to write all fields to gid - meshes          m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_gid_msh()

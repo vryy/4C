@@ -1,5 +1,17 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+/*----------------------------------------------------------------------*
  |  put dofs to nodes                                    m.gee 5/01     |
  |  the numbering of the dofs is done the same on all procs             |
  |  because it seems practical that all                                 |

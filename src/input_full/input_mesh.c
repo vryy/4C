@@ -1,11 +1,26 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
  | Global variables for this file                        m.gee 11/00    |
  *----------------------------------------------------------------------*/
 static ARRAY tmpnodes1;
 static ARRAY tmpnodes2;
-
-
 
 /*----------------------------------------------------------------------*
  | input of fields                                        m.gee 4/01    |

@@ -1,6 +1,29 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
-
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | global variable *partition, vector of lenght numfld of structures    |
+ | PARTITION is defined in global_control.c                             |
+ *----------------------------------------------------------------------*/
+extern struct _PARTITION  *partition;
 /*----------------------------------------------------------------------*
  |  calculate the storage mask of the global matrices    m.gee 5/01     |
  |  for various kinds of distributed sparsity patterns                  |

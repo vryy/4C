@@ -1,5 +1,13 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | tracing variables                                                    |
+ | defined in pss_ds.c                                                  |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+extern struct _TRACE         trace;
+#endif
+/*----------------------------------------------------------------------*
  | Initialize program service systems                     m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void ntaini(int argc, char *argv[])

@@ -267,58 +267,73 @@ struct _ARRAY       arcfac;               /* vector of load factors of increment
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
- | structure which holds all file pointers                              |
- *----------------------------------------------------------------------*/
-FILES             allfiles;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
  | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
-PAR               par;
+extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of partitions, size numfld                                    |
+ | struct _PARTITION    *partition; defined in gobal_control.c          |
  *----------------------------------------------------------------------*/
-PARTITION        *partition;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
-GENPROB           genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c                                 |
+ | struct _FILES  allfiles;                                             |
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ | struct _SOLVAR  *solv;                                               |
+ *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | tracing variables                                                    |
+ | defined in pss_ds.c                                                  |
+ | #ifdef DEBUG                                                         |
+ | extern struct _TRACE         trace;                                  |
+ | #endif                                                               |
  *----------------------------------------------------------------------*/
-#ifdef DEBUG
-TRACE             trace;
-#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate design if needed                                 |
+ | defined in global_control.c                                          |
+ | struct _DESIGN       *design;                                        |
  *----------------------------------------------------------------------*/
-DESIGN            *design;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
- | vector of numfld FIELDs                                              |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ | struct _FIELD         *field;                                        |
  *----------------------------------------------------------------------*/
-FIELD             *field;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | struct _DYNAMIC      *dyn;                                           |
  *----------------------------------------------------------------------*/
-DYNAMIC           *dyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
+ | defined in global_control.c                                          |
+ | struct _STATIC_VAR   *statvar;                                       |
  *----------------------------------------------------------------------*/
-STATIC_VAR        *statvar;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
+ | defined in global_control.c                                          |
+ | struct _MATERIAL     *mat;                                           |
  *----------------------------------------------------------------------*/
-MATERIAL          *mat;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ | struct _IO_FLAGS        ioflags;                                     |
  *----------------------------------------------------------------------*/
-IO_FLAGS           ioflags;

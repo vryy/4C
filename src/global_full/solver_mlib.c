@@ -1,6 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
-#include <veclib.h> 
+#ifdef MLIB_PACKAGE
+#include "/opt/mlib/include/veclib.h" 
+#endif
 /* prototypes */
 /*----------------------------------------------------------------------*
  |  control solver lib MLIB                               al   10/01    |

@@ -1,6 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
-#include <veclib.h> 
+#ifdef MLIB_PACKAGE
+#include "/opt/mlib/include/veclib.h" 
+#endif
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
  | (defined in globcalelm.c, so they are extern here)                |                
@@ -27,7 +29,8 @@ int  add_mds(struct _PARTITION     *actpart,
   int         lm[MAXDOFPERELE];/* location vector for this element */
   double      value;
   double    **estif;     /* element matrix to be added to system matrix */
-  MLVAR       *mlvar;
+  int         owner[MAXDOFPERELE];      /* the owner of every dof */
+MLVAR       *mlvar;
 /*----------------------------------------------------------------------*/
   mlvar = actsolv->mlvar;
 /*----------------------------------------------------------------------*/

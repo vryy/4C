@@ -1,5 +1,41 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure which holds all file pointers                              |
+ *----------------------------------------------------------------------*/
+struct _FILES           allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ *----------------------------------------------------------------------*/
+extern struct _DYNAMIC  *dyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate static variables if needed                       |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _STATIC_VAR  *statvar;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
 
 /*----------------------------------------------------------------------*
  | input of control information                           m.gee 8/00    |

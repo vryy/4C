@@ -1,4 +1,18 @@
 #include "../headers/standardtypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | tracing variables                                                    |
+ | defined in pss_ds.c                                                  |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+extern struct _TRACE         trace;
+#endif
 
 /*----------------------------------------------------------------------*
  | input of problem title         m.gee 8/00    |

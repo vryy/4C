@@ -1,5 +1,41 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | global variable *partition, vector of lenght numfld of structures    |
+ | PARTITION is defined in global_control.c                             |
+ *----------------------------------------------------------------------*/
+extern struct _PARTITION  *partition;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate static variables if needed                       |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _STATIC_VAR  *statvar;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
 
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear static execution       m.gee 11/01     |
@@ -117,11 +153,7 @@ actsolv->nrhs = 2;
 solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
 for (i=0; i<actsolv->nrhs; i++) solserv_zero_vec(&(actsolv->rhs[i]));
 /*------------------------------------------ number of solution vectors */
-/*----- there is one solution vector for each step to hold total displ. */
-/* we need on solution vector more then we have steps, because the      */
-/* 'stupid' equilib. iteration routine conequ puts the results of       */
-/* a converged step as initial values to the next step. This is also    */
-/* done in the last step                                                */
+/*-------------------- there is one solution vector to hold total displ.*/
 actsolv->nsol= 1;
 solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
 for (i=0; i<actsolv->nsol; i++) solserv_zero_vec(&(actsolv->sol[i]));
@@ -183,7 +215,7 @@ nln_data.rlnew = 0.0;
 nln_data.rlpre = 0.0;
 amdef("arcfac",&(nln_data.arcfac),nstep,1,"DV");
 amzero(&(nln_data.arcfac));
-/*-------------------------------- init the output to GID postprozessor */
+/*----------------------------------------- output to GID postprozessor */
 if (par.myrank==0) 
 {
    out_gid_domains(actfield);
@@ -235,7 +267,7 @@ for (kstep=0; kstep<nstep; kstep++)
     }
     /*---------------------------------------- print out results to out */
     out_sol(actfield,actpart,actintra,kstep);
-    
+    /*----------------------------------------- printout results to gid */
     if (par.myrank==0) 
     {
        if (ioflags.struct_disp_gid==1)
@@ -243,7 +275,6 @@ for (kstep=0; kstep<nstep; kstep++)
        if (ioflags.struct_stress_gid==1)
        out_gid_sol("stress"      ,actfield,actintra,kstep);
     }
-    /*--------------------------------------- print out stresses to out */
 } /* end of (kstep=0; kstep<nstep; kstep++) */
 /*----------------------------------------------------------------------*/
 end:

@@ -1,5 +1,20 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | tracing variables                                                    |
+ | defined in pss_ds.c                                                  |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+extern struct _TRACE         trace;
+#endif
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+/*----------------------------------------------------------------------*
  | input of control, element and load information         m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void ntainp()

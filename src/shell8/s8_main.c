@@ -1,6 +1,13 @@
 #include "../headers/standardtypes.h"
 #include "shell8.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+
+/*----------------------------------------------------------------------*
  | main shell8 control routine                            m.gee 6/01    |
  *----------------------------------------------------------------------*/
 void shell8(      FIELD     *actfield,
