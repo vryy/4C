@@ -975,11 +975,12 @@ break;
 
 #ifdef AZTEC_PACKAGE
 case msr:
-  /*
+#if 0
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_msr(actintra,mat->msr,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
-  */
+#endif
+#if 1
 {
   struct _AZ_ARRAY_MSR* msr_array = mat->msr;
 
@@ -991,6 +992,12 @@ case msr:
   DOUBLE     *tmprhs;
   ARRAY       tmprhs_a;
 
+#if 0
+  am_debug_out(actintra, &(msr_array->update), "update");
+  am_debug_out(actintra, &(msr_array->val), "val");
+  am_debug_out(actintra, &(msr_array->bindx), "bindx");
+#endif
+  
 /*----------------------- transform matrix to processor local numbering */
     if (msr_array->is_transformed==0) {
       msr_array->is_transformed = 1;
@@ -1054,7 +1061,12 @@ case msr:
                  NULL, 
                  AZ_LOCAL);
     }
-    
+
+    msr_array->N_external = msr_array->data_org[AZ_N_external];
+
+#if 0
+    am_debug_out(actintra, &(msr_array->bindx), "bindx_backup");
+#endif
 
   /* reorder rhs-vector */
   tmprhs = amdef("tmprhs",&tmprhs_a,msr_array->numeq+msr_array->N_external,1,"DV");
@@ -1087,6 +1099,7 @@ case msr:
   /* delete temporary solution vector */
   amdel(&tmpsol_a);
 }
+#endif
 break;
 #endif
 
