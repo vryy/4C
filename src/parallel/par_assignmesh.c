@@ -147,7 +147,7 @@ for (i=0; i<genprob.numfld; i++)
       /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
       /* parition field, such that cuts are through elements and each node
          is assigned exactly one proc.
-         Attention: From now on information on different procs can difer!!
+         Attention: From now on information on different procs can differ!!
          severely !! (Additive Schwartz)*/
       /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
       if (part==1)
