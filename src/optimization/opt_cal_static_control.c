@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routines 'opt_calsta',to control static execution
+       and 'opt_stalin' to control linear static structural analysis
+       for optimization
+
+*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
+/*----------------------------------------------------------------------*/
+
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -273,3 +285,8 @@ dstrc_exit();
 #endif
 return;
 } /* end of opt_stalin */
+/*----------------------------------------------------------------------*/
+#endif /* stop including optimization code to ccarat :*/
+/*----------------------------------------------------------------------*/
+
+/*! @} (documentation module close)*/

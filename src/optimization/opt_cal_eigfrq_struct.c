@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'calfrq',
+      to control dynamic eigenvalue analysis for optimization
+       
+
+*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
+/*----------------------------------------------------------------------*/
+
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -568,6 +580,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of calfrq */
+/*----------------------------------------------------------------------*/
+#endif /* stop including optimization code to ccarat :*/
+/*----------------------------------------------------------------------*/
+
+/*! @} (documentation module close)*/
 
 
 

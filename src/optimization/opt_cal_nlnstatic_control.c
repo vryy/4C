@@ -1,3 +1,13 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routines to control nonlinear static execution
+       for optimization
+*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
+/*----------------------------------------------------------------------*/
+
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -1056,4 +1066,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of nlnequ */
+/*----------------------------------------------------------------------*/
+#endif /* stop including optimization code to ccarat :*/
+/*----------------------------------------------------------------------*/
+
+/*! @} (documentation module close)*/
 

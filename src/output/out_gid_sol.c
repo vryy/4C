@@ -178,7 +178,9 @@ for (i=0; i<genprob.numfld; i++)
 #endif /*D_SHELL9*/
       case el_brick1: 
          /*--- initialize stress output for hex ---*/
+#ifdef D_BRICK1   
          c1_out_gid_sol_str(NULL, actfield, 0, 1);
+#endif
          /*----------------------------------------*/
          if (actele->numnp==8)  
          {
