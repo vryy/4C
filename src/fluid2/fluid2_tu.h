@@ -25,7 +25,6 @@ fluid element fluid2_tu are stored.
 typedef struct _FLUID2_TU
 {
 
-INT                ntyp;     /*!< flag for element type: 1=quad; 2=tri    */
 INT                nGP[2];   /*!< number of gaussian points in rs direct. */
 INT                is_ale;   /*!< flag whether there is ale to me or not  */
 struct _ELEMENT   *my_ale;   /*!< pointer to my ale ele, otherwise NULL   */
