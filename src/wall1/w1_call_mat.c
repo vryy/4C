@@ -111,3 +111,37 @@ dstrc_exit();
 return; 
 } /* end of w1_call_mat */
 /*----------------------------------------------------------------------*/
+
+#if 1
+/*----------------------------------------------------------------------*/
+/* get density out of material law                        ah 06/02      */
+/*----------------------------------------------------------------------*/
+void w1_getdensity(MATERIAL   *mat, double *density)
+{
+#ifdef DEBUG 
+dstrc_enter("w1_getdensity");
+#endif
+/*----------------------------------------------------------------------*/
+/*------------------------------------------------ switch material type */
+switch(mat->mattyp)
+{
+case m_stvenant:/*-------------------------------------- linear elastic */
+   *density = mat->m.stvenant->density;
+break;
+case m_pl_mises:/*--------------------------- von mises material law ---*/
+  dserror("Ilegal typ of material for this element");
+break;
+case m_pl_dp:/*------------------------- drucker prager material law ---*/
+   dserror("Ilegal typ of material for this element");
+break;
+default:
+   dserror("Ilegal typ of material for this element");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of w1_getdensity */
+#endif
