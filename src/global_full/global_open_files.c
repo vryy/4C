@@ -286,6 +286,7 @@ if (par.myrank==0)
 #endif 
         exit(1);
      }
+    allfiles.num_flaviaresfiles = 1;
     printf("output is written to       %s\n",allfiles.outputfile_name);
 }     
 /*--------------------------to open any other file just add block here */
@@ -323,7 +324,21 @@ if (genprob.visual>0)
      {
         printf("Opening of visual data file .pss failed\n");
      }
-    printf("visual data are read from    %s\n",allfiles.vispssfile_name);
+     printf("visual data are read from    %s\n",allfiles.vispssfile_name);
+/*------------------------------- kenner of flavia.res file and open it */
+     allfiles.visreslength=strlen(argv[2]);
+     allfiles.visresfile_kenner=argv[2];    
+     strcpy(allfiles.visresfile_name,allfiles.visresfile_kenner);
+     charpointer=allfiles.visresfile_name+strlen(allfiles.visresfile_kenner);
+     charpointer = allfiles.visresfile_name+strlen(allfiles.visresfile_name); 
+
+     strncpy(charpointer,".flavia.res",11);
+     if ( (allfiles.gidres=fopen(allfiles.visresfile_name,"r"))==NULL)
+     {
+        printf("Opening of visual data file .flavia.res failed\n");
+     }
+     printf("visual data are read from    %s\n",allfiles.visresfile_name);
+
    }
 /*------------------------------------------------------open .err file */     
      strcpy(allfiles.outputfile_name,allfiles.vispssfile_kenner);
