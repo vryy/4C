@@ -182,8 +182,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*------------------------------------------------------ check values */
 if (genprob.nmat<=0)
    dserror ("No Material defined!");
-/*------------------------------  default value for multidis flag = 0 */
-genprob.multidis=0;
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
 /*----------------------------------------- defualt values for output */
@@ -219,15 +217,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (strncmp("Static" ,buffer,6)==0) genprob.timetyp=time_static;
     if (strncmp("Dynamic",buffer,7)==0) genprob.timetyp=time_dynamic;
   }
-
-  frchar("MULTIDIS"   ,buffer,            &ierr);
-  if (ierr==1)
-  {
-    if (strncmp("yes" ,buffer,3)==0) genprob.multidis=1;
-    if (strncmp("YES" ,buffer,3)==0) genprob.multidis=1;
-    if (strncmp("Yes" ,buffer,3)==0) genprob.multidis=1;
-  }      
-
   frint("RESTART"    ,&(restart),&ierr);
   if (ierr==1)
   {
@@ -764,6 +753,7 @@ dstrc_enter("inpctr_dyn_fluid");
 #endif
 
 /*-------------------------------------------------- set default values */
+fdyn->dyntyp=0;
 fdyn->iop=2;
 fdyn->freesurf=0;
 fdyn->surftens=0;
@@ -774,7 +764,7 @@ fdyn->itnorm=2;
 fdyn->stchk=0;
 fdyn->init=0;
 fdyn->viscstr=0;
-fdyn->numdf=3;  
+fdyn->numdf=genprob.ndim+1;  
 fdyn->numcont=0;
 fdyn->uppss=1;  
 fdyn->upout=1;  
@@ -783,50 +773,45 @@ fdyn->res_write_evry=20;
 fdyn->nstep=1;
 fdyn->stchk=5;  
 fdyn->nums=0;
-fdyn->init=-1;
 fdyn->iprerhs=1;
 fdyn->itemax=3;
 fdyn->dt=0.01;    
 fdyn->maxtime=1000.0;
-fdyn->alpha=1.0;
-fdyn->gamma=1.0; 
 fdyn->theta=0.5;
 fdyn->ittol=EPS6; 
 fdyn->sttol=EPS6; 
+fdyn->turbu=0;
  
 if (frfind("-FLUID DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
 /*--------------read chars */
-   frchar("DYNAMICTYP",fdyn->dyntyp,&ierr);
+   frchar("DYNAMICTYP",buffer,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"Projection_Method",17)==0) 
+         fdyn->dyntyp=1;
+      else if (strncmp(buffer,"Nlin_Time_Int",13)==0)
+         fdyn->dyntyp=0;
+      else
+         dserror("DYNAMICTYP unknown");      
+   }
    frchar("TIMEINTEGR"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"Stationary",10)==0) 
          fdyn->iop=0;
-      else if (strncmp(buffer,"Semi_Impl_One_Step",18)==0) 
-         fdyn->iop=2;                  
-      else if (strncmp(buffer,"Semi_Impl_Two_Step",18)==0) 
-         fdyn->iop=3;
-      else if (strncmp(buffer,"One_Step_Theta",14)==0) 
-         fdyn->iop=4;
-      else if (strncmp(buffer,"Fract_Step_Theta",16)==0) 
-         fdyn->iop=5;      
+      else if (strncmp(buffer,"One_Step_Theta",18)==0) 
+         fdyn->iop=4;                  
       else
          dserror("TIMEINTEGR-Type unknown");
    }
    frchar("STARTINGALGO"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"Semi_Impl_One_Step",18)==0) 
-         fdyn->iops=2;                  
-      else if (strncmp(buffer,"Semi_Impl_Two_Step",18)==0) 
-         fdyn->iops=3;
-      else if (strncmp(buffer,"One_Step_Theta",14)==0) 
+      if (strncmp(buffer,"One_Step_Theta",14)==0) 
          fdyn->iops=4;
-      else if (strncmp(buffer,"Fract_Step_Theta",16)==0) 
-         fdyn->iops=5;      
       else
          dserror("STARTINGALGO unknown");
    }   
@@ -963,7 +948,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("TURBULENCE"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"No",2)==0) 
+      if (strncmp(buffer,"No",2)==0 ||
+          strncmp(buffer,"NO",2)==0 ||
+	  strncmp(buffer,"no",2)==0   ) 
          fdyn->turbu=0;
       else if (strncmp(buffer,"algebraic",9)==0) 
          fdyn->turbu=1;
@@ -977,7 +964,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("DISC_CAPT"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"No",2)==0) 
+      if (strncmp(buffer,"No",2)==0 ||
+          strncmp(buffer,"NO",2)==0 ||
+	  strncmp(buffer,"no",2)==0   ) 
          fdyn->dis_capt=0;
       else if (strncmp(buffer,"Yes",3)==0) 
          fdyn->dis_capt=1;
@@ -986,7 +975,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }   
 
 /*--------------read INT */
-   frint("NUMDF"      ,&(fdyn->numdf)         ,&ierr);
    frint("NUMCONT"    ,&(fdyn->numcont)       ,&ierr);
    frint("UPPSS"      ,&(fdyn->uppss)         ,&ierr);
    frint("UPOUT"      ,&(fdyn->upout)         ,&ierr);
@@ -1012,8 +1000,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*--------------read DOUBLE */
    frdouble("TIMESTEP" ,&(fdyn->dt)     ,&ierr);
    frdouble("MAXTIME"  ,&(fdyn->maxtime),&ierr);
-   frdouble("ALPHA"    ,&(fdyn->alpha)  ,&ierr);
-   frdouble("GAMMA"    ,&(fdyn->gamma)  ,&ierr);
    if (thetafound==0)
    {
       frdouble("THETA"    ,&(fdyn->theta)  ,&ierr);
@@ -1033,6 +1019,12 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
+/*-------------------------------------------------- plausibility check */
+if (fdyn->freesurf>0)
+#ifndef D_FSI
+dserror("Freesurf requires FSI functions to compile in!\n");
+#endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1210,22 +1202,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 frrewind();
-/*----------------------------------------------------------------------*/
 
 end:
-/*------------------------------------------------ check restart option */
-if (fsidyn->res_write_evry >= fsidyn->upres)
-{
-   mod_res_write = fsidyn->res_write_evry % fsidyn->upres;
-   if (mod_res_write!=0)
-   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");
-}
-else
-{
-   mod_res_write =  fsidyn->upres % fsidyn->res_write_evry;
-   if (mod_res_write!=0)
-   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");   
-}
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
