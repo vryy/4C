@@ -62,9 +62,13 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/solver_mlpcg3.o \
                 src/global_full/solver_mlpcg4.o \
                 src/global_full/solver_mlpcg_smo.o \
+                src/global_full/solver_mlpcg_spooles.o \
                 src/global_full/solver_mlpcg_matmat.o \
                 src/global_full/solver_mlpcg_agg.o \
                 src/global_full/solver_mlpcg_csr.o \
+                src/global_full/solver_mlpcg_overlap.o \
+                src/global_full/solver_mlpcg_fish.o \
+                src/global_full/solver_mlpcg_test.o \
                 src/global_full/restart_control.o \
                 src/global_full/machine_hpux.o 
 #                pss_full
@@ -250,7 +254,6 @@ OBJS13           = src/fortran/colsol.o \
                    src/fortran/mpcg_futils.o \
                    src/fortran/vis2_qat2v2.o \
                    src/fortran/hex_fserv.o
-
 #---------------------------------------------  fortran parallel on HPUX11.0
 #            
 #OBJS13         = src/fortran/mumps_interface.o \
