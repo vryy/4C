@@ -66,6 +66,12 @@ extern struct _FIELD       *field;
 /*----------------------------------------------------------------------*
  | input of control information                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
+
+
+#ifdef WALLCONTACT
+extern struct _WALL_CONTACT contact;
+#endif
+
 void inpctr()
 {
 #ifdef DEBUG 
@@ -546,7 +552,6 @@ return;
 } /* end of inpctr_eig_struct */
 
 
-
 /*----------------------------------------------------------------------*
  | input of dynamic problem data                          m.gee 2/01    |
  |                                                         genk 3/01    |
@@ -576,7 +581,6 @@ for (i=0; i<genprob.numfld; i++)
    case fluid:
 #ifdef D_FLUID   
       alldyn[i].fdyn = (FLUID_DYNAMIC*)CCACALLOC(1,sizeof(FLUID_DYNAMIC));
-      if (!alldyn[i].fdyn) dserror("Allocation of FLUID_DYNAMIC failed");
       inpctr_dyn_fluid(alldyn[i].fdyn);
 #else
       dserror("General FLUID problem not defined in Makefile!!!");
@@ -585,15 +589,13 @@ for (i=0; i<genprob.numfld; i++)
    case ale:
 #ifdef D_ALE
       alldyn[i].adyn = (ALE_DYNAMIC*)CCACALLOC(1,sizeof(ALE_DYNAMIC));
-      if (!alldyn[i].adyn) dserror("Allocation of STRUCT_DYNAMIC failed");
       inpctr_dyn_ale(alldyn[i].adyn);
 #else
       dserror("General ALE problem not defined in Makefile!!!");
-#endif      
+#endif
    break;
    case structure:
       alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
-      if (!alldyn[i].sdyn) dserror("Allocation of STRUCT_DYNAMIC failed");
       inpctr_dyn_struct(alldyn[i].sdyn);
    break;
    case none:
@@ -652,6 +654,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       if (strncmp(buffer,"Centr_Diff",10)==0) sdyn->Typ = centr_diff;
       if (strncmp(buffer,"Gen_Alfa",8)==0)    sdyn->Typ = gen_alfa;
+      if (strncmp(buffer,"Gen_EMM",7)==0)    sdyn->Typ = Gen_EMM;
    }
    frchar("DAMPING"   ,buffer    ,&ierr);
    if (ierr==1)
@@ -684,14 +687,24 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("RESEVRYSTRS",&(sdyn->updevry_stress),&ierr);
    frint("RESTARTEVRY",&(sdyn->res_write_evry),&ierr);
    frint("CONTACT"    ,&(sdyn->contact)       ,&ierr);
-   
+   frint("CET_flag",   &(contact.CET_flag)    ,&ierr);
+   frint("FR_flag",    &(contact.FR_flag)     ,&ierr);
 /*--------------read DOUBLE */
    frdouble("TIMESTEP",&(sdyn->dt)     ,&ierr);
+#ifdef GEMM
+   frdouble("TIMESTEP",&(contact.dt)   ,&ierr);
+#endif
    frdouble("MAXTIME" ,&(sdyn->maxtime),&ierr);
    frdouble("BETA"    ,&(sdyn->beta)   ,&ierr);
    frdouble("GAMMA"   ,&(sdyn->gamma)  ,&ierr);
    frdouble("ALPHA_M" ,&(sdyn->alpha_m),&ierr);
    frdouble("ALPHA_F" ,&(sdyn->alpha_f),&ierr);
+#ifdef GEMM   
+   frdouble("XSI"     ,&(sdyn->xsi)    ,&ierr);
+#endif
+   frdouble("NPP"     ,&(contact.n_pen_par) , &ierr);
+   frdouble("TPP"     ,&(contact.t_pen_par) , &ierr);
+   frdouble("FR_COEF" ,&(contact.fr_coef)   , &ierr);
    frdouble("M_DAMP"  ,&(sdyn->m_damp) ,&ierr);
    frdouble("K_DAMP"  ,&(sdyn->k_damp) ,&ierr);
    frdouble("TOLDISP" ,&(sdyn->toldisp),&ierr);
