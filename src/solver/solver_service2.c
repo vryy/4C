@@ -945,7 +945,7 @@ for (i=0; i<actdis->numnp; i++)
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
       actnode->sol.a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
 /* this is special for the ortiz example */
-      actnode->sol.a.da[place][j] *= actnode->x[0];
+/*      actnode->sol.a.da[place][j] *= actnode->x[0];*/
    }   
 }
 /*----------------------------------------------------------------------*/
