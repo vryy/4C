@@ -3,6 +3,9 @@
 \brief stability parameter for fluid2 element
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -201,3 +204,4 @@ return;
 } /* end of f2_calstabpar*/	
 
 #endif
+/*! @} (documentation module close)*/
