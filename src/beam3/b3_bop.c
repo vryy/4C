@@ -106,6 +106,7 @@ if (init==1)
    uderiv    = amdef("uderiv"  ,&uderiv_a  ,3,4                      ,"DA");
    vderiv    = amdef("vderiv"  ,&vderiv_a  ,3,4                      ,"DA");
    wderiv    = amdef("wderiv"  ,&wderiv_a  ,3,4                      ,"DA");
+goto end;
 }
 amzero(&R_a);
 amzero(&uderiv_a);
@@ -348,7 +349,8 @@ for (inode=0; inode<iel; inode++)
 }
 /* end of loop over nodes */
 
-
+/*----------------------------------------------------------------------*/
+end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
