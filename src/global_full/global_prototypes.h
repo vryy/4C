@@ -11,20 +11,9 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
-#ifndef PROTOTYPES_H
-#define PROTOTYPES_H
+#ifndef GLOBAL_PROTOTYPES_H
+#define GLOBAL_PROTOTYPES_H
 
-
-#include "../solver/solver.h"
-
-/* include all the other prototypes */
-#include "../pss_full/pss_prototypes.h"
-#include "../input_full/input_prototypes.h"
-#include "../output/output_prototypes.h"
-#include "../math/math_prototypes.h"
-#include "../parallel/parallel_prototypes.h"
-#include "../visual/visual_prototypes.h"
-#include "../structure/structure_prototypes.h"
 
 
 /*----------------------------------------------------------------------*
