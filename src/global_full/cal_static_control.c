@@ -2,6 +2,12 @@
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
@@ -187,6 +193,11 @@ solserv_result_total(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                     );
+/*--------------------------------------------- printout results to gid */
+if (ioflags.struct_disp_gid==1)
+{
+   out_gid_sol("displacement",actfield,actintra,0,0);
+}
 /*----------------------------------------------------------------------*/
 end:
 #ifndef PARALLEL 
