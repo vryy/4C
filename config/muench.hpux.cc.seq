@@ -14,7 +14,7 @@ LIBDIRS="-L/usr/local/lib/hpux32 -L/usr/local/lib -L/opt/mpi/lib/hpux32 -L/opt/m
 # aztec
 # mpi is needed to satisfy aztec dependencies. It won't be called.
 AZTEC_INC=""
-AZTEC_LIB="-laztec -lmpi"
+AZTEC_LIB="-laztec_ser"
 
 # spooles
 SPOOLES_INC=""
