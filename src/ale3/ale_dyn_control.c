@@ -283,7 +283,7 @@ if (ioflags.ale_disp_gid==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem linear");
+printf("Performing pure ALE problem linear\n\n");
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
 /*===================================================================== */
@@ -481,7 +481,7 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem nonlinear and stiffened");
+printf("Performing pure ALE problem nonlinear and stiffened\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
@@ -732,7 +732,7 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem in two steps");
+printf("Performing pure ALE problem in two steps\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
@@ -1013,7 +1013,7 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem with springs");
+printf("Performing pure ALE problem with springs\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
@@ -1253,7 +1253,7 @@ if (ioflags.struct_disp_file==1)
   if (par.myrank==0)  out_gid_domains(actfield);
 }
 #endif
-printf("Performing pure ALE problem with Laplace smoothing");
+printf("Performing pure ALE problem with Laplace smoothing\n\n");
 
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
