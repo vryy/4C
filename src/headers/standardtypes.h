@@ -182,6 +182,7 @@ INT               struct_stress_gid;      /* write structural stresses to .flavi
 INT               struct_stress_gid_smo;  /* write structural smoothed/unsmoothed stresses to .flavia.res */
 INT               fluid_sol_file;         /* write vel/pre to .out */
 INT               fluid_sol_gid;          /* write vel/pre to .flavia.res */
+INT               fluid_stress_gid;       /* write stresses to .flavia.res */
 INT               fluid_vis_file;         /* write solution to pss-file for VISUAL2 */
 INT               ale_disp_file;          /* write ale displacements to .out */
 INT               ale_disp_gid;           /* write ale displacement to .flavia.res */
