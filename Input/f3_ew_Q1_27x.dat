@@ -21,6 +21,7 @@ STRUCT_STRESS_FILE No
 STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
+FLUID_SOL_GID      Yes
 FLUID_VIS_FILE     Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
