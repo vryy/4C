@@ -80,7 +80,7 @@ static LS2_INTG_DATA      *data;         /* integration data                    
 
 static INT                 nlayer;
 static INT                 is_elcut;
-
+static INT                 iand[4];      /* index vector of active nodes        */
 
 
 /*!----------------------------------------------------------------------
@@ -482,6 +482,7 @@ void ls2_calc_reinitialized(
   DOUBLE      phi=0.0;
   DOUBLE      sign=0.0;
   DOUBLE      fs[4]={0.0,0.0,0.0,0.0};
+  INT         locid;
  
 #ifdef DEBUG 
   dstrc_enter("ls2_calc_reinitialized");
@@ -579,7 +580,7 @@ void ls2_calc_reinitialized(
       /* Jacobian matrix */
       ls2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
       fac = facr*facs*det;
-      /* global derivates */
+      /* global derivatives */
       ls2_gder(derxy,deriv,xjm,det,iel);
       /* velocity at the Gauss point */
       velGP[0] = 0.0; velGP[1] = 0.0;
@@ -673,7 +674,49 @@ void ls2_calc_reinitialized(
   for (i=0; i<iel; i++)
     for (j=0; j<iel; j++)
       eiforce[i] += -emass[i][j]*lset01[j] - estif[i][j]*lset01[j]
-                                           - thdt*fs[i];        
+                                           - thdt*fs[i];
+  /* ANCHOR the interface so that it can not move during reinitialization */
+  if (lsdyn->lsdata->anchor == 1)
+  {
+    if (is_elcut == 1)
+    {
+      /* reset */
+      for (i=0; i<iel; i++)
+        for (j=0; j<iel; j++)
+        {
+          emass[i][j] = 0.0;
+          estif[i][j] = 0.0;
+        }
+      /* stiffness matrix */
+      for (i=0; i<iel; i++)
+        estif[i][i] = 1.0;
+      /* time right hand side */
+      for (i=0; i<iel; i++)
+        etforce[i] = 0.0;
+      /* iteration right hand side */
+      for (i=0; i<iel; i++)
+        eiforce[i] = 0.0;
+    }
+    else if (is_elcut == 2)
+    {
+      for (i=0; i<ele->e.ls2->nenode; i++)
+      {
+        locid = ele->e.ls2->enode[i] - 1;
+        /* reset matrix components */
+        for (j=0; j<iel; j++)
+        {
+          emass[locid][    j] = 0.0;
+          emass[    j][locid] = 0.0;          
+          estif[locid][j    ] = 0.0;
+          estif[    j][locid] = 0.0;
+        }
+        /* reset vector components */
+        etforce[locid] = 0.0;
+        eiforce[locid] = 0.0;        
+      }
+    }
+  }
+  
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();

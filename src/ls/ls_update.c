@@ -43,6 +43,7 @@ extern struct _GENPROB        genprob;
 
 
 static  FIELD                *actfield;               /* pointer to levelset field */
+static  FIELD                *fluidfield;             /* pointer to fluid field */
 static  LS_DYNAMIC           *lsdyn;                  
 static  INT                   completionflag;         /* flag for completion of level set update */
 const static DOUBLE           NODETHRESHOLD = 0.001;  /* node threshold (used in case anyone of
@@ -83,6 +84,11 @@ static  FILE                 *file09;
 static  FILE                 *file10;
 static  FILE                 *file11;
 static  FILE                 *file12;
+
+static  FILE                 *file13;
+static  FILE                 *file14;
+
+
 
 
 
@@ -183,6 +189,12 @@ void ls_main(
           /* write front into file */
           frontlsflag = front_ls_write;
           ls_update(frontlsflag);
+          /* write fluid solution to file */
+          if (genprob.probtyp == prb_twophase)
+          {
+            frontlsflag = front_ls_write_fld_soln;
+            ls_update(frontlsflag);
+          }
           /* turn off print flag */
           lsdyn->lsdata->print_on_off = 0;
         }
@@ -272,6 +284,10 @@ void ls_update(
 /*------------------------------------------------- write front to file */        
       case front_ls_write:
         ls_write();
+        break;
+/*---------------------------------------- write fluid solution to file */        
+      case front_ls_write_fld_soln:
+        ls_write_soln();
         break;
 /*------------------------------------------------------------ finalize */
       case front_ls_finalize: 
@@ -668,9 +684,9 @@ void ls_construct(
             /* set type of inerface to open ( 0 => closed; 1 => open ) */
             lsupdt.typeinterface[numint] = 1;
             /* print to screen */
-            printf("\n**WARNING** LEVELSET TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
+            printf("\n**WARNING** LEVELSET INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
             /* print to file */
-            fprintf(file12,"\n**WARNING** LEVELSET TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");            
+            fprintf(file12,"\n**WARNING** LEVELSET INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");            
             /* turn on lsdyn->lsdata->reconstruct_on_off flag */
             lsdyn->lsdata->reconstruct_on_off = 1;
             /* RECONSTRUCTION! ( => use nbor_s ) */
@@ -1609,7 +1625,15 @@ void ls_write()
   fprintf(file10,"\n");
   /* print out numlayer */
   fprintf(file11,"%5d\n",counter);
-  
+
+  /* print out element material index */
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    fprintf(file14,"%5d\n",actele->e.ls2->my_fluid->mat-1);                  
+  }
+  fprintf(file14,"\n");
+ 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();
@@ -1617,6 +1641,47 @@ void ls_write()
   
   return;
 } /* end of ls_write */
+
+
+
+/*!----------------------------------------------------------------------
+\brief write fluid solution to files
+
+<pre>                                                            irhan 06/04
+In this subroutine fluid solution is written into files. These data
+files are sent to MATLAB and processed to produce some graphical outputs.
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_write_soln()
+{
+  INT          i,j;
+  NODE        *actnode;
+  
+#ifdef DEBUG 
+  dstrc_enter("ls_write_soln");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* write solution to file */
+  for (i=0; i<fluidfield->ndis; i++)
+  {
+    for (j=0; j<fluidfield->dis[i].numnp; j++)
+    {
+      actnode = &(fluidfield->dis[i].node[j]);
+      fprintf(file13,"%10.5E %10.5E %10.5E %5d\n",actnode->sol_increment.a.da[3][0],
+              actnode->sol_increment.a.da[3][1],actnode->sol_increment.a.da[3][2],actnode->Id+1);
+    }
+    fprintf(file13,"\n");
+  }
+  
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  
+  return;
+} /* end of ls_write_soln */
 
 
 
@@ -1837,6 +1902,8 @@ void ls_finalize()
   fclose(file10);
   fclose(file11);
   fclose(file12);
+  fclose(file13);
+  fclose(file14);  
     
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2190,18 +2257,30 @@ void ls_setdata()
   file09 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_firstinlist","w");
   file10 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_layer","w");
   file11 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nlayer","w");
+  file14 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_matindex","w");  
+
   /* this file is used for debugging purposes */
-  file12 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_debug","w");  
+  file12 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_debug","w");
+
+  /* open files to write fluid solution (velocity and pressure) */
+  file13 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_fluid_solution","w");
   
   /*initialize the lsupdt */
   lsupdt.nael = (INT*)CCACALLOC(50,sizeof(INT));
   lsupdt.typeinterface = (INT*)CCACALLOC(50,sizeof(INT));
 
-  /* set actfield */
+  /* set actfield (level set) */
   actfield = &(field[genprob.numls]);
-
   /* perform check for the field type */
   if (actfield->fieldtyp!=levelset) dserror("field != levelset");  
+  
+  /* set fluid field */
+  if (genprob.probtyp == prb_twophase)
+  {
+    fluidfield = &(field[genprob.numff]);
+    /* perform check for the field type */
+    if (fluidfield->fieldtyp!=fluid) dserror("field != fluid");  
+  }
 
   /* initialize the flag for node activation */
   for (i=0; i<actfield->dis[0].ngnode; i++)

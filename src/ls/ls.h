@@ -179,7 +179,8 @@ typedef struct _LS_GEN_DATA
   INT 	     reinitflag;          /* initialization flag */
   DOUBLE     rdt;                 /* dt for reinitialization */
   INT        algo;                /* treatment of velocity (imp. or exp.) */
-  DOUBLE     epsilon;             /* smoothing parameter for sign function */      
+  DOUBLE     epsilon;             /* smoothing parameter for sign function */
+  INT 	     anchor;              /*  */  
 
   INT        boundary_on_off;     /* treatment of boundary */
   INT        reconstruct_on_off;  /* flag used in reconstruction phase */
@@ -266,6 +267,7 @@ typedef enum _FRONTLSFLAG
   front_ls_polygonize,
   front_ls_modify,  
   front_ls_write,
+  front_ls_write_fld_soln,
   front_ls_finalize
 } FRONTLSFLAG;
 /*! @} (documentation module close)*/

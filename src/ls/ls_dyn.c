@@ -168,6 +168,10 @@ void ls_dyn()
               lsdyn->lsdata->reinitflag = 1;
               /* print to screen */  
               printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
+              if (lsdyn->lsdata->anchor == 1)
+              {
+                printf("\n**WARNING** INTERFACE IS ANCHORED!");                
+              }
               for (i=0; i<lsdyn->lsdata->numreinit; i++)
               {
                 /* solve levelset field */
@@ -266,6 +270,10 @@ void ls_dyn()
               lsdyn->lsdata->reinitflag = 1;
               /* print to screen */  
               printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
+              if (lsdyn->lsdata->anchor == 1)
+              {
+                printf("\n**WARNING** INTERFACE IS ANCHORED!");                
+              }
               for (i=0; i<lsdyn->lsdata->numreinit; i++)
               {
                 /* solve levelset field */

@@ -54,6 +54,7 @@ void ls_init(
     amredef(&(actnode->sol_increment),numr,actnode->numdf,"DA");
     amzero(&(actnode->sol_increment));
   }
+
   /* construct the initial profile */
   if (lsdyn->init>=1)
   {

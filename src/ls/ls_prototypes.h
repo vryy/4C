@@ -377,6 +377,9 @@ void ls_activate();
 void ls_write();
 
 
+void ls_write_soln();
+
+
 void ls_reset();
 
 
