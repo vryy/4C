@@ -1019,4 +1019,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of b3_condense */
+#endif
 /*! @} (documentation module close)*/
