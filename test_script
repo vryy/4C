@@ -13,9 +13,9 @@
 #
 # use the following config-file
 #------------------------------
-#conf="stgrt.hpux11.cc.seq"
+conf="stgrt.hpux11.cc.seq"
 #conf="stgrt.hpux11.cc.par"
-conf="muench.linux.gcc.par"
+#conf="muench.linux.gcc.par"
 #conf="muench.linux.gcc.seq"
 #
 #==========================================
@@ -40,7 +40,7 @@ NODEPS=yes
 function cleanup
 {
     #echo cleanup
-    make clean >/dev/null
+    make -f $makefile clean >/dev/null
     rm -f test.tmp test_out_* $exe make.log $makefile $definefile
 
     # remove hook
@@ -132,7 +132,7 @@ else
   '
 fi
  
-#liste='krag_2ele_expl.dat'
+#liste='xfem_ls_risingbubble.dat xfem_ls_joggedchannel.dat'
 
 # loop this list
 for file in $liste; do 
@@ -167,7 +167,7 @@ for file in $liste; do
   # make the executable
   echo
   echo '  Making executable ...'
-  make clean 2>&1 | cat > make.log
+  make -f $makefile clean 2>&1 | cat > make.log
   make -f $makefile 2>&1 | cat >> make.log
 
   # check the success of the make
