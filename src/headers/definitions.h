@@ -38,6 +38,19 @@ typedef double    DOUBLE;
 typedef char      CHAR;
 
 /*----------------------------------------------------------------------*
+ | special definitions for special compilers.....                       |
+ *----------------------------------------------------------------------*/
+/* append underslash for gnu's linux compiler gcc and g77 */
+#ifdef SUSE73 
+#define dsytrf dsytrf_
+#define dsytri dsytri_
+#define dsytrs dsytrs_
+#define dgetrf dgetrf_
+#define dgetrs dgetrs_
+#define colsol colsol_
+#endif
+
+/*----------------------------------------------------------------------*
  | absolut value of an integer                                          |
  *----------------------------------------------------------------------*/
 #define ABS(x)    ((x) <  0  ? (-x) : (x))
@@ -161,17 +174,5 @@ static INT iminarg1,iminarg2;
 #define MAXNOD_BRICK1    (20)
 
 
-/*----------------------------------------------------------------------*
- | special definitions for special compilers.....                       |
- *----------------------------------------------------------------------*/
-/* append underslash for gnu's linux compiler gcc and g77 */
-#ifdef SUSE73 
-#define dsytrf dsytrf_
-#define dsytri dsytri_
-#define dsytrs dsytrs_
-#define dgetrf dgetrf_
-#define dgetrs dgetrs_
-#define colsol colsol_
-#endif
 
 
