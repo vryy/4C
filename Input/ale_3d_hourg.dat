@@ -125,9 +125,8 @@ AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
-//SOLVER         SPOOLES_nonsym
 SOLVER         Colsol
-MATRIXTYP      OLL
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 32
