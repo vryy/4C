@@ -16,7 +16,6 @@ void wall1(PARTITION   *actpart,
            ARRAY       *estif_global,
            ARRAY       *emass_global,
            ARRAY       *intforce_global,
-           int          kstep,
            CALC_ACTION *action)
 {
 int  i;

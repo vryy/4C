@@ -102,7 +102,6 @@ void wall1(PARTITION   *actpart,
            ARRAY       *estif_global,
            ARRAY       *emass_global,
            ARRAY       *intforce_global,
-           int         global_numeq,
            CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  | read wall element                                         al 9/01    |
