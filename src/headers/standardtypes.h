@@ -60,7 +60,6 @@ Maintainer: Malte Neumann
  | structures used by local co-sys                        genk 04/04    |
  *----------------------------------------------------------------------*/
 #include "locsys.h"
-
 /*----------------------------------------------------------------------*
  | Nodes and Elements on finite element level             m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -69,8 +68,7 @@ Maintainer: Malte Neumann
  | Points, Lines, Surfaces and Volumes on design level    m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "design.h"
- 
- /*----------------------------------------------------------------------*
+  /*----------------------------------------------------------------------*
  | structures used by load curves                         m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "curve.h"
@@ -295,11 +293,11 @@ GVOL            **gvols;
  *---------------------------------------------------------------------*/
 typedef struct _MONITOR
 {
-INT              numnp;
-INT              numval;
-ARRAY            onoff;
-ARRAY            monnodes;
-ARRAY            val;
+INT              numnp;        /*!< number of nodes in field to monitor */
+INT              numval;       /*!< number of DOFS in field to monitor */
+ARRAY            onoff;        /*!< onoff flags for monitor nodes */
+ARRAY            monnodes;     /*!< postion in field for monitor nodes */
+ARRAY            val;          /*!< monitoring values for output */
 } MONITOR;
 
 

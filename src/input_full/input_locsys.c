@@ -126,6 +126,9 @@ return;
 \brief input local co-ordinate system
 
 <pre>                                                         genk 04/04
+
+read the local co-system from the input file. The so defined system has
+ to be cartesian up to now!
 			     
 </pre>
 \param   *string     char           string to find
@@ -166,11 +169,19 @@ yloc=amdef("yloc",&actlocsys->yloc,3,1,"DV");
 zloc=amdef("zloc",&actlocsys->zloc,3,1,"DV");
 
 /*--------------------------------------------------- read typ of locsys */   
+frchk("None",&ierr);
+if (ierr==1) 
+{
+   actlocsys->locsystyp = locsys_none;
+}
 frchk("BASEVEC",&ierr);
 if (ierr==1) 
 {
    actlocsys->locsystyp = locsys_basevec;
 
+   /* in this case the three base vector are explicitely specified in the
+      input file
+   */
    /* read the base vectors */
    frdouble_n("XLOC",xloc,3,&ierr);
    frdouble_n("YLOC",yloc,3,&ierr);
@@ -180,6 +191,12 @@ frchk("LINEPLANE",&ierr);
 if (ierr==1) 
 {
    actlocsys->locsystyp = locsys_line_plane;
+   /* in this case the system is created through a given DLine and a plane:
+      e.g. LX_PXY means:
+         the given line lies in the xy-plane and represents the x-direction
+         the y-direction is chosen orthogonal in such a way that the
+         resulting z-direction is positive
+   */
 
    /* read the dlineId */
    frint("LINEID",&dlineId,&ierr);
@@ -194,7 +211,8 @@ if (ierr==1)
          break;
       }
    }
-   dsassert(actdline1!=NULL,"error reading locsys\n");   
+   if (actdline1==NULL)
+      dserror("error reading locsys\n");   
    frchk("LX_PXY",&ierr);
    if (ierr==1)
    {
@@ -217,11 +235,16 @@ if (ierr==1)
          zloc[2] *=-ONE;
       }
    }
+   else
+      dserror("error reading locsys: given plane not implemented yet!\n");
 }
 frchk("LINELINE",&ierr);
 if (ierr==1) 
 {
    actlocsys->locsystyp = locsys_line_line;
+   /* in this case the system is created through two given DLines which
+      have to be orthogonal!
+   */
 
    /* read the dlineIdx */
    frint("LINEIDX",&dlineId,&ierr);
@@ -249,6 +272,13 @@ if (ierr==1)
          break;
       }
    }
+   /* read the dlineIdz*/
+   frint("LINEIDZ",&dlineId,&ierr);
+   if (dlineId<=0)
+      dserror("locsys via LINEDZ not implemented yet\n");
+   if (actdline1==NULL || actdline2==NULL)
+      dserror("error reading locsys: none or only one LineID given\n");
+      
    /*--------------------------------------------------- x-base vector */
    for (i=0;i<3;i++)
       xloc[i] = actdline1->dnode[1]->x[i] - actdline1->dnode[0]->x[i];
