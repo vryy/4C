@@ -310,8 +310,8 @@ am-allocated 2D arrays therefore operate on the transpose of the array.
 \param sdim     int     (i)   scnd dimension of 2D vector                  
 \param typstr   char[]  (i)   type of array to allocate                    
               ="IV"     allocate integer vector in a->a.iv           
-              ="IA"     allocate double array  in a->a.ia            
-              ="DV"     allocate integer vector in a->a.dv           
+              ="IA"     allocate integer array  in a->a.ia            
+              ="DV"     allocate double vector in a->a.dv           
               ="DA"     allocate double array  in a->a.da            
 \return void pointer to allocated memory                                               
 \sa am4def()                                    
