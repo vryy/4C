@@ -23,6 +23,8 @@ Maintainer: Stefan Hartmann
 
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
+#ifdef D_MAT
+
 #include "../headers/standardtypes.h"
 #include "../materials/mat_prototypes.h"
 #include "wall1.h"
@@ -205,6 +207,7 @@ dstrc_exit();
 return;
 } /* end of w1_mat_plast_mises_3D */
 /*----------------------------------------------------------------------*/
+#endif /* D_MAT */
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
 

@@ -84,6 +84,7 @@ dstrc_enter("w1_call_mat");
                        istore,
                        newval);
   break;
+#ifdef D_MAT
   case m_pl_mises_3D:/*--------------------- von mises material law -> 3D---*/
     w1_mat_plast_mises_3D(mat->m.pl_mises->youngs,
                           mat->m.pl_mises->possionratio,
@@ -102,6 +103,7 @@ dstrc_enter("w1_call_mat");
                           istore,
                           newval);
   break;
+#endif
   case m_pl_dp:/*------------------- drucker prager material law ---*/
     w1_mat_plast_dp(   mat->m.pl_dp->youngs,
                        mat->m.pl_dp->possionratio,
