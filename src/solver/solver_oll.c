@@ -13,7 +13,6 @@ Maintainer: Malte Neumann
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-
 /*! 
 \addtogroup OLL 
 *//*! @{ (documentation module open)*/
@@ -126,6 +125,9 @@ void solver_oll(
 
 #ifdef UMFPACK
         case umfpack: /*-------------------------------------- solver is umfpack */
+#ifndef UMFPACK
+     dserror("Solver Umfpack not compiled in!\n");
+#endif
 #ifdef PARALLEL
           dserror("No UMFPACK for parallel OLL!\n");
 #endif	  
