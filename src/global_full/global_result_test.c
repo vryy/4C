@@ -41,6 +41,7 @@ undetected.
 #include "../headers/standardtypes.h"
 #include "../axishell/axishell.h"
 #include "../shell9/shell9.h"
+#include "../wall1/wall1.h"
 #include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -439,6 +440,19 @@ void global_result_test()
         INT args[3];
         if (parse_position_descr(res->position, "stresses", 3, args) == 1) {
           actresult = actelement->e.s9->stresses.a.d3[args[0]][args[1]][args[2]];
+          nerr += compare_values(err, actresult, res->value, res);
+        }
+        else {
+          dserror("Unknown position specifier");
+        }
+      }
+#endif
+
+#ifdef D_WALL1
+      if (actelement->eltyp == el_wall1) {
+        INT args[3];
+        if (parse_position_descr(res->position, "stress_GP", 3, args) == 1) {
+          actresult = actelement->e.w1->stress_GP.a.d3[args[0]][args[1]][args[2]];
           nerr += compare_values(err, actresult, res->value, res);
         }
         else {
