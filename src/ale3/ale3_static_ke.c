@@ -173,7 +173,8 @@ void ale3_static_ke(
       }  /* end of loop over lt */
     }  /* end of loop over ls */
   }  /* end of loop over lr */
-
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 
 #ifdef DEBUG 
