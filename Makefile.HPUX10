@@ -56,7 +56,7 @@ include ./Makefile.personal_path
 #LDX     = cc
 #PFL     = -DD_SHELL8 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK
 #AZTEC   = -laztec_seriell21
-#UMFPACK = -lumfpack40_32
+#UMFPACK = -lumfpack40_hpux10_32
 #--------------------------------------------------------------------
 #
 # parallel part
