@@ -52,6 +52,24 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;
+
+#ifdef D_MLSTRUCT
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld submeshFIELDs, defined in global_control.c          |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *sm_field;
+/*----------------------------------------------------------------------*
+ | global variable *sm_solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in input_submesh.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *sm_solv;
+/*!----------------------------------------------------------------------
+proc's info about his partition, global variable defined in input_submesh.c
+*----------------------------------------------------------------------*/
+extern struct _PARTITION  *sm_part;
+#endif /* D_MLSTRUCT */
+
 /*----------------------------------------------------------------------*
  |  calculate the storage mask of the global matrices    m.gee 5/01     |
  |  for various kinds of distributed sparsity patterns                  |
@@ -454,3 +472,97 @@ dstrc_exit();
 
 return;
 } /* end of mask_global_matrices */
+
+#ifdef D_MLSTRUCT
+/*----------------------------------------------------------------------*
+ |  calculate the storage mask of the submesh matrix k''    ah 03/04    |
+ |  for (various kinds of distributed sparsity patterns) CCF->UMPFPACK  |
+ |  and initialize the solver and the assemblation                      |
+ *----------------------------------------------------------------------*/
+void mask_submesh_matrices()
+{
+INT i;               /* some counters */
+INT isumfpack    =0;
+
+INT actsmsysarray=0;
+
+INT numeq;
+INT numeq_total;
+INT init;                    /* flag for solver_control call */
+
+FIELD      *actsmfield;      /* the active submeshfield */
+PARTITION  *actsmpart;       /* my partition of the active submeshfield */
+SOLVAR     *actsmsolv;       /* the active submeshSOLVAR */
+INTRA      *actsmintra;      /* the field's submesh-intra-communicator */
+
+#ifdef DEBUG 
+dstrc_enter("mask_global_matrices");
+#endif
+/*----------------------------------------------------------------------*/
+/*              mask for submesh stiffness k prime prime                */
+/*----------------------------------------------------------------------*/
+actsmfield = &(sm_field[0]);
+actsmsolv  = &(sm_solv[0]);
+actsmpart  = &(sm_part[0]);
+/* because we are not parallel here, we have to allocate a pseudo-intracommunicator */
+actsmintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+actsmintra->intra_fieldtyp = structure;
+actsmintra->intra_rank   = 0;
+actsmintra->intra_nprocs   = 1;
+/*-------------------- matrix is compressed column format for Umfpack */
+if (actsmsolv->solvertyp==umfpack)
+{
+  if (actsmsolv->parttyp != cut_elements)
+    dserror("Partitioning has to be Cut_Elements for solution with Umfpack"); 
+  else isumfpack=1;
+}
+else dserror("only umpfpack for submesh solver "); 
+/*---------------- matrix is row-column pointer format for umfpack solver */
+if (isumfpack==1)
+{
+  actsmsolv->nsysarray = 1;
+  actsmsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsmsolv->nsysarray,sizeof(SPARSE_TYP));
+  actsmsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsmsolv->nsysarray,sizeof(SPARSE_ARRAY));
+  actsmsolv->sysarray_typ[0] = ccf;
+  actsmsolv->sysarray[0].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
+  /*--------------------------------------------------------------------*/
+  mask_ccf(actsmfield,actsmpart,actsmsolv,actsmintra,actsmsolv->sysarray[0].ccf);
+  isumfpack=0;
+}
+/*----------------------------------------------------------------------*/
+/*            init solver for sm-equation and assemblation of k ''      */
+/*----------------------------------------------------------------------*/
+
+numeq_total = actsmfield->dis[0].numeq;
+numeq = numeq_total;
+
+/*-------------------------- allocate 10 dist. load vectors for the RHS */
+actsmsolv->nrhs = 10;
+solserv_create_vec(&(actsmsolv->rhs),actsmsolv->nrhs,numeq_total,numeq,"DV");
+for (i=0; i<actsmsolv->nrhs; i++) solserv_zero_vec(&(actsmsolv->rhs[i]));
+/*--------------------- allocate 10 dist. load vectors for the solution */
+actsmsolv->nsol= 10;
+solserv_create_vec(&(actsmsolv->sol),actsmsolv->nsol,numeq_total,numeq,"DV");
+for (i=0; i<actsmsolv->nsol; i++) solserv_zero_vec(&(actsmsolv->sol[i]));
+/*--------------------------------------------------- initialize solver */
+init=1;
+solver_control(actsmsolv, actsmintra,
+             &(actsmsolv->sysarray_typ[0]),
+             &(actsmsolv->sysarray[0]),
+             &(actsmsolv->sol[0]),
+             &(actsmsolv->rhs[0]),
+              init);
+/*--------------------- init the Assemblation of submesh stiffness k'' */
+/*----------------------------- init the assembly for ONE sparse matrix */
+init_assembly(actsmpart,actsmsolv,actsmintra,actsmfield,actsmsysarray,0);
+
+
+CCAFREE(actsmintra);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+}
+#endif /* D_MLSTRUCT */
+
