@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/lipka/index.html
 //             0711 - 685-6575
 // 
-// necessary defines: D_BRICK1
+// necessary defines: D_BRICK1 RESULTTEST
 //
 // #define MAXNOD           (27)
 // #define MAXELE           (25)
@@ -2134,5 +2134,9 @@ NODE      28 DOF 2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 8 POSITION sol(1,1) NAME ux VALUE -0.0210053473017185 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 8 POSITION sol(1,2) NAME uy VALUE 3.8652703041082366 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 8 POSITION sol(1,3) NAME uz VALUE -0.1424273620407610 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
