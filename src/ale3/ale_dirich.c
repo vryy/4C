@@ -48,6 +48,8 @@ time t to actnode->sol.a.da[0][j].
 \param *actfield  FIELD          (i)  my field
 \param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
 \param  actpos    INT            (i)  actual position in solution history
+\param  readstructpos INT        (i)  position, where to read FSI structural
+                                      displacement from
 
 \warning For (dirich_val.a.dv == 90) the boundary conditions for a special
          example (rotating hole) are calculated.
@@ -55,7 +57,10 @@ time t to actnode->sol.a.da[0][j].
 \sa calling: dyn_facfromcurve(); called by: dyn_ale_lin()
 
 *----------------------------------------------------------------------*/
-void ale_setdirich(FIELD  *actfield, ALE_DYNAMIC *adyn, INT actpos)
+void ale_setdirich(FIELD        *actfield, 
+                   ALE_DYNAMIC  *adyn, 
+		   INT           actpos,
+		   INT           readstructpos)
 {
 GNODE                *actagnode;
 NODE                 *actsnode;
@@ -154,9 +159,14 @@ for (i=0;i<numnp_total;i++)
       actsnode = actagnode->mfcpnode[numsf];
       for (j=0;j<actanode->numdf;j++)
       {
-         actanode->sol_increment.a.da[0][j] = actsnode->sol_mf.a.da[0][j];  
-	 actanode->sol.a.da[actpos][j] = actsnode->sol_mf.a.da[0][j]; 
-      }
+         actanode->sol_increment.a.da[0][j] =
+	    actsnode->sol_mf.a.da[readstructpos][j];  
+	 if (readstructpos != 6) /* 'ordinary' calculation */
+	    actanode->sol.a.da[actpos][j] = 
+	       actsnode->sol_mf.a.da[readstructpos][j]; 
+      } /* readstructpos = 0 for 'ordinary' calculation *
+                         = 6 for calculation for Relaxation parameter via
+			     steepest descent method */
    break;
    case dirich_freesurf: /* dirichvalues = displacement of fluid
                             free surface                                */
@@ -366,7 +376,7 @@ calculation
 This routine reads the initial value for the dirichlet condition from 
 actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from 
 the timecurve at t and t - dt and writes the value for the dirichlet 
-conditions at the time t to actnode->sol_increment.a.da[actpos][j].
+conditions at the time t to actnode->sol_increment.a.da[0][j].
 
 </pre>
 \param *actfield  FIELD          (i)  my field
@@ -394,6 +404,7 @@ DOUBLE                acttimefac, prevtimefac;
 DOUBLE                initval;
 
 DOUBLE                cx,cy,win,wino,winp,dd;
+
 
 #ifdef DEBUG 
 dstrc_enter("ale_setdirich_increment");

@@ -299,7 +299,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich(actfield,adyn,0);
+ale_setdirich(actfield,adyn,0,0);
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
 ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,numeq_total,0,&container,action);
@@ -1361,7 +1361,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_ale_laplace */
-
 
 
 /*! @} (documentation module close)*/

@@ -74,7 +74,8 @@ void ale_keku(DOUBLE **s, DOUBLE **bs, DOUBLE **d,
 /*----------------------------------------------------------------------*
  | ale_dirich.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_setdirich(FIELD  *actfield, ALE_DYNAMIC *adyn,INT actpos);
+void ale_setdirich(FIELD  *actfield, ALE_DYNAMIC *adyn,INT actpos,
+		   INT readstructpos);
 void ale_setdirich_increment(FIELD *actfield, ALE_DYNAMIC *adyn);
 void ale_caldirich(ELEMENT *actele, DOUBLE *fullvec, INT dim,
 		   ARRAY *estif_global);
@@ -93,6 +94,7 @@ void dyn_ale_nln(void);
 void dyn_ale_2step(void);
 void dyn_ale_spring(void);
 void dyn_ale_laplace(void);
+void dyn_ale_modes(void);
 /*----------------------------------------------------------------------*
  | ale_service.c                                            genk 03/03  |
  *----------------------------------------------------------------------*/
