@@ -1,0 +1,1946 @@
+//
+// Maintainer: Stefan Hartmann
+//             hartmann@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/hartmann/
+//             0711 - 685-6120
+// 
+// necessary defines: D_WALL1 D_MAT RESULTTEST UMFPACK CHECK_MAX
+//
+// #define MAXNOD           (4)
+// #define MAXELE           (4)
+// #define MAXDOFPERNODE    (2)
+// #define MAXGAUSS         (4)
+//
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+L-shaped panel (ex. of Dis. Menrath p.100 with el-pl-conc-Material)
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS         300 
+NODES            341
+DIM                2
+MATERIALS          1
+NUMDF        6
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+NUMFIELD     1
+MULTIDIS     no
+TIMETYP      Static
+TRACE        secure
+RESTART      0
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE   No
+STRUCT_STRESS_FILE No
+STRUCT_DISP_GID    Yes
+STRUCT_STRESS_GID  No
+STRUCT_STRESS_GID_SMO  No
+FLUID_SOL_FILE         No
+FLUID_SOL_GID          No
+FLUID_VIS_FILE         No
+ALE_DISP_FILE          No
+ALE_DISP_GID           No
+MONITORING             No
+------------------------------------------------------------STATIC
+NONLINEAR
+KINTYP       Tot_Lagr
+NEWTONRAPHSO Displacement_Control
+NUMSTEP      7
+MAXITER      20
+TOLRESID     1.0E-05
+TOLDISP      1.0E-06
+STEPSIZE     -0.02
+IARC         No
+ARCSCL       1.0
+SIGNCHCSP    No
+RESEVRYDISP  10
+RESEVRYSTRS  10
+RESTARTEVRY  10
+-----------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Gen_Alfa
+EIGEN        0
+RESEVRYDISP  10
+RESEVRYSTRS  20
+RESTARTEVRY  20
+TIMESTEP     0.05 
+NUMSTEP      200 
+MAXTIME      5.0
+BETA         0.25 
+GAMMA        0.5 
+ALPHA_M      0.5 
+ALPHA_F      0.5
+XSI          0.0
+DAMPING      Yes 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
+TOLDISP      1.0E-08
+MAXITER      50
+CONTACT      0
+CET_flag      1
+FR_flag      0
+NPP          1.0E+06
+TPP          1.0E+06
+FR_COEF          0.4
+TIMEADAPT    0
+ITWANT       4
+MAXDT        0.07
+RESULTDT     0.05
+-----------------------------------------------------FLUID DYNAMIC
+DYNAMICTYP   Nlin_Time_Int
+TIMEINTEGR   One_Step_Theta
+NUMDF        3
+VISCSTRESS   no
+FREESURFACE  no
+IPRERHS      1
+NUMCONT      1
+UPPSS        1
+UPOUT        1
+MAXTIME      1000.0
+NUMSTEP      200  
+TIMESTEP     0.05
+ALPHA        1.00
+THETA        0.50
+GAMMA        1.00
+NONLINITER   fixed_point_like
+ITEMAX       3
+CONVCHECK    L_2_norm
+CONVTOL      1.0E-6
+STEADYCHECK  L_2_norm
+STEADYSTEP   5
+STEADYTOL    1.0E-6
+STARTINGALGO One_Step_Theta
+NUMSTASTEPS  0
+START_THETA  0.67
+INITIALFIELD zero_field
+STARTFUNCNO  2
+TURBULENCE   No
+INT_LENGHT   1.0
+ROUGHTNESS   1.0
+SC_COORD_X   0.0
+SC_COORD_Y   0.0
+DISC_CAPT    No
+-------------------------------------------------------FSI DYNAMIC
+MAXTIME      1000.0
+TIMESTEP     0.05
+NUMSTEP      200
+UPPSS        1
+IALE         Pseudo_Structure
+COUPALGO     sequ_staggerd
+PREDICTOR    d(n)
+CONVCRIT     ||g(i)||:sqrt(neq)
+ENERGYCHECK  yes
+TOLENCHECK   1.0E-6
+RELAX        1.0
+ITEMAX       1
+CONVTOL      1.0E-6
+NESTEDITER   no
+ISDMAX       0
+ICHMAX       0
+ITECHAPP     20
+ICHOPT       no
+-------------------------------------------------------ALE DYNAMIC
+TIMESTEP     0.1
+NUMSTEP      200
+MAXTIME      5.0
+NUM_INITSTEP 0
+ALE_TYPE     classic_lin
+RESEVRYDISP  10
+QUALITY      none
+------------------------------------------------------OPTIMIZATION
+OPT_NUMITER   10 total number of iteration steps
+OPT_TYPE      Topo type of optimization
+OPT_STRATEGY  FSD type of optimization strategy
+//
+FSD_GRAD      Explicit gradientenbestimmung  
+FSD_NUMITER   10 number of iteration steps with fsd
+FSD_ACC       1.0E-07 erforderliche genauigkeit                  
+FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
+FSD_BETA      0.55 schreitweitenfaktor                        
+FSD_DELTA     0.25 schrittweitenbegrenzung                    
+FSD_GAMMA     0.0 gleichheitsrestriktionswert                
+//
+OPT_SMO       ON smooth gradients or other values
+SMO_TYPE      gradient
+SMO_ERAD      1.1 radius
+SMO_EXPO      2.2 exponent
+//
+OPT_OBJ       Stiffness objective
+//
+OV_VAR 1 global opt. variables
+  ELEofMAT 1 TYPE DENS  DL 1.0E-4  DU 1.0E0 SCL 1.
+OV_END
+//
+OC_ICO 0 global inequality constraints
+//
+OC_ECO 1 global   equality constraints
+      DVOLU 1 TYP WEIGHT  SCL 1. 
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        BiCGSTAB
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         1.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+//SOLVER         SPOOLES_nonsym
+SOLVER         UMFPACK
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 16
+NDLINE  22
+NDSURF  7
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 500.000000 0.000000
+END POINT
+POINT
+Num: 2 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 250.000000 500.000000 0.000000
+END POINT
+POINT
+Num: 3 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 375.000000 0.000000
+END POINT
+POINT
+Num: 4 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 250.000000 375.000000 0.000000
+END POINT
+POINT
+Num: 5 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 325.000000 0.000000
+END POINT
+POINT
+Num: 6 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 250.000000 325.000000 0.000000
+END POINT
+POINT
+Num: 7 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 250.000000 0.000000
+END POINT
+POINT
+Num: 8 HigherEntity: 4 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 250.000000 250.000000 0.000000
+END POINT
+POINT
+Num: 9 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 325.000000 250.000000 0.000000
+END POINT
+POINT
+Num: 10 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 375.000000 250.000000 0.000000
+END POINT
+POINT
+Num: 11 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Coord: 500.000000 250.000000 0.000000
+END POINT
+POINT
+Num: 12 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 13 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 250.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 14 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 325.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 15 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 375.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 16 HigherEntity: 2 conditions: 3 material: 0
+LAYER: Layer0
+Coord: 500.000000 0.000000 0.000000
+END POINT
+------------------------------------------------------DESIGN LINES
+STLINE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=7) Elemtype=1 IsStructured=1 size=10 Meshing=Default
+Points: 1 2
+END STLINE
+STLINE
+Num: 2 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=7) Elemtype=1 IsStructured=1 size=10 Meshing=Default
+Points: 3 4
+END STLINE
+STLINE
+Num: 3 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=6,NOE=1) Elemtype=0 IsStructured=1 size=10 Meshing=Default
+Points: 5 6
+END STLINE
+STLINE
+Num: 4 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=8,NOE=1) Elemtype=0 IsStructured=1 size=10 Meshing=Default
+Points: 7 8
+END STLINE
+STLINE
+Num: 5 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=19,NOE=4) Elemtype=1 IsStructured=1 size=3 Meshing=Default
+Points: 8 9
+END STLINE
+STLINE
+Num: 6 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=4,NOE=4) Elemtype=1 IsStructured=1 size=2 Meshing=Default
+Points: 9 10
+END STLINE
+STLINE
+Num: 7 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=5 Meshing=Default
+Points: 10 11
+END STLINE
+STLINE
+Num: 8 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=9,NOE=1) Elemtype=0 IsStructured=1 size=10 Meshing=Default
+Points: 12 13
+END STLINE
+STLINE
+Num: 9 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=19,NOE=4) Elemtype=1 IsStructured=1 size=3 Meshing=Default
+Points: 13 14
+END STLINE
+STLINE
+Num: 10 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=4,NOE=4) Elemtype=1 IsStructured=1 size=2 Meshing=Default
+Points: 14 15
+END STLINE
+STLINE
+Num: 11 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=5 Meshing=Default
+Points: 15 16
+END STLINE
+STLINE
+Num: 12 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=5 Meshing=Default
+Points: 1 3
+END STLINE
+STLINE
+Num: 13 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=5 Meshing=Default
+Points: 2 4
+END STLINE
+STLINE
+Num: 14 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=4,NOE=4) Elemtype=1 IsStructured=1 size=2 Meshing=Default
+Points: 3 5
+END STLINE
+STLINE
+Num: 15 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=4,NOE=4) Elemtype=1 IsStructured=1 size=2 Meshing=Default
+Points: 4 6
+END STLINE
+STLINE
+Num: 16 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=19,NOE=4) Elemtype=1 IsStructured=1 size=3 Meshing=Default
+Points: 5 7
+END STLINE
+STLINE
+Num: 17 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=19,NOE=4) Elemtype=1 IsStructured=1 size=3 Meshing=Default
+Points: 6 8
+END STLINE
+STLINE
+Num: 18 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=7) Elemtype=1 IsStructured=1 size=10 Meshing=Default
+Points: 7 12
+END STLINE
+STLINE
+Num: 19 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=7) Elemtype=1 IsStructured=1 size=10 Meshing=Default
+Points: 8 13
+END STLINE
+STLINE
+Num: 20 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=7) Elemtype=1 IsStructured=1 size=10 Meshing=Default
+Points: 9 14
+END STLINE
+STLINE
+Num: 21 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=7) Elemtype=1 IsStructured=1 size=10 Meshing=Default
+Points: 10 15
+END STLINE
+STLINE
+Num: 22 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=7) Elemtype=1 IsStructured=1 size=10 Meshing=Default
+Points: 11 16
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 0 conditions: 3 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=7) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 1 Orientation: DIFF1ST
+Line: 12 Orientation: SAME1ST
+Line: 2 Orientation: SAME1ST
+Line: 13 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-19.062500,509.531250,0.000000
+Point 1,2 coords:-19.062500,368.593750,0.000000
+Point 2,1 coords:262.812500,509.531250,0.000000
+Point 2,2 coords:262.812500,368.593750,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 125.000000 437.500000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 2 HigherEntity: 0 conditions: 3 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=7) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 2 Orientation: DIFF1ST
+Line: 14 Orientation: SAME1ST
+Line: 3 Orientation: SAME1ST
+Line: 15 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-19.062500,378.812500,0.000000
+Point 1,2 coords:-19.062500,322.437500,0.000000
+Point 2,1 coords:262.812500,378.812500,0.000000
+Point 2,2 coords:262.812500,322.437500,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 125.000000 350.000000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 3 HigherEntity: 0 conditions: 3 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=7) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 3 Orientation: DIFF1ST
+Line: 16 Orientation: SAME1ST
+Line: 4 Orientation: SAME1ST
+Line: 17 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-19.062500,330.718750,0.000000
+Point 1,2 coords:-19.062500,246.156250,0.000000
+Point 2,1 coords:262.812500,330.718750,0.000000
+Point 2,2 coords:262.812500,246.156250,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 125.000000 287.500000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 4 HigherEntity: 0 conditions: 3 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=7) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: DIFF1ST
+Line: 18 Orientation: SAME1ST
+Line: 8 Orientation: SAME1ST
+Line: 19 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-19.062500,269.062500,0.000000
+Point 1,2 coords:-19.062500,-12.812500,0.000000
+Point 2,1 coords:262.812500,269.062500,0.000000
+Point 2,2 coords:262.812500,-12.812500,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 125.000000 125.000000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 5 HigherEntity: 0 conditions: 3 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=7) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 5 Orientation: DIFF1ST
+Line: 19 Orientation: SAME1ST
+Line: 9 Orientation: SAME1ST
+Line: 20 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:244.281250,269.062500,0.000000
+Point 1,2 coords:244.281250,-12.812500,0.000000
+Point 2,1 coords:328.843750,269.062500,0.000000
+Point 2,2 coords:328.843750,-12.812500,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 287.500000 125.000000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 6 HigherEntity: 0 conditions: 3 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=7) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 6 Orientation: DIFF1ST
+Line: 20 Orientation: SAME1ST
+Line: 10 Orientation: SAME1ST
+Line: 21 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:321.187500,269.062500,0.000000
+Point 1,2 coords:321.187500,-12.812500,0.000000
+Point 2,1 coords:377.562500,269.062500,0.000000
+Point 2,2 coords:377.562500,-12.812500,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 350.000000 125.000000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 7 HigherEntity: 0 conditions: 3 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=7) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 7 Orientation: DIFF1ST
+Line: 21 Orientation: SAME1ST
+Line: 11 Orientation: SAME1ST
+Line: 22 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:365.468750,269.062500,0.000000
+Point 1,2 coords:365.468750,-12.812500,0.000000
+Point 2,1 coords:506.406250,269.062500,0.000000
+Point 2,2 coords:506.406250,-12.812500,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 437.500000 125.000000 0.000000
+Normal: -0.000000 0.000000 1.000000
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 1
+ E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DPOINT 1
+ E 11 -   none 0 1 0 0 0 0 0.0 -1000 0.0 0.0 0.0 0.0 Mid 
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DLINE 0
+// E 22 -   none 0 1 0 0 0 0 0.0 -4 0.0 0.0 0.0 0.0 Mid 
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
+DSURF 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+// E 11 -   1 structure 0 1 0 0 0 0 0 0 0 0 0 0 0 0 
+// E 16 -   1 structure 0 1 0 0 0 0 0 0 0 0 0 0 0 0 
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DLINE 0
+-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT FIELD FIXED FIXED FIXED FIXED FIXED FIXED
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0
+------------------------------------------------CONTACT CONDITIONS
+DLINE 0
+-------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL COS POINT CONDITIONS
+DPOINT 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE       1 DNODE 1
+NODE      88 DNODE 2
+NODE      24 DNODE 3
+NODE     108 DNODE 4
+NODE      44 DNODE 5
+NODE     123 DNODE 6
+NODE      89 DNODE 7
+NODE     147 DNODE 8
+NODE     179 DNODE 9
+NODE     207 DNODE 10
+NODE     291 DNODE 11
+NODE     246 DNODE 12
+NODE     292 DNODE 13
+NODE     312 DNODE 14
+NODE     325 DNODE 15
+NODE     341 DNODE 16
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE       1 DLINE 1
+NODE       2 DLINE 1
+NODE       5 DLINE 1
+NODE      10 DLINE 1
+NODE      16 DLINE 1
+NODE      25 DLINE 1
+NODE      34 DLINE 1
+NODE      45 DLINE 1
+NODE      57 DLINE 1
+NODE      72 DLINE 1
+NODE      88 DLINE 1
+NODE      24 DLINE 2
+NODE      28 DLINE 2
+NODE      30 DLINE 2
+NODE      32 DLINE 2
+NODE      40 DLINE 2
+NODE      46 DLINE 2
+NODE      56 DLINE 2
+NODE      68 DLINE 2
+NODE      81 DLINE 2
+NODE      95 DLINE 2
+NODE     108 DLINE 2
+NODE      44 DLINE 3
+NODE      47 DLINE 3
+NODE      51 DLINE 3
+NODE      53 DLINE 3
+NODE      61 DLINE 3
+NODE      69 DLINE 3
+NODE      77 DLINE 3
+NODE      86 DLINE 3
+NODE      99 DLINE 3
+NODE     111 DLINE 3
+NODE     123 DLINE 3
+NODE      89 DLINE 4
+NODE      91 DLINE 4
+NODE      93 DLINE 4
+NODE      97 DLINE 4
+NODE     101 DLINE 4
+NODE     109 DLINE 4
+NODE     114 DLINE 4
+NODE     124 DLINE 4
+NODE     129 DLINE 4
+NODE     138 DLINE 4
+NODE     147 DLINE 4
+NODE     147 DLINE 5
+NODE     155 DLINE 5
+NODE     166 DLINE 5
+NODE     179 DLINE 5
+NODE     179 DLINE 6
+NODE     193 DLINE 6
+NODE     207 DLINE 6
+NODE     207 DLINE 7
+NODE     222 DLINE 7
+NODE     240 DLINE 7
+NODE     259 DLINE 7
+NODE     277 DLINE 7
+NODE     291 DLINE 7
+NODE     246 DLINE 8
+NODE     249 DLINE 8
+NODE     250 DLINE 8
+NODE     252 DLINE 8
+NODE     256 DLINE 8
+NODE     261 DLINE 8
+NODE     267 DLINE 8
+NODE     271 DLINE 8
+NODE     279 DLINE 8
+NODE     282 DLINE 8
+NODE     292 DLINE 8
+NODE     292 DLINE 9
+NODE     300 DLINE 9
+NODE     304 DLINE 9
+NODE     312 DLINE 9
+NODE     312 DLINE 10
+NODE     319 DLINE 10
+NODE     325 DLINE 10
+NODE     325 DLINE 11
+NODE     330 DLINE 11
+NODE     334 DLINE 11
+NODE     337 DLINE 11
+NODE     339 DLINE 11
+NODE     341 DLINE 11
+NODE       1 DLINE 12
+NODE       3 DLINE 12
+NODE       6 DLINE 12
+NODE      11 DLINE 12
+NODE      17 DLINE 12
+NODE      24 DLINE 12
+NODE      88 DLINE 13
+NODE      92 DLINE 13
+NODE      94 DLINE 13
+NODE      98 DLINE 13
+NODE     102 DLINE 13
+NODE     108 DLINE 13
+NODE      24 DLINE 14
+NODE      35 DLINE 14
+NODE      44 DLINE 14
+NODE     108 DLINE 15
+NODE     115 DLINE 15
+NODE     123 DLINE 15
+NODE      44 DLINE 16
+NODE      58 DLINE 16
+NODE      73 DLINE 16
+NODE      89 DLINE 16
+NODE     123 DLINE 17
+NODE     130 DLINE 17
+NODE     139 DLINE 17
+NODE     147 DLINE 17
+NODE      89 DLINE 18
+NODE     105 DLINE 18
+NODE     117 DLINE 18
+NODE     132 DLINE 18
+NODE     144 DLINE 18
+NODE     157 DLINE 18
+NODE     171 DLINE 18
+NODE     187 DLINE 18
+NODE     205 DLINE 18
+NODE     225 DLINE 18
+NODE     246 DLINE 18
+NODE     147 DLINE 19
+NODE     156 DLINE 19
+NODE     167 DLINE 19
+NODE     180 DLINE 19
+NODE     194 DLINE 19
+NODE     208 DLINE 19
+NODE     223 DLINE 19
+NODE     241 DLINE 19
+NODE     260 DLINE 19
+NODE     278 DLINE 19
+NODE     292 DLINE 19
+NODE     179 DLINE 20
+NODE     189 DLINE 20
+NODE     199 DLINE 20
+NODE     213 DLINE 20
+NODE     228 DLINE 20
+NODE     243 DLINE 20
+NODE     262 DLINE 20
+NODE     275 DLINE 20
+NODE     289 DLINE 20
+NODE     302 DLINE 20
+NODE     312 DLINE 20
+NODE     207 DLINE 21
+NODE     218 DLINE 21
+NODE     230 DLINE 21
+NODE     244 DLINE 21
+NODE     257 DLINE 21
+NODE     272 DLINE 21
+NODE     283 DLINE 21
+NODE     296 DLINE 21
+NODE     308 DLINE 21
+NODE     317 DLINE 21
+NODE     325 DLINE 21
+NODE     291 DLINE 22
+NODE     301 DLINE 22
+NODE     305 DLINE 22
+NODE     313 DLINE 22
+NODE     320 DLINE 22
+NODE     326 DLINE 22
+NODE     331 DLINE 22
+NODE     335 DLINE 22
+NODE     338 DLINE 22
+NODE     340 DLINE 22
+NODE     341 DLINE 22
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE       1 DSURFACE 1
+NODE      88 DSURFACE 1
+NODE      24 DSURFACE 1
+NODE     108 DSURFACE 1
+NODE       2 DSURFACE 1
+NODE       5 DSURFACE 1
+NODE      10 DSURFACE 1
+NODE      16 DSURFACE 1
+NODE      25 DSURFACE 1
+NODE      34 DSURFACE 1
+NODE      45 DSURFACE 1
+NODE      57 DSURFACE 1
+NODE      72 DSURFACE 1
+NODE      28 DSURFACE 1
+NODE      30 DSURFACE 1
+NODE      32 DSURFACE 1
+NODE      40 DSURFACE 1
+NODE      46 DSURFACE 1
+NODE      56 DSURFACE 1
+NODE      68 DSURFACE 1
+NODE      81 DSURFACE 1
+NODE      95 DSURFACE 1
+NODE       3 DSURFACE 1
+NODE       6 DSURFACE 1
+NODE      11 DSURFACE 1
+NODE      17 DSURFACE 1
+NODE      92 DSURFACE 1
+NODE      94 DSURFACE 1
+NODE      98 DSURFACE 1
+NODE     102 DSURFACE 1
+NODE      75 DSURFACE 1
+NODE      59 DSURFACE 1
+NODE      48 DSURFACE 1
+NODE      37 DSURFACE 1
+NODE      27 DSURFACE 1
+NODE      19 DSURFACE 1
+NODE      13 DSURFACE 1
+NODE       7 DSURFACE 1
+NODE       4 DSURFACE 1
+NODE      78 DSURFACE 1
+NODE      63 DSURFACE 1
+NODE      52 DSURFACE 1
+NODE      39 DSURFACE 1
+NODE      29 DSURFACE 1
+NODE      22 DSURFACE 1
+NODE      15 DSURFACE 1
+NODE       9 DSURFACE 1
+NODE       8 DSURFACE 1
+NODE      82 DSURFACE 1
+NODE      67 DSURFACE 1
+NODE      54 DSURFACE 1
+NODE      43 DSURFACE 1
+NODE      33 DSURFACE 1
+NODE      23 DSURFACE 1
+NODE      20 DSURFACE 1
+NODE      14 DSURFACE 1
+NODE      12 DSURFACE 1
+NODE      85 DSURFACE 1
+NODE      71 DSURFACE 1
+NODE      62 DSURFACE 1
+NODE      50 DSURFACE 1
+NODE      41 DSURFACE 1
+NODE      31 DSURFACE 1
+NODE      26 DSURFACE 1
+NODE      21 DSURFACE 1
+NODE      18 DSURFACE 1
+NODE      24 DSURFACE 2
+NODE     108 DSURFACE 2
+NODE      44 DSURFACE 2
+NODE     123 DSURFACE 2
+NODE      28 DSURFACE 2
+NODE      30 DSURFACE 2
+NODE      32 DSURFACE 2
+NODE      40 DSURFACE 2
+NODE      46 DSURFACE 2
+NODE      56 DSURFACE 2
+NODE      68 DSURFACE 2
+NODE      81 DSURFACE 2
+NODE      95 DSURFACE 2
+NODE      47 DSURFACE 2
+NODE      51 DSURFACE 2
+NODE      53 DSURFACE 2
+NODE      61 DSURFACE 2
+NODE      69 DSURFACE 2
+NODE      77 DSURFACE 2
+NODE      86 DSURFACE 2
+NODE      99 DSURFACE 2
+NODE     111 DSURFACE 2
+NODE      35 DSURFACE 2
+NODE     115 DSURFACE 2
+NODE     103 DSURFACE 2
+NODE      87 DSURFACE 2
+NODE      79 DSURFACE 2
+NODE      65 DSURFACE 2
+NODE      55 DSURFACE 2
+NODE      49 DSURFACE 2
+NODE      42 DSURFACE 2
+NODE      38 DSURFACE 2
+NODE      36 DSURFACE 2
+NODE      44 DSURFACE 3
+NODE     123 DSURFACE 3
+NODE      89 DSURFACE 3
+NODE     147 DSURFACE 3
+NODE      47 DSURFACE 3
+NODE      51 DSURFACE 3
+NODE      53 DSURFACE 3
+NODE      61 DSURFACE 3
+NODE      69 DSURFACE 3
+NODE      77 DSURFACE 3
+NODE      86 DSURFACE 3
+NODE      99 DSURFACE 3
+NODE     111 DSURFACE 3
+NODE      91 DSURFACE 3
+NODE      93 DSURFACE 3
+NODE      97 DSURFACE 3
+NODE     101 DSURFACE 3
+NODE     109 DSURFACE 3
+NODE     114 DSURFACE 3
+NODE     124 DSURFACE 3
+NODE     129 DSURFACE 3
+NODE     138 DSURFACE 3
+NODE      58 DSURFACE 3
+NODE      73 DSURFACE 3
+NODE     130 DSURFACE 3
+NODE     139 DSURFACE 3
+NODE     119 DSURFACE 3
+NODE     110 DSURFACE 3
+NODE     100 DSURFACE 3
+NODE      90 DSURFACE 3
+NODE      80 DSURFACE 3
+NODE      70 DSURFACE 3
+NODE      66 DSURFACE 3
+NODE      64 DSURFACE 3
+NODE      60 DSURFACE 3
+NODE     128 DSURFACE 3
+NODE     120 DSURFACE 3
+NODE     112 DSURFACE 3
+NODE     104 DSURFACE 3
+NODE      96 DSURFACE 3
+NODE      84 DSURFACE 3
+NODE      83 DSURFACE 3
+NODE      76 DSURFACE 3
+NODE      74 DSURFACE 3
+NODE      89 DSURFACE 4
+NODE     147 DSURFACE 4
+NODE     246 DSURFACE 4
+NODE     292 DSURFACE 4
+NODE      91 DSURFACE 4
+NODE      93 DSURFACE 4
+NODE      97 DSURFACE 4
+NODE     101 DSURFACE 4
+NODE     109 DSURFACE 4
+NODE     114 DSURFACE 4
+NODE     124 DSURFACE 4
+NODE     129 DSURFACE 4
+NODE     138 DSURFACE 4
+NODE     249 DSURFACE 4
+NODE     250 DSURFACE 4
+NODE     252 DSURFACE 4
+NODE     256 DSURFACE 4
+NODE     261 DSURFACE 4
+NODE     267 DSURFACE 4
+NODE     271 DSURFACE 4
+NODE     279 DSURFACE 4
+NODE     282 DSURFACE 4
+NODE     105 DSURFACE 4
+NODE     117 DSURFACE 4
+NODE     132 DSURFACE 4
+NODE     144 DSURFACE 4
+NODE     157 DSURFACE 4
+NODE     171 DSURFACE 4
+NODE     187 DSURFACE 4
+NODE     205 DSURFACE 4
+NODE     225 DSURFACE 4
+NODE     156 DSURFACE 4
+NODE     167 DSURFACE 4
+NODE     180 DSURFACE 4
+NODE     194 DSURFACE 4
+NODE     208 DSURFACE 4
+NODE     223 DSURFACE 4
+NODE     241 DSURFACE 4
+NODE     260 DSURFACE 4
+NODE     278 DSURFACE 4
+NODE     148 DSURFACE 4
+NODE     140 DSURFACE 4
+NODE     134 DSURFACE 4
+NODE     126 DSURFACE 4
+NODE     121 DSURFACE 4
+NODE     116 DSURFACE 4
+NODE     113 DSURFACE 4
+NODE     107 DSURFACE 4
+NODE     106 DSURFACE 4
+NODE     158 DSURFACE 4
+NODE     151 DSURFACE 4
+NODE     142 DSURFACE 4
+NODE     137 DSURFACE 4
+NODE     131 DSURFACE 4
+NODE     127 DSURFACE 4
+NODE     125 DSURFACE 4
+NODE     122 DSURFACE 4
+NODE     118 DSURFACE 4
+NODE     170 DSURFACE 4
+NODE     162 DSURFACE 4
+NODE     153 DSURFACE 4
+NODE     149 DSURFACE 4
+NODE     143 DSURFACE 4
+NODE     141 DSURFACE 4
+NODE     136 DSURFACE 4
+NODE     135 DSURFACE 4
+NODE     133 DSURFACE 4
+NODE     183 DSURFACE 4
+NODE     174 DSURFACE 4
+NODE     168 DSURFACE 4
+NODE     161 DSURFACE 4
+NODE     154 DSURFACE 4
+NODE     152 DSURFACE 4
+NODE     150 DSURFACE 4
+NODE     146 DSURFACE 4
+NODE     145 DSURFACE 4
+NODE     198 DSURFACE 4
+NODE     186 DSURFACE 4
+NODE     182 DSURFACE 4
+NODE     175 DSURFACE 4
+NODE     169 DSURFACE 4
+NODE     164 DSURFACE 4
+NODE     163 DSURFACE 4
+NODE     160 DSURFACE 4
+NODE     159 DSURFACE 4
+NODE     212 DSURFACE 4
+NODE     204 DSURFACE 4
+NODE     197 DSURFACE 4
+NODE     191 DSURFACE 4
+NODE     184 DSURFACE 4
+NODE     181 DSURFACE 4
+NODE     176 DSURFACE 4
+NODE     173 DSURFACE 4
+NODE     172 DSURFACE 4
+NODE     233 DSURFACE 4
+NODE     221 DSURFACE 4
+NODE     214 DSURFACE 4
+NODE     209 DSURFACE 4
+NODE     201 DSURFACE 4
+NODE     196 DSURFACE 4
+NODE     195 DSURFACE 4
+NODE     192 DSURFACE 4
+NODE     188 DSURFACE 4
+NODE     251 DSURFACE 4
+NODE     239 DSURFACE 4
+NODE     234 DSURFACE 4
+NODE     224 DSURFACE 4
+NODE     220 DSURFACE 4
+NODE     215 DSURFACE 4
+NODE     211 DSURFACE 4
+NODE     210 DSURFACE 4
+NODE     206 DSURFACE 4
+NODE     268 DSURFACE 4
+NODE     263 DSURFACE 4
+NODE     253 DSURFACE 4
+NODE     245 DSURFACE 4
+NODE     238 DSURFACE 4
+NODE     235 DSURFACE 4
+NODE     232 DSURFACE 4
+NODE     227 DSURFACE 4
+NODE     226 DSURFACE 4
+NODE     147 DSURFACE 5
+NODE     179 DSURFACE 5
+NODE     292 DSURFACE 5
+NODE     312 DSURFACE 5
+NODE     155 DSURFACE 5
+NODE     166 DSURFACE 5
+NODE     300 DSURFACE 5
+NODE     304 DSURFACE 5
+NODE     156 DSURFACE 5
+NODE     167 DSURFACE 5
+NODE     180 DSURFACE 5
+NODE     194 DSURFACE 5
+NODE     208 DSURFACE 5
+NODE     223 DSURFACE 5
+NODE     241 DSURFACE 5
+NODE     260 DSURFACE 5
+NODE     278 DSURFACE 5
+NODE     189 DSURFACE 5
+NODE     199 DSURFACE 5
+NODE     213 DSURFACE 5
+NODE     228 DSURFACE 5
+NODE     243 DSURFACE 5
+NODE     262 DSURFACE 5
+NODE     275 DSURFACE 5
+NODE     289 DSURFACE 5
+NODE     302 DSURFACE 5
+NODE     177 DSURFACE 5
+NODE     165 DSURFACE 5
+NODE     185 DSURFACE 5
+NODE     178 DSURFACE 5
+NODE     200 DSURFACE 5
+NODE     190 DSURFACE 5
+NODE     216 DSURFACE 5
+NODE     202 DSURFACE 5
+NODE     231 DSURFACE 5
+NODE     219 DSURFACE 5
+NODE     247 DSURFACE 5
+NODE     236 DSURFACE 5
+NODE     265 DSURFACE 5
+NODE     254 DSURFACE 5
+NODE     280 DSURFACE 5
+NODE     269 DSURFACE 5
+NODE     293 DSURFACE 5
+NODE     285 DSURFACE 5
+NODE     179 DSURFACE 6
+NODE     207 DSURFACE 6
+NODE     312 DSURFACE 6
+NODE     325 DSURFACE 6
+NODE     193 DSURFACE 6
+NODE     319 DSURFACE 6
+NODE     189 DSURFACE 6
+NODE     199 DSURFACE 6
+NODE     213 DSURFACE 6
+NODE     228 DSURFACE 6
+NODE     243 DSURFACE 6
+NODE     262 DSURFACE 6
+NODE     275 DSURFACE 6
+NODE     289 DSURFACE 6
+NODE     302 DSURFACE 6
+NODE     218 DSURFACE 6
+NODE     230 DSURFACE 6
+NODE     244 DSURFACE 6
+NODE     257 DSURFACE 6
+NODE     272 DSURFACE 6
+NODE     283 DSURFACE 6
+NODE     296 DSURFACE 6
+NODE     308 DSURFACE 6
+NODE     317 DSURFACE 6
+NODE     203 DSURFACE 6
+NODE     217 DSURFACE 6
+NODE     229 DSURFACE 6
+NODE     242 DSURFACE 6
+NODE     258 DSURFACE 6
+NODE     273 DSURFACE 6
+NODE     287 DSURFACE 6
+NODE     299 DSURFACE 6
+NODE     310 DSURFACE 6
+NODE     207 DSURFACE 7
+NODE     291 DSURFACE 7
+NODE     325 DSURFACE 7
+NODE     341 DSURFACE 7
+NODE     222 DSURFACE 7
+NODE     240 DSURFACE 7
+NODE     259 DSURFACE 7
+NODE     277 DSURFACE 7
+NODE     330 DSURFACE 7
+NODE     334 DSURFACE 7
+NODE     337 DSURFACE 7
+NODE     339 DSURFACE 7
+NODE     218 DSURFACE 7
+NODE     230 DSURFACE 7
+NODE     244 DSURFACE 7
+NODE     257 DSURFACE 7
+NODE     272 DSURFACE 7
+NODE     283 DSURFACE 7
+NODE     296 DSURFACE 7
+NODE     308 DSURFACE 7
+NODE     317 DSURFACE 7
+NODE     301 DSURFACE 7
+NODE     305 DSURFACE 7
+NODE     313 DSURFACE 7
+NODE     320 DSURFACE 7
+NODE     326 DSURFACE 7
+NODE     331 DSURFACE 7
+NODE     335 DSURFACE 7
+NODE     338 DSURFACE 7
+NODE     340 DSURFACE 7
+NODE     286 DSURFACE 7
+NODE     270 DSURFACE 7
+NODE     255 DSURFACE 7
+NODE     237 DSURFACE 7
+NODE     294 DSURFACE 7
+NODE     281 DSURFACE 7
+NODE     266 DSURFACE 7
+NODE     248 DSURFACE 7
+NODE     303 DSURFACE 7
+NODE     290 DSURFACE 7
+NODE     276 DSURFACE 7
+NODE     264 DSURFACE 7
+NODE     311 DSURFACE 7
+NODE     298 DSURFACE 7
+NODE     288 DSURFACE 7
+NODE     274 DSURFACE 7
+NODE     318 DSURFACE 7
+NODE     309 DSURFACE 7
+NODE     297 DSURFACE 7
+NODE     284 DSURFACE 7
+NODE     323 DSURFACE 7
+NODE     315 DSURFACE 7
+NODE     306 DSURFACE 7
+NODE     295 DSURFACE 7
+NODE     329 DSURFACE 7
+NODE     321 DSURFACE 7
+NODE     314 DSURFACE 7
+NODE     307 DSURFACE 7
+NODE     332 DSURFACE 7
+NODE     327 DSURFACE 7
+NODE     322 DSURFACE 7
+NODE     316 DSURFACE 7
+NODE     336 DSURFACE 7
+NODE     333 DSURFACE 7
+NODE     328 DSURFACE 7
+NODE     324 DSURFACE 7
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 0.000000000000000e+00     5.000000000000000e+02     0.000000000000000e+00   
+NODE            2     COORD 2.500000000000000e+01     5.000000000000000e+02     0.000000000000000e+00   
+NODE            3     COORD 0.000000000000000e+00     4.750000000000000e+02     0.000000000000000e+00   
+NODE            4     COORD 2.500000000000000e+01     4.750000000000000e+02     0.000000000000000e+00   
+NODE            5     COORD 5.000000000000000e+01     5.000000000000000e+02     0.000000000000000e+00   
+NODE            6     COORD 0.000000000000000e+00     4.500000000000000e+02     0.000000000000000e+00   
+NODE            7     COORD 4.999999999999999e+01     4.750000000000000e+02     0.000000000000000e+00   
+NODE            8     COORD 2.500000000000000e+01     4.500000000000000e+02     0.000000000000000e+00   
+NODE            9     COORD 4.999999999999999e+01     4.500000000000000e+02     0.000000000000000e+00   
+NODE           10     COORD 7.500000000000000e+01     5.000000000000000e+02     0.000000000000000e+00   
+NODE           11     COORD 0.000000000000000e+00     4.250000000000000e+02     0.000000000000000e+00   
+NODE           12     COORD 2.500000000000000e+01     4.250000000000000e+02     0.000000000000000e+00   
+NODE           13     COORD 7.500000000000000e+01     4.750000000000000e+02     0.000000000000000e+00   
+NODE           14     COORD 4.999999999999999e+01     4.250000000000000e+02     0.000000000000000e+00   
+NODE           15     COORD 7.500000000000000e+01     4.500000000000000e+02     0.000000000000000e+00   
+NODE           16     COORD 1.000000000000000e+02     5.000000000000000e+02     0.000000000000000e+00   
+NODE           17     COORD 0.000000000000000e+00     4.000000000000000e+02     0.000000000000000e+00   
+NODE           18     COORD 2.500000000000000e+01     4.000000000000000e+02     0.000000000000000e+00   
+NODE           19     COORD 1.000000000000000e+02     4.750000000000000e+02     0.000000000000000e+00   
+NODE           20     COORD 7.500000000000001e+01     4.250000000000000e+02     0.000000000000000e+00   
+NODE           21     COORD 4.999999999999999e+01     4.000000000000000e+02     0.000000000000000e+00   
+NODE           22     COORD 1.000000000000000e+02     4.500000000000000e+02     0.000000000000000e+00   
+NODE           23     COORD 9.999999999999999e+01     4.250000000000000e+02     0.000000000000000e+00   
+NODE           24     COORD 0.000000000000000e+00     3.750000000000000e+02     0.000000000000000e+00   
+NODE           25     COORD 1.250000000000000e+02     5.000000000000000e+02     0.000000000000000e+00   
+NODE           26     COORD 7.500000000000001e+01     4.000000000000000e+02     0.000000000000000e+00   
+NODE           27     COORD 1.250000000000000e+02     4.750000000000000e+02     0.000000000000000e+00   
+NODE           28     COORD 2.500000000000000e+01     3.750000000000000e+02     0.000000000000000e+00   
+NODE           29     COORD 1.250000000000000e+02     4.500000000000000e+02     0.000000000000000e+00   
+NODE           30     COORD 5.000000000000000e+01     3.750000000000000e+02     0.000000000000000e+00   
+NODE           31     COORD 9.999999999999999e+01     4.000000000000000e+02     0.000000000000000e+00   
+NODE           32     COORD 7.500000000000000e+01     3.750000000000000e+02     0.000000000000000e+00   
+NODE           33     COORD 1.250000000000000e+02     4.250000000000000e+02     0.000000000000000e+00   
+NODE           34     COORD 1.500000000000000e+02     5.000000000000000e+02     0.000000000000000e+00   
+NODE           35     COORD 0.000000000000000e+00     3.500000000000000e+02     0.000000000000000e+00   
+NODE           36     COORD 2.500000000000000e+01     3.500000000000000e+02     0.000000000000000e+00   
+NODE           37     COORD 1.500000000000000e+02     4.750000000000000e+02     0.000000000000000e+00   
+NODE           38     COORD 4.999999999999999e+01     3.500000000000000e+02     0.000000000000000e+00   
+NODE           39     COORD 1.500000000000000e+02     4.500000000000000e+02     0.000000000000000e+00   
+NODE           40     COORD 1.000000000000000e+02     3.750000000000000e+02     0.000000000000000e+00   
+NODE           41     COORD 1.250000000000000e+02     4.000000000000000e+02     0.000000000000000e+00   
+NODE           42     COORD 7.500000000000001e+01     3.500000000000000e+02     0.000000000000000e+00   
+NODE           43     COORD 1.500000000000000e+02     4.250000000000000e+02     0.000000000000000e+00   
+NODE           44     COORD 0.000000000000000e+00     3.250000000000000e+02     0.000000000000000e+00   
+NODE           45     COORD 1.750000000000000e+02     5.000000000000000e+02     0.000000000000000e+00   
+NODE           46     COORD 1.250000000000000e+02     3.750000000000000e+02     0.000000000000000e+00   
+NODE           47     COORD 2.500000000000000e+01     3.250000000000000e+02     0.000000000000000e+00   
+NODE           48     COORD 1.750000000000000e+02     4.750000000000000e+02     0.000000000000000e+00   
+NODE           49     COORD 9.999999999999999e+01     3.500000000000000e+02     0.000000000000000e+00   
+NODE           50     COORD 1.500000000000000e+02     4.000000000000000e+02     0.000000000000000e+00   
+NODE           51     COORD 5.000000000000000e+01     3.250000000000000e+02     0.000000000000000e+00   
+NODE           52     COORD 1.750000000000000e+02     4.500000000000000e+02     0.000000000000000e+00   
+NODE           53     COORD 7.500000000000000e+01     3.250000000000000e+02     0.000000000000000e+00   
+NODE           54     COORD 1.750000000000000e+02     4.250000000000000e+02     0.000000000000000e+00   
+NODE           55     COORD 1.250000000000000e+02     3.500000000000000e+02     0.000000000000000e+00   
+NODE           56     COORD 1.500000000000000e+02     3.750000000000000e+02     0.000000000000000e+00   
+NODE           57     COORD 2.000000000000000e+02     5.000000000000000e+02     0.000000000000000e+00   
+NODE           58     COORD 0.000000000000000e+00     3.000000000000000e+02     0.000000000000000e+00   
+NODE           59     COORD 2.000000000000000e+02     4.750000000000000e+02     0.000000000000000e+00   
+NODE           60     COORD 2.500000000000000e+01     3.000000000000000e+02     0.000000000000000e+00   
+NODE           61     COORD 1.000000000000000e+02     3.250000000000000e+02     0.000000000000000e+00   
+NODE           62     COORD 1.750000000000000e+02     4.000000000000000e+02     0.000000000000000e+00   
+NODE           63     COORD 2.000000000000000e+02     4.500000000000000e+02     0.000000000000000e+00   
+NODE           64     COORD 4.999999999999999e+01     3.000000000000000e+02     0.000000000000000e+00   
+NODE           65     COORD 1.500000000000000e+02     3.500000000000000e+02     0.000000000000000e+00   
+NODE           66     COORD 7.500000000000000e+01     3.000000000000000e+02     0.000000000000000e+00   
+NODE           67     COORD 2.000000000000000e+02     4.250000000000000e+02     0.000000000000000e+00   
+NODE           68     COORD 1.750000000000000e+02     3.750000000000000e+02     0.000000000000000e+00   
+NODE           69     COORD 1.250000000000000e+02     3.250000000000000e+02     0.000000000000000e+00   
+NODE           70     COORD 1.000000000000000e+02     3.000000000000000e+02     0.000000000000000e+00   
+NODE           71     COORD 2.000000000000000e+02     4.000000000000000e+02     0.000000000000000e+00   
+NODE           72     COORD 2.250000000000000e+02     5.000000000000000e+02     0.000000000000000e+00   
+NODE           73     COORD 0.000000000000000e+00     2.750000000000000e+02     0.000000000000000e+00   
+NODE           74     COORD 2.500000000000000e+01     2.750000000000000e+02     0.000000000000000e+00   
+NODE           75     COORD 2.250000000000000e+02     4.750000000000000e+02     0.000000000000000e+00   
+NODE           76     COORD 4.999999999999999e+01     2.750000000000000e+02     0.000000000000000e+00   
+NODE           77     COORD 1.500000000000000e+02     3.250000000000000e+02     0.000000000000000e+00   
+NODE           78     COORD 2.250000000000000e+02     4.500000000000000e+02     0.000000000000000e+00   
+NODE           79     COORD 1.750000000000000e+02     3.500000000000000e+02     0.000000000000000e+00   
+NODE           80     COORD 1.250000000000000e+02     3.000000000000000e+02     0.000000000000000e+00   
+NODE           81     COORD 2.000000000000000e+02     3.750000000000000e+02     0.000000000000000e+00   
+NODE           82     COORD 2.250000000000000e+02     4.250000000000000e+02     0.000000000000000e+00   
+NODE           83     COORD 7.500000000000001e+01     2.750000000000000e+02     0.000000000000000e+00   
+NODE           84     COORD 9.999999999999999e+01     2.750000000000000e+02     0.000000000000000e+00   
+NODE           85     COORD 2.250000000000000e+02     4.000000000000000e+02     0.000000000000000e+00   
+NODE           86     COORD 1.750000000000000e+02     3.250000000000000e+02     0.000000000000000e+00   
+NODE           87     COORD 2.000000000000000e+02     3.500000000000000e+02     0.000000000000000e+00   
+NODE           88     COORD 2.500000000000000e+02     5.000000000000000e+02     0.000000000000000e+00   
+NODE           89     COORD 0.000000000000000e+00     2.500000000000000e+02     0.000000000000000e+00   
+NODE           90     COORD 1.500000000000000e+02     3.000000000000000e+02     0.000000000000000e+00   
+NODE           91     COORD 2.500000000000000e+01     2.500000000000000e+02     0.000000000000000e+00   
+NODE           92     COORD 2.500000000000000e+02     4.750000000000000e+02     0.000000000000000e+00   
+NODE           93     COORD 5.000000000000000e+01     2.500000000000000e+02     0.000000000000000e+00   
+NODE           94     COORD 2.500000000000000e+02     4.500000000000000e+02     0.000000000000000e+00   
+NODE           95     COORD 2.250000000000000e+02     3.750000000000000e+02     0.000000000000000e+00   
+NODE           96     COORD 1.250000000000000e+02     2.750000000000000e+02     0.000000000000000e+00   
+NODE           97     COORD 7.500000000000000e+01     2.500000000000000e+02     0.000000000000000e+00   
+NODE           98     COORD 2.500000000000000e+02     4.250000000000000e+02     0.000000000000000e+00   
+NODE           99     COORD 2.000000000000000e+02     3.250000000000000e+02     0.000000000000000e+00   
+NODE          100     COORD 1.750000000000000e+02     3.000000000000000e+02     0.000000000000000e+00   
+NODE          101     COORD 1.000000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          102     COORD 2.500000000000000e+02     4.000000000000000e+02     0.000000000000000e+00   
+NODE          103     COORD 2.250000000000000e+02     3.500000000000000e+02     0.000000000000000e+00   
+NODE          104     COORD 1.500000000000000e+02     2.750000000000000e+02     0.000000000000000e+00   
+NODE          105     COORD 0.000000000000000e+00     2.250000000000000e+02     0.000000000000000e+00   
+NODE          106     COORD 2.500000000000000e+01     2.250000000000000e+02     0.000000000000000e+00   
+NODE          107     COORD 4.999999999999999e+01     2.250000000000000e+02     0.000000000000000e+00   
+NODE          108     COORD 2.500000000000000e+02     3.750000000000000e+02     0.000000000000000e+00   
+NODE          109     COORD 1.250000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          110     COORD 2.000000000000000e+02     3.000000000000000e+02     0.000000000000000e+00   
+NODE          111     COORD 2.250000000000000e+02     3.250000000000000e+02     0.000000000000000e+00   
+NODE          112     COORD 1.750000000000000e+02     2.750000000000000e+02     0.000000000000000e+00   
+NODE          113     COORD 7.500000000000000e+01     2.250000000000000e+02     0.000000000000000e+00   
+NODE          114     COORD 1.500000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          115     COORD 2.500000000000000e+02     3.500000000000000e+02     0.000000000000000e+00   
+NODE          116     COORD 1.000000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          117     COORD 0.000000000000000e+00     2.000000000000000e+02     0.000000000000000e+00   
+NODE          118     COORD 2.500000000000000e+01     2.000000000000000e+02     0.000000000000000e+00   
+NODE          119     COORD 2.250000000000000e+02     3.000000000000000e+02     0.000000000000000e+00   
+NODE          120     COORD 2.000000000000000e+02     2.750000000000000e+02     0.000000000000000e+00   
+NODE          121     COORD 1.250000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          122     COORD 4.999999999999999e+01     2.000000000000000e+02     0.000000000000000e+00   
+NODE          123     COORD 2.500000000000000e+02     3.250000000000000e+02     0.000000000000000e+00   
+NODE          124     COORD 1.750000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          125     COORD 7.500000000000000e+01     2.000000000000000e+02     0.000000000000000e+00   
+NODE          126     COORD 1.500000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          127     COORD 1.000000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          128     COORD 2.250000000000000e+02     2.750000000000000e+02     0.000000000000000e+00   
+NODE          129     COORD 2.000000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          130     COORD 2.500000000000000e+02     3.000000000000000e+02     0.000000000000000e+00   
+NODE          131     COORD 1.250000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          132     COORD 0.000000000000000e+00     1.750000000000000e+02     0.000000000000000e+00   
+NODE          133     COORD 2.500000000000000e+01     1.750000000000000e+02     0.000000000000000e+00   
+NODE          134     COORD 1.750000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          135     COORD 4.999999999999999e+01     1.750000000000000e+02     0.000000000000000e+00   
+NODE          136     COORD 7.500000000000000e+01     1.750000000000000e+02     0.000000000000000e+00   
+NODE          137     COORD 1.500000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          138     COORD 2.250000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          139     COORD 2.500000000000000e+02     2.750000000000000e+02     0.000000000000000e+00   
+NODE          140     COORD 2.000000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          141     COORD 1.000000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          142     COORD 1.750000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          143     COORD 1.250000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          144     COORD 0.000000000000000e+00     1.500000000000000e+02     0.000000000000000e+00   
+NODE          145     COORD 2.500000000000000e+01     1.500000000000000e+02     0.000000000000000e+00   
+NODE          146     COORD 4.999999999999999e+01     1.500000000000000e+02     0.000000000000000e+00   
+NODE          147     COORD 2.500000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          148     COORD 2.250000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          149     COORD 1.500000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          150     COORD 7.500000000000000e+01     1.500000000000000e+02     0.000000000000000e+00   
+NODE          151     COORD 2.000000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          152     COORD 1.000000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          153     COORD 1.750000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          154     COORD 1.250000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          155     COORD 2.750000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          156     COORD 2.500000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          157     COORD 0.000000000000000e+00     1.250000000000000e+02     0.000000000000000e+00   
+NODE          158     COORD 2.250000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          159     COORD 2.500000000000000e+01     1.250000000000000e+02     0.000000000000000e+00   
+NODE          160     COORD 4.999999999999999e+01     1.250000000000000e+02     0.000000000000000e+00   
+NODE          161     COORD 1.500000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          162     COORD 2.000000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          163     COORD 7.500000000000001e+01     1.250000000000000e+02     0.000000000000000e+00   
+NODE          164     COORD 1.000000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          165     COORD 2.750000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          166     COORD 3.000000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          167     COORD 2.500000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          168     COORD 1.750000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          169     COORD 1.250000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          170     COORD 2.250000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          171     COORD 0.000000000000000e+00     1.000000000000000e+02     0.000000000000000e+00   
+NODE          172     COORD 2.500000000000000e+01     9.999999999999994e+01     0.000000000000000e+00   
+NODE          173     COORD 4.999999999999999e+01     1.000000000000000e+02     0.000000000000000e+00   
+NODE          174     COORD 2.000000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          175     COORD 1.500000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          176     COORD 7.500000000000001e+01     1.000000000000000e+02     0.000000000000000e+00   
+NODE          177     COORD 3.000000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          178     COORD 2.750000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          179     COORD 3.250000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          180     COORD 2.500000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          181     COORD 9.999999999999999e+01     1.000000000000000e+02     0.000000000000000e+00   
+NODE          182     COORD 1.750000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          183     COORD 2.250000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          184     COORD 1.250000000000000e+02     9.999999999999999e+01     0.000000000000000e+00   
+NODE          185     COORD 3.000000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          186     COORD 2.000000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          187     COORD 0.000000000000000e+00     7.500000000000000e+01     0.000000000000000e+00   
+NODE          188     COORD 2.500000000000000e+01     7.499999999999997e+01     0.000000000000000e+00   
+NODE          189     COORD 3.250000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          190     COORD 2.750000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          191     COORD 1.500000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          192     COORD 4.999999999999999e+01     7.500000000000000e+01     0.000000000000000e+00   
+NODE          193     COORD 3.500000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          194     COORD 2.500000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          195     COORD 7.500000000000001e+01     7.500000000000000e+01     0.000000000000000e+00   
+NODE          196     COORD 9.999999999999999e+01     7.500000000000000e+01     0.000000000000000e+00   
+NODE          197     COORD 1.750000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          198     COORD 2.250000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          199     COORD 3.250000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          200     COORD 3.000000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          201     COORD 1.250000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          202     COORD 2.750000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          203     COORD 3.500000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          204     COORD 2.000000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          205     COORD 0.000000000000000e+00     5.000000000000000e+01     0.000000000000000e+00   
+NODE          206     COORD 2.500000000000000e+01     5.000000000000001e+01     0.000000000000000e+00   
+NODE          207     COORD 3.750000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          208     COORD 2.500000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          209     COORD 1.500000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          210     COORD 4.999999999999999e+01     5.000000000000001e+01     0.000000000000000e+00   
+NODE          211     COORD 7.500000000000001e+01     5.000000000000001e+01     0.000000000000000e+00   
+NODE          212     COORD 2.250000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          213     COORD 3.250000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          214     COORD 1.750000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          215     COORD 9.999999999999999e+01     5.000000000000001e+01     0.000000000000000e+00   
+NODE          216     COORD 3.000000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          217     COORD 3.500000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          218     COORD 3.750000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          219     COORD 2.750000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          220     COORD 1.250000000000000e+02     4.999999999999999e+01     0.000000000000000e+00   
+NODE          221     COORD 2.000000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          222     COORD 4.000000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          223     COORD 2.500000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          224     COORD 1.500000000000000e+02     5.000000000000005e+01     0.000000000000000e+00   
+NODE          225     COORD 0.000000000000000e+00     2.500000000000000e+01     0.000000000000000e+00   
+NODE          226     COORD 2.500000000000000e+01     2.499999999999997e+01     0.000000000000000e+00   
+NODE          227     COORD 4.999999999999999e+01     2.500000000000003e+01     0.000000000000000e+00   
+NODE          228     COORD 3.250000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          229     COORD 3.500000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          230     COORD 3.750000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          231     COORD 3.000000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          232     COORD 7.500000000000001e+01     2.500000000000003e+01     0.000000000000000e+00   
+NODE          233     COORD 2.250000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          234     COORD 1.750000000000000e+02     5.000000000000005e+01     0.000000000000000e+00   
+NODE          235     COORD 9.999999999999999e+01     2.500000000000003e+01     0.000000000000000e+00   
+NODE          236     COORD 2.750000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          237     COORD 4.000000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          238     COORD 1.250000000000000e+02     2.500000000000000e+01     0.000000000000000e+00   
+NODE          239     COORD 2.000000000000000e+02     5.000000000000001e+01     0.000000000000000e+00   
+NODE          240     COORD 4.250000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          241     COORD 2.500000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          242     COORD 3.500000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          243     COORD 3.250000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          244     COORD 3.750000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          245     COORD 1.500000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          246     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE          247     COORD 3.000000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          248     COORD 4.000000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          249     COORD 2.500000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          250     COORD 5.000000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          251     COORD 2.250000000000000e+02     5.000000000000001e+01     0.000000000000000e+00   
+NODE          252     COORD 7.500000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          253     COORD 1.750000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          254     COORD 2.750000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          255     COORD 4.250000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          256     COORD 1.000000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          257     COORD 3.750000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          258     COORD 3.500000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          259     COORD 4.500000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          260     COORD 2.500000000000000e+02     5.000000000000000e+01     0.000000000000000e+00   
+NODE          261     COORD 1.250000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          262     COORD 3.250000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          263     COORD 2.000000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          264     COORD 4.000000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          265     COORD 3.000000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          266     COORD 4.250000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          267     COORD 1.500000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          268     COORD 2.250000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          269     COORD 2.750000000000000e+02     5.000000000000001e+01     0.000000000000000e+00   
+NODE          270     COORD 4.500000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          271     COORD 1.750000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          272     COORD 3.750000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          273     COORD 3.500000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          274     COORD 4.000000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          275     COORD 3.250000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          276     COORD 4.250000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          277     COORD 4.750000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          278     COORD 2.500000000000000e+02     2.500000000000000e+01     0.000000000000000e+00   
+NODE          279     COORD 2.000000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          280     COORD 3.000000000000000e+02     5.000000000000001e+01     0.000000000000000e+00   
+NODE          281     COORD 4.500000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          282     COORD 2.250000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          283     COORD 3.750000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          284     COORD 4.000000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          285     COORD 2.750000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          286     COORD 4.750000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          287     COORD 3.500000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          288     COORD 4.250000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          289     COORD 3.250000000000000e+02     5.000000000000000e+01     0.000000000000000e+00   
+NODE          290     COORD 4.500000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          291     COORD 5.000000000000000e+02     2.500000000000000e+02     0.000000000000000e+00   
+NODE          292     COORD 2.500000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          293     COORD 3.000000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          294     COORD 4.750000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          295     COORD 4.000000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          296     COORD 3.750000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          297     COORD 4.250000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          298     COORD 4.500000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          299     COORD 3.500000000000000e+02     4.999999999999995e+01     0.000000000000000e+00   
+NODE          300     COORD 2.750000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          301     COORD 5.000000000000000e+02     2.250000000000000e+02     0.000000000000000e+00   
+NODE          302     COORD 3.250000000000000e+02     2.500000000000000e+01     0.000000000000000e+00   
+NODE          303     COORD 4.750000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          304     COORD 3.000000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          305     COORD 5.000000000000000e+02     2.000000000000000e+02     0.000000000000000e+00   
+NODE          306     COORD 4.250000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          307     COORD 4.000000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          308     COORD 3.750000000000000e+02     5.000000000000000e+01     0.000000000000000e+00   
+NODE          309     COORD 4.500000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          310     COORD 3.500000000000000e+02     2.500000000000003e+01     0.000000000000000e+00   
+NODE          311     COORD 4.750000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          312     COORD 3.250000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          313     COORD 5.000000000000000e+02     1.750000000000000e+02     0.000000000000000e+00   
+NODE          314     COORD 4.250000000000000e+02     7.499999999999997e+01     0.000000000000000e+00   
+NODE          315     COORD 4.500000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          316     COORD 4.000000000000000e+02     5.000000000000001e+01     0.000000000000000e+00   
+NODE          317     COORD 3.750000000000000e+02     2.500000000000000e+01     0.000000000000000e+00   
+NODE          318     COORD 4.750000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          319     COORD 3.500000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          320     COORD 5.000000000000000e+02     1.500000000000000e+02     0.000000000000000e+00   
+NODE          321     COORD 4.500000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          322     COORD 4.250000000000000e+02     5.000000000000001e+01     0.000000000000000e+00   
+NODE          323     COORD 4.750000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          324     COORD 4.000000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          325     COORD 3.750000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          326     COORD 5.000000000000000e+02     1.250000000000000e+02     0.000000000000000e+00   
+NODE          327     COORD 4.500000000000000e+02     5.000000000000001e+01     0.000000000000000e+00   
+NODE          328     COORD 4.250000000000000e+02     2.500000000000003e+01     0.000000000000000e+00   
+NODE          329     COORD 4.750000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          330     COORD 4.000000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          331     COORD 5.000000000000000e+02     1.000000000000000e+02     0.000000000000000e+00   
+NODE          332     COORD 4.750000000000000e+02     5.000000000000005e+01     0.000000000000000e+00   
+NODE          333     COORD 4.500000000000000e+02     2.500000000000003e+01     0.000000000000000e+00   
+NODE          334     COORD 4.250000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          335     COORD 5.000000000000000e+02     7.500000000000000e+01     0.000000000000000e+00   
+NODE          336     COORD 4.750000000000000e+02     2.499999999999997e+01     0.000000000000000e+00   
+NODE          337     COORD 4.500000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          338     COORD 5.000000000000000e+02     5.000000000000000e+01     0.000000000000000e+00   
+NODE          339     COORD 4.750000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+NODE          340     COORD 5.000000000000000e+02     2.500000000000000e+01     0.000000000000000e+00   
+NODE          341     COORD 5.000000000000000e+02     0.000000000000000e+00     0.000000000000000e+00   
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 WALL QUAD4      72     75     92     88 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+      2 WALL QUAD4      57     59     75     72 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+      3 WALL QUAD4      45     48     59     57 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+      4 WALL QUAD4      34     37     48     45 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+      5 WALL QUAD4      25     27     37     34 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+      6 WALL QUAD4      16     19     27     25 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+      7 WALL QUAD4      10     13     19     16 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+      8 WALL QUAD4       5      7     13     10 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+      9 WALL QUAD4       2      4      7      5 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     10 WALL QUAD4       1      3      4      2 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     11 WALL QUAD4      75     78     94     92 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     12 WALL QUAD4      59     63     78     75 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     13 WALL QUAD4      48     52     63     59 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     14 WALL QUAD4      37     39     52     48 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     15 WALL QUAD4      27     29     39     37 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     16 WALL QUAD4      19     22     29     27 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     17 WALL QUAD4      13     15     22     19 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     18 WALL QUAD4       7      9     15     13 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     19 WALL QUAD4       4      8      9      7 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     20 WALL QUAD4       3      6      8      4 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     21 WALL QUAD4      78     82     98     94 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     22 WALL QUAD4      63     67     82     78 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     23 WALL QUAD4      52     54     67     63 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     24 WALL QUAD4      39     43     54     52 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     25 WALL QUAD4      29     33     43     39 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     26 WALL QUAD4      22     23     33     29 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     27 WALL QUAD4      15     20     23     22 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     28 WALL QUAD4       9     14     20     15 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     29 WALL QUAD4       8     12     14      9 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     30 WALL QUAD4       6     11     12      8 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     31 WALL QUAD4      82     85    102     98 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     32 WALL QUAD4      67     71     85     82 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     33 WALL QUAD4      54     62     71     67 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     34 WALL QUAD4      43     50     62     54 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     35 WALL QUAD4      33     41     50     43 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     36 WALL QUAD4      23     31     41     33 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     37 WALL QUAD4      20     26     31     23 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     38 WALL QUAD4      14     21     26     20 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     39 WALL QUAD4      12     18     21     14 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     40 WALL QUAD4      11     17     18     12 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     41 WALL QUAD4      85     95    108    102 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     42 WALL QUAD4      71     81     95     85 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     43 WALL QUAD4      62     68     81     71 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     44 WALL QUAD4      50     56     68     62 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     45 WALL QUAD4      41     46     56     50 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     46 WALL QUAD4      31     40     46     41 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     47 WALL QUAD4      26     32     40     31 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     48 WALL QUAD4      21     30     32     26 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     49 WALL QUAD4      18     28     30     21 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     50 WALL QUAD4      17     24     28     18 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     51 WALL QUAD4      95    103    115    108 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     52 WALL QUAD4      81     87    103     95 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     53 WALL QUAD4      68     79     87     81 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     54 WALL QUAD4      56     65     79     68 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     55 WALL QUAD4      46     55     65     56 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     56 WALL QUAD4      40     49     55     46 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     57 WALL QUAD4      32     42     49     40 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     58 WALL QUAD4      30     38     42     32 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     59 WALL QUAD4      28     36     38     30 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     60 WALL QUAD4      24     35     36     28 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     61 WALL QUAD4     103    111    123    115 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     62 WALL QUAD4      87     99    111    103 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     63 WALL QUAD4      79     86     99     87 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     64 WALL QUAD4      65     77     86     79 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     65 WALL QUAD4      55     69     77     65 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     66 WALL QUAD4      49     61     69     55 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     67 WALL QUAD4      42     53     61     49 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     68 WALL QUAD4      38     51     53     42 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     69 WALL QUAD4      36     47     51     38 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     70 WALL QUAD4      35     44     47     36 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     71 WALL QUAD4     111    119    130    123 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     72 WALL QUAD4      99    110    119    111 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     73 WALL QUAD4      86    100    110     99 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     74 WALL QUAD4      77     90    100     86 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     75 WALL QUAD4      69     80     90     77 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     76 WALL QUAD4      61     70     80     69 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     77 WALL QUAD4      53     66     70     61 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     78 WALL QUAD4      51     64     66     53 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     79 WALL QUAD4      47     60     64     51 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     80 WALL QUAD4      44     58     60     47 MAT       1 THICK 200 GP 2 2 PLANE_STRESS 
+     81 WALL QUAD4     119    128    139    130 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     82 WALL QUAD4     110    120    128    119 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     83 WALL QUAD4     100    112    120    110 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     84 WALL QUAD4      90    104    112    100 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     85 WALL QUAD4      80     96    104     90 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     86 WALL QUAD4      70     84     96     80 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     87 WALL QUAD4      66     83     84     70 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     88 WALL QUAD4      64     76     83     66 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     89 WALL QUAD4      60     74     76     64 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     90 WALL QUAD4      58     73     74     60 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     91 WALL QUAD4     128    138    147    139 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     92 WALL QUAD4     120    129    138    128 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     93 WALL QUAD4     112    124    129    120 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     94 WALL QUAD4     104    114    124    112 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     95 WALL QUAD4      96    109    114    104 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     96 WALL QUAD4      84    101    109     96 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     97 WALL QUAD4      83     97    101     84 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     98 WALL QUAD4      76     93     97     83 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+     99 WALL QUAD4      74     91     93     76 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    100 WALL QUAD4      73     89     91     74 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    101 WALL QUAD4     138    148    156    147 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    102 WALL QUAD4     129    140    148    138 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    103 WALL QUAD4     124    134    140    129 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    104 WALL QUAD4     114    126    134    124 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    105 WALL QUAD4     109    121    126    114 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    106 WALL QUAD4     101    116    121    109 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    107 WALL QUAD4      97    113    116    101 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    108 WALL QUAD4      93    107    113     97 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    109 WALL QUAD4      91    106    107     93 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    110 WALL QUAD4      89    105    106     91 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    111 WALL QUAD4     148    158    167    156 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    112 WALL QUAD4     140    151    158    148 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    113 WALL QUAD4     134    142    151    140 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    114 WALL QUAD4     126    137    142    134 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    115 WALL QUAD4     121    131    137    126 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    116 WALL QUAD4     116    127    131    121 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    117 WALL QUAD4     113    125    127    116 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    118 WALL QUAD4     107    122    125    113 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    119 WALL QUAD4     106    118    122    107 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    120 WALL QUAD4     105    117    118    106 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    121 WALL QUAD4     158    170    180    167 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    122 WALL QUAD4     151    162    170    158 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    123 WALL QUAD4     142    153    162    151 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    124 WALL QUAD4     137    149    153    142 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    125 WALL QUAD4     131    143    149    137 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    126 WALL QUAD4     127    141    143    131 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    127 WALL QUAD4     125    136    141    127 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    128 WALL QUAD4     122    135    136    125 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    129 WALL QUAD4     118    133    135    122 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    130 WALL QUAD4     117    132    133    118 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    131 WALL QUAD4     170    183    194    180 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    132 WALL QUAD4     162    174    183    170 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    133 WALL QUAD4     153    168    174    162 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    134 WALL QUAD4     149    161    168    153 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    135 WALL QUAD4     143    154    161    149 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    136 WALL QUAD4     141    152    154    143 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    137 WALL QUAD4     136    150    152    141 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    138 WALL QUAD4     135    146    150    136 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    139 WALL QUAD4     133    145    146    135 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    140 WALL QUAD4     132    144    145    133 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    141 WALL QUAD4     183    198    208    194 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    142 WALL QUAD4     174    186    198    183 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    143 WALL QUAD4     168    182    186    174 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    144 WALL QUAD4     161    175    182    168 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    145 WALL QUAD4     154    169    175    161 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    146 WALL QUAD4     152    164    169    154 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    147 WALL QUAD4     150    163    164    152 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    148 WALL QUAD4     146    160    163    150 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    149 WALL QUAD4     145    159    160    146 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    150 WALL QUAD4     144    157    159    145 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    151 WALL QUAD4     198    212    223    208 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    152 WALL QUAD4     186    204    212    198 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    153 WALL QUAD4     182    197    204    186 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    154 WALL QUAD4     175    191    197    182 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    155 WALL QUAD4     169    184    191    175 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    156 WALL QUAD4     164    181    184    169 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    157 WALL QUAD4     163    176    181    164 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    158 WALL QUAD4     160    173    176    163 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    159 WALL QUAD4     159    172    173    160 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    160 WALL QUAD4     157    171    172    159 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    161 WALL QUAD4     212    233    241    223 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    162 WALL QUAD4     204    221    233    212 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    163 WALL QUAD4     197    214    221    204 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    164 WALL QUAD4     191    209    214    197 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    165 WALL QUAD4     184    201    209    191 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    166 WALL QUAD4     181    196    201    184 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    167 WALL QUAD4     176    195    196    181 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    168 WALL QUAD4     173    192    195    176 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    169 WALL QUAD4     172    188    192    173 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    170 WALL QUAD4     171    187    188    172 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    171 WALL QUAD4     233    251    260    241 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    172 WALL QUAD4     221    239    251    233 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    173 WALL QUAD4     214    234    239    221 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    174 WALL QUAD4     209    224    234    214 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    175 WALL QUAD4     201    220    224    209 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    176 WALL QUAD4     196    215    220    201 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    177 WALL QUAD4     195    211    215    196 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    178 WALL QUAD4     192    210    211    195 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    179 WALL QUAD4     188    206    210    192 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    180 WALL QUAD4     187    205    206    188 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    181 WALL QUAD4     251    268    278    260 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    182 WALL QUAD4     239    263    268    251 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    183 WALL QUAD4     234    253    263    239 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    184 WALL QUAD4     224    245    253    234 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    185 WALL QUAD4     220    238    245    224 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    186 WALL QUAD4     215    235    238    220 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    187 WALL QUAD4     211    232    235    215 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    188 WALL QUAD4     210    227    232    211 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    189 WALL QUAD4     206    226    227    210 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    190 WALL QUAD4     205    225    226    206 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    191 WALL QUAD4     268    282    292    278 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    192 WALL QUAD4     263    279    282    268 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    193 WALL QUAD4     253    271    279    263 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    194 WALL QUAD4     245    267    271    253 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    195 WALL QUAD4     238    261    267    245 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    196 WALL QUAD4     235    256    261    238 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    197 WALL QUAD4     232    252    256    235 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    198 WALL QUAD4     227    250    252    232 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    199 WALL QUAD4     226    249    250    227 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    200 WALL QUAD4     225    246    249    226 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    201 WALL QUAD4     166    177    189    179 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    202 WALL QUAD4     155    165    177    166 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    203 WALL QUAD4     147    156    165    155 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    204 WALL QUAD4     177    185    199    189 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    205 WALL QUAD4     165    178    185    177 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    206 WALL QUAD4     156    167    178    165 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    207 WALL QUAD4     185    200    213    199 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    208 WALL QUAD4     178    190    200    185 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    209 WALL QUAD4     167    180    190    178 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    210 WALL QUAD4     200    216    228    213 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    211 WALL QUAD4     190    202    216    200 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    212 WALL QUAD4     180    194    202    190 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    213 WALL QUAD4     216    231    243    228 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    214 WALL QUAD4     202    219    231    216 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    215 WALL QUAD4     194    208    219    202 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    216 WALL QUAD4     231    247    262    243 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    217 WALL QUAD4     219    236    247    231 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    218 WALL QUAD4     208    223    236    219 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    219 WALL QUAD4     247    265    275    262 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    220 WALL QUAD4     236    254    265    247 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    221 WALL QUAD4     223    241    254    236 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    222 WALL QUAD4     265    280    289    275 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    223 WALL QUAD4     254    269    280    265 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    224 WALL QUAD4     241    260    269    254 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    225 WALL QUAD4     280    293    302    289 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    226 WALL QUAD4     269    285    293    280 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    227 WALL QUAD4     260    278    285    269 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    228 WALL QUAD4     293    304    312    302 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    229 WALL QUAD4     285    300    304    293 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    230 WALL QUAD4     278    292    300    285 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    231 WALL QUAD4     193    203    218    207 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    232 WALL QUAD4     179    189    203    193 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    233 WALL QUAD4     203    217    230    218 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    234 WALL QUAD4     189    199    217    203 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    235 WALL QUAD4     217    229    244    230 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    236 WALL QUAD4     199    213    229    217 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    237 WALL QUAD4     229    242    257    244 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    238 WALL QUAD4     213    228    242    229 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    239 WALL QUAD4     242    258    272    257 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    240 WALL QUAD4     228    243    258    242 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    241 WALL QUAD4     258    273    283    272 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    242 WALL QUAD4     243    262    273    258 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    243 WALL QUAD4     273    287    296    283 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    244 WALL QUAD4     262    275    287    273 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    245 WALL QUAD4     287    299    308    296 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    246 WALL QUAD4     275    289    299    287 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    247 WALL QUAD4     299    310    317    308 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    248 WALL QUAD4     289    302    310    299 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    249 WALL QUAD4     310    319    325    317 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    250 WALL QUAD4     302    312    319    310 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    251 WALL QUAD4     277    286    301    291 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    252 WALL QUAD4     259    270    286    277 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    253 WALL QUAD4     240    255    270    259 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    254 WALL QUAD4     222    237    255    240 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    255 WALL QUAD4     207    218    237    222 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    256 WALL QUAD4     286    294    305    301 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    257 WALL QUAD4     270    281    294    286 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    258 WALL QUAD4     255    266    281    270 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    259 WALL QUAD4     237    248    266    255 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    260 WALL QUAD4     218    230    248    237 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    261 WALL QUAD4     294    303    313    305 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    262 WALL QUAD4     281    290    303    294 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    263 WALL QUAD4     266    276    290    281 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    264 WALL QUAD4     248    264    276    266 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    265 WALL QUAD4     230    244    264    248 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    266 WALL QUAD4     303    311    320    313 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    267 WALL QUAD4     290    298    311    303 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    268 WALL QUAD4     276    288    298    290 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    269 WALL QUAD4     264    274    288    276 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    270 WALL QUAD4     244    257    274    264 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    271 WALL QUAD4     311    318    326    320 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    272 WALL QUAD4     298    309    318    311 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    273 WALL QUAD4     288    297    309    298 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    274 WALL QUAD4     274    284    297    288 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    275 WALL QUAD4     257    272    284    274 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    276 WALL QUAD4     318    323    331    326 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    277 WALL QUAD4     309    315    323    318 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    278 WALL QUAD4     297    306    315    309 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    279 WALL QUAD4     284    295    306    297 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    280 WALL QUAD4     272    283    295    284 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    281 WALL QUAD4     323    329    335    331 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    282 WALL QUAD4     315    321    329    323 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    283 WALL QUAD4     306    314    321    315 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    284 WALL QUAD4     295    307    314    306 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    285 WALL QUAD4     283    296    307    295 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    286 WALL QUAD4     329    332    338    335 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    287 WALL QUAD4     321    327    332    329 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    288 WALL QUAD4     314    322    327    321 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    289 WALL QUAD4     307    316    322    314 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    290 WALL QUAD4     296    308    316    307 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    291 WALL QUAD4     332    336    340    338 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    292 WALL QUAD4     327    333    336    332 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    293 WALL QUAD4     322    328    333    327 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    294 WALL QUAD4     316    324    328    322 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    295 WALL QUAD4     308    317    324    316 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    296 WALL QUAD4     336    339    341    340 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    297 WALL QUAD4     333    337    339    336 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    298 WALL QUAD4     328    334    337    333 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    299 WALL QUAD4     324    330    334    328 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+    300 WALL QUAD4     317    325    330    324 MAT       1 THICK 200 GP 2 2 PLANE_STRESS
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+//   Concrete 3D
+MAT      1 MAT_3DConcretePlastic  YOUNG 30000  NUE  0.2  FTM  3.0  FCM  40.0  GT 0.12 GC 50.0 
+----------------------------------------------MULTILAYER MATERIALS
+------------------------------------------------------CONTROL NODE
+NODE     291 DOF 2 
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 138 POSITION sol(1,1) NAME ux VALUE -0.01912022455520295 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 138 POSITION sol(1,2) NAME uy VALUE -0.02167934013444381 TOLERANCE 1e-6
+---------------------------------------------------------------END
+// END
