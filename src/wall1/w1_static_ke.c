@@ -8,7 +8,7 @@ void w1static_ke(ELEMENT   *ele,
                  W1_DATA   *data, 
                  MATERIAL  *mat,
                  ARRAY     *estif_global, 
-                 double    *force,                      /* for internal forces (initialized!) */
+                 double    *force,  /* global vector for internal forces (initialized!) */
                  int        init)
 {
 int                 i,j,k;            /* some loopers */
@@ -132,24 +132,12 @@ for (lr=0; lr<nir; lr++)
       /*-------------------------------- elastic stiffness matrix ke ---*/
         w1_keku(estif,bop,D,fac,nd,numeps);
       /*--------------- nodal forces fi from integration of stresses ---*/
-        if (force) w1fi (F,fac,bop,nd,fie);                    
+        if (force) w1fi (F,fac,bop,nd,force);                    
       }
    }/*============================================= end of loop over ls */ 
 }/*================================================ end of loop over lr */
 }
 /*------------------------------- loop concrete reinforcement steel ----*/
-
-/*- add internal forces to global vector, if a global vector was passed */
-/*                                                      to this routine */
-if(istore!=0) goto end;
-
-for (i=0; i<ele->numnp; i++)
-{
-   for (j=0; j<ele->node[i]->numdf; j++)
-   {
-      force[i*numdf+j] += fie[i*numdf+j];
-   }
-}
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/

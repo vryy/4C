@@ -9,7 +9,7 @@ void w1_cal_stress(ELEMENT   *ele,
                    W1_DATA   *data, 
                    MATERIAL  *mat,
                    ARRAY     *estif_global, 
-                   double    *force,  /* vector for internal forces (initialized!) */
+                   double    *force,  /* global vector for internal forces (initialized!) */
                    int        init)
 {
 int                 i,j,k;            /* some loopers */

@@ -14,19 +14,24 @@ void wall1(PARTITION   *actpart,
            INTRA       *actintra,
            ELEMENT     *ele,
            ARRAY       *estif_global,
-           ARRAY       *emass_global, 
+           ARRAY       *emass_global,
            ARRAY       *intforce_global,
+           int          kstep,
            CALC_ACTION *action)
 {
 int  i;
-double      *intforce;
 W1_DATA      actdata;
 MATERIAL    *actmat;
+
+int          imyrank;
+double      *intforce;
 
 #ifdef DEBUG 
 dstrc_enter("wall1");
 #endif
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+if (intforce_global)
 intforce = intforce_global->a.dv;
 /*------------------------------------------------- switch to do option */
 switch (*action)
@@ -40,7 +45,7 @@ break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
-   w1static_ke(ele,&actdata,actmat,estif_global,intforce,0);
+   w1static_ke(ele,&actdata,actmat,estif_global,NULL,0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:

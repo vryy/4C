@@ -32,7 +32,7 @@ void w1_cal_stress(ELEMENT   *ele, /* actual element                    */
                    W1_DATA   *data,/* wall1 data                        */
                    MATERIAL  *mat, /* actual material                   */
                    ARRAY     *estif_global, /* element stiffness matrix */ 
-                   double    *force,  /* vector - internal forces */
+                   double    *force,  /* glob. vector - internal forces */
                    int        init);  /* initialize this function       */
 /*-----------------------------------------------------------------------*
 |  w1_cal_stress.c                                           al 9/01     |

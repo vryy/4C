@@ -45,6 +45,8 @@ typedef struct _W1_ELE_WA
 {
 W1_IP_WA      *ipwa;
 double         dia;
+double        *matdata; /* element material data, actual density ... */
+int           *optdata; /* optimization variable number ... */
 } W1_ELE_WA;
 /*----------------------------------------------------------------------*
  | result struct: stresses                                   al 6/01    |
@@ -94,13 +96,14 @@ W1_ELE_STRESS *stress;                        /* element stresses      */
 /*----------------------------------------------------------------------*
  | main wall1  control routine                               al 6/01    |
  *----------------------------------------------------------------------*/
-void wall1(       PARTITION   *actpart,
-                  INTRA       *actintra,
-                  ELEMENT     *ele,
-                  ARRAY       *estif_global,
-                  ARRAY       *emass_global,
-                  ARRAY      *intforce_global,
-                  CALC_ACTION *action);
+void wall1(PARTITION   *actpart,
+           INTRA       *actintra,
+           ELEMENT     *ele,
+           ARRAY       *estif_global,
+           ARRAY       *emass_global,
+           ARRAY       *intforce_global,
+           int         global_numeq,
+           CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  | read wall element                                         al 9/01    |
  *----------------------------------------------------------------------*/
