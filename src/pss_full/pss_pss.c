@@ -474,8 +474,8 @@ return;
  | ierr=2     record with this name doesn't exists                      |
  |                                                                      |
  |  NOTE: the structure for the array must be provided by user,         |
- |        space is allocated in correct amount to hold record           |
- |        by this routine                                               |
+ |        space must be allocated in correct amount to hold record      |
+ |        before calling this routine                                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_read_array_name(char       *name, 
@@ -555,16 +555,14 @@ else
    if (err != 3) dserror("error reading pss-file");
    if (dimensions[2] == sizeof(int)) /* it's a int-record */
    {
-       if ( (dimensions[0]==1)||(dimensions[1]==1) )/* it's an int-vector */
+       if ( array->Typ == cca_IV )/* it's an int-vector */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"IV");
           err=fread(&(array->a.iv[0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
        else /* it's an int-array */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"IA");
           err=fread(&(array->a.ia[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
@@ -572,16 +570,14 @@ else
    }
    else if (dimensions[2] == sizeof(double))/* it's a double-record */
    {
-       if ( (dimensions[0]==1)||(dimensions[1]==1) )/* it's a double-vector */
+       if ( array->Typ == cca_DV )/* it's a double-vector */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"DV");
           err=fread(&(array->a.dv[0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
        else /* it's a double-array */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"DA");
           err=fread(&(array->a.da[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
@@ -622,8 +618,8 @@ return;
  | ierr=2     record with this name doesn't exists                      |
  |                                                                      |
  |  NOTE: the structure for the array must be provided by user,         |
- |        space is allocated in correct amount to hold record           |
- |        by this routine                                               |
+ |        space must be allocated in correct amount to hold record      |
+ |        before calling this routine                                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_read_array_name_handle(char       *name, 
@@ -701,16 +697,14 @@ else
    if (err != 3) dserror("error reading pss-file");
    if (dimensions[2] == sizeof(int)) /* it's a int-record */
    {
-       if ( (dimensions[0]==1)||(dimensions[1]==1) )/* it's an int-vector */
+       if ( array->Typ == cca_IV )/* it's an int-vector */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"IV");
           err=fread(&(array->a.iv[0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
        else /* it's an int-array */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"IA");
           err=fread(&(array->a.ia[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
@@ -718,16 +712,14 @@ else
    }
    else if (dimensions[2] == sizeof(double))/* it's a double-record */
    {
-       if ( (dimensions[0]==1)||(dimensions[1]==1) )/* it's a double-vector */
+       if ( array->Typ == cca_DV )/* it's a double-vector */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"DV");
           err=fread(&(array->a.dv[0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
        else /* it's a double-array */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"DA");
           err=fread(&(array->a.da[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
@@ -767,8 +759,8 @@ return;
  | ierr=2     record with this name doesn't exists                      |
  |                                                                      |
  |  NOTE: the structure for the array must be provided by user,         |
- |        space is allocated in correct amount to hold record           |
- |        by this routine                                               |
+ |        space must be allocated in correct amount to hold record      |
+ |        before calling this routine                                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_read_array_handle(ARRAY      *array,
@@ -842,16 +834,14 @@ else
    if (err != 3) dserror("error reading pss-file");
    if (dimensions[2] == sizeof(int)) /* it's a int-record */
    {
-       if ( (dimensions[0]==1)||(dimensions[1]==1) )/* it's an int-vector */
+       if ( array->Typ == cca_IV )/* it's an int-vector */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"IV");
           err=fread(&(array->a.iv[0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
        else /* it's an int-array */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"IA");
           err=fread(&(array->a.ia[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
@@ -859,16 +849,14 @@ else
    }
    else if (dimensions[2] == sizeof(double))/* it's a double-record */
    {
-       if ( (dimensions[0]==1)||(dimensions[1]==1) )/* it's a double-vector */
+       if ( array->Typ == cca_DV )/* it's a double-vector */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"DV");
           err=fread(&(array->a.dv[0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
        else /* it's a double-array */
        {
-          amdef(name,array,dimensions[0],dimensions[1],"DA");
           err=fread(&(array->a.da[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),allfiles.out_pss);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
@@ -1094,7 +1082,7 @@ cur_pos = ftell(allfiles.out_pss);
 
 /*--------------------------------------------------------- rewind file */
 rewind(allfiles.out_pss);
-
+*ierr=0;
 /*------------------------------- loop all records till record is found */
 do
 {
@@ -1137,7 +1125,7 @@ else
 /*---------------------------------- reset the position of file-pointer */
    err = fseek(allfiles.out_pss,cur_pos,SEEK_SET);
    if (err == -1) dserror("error reading pss-file");
-   *ierr=0;    
+   *ierr=1;    
 }
 } while (foundit != 1);
 
@@ -1185,6 +1173,7 @@ cur_pos = ftell(allfiles.out_pss);
 rewind(allfiles.out_pss);
 
 /*------------------------------- loop all records till record is found */
+*ierr=0;
 do
 {
 /*--------------------------------------------------- read size of name */
@@ -1225,7 +1214,7 @@ else
 /*---------------------------------- reset the position of file-pointer */
    err = fseek(allfiles.out_pss,cur_pos,SEEK_SET);
    if (err == -1) dserror("error reading pss-file");
-   *ierr=0;    
+   *ierr=1;    
 }
 } while (foundit != 1);
 
@@ -1336,3 +1325,76 @@ dstrc_exit();
 #endif
 return;
 } /* end of pss_status_to_err */
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                        m.gee 5/02    |
+ | get the last handle to be found in file                              |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void pss_last_handle_in_file(int *lasthandle, int *nrecords)
+{
+long int cur_pos=0;
+long int current=0;
+long int endoffile=0;
+long int offset=0;
+int      sizename=0;
+int      err=0;
+char     test_name[200];
+char     writename[20];
+int      dimensions[3];
+int      counter=0;
+int      handle;
+#ifdef DEBUG 
+dstrc_enter("pss_last_handle_in_file");
+#endif
+/*------------------------------- save current position of file-pointer */
+cur_pos = ftell(allfiles.out_pss);
+fseek(allfiles.out_pss,0,SEEK_END);
+endoffile = ftell(allfiles.out_pss);
+/*--------------------------------------------------------- rewind file */
+rewind(allfiles.out_pss);
+/*------------------------------------ loop all records till end of file*/
+do
+{
+/*--------------------------------------------------- read size of name */
+   current=ftell(allfiles.out_pss);
+   if (current==endoffile) goto end;
+   err=fread(&sizename,sizeof(int),1,allfiles.out_pss);
+   if (err != 1) goto end;
+/*------------------------------------------------------ read test_name */ 
+   err=fread(test_name,sizeof(char),sizename,allfiles.out_pss);
+   if (err != sizename) goto end;
+/*--------------------------------------------------------- read handle */   
+   err=fread(&handle,sizeof(int),1,allfiles.out_pss);
+   if (err != 1) goto end;
+   *lasthandle = handle;
+/*----------------------------------------------------- read dimensions */
+   err=fread(dimensions,sizeof(int),3,allfiles.out_pss);
+   if (err != 3) goto end;
+/*----------------------------------------------------- jump the record */
+   offset = dimensions[0]*dimensions[1]*dimensions[2];
+   err = fseek(allfiles.out_pss,offset,SEEK_CUR);
+   if (feof(allfiles.out_pss) == 1) goto end;
+   if (err == -1) goto end;
+   counter++;
+   *nrecords = counter;
+/*----------------------------------------------------------------------*/
+} while (1);
+
+/*----------------------------------------------------------------------*/
+end:
+if ((current-endoffile)==0);
+else
+{
+   printf("WARNING: Using somehow damaged pss-file !\n");
+}
+/*---------------------------------- reset the position of file-pointer */
+err = fseek(allfiles.out_pss,cur_pos,SEEK_SET);
+if (err == -1) dserror("error reading pss-file");
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of pss_last_handle_in_file */
