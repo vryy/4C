@@ -33,7 +33,6 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_mask_ucchb.o \
                 ${SRC}/global_full/global_mask_dense.o \
                 ${SRC}/global_full/global_mask_rcptr.o \
-                ${SRC}/global_full/global_bunker_init.o \
                 ${SRC}/global_full/global_calelm.o \
                 ${SRC}/global_full/global_calrhs.o \
                 ${SRC}/global_full/global_calrhs_nodal.o \
@@ -54,8 +53,6 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
 OBJS3	      = ${SRC}/pss_full/pss_am.o \
                 ${SRC}/pss_full/pss_ds.o \
                 ${SRC}/pss_full/pss_fr.o \
-                ${SRC}/pss_full/pss_bunk1.o \
-                ${SRC}/pss_full/pss_bunk2.o \
                 ${SRC}/pss_full/pss_pss.o 
 #                input_full
 OBJS4	      = ${SRC}/input_full/input_control_global.o \
