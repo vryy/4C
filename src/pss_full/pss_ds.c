@@ -95,7 +95,8 @@ return;
 
 
 /*----------------------------------------------------------------------*
- | report entrance to routine to the tracing system       m.gee 8/00    |
+ | report intrance to routine named string to the tracing system  m.gee |
+ | is empty is DEBUG is not defined                               8/00  |
  *----------------------------------------------------------------------*/
 void dstrc_enter(char string[])
 {
@@ -109,10 +110,11 @@ trace.deepness++;
 }
 #endif
 return;
-} /* end of dstracesize */
+} /* end of dstrc_enter */
 
 /*----------------------------------------------------------------------*
  | report exit to routine to the tracing system           m.gee 8/00    |
+ | is empty is DEBUG is not defined                                     |
  *----------------------------------------------------------------------*/
 void dstrc_exit()
 {
@@ -125,7 +127,7 @@ trace.deepness--;
 }
 return;
 #endif
-} /* end of dstracesize */
+} /* end of dstrc_exit */
 
 
 
@@ -133,6 +135,7 @@ return;
 
 /*----------------------------------------------------------------------*
  | report a new double array to the bugtracing system     m.gee 8/00    |    
+ | this routine is called by the am-system only !                       | 
  *----------------------------------------------------------------------*/
 void dsreportarray(void *array, int typ)
 {
@@ -172,6 +175,7 @@ return;
 
 /*----------------------------------------------------------------------*
  | report a new double array to the bugtracing system     m.gee 8/00    |    
+ | this routine is called by the am-system only !                       |
  *----------------------------------------------------------------------*/
 void dsdeletearray(void *array, int typ)
 {
@@ -229,6 +233,9 @@ return;
 
 /*----------------------------------------------------------------------*
  | write a report about all arrays to the .err file       m.gee 8/00    |    
+ | does nothing if DEBUG is not defined                                 |
+ | writes a list of all ARRAY and ARRAY4D structure generated           |
+ | by the am-System to the *.err file                                   |
  *----------------------------------------------------------------------*/
 void dstrace_to_err()
 {
@@ -367,6 +374,7 @@ return;
 
 /*----------------------------------------------------------------------*
  | report the amount of actual allocated memory           m.gee 2/02    |
+ | only works if DEBUG is defined                                       |
  *----------------------------------------------------------------------*/
 void dsmemreport()
 {
@@ -411,9 +419,36 @@ return;
 } /* end of dsmemreport */
 
 
+/*----------------------------------------------------------------------*
+ |                                                        m.gee 3/02    |
+ | this routine does nothing if the boolean criterium is true           |
+ | but aborts the programm, if it is not                                |
+ | The routine is empty in an optimezed (not DEBUG) compilation and     |
+ | can therefor be excessively used to develop a secure code, without   |
+ | making it slow when running as fast-exe                              |
+ | parameter list                                                       |
+ | true - (input) boolean criterium                                     |
+ | string - (input) error message                                       |
+ *----------------------------------------------------------------------*/
+void dsassert(int true, char string[])
+{
+#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+if (true) return;
+else
+dserror(string);
+/*----------------------------------------------------------------------*/
+#endif
+return;
+} /* end of dsmemreport */
+
+
 
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
+ | prints error message string to console and *.err                     |
+ | prints call tree, if DEBUG was defined                               |
+ | aborts parallel and sequentiell programm                             |
  *----------------------------------------------------------------------*/
 void dserror(char string[])
 {

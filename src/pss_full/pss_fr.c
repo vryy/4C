@@ -136,6 +136,8 @@ return;
 
 /*----------------------------------------------------------------------*
  | find a character string                                m.gee 8/00    |
+ | char string[] (input) character string to search for copy of inputfil|
+ |                       terminates programm if not found               |
  *----------------------------------------------------------------------*/
 void frfind(char string[])
 {
@@ -171,7 +173,8 @@ return;
 
 
 /*----------------------------------------------------------------------*
- | set pointers to next line in input_file                m.gee 8/00    |
+ |                                                        m.gee 8/00    |
+ | sets a pointer to the next line in thecopy of input file on all procs|
  *----------------------------------------------------------------------*/
 void frread()
 {
@@ -194,9 +197,10 @@ return;
 
 /*----------------------------------------------------------------------*
  | reads n integers from input_file                       m.gee 4/01    |
- | starting in allfiles.actrow                                          |
- | ierr=0 kenner not found                                              |
- | ierr=1 integer read                                                  |
+ | char string[] (input) keyword to search for in actual line           |
+ | int *var      (output) adress of field to hold values read           |
+ | int num       (input)  number of values to read                      |
+ | int *ierr     (output) =0 keyword not found / =1 values read         |
  *----------------------------------------------------------------------*/
 void frint_n(char string[],int *var,int num, int *ierr)
 {
@@ -234,7 +238,10 @@ return;
 /*----------------------------------------------------------------------*
  | reads an integer from input_file                       m.gee 8/00    |
  | starting in allfiles.actrow                                          |
- | ierr=0 kenner not found                                              |
+ | char string[] (input) keyword to search for in actual line           |
+ | int *var      (output)adress of variable to read to                  |
+ | int *ierr     (output) flag to indicate success                      |
+ | ierr=0 keyword not found                                             |
  | ierr=1 integer read                                                  |
  *----------------------------------------------------------------------*/
 void frint(char string[],int *var, int *ierr)
@@ -276,6 +283,7 @@ return;
 
 /*----------------------------------------------------------------------*
  | reads a double from input file line allfiles.line      m.gee 8/00    |
+ | see frint_n                                                          |
  | ierr=0 kenner not found                                              |
  | ierr=1 double  read                                                  |
  *----------------------------------------------------------------------*/
@@ -314,6 +322,7 @@ return;
 
 /*----------------------------------------------------------------------*
  | reads a double from input file line allfiles.line      m.gee 8/00    |
+ | see frint                                                            |
  | ierr=0 kenner not found                                              |
  | ierr=1 double  read                                                  |
  *----------------------------------------------------------------------*/
@@ -349,11 +358,11 @@ return;
 
 
 /*----------------------------------------------------------------------*
- | reads a charstring from input file line allfiles.line                |
+ | reads a charstring from input file                                   |
  | user must assure, that the given charpointer space is long enough    |   
- | to take the string                                                   |
- | ierr=0 kenner not found                                              |
- | ierr=1 char read                                        m.gee 8/00   |
+ | to hold the string                                                   |
+ | ierr=0 keyword not found on line                                     |
+ | ierr=1 char string read                                 m.gee 8/00   |
  *----------------------------------------------------------------------*/
 void frchar(char string[],char *var, int *ierr)
 {
@@ -390,6 +399,7 @@ return;
  | checks for a keyword in actual line                                  |
  | ierr=0 not found                                                     |
  | ierr=1 found                                            m.gee 8/00   |
+ | char string[] (input) character string to check actual line for      |
  *----------------------------------------------------------------------*/
 void frchk(char string[], int *ierr)
 {

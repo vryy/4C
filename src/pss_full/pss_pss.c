@@ -35,12 +35,12 @@ extern struct _FILES  allfiles;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_write(char          *name, 
-                  int            fdim, 
-                  int            sdim,
-                  int            byte,
-                  const void    *startaddress,
-                  int           *handle, 
-                  int           *ierr)
+               int            fdim, 
+               int            sdim,
+               int            byte,
+               const void    *startaddress,
+               int           *handle, 
+               int           *ierr)
 {
 int          i;
 int          err=0;
@@ -101,11 +101,14 @@ return;
  | ierr=1     writing successfull                                       |
  | ierr=2     record with this name already exists                      |
  |                                                                      |
+ | const ARRAY *array (input) adress of array to be written             |
+ | int         *handle(output) unique handle returned by the pss-system |
+ | int         *ierr  (output) success flag                             |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_write_array(const ARRAY *array, 
-                        int         *handle, 
-                        int         *ierr)
+                     int         *handle, 
+                     int         *ierr)
 {
 int           i;
 int           err=0;
@@ -231,15 +234,20 @@ return;
  | ierr=1     reading successfull                                       |
  | ierr=2     record with this name doesn't exists                      |
  |                                                                      |
+ | char *name (input) name of the record to read                        |
+ | int  *fdim (output) first dimension of record                        |
+ | int  *sdim (output) scnd dimension of record                         |
+ | int  *byte (output) size in byte of one entry in record              |
+ | 
  |                                                                      |
  *----------------------------------------------------------------------*/
-void pss_read_name(char       *name, 
-                      int        *fdim, 
-                      int        *sdim,
-                      int        *byte,
-                      void       *ziel,
-                      int        *handle, 
-                      int        *ierr)
+void pss_read_name(char *name, 
+                   int  *fdim, 
+                   int  *sdim,
+                   int  *byte,
+                   void *ziel,
+                   int  *handle, 
+                   int  *ierr)
 {
 long int      cur_pos = 0;
 long int      offset = 0;
