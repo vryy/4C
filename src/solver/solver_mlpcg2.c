@@ -61,9 +61,9 @@ INT      numeq;
 
 DOUBLE  *z,*r;
 ARRAY    rwork_a;
-DOUBLE  *rwork;
+DOUBLE  *rwork = NULL;
 ARRAY    zwork_a;
-DOUBLE  *zwork;
+DOUBLE  *zwork = NULL;
 
 ARRAY    rcwork_a;
 DOUBLE  *rcwork;

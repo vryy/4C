@@ -135,7 +135,6 @@ INT             itnum2;             /* counter for nonlinear iteration  */
 INT             itnumke;            /* counter for nonlinear iteration  */
 INT             itnum_n=1;          /* counter for nonlinear iteration  */
 INT             itnum_check;        /* counter for nonlinear iteration  */
-INT             kapomegastep;       /* counter for timeloop             */
 INT             conv_check_rans;
 INT             i,kk;               /* simply a counter                 */
 INT             numeq[2];           /* number of equations on this proc */
@@ -143,7 +142,6 @@ INT             numeq_total[2];     /* total number of equations        */
 INT             numeq_oll;
 INT             numeq_total_oll;
 INT             init;               /* flag for solver_control call     */
-INT             start;               /* flag for solver_control call     */
 INT             nsysarray=1;        /* two system matrix                */
 INT             actsysarray;        /* number of actual sysarray        */
 INT             k_array=0;          /* index of K-matrix in solver      */

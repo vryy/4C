@@ -85,8 +85,10 @@ fprintf(allfiles.gnu,"\n");
 fflush(allfiles.gnu);
 
 /*----------------------------------------------------------------------*/
+#ifdef PARALLEL
 end:
-/*----------------------------------------------------------------------*/
+#endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -139,8 +141,11 @@ fprintf(allfiles.gnu,"%12.7f      %i  %14.12f  %12.7f  %i\n",
         time, step, norm, dt, itnum);
 fflush(allfiles.gnu);
 
+
+#ifdef PARALLEL
 end:
-/*----------------------------------------------------------------------*/
+#endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif

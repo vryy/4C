@@ -69,7 +69,8 @@ INT        numnp_total;              /* total number of fluid nodes     */
 INT        numele_total;             /* total number of fluid elements  */
 INT        numdf;	                   /* number of fluid dofs       	*/
 DOUBLE     k_2,roughtness;
-DOUBLE     visc,int_lenght;
+DOUBLE     visc = 0.0;
+DOUBLE     int_lenght;
 GNODE     *actgnode;	             /* actual GNODE		            */
 NODE      *actnode;	             /* actual NODE		            */
 NODE      *actnode2;	             /* NODE from RANS                  */    
@@ -167,7 +168,6 @@ void fluid_caldirich_tu_1(
 {
 
 INT         i,j;
-INT         dof;
 INT         numdf;                      /* number of fluid dofs         */
 INT         nd=0;                      
 DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */

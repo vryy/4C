@@ -160,6 +160,8 @@ break;
 case ale:
    fprintf(mon,"MONITORING DATA: ALE FIELD\n");
 break;
+default:
+break;
 }
 fprintf(mon,"================================================================================\n");
 fprintf(mon,"\n");
@@ -278,7 +280,7 @@ fprintf(mon,"\n");
 }
 
 if (myrank==0) fflush(mon);
-end:
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif

@@ -356,7 +356,7 @@ INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
 INT        numele_total;             /* total number of fluid elements  */
 INT        numdf;	                   /* number of fluid dofs       	*/
-DOUBLE     k_2,int_lenght;
+DOUBLE     int_lenght;
 GNODE     *actgnode;	             /* actual GNODE		            */
 NODE      *actnode;	             /* actual NODE		            */
 
@@ -652,7 +652,7 @@ fdyn = alldyn[genprob.numff].fdyn;
       default:
          dserror("Norm for nonlin. convergence check unknown!!\n");
       } /*end of switch(fdyn->itnorm) */
-   } /* endif (par.myrank)
+   } /* endif (par.myrank) */
    /*------------------------------------------------ convergence check */
    if (kapepsrat<fdyn->ittol)
       converged=2;
@@ -864,7 +864,7 @@ INT         i,j;          /* simply some counters                       */
 INT         numnp_total;  /* total number of nodes                      */
 INT         diff,max;     /* integers for amredef                       */
 INT         numdf;        /* number of fluid dofs                       */
-DOUBLE     visc;
+DOUBLE      visc = 0.0;
 NODE       *actnode;      /* actual node                                */
 
 #ifdef DEBUG 
@@ -950,7 +950,7 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("don't know what to do, so I better stop! *gg* \n");
-} /* end of switch(flag)
+} /* end of switch(flag) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

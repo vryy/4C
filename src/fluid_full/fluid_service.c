@@ -549,17 +549,25 @@ INT    numdf;           /* number of dofs in this discretisation        */
 INT    numnp_total;     /* total number of nodes in this discretisation */
 INT    numele_total;    /* total number of elements in this discr.      */  
 INT    numnp=0;         /* number of nodes at actual element            */
+#ifdef D_FSI
 INT    found;
+GNODE *actgnode;        /* the actual gnode                             */
+#endif
 int    ldflag;
 DOUBLE dens;            /* density                                      */
 NODE  *actnode;         /* the actual node                              */
-GNODE *actgnode;        /* the actual gnode                             */
 ELEMENT *actele;        /* the actual element                           */
 GVOL    *actgvol;
 GSURF   *actgsurf;
+
+#ifdef D_FLUID2
 GLINE   *actgline;
-DSURF   *actdsurf;
 DLINE   *actdline;
+#endif
+
+#ifdef D_FLUID3
+DSURF   *actdsurf;
+#endif
 
 /*----------------------------------------- variables for solitary wave */
 DOUBLE u1,u2,u3,eta,p,c,g,H,d,x,y,t,fac,fac1,sech;
@@ -1389,6 +1397,7 @@ for (i=0; i<actdis->numnp; i++)
       arrayf = &(actnode->sol_mf);
    break;   
    default:
+      arrayf = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
    }
    /*----------------------------------------- select correct arrayfrom */
@@ -1407,6 +1416,7 @@ for (i=0; i<actdis->numnp; i++)
       arrayt = &(actnode->sol_mf);
    break;      
    default:
+      arrayt = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* check the size of arrayf */
@@ -1508,6 +1518,7 @@ for (i=0; i<actdis->numnp; i++)
       array = &(actnode->sol_mf);
    break;   
    default:
+      array = NULL;
       dserror("Only 0,1,2,3 allowed for index to select sol, sol_increment, sol_residual, sol_mf");
    }
    dsassert(actpos<array->fdim,"cannot transform pressure\n");

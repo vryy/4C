@@ -135,7 +135,6 @@ INT             itnum2;             /* counter for nonlinear iteration  */
 INT             itnumke;            /* counter for nonlinear iteration  */
 INT             itnum_n=1;          /* counter for nonlinear iteration  */
 INT             itnum_check;        /* counter for nonlinear iteration  */
-INT             kapepsstep;         /* counter for timeloop             */
 INT             conv_check_rans;
 INT             i,kk;               /* simply a counter                 */
 INT             numeq[2];           /* number of equations on this proc */

@@ -73,6 +73,9 @@ especially fluid problems with free surfaces
 ------------------------------------------------------------------------*/
 void fluid_mf(INT mctrl)
 {
+  
+#ifdef D_FSI
+
 static INT      numfld;       /* number of fiels                        */
 static INT      numff;
 static INT      numaf;        /* actual number of fields                */
@@ -89,7 +92,6 @@ static FSI_DYNAMIC    *fsidyn;
 dstrc_enter("fluid_mf");
 #endif
 
-#ifdef D_FSI
 /*----------------------------------------------------------------------*/
 if (mctrl==99) goto cleaningup;
 

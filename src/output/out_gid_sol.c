@@ -1049,8 +1049,8 @@ if (actgid->is_shell9_4_22)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-   /* for (j=1; j<4; j++)/* quadrilateral version */
-      for (j=1; j<8; j++)/* hexahedra version */
+   /* for (j=1; j<4; j++) */    /* quadrilateral version */
+      for (j=1; j<8; j++)       /* hexahedra version */
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
@@ -1068,8 +1068,8 @@ if (actgid->is_shell9_4_33)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-   /* for (j=1; j<9; j++)/* quadrilateral version */
-      for (j=1; j<27; j++)/* hexahedra version */
+   /* for (j=1; j<9; j++) */     /* quadrilateral version */
+      for (j=1; j<27; j++)       /* hexahedra version */
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
@@ -1088,8 +1088,8 @@ if (actgid->is_shell9_8_22)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-   /* for (j=1; j<4; j++)/* quadrilateral version */
-      for (j=1; j<8; j++)/* hexahedra version */
+   /* for (j=1; j<4; j++) */     /* quadrilateral version */
+      for (j=1; j<8; j++)        /* hexahedra version */
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
@@ -1107,8 +1107,8 @@ if (actgid->is_shell9_8_33)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-   /* for (j=1; j<9; j++)/* quadrilateral version */
-      for (j=1; j<27; j++)/* hexahedra version */
+   /* for (j=1; j<9; j++) */    /* quadrilateral version */
+      for (j=1; j<27; j++)      /* hexahedra version */
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
@@ -1127,8 +1127,8 @@ if (actgid->is_shell9_9_22)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 9) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-   /* for (j=1; j<4; j++)/* quadrilateral version */
-      for (j=1; j<8; j++)/* hexahedra version */
+   /* for (j=1; j<4; j++) */     /* quadrilateral version */
+      for (j=1; j<8; j++)        /* hexahedra version */
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
@@ -1146,8 +1146,8 @@ if (actgid->is_shell9_9_33)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 9) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-   /* for (j=1; j<9; j++)/* quadrilateral version */
-      for (j=1; j<27; j++)/* hexahedra version */
+   /* for (j=1; j<9; j++) */      /* quadrilateral version */
+      for (j=1; j<27; j++)      /* hexahedra version */
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
@@ -1551,12 +1551,18 @@ char          sign='"';
 INT           stringlenght;
 
 INT           ngauss;
-DOUBLE      **forces;/* for shell8 */
 DOUBLE      **stress;
 
-DOUBLE        a1,a2,a3,thick,scal,sdc; /* for shell8 */
-DOUBLE        pv,ph,pw,px;
+#ifdef D_SHELL8
+DOUBLE      **forces;/* for shell8 */
+DOUBLE        scal,sdc; /* for shell8 */
 INT           tot_numnp;
+#endif
+
+#ifdef D_AXISHELL
+DOUBLE        pv,ph,pw,px;
+DOUBLE        thick;
+#endif
 
 INT           numele;   /*for shell9/shell8*/
 /* 
@@ -2465,7 +2471,7 @@ if (strncmp(string,"stress",stringlenght)==0)
      fprintf(out,"RESULT %cfluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
-         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
      fprintf(out,"VALUES\n");
      f3_out_gid_sol_str(out,actfield,0,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
@@ -2480,7 +2486,7 @@ if (strncmp(string,"stress",stringlenght)==0)
      fprintf(out,"RESULT %cviscous_fluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
-         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
      fprintf(out,"VALUES\n");
      f3_out_gid_sol_str(out,actfield,1,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
@@ -2502,7 +2508,7 @@ if (strncmp(string,"stress",stringlenght)==0)
      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
-         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
      fprintf(out,"VALUES\n");
      f3_out_gid_sol_str(out,actfield,0,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
@@ -2517,7 +2523,7 @@ if (strncmp(string,"stress",stringlenght)==0)
      fprintf(out,"RESULT %cviscous_fluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
-         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
      fprintf(out,"VALUES\n");
      f3_out_gid_sol_str(out,actfield,1,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");

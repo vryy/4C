@@ -67,11 +67,13 @@ char          sign='"';
 INT           stringlenght;
 
 INT           ngauss;
-DOUBLE      **forces;
 DOUBLE      **stress;
 
+#ifdef D_SHELL8
+DOUBLE      **forces;
 DOUBLE        a1,a2,a3,thick,scal,sdc;
 INT           tot_numnp;
+#endif
 
 INT           numele;   /*for shell9*/
 /* 

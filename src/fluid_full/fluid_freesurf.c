@@ -81,6 +81,8 @@ FLUID  - no boundary condition at all
 ------------------------------------------------------------------------*/
 void fluid_createfreesurf()
 {
+
+#ifdef D_FSI
 INT       i;                              /* simply some counters       */
 INT       hasdirich,hascouple;
 INT       hasfsi,hasneum;                 /* different flags            */
@@ -93,7 +95,6 @@ FIELDTYP  fieldtyp;
 dstrc_enter("fluid_createfreesurf");
 #endif
 
-#ifdef D_FSI
 
 dsassert(genprob.numff>=0,"No fluid field in fluid function!\n");
 dsassert(genprob.numaf>=0,"No ale field in fluid freesurf function!\n");

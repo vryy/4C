@@ -58,13 +58,14 @@ FIELD        *actfield;
 GIDSET       *actgid;
 ELEMENT      *actele;
 ELEMENT      *firstele;
-NODE         *actnode;
+NODE         *actnode = NULL;
 
+#ifdef D_SHELL8
 DOUBLE        a1,a2,a3,thick,scal;
 INT           tot_numnp;
+#endif
 
 INT           is_firstmesh;
-char          sign='"';
 
 #ifdef DEBUG 
 dstrc_enter("out_gid_msh");
@@ -1207,7 +1208,7 @@ for (i=0; i<genprob.numfld; i++)
 	break;
       }
    }
-}/* end of (i=0; i<genprob.numfld; i++)
+}/* end of (i=0; i<genprob.numfld; i++) */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

@@ -173,12 +173,15 @@ DOUBLE          newdt;
 DOUBLE          olddt;
 DOUBLE          eta;
 #endif 
+
 INT             repeatcount;
+#if 0
 DOUBLE          lowtime,uptime,writetime;
 DOUBLE          remain;
 DOUBLE          low,up;
 INT             ilow,iup;
 DOUBLE          tau,tau2,tau3,fac;
+#endif
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn   = 1;                /* dynamic calculation */
@@ -533,7 +536,9 @@ if (restart)
 sdyn->step++;
 repeatcount = 0;
 /*------------------- modifications to time steps size can be done here */
+#if 0
 adapt_top:
+#endif
 /*------------------------------------------------ set new absolue time */
 sdyn->time += sdyn->dt;
 /*--- put time to global variable for time-dependent load distributions */

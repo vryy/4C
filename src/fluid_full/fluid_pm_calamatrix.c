@@ -100,19 +100,17 @@ void fluid_pm_calamatrix(
 			  CONTAINER       *container  
 			 )
 {
-INT     i,j,k,l,n,jj;    /* just some counters                         */
 INT     firstdof[2];     /* first dofnumber on this proc (vel&pres)    */
 INT     lastdof[2];      /* last dofnumber on this proc  (vel&pres)    */
 INT     nnz_guess;       /* nnz guess for opening CSR-matrix           */
-INT     mone=-1;   
 INT     numnp_vel;       /* number of velocity nodes                   */
 DOUBLE  t0,t1;           /* time measuring                             */
 DBCSR  *work_csr;        /* working matrix for the matrix product      */
 DBCSR  *amatrix_csr;     /* A-matrix in CSR format                     */
 DBCSR  *lumpedmass_csr;  /* lumped mass matrix in CSR-format           */
 DBCSR  *gradmatrix_csr;  /* gradient matrix in CSR-format              */
-NODE   *actnode;         /* the actual node                            */
 #ifdef PARALLEL
+INT     mone=-1;   
 ARRAY   saveveldof_a;    /* vel dofs before renumbering                */
 ARRAY   savepredof_a;    /* pre dofs before renumbering                */
 ARRAY   newveldof_a;     /* vel dofs after renumbering                 */
@@ -368,6 +366,7 @@ void fluid_pm_dofrenumber(FIELD      *actfield,
 			  INT         option
 			)
 {
+#ifdef PARALLEL
 INT            Id;            /* global node Id                         */
 INT            i,j,k;         /* simply some counters                   */
 INT            fd,ld;         /* temporary first and last dof           */
@@ -377,6 +376,7 @@ INT            actdof;        /* actual dof                             */
 DISCRET       *actdis;        /* actual discretisation                  */
 PARTDISCRET   *actpdis;       /* actual pdis                            */
 NODE          *actnode;       /* actual node                            */
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("fluid_pmdofrenumber");
@@ -536,7 +536,7 @@ void assemble_fluid_amatrix(
 			     INTRA     *actintra 
 			   ) 
 {
-INT     i,j,k,l;              /* simply some counters                   */  
+INT     i,j;                  /* simply some counters                   */  
 INT     ndv,ndp;              /* number of dofs per element             */
 INT     counter;              /* a counter                              */
 INT     numnpv,numnpp;        /* number of nodes per element            */ 
@@ -675,10 +675,11 @@ void fluid_pm_lumpedmass(DBCSR *lumpedmass_csr,INTRA *actintra,
 #endif
 			 INT *numeq_total)
 {
-INT         i,j,k;            /* simply some counters                   */
+INT         i;                /* simply some counters                   */
 INT         numeq;            /* number of equations on this proc       */
 DOUBLE     *val;              /* matrix entries                         */
 #ifdef PARALLEL
+INT         j,k;              /* simply some counters                   */
 INT        *update;           /* dofs updated on this proc              */
 INT         andof,aodof,fd;   /* actual dof numbers                     */
 ARRAY       lmsend_a;
@@ -765,7 +766,7 @@ void fluid_pm_redcpmat(
 		       INT numeq_totalr_full,INT numeq_totalc_full,
 		       DBCSR *matrix_csr,    OLL *matrix_oll)
 {
-INT      i,j,k;           /* simply some counters                       */
+INT      i,j;             /* simply some counters                       */
 INT     *ia,*ja,*update;  /* matrix indices                             */
 INT      numeq;           /* number of equations on this proc           */
 INT      rindex,cindex;   /* row/column index                           */
@@ -774,6 +775,10 @@ INT     *lm;              /* column location vector                     */
 DOUBLE  *a,*val;          /* matrix entries                             */      
 ARRAY    lm_a;
 ARRAY    val_a;
+
+#ifdef PARALLEL
+INT      k;               /* simply some counters                       */
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("fluid_pmredcpam");

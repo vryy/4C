@@ -50,18 +50,17 @@ void inp_fluid_start_data( FIELD   *actfield,
 			 )
 {
 INT     irc=1;                    /* flag for file opening              */
-INT     i,j,k;                    /* counters                           */
+INT     i;                        /* counters                           */
 INT     numnp=0; 	          /* number of nodes                    */
 INT     numdf=0;                  /* number dofs per node               */
 INT     num;                      /* actual number of node during input */
 INT     stepin=-1;
-INT     counter;
 INT     mone=-1;
-INT     datastep;
-INT     step;
+INT     datastep = 0;
+INT     step     = 0;
 INT     foundstep;
 DOUBLE  dens;
-DOUBLE  time;
+DOUBLE  time     = 0.0;
 ARRAY   pre_a;
 DOUBLE *pre;
 ARRAY   velx_a;
@@ -69,7 +68,7 @@ DOUBLE *velx;
 ARRAY   vely_a;
 DOUBLE *vely;
 ARRAY   velz_a;
-DOUBLE *velz;
+DOUBLE *velz     = NULL;
 ARRAY   globloc;                   /* global - local node Ids            */
 NODE  *actnode;
 ELEMENT *actele;
@@ -281,7 +280,7 @@ if (numdf==4) amdel(&velz_a);
 amdel(&pre_a);
 amdel(&globloc);
 /*----------------------------------------------------------------------*/
-end:
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -301,8 +300,6 @@ searches for a given character string in fluid_start.data
 ------------------------------------------------------------------------*/
 void inp_fluid_frfind(char string[])
 {
-char message[100];
-int  i=0;
 
 #ifdef DEBUG 
 dstrc_enter("inp_fluid_frfind");

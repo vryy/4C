@@ -29,7 +29,9 @@ static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to);
 static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,DOUBLE *work1,DOUBLE *work2);
 static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,DOUBLE *work1,DOUBLE *work2);
 static void solserv_matvec_ccf(INTRA  *actintra,CCF *ccf,DOUBLE *work1,DOUBLE *work2);
+#if 0
 static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,DOUBLE *work1,DOUBLE *work2);
+#endif
 static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,DOUBLE *work1,DOUBLE *work2);
 static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,DOUBLE *work1,DOUBLE *work2);
 static void oll_matvec(INTRA *actintra, OLL *oll, DOUBLE *work1, DOUBLE *work2);
@@ -787,13 +789,13 @@ switch (*mattyp)
 case mds:
    dserror("Matrix-Vector Product for MLIB not implemented");
 break;
+#ifdef AZTEC_PACKAGE
 case msr:
   /*
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_msr(actintra,mat->msr,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
   */
-#ifdef AZTEC_PACKAGE
 {
   struct _AZ_ARRAY_MSR* msr_array = mat->msr;
 
@@ -886,8 +888,8 @@ case msr:
   /* delete temporary solution vector */
   amdel(&tmpsol_a);
 }
-#endif
 break;
+#endif
 case parcsr:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
@@ -1124,14 +1126,16 @@ return;
 
 
 
+#if 0
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with msr matrix        m.gee 02/02|
  |  called by solserv_sparsematvec only !                               |
  *----------------------------------------------------------------------*/
-static void solserv_matvec_msr(INTRA        *actintra,
-                        AZ_ARRAY_MSR *msr,
-                        DOUBLE       *work1,
-                        DOUBLE       *work2)
+static void solserv_matvec_msr(
+    INTRA        *actintra,
+    AZ_ARRAY_MSR *msr,
+    DOUBLE       *work1,
+    DOUBLE       *work2)
 {
 #ifdef AZTEC_PACKAGE
 INT         i,j,dof;
@@ -1184,6 +1188,7 @@ dstrc_exit();
 # endif /* end of #ifdef AZTEC_PACKAGE */
 return;
 } /* end of solserv_matvec_msr */
+#endif
 
 
 

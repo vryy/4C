@@ -285,7 +285,6 @@ INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
 INT        numele_total;             /* total number of fluid elements  */
 INT        numdf;	                   /* number of fluid dofs       	*/
-DOUBLE     k_2;
 GNODE     *actgnode;	             /* actual GNODE		            */
 NODE      *actnode;	             /* actual NODE		            */
 
@@ -344,7 +343,7 @@ void fluid_eddy_update_1(FIELD         *actfield,
 INT  i,j;
 INT  dof,actmat;
 INT  numeq_total;
-DOUBLE  visc,Re_t;
+DOUBLE  visc;
 NODE    *actnode;
 ELEMENT *actele;
 

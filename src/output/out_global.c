@@ -103,10 +103,12 @@ and the type is in partition.h
 void out_general()
 {
 INT        i,j,k;
+#ifdef D_SHELL9
 INT        is_shell9;
+#endif
 FILE      *out = allfiles.out_out;
 FIELD     *actfield;
-INTRA     *actintra;
+INTRA     *actintra = NULL;
 ELEMENT   *actele;
 NODE      *actnode;
 INT        myrank;
@@ -377,9 +379,11 @@ return;
 void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
              INT step, INT place)
 {
-int        i,j,k,kk,l;
-int        is_shell9;    /*->shell9*/
-int        num_klay,kl;  /*->shell9*/
+INT        i,j,k,kk;
+#ifdef D_SHELL9
+INT        is_shell9;    /*->shell9*/
+INT        num_klay,kl;  /*->shell9*/
+#endif
 FILE      *out = allfiles.out_out;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -464,7 +468,7 @@ case structure:
       for (k=0; k<actnode->numdf; k++) 
       { 
          if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-         fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+         fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
       }
       fprintf(out,"\n");     
    }
@@ -500,7 +504,7 @@ case ale:
       for (k=0; k<actnode->numdf; k++) 
       { 
    	 if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-   	 fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+   	 fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
       }
       fprintf(out,"\n");
    }
@@ -590,7 +594,8 @@ for (j=0; j<actfield->dis[0].numele; j++)
         usefull to look at the stresses. These are writen to the flavia.res-File, so that they could be
         visualized with gid.   sh 02/03 */
         
-/*       ngauss   = actele->e.s9->nGP[0] * actele->e.s9->nGP[1];
+#if 0
+       ngauss   = actele->e.s9->nGP[0] * actele->e.s9->nGP[1];
        num_klay = actele->e.s9->num_klay;
        fprintf(out,"________________________________________________________________________________\n");
        fprintf(out,"Element glob_Id %d loc_Id %d                SHELL9\n",actele->Id,actele->Id_loc);
@@ -611,7 +616,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        for (i=0; i<ngauss; i++)
        {
           for (kl=0; kl<num_klay; kl++)  /*write forces for each kinematic layer*/
-/*          {
+          {
           fprintf(out,"Gauss %d    Layer %d %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
           i,
           kl,
@@ -644,7 +649,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        for (i=0; i<ngauss; i++)
        {
           for (kl=0; kl<num_klay; kl++)  /*write forces for each kinematic layer*/
-/*          {
+          {
           fprintf(out,"Gauss %d    Layer %d %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
           i,
           kl,
@@ -660,7 +665,9 @@ for (j=0; j<actfield->dis[0].numele; j++)
           );
           }
        }
-*/#endif /*D_SHELL9*/
+#endif
+       
+#endif /*D_SHELL9*/
    break;
 /*---------------------------------------------------------fh 03/02-------*/  
    case el_wall1:
@@ -922,6 +929,8 @@ case fluid:
 break;
 case ale:
 break;
+default:
+break;
 } /* end switch(actfield->fieldtyp) */
 
 fprintf(out,"\n");
@@ -1025,6 +1034,8 @@ return;
 ------------------------------------------------------------------------*/
 void out_fsi(FIELD *fluidfield)
 {
+
+#ifdef D_FSI
 INT        i;
 FILE      *out = allfiles.out_out;
 NODE      *actfnode, *actanode, *actsnode;
@@ -1037,7 +1048,6 @@ INT        numaf,numsf;
 dstrc_enter("out_fsi");
 #endif
 
-#ifdef D_FSI
 /*----------------------------------------------------------------------*/
 myrank = par.myrank;
 nprocs = par.nprocs;
@@ -1118,6 +1128,8 @@ return;
 ------------------------------------------------------------------------*/
 void out_fluidmf(FIELD *fluidfield)
 {
+
+#ifdef D_FSI
 INT        i;
 FILE      *out = allfiles.out_out;
 NODE      *actfnode, *actanode;
@@ -1131,7 +1143,6 @@ INT        numaf;
 dstrc_enter("out_fluidmf");
 #endif
 
-#ifdef D_FSI
 /*----------------------------------------------------------------------*/
 myrank = par.myrank;
 nprocs = par.nprocs;
@@ -1203,7 +1214,7 @@ INT        nprocs;
 INT        imyrank;
 INT        inprocs;
 INT	     numff;
-DOUBLE     visc;
+DOUBLE     visc = 0.0;
 FLUID_DYNAMIC *fdyn;
 
 /*----------------------------------------------------------------------*/

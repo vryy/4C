@@ -39,7 +39,7 @@ void solver_az_msr(
 INT         i;
 INT         dim;
 /* INT         reuse; */
-INT         azname;
+INT         azname = 0;
 AZVAR      *azvar;
 
 DOUBLE     *dfrom,*dto;

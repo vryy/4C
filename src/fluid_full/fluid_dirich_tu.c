@@ -143,7 +143,6 @@ void fluid_caldirich_tu(
 {
 
 INT         i,j;
-INT         dof;
 INT         numdf;                      /* number of fluid dofs         */
 INT         nd=0;                      
 DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */

@@ -355,13 +355,13 @@ NODE      *actnode;	             /* actual NODE		        */
 #ifdef DEBUG 
 dstrc_enter("fluid_setdirich_parabolic");
 #endif 
-/*======================================================================*/
-/*REMARK: Here the inflow profile is assumed to be set at point x=-0.5
-/*also the profile is formulated according to the parabolic formula below
-/*-(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE; 
-/*a better way of doing this would be implementing the velocity profile into
-/*preprocessor code "GID"
-/*----------------------------------------------------- set some values */
+/*======================================================================*
+* REMARK: Here the inflow profile is assumed to be set at point x=-0.5
+* also the profile is formulated according to the parabolic formula below
+* -(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE; 
+* a better way of doing this would be implementing the velocity profile into
+* preprocessor code "GID"
+*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
 
 numnp_total  = actfield->dis[0].numnp;
@@ -458,15 +458,15 @@ NODE      *actnode;	              /* actual NODE		         */
 #ifdef DEBUG 
 dstrc_enter("fluid_setdirich_cyl");
 #endif 
-/*======================================================================*/
-/*REMARK: Here the inflow profile is assumed to be set at point x=0.0
-/*also the profile is formulated according to the parabolic formula below
-/*FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H); 
-/*see the DFG Benchmark paper for the flow around a cylinder for the proper
-/*description of the problem 
-/*a better way of doing this would be implementing the velocity profile into
-/*preprocessor code "GID"
-/*----------------------------------------------------- set some values */
+/*======================================================================*
+* REMARK: Here the inflow profile is assumed to be set at point x=0.0
+* also the profile is formulated according to the parabolic formula below
+* FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H); 
+* see the DFG Benchmark paper for the flow around a cylinder for the proper
+* description of the problem 
+* a better way of doing this would be implementing the velocity profile into
+* preprocessor code "GID"
+*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
 
 numnp_total  = actfield->dis[0].numnp;
@@ -856,14 +856,13 @@ void fluid_pm_caldirich(
 {
 
 INT         i,j;
-INT         dof;
 INT         numdf;                      /* number of fluid dofs         */
 INT         nd=0;                      
 DOUBLE    dirich[MAXDOFPERELE];      /* dirichlet values of act. ele */
 INT         dirich_onoff[MAXDOFPERELE];  /* dirichlet flags of act. ele  */ 
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
-DOUBLE     tol=1.0E-6;
+
 #ifdef DEBUG 
 dstrc_enter("fluid_pm_caldirich");
 #endif  
@@ -968,7 +967,6 @@ void fluid_pm_caldirich_parabolic(
 {
 
 INT         i,j;
-INT         dof;
 INT         numdf;                          /* number of fluid dofs         */
 INT         nd=0;                      
 DOUBLE    dirich[MAXDOFPERELE];           /* dirichlet values of act. ele */
@@ -981,12 +979,12 @@ DOUBLE     L=ONE;
 #ifdef DEBUG 
 dstrc_enter("fluid_pm_caldirich_parabolic");
 #endif  
-/*======================================================================*/
-/*REMARK: the profile is formulated according to the parabolic formula below
-/*-(TWO/L)*(TWO/L)*y_coor*y_coor+ONE; 
-/*if the parabolic input profile is implemented into the preprocessor "GID" 
-/*one doesn't need any further subroutines then "fluid_caldirich"
-/*------------------------- check if there are any dirichlet conditions *
+/*======================================================================*
+* REMARK: the profile is formulated according to the parabolic formula below
+* -(TWO/L)*(TWO/L)*y_coor*y_coor+ONE; 
+* if the parabolic input profile is implemented into the preprocessor "GID" 
+* one doesn't need any further subroutines then "fluid_caldirich"
+*------------------------- check if there are any dirichlet conditions *
                                           for the nodes of this element */
 for (i=0; i<actele->numnp; i++)
 {
@@ -1085,7 +1083,7 @@ the element load vector 'dforce' is calculated by eveluating
                                    for the implicitly treated K, theta=1.0
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
 \return void                                                                             
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 void fluid_pm_caldirich_cyl(
                      ELEMENT   *actele,  
 		     DOUBLE   *dforces, 
@@ -1098,7 +1096,6 @@ void fluid_pm_caldirich_cyl(
 {
 
 INT         i,j;
-INT         dof;
 INT         numdf;                        /* number of fluid dofs         */
 INT         nd=0;                      
 DOUBLE    dirich[MAXDOFPERELE];         /* dirichlet values of act. ele */
@@ -1115,12 +1112,12 @@ DOUBLE   H=0.41;                       /* height of the channel        */
 #ifdef DEBUG 
 dstrc_enter("fluid_pm_caldirich_cyl");
 #endif  
-/*======================================================================*/
-/*REMARK: the profile is formulated according to the parabolic formula below
-/*FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
-/*if the parabolic input profile is implemented into the preprocessor "GID" 
-/*one doesn't need any further subroutines then "fluid_caldirich"
-/*------------------------- check if there are any dirichlet conditions--*/ 
+/*======================================================================*
+* REMARK: the profile is formulated according to the parabolic formula below
+* FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
+* if the parabolic input profile is implemented into the preprocessor "GID" 
+* one doesn't need any further subroutines then "fluid_caldirich"
+*------------------------- check if there are any dirichlet conditions--*/ 
 /*------------------------- for the nodes of this element----------------*/
 for (i=0; i<actele->numnp; i++)
 {

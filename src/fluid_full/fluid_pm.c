@@ -120,7 +120,6 @@ VOL 11, pp. 587-659, (1990)
 void fluid_pm(void)
 {
 INT             actcurve;           /* actual timecurve                 */
-INT             i;                  /* simply a counter                 */
 INT             kk;                 /* counter for discretisations      */
 INT             numeq[3];           /* number of equations on this proc */
 INT             numeq_total[2];     /* total number of equations        */
@@ -182,7 +181,7 @@ dstrc_enter("fluid_pm");
 
 /*======================================================================*
  |                   I N I T I A L I S A T I O N                        |   
-/*======================================================================*/
+ *======================================================================*/
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
 fdyn        = alldyn[genprob.numff].fdyn;
@@ -342,7 +341,7 @@ solserv_zero_vec(sol_pnew);
 lmass = amdef("lmass",&lmass_a,numeq_total[veldis],1,"DV");
 amzero(&lmass_a);
 /*------------------ allocate redundant vectors fvelrhs1 of full lenght 
-/*          these are used by the element routines to assemble the  RHS */
+ *          these are used by the element routines to assemble the  RHS */
 fvelrhs1    = amdef("fvelrhs1",&fvelrhs1_a,numeq_total[veldis],1,"DV");
 amzero(&fvelrhs1_a);
 /*------------------ allocate redundant vectors fvelrhs2 of full lenght */
@@ -427,17 +426,17 @@ if (ioflags.fluid_sol_gid==1 && par.myrank==0)
 }
 
 /*----------------------------------------------------------------------*
-/*                    END OF THE INITIALISATION       
-/*----------------------------------------------------------------------*/
+ *                    END OF THE INITIALISATION       
+ *----------------------------------------------------------------------*/
 
 fdyn->theta = ONE;
-fdyn->pro_profile = 1;  /* parabolic profile              */
-/*fdyn->pro_profile = 2 ; /* constant profile               */
-/*fdyn->pro_profile = 3;    /* parabolic profile for cylinder */
+fdyn->pro_profile = 1;        /* parabolic profile              */
+/*fdyn->pro_profile = 2 ;*/   /* constant profile               */
+/*fdyn->pro_profile = 3; */   /* parabolic profile for cylinder */
 
 /*======================================================================*
  |                         A  -  M A T R I X                            |   
-/*======================================================================*/
+ *======================================================================*/
 /*-------------------- calculate the A-matrix : A = CT*ML-1*C-----------*/
 /*-------------------- A  corresponds to the laplace operator ----------*/
 if (par.myrank==0)
@@ -490,7 +489,7 @@ fdyn->dta = fdyn->dt;
 
 /*======================================================================*
  |                         T I M E   L O O P                            |   
-/*======================================================================*/
+ *======================================================================*/
 if (par.myrank==0) printf("\nTIMELOOP:\n\n");
 timeloop:
 fdyn->step++; 
@@ -538,13 +537,13 @@ amzero(&fdirich_a);
 | Stiffness matrix and Mass matrix are also calculated at every         |
 | time step because K includes the BTD stabilization term which         |
 | is dependent on the velocity and changing at every time step          |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*
  | instead of two times element calculation for LHS and RHS,             |
  | both actions are combined into one action called                      |
  | calc_fluid_f2pro_rhs_both dirichlet forces are also calculated        |
  | within the time loop.                                                 |
-/*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 *action = calc_fluid_f2pro_rhs_both;
 container.fiterhs      = fvelrhs1;
 container.nii          = 1;

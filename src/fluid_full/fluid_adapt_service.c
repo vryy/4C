@@ -19,7 +19,7 @@ Maintainer: Christiane Foerster
 #include "../headers/solution.h"
 #include "fluid_prototypes.h"
 /*#include "../fluid2/fluid2.h"
-#include "../fluid3/fluid3.h"
+#include "../fluid3/fluid3.h"*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -479,17 +479,18 @@ void fluid_lte_norm(
 
 INT      i,j;		/* counters                                     */
 INT      nvel;          /* number of free velocity dofs in global dir.  */
+#ifdef PARALLEL
 INT      get;		/* receive value (int) for MPI-process          */
+DOUBLE   recv;          /* receive value (double) for MPI-process       */
+#endif
 INT      numveldof;
-INT      imax;
 
-DOUBLE   d_norm;        /* norm of LTE                                  */
+DOUBLE   d_norm = 0.0;  /* norm of LTE                                  */
 DOUBLE   sum;
 DOUBLE   vel0[3];       /* 'characteristic' velocity in global dir.     */
-DOUBLE   recv;          /* receive value (double) for MPI-process       */
 DOUBLE   getvec[3];     /* vector to receive values                     */
 DOUBLE   proposed_dt;   /* the adaptively proposed new delta t          */
-DOUBLE   ratio;         /* ratio betw. recent step size and new proposal*/
+DOUBLE   ratio = 0.0;   /* ratio betw. recent step size and new proposal*/
 
 NODE    *actnode;       /* the actual node                              */
 GNODE   *actgnode;      /* the corresponding gnode                      */
@@ -542,7 +543,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
   for (j=0;j<numveldof;j++) /* loop all velocity dofs */    
   {
     if (actgnode->dirich->dirich_onoff.a.iv[j]!=0)
-    continue; /* do nothing for dbc dofs*/
+      continue; /* do nothing for dbc dofs*/
     sum += DSQR( actnode->sol_increment.a.da[7][j]
          / ( FABS(actnode->sol_increment.a.da[3][j]) + vel0[j] ) );
     nvel++;

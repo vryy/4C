@@ -272,9 +272,13 @@ results, too.
 void global_result_test() 
 {
 #ifndef PARALLEL
-  FIELD  *alefield,*structfield,*fluidfield;
+  FIELD  *alefield     = NULL;
+  FIELD  *structfield  = NULL;
+  FIELD  *fluidfield   = NULL;
 #endif
-  PARTITION *alepart,*structpart,*fluidpart;
+  PARTITION *alepart     = NULL;
+  PARTITION *structpart  = NULL;
+  PARTITION *fluidpart   = NULL;
   NODE   *actnode;
   DOUBLE  actresult;
   FILE   *err = allfiles.out_err;
@@ -301,7 +305,7 @@ void global_result_test()
   }
 
   for (i=0; i<genprob.numresults; ++i) {
-    PARTITION* actpart;
+    PARTITION* actpart = NULL;
     RESULTDESCR* res = &(resultdescr[i]);
     
     switch (res->field) {

@@ -237,7 +237,7 @@ return;
 \param  place	 INT    (i) row to get values in the ARRAY sol_increment
 \return void
 
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void fluid_pm_fullvel(FIELD *actfield, INT disnum,DOUBLE *fullvel, INT place)
 {
 INT               i,j;     /* simply some counters                      */
@@ -283,7 +283,7 @@ discretisation.
 \param *actfield FIELD  (i) actual field
 \return void
 
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void fluid_pm_pretovel(FIELD *actfield,INT actpos)
 {
 int i,j;
