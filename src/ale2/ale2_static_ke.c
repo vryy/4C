@@ -88,8 +88,21 @@ ale2_intg(ele,data);
 amzero(estif_global);
 estif     = estif_global->a.da;
 /*------------------------------------------- integration parameters ---*/
+if(ele->distyp==quad4 || ele->distyp==quad8 || ele->distyp==quad9)
+{
 nir     = ele->e.ale2->nGP[0];
 nis     = ele->e.ale2->nGP[1];
+}
+else if (ele->distyp==tri3 || ele->distyp==tri6)
+{
+    nir = ele->e.ale2->nGP[0];
+    nis = 1;
+}
+else
+{
+   dserror("unknown number of gaussian points in ale2_intg");
+}
+
 iel     = ele->numnp;
 nd      = numdf * iel;
 /*================================================ integration loops ===*/
@@ -101,9 +114,21 @@ for (lr=0; lr<nir; lr++)
   for (ls=0; ls<nis; ls++)
   {
      /*============================= gaussian point and weight at it ===*/
-     e2   = data->xgps[ls];
-     facs = data->wgts[ls];
-     /*-------------------------- shape functions and their derivatives */
+     if(ele->distyp==quad4 || ele->distyp==quad8 || ele->distyp==quad9)
+     {
+         e2   = data->xgps[ls];
+         facs = data->wgts[ls];
+     }
+     else if (ele->distyp==tri3 || ele->distyp==tri6)
+     {
+         e2   = data->xgps[lr];
+         facs = ONE;
+     }
+     else
+     {
+       dserror("unknown number of gaussian points in ale2_intg");
+     }
+     /*---------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
      ale2_jaco (deriv,xjm,&det,ele,iel);

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale2_funct_deriv' which calculates the 
-shape functions for a 2d ale element
+\brief contains the routine 'ale2_funct_rec' and 'ale2_funct_tri' which
+calculate the shape functions for the 2d ale elements
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
@@ -17,7 +17,7 @@ shape functions for a 2d ale element
 
 <pre>                                                              mn 06/02
 This routine calcuates the shape functions and their derivatives at a
-point r,s for an 2D-ale-element.
+point r,s for an rectangular 2D-ale-element.
 
 </pre>
 \param *funct  DOUBLE  (o)   shape functions
@@ -164,8 +164,48 @@ case quad9:/*---------------- quadratic interpolation with central node */
 break;
 /*------------------------------------------------- triangular elements */
 case tri3:
+   funct[0]=ONE-r-s;
+   funct[1]=r;
+   funct[2]=s; 
+
+   if(option==1) /* --> first derivative evaluation */
+   {
+      deriv[0][0]=-ONE;
+      deriv[1][0]=-ONE;
+      deriv[0][1]= ONE;
+      deriv[1][1]=ZERO;
+      deriv[0][2]=ZERO;
+      deriv[1][2]= ONE;
+   } /* endif (option==1) */
 break;
 case tri6:
+   funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
+   funct[1]=TWO*rr-r;
+   funct[2]=TWO*ss-s;
+   funct[3]=FOUR*(r-rr-rs);
+   funct[4]=FOUR*rs;
+   funct[5]=FOUR*(s-rs-ss);
+   
+   if(option==1) /* --> first derivative evaluation */
+   {
+      deriv[0][0]=-THREE+FOUR*(r+s);
+      deriv[1][0]= deriv[0][0];
+
+      deriv[0][1]= FOUR*r-ONE;
+      deriv[1][1]= ZERO;
+
+      deriv[0][2]= ZERO;
+      deriv[1][2]= FOUR*s-ONE;
+
+      deriv[0][3]= FOUR*(ONE-TWO*r-s);
+      deriv[1][3]=-FOUR*r;
+
+      deriv[0][4]= FOUR*s;
+      deriv[1][4]= FOUR*r;
+
+      deriv[0][5]=-FOUR*s;
+      deriv[1][5]= FOUR*(ONE-r-TWO*s);         
+   } /* endif (option==1) */
 break;
 default:
    dserror("unknown typ of interpolation");

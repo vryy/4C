@@ -38,12 +38,18 @@ DOUBLE one   = 1.0;
 DOUBLE two   = 2.0;
 DOUBLE three = 3.0;
 
-DOUBLE  q12, q13, q16, q23;
+DOUBLE  q12 = 1.0/2.0;
+DOUBLE  q13 = 1.0/3.0;
+DOUBLE  q16 = 1.0/6.0;
+DOUBLE  q23 = 2.0/3.0;
 DOUBLE  xgr[13][8],xgs[13][8],wgtt[13][8];
 static DOUBLE xg[6][6],wgt[6][6];
 #ifdef DEBUG 
 dstrc_enter("ale2_intg");
 #endif
+
+if(ele->distyp==quad4 || ele->distyp==quad8 || ele->distyp==quad9)
+{
 /*----------------------------------------------------------------------*  
  |     INTEGRATION PARAMETERS FOR    Q U A D                 ELEMENTS   |
  |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
@@ -85,6 +91,42 @@ default:
    dserror("unknown number of gaussian points in ale2_intg");
 break;
 }
+} /* end if quad489*/
+else if (ele->distyp==tri3 || ele->distyp==tri6)
+{
+/*----------------------------------------------------------------------*  
+ |     INTEGRATION PARAMETERS FOR    T R I                   ELEMENTS   |
+ |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
+ |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
+ *----------------------------------------------------------------------*/       
+switch(ele->e.ale2->nGP[0])
+{
+    case 1:
+        data->xgpr[0] = q13;
+        data->xgps[0] = q13;
+        data->wgtr[0] = q12;
+        break;
+    case 3:
+        data->xgpr[0] = q12;
+        data->xgpr[1] = q12;
+        data->xgpr[2] = ZERO;
+        data->xgps[0] = ZERO;
+        data->xgps[1] = q12;
+        data->xgps[2] = q12;
+        data->wgtr[0] = q16;
+        data->wgtr[1] = q16;
+        data->wgtr[2] = q16;
+        break;
+    default:
+        dserror("unknown number of gaussian points");
+        break;
+}
+} /* end if tri36 */
+else
+{
+    dserror("unknown typ of discretisation");
+} /* end else tri36 */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

@@ -74,6 +74,26 @@ if (ierr==1)
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
+frchk("TRI3",&ierr);
+if (ierr==1)
+{
+   ele->distyp = tri3;
+   ele->numnp=3;
+   ele->lm = (INT*)calloc(ele->numnp,sizeof(INT));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+   frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
+}
+frchk("TRI6",&ierr);
+if (ierr==1)
+{
+   ele->distyp = tri6;
+   ele->numnp=6;
+   ele->lm = (INT*)calloc(ele->numnp,sizeof(INT));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+   frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
+}
 
 /*------------------------------------------ reduce node numbers by one */
 for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
@@ -81,8 +101,17 @@ for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 frint("MAT",&(ele->mat),&ierr);
 if (ierr!=1) dserror("Reading of ALE2 element failed");
 /*-------------------------------------------- read the gaussian points */
-frint_n("GP",&(ele->e.ale2->nGP[0]),2,&ierr);
-if (ierr!=1) dserror("Reading of ALE2 element failed");
+if (ele->numnp==4 || ele->numnp==8 || ele->numnp==9)
+{
+   frint_n("GP",&(ele->e.ale2->nGP[0]),2,&ierr);
+   if (ierr!=1) dserror("Reading of ALE2 element failed: integration\n");  
+}   
+/*-------------------------- read gaussian points for triangle elements */
+if (ele->numnp==3 || ele->numnp==6)
+{
+   frint("GP_TRI",&(ele->e.ale2->nGP[0]),&ierr);   
+   if (ierr!=1) dserror("Reading of ALE2 element failed: integration\n");
+}
 /*-------------------------- read gaussian points for triangle elements */
 frint("JAC",&(ele->e.ale2->jacobi),&ierr);
 if (ierr!=1) dserror("Reading of ALE element failed");
