@@ -12,8 +12,10 @@ typedef struct _MATERIAL
      {
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
+     struct _PL_MISES_LS      *pl_mises_ls;  /* von Mises material - large strains*/
      struct _PL_DP            *pl_dp;        /* Drucker Prager material */
      struct _PL_EPC           *pl_epc;       /* elastoplastic concrete material */
+     struct _STVENPOR         *stvenpor;     /* porous St. Ven.-Kirch. material */
      struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
      struct _FLUID            *fluid;        /* fluid material */
@@ -35,6 +37,18 @@ typedef struct _STVENANT
      double                    density;        /* material specific weight */
 } STVENANT;
 
+
+/*----------------------------------------------------------------------*
+ | porous St. Venant-Kirchhoff material (optimization)       al 4/01    |
+ *----------------------------------------------------------------------*/
+typedef struct _STVENPOR
+{
+     double                    youngs;         /* Young's modulus */
+     double                    possionratio;   /* Possion ratio */
+     double                    density;        /* material specific weight */
+     double                    refdens;        /* reference density */
+     double                    exponent;       /* material parameter */
+} STVENPOR;
 
 
 /*----------------------------------------------------------------------*
@@ -69,6 +83,19 @@ typedef struct _PL_MISES
      double                    Hard;
      double                    GF;
 } PL_MISES;
+
+/*----------------------------------------------------------------------*
+ | plastic mises material including large strains      a.lipka 17/05    |
+ *----------------------------------------------------------------------*/
+typedef struct _PL_MISES_LS
+{
+     double                    youngs;        /* Young's modulus */
+     double                    possionratio;  /* Possion ratio */
+     double                    ALFAT;
+     double                    Sigy;
+     double                    Hard;
+     double                    GF;
+} PL_MISES_LS;
 
 /*----------------------------------------------------------------------*
  | plastic drucker prager material                     a.lipka 17/05    |

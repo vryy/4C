@@ -64,10 +64,12 @@ typedef enum _ELEMENT_TYP
  *----------------------------------------------------------------------*/
 typedef enum _MATERIAL_TYP
 {
-                       m_stvenant,      /* St.Venant Kirchhoff material */
+                       m_stvenant,    /* St.Venant Kirchhoff material */
                        m_pl_mises,    /* von Mises material */
+                       m_pl_mises_ls, /* von Mises material - large strains*/
                        m_pl_dp,       /* Drucker Prager material */
                        m_pl_epc,      /* elastoplastic concrete material */
+                       m_stvenpor,    /* porous St.Venant Kirchhoff material */
                        m_pl_por_mises,/* porous von Mises material */
                        m_neohooke,    /* Neo-Hooke material */
                        m_fluid        /* fluid */
