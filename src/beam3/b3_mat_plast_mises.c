@@ -8,7 +8,7 @@
 Maintainer: Frank Huber
             huber@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/huber/
-            0711 - 685-6120
+            0711 - 685-6574
 </pre>
 
 *----------------------------------------------------------------------*/
