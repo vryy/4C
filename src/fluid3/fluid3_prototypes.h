@@ -986,6 +986,12 @@ void f3_vder2(
 	     double **evel,     
 	     int      iel       
 	    );
+void f3_pder(
+             double  *pderxy,    
+             double **derxy,    
+	     double  *epre,     
+	     int      iel       
+	    );
 /*!--------------------------------------------------------------------- 
 \brief convective velocities 
 
@@ -1693,7 +1699,13 @@ void f3_calstabtfp(
          a local left-system, which leads to a negative determinant 
          of the Jacobian matrix.
 ------------------------------------------------------------------------*/
-void f3inp(ELEMENT *ele);
+void f3inp(ELEMENT *ele, int counter);
+
+/************************************************************************
+ | f3_intg.c                                                            |
+ ************************************************************************/
+void f3_intg(FLUID_DATA      *data,
+             int              option);
 
 /************************************************************************
  | f3_main.c                                                            |
