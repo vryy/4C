@@ -124,7 +124,7 @@ W1_ELE_WA     *elewa;                         /* element working array */
 enum
     {
     w1_xy,
-    w1_rs,
+    w1_rs
     }            stresstyp; 
 
 struct _ARRAY4D  stress_GP;
