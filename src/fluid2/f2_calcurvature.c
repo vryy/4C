@@ -18,8 +18,6 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
-
-static INT NUMDF = 3;
 /*!---------------------------------------------------------------------
 \brief curvature at free surface for fluid2 element
 
@@ -29,9 +27,9 @@ in this function the curvature at the free surface of a fluid2 element
 with linear shape functions is calculated.
 		     
 </pre>
-\param  *funct     DOUBLE          (o)    shape functions
 \param  **actgline GLINE           (i)    glines to actual element
 \param  *actlinefs                 (i)    free surface conditions
+\param  *actele    ELEMENT         (i)    the actual element
 \param   foundline INT             (i)    flag
 \param   actngline INT             (i)    num. of glines to element
 \param **xyze      DOUBLE          (-)    nodal coordinates
