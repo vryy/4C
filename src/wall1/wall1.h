@@ -48,10 +48,16 @@ DOUBLE      alpha[4];     /* INT.dof for inc modes of last loadst k */
 typedef struct _W1_IP_WA
 {
 DOUBLE      sig[4]; /* global stresses                              */
+DOUBLE      t_d[2]; /* global discrete stresses                     */
+DOUBLE      sig_esz[4]; /* global stresses for plain stress         */
 DOUBLE      eps[4]; /* global strains                               */
+DOUBLE      eps_esz[4]; /* global strains for plain stress          */
+DOUBLE      d4_esz[4];  /* tangentstiffness (x,3) for plain stress  */
 DOUBLE         *qn; /* 'backstress' vec                             */
 DOUBLE       epstn; /* equivalent strain                            */
 INT          yip;   /* stress state: 1=elastic 2=plastic            */
+DOUBLE       kap;   /* history variable for damage-model            */
+DOUBLE       dam;   /* damage variable for output                   */
 /* concrete */
 DOUBLE       *sigc; /* condensed global stresses                    */
 DOUBLE       *grad; /* actual gradient                              */
@@ -72,7 +78,11 @@ DOUBLE       stalpha;   /* angle of the principal concrete stress  */
 DOUBLE       stthick ;  /* thickness ot the structure              */        
 DOUBLE       stfbd;     /* tension stiffening stress               */
 /* incompatible mode method */
-DOUBLE       D[3];   /* material tangente:D0=C11,D1=C22,D2=C12=C21 */
+DOUBLE       D[3];      /* material tangente:D0=C11,D1=C22,D2=C12=C21 */
+/* damgage */
+DOUBLE       kappa;     /* max. equival. strain ever reached*/              
+DOUBLE       aequistrain;     /* actual equival. strain */              
+DOUBLE       damage;    /* damage value*/              
 } W1_IP_WA;
 typedef struct _W1_ELE_WA
 {

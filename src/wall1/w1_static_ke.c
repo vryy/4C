@@ -33,7 +33,7 @@ void w1static_ke(ELEMENT   *ele,
                  INT        init)
 {
 INT                 i,j,k,a,b;        /* some loopers */
-INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 nir,nis;          /* num GP in r/s direction */
 INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
 INT                 dof;

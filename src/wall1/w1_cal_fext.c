@@ -251,7 +251,7 @@ for (line=0; line<ngline; line++)
           /*========================== gaussian point and weight at it ===*/
           e2   = ygp[ls];
           facs = wgy[ls];
-          /*--------- shape functions (and (not needed)their derivatives) */
+          /*----------------------- shape functions and their derivatives */
           w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
           /*--------------------------------------------- jacobian matrix */       
           w1_jaco (funct,deriv,xjm,&det,ele,iel); 

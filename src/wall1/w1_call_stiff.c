@@ -21,7 +21,7 @@ Maintainer: Andrea Hund
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
- | usual stiffness matrix total lagrangian formulation           al 9/01|
+ | usual stiffness matrix small strain formulation               al 9/01|
  |----------------------------------------------------------------------|
  | S       -->  ELEMENT STIFFNESS MATRIX                                |
  | BS      -->  DERIVATIVE OPERATOR                                     |

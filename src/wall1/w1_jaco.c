@@ -46,8 +46,8 @@ dstrc_enter("w1_jaco");
    for (k=0; k<iel; k++)
    {
         xjm[0][0] += deriv[0][k] * ele->node[k]->x[0] ;
-        xjm[0][1] += deriv[0][k] * ele->node[k]->x[1] ;
-        xjm[1][0] += deriv[1][k] * ele->node[k]->x[0] ;
+        xjm[0][1] += deriv[0][k] * ele->node[k]->x[1] ; 
+        xjm[1][0] += deriv[1][k] * ele->node[k]->x[0] ;  
         xjm[1][1] += deriv[1][k] * ele->node[k]->x[1] ;
    }
 /*------------------------------------------ determinant of jacobian ---*/        

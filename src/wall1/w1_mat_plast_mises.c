@@ -103,9 +103,9 @@ for (i=0; i<4; i++)
   tau[i]    = 0.0;
 }
 /*-----------------------------------------------------------------------|
-|     YIP > 0  STRESSES ARE AVAILABLE FROM LAST UPDATE                   |
-|         = 1  E L A S T I C                                             |
-|         = 2  P L A S T I C                                             |
+|  YIP > 0  STRESSES ARE AVAILABLE FROM LAST UPDATE  (GLOBAL PRAEDIKTOR) |
+|      = 1  E L A S T I C                                                |
+|      = 2  P L A S T I C                                                |
 |     UPDATE FLAG MUST SET TO STORE CHANGE OF PARAMETER YIP              |
 |     NO CHANGES HAVE BEEN MADE ON STRESS STATE                          |
 |-----------------------------------------------------------------------*/

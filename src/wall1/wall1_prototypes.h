@@ -1137,8 +1137,131 @@ void w1_matrix_switch(DOUBLE **mat,   /* matrix do be modified          */
                       INT b,          /* row & colum to be changed to a */
                       INT l);         /* length of row/column of matrix */
 /*----------------------------------------------------------------------*/
-/*  w1_strain_energy.c                                                  */
-/*  Calculation of strain energy of an element                          */
+void w1_mat_dam_mp(DOUBLE     youngs,
+                   DOUBLE     nue,
+                   DOUBLE     kappa_0,
+                   DOUBLE     alph,
+                   DOUBLE     beta,
+                   ELEMENT   *ele,
+                   WALL_TYPE  wtype,
+                   DOUBLE   **bop,
+                   DOUBLE    *gop,
+                   DOUBLE    *alpha,
+                   INT        ip,
+                   DOUBLE    *stress,
+                   DOUBLE   **D,
+                   DOUBLE     istore,
+                   DOUBLE     newval); 
+/*----------------------------------------------------------------------*
+ | constitutive matrix - forces - linear elastic- Damage - 2D   he 04/03|
+ | plane stress, plane strain, rotational symmetry                      |
+ *----------------------------------------------------------------------*/
+void w1_mat_damage(DOUBLE ym,      /* young's modulus                   */
+                   DOUBLE pv,      /* poisson's ratio                   */
+                   INT    Equival, /* flag for equivalent strains       */
+                   INT    Damtyp,  /* flag for Damage-Typ               */
+                   DOUBLE Kappa_0, /* initial damage equivalent strain  */
+                   DOUBLE Kappa_m, /* factor for damage-law             */
+                   DOUBLE Alpha,   /* factor for expon. damage-function */       
+                   DOUBLE Beta,    /* factor for expon. damage-function */
+                   DOUBLE k_fac,   /* factor for de Vree                */       
+                   ELEMENT   *ele, /* actual element                    */
+                   WALL_TYPE wtype,/* plane stress/strain...            */         
+                   DOUBLE **bop,   /* derivative operator               */
+                   DOUBLE  *gop,
+                   DOUBLE  *alpha,
+                   INT ip,         /* integration point Id              */
+                   DOUBLE *stress, /* vector of stresses                */
+                   DOUBLE **d,     /* constitutive matrix               */
+                   INT istore,     /* controls storing of stresses      */
+                   INT newval);     /* controls eval. of stresses        */ 
+/*----------------------------------------------------------------------*
+ | create tensor from vector !!!!!!only for strains!!!!   he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_4to9(DOUBLE  *vector, 
+             DOUBLE   tensor[3][3]);
+/*----------------------------------------------------------------------*
+ | compute Kroneker-Delta (2-stufiger Einheitstensor)      he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_kroneker(DOUBLE delta[3][3]);
+/*----------------------------------------------------------------------*
+ | compute ela. stresses with Hook                        he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_stress_ela(DOUBLE ym, 
+                   DOUBLE pv, 
+                   DOUBLE epsilon[3][3], 
+                   DOUBLE sigma_el[3][3],
+                   DOUBLE delta[3][3]);
+/*----------------------------------------------------------------------*
+ | compute actuel equivalent strains and                  he    04/03   |
+ | their global derivatives of epsilon                                  |
+ | Equival = 1 -  ENERGY RELEASE RATE CONCEPT - THERMODYNAMICS          |
+ | Equival = 2 -  SIMO & JU (1987)                                      |
+ | Equival = 3 -  JU (1989)                                             |
+ | Equival = 4 -  de VREE (1995)                                        |
+ *----------------------------------------------------------------------*/
+void w1_equi_eps(DOUBLE   epsilon[3][3], 
+                 DOUBLE   sigma_el[3][3],       
+                 DOUBLE   delta[3][3], 
+                 INT      Equival,
+                 DOUBLE   *eta, 
+                 DOUBLE   eta_der[3][3],
+                 DOUBLE   ym,
+                 DOUBLE   pv,
+                 DOUBLE   k);
+/*----------------------------------------------------------------------*
+ | BESTIMMUNG DER SCHAEDIGUNG UND IHRER PARTIELLEN        he    04/03   |
+ | ABLEITUNG NACH KAPPA JE NACH DAMTYPE                                 |
+ | DAMTYPE=1 - LINEAR-ENTFESTIGENDES DAMAGING                           |
+ | DAMTYPE=2 - EXPONENTIELLES DAMAGING                                  |
+ *----------------------------------------------------------------------*/
+void w1_dam_typ(DOUBLE *damage, 
+                DOUBLE *dam_deriv,
+                DOUBLE kappa,
+                DOUBLE Kappa_0,
+                DOUBLE Kappa_m,
+                DOUBLE Alpha,
+                DOUBLE Beta,
+                INT    Damtyp);
+/*----------------------------------------------------------------------*
+ | compute ela. stiffness tensor                           he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_mat_ela(DOUBLE   ym, 
+                DOUBLE   pv,
+                DOUBLE   delta[3][3], 
+                DOUBLE   c_el[3][3][3][3]);
+/*----------------------------------------------------------------------*
+ | BESTIMMUNG DES SEKANTENTENSORS                         he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_sec(DOUBLE damage, 
+            DOUBLE c_el[3][3][3][3],
+            DOUBLE c_sec[3][3][3][3]);
+/*----------------------------------------------------------------------*
+ | BESTIMMUNG DES SPANNUNGSTENSORS                        he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_stress(DOUBLE c_sec[3][3][3][3], 
+               DOUBLE epsilon[3][3],
+               DOUBLE sigma[3][3]);
+/*----------------------------------------------------------------------*
+ | reduce tensor to vector                                 he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_9to4(DOUBLE   tensor[3][3], 
+             DOUBLE  *vector);
+/*----------------------------------------------------------------------*
+ | reduce 4-stufigen tensor to 2-stufigen tensor           he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_81to16(DOUBLE   tensor4[3][3][3][3], 
+               DOUBLE **tensor2);
+/*----------------------------------------------------------------------*
+ | reduce 4-stufigen tensor to 2-stufigen tensor           he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_81to16_1(DOUBLE   tensor4[3][3][3][3], 
+                 DOUBLE   tensor2[4][4]);
+/*----------------------------------------------------------------------*
+ | BESTIMMUNG DER SPANNUNGSKOMPONENTEN sig                he    04/03   |
+ *----------------------------------------------------------------------*/
+void w1_cond(DOUBLE sig[4], 
+             DOUBLE **d);
 /*----------------------------------------------------------------------*/
 void w1_strain_energy(ELEMENT *ele,                   /* actual element */
                       DOUBLE **stress,   /* 2PK str. at act. Gauss point*/

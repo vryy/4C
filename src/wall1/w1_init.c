@@ -101,12 +101,43 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     } 
     actele->e.w1->elewa->optdata[0] = 0;
   }
-  
-  /* for plasticity */
+  /*--------------------------------------------- damage ---*/
+  if(mat[actele->mat-1].mattyp == m_dam_mp )
+  {/*matdam01*/
+    size_i = 1;
+    actele->e.w1->elewa = (W1_ELE_WA*)CCACALLOC(size_i,sizeof(W1_ELE_WA));
+    if (actele->e.w1->elewa==NULL)
+    {
+      dserror("Allocation of elewa in ELEMENT failed");
+      break;
+    } 
+    size_j = actele->e.w1->nGP[0] * actele->e.w1->nGP[1];
+    actele->e.w1->elewa[0].ipwa = 
+                               (W1_IP_WA*)CCACALLOC(size_j,sizeof(W1_IP_WA));
+    if (actele->e.w1->elewa[0].ipwa==NULL)
+    {
+      dserror("Allocation of ipwa in ELEMENT failed");
+      break;
+    } 
+    for (k=0; k<size_j; k++)
+    {
+      actele->e.w1->elewa[0].ipwa[k].yip    = -1;
+      actele->e.w1->elewa[0].ipwa[k].kappa  = 0.0;
+      actele->e.w1->elewa[0].ipwa[k].damage = 0.0;
+      actele->e.w1->elewa[0].ipwa[k].aequistrain = 0.0;
+      for (j=0; j<4; j++)
+      {
+        actele->e.w1->elewa[0].ipwa[k].sig[j] = 0.0;
+      }
+    }
+  }/*matdam01*/
+  /*-----------------------------------------------------------*/
+  /* for plasticity and 3D-damage */
   if(mat[actele->mat-1].mattyp == m_pl_mises || 
      mat[actele->mat-1].mattyp == m_pl_mises_3D ||  /*Stefan's mises 3D*/ 
      mat[actele->mat-1].mattyp == m_pl_dp || 
-     mat[actele->mat-1].mattyp == m_pl_epc )
+     mat[actele->mat-1].mattyp == m_pl_epc || 
+     mat[actele->mat-1].mattyp == m_damage)
   {/*matplast01*/
     size_i = 1;
     actele->e.w1->elewa = (W1_ELE_WA*)CCACALLOC(size_i,sizeof(W1_ELE_WA));
@@ -128,6 +159,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     {/*matplast02*/
       actele->e.w1->elewa[0].ipwa[k].epstn = 0.;
       actele->e.w1->elewa[0].ipwa[k].yip   = -1;
+      actele->e.w1->elewa[0].ipwa[k].kap   = 0.;
+      actele->e.w1->elewa[0].ipwa[k].dam   = 0.;
+      actele->e.w1->elewa[0].ipwa[k].damage= 0.;
+      actele->e.w1->elewa[0].ipwa[k].aequistrain = 0.;
       actele->e.w1->elewa[0].ipwa[k].qn = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
 
       /*additional values needed for condensation       sh 08/02*/
@@ -163,12 +198,17 @@ for (i=0; i<actpart->pdis[0].numele; i++)
         actele->e.w1->elewa[0].ipwa[k].ryip[j]   = -1;
       }
       }
-      
-      
+      for (j=0; j<2; j++)
+      {
+       actele->e.w1->elewa[0].ipwa[k].t_d[j] = 0.;
+      }
       for (j=0; j<4; j++)
       {
         actele->e.w1->elewa[0].ipwa[k].sig[j] = 0.;
+        actele->e.w1->elewa[0].ipwa[k].sig_esz[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].eps[j] = 0.;
+        actele->e.w1->elewa[0].ipwa[k].eps_esz[j] = 0.;
+        actele->e.w1->elewa[0].ipwa[k].d4_esz[j]  = 0.;
         actele->e.w1->elewa[0].ipwa[k].qn[ j] = 0.;
         if(mat[actele->mat-1].mattyp == m_pl_mises_3D )
         {

@@ -68,7 +68,7 @@ dstrc_enter("w1_call_mat");
     	  stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2;
     	  stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2;
     	  stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2;
-	  stress[3]=0;
+	  stress[3]=0.0;
        break;
        
        case rotat_symmet:
@@ -185,6 +185,44 @@ dstrc_enter("w1_call_mat");
                        istore,                   
                        newval);                  
   break;                                         
+  case m_dam_mp:/*--------------------- isotropic damage ---*/
+    w1_mat_dam_mp(mat->m.dam_mp->youngs,
+                   mat->m.dam_mp->nue,
+                   mat->m.dam_mp->kappa_0,               
+                   mat->m.dam_mp->alpha,               
+                   mat->m.dam_mp->beta,              
+                   ele,
+                   wtype,
+                   bop,
+                   gop,
+                   alpha,
+                   ip,
+                   stress,
+                   d,
+                   istore,
+                   newval);
+  break;
+  case m_damage:   /*------------------------------------- CDM law ---*/
+    w1_mat_damage(mat->m.damage->youngs,
+                       mat->m.damage->possionratio,
+                       mat->m.damage->Equival,
+                       mat->m.damage->Damtyp,
+                       mat->m.damage->Kappa_0,
+                       mat->m.damage->Kappa_m,
+                       mat->m.damage->Alpha,
+                       mat->m.damage->Beta,
+                       mat->m.damage->k_fac,
+                       ele,
+                       wtype,
+                       bop,
+                       gop,
+                       alpha,
+                       ip,
+                       stress,
+                       d,
+                       istore,
+                       newval);
+  break;
   default:
     dserror(" unknown type of material law");
   break;

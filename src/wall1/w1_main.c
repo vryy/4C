@@ -100,8 +100,12 @@ case calc_struct_nlnstiffmass:
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
-   actmat = &(mat[ele->mat-1]);
-   w1_cal_stress(ele,&actdata,actmat,estif_global,intforce,0,0);
+   imyrank = actintra->intra_rank;
+   if (imyrank==ele->proc)
+   { 
+    actmat = &(mat[ele->mat-1]);
+    w1_cal_stress(ele,&actdata,actmat,estif_global,intforce,0,0);
+   }
 break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
 case calc_struct_eleload:
