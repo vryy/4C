@@ -7,7 +7,7 @@
 # list of possible defines:
 #  
 # -DD_BRICK1    defines element brick1
-# -DD_FLUID1    defines element fluid1
+# -DD_FLUID2    defines element fluid1
 # -DD_SHELL8    defines element shell8
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
@@ -30,7 +30,7 @@
 FXX=/opt/mpi/bin/mpif90
 CCX=/opt/mpi/bin/mpicc 
 LDX=/opt/mpi/bin/mpicc 
-PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_FLUID2 -DD_ALE -DD_BRICK1 -DD_WALL1 \
      -DSPOOLES_PACKAGE 
 #PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
 #     -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE -DMUMPS_PACKAGE
