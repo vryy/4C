@@ -93,12 +93,14 @@ CCAFREE(dof_connect);
 amdel(&bindx_a);
 
 
+#ifdef FAST_ASS
 /* make the index vector for faster assembling */
   for (i=0; i<actpart->pdis[0].numele; i++)
   {
     actele = actpart->pdis[0].element[i];
     spo_make_index(actfield,actpart,actintra,actele,spo);
   }
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -660,6 +662,7 @@ return;
 
 
 
+#ifdef FAST_ASS
 /*----------------------------------------------------------------------*/
 /*!
  \brief 
@@ -881,6 +884,8 @@ void spo_make_index(
 
   return;
 } /* end of spo_make_index */
+
+#endif FAST_ASS /* ifdef FAST_ASS */
 
 
 #endif /* ifdef SPOOLES_PACKAGE */

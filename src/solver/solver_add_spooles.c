@@ -39,6 +39,8 @@ void  add_spo(
     struct _SPOOLMAT      *spo2)
 {
 
+#ifdef FAST_ASS
+
   INT         i,j,k,l,counter;          /* some counter variables */
   INT         istwo=0;
   INT         start,index,lenght;       /* some more special-purpose counters */
@@ -159,6 +161,190 @@ void  add_spo(
 
     } /* end loop over j */
   }/* end loop over i */
+
+
+#else  /* ifdef FAST_ASS */
+
+
+  INT         i,j,k,l,counter;    /* some counter variables */
+  INT         istwo=0;
+  INT         start,index,lenght; /* some more special-purpose counters */
+  INT         ii,jj;              /* counter variables for system matrix */
+  INT         ii_iscouple;        /* flag whether ii is a coupled dof */
+  INT         ii_owner;           /* who is owner of dof ii -> procnumber */
+  INT         ii_index;           /* place of ii in dmsr format */
+  INT         jj_index;           /* place of jj in dmsr format */
+  INT         nd,ndnd;            /* size of estif */
+  INT         nnz;                /* number of nonzeros in sparse system matrix */
+  INT         numeq_total;        /* total number of equations */
+  INT         numeq;              /* number of equations on this proc */
+  INT         lm[MAXDOFPERELE];   /* location vector for this element */
+  INT         owner[MAXDOFPERELE];/* the owner of every dof */
+  INT         myrank;             /* my intra-proc number */
+  INT         nprocs;             /* my intra- number of processes */
+  DOUBLE    **estif;              /* element matrix to be added to system matrix */
+  DOUBLE    **emass;              /* element matrix to be added to system matrix */
+  INT        *update;             /* vector update see AZTEC manual */
+  DOUBLE     *A_loc;              /*    "       A_loc see MUMPS manual */
+  DOUBLE     *B_loc;              /*    "       A_loc see MUMPS manual */
+  INT        *irn;                /*    "       irn see MUMPS manual */
+  INT        *jcn;                /*    "       jcn see MUMPS manual */
+  INT        *rowptr;             /*    "       rowptr see rc_ptr structure */
+  INT       **cdofs;              /* list of coupled dofs and there owners, see init_assembly */
+  INT         ncdofs;             /* total number of coupled dofs */
+  INT       **isend1;             /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend1;             /* pointer to sendbuffer to communicate coupling conditions */
+  INT       **isend2;             /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend2;             /* pointer to sendbuffer to communicate coupling conditions */
+  INT         nsend;
+
+
+#ifdef DEBUG 
+  dstrc_enter("add_spo");
+#endif
+
+  /* check whether to assemble one or two matrices */
+  if (spo2) istwo=1;
+
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  estif      = estif_global.a.da;
+  emass      = emass_global.a.da;
+  nd         = actele->numnp * actele->node[0]->numdf;
+  ndnd       = nd*nd;
+  nnz        = spo1->nnz;
+  numeq_total= spo1->numeq_total;
+  numeq      = spo1->numeq;
+  update     = spo1->update.a.iv;
+  A_loc      = spo1->A_loc.a.dv;
+  if (istwo)
+    B_loc      = spo2->A_loc.a.dv;
+  irn        = spo1->irn_loc.a.iv;
+  jcn        = spo1->jcn_loc.a.iv;
+  rowptr     = spo1->rowptr.a.iv;
+  cdofs      = actpart->pdis[0].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+
+  /* put pointers to sendbuffers if any */
+#ifdef PARALLEL 
+  if (spo1->couple_i_send) 
+  {
+    isend1 = spo1->couple_i_send->a.ia;
+    dsend1 = spo1->couple_d_send->a.da;
+    nsend  = spo1->couple_i_send->fdim;
+    if (istwo)
+    {
+      isend2 = spo2->couple_i_send->a.ia;
+      dsend2 = spo2->couple_d_send->a.da;
+    }
+  }
+#endif
+
+  /* make location vector lm*/
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      lm[counter]    = actele->node[i]->dof[j];
+#ifdef PARALLEL 
+      owner[counter] = actele->node[i]->proc;
+#endif
+      counter++;
+    }
+  }/* end of loop over element nodes */
+  /* end of loop over element nodes */
+
+  /* this check is not possible any more for fluid element with implicit 
+  free surface condition: nd not eqaual numnp*numdf!!!                    */
+#if 0
+    if (counter != nd) dserror("assemblage failed due to wrong dof numbering");
+#endif
+  nd = counter;
+
+
+  /* now start looping the dofs */
+  /* loop over i (the element row) */
+  ii_iscouple = 0;
+  ii_owner    = myrank;
+  for (i=0; i<nd; i++)
+  {
+    ii = lm[i];
+
+    /* loop only my own rows */
+#ifdef PARALLEL 
+    if (owner[i]!=myrank) continue;
+#endif
+
+    /* check for boundary condition */
+    if (ii>=numeq_total) continue;
+
+    /* check for coupling condition */
+#ifdef PARALLEL 
+    if (ncdofs)
+    {
+      ii_iscouple = 0;
+      ii_owner    = -1;
+      add_msr_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
+    }
+#endif
+
+    /* ii is not a coupled dofs or I am master owner */
+    ii_index      = find_index(ii,update,numeq);
+#ifndef D_CONTACT
+    if (!ii_iscouple || ii_owner==myrank)
+    {
+
+      if (ii_index==-1) dserror("dof ii not found on this proc");
+      start         = rowptr[ii_index];
+      lenght        = rowptr[ii_index+1]-rowptr[ii_index];
+
+    }
+#endif   
+
+    /* loop over j (the element column) */
+    /* This is the full unsymmetric version ! */
+    for (j=0; j<nd; j++)
+    {
+      jj = lm[j];
+
+      /* check for boundary condition */
+      if (jj>=numeq_total) continue;
+
+      /* do main-diagonal entry */
+      /* (either not a coupled dof or I am master owner) */
+      if (!ii_iscouple || ii_owner==myrank)
+      {
+#ifdef D_CONTACT
+        add_val_spo(ii,ii_index,jj,spo1,estif[i][j],actintra);
+        if (istwo)
+          add_val_spo(ii,ii_index,jj,spo2,emass[i][j],actintra);
+#else
+        index         = find_index(jj,&(jcn[start]),lenght);
+        if (index==-1) dserror("dof jj not found in this row ii");
+        index        += start;
+        A_loc[index] += estif[i][j];
+        if (istwo)
+          B_loc[index] += emass[i][j];
+#endif
+      }
+
+      /* do main-diagonal entry */
+      /* (a coupled dof and I am slave owner) */
+      else
+      {
+        add_spo_sendbuff(ii,jj,i,j,ii_owner,isend1,dsend1,estif,nsend);
+        if (istwo)
+          add_spo_sendbuff(ii,jj,i,j,ii_owner,isend2,dsend2,emass,nsend);
+      }
+
+    } /* end loop over j */
+  }/* end loop over i */
+
+
+#endif  /* ifdef FAST_ASS */
+  
 
 #ifdef DEBUG 
   dstrc_exit();

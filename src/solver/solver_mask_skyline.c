@@ -86,12 +86,15 @@ for (i=0; i<sky->numeq_total; i++)
 CCAFREE(dof_connect);
 amdel(&red_dof_connect);
 
+
+#ifdef FAST_ASS
 /* make the index vector for faster assembling */
   for (i=0; i<actpart->pdis[0].numele; i++)
   {
     actele = actpart->pdis[0].element[i];
     sky_make_index(actfield,actpart,actintra,actele,sky);
   }
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -540,6 +543,7 @@ return;
 
 
 
+#ifdef FAST_ASS
 /*----------------------------------------------------------------------*/
 /*!
  \brief 
@@ -705,4 +709,5 @@ void sky_make_index(
   return;
 } /* end of sky_make_index */
 
+#endif FAST_ASS /* ifdef FAST_ASS */
 

@@ -37,6 +37,8 @@ void  add_skyline(
     struct _SKYMATRIX     *sky2)
 {
 
+#ifdef FAST_ASS
+  
   INT               i,j;                   /* some counter variables */
   INT               ii,jj;                 /* counter variables for system matrix */
   INT               nd;                    /* size of estif */
@@ -94,6 +96,121 @@ void  add_skyline(
 
     } /* end loop over j */
   }/* end loop over i */
+
+
+#else  /* ifdef FAST_ASS */
+
+
+  INT               i,j,counter;           /* some counter variables */
+  INT               ii,jj;                 /* counter variables for system matrix */
+  INT               nd;                    /* size of estif */
+  INT               numeq_total;           /* total number of equations */
+  INT               numeq;                 /* number of equations on this proc */
+  INT               lm[MAXDOFPERELE];      /* location vector for this element */
+#ifdef PARALLEL 
+  INT               owner[MAXDOFPERELE];   /* the owner of every dof */
+#endif
+  INT               myrank;                /* my intra-proc number */
+  INT               nprocs;                /* my intra- number of processes */
+  DOUBLE          **estif;                  /* element matrix 1 to be added to system matrix */
+  DOUBLE          **emass;                  /* element matrix 2 to be added to system matrix */
+  DOUBLE           *A;                      /* the skyline matrix 1 */
+  DOUBLE           *B;                      /* the skyline matrix 2 */
+  INT              *maxa;
+
+  INT               startindex;
+  INT               height;
+  INT               distance;
+  INT               index;
+
+  
+#ifdef DEBUG 
+  dstrc_enter("add_skyline");
+#endif
+  
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  estif      = estif_global.a.da;
+  emass      = emass_global.a.da;
+  nd         = actele->numnp * actele->node[0]->numdf;
+  numeq_total= sky1->numeq_total;
+  numeq      = sky1->numeq;
+  A          = sky1->A.a.dv;
+  maxa       = sky1->maxa.a.iv;
+  if (sky2)
+    B          = sky2->A.a.dv;
+  else
+    B          = NULL;
+
+  /* make location vector lm*/
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      lm[counter]    = actele->node[i]->dof[j];
+#ifdef PARALLEL 
+      owner[counter] = actele->node[i]->proc;
+#endif
+      counter++;
+    }
+  }/* end of loop over element nodes */
+  if (counter != nd) dserror("assemblage failed due to wrong dof numbering");
+
+  /* now start looping the dofs */
+  /*
+NOTE:
+I don't have to care for coupling at all in this case, because
+system matrix is redundant on all procs, every proc adds his part
+(also slave and master owners of a coupled dof) and the system matrix
+is then allreduced. This makes things very comfortable for the moment.
+*/
+
+  /* loop over i (the element row) */
+  for (i=0; i<nd; i++)
+  {
+    ii = lm[i];
+
+    /* check for boundary condition */
+    if (ii>=numeq_total) continue;
+
+    /* check for ownership of row ii */
+#ifdef PARALLEL 
+    if (owner[i]!=myrank) continue;
+#endif
+
+    /* start of the skyline of ii is maxa[ii] */
+    startindex = maxa[ii];
+
+    /* height of the skyline of ii */
+    height     = maxa[ii+1]-maxa[ii];
+
+    /* loop over j (the element column) */
+    /* This is the symmetric version ! */
+    for (j=0; j<nd; j++)
+    {
+      jj = lm[j];
+
+      /* check for boundary condition */
+      if (jj>=numeq_total) continue;
+
+      /* find position [ii][jj] in A */
+      distance  = ii-jj;
+      if (distance < 0) continue;
+
+      /* if (distance>=height) dserror("Cannot assemble skyline");*/
+      index     = startindex+distance;
+      A[index] += estif[i][j];
+      if (B)
+        B[index] += emass[i][j];
+
+    } /* end loop over j */
+  }/* end loop over i */
+
+
+#endif  /* ifdef FAST_ASS */
+  
 
 #ifdef DEBUG 
   dstrc_exit();

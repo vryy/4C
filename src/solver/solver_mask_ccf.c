@@ -102,12 +102,15 @@ for (i=0; i<ccf->numeq_total; i++)
 CCAFREE(dof_connect);
 amdel(&bindx_a);
 
+
+#ifdef FAST_ASS
 /* make the index vector for faster assembling */
   for (i=0; i<actpart->pdis[0].numele; i++)
   {
     actele = actpart->pdis[0].element[i];
     ccf_make_index(actfield,actpart,actintra,actele,ccf);
   }
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -714,6 +717,7 @@ return;
 
 
 
+#ifdef FAST_ASS
 /*----------------------------------------------------------------------*/
 /*!
  \brief 
@@ -876,6 +880,8 @@ void ccf_make_index(
 
   return;
 } /* end of ccf_make_index */
+
+#endif /* ifdef FAST_ASS */
 
 
 
