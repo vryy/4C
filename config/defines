@@ -34,6 +34,10 @@
 #S8CONTACT          # defines contact algorithms for shell8 contact
 #WALLCONTACT        # defines contact algorithms for wall contact
 #GEMM               # defines Generalized Energy-Momentum Int. Scheme
+#FAST_ASS           # use a faster procedure for assembling
+                    # requires a lot of memory !!!
+#FAST_ASS2          # use a faster procedure for assembling
+                    # requires allmost no extra memory
 
 
 # tools
