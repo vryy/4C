@@ -192,9 +192,14 @@ int                     numeq;           /* number of unknowns updated on this p
 int                     nnz_total;       /* total number of nonzero entries */
 int                     nnz;             /* number of nonzeros on this proc */
 
+int                     icntl[20];
+int                     comm;
+
 struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
 struct _ARRAY           irn_loc;         /* proc-local row pointer vector */
+struct _ARRAY           irn_locf;        /* fortran style pointer vector of irn_loc */
 struct _ARRAY           jcn_loc;         /* proc-local column pointer vector */
+struct _ARRAY           jcn_locf;        /* fortran style pointer vector of jcn_loc */
 struct _ARRAY           A_loc;           /* values of the matrix */
 struct _ARRAY           rowptr;          /* int vector holding the begin of each row in irn_loc */
 struct _ARRAY           bindx;           /* aztec style proc-local indicee-vector */
