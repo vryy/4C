@@ -47,8 +47,7 @@ enum _CALC_ACTION calc_action[MAXFIELD];
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_fast;   /* element stiffness matrix(fortran) */
 extern struct _ARRAY emass_fast;   /* element mass matrix (fortran) */
-extern struct _ARRAY etforce_fast; /* element Time RHS	(fortran) */
-extern struct _ARRAY eiforce_fast; /* element Iteration RHS(fortran) */
+extern struct _ARRAY eforce_fast;  /* element Iteration RHS(fortran) */
 extern struct _ARRAY edforce_fast; /* element dirichlet RHS(fortran) */
 
 
@@ -137,8 +136,7 @@ dstrc_enter("calelm_fast");
         act_fast_eles->ele_vec,
         &estif_fast,
         &emass_fast,
-        &etforce_fast,
-        &eiforce_fast,
+        &eforce_fast,
         &edforce_fast,
         action,
         hasdirich_fast,
