@@ -36,6 +36,19 @@ extern struct _GENPROB     genprob;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 
 /*!---------------------------------------------------------------------
 \brief calculation of fluid stresses
@@ -109,8 +122,8 @@ dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity*dens; /* here we need dynamic viscosity! */
 typ  = ele->distyp;
 
-if (is_relax) pos = 7;
-else          pos = 3;
+if (is_relax) pos = ipos.relax;
+else          pos = ipos.velnp;
 
 switch(viscstr)
 {
@@ -200,7 +213,7 @@ case 1: /* real pressure + viscose stresses */
             dserror("typ unknown!");
          } /* end switch(typ) */
 /*-------------------------------------------- compute Jacobian matrix */
-         f2_jaco2(xyze,funct,deriv,xjm,&det,iel,ele);
+         f2_jaco2(xyze,deriv,xjm,&det,iel);
 /*------------------------------------------- compute global derivates */
          f2_gder(derxy,deriv,xjm,det,iel);
 /*--------------------- get velocity  derivatives at integration point */

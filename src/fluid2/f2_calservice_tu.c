@@ -34,6 +34,19 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------
@@ -112,44 +125,46 @@ for(i=0;i<ele->numnp;i++)
      actnode=ele->node[i];
 
 /*----------------------------------- set element kapeps (n+1,i)       */
-      kapepsg[i]  =actnode->sol_increment.a.da[3][kap_eps];
+      kapepsg[i]  =actnode->sol_increment.a.da[ipos.velnp][kap_eps];
 /*----------------------------------- set element kapeps (n)           */
-      kapepsn[i]  =actnode->sol_increment.a.da[1][kap_eps];
+      kapepsn[i]  =actnode->sol_increment.a.da[ipos.veln][kap_eps];
 /*----------------------------------- set eddy viscosity for timestep  */
-      eddyg[i]   =actnode->sol_increment.a.da[3][1];
-      eddypro[i] =actnode->sol_increment.a.da[2][1];
+      eddyg[i]   =actnode->sol_increment.a.da[ipos.velnp][1];
+      eddypro[i] =actnode->sol_increment.a.da[ipos.eddy][1];
 
 /*--------------------- for kappa equation: epsilon is needed for R_t  */
     if (fdyn->kapeps_flag==0)
     {
-     epsilon[i] = actnode->sol_increment.a.da[3][2];
+     epsilon[i] = actnode->sol_increment.a.da[ipos.velnp][2];
 
      if (fdyn->kappan==2)
      {
-      actnode->sol_increment.a.da[2][0] = actnode->sol_increment.a.da[3][0];
+      actnode->sol_increment.a.da[ipos.eddy][0] = 
+                           actnode->sol_increment.a.da[ipos.velnp][0];
      }
     }
 
 /*-------- for epsilon equation: kappan is needed for production term  */
     if (fdyn->kapeps_flag==1)
     {
-     kappa[i]  =actnode->sol_increment.a.da[3][0];
+     kappa[i]  =actnode->sol_increment.a.da[ipos.velnp][0];
 
      if (fdyn->kappan==2)
      {
-      actnode->sol_increment.a.da[2][2] = actnode->sol_increment.a.da[3][2];
-      kappan[i] =actnode->sol_increment.a.da[2][0];
+      actnode->sol_increment.a.da[ipos.eddy][2] =
+                          actnode->sol_increment.a.da[ipos.velnp][2];
+      kappan[i] =actnode->sol_increment.a.da[ipos.eddy][0];
      }
     }
 
 /*----------------------------------- set element kapeps (pro)         */
-      kapepspro[i]=actnode->sol_increment.a.da[2][kap_eps];
+      kapepspro[i]=actnode->sol_increment.a.da[ipos.eddy][kap_eps];
 
 /*----------------------- get velocities calculated form Navier-Stokes */
     for(j=0;j<2;j++)
     {
       actnode=elev->node[i];
-      evel[j][i]=actnode->sol_increment.a.da[3][j];
+      evel[j][i]=actnode->sol_increment.a.da[ipos.velnp][j];
     }
 
  } /* end of loop over nodes of element */
@@ -600,7 +615,7 @@ dstrc_enter("f2_eddyirans");
    {
       actnode=eleke->node[i];
 /*----------------------------------- get kappa from nodes             */
-      eddy[i] =actnode->sol_increment.a.da[3][1];
+      eddy[i] =actnode->sol_increment.a.da[ipos.velnp][1];
    }
 
    *eddyint =ZERO;
