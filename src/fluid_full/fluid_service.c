@@ -291,7 +291,7 @@ case 7:		/* 2nd order backward differencing BDF2 */
    else if (fdyn->adaptive==0)
    {
       fdyn->dta  = fdyn->dt;    
-      fdyn->thsl = fdyn->dta*2.0/3.0;
+      fdyn->thsl = fdyn->dta*TWO/THREE;
       fdyn->thpl = fdyn->thsl;
       fdyn->thsr = 0.0;
       fdyn->thpr = fdyn->thsr;
@@ -324,10 +324,7 @@ in this routine the flags for the different nonlinear iteration schemes
 are set. Depending on the iteration schemes the evaluation of some 
 termes in the LHS or the RHS have to turned on or off:
 
-nik <->  EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)    
-nic <->  EVALUATION OF NONLINEAR LHS N-CONVECTIVE	    
 nir <->  EVALUATION OF NONLINEAR LHS N-REACTION 	    
-nie <->  EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY      
 nil <->  EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)      
 nif <->  EVALUATION OF "TIME - RHS" (F-hat)		    
 nii <->  EVALUATION OF "ITERATION - RHS"		    
@@ -348,10 +345,7 @@ dstrc_enter("fluid_icons");
 
 fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------- initialisation */
-fdyn->nik=0;
-fdyn->nic=0;
 fdyn->nir=0;
-fdyn->nie=0;
 fdyn->nil=0;
 fdyn->nif=0;
 fdyn->nii=0;
@@ -362,59 +356,37 @@ fdyn->totarea=ZERO;
 switch (fdyn->ite)
 {
 case 0:		/* no iteration */
-   fdyn->sigma=ZERO;
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
-      fdyn->nik=1;       
-      fdyn->nic=2; 
       fdyn->nif=3;      /* KCF */
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      fdyn->nik=1;       
-      fdyn->nic=2; 
       fdyn->nim=1;      /* KC(F) */
    }
    dserror("results with no nonlin. iteration not checked yet!\n");
 break;
 case 1:		/* fixed point like iteration */
-   fdyn->sigma=ZERO;
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
-      if (itnum>1)
-      {
-         fdyn->nik=1;  
-         fdyn->nic=2;   /* KC */  
-      }
-      else
-      {
-         fdyn->nik=1;
-         fdyn->nic=2;
+      if (itnum==1)
          fdyn->nif=3;   /* KCF */
-      }
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      fdyn->nik=1;  
-      fdyn->nic=2;
       fdyn->nim=1;	/* KC(F) */
    }
 break;
 case 2:		/* Newton iteration */
-   fdyn->sigma=ONE;
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
       if (itnum>1 || fdyn->iop==7) 	/* no time rhs for BDF2 */
       {
-         fdyn->nik=1;
-         fdyn->nic=2;
          fdyn->nir=3;
          fdyn->nii=4;  /* KCRI */
       }
       else
       {
-         fdyn->nik=1;
-         fdyn->nic=2;
          fdyn->nir=3;
          fdyn->nif=4;
          fdyn->nii=5;  /* KCRFI */
@@ -422,33 +394,27 @@ case 2:		/* Newton iteration */
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      fdyn->nik=1;
-      fdyn->nic=2;
       fdyn->nir=3;
       fdyn->nii=4;
       fdyn->nim=1;	/* KCR(F)I */
    }
 break;
 case 3:		/* fixed point iteration */
-   dserror("fixed point iteration not checked yet!!!\n");
-   fdyn->sigma=-ONE;
+   dserror("fixed point iteration removed!!!\n");
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
       if (itnum>1)
       {
-         fdyn->nik=1;
          fdyn->nii=2;  /* KI */     
       }
       else
       {
-         fdyn->nik=1;
          fdyn->nif=2;      
          fdyn->nii=3;  /* KFI */      
       }
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      fdyn->nik=1;
       fdyn->nim=1;      
       fdyn->nii=3;  /* K(F)I */   
    }
@@ -462,7 +428,8 @@ switch (fdyn->freesurf)
 {
 case 0: /* do nothing */
 break;
-case 1: /* explicit: include only for first iteration step in "time rhs" */
+case 1: /* explicit local langrage: include only for first iteration 
+           step in "time rhs" */
    if (itnum>1)
    {
       fdyn->surftens= 0;
@@ -471,24 +438,28 @@ case 1: /* explicit: include only for first iteration step in "time rhs" */
    }
    else
    {
-      fdyn->surftens=fdyn->surftens;
       fdyn->fsstnif = fdyn->surftens; 
       fdyn->fsstnii = fdyn->surftens;
    }
 break;
-case 2:
+case 2: case 6:/* partioned implicit local lagrange*/
+   fdyn->nif=2;
    if (itnum>1)
    {
-      fdyn->surftens=fdyn->surftens;
       fdyn->fsstnif = 0; 
       fdyn->fsstnii = fdyn->surftens;
    }
    else
    {
-      fdyn->surftens=fdyn->surftens;
       fdyn->fsstnif = fdyn->surftens;
       fdyn->fsstnii = fdyn->surftens;
    }
+break;
+case 3: case 5:/* vertical heightfunction */
+   /*----------------------- evaluate "time rhs" in each iteration step */
+   fdyn->nif=2;
+   fdyn->fsstnif  = fdyn->surftens;
+   fdyn->fsstnii  = fdyn->surftens;
 break;
 default:
       dserror("parameter fdyn->freesurf out of range!\n");
@@ -548,28 +519,34 @@ INT    numdf;           /* number of dofs in this discretisation        */
 INT    numnp_total;     /* total number of nodes in this discretisation */
 INT    numele_total;    /* total number of elements in this discr.      */  
 INT    numnp=0;         /* number of nodes at actual element            */
-#ifdef D_FSI
-INT    found;
-GNODE *actgnode;        /* the actual gnode                             */
-#endif
-int    ldflag;
-DOUBLE dens;            /* density                                      */
+INT    ldflag;
 NODE  *actnode;         /* the actual node                              */
 ELEMENT *actele;        /* the actual element                           */
-GVOL    *actgvol;
 GSURF   *actgsurf;
+#ifdef D_FSI
+INT    found;
+INT    addcol=0;
+DOUBLE dens;            /* density                                      */
+DOUBLE phi;
+NODE  *actanode;        /* the actual ale ode                           */
+GNODE *actgnode;        /* the actual gnode                             */
+#endif
+#ifdef D_FLUID3
+GVOL    *actgvol;
+DSURF   *actdsurf;
+#endif
 
 #ifdef D_FLUID2
 GLINE   *actgline;
 DLINE   *actdline;
 #endif
 
-#ifdef D_FLUID3
-DSURF   *actdsurf;
-#endif
+DOUBLE d,t,p,u1,u2,u3;
 
 /*----------------------------------------- variables for solitary wave */
-DOUBLE u1,u2,u3,eta,p,c,g,H,d,x,y,t,fac,fac1,sech;
+#ifdef D_FSI
+DOUBLE eta,c,g,H,x,y,fac,fac1,sech;
+#endif
 
 /* variables for beltrami */
 DOUBLE    visc,a,x1,x2,x3;
@@ -599,6 +576,61 @@ for (k=0;k<actfield->ndis;k++)
    }
 }
 
+/*----------------------------------- set initial free surface position */
+#ifdef D_FSI
+if (fdyn->freesurf>0)
+{
+   for (i=0;i<numnp_total;i++)
+   {
+      actnode=&(actfield->dis[0].node[i]);
+      actgnode = actnode->gnode;
+      if (actgnode->freesurf!=NULL)
+      {
+         actnode->xfs = (DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));
+	 if (genprob.restart==0)
+         {
+            actnode->xfs[0] = actnode->x[0];
+	    actnode->xfs[1] = actnode->x[1];
+	    actnode->xfs[2] = actnode->x[2];
+         }
+         else /* get free surf position from ale-displacements */
+         {
+            dserror("restart for free surface not checked up to now!\n");
+            actanode=actgnode->mfcpnode[genprob.numaf];
+            actnode->xfs[0] = actanode->x[0]+actanode->sol_mf.a.da[1][0];
+            actnode->xfs[1] = actanode->x[0]+actanode->sol_mf.a.da[1][1];
+            actnode->xfs[2] = actanode->x[0]+actanode->sol_mf.a.da[1][2];
+         }
+      }
+      else
+         actnode->xfs=NULL;   
+   }
+}
+
+if (fdyn->freesurf==3 || fdyn->freesurf==5)
+{
+   if (fdyn->freesurf==3) addcol=1;
+   for (i=0;i<numnp_total;i++)
+   {
+      actnode=&(actfield->dis[0].node[i]);
+      if (actnode->xfs!=NULL)
+      {
+         amredef(&(actnode->sol_increment),numr,actnode->numdf+addcol,"DA");
+         amzero(&(actnode->sol_increment));
+         amredef(&(actnode->sol),actnode->sol.fdim,actnode->numdf+addcol,"DA");      
+         amzero(&(actnode->sol));
+         amredef(&(actnode->sol_mf),actnode->sol.fdim,actnode->numdf+addcol,"DA");      
+         amzero(&(actnode->sol_mf));
+         phi = actnode->x[numdf-2];
+         actnode->sol.a.da[0][numdf] = phi;
+         actnode->sol_increment.a.da[0][numdf] = phi;
+         actnode->sol_increment.a.da[1][numdf] = phi;
+         actnode->sol_increment.a.da[3][numdf] = phi;
+         actnode->sol_mf.a.da[0][numdf] = phi;
+      }
+   }
+}
+#endif
 /*---------------------- redefine solution history for projecton method */
 if (fdyn->dyntyp==1)
 for (i=0;i<actfield->dis[0].numnp;i++)
@@ -633,7 +665,7 @@ case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nod
 #endif
 #ifdef D_FLUID3
          if (numdf==4)
-            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,12,"DA");
+            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
 #endif	 
       }
    }
@@ -650,7 +682,7 @@ case str_all: /* allocate stress field for all elements */
 #endif
 #ifdef D_FLUID3
       if (numdf==4)
-         amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,12,"DA");
+         amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
 #endif	 
    }
 break;   
@@ -691,7 +723,7 @@ case str_liftdrag:
 	    break;
          }  
          if (ldflag>0)
-            amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,12,"DA");
+            amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
       }
 #endif	
    }
@@ -723,8 +755,8 @@ if (fdyn->surftens>0)
    }
 }
 
-/*--------- inherit the neuman conditions from design to discretization */
-for (k=0; k<actfield->ndis; k++) inherit_design_dis_neum(&(actfield->dis[k]));
+/*-------- inherit the Neumann conditions from design to discretization */
+for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
 
 /*-------------------------------------------- create the initial field */
 if (fdyn->init>=1)
@@ -736,6 +768,7 @@ if (fdyn->init>=1)
       restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,
                             action,container);
 			    
+#ifdef D_FSI
    if (fdyn->init==6) /*--------------------------------- solitary wave */
    {
       actele = &(actfield->dis[0].element[0]);
@@ -763,6 +796,7 @@ if (fdyn->init>=1)
 	 p    = dens*g*(eta-y);
 	 u1   = sqrt(g*d)*H/d*sech;
 	 u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
+         actgnode = actnode->gnode;
 	 /*---------------------------------------- write values to nodes */
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
@@ -773,9 +807,31 @@ if (fdyn->init>=1)
 	 actnode->sol_increment.a.da[3][0] = u1;  
 	 actnode->sol_increment.a.da[3][1] = u2;  
 	 actnode->sol_increment.a.da[3][2] = p ;
-
+         if (fdyn->freesurf==2 && actnode->xfs!=NULL)
+	 {
+	    actnode->sol_increment.a.da[1][3] = u1;
+	    actnode->sol_increment.a.da[1][4] = u2;
+	    actnode->sol_increment.a.da[3][3] = u1;
+	    actnode->sol_increment.a.da[3][4] = u2;
+            actgnode = actnode->gnode;
+            if (actgnode->dirich!=NULL)
+	    {
+               if (actgnode->dirich->dirich_type!=dirich_none)
+	       dserror("dirich type not allowed for solwave init\n");
+	       for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
+               {
+                  if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
+	          {
+		     actnode->sol_increment.a.da[1][j] = ZERO;                  
+		     actnode->sol_increment.a.da[3][j] = ZERO;                  
+                  }
+	       } /* end loop over dofs */	    
+	    }
+	 }
       }    
    }
+#endif
+#ifdef D_FSI   
    if (fdyn->init==7) /*-------------------------- wavebreaking problem */
    {
       actele = &(actfield->dis[0].element[0]);
@@ -785,7 +841,7 @@ if (fdyn->init>=1)
       dens   = mat[actmat].m.fluid->density;
       g      = -actele->g.gsurf->neum->neum_val.a.dv[1];
       d      = TEN;
-      H      = FIVE;
+      H      = ONE/FIVE*d;
       fac1   = sqrt((THREE*H)/(FOUR*d*d*d));
       c      = sqrt(g*d*(1+H/d));
       t      = ZERO;
@@ -800,10 +856,19 @@ if (fdyn->init>=1)
 	 sech = ONE/sech/sech;
 	 eta  = d + H*sech;
 	 /*---------------------------------------- modify initial values */ 	 
-	 p    = dens*g*(eta-y);
-	 u1   = sqrt(g*d)*H/d*sech;
-	 u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
-	 /*---------------------------------------- write values to nodes */
+         if (x>=80.0)
+         {
+	    p    = dens*g*(d-y);
+            u1 = ZERO;
+            u2 = ZERO;
+         }
+         else
+         {
+	    p    = dens*g*(eta-y);
+	    u1   = sqrt(g*d)*H/d*sech;
+	    u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
+	 }
+         /*---------------------------------------- write values to nodes */
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
@@ -813,9 +878,30 @@ if (fdyn->init>=1)
 	 actnode->sol_increment.a.da[3][0] = u1;  
 	 actnode->sol_increment.a.da[3][1] = u2;  
 	 actnode->sol_increment.a.da[3][2] = p ;
+         if (fdyn->freesurf==2 && actnode->xfs!=NULL)
+	 {
+	    actnode->sol_increment.a.da[1][3] = u1;
+	    actnode->sol_increment.a.da[1][4] = u2;
+	    actnode->sol_increment.a.da[3][3] = u1;
+	    actnode->sol_increment.a.da[3][4] = u2;
+            actgnode = actnode->gnode;
+            if (actgnode->dirich!=NULL)
+	    {
+               if (actgnode->dirich->dirich_type!=dirich_none)
+	          dserror("dirich type not allowed for solwave init\n");
+	       for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
+               {
+                  if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
+	          {
+		     actnode->sol_increment.a.da[1][j] = ZERO;                  
+		     actnode->sol_increment.a.da[3][j] = ZERO;                  
+                  }
+	       } /* end loop over dofs */	    
+	    }
+	 }
       }    
    }
-
+#endif
    if (fdyn->init==8) /* Beltrami flow */
    {
       actele = &(actfield->dis[0].element[0]);
@@ -982,13 +1068,17 @@ solserv_reddistvec(
                       actintra
                      );
 
+/* values in sol_increment are in XYZ co-sys - result is in xyz* co-sys
+   so we have to tranform sol_increment for the convergence check       */
+locsys_trans_sol(actfield,0,1,place,0);   
+
 if (fdyn->itchk==0) /* no iteration convergence check */
 {
-   /*-----------  loop nodes and put the result back to the node structure */
+   /*--------  loop nodes and put the result back to the node structure */
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
-      /*------------------------------ enlarge sol_increment, if necessary */
+      /*--------------------------- enlarge sol_increment, if necessary */
       if (place >= actnode->sol_increment.fdim)
       {
          diff = place - actnode->sol_increment.fdim;
@@ -1005,17 +1095,17 @@ if (fdyn->itchk==0) /* no iteration convergence check */
      
    } /* end of loop over nodes */
 } /* end if no iteration check */
-/*----------------------------------------------------------------------------*/   
+/*----------------------------------------------------------------------*/   
 else if (fdyn->itchk==1) /* convergence check  */
 {
    switch (fdyn->itnorm) /* switch to norm */
    {
    case 0: /* L_infinity norm */
-      /*-----------  loop nodes and put the result back to the node structure */
+      /*-----  loop nodes and put the result back to the node structure */
       for (i=0; i<actfield->dis[0].numnp; i++)
       {
          actnode = &(actfield->dis[0].node[i]);
-         /*------------------------------ enlarge sol_increment, if necessary */
+         /*------------------------ enlarge sol_increment, if necessary */
          if (place >= actnode->sol_increment.fdim)
          {
             diff = place - actnode->sol_increment.fdim;
@@ -1033,7 +1123,7 @@ else if (fdyn->itchk==1) /* convergence check  */
 	       pnorm  = DMAX(pnorm, FABS(result[dof]));
 	       actnode->sol_increment.a.da[place][j] = result[dof];
 	    } /* endif pressure dof */
-	    else if (j>predof) /* grid velocity dof */
+	    else if (j>predof) /* grid velocity or height function dof */
 	    {
 	       dgnorm = DMAX(dgnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
 	       gnorm  = DMAX(gnorm,FABS(result[dof]));
@@ -1072,7 +1162,7 @@ else if (fdyn->itchk==1) /* convergence check  */
 	       pnorm  += FABS(result[dof]);
 	       actnode->sol_increment.a.da[place][j] = result[dof];
 	    } /* endif pressure dof */
-            else if (j>predof) /* grid velocity dofs */
+            else if (j>predof) /* grid velocity or height function dof */
 	    {
                dgnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
 	       gnorm  += FABS(result[dof]);
@@ -1107,20 +1197,20 @@ else if (fdyn->itchk==1) /* convergence check  */
             if (dof>=numeq_total) continue;
             if (j==predof) /* pressure dof */
 	    {
-               dpnorm += pow(result[dof]-actnode->sol_increment.a.da[place][j],2);
-	       pnorm  += pow(result[dof],2);
+               dpnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
+	       pnorm  += DSQR(result[dof]);
 	       actnode->sol_increment.a.da[place][j] = result[dof];
 	    } /* endif pressure dof */
-	    else if (j>predof) /* grid velocity dofs */
+	    else if (j>predof) /* grid velocity or height function dof */
 	    {
-               dgnorm += pow(result[dof]-actnode->sol_increment.a.da[place][j],2);
-	       gnorm  += pow(result[dof],2);
+               dgnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
+	       gnorm  += DSQR(result[dof]);
 	       actnode->sol_increment.a.da[place][j] = result[dof];	    
 	    } /* endif grid velocity dofs */
 	    else /* vel - dof */
 	    {	       
-	       dvnorm += pow(result[dof]-actnode->sol_increment.a.da[place][j],2);
-	       vnorm  += pow(result[dof],2);
+	       dvnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
+	       vnorm  += DSQR(result[dof]);
                actnode->sol_increment.a.da[place][j] = result[dof];
 	    } /* endif vel dof */
          } /* end of loop over dofs */        
@@ -1140,7 +1230,7 @@ else if (fdyn->itchk==1) /* convergence check  */
    if (vnorm<EPS5)
    {
       vnorm = ONE;
-#ifdef DEBUT
+#ifdef DEBUG
       printf("ATTENTION: zero vel field - norm <= 1.0e-5 set to 1.0!! \n");
 #endif
    }
@@ -1158,13 +1248,20 @@ else if (fdyn->itchk==1) /* convergence check  */
    /*------------------------------------- set final convergence ratios */
    *vrat = dvnorm/vnorm;
    *prat = dpnorm/pnorm;
-   if (fdyn->freesurf==2) *grat = dgnorm/gnorm;   
+   if (fdyn->freesurf==2 || fdyn->freesurf==5 || fdyn->freesurf==6) 
+      *grat = dgnorm/gnorm;   
 } /* endif convergence check */   
 /*----------------------------------------------------------------------*/
 else
 {
    dserror("parameter itchk out of range!\n");
 }
+
+/*------------------------------------------- local co-ordinate system:
+  the values in sol_increment[3][] are given in the xyz* co-system, 
+  however everything else is in the XYZ co-system. So we have to 
+  tranform them from xyz* to XYZ                                        */
+locsys_trans_sol(actfield,0,1,place,1); 
 
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
@@ -1281,15 +1378,15 @@ case 2: /* L_2 norm */
       { 
 	 actdof = actnode->dof[j];
          if (actdof>=numeq_total) continue;
-         dvnorm += pow(actnode->sol_increment.a.da[3][j]  \
-	               -actnode->sol_increment.a.da[1][j],2);
-          vnorm += pow(actnode->sol_increment.a.da[3][j],2);
+         dvnorm += DSQR(actnode->sol_increment.a.da[3][j]  \
+	               -actnode->sol_increment.a.da[1][j]);
+          vnorm += DSQR(actnode->sol_increment.a.da[3][j]);
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
       if (actdof>=numeq_total) continue;
-      dpnorm += pow(actnode->sol_increment.a.da[3][predof]  \
-	            -actnode->sol_increment.a.da[1][predof],2);
-       pnorm += pow(actnode->sol_increment.a.da[3][predof],2);                
+      dpnorm += DSQR(actnode->sol_increment.a.da[3][predof]  \
+	            -actnode->sol_increment.a.da[1][predof]);
+       pnorm += DSQR(actnode->sol_increment.a.da[3][predof]);                
    } /* end of loop over nodes */
    dvnorm = sqrt(dvnorm);
     vnorm = sqrt( vnorm);
@@ -1429,7 +1526,7 @@ for (i=0; i<actdis->numnp; i++)
       max = diff;
       amredef(arrayt,arrayt->fdim+max+1,arrayt->sdim,"DA");
    }
-   for (j=0;j<actnode->numdf;j++)
+   for (j=0;j<arrayf->sdim;j++)
       arrayt->a.da[to][j] = arrayf->a.da[from][j];  
    /*----------------------------------------------- transform pressure */
    arrayt->a.da[to][predof]*=dens;    
@@ -1675,7 +1772,11 @@ if (fdyn->itchk!=0)
               itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
       break;
       case 2: /* L_2 norm */
-         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+         if (fdyn->freesurf>1)    
+         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+                 itnum,fdyn->itemax,fdyn->ittol,vrat,prat,grat,te,ts);
+         else
+	 printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
       break;
       default:
@@ -1689,14 +1790,21 @@ if (fdyn->itchk!=0)
       converged++;
    if (converged==1 && par.myrank==0)
    {
-      printf("---------------------------------------------------------------- \n");
+      if (fdyn->freesurf>1)
+      printf("------------------------------------------------------------------------------- \n");
+      else      
+      printf("---------------------------------------------------------------- \n"); 
       printf("|          >>>>>> not converged in itemax steps!               | \n");         
+      printf("---------------------------------------------------------------- \n");
       fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
           fdyn->step,fdyn->acttime,itnum,vrat,prat);
       fprintf(out,"not converged in itemax steps\n");
    }
-   if (converged>0 && par.myrank==0)
+   else if (converged>0 && par.myrank==0)
    {
+      if (fdyn->freesurf>1)
+      printf("------------------------------------------------------------------------------- \n");
+      else      
       printf("---------------------------------------------------------------- \n"); 
       printf("\n");
       fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
@@ -1877,7 +1985,7 @@ return;
 /*!---------------------------------------------------------------------
 \brief reduce fluid stresses
 
-<pre>                                                         genk 05/02
+<pre>                                                         genk 01/03
 
 fluid stresses are calcuted within a parellel loop over the elements.
 So the results are not available on all procs. Here they are reduced by
@@ -1894,6 +2002,7 @@ MPI to all procs!
 ------------------------------------------------------------------------*/
 void fluid_reducestress(  
                           INTRA             *actintra,
+                          PARTITION         *actpart,
                           FIELD             *actfield,
 			  INT                numdf, 
 			  FLUID_STRESS       str
@@ -1902,8 +2011,15 @@ void fluid_reducestress(
 #ifdef PARALLEL
 INT      numele_total,numnp;
 INT      i,j, coupled;
-INT      dim;
-DOUBLE  *buffer;
+static INT dim;
+INT      start;
+INT      mone=-1;
+static ARRAY    index_a;
+static INT     *index;
+static DOUBLE  *buffer;
+static ARRAY    buffer_a;
+static DOUBLE  *recvbuffer;
+static ARRAY    recvbuffer_a;
 ELEMENT *actele;
 GNODE   *actgnode;
 
@@ -1913,49 +2029,137 @@ dstrc_enter("fluid_reducestress");
 
 numele_total = actfield->dis[0].numele;
 
-switch(str)
+if (index_a.Typ!= cca_IV)
 {
-#ifdef D_FSI
-case str_fsicoupling: /* sent only if element has fsi-coupled nodes */
-   for(i=0;i<numele_total;i++) /* loop elements */
+   index=amdef("index",&index_a,numele_total,1,"IV");
+   aminit(&index_a,&mone);
+   switch(str)
    {
-      actele=&(actfield->dis[0].element[i]);
-      numnp = actele->numnp;
-      /*--------------- loop nodes and if element has a fsi-coupled node */
+#ifdef D_FSI
+   case str_fsicoupling: /*- sent only if element has fsi-coupled nodes */
       coupled=0;
+      for(i=0;i<numele_total;i++) /* loop elements */
+      {
+         actele=&(actfield->dis[0].element[i]);
+         numnp = actele->numnp;
+         /*----- loop nodes and check if element has a fsi-coupled node */
+         for (j=0;j<numnp;j++)
+         {
+            actgnode = actele->node[j]->gnode;
+            /* check if there is a coupled struct node */
+            if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
+            index[actele->Id_loc]=coupled;
+            coupled++;
+            break;    
+         } /* end of loop over nodes */
+      }
+   break;
+#endif       
+   default:
+      dserror("str not valid for reduction\n");
+   } /* end switch */
+
+   /*------------------------------------------ allocate stress buffers */
+   if (numdf==3)
+   {
+      dim=MAXNOD*coupled*3;
+      buffer     = amdef("buffer",&buffer_a,MAXNOD*coupled*3,1,"DV");
+      recvbuffer = amdef("recvbuffer",&recvbuffer_a,dim,1,"DV");
+   }
+   else if (numdf==4)
+   {
+      dim=MAXNOD*coupled*6;
+      buffer     = amdef("buffer",&buffer_a,MAXNOD*coupled*6,1,"DV");
+      recvbuffer = amdef("recvbuffer",&recvbuffer_a,dim,1,"DV");
+   }
+   else
+      dserror("numdf out of range!\n");
+} /* endif */
+
+amzero(&buffer_a);
+amzero(&recvbuffer_a);
+
+for (i=0; i<actpart->pdis[0].numele; i++)
+{
+   actele = actpart->pdis[0].element[i];
+   coupled=index[actele->Id_loc];
+   /* continue if element belongs to other proc or is not coupled */
+   if (par.myrank!=actele->proc || coupled==-1) continue;
+   numnp=actele->numnp;
+   /*------------------------------------------- set buffer and dim */
+#ifdef D_FLUID2
+   if (numdf==3)    
+   {
+      start=coupled*MAXNOD*3;
       for (j=0;j<numnp;j++)
       {
-         actgnode = actele->node[j]->gnode;
-         /* check if there is a coupled struct node */
-         if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
-         coupled=1;
-         break;    
-      } /* end of loop over nodes */
-      if (coupled==1)
-      { 
-	 /*------------------------------------------- set buffer and dim */
-#ifdef D_FLUID2
-         if (numdf==3)    
-	 {
-            buffer=&(actele->e.f2->stress_ND.a.da[0][0]);
-	    dim = 3*numnp;
-	 }
+         buffer[start]  =actele->e.f2->stress_ND.a.da[j][0];
+         buffer[start+1]=actele->e.f2->stress_ND.a.da[j][1];
+         buffer[start+2]=actele->e.f2->stress_ND.a.da[j][2];
+         start+=3;
+      }
+   }
 #endif
 #ifdef D_FLUID3
-         if (numdf==4)
-         {
-            buffer=&(actele->e.f2->stress_ND.a.da[0][0]);
-	    dim = 6*numnp;
-         }
-#endif         
-	 MPI_Bcast(buffer,dim,MPI_DOUBLE,actele->proc,actintra->MPI_INTRA_COMM);
-      } /* endif (coupled==1) */
-   } /* end of loop over all elements */
-break;
+   if (numdf==4)
+   {
+      start=coupled*MAXNOD*6;
+      for (j=0;j<numnp;j++)
+      {
+         buffer[start]  =actele->e.f3->stress_ND.a.da[j][0];
+         buffer[start+1]=actele->e.f3->stress_ND.a.da[j][1];
+         buffer[start+2]=actele->e.f3->stress_ND.a.da[j][2];
+         buffer[start+3]=actele->e.f3->stress_ND.a.da[j][3];
+         buffer[start+4]=actele->e.f3->stress_ND.a.da[j][4];
+         buffer[start+5]=actele->e.f3->stress_ND.a.da[j][5];
+         start+=6;
+      }
+   }
 #endif
-default:
-   dserror("invalid value for 'flag'\n");
-} /* end switch (flag) */
+} /* end of loop over all elements */
+
+/*------------------------------------------------------ allreduce the vector */
+MPI_Allreduce(buffer,recvbuffer,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+
+/* now recbuffer contains all stresses, which have to be distrubuted to the 
+   elements */
+for(i=0;i<numele_total;i++) /* loop elements */
+{
+   actele=&(actfield->dis[0].element[i]);  
+   coupled=index[actele->Id_loc];
+   if (coupled==-1) continue; /* no stress reduction */
+   numnp=actele->numnp;
+#ifdef D_FLUID2
+   if (numdf==3)    
+   {
+      start=coupled*MAXNOD*3;
+      for (j=0;j<numnp;j++)
+      {
+         actele->e.f2->stress_ND.a.da[j][0]=recvbuffer[start]  ;
+         actele->e.f2->stress_ND.a.da[j][1]=recvbuffer[start+1];
+         actele->e.f2->stress_ND.a.da[j][2]=recvbuffer[start+2];
+         start+=3;
+      }
+   }
+#endif
+#ifdef D_FLUID3
+   if (numdf==4)
+   {
+      start=coupled*MAXNOD*6;
+      for (j=0;j<numnp;j++)
+      {
+         actele->e.f3->stress_ND.a.da[j][0]=recvbuffer[start]  ;
+         actele->e.f3->stress_ND.a.da[j][1]=recvbuffer[start+1];
+         actele->e.f3->stress_ND.a.da[j][2]=recvbuffer[start+2];
+         actele->e.f3->stress_ND.a.da[j][3]=recvbuffer[start+3];
+         actele->e.f3->stress_ND.a.da[j][4]=recvbuffer[start+4];
+         actele->e.f3->stress_ND.a.da[j][5]=recvbuffer[start+5];
+         start+=6;
+      }
+   }
+#endif
+} /* end of loop over all elements */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -1963,8 +2167,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of fluid_reducestress*/
-
-
 
 /*!--------------------------------------------------------------------- 
 \brief calculating errors for beltrami and kim-moin

@@ -109,26 +109,23 @@ as Neumann boundary conditions
 \param *sdyn	 STRUCT_DYNAMIC	(i)				
 \param *actfield FIELD          (i)     actual field		
 \param  mctrl    INT            (i)     evaluation flag		
-\param  numfs    INT            (i)     number of struct field	
 \param  fsiitnum INT            (i)     counter for Iterations over fields
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_struct(   
 		   FIELD             *actfield, 
-		   INT                mctrl, 
-		   INT                numfs,
+		   INT                mctrl,
 		   INT                fsiitnum
 	       )
 {
 INT                  i;		         /* simply a counter		                        */
+static INT           numsf;              /* actual number of struct field                       */
 static INT           numeq;		 /* number of equations on this proc                    */
 static INT           numeq_total;	 /* total number of equations	                        */
 INT                  init;		 /* flag for solver_control call                        */
 static INT           itnum;		 /* counter for NR-Iterations	                        */
 INT                  convergence;	 /* convergence flag		                        */
-static INT           mod_disp,mod_stress;
-static INT           mod_res_write;
 static INT           restart;
 static INT           nstep;
 static INT           outstep;            /* counter for output control                          */
@@ -142,8 +139,7 @@ static DOUBLE        dmax;		 /* infinity norm of residual displacements         
 static INT           stiff_array;	 /* indice of the active system sparse matrix           */
 static INT           mass_array;	 /* indice of the active system sparse matrix           */
 static INT           damp_array;	 /* indice of the active system sparse matrix           */
-static INT           num_array; 	 /* indice of global stiffness matrices                 */
-static INT           actcurve;  	 /* indice of active time curve                         */
+static INT           actcurve=0;  	 /* indice of active time curve                         */
 
 static SOLVAR       *actsolv;		 /* pointer to active solution structure                */
 static PARTITION    *actpart;		 /* pointer to active partition                         */
@@ -166,6 +162,7 @@ static CONTAINER       container;        /* contains variables defined in contai
 
 static FSI_DYNAMIC       *fsidyn;
 static STRUCT_DYNAMIC    *sdyn;
+
 #ifdef DEBUG 
 dstrc_enter("fsi_struct");
 #endif
@@ -176,8 +173,9 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1: 
+numsf  = genprob.numsf;
 fsidyn = alldyn[genprob.numaf+1].fsidyn;
-sdyn   = alldyn[genprob.numsf].sdyn;
+sdyn   = alldyn[numsf].sdyn;
 
 sdyn->dt=fsidyn->dt;
 sdyn->maxtime=fsidyn->maxtime;
@@ -190,9 +188,9 @@ restartstep=0;
 /*----------------------------------------------------------------------*/
 restart = genprob.restart;
 /*--------------------------------------------------- set some pointers */
-actsolv            = &(solv[numfs]);
-actpart            = &(partition[numfs]);
-action             = &(calc_action[numfs]);
+actsolv            = &(solv[numsf]);
+actpart            = &(partition[numsf]);
+action             = &(calc_action[numsf]);
 container.fieldtyp = actfield->fieldtyp;
 /*----------------------------------------- check for explicit dynamics */
 dsassert(sdyn->Typ==gen_alfa,"Structural DYNAMICTYP not possible for FSI\n");
@@ -336,6 +334,7 @@ for (i=0; i<3; i++) solserv_zero_vec(&(fie[i]));
 /*    vectors, I needed three to make things straight-forward and easy */
 solserv_create_vec(&work,3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(work[i]));
+
 /*---------------------------------- initialize solver on all matrices */
 /*
 NOTE: solver init phase has to be called with each matrix one wants to 
@@ -998,13 +997,14 @@ if (restartstep==fsidyn->res_write_evry)
                               &dirich_a,
                               &container);  /* contains variables defined in container.h */
 }
+
 /*----------------------------------------------------- print time step */
 /*if (par.myrank==0) 
 {
    dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
    printf("--------------------------------------------------------------- \n");
    printf("\n"); 
-} 
+} */
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 fprintf(allfiles.out_err,"TIME for step %d is %f sec\n",sdyn->step,t1-t0);

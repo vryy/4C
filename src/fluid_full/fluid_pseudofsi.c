@@ -79,7 +79,8 @@ FLUID  - dirichlet boundary condition
 ------------------------------------------------------------------------*/
 void fluid_createpseudofsi()
 {
-INT       i;                              /* simply some counters       */
+#ifdef D_FSI
+INT       i,j;                            /* simply some counters       */
 INT       hasdirich,hascouple;
 INT       hasfsi,hasneum;                 /* different flags            */
 INT       hasfreesurf;
@@ -90,6 +91,10 @@ FIELDTYP  fieldtyp;
 #ifdef DEBUG 
 dstrc_enter("fluid_createpseudofsi");
 #endif
+
+/* quit if there's no ALE field */
+if (genprob.numaf==-1 || genprob.numfld==1) goto end;
+
 
 dsassert(genprob.numff>=0,"No fluid field in fluid function!\n");
 dsassert(genprob.numaf>=0,"No ale field in fluid freesurf function!\n");
@@ -129,8 +134,8 @@ for (i=0; i<design->ndline; i++)
       amzero(&(actdline->dirich->dirich_val));
       amzero(&(actdline->dirich->curve));
       /*----------------------------------- initialise for fsi-coupling */
-      actdline->dirich->dirich_onoff.a.iv[0] = 1;   
-      actdline->dirich->dirich_onoff.a.iv[1] = 1;       
+      for (j=0;j<genprob.ndim;j++)
+         actdline->dirich->dirich_onoff.a.iv[j] = 1;   
       actdline->dirich->dirich_type=dirich_FSI_pseudo;
    break;
    case ale:
@@ -140,11 +145,65 @@ for (i=0; i<design->ndline; i++)
       dserror("fieldtyp structure not allowed for pseudo fsi!");   
    break;
    default:
-       dserror("fieldtyp unknown!");
+       dserror("fieldtyp unknown!(1)");
    break;
    }
 } /* end of loops over dlines */
+
+/*--------------------------------------------------------- loop dnodes */
+for (i=0; i<design->ndnode; i++)
+{
+   hasdirich=0;
+   hascouple=0;
+   hasfsi   =0;
+   hasneum  =0;
+   actdnode = &(design->dnode[i]);
+   /*--------------------------------------------- check for conditions */
+   if (actdnode->dirich!=NULL) hasdirich++;
+   if (actdnode->couple!=NULL) hascouple++;
+   if (actdnode->fsicouple!=NULL) hasfsi++;
+   if (actdnode->neum!=NULL) hasneum++;
+   if (hasfsi==0) continue;
+   fieldtyp=actdnode->fsicouple->fieldtyp;
+   switch (fieldtyp)
+   {
+   case fluid:
+      dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DNODE\n");
+      dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DNODE\n");
+      dsassert(hasneum==0,"neumann- and fsi-coupling condition defined on same DNODE\n");
+      /*----------- allocate space for a dirichlet condition in this dnode */
+      actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+      amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
+      amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
+      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amzero(&(actdnode->dirich->dirich_onoff));
+      amzero(&(actdnode->dirich->dirich_val));
+      amzero(&(actdnode->dirich->curve));
+      amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
+      amzero(&(actdnode->dirich->funct));
+      /*----------------------------------- initialise for fsi-coupling */
+      for (j=0;j<genprob.ndim;j++)
+         actdnode->dirich->dirich_onoff.a.iv[j] = 1;   
+      actdnode->dirich->dirich_type=dirich_FSI_pseudo;
+   break;   
+   case ale:
+      dserror("fieldtyp ale not allowed for pseudo fsi!");   
+   break;
+   case structure:
+      dserror("fieldtyp structure not allowed for pseudo fsi!");   
+   break;
+   default:
+      dserror("fieldtyp unknown (1)!\n"); 
+   } /* end switch(fieldtyp) */
+} /* end of loop over dnodes */
+
+end:
+#else
+dserror("FSI-functions not compiled in!\n");
+#endif
+
 /*----------------------------------------------------------------------*/
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif

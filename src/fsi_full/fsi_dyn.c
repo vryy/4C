@@ -132,6 +132,9 @@ fsidyn= alldyn[3].fsidyn;
 fsidyn->time=ZERO;
 fsidyn->step=0;
 
+if (fdyn->freesurf==1)
+dserror("No explicit free surface combined with FSI!");
+
 /*---------------------------------- initialise fsi coupling conditions */
 fsi_initcoupling(structfield,fluidfield,alefield);
 /*--------------------------------- determine structural interface dofs */
@@ -140,12 +143,12 @@ fsi_struct_intdofs(structfield);
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,fsidyn->nstep,fsidyn->dt,fsidyn->maxtime);
 
-/*---------------------------------------------------- initialise fluid */
-fsi_fluid(fluidfield,mctrl,numff);
-/*------------------------------------------------ initialise structure */
-fsi_struct(structfield,mctrl,numsf,itnum);
 /*------------------------------------------------------ initialise ale */
-fsi_ale(alefield,mctrl,numaf);
+fsi_ale(alefield,mctrl);
+/*---------------------------------------------------- initialise fluid */
+fsi_fluid(fluidfield,mctrl);
+/*------------------------------------------------ initialise structure */
+fsi_struct(structfield,mctrl,itnum);
 
 if (genprob.restart!=0)
 {
@@ -200,11 +203,11 @@ if (fsidyn->ifsi==1 || fsidyn->ifsi==3)
    dsassert(fsidyn->ifsi!=3,"Scheme with DT/2-shift not implemented yet!\n");
 
    /*------------------------------- CFD -------------------------------*/
-   fsi_fluid(fluidfield,mctrl,numff);
+   fsi_fluid(fluidfield,mctrl);
    /*------------------------------- CSD -------------------------------*/
-   fsi_struct(structfield,mctrl,numsf,itnum);
+   fsi_struct(structfield,mctrl,itnum);
    /*------------------------------- CMD -------------------------------*/
-   fsi_ale(alefield,mctrl,numaf);
+   fsi_ale(alefield,mctrl);
 } /* endif (fsidyn->ifsi==1 || fsidyn->ifsi==3) */
 
 /*---------------------------------------------- schemes with predictor */
@@ -218,14 +221,14 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
    /*----------------- CSD - predictor for itnum==0 --------------------*/
    if (itnum==0)
    {
-      fsi_struct(structfield,mctrlpre,numsf,itnum);
+      fsi_struct(structfield,mctrlpre,itnum);
    }
    /*------------------------------- CMD -------------------------------*/
-   fsi_ale(alefield,mctrl,numaf);
+   fsi_ale(alefield,mctrl);
    /*------------------------------- CFD -------------------------------*/
-   fsi_fluid(fluidfield,mctrl,numff);
+   fsi_fluid(fluidfield,mctrl);
    /*------------------------------- CSD -------------------------------*/
-   fsi_struct(structfield,mctrl,numsf,itnum);
+   fsi_struct(structfield,mctrl,itnum);
 }
 /*--------------------------------------------- strong coupling schemes */
 if (fsidyn->ifsi>=4)
@@ -257,11 +260,11 @@ if (fsidyn->ifsi>=4)
    {
       mctrl=3;
       /*--------------------- update MESH data -------------------------*/
-      fsi_ale(alefield,mctrl,numaf);
+      fsi_ale(alefield,mctrl);
       /*-------------------- update FLUID data -------------------------*/
-      fsi_fluid(fluidfield,mctrl,numff);      
+      fsi_fluid(fluidfield,mctrl);      
       /*------------------ update STRUCTURE data -----------------------*/
-      fsi_struct(structfield,mctrl,numsf,itnum);
+      fsi_struct(structfield,mctrl,itnum);
    }
 }
 /*--------------------------------------- write current solution to gid */
@@ -295,10 +298,9 @@ if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
  *======================================================================*/
 cleaningup:
 mctrl=99;
-fsi_fluid(fluidfield,mctrl,numff);
-fsi_struct(structfield,mctrl,numsf,itnum);
-fsi_ale(alefield,mctrl,numaf);   
-
+fsi_fluid(fluidfield,mctrl);
+fsi_struct(structfield,mctrl,itnum);
+fsi_ale(alefield,mctrl);   
 
 /*----------------------------------------------------------------------*/
 #else

@@ -105,7 +105,7 @@ case 1: /* calculation */
    - sol_mf[0][j] holds the latest struct-displacements
    - sol_mf[1][j] holds the (relaxed) displacements of the last iteration step
 
-   /*------------------------------------------------------- loop nodes */
+    *------------------------------------------------------- loop nodes */
    for (i=0;i<numnp_total;i++)
    {
       actsnode  = &(structfield->dis[0].node[i]);

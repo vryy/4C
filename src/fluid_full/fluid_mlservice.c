@@ -13,6 +13,8 @@ Maintainer: Volker Gravemeier
 #if defined(FLUID2_ML) || defined(FLUID3_ML)
 #include "../headers/standardtypes.h"
 #include "fluid_prototypes.h"
+#include "../fluid2ml/fluid2ml_prototypes.h"
+#include "../fluid3ml/fluid3ml_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -811,7 +813,6 @@ void fluid_mlcaldirich(
 {
 
 INT         i,j;
-INT         dof;
 INT         numdf;                      /* number of fluid dofs         */
 INT         nd=0;                      
 DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */

@@ -79,7 +79,6 @@ static INT      numfld;       /* number of fiels                        */
 static INT      numff;
 static INT      numaf;        /* actual number of fields                */
 INT             resstep=0;    /* counter to control output              */
-const  INT      mctrlpre=4;   /* control flag                           */
 INT             actcurve;     /* actual curve                           */
 static FIELD          *fluidfield;   
 static FIELD          *alefield;
@@ -129,15 +128,15 @@ adyn->dt=fsidyn->dt;
 
 /*--------------------- initialise fluid multifield coupling conditions */
 fluid_initmfcoupling(fluidfield,alefield);
-
+	
 /*---------------------------------------- init all applied time curves */
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,fsidyn->nstep,fsidyn->dt,fsidyn->maxtime);
    
 /*------------------------------------------------------ initialise ale */
-fsi_ale(alefield,mctrl,numaf);
+fsi_ale(alefield,mctrl);
 /*---------------------------------------------------- initialise fluid */
-fsi_fluid(fluidfield,mctrl,numff);   
+fsi_fluid(fluidfield,mctrl);   
 
 if (genprob.restart>0)
 {
@@ -174,10 +173,14 @@ printf("TIME: %11.4E/%11.4E   DT = %11.4E   STEP = %4d/%4d \n",
           fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep);
 printf("\n");
 }
+
 /*------------------------------- CMD ----------------------------------*/
-fsi_ale(alefield,mctrl,numaf);
+fsi_ale(alefield,mctrl);
 /*------------------------------- CFD ----------------------------------*/
-fsi_fluid(fluidfield,mctrl,numff);
+fsi_fluid(fluidfield,mctrl);
+/*------------------------------- CMD ----------------------------------*/
+mctrl=3; /*------------------------------------ finalise ALE - timestep */
+fsi_ale(alefield,mctrl);
 
 /*--------------------------------------- write current solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
@@ -198,8 +201,8 @@ if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
  *======================================================================*/
 cleaningup:
 mctrl=99;
-fsi_fluid(fluidfield,mctrl,numff);
-fsi_ale(alefield,mctrl,numaf); 
+fsi_fluid(fluidfield,mctrl);
+fsi_ale(alefield,mctrl); 
 
 #else
 dserror("FSI-functions not compiled in!\n");
