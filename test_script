@@ -25,6 +25,9 @@ pass1=0
 fail2=0
 pass2=0
 total=0
+number=0
+s_time=0
+e_time=0
 
 # variables used for creating the makefile
 makefile="Makefile.test"
@@ -49,6 +52,7 @@ function cleanup
 trap "cleanup" 0 1 2 15
 
 
+
 # remove all output files from previous runs
 rm -f *.dat.scr *.dat.make.log
 
@@ -63,6 +67,7 @@ if [ "x$PARALLEL" = "xno" ]; then
   liste='
   ale2_nln.dat
   ale_3d_hourg.dat
+  ale_3d_umfpack.dat
   axishell.dat
   b3_elast.dat
   b3_matnln.dat
@@ -130,18 +135,31 @@ else
   '
 fi
  
-#liste=' ale2_nln.dat '
+#liste='ale2_nln.dat' 
+
+# get the start-time in seconds:
+h=`date +"%H"`
+m=`date +"%M"`
+s=`date +"%S"`
+st_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+
+
+# count files in list
+for file in $liste; do 
+  total=`expr $total + 1`
+done
+
 
 # loop this list
 for file in $liste; do 
 
   # write time and filename to the srceen
+  number=`expr $number + 1`
   echo ' '
   echo '========================================'
   date
   echo ' '
-  echo 'Testing ' $file
-  total=`expr $total + 1`
+  echo 'Testing ' $file '   ('$number'/'$total')'
 
   inputfile="Input/$file"
 
@@ -162,12 +180,28 @@ for file in $liste; do
   # remove executable
   rm -f $exe
 
+  # get the start-time in seconds:
+  h=`date +"%H"`
+  m=`date +"%M"`
+  s=`date +"%S"`
+  s_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
 
   # make the executable
   echo
   echo '  Making executable ...'
   make -f $makefile clean 2>&1 | cat > make.log
   make -f $makefile 2>&1 | cat >> make.log
+
+  # get the end-time in seconds:
+  h=`date +"%H"`
+  m=`date +"%M"`
+  s=`date +"%S"`
+  e_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+  time=`expr $e_time - $s_time`
+  mins=`expr $time / 60`
+  secs=`expr $time % 60`
+  echo '    '$mins':'$secs' mins:secs'
+  
 
   # check the success of the make
   # (look for the executable)
@@ -185,6 +219,13 @@ for file in $liste; do
     continue
   fi
 
+
+  # get the start-time in seconds:
+  h=`date +"%H"`
+  m=`date +"%M"`
+  s=`date +"%S"`
+  s_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+
   if [ "x$PARALLEL" = "xno" ]; then
     # run the executable with the inputfile
     echo
@@ -197,6 +238,15 @@ for file in $liste; do
     mpirun -np 1 ./$exe Input/$file test_out_ >test.tmp 
   fi
 
+  # get the end-time in seconds:
+  h=`date +"%H"`
+  m=`date +"%M"`
+  s=`date +"%S"`
+  e_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+  time=`expr $e_time - $s_time`
+  mins=`expr $time / 60`
+  secs=`expr $time % 60`
+  echo '    '$mins':'$secs' mins:secs'
 
   # evaluate the output
   # (look for the word 'normally' in the output
@@ -219,10 +269,22 @@ done
 
 
 # write final time to the screen
-echo 
+echo
 echo '========================================'
 date
-echo 
+echo
+
+# get the end-time in seconds:
+h=`date +"%H"`
+m=`date +"%M"`
+s=`date +"%S"`
+et_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+ttime=`expr $et_time - $st_time`
+mins=`expr $ttime / 60`
+secs=`expr $ttime % 60`
+echo 'Total time:'
+echo ''$mins':'$secs' mins:secs'
+echo
 
 
 # write table with result to the screen
