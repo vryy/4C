@@ -37,7 +37,14 @@ void fluid_lte_norm(
 			);
 
 /************************************************************************
- | fluid_curvature.c                                                       |
+ | fluid_consistbf.c                                                    |
+ ************************************************************************/
+void fluid_cbf(PARTDISCRET *actpdis,
+	       CONTAINER   *container,
+               INT          init);
+
+/************************************************************************
+ | fluid_curvature.c                                                    |
  ************************************************************************/
 void fluid_curvature(FIELD        *actfield,
                      PARTITION    *actpart,
@@ -341,6 +348,7 @@ void fluid_cal_error(
     FIELD             *actfield,
     INT                index
     );
+void fluid_init_pos_euler(void);
 
 /************************************************************************
  | fluid_service_tu.c                                                   |
@@ -385,6 +393,7 @@ void fluid_copysol_test(
 		       );
 
 void fluid_algoout_tu( void );
+void fluid_init_pos_euler_tu(void);
 
 /************************************************************************
  | fluid_service_tu_1.c                                                 |
