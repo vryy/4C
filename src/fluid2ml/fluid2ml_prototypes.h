@@ -128,7 +128,7 @@ void f2_smstrlen(DOUBLE   *strle,
 		 DOUBLE  **smxyze,	
                  DOUBLE   *gcoor,    
 		 DOUBLE  **cutp,	     
-		 INT	   ntyp);
+		 DIS_TYP   typ);
 void f2_mlcalelesize(ELEMENT         *ele,    
 		     FLUID_DATA      *data,
 	             DOUBLE          *funct,
@@ -140,20 +140,20 @@ void f2_mlcalelesize(ELEMENT         *ele,
 		     DOUBLE          *velint, 
 	             DOUBLE         **vderxy,  
 		     DOUBLE         **cutp);
-void f2_mlcalelesize2(ELEMENT         *ele,
+void f2_mlcalelesize2(ELEMENT         *ele,    
 	              DOUBLE	    *funct,			  
 		      DOUBLE	    *velint, 
 		      DOUBLE	   **vderxy, 
 		      DOUBLE	   **cutp,   
 		      DOUBLE	     visc,   
-		      INT 	     iel,
-		      INT 	     ntyp);
-void f2_mlcalstrlen(DOUBLE   *strle,
-		    DOUBLE   *velint,
-		    ELEMENT  *ele,
-                    DOUBLE   *gcoor,
-		    DOUBLE  **cutp,
-		    INT	    ntyp);
+		      INT 	     iel,    
+		      DIS_TYP 	     typ);
+void f2_mlcalstrlen(DOUBLE   *strle,     
+		    DOUBLE   *velint,   
+		    ELEMENT  *ele,      
+                    DOUBLE   *gcoor,    
+		    DOUBLE  **cutp,	      
+		    DIS_TYP   typ);
 		 
 /************************************************************************
  | f2_mlgalmat.c                                                          |
@@ -557,31 +557,31 @@ void f2_lscalstabmpv(DOUBLE	  **emass,
 /************************************************************************
  | f2_mlstabpar.c                                                            |
  ************************************************************************/
-void f2_smstabpar(ELEMENT         *ele,
+void f2_smstabpar(ELEMENT         *ele,      
 		  FLUID_DYN_ML    *mlvar,
 		  DOUBLE	  *velint,  
 		  DOUBLE	   visc,    
 		  INT		   iel,     
-		  INT		   ntyp);
+		  DIS_TYP          typ);
 void f2_smsgvisc(ELEMENT         *ele,
                  FLUID_DYN_ML    *mlvar,
 		 DOUBLE 	 *velint,  
 		 DOUBLE 	**vderxy,  
 		 DOUBLE 	  visc,    
 		 INT		  iel,     
-		 INT		  ntyp);
-void f2_mlcalstabpar(ELEMENT         *ele,
+		 DIS_TYP          typ);
+void f2_mlcalstabpar(ELEMENT         *ele,      
 		     DOUBLE	   *velint,  
 		     DOUBLE	    visc,    
 		     INT  	    iel,     
-		     INT  	    ntyp,    
+		     DIS_TYP 	    typ,    
 		     INT  	    iflag);
 void f2_calsgvisc(ELEMENT         *ele,
 		  DOUBLE          *velint,  
 		  DOUBLE         **vderxy,  
 		  DOUBLE           visc,    
 		  INT              iel,     
-		  INT              ntyp);
+		  DIS_TYP          typ);
 		 
 /************************************************************************
  | f2_mlsubmesh.c                                                            |
