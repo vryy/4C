@@ -95,6 +95,23 @@ typedef enum _ELEMENT_TYP
                        el_ls2,         /* 2D element for level set calculations */
                        el_fluid2_xfem  /* 2D element for x-fem calculations */
 } ELEMENT_TYP;
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Some utility functions need to distinguish between different node
+  arrays. These are the numbers they are supposed to use.
+
+  \author u.kue
+  \date 08/04
+ */
+/*----------------------------------------------------------------------*/
+typedef enum _NODE_ARRAY {
+  node_array_sol = 0,
+  node_array_sol_increment,
+  node_array_sol_residual,
+  node_array_sol_mf
+} NODE_ARRAY;
+
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
  | material laws                                                        |
