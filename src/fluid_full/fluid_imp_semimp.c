@@ -11,6 +11,7 @@
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "fluid_prototypes.h"
+#include "../fluid2/fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -126,9 +127,9 @@ INT             itnum;              /* counter for nonlinear iteration  */
 INT             i;                  /* simply a counter                 */
 INT             numeq;              /* number of equations on this proc */
 INT             numeq_total;        /* total number of equations        */
+INT             num_sol;	    /* size of field sol_increment 	*/
 INT             init;               /* flag for solver_control call     */
 INT             calstress=0;        /* flag for stress calculation      */
-INT             nsysarray=1;        /* one system matrix                */
 INT             actsysarray=0;      /* number of actual sysarray        */
 INT             outstep=0;          /* counter for output control       */
 INT             resstep=0;          /* counter for output control       */
@@ -143,12 +144,16 @@ INT             steady=0;           /* flag for steady state            */
 INT             actpos;             /* actual position in sol. history  */
 INT             restart;
 INT             step_s;
+INT		repeat=0;	    /* flag, repeat time step?		*/
+INT		repeated=0;	    /* has time step been repeated?	*/
 DOUBLE          vrat,prat;          /* convergence ratios               */
 DOUBLE          t1,t2,ts,te,tt;	    /*					*/
 DOUBLE          tes=0.0;            /*					*/
 DOUBLE          tss=0.0;            /*					*/
 DOUBLE          tts=0.0;            /*					*/
 FLUID_STRESS    str;           
+DOUBLE		liftdrag[2];	    /* array with lift & drag coeff.	*/
+DOUBLE		recv[2];
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
 PARTITION      *actpart;            /* pointer to active partition      */
@@ -184,7 +189,10 @@ restart     = genprob.restart;
 container.actndis  = 0;
 container.turbu    = fdyn->turbu;
 container.fieldtyp = actfield->fieldtyp;
+if (fdyn->liftdrag==0)
 str         = str_none;
+else
+str         = str_liftdrag;
 dynvar->acttime=ZERO;
 
 /*---------------- if we are not parallel, we have to allocate an alibi * 
@@ -206,9 +214,9 @@ if (actintra->intra_fieldtyp != fluid) goto end;
 /*------------------------------- init the dist sparse matrices to zero */
 solserv_zero_mat(
                  actintra,
-                 &(actsolv->sysarray[actsysarray]),
-                 &(actsolv->sysarray_typ[actsysarray])
-                );
+                &(actsolv->sysarray[actsysarray]),
+                &(actsolv->sysarray_typ[actsysarray])
+                 );
 
 /*---------------------------- get global and local number of equations */
 solserv_getmatdims(actsolv->sysarray[actsysarray],
@@ -231,13 +239,14 @@ if (par.myrank==0)
 printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
 if (par.myrank==0) printf("\n\n");
 
-/*--------------------------------------- allocate 1 dist. vector 'rhs' */
-actsolv->nrhs = 1;
+/*---------------------------------------- allocate dist. vectors 'rhs' */
+if (fdyn->iop == 7) actsolv->nrhs = 2; /* two dist. rhs vecs for BDF2	*/
+else actsolv->nrhs = 1;
 solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
 solserv_zero_vec(&(actsolv->rhs[0]));
 
-/*------------------------------------------- allocate 1 dist. solution */		       
-actsolv->nsol= 1;
+/*---------------------------------- allocate dist. solution vectors ---*/
+actsolv->nsol = 1;
 solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
 solserv_zero_vec(&(actsolv->sol[0]));
                                      
@@ -264,14 +273,18 @@ if (restart>0)
       fdyn->init=2;
    }
 }
-fluid_init(actpart,actintra,actfield,fdyn,action,&container,4,str);		     
+if (fdyn->adaptive==0 && fdyn->time_rhs)
+   num_sol = 4;
+else
+   num_sol = 8;
+fluid_init(actpart,actintra,actfield,fdyn,action,&container,num_sol,str);
 actpos=0;
 
-/*--------------------------------------- init all applied time curves */
+/*--------------------------------------- init all applied time curves -*/
 for (actcurve=0; actcurve<numcurve; actcurve++)
 dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);   
 
-/*-------------------------------------- init the dirichlet-conditions */
+/*-------------------------------------- init the dirichlet-conditions -*/
 fluid_initdirich(actfield, fdyn);
 
 /*---------------------------------- initialize solver on all matrices */
@@ -308,6 +321,9 @@ if (ioflags.fluid_sol_gid==1 && par.myrank==0)
    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
 }
 
+/*---------- calculate time independent constants for time algorithm ---*/
+fluid_cons(fdyn,dynvar);
+container.gen_alpha	= dynvar->gen_alpha;
 
 /*======================================================================* 
  |                         T I M E L O O P                              |
@@ -317,8 +333,12 @@ if (ioflags.fluid_sol_gid==1 && par.myrank==0)
  * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
  * sol_increment[0][j] ... solution at time (n-1)			*
  * sol_increment[1][j] ... solution at time (n) 			*
- * sol_increment[2][j] ... solution at time (n+g)			*
+ * sol_increment[2][j] ... lin combin. of velocity at (n) and acc at (n)*
  * sol_increment[3][j] ... solution at time (n+1)			*
+ * sol_increment[4][j] ... acceleration at time (n-1)			*
+ * sol_increment[5][j] ... acceleration at time (n)			*
+ * sol_increment[6][j] ... predicted solution vector at (n+1)		*
+ * sol_increment[7][j] ... vector of local truncation error		*
  *======================================================================*/
 timeloop:
 t2=ds_cputime();
@@ -338,12 +358,21 @@ if (restart!=0)
 if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
 
 /*------------------------------ calculate constants for time algorithm */
-fluid_tcons(fdyn,dynvar);
-fdyn->time += dynvar->dta; 
+fluid_tcons(fdyn,dynvar,0);	
+if (fdyn->iop == 1)/* generalised alpha is solved for time n+alpha_f 	*/
+   fdyn->time += dynvar->dta * fdyn->alpha_f;
+else
+   fdyn->time += dynvar->dta; 
 dynvar->acttime=fdyn->time;
 
 /*------------------------------------------------ output to the screen */
 if (par.myrank==0) fluid_algoout(fdyn,dynvar);
+
+/*------------------------ predictor step for adaptive time stepping ---*/
+if (fdyn->adaptive && fdyn->step > 1) 
+{
+   fluid_predictor(actfield,fdyn->iop,dynvar);
+}
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
 fluid_setdirich(actfield,fdyn,3);
@@ -351,12 +380,18 @@ fluid_setdirich(actfield,fdyn,3);
 /*-------------------------------------------------- initialise timerhs */
 amzero(&ftimerhs_a);
 
+/*------------------------------------ prepare time rhs in mass form ---*/
+if(fdyn->time_rhs==0)
+   fluid_prep_rhs(actfield,dynvar,fdyn);
+
+/*------------------------------------- start time step on the screen---*/
 if (fdyn->itchk!=0 && par.myrank==0)
 {
    printf("----------------------------------------------------------------\n");
    printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error -| \n");
 }
 itnum=1;
+
 /*======================================================================* 
  |           N O N L I N E A R   I T E R A T I O N                      |
  *======================================================================*/
@@ -382,25 +417,27 @@ container.fiterhs      = fiterhs;
 container.global_numeq = numeq_total;
 container.nii          = dynvar->nii;
 container.nif          = dynvar->nif;
+container.nim          = dynvar->nim;
 container.kstep        = 0;
 container.is_relax     = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
        &container,action);
 te=ds_cputime()-t1;
-tes+=te;	     
+tes+=te;
 
 /*--------------------------------------------------------------------- *
  | build the actual rhs-vector:                                         |
- |        rhs = ftimerhs + fiterhs                                      |
+ |        rhs = ftimerhs + fiterhs 				|
  *----------------------------------------------------------------------*/
 /* add time-rhs: */
-assemble_vec(actintra,
-             &(actsolv->sysarray_typ[actsysarray]),
-             &(actsolv->sysarray[actsysarray]),
-             &(actsolv->rhs[0]),
-             ftimerhs,
-             1.0
-             );
+if (fdyn->time_rhs)
+   assemble_vec(actintra,
+                &(actsolv->sysarray_typ[actsysarray]),
+                &(actsolv->sysarray[actsysarray]),
+                &(actsolv->rhs[0]),
+                ftimerhs,
+                1.0
+                );
 /* add iteration-rhs: */
 assemble_vec(actintra,
              &(actsolv->sysarray_typ[actsysarray]),
@@ -443,6 +480,66 @@ if (converged==0)
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration                                      |
  *----------------------------------------------------------------------*/
+/*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
+if (fdyn->iop == 1)
+{
+   solserv_sol_zero(actfield,0,1,2);
+   solserv_sol_add(actfield,0,1,1,3,2,1.0/fdyn->alpha_f);
+   solserv_sol_add(actfield,0,1,1,1,2,1.0-1.0/fdyn->alpha_f);
+   solserv_sol_copy(actfield,0,1,1,2,3);   
+   
+   fdyn->time += dynvar->dta * (1.0 - fdyn->alpha_f);
+}
+/*-------------------------- check time step size in adaptive regime ---*/
+if(fdyn->adaptive)
+{
+   if (fdyn->step > 1)
+   {
+      /*---------------------- evaluate local truncation error (LTE) ---*/
+      fluid_lte(actfield,fdyn->iop,dynvar,fdyn);
+   
+      /*---------------- evaluate norm of LTE and new time step size ---*/
+      fluid_lte_norm(actpart,actintra,dynvar,fdyn,
+                     &iststep,&repeat,&repeated);
+      if (repeat) 
+      {
+         repeated++;
+         goto timeloop;
+      }
+   }
+   
+   else
+   {
+      repeated = 0;
+      dynvar->dt_prop = dynvar->dta;
+   }
+}
+   
+/*---------------------------------------------- update acceleration ---*/
+if (fdyn->adaptive || (fdyn->time_rhs==0 && fdyn->iop==4) )
+{
+   /*---- copy solution from sol_increment[5][j] to sol_increment[4][j] */
+   /*-- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/
+   if (fdyn->step > 1) solserv_sol_copy(actfield,0,1,1,5,4);
+   /*----------------------- evaluate acceleration in this time step ---*
+    *------------------------------- depending on integration method ---*/
+   if (fdyn->step == 1)
+   {
+      solserv_sol_zero(actfield,0,1,5);
+      solserv_sol_add(actfield,0,1,1,3,5, 1.0/dynvar->dta);
+      solserv_sol_add(actfield,0,1,1,1,5,-1.0/dynvar->dta);
+      solserv_sol_copy(actfield,0,1,1,5,4);
+   }
+   else 
+      fluid_acceleration(actfield,fdyn->iop,dynvar,fdyn);
+}
+
+/*--------------------------------------------- update time stepping ---*/
+dynvar->dtp = dynvar->dta;
+if (fdyn->adaptive)
+{
+   dynvar->dta = dynvar->dt_prop;
+}
 
 /*-------------------------------------------------- steady state check */
 if (fdyn->stchk==iststep)
@@ -451,8 +548,46 @@ if (fdyn->stchk==iststep)
    steady = fluid_steadycheck(fdyn,actfield,numeq_total);
 }
 
-/*-------- copy solution from sol_increment[3][j] to sol_increment[1[j] */
+/*----------------------------------------------- lift&drag computation */
+if (fdyn->liftdrag>0)
+{
+   /*---------------- initialise lift- and drag- coefficient to zero ---*/
+   liftdrag[0] = liftdrag[1] = 0.0;
+   
+   /*------------------------- get fluid stresses and integrate them ---*/
+   *action = calc_fluid_liftdrag;
+   container.nii= 0;
+   container.nif= 0;
+   container.str=str;
+   container.liftdrag = liftdrag;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+          &container,action);
+
+/*-------------- distribute lift- and drag- coefficient to all procs ---*/
+#ifdef PARALLEL
+MPI_Reduce(liftdrag,recv,2,MPI_DOUBLE,MPI_SUM,0,actintra->MPI_INTRA_COMM);
+for (i=0; i<2; i++)
+   liftdrag[i] = recv[i];
+#endif
+
+   /*-------------------------------------------------------- output ---*/
+   if(par.myrank == 0)
+   {
+      printf("Drag (global x-direction) = %lf\n",   liftdrag[0]);
+      printf("Lift (global y-direction) = %lf\n\n", liftdrag[1]);
+   }
+   if (par.myrank == 0)
+      f2_plot_liftdrag(fdyn->time, liftdrag);
+}
+
+/*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
+/*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
+solserv_sol_copy(actfield,0,1,1,1,0);
+
+/*------- copy solution from sol_increment[3][j] to sol_increment[1][j] */
+/*--- -> actual solution becomes previous solution of next time step ---*/
 solserv_sol_copy(actfield,0,1,1,3,1);
+
 /*---------------------------------------------- finalise this timestep */
 outstep++;
 pssstep++;
