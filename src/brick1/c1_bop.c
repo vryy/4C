@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routines which calclate the operator 
+\brief contains the routines which calculate the operator 
        matrix for a 3D hex element
 
 *----------------------------------------------------------------------*/
@@ -21,12 +21,12 @@
 This routine calcuates the operator matrix b at the given point r,s,t
 for an 3D-hex-element.
 </pre>
-\param **bop     DOUBLE  (o)   the calculated operator matrix
-\param **bn      DOUBLE  (o)   the calculated operator without zero values ?
-\param **deriv   DOUBLE  (i)   the derivatives of the shape functions
-\param **xjm     DOUBLE  (i)   the Jacobian matrix
-\param det       DOUBLE  (i)   the determinant of the Jacobian matrix
-\param iel       INT     (i)   number of nodes per element
+\param bop       DOUBLE**  (o)   the calculated operator matrix
+\param bn        DOUBLE**  (o)   the calculated operator without zero values ?
+\param deriv     DOUBLE**  (i)   the derivatives of the shape functions
+\param xjm       DOUBLE**  (i)   the Jacobian matrix
+\param det       DOUBLE    (i)   the determinant of the Jacobian matrix
+\param iel       INT       (i)   number of nodes per element
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -122,9 +122,9 @@ return;
 This routine includes initial displacements to derivative operator
 for an 3D-hex-element.
 </pre>
-\param **bop     DOUBLE  (o)   the calculated operator matrix
-\param **disd    DOUBLE  (i)   displacement derivatives
-\param iel       INT     (i)   number of nodes per element
+\param bop       DOUBLE**  (o)   the calculated operator matrix
+\param disd      DOUBLE*   (i)   displacement derivatives
+\param iel       INT       (i)   number of nodes per element
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -136,7 +136,7 @@ void c1_bdis( double   **bop, /* b-operator matrix                      */
               int        iel) /* number of nodes at actual element      */
 {
 /*----------------------------------------------------------------------*/
-int i,node_start, inode;
+int node_start, inode;
 double rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
 double h1, h2, h3;
 /*----------------------------------------------------------------------*/

@@ -1,18 +1,53 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'c1_mat_plast_mises' to establish local material law
+       stress-strain law for mises material for a 3D hex element
+
+*----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 #include "brick1_prototypes.h"
-/*----------------------------------------------------------------------*
- | constitutive matrix - forces - linear elastic- von Mises - 3D al 9/01|
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup BRICK1 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief establish local material
+
+<pre>                                                              al 06/02
+This routine to establish local material law
+       stress-strain law for isotropic material for for a 3D-hex-element.
+
+</pre>
+\param        ym  DOUBLE    (i) young's modulus                     
+\param        pv  DOUBLE    (i) poisson's ratio                   
+\param     alfat  DOUBLE    (i) temperature expansion factor 
+\param     uniax  DOUBLE    (i) yield stresse                
+\param     fhard  DOUBLE    (i) hardening modulus            
+\param        gf  DOUBLE    (i) fracture energy                   
+\param       ele  ELEMENT*  (i) actual element               
+\param       bop  DOUBLE**  (i) derivative operator          
+\param        ip  INT       (i) integration point Id                 
+\param    stress  DOUBLE*   (o) ele stress (-resultant) vector  
+\param         d  DOUBLE**  (o) material matrix                    
+\param      disd  DOUBLE*   (i) displacement derivatives     
+\param   g[6][6]  DOUBLE    (i) transformation matrix        
+\param  gi[6][6]  DOUBLE    (i) inverse of g                 
+\param    istore  INT       (i) controls storing of stresses     
+\param    newval  INT       (i) controls eval. of stresses   
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_cint()
+
+*----------------------------------------------------------------------*/
 void c1_mat_plast_mises(double ym,      /* young's modulus              */
                         double pv,      /* poisson's ratio              */
-                        double alfat,   /* temperature expansion factor */
                         double uniax,   /* yield stresse                */
                         double fhard,   /* hardening modulus            */
-                        double gf,      /* fracture energy              */
                         ELEMENT   *ele, /* actual element               */
-                        double **bop,   /* derivative operator          */
                         int ip,         /* integration point Id         */
                         double *stress, /*ele stress (-resultant) vector*/      
                         double **d,     /* material matrix              */
@@ -23,11 +58,10 @@ void c1_mat_plast_mises(double ym,      /* young's modulus              */
                         int newval)     /* controls eval. of stresses   */
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
+int i,j;
 int yip;
-int isoft;
 int iupd;
-double e1, e2, e3, a1, b1, c1, sum, epstn, ft;
+double epstn, ft;
 double sig[6];
 double eps[6];
 double strain[6];
@@ -38,7 +72,7 @@ double tol = 1.0E-10;
 double dlam;
 
 
-double yld, sm, sx, sy, sz, sxy, sxz, syz, sig2, hard;
+double yld, sm, sx, sy, sz, sxy, sxz, syz, sig2;
 double expo  = 0.;
 double alpha = 0.;
 #ifdef DEBUG 
@@ -108,7 +142,7 @@ dstrc_enter("c1_mat_plast_mises");
           sig2*=2.;
           sig2=sqrt(sig2);
  
-          c1matp1 (ym, fhard, uniax, pv, sig2,tau,epstn,dlam,d);
+          c1matp1 (ym, fhard, pv, sig2,tau,epstn,dlam,d);
           c1gld (d,g);/* transform local to global material matrix */
 
           yip=-yip;
@@ -163,7 +197,7 @@ dstrc_enter("c1_mat_plast_mises");
     
     /* evaluate new material matrix if requested    */
     
-    c1matp1 (ym, fhard, uniax, pv, sig2,stress,epstn,dlam,d);
+    c1matp1 (ym, fhard, pv, sig2,stress,epstn,dlam,d);
     c1gld (d,g);/* transform local to global material matrix */
 
     tau[0] += sm;
@@ -193,16 +227,34 @@ dstrc_exit();
 #endif
 return;
 } /* end of c1_mat_plast_mises */
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   radial return for elements with mises material model               |
- |                                                                      |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief radial return for elements with mises material model
+
+<pre>                                                              al 06/02
+This routine performs a
+radial return for elements with mises material model.
+Nonlinear Ramberg-Osgood -Hardening law.
+
+</pre>
+\param e     DOUBLE  (i) young's modulus                      
+\param fhard DOUBLE  (i) hardening modulus                    
+\param uniax DOUBLE  (i) yield stresse                        
+\param vnu   DOUBLE  (i) poisson's ratio                      
+\param sig2  DOUBLE  (i) equivalent stress                    
+\param dev   DOUBLE* (i) elastic predicor projected onto yield
+\param epstn DOUBLE* (i) equivalent uniaxial plastic strain   
+\param dlam  DOUBLE* (i) increment of plastic multiplier      
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_cint()
+
+*----------------------------------------------------------------------*/
 void c1rad1(double e,        /* young's modulus                         */
             double fhard,    /* hardening modulus                       */
             double uniax,    /* yield stresse                           */
             double vnu,      /* poisson's ratio                         */
-            double sig2,
+            double sig2,     /* equivalent stress                       */
             double *dev,     /* elastic predicor projected onto yield   */
             double *epstn,   /* equivalent uniaxial plastic strain      */
             double *dlam)    /* increment of plastic multiplier         */
@@ -295,13 +347,30 @@ dstrc_exit();
 #endif
 return;
 } /* end of c1rad1 */
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   forms the elasto-plastic consistent tangent material tensor        |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief forms the elasto-plastic consistent tangent material tenso
+
+<pre>                                                              al 06/02
+This routine forms the elasto-plastic consistent tangent material tensor.
+
+</pre>
+\param e     DOUBLE  (i) young's modulus                      
+\param fhard DOUBLE  (i) hardening modulus                    
+\param uniax DOUBLE  (i) yield stresse                        
+\param vnu   DOUBLE  (i) poisson's ratio                      
+\param sig2  DOUBLE  (i) equivalent stress                    
+\param tau   DOUBLE* (i) current stresses (local)
+\param epstn DOUBLE* (i) equivalent uniaxial plastic strain   
+\param dlam  DOUBLE* (i) increment of plastic multiplier      
+\param cc    DOUBLE**(o) material matrix to be calculated   
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_cint()
+
+*----------------------------------------------------------------------*/
 void c1matp1(double e,       /* young's modulus                         */
              double fhard,   /* hardening modulus                       */
-             double uniax,   /* yield stresse                           */
              double vnu,     /* poisson's ratio                         */
              double sig2,
              double *tau,    /* current stresses (local)                */
@@ -366,64 +435,6 @@ dstrc_enter("c1matp1");
   fac1 = fkh -2.*g*b/3.;
   fac2 = g*b; 
   fac3 = 2.*g*(fobj*1./(fobj+hard/(3.*g)) - 1. + b );
-
-  /*
-  for (i=0; i<3; i++)
-  {
-    for (j=0; j<3; j++)
-    {
-      for (k=0; k<3; k++)
-      {
-        for (l=0; l<3; l++)
-        {
-          c[i][j][k][l]= 
-                   fac1 * gk[i][j] * gk[k][l] +
-                   fac2 *(gk[i][k] * gk[j][l] + gk[i][l] * gk[j][k]) -
-                   fac3 * rn[i][j] * rn[k][l];
-  }}}}
-
-  cc[0][0]=c[0][0][0][0];                                                     
-  cc[0][1]=c[1][1][0][0];                                                     
-  cc[0][2]=c[2][2][0][0];                                                     
-  cc[0][3]=c[0][1][0][0];                                                     
-  cc[0][4]=c[1][2][0][0];                                                     
-  cc[0][5]=c[0][2][0][0];                                                     
-                                                                         
-  cc[1][0]=c[1][1][0][0];                                                     
-  cc[1][1]=c[1][1][1][1];                                                     
-  cc[1][2]=c[2][2][1][1];                                                     
-  cc[1][3]=c[0][1][1][1];                                                     
-  cc[1][4]=c[1][2][1][1];                                                     
-  cc[1][5]=c[0][2][1][1];                                                     
-                                                                         
-  cc[2][0]=c[2][2][0][0];                                                     
-  cc[2][1]=c[2][2][1][1];                                                     
-  cc[2][2]=c[2][2][2][2];                                                     
-  cc[2][3]=c[0][1][2][2];                                                     
-  cc[2][4]=c[1][2][2][2];                                                     
-  cc[2][5]=c[0][2][2][2];                                                     
-                                                                         
-  cc[3][0]=c[0][1][0][0];                                                     
-  cc[3][1]=c[0][1][1][1];                                                     
-  cc[3][2]=c[0][1][2][2];                                                     
-  cc[3][3]=c[0][1][0][1];                                                     
-  cc[3][4]=c[1][2][0][1];                                                     
-  cc[3][5]=c[0][2][0][1];                                                     
-                                                                         
-  cc[4][0]=c[1][2][0][0];                                                     
-  cc[4][1]=c[1][2][1][1];                                                     
-  cc[4][2]=c[1][2][2][2];                                                     
-  cc[4][3]=c[1][2][0][1];                                                     
-  cc[4][4]=c[1][2][1][2];                                                     
-  cc[4][5]=c[1][2][0][2];                                                     
-                                                                         
-  cc[5][0]=c[0][2][0][0];                                                     
-  cc[5][1]=c[0][2][1][1];                                                     
-  cc[5][2]=c[0][2][2][2];                                                     
-  cc[5][3]=c[0][2][0][1];                                                     
-  cc[5][4]=c[0][2][1][2];                                                     
-  cc[5][5]=c[0][2][0][2];                                              
-  */
   for (k=0; k<3; k++)
   {
     for (l=0; l<3; l++)
@@ -501,5 +512,5 @@ dstrc_exit();
 return; 
 } /* end of c1matp1 */
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 #endif
+/*! @} (documentation module close)*/

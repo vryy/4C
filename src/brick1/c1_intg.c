@@ -25,7 +25,6 @@ for an 3D-hex-element.
 </pre>
 \param  *ele     ELEMENT (i)   the element
 \param *data     C1_DATA (i)   structure containing gaussian point and weight
-\param option        INT (i)   unused ?
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -33,18 +32,14 @@ for an 3D-hex-element.
 
 *----------------------------------------------------------------------*/
 void c1intg(ELEMENT         *ele,
-            C1_DATA         *data,
-            int              option)
+            C1_DATA         *data)
 {
-int i, k;
 
 double zero  = 0.0;
 double one   = 1.0;
 double two   = 2.0;
 double three = 3.0;
 
-double  q12, q13, q16, q23;
-double  xgr[13][8],xgs[13][8],wgtt[13][8];
 static double xg[6][6],wgt[6][6];
 #ifdef DEBUG 
 dstrc_enter("c1intg");

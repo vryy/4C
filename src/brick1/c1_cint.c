@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'c1_disd' which calclate displacement
-       derivatives for a 3D hex element
+\brief contains the control program 'c1_cint' for integration over
+       the element volume for a 3D hex element
 
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
@@ -21,16 +21,40 @@
 This routine performs integration of an 3D-hex-element.
 
 </pre>
-\param           *ele ELEMENT  (i)   element data
-\param          *data C1_DATA  (i)   hex element data
-\param           *mat MATERIAL (i)   material data
-\param  *estif_global ARRAY    (o)   element stiffness matrix
-\param         *force DOUBLE   (o)   vector for internal forces
-\param         *init  INT      (i)   flag for initialization (alloc mem...)
+\param           ele ELEMENT*  (i)   element data
+\param          data C1_DATA*  (i)   hex element data
+\param          mat MATERIAL*  (i)   material data
+\param    estif_global ARRAY*  (o)   element stiffness matrix
+\param          force DOUBLE*  (o)   vector for internal forces
+\param             init  INT*  (i)   flag for initialization (alloc mem...)
+
+
+ *----------------------------------------------------------------------*
+ |                                                                      |
+ |    6-------18-------2           6----------------2                   |
+ |    |\               |\          |\               |\                  |
+ |    | \              | \         | \        S     | \                 |
+ |    |  13            |  9        |  \       |     |  \                |
+ |    |   \            |   \       |   \      |     |   \               |
+ |   14    \           10   \      |    \  \  |     10   \              |
+ |    |     5-------17-------1     |     5----------------1             |
+ |    |     |          |     |     |     |   \|     |     |             |
+ |    |     |          |     |     | T---|----o--------   |             |
+ |    |     |          |     |     |     |    |\    |     |             |
+ |    7-----|-19-------3     |     7-----|----|-\---3     |             |
+ |     \    12          \    8      \    |    |  \   \    |             |
+ |      \   |            \   |       \   |    |   R   \   |             |
+ |       15 |             11 |        \  |    |        \  |             |
+ |        \ |              \ |         \ |              \ |             |
+ |         \|               \|          \|               \|             |
+ |          4-------16-------0           4----------------0             |
+ |                                                                      |
+ *----------------------------------------------------------------------* 
+
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: ---; called by: c1_cint()
+\sa calling: ---; called by: c1_main()
 
 *----------------------------------------------------------------------*/
 void c1_cint(
@@ -38,7 +62,7 @@ void c1_cint(
              C1_DATA   *data, 
              MATERIAL  *mat,
              ARRAY     *estif_global, 
-             double    *force,  /* global vector for internal forces (initialized!) */
+             double    *force, 
              int        init
              )
 {
@@ -48,7 +72,6 @@ int                 lr, ls, lt;       /* loopers over GP */
 int                 ip;
 int                 iel;              /* numnp to this element */
 int                 nd, nd1;
-int                 dof;
 int                 istore = 0;/* controls storing of new stresses to wa */
 int                 newval = 0;/* controls evaluation of new stresses    */
 const int           numdf =3;
@@ -57,11 +80,8 @@ const int           numeps=6;
 double              fac;
 double              e1,e2,e3;         /*GP-coords*/
 double              facr,facs,fact;   /* weights at GP */
-double              xnu;              /* value of shell shifter */
-double              weight;
 double disd[9];
 double F[6]; /* element stress vector   (stress-resultants) */
-double fie[81];
 double fielo[81];
 double strain[6];
 double xyze[60];
@@ -70,23 +90,13 @@ double  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
 double gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
 
 /*-------------------------  for postprocessing - stress calculation ---*/
-/* 
-gpstrs[0][ 0.. 7] [stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz ]
-gpstrs[0][ 6..11] [stress-rr stress-ss stress-tt stress-rs stress-st stress-tr ]
-gpstrs[0][12..14] [stress-11 stress-22 stress-33 ]
-gpstrs[0][15..23] [ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang-r3  ang-s3  ang-t3 ]
-*/
-double gpstrs[27][26];
-/*nostrs[nn] [ 0.. 5]: x-coord.    y-coord.    z-coord.     stress-rr   stress-ss   stress-tt   stress-rs   stress-st   stress-tr*/  
-/*nostrs[nn] [ 6..11]: x-coord.    y-coord.    z-coord.     stress-xx   stress-yy   stress-zz   stress-xy   stress-yz   stress-xz*/ 
-/*nostrs[nn] [12..23]: stress-11   stress-22   stress-33    ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang-r3  ang-s3  ang-t3*/
-double nostrs[20][26];
+double gpstrs[27][26]; /* [number of gp   ][stresses] */
+double nostrs[20][26]; /* [number of nodes][stresses] */
 double srst[6];
 double s123[12];
 double gpcod[3]; /* natural coordinates of g.p.*/
 /*-------------------------------------------  for eas elements only ---*/
 int    l1, l3, ihyb, cc;
-double xjm0[3][3];
 double ehdis[3][10],fi[6][6],ff[6][6];
 double det0, det1;
 double bn1[3][10];
@@ -97,11 +107,10 @@ double epsh[6];
 static double **estiflo;       
 static ARRAY    estiflo_a; /* local element stiffness matrix ke for eas */   
 
-
-
 static double **estif9;       
 static ARRAY    estif9_a;   /* element stiffness matrix ke for eas */   
 
+/*----------------------------------------------------------------------*/
 static ARRAY    D_a;      /* material tensor */     
 static double **D;         
 static ARRAY    funct_a;  /* shape functions */    
@@ -115,9 +124,8 @@ static double **bop;
 static ARRAY    bnop_a;   /* BN-operator */   
 static double **bn;       
 static double **estif;    /* element stiffness matrix ke */
-
 double det;
-
+/*----------------------------------------------------------------------*/
 int    iform;             /* index for nonlinear formulation of element */
 int    calstr;            /* flag for stress calculation                */
 /*----------------------------------------------------------------------*/
@@ -149,15 +157,15 @@ else if(init==2)
 }
 else if(init==3)
 {
-  calstr = 1;
+  if(ele->e.c1->stresstyp != c1_nostr) calstr = 1;
   newval = 0;
 }
-else if(init==0)/*?!*/
+else if(init==0)
 {
-  newval = 1; /* foam plasticity with large deformations ?! */
+  newval = 1;
 }
 /*------------------------------------------- integration parameters ---*/
-c1intg(ele,data,1);
+c1intg(ele,data);
 /*-------------- some of the fields have to be reinitialized to zero ---*/
 amzero(estif_global);
 estif     = estif_global->a.da;
@@ -376,17 +384,27 @@ for (lr=0; lr<nir; lr++)
               strain[j] +=  bop[j][k + (i+iel)*3] * ehdis[k][i];}}}
       }
       /*------------------------------------------ call material law ---*/
-      c1_call_mat(ele, mat,bop,xjm,ip,F,strain,D,disd,g,gi,istore,newval);
-      /*-----------------------  calculate stresses - postprocessing ---*/
+      c1_call_mat(ele, mat,ip,F,strain,D,disd,g,gi,istore,newval);
+      /*----------- calculate element stresses at integration points ---*/
       if(calstr==1) 
       {
-        for (i=0; i<6; i++) s123[i]=F[i];
-        for (i=0; i<6; i++) srst[i]=F[i];
+        for (i=0; i<6; i++) srst[i]=F[i]; /* stresses at gauss point    */
+        for (i=0; i<6; i++) s123[i]=F[i]; /* princ. stress,  directions */
         c1trss2local(srst, gi);
 
-        c1_cstr (srst ,s123, ele->e.c1->stress[0].gpstrs[ip]);
+        c1_cstr (srst ,s123, gpstrs[ip]); /* gpstrs[ip][0..24] */
         /*------------- global coordinates of actual  gaussian point ---*/
-        c1gcor  (funct,xyze, iel  ,ele->e.c1->stress[0].gpcoor[ip]);
+        c1gcor  (funct,xyze, iel  ,gpcod);
+        /*--------------------------------------------- store values ---*/
+        for (i=0; i<25; i++)
+        {
+          ele->e.c1->stress_GP.a.d3[0][i][ip]= gpstrs[ip][i];
+        }
+        for (i=0; i<3; i++)
+        {
+          ele->e.c1->stress_GP.a.d3[0][i+24][ip]= gpcod[i];
+        }
+        /*--------------------------------------------------------------*/
       }
       /*----------------------------------------------------------------*/
       if(istore==0)
@@ -421,8 +439,17 @@ for (lr=0; lr<nir; lr++)
   if(calstr==1)
   {
     /*---- extrapolation of stress from gauss points to nodal points ---*/
-    c1_sext(ele->e.c1->stress[0].npstrs, funct, deriv,xjm,xyze,
-            ele->e.c1->stress[0].gpstrs, data->xgrr, data->xgss, data->xgtt, nir,nis,nit,iel);
+    c1_sext(nostrs, funct, deriv,xjm,xyze,
+            gpstrs, 
+            data->xgrr, data->xgss, data->xgtt, nir,nis,nit,iel);
+    /*------------------------------------------------- store values ---*/
+    for (i=0; i<25; i++) /* number of stress components */
+    {
+      for (j=0; j<iel; j++) /* number of nodes */
+      {
+        ele->e.c1->stress_ND.a.d3[0][i][j] = nostrs[j][i];
+      }
+    }
     goto end;
   }
 /*----------------------------------------------------------------------*/
@@ -460,11 +487,11 @@ return;
 This routine evaluates element forces of an 3D-hex-element.
 
 </pre>
-\param    F   DOUBLE  (i)   force vector integral (stress-resultants) 
-\param  fac   DOUBLE  (i)   multiplier for numerical integration      
-\param  bop   DOUBLE  (i)   b-operator matrix                         
-\param   nd   INT     (i)   total number degrees of freedom of element
-\param  fie   DOUBLE  (o)   internal force vector                     
+\param    F   DOUBLE*   (i)   force vector integral (stress-resultants) 
+\param  fac   DOUBLE    (i)   multiplier for numerical integration      
+\param  bop   DOUBLE**  (i)   b-operator matrix                         
+\param   nd   INT       (i)   total number degrees of freedom of element
+\param  fie   DOUBLE*   (o)   internal force vector                     
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -518,9 +545,9 @@ return;
 This routine evaluates material transformation matricies for a 3D-hex-element.
 
 </pre>
-\param       xjm   DOUBLE  (i)  jacobian matrix r,s,t-direction          
-\param   g[6][6]   DOUBLE  (o)  transformation matrix s(glob)=g*s(loc)   
-\param  gi[6][6]   DOUBLE  (o)  inverse of g          s(loc) =gi*s(glob) 
+\param       xjm   DOUBLE**  (i)  jacobian matrix r,s,t-direction          
+\param   g[6][6]   DOUBLE    (o)  transformation matrix s(glob)=g*s(loc)   
+\param  gi[6][6]   DOUBLE    (o)  inverse of g          s(loc) =gi*s(glob) 
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -532,7 +559,6 @@ void c1tram( double **xjm,   /* jacobian matrix r,s,t-direction         */
              double gi[6][6])/* inverse of g          s(loc) =gi*s(glob)*/
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
 double dm;
 double x1r, x2r, x3r, x1s, x2s, x3s;
 double x1n, x2n, x3n, x1c, x2c, x3c;
@@ -763,7 +789,7 @@ return;
 This routine transforms of global stress vector to local axes for a 3D-hex-element.
 
 </pre>
-\param        *s   DOUBLE  (o)  stress vector to be transformed   
+\param         s   DOUBLE* (o)  stress vector to be transformed   
 \param   g[6][6]   DOUBLE  (i)  inverse of transformation matrix  
 
 \warning There is nothing special to this routine
@@ -805,7 +831,7 @@ return;
 This routine transforms of local stress vector to global axes for a 3D-hex-element.
 
 </pre>
-\param        *s   DOUBLE  (o)  stress vector to be transformed   
+\param         s   DOUBLE* (o)  stress vector to be transformed   
 \param   g[6][6]   DOUBLE  (i)  transformation matrix  
 
 \warning There is nothing special to this routine

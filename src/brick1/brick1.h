@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief headerfile for 3D hex element, XX containing structures and prototypes
+\brief headerfile for 3D hex element, containing structures and prototypes
 
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
@@ -66,13 +66,6 @@ int          yip;   /*!< stress state: 1=elastic 2=plastic            */
 /* hashin delamination (plasticity) ...*/
 double      kappa;  /*!< damage threshold value                       */ 
 int         imod;   /*!< flag, indicates if sigy has been reached     */
-/* foam plasticity */
-double EQpVol;
-int iHVol ;/* last position in hardening curve */
-int iHPhi ;
-int iHEla ;
-
-
 } C1_IP_WA;
 
 
@@ -96,36 +89,6 @@ int           *optdata; /*!< optimization variable number ...           */
 \brief 3D hex element
 
 <pre>                                                              al 06/01
-This structure contains gp and nodal coordinates and stress values 
-</pre>
-
-*----------------------------------------------------------------------*/
-typedef struct _C1_ELE_STRESS
-{
-/*
-gpstrs[gp][ 0.. 7] stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz
-gpstrs[gp][ 6..11] stress-rr stress-ss stress-tt stress-rs stress-st stress-tr
-gpstrs[gp][12..14] stress-11 stress-22 stress-33
-gpstrs[gp][15..23] ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang-r3  ang-s3  ang-t3
-*/
-double      **gpstrs;  /*!< stress values of gaussian points   */
-double      **gpcoor;  /*!< coordinates xyz of gaussian points */
-/*
-npstrs[nn] [ 0.. 2]: stress-rr   stress-ss   stress-tt
-npstrs[nn] [ 3.. 5]: stress-rs   stress-st   stress-tr  
-npstrs[nn] [ 6.. 8]: stress-xx   stress-yy   stress-zz
-npstrs[nn] [ 9..11]: stress-xy   stress-yz   stress-xz 
-npstrs[nn] [12..14]: stress-11   stress-22   stress-33
-npstrs[nn] [15..17]: ang-r1  ang-s1  ang-t1
-npstrs[nn] [18..20]: ang-r2  ang-s2  ang-t2
-npstrs[nn] [21..23]: ang-r3  ang-s3  ang-t3
-*/
-double      **npstrs;  /*!< stress values of nodal points      */
-} C1_ELE_STRESS;
-/*!----------------------------------------------------------------------
-\brief 3D hex element
-
-<pre>                                                              al 06/01
 This structure contains all specific information for a 3D hex element
 </pre>
 
@@ -137,21 +100,51 @@ int           nhyb;      /*!< flag whether to use the eas formulation   */
 int           form;      /*!< ==2: T.L.  */
 
 C1_ELE_WA     *elewa;                        /*!< element working array */
+/*----------------------------- stresses in local and global systems ---*/
+/*
+stress_GP[place][ 0.. 5][gp] stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz
+stress_GP[place][ 6..11][gp] stress-rr stress-ss stress-tt stress-rs stress-st stress-tr
+stress_GP[place][12..14][gp] stress-11 stress-22 stress-33
+stress_GP[place][15..23][gp] ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang-r3  ang-s3  ang-t3
+stress_GP[place][24..26][gp] x-coord.    y-coord.    z-coord.
 
-C1_ELE_STRESS *stress;                       /*!< element stresses      */
-/*!----------------------------------------------------------------------
-\brief 3D hex element
-
-<pre>                                                              fh 6/02
-This structure contains arrays for stress values for a 3D hex element
-</pre>
-
-*----------------------------------------------------------------------*/
-struct _ARRAY4D  stress_GP;  /*!< array for stress values - unused      */
-struct _ARRAY4D  stress_ND;  /*!< array for stress values - unused      */
+stress_ND[place][ 0.. 2][nn] stress-rr   stress-ss   stress-tt
+stress_ND[place][ 3.. 5][nn] stress-rs   stress-st   stress-tr  
+stress_ND[place][ 6.. 8][nn] stress-xx   stress-yy   stress-zz
+stress_ND[place][ 9..11][nn] stress-xy   stress-yz   stress-xz 
+stress_ND[place][12..14][nn] stress-11   stress-22   stress-33
+stress_ND[place][15..17][nn] ang-r1  ang-s1  ang-t1
+stress_ND[place][18..20][nn] ang-r2  ang-s2  ang-t2
+stress_ND[place][21..23][nn] ang-r3  ang-s3  ang-t3
+*/
+enum
+    {
+    c1_nostr,  /*!<  default                           */
+    c1_gpxyz,  /*!<  gp: global system on element level    */
+    c1_gprst,  /*!<  gp: local  system on element level    */
+    c1_gp123,  /*!<  gp: principal-stresses                */
+    c1_npxyz,  /*!<  extrapolation to nodes: global system on element level    */
+    c1_nprst,  /*!<  extrapolation to nodes: local  system on element level    */
+    c1_np123,  /*!<  extrapolation to nodes: principal-stresses                */
+    c1_npeqs   /*!<  extrapolation to nodes: equivalent stress                 */
+    }            stresstyp; 
+struct _ARRAY4D  stress_GP;  /*!< array for stress values */
+struct _ARRAY4D  stress_ND;  /*!< array for stress values */
 } BRICK1;
+/*!----------------------------------------------------------------------
+\brief rst-flag for edge, surface - load evaluation
+
+<pre>                                                              al 06/01
+</pre>
+*----------------------------------------------------------------------*/
+typedef enum _RSTF
+{ /* r..r-dir., s..s-dir., t..t-dir., n..-1.0, p..+1.0 */
+  rpp, rpn, rnp, rnn, psp, psn, nsp, nsn, ppt, pnt, npt, nnt,/*line*/
+  rsn, rsp, rnt, rpt, nst, pst,/*surface*/
+  rst/*volume*/ 
+} RSTF;
 /*----------------------------------------------------------------------*
- |  prototypes of main and input routines                   al 11/01    |
+ |  prototypes of main and input/output routines            al 11/01    |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | c1_main.c                                                 al 6/01    |
@@ -170,5 +163,15 @@ void brick1(PARTITION   *actpart,
  | read brick1 element                                                  |
  *----------------------------------------------------------------------*/
 void c1inp(ELEMENT *ele);
+/*----------------------------------------------------------------------*
+ |  routine to calcualate and to write gp stresses of a brick1          |
+ |  element to visualize in gid -> Hexahedra elements        al 1/03    |
+ *----------------------------------------------------------------------*/
+void c1_out_gid_sol_str(
+                        FILE       *out, /* File pointer to flavia.res */
+                        FIELD *actfield, /* active field               */ 
+                        int       place, /* current solution           */
+                        int         init /* allocate/free memory       */
+                        );
 #endif
 /*! @} (documentation module close)*/

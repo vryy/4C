@@ -21,10 +21,10 @@
 This routine calcuates the displacement derivatives for an 3D-hex-element.
 
 </pre>
-\param **bop   DOUBLE  (i)   b-operator matrix 
-\param *edis   DOUBLE  (i)   element displacements 
-\param *disd   DOUBLE  (o)   displacement derivatives
-\param iel     INT     (i)   number of element nodes
+\param  bop   DOUBLE**   (i)   b-operator matrix 
+\param edis   DOUBLE*    (i)   element displacements 
+\param disd   DOUBLE*    (o)   displacement derivatives
+\param  iel      INT     (i)   number of element nodes
 
 \warning There is nothing special to this routine
 \return void                                               

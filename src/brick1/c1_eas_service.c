@@ -144,11 +144,9 @@ void c1bop9(
            )  
 {
 /*----------------------------------------------------------------------*/
-int i,j,k,m,cc,cb,ce;
+int i,j,k,m,cb,ce;
 int fdim=6;
 double rdet, dum;
-double ffi[36];
-double fii[36];
 double eas[6][30],aux[9];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -177,8 +175,7 @@ dstrc_enter("c1bop9");
       eas[5][20]= e1 * e2 * rdet;
       eas[4][19]= e1 * e2 * rdet;
       
-/*   CALL MXMATB (FI,EAS,BOP9(1,1,9),6,6,L1,0)*/
-    for (k=0; k<l3; k++) { /*l1?*/
+    for (k=0; k<l3; k++) { 
       for (m=0; m<3; m++) {
         for (i=0; i<6; i++) {
           dum=0.;
@@ -229,8 +226,7 @@ dstrc_enter("c1bop9");
         eas[5][29]= e1*e2*e3* rdet;
         eas[4][28]= e1*e2*e3* rdet;
 
-/*   CALL MXMATB (FI,EAS,BOP9(1,1,9),6,6,L1,0)*/
-    for (k=0; k<l3; k++) { /*l1?*/
+    for (k=0; k<l3; k++) { 
       for (m=0; m<3; m++) {
         for (i=0; i<6; i++) {
           dum=0.;
@@ -292,7 +288,7 @@ void c1bdish(
            )  
 {
 /*----------------------------------------------------------------------*/
-int i,l,k,node_start, inode;
+int l,k,node_start;
 double rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
 double h1, h2, h3;
 /*----------------------------------------------------------------------*/
@@ -375,12 +371,10 @@ void c1rkefi(
            )  
 {
 /*----------------------------------------------------------------------*/
-int i,j,l,k;
-int cc, cc1, cc2;
+int i,j;
+int cc;
 int dim1 = 1;
 int dim24=24;
-double rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
-double h1, h2, h3;
 double estif1[576];
 double fiehi[30];
 double saa[ 576];
@@ -570,7 +564,7 @@ void c1upenh(
 {
 /*----------------------------------------------------------------------*/
 int i,j,k;
-int cc,ca,ce;
+int cc;
 double disl[24];
 double ehdisl[30];
 double hih[30];

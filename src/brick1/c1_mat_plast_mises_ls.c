@@ -1,7 +1,9 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine ' ' which calclate displacement
-       derivatives for a 3D hex element
+\brief contains the routine c1mate, c1radg, c1matpg, c1pushf, c1elpag,
+                            c1_mat_plast_mises_ls to perfom a stress
+                            update and to evaluate the algorithmic 
+                            tangent ( Mises-plasticity, large strain)
 
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
@@ -18,22 +20,24 @@
 \brief routines for mises plasticity with respect to large strains 
 
 <pre>                                                              al 06/02
-This routine ... for an 3D-hex-element.
+This routine evaluates the material tangent for a hyberelastic
+material law (Simo/Pister).
 
 </pre>
-\param **sigy  DOUBLE  (i)   input value
+\param   detf   DOUBLE   (i) determinant of jacobian
+\param   rmu    DOUBLE   (i) shear modulus
+\param   rk     DOUBLE   (i) bulk  modulus
+\param   bmu    DOUBLE   (i) factor to speed up
+\param   sig2   DOUBLE   (i) equivalent stress
+\param   *devn  DOUBLE*  (i) deviator stresses
+\param   **d    DOUBLE** (i) material matrix  
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: ---; called by: c1_cint()
-
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   evaluation of the elastic constitutive matrix (large strains)      |
- *----------------------------------------------------------------------*/
+\sa calling: ---; called by: c1elpag()
+*----------------------------------------------------------------------*/
 void c1mate(
             double detf,   /*   */
-            double rmu,    /*   */
             double rk,     /*   */
             double bmu,    /*   */
             double sig2,   /*   */
@@ -102,11 +106,29 @@ dstrc_exit();
 #endif  
 return; 
 } /* end of c1mate */
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   radial return for elements with mises material model               |
- |   topic : radial return (large def. model)                           |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief routines for radial return for elements with mises material model
+                   (large def. model)
+
+<pre>                                                              al 06/02
+This routine performs a
+radial return for elements with mises material model.
+Nonlinear Ramberg-Osgood -Hardening law (large def. model).
+
+</pre>
+\param   fhard  DOUBLE    (i) hardening modulus                      
+\param   uniax  DOUBLE    (i) yield stresse                          
+\param   bmu    DOUBLE    (i) factor to speed up                       
+\param   sig2   DOUBLE    (i) equivalent stress                                      
+\param   dhard  DOUBLE*   (i) hardening modulus                      
+\param   dev    DOUBLE*   (i) elastic predicor projected onto yield  
+\param   epstn  DOUBLE*   (i) equivalent uniaxial plastic strain     
+\param   dlam)  DOUBLE*   (i) increment of plastic multiplier        
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1elpag()
+*----------------------------------------------------------------------*/
 void c1radg(
             double fhard,    /* hardening modulus                       */
             double uniax,    /* yield stresse                           */
@@ -227,24 +249,43 @@ dstrc_exit();
 #endif
 return;
 } /* end of c1radg */
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   forms the elasto-plastic consistent tangent material tensor        |
- |   (large strains)                                                    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief routines forms the elasto-plastic consistent tangent material tensor
+(large def. model).
+
+<pre>                                                              al 06/02
+This routine forms the elasto-plastic consistent tangent material tensor.
+Nonlinear Ramberg-Osgood -Hardening law (large def. model).
+
+</pre>
+\param   dlam    DOUBLE  (i) increment of plastic multiplier         
+\param   detf    DOUBLE  (i) determinant of jacobian
+\param   rmu     DOUBLE  (i) shear modulus
+\param   rk      DOUBLE  (i) bulk  modulus
+\param   bmu     DOUBLE  (i) factor to speed up
+\param   sig2    DOUBLE  (i) equivalent stress
+\param   hard    DOUBLE  (i) hardening modulus
+\param   devn    DOUBLE* (i) deviator stresses
+\param   d       DOUBLE**(o)  material matrix to be calculated       
+
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1elpag()
+
+*----------------------------------------------------------------------*/
 void c1matpg(
-             double dlam,    /* increment of plastic multiplier         */
+             double dlam,   
              double detf,
-             double rmu,
              double rk,
              double bmu,
              double sig2,
              double hard,
              double *devn,
-             double **d)     /* material matrix to be calculated        */
+             double **d)    
 {
 /*----------------------------------------------------------------------*/
-int i, j, k, l;
+int i, j;
 double a,b,c,f,e,b0,b1,b2,b3,trrn2,fac;
 double rn2[6];
 double drn2[6];
@@ -340,9 +381,25 @@ dstrc_exit();
 #endif  
 return; 
 } /* end of c1matpg */
-/*----------------------------------------------------------------------*
- |   push forward(deformations)/pull-back(stresses)       al    9/01    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief routines performs a push forward(deformations)/pull-back(stresses)
+(large def. model).
+
+<pre>                                                              al 06/02
+This routine performs a push forward(deformations)/pull-back(stresses)
+                   (large def. model).
+
+</pre>
+\param   be     DOUBLE*  (i) left Cauchy green         
+\param   bet    DOUBLE*  (i) return tensor
+\param   fn     DOUBLE*  (i) deformation gradien
+
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1elpag()
+
+*----------------------------------------------------------------------*/
 void c1pushf(
             double *be,   
             double *bet,  
@@ -350,7 +407,6 @@ void c1pushf(
             )   
 {
 /*----------------------------------------------------------------------*/
-int i;
 int dim3 = 3;
 double fb[9],bbe[9],fc[9],fa[9];
 /*----------------------------------------------------------------------*/
@@ -395,30 +451,50 @@ dstrc_exit();
 #endif  
 return; 
 } /* end of c1pushf */
-/*----------------------------------------------------------------------*
- |                                                              al 9/01 |
- | topic :  calculate  e l a s t o p l a s t i c  stresses and          |
- |          stress increments  -  s t r e s s  p r o j e c t i o n      |
- |          for large deformation model                                 |
- |                                                                      |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief routines calculates stresses and stress increments
+for large deformation model.
+
+<pre>                                                              al 06/02
+This routine calculates stresses and stress increments
+for large deformation model.
+
+</pre>
+\param        ym  DOUBLE    (i) young's modulus                     
+\param        pv  DOUBLE    (i) poisson's ratio                   
+\param     uniax  DOUBLE    (i) yield stresse                
+\param     fhard  DOUBLE    (i) hardening modulus            
+\param    stress  DOUBLE*   (o) ele stress (-resultant) vector  
+\param        fn  DOUBLE*   (i) deformation gradient
+\param       fni  DOUBLE*   (i) its inverse
+\param      detf  DOUBLE    (i) its determinant
+\param         d  DOUBLE**  (o) material matrix                    
+\param     epstn  DOUBLE*   (i) equivalent uniaxial plastic strain   
+\param      iupd  INT       (i) controls storing of stresses     
+\param       yip  INT       (i) update flag   
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_mat_plast_mises_ls()
+
+*----------------------------------------------------------------------*/
 void c1elpag(
-             double ym,      /* young's modulus              */
-             double pv,      /* poisson's ratio              */
-             double uniax,   /* yield stresse                */
-             double fhard,   /* hardening modulus            */
-             double *stress, /**/      
-             double *sig,    /**/      
-             double *fn,     /**/      
-             double *fni,    /**/      
-             double detf,    /**/      
-             double **d,     /* material matrix              */
-             double *epstn,  /**/
-             int    *iupd,   /* controls storing of stresses */
-             int    *yip)    /*    */
+             double ym,      
+             double pv,      
+             double uniax,   
+             double fhard,   
+             double *stress, 
+             double *sig,    
+             double *fn,     
+             double *fni,    
+             double detf,    
+             double **d,     
+             double *epstn,  
+             int    *iupd,   
+             int    *yip)    
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
+int i;
 double mot, dlam, rlin, rqua, rmu, rk, deth, trtau, sig2, ft;
 double epstnh, expo, yld, bmu, fac, press, deti;
 double sq23, alpha, sm, dhard, expoh;
@@ -427,7 +503,6 @@ double sigf[6];
 double tau[6];
 double dev[6];
 double rnorm[6];
-double eps[9];
 double faux[9];
 #ifdef DEBUG 
 dstrc_enter("c1elpag");
@@ -501,11 +576,11 @@ dstrc_enter("c1elpag");
 /*--------- yip = 2 ----------------------------------------------------*/
     if (*yip==1) 
     {
-      c1mate (detf,rmu,rk,bmu,sig2,rnorm,d); 
+      c1mate (detf,rk,bmu,sig2,rnorm,d); 
 /*--------- yip = 2 ----------------------------------------------------*/
     } else {    
       dlam = 0.;
-      c1matpg (dlam,detf,rmu,rk,bmu,sig2,dhard,rnorm,d);
+      c1matpg (dlam,detf,rk,bmu,sig2,dhard,rnorm,d);
     }
     *yip=-*yip;
     fac=1.;
@@ -582,7 +657,7 @@ dstrc_enter("c1elpag");
   {
 /*------------- state of stress within yield surface - E L A S T I C ---*/
     *yip=1;
-       c1mate (detf,rmu,rk,bmu,sig2,rnorm,d);
+       c1mate (detf,rk,bmu,sig2,rnorm,d);
    } else {
 /*------------ state of stress outside yield surface - P L A S T I C ---*/
     *yip = 2;
@@ -590,7 +665,7 @@ dstrc_enter("c1elpag");
 /*--- projection of devatoric stresses on yield surface ---*/
     c1radg (fhard, uniax,bmu,sig2,&dhard,dev,epstn,&dlam);
 /*--- consistent tangent ---*/
-      c1matpg (dlam,detf,rmu,rk,bmu,sig2,dhard,rnorm,d);
+      c1matpg (dlam,detf,rk,bmu,sig2,dhard,rnorm,d);
   }
 /*--- adition of the elastic hydrostatic pressure (only to diagonal) ---*/
     fac=1.;
@@ -633,41 +708,57 @@ dstrc_exit();
 return;
 } /* end of c1elpag */
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
- |                                                              al 9/01 |
- | constitutive matrix - forces - plastic large strain - von Mises - 3D |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief routines calculates constitutive matrix - forces - plastic large strain 
+- von Mises - 3D.
+
+<pre>                                                              al 06/02
+This routine to establish local material law - plastic large strain
+       stress-strain law for isotropic material for for a 3D-hex-element.
+
+</pre>
+\param        ym  DOUBLE    (i) young's modulus                     
+\param        pv  DOUBLE    (i) poisson's ratio                   
+\param     alfat  DOUBLE    (i) temperature expansion factor 
+\param     uniax  DOUBLE    (i) yield stresse                
+\param     fhard  DOUBLE    (i) hardening modulus            
+\param       ele  ELEMENT*  (i) actual element               
+\param       bop  DOUBLE**  (i) derivative operator          
+\param        ip  INT       (i) integration point Id                 
+\param    stress  DOUBLE*   (o) ele stress (-resultant) vector  
+\param         d  DOUBLE**  (o) material matrix                    
+\param      disd  DOUBLE*   (i) displacement derivatives     
+\param   g[6][6]  DOUBLE    (i) transformation matrix        
+\param  gi[6][6]  DOUBLE    (i) inverse of g                 
+\param    istore  INT       (i) controls storing of stresses     
+\param    newval  INT       (i) controls eval. of stresses   
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_mat_plast_mises_ls()
+
+*----------------------------------------------------------------------*/
 void c1_mat_plast_mises_ls(
                         double ym,      /* young's modulus              */
                         double pv,      /* poisson's ratio              */
-                        double alfat,   /* temperature expansion factor */
                         double uniax,   /* yield stresse                */
                         double fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
-                        double **bop,   /* derivative operator          */
                         int ip,         /* integration point Id         */
                         double *stress, /*ele stress (-resultant) vector*/      
                         double **d,     /* material matrix              */
                         double  *disd,  /* displacement derivatives     */
-                        double g[6][6], /* transformation matrix        */
-                        double gi[6][6],/* inverse of g                 */
                         int istore,     /* controls storing of stresses */
                         int newval)     /* controls eval. of stresses   */
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
+int i;
 int yip;
-int isoft;
 int iupd;
-double e1, e2, e3, a1, b1, c1, sum, epstn, ft;
+double epstn;
 double sig[6];
 double eps[9];
-double strain[9];
-double delsig[6];
-double deleps[9];
-double tau[6];
 double tol = 1.0E-10;
-double dlam;
 
 double mot, deth;
 double rmu, rk, fac, press, det, detf;
@@ -677,7 +768,7 @@ double stress1[6];
 double sigf[6];
 
 
-double yld, sm, sx, sy, sz, sxy, sxz, syz, sig2, hard;
+double sm;
 double expo  = 0.;
 double alpha = 0.;
 #ifdef DEBUG 
@@ -746,7 +837,6 @@ dstrc_enter("c1_mat_plast_mises_ls");
     for (i=0; i<6; i++) stress[i] = stress1[i];
   }
 /*----------------------------- put new values -> sig, eps,epstn,yip ---*/
-end:
 /*----------------------------------------------------------------------*/
 /* disd1 ----- new def grad (inverse)         */
 /* sig ---- new left cauchy-green def tensor  */

@@ -26,14 +26,14 @@ This routine controles the calculation of the element stiffness, acts
 according to the action.
 
 </pre>
-\param *actpart         PARTITION   (i)   my partition
-\param *actintra        INTRA       (i)   my intra-communicator 
-\param *ele             ELEMENT     (i)   my element
-\param *estif_global    ARRAY       (i)   global stiffness matrix
-\param *emass_global    ARRAY       (i)   global mass      matrix
-\param *intforce_global ARRAY       (i)   global mass      matrix
-\param *action          CALC_ACTION (i)   option passed to element
-\param *container       CONTAINER   (i)   contains variables defined in container.h
+\param actpart         PARTITION*   (i)   my partition
+\param actintra        INTRA*       (i)   my intra-communicator 
+\param ele             ELEMENT*     (i)   my element
+\param estif_global    ARRAY*       (i)   global stiffness matrix
+\param emass_global    ARRAY*       (i)   global mass      matrix
+\param intforce_global ARRAY*       (i)   global mass      matrix
+\param action          CALC_ACTION* (i)   option passed to element
+\param container       CONTAINER*   (i)   contains variables defined in container.h
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -52,7 +52,7 @@ void brick1(      PARTITION   *actpart,
 /*----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 /*----------------------------------------------------------------------*/
-int  i, kstep, iloc;
+int  kstep, iloc;
 C1_DATA      actdata;
 MATERIAL    *actmat;
 
@@ -77,7 +77,7 @@ switch (*action)
 case calc_struct_init:
    c1init(actpart, mat);
    c1_cint(NULL,NULL,NULL,NULL,NULL,1);
-   c1_eleload(NULL,NULL,NULL,NULL,1);
+   c1_eleload(NULL,NULL,NULL,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
@@ -106,7 +106,7 @@ case calc_struct_eleload:
    if (imyrank==ele->proc) 
    {
       actmat = &(mat[ele->mat-1]);
-      c1_eleload(ele,&actdata,actmat,intforce,0);
+      c1_eleload(ele,&actdata,intforce,0);
    }
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------- update after incremental step */

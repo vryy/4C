@@ -10,12 +10,6 @@ for a 3D hex element
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 #include "brick1_prototypes.h"
-typedef enum _RSTF
-{ /* r..r-dir., s..s-dir., t..t-dir., n..-1.0, p..+1.0 */
-  rpp, rpn, rnp, rnn, psp, psn, nsp, nsn, ppt, pnt, npt, nnt,/*line*/
-  rsn, rsp, rnt, rpt, nst, pst,/*surface*/
-  rst/*volume*/ 
-} RSTF;
 /**/      
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -54,27 +48,27 @@ for a 3D hex element
 \param     ngr      INT  (i)   number integration points in r direction
 \param     ngs      INT  (i)   number integration points in r direction
 \param     ngt      INT  (i)   number integration points in r direction
-\param    *xgp   DOUBLE  (i)   gp-coordinate in r direction
-\param    *wgx   DOUBLE  (i)   weights at gaussian point
-\param    *ygp   DOUBLE  (i)   gp-coordinate in s direction
-\param    *wgy   DOUBLE  (i)   weights at gaussian point
-\param    *zgp   DOUBLE  (i)   gp-coordinate in t direction
-\param    *wgz   DOUBLE  (i)   weights at gaussian point
-\param   *xyze   DOUBLE  (i)   element coordinates          
-\param  *funct   DOUBLE  (i)   shape functions  
-\param  *deriv   DOUBLE  (i)   derivatives of the shape functions
-\param   **xjm   DOUBLE  (i)   the Jacobian matrix
+\param     xgp   DOUBLE* (i)   gp-coordinate in r direction
+\param     wgx   DOUBLE* (i)   weights at gaussian point
+\param     ygp   DOUBLE* (i)   gp-coordinate in s direction
+\param     wgy   DOUBLE* (i)   weights at gaussian point
+\param     zgp   DOUBLE* (i)   gp-coordinate in t direction
+\param     wgz   DOUBLE* (i)   weights at gaussian point
+\param    xyze   DOUBLE* (i)   element coordinates          
+\param   funct   DOUBLE* (i)   shape functions  
+\param   deriv   DOUBLE* (i)   derivatives of the shape functions
+\param     xjm   DOUBLE**(i)   the Jacobian matrix
 \param     iel      INT  (i)   number of element nodes
 \param  ngnode      INT  (i)   number of element nodes
-\param    *shn      INT  (i)   permutation vector for surface nodes
+\param     shn      INT* (i)   permutation vector for surface nodes
 \param  rstgeo     RSTF  (i)   defines intgration (rs,rt,st,rst...)
-\param *lonoff      INT  (i)   flags if loads present or not
-\param   *lval   DOUBLE  (i)   real load values
-\param **eload   DOUBLE  (o)   element load vector
+\param  lonoff      INT* (i)   flags if loads present or not
+\param    lval   DOUBLE* (i)   real load values
+\param   eload   DOUBLE**(o)   element load vector
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: ---; called by: c1_cint()
+\sa calling: ---; called by: c1_eleload()
 
 *----------------------------------------------------------------------*/
 void c1_lint(
@@ -166,7 +160,6 @@ dstrc_enter("c1_lint");
       }
    }}}/* end loop gpr over integration points */
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -181,10 +174,10 @@ This routine performs calculation of element loads
 for a 3D hex element
 
 </pre>
-\param     *ele    ELEMENT (i)   the element
-\param    *data    C1_DATA (i)   structure containing gaussian point and weight
-\param     *mat   MATERIAL (i)   my material
-\param *loadvec     DOUBLE (o)   element load vector
+\param      ele    ELEMENT*(i)   the element
+\param     data    C1_DATA*(i)   structure containing gaussian point and weight
+\param      mat   MATERIAL*(i)   my material
+\param  loadvec     DOUBLE*(o)   element load vector
 \param     init       INT  (i)   ==1 init phase for this routine
 
 \warning There is nothing special to this routine
@@ -195,13 +188,12 @@ for a 3D hex element
 void c1_eleload(
              ELEMENT   *ele, 
              C1_DATA   *data, 
-             MATERIAL  *mat,
              double    *loadvec,  
              int        init
              )
 {
 /* for element integration */
-int                 i,j,k,cc;         /* some loopers and counters      */
+int                 i,j,cc;         /* some loopers and counters      */
 int                 nir,nis,nit;      /* num GP in r/s/t direction      */
 int                 iel;              /* numnp to this element          */
 const int           numdf =3;
@@ -287,7 +279,7 @@ dstrc_enter("c1_eleload");
 /*---------------------------------------------------- initialize eload */
   amzero(&eload_a);
 /*------------------------------------------- integration parameters ---*/
-  c1intg(ele,data,1);
+  c1intg(ele,data);
   nir     = ele->e.c1->nGP[0];
   nis     = ele->e.c1->nGP[1];
   nit     = ele->e.c1->nGP[2];

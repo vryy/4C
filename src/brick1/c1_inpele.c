@@ -31,11 +31,6 @@ void c1inp(ELEMENT *ele)
 {
 int  i;
 int  ierr=0;
-int  quad;
-int  counter;
-int  eletopo[100];
-long int  topology[100];
-char *colpointer;
 char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("c1inp");
@@ -62,28 +57,6 @@ if (ierr==1)
    ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
-   /*
-   ele->lm[ 0] = eletopo[ 0];
-   ele->lm[ 1] = eletopo[ 1];
-   ele->lm[ 2] = eletopo[ 2];
-   ele->lm[ 3] = eletopo[ 3];
-   ele->lm[ 4] = eletopo[ 4];
-   ele->lm[ 5] = eletopo[ 5];
-   ele->lm[ 6] = eletopo[ 6];
-   ele->lm[ 7] = eletopo[ 7];
-   ele->lm[ 8] = eletopo[ 8];
-   ele->lm[ 9] = eletopo[ 9];
-   ele->lm[10] = eletopo[10];
-   ele->lm[11] = eletopo[11];
-   ele->lm[12] = eletopo[16];
-   ele->lm[13] = eletopo[17];
-   ele->lm[14] = eletopo[18];
-   ele->lm[15] = eletopo[19];
-   ele->lm[16] = eletopo[12];
-   ele->lm[17] = eletopo[13];
-   ele->lm[18] = eletopo[14];
-   ele->lm[19] = eletopo[15];
-   */
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("HEX27",&ierr);
@@ -126,6 +99,20 @@ if (ierr!=1) dserror("Reading of BRICK1 element failed");
 frint("HYB",&(ele->e.c1->nhyb),&ierr);
 /*------------------------ read element formulation: linear, T.L., U.L. */
 frint("FORM",&(ele->e.c1->form),&ierr);
+/*--------------------------------------- read local or global stresses */
+ele->e.c1->stresstyp = c1_nostr; /* default */
+frchar("STRESSES",buffer,&ierr);
+if (ierr)
+{
+   if (strncmp(buffer,"GPXYZ",3)==0)       ele->e.c1->stresstyp = c1_gpxyz;
+   if (strncmp(buffer,"GPRST",3)==0)       ele->e.c1->stresstyp = c1_gprst;
+   if (strncmp(buffer,"GP123",3)==0)       ele->e.c1->stresstyp = c1_gp123;
+   if (strncmp(buffer,"NDXYZ",3)==0)       ele->e.c1->stresstyp = c1_npxyz;
+   if (strncmp(buffer,"NDRST",3)==0)       ele->e.c1->stresstyp = c1_nprst;
+   if (strncmp(buffer,"ND123",3)==0)       ele->e.c1->stresstyp = c1_np123;
+   if (strncmp(buffer,"NDEQS",3)==0)       ele->e.c1->stresstyp = c1_npeqs;
+}
+/*----------------------------------------------------------------------*/
     
 #ifdef DEBUG 
 dstrc_exit();

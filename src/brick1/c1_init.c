@@ -25,16 +25,14 @@ This routine initializes the 3D-hex-element.
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: ---; called by: c1_cint()
+\sa calling: ---; called by: brick1()
 
 *----------------------------------------------------------------------*/
 void c1init(PARTITION *actpart,MATERIAL    *mat )
 {
-int          i,j,k,ncm,ngp,nnp;
+int          i,j,k,ngp,nnp;
 int          size_i, size_j;
 ELEMENT     *actele;
-NODE        *actnode;
-C1_DATA      data;
 
 #ifdef DEBUG 
 dstrc_enter("c1init");
@@ -49,35 +47,11 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   nnp = actele->numnp;
   /* number of gaussian points */
   ngp = actele->e.c1->nGP[0]*actele->e.c1->nGP[1]*actele->e.c1->nGP[2];
-  /*----------------------------------------- init stress structures ---*/
-  size_i = 1;
-  actele->e.c1->stress = (C1_ELE_STRESS*)CCACALLOC(size_i,sizeof(C1_ELE_STRESS));
-
-  size_i = nnp;
-  size_j = 26;
-
-  actele->e.c1->stress[0].npstrs = (double**)CCACALLOC(size_i,sizeof(double*));
-  for (k=0; k<size_i; k++)
+  /*-------------------------------- allocate the space for stresses ---*/
+  if(actele->e.c1->stresstyp!=c1_nostr)
   {
-    actele->e.c1->stress[0].npstrs[k]=(double*)CCACALLOC(size_j,sizeof(double)); 
-    for (j=0; j<size_j; j++) actele->e.c1->stress[0].npstrs[k][j] = 0.;
-  }
-
-  size_i = ngp;
-  size_j = 26;
-
-  actele->e.c1->stress[0].gpstrs = (double**)CCACALLOC(size_i,sizeof(double*));
-  for (k=0; k<size_i; k++)
-  {
-    actele->e.c1->stress[0].gpstrs[k]=(double*)CCACALLOC(size_j,sizeof(double)); 
-    for (j=0; j<size_j; j++) actele->e.c1->stress[0].gpstrs[k][j] = 0.;
-  }
-  size_j = 3;
-  actele->e.c1->stress[0].gpcoor = (double**)CCACALLOC(size_i,sizeof(double*));
-  for (k=0; k<size_i; k++)
-  {
-    actele->e.c1->stress[0].gpcoor[k]=(double*)CCACALLOC(size_j,sizeof(double)); 
-    for (j=0; j<size_j; j++) actele->e.c1->stress[0].gpcoor[k][j] = 0.;
+    am4def("stress_GP",&(actele->e.c1->stress_GP),1,27,ngp,0,"D3");
+    am4def("stress_ND",&(actele->e.c1->stress_ND),1,27,nnp,0,"D3");
   }
   /*--------------------------------------------- init working array ---*/
   if(mat[actele->mat-1].mattyp == m_pl_mises    ||

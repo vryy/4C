@@ -43,32 +43,12 @@ void c1rad1(double e,        /* young's modulus                         */
  *----------------------------------------------------------------------*/
 void c1matp1(double e,       /* young's modulus                         */
              double fhard,   /* hardening modulus                       */
-             double uniax,   /* yield stresse                           */
              double vnu,     /* poisson's ratio                         */
              double sig2,
              double *tau,    /* current stresses (local)                */
              double epstn,   /* equivalent uniaxial plastic strain      */ 
              double dlam,    /* increment of plastic multiplier         */
              double **cc);   /* material matrix to be calculated        */
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   radial return for elements with mises material model               |
- |                                                                      |
- *----------------------------------------------------------------------*/
-void c1rad (double e,        /* young's modulus                         */
-            double fhard,    /* hardening modulus                       */
-            double uniax,    /* yield stresse                           */
-            double vnu,      /* poisson's ratio                         */
-            double *sigma,   /* elastic predicor projected onto yield   */
-            double *epstn,   /* equivalent uniaxial plastic strain      */
-            double *dlam);   /* increment of plastic multiplier         */
-void c1matp (double e,       /* young's modulus                         */
-             double fhard,   /* hardening modulus                       */
-             double vnu,     /* poisson's ratio                         */
-             double *tau,    /* current stresses (local)                */
-             double epstn,   /* equivalent uniaxial plastic strain      */ 
-             double dlam,    /* increment of plastic multiplier         */
-             double **d);    /* material matrix to be calculated        */
 /*----------------------------------------------------------------------*
  | transformation of local stress vector to global axes         al 9/01 |
  *----------------------------------------------------------------------*/
@@ -98,8 +78,7 @@ void c1tram(double **xjm,   /* jacobian matrix r,s,t-direction          */
  | numerical integration                                                |
  *----------------------------------------------------------------------*/
 void c1intg(ELEMENT         *ele,       /* actual element */
-            C1_DATA         *data,      /* element data: wa, stress...  */
-            int              option);   /* flag: calc.force, init...    */
+            C1_DATA         *data);     /* element data: wa, stress...  */
 /*----------------------------------------------------------------------*
  | update of strain paramenters                          al    9/01     |
  *----------------------------------------------------------------------*/
@@ -221,17 +200,15 @@ void c1_disd(double    **bop, /* b-operator matrix                      */
  *----------------------------------------------------------------------*/
 void c1_call_mat(ELEMENT   *ele,
                  MATERIAL  *mat, 
-                 double **bop,
-                 double **xjm,
                  int ip,       
                  double *stress,
                  double *strain,
                  double **d,
                  double *disd,
-                 double g[6][6], /* transformation matrix s(glob)=g*s(loc)  */
-                 double gi[6][6],/* inverse of g          s(loc) =gi*s(glob)*/
-                 int istore, /* controls storing of new stresses to wa */
-                 int newval);/* controls evaluation of new stresses    */
+                 double g[6][6], 
+                 double gi[6][6],
+                 int istore,
+                 int newval);
 /*----------------------------------------------------------------------*
  |                                                          al 01/02    |
  |         control program for formulation of material law              |
@@ -240,17 +217,10 @@ void c1_call_mat(ELEMENT   *ele,
  *----------------------------------------------------------------------*/
 void c1_call_matd(ELEMENT   *ele,
                  MATERIAL  *mat, 
-                 double **bop,
-                 double **xjm,
-                 int ip,       
                  double *stress,
                  double *strain,
                  double **d,
-                 double *disd,
-                 double g[6][6], /* transformation matrix s(glob)=g*s(loc)  */
-                 double gi[6][6],/* inverse of g          s(loc) =gi*s(glob)*/
-                 int istore,/* controls storing of new stresses to wa */
-                 int newval);/* controls evaluation of new stresses    */
+                 double g[6][6]);
 /*----------------------------------------------------------------------*
  | program for evaluation of principal stresses at given gauss  al 9/01 |
  | point for isoparametric brick element                                |
@@ -316,8 +286,7 @@ void c1gcor(
 /*----------------------------------------------------------------------*/
 double c1rsn (
              int node,
-             int irs,
-             int iel  /* number of nodes */
+             int irs
              );
 /*----------------------------------------------------------------------*
  |program to evaluate nth order legendre polynomial of degree 'n' at 'z'|
@@ -373,12 +342,12 @@ void c1_nstr(double    *srst,     /* element vector with stress resultants */
  | for isoparametric brick elements                                     |
  *----------------------------------------------------------------------*/
 void c1_sext(
-            double **nostrs,
+            double nostrs[20][26],
             double *funct,
             double **deriv,
             double **xjm,
             double *xyze,
-            double **gpstress,
+            double gpstress[27][26],
             double *xgr,
             double *xgs,
             double *xgt,
@@ -458,12 +427,9 @@ void c1mefm(double *strain, /* global strains                           */
  *----------------------------------------------------------------------*/
 void c1_mat_plast_mises(double ym,      /* young's modulus              */
                         double pv,      /* poisson's ratio              */
-                        double alfat,   /* temperature expansion factor */
                         double uniax,   /* yield stresse                */
                         double fhard,   /* hardening modulus            */
-                        double gf,      /* fracture energy              */
                         ELEMENT   *ele, /* actual element               */
-                        double **bop,   /* derivative operator          */
                         int ip,         /* integration point Id         */
                         double *stress, /*ele stress (-resultant) vector*/      
                         double **d,     /* material matrix              */
@@ -478,7 +444,6 @@ void c1_mat_plast_mises(double ym,      /* young's modulus              */
  *----------------------------------------------------------------------*/
 void c1mate(
             double detf,   /*   */
-            double rmu,    /*   */
             double rk,     /*   */
             double bmu,    /*   */
             double sig2,   /*   */
@@ -506,7 +471,6 @@ void c1radg(
 void c1matpg(
              double dlam,    /* increment of plastic multiplier         */
              double detf,
-             double rmu,
              double rk,
              double bmu,
              double sig2,
@@ -521,27 +485,20 @@ void c1pushf(
             double *bet,  
             double *fn
             );  
-/*----------------------------------------------------------------------*
- |                                                              al 9/01 |
- | topic :  calculate  e l a s t o p l a s t i c  stresses and          |
- |          stress increments  -  s t r e s s  p r o j e c t i o n      |
- |          for large deformation model                                 |
- |                                                                      |
- *----------------------------------------------------------------------*/
 void c1elpag(
-             double ym,      /* young's modulus              */
-             double pv,      /* poisson's ratio              */
-             double uniax,   /* yield stresse                */
-             double fhard,   /* hardening modulus            */
-             double *stress, /**/      
-             double *sig,    /**/      
-             double *fn,     /**/      
-             double *fni,    /**/      
-             double detf,    /**/      
-             double **d,     /* material matrix              */
-             double *epstn,  /**/
-             int    *iupd,   /* controls storing of stresses */
-             int    *yip);   /*    */
+             double ym,      
+             double pv,      
+             double uniax,   
+             double fhard,   
+             double *stress, 
+             double *sig,    
+             double *fn,     
+             double *fni,    
+             double detf,    
+             double **d,     
+             double *epstn,  
+             int    *iupd,   
+             int    *yip);    
 /*----------------------------------------------------------------------*
  |                                                              al 9/01 |
  | constitutive matrix - forces - plastic large strain - von Mises - 3D |
@@ -549,64 +506,15 @@ void c1elpag(
 void c1_mat_plast_mises_ls(
                         double ym,      /* young's modulus              */
                         double pv,      /* poisson's ratio              */
-                        double alfat,   /* temperature expansion factor */
                         double uniax,   /* yield stresse                */
                         double fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
-                        double **bop,   /* derivative operator          */
                         int ip,         /* integration point Id         */
                         double *stress, /*ele stress (-resultant) vector*/      
                         double **d,     /* material matrix              */
                         double  *disd,  /* displacement derivatives     */
-                        double g[6][6], /* transformation matrix        */
-                        double gi[6][6],/* inverse of g                 */
                         int istore,     /* controls storing of stresses */
                         int newval);    /* controls eval. of stresses   */
-/*----------------------------------------------------------------------*
- | constitutive matrix - forces - foam material - 3D             al 9/01|
- *----------------------------------------------------------------------*/
-void c1_mat_plast_foam( double ym,      /* young's modulus              */
-                        double pv,      /* poisson's ratio              */
-                        double alfat,   /* temperature expansion factor */
-                        double uniax,   /* yield stresse                */
-                        double fhard,   /* hardening modulus            */
-                        double gf,      /* fracture energy              */
-                        ELEMENT   *ele, /* actual element               */
-                        double **bop,   /* derivative operator          */
-                        int ip,         /* integration point Id         */
-                        double *stress, /*ele stress (-resultant) vector*/      
-                        double **d,     /* material matrix              */
-                        double  *disd,  /* displacement derivatives     */
-                        double g[6][6], /* transformation matrix        */
-                        double gi[6][6],/* inverse of g                 */
-                        int istore,     /* controls storing of stresses */
-                        int newval);    /* controls eval. of stresses   */
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   radial return for elements with mises material model               |
- |                                                                      |
- *----------------------------------------------------------------------*/
-void c1radf(double e,        /* young's modulus                         */
-            double eh,       /* hardening modulus                       */
-            double uniax,    /* yield stresse                           */
-            double vnu,      /* poisson's ratio                         */
-            double sig2,
-            double *dev,     /* elastic predicor projected onto yield   */
-            double *epstn,   /* equivalent uniaxial plastic strain      */
-            double *dlam);   /* increment of plastic multiplier         */
-/*----------------------------------------------------------------------*
- |                                                        al    9/01    |
- |   forms the elasto-plastic consistent tangent material tensor        |
- *----------------------------------------------------------------------*/
-void c1matpf(double e,       /* young's modulus                         */
-             double fhard,   /* hardening modulus                       */
-             double uniax,   /* yield stresse                           */
-             double vnu,     /* poisson's ratio                         */
-             double sig2,
-             double *tau,    /* current stresses (local)                */
-             double epstn,   /* equivalent uniaxial plastic strain      */ 
-             double dlam,    /* increment of plastic multiplier         */
-             double **cc);   /* material matrix to be calculated        */
 /*----------------------------------------------------------------------*
  | initialize the element                                    al 6/01    |
  *----------------------------------------------------------------------*/
@@ -661,13 +569,21 @@ void  c1gcor(
              double     *gpcod  /* global coordinates of actual point   */
             );
 
+void c1_lint(
+             int        ngr,       int ngs,        int ngt, 
+             double    *xgp,   double *wgx,    double *ygp,
+             double    *wgy,   double *zgp,    double *wgz,
+             double   *xyze, double *funct, double **deriv, double **xjm,
+             int        iel,    int ngnode,       int *shn,  RSTF rstgeo,
+             int    *lonoff,  double *lval, 
+             double **eload
+             );
 /*----------------------------------------------------------------------*
  | calculate element loads (edge, surface, volume)              al 9/01 |
  *----------------------------------------------------------------------*/
 void c1_eleload(
              ELEMENT   *ele, 
              C1_DATA   *data, 
-             MATERIAL  *mat,
              double    *loadvec,  
              int        init
              );

@@ -24,7 +24,7 @@ This routine to establish local material law
 </pre>
 \param       youngs   DOUBLE  (i)   young's modulus 
 \param possionratio   DOUBLE  (i)   poisson's ratio 
-\param          **d   DOUBLE  (i)   constitutive matrix
+\param            d   DOUBLE**(o)   constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -104,9 +104,9 @@ This routine to establish local porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param     *matdata MATERIAL  (i)   material data
-\param          **d   DOUBLE  (i)   constitutive matrix
+\param       youngs   DOUBLE    (i)   young's modulus 
+\param      matdata MATERIAL*   (i)   material data
+\param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -196,9 +196,9 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param     *matdata MATERIAL  (i)   material data
-\param          **d   DOUBLE  (i)   derivative of constitutive matrix
+\param       youngs   DOUBLE    (i)   young's modulus 
+\param      matdata MATERIAL*   (i)   material data
+\param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -292,9 +292,9 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param     *matdata MATERIAL  (i)   material data
-\param          **d   DOUBLE  (i)   derivative of constitutive matrix
+\param       youngs   DOUBLE    (i)   young's modulus 
+\param      matdata MATERIAL*   (i)   material data
+\param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -388,9 +388,9 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param     *matdata MATERIAL  (i)   material data
-\param          **d   DOUBLE  (i)   derivative of constitutive matrix
+\param       youngs   DOUBLE    (i)   young's modulus 
+\param      matdata MATERIAL*   (i)   material data
+\param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -484,9 +484,9 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param     *matdata MATERIAL  (i)   material data
-\param          **d   DOUBLE  (i)   derivative of constitutive matrix
+\param       youngs   DOUBLE    (i)   young's modulus 
+\param      matdata MATERIAL*   (i)   material data
+\param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -499,7 +499,7 @@ void c1_matd_mfoc( MATERIAL  *mat,
 {
 /*----------------------------------------------------------------------*/
 double d1,d2,d3;
-double es, ym, dym, pr, dens, denss, oce, ocf, denmin, denmax;
+double es, dym, pr, dens, denss, oce, ocf, denmin, denmax;
 #ifdef DEBUG 
 dstrc_enter("c1_matd_mfoc");
 #endif
@@ -582,9 +582,9 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param     *matdata MATERIAL  (i)   material data
-\param          **d   DOUBLE  (i)   derivative of constitutive matrix
+\param       youngs   DOUBLE    (i)   young's modulus 
+\param      matdata MATERIAL*   (i)   material data
+\param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -597,7 +597,7 @@ void c1_matd_mfcc( MATERIAL  *mat,
 {
 /*----------------------------------------------------------------------*/
 double d1,d2,d3;
-double es, ym, dym, pr, dens, denss, cce, ccf, denmin, denmax;
+double es, dym, pr, dens, denss, cce, ccf, denmin, denmax;
 #ifdef DEBUG 
 dstrc_enter("c1_matd_mfcc");
 #endif
@@ -679,9 +679,9 @@ return;
 This routine to evaluate stresses for elastic material for a 3D-hex-element.
 
 </pre>
-\param     *strain   DOUBLE   (i)   global strains                 
-\param         **d   MATERIAL (i)   material matrices              
-\param     *stress   DOUBLE   (o)   forces/moments/additional terms
+\param      strain   DOUBLE*    (i)   global strains                 
+\param           d   MATERIAL** (i)   material matrices              
+\param      stress   DOUBLE*    (o)   forces/moments/additional terms
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -694,8 +694,6 @@ void c1mefm(double *strain, /* global strains                           */
 {
 /*----------------------------------------------------------------------*/
 int    i, j;
-double d1,d2,d3;
-double ym,pv;/*------------------------------------------ mat constants */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1mefm");
@@ -728,7 +726,7 @@ This routine to establish of llocal porous material law
 \param    gmod12   DOUBLE  (i)   shear modulus 
 \param    gmod23   DOUBLE  (i)   shear modulus 
 \param    gmod13   DOUBLE  (i)   shear modulus 
-\param       **c   DOUBLE  (o)   constitutive matrix 
+\param         c   DOUBLE**(o)   constitutive matrix 
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -747,13 +745,11 @@ void c1_mat_elorth(double   emod1 ,
                    double      **c)
 {
 int i,j;
-double d1,d2,d3;
 double xnue31        = 0.;
 double xnue32        = 0.;
 double xnue21        = 0.;
 double emod          = 0.;
 double delta         = 0.;
-double ym,pv;/*------------------------------------------ mat constants */
 #ifdef DEBUG 
 dstrc_enter("c1_mat_elorth");
 #endif

@@ -22,13 +22,13 @@
 This routine calcuates shape functions and derivatives for an 3D-hex-element.
 
 </pre>
-\param   *funct   DOUBLE  (o)   shape functions  
-\param  **deriv   DOUBLE  (o)   the derivatives of the shape functions  
-\param        r   DOUBLE  (i)   r coordinate           
-\param        s   INT     (i)   s coordinate           
-\param        t   INT     (i)   t coordinate   
-\param      typ   INT     (i)   type of dicretization   
-\param   option   INT     (i)   option == 0 : only functions  
+\param    funct   DOUBLE*  (o)   shape functions  
+\param    deriv   DOUBLE** (o)   the derivatives of the shape functions  
+\param        r   DOUBLE   (i)   r coordinate           
+\param        s   INT      (i)   s coordinate           
+\param        t   INT      (i)   t coordinate   
+\param      typ   INT      (i)   type of dicretization   
+\param   option   INT      (i)   option == 0 : only functions  
                                 option == 1 : also derivatives
 
 \warning There is nothing special to this routine
@@ -44,14 +44,13 @@ void c1_funct_deriv(double     *funct,
                     int           typ,
                     int         option)
 {
-int            i, ii;
 const double   q12 = 1.0/2.0;
 const double   q14 = 1.0/4.0;
 const double   q16 = 1.0/6.0;
 const double   q18 = 1.0/8.0;
 const double   q64 = 1.0/64.0;
 const double   q964= 9.0/64.0;
-double         rr,ss,tt,rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
+double         rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
 #ifdef DEBUG 
 dstrc_enter("c1_funct_deriv");
 #endif

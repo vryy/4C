@@ -22,12 +22,12 @@
 This routine calcuates the usual stiffness matrix for an 3D-hex-element.
 
 </pre>
-\param    **s    DOUBLE  (o)   element stiffness matrix 
-\param   **bs    DOUBLE  (i)   derivative operator  
-\param    **d    DOUBLE  (i)   constitutive matrix
-\param    fac    DOUBLE  (i)   integration factor
-\param     nd    INT     (i)   total number degrees of freedom of element
-\param   neps    INT     (i)   actual number of strain components 
+\param      s    DOUBLE**  (o)   element stiffness matrix 
+\param     bs    DOUBLE**  (i)   derivative operator  
+\param      d    DOUBLE**  (i)   constitutive matrix
+\param    fac    DOUBLE    (i)   integration factor
+\param     nd    INT       (i)   total number degrees of freedom of element
+\param   neps    INT       (i)   actual number of strain components 
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -84,11 +84,11 @@ return;
 This routine calcuates the usual stiffness matrix for an 3D-hex-element.
 
 </pre>
-\param    **s    DOUBLE  (o)   element stiffness matrix 
-\param   **bn    DOUBLE  (i)   b-operator matrix  
-\param     *f    DOUBLE  (i)   force vector integral (stress-resultants)
-\param    fac    DOUBLE  (i)   integration factor
-\param    iel    INT     (i)   number of nodes at actual element
+\param      s    DOUBLE**  (o)   element stiffness matrix 
+\param     bn    DOUBLE**  (i)   b-operator matrix  
+\param      f    DOUBLE*   (i)   force vector integral (stress-resultants)
+\param    fac    DOUBLE    (i)   integration factor
+\param    iel    INT       (i)   number of nodes at actual element
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -101,11 +101,9 @@ void c1vkg(  double  **s,   /* element stiffness-matrix                 */
              double    fac, /* multiplier for numerical integration     */
              int       iel) /* number of nodes at actual element         */
 {
-int            i, j, k, l, m, n, i1, i2, i3, sc1, sc2;
-int            node_start1, node_start2;
+int            i, j, l, m, n, sc1, sc2;
 double         g11, g12, g13, b11, b21, b31, n11, n22, n33, n12, n23, n31;
 double         nb[9][3];
-double       dum1, dum2, dum3;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1vkg");
@@ -205,14 +203,7 @@ dstrc_enter("c1kgid");
         so[ reor[i]*3+2 ][ reor[j]*3+0 ]=si[i*3+2][j*3+0];
         so[ reor[i]*3+2 ][ reor[j]*3+1 ]=si[i*3+2][j*3+1];
         so[ reor[i]*3+2 ][ reor[j]*3+2 ]=si[i*3+2][j*3+2];
-        
-        /*
-        so[ reor[i]*3+0 ][ reor[j]*3+0 ]=si[i*3+0][j*3+0];
-        so[ reor[i]*3+1 ][ reor[j]*3+1 ]=si[i*3+1][j*3+1];
-        so[ reor[i]*3+2 ][ reor[j]*3+2 ]=si[i*3+2][j*3+2];
-        */
         }}
-/*        so[i][j]=si[reor[i]][reor[j]];}}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -230,8 +221,8 @@ return;
 This routine reorders force vector for 'gid'  hex20 for an 3D-hex-element.
 
 </pre>
-\param   **fi    DOUBLE  (i)  element force vector - convent.
-\param   **fo    DOUBLE  (o)  element force vector - gid.    
+\param   fi    DOUBLE**  (i)  element force vector - convent.
+\param   fo    DOUBLE**  (o)  element force vector - gid.    
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -242,7 +233,7 @@ void c1fgid( double  *fi,  /* element force vector - convent.       */
              double  *fo)  /* element force vector - gid.           */
 {
 /*----------------------------------------------------------------------*/
-  int i,j;
+  int i;
   int reor[20] = {0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,12,13,14,15};
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

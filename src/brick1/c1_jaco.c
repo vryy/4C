@@ -21,11 +21,11 @@ matrix for a 3D hex element
 This routine calcuates the Jacobian matrix for a 3D-hex-element.
 
 </pre>
-\param *deriv   DOUBLE     (i)   derivatives of the shape functions
-\param **xjm    DOUBLE     (o)   the Jacobian matrix
-\param *det     DOUBLE     (i)   determinant of the Jacobian matrix
-\param *ele     ELEMENT    (i)   the element
-\param iel      INT        (i)   number of nodes of the element
+\param deriv    DOUBLE*     (i)   derivatives of the shape functions
+\param xjm      DOUBLE**    (o)   the Jacobian matrix
+\param det      DOUBLE*     (i)   determinant of the Jacobian matrix
+\param ele      ELEMENT*    (i)   the element
+\param iel      INT         (i)   number of nodes of the element
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -42,7 +42,7 @@ void c1_jaco(double  **deriv,
              int         iel)
 {
 /*----------------------------------------------------------------------*/
-int i,j,k,l,pc;
+int i,j,l,pc;
 double dum;
 #ifdef DEBUG 
 dstrc_enter("c1_jaco");

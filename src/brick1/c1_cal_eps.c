@@ -22,9 +22,9 @@ This routine evaluates linear/nonlinear strains from displacement derivatives
 for an 3D-hex-element.
 
 </pre>
-\param *disd   DOUBLE  (i)   displacement derivatives
-\param *eps    DOUBLE  (o)   strain vector
-\param iform   INT     (i)   index for nonlinear formulation
+\param disd     DOUBLE*  (i)   displacement derivatives
+\param eps      DOUBLE*  (o)   strain vector
+\param iform       INT   (i)   index for nonlinear formulation
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -36,8 +36,8 @@ void c1_eps( double   *disd,                /* displacement derivatives */
              int      iform)         /* index for nonlinear formulation */
 {
 /*----------------------------------------------------------------------*/
-int i,inode, node_start;
-double dum, fac, half;
+int i;
+double fac, half;
 double u11, u12, u13, u21, u22, u23, u31, u32, u33;
 double dn[6];
 /*----------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routines forstress evaluation for a 3D hex element
+\brief contains the routines for stress evaluation for a 3D hex element
 
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
@@ -21,36 +21,16 @@ This routine evaluates principal stresses at given gauss point
 for a 3D hex element.
 
 </pre>
-\param **srst   DOUBLE  (i)   stresses at given gauss point           
-\param  *s123   DOUBLE  (o)   principal stresses and direction at g.p.
+\param  srst   DOUBLE*  (i)   stresses at given gauss point           
+\param  s123   DOUBLE*  (o)   principal stresses and direction at g.p.
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
- | stress  (1) = sig-rr                                                 |
- | stress  (2) = sig-ss                                                 |
- | stress  (3) = sig-tt                                                 |
- | stress  (4) = sig-rs                                                 |
- | stress  (5) = sig-st                                                 |
- | stress  (6) = sig-tr                                                 |
- | stress  (7) = sig-  i   )                                            |
- | stress  (8) = sig- ii   ) --> principal stresses                     |
- | stress  (9) = sig-iii   )                                            |
- | stress (10) = alpha  (r,i)  )                                        |
- | stress (11) = alpha  (s,i)  )                                        |
- | stress (12) = alpha  (t,i)  )                                        |
- | stress (13) = alpha (r,ii)  )                                        |
- | stress (14) = alpha (s,ii)  ) -->   directions                       |
- | stress (15) = alpha (t,ii)  )                                        |
- | stress (16) = alpha(r,iii)  )                                        |
- | stress (17) = alpha(s,iii)  )                                        |
- | stress (18) = alpha(t,iii)  )                                        |
- *----------------------------------------------------------------------*/
-void c1pstr(double    *srst,/* stresses at given gauss point            */
-            double    *s123 /* principal stresses and direction at g.p. */
+void c1pstr(double    *srst,/* stresses at given gauss point           */
+            double    *s123 /* principal stresses and direction at g.p.*/
             )
 {
 /*----------------------------------------------------------------------*/
@@ -126,7 +106,6 @@ dstrc_enter("c1pstr");
     s123[3*(i+1)+2]=wt;
   }
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -140,12 +119,18 @@ return;
 
 <pre>                                                              al 06/02
 This routine calculates element stresses for postprocessing 
-for a 3D hex element.
+for a 3D hex element (integretion point values).
+
+pstrs[ 0.. 5] [stress-rr stress-ss stress-tt stress-rs stress-st stress-tr ]
+pstrs[ 6..11] [stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz ]
+pstrs[12..14] [stress-11 stress-22 stress-33 ]
+pstrs[15..23] [ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang-r3  ang-s3  ang-t3 ]
+pstrs[24..26] [x y z ] -global coordinates of integration points
 
 </pre>
-\param **srst   DOUBLE  (i)   stresses at given gauss point           
-\param  *s123   DOUBLE  (i)   principal stresses and direction at g.p.
-\param  *pstrs  DOUBLE  (o)   postprocessing stresses
+\param srst   DOUBLE*   (i)   stresses at given gauss point           
+\param s123   DOUBLE*   (i)   principal stresses and direction at g.p.
+\param pstrs  DOUBLE*   (o)   postprocessing stresses
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -162,9 +147,14 @@ int i;
 double aux[6];
 double strmin  = 1.0E-9;
 double strzero = 0.;
+double seqv;
 #ifdef DEBUG 
 dstrc_enter("c1_cstr");
 #endif
+/*------------------------------------------- mises effective stress ---*/
+seqv = ( srst[0]*srst[0] + srst[1]*srst[1] + srst[2]*srst[2])
+     + 2.0*(srst[3]*srst[3] + srst[4]*srst[4] + srst[5]*srst[5]);
+seqv=sqrt(seqv);
 /*----------------------------------------------------------------------*/
   for (i=0; i<6; i++) if(fabs(s123[i])<strmin) s123[i]=strzero;
   for (i=0; i<6; i++) if(fabs(srst[i])<strmin) srst[i]=strzero;
@@ -174,12 +164,12 @@ dstrc_enter("c1_cstr");
   pstrs[ 3]   =  srst[ 3];
   pstrs[ 4]   =  srst[ 4];
   pstrs[ 5]   =  srst[ 5];
-  pstrs[ 6]   =  s123[ 0];
-  pstrs[ 7]   =  s123[ 1];
-  pstrs[ 8]   =  s123[ 2];
-  pstrs[ 9]   =  s123[ 3];
-  pstrs[10]   =  s123[ 4];
-  pstrs[11]   =  s123[ 5];
+  pstrs[ 6]   =  s123[ 0];                           
+  pstrs[ 7]   =  s123[ 1];                          
+  pstrs[ 8]   =  s123[ 2];                          
+  pstrs[ 9]   =  s123[ 3];                          
+  pstrs[10]   =  s123[ 4];                          
+  pstrs[11]   =  s123[ 5];                          
   pstrs[12]   =  s123[ 6];
   pstrs[13]   =  s123[ 7];
   pstrs[14]   =  s123[ 8];
@@ -191,20 +181,19 @@ dstrc_enter("c1_cstr");
   c1pstr (aux,s123); 
   for (i=0; i<12; i++) if(fabs(s123[i])<strmin) s123[i]=strzero;
 /*----------------------------------------------------------------------*/
-  pstrs[12]   =  s123[ 0];
-  pstrs[13]   =  s123[ 1];
-  pstrs[14]   =  s123[ 2];
-  pstrs[15]   =  s123[ 3];
-  pstrs[16]   =  s123[ 4];
-  pstrs[17]   =  s123[ 5];
-  pstrs[18]   =  s123[ 6];
-  pstrs[19]   =  s123[ 7];
-  pstrs[20]   =  s123[ 8];
-  pstrs[21]   =  s123[ 9];
-  pstrs[22]   =  s123[10];
-  pstrs[23]   =  s123[11];
-  pstrs[24]   =  srst[ 6];
-  pstrs[25]   =  srst[ 7];
+  pstrs[12]   =  s123[ 0]; /*sig-  i   )                        */
+  pstrs[13]   =  s123[ 1]; /*sig- ii   ) --> principal stresses */
+  pstrs[14]   =  s123[ 2]; /*sig-iii   )                        */
+  pstrs[15]   =  s123[ 3]; /*alpha  (r,i)  )                    */
+  pstrs[16]   =  s123[ 4]; /*alpha  (s,i)  )                    */
+  pstrs[17]   =  s123[ 5]; /*alpha  (t,i)  )                    */
+  pstrs[18]   =  s123[ 6]; /*alpha (r,ii)  )                    */
+  pstrs[19]   =  s123[ 7]; /*alpha (s,ii)  ) -->   directions   */
+  pstrs[20]   =  s123[ 8]; /*alpha (t,ii)  )                    */
+  pstrs[21]   =  s123[ 9]; /*alpha(r,iii)  )                    */
+  pstrs[22]   =  s123[10]; /*alpha(s,iii)  )                    */
+  pstrs[23]   =  s123[11]; /*alpha(t,iii)  )                    */
+  pstrs[24]   =  seqv;     /*equivalent stress                  */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -214,17 +203,18 @@ return;
 } /* end of c1_cstr */
 
 /*!----------------------------------------------------------------------
-\brief calculate global coordinates referring to the natural ones
+\brief calculate global coordinates of integration points 
+       referring to the natural ones
 
 <pre>                                                              al 06/02
 This routine calculates global coordinates referring to the natural ones 
 for a 3D hex element.
 
 </pre>
-\param *funct  DOUBLE  (i)   value of form functions           
-\param  *xyze  DOUBLE  (i)   element coordinates               
-\param    iel     INT  (o)   number of nodes                   
-\param *gpcod  DOUBLE  (o)   global coordinates of actual point
+\param funct  DOUBLE*  (i)   value of form functions           
+\param  xyze  DOUBLE*  (i)   element coordinates               
+\param   iel      INT  (i)   number of nodes                   
+\param gpcod  DOUBLE*  (o)   global coordinates of actual point
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -239,8 +229,7 @@ void c1gcor(
             )
 {
 /*----------------------------------------------------------------------*/
-int i,j,k,l,pc;
-double dum;
+int i,k,pc;
 #ifdef DEBUG 
 dstrc_enter("c1gcor");
 #endif
@@ -261,12 +250,26 @@ dstrc_exit();
 #endif
 return;
 } /* end of c1gcor */
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief returns local coordinates of element nodes in rst-coordinates 
+
+<pre>                                                              al 06/02
+This routine returns local coordinates of element nodes in rst-coordinates 
+for a 3D hex element.
+
+</pre>
+\param   node     INT  (i)   element node           
+\param    irs     INT  (i)   flag for r,s or t             
+
+\warning There is nothing special to this routine
+\return double local coordinates of element node                                               
+\sa calling: ---; called by: c1_cstr()
+
+*----------------------------------------------------------------------*/
 double c1rsn (
              int node,
-             int irs,
-             int iel  /* number of nodes */
+             int irs
              )
 {
 /*----------------------------------------------------------------------*/
@@ -314,14 +317,14 @@ for a 3D hex element.
 
 </pre>
 \param       i     INT  (i)
-\param       n     INT  (i)
-\param     *zr     INT  (i)
-\param       z  DOUBLE  (i)
-\param  *value  DOUBLE  (o)
+\param       n     INT  (i) order legendre polynomial
+\param      zr     INT* (i)
+\param       z  DOUBLE  (i) z-coordinate
+\param   value  DOUBLE* (o) value at z
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: ---; called by: c1_cint()
+\sa calling: ---; called by: c1hxsm()
 
 *----------------------------------------------------------------------*/
 void c1lgpl (
@@ -353,8 +356,24 @@ dstrc_exit();
 #endif
 return;
 } /* end of c1lgpl */
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief subroutine of c1_sext
+
+<pre>                                                              al 06/02
+subroutine of c1_sext
+
+</pre>
+\param   nir,nis,nit     INT  (i) num GP in r/s/t direction
+\param      rk,sk,tk     INT  (i) r,s,t -coordinates
+\param      f[8][27]     DOUBLE  (i) original values on g.p.
+\param            fp     DOUBLE* (o) extrapolated values
+\param           xgr     DOUBLE* (i) coordinates of g.p.
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_sext()
+
+*----------------------------------------------------------------------*/
 void c1hxsm (
               int nir,
               int nis,
@@ -376,7 +395,7 @@ double xlr, xls, xlt;
 dstrc_enter("c1rsn");
 #endif
 /*----------------------------------------------------------------------*/
-  kkk=6;
+  kkk=6+1;
 /*----------------------------------------------------------------------*/
   for (i=0; i<8; i++) fp[i] = 0.;
 /*----------------------------------------------------------------------*/
@@ -402,20 +421,24 @@ return;
 \brief calculate element stresses for postprocessing
 
 <pre>                                                              al 06/02
-This routine calculates element stresses for postprocessing 
-for a 3D hex element.
+This routine calculates principal element stresses and fill stress vector
+for postprocessing for a 3D hex element.
 
+pstrs[ 0.. 5]: x-coord. y-coord. z-coord.  stress-rr   stress-ss   stress-tt   stress-rs   stress-st   stress-tr  
+pstrs[ 6..11]: x-coord. y-coord. z-coord. stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz 
+pstrs[12..23]: stress-11 stress-22 stress-33 ang-r1 ang-s1 ang-t1 ang-r2 ang-s2 ang-t2 ang-r3 ang-s3 ang-t3
+pstrs[    26]: equivalent stress
 </pre>
-\param **srst   DOUBLE  (i)   stresses at given gauss point           
-\param  *s123   DOUBLE  (i)   principal stresses and direction at g.p.
-\param  *pstrs  DOUBLE  (o)   postprocessing stresses
+\param  srst   DOUBLE*  (i)   element stresses at given gauss point           
+\param  s123   DOUBLE*  (i)   principal stresses and direction at g.p.
+\param  pstrs  DOUBLE*  (o)   postprocessing stresses
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_nstr(double    *srst,     /* element vector with stress resultants */
+void c1_nstr(double    *srst,     
              double    *s123,
              double    *pstrs
             )
@@ -468,6 +491,7 @@ dstrc_enter("c1_nstr");
   pstrs[23]   =  s123[11];
   pstrs[24]   =  srst[ 6];
   pstrs[25]   =  srst[ 7];
+  pstrs[26]   =  srst[ 6];/* equivalent stress */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -483,20 +507,24 @@ return;
 This routine extrapolates stresses from gauss points to nodal points 
 for a 3D hex element.
 
+nostrs[element node] [ 0.. 5]: stress-rr stress-ss stress-tt stress-rs stress-st stress-tr  
+nostrs[element node] [ 6..11]: stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz
+nostrs[element node] [12..23]: stress-11 stress-22 stress-33 ang-r1 ang-s1 ang-t1 ang-r2 ang-s2 ang-t2 ang-r3 ang-s3 ang-t3
+
 </pre>
-\param   **nostrs  DOUBLE  (o)
-\param     *funct  DOUBLE  (i)
-\param    **deriv  DOUBLE  (i)
-\param      **xjm  DOUBLE  (i)
-\param      *xyze  DOUBLE  (i)
-\param **gpstress  DOUBLE  (i)
-\param       *xgr  DOUBLE  (i)
-\param       *xgs  DOUBLE  (i)
-\param       *xgt  DOUBLE  (i)
-\param        nir     INT  (i)
-\param        nis     INT  (i)
-\param        nit     INT  (i)
-\param        iel     INT  (i)
+\param     nostrs  DOUBLE**  (o) element stresses extrapolated to the nodes
+\param      funct  DOUBLE*   (i) shape functions
+\param      deriv  DOUBLE**  (i) derivatives of the shape functions
+\param        xjm  DOUBLE**  (i) the Jacobian matrix
+\param       xyze  DOUBLE*   (i) element-node coordinates
+\param   gpstress  DOUBLE**  (i) element stresses of integration points
+\param        xgr  DOUBLE*   (i) local rst-coordinates of integration points
+\param        xgs  DOUBLE*   (i) ..
+\param        xgt  DOUBLE*   (i) ..
+\param        nir     INT    (i) number of integration points in rst-direction
+\param        nis     INT    (i) ..
+\param        nit     INT    (i) ..
+\param        iel     INT    (i) number of element nodes
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -504,30 +532,29 @@ for a 3D hex element.
 
 *----------------------------------------------------------------------*/
 void c1_sext(
-            double   **nostrs,
+            double nostrs[20][26],
             double     *funct,
             double    **deriv,
             double      **xjm,
             double      *xyze,
-            double **gpstress,
+            double gpstress[27][26],
             double       *xgr,
             double       *xgs,
             double       *xgt,
             int           nir,
             int           nis, 
             int           nit,
-            int           iel /* number of nodes */
+            int           iel 
             )
 {
 /*----------------------------------------------------------------------*/
-int nn,i,j,k,l,ngp;
+int nn,i,j,ngp;
 double g[6][6]; 
 double gi[6][6];
 double cnp1, cnp2, cnp3, det;
 double s123[12];
 double fgp[8][27];
 double fnp[8];
-double dum;
 #ifdef DEBUG 
 dstrc_enter("c1_sext");
 #endif
@@ -539,15 +566,16 @@ dstrc_enter("c1_sext");
        fgp[i][j] = 0.;}}
 
   for (i=0; i<ngp; i++){
+              fgp[6][i] = gpstress[i][24]; /* equivalent stress */
     for (j=0; j<6; j++){
               fgp[j][i] = gpstress[i][j+6];
   }}
 /*----------------------------------------------------------------------*/
   for (nn=1; nn<=iel; nn++)
   {
-    cnp1 = c1rsn (nn,1,iel);
-    cnp2 = c1rsn (nn,2,iel);
-    cnp3 = c1rsn (nn,3,iel);
+    cnp1 = c1rsn (nn,1);
+    cnp2 = c1rsn (nn,2);
+    cnp3 = c1rsn (nn,3);
 
     c1hxsm (nir,nis,nit,cnp1,cnp2,cnp3,fgp,fnp,xgr,xgs,xgt);
     /*------------------------- retransform stresses to local system ---*/
@@ -558,13 +586,10 @@ dstrc_enter("c1_sext");
     c1tram (xjm,g,gi);
 
     for (i=0; i<12; i++) s123[i] = 0.;
-    for (i=0; i< 6; i++) s123[i] = fnp[i];
+    for (i=0; i< 7; i++) s123[i] = fnp[i];
 
     c1trss2local (fnp,gi);
    /*------------------------- store nodal stresses in array stresk ---*/
-    /*nostrs[nn] [ 0.. 5]: x-coord.    y-coord.    z-coord.     stress-rr   stress-ss   stress-tt   stress-rs   stress-st   stress-tr*/  
-    /*nostrs[nn] [ 6..11]: x-coord.    y-coord.    z-coord.     stress-xx   stress-yy   stress-zz   stress-xy   stress-yz   stress-xz*/ 
-    /*nostrs[nn] [12..23]: stress-11   stress-22   stress-33    ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang-r3  ang-s3  ang-t3*/
     c1_nstr (fnp,s123,nostrs[nn-1]);
     }
 /*----------------------------------------------------------------------*/
