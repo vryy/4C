@@ -498,7 +498,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich_increment(actfield,adyn,0);
+ale_setdirich_increment(actfield,adyn);
 /*----------------------------------------------------------------------*/
 solserv_zero_mat(actintra,
 		 &(actsolv->sysarray[actsysarray]),
@@ -750,7 +750,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
 /* write dirichlet cond. from dt on sol_increment */
-ale_setdirich_increment(actfield,adyn,0);
+ale_setdirich_increment(actfield,adyn);
 /*----------------------------------------------------------------------*/
 solserv_zero_mat(
 		    actintra,
@@ -1030,7 +1030,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich_increment(actfield,adyn,0);
+ale_setdirich_increment(actfield,adyn);
 /*----------------------------------------------------------------------*/
 solserv_zero_mat(actintra,
 		 &(actsolv->sysarray[actsysarray]),
@@ -1270,7 +1270,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich_increment(actfield,adyn,0);
+ale_setdirich_increment(actfield,adyn);
 /*----------------------------------------------------------------------*/
 solserv_zero_mat(actintra,
 		 &(actsolv->sysarray[actsysarray]),

@@ -371,7 +371,6 @@ conditions at the time t to actnode->sol_increment.a.da[actpos][j].
 </pre>
 \param *actfield  FIELD          (i)  my field
 \param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
-\param actpos     INT            (i)  where to write in sol_increment array
 
 \warning There is nothing special to this routine.
 \return void                                               
@@ -380,7 +379,7 @@ called by: dyn_ale_nln(), dyn_ale_2step(), dyn_ale_spring(),
            dyn_ale_laplace()
 
 *----------------------------------------------------------------------*/
-void ale_setdirich_increment(FIELD *actfield, ALE_DYNAMIC *adyn, INT actpos)
+void ale_setdirich_increment(FIELD *actfield, ALE_DYNAMIC *adyn)
 {
 GNODE                *actgnode;
 NODE                 *actnode; 
@@ -388,9 +387,8 @@ INT                   i,j;
 INT                   numnp_total;
 INT                   numele_total;
 INT                   actcurve;
-INT                   max, diff;
 DOUBLE                timefac[2][ALENUMTIMECURVE];
-DOUBLE                T, dt;
+DOUBLE                T;
 DOUBLE                T_prev;
 DOUBLE                acttimefac, prevtimefac;
 DOUBLE                initval;
