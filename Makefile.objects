@@ -83,6 +83,7 @@ OBJS4	      = src/input_full/input_control_global.o \
 #                fluid3
 OBJS5	      = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
+                src/fluid3/f3_calextrhs.o \
                 src/fluid3/f3_calfuncderiv.o \
                 src/fluid3/f3_calgalmat.o \
 		src/fluid3/f3_calint.o \
@@ -209,6 +210,7 @@ OBJS12	      = src/wall1/w1_bop.o \
 #                fluid2
 OBJS14        = src/fluid2/f2_calelesize.o \
                 src/fluid2/f2_calele.o \
+                src/fluid2/f2_calextrhs.o \
                 src/fluid2/f2_calfuncderiv.o \
                 src/fluid2/f2_calint.o \
                 src/fluid2/f2_caliterrhs.o \
