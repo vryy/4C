@@ -195,6 +195,7 @@ DOUBLE val1, fac;
 DOUBLE c1,c2;       /* function constants                               */
 DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
 DOUBLE a;           /* parameters for Kim-Moin flow */
+DOUBLE s0;
 static DOUBLE savefac;
 
 #ifdef DEBUG 
@@ -231,11 +232,15 @@ case -2: /* f(t)=exp(1-1:t)_for_t<C1_else_const. */
    else
       fac = savefac;
 break;
-case -3: /* f(t)=1-cos(C1*PI*t) */
-   val1 = c1*PI*T;
+case -3: /* f(t)=1-cos(2*PI*C1*t) */
+   val1 = TWO*PI*c1*T;
    fac  = ONE - cos(val1);
-break; 
-case -4: /* f(t)=(sin(PI(t:C1-0.5))+1)*0.5 */
+break;   
+case -4: /* f(t)=C2*sin(2PI*C1*t) */
+   val1 = TWO*c1*PI*T;
+   fac  = c2*sin(val1);
+break;
+case -5: /* f(t)=(sin(PI(t:C1-0.5))+1)*0.5 */
    if (T<=c1)
    { 
       val1 = PI*(T/c1-ONE/TWO);
@@ -244,15 +249,6 @@ case -4: /* f(t)=(sin(PI(t:C1-0.5))+1)*0.5 */
    else
       fac = ONE;
 break;      
-case -5: /* f(t)=(sin(2PI*C1(t-C2)_for_t>C2_else_ZERO */
-   if (T>=c2)
-   { 
-      val1 = TWO*PI*c1*(T-c2); 
-      fac = sin(val1);
-   }
-   else
-      fac = ZERO;
-break; 
 case -6: /* Beltrami-Flow */
    visc = mat[0].m.fluid->viscosity;
    d = PI/TWO;
@@ -266,9 +262,12 @@ case -7: /* Kim-Moin-Flow */
    val1 = -c1*a*a*PI*PI*visc*T;
    fac = exp(val1);
 break;
-   
+case -8: /* f(t)=(C2/2PI*C1)*cos(2PI*C1*t) +s0*/
+   val1 = TWO*c1*PI;
+   s0   = -c2/val1;
+   fac = c2/val1*cos(val1*T)+s0;
+break;
 default:
-   fac = 0.0;
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
 } /* end switch(numex) */
 
