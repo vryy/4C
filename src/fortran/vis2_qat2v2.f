@@ -470,7 +470,7 @@ c $ dir no_recurrence
 c
  68	  kptri = kptri + 1
           if(kptri .gt. mptri) then
-            write(*,*) ' ERROR - MPTRI too small for fill'
+            write(*,*) ' ERROR - MPPTRI too small for fill'
             stop
           endif
 	  pptri(kptri) = ktri
@@ -963,9 +963,11 @@ C LINUX Stuttgart
           CMFILE='/home/ccarat/viscol/spec_white.col'
 C LINUX Muenchen
        ELSE IF (BGCOLOUR.EQ.20) THEN
-          CMFILE='/home/kuettler/fem/visual/spec_black.col'
+          CMFILE='/lnm/lib/visual/spec_black.col'
        ELSE IF (BGCOLOUR.EQ.21) THEN
-          CMFILE='/home/kuettler/fem/visual/spec_white.col'
+          CMFILE='/lnm/lib/visual/spec_white.col'
+       ELSE IF (BGCOLOUR.EQ.22) THEN
+          CMFILE='/lnm/lib/visual/spec_grey_.col'
        ELSE
           WRITE(*,*) 'cannot find colour file - STOPPING!'
           STOP

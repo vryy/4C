@@ -202,6 +202,7 @@ INT               ale_disp_file;          /* write ale displacements to .out */
 INT               ale_disp_gid;           /* write ale displacement to .flavia.res */
 INT               monitor;
 INT               relative_displ;         /* write relative displacements to .err */
+INT               steps_per_file;         /* number of result steps per binary file */
 } IO_FLAGS;
 
 

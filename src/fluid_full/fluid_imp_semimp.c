@@ -400,6 +400,16 @@ if (ioflags.fluid_stress_gid==1 && par.myrank==0)
   out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
 }
 
+/*-------------------------------------------- write solution to binary */
+#ifdef BINIO
+if (ioflags.fluid_sol_gid==1) {
+  out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_PRESSURE);
+}
+if (ioflags.fluid_stress_gid==1) {
+  out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_STRESS);
+}
+#endif
+
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
 {

@@ -282,6 +282,7 @@ if (genprob.probtyp==prb_ssi)
 if (frfind("---IO")==1)
 {
   frread();
+  ioflags.steps_per_file = 1000;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
     frchar("STRUCT_DISP_FILE",buffer,&ierr);
@@ -376,6 +377,7 @@ if (frfind("---IO")==1)
       if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp_gid=1;
     }
     frint("RELATIVE_DISP_NUM",&(ioflags.relative_displ),&ierr);
+    frint("FILESTEPS",&(ioflags.steps_per_file),&ierr);
     frread();
   }
 }

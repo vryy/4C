@@ -86,7 +86,7 @@ funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
 deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
 D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
 xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
+xyz       = amdef("xyz"    ,&xyz_a ,MAXNOD,numdf     ,"DA");
 
 bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;

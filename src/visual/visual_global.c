@@ -63,7 +63,7 @@ VISUAL2
 void ntavisual()
 {
 INT    i;        /* simply a counter                                    */
-#ifdef VISUAL2_PACKAGE
+#if defined(VISUAL2_PACKAGE) || defined(VISUAL3_PACKAGE)
 INT    actnum;   /* field number to visualise                           */
 INT    screen;
 INT    dummy;
@@ -97,7 +97,7 @@ part_assignfield();
 
 /*---------------------------------- allocate fluid integration data ---*/
 alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
- 
+
 switch(genprob.visual)
 {
 case 2: /* 2D - Problem: Visualisation with VISUAL2*/

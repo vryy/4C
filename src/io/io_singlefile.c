@@ -254,12 +254,7 @@ void init_bin_out_main(CHAR* outputname)
   dstrc_enter("init_bin_out_main");
 #endif
 
-  /* default value */
-#ifdef DEBUG
-  bin_out_main.steps_per_file = 30;
-#else
-  bin_out_main.steps_per_file = 1000;
-#endif
+  bin_out_main.steps_per_file = ioflags.steps_per_file;
 
   /* explizit initialization. */
   for (i=0; i<MAXFIELD; ++i)
