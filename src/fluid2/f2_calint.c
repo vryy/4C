@@ -59,7 +59,7 @@ time-RHS for one fluid2 element is calculated
 \param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
 \param **wa1	   DOUBLE	   (-)    working array
 \param **wa2	   DOUBLE	   (-)    working array
-\param   visc        DOUBLE	   (-)    viscosity
+\param   visc      DOUBLE	   (-)    viscosity
 \return void                                                   
 
 ------------------------------------------------------------------------*/
@@ -80,7 +80,7 @@ void f2_calint(
 	       DOUBLE         **derxy,   
 	       DOUBLE         **derxy2,  
 	       DOUBLE         **eveln,   
-	       DOUBLE         **evelng,  
+	       DOUBLE         **evelng, 
 	       DOUBLE          *epren,   
 	       DOUBLE          *edeadn,
 	       DOUBLE          *edeadng,	        	       
@@ -199,9 +199,9 @@ for (lr=0;lr<nir;lr++)
 /*------------------------------------------ compute matrix Kvp and Kpv */
 	 f2_calkvp(estif,funct,derxy,fac,iel);
 /*-------------------------------------------------- compute matrix Mvv */
-	 if (dynvar->nis==0)	  	 	    
+	 if (dynvar->nis==0 || dynvar->gen_alpha==1)	  	 	    
             f2_calmvv(emass,funct,fac,iel);
-      } /* endif (dynvar->nik>0) */
+      } /* endif (dynvar->nik>0 || dynvar->gen_alpha==1) */
       
 /*----------------------------------------------------------------------*
  |         compute Stabilisation matrices                               |
@@ -227,7 +227,7 @@ for (lr=0;lr<nir;lr++)
             f2_calstabkvp(ele,dynvar,estif,velint,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilisation for matrix Mvv */
-            if (dynvar->nis==0) 
+            if (dynvar->nis==0 || dynvar->gen_alpha==1) 
                f2_calstabmvv(ele,dynvar,emass,velint, 
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel); 
             if (ele->e.f2->ipres!=0)	        
@@ -236,7 +236,7 @@ for (lr=0;lr<nir;lr++)
                f2_calstabkpv(ele,dynvar,estif,velint,NULL,vderxy,
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilisation for matrix Mpv */
-	       if (dynvar->nis==0)
+	       if (dynvar->nis==0 || dynvar->gen_alpha==1)
 		  f2_calstabmpv(dynvar,emass,funct,derxy,fac,iel);
             } /* endif (ele->e.f2->ipres!=0) */
          } /* endif (dynvar->nie==0) */
@@ -253,7 +253,6 @@ for (lr=0;lr<nir;lr++)
  *----------------------------------------------------------------------*/ 
       if (dynvar->nii!=0)
       {
-         dserror("Iteration RHS not checked yet!\n");
 /*-------------- get convective velocities (n+1,i) at integration point */
 /*               covint = u*grad(u)                                     */
          f2_covi(vderxy,velint,covint);

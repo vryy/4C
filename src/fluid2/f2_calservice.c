@@ -34,7 +34,11 @@ get the element velocities and the pressure at different times
 NOTE: in contradiction to the old programm the kinematic pressure
       is stored in the solution history; so one can avoid the	 
       transformation in every time step 			 
-				      
+				 
+NOTE: if there is no classic time rhs (as described in WAW) the array
+         eveln is misused and does NOT contain the velocity at time (n)
+	 but rather a linear combination of old velocities and 
+	 accelerations depending upon the time integration scheme!!!!!
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)  actual element
@@ -53,7 +57,7 @@ void f2_calset(
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze,
                 DOUBLE         **eveln,    
-	        DOUBLE         **evelng,   
+	        DOUBLE         **evelng,
 	        DOUBLE          *epren,
 		DOUBLE          *edeadn,
 		DOUBLE          *edeadng,
@@ -100,7 +104,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 } /* end of loop over nodes of element */
    
 
-if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
+if(dynvar->nif!=0) /* -> computation of time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
 {
       for(i=0;i<ele->numnp;i++) /* loop nodes of element */
@@ -113,6 +117,21 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
          epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
       } /* end of loop over nodes of element */  
 } /* endif (dynvar->nif!=0) */		       
+
+if(dynvar->nim!=0) /* -> computation of mass rhs "on" ------------------
+                      -> vel(n)+a*acc(n) are needed --------------------*/
+/* NOTE: if there is no classic time rhs (as described in WAW) the array
+         eveln is misused and does NOT contain the velocity at time (n)
+	 but rather a linear combination of old velocities and 
+	 accelerations depending upon the time integration scheme!!!!!*/
+{
+      for(i=0;i<ele->numnp;i++) /* loop nodes of element */
+      {
+         actnode=ele->node[i];
+         eveln[0][i] = actnode->sol_increment.a.da[2][0];
+	 eveln[1][i] = actnode->sol_increment.a.da[2][1];
+      } /* end of loop over nodes of element */  
+} /* endif (dynvar->nim!=0) */		       
 
 /*------------------------------------------------ check for dead load */
 actgsurf = ele->g.gsurf;
