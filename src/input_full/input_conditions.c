@@ -761,6 +761,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read type of neumann condition */
    frchk("Live",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_live;
+   frchk("PredescrDomainLoad",&ierr);
+   if (ierr) actdsurf->neum->neum_type = pres_domain_load;
    frchk("constHydro_z",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_consthydro_z;
    frchk("increaseHydro_z",&ierr);
