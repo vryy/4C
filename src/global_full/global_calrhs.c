@@ -21,7 +21,7 @@ void calrhs(FIELD        *actfield,     /* the active field */
             CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
 int i;
-static ARRAY rhs_a;
+static ARRAY rhs_a; 
 static double *rhs;
 #ifdef PARALLEL 
 static ARRAY rhsrecv_a;
@@ -59,12 +59,16 @@ if (rhsrecv_a.fdim < rhs1->numeq_total)
 amzero(&rhsrecv_a);
 #endif
 /*--------- inherit the neuman conditions from design to discretization */
+if (container->inherit>0)
 for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
 /*---------------------------------- calculate point neumann conditions */
-rhs_point_neum(rhs,rhs1->numeq_total,actpart);
+if (container->point_neum>0) rhs_point_neum(rhs,rhs1->numeq_total,actpart);
 /*--- line/surface/volume loads are a matter of element integration and */
 /*                                            different in each element */
+#if 0
+/* changed: action is now set before calling calrhs!!!!                 */
 *action = calc_struct_eleload;
+#endif
 container->dvec         = rhs;
 container->dirich       = NULL;
 container->global_numeq = rhs1->numeq_total;
@@ -80,6 +84,14 @@ assemble_vec(actintra,sysarraytyp,sysarray,rhs1,rhs,1.0);
 /*
 m.gee
 testen, ob linienlasten ueber prozessorengrenzen hinweg richtig assembliert werden!
+*/
+/* genk 05/03 
+GLINEs haben nun einen Prozessor als eindeutigen Besitzer gline->proc.
+Integrale ueber die Elementkanten werden nur vom besitzenden Prozessor
+ausgewertet.
+Umsetzung fuer
+ - WALL1 - Linienlasten
+ - WALL1 - FSI-Lasten
 */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
