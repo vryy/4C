@@ -50,6 +50,9 @@ $(OBJS_FLUID):
 $(OBJS_FSI):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
+$(OBJS_SSI):
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS_SHELL9):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
@@ -103,7 +106,7 @@ clean:
 	rm -rf 	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
 		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
-		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
+		$(OBJS_FSI) $(OBJS_SSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
 		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_LS) $(OBJS_XFEM) \
