@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/hettich/
 //             0711 - 685-6575
 // 
-// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE UMFPACK  CHECK_MAX
+// necessary defines: D_FLUID D_FLUID2 D_FLUID2TU AZTEC_PACKAGE UMFPACK  CHECK_MAX
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)
@@ -271,9 +271,9 @@ DPOINT 0
 // DOBJECT
 DLINE 0
 ------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE ISTABI IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
 DSURF 1
- E 1 -   GLS yes yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
+ E 1 -   GLS yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE       1 DNODE 1
 NODE      16 DNODE 2

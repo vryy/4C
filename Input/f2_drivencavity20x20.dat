@@ -138,7 +138,7 @@ AZREUSE        0
 AZDROP         0.0  
 AZFILL         2.0  
 AZGFILL        0  
-AZTOL          1.0E-15  
+AZTOL          1.0E-12  
 AZITER         2500  
 AZSUB          50  
 AZOMEGA        1.0  
@@ -287,9 +287,9 @@ DPOINT 0
 // DOBJECT
 DLINE 0
 ------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE ISTABI IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
 DSURF 1
- E 1 -    GLS yes yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
+ E 1 -    GLS yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE     332 DNODE 1
 NODE       1 DNODE 2
@@ -1685,8 +1685,8 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
 // STRUCTURE 2 - 0 0 0 0 0 0                                      
 // ALE 3 - 0 0 0 0 0 0                                            
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 173 POSITION sol(1,1) NAME velx VALUE -0.01144271046249421 TOLERANCE 1e-9
-FLUID DIS 1 NODE 173 POSITION sol(1,2) NAME vely VALUE 0.0001027305751481696 TOLERANCE 1e-9
-FLUID DIS 1 NODE 173 POSITION sol(1,3) NAME pressure VALUE 0.001862187203092821 TOLERANCE 1e-9
+FLUID DIS 1 NODE 173 POSITION sol(1,1) NAME velx VALUE -0.0114427131599022 TOLERANCE 1e-9
+FLUID DIS 1 NODE 173 POSITION sol(1,2) NAME vely VALUE 0.0001027227429537 TOLERANCE 1e-9
+FLUID DIS 1 NODE 173 POSITION sol(1,3) NAME pressure VALUE 0.0018621907415871 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
