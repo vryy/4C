@@ -680,8 +680,6 @@ if (gls->iadvec!=0)
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nc(u):
  *----------------------------------------------------------------------*/
-  if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-  {
 /*----------------------------------------------------------------------*
     /
    |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega
@@ -771,7 +769,6 @@ if (gls->iadvec!=0)
         icol += 3;
       } /* end of loop over icn */
     }
-  } /* endif (fdyn->nic!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nr(u):
@@ -1063,8 +1060,6 @@ if (ihoel!=0 && gls->ivisc>0)
  *----------------------------------------------------------------------*/
     ccon = fac * taump * visc * signvi;
    
-    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-    {
       icol=0;
       for (icn=0;icn<iel;icn++)
       {
@@ -1106,7 +1101,6 @@ if (ihoel!=0 && gls->ivisc>0)
 	  icol += 3;
         } /* end of loop over icn */
       }
-    } /* endif (fdyn->nic!=0) */
    
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
@@ -1230,8 +1224,6 @@ if (ihoel!=0 && gls->ivisc>0)
  *----------------------------------------------------------------------*/
     ccon = fac * taump * visc * signvi;
 
-    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-    {
       icol=0;
       for (icn=0;icn<iel;icn++)
       {
@@ -1289,7 +1281,6 @@ if (ihoel!=0 && gls->ivisc>0)
 	  icol += 3;
         } /* end of loop over icn */
       }
-    } /* endif (fdyn->nic!=0) */
     
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
@@ -1998,8 +1989,7 @@ default:
 /*----------------------------------------------------------------------*
    Calculate stabilisation part Nc(u):
  *----------------------------------------------------------------------*/
-if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
+
 /*----------------------------------------------------------------------*
     /
    |  - tau_mp * grad(q) * u_old * grad(u) d_omega
@@ -2042,7 +2032,6 @@ if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
       icol += 3;
     } /* end loop over icn */
   }
-} /* endif (fdyn->nic!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate stabilisation part Nr(u):

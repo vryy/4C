@@ -382,8 +382,6 @@ else
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*----------------------------------------------------------------------*
     /
    |  v * u_old * grad(u)     d_omega
@@ -430,7 +428,6 @@ if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       icol += 3;
     } /* end loop over icn */
   }
-} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nr(u):

@@ -155,8 +155,6 @@ else
 /*----------------------------------------------------------------------*
    Calculate velocity bubble part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*----------------------------------------------------------------------*
     /
    |  v * u_old * grad(u_bub)     d_omega
@@ -203,7 +201,6 @@ if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       icol += 3;
     } /* end loop over icn */
   }
-} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate velocity bubble part of matrix Nr(u):
@@ -391,8 +388,6 @@ else
 /*----------------------------------------------------------------------*
    Calculate pressure bubble part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*----------------------------------------------------------------------*
                   /
  sum over j=1,3  |  v * u_old * grad(p_bub(j))     d_omega
@@ -441,7 +436,6 @@ if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       } /* end loop over irn */
     } /* end loop over icn */
   }
-} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate pressure bubble part of matrix Nr(u):
