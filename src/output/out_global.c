@@ -102,281 +102,295 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void out_general()
 {
-INT        i,j,k;
+  INT        i,j,k;
 #ifdef D_SHELL9
-INT        is_shell9;
+  INT        is_shell9;
 #endif
-FILE      *out = allfiles.out_out;
-FIELD     *actfield;
-INTRA     *actintra = NULL;
-ELEMENT   *actele;
-NODE      *actnode;
-INT        myrank;
-INT        nprocs;
+  FILE      *out = allfiles.out_out;
+  FIELD     *actfield;
+  INTRA     *actintra = NULL;
+  ELEMENT   *actele;
+  NODE      *actnode;
+  INT        myrank;
+  INT        nprocs;
 
 #ifdef DEBUG
-dstrc_enter("out_general");
+  dstrc_enter("out_general");
 #endif
 
-/*----------------------------------------------------------------------*/
-myrank = par.myrank;
-nprocs = par.nprocs;
-/*----------------------------------------------------------------------*/
-if (myrank==0)
-{
-/*-------------------------------------------------------- print header */
-fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"CCARAT outputfile\n");
-fprintf(out,"________________________________________________________________________________\n\n");
-for (i=0; i<5; i++)
-fprintf(out,"%s\n",allfiles.title[i]);
-fprintf(out,"________________________________________________________________________________\n");
-fprintf(out,"\n");
-/*------------------------------------------ print general problem data */
-fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"Total number of Fields    : %d\n",genprob.numfld);
-fprintf(out,"Total number of Elements  : %d\n",genprob.nele);
-fprintf(out,"Total number of Nodes     : %d\n",genprob.nnode);
-fprintf(out,"Total number of Materials : %d\n",genprob.nmat);
-switch(genprob.probtyp)
-{
-case prb_fsi:
-fprintf(out,"Type of Problem           : Fluid-Structure-Interaction\n");
-break;
-case prb_ssi:
-fprintf(out,"Type of Problem           : Structure-Structure-Interaction\n");
-break;
-case prb_structure:
-fprintf(out,"Type of Problem           : Structural\n");
-break;
-case prb_fluid:
-fprintf(out,"Type of Problem           : Fluid\n");
-break;
-case prb_opt:
-fprintf(out,"Type of Problem           : Optimization\n");
-break;
-case prb_ale:
-fprintf(out,"Type of Problem           : Ale\n");
-break;
-case prb_twophase:
-fprintf(out,"Type of Problem           : Two-Phase-Fluid-Flow\n");
-break;
-case prb_levelset:
-fprintf(out,"Type of Problem           : Levelset \n");
-break;
-default:
-dserror("Cannot print problem type");
-break;
-}
-switch(genprob.timetyp)
-{
-case time_static:
-fprintf(out,"Type of Time              : Static\n");
-fprintf(out,"Total Number of Steps     : %d\n",statvar->nstep);
-break;
-case time_dynamic:
-fprintf(out,"Type of Time              : Dynamic\n");
-/*fprintf(out,"Total Number of Steps     : %d\n",dyn->nstep);*/
-break;
-default:
-dserror("Cannot print time type");
-break;
-}
-fprintf(out,"________________________________________________________________________________\n");
-fprintf(out,"\n");
-/*----------------------------------------------------------------------*/
-for (i=0; i<genprob.numfld; i++)
-{
-   actfield = &(field[i]);
+  /*----------------------------------------------------------------------*/
+  myrank = par.myrank;
+  nprocs = par.nprocs;
+
+  if (myrank==0)
+  {
+    /*-------------------------------------------------------- print header */
+    fprintf(out,"________________________________________________________________________________\n\n");
+    fprintf(out,"CCARAT outputfile\n");
+    fprintf(out,"________________________________________________________________________________\n\n");
+    for (i=0; i<5; i++)
+      fprintf(out,"%s\n",allfiles.title[i]);
+    fprintf(out,"________________________________________________________________________________\n");
+    fprintf(out,"\n");
+
+    /*------------------------------------------ print general problem data */
+    fprintf(out,"________________________________________________________________________________\n\n");
+    fprintf(out,"Total number of Fields    : %d\n",genprob.numfld);
+    fprintf(out,"Total number of Elements  : %d\n",genprob.nele);
+    fprintf(out,"Total number of Nodes     : %d\n",genprob.nnode);
+    fprintf(out,"Total number of Materials : %d\n",genprob.nmat);
+
+    switch(genprob.probtyp)
+    {
+      case prb_fsi:
+        fprintf(out,"Type of Problem           : Fluid-Structure-Interaction\n");
+        break;
+      case prb_ssi:
+        fprintf(out,"Type of Problem           : Structure-Structure-Interaction\n");
+        break;
+      case prb_structure:
+        fprintf(out,"Type of Problem           : Structural\n");
+        break;
+      case prb_fluid:
+        fprintf(out,"Type of Problem           : Fluid\n");
+        break;
+      case prb_opt:
+        fprintf(out,"Type of Problem           : Optimization\n");
+        break;
+      case prb_ale:
+        fprintf(out,"Type of Problem           : Ale\n");
+        break;
+      case prb_twophase:
+        fprintf(out,"Type of Problem           : Two-Phase-Fluid-Flow\n");
+        break;
+      case prb_levelset:
+        fprintf(out,"Type of Problem           : Levelset \n");
+        break;
+      default:
+        dserror("Cannot print problem type");
+        break;
+    }
+
+    switch(genprob.timetyp)
+    {
+      case time_static:
+        fprintf(out,"Type of Time              : Static\n");
+        fprintf(out,"Total Number of Steps     : %d\n",statvar->nstep);
+        break;
+      case time_dynamic:
+        fprintf(out,"Type of Time              : Dynamic\n");
+        break;
+      default:
+        dserror("Cannot print time type");
+        break;
+    }
+    fprintf(out,"________________________________________________________________________________\n");
+    fprintf(out,"\n");
+
+
+    for (i=0; i<genprob.numfld; i++)
+    {
+      actfield = &(field[i]);
 #ifdef PARALLEL
-   actintra = &(par.intra[i]);
+      actintra = &(par.intra[i]);
 #else
-   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
-   if (!actintra) dserror("Allocation of INTRA failed");
-   actintra->intra_rank     = 0;
-   actintra->intra_nprocs   = 1;
+      actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+      if (!actintra) dserror("Allocation of INTRA failed");
+      actintra->intra_rank     = 0;
+      actintra->intra_nprocs   = 1;
 #endif
-fprintf(out,"================================================================================\n");
-switch(actfield->fieldtyp)
-{
-case fluid:
-fprintf(out,"FIELD: fluid\n");
-break;
-case ale:
-fprintf(out,"FIELD: ale\n");
-break;
-case structure:
-fprintf(out,"FIELD: structure\n");
-break;
-case levelset:
-fprintf(out,"FIELD: levelset\n");
-break;
-default:
-dserror("Cannot print fieldtype");
-break;
-}
-fprintf(out,"================================================================================\n");
-fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"Number of Elements  in this field : %d\n",actfield->dis[0].numele);
-fprintf(out,"Number of Nodes     in this field : %d\n",actfield->dis[0].numnp);
-fprintf(out,"Number of Dofs      in this field : %d\n",actfield->dis[0].numdf);
-fprintf(out,"Number of Equations in this field : %d\n",actfield->dis[0].numeq);
-fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"Element connectivity in global Ids:\n");
-for (j=0; j<actfield->dis[0].numele; j++)
-{
-actele = &(actfield->dis[0].element[j]);
-fprintf(out,"glob_Id %6d Nnodes %2d Nodes: ",actele->Id,actele->numnp);
-for (k=0; k<actele->numnp; k++) fprintf(out,"%6d ",actele->node[k]->Id);
-fprintf(out,"\n");
-}
-fprintf(out,"Element connectivity in field-local Ids:\n");
-for (j=0; j<actfield->dis[0].numele; j++)
-{
-actele = &(actfield->dis[0].element[j]);
-fprintf(out,"loc_Id %6d Nnodes %2d Nodes: ",actele->Id_loc,actele->numnp);
-for (k=0; k<actele->numnp; k++) fprintf(out,"%6d ",actele->node[k]->Id_loc);
-fprintf(out,"\n");
-}
-fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"Element types:\n");
-for (j=0; j<actfield->dis[0].numele; j++)
-{
-actele = &(actfield->dis[0].element[j]);
-switch(actele->eltyp)
-{
-case el_shell8:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL8\n",actele->Id,actele->Id_loc);
-break;
-case el_shell9:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL9\n",actele->Id,actele->Id_loc);
-break;
-case el_brick1:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d BRICK1\n",actele->Id,actele->Id_loc);
-break;
-case el_wall1:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d WALL1\n",actele->Id,actele->Id_loc);
-break;
-case el_fluid3:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3\n",actele->Id,actele->Id_loc);
-break;
-case el_fluid2:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",actele->Id,actele->Id_loc);
-break;
-case el_fluid2_xfem:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_XFEM\n",actele->Id,actele->Id_loc);
-break;
-case el_fluid2_pro:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_PRO\n",actele->Id,actele->Id_loc);
-break;
-case el_ale3:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",actele->Id,actele->Id_loc);
-break;
-case el_ale2:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE2\n",actele->Id,actele->Id_loc);
-break;
-case el_beam3:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d BEAM3\n",actele->Id,actele->Id_loc);
-break;
-case el_axishell:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d AXISHELL\n",actele->Id,actele->Id_loc);
-break;
-case el_interf:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d INTERFACE\n",actele->Id,actele->Id_loc);
-break;
-case el_wallge:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",actele->Id,actele->Id_loc);
-break;
-case el_ls2:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d LS2\n",actele->Id,actele->Id_loc);
-break;
-default:
-dserror("Cannot print elementtype");
-break;
-}
-}
-fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"Nodal Coordinates:\n");
-for (j=0; j<actfield->dis[0].numnp; j++)
-{
-actnode = &(actfield->dis[0].node[j]);
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %-18.5f %-18.5f %-18.5f \n",
-        actnode->Id,actnode->Id_loc,actnode->x[0],actnode->x[1],actnode->x[2]);
-}
-fprintf(out,"________________________________________________________________________________\n\n");
-#ifdef DEBUG
-fprintf(out,"Degrees of Freedom:\n");
-for (j=0; j<actfield->dis[0].numnp; j++)
-{
-actnode = &(actfield->dis[0].node[j]);
+      fprintf(out,"================================================================================\n");
 
-/* check if actnode belongs to a shell9 element */
+      switch(actfield->fieldtyp)
+      {
+        case fluid:
+          fprintf(out,"FIELD: fluid\n");
+          break;
+        case ale:
+          fprintf(out,"FIELD: ale\n");
+          break;
+        case structure:
+          fprintf(out,"FIELD: structure\n");
+          break;
+        case levelset:
+          fprintf(out,"FIELD: levelset\n");
+          break;
+        default:
+          dserror("Cannot print fieldtype");
+          break;
+      }
+      fprintf(out,"================================================================================\n");
+
+      fprintf(out,"________________________________________________________________________________\n\n");
+      fprintf(out,"Number of Elements  in this field : %d\n",actfield->dis[0].numele);
+      fprintf(out,"Number of Nodes     in this field : %d\n",actfield->dis[0].numnp);
+      fprintf(out,"Number of Dofs      in this field : %d\n",actfield->dis[0].numdf);
+      fprintf(out,"Number of Equations in this field : %d\n",actfield->dis[0].numeq);
+      fprintf(out,"________________________________________________________________________________\n\n");
+
+#ifdef DEBUG
+
+      fprintf(out,"Element connectivity in global Ids:\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+        actele = &(actfield->dis[0].element[j]);
+        fprintf(out,"glob_Id %6d Nnodes %2d Nodes: ",actele->Id,actele->numnp);
+        for (k=0; k<actele->numnp; k++)
+          fprintf(out,"%6d ",actele->node[k]->Id);
+        fprintf(out,"\n");
+      }
+
+      fprintf(out,"Element connectivity in field-local Ids:\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+        actele = &(actfield->dis[0].element[j]);
+        fprintf(out,"loc_Id %6d Nnodes %2d Nodes: ",actele->Id_loc,actele->numnp);
+        for (k=0; k<actele->numnp; k++)
+          fprintf(out,"%6d ",actele->node[k]->Id_loc);
+        fprintf(out,"\n");
+      }
+
+      fprintf(out,"________________________________________________________________________________\n\n");
+      fprintf(out,"Element types:\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+        actele = &(actfield->dis[0].element[j]);
+        switch(actele->eltyp)
+        {
+          case el_shell8:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL8\n",actele->Id,actele->Id_loc);
+            break;
+          case el_shell9:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL9\n",actele->Id,actele->Id_loc);
+            break;
+          case el_brick1:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d BRICK1\n",actele->Id,actele->Id_loc);
+            break;
+          case el_wall1:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d WALL1\n",actele->Id,actele->Id_loc);
+            break;
+          case el_fluid3:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3\n",actele->Id,actele->Id_loc);
+            break;
+          case el_fluid2:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",actele->Id,actele->Id_loc);
+            break;
+          case el_fluid2_xfem:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_XFEM\n",actele->Id,actele->Id_loc);
+            break;
+          case el_fluid2_pro:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_PRO\n",actele->Id,actele->Id_loc);
+            break;
+          case el_ale3:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",actele->Id,actele->Id_loc);
+            break;
+          case el_ale2:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE2\n",actele->Id,actele->Id_loc);
+            break;
+          case el_beam3:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d BEAM3\n",actele->Id,actele->Id_loc);
+            break;
+          case el_axishell:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d AXISHELL\n",actele->Id,actele->Id_loc);
+            break;
+          case el_interf:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d INTERFACE\n",actele->Id,actele->Id_loc);
+            break;
+          case el_wallge:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",actele->Id,actele->Id_loc);
+            break;
+          case el_ls2:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d LS2\n",actele->Id,actele->Id_loc);
+            break;
+          default:
+            dserror("Cannot print elementtype");
+            break;
+        }
+      }
+
+      fprintf(out,"________________________________________________________________________________\n\n");
+      fprintf(out,"Nodal Coordinates:\n");
+      for (j=0; j<actfield->dis[0].numnp; j++)
+      {
+        actnode = &(actfield->dis[0].node[j]);
+        fprintf(out,"NODE glob_Id %6d loc_Id %6d    %-18.5f %-18.5f %-18.5f \n",
+            actnode->Id,actnode->Id_loc,actnode->x[0],actnode->x[1],actnode->x[2]);
+      }
+
+      fprintf(out,"________________________________________________________________________________\n\n");
+
+
+      fprintf(out,"Degrees of Freedom:\n");
+      for (j=0; j<actfield->dis[0].numnp; j++)
+      {
+        actnode = &(actfield->dis[0].node[j]);
+
+        /* check if actnode belongs to a shell9 element */
 #ifdef D_SHELL9
-   is_shell9 = 0;
-   for (k=0; k<actnode->numele; k++)
-   {
-      if (actnode->element[k]->eltyp == el_shell9) is_shell9 = 1;
-   }
-   /* write dofs for shell9 */
-   if (is_shell9 == 1)
-   {
-     s9out_dof(actnode,j);
-     continue;
-   }
+        is_shell9 = 0;
+        for (k=0; k<actnode->numele; k++)
+        {
+          if (actnode->element[k]->eltyp == el_shell9) is_shell9 = 1;
+        }
+        /* write dofs for shell9 */
+        if (is_shell9 == 1)
+        {
+          s9out_dof(actnode,j);
+          continue;
+        }
 #endif /*D_SHELL9*/
 
-switch (actnode->numdf)
-{
-case 2:
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
-        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
-break;
-case 3:
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
-        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
-break;
-case 4:
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d\n",
-        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3]);
-break;
-case 5:
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d\n",
-        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4]);
-break;
-case 6:
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d\n",
-        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4],actnode->dof[5]);
-break;
-case 7:
-fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d   %6d\n",
-        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4],actnode->dof[5],actnode->dof[6]);
-break;
-default:
-#if 0
-   dserror("no output for actual numdf!\n");
-#endif
-break;
-}
-}
-fprintf(out,"________________________________________________________________________________\n\n");
-#endif
-/* .... other stuff */
+        switch (actnode->numdf)
+        {
+          case 2:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
+                actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
+            break;
+          case 3:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d\n",
+                actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2]);
+            break;
+          case 4:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d\n",
+                actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3]);
+            break;
+          case 5:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d\n",
+                actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4]);
+            break;
+          case 6:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d\n",
+                actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4],actnode->dof[5]);
+            break;
+          case 7:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d   %6d\n",
+                actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4],actnode->dof[5],actnode->dof[6]);
+            break;
+          default:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    No output for actual numdf = %6d \n",
+                actnode->Id,actnode->Id_loc,actnode->numdf);
+            break;
+        }
+      }
+      fprintf(out,"________________________________________________________________________________\n\n");
+
+#endif /*ifdef DEBUG */
 
 
+    } /* end of (i=0; i<genprob.numfld; i++) */
+
+  } /* end of if (myrank==0) */
 
 
-} /* end of (i=0; i<genprob.numfld; i++) */
-/*----------------------------------------------------------------------*/
-} /* end of if (myrank==0) */
-/*----------------------------------------------------------------------*/
-fflush(out);
+  fflush(out);
+
 #ifndef PARALLEL
-CCAFREE(actintra);
+  CCAFREE(actintra);
 #endif
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+  return;
 } /* end of out_general */
 
 
