@@ -79,14 +79,27 @@ void ntainp(void);
 
 
 /*----------------------------------------------------------------------*
+  | global_locsys.c                                       genk 01/03    |
+ *----------------------------------------------------------------------*/
+void locsys_inherit_to_node(void);
+void locsys_trans(ELEMENT *ele, DOUBLE **estif1, DOUBLE **estif2, 
+                                DOUBLE *vec1,    DOUBLE *vec2);
+void locsys_trans_sol(FIELD *actfield, INT idis, INT array, 
+                      INT place, INT flag);
+void locsys_trans_sol_dirich(FIELD *actfield, INT idis, INT array, 
+                             INT place, INT flag);
+void locsys_trans_nodval(ELEMENT *actele, DOUBLE *val, INT numdf, 
+                         INT iloccsys, INT flag);
+                                                                                                          
+/*----------------------------------------------------------------------*
   | global_monitoring.c                                  genk 01/03    |
  *----------------------------------------------------------------------*/
 void monitoring(
-    FIELD         *actfield,
-    INT            numf,
-    INT            actpos,
-    INT            actstep,
-    DOUBLE         time); 
+                  FIELD         *actfield,
+                  INT            numf,
+                  INT            actpos,
+                  DOUBLE         time
+               ); 
 
 
 /*----------------------------------------------------------------------*
