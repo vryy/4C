@@ -297,7 +297,7 @@ for (i=0; i<actsolv->nsysarray; i++)
 solserv_zero_mat(actintra,&(actsolv->sysarray[i]),&(actsolv->sysarray_typ[i]));
 
 /*---------------------------- get global and local number of equations */
-solserv_getmatdims(actsolv->sysarray[stiff_array],actsolv->sysarray_typ[stiff_array],
+solserv_getmatdims(&(actsolv->sysarray[stiff_array]),actsolv->sysarray_typ[stiff_array],
                    &numeq,&numeq_total);
 
 /*---------------------------------------allocate 4 dist. vectors 'rhs' */
