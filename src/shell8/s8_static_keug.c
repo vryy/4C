@@ -20,7 +20,7 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
 int                 i,j,k,l;                                /* some loopers */
 double              sum;
 int                 ngauss;
-
+double diff;
 int                 imass;                                  /* flag for calculating mass matrix */
 double              density;                                /* density of the material */
 double              facv,facw,facvw;                        /* variables for mass integration */
@@ -701,6 +701,26 @@ for (i=0; i<ele->numnp; i++)
    {
       force[i*numdf+j] += intforce[i*numdf+j];
    }
+}
+/*------------------------------------------------------ check symmetry */
+/*
+for (i=0; i<nd; i++)
+for (j=0; j<nd; j++)
+{
+   diff = FABS(estif[i][j]-estif[j][i]);
+   if (diff>EPS12)
+   {
+      printf("estif i %d j %d diff %30.25f\n",i,j,diff);
+   }
+}
+*/
+/* make estif absolute symmetric */
+for (i=0; i<nd; i++)
+for (j=i+1; j<nd; j++)
+{
+   diff = 0.5*(estif[i][j] + estif[j][i]);
+   estif[i][j] = diff;
+   estif[j][i] = diff;
 }
 /*----------------------------------------------------------------- end */
 /*----------------------------------------------------------------------*/
