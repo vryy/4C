@@ -96,6 +96,8 @@ typedef struct _DLINE
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
    INT                       liftdrag;
+   DOUBLE                    ld_center[2];	/* center of body */
+   INT                       aledline;
 #endif
 #ifdef D_AXISHELL
    struct _SAXI_THICK_CONDITION   *thickness;
@@ -162,6 +164,15 @@ typedef struct _DSURF
    struct _NEUM_CONDITION   *neum;        /* neumann conditions to this DSURF, else NULL */
    struct _DIRICH_CONDITION *dirich;      /* dirichlet conditions to this DSURF, else NULL */
    struct _COUPLE_CONDITION *couple;      /* coupling conditions to this DSURF, else NULL */
+   
+#ifdef D_FLUID /* fluid2 stabilisation is condition assigned to dsurface */
+   enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
+   union 
+   {
+     struct _STAB_PAR_GLS  *gls;/*! pointer to stabilisation parameters	*/
+   /*  struct _STAB_PRES_PRO *pp; */
+   } stabi;
+#endif
 } DSURF;
 
 
@@ -183,4 +194,13 @@ typedef struct _DVOL
    struct _NEUM_CONDITION   *neum;        /* neumann conditions to this DVOL, else NULL */
    struct _DIRICH_CONDITION *dirich;      /* dirichlet conditions to this DVOL, else NULL */
    struct _COUPLE_CONDITION *couple;      /* coupling conditions to this DVOL, else NULL */
+  
+#ifdef D_FLUID /* fluid3 stabilisation is condition assigned to dsurface */
+   enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
+   union 
+   {
+     struct _STAB_PAR_GLS  *gls;/*! pointer to stabilisation parameters	*/
+   /*  struct _STAB_PRES_PRO *pp; */
+   } stabi;
+#endif
 } DVOL;

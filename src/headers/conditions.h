@@ -62,6 +62,7 @@ typedef struct _DIRICH_CONDITION
      {
      dirich_none,
      dirich_FSI,
+     dirich_FSI_pseudo,
      dirich_freesurf
      }                         dirich_type;                       
 
@@ -86,7 +87,10 @@ typedef struct _FSI_COUPLE_CONDITION
      enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
      INT                       fsi_coupleId;
      enum _FSI_MESH            fsi_mesh;
-     
+     enum {
+           fsi_real,
+	   fsi_pseudo
+	  }                   fsi_typ;     
 } FSI_COUPLE_CONDITION;
 /*----------------------------------------------------------------------*
  | fluid freesurface condition                            genk 10/02    |
@@ -137,3 +141,40 @@ typedef struct _SAXI_LOAD_CONDITION
   DOUBLE            pw[2];          /* normal load at the two dnodes of the line */
   INT               interpol_pw;    /* interpolation typ: 0=along curve; 1= along vertical axis */
 } SAXI_LOAD_CONDITION;
+
+/*!----------------------------------------------------------------------
+\brief stabilisation parameters
+
+<pre>                                                         chfoe 01/04
+stabilisation parameters used for fluid2 or fluid3 elements in case of 
+'classic' GLS stabilisation as described in the dissertation of W. Wall.
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef struct _STAB_PAR_GLS
+{
+/*---------------------------------------------- stabilisation flags ---*/
+   INT	istabi;		/*!< stabilisation: 0=no; 1=yes			*/
+   INT	iadvec;		/*!< advection stab.: 0=no; 1=yes		*/
+   INT	ipres;		/*!< pressure stab.: 0=no; 1=yes		*/
+   INT	ivisc;		/*!< diffusion stab.: 0=no; 1=GLS-; 2=GLS+	*/
+   INT	icont;		/*!< continuity stab.: 0=no; 1=yes		*/
+   INT	istapa;		/*!< version of stab. parameter			*/
+   INT	istapc;		/*!< flag for stab parameter calculation	*/
+   INT	mk;		/*!< 0=mk fixed 1=min(1/3,2*C); -1 mk=1/3	*/
+   INT	ihele[3];	/*!< x/y/z length-def. for vel/pres/cont stab	*/
+   INT	ninths;		/*!< number of integ. points for streamlength	*/
+/*----------------------------------------------- stabilisation norm ---*/
+   INT	norm_p;		/*!< p-norm: p+1<=infinity; 0=Max.norm		*/
+
+/*------------------------------------------ stabilisation constants ---*/
+   DOUBLE	clamb;
+
+/*------------------------------- statiblisation control information ---*/
+   INT	istrle;		/*!< has streamlength to be computed		*/
+   INT	iareavol;	/*!< calculation of area length			*/
+   INT	iduring;	/*!< calculation during INT.-pt.loop		*/
+   INT	itau[3];	/*!< has diagonals etc. to be computed		*/
+   INT	idiaxy;		/*!< flags for tau_? calculation 
+			     	  (-1: before; 1: during)		*/
+} STAB_PAR_GLS;
