@@ -290,7 +290,6 @@ OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calextrhs.o \
                 src/fluid2/f2_calfuncderiv.o \
                 src/fluid2/f2_calint.o \
-                src/fluid2/f2_calint_gen_alpha.o \
                 src/fluid2/f2_calint_tu.o \
                 src/fluid2/f2_calint_tu_1.o \
                 src/fluid2/f2_caliterrhs.o \
