@@ -169,7 +169,9 @@ typedef enum _ASSEMBLE_ACTION
                        assemble_one_matrix,
                        assemble_two_matrix,
                        assemble_one_exchange,
-                       assemble_two_exchange
+                       assemble_two_exchange,
+                       assemble_close_1matrix,
+                       assemble_close_2matrix
 } ASSEMBLE_ACTION;                         
 /*----------------------------------------------------------------------*
  | enum SOLVER_TYP                                        m.gee 7/01    |

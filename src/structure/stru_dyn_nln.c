@@ -85,6 +85,7 @@ double acttime;
 void dyn_nln_structural() 
 {
 int             i,j,k;                  /* simply a counter */
+int             counter=0;
 int             numeq;              /* number of equations on this proc */
 int             numeq_total;        /* total number of equations */
 int             init;               /* flag for solver_control call */
@@ -92,6 +93,7 @@ int             itnum;              /* counter for NR-Iterations */
 int             convergence;        /* convergence flag */
 int             mod_disp,mod_stress;
 int             mod_res_write;
+int             updevry_disp;
 int             restart;
 double          maxtime;
 double          t0_res,t1_res;
@@ -130,6 +132,13 @@ double          dirichfacs[10];     /* factors needed for dirichlet-part of rhs 
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
+int             contact = 0;        /* flag for contact onoff */
+ARRAY           contactforce_a;     /* redundant vector of full length for contact forces */
+double         *cforce;
+DIST_VECTOR    *con;                /*  contact forces */              
+int             augon=0;
+int             actaug;
+
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
 
@@ -143,14 +152,9 @@ actfield           = &(field[0]);
 actsolv            = &(solv[0]);
 actpart            = &(partition[0]);
 action             = &(calc_action[0]);
-sdyn               =   alldyn[0].sdyn;
+sdyn               = alldyn[0].sdyn;
+contact            = sdyn->contact;
 container.fieldtyp = actfield->fieldtyp;
-/*----------------------------------------- check for explicit dynamics */
-if (sdyn->Typ == centr_diff)
-{
-   dyn_nln_stru_expl();
-   goto end_expl;
-}
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
@@ -265,6 +269,13 @@ for (i=0; i<1; i++) solserv_zero_vec(&(acc[i]));
 intforce = amdef("intforce",&intforce_a,numeq_total,1,"DV");
 /*----------- create a vector of full length for dirichlet part of rhs */
 dirich = amdef("dirich",&dirich_a,numeq_total,1,"DV");
+/*------------------ create a vector of full length for contact forces */
+if (contact)
+{
+   cforce = amdef("contact",&contactforce_a,numeq_total,1,"DV");
+   solserv_create_vec(&con,1,numeq_total,numeq,"DV");
+   solserv_zero_vec(&(con[0]));
+}
 /*----------------------------------------- allocate 3 DIST_VECTOR fie */
 /*                    to hold internal forces at t, t-dt and inbetween */ 
 solserv_create_vec(&fie,3,numeq_total,numeq,"DV");
@@ -319,6 +330,11 @@ if (par.myrank==0)
 if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
    out_gid_msh();
 
+/*----------------- init the contact algorithms for contact with shells */
+#ifdef S8CONTACT
+if (contact)
+s8contact_init(actfield,actpart,actintra);
+#endif
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
 container.dvec          = NULL;
@@ -457,7 +473,7 @@ Values of the different vectors from above in one loop:
 timeloop:
 t0 = ds_cputime();
 /*------------------------------------------------- write memory report */
-if (par.myrank==0) dsmemreport();
+/*if (par.myrank==0) dsmemreport();*/
 /*--------------------------------------------------- check for restart */
 if (restart)
 {
@@ -469,6 +485,7 @@ if (restart)
    maxtime = sdyn->maxtime;
    /*------------- save the restart interval, as it will be overwritten */
    mod_res_write = sdyn->res_write_evry;
+   updevry_disp  = sdyn->updevry_disp;
    /*----------------------------------- the step to read in is restart */
    restart_read_nlnstructdyn(restart,
                              sdyn,
@@ -487,6 +504,10 @@ if (restart)
                              &intforce_a,
                              &dirich_a,
                              &container);     /* contains variables defined in container.h */
+   /*--------- read restart of contact data of shell contact if present */
+#ifdef S8CONTACT
+   if (contact)  s8_contact_restartread(actintra,sdyn->step);
+#endif
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
@@ -494,6 +515,7 @@ if (restart)
    sdyn->maxtime = maxtime;
    /*-------------------------------- put restart interval to structure */
    sdyn->res_write_evry = mod_res_write;
+   sdyn->updevry_disp   = updevry_disp;
    /*------------------------------------------- switch the restart off */
    restart=0;
    /*----------------------------------------------------- measure time */
@@ -577,6 +599,17 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_
 solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
 amzero(&dirich_a);
 amzero(&intforce_a);
+/*---------------------------------------------------- contact detection */
+#ifdef S8CONTACT
+if (contact)
+{
+   s8_contact_searchupdate(actintra,sdyn->dt);
+   amzero(&contactforce_a);
+   augon = 0;
+   s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon);
+}
+#endif
+/*-------------------------------------------------------- call elements */
 *action = calc_struct_nlnstiffmass;
 container.dvec          = intforce;
 container.dirich        = dirich;
@@ -588,6 +621,12 @@ calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,actio
 solserv_zero_vec(&fie[1]);
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
              &(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
+
+/*-------------------------------- put contact forces to internal forces */
+#ifdef S8CONTACT
+if (contact)
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[1]),cforce,1.0);
+#endif
 
 /* interpolate external forces rhs[0] = (1-alphaf)rhs[1] + alphaf*rhs[2] */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
@@ -644,11 +683,29 @@ solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
+/*--------------------------------------- make testprintout for contact */
+/*if (par.myrank==0 && ioflags.struct_disp_gid) 
+{
+   out_gid_sol("displacement",actfield,actintra,counter,0);
+   counter++;
+}
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
+/*----------------------------------------------------------------------*/
+/*                     AUGMENTATION FOR CONTACT                         */
+/*----------------------------------------------------------------------*/
+#ifdef S8CONTACT
+if (contact)
+{
+   actaug = 0;
+   /* set lagrangian multipliers in contact to zero for nodes no longer in contact */
+   s8_contact_setlagr(actfield,actpart,actintra);
+}
+augstart:;
+#endif
 /*----------------------------------------------------------------------*/
 /*                     PERFORM EQUILLIBRIUM ITERATION                   */
 /*----------------------------------------------------------------------*/
@@ -674,6 +731,17 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_
 solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
 amzero(&intforce_a);
 amzero(&dirich_a);
+
+/*------------------------------------------------------ detect contact */
+#ifdef S8CONTACT
+if (contact)
+{
+   amzero(&contactforce_a);
+   augon = 0;
+   s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon);
+}
+#endif
+
 /* call element routines for calculation of tangential stiffness and intforce */
 *action = calc_struct_nlnstiffmass;
 container.dvec          = intforce;
@@ -686,6 +754,16 @@ calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,actio
 solserv_zero_vec(&fie[2]);
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
              &(actsolv->sysarray[stiff_array]),&(fie[2]),intforce,1.0);
+
+/*-------------------------------- put contact forces to internal forces */
+#ifdef S8CONTACT
+if (contact)
+{
+solserv_zero_vec(&(con[0]));
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(con[0]),cforce,1.0);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[2]),cforce,1.0);
+}
+#endif
 
 /* interpolate external forces rhs[0] = (1-alphaf)rhs[1] + alphaf*rhs[2] */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
@@ -737,6 +815,12 @@ solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
+/*--------------------------------------- make testprintout for contact */
+/*if (par.myrank==0 && ioflags.struct_disp_gid)
+{
+   out_gid_sol("displacement",actfield,actintra,counter,0);
+   counter++;
+}
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
@@ -748,6 +832,7 @@ dmax        = 0.0;
 solserv_vecnorm_euclid(actintra,&(work[0]),&(dynvar.dinorm));
 solserv_vecnorm_euclid(actintra,&(dispi[0]),&(dynvar.dnorm));
 solserv_vecnorm_Linf(actintra,&(work[0]),&dmax);
+if (par.myrank==0) printf("                                                   Residual %10.5E\n",dynvar.dinorm);fflush(stdout);
 if (dynvar.dinorm < sdyn->toldisp ||
     dynvar.dnorm  < EPS14 ||
     (dynvar.dinorm < EPS14 && dmax < EPS12) )
@@ -763,6 +848,34 @@ else
 /*----------------------------------------------------------------------*/
 /*                      END OF EQUILLIBRIUM ITERATION                   */
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*                     AUGMENTATION FOR CONTACT                         */
+/*----------------------------------------------------------------------*/
+#ifdef S8CONTACT
+if (contact)
+{
+   s8_contact_updlagr(actfield,actpart,actintra);
+   if (augon)
+   {
+      /* the lagrange mutlipliers have to be updated either for next augmentation */
+      /* or for the next predictor, which also uses the correct multipliers */
+      actaug++;
+      /* make augmentation for actaug = 0,1,2, where 0 is penalty method */
+      if (actaug<3)
+      { 
+         if (par.myrank==0) printf("\nAUGMENTATION %d\n",actaug);fflush(stdout);
+         augon = 0;
+         goto augstart;
+      }
+   }
+/*---------------------------- make contact history for frictional case */
+s8_contact_history(actintra);
+/*------------------------ write contact forces to the nodes in place 9 */
+solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+/*-------------------------------- set the augmenation flag back to off */
+augon = 0;
+}/* end of if (contact) */
+#endif
 /*----------- make temporary copy of actsolv->rhs[2] to actsolv->rhs[0] */
 /*                                   (load at t-dt)                     */
 /* because in  dyn_nlnstructupd actsolv->rhs[2] is overwritten but is   */
@@ -846,8 +959,10 @@ if (par.myrank==0)
    if (ioflags.struct_disp_gid==1)
    {
       out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
-      out_gid_sol("velocities",actfield,actintra,sdyn->step,1);
+      out_gid_sol("velocity",actfield,actintra,sdyn->step,1);
       out_gid_sol("accelerations",actfield,actintra,sdyn->step,2);
+      if (contact)
+      out_gid_sol("contact",actfield,actintra,sdyn->step,9);
    }
    if (mod_stress==0)
    if (ioflags.struct_stress_gid==1)
@@ -857,6 +972,7 @@ if (par.myrank==0)
 }
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)
+{
 restart_write_nlnstructdyn(sdyn,
                            &dynvar,
                            actfield,
@@ -873,6 +989,11 @@ restart_write_nlnstructdyn(sdyn,
                            &intforce_a,
                            &dirich_a,
                            &container);     /* contains variables defined in container.h */
+#ifdef S8CONTACT
+if (contact)
+   s8_contact_restartwrite(actintra,sdyn->step);
+#endif
+}                           
 /*----------------------------------------------------- print time step */
 if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
 
@@ -885,6 +1006,7 @@ goto timeloop;
 /*----------------------------------------------------------------------*/
 end:
 /*--------------------------------------------------- cleaning up phase */
+if (contact) amdel(&contactforce_a);
 amdel(&intforce_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
@@ -897,7 +1019,6 @@ solserv_del_vec(&work,3);
 #ifndef PARALLEL 
 CCAFREE(actintra);
 #endif
-end_expl:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

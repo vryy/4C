@@ -346,6 +346,36 @@ assemble(sysarray1,
          container);
 #endif
 /*----------------------------------------------------------------------*/
+/* 
+   in the case of dynamically increasing sparse matrices (spooles) the 
+   matrix has to be closed after assembly
+*/
+#ifdef D_CONTACT
+switch(*action)
+{
+case calc_struct_linstiff      : assemble_action = assemble_close_1matrix; break;
+case calc_struct_nlnstiff      : assemble_action = assemble_close_1matrix; break;
+case calc_struct_nlnstiffmass  : assemble_action = assemble_close_2matrix; break;
+case calc_struct_eleload       : assemble_action = assemble_do_nothing;    break;
+case calc_struct_stress        : assemble_action = assemble_do_nothing;    break;
+case calc_struct_update_istep  : assemble_action = assemble_do_nothing;    break;
+case calc_ale_stiff            : assemble_action = assemble_close_1matrix; break;
+case calc_ale_rhs              : assemble_action = assemble_do_nothing;    break;
+case calc_fluid                : assemble_action = assemble_close_1matrix; break;
+default: dserror("Unknown type of assembly"); break;
+}
+assemble(sysarray1,
+         NULL,
+         sysarray2,
+         NULL,
+         actpart,
+         actsolv,
+         actintra,
+         NULL,
+         assemble_action,
+         container);
+#endif
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif

@@ -126,7 +126,11 @@ case rc_ptr:
    amadd(&(A->rc_ptr->A_loc),&(B->rc_ptr->A_loc),factor,0);
 break;
 case spoolmatrix:
+#ifdef D_CONTACT
+   add_spooles_matrix(A->spo,B->spo,factor,0,actintra);
+#else
    amadd(&(A->spo->A_loc),&(B->spo->A_loc),factor,0);
+#endif
 break;
 case bdcsr:
    amadd(&(A->bdcsr->a),&(B->bdcsr->a),factor,0);
@@ -236,6 +240,7 @@ int                  imyrank;
 int                  inprocs;
 int                  ilower,iupper,jlower,jupper;
 int                  err=1;
+int                  minusone=-1;
 #ifdef DEBUG 
 dstrc_enter("solserv_zero_mat");
 #endif
@@ -293,6 +298,10 @@ case bdcsr:
 break;
 case spoolmatrix:
    amzero(&(mat->spo->A_loc));
+#ifdef D_CONTACT
+   aminit(&(mat->spo->irn_loc),&minusone);
+   aminit(&(mat->spo->jcn_loc),&minusone);
+#endif
    mat->spo->is_factored=0;
 #ifdef SPOOLES_PACKAGE
    if (mat->spo->ncall > 0)

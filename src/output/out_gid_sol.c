@@ -1277,6 +1277,107 @@ if (strncmp(string,"displacement",stringlenght)==0)
    next:
 #endif /*D_SHELL9*/
 
+/*============================================ result type is contact */
+#ifdef D_CONTACT
+if (strncmp(string,"contact",stringlenght)==0)
+{
+   resulttype        = "VECTOR";
+   resultplace       = "ONNODES";
+   gpset             = ""; 
+   rangetable        = actgid->standardrangetable;
+   ncomponent        = 3;
+   componentnames[0] = "x-con";
+   componentnames[1] = "y-con";
+   componentnames[2] = "z-con";
+   /*-------------------------------------------------------------------*/
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+                                                             sign,string,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace
+                                                             );
+   fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+                                            sign,actgid->standardrangetable,sign
+                                            );
+   switch (genprob.ndim)
+   {
+     case 3:
+       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+                                                       sign,componentnames[0],sign,
+                                                       sign,componentnames[1],sign,
+                                                       sign,componentnames[2],sign
+                                                       );
+     break;
+     case 2:
+       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c\n",
+                                                       sign,componentnames[0],sign,
+                                                       sign,componentnames[1],sign
+                                                       );
+     break;
+     default:
+       dserror("Unknown numer of dimensions");
+     break;
+   }
+   fprintf(out,"VALUES\n");
+#if 1 /* this is hexahedra output for shell8 element */
+   if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
+   {
+      tot_numnp = genprob.nnode;
+      scal = 1.0;
+      sdc  = actfield->dis[0].element[0].e.s8->sdc;
+      for (i=0; i<actfield->dis[0].numnp; i++)
+      {
+         actnode = &(actfield->dis[0].node[i]);
+         /* the lower surface */
+         fprintf(out," %6d %23.15E %23.15E %23.15E\n",
+                                                    actnode->Id+1,
+                                                    -actnode->sol.a.da[place][0]+actnode->sol.a.da[place][3]*scal/sdc,
+                                                    -actnode->sol.a.da[place][1]+actnode->sol.a.da[place][4]*scal/sdc,
+                                                    -actnode->sol.a.da[place][2]+actnode->sol.a.da[place][5]*scal/sdc
+                                                    );
+         /* the upper surface */
+         fprintf(out," %6d %23.15E %23.15E %23.15E\n",
+                                                    actnode->Id+1+tot_numnp,
+                                                    -actnode->sol.a.da[place][0]-actnode->sol.a.da[place][3]*scal/sdc,
+                                                    -actnode->sol.a.da[place][1]-actnode->sol.a.da[place][4]*scal/sdc,
+                                                    -actnode->sol.a.da[place][2]-actnode->sol.a.da[place][5]*scal/sdc
+                                                    );
+      }
+   }
+#else
+   for (i=0; i<actfield->dis[0].numnp; i++)
+   {
+      actnode = &(actfield->dis[0].node[i]);
+      switch (genprob.ndim)
+      {
+	case 3:
+        fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[place][0],
+                                                   actnode->sol.a.da[place][1],
+                                                   actnode->sol.a.da[place][2]
+                                                   );
+	break;
+	case 2:
+        fprintf(out," %6d %18.5E %18.5E \n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[place][0],
+                                                   actnode->sol.a.da[place][1]
+                                                   );
+        break;
+	default:
+	  dserror("Unknown number of dimensions");
+        break;
+      }
+   }
+#endif
+   fprintf(out,"END VALUES\n");
+} /* end of (strncmp(string,"contact",stringlenght)==0) */
+#endif
 /*========================================= result type is eigenmodes */
 if (strncmp(string,"eigenmodes",stringlenght)==0)
 {

@@ -177,12 +177,12 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of nodes to an element                                |
  *----------------------------------------------------------------------*/
-#define MAXNOD           (27)
+#define MAXNOD           (9)
 
 /*----------------------------------------------------------------------*
  | maximum number of elements to a node                                 |
  *----------------------------------------------------------------------*/
-#define MAXELE           (25)
+#define MAXELE           (10)
 
 /*----------------------------------------------------------------------*
  | maximum number of conditions (dirich/neumann) to a node              |
@@ -192,12 +192,12 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
  *----------------------------------------------------------------------*/
-#define MAXDOFPERNODE    (33)
+#define MAXDOFPERNODE    (6)
 
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
-#define MAXGAUSS         (360)  /*20 Layers 3x3x2 integrated*/
+#define MAXGAUSS         (9)  
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
@@ -256,6 +256,7 @@ static INT iminarg1,iminarg2;
  | a set of numbers                                                     |
  *----------------------------------------------------------------------*/
 #define VERYLARGEINT     (1000000000)
+#define VERYLARGEREAL    (1000000000.0)
 
 /*----------------------------------------------------------------------*
  | shell8                                                               |

@@ -89,7 +89,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (mat[i].m.neohooke==NULL) dserror("Alloocation of NEO_HOOKE material failed");
       frdouble("YOUNG",&(mat[i].m.neohooke->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.neohooke->possionratio)  ,&ierr);
-      frdouble("DENSITY",&(mat[i].m.neohooke->density)     ,&ierr);
+      frdouble("DENS",&(mat[i].m.neohooke->density)     ,&ierr);
    }
    frchk("MAT_3DMisesPlastic",&ierr);
    if (ierr==1)

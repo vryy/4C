@@ -129,13 +129,17 @@ for (i=0; i<nd; i++)
    }
 #endif
    /*-------------------- ii is not a coupled dofs or I am master owner */
+#ifndef D_CONTACT
    if (!ii_iscouple || ii_owner==myrank)
    {
+
       ii_index      = find_index(ii,update,numeq);
       if (ii_index==-1) dserror("dof ii not found on this proc");
       start         = rowptr[ii_index];
       lenght        = rowptr[ii_index+1]-rowptr[ii_index];
+
    }
+#endif   
    /*================================= loop over j (the element column) */
    /*                            This is the full unsymmetric version ! */
    for (j=0; j<nd; j++)
@@ -152,12 +156,18 @@ for (i=0; i<nd; i++)
       /*                (either not a coupled dof or I am master owner) */
       if (!ii_iscouple || ii_owner==myrank)
       {
+#ifdef D_CONTACT
+         add_val_spo(ii,jj,spo1,estif[i][j],actintra);
+         if (istwo)
+         add_val_spo(ii,jj,spo2,emass[i][j],actintra);
+#else
          index         = find_index(jj,&(jcn[start]),lenght);
          if (index==-1) dserror("dof jj not found in this row ii");
          index        += start;
          A_loc[index] += estif[i][j];
          if (istwo)
          B_loc[index] += emass[i][j];
+#endif
       }
       /*======================================== do main-diagonal entry */
       /*                           (a coupled dof and I am slave owner) */
@@ -178,6 +188,408 @@ dstrc_exit();
 #endif /* end of ifdef SPOOLES_PACKAGE */
 return;
 } /* end of add_spo */
+
+
+/*----------------------------------------------------------------------*
+ |  add value to spooles matrix (with enlargment)            m.gee 11/02|
+ *----------------------------------------------------------------------*/
+void add_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
+{
+#ifdef SPOOLES_PACKAGE
+int     i,j,k,l,index,colstart,colend,foundit;
+int     counter,hasmoved;
+int    *irn,*jcn,*update,*rptr,numeq;
+double *A;
+int     nnz,nnz_new;
+int     rsize;
+int     move_index;
+int     sf_col,ef_col,st_col,et_col;
+#ifdef DEBUG 
+dstrc_enter("add_val_spo");
+#endif
+/*----------------------------------------------------------------------*/
+irn    = spo->irn_loc.a.iv;
+jcn    = spo->jcn_loc.a.iv;
+update = spo->update.a.iv;
+numeq  = spo->numeq;
+rptr   = spo->rowptr.a.iv;
+A      = spo->A_loc.a.dv;
+/*----------------------------------------------------------------------*/
+index  = find_index(ii,update,numeq);
+if (index==-1) dserror("Cannot find local dof");
+colstart = rptr[index];
+colend   = rptr[index+1];
+/* check whether entry jj already exists */
+foundit=find_index(jj,&jcn[colstart],colend-colstart);
+/* found the entry jj */
+if (foundit != -1)
+{
+   A[colstart+foundit] += val;
+}
+/* entry does not exists in this row */
+else
+{
+   if (jcn[colstart]==-1) /* there is still room in this row */
+   {
+      irn[colstart] = ii;
+      jcn[colstart] = jj;
+      A[colstart] = val;
+      mg_sort(&(jcn[colstart]),colend-colstart,&(irn[colstart]),&(A[colstart]));
+   }
+   else /* there is no room in matrix */
+   {
+      startenlarge:
+      nnz = spo->A_loc.fdim;
+      nnz_new = (int)(2.5*nnz);
+      rsize   = (int)(nnz_new/numeq);
+      nnz_new = rsize*numeq;
+      irn = amredef(&(spo->irn_loc),nnz_new,1,"IV");
+      jcn = amredef(&(spo->jcn_loc),nnz_new,1,"IV");
+      A   = amredef(&(spo->A_loc)  ,nnz_new,1,"DV");
+      /* make sure, the new rowsize is larger then the old one */
+      for (l=0; l<numeq; l++)
+         if (rptr[l+1]-rptr[l] > rsize-1)
+            goto startenlarge;
+      /* init the new part of irn and jcn */
+      for (i=nnz; i<nnz_new; i++)
+      {
+         irn[i]=-1;
+         jcn[i]=-1;
+      }
+      /* loop row from back to front and move them */
+      for (k=numeq-1; k>=0; k--)
+      {
+         move_index = k;
+         /* get old column range */
+         sf_col = rptr[move_index];
+         ef_col = rptr[move_index+1];
+         /* get new column range */
+         st_col = move_index * rsize;
+         et_col = (move_index+1) *rsize;
+         /* loop the old row and copy to new location */
+         counter=0;
+         hasmoved=0;
+         for (l=sf_col; l<ef_col; l++)
+         {
+            if (jcn[l]==-1) continue;
+            hasmoved++;
+            jcn[st_col+counter] = jcn[l];
+            irn[st_col+counter] = irn[l];
+            A[st_col+counter]   = A[l];
+            counter++;
+         }
+         /* make sure, there is no old stuff in the new row */
+         for (l=st_col+counter; l<et_col; l++)
+         {
+            jcn[l] = -1;
+            irn[l] = -1;
+            A[l]   = 0.0;
+         }
+         /* transfer complete, now sort the values to the back of new row */
+         mg_sort(&(jcn[st_col]),et_col-st_col,&(irn[st_col]),&(A[st_col]));
+         /* set new ptr in rptr */
+         rptr[move_index+1] = et_col;
+      }
+      /* now there is room in the row, add value */
+      /* the row has moved, so get the range again */
+      colstart = rptr[index];
+      colend   = rptr[index+1];
+      if (jcn[colstart]==-1)
+      {
+         jcn[colstart] = jj;
+         irn[colstart] = ii;
+         A[colstart]   = val;
+         mg_sort(&(jcn[colstart]),colend-colstart,&(irn[colstart]),&(A[colstart]));
+      }
+      else
+         dserror("Fatal error in redimensioning of system matrix");
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif /* end of ifdef SPOOLES_PACKAGE */
+return;
+} /* end of add_val_spo */
+
+
+
+/*----------------------------------------------------------------------*
+ |  set value to spooles matrix (with enlargment)            m.gee 11/02|
+ *----------------------------------------------------------------------*/
+void set_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
+{
+#ifdef SPOOLES_PACKAGE
+int     i,j,k,l,index,colstart,colend,foundit;
+int     counter,hasmoved;
+int    *irn,*jcn,*update,*rptr,numeq;
+double *A;
+int     nnz,nnz_new;
+int     rsize;
+int     move_index;
+int     sf_col,ef_col,st_col,et_col;
+#ifdef DEBUG 
+dstrc_enter("set_val_spo");
+#endif
+/*----------------------------------------------------------------------*/
+irn    = spo->irn_loc.a.iv;
+jcn    = spo->jcn_loc.a.iv;
+update = spo->update.a.iv;
+numeq  = spo->numeq;
+rptr   = spo->rowptr.a.iv;
+A      = spo->A_loc.a.dv;
+/*----------------------------------------------------------------------*/
+index  = find_index(ii,update,numeq);
+if (index==-1) dserror("Cannot find local dof");
+colstart = rptr[index];
+colend   = rptr[index+1];
+/* check whether entry jj already exists */
+foundit=find_index(jj,&jcn[colstart],colend-colstart);
+/* found the entry jj */
+if (foundit != -1)
+{
+   A[colstart+foundit] = val;
+}
+/* entry does not exists in this row */
+else
+{
+   if (jcn[colstart]==-1) /* there is still room in this row */
+   {
+      irn[colstart] = ii;
+      jcn[colstart] = jj;
+      A[colstart] = val;
+      mg_sort(&(jcn[colstart]),colend-colstart,&(irn[colstart]),&(A[colstart]));
+   }
+   else /* there is no room in matrix */
+   {
+      startenlarge:
+      printf("MESSAGE: Enlargment of system matrix\n");
+      nnz = spo->A_loc.fdim;
+      nnz_new = (int)(2.5*nnz);
+      rsize   = (int)(nnz_new/numeq);
+      nnz_new = rsize*numeq;
+      irn = amredef(&(spo->irn_loc),nnz_new,1,"IV");
+      jcn = amredef(&(spo->jcn_loc),nnz_new,1,"IV");
+      A   = amredef(&(spo->A_loc)  ,nnz_new,1,"DV");
+      /* make sure, the new rowsize is larger then the old one */
+      for (l=0; l<numeq; l++)
+         if (rptr[l+1]-rptr[l] > rsize-1)
+            goto startenlarge;
+      /* init the new part of irn and jcn */
+      for (i=nnz; i<nnz_new; i++)
+      {
+         irn[i]=-1;
+         jcn[i]=-1;
+      }
+      /* loop row from back to front and move them */
+      for (k=numeq-1; k>=0; k--)
+      {
+         move_index = k;
+         /* get old column range */
+         sf_col = rptr[move_index];
+         ef_col = rptr[move_index+1];
+         /* get new column range */
+         st_col = move_index * rsize;
+         et_col = (move_index+1) *rsize;
+         /* loop the old row and copy to new location */
+         counter=0;
+         hasmoved=0;
+         for (l=sf_col; l<ef_col; l++)
+         {
+            if (jcn[l]==-1) continue;
+            hasmoved++;
+            jcn[st_col+counter] = jcn[l];
+            irn[st_col+counter] = irn[l];
+            A[st_col+counter]   = A[l];
+            counter++;
+         }
+         /* make sure, there is no old stuff in the new row */
+         for (l=st_col+counter; l<et_col; l++)
+         {
+            jcn[l] = -1;
+            irn[l] = -1;
+            A[l]   = 0.0;
+         }
+         /* transfer complete, now sort the values to the back of new row */
+         mg_sort(&(jcn[st_col]),et_col-st_col,&(irn[st_col]),&(A[st_col]));
+         /* set new ptr in rptr */
+         rptr[move_index+1] = et_col;
+      }
+      /* now there is room in the row, add value */
+      /* the row has moved, so get the range again */
+      colstart = rptr[index];
+      colend   = rptr[index+1];
+      if (jcn[colstart]==-1)
+      {
+         jcn[colstart] = jj;
+         irn[colstart] = ii;
+         A[colstart]   = val;
+         mg_sort(&(jcn[colstart]),colend-colstart,&(irn[colstart]),&(A[colstart]));
+      }
+      else
+         dserror("Fatal error in redimensioning of system matrix");
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif /* end of ifdef SPOOLES_PACKAGE */
+return;
+} /* end of set_val_spo */
+
+
+
+ 
+/*----------------------------------------------------------------------*
+ |  finalize the assembly to the spooles matrix              m.gee 11/02|
+ *----------------------------------------------------------------------*/
+void close_spooles_matrix(struct _SPOOLMAT *spo, INTRA *actintra)
+{
+#ifdef SPOOLES_PACKAGE
+int     i,j,k,index,colstart,colend,foundit,actrow,offset;
+int    *irn,*jcn,*update,*rptr,numeq;
+double *A;
+
+#ifdef DEBUG 
+dstrc_enter("close_spooles_matrix");
+#endif
+/*----------------------------------------------------------------------*/
+irn    = spo->irn_loc.a.iv;
+jcn    = spo->jcn_loc.a.iv;
+update = spo->update.a.iv;
+numeq  = spo->numeq;
+rptr   = spo->rowptr.a.iv;
+A      = spo->A_loc.a.dv;
+/*----------------------------------------------------------------------*/
+/*-------------------------- loop the rows and move values to the front */
+for (i=0; i<numeq; i++)
+{
+   actrow = i;
+   colstart = rptr[actrow];
+   colend   = rptr[actrow+1];
+   offset   = 0;
+   /* count number of unused entries in this row */
+   for (j=colstart; j<colend; j++)
+   {
+      if (jcn[j]==-1) offset++;
+      else            break;
+   }
+   /* do nothing, if there is no offset */
+   if (offset==0) continue;
+   /* move all values offset to the front */
+   for (k=j; k<colend; k++)
+   {
+      jcn[k-offset] = jcn[k];
+      irn[k-offset] = irn[k];
+      A[k-offset]   = A[k];
+      jcn[k]        = -1;
+      irn[k]        = -1;
+      A[k]          = 0.0;
+   }
+   /* resize the row */
+   rptr[actrow+1] = colend-offset;
+}
+/* redefine the array */
+if (spo->jcn_loc.fdim > (int)(1.2 * rptr[numeq]))
+{
+   amredef(&(spo->jcn_loc),rptr[numeq],1,"IV");
+   amredef(&(spo->irn_loc),rptr[numeq],1,"IV");
+   amredef(&(spo->A_loc)  ,rptr[numeq],1,"DV");
+}
+/* set correct number of nonzeros */
+spo->nnz = rptr[numeq];
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif /* end of ifdef SPOOLES_PACKAGE */
+return;
+} /* end of close_spooles_matrix */
+
+
+
+/*----------------------------------------------------------------------*
+ |  add one spooles matrix to another                        m.gee 11/02|
+ |  init=0 : to = to + from * factor                                    |
+ |  init=1:  to =      from * factor                                    |
+ *----------------------------------------------------------------------*/
+void add_spooles_matrix(struct _SPOOLMAT *to, struct _SPOOLMAT *from,
+                       double factor, int init, INTRA *actintra)
+{
+#ifdef SPOOLES_PACKAGE
+int     i,j,k,index,foundit,actrow,offset;
+int     colstart_to,colend_to;
+int     colstart_from,colend_from;
+int    *irn_to,*jcn_to,*update_to,*rptr_to,numeq_to;
+double *A_to;
+int    *irn_from,*jcn_from,*update_from,*rptr_from,numeq_from;
+double *A_from;
+
+#ifdef DEBUG 
+dstrc_enter("add_spooles_matrix");
+#endif
+/*----------------------------------------------------------------------*/
+irn_to    = to->irn_loc.a.iv;
+jcn_to    = to->jcn_loc.a.iv;
+update_to = to->update.a.iv;
+numeq_to  = to->numeq;
+rptr_to   = to->rowptr.a.iv;
+A_to      = to->A_loc.a.dv;
+irn_from    = from->irn_loc.a.iv;
+jcn_from    = from->jcn_loc.a.iv;
+update_from = from->update.a.iv;
+numeq_from  = from->numeq;
+rptr_from   = from->rowptr.a.iv;
+A_from      = from->A_loc.a.dv;
+/*----------------------------------------------------------------------*/
+if (numeq_to != numeq_from) dserror("Number of rows not equal");
+/*-------------------------- loop the rows and move values to the front */
+for (i=0; i<numeq_to; i++)
+{
+   actrow        = i;
+   colstart_to   = rptr_to[actrow];
+   colend_to     = rptr_to[actrow+1];
+   colstart_from = rptr_from[actrow];
+   colend_from   = rptr_from[actrow+1];
+   for (j=colstart_from; j<colend_from; j++)
+   {
+       if (!init)
+       add_val_spo(irn_from[j],jcn_from[j],to,A_from[j]*factor,actintra);
+       else
+       set_val_spo(irn_from[j],jcn_from[j],to,A_from[j]*factor,actintra);
+   }
+}
+close_spooles_matrix(to,actintra);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif /* end of ifdef SPOOLES_PACKAGE */
+return;
+} /* end of add_spooles_matrix */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*----------------------------------------------------------------------*
  |  fill sendbuffer isend and dsend                           m.gee 1/02|
@@ -326,7 +738,12 @@ for (i=0; i<numrecv; i++)
    {
       index         = start+j;
       jj            = jcn[index];
+      if (jj==-1) continue;
+#ifdef D_CONTACT
+      add_val_spo(ii,jj,spo,drecv[i][jj],actintra);
+#else
       A_loc[index] += drecv[i][jj];
+#endif
    }
 }/*---------------------------------------------- end of receiving loop */
 /*-------------------------------------------- free allocated MPI-stuff */

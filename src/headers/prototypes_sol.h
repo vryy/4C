@@ -587,6 +587,11 @@ void exchange_coup_spo(
                          INTRA         *actintra,
                          SPOOLMAT      *spo
                         );
+void add_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
+void set_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
+void close_spooles_matrix(struct _SPOOLMAT *spo, INTRA *actintra);
+void add_spooles_matrix(struct _SPOOLMAT *to, struct _SPOOLMAT *from,
+                       double factor, int init, INTRA *actintra);
 /*----------------------------------------------------------------------*
  |  solver_colsol.c                                       m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -1187,3 +1192,18 @@ void solver_copy_csr(
                        DBCSR         *amatrix_csr,
 		       int            numeq_total
                      );
+/*! 
+\addtogroup CONTACT 
+*//*! @{ (documentation module open)*/
+/*----------------------------------------------------------------------*
+ |  s8_contact1.c                                         m.gee 3/03    |
+ *----------------------------------------------------------------------*/
+#ifdef S8CONTACT
+void s8_contact_detection(FIELD        *actfield, 
+                          INTRA        *actintra, 
+                          SPARSE_ARRAY *matrix, 
+                          SPARSE_TYP   *matrix_type, 
+                          double       *cforce,
+                          int          *iscontact);
+#endif
+/*! @} (documentation module close)*/

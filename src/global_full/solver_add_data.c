@@ -146,6 +146,70 @@ if (assemble_action==assemble_one_matrix)
    break;
    }
 }
+/*----------------- close the system matrix, or close two system matices */
+if (assemble_action==assemble_close_1matrix)
+{
+   switch(sysa1_typ)
+   {
+   case mds:
+   break;
+   case msr:
+   break;
+   case parcsr:
+   break;
+   case ucchb:
+   break;
+   case dense:
+   break;
+   case rc_ptr:
+   break;
+   case ccf:
+   break;
+   case skymatrix:
+   break;
+   case spoolmatrix:
+      close_spooles_matrix(sysa1->spo,actintra);
+   break;
+   case sparse_none:
+      dserror("Unspecified typ of system matrix");
+   break;
+   default:
+      dserror("Unspecified typ of system matrix");
+   break;
+   }
+}
+if (assemble_action==assemble_close_2matrix)
+{
+   switch(sysa1_typ)
+   {
+   case mds:
+   break;
+   case msr:
+   break;
+   case parcsr:
+   break;
+   case ucchb:
+   break;
+   case dense:
+   break;
+   case rc_ptr:
+   break;
+   case ccf:
+   break;
+   case skymatrix:
+   break;
+   case spoolmatrix:
+      close_spooles_matrix(sysa1->spo,actintra);
+      close_spooles_matrix(sysa2->spo,actintra);
+   break;
+   case sparse_none:
+      dserror("Unspecified typ of system matrix");
+   break;
+   default:
+      dserror("Unspecified typ of system matrix");
+   break;
+   }
+}
 /*-------------- option==1 is exchange of coupled dofs among processors */
 /*                    (which, of course, only occures in parallel case) */
 #ifdef PARALLEL 
@@ -232,6 +296,7 @@ if (assemble_action==assemble_one_exchange)
       }
 }
 #endif
+/*------------------------------------- close the dynamic system matrix */
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG 

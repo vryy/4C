@@ -8,6 +8,13 @@
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
  |  routine to control dynamic execution                 m.gee 5/01     |
  *----------------------------------------------------------------------*/
 void caldyn()
@@ -19,7 +26,14 @@ dstrc_enter("caldyn");
 switch (genprob.probtyp)
 {
 case prb_structure:
-    dyn_nln_structural();
+    if (alldyn[0].sdyn->Typ == centr_diff)
+    {
+       dyn_nln_stru_expl();/* generalized alfa time integration */
+    }
+    if (alldyn[0].sdyn->Typ == gen_alfa)
+    {
+       dyn_nln_structural();/* central difference time integration */
+    }
 break;
 case prb_fluid:
     dyn_fluid();

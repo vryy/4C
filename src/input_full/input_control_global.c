@@ -492,6 +492,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("RESEVRYDISP",&(sdyn->updevry_disp)  ,&ierr);
    frint("RESEVRYSTRS",&(sdyn->updevry_stress),&ierr);
    frint("RESTARTEVRY",&(sdyn->res_write_evry),&ierr);
+   frint("CONTACT"    ,&(sdyn->contact)       ,&ierr);
    
 /*--------------read double */
    frdouble("TIMESTEP",&(sdyn->dt)     ,&ierr);

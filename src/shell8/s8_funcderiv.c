@@ -6,11 +6,11 @@
  | shape functions and derivatives                            m.gee 6/01|
  *----------------------------------------------------------------------*/
 void s8_funct_deriv(double     *funct, 
-                       double    **deriv, 
-                       double      r, 
-                       double      s,
-                       DIS_TYP     typ,
-                       int         option)
+                    double    **deriv, 
+                    double      r, 
+                    double      s,
+                    DIS_TYP     typ,
+                    int         option)
 {
 int            i;
 const double   q12 = 1.0/2.0;

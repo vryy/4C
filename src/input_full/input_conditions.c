@@ -77,11 +77,11 @@ inpdesign_surf_neum();
 inpdesign_vol_neum();
 /*---------------------------------- input of nodal coupling conditions */
 inpdesign_nodal_couple();
-/*---------------------------------- input of line coupling conditions */
+/*----------------------------------- input of line coupling conditions */
 inpdesign_line_couple();
-/*---------------------------------- input of surf coupling conditions */
+/*----------------------------------- input of surf coupling conditions */
 inpdesign_surf_couple();
-/*---------------------------------- input of vol coupling conditions */
+/*------------------------------------ input of vol coupling conditions */
 inpdesign_vol_couple();
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
