@@ -57,9 +57,11 @@ DOUBLE  xp[3],x1[3],x2[3];
 DOUBLE  fac;
 
 DOUBLE    a,d;
+DOUBLE    h,um;
 
 FUNCT_LIN  *f_lin;
 FUNCT_QUA  *f_qua;
+FUNCT_CYL  *f_cyl;
 
 #ifdef DEBUG 
 dstrc_enter("cal_dirich_fac");
@@ -192,6 +194,18 @@ switch (funct[funct_num].functtyp)
         fac = 1.0;
         break;
     }
+    break;
+
+
+  case funct_cyl:  /* spatial function for kim-moin flow */
+    f_cyl = funct[funct_num].typ.funct_cyl;
+
+    /* set some constants */
+    h    = 0.41;
+    um = f_cyl->um;
+    
+    /* calculate values */ 	 
+    fac = 16*um*xp[1]*xp[2]*(h-xp[1])*(h-xp[2]) / (h*h*h*h);
     break;
 
 

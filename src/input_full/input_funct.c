@@ -211,6 +211,16 @@ if (frfind(string)==0) goto end;
       actfunct->functtyp = funct_kim;
       actfunct->typ.funct_kim = NULL;
    }
+
+   frchk("CYLINDER_3D",&ierr);
+   if (ierr==1) 
+   {
+      actfunct->functtyp = funct_cyl;
+      actfunct->typ.funct_cyl = (FUNCT_CYL*)CCACALLOC(1,sizeof(FUNCT_CYL));
+      /* read 1 double values */
+      frdouble_n("CYLINDER_3D",&(tmp[0]),1,&ierr);
+      actfunct->typ.funct_cyl->um = tmp[0];
+   }
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG 

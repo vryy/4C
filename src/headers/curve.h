@@ -52,7 +52,8 @@ typedef enum _FUNCTTYP
                        funct_lin,           /* linear function */
                        funct_qua,           /* quadratic parabola */
                        funct_bel,           /* beltrami flow function */
-                       funct_kim            /* Kim-Moin flow function */
+                       funct_kim,           /* Kim-Moin flow function */
+                       funct_cyl            /* 3d cylinder */
 } FUNCTTYP;                         
 
 
@@ -74,6 +75,7 @@ typedef struct _FUNCT
     struct _FUNCT_QUA   *funct_qua;        /* quadratic parabola */
     struct _FUNCT_BEL   *funct_bel;        /* Beltrami flow function */
     struct _FUNCT_KIM   *funct_kim;        /* Kim-Moin flow function */
+    struct _FUNCT_CYL   *funct_cyl;        /* 3D cylinder */
   }                      typ;              /* name of union */ 
 
 } FUNCT;
@@ -146,5 +148,19 @@ typedef struct _FUNCT_BEL
 {
   INT                 dummy;
 } FUNCT_BEL;
+
+
+/*!----------------------------------------------------------------------
+\brief structure FUNCT_CYL                                            
+
+<pre>                                                              mn 02/04
+This structure contains all information about a loading function.
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef struct _FUNCT_CYL
+{
+  DOUBLE                 um;
+} FUNCT_CYL;
 
 
