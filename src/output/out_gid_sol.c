@@ -257,6 +257,9 @@ for (i=0; i<genprob.numfld; i++)
 #endif
 #ifdef D_FLUID3      
       case el_fluid3: 
+#ifdef D_FLUID3   
+         f3_out_gid_sol_str(NULL, actfield, 1);
+#endif
          if (actele->numnp==8)  
          {
             actgid->is_fluid3_222   = 1;
@@ -2357,6 +2360,47 @@ if (strncmp(string,"stress",stringlenght)==0)
        fprintf(out,"no stresses available\n");
      break;
      }
+   }
+#endif
+#ifdef D_FLUID3   
+   /* bricks have 6 stress - use 3D matrix */
+   if (actgid->is_fluid3_222)
+   {  
+     resulttype                             = "MATRIX";
+     resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset             = actgid->fluid3_222_name;
+     rangetable        = actgid->standardrangetable;
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+     fprintf(out,"# TIME %18.5E \n",time);   
+     fprintf(out,"# STEP %6d    \n",step);   
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"RESULT %cfluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+         sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
+     fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+     fprintf(out,"VALUES\n");
+     f3_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
+     fprintf(out,"END VALUES\n");
+   }   
+   if (actgid->is_fluid3_333)
+   {  
+     resulttype                             = "MATRIX";
+     resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset             = actgid->fluid3_333_name;
+     rangetable        = actgid->standardrangetable;
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+     fprintf(out,"# TIME %18.5E \n",time);   
+     fprintf(out,"# STEP %6d    \n",step);   
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+         sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
+     fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+     fprintf(out,"VALUES\n");
+     f3_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
+     fprintf(out,"END VALUES\n");
    }
 #endif
 #ifdef D_AXISHELL   

@@ -198,6 +198,7 @@ ioflags.struct_disp_gid       =0;
 ioflags.struct_stress_gid     =0;
 ioflags.struct_stress_gid_smo =0;
 ioflags.fluid_sol_gid         =0;
+ioflags.fluid_stress_gid      =0;
 ioflags.fluid_sol_file        =0; 
 ioflags.fluid_vis_file        =0;
 ioflags.ale_disp_file         =0;
@@ -295,6 +296,13 @@ if (frfind("---IO")==1)
       if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid_smo=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid_smo=1;
     }
+    frchar("FLUID_STRESS_GID",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_stress_gid=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_stress_gid=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_stress_gid=1;
+    }     
     frchar("FLUID_SOL_GID",buffer,&ierr);
     if (ierr)
     {
