@@ -62,6 +62,11 @@ INT                 iel;
 INT                 nd;
 INT                 ngauss;
 
+INT                 istore = 0;                             /* controls storing of new stresses to wa */
+INT                 newval = 1;                             /* controls evaluation of new stresses    */
+
+INT                 ip;                                     /* actual integration point */
+INT                 actlay;                                 /* actual layer */
 INT                 nir_x,nis_x,nit_x;                      /*order of extrapolation -> depends on quad4/8/9*/
 INT                 gaussperm4[4] = {3,1,0,2};
 INT                 gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
@@ -70,7 +75,6 @@ DOUBLE              gp_u[6][9], gp_o[6][9];                 /*interpolated value
 DOUBLE              strK;                                   /*stress at a Node -> extrapolated*/
 DOUBLE              strGP[9];                               /*stress at GPs in one plane*/
 DIS_TYP             distyp;
-INT                 lay;                                    /*absolut actual layer -> a mat layer in kin layer*/
 INT                 ID_stress,ID_stress_perm;               /*ID, on which the calculated stress has to be written -> gp_stress*/
 INT                 sum_lay;                                /*sum of all layers: kinematic and material*/
 INT                 num_mlay;                               /* number of material layers to actual kinematic layer */  
@@ -106,7 +110,6 @@ static ARRAY        strK_a;      static DOUBLE **gp_strK;   /* element array for
 
 static ARRAY        stress_a;    static DOUBLE **gp_stress; /* element array for stresses on gaussian points */
                                       DOUBLE ***ele_stress; /* pointer to array of stress history in element */
-
 /*static ARRAY        forces_a;    static DOUBLE **gp_forces; /* element array for forces (stress resultants) on gaussian points */
 /*                                      DOUBLE ***ele_forces; /* pointer to array of stress history in element */
 
@@ -204,7 +207,7 @@ gmkonc    = amdef("gmkonc" ,&gmkonc_a,3,3,"DA");
 C         = amdef("C"      ,&C_a   ,6 ,6                    ,"DA");             
 D         = amdef("D"      ,&D_a   ,12,12                   ,"DA");           
 
-gp_strK   = amdef("gp_strK"  ,&strK_a,   6,MAXGAUSS,"DA");        
+gp_strK   = amdef("gp_strK"  ,&strK_a,   6,MAXNODESTRESS_SHELL9,"DA");        
 gp_stress = amdef("gp_stress",&stress_a, 6,MAXGAUSS,"DA");        
 /*gp_forces = amdef("gp_forces",&forces_a,18,MAXGAUSS,"DA"); */       
 
@@ -348,7 +351,7 @@ for (lr=0; lr<nir; lr++)
       for (i=0; i<6; i++) stress[i]=0.0;
 
 /*---------------------------loop over all kinematic layers (num_klay) */
-      lay = 0;
+      actlay = 0;
       for (kl=0; kl<num_klay; kl++)   /*loop over all kinematic layers */
       {
          num_mlay = ele->e.s9->kinlay[kl].num_mlay;
@@ -377,13 +380,14 @@ for (lr=0; lr<nir; lr++)
                rot_axis = mat->m.multi_layer->kinlay[kl].rot[ml];
                phi = mat->m.multi_layer->kinlay[kl].phi[ml];
                
+               ip = 2* ngauss + lt;
                s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
-                           gkovc,gkonc,gkovr,gkonr,rot_axis,phi);
+                           gkovc,gkonc,gkovr,gkonr,rot_axis,phi,ip,actlay,istore,newval);
                /*- calculates physical stresses at gaussian point in respect to local/global coordinat system */
-               ID_stress = ngauss + (2*lay + lt) * (nir*nis);  /*write gp's layerwise*/
+               ID_stress = ngauss + (2*actlay + lt) * (nir*nis);  /*write gp's layerwise*/
                s9_tstress(gp_stress,stress,ID_stress,gkovr,ele);
             }/*========================================== end of loop over lt */            
-            lay++;
+            actlay++;
          }/*======= end of loop over all material layers of aktual kinematic layer*/
       }/*============================== end loop over all kinematic layers */
       /*------------------ set counter for number of gaussian points in plane */
@@ -406,23 +410,26 @@ ele_stress = ele->e.s9->stresses.a.d3;
 if      (ngauss == 4) distyp = quad4;  /*2x2 gp*/
 else if (ngauss == 9) distyp = quad9;  /*3x3 gp*/
 
+
 /*set order for extrapolation*/
 if (ele->distyp == quad4)
 { 
    nir_x = 2;
    nis_x = 2;
    nit_x = 2;
+   s9intg_str(data,4);     /*integration parameters for stress extrapolation*/
 }
 else if (ele->distyp == quad8 || ele->distyp == quad9)
 { 
    nir_x = 3;
    nis_x = 3;
    nit_x = 2;
+   s9intg_str(data,9);     /*integration parameters for stress extrapolation*/
 }
 
 
 /*--------------------------- loop over all layers (sum_lay) */
-for (lay=0; lay<sum_lay; lay++)   /*loop over all layers */
+for (actlay=0; actlay<sum_lay; actlay++)   /*loop over all layers */
 {
    for (lt=0; lt<nit_x; lt++)  /*loop in t-direction */
    {
@@ -446,14 +453,16 @@ for (lay=0; lay<sum_lay; lay++)   /*loop over all layers */
             for (j=0; j<6; j++)    /*6-stress komponents*/
             {
                strK = 0.0;
-               for (k=0; k<(nir_x*nis_x); k++)
+
+               for (k=0; k<(nir*nis); k++)
                {
-                 ID_stress = k + (2*lay + lt) * (nir_x*nis_x);  /*write gp's layerwise*/
+                 ID_stress = k + (2*actlay + lt) * (nir*nis);  /*write gp's layerwise*/
                  strGP[k] = gp_stress[j][ID_stress];
                }
-               if (ele->distyp == quad4) 
+
+               if      (distyp == quad4) 
                  for (k=0; k<4; k++)    strK += funct[k]*strGP[gaussperm4[k]];
-               else if (ele->distyp == quad8 || ele->distyp == quad9) /*write midpoint value for quad8 as well ! */
+               else if (distyp == quad9) /*write midpoint value for quad8 as well ! */
                  for (k=0; k<9; k++)    strK += funct[k]*strGP[gaussperm9[k]];
 
                /*store value to finaly interpolate in thickness direction*/
@@ -478,9 +487,9 @@ for (lay=0; lay<sum_lay; lay++)   /*loop over all layers */
        N_u = P_u - m * ( 1. - 1./sqrt(3.));
        N_o = P_o + m * ( 1. - 1./sqrt(3.));    
        /*write to gp_strK array*/
-       ID_stress = k + (2*lay + 0) * (nir_x*nis_x);
+       ID_stress = k + (2*actlay + 0) * (nir_x*nis_x);
        gp_strK[j][ID_stress] = N_u;           
-       ID_stress = k + (2*lay + 1) * (nir_x*nis_x);
+       ID_stress = k + (2*actlay + 1) * (nir_x*nis_x);
        gp_strK[j][ID_stress] = N_o;           
       }
    }
@@ -488,7 +497,7 @@ for (lay=0; lay<sum_lay; lay++)   /*loop over all layers */
 
 /* now write the stresses at the nodes gp_strK back to ele_stress array */
 /*--------------------------- loop over all layers (sum_lay) */
-for (lay=0; lay<sum_lay; lay++)   /*loop over all layers */
+for (actlay=0; actlay<sum_lay; actlay++)   /*loop over all layers */
 {
    for (lt=0; lt<nit_x; lt++)  /*loop in t-direction */
    {
@@ -499,12 +508,12 @@ for (lay=0; lay<sum_lay; lay++)   /*loop over all layers */
          {
             for (j=0; j<6; j++)    /*6-stress komponents*/
             {
-             ID_stress = ngauss + (2*lay + lt) * (nir_x*nis_x);
+             ID_stress = ngauss + (2*actlay + lt) * (nir_x*nis_x);
 
              if      (ele->distyp == quad4) 
-                  ID_stress_perm = gaussperm4[ngauss] + (2*lay + lt) * (nir_x*nis_x);
+                  ID_stress_perm = gaussperm4[ngauss] + (2*actlay + lt) * (nir_x*nis_x);
              else if (ele->distyp == quad8 ||ele->distyp == quad9) 
-                  ID_stress_perm = gaussperm9[ngauss] + (2*lay + lt) * (nir_x*nis_x);
+                  ID_stress_perm = gaussperm9[ngauss] + (2*actlay + lt) * (nir_x*nis_x);
 
              ele_stress[kstep][j][ID_stress] = gp_strK[j][ID_stress_perm];
             }
