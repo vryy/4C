@@ -37,6 +37,12 @@ extern struct _STATIC_VAR  *statvar;
  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
+/*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
  | to tell element routines what to do                                  |
@@ -138,6 +144,10 @@ break;
 case rc_ptr:/*----------------------- system array is row/column matrix */
    numeq       = actsolv->sysarray[actsysarray].rc_ptr->numeq;
    numeq_total = actsolv->sysarray[actsysarray].rc_ptr->numeq_total;
+break;
+case skymatrix:/*----------------------- system array is skyline matrix */
+   numeq       = actsolv->sysarray[actsysarray].sky->numeq;
+   numeq_total = actsolv->sysarray[actsysarray].sky->numeq_total;
 break;
 default:
    dserror("unknown type of global matrix");

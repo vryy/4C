@@ -44,6 +44,12 @@ struct _MATERIAL     *mat;
  | is defined in input_control_global.c
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 
 /*----------------------------------------------------------------------*
  | main routine                                           m.gee 8/00    |

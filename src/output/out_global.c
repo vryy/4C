@@ -35,6 +35,12 @@ extern struct _FILES  allfiles;
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _STATIC_VAR  *statvar;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 
 /*----------------------------------------------------------------------*
  |  print out general information about problem              m.gee 12/01|

@@ -10,6 +10,12 @@ extern struct _FIELD      *field;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 
 /*----------------------------------------------------------------------*
  |  do initial partitioning of fields                    m.gee 9/01     |

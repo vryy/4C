@@ -269,8 +269,8 @@ struct _ARRAY       arcfac;               /* vector of load factors of increment
  |                                                       m.gee 06/01    |
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
+ extern struct _PAR   par;                      
  *----------------------------------------------------------------------*/
-extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of partitions, size numfld                                    |

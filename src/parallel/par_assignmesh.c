@@ -24,6 +24,12 @@ extern struct _SOLVAR  *solv;
  | PARTITION is defined in global_control.c                             |
  *----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 
 /*----------------------------------------------------------------------*
  |  do initial partitioning of fields                    m.gee 5/01     |

@@ -1,5 +1,14 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
+/* 
+the 64bit linker expects an underslash appended to calls for
+fortran90 subroutines:
+*/
+#ifdef MUMPS_PACKAGE
+#ifdef SIXTYFOUR 
+#define mumps_interface   mumps_interface_
+#endif
+#endif
 /*----------------------------------------------------------------------*
  |  control solver lib Lapack                            m.gee 11/01    |
  *----------------------------------------------------------------------*/

@@ -108,6 +108,10 @@ case rc_ptr:
    amzero(&(mat->rc_ptr->A_loc));
    mat->rc_ptr->is_factored=0;
 break;
+case skymatrix:
+   amzero(&(mat->sky->A));
+   mat->sky->is_factored=0;
+break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -261,6 +265,9 @@ break;
 case rc_ptr:
    update = sysarray->rc_ptr->update.a.iv;
 break;
+case skymatrix:
+   update = sysarray->sky->update.a.iv;
+break;
 default:
    dserror("Unknown typ of system matrix given");
 break;
@@ -370,14 +377,14 @@ void solserv_reddistvec(DIST_VECTOR  *distvec,
                           int           dim,
                           INTRA        *actintra)
 {
-int     i;
-int     dof,dofperm;
-double *dfrom;
-double *dto;
-int     imyrank;
-int     inprocs;
+int             i;
+int             dof,dofperm;
+double         *dfrom;
+int             imyrank;
+int             inprocs;
 #ifdef PARALLEL 
-double  *recvbuff;
+static double  *recvbuff;
+static ARRAY    recv;    
 #endif
 
 #ifdef DEBUG 
@@ -385,6 +392,18 @@ dstrc_enter("solserv_reddistvec");
 #endif
 /*----------------------------------------------------------------------*/
 if (dim != distvec->numeq_total) dserror("Dimension mismatch");
+/*------------------------- allocate communication buffer, if necessary */
+#ifdef PARALLEL 
+if (recv.Typ != DV) 
+{
+   recvbuff = amdef("recvbuff",&recv,dim,1,"DV");
+}
+if (dim > recv.fdim)
+{
+   amdel(&recv);
+   recvbuff = amdef("recvbuff",&recv,dim,1,"DV");
+}
+#endif
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -398,11 +417,8 @@ case msr:
       fullvec[dof] = distvec->vec.a.dv[i];
    }
 #ifdef PARALLEL 
-   recvbuff = (double*)calloc(dim,sizeof(double));
-   if (!recvbuff) dserror("Allocation of memory failed");
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
-   free(recvbuff);
 #endif
 break;
 case parcsr:
@@ -420,11 +436,8 @@ case parcsr:
       fullvec[dof] = distvec->vec.a.dv[i];
    }
 #ifdef PARALLEL 
-   recvbuff = (double*)calloc(dim,sizeof(double));
-   if (!recvbuff) dserror("Allocation of memory failed");
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
-   free(recvbuff);
 #endif
 break;
 case ucchb:
@@ -434,11 +447,8 @@ case ucchb:
       fullvec[dof] = distvec->vec.a.dv[i];
    }
 #ifdef PARALLEL 
-   recvbuff = (double*)calloc(dim,sizeof(double));
-   if (!recvbuff) dserror("Allocation of memory failed");
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
-   free(recvbuff);
 #endif
 break;
 case dense:
@@ -448,11 +458,8 @@ case dense:
       fullvec[dof] = distvec->vec.a.dv[i];
    }
 #ifdef PARALLEL 
-   recvbuff = (double*)calloc(dim,sizeof(double));
-   if (!recvbuff) dserror("Allocation of memory failed");
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
-   free(recvbuff);
 #endif
 break;
 case mds:
@@ -468,11 +475,19 @@ case rc_ptr:
       fullvec[dof] = distvec->vec.a.dv[i];
    }
 #ifdef PARALLEL 
-   recvbuff = (double*)calloc(dim,sizeof(double));
-   if (!recvbuff) dserror("Allocation of memory failed");
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
-   free(recvbuff);
+#endif
+break;
+case skymatrix:
+   for (i=0; i<sysarray->sky->numeq; i++)
+   {
+      dof = sysarray->sky->update.a.iv[i];
+      fullvec[dof] = distvec->vec.a.dv[i];
+   }
+#ifdef PARALLEL 
+   MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+   for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
 default:

@@ -25,6 +25,12 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
+/*----------------------------------------------------------------------*
  |  calculate the storage mask of the global matrices    m.gee 5/01     |
  |  for various kinds of distributed sparsity patterns                  |
  |  the sparsity pattern implemented at the moment can be found in      |
@@ -37,8 +43,9 @@ int isaztec_msr  =0;       /* flag for a certain sparsity pattern */
 int ishypre      =0;
 int isucchb      =0;
 int isdense      =0;
-int ismlib_d_sp  =0; /*mlib direct solver  - sparse */
+int ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
 int isrc_ptr     =0;
+int iscolsol     =0;
 FIELD      *actfield;      /* the active field */
 PARTITION  *actpart;       /* my partition of the active field */
 SOLVAR     *actsolv;       /* the active SOLVAR */
@@ -112,6 +119,13 @@ for (i=0; i<genprob.numfld; i++)
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
       else isrc_ptr=1;
+   }
+   /*------------------------------ matrix is skyline format for colsol */
+   if (actsolv->solvertyp==colsol_solver)
+   {
+      if (actsolv->parttyp != cut_elements)
+      dserror("Partitioning has to be Cut_Elements for solution with Colsol"); 
+      else iscolsol=1;
    }
    /* allocate only one sparse matrix for each field. The sparsity
       pattern of the matrices for mass and damping and stiffness are  
@@ -219,6 +233,23 @@ for (i=0; i<genprob.numfld; i++)
       }
       mask_rc_ptr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].rc_ptr);
       isrc_ptr=0;
+   }
+   /*---------------------------------------- matrix is skyline format  */
+   if (iscolsol==1)
+   {
+      actsolv->nsysarray = 1;
+      actsolv->sysarray_typ = (SPARSE_TYP*)  calloc(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)calloc(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      if (!actsolv->sysarray_typ || !actsolv->sysarray)
+         dserror("Allocation of SPARSE_ARRAY failed");
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+         actsolv->sysarray_typ[i] = skymatrix;
+         actsolv->sysarray[i].sky = (SKYMATRIX*)calloc(1,sizeof(SKYMATRIX));
+         if (actsolv->sysarray[i].sky==NULL) dserror("Allocation of SKY failed");
+      }
+      mask_skyline(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].sky);
+      iscolsol=0;
    }
 /*----------------------------------------------------------------------*/
 } /* end of loop over numfld fields */

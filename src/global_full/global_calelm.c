@@ -74,6 +74,12 @@ if (sysarray1 != -1)
       if (actsolv->sysarray[sysarray1].rc_ptr->couple_d_recv)
          amzero(actsolv->sysarray[sysarray1].rc_ptr->couple_d_recv);
    break;
+   case skymatrix:
+      if (actsolv->sysarray[sysarray1].sky->couple_d_send)
+         amzero(actsolv->sysarray[sysarray1].sky->couple_d_send);
+      if (actsolv->sysarray[sysarray1].sky->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray1].sky->couple_d_recv);
+   break;
    default:
       dserror("Unknown typ of system matrix");
    break;
@@ -113,6 +119,12 @@ if (sysarray2 != -1)
          amzero(actsolv->sysarray[sysarray2].rc_ptr->couple_d_send);
       if (actsolv->sysarray[sysarray2].rc_ptr->couple_d_recv)
          amzero(actsolv->sysarray[sysarray2].rc_ptr->couple_d_recv);
+   break;
+   case skymatrix:
+      if (actsolv->sysarray[sysarray2].sky->couple_d_send)
+         amzero(actsolv->sysarray[sysarray2].sky->couple_d_send);
+      if (actsolv->sysarray[sysarray2].sky->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray2].sky->couple_d_recv);
    break;
    default:
       dserror("Unknown typ of system matrix");

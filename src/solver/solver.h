@@ -45,7 +45,8 @@ typedef enum _SPARSE_TYP
      parcsr,                 /* distributed compressed sparse row format */
      ucchb,                  /* unsymmetric column compressed Harwell-Boeing format */
      dense,                  /* dense matrix for Lapack */
-     rc_ptr                  /* row column pointer format for mumps */
+     rc_ptr,                 /* row column pointer format for mumps */
+     skymatrix               /* skyline format for solver colsol */  
 } SPARSE_TYP;
 
 /*----------------------------------------------------------------------*
@@ -60,6 +61,7 @@ struct _H_PARCSR       *parcsr; /*         to HYPRE's ParCSR matrix */
 struct _UCCHB          *ucchb;  /*         to Superlu's UCCHB matrix */
 struct _DENSE          *dense;  /*         to dense matrix */
 struct _RC_PTR         *rc_ptr; /*         to Mump's row/column ptr matrix */
+struct _SKYMATRIX      *sky;    /*         to Colsol's skyline matrix */
 
 } SPARSE_ARRAY;
 
@@ -81,6 +83,7 @@ struct _HYPREVARS      *hyprevar;          /* variables needed for HYPRE EuclidC
 struct _PSUPERLUVARS   *psuperluvars;      /* variables needed for Parallel SuperLU */
 struct _LAPACKVARS     *lapackvars;        /* variables needed for Lapack */
 struct _MUMPSVARS      *mumpsvars;         /* variables needed for MUMPS */
+struct _COLSOLVARS     *colsolvars;        /* variables needed for colsol */
 
 int                     nsysarray;         /* number of global sparse arrays for this field */   
 enum  _SPARSE_TYP      *sysarray_typ;      /* vector of types for all sparse arrays */
@@ -105,6 +108,14 @@ int                     order;
 double                  pvttol;/* 0.0 reorder with minim. fill in      */
                                /* 1.0 best numerical stability         */
 } MLVAR;
+
+/*----------------------------------------------------------------------*
+ | variables needed for solver colsol                    m.gee 01/02    |
+ *----------------------------------------------------------------------*/
+typedef struct _COLSOLVARS
+{
+int                     i;                   /* this is in progress.... */
+} COLSOLVARS;
 
 
 /*----------------------------------------------------------------------*
@@ -174,6 +185,37 @@ typedef struct _LAPACKVARS
 {
 int                     reuse;            /* in progress.... */
 } LAPACKVARS;
+
+/*----------------------------------------------------------------------*
+ | a skyline matrix                                      m.gee 01/02    |
+ | this structure holds a skyline matrix to be solved with colsol       |
+ *----------------------------------------------------------------------*/
+typedef struct _SKYMATRIX
+{
+int                     is_init;         /* was this matrix initialized ? */
+int                     is_factored;     /* is this matrix already factored ? */
+int                     ncall;           /* how often was this matrix solved */
+
+int                     numeq_total;     /* total number of unknowns */
+int                     numeq;           /* number of unknowns updated on this proc */ 
+int                     nnz_total;       /* total number of nonzero entries */
+int                     nnz;             /* number of nonzeros on this proc */
+
+struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
+struct _ARRAY           maxa;
+struct _ARRAY           maxaf;
+struct _ARRAY           A;
+double                  det;
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
+#ifdef PARALLEL 
+int                     numcoupsend;     /* number of coupling information to be send by this proc */
+int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
+struct _ARRAY          *couple_i_send;
+struct _ARRAY          *couple_d_recv;
+struct _ARRAY          *couple_i_recv;
+#endif
+} SKYMATRIX;
 
 /*----------------------------------------------------------------------*
  | a sparse matrix in row/column pointer format          m.gee 12/02    |

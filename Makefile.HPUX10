@@ -44,23 +44,23 @@ include ./Makefile.personal_path
 #
 # sequentiell part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_seq_10.20.exe
-FXX   = f77
-CCX   = cc
-LDX   = cc
-PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DAZTEC_PACKAGE
-AZTEC = -laztec_seriell21
+#PROGRAM_NAME  = cca_seq_10.20.exe
+#FXX   = f77
+#CCX   = cc
+#LDX   = cc
+#PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DAZTEC_PACKAGE
+#AZTEC = -laztec_seriell21
 #--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_par_10.20.exe
-#FXX   = /opt/mpi/bin/mpif77
-#CCX   = /opt/mpi/bin/mpicc
-#LDX   = /opt/mpi/bin/mpicc
-#PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
-#        -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
-#AZTEC = -laztec_par21
+PROGRAM_NAME  = cca_par_10.20.exe
+FXX   = /opt/mpi/bin/mpif77
+CCX   = /opt/mpi/bin/mpicc
+LDX   = /opt/mpi/bin/mpicc
+PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
+        -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
+AZTEC = -laztec_par21
 #
 #--------------------------------------------------------------------
 #
@@ -151,6 +151,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_mask_ucchb.o \
                 ${SRC}/global_full/global_mask_dense.o \
                 ${SRC}/global_full/global_mask_rcptr.o \
+                ${SRC}/global_full/global_mask_skyline.o \
                 ${SRC}/global_full/global_calelm.o \
                 ${SRC}/global_full/global_calrhs.o \
                 ${SRC}/global_full/global_calrhs_nodal.o \
@@ -163,12 +164,14 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_add_ucchb.o \
                 ${SRC}/global_full/solver_add_dense.o \
                 ${SRC}/global_full/solver_add_rcptr.o \
+                ${SRC}/global_full/solver_add_skyline.o \
                 ${SRC}/global_full/solver_mlib.o \
                 ${SRC}/global_full/solver_aztec.o \
                 ${SRC}/global_full/solver_hypre.o \
                 ${SRC}/global_full/solver_superlu.o \
                 ${SRC}/global_full/solver_lapack.o \
                 ${SRC}/global_full/solver_mumps.o \
+                ${SRC}/global_full/solver_colsol.o \
                 ${SRC}/global_full/machine_hpux.o 
 #                pss_full
 OBJS3	      = ${SRC}/pss_full/pss_am.o \
@@ -257,7 +260,7 @@ OBJS12	      = ${SRC}/wall1/w1_init.o \
                 ${SRC}/wall1/w1_call_stiff.o \
                 ${SRC}/wall1/w1_main.o
 #                fortran
-OBJS13	      = ${SRC}/fortran/fortran_dummy.o
+OBJS13	      = ${SRC}/fortran/colsol.o
 #
 #
 # targets
@@ -333,7 +336,7 @@ $(OBJS12):
 		@echo "Making $@ ..."
 		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
 		@echo "MainMake is back."
-# fortran ----------------------------------------------------------
+# fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
 		cd ${@D}; $(FXX) $(FFLAGS)  -c  $<
@@ -348,5 +351,5 @@ $(OBJS13):
 	$(FXX) $(FFLAGS) -c  $<
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) 
+                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) 
 $

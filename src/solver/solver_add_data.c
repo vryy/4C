@@ -81,6 +81,9 @@ if (assemble_action==assemble_two_matrix)
    case rc_ptr:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
+   case skymatrix:
+      dserror("Simultanous assembly of 2 system matrices not yet impl.");
+   break;
    case sparse_none:
       dserror("Unspecified type of system matrix");
    break;
@@ -111,6 +114,9 @@ if (assemble_action==assemble_one_matrix)
    break;
    case rc_ptr:
       add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr);
+   break;
+   case skymatrix:
+      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky);
    break;
    case sparse_none:
       dserror("Unspecified typ of system matrix");
@@ -144,6 +150,9 @@ if (assemble_action==assemble_two_exchange)
       case rc_ptr:
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
       break;
+      case skymatrix:
+         dserror("Simultanous assembly of 2 system matrices not yet impl.");
+      break;
       case sparse_none:
          dserror("Unspecified type of system matrix");
       break;
@@ -168,6 +177,9 @@ if (assemble_action==assemble_one_exchange)
       break;
       case dense:
          redundant_dense(actpart,actsolv,actintra,sysa1->dense);
+      break;
+      case skymatrix:
+         redundant_skyline(actpart,actsolv,actintra,sysa1->sky);
       break;
       case rc_ptr:
          exchange_coup_rc_ptr(actpart,actsolv,actintra,sysa1->rc_ptr);
@@ -275,6 +287,14 @@ case rc_ptr:
    couple_i_send_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_i_send);
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_i_recv);
+break;
+case skymatrix:
+   numcoupsend       = &(actsolv->sysarray[actsysarray].sky->numcoupsend);
+   numcouprecv       = &(actsolv->sysarray[actsysarray].sky->numcouprecv);
+   couple_d_send_ptr = &(actsolv->sysarray[actsysarray].sky->couple_d_send);
+   couple_i_send_ptr = &(actsolv->sysarray[actsysarray].sky->couple_i_send);
+   couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].sky->couple_d_recv);
+   couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].sky->couple_i_recv);
 break;
 default:
    dserror("Unknown typ of sparse array");
@@ -416,6 +436,7 @@ H_PARCSR             *parcsr_array;
 UCCHB                *ucchb_array;
 DENSE                *dense_array;
 RC_PTR               *rcptr_array;
+SKYMATRIX            *sky_array;
 #ifdef DEBUG 
 dstrc_enter("assemble_vec");
 #endif
@@ -460,6 +481,14 @@ case dense:
     for (i=0; i<rhs->numeq; i++)
     {
        dof = dense_array->update.a.iv[i];
+       rhs->vec.a.dv[i] += drhs[dof]*factor;
+    }
+break;
+case skymatrix:
+    sky_array = sysarray->sky;
+    for (i=0; i<rhs->numeq; i++)
+    {
+       dof = sky_array->update.a.iv[i];
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;

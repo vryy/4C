@@ -1,6 +1,12 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | ranks and communicators                                              |
+ | This structure struct _PAR par; is defined in main_ccarat.c
+ *----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
+/*----------------------------------------------------------------------*
  |  put dofs in update in ascending order                 a.lipka 5/01  |
  *----------------------------------------------------------------------*/
 /* compare the integers - qsort routine*/
