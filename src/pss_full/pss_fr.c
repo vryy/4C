@@ -202,7 +202,8 @@ while ( strstr(allfiles.input_file[i],string) == NULL )
       
       sprintf(message,"frfind:  String %s is not in input file",string);
       /*dserror(message);*/
-      printf("%s\n",message);
+      /*printf("%s\n",message);*/
+      fprintf(allfiles.out_err,"%s\n",message);
       frrewind();
 #ifdef DEBUG 
       dstrc_exit();
