@@ -699,21 +699,6 @@ void perf_end (
     INT       index);
 
 
-/*!---------------------------------------------------------------------
-  \brief routine to meassure the performance
-
-  <pre>                                                        mn 01/04
-  Print the results for one timer.
-  </pre>
-  \return void
-  ------------------------------------------------------------------------*/
-void perf_print (
-    FILE      *out,
-    INT        index,
-    char       string[],
-    INT        bezug,
-    INT        ops);
-
 
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
@@ -723,7 +708,7 @@ void perf_print (
   </pre>
   \return void
   ------------------------------------------------------------------------*/
-void perf_out (FILE* out);
+void perf_out (void);
 
 
 #endif

@@ -10,6 +10,29 @@ Maintainer: Malte Neumann
 </pre>
 
   ---------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;
+
 /*---------------------------------------------------- local prototype */
 double cputime_thread();
 
@@ -37,12 +60,119 @@ double cputime_thread();
 #include <sys/times.h>
 #endif
 
+
 #ifdef PERF
 static DOUBLE begtime[100];
 static DOUBLE sumtime[100];
 
 static INT    counter[100];
+static char   name[100][25];
+static INT    bezug[100];
 #endif
+
+
+#ifdef PERF
+
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance
+
+  <pre>                                                        mn 01/04
+  Initializes all counters with 0.
+  </pre>
+
+  \return void
+
+  ------------------------------------------------------------------------*/
+void perf_init_all ()
+{
+  INT index;
+
+  for (index=0; index<100; index++)
+  {
+    begtime[index] = 0.0;
+    sumtime[index] = 0.0;
+    counter[index] = 0;
+    bezug[index]   = 0;
+    sprintf(name[index],"perf slot %2i",index);
+  }
+
+  strcpy(name[0], "TOTAL");                     bezug[0]  = 0;
+  strcpy(name[1], "INPUT");                     bezug[1]  = 0;
+  strcpy(name[2], "CALCULATION");               bezug[2]  = 0;
+
+  strcpy(name[3], "input control");             bezug[3]  = 1;
+  strcpy(name[4], "input design");              bezug[4]  = 1;
+  strcpy(name[5], "input design topology");     bezug[5]  = 1;
+  strcpy(name[6], "input material");            bezug[6]  = 1;
+  strcpy(name[7], "input fields");              bezug[7]  = 1;
+  strcpy(name[8], "input detailed topology");   bezug[8]  = 1;
+  strcpy(name[9], "input topology fe");         bezug[9]  = 1;
+  strcpy(name[10],"input conditions");          bezug[10] = 1;
+  strcpy(name[11],"input inherit");             bezug[11] = 1;
+
+  strcpy(name[12],"part fields");               bezug[12] = 0;
+  strcpy(name[13],"assign dofs");               bezug[13] = 0;
+  strcpy(name[14],"part assign field");         bezug[14] = 0;
+  strcpy(name[15],"mask global mat");           bezug[15] = 0;
+  strcpy(name[16],"calc matrices");             bezug[16] = 0;
+  strcpy(name[17],"assemble matrices");         bezug[17] = 0;
+  strcpy(name[18],"assemble rhs");              bezug[18] = 0;
+  strcpy(name[19],"exchange dofs");             bezug[19] = 0;
+  strcpy(name[20],"solve system");              bezug[20] = 0;
+
+  strcpy(name[40],"calc matrices fast");        bezug[40] = 0;
+  strcpy(name[41],"assemble_fast");             bezug[41] = 0;
+  strcpy(name[42],"init element");              bezug[42] = 0;
+  strcpy(name[43],"calele");                    bezug[43] = 0;
+
+  strcpy(name[44],"calset");                    bezug[44] = 43;
+  strcpy(name[45],"elecord");                   bezug[45] = 43;
+  strcpy(name[46],"elesize");                   bezug[46] = 43;
+  strcpy(name[47],"calint");                    bezug[47] = 43;
+  strcpy(name[48],"make_estif");                bezug[48] = 43;
+  strcpy(name[49],"caldirich");                 bezug[49] = 43;
+  strcpy(name[50],"massrhs");                   bezug[50] = 43;
+
+  strcpy(name[51],"functderiv");                bezug[51] = 47;
+  strcpy(name[52],"jacob");                     bezug[52] = 47;
+  strcpy(name[53],"gder");                      bezug[53] = 47;
+  strcpy(name[54],"gder2");                     bezug[54] = 47;
+  strcpy(name[55],"veli");                      bezug[55] = 47;
+  strcpy(name[56],"vder");                      bezug[56] = 47;
+  strcpy(name[57],"elesize_2");                 bezug[57] = 47;
+  strcpy(name[58],"gal_mat");                   bezug[58] = 47;
+  strcpy(name[59],"stab_mat");                  bezug[59] = 47;
+  strcpy(name[60],"iter_rhs");                  bezug[60] = 47;
+  strcpy(name[61],"ext_rhs");                   bezug[61] = 47;
+  strcpy(name[62],"time_rhs");                  bezug[62] = 47;
+  strcpy(name[63],"ext_rhs");                   bezug[63] = 47;
+
+  strcpy(name[64],"invupdate");                 bezug[64] = 41;
+  strcpy(name[65],"invbindx");                  bezug[65] = 41;
+  strcpy(name[66],"make lm");                   bezug[66] = 41;
+  strcpy(name[67],"faddmsr");                   bezug[67] = 41;
+  strcpy(name[68],"copy rhs");                  bezug[68] = 41;
+  strcpy(name[69],"assemble rhs");              bezug[69] = 41;
+
+  strcpy(name[71],"out_results");               bezug[71] = 0;
+  strcpy(name[72],"restart_write_bin");         bezug[72] = 0;
+  strcpy(name[73],"out_gid");                   bezug[73] = 0;
+  strcpy(name[74],"restart_write");             bezug[74] = 0;
+
+  strcpy(name[80],"write gid");                 bezug[80] = 0;
+  strcpy(name[81],"write binio");               bezug[81] = 0;
+  strcpy(name[82],"write restart_new");         bezug[82] = 0;
+
+  strcpy(name[92],"amzero");                    bezug[92] = 0;
+  strcpy(name[93],"amdel");                     bezug[93] = 0;
+  strcpy(name[94],"amredef");                   bezug[94] = 0;
+  strcpy(name[95],"amdef");                     bezug[95] = 0;
+
+  /*----------------------------------------------------------------------*/
+  return;
+}
+#endif /* ifdef PERF */
+
 
 
 /*!---------------------------------------------------------------------
@@ -165,32 +295,6 @@ DOUBLE perf_time ()
 
 
 #ifdef PERF
-
-/*!---------------------------------------------------------------------
-  \brief routine to meassure the performance
-
-  <pre>                                                        mn 01/04
-  Initializes all counters with 0.
-  </pre>
-
-  \return void
-
-  ------------------------------------------------------------------------*/
-void perf_init_all ()
-{
-  INT index;
-
-  for (index=0; index<100; index++)
-  {
-    begtime[index] = 0.0;
-    sumtime[index] = 0.0;
-    counter[index] = 0;
-  }
-  /*----------------------------------------------------------------------*/
-  return;
-}
-
-
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
@@ -230,7 +334,13 @@ void perf_begin (INT index)
   DOUBLE perf_cpu();
   DOUBLE perf_time();
 
+#ifdef SX6
+  char   name[28];
+  sprintf(name, "%2i_%24s",index,name[index]);
+  ftrace_region_begin(name);
+#else
   begtime[index] = perf_time();
+#endif
 
   /*----------------------------------------------------------------------*/
   return;
@@ -275,6 +385,11 @@ void perf_end (INT index)
 
   DOUBLE end_time, elapsed_time;
 
+#ifdef SX6
+  char   name[28];
+  sprintf(name, "%2i_%24s",index,name[index]);
+  ftrace_region_end(name);
+#else
   end_time = perf_time();
 
   elapsed_time = end_time - begtime[index];
@@ -285,6 +400,7 @@ void perf_end (INT index)
 
   sumtime[index] += elapsed_time;
   counter[index] += 1;
+#endif
 
   /*----------------------------------------------------------------------*/
   return;
@@ -323,53 +439,6 @@ void perfendf_ (INT *index)
 }
 
 
-/*!---------------------------------------------------------------------
-  \brief routine to meassure the performance
-
-  <pre>                                                        mn 01/04
-  Print the results for one timer.
-  </pre>
-
-  \param  out           (i)   file stream to write to
-  \param  index   INT   (i)   index of the counter to use
-  \param  string  char  (i)   name of this counter
-  \param  bezug   INT   (i)   calculate percentage relative to this counter
-  \param  ops     INT   (i)   number of FLOP in this counter region
-  \return void
-
-  ------------------------------------------------------------------------*/
-void perf_print (FILE* out, INT index, char string[], INT bezug, INT ops)
-{
-
-  if (ops!=1)
-  {
-    fprintf(out, "%2d %25s: %7d %12.6e %5.1f %2d %8d %8.3f\n",
-        index,
-        string,
-        counter[index],
-        sumtime[index],
-        (sumtime[bezug] != 0) ? (sumtime[index]/(sumtime[bezug]))*100 : 0,
-        bezug,
-        ops,
-        ((sumtime[bezug] != 0) && (counter[index] != 0)) ? ops/(sumtime[index]/counter[index]*1.0e6) : 0
-        );
-  }
-  else
-  {
-    fprintf(out, "%2d %25s: %7d %12.6e %5.1f %2d \n",
-        index,
-        string,
-        counter[index],
-        sumtime[index],
-        (sumtime[bezug] != 0) ? (sumtime[index]/(sumtime[bezug]))*100 : 0,
-        bezug
-        );
-  }
-
-  /*----------------------------------------------------------------------*/
-  return;
-}
-
 
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
@@ -382,113 +451,262 @@ void perf_print (FILE* out, INT index, char string[], INT bezug, INT ops)
   \return void
 
   ------------------------------------------------------------------------*/
-void perf_out (FILE* out)
+void perf_out ()
 {
-  INT i;
-  INT user_perf;
+  INT             proc;
+  INT             index;
 
-  /* --------------- print out time counters */
-  fprintf(out, "%2s %25s: %7s %12s %5s%3s %8s %8s\n",
+  FILE*           screen = stdout;
+  FILE*           err    = allfiles.out_err;
+
+#ifdef PARALLEL
+  struct _ARRAY   alltimer_s_a;
+  struct _ARRAY   allcounter_s_a;
+  DOUBLE        **alltimer_s;
+  INT           **allcounter_s;
+  struct _ARRAY   alltimer_r_a;
+  struct _ARRAY   allcounter_r_a;
+  DOUBLE        **alltimer_r;
+  INT           **allcounter_r;
+  INTRA          *actintra;
+
+  DOUBLE          sum_timer;
+  INT             sum_counter;
+#endif
+
+
+
+  /* for the sequential case just print the timers to the screen and the error file */
+#ifndef PARALLEL
+
+
+  /* print out the headings */
+  fprintf(err, "\n%2s %25s: %7s %12s %5s%3s\n",
       "ID",
       "Functionname",
       "Count",
       "Time [sec]",
-      "% ",
-      " of",
-      "FLOP",
-      "MFLOPS"
+      "%",
+      "of"
       );
+  fprintf(err,
+      "============================================================\n");
 
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out,  1,"INPUT",                   0,1);
-  perf_print(out,  2,"CALCULATION",             0,1);
-  perf_print(out,  0,"TOTAL",                   0,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out,  3,"input control",           1,1);
-  perf_print(out,  4,"input design",            1,1);
-  perf_print(out,  5,"input design topology",   1,1);
-  perf_print(out,  6,"input material",          1,1);
-  perf_print(out,  7,"input fields",            1,1);
-  perf_print(out,  8,"input detailed topology", 1,1);
-  perf_print(out,  9,"input topology fe",       1,1);
-  perf_print(out, 10,"input conditions",        1,1);
-  perf_print(out, 11,"input inherit",           1,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out, 12,"part fields",             0,1);
-  perf_print(out, 13,"assign dofs",             0,1);
-  perf_print(out, 14,"part assign field",       0,1);
-  perf_print(out, 15,"mask global mat",         0,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out, 16,"calc matrices",           0,1);
-  perf_print(out, 17,"assemble matrices",       0,1);
-  perf_print(out, 18,"assemble rhs vectors",    0,1);
-  perf_print(out, 19,"exchange dofs",           0,1);
-  perf_print(out, 20,"solve system",            0,1);
-  if (counter[21]+counter[22]>0)
-    fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  if (counter[21]>0)
-    perf_print(out, 21,"permute fluid matrices",  2,1);
-  if (counter[22]>0)
-    perf_print(out, 22,"local co-ord. system",    2,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  user_perf = 0;
-  for (i=30; i<40; ++i) {
-    if (counter[i] > 0) {
-      perf_print(out, i, "temp perf slot", 0, 1);
-      user_perf = 1;
+  fprintf(screen, "\n%2s %25s: %7s %12s %5s%3s\n",
+      "ID",
+      "Functionname",
+      "Count",
+      "Time [sec]",
+      "%",
+      "of"
+      );
+  fprintf(screen,
+      "============================================================\n");
+
+
+  /* loop all counters and print only those that were used */
+  for (index=0; index<100; index++)
+  {
+    if (counter[index] != 0)
+    {
+      fprintf(err, "%2d %25s: %7d %12.6e %5.1f %2d \n",
+          index,
+          name[index],
+          counter[index],
+          sumtime[index],
+          (sumtime[bezug[index]] != 0) ? (sumtime[index]/(sumtime[bezug[index]]))*100 : 0,
+          bezug[index]
+          );
+
+      fprintf(screen, "%2d %25s: %7d %12.6e %5.1f %2d \n",
+          index,
+          name[index],
+          counter[index],
+          sumtime[index],
+          (sumtime[bezug[index]] != 0) ? (sumtime[index]/(sumtime[bezug[index]]))*100 : 0,
+          bezug[index]
+          );
+    } /* if (counter[index] != 0) */
+
+
+    /* add separators at some points */
+    if (index== 2 || index==11 || index==20 ||
+        index==43 || index==50 || index==63 ||
+        index==69 || index==74 || index==82 )
+    {
+      fprintf(err,
+          "------------------------------------------------------------\n");
+      fprintf(screen,
+          "------------------------------------------------------------\n");
     }
+
+  } /* for (index=0; index<100; index++) */
+
+
+  /* print footer line */
+  fprintf(err,
+      "============================================================\n");
+  fprintf(screen,
+      "============================================================\n");
+
+
+
+
+  /* in the parallel case collect the timers on the first processor and print them there */
+#else
+
+  actintra    = &(par.intra[0]);
+
+
+  /* allocate memory for the timers and counters of all procs */
+  alltimer_s   = amdef("alltimer_s",  &alltimer_s_a,  par.nprocs+1,100,"DA");
+  alltimer_r   = amdef("alltimer_r",  &alltimer_r_a,  par.nprocs+1,100,"DA");
+  allcounter_s = amdef("allcounter_s",&allcounter_s_a,par.nprocs+1,100,"IA");
+  allcounter_r = amdef("allcounter_r",&allcounter_r_a,par.nprocs+1,100,"IA");
+
+  amzero(&alltimer_s_a);
+  amzero(&alltimer_r_a);
+  amzero(&allcounter_s_a);
+  amzero(&allcounter_r_a);
+
+
+  /* copy the data into these arrays */
+  for (index=0; index<100; index++)
+  {
+    alltimer_s[par.myrank][index]   = sumtime[index];
+    allcounter_s[par.myrank][index] = counter[index];
   }
-  if (user_perf)
-    fprintf(out, "-----------------------------------------------------------------------------\n");
-  perf_print(out, 40,"calc matrices fast", 0,1);
-  perf_print(out, 41,"assemble_fast", 0,1);
-  perf_print(out, 42,"init element", 0,1);
-  perf_print(out, 43,"calele", 0,1);
-  fprintf(out, "-----------------------------------------------------------------------------\n");
-  perf_print(out, 44,"calset", 43,1);
-  perf_print(out, 45,"elecord", 43,1);
-  perf_print(out, 46,"elesize", 43,1);
-  perf_print(out, 47,"calint", 43,1);
-  perf_print(out, 48,"make_estif", 43,1);
-  perf_print(out, 49,"caldirich", 43,1);
-  perf_print(out, 50,"massrhs", 43,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out, 51,"functderiv", 47,1);
-  perf_print(out, 52,"jacob", 47,1);
-  perf_print(out, 53,"gder", 47,1);
-  perf_print(out, 54,"gder2", 47,1);
-  perf_print(out, 55,"veli", 47,1);
-  perf_print(out, 56,"vder", 47,1);
-  perf_print(out, 57,"elesize_2", 47,1);
-  perf_print(out, 58,"gal_mat", 47,1);
-  perf_print(out, 59,"stab_mat", 47,1);
-  perf_print(out, 60,"iter_rhs", 47,1);
-  perf_print(out, 61,"ext_rhs", 47,1);
-  perf_print(out, 62,"time_rhs", 47,1);
-  perf_print(out, 63,"ext_rhs", 47,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out, 64,"invupdate", 41,1);
-  perf_print(out, 65,"invbindx", 41,1);
-  perf_print(out, 66,"make lm", 41,1);
-  perf_print(out, 67,"faddmsr", 41,1);
-  perf_print(out, 68,"copy rhs", 41,1);
-  perf_print(out, 69,"assemble rhs", 41,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out, 71,"out_results", 0,1);
-  perf_print(out, 72,"restart_write_bin", 0,1);
-  perf_print(out, 73,"out_gid", 0,1);
-  perf_print(out, 74,"restart_write", 0,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
-  perf_print(out, 95,"amdef",                   0,1);
-  perf_print(out, 94,"amredef",                 0,1);
-  perf_print(out, 93,"amdel",                   0,1);
-  perf_print(out, 92,"amzero",                  0,1);
-  fprintf(out, "%77s\n","-----------------------------------------------------------------------------");
+
+
+  /* allreduce the data */
+  MPI_Allreduce(alltimer_s[0],  alltimer_r[0],  (par.nprocs+1)*100,
+      MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+  MPI_Allreduce(allcounter_s[0],allcounter_r[0],(par.nprocs+1)*100,
+      MPI_INT   ,MPI_SUM,actintra->MPI_INTRA_COMM);
+
+
+  /* print only on the first processor */
+  if (par.myrank==0)
+  {
+    /* print out the headings */
+    /* first line */
+    fprintf(err,   "\n                              ");
+    fprintf(screen,"\n                              ");
+
+    for (proc=0;proc<par.nprocs;proc++)
+      fprintf(err, "     Processor %2i:   ", proc);
+
+    fprintf(err,   "            Average:\n");
+    fprintf(screen,"            Average:\n");
+
+    /* second line */
+    fprintf(err,   "                              ");
+    fprintf(screen,"                              ");
+
+    for (proc=0;proc<par.nprocs;proc++)
+      fprintf(err, "  ------------------ ", proc);
+
+    fprintf(err,   "  ---------------------------\n");
+    fprintf(screen,"  ---------------------------\n");
+
+    /* third line */
+    fprintf(err,   "%2s %25s: ","ID","Functionname");
+    fprintf(screen,"%2s %25s: ","ID","Functionname");
+
+    for (proc=0;proc<par.nprocs;proc++)
+      fprintf(err, "  Count   Time [sec] ", proc);
+
+    fprintf(err,   "%7s %12s %5s%3s\n","Count","Time [sec]","%","of");
+    fprintf(screen,"%7s %12s %5s%3s\n","Count","Time [sec]","%","of");
+
+    for (proc=0;proc<par.nprocs;proc++)
+      fprintf(err, "=====================");
+    fprintf(err,
+        "============================================================\n");
+    fprintf(screen,
+        "============================================================\n");
+
+
+    /* loop all counters and print only those that were used */
+    for (index=0; index<100; index++)
+    {
+      sum_timer   = 0.0;
+      sum_counter = 0;
+
+      if (allcounter_r[0][index] != 0)
+      {
+        fprintf(err,   "%2d %25s: ",index,name[index]);
+        fprintf(screen,"%2d %25s: ",index,name[index]);
+
+        for (proc=0;proc<par.nprocs;proc++)
+        {
+          fprintf(err, "%7d %12.6e ",
+              allcounter_r[proc][index],
+              alltimer_r[proc][index]
+              );
+          sum_timer   += alltimer_r[proc][index];
+          sum_counter += allcounter_r[proc][index];
+        }
+
+        alltimer_r[par.nprocs][index]   = sum_timer/par.nprocs;
+        allcounter_r[par.nprocs][index] = sum_counter/par.nprocs;
+
+        fprintf(err,    "%7d %12.6e %5.1f %2d\n",
+            allcounter_r[par.nprocs][index],
+            alltimer_r[par.nprocs][index],
+            (alltimer_r[par.nprocs][bezug[index]] != 0) ?
+                (alltimer_r[par.nprocs][index]/(alltimer_r[par.nprocs][bezug[index]]))*100 : 0,
+            bezug[index]
+            );
+        fprintf(screen, "%7d %12.6e %5.1f %2d\n",
+            allcounter_r[par.nprocs][index],
+            alltimer_r[par.nprocs][index],
+            (alltimer_r[par.nprocs][bezug[index]] != 0) ?
+                (alltimer_r[par.nprocs][index]/(alltimer_r[par.nprocs][bezug[index]]))*100 : 0,
+            bezug[index]
+            );
+      } /* if (allcounter_r[0][index] != 0) */
+
+
+      /* add separators at some points */
+      if (index== 2 || index==11 || index==20 ||
+          index==43 || index==50 || index==63 ||
+          index==69 || index==74 || index==82 )
+      {
+        for (proc=0;proc<par.nprocs;proc++)
+          fprintf(err, "---------------------");
+        fprintf(err,
+            "------------------------------------------------------------\n");
+        fprintf(screen,
+            "------------------------------------------------------------\n");
+      }
+
+    } /* for (index=0; index<100; index++) */
+
+
+    /* print footer line */
+    for (proc=0;proc<par.nprocs;proc++)
+      fprintf(err, "=====================");
+    fprintf(err,
+        "============================================================\n");
+    fprintf(screen,
+        "============================================================\n");
+
+    fflush(err);
+    fflush(screen);
+
+  } /* if (par.myrank==0) */
+
+
+  MPI_Barrier(actintra->MPI_INTRA_COMM);
+
+#endif
+
 
   /*----------------------------------------------------------------------*/
   return;
 }
-#endif
+#endif /* ifdef PERF */
 
 
 

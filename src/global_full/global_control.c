@@ -180,11 +180,7 @@ void ntam(INT argc, char *argv[])
 #ifdef PERF
   perf_end(0);
   /* print out time counters */
-  if (par.myrank==0)
-  {
-    perf_out(stdout);
-    perf_out(allfiles.out_err);
-  }
+  perf_out();
 #endif
 
 
