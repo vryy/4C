@@ -82,7 +82,7 @@ DOUBLE        *tmp;
 /* some umfpack variables see umfpack manual */
 /*DOUBLE        *control = (DOUBLE *) NULL;
 DOUBLE        *info    = (DOUBLE *) NULL;*/
-void          *symbolic, *numeric;
+static void          *symbolic, *numeric;
 DOUBLE        info [UMFPACK_INFO], control [UMFPACK_CONTROL];
 
 #ifdef DEBUG
@@ -103,6 +103,7 @@ case 1:
    ccf->is_init     = 1;
    ccf->ncall       = 0;
    ccf->is_factored = 0;
+   ccf->reuse       = 0;
 
    /* get the default control parameters */
    umfpack_di_defaults (control) ;
@@ -149,56 +150,75 @@ case 0:
        t = umfpack_timer ( ) ;
        /* get the default control parameters */
        umfpack_di_defaults (control) ;
-       control [UMFPACK_PIVOT_TOLERANCE] = 0.2;
+       control [UMFPACK_PIVOT_TOLERANCE] = 1.0;
        control [UMFPACK_IRSTEP]          =   5;
 
 #ifdef DEBUG
        control [UMFPACK_PRL] = 5 ;
 #endif
+       if (ccf->reuse==0)/* last LU-decomposition is not to be used */
+       {
+          if (ccf->is_factored==1)/* free pointer *numeric of last decomposition*/
+          {
+             umfpack_di_free_numeric (&numeric);
+          }
+          /* symbolic -> (with respect to the mask of matrix A) factorization */
 
-       /* symbolic factorization */
 #if defined(LINUX_MUENCH) || defined(HPUX_MUENCH)
        status = umfpack_di_symbolic (n, n, Ap, Ai, Ax, &symbolic, control, info);
 #else
        status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
 #endif
+#ifdef DEBUG 
+          if (status < 0)
+          {
+             umfpack_di_report_info (control, info) ;
+             umfpack_di_report_status (control, status) ;
+             dserror ("umfpack_di_symbolic failed") ;
+          }
+#endif
+          /* numeric-> (with respect to the values of matrix A) factorization */
+          status =  umfpack_di_numeric (Ap, Ai, Ax, symbolic, &numeric, control, info);
+#ifdef DEBUG 
+          if (status < 0)
+          {
+             umfpack_di_report_info (control, info) ;
+             umfpack_di_report_status (control, status) ;
+             dserror ("umfpack_di_numeric failed") ;
+          }
+#endif
+          umfpack_di_free_symbolic (&symbolic);
+          /* solve Ax=b */
+          status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
+#ifdef DEBUG 
+          if (status < 0)
+          {
+             umfpack_di_report_info (control, info) ;
+             umfpack_di_report_status (control, status) ;
+             dserror ("umfpack_di_solve failed") ;
+          }
+#endif
+          t = umfpack_timer ( ) - t ;
+          fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
+          ccf->is_factored = 1;
+       }/* if (ccf->reuse==0)*/
 
-#ifdef DEBUG
-       if (status < 0)
+       else if (ccf->reuse==1)/* use last LU-decomposition (if only RHS has changed) */
        {
-           umfpack_di_report_info (control, info) ;
-           umfpack_di_report_status (control, status) ;
-           dserror ("umfpack_di_symbolic failed") ;
-       }
+          /* solve Ax=b */
+          status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
+#ifdef DEBUG 
+          if (status < 0)
+          {
+             umfpack_di_report_info (control, info) ;
+             umfpack_di_report_status (control, status) ;
+             dserror ("umfpack_di_solve failed") ;
+          }
 #endif
 
-       /* numeric factorization */
-       status =  umfpack_di_numeric (Ap, Ai, Ax, symbolic, &numeric, control, info);
-#ifdef DEBUG
-       if (status < 0)
-       {
-           umfpack_di_report_info (control, info) ;
-           umfpack_di_report_status (control, status) ;
-           dserror ("umfpack_di_numeric failed") ;
-       }
-#endif
-
-       umfpack_di_free_symbolic (&symbolic);
-
-       /* solve Ax=b */
-       status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
-#ifdef DEBUG
-       if (status < 0)
-       {
-           umfpack_di_report_info (control, info) ;
-           umfpack_di_report_status (control, status) ;
-           dserror ("umfpack_di_solve failed") ;
-       }
-#endif
-
-       umfpack_di_free_numeric (&numeric);
-       t = umfpack_timer ( ) - t ;
-       fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
+          t = umfpack_timer ( ) - t ;
+          fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
+       }/* end else if (ccf->reuse==1)*/
 
 /*#ifdef DEBUG
    control [UMFPACK_PRL] = 5 ;
