@@ -211,6 +211,7 @@ OBJS12	      = src/wall1/w1_bop.o \
                 src/wall1/w1_mat_plast_epc.o \
                 src/wall1/w1_mat_plast_epc_serv.o \
                 src/wall1/w1_mat_plast_mises.o \
+                src/wall1/w1_mat_plast_mises3D.o \
                 src/wall1/w1_mat_plast_serv.o \
                 src/wall1/w1_mat_serv.o \
                 src/wall1/w1_static_ke.o \
@@ -251,6 +252,42 @@ OBJS15        = src/fluid_full/fluid_dyn.o \
                 src/fluid_full/fluid_service.o \
                 src/fluid_full/fluid_visual.o \
 		src/fluid_full/inp_fluid_start_data.o
+#                shell9
+OBJS16        = src/shell9/s9_main.o \
+                src/shell9/s9_a3.o \
+                src/shell9/s9_ans.o \
+                src/shell9/s9_btdb.o \
+                src/shell9/s9_cal_dyn.o \
+                src/shell9/s9_call_mat.o \
+                src/shell9/s9_eas.o \
+                src/shell9/s9_eps.o \
+                src/shell9/s9_funcderiv.o \
+                src/shell9/s9_init.o   \
+                src/shell9/s9_inpele.o \
+                src/shell9/s9_intforce.o \
+                src/shell9/s9_intg.o \
+                src/shell9/s9_jaco.o \
+                src/shell9/s9_load1.o \
+                src/shell9/s9_load_surf.o \
+                src/shell9/s9_loccoordnode.o \
+                src/shell9/s9_mat_linel.o \
+                src/shell9/s9_mat_linel3D.o \
+                src/shell9/s9_mat_orth3D.o \
+                src/shell9/s9_math.o\
+                src/shell9/s9_out.o\
+                src/shell9/s9_restart.o \
+                src/shell9/s9_static_keug.o \
+                src/shell9/s9_stress.o \
+                src/shell9/s9_tforce.o \
+                src/shell9/s9_tfte.o \
+                src/shell9/s9_tmtr.o \
+                src/shell9/s9_tvbo.o \
+                src/shell9/s9_tvhe.o \
+                src/shell9/s9_tvkg.o \
+                src/shell9/s9_tvma.o \
+                src/shell9/s9_tvmr.o \
+                src/shell9/s9_vthv.o \
+                src/shell9/s9_xint.o 
 #                optimization
 OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/input_optdata.o \
