@@ -265,7 +265,8 @@ for (i=0; i<genprob.numfld; i++)
          {
             klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
             hl      = (klayhgt/100)*thick;
-            hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+            /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+            hl      = A3FAC_SHELL9*hl;   
             e3 = -1.0; /*bottom*/
             zeta = s9con(e3,num_klay,klay,jlay,1.0);
             /*calculate coordinates*/
@@ -287,7 +288,8 @@ for (i=0; i<genprob.numfld; i++)
             {
                klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
                hl      = (klayhgt/100)*thick;
-               hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+               /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+               hl      = A3FAC_SHELL9*hl;
                e3 = +1.0; /*top*/
                zeta = s9con(e3,num_klay,klay,jlay,1.0);
                /*calculate coordinates*/
@@ -346,7 +348,8 @@ for (i=0; i<genprob.numfld; i++)
          {
             klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
             hl      = (klayhgt/100)*thick;
-            hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+            /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+            hl      = A3FAC_SHELL9*hl;  
             e3 = -1.0; /*bottom*/
             zeta = s9con(e3,num_klay,klay,jlay,1.0);
             /*calculate coordinates*/
@@ -368,7 +371,8 @@ for (i=0; i<genprob.numfld; i++)
             {
                klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
                hl      = (klayhgt/100)*thick;
-               hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+               /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+               hl      = A3FAC_SHELL9*hl;   
                e3 = +1.0; /*top*/
                zeta = s9con(e3,num_klay,klay,jlay,1.0);
                /*calculate coordinates*/
