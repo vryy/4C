@@ -81,6 +81,17 @@ dstrc_enter("c1_call_mat");
     c1gld (d,g);/* transform local to global material matrix */
     c1mefm(strain, d, stress);
   break;
+  case m_nhmfcc:/*---foam, closed cell, based on modified Neo Hook */
+    c1_mat_nhmfcc( mat, ele->e.c1->elewa->matdata,
+                   disd, stress, d, &strain[0]);
+  break;
+  case m_neohooke:/*------------------------------ kompressible neo-hooke */
+    c1_mat_neohook(mat->m.stvenant->youngs,
+                   mat->m.stvenant->possionratio,
+                   disd,
+                   stress,
+                   d);
+  break;
   case m_pl_mises:/*----------------------- von mises material law ---*/
     c1_mat_plast_mises(mat->m.pl_mises->youngs,
                        mat->m.pl_mises->possionratio,
