@@ -55,6 +55,7 @@ trap "cleanup" 0 1 2 15
 rm -f *.dat.scr *.dat.make.log
 
 # figure out whether we are parallel or not
+touch "$definefile"
 . "./$configfile"
 
 
