@@ -290,10 +290,15 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_struct_update_stepback : assemble_action = assemble_do_nothing; break;
    case calc_ale_stiff              : assemble_action = assemble_one_matrix; break;
    case calc_ale_rhs                : assemble_action = assemble_do_nothing; break;
+   case calc_ale_stiff_nln          : assemble_action = assemble_one_matrix; break;
+   case calc_ale_stiff_stress       : assemble_action = assemble_one_matrix; break;
+   case calc_ale_stiff_step2        : assemble_action = assemble_one_matrix; break;
+   case calc_ale_stiff_spring       : assemble_action = assemble_one_matrix; break;
+   case calc_ale_stiff_laplace      : assemble_action = assemble_one_matrix; break;
    case calc_fluid                  : assemble_action = assemble_one_matrix; break;
-   case calc_fluid_vort          : assemble_action = assemble_do_nothing; break;
-   case calc_fluid_stress        : assemble_action = assemble_do_nothing; break;
-   case calc_fluid_shearvelo     : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_vort             : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_stress           : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing; break;
    default: dserror("Unknown type of assembly 1"); break;
    }
    /*--------------------------- assemble one or two system matrices */
@@ -359,8 +364,18 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
       container->dvec=NULL;   
    break;
 #endif   
+#ifdef D_ALE
    case ale:
+   if (container->dirich && container->isdyn == 1)
+      {
+         hasdirich = check_ale_dirich(actele);
+	 if (hasdirich)
+            ale_caldirich_increment(actele,container->dirich,
+                          container->global_numeq,&estif_global,
+			  container->pos); 
+      }
    break;
+#endif 
    default:
       dserror("fieldtyp unknown!");
    }
@@ -391,6 +406,11 @@ case calc_deriv_self_adj         : assemble_action = assemble_do_nothing;   brea
 case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
 case calc_ale_stiff              : assemble_action = assemble_one_exchange; break;
+case calc_ale_stiff_nln          : assemble_action = assemble_one_exchange; break;
+case calc_ale_stiff_stress       : assemble_action = assemble_one_exchange; break;
+case calc_ale_stiff_step2        : assemble_action = assemble_one_exchange; break;
+case calc_ale_stiff_spring       : assemble_action = assemble_one_exchange; break;
+case calc_ale_stiff_laplace      : assemble_action = assemble_one_exchange; break;
 case calc_ale_rhs                : assemble_action = assemble_do_nothing;   break;
 case calc_fluid                  : assemble_action = assemble_one_exchange; break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
@@ -438,6 +458,11 @@ case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   brea
 case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
 case calc_ale_stiff              : assemble_action = assemble_close_1matrix; break;
 case calc_ale_rhs                : assemble_action = assemble_do_nothing;    break;
+case calc_ale_stiff_nln          : assemble_action = assemble_close_1matrix; break;
+case calc_ale_stiff_stress       : assemble_action = assemble_close_1matrix; break;
+case calc_ale_stiff_step2        : assemble_action = assemble_close_1matrix; break;
+case calc_ale_stiff_spring       : assemble_action = assemble_close_1matrix; break;
+case calc_ale_stiff_laplace      : assemble_action = assemble_one_matrix; break;
 case calc_fluid                  : assemble_action = assemble_close_1matrix; break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
