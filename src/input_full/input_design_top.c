@@ -16,6 +16,9 @@ extern struct _GENPROB     genprob;
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _DESIGN *design;
+/* global variable: flag for the creation of a second discretisation */
+extern INT      create_dis;
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -35,10 +38,10 @@ static void inpdesign_dline_fenode_read(void);
 static void inpdesign_dsurf_fenode_read(void);
 static void inpdesign_dvol_fenode_read(void);
 
-static void inpdesign_dpoint_fenode(DISCRET *actdis);
-static void inpdesign_dline_feline(DISCRET *actdis);
-static void inpdesign_dsurf_fesurf(DISCRET *actdis);
-static void inpdesign_dvol_fevol(DISCRET *actdis);
+static void inpdesign_dpoint_fenode(void);
+static void inpdesign_dline_feline(void);
+static void inpdesign_dsurf_fesurf(void);
+static void inpdesign_dvol_fevol(void);
 
 /*----------------------------------------------------------------------*
  | global variables in this file in this file                      3/02 |
@@ -230,6 +233,7 @@ DSURF *actdsurf;
 DVOL  *actdvol;
 FIELD *actfield;
 NODE  *actnode;
+
 #ifdef DEBUG 
 dstrc_enter("inpdesign_topology_fe");
 #endif
@@ -247,19 +251,35 @@ dsurf_fenode  = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
 ndvol_fenode = (INT*)CCACALLOC(design->ndvol,sizeof(INT));;
 dvol_fenode  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
 /*----------------------------- read the fe-nodes on each design object */
-inpdesign_dpoint_fenode_read();
-inpdesign_dline_fenode_read();
-inpdesign_dsurf_fenode_read();
-inpdesign_dvol_fenode_read();
+  inpdesign_dpoint_fenode_read();
+  inpdesign_dline_fenode_read();
+  inpdesign_dsurf_fenode_read();
+  inpdesign_dvol_fenode_read();
 /*----------------------- make the topology between DESIGN and GEOMETRY */
-for (i=0; i<genprob.numfld; i++)
-for (j=0; j<field[i].ndis; j++)
-{
-   inpdesign_dpoint_fenode(&(field[i].dis[j]));
-   inpdesign_dline_feline(&(field[i].dis[j]));
-   inpdesign_dsurf_fesurf(&(field[i].dis[j]));
-   inpdesign_dvol_fevol(&(field[i].dis[j]));
-}
+  inpdesign_dpoint_fenode();
+  inpdesign_dline_feline();
+  inpdesign_dsurf_fesurf();
+  inpdesign_dvol_fevol();
+  /* make topolopy for gentities on the second discretisation */
+  if (create_dis ==1)
+  {
+    for (i=0; i<design->ndnode; i++)
+      for ( j=0; j<ndnode_fenode[i]; j++)
+        dnode_fenode[i][j] += genprob.nodeshift;
+    for (i=0; i<design->ndline; i++)
+      for ( j=0; j<ndline_fenode[i]; j++)
+        dline_fenode[i][j] += genprob.nodeshift;
+    for (i=0; i<design->ndsurf; i++)
+      for ( j=0; j<ndsurf_fenode[i]; j++)
+        dsurf_fenode[i][j] += genprob.nodeshift;
+    for (i=0; i<design->ndvol; i++)
+      for ( j=0; j<ndvol_fenode[i]; j++)
+        dvol_fenode[i][j] += genprob.nodeshift;
+    inpdesign_dpoint_fenode();
+    inpdesign_dline_feline();
+    inpdesign_dsurf_fesurf();
+    inpdesign_dvol_fevol();
+  }
 /*------------------------------------------------------------- tidy up */
 for (i=0; i<design->ndnode; i++) CCAFREE(dnode_fenode[i]);
 CCAFREE(dnode_fenode);
@@ -512,12 +532,12 @@ return;
 /*----------------------------------------------------------------------*
  | make topology DNODE <-> GNODE                          m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dpoint_fenode(DISCRET *actdis)
+static void inpdesign_dpoint_fenode()
 {
 INT           i,j,k;
 INT           nodeId;
 DNODE        *actdnode;
-NODE         *actnode;
+GNODE        *actgnode;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dpoint_fenode");
 #endif
@@ -526,22 +546,10 @@ for (i=0; i<design->ndnode; i++)
 {
    actdnode = &(design->dnode[i]);
    nodeId   = dnode_fenode[i][0];
-   actnode  = NULL;
-   for (k=0; k<actdis->numnp; k++)
-   {
-      if (actdis->node[k].Id == nodeId)
-      {
-         actnode = &(actdis->node[k]);
-         break;
-      }
-   }
-/*   if (!actnode) dserror("Cannot make DNODE<->GNODE topology"); 
-     check is done later again!!!                                       */
-   if (actnode)
-   {
-      actnode->gnode->ondesigntyp = ondnode;
-      actnode->gnode->d.dnode = actdnode;
-   }
+   actgnode = genprob.gnodes[nodeId];
+   if (actgnode == NULL) continue;
+   actgnode->ondesigntyp = ondnode;
+   actgnode->d.dnode = actdnode;
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -555,7 +563,7 @@ return;
 /*----------------------------------------------------------------------*
  | make topology DLINE <-> GLINE                          m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dline_feline(DISCRET *actdis)
+static void inpdesign_dline_feline()
 {
 INT           i,j,k;
 DLINE        *actdline;
@@ -575,11 +583,11 @@ for (i=0; i<design->ndline; i++)
    actdline = &(design->dline[i]);
    nnodeonline = ndline_fenode[i];
    /* loop all GLINES and check whether there nodes are on this actdline */
-   for (j=0; j<actdis->ngline; j++)
+   for (j=0; j<genprob.ngline; j++)
    {
       linematch=0;
       firstmatch=scndmatch=thirdmatch=0;
-      actgline = &(actdis->gline[j]);
+      actgline = genprob.glines[j];
       if (actgline->dline) continue;
       /*----------------------- check whether firstnode is on actdline */
       firstnode = actgline->gnode[0]->node->Id;
@@ -630,28 +638,22 @@ for (i=0; i<design->ndline; i++)
 }/* end loop i over dlines */
 /* loop all dlines again and make pointers from all gnodes to the dlines*/
 /*------------- if a gnode already has a pointer to a dnode, do nothing */
-for (i=0; i<design->ndline; i++)
-{
-   /*------------------------------------------- set active design line */
-   actdline = &(design->dline[i]);
-   /*----------------------- set number of fe-nodes on this design line */
-   nnodeonline = ndline_fenode[i];
-   /*-------------------------------- loop fe-nodes on this design line */
-   for (j=0; j<nnodeonline; j++)
-   {
+
+  for (i=0; i<design->ndline; i++)
+  {
+    actdline = &(design->dline[i]);
+    nnodeonline = ndline_fenode[i];
+    for (j=0; j<nnodeonline; j++)
+    {
       nodeId = dline_fenode[i][j];
-      for (k=0; k<actdis->ngnode; k++)
-      {
-         if (actdis->gnode[k].node->Id != nodeId) continue;
-         actgnode = &(actdis->gnode[k]);
-         /*-------------------- check whether node is on a design point */
-         if (actgnode->ondesigntyp != ondnothing) break;
-         actgnode->ondesigntyp = ondline;
-         actgnode->d.dline = actdline;
-         break;
-      }
-   }
-}/* end loop i over dlines */
+      actgnode = genprob.gnodes[nodeId];
+      if (actgnode == NULL) continue;
+      if (actgnode->ondesigntyp != ondnothing) continue;
+      actgnode->ondesigntyp = ondline;
+      actgnode->d.dline = actdline;
+    }
+  }/* end loop i over dlines */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -664,17 +666,18 @@ return;
 /*----------------------------------------------------------------------*
  | make topology DSURF <-> GSURF                          m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dsurf_fesurf(DISCRET *actdis)
+static void inpdesign_dsurf_fesurf()
 {
 INT           i,j,k;
 GSURF        *actgsurf;
 DSURF        *actdsurf;
 GNODE        *actgnode;
 INT           nnodeonsurf;
-INT           nodeId;
 INT           firstnode,scndnode,thirdnode;
 INT           firstmatch,scndmatch,thirdmatch;
 INT           surfmatch;
+INT           nodeId;
+
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dsurf_fesurf");
 #endif
@@ -684,11 +687,11 @@ for (i=0; i<design->ndsurf; i++)
    actdsurf = &(design->dsurf[i]);
    nnodeonsurf = ndsurf_fenode[i];
    /* loop all GSURFS and check whether there nodes are on this actdsurf */
-   for (j=0; j<actdis->ngsurf; j++)
+   for (j=0; j<genprob.ngsurf; j++)
    {
       surfmatch=0;
       firstmatch=scndmatch=thirdmatch=0;
-      actgsurf = &(actdis->gsurf[j]);
+      actgsurf = genprob.gsurfs[j];
       if (actgsurf->dsurf) continue;
       /*----------------------- check whether firstnode is on actdsurf */
       firstnode = actgsurf->gnode[0]->node->Id;
@@ -735,25 +738,21 @@ for (i=0; i<design->ndsurf; i++)
 /*- loop dsurfaces again and set pointers GNODE -> DSURF for all GNODEs */
 /*------------- which do NOT already have a pointer to a DNODE or DLINE */
 
-for (i=0; i<design->ndsurf; i++)
-{
-   actdsurf = &(design->dsurf[i]);
-   nnodeonsurf = ndsurf_fenode[i];
-   for (j=0; j<nnodeonsurf; j++)
-   {
+  for (i=0; i<design->ndsurf; i++)
+  {
+    actdsurf = &(design->dsurf[i]);
+    nnodeonsurf = ndsurf_fenode[i];
+    for (j=0; j<nnodeonsurf; j++)
+    {
       nodeId = dsurf_fenode[i][j];
-      for (k=0; k<actdis->ngnode; k++)
-      {
-         if (actdis->gnode[k].node->Id != nodeId) continue;
-         actgnode = &(actdis->gnode[k]);
-         if (actgnode->ondesigntyp != ondnothing) break;
-         actgnode->ondesigntyp = ondsurf;
-         actgnode->d.dsurf = actdsurf;
-         break;
-      }
-   }
-  
-} /* ned loop i over surfaces */
+      actgnode = genprob.gnodes[nodeId];
+      if (actgnode == NULL) continue;
+      if (actgnode->ondesigntyp != ondnothing) continue;
+      actgnode->ondesigntyp = ondsurf;
+      actgnode->d.dsurf = actdsurf;
+    }/* end loop j over GNODEs */
+  } /* end loop i over DSURF */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -766,17 +765,18 @@ return;
 /*----------------------------------------------------------------------*
  | make topology DSURF <-> GSURF                          m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dvol_fevol(DISCRET *actdis)
+static void inpdesign_dvol_fevol()
 {
 INT           i,j,k;
 DVOL         *actdvol;
 GVOL         *actgvol;
 GNODE        *actgnode;
-INT           nodeId;
 INT           ngnode;
 ELEMENT      *actele;
 INT           firstnode,scndnode,thirdnode,fourthnode;
 INT           firstmatch,scndmatch,thirdmatch,fourthmatch;
+INT           nodeId;
+
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dvol_fevol");
 #endif
@@ -784,9 +784,9 @@ dstrc_enter("inpdesign_dvol_fevol");
 for (i=0; i<design->ndvol; i++)
 {
    actdvol = &(design->dvol[i]);
-   for (j=0; j<actdis->ngvol; j++)
+   for (j=0; j<genprob.ngvol; j++)
    {
-      actgvol = &(actdis->gvol[j]);
+      actgvol = genprob.gvols[j];
       actele  = actgvol->element;
       firstmatch=scndmatch=thirdmatch=fourthmatch=0;
       /*-------- find four nodes of element that are not in one surface */
@@ -857,26 +857,25 @@ for (i=0; i<design->ndvol; i++)
       actgvol->dvol = actdvol;
    }/* end loop j over gvols */
 }/* end loop i over dvols */
+
 /* loop all design volumes again and make pointers GNODE -> DVOL in all */
 /* GNODEs which do not already have a pointer to a DSURF,DLINE or DNODE */
-for (i=0; i<design->ndvol; i++)
-{
-   actdvol = &(design->dvol[i]);
-   ngnode  = ndvol_fenode[i];
-   for (j=0; j<ngnode; j++)
-   {
+
+  for (i=0; i<design->ndvol; i++)
+  {
+    actdvol = &(design->dvol[i]);
+    ngnode  = ndvol_fenode[i];
+    for (j=0; j<ngnode; j++)
+    {
       nodeId = dvol_fenode[i][j];
-      for (k=0; k<actdis->ngnode; k++)
-      {
-         if (actdis->gnode[k].node->Id != nodeId) continue;
-         actgnode = &(actdis->gnode[k]);
-         if (actgnode->ondesigntyp != ondnothing) break;
-         actgnode->ondesigntyp = ondvol;
-         actgnode->d.dvol = actdvol;
-         break;
-      }
-   }/* end loop j over GNODEs */
-} /* end loop i over DVOL */
+      actgnode = genprob.gnodes[nodeId];
+      if (actgnode == NULL) continue;
+      if (actgnode->ondesigntyp != ondnothing) continue;
+      actgnode->ondesigntyp = ondvol;
+      actgnode->d.dvol = actdvol;
+    }/* end loop j over GNODEs */
+  } /* end loop i over DVOL */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

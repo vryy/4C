@@ -37,6 +37,8 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+/* global variable: flag for the creation of a second discretisation */
+extern INT      create_dis;
 /*----------------------------------------------------------------------*
  | Global variables for this file                        m.gee 11/00    |
  *----------------------------------------------------------------------*/
@@ -48,12 +50,17 @@ static ARRAY tmpnodes2;
  *----------------------------------------------------------------------*/
 void inpfield()
 {
-INT  i,j;
-INT  ierr;
+INT  i,j,k;
+INT  ierr,node_id;
+INT  numnd;
+INT  nnode_total = 0;
+
 #ifdef DEBUG 
 dstrc_enter("inpfield");
 #endif
 
+create_dis = 0;
+genprob.maxnode    = 0;
 /*--------------------------------------read node coordinates from file */
 inpnodes();
 /*--------------------------------------------------------- read field  */
@@ -144,18 +151,53 @@ if (genprob.probtyp == prb_opt)
 {
 /* not yet implemented */
 }
+/* copy nodes for the second discretisation */
+if (create_dis == 1)
+{
+  /*dserror("Copying of nodes for second discretisarion not yet implemented!!");*/
+
+  numnd = genprob.nnode;
+  /*genprob.nnode = 2*genprob.nnode;*/
+  amredef(&tmpnodes1,2*(genprob.nnode),3,"DA");
+  amredef(&tmpnodes2,2*(genprob.nnode),1,"IV");
+
+  for (i=numnd; i<2*genprob.nnode; i++)
+  {
+    tmpnodes1.a.da[i][0] = tmpnodes1.a.da[i-numnd][0];
+    tmpnodes1.a.da[i][1] = tmpnodes1.a.da[i-numnd][1];
+    tmpnodes1.a.da[i][2] = tmpnodes1.a.da[i-numnd][2];
+    tmpnodes2.a.iv[i]    = tmpnodes2.a.iv[i-numnd] + numnd;
+  }
+}
 /*-------------------------------------- assign the nodes to the fields */
 for (i=0; i<genprob.numfld; i++)
 for (j=0;j<field[i].ndis;j++)
-   inp_assign_nodes(&(field[i].dis[j]));
+{
+  inp_assign_nodes(&(field[i].dis[j]));
+  nnode_total += field[i].dis[j].numnp;
+}
 
 amdel(&tmpnodes1);
 amdel(&tmpnodes2);
 /*---------------------------------- make element-node-element topology */
-for (i=0; i<genprob.numfld; i++)
-for (j=0;j<field[i].ndis;j++)
-   inp_topology(&(field[i].dis[j]));
+  genprob.nnode = nnode_total;
+  genprob.nodes = (NODE**)CCACALLOC(genprob.maxnode,sizeof(NODE*));
 
+  for (i=0; i<genprob.numfld; i++)
+  {
+    for (j=0;j<field[i].ndis;j++)
+    {
+      /* make pointers to all nodes in genprob.nodes */
+      for (k=0; k<field[i].dis[j].numnp; k++)
+      {
+        node_id = field[i].dis[j].node[k].Id;
+        dsassert(node_id <= genprob.maxnode,"Zu wenig KNOTEN");
+        genprob.nodes[node_id] = &(field[i].dis[j].node[k]);
+      }
+
+      inp_topology(&(field[i].dis[j]));
+    }
+  }
 /*----------------------------------------------- FSI 3D typ of problem */
 if (genprob.probtyp==prb_fsi)
 {
@@ -191,7 +233,7 @@ ELEMENT *actele;
 #ifdef DEBUG 
 dstrc_enter("inp_assign_nodes");
 #endif
-amdef("nodeflag",&nodeflag,genprob.nnode,1,"IV");
+amdef("nodeflag",&nodeflag,2*genprob.nnode,1,"IV");
 aminit(&nodeflag,&minusone);
 /*----------------  set a flag to the node_id for each node in the field */
 for (i=0; i<actdis->numele; i++)
@@ -205,7 +247,7 @@ for (i=0; i<actdis->numele; i++)
 }
 /*----------------------------------------------------- count the flags */
 counter=0;
-for (i=0; i<genprob.nnode; i++)
+for (i=0; i<2*genprob.nnode; i++)
 {
    if (nodeflag.a.iv[i]!=-1) counter++;
 }
@@ -214,7 +256,7 @@ actdis->numnp=counter;
 actdis->node = (NODE*)CCACALLOC(counter,sizeof(NODE));
 /*---------------- assign the node Ids and coords to the NODE structure */
 counter=0;
-for (i=0; i<genprob.nnode; i++)
+for (i=0; i<2*genprob.nnode; i++)
 {
    if (nodeflag.a.iv[i]!=-1)
    {
@@ -223,6 +265,10 @@ for (i=0; i<genprob.nnode; i++)
       {
          actdis->node[counter].x[j] = tmpnodes1.a.da[i][j];
       }
+
+      if (genprob.maxnode < (actdis->node[counter].Id+1))
+        genprob.maxnode = actdis->node[counter].Id + 1;
+      
       counter++;
    }
 }
@@ -501,6 +547,7 @@ INT  cpro=0;
 INT  elenumber;
 INT  isquad;
 char *colpointer;
+
 #ifdef DEBUG 
 dstrc_enter("inp_fluid_field");
 #endif
@@ -554,11 +601,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fluidfield->dis[1].numele = fluidfield->dis[0].numele;
 	 fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
          cpro++;
+         create_dis = 1;
       } /* endif (cpro==0) */      
       fluidfield->dis[0].element[counter].eltyp=el_fluid2_pro;
       fluidfield->dis[1].element[counter].eltyp=el_fluid2_pro;
       f2pro_inp(&(fluidfield->dis[0].element[counter]));
-      f2pro_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]));       
+      f2pro_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]),
+           genprob.nele,genprob.nnode);       
+      genprob.nodeshift = genprob.nnode;
       goto read;
    }
 #endif
@@ -582,27 +632,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
 #ifndef D_FLUID2 
-      dserror("FLUID2 needed but not defined in Makefile");
+     dserror("FLUID2 needed but not defined in Makefile");
 #endif
    }
 #ifdef D_FLUID2 
    if (ierr==1) 
    {
-      fluidfield->dis[0].element[counter].eltyp=el_fluid2;
-      f2_inp(&(fluidfield->dis[0].element[counter]),counter);
+     fluidfield->dis[0].element[counter].eltyp=el_fluid2;
+     f2_inp(&(fluidfield->dis[0].element[counter]),counter);
 
-      if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 || 
-          fluidfield->dis[0].element[counter].e.f2->turbu == 3 )
-      {
+     if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 || 
+         fluidfield->dis[0].element[counter].e.f2->turbu == 3 )
+     {
        if(cpro==0)
        {
-        fluidfield->dis[1].numele = fluidfield->dis[0].numele;
-	  fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
+         fluidfield->dis[1].numele = fluidfield->dis[0].numele;
+         fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
          cpro++;
+         create_dis = 1;
        } /* endif (cpro==0) */      
        fluidfield->dis[1].element[counter].eltyp=el_fluid2_tu;
-       f2tu_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]));       
-      } /* endif (e.f2->turbu == 2 || 3) */      
+       f2tu_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]),
+           genprob.nele,genprob.nnode);       
+       genprob.nodeshift = genprob.nnode;
+     } /* endif (e.f2->turbu == 2 || 3) */      
    }
 #endif
 /*----------------------------------------------------------------------*/

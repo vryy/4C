@@ -10,7 +10,7 @@ extern struct _FIELD      *field;
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h                                                  
+defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -22,6 +22,9 @@ extern struct _TRACE         trace;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+
+/* global variable: flag for the creation of a second discretisation */
+INT      create_dis;
 
 
 #ifdef D_AXISHELL
@@ -38,7 +41,13 @@ void interpolate_axishell_conds(DISCRET  *actdis);
  *----------------------------------------------------------------------*/
 void ntainp()
 {
-INT i,j;
+INT i,j,k,id;
+INT  ngnode;
+INT  ngline;
+INT  ngsurf;
+INT  ngvol;
+INT  counter1, counter2, counter3;
+
 /* 
    the input of the tracing option has not been done yet, so
    we have to make the dstrc_enter 'by hand' 
@@ -99,7 +108,61 @@ inp_detailed_topology(&(field[i].dis[j]));
    For each field and discretization build the pointers among design
    and FE-objects DVOL<->GVOL,DSURF<->GSURF,DLINE<->GLINE,DNODE<->GNODE.
 */   
-inpdesign_topology_fe();
+  /* count number of gnodes, glines, gsurfs and gvols in whole problem */
+  ngnode =0;
+  ngline =0;
+  ngsurf =0;
+  ngvol  =0;
+  for (i=0; i<genprob.numfld; i++)
+  {
+    for (j=0;j<field[i].ndis;j++)
+    {
+      ngnode += field[i].dis[j].ngnode;
+      ngline += field[i].dis[j].ngline;
+      ngsurf += field[i].dis[j].ngsurf;
+      ngvol  += field[i].dis[j].ngvol;
+    }
+  }
+  genprob.ngnode = ngnode;
+  genprob.gnodes = (GNODE**)CCACALLOC(genprob.maxnode,sizeof(GNODE*));
+  genprob.ngline = ngline;
+  genprob.glines = (GLINE**)CCACALLOC(ngline,sizeof(GLINE*));
+  genprob.ngsurf = ngsurf;
+  genprob.gsurfs = (GSURF**)CCACALLOC(ngsurf,sizeof(GSURF*));
+  genprob.ngvol  = ngvol;
+  genprob.gvols  = (GVOL**)CCACALLOC(ngvol,sizeof(GVOL*));
+
+  counter1 = 0;
+  counter2 = 0;
+  counter3 = 0;
+  for (i=0; i<genprob.numfld; i++)
+  {
+    for (j=0;j<field[i].ndis;j++)
+    {
+      /* make pointers to all gnodes in genprob.gnodes */
+      for (k=0; k<field[i].dis[j].ngnode; k++)
+      {
+        id = field[i].dis[j].gnode[k].node->Id;
+        dsassert(id <= genprob.maxnode,"Zu wenig KNOTEN");
+        genprob.gnodes[id] = &(field[i].dis[j].gnode[k]);
+      }
+      for (k=0; k<field[i].dis[j].ngline; k++)
+        genprob.glines[counter1++] = &(field[i].dis[j].gline[k]);
+      for (k=0; k<field[i].dis[j].ngsurf; k++)
+        genprob.gsurfs[counter2++] = &(field[i].dis[j].gsurf[k]);
+      for (k=0; k<field[i].dis[j].ngvol; k++)
+        genprob.gvols[counter3++] = &(field[i].dis[j].gvol[k]);
+    }
+  }
+
+  inpdesign_topology_fe();
+
+  CCAFREE(genprob.nodes);
+  CCAFREE(genprob.gnodes);
+  CCAFREE(genprob.glines);
+  CCAFREE(genprob.gsurfs);
+  CCAFREE(genprob.gvols);
+
 /*--------------------------------------- input of general dynamic data */
 if (genprob.timetyp==time_dynamic) inpctrdyn();
 /*---------------------------------------- input of general static data */
@@ -163,7 +226,6 @@ if (genprob.probtyp==prb_structure)
     interpolate_axishell_conds(&(field[genprob.numsf].dis[j]));
 }
 #endif
-
 /*-------------------------------------------- input of monitoring data */
 inp_monitor();
 

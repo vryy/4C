@@ -1,5 +1,11 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
  | prototypes of routines which are only to be called inside this file  | 
  |                                                        m.gee 3/02    |
  *----------------------------------------------------------------------*/
@@ -24,34 +30,27 @@ static void inptop_makesurfnodes(ELEMENT *actele, INT surfnodes[6][4]);
  *----------------------------------------------------------------------*/
 void inp_topology(DISCRET *actdis)
 {
-INT  i,j,k;
-INT  node_id;
-ELEMENT *actele;
-NODE    *actnode;
+  INT  i,j,k;
+  INT  node_id;
+  ELEMENT *actele;
+  NODE    *actnode;
+
 #ifdef DEBUG 
-dstrc_enter("inp_topology");
+  dstrc_enter("inp_topology");
 #endif
-/*------------------------------- create pointer from elements to nodes */
-for (i=0; i<actdis->numele; i++)
-{
-   actele = &(actdis->element[i]);
-/*--------------------------------- allocate the ELEMENTs node-pointers */
-   actele->node = (NODE**)CCACALLOC(actele->numnp,sizeof(NODE*));
-   
-   for (j=0; j<actele->numnp; j++)
-   {
+  /* create pointer from elements to nodes */
+
+  for (i=0; i<actdis->numele; i++)
+  {
+    actele = &(actdis->element[i]);
+    actele->node = (NODE**)CCACALLOC(actele->numnp,sizeof(NODE*));
+
+    for (j=0; j<actele->numnp; j++)
+    {
       node_id = actele->lm[j];
-      
-      for (k=0; k<actdis->numnp; k++)
-      {
-         if (actdis->node[k].Id == node_id)
-         {
-            actele->node[j] = &(actdis->node[k]);
-            break;
-         }
-      } /* end of loop over all nodes */
-   } /* end of loop over elements nodes */
-}/* end of loop over elements */
+      actele->node[j] = genprob.nodes[node_id];
+    } /* end of loop over elements nodes */
+  }/* end of loop over elements */
 
 /*------------------------------ create pointers from nodes to elements */
 for (i=0; i<actdis->numnp; i++) actdis->node[i].numele=0;
