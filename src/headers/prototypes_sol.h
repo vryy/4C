@@ -277,7 +277,8 @@ void  add_msr(struct _PARTITION     *actpart,
                 struct _SOLVAR        *actsolv,
                 struct _INTRA         *actintra,
                 struct _ELEMENT       *actele,
-                struct _AZ_ARRAY_MSR  *msr);
+                struct _AZ_ARRAY_MSR  *msr1,
+                struct _AZ_ARRAY_MSR  *msr2);
 void add_msr_checkcouple(int ii,int **cdofs,int ncdofs,int *iscouple,
                            int *isowner, int nprocs);
 void add_msr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
@@ -286,8 +287,7 @@ void exchange_coup_msr(
                          PARTITION     *actpart,
                          SOLVAR        *actsolv,
                          INTRA         *actintra,
-                         AZ_ARRAY_MSR  *msr
-                        );
+                         AZ_ARRAY_MSR  *msr);
 /*----------------------------------------------------------------------*
  | solver_add_parcsr.c                                   m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -318,6 +318,22 @@ void redundant_ucchb(
                         SOLVAR        *actsolv,
                         INTRA         *actintra,
                         UCCHB         *ucchb
+                        );
+/*----------------------------------------------------------------------*
+ |  solver_add_skyline.c                                 m.gee 09/01    |
+ *----------------------------------------------------------------------*/
+void  add_skyline(struct _PARTITION     *actpart,
+                  struct _SOLVAR        *actsolv,
+                  struct _INTRA         *actintra,
+                  struct _ELEMENT       *actele,
+                  struct _SKYMATRIX     *sky1,
+                  struct _SKYMATRIX     *sky2);
+void redundant_skyline(
+                        PARTITION     *actpart,
+                        SOLVAR        *actsolv,
+                        INTRA         *actintra,
+                        SKYMATRIX     *sky1,
+                        SKYMATRIX     *sky2
                         );
 /*----------------------------------------------------------------------*
  |  solver_aztec.c                                  m.gee 11/01    |
