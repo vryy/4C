@@ -192,7 +192,7 @@ break;
 }
 /*--------------------------------------------- check the reuse feature */
 if (msr_array->is_factored==0) amcopy(&(msr_array->val),&(msr_array->val_backup));
-else                           amcopy(&(msr_array->val_backup),&(msr_array->val));                           
+else                           amcopy(&(msr_array->val_backup),&(msr_array->val));
 /*----------------------- transform matrix to processor local numbering */
 AZ_transform(
              msr_array->proc_config,

@@ -88,8 +88,6 @@ CALC_ACTION  *action;             /* pointer to the structures cal_action enum *
 dstrc_enter("stanln");
 #endif
 /*----------------------------------------------------------------------*/
-/*--------------------------------------------------- check for restart */
-res_control();/* There is not much inside yet... */
 /*------------ the distributed system matrix, which is used for solving */
 /* 
 NOTE: This routine only uses 1 global sparse matrix, which was created

@@ -1,6 +1,6 @@
-      SUBROUTINE mumps_interface(job,parproc,comm,sym,icntl,n,nz,nz_loc,
-     *                           irn_loc,jcn_loc,irn,jcn,a_loc,b)
-      INCLUDE 'mpif.h'
+      SUBROUTINE mumps_interface(job,parproc,comm,sym,icntl,n,nz,
+     *                           nz_loc,irn_loc,jcn_loc,irn,jcn,a_loc,b)
+      INCLUDE '/opt/mpi/include/mpif.h'
       INCLUDE 'mumps_struc.h'
       TYPE (MUMPS_STRUC) mumps_par
       integer i
