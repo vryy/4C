@@ -1,6 +1,5 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
-#include "wall1_calc.h"
 
 /*----------------------------------------------------------------------*
  | integration points                                        al 6/01    |

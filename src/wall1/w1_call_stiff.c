@@ -16,11 +16,11 @@
  |                                                                      |
  *----------------------------------------------------------------------*/
 void w1_keku(double  **s, 
-                double  **bs, 
-                double  **d, 
-                double    fac, 
-                int       nd,
-                int       neps)
+             double  **bs, 
+             double  **d, 
+             double    fac, 
+             int       nd,
+             int       neps)
 {
 int            i, j, k, l, m;
 double         dum;

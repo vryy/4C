@@ -146,7 +146,7 @@ for (i=0; i<actpart->numele; i++)
       brick1(actpart,actintra,actele,&estif_global,&emass_global,action);
    break;
    case el_wall1:
-      wall1( actpart,actintra,actele,&estif_global,&emass_global,action);
+      wall1( actpart,actintra,actele,&estif_global,&emass_global,dvec,global_numeq,action);
    break;
    case el_fluid1: 
    break;
@@ -164,10 +164,11 @@ for (i=0; i<actpart->numele; i++)
 
    switch(*action)/*=== call assembly dependent on calculation-flag */
    {
-   case calc_struct_linstiff: assemble_action = assemble_one_matrix; break;
-   case calc_struct_nlnstiff: assemble_action = assemble_one_matrix; break;
-   case calc_struct_eleload : assemble_action = assemble_do_nothing; break;
-   case calc_struct_stress  : assemble_action = assemble_do_nothing; break;
+   case calc_struct_linstiff     : assemble_action = assemble_one_matrix; break;
+   case calc_struct_nlnstiff     : assemble_action = assemble_one_matrix; break;
+   case calc_struct_eleload      : assemble_action = assemble_do_nothing; break;
+   case calc_struct_stress       : assemble_action = assemble_do_nothing; break;
+   case calc_struct_update_istep : assemble_action = assemble_do_nothing; break;
    default: dserror("Unknown type of assembly"); break;
    }
    assemble(sysarray1,
@@ -187,10 +188,11 @@ for (i=0; i<actpart->numele; i++)
 #ifdef PARALLEL 
 switch(*action)
 {
-case calc_struct_linstiff: assemble_action = assemble_one_exchange; break;
-case calc_struct_nlnstiff: assemble_action = assemble_one_exchange; break;
-case calc_struct_eleload : assemble_action = assemble_do_nothing; break;
-case calc_struct_stress  : assemble_action = assemble_do_nothing; break;
+case calc_struct_linstiff      : assemble_action = assemble_one_exchange; break;
+case calc_struct_nlnstiff      : assemble_action = assemble_one_exchange; break;
+case calc_struct_eleload       : assemble_action = assemble_do_nothing; break;
+case calc_struct_stress        : assemble_action = assemble_do_nothing; break;
+case calc_struct_update_istep  : assemble_action = assemble_do_nothing; break;
 default: dserror("Unknown type of assembly"); break;
 }
 assemble(sysarray1,
@@ -283,7 +285,7 @@ if (is_brick1==1)
 /*-------------------------------- init all kind of routines for wall1  */
 if (is_wall1==1)
 {
-   wall1(actpart,NULL,NULL,&estif_global,&emass_global,action);
+   wall1(actpart,NULL,NULL,&estif_global,&emass_global,NULL,0,action);
 }
 /*-------------------------------- init all kind of routines for fluid1 */
 if (is_fluid1==1)
@@ -322,6 +324,7 @@ void calreduce(FIELD       *actfield, /* the active field */
 int i;
 int is_shell8=0;
 int is_brick1=0;
+int is_wall1 =0;
 int is_fluid1=0;
 int is_fluid3=0;
 int is_ale=0;
@@ -341,6 +344,9 @@ for (i=0; i<actfield->numele; i++)
    break;
    case el_brick1:
       is_brick1=1;
+   break;
+   case el_wall1:
+      is_wall1=1;
    break;
    case el_fluid1:
       is_fluid1=1;
@@ -363,6 +369,10 @@ if (is_shell8==1)
 }
 /*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)
+{
+}
+/*---------------------------------------------reduce results for wall1 */
+if (is_wall1==1)
 {
 }
 /*--------------------------------------------reduce results for fluid1 */

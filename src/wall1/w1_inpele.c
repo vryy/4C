@@ -1,6 +1,5 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
-#include "wall1_calc.h"
 /*----------------------------------------------------------------------*
  | read wall element                                         al 9/01    |
  *----------------------------------------------------------------------*/
@@ -36,6 +35,14 @@ if (ierr!=1) dserror("Reading of WALL1 element failed");
 /*-------------------------- read gaussian points for wall elements */
 frint_n("GP",&(ele->e.w1->nGP[0]),2,&ierr);
 if (ierr!=1) dserror("Reading of WALL1 element failed");
+/*---------------------------------------------- read 2D problem type */
+ele->e.w1->wtype = plain_stress; /* default */
+frchk("PLAIN_STRESS",&ierr);
+if (ierr==1) ele->e.w1->wtype = plain_stress;
+frchk("PLAIN_STRAIN",&ierr);
+if (ierr==1) ele->e.w1->wtype = plain_strain;
+frchk("ROTATIONAL_SYMMETRY",&ierr);
+if (ierr==1) ele->e.w1->wtype = rotat_symmet;
     
 #ifdef DEBUG 
 dstrc_exit();

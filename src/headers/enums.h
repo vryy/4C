@@ -64,9 +64,12 @@ typedef enum _ELEMENT_TYP
  *----------------------------------------------------------------------*/
 typedef enum _MATERIAL_TYP
 {
-                       m_lin_el,     /* St.Venant Kirchhoff material */
-                       m_neohooke,   /* Neo-Hooke material */
-                       m_fluid       /* fluid */
+                       m_lin_el,      /* St.Venant Kirchhoff material */
+                       m_pl_mises,    /* von Mises material */
+                       m_pl_dp,       /* Drucker Prager material */
+                       m_pl_por_mises,/* porous von Mises material */
+                       m_neohooke,    /* Neo-Hooke material */
+                       m_fluid        /* fluid */
 } MATERIAL_TYP;                         
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
@@ -94,7 +97,8 @@ typedef enum _CALC_ACTION
                        calc_struct_nlnstiffmass,
                        calc_struct_stress,
                        calc_struct_stressreduce,
-                       calc_struct_eleload
+                       calc_struct_eleload,
+                       calc_struct_update_istep
 } CALC_ACTION;                         
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
