@@ -30,18 +30,24 @@ typedef struct _NODE
      struct _ARRAY              sol_mf;        /* my multifield coupling values */
      INT                        numdf;         /* my number of degrees of freedom */
      INT                       *dof;           /* my dof-numbers  */
-
+#ifdef D_FSI
+     INT                       *hfdof;         /* my height-funct. dofs */
+     DOUBLE                    *xfs;           /* coordinates of free surface */
+#endif
      INT                        numele;        /* number of elements to me */
      struct _ELEMENT          **element;       /* ptrs to elements to me */
 
      struct _GNODE             *gnode;         /* ptr to my gnode */
 #ifdef D_FLUID   
      struct _FLUID_VARIA       *fluid_varia;   /* ptr to my fluid_varia */
+     DOUBLE                    *actn;          /* ptr to my actual surface normal */
+     DOUBLE                    *oldn;          /* ptr to my old surface normal */
 #endif
 #ifdef WALLCONTACT  
      DOUBLE                     x_cr[3];       /* current coordinates (for contact only) */     
      DOUBLE                     x_mid[3];      /* mid_configuration  coordinates(contact and EM Int. Scheme)*/  
 #endif
+     INT                        locsysId;
 } NODE;
 
 
@@ -104,8 +110,7 @@ typedef struct _ELEMENT
 /*----------------------------------------------------------------------*/
 #endif                   /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/
-
-
+     enum _ELECOSYS    locsys;
 
 } ELEMENT;
 
@@ -148,6 +153,7 @@ typedef struct _GNODE
 #ifdef D_FSI
      struct _FSI_COUPLE_CONDITION *fsicouple;
      struct _FLUID_FREESURF_CONDITION *freesurf;
+     struct _SLIPDIRICH_CONDITION     *slipdirich;
      struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
 #endif
 
@@ -227,6 +233,10 @@ typedef struct _GSURF
 
    /*----------- boundary conditions */
      struct _NEUM_CONDITION       *neum;        /* neumann conditions to this GSURF, else NULL */
+#ifdef D_FSI
+     struct _FSI_COUPLE_CONDITION *fsicouple;
+     struct _FLUID_FREESURF_CONDITION *freesurf;
+#endif
 } GSURF;
 /*----------------------------------------------------------------------*
  | 1 GVOL                                                  m.gee 3/02   |
