@@ -438,6 +438,70 @@ dstrc_exit();
 return;
 } /* end of math_sym_inv */
 /*----------------------------------------------------------------------*
+ |  do inverse of unsymmetric matrix A[m][n]                 genk 05/02 |
+ |                                                                      |
+ | important: this routine works only with arrays that are dynamically  |
+ |            allocated the way the AM routines do it                   |
+ |            uses LAPACKS dsytrf and dsytri routines                   |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void math_unsym_inv(double **A, int dimr, int dimc)
+{
+int      i,j;
+char     uplo = 'L';
+int      ipiv[2000];
+int      lwork=2000;
+double   work[2000];
+double   Inverse[4000000];
+int      info=0;
+
+#ifdef DEBUG 
+dstrc_enter("math_unsym_inv");
+#endif
+/*----------------------------------------------------------------------*/
+
+if (dimr>=2000 || dimc>=2000) 
+   dserror("This routine only unsym dense matrices upto size 2000");
+
+for (i=0; i<dimr; i++) 
+for (j=0; j<dimc; j++)
+{
+   Inverse[info] = A[i][j];
+   info++;
+}
+
+dgetrf(&dimr,
+       &dimc,
+       &(Inverse[0]),
+       &dimr,
+       &(ipiv[0]),
+       &info);
+
+if (info) dserror("Inversion of dense matrix failed");
+
+dgetri(&dimc,
+       &(Inverse[0]),  
+       &dimc,
+       &(ipiv[0]),
+       &(work[0]),
+       &lwork,
+       &info);
+
+if (info) dserror("Inversion of dense matrix failed");
+
+/*---------------------------------------------------- copy result to A */
+for (i=0; i<dimr; i++) 
+for (j=0; j<dimc; j++)
+{
+   A[i][j] = Inverse[info];
+   info++;
+}
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of math_sym_inv */
+/*----------------------------------------------------------------------*
  |  spatproduct  spt = a*(b x c)                            m.gee 10/01 |
  *----------------------------------------------------------------------*/
 void math_sppr(double *spat, double *a, double *b, double *c)
