@@ -23,6 +23,7 @@ typedef struct _NODE
 
      enum                                      /* type of design object that owns me */
        {
+          not_owned
           dnode_owned,
           dline_owned,
           dsurf_owned,
