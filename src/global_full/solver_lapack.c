@@ -146,6 +146,7 @@ case 0:
       }
       info=1;
       trans[0]='N';
+#ifndef SUN
       dgetrs(
               trans,
               &(dense->numeq_total),
@@ -157,6 +158,7 @@ case 0:
               &(dense->numeq_total),
               &info
             );
+#endif
       if (info!=0) dserror("Lapack solve failed");
    break;
    default:
