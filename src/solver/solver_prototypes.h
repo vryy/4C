@@ -430,30 +430,40 @@ void sky_make_index(
 /*----------------------------------------------------------------------*
  |  global_mask_spooles.c                                m.gee 05/02    |
  *----------------------------------------------------------------------*/
-void mask_spooles(FIELD         *actfield, 
-                  PARTITION     *actpart, 
-                  SOLVAR        *actsolv,
-                  INTRA         *actintra, 
-                  SPOOLMAT      *spo);
-void     spo_make_sparsity(SPOOLMAT        *spo,
-                           INT           *bindx);
-void    spo_make_bindx(FIELD         *actfield, 
-                       PARTITION     *actpart, 
-                       SOLVAR        *actsolv,
-                       SPOOLMAT      *spo,
-                       INT          **dof_connect,
-                       INT           *bindx);
-void  spo_nnz_topology(FIELD         *actfield, 
-                       PARTITION    *actpart, 
-                       SOLVAR       *actsolv,
-                       INTRA        *actintra,
-                       SPOOLMAT     *spo,
-                       INT         **dof_connect);
-void spo_update(FIELD         *actfield, 
-                PARTITION     *actpart, 
-                SOLVAR        *actsolv,
-                INTRA         *actintra,
-                SPOOLMAT      *spo);
+void mask_spooles(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra, 
+    SPOOLMAT      *spo);
+
+void spo_make_sparsity(
+    SPOOLMAT      *spo,
+    INT           *bindx);
+
+void spo_make_bindx(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    SPOOLMAT      *spo,
+    INT          **dof_connect,
+    INT           *bindx);
+
+void spo_nnz_topology(
+    FIELD        *actfield, 
+    PARTITION    *actpart, 
+    SOLVAR       *actsolv,
+    INTRA        *actintra,
+    SPOOLMAT     *spo,
+    INT         **dof_connect);
+
+void spo_update(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    SPOOLMAT      *spo);
+
 
 void spo_make_index(
     FIELD                 *actfield, 
@@ -592,6 +602,15 @@ void  add_rc_ptr(struct _PARTITION     *actpart,
                 struct _ELEMENT       *actele,
                 struct _RC_PTR        *rc_ptr1,
                 struct _RC_PTR        *rc_ptr2);
+
+void add_rcptr_checkcouple(
+    INT         ii,
+    INT       **cdofs,
+    INT         ncdofs,
+    INT        *iscouple,
+    INT        *isowner,
+    INT         nprocs);
+
 void add_rcptr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                     DOUBLE **dsend,DOUBLE **estif, INT numsend);
 void exchange_coup_rc_ptr(
@@ -617,20 +636,31 @@ void redundant_ccf(struct _PARTITION *actpart,
 /*----------------------------------------------------------------------*
  |  solver_add_spooles.c                                 m.gee 05/02    |
  *----------------------------------------------------------------------*/
-void  add_spo(struct _PARTITION     *actpart,
-              struct _SOLVAR        *actsolv,
-              struct _INTRA         *actintra,
-              struct _ELEMENT       *actele,
-              struct _SPOOLMAT      *spo1,
-              struct _SPOOLMAT      *spo2);
+void  add_spo(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _SPOOLMAT      *spo1,
+    struct _SPOOLMAT      *spo2);
+
+void add_spo_checkcouple(
+    INT         ii,
+    INT       **cdofs,
+    INT         ncdofs,
+    INT        *iscouple,
+    INT        *isowner,
+    INT         nprocs);
+
 void add_spo_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                       DOUBLE **dsend,DOUBLE **estif, INT numsend);
+
 void exchange_coup_spo(
-                         PARTITION     *actpart,
-                         SOLVAR        *actsolv,
-                         INTRA         *actintra,
-                         SPOOLMAT      *spo
-                        );
+    PARTITION     *actpart,
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    SPOOLMAT      *spo);
+
 void add_val_spo(INT ii,INT index, INT jj, struct _SPOOLMAT *spo, DOUBLE val, INTRA *actintra);
 void set_val_spo(INT ii,INT index, INT jj, struct _SPOOLMAT *spo, DOUBLE val, INTRA *actintra);
 void close_spooles_matrix(struct _SPOOLMAT *spo, INTRA *actintra);
