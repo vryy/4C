@@ -153,7 +153,22 @@ if (genprob.probtyp==prb_ale)
    inpdis(&(field[genprob.numaf]));
    inp_ale_field(&(field[genprob.numaf]));
 }
+#ifdef D_LS
+/*------------------------------------------------ two phase fluid flow */
+if (genprob.probtyp==prb_twophase)
+{
+   if (genprob.numfld!=2) dserror("numfld != 2 for two phase fluid flow problem");
+   field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+   
+   field[genprob.numff].fieldtyp = fluid;
+   inpdis(&(field[genprob.numff]));
+   inp_fluid_field(&(field[genprob.numff]));
 
+   field[genprob.numls].fieldtyp = levelset;
+   inpdis(&(field[genprob.numls]));
+   inp_ls_field(&(field[genprob.numls]));
+}
+#endif
 /*---------------------------------------- Optimisation type of problem */
 if (genprob.probtyp == prb_opt)
 {
@@ -214,6 +229,19 @@ if (genprob.probtyp==prb_fsi)
    fluid_to_ale(&(field[1]),&(field[2]));
 #endif
 }
+/*---------------------------------------- TWO PHASE FLUID FLOW PROBLEM */
+/* 
+ * levelset and fluid discretizations are compatible
+ * => construct the topology in between
+ */
+#ifdef D_LS
+if (genprob.probtyp==prb_twophase)
+{
+  if (field[genprob.numff].ndis!=1 || field[genprob.numls].ndis!=1)
+    dserror("ndis != 1 for twophase problem");   
+  fluid_to_ls(&(field[genprob.numff]),&(field[genprob.numls]));
+}
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -333,6 +361,13 @@ case ale:
       frread();
    }
 break;
+case levelset:
+   while(strncmp(allfiles.actplace,"------",6)!=0)
+   {
+      frint("NUMLEVELSETDIS", &(actfield->ndis),&ierr);
+      frread();
+   }
+break; 
 }   
 frrewind();
 /*----------------------------------------------------------------------*/
@@ -672,7 +707,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_FLUID2 
    if (ierr==1) 
    {
+#ifdef D_XFEM
+     if (genprob.probtyp==prb_twophase)
+     {
+       fluidfield->dis[0].element[counter].eltyp=el_fluid2_xfem;
+     }
+     else
+     {
+#endif     
      fluidfield->dis[0].element[counter].eltyp=el_fluid2;
+#ifdef D_XFEM
+     }
+#endif          
      f2_inp(&(fluidfield->dis[0].element[counter]),counter);
 
      if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 || 
@@ -800,3 +846,76 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_ale_field */
+
+
+
+
+
+
+
+
+void inp_ls_field(FIELD *lsfield)
+{
+  INT        i;
+  INT        ierr;
+  INT        counter=0;
+  INT        elenumber;
+  INT        isquad;
+  char      *colpointer;
+  
+#ifdef DEBUG 
+  dstrc_enter("inp_ls_field");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /*--------------------------------------- allocate one discretization */
+  /*lsfield->ndis=1;*/
+  if (lsfield->ndis>1) 
+    dserror("different discretisations not implemented yet for levelset elements\n");
+  lsfield->dis = (DISCRET*)CCACALLOC(lsfield->ndis,sizeof(DISCRET));
+  /*------------------------------------------ count number of elements */
+  if (frfind("--LEVELSET ELEMENTS")==1)
+  {
+    frread();
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
+      counter++;
+      frread();
+    }
+  }
+  frrewind();
+  lsfield->dis[0].numele = counter;
+  /*------------------------------------------------- allocate elements */
+  lsfield->dis[0].element=(ELEMENT*)CCACALLOC(lsfield->dis[0].numele,sizeof(ELEMENT));
+  /*----------------------------------------------------- read elements */
+  if (frfind("--LEVELSET ELEMENTS")==0) goto end; 
+  frread();
+  counter=0;
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    colpointer = allfiles.actplace;
+    elenumber  = strtol(colpointer,&colpointer,10);
+    lsfield->dis[0].element[counter].Id = --elenumber;
+    /* read the typ of element and call element reading function */
+    /* --------------------------------------- elementtyp is LS2 */
+    frchk("LS2",&ierr);
+#ifdef D_LS 
+    if (ierr==1) 
+    {
+      lsfield->dis[0].element[counter].eltyp=el_ls2;
+      ls2inp(&(lsfield->dis[0].element[counter]));
+    }
+#endif
+    counter++;
+    frread();
+  }
+  frrewind();
+
+/*----------------------------------------------------------------------*/
+  
+ end:
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return;
+} /* end of inp_ls_field */

@@ -135,7 +135,6 @@ dstrc_enter("inpctr");
         solv[genprob.numaf].fieldtyp = ale; 
 	inpctrsol(&(solv[genprob.numaf]));
       }
-                
    }
    if (genprob.probtyp == prb_ale)
    {
@@ -146,6 +145,24 @@ dstrc_enter("inpctr");
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
    }
+#ifdef D_LS
+   if (genprob.probtyp == prb_twophase)
+   {
+     if (genprob.numfld!=2) dserror("numfld != 2 for Two Phase Fluid Flow Problem");
+     
+     /* initialize solver object */
+     solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+
+     /* initialize solver for the fluid field */
+     solv[genprob.numff].fieldtyp = fluid;
+     inpctrsol(&(solv[genprob.numff]));
+     
+     /* initialize solver for the levelset field */
+     solv[genprob.numls].fieldtyp = levelset;
+     inpctrsol(&(solv[genprob.numls]));
+   }
+#endif
+   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -173,7 +190,8 @@ dstrc_enter("inpctrprob");
 genprob.numsf=-1;
 genprob.numff=-1;
 genprob.numaf=-1;
-
+genprob.numls=-1;
+ 
 if (frfind("-PROBLEM SIZE")==0) dserror("frfind: PROBLEM SIZE not in input file");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -218,8 +236,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (strncmp("Fluid_Structure_Interaction",buffer,24)==0) genprob.probtyp = prb_fsi;
     if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
     if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
+    if (strncmp("Two_Phase_Fluid_Flow"       ,buffer,20)==0) genprob.probtyp = prb_twophase;    
   }
-
+  
+#ifdef D_XFEM
+  frchar("ENRONOFF"   ,buffer    ,&ierr);
+  if (ierr==1)
+  {
+    if (strncmp(buffer,"yes",3)==0)
+      genprob.xfem_on_off=1;
+    else
+      genprob.xfem_on_off=0;
+  }
+#endif  
+  
   frchar("TIMETYP"   ,buffer,            &ierr);
   if (ierr==1)
   {
@@ -254,7 +284,17 @@ if (genprob.probtyp==prb_fluid)
 }
 if (genprob.probtyp==prb_ale) genprob.numaf=0;
 if (genprob.probtyp==prb_structure) genprob.numsf=0;
-
+#ifdef D_LS
+if (genprob.probtyp==prb_twophase)
+{
+  /* redefine the number of materials */
+  genprob.nmat     = 3;
+  /* set field numbers */
+  genprob.numfld   = 2;
+  genprob.numff    = 0;
+  genprob.numls    = 1;  
+}
+#endif
 
 if (frfind("---IO")==1)
 {
@@ -539,8 +579,10 @@ for (i=0; i<genprob.numfld; i++)
    break;
    case ale:
    break;
+   case levelset:
+   break;
    case structure:
-      inpctr_eig_struct(alleig);
+     inpctr_eig_struct(alleig);
    break;
    case none:
       dserror("Cannot find type of field");
@@ -638,51 +680,57 @@ for (i=0; i<genprob.numfld; i++)
    actfield = &(field[i]);
    switch(actfield->fieldtyp)
    {
-   case fluid:
+       case fluid:
 #ifdef D_FLUID   
-      alldyn[i].fdyn = (FLUID_DYNAMIC*)CCACALLOC(1,sizeof(FLUID_DYNAMIC));
-      inpctr_dyn_fluid(alldyn[i].fdyn);
+         alldyn[i].fdyn = (FLUID_DYNAMIC*)CCACALLOC(1,sizeof(FLUID_DYNAMIC));
+         inpctr_dyn_fluid(alldyn[i].fdyn);
 #else
-      dserror("General FLUID problem not defined in Makefile!!!");
+         dserror("General FLUID problem not defined in Makefile!!!");
 #endif            
-   break;
-   case ale:
+         break;
+       case ale:
 #ifdef D_ALE
-      alldyn[i].adyn = (ALE_DYNAMIC*)CCACALLOC(1,sizeof(ALE_DYNAMIC));
-      inpctr_dyn_ale(alldyn[i].adyn);
+         alldyn[i].adyn = (ALE_DYNAMIC*)CCACALLOC(1,sizeof(ALE_DYNAMIC));
+         inpctr_dyn_ale(alldyn[i].adyn);
 #else
-      dserror("General ALE problem not defined in Makefile!!!");
+         dserror("General ALE problem not defined in Makefile!!!");
 #endif
-   break;
-   case structure:
-      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
-      inpctr_dyn_struct(alldyn[i].sdyn);
-   break;
-   case none:
-      dserror("Cannot find type of field");
-   break;
-   default:
-      dserror("Cannot find type of field");
-   break;
+         break;
+       case structure:
+         alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
+         inpctr_dyn_struct(alldyn[i].sdyn);
+         break;
+#ifdef D_LS
+       case levelset:
+         alldyn[i].lsdyn = (LS_DYNAMIC*)CCACALLOC(1,sizeof(LS_DYNAMIC));
+         inpctr_dyn_ls(alldyn[i].lsdyn);
+         break;	
+#endif	
+       case none:
+         dserror("Cannot find type of field");
+         break;
+       default:
+         dserror("Cannot find type of field");
+         break;
    }
 }
 /*----------------------------------------------------------------------*/
-if (genprob.probtyp==prb_fsi || 
-   (genprob.probtyp==prb_fluid &&  genprob.numfld>1))
-{
+ if (genprob.probtyp==prb_fsi || 
+     (genprob.probtyp==prb_fluid &&  genprob.numfld>1))
+ {
 #ifdef D_FSI
    alldyn[i].fsidyn = (FSI_DYNAMIC*)CCACALLOC(1,sizeof(FSI_DYNAMIC));
    inpctr_dyn_fsi(alldyn[i].fsidyn);
 #else
    dserror("General FSI problem not defined in Makefile!!!");
 #endif 
-}
+ }
  
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_exit();
+ dstrc_exit();
 #endif
-return;
+ return;
 } /* end of inpctrdyn */
 
 
@@ -1642,4 +1690,180 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctr_dyn_ale */
+#endif
+
+
+/*!---------------------------------------------------------------------                                         
+\brief input of the LS DYNAMIC block in the input-file
+
+<pre>                                                        irhan 04/04
+
+In this routine the data in the LS DYNAMIC block of the input file
+are read and stored in adyn	       
+
+</pre>
+\param  *lsdyn->lsdata 	  LS_GEN_DATA       (o)	   
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+
+#ifdef D_LS
+void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
+{
+  INT ierr;
+  char buffer[50];
+  
+#ifdef DEBUG 
+  dstrc_enter("inpctr_dyn_ls");
+#endif
+/*----------------------------------------------------------------------*/  
+  
+  /* allocate memory for lsdata */
+  lsdyn->lsdata = (LS_GEN_DATA*)CCACALLOC(1,sizeof(LS_GEN_DATA));  
+  /* set some parameters */
+  lsdyn->lsdata->boundary_on_off = 0;
+  lsdyn->lsdata->reinitflag = 0;
+  /* read in lsdyn */
+  if (frfind("-LEVELSET DYNAMIC")==0) dserror("frfind: LEVELSET DYNAMIC not in input file");
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /* read INT */
+    frint("NSTEP", &(lsdyn->nstep), &ierr);
+    frint("NFSTEP", &(lsdyn->nfstep), &ierr);
+    frint("NFREINIT", &(lsdyn->nfreinit), &ierr);    
+    frint("ITEMAX", &(lsdyn->itemax), &ierr);	
+    frint("INIT", &(lsdyn->init), &ierr);
+    frint("IOP", &(lsdyn->iop), &ierr);
+    frint("ITE", &(lsdyn->ite), &ierr);
+    frint("ITCHK", &(lsdyn->itchk), &ierr);
+    frint("STCHK", &(lsdyn->stchk), &ierr);
+    frint("ITNRM", &(lsdyn->itnrm), &ierr);
+    /* read DOUBLE */
+    frdouble("DT", &(lsdyn->dt)  , &ierr);
+    frdouble("MAXTIME", &(lsdyn->maxtime), &ierr);
+    frdouble("ITTOL", &(lsdyn->ittol) , &ierr);
+    frdouble("STTOL", &(lsdyn->sttol) , &ierr);
+    frdouble("THETA", &(lsdyn->theta) , &ierr);
+    frread();
+  }
+  frrewind();
+
+  /* read in lsdata */
+  if (frfind("-LEVELSET GENERAL DATA")==0) dserror("frfind: LEVELSET GENERAL DATA not in input file");
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /* read INT */
+    frint("FLAGVEL", &(lsdyn->lsdata->flag_vel), &ierr);
+    frint("NUMLAYER", &(lsdyn->lsdata->numlayer), &ierr);
+    frint("NUMREINIT", &(lsdyn->lsdata->numreinit), &ierr);
+    frint("NUMCIRC", &(lsdyn->lsdata->numcirc), &ierr);
+    frint("NUMLINE", &(lsdyn->lsdata->numline), &ierr);    
+    /* read DOUBLE */
+    frdouble("XC1", &(lsdyn->lsdata->xc1), &ierr);
+    frdouble("YC1", &(lsdyn->lsdata->yc1), &ierr);
+    frdouble("RAD1", &(lsdyn->lsdata->rad1), &ierr);
+    frdouble("XC2", &(lsdyn->lsdata->xc2), &ierr);
+    frdouble("YC2", &(lsdyn->lsdata->yc2), &ierr);
+    frdouble("RAD2", &(lsdyn->lsdata->rad2), &ierr);
+    frdouble("XC3", &(lsdyn->lsdata->xc3), &ierr);
+    frdouble("YC3", &(lsdyn->lsdata->yc3), &ierr);
+    frdouble("RAD3", &(lsdyn->lsdata->rad3), &ierr);
+    frdouble("XS1", &(lsdyn->lsdata->xs1), &ierr);
+    frdouble("YS1", &(lsdyn->lsdata->ys1), &ierr);
+    frdouble("XE1", &(lsdyn->lsdata->xe1), &ierr);
+    frdouble("YE1", &(lsdyn->lsdata->ye1), &ierr);
+    frdouble("XS2", &(lsdyn->lsdata->xs2), &ierr);
+    frdouble("YS2", &(lsdyn->lsdata->ys2), &ierr);
+    frdouble("XE2", &(lsdyn->lsdata->xe2), &ierr);
+    frdouble("YE2", &(lsdyn->lsdata->ye2), &ierr);
+    frdouble("XS3", &(lsdyn->lsdata->xs3), &ierr);
+    frdouble("YS3", &(lsdyn->lsdata->ys3), &ierr);
+    frdouble("XE3", &(lsdyn->lsdata->xe3), &ierr);
+    frdouble("YE3", &(lsdyn->lsdata->ye3), &ierr);
+    frdouble("RDT", &(lsdyn->lsdata->rdt), &ierr);    
+    frdouble("EPSILON", &(lsdyn->lsdata->epsilon), &ierr);
+    /* read character */
+    frchar("BOUNDARYONOFF"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"on",2)==0)
+        lsdyn->lsdata->boundary_on_off = 1;
+      else if (strncmp(buffer,"off",3)==0)
+        lsdyn->lsdata->boundary_on_off = 0;
+      else
+        dserror("BOUNDARYONOFF unknown!\n");	 
+    }
+    frchar("SETVEL"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"by_user",7)==0)
+        lsdyn->lsdata->setvel = 1;
+      else if (strncmp(buffer,"by_fluid",8)==0)
+        lsdyn->lsdata->setvel = 2;
+      else
+        dserror("SETVEL unknown!\n");	 
+    }    
+    frchar("ISSTAB"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"yes",3)==0)
+        lsdyn->lsdata->isstab = 1;
+      else if (strncmp(buffer,"no",2)==0)
+        lsdyn->lsdata->isstab = 0;
+      else
+        dserror("ISSTAB unknown!\n");	 
+    }
+    frchar("LOCALIZATION"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"on",2)==0)
+        lsdyn->lsdata->localization = 1;
+      else if (strncmp(buffer,"off",3)==0)
+        lsdyn->lsdata->localization = 0;
+      else
+        dserror("LOCALIZATION unknown!\n");	 
+    }
+    frchar("REINITIALIZATION"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"on",2)==0)
+        lsdyn->lsdata->reinitialization = 1;
+      else if (strncmp(buffer,"off",3)==0)
+        lsdyn->lsdata->reinitialization = 0;
+      else
+        dserror("REINITIALIZATION unknown!\n");	 
+    }
+    frchar("ALGO"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"explicit",8)==0)
+        lsdyn->lsdata->algo = 0;
+      else if (strncmp(buffer,"implicit",8)==0)
+        lsdyn->lsdata->algo = 1;
+      else
+        dserror("ALGO unknown!\n");	 
+    }
+    frchar("ISSHARP"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"yes",3)==0)
+        lsdyn->lsdata->is_sharp = 1;
+      else if (strncmp(buffer,"no",2)==0)
+        lsdyn->lsdata->is_sharp = 0;
+      else
+        dserror("ISSHARP unknown!\n");	 
+    }
+    frread();
+  }
+  frrewind();
+ end:
+  
+/*----------------------------------------------------------------------*/  
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return;
+} /* end of inpctr_dyn_ls */
 #endif

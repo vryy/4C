@@ -79,6 +79,25 @@ for (i=0; i<actdis->numele; i++)
     case el_fluid2_tu:          /* turbulence elements                  */
 #endif
     break;
+    case el_fluid2_xfem:
+#ifdef D_XFEM
+      /*------------------------------------------ set some pointers ---*/
+      fluid2 = actele->e.f2;
+      actdsurf = actele->g.gsurf->dsurf;
+       
+      /*------------------- get type of stabilisation to the element ---*/
+      fluid2->stab_type = actdsurf->stab_type;
+       
+      /*--- assign pointer to corresponding stabilisation parameters ---*/
+      if (fluid2->stab_type == stab_gls)
+        fluid2->stabi.gls = actdsurf->stabi.gls;
+      else if (fluid2->stab_type == stab_prespro)
+        ;   /* nothing needs to be done at the moment (no parameters!) */
+      else 
+        dserror("Unknown stabilisation");
+    break;
+#endif
+    break;    
     case el_fluid3:
 #ifdef D_FLUID3
       /*------------------------------------------ set some pointers ---*/

@@ -420,6 +420,41 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
    frread();
 }
+#ifdef D_LS
+   if (genprob.probtyp==prb_twophase)
+   {
+     if (genprob.nmat!=3) dserror("number of materials incorrect");
+   
+     if (frfind("--LS_MATERIAL_SECOND_PHASE")==0)
+       dserror("frfind: MATERIAL PROPERTIES FOR SECOND PHASE is not in input file");
+     frread();
+     while(strncmp(allfiles.actplace,"------",6)!=0)
+     {
+       frint("MAT",&(mat[i].Id),&ierr);
+       frchk("MAT_fluid",&ierr);
+       if (ierr==1)
+       {
+         mat[i].mattyp = m_fluid;
+         mat[i].m.fluid = (FLUID*)CCACALLOC(1,sizeof(FLUID));
+         frdouble("VISCOSITY",&(mat[i].m.fluid->viscosity),&ierr);
+         frdouble("DENSITY"  ,&(mat[i].m.fluid->density)  ,&ierr);
+         frdouble("GAMMA",&(mat[i].m.fluid->gamma)  ,&ierr);
+       }   
+     i++;
+     frread();
+     }
+
+     /* define matrerial propertie for the interface */
+     mat[i].mattyp = m_fluid;
+     mat[i].m.fluid = (FLUID*)CCACALLOC(1,sizeof(FLUID));     
+     mat[i].m.fluid->viscosity =
+       0.5*(mat[0].m.fluid->viscosity+mat[1].m.fluid->viscosity);
+     mat[i].m.fluid->density =
+       0.5*(mat[0].m.fluid->density+mat[1].m.fluid->density);
+     mat[i].m.fluid->gamma =
+       0.5*(mat[0].m.fluid->gamma+mat[1].m.fluid->gamma);
+   }
+#endif 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

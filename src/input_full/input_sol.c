@@ -55,6 +55,9 @@ break;
 case ale:
 if (frfind("-ALE SOLVER")==0) goto end;
 break;
+case levelset:
+if (frfind("-LEVELSET SOLVER")==0) goto end;
+break;
 default:
    dserror("Unknown field typ in reading solver");
 break;

@@ -164,6 +164,13 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
    inpdesign_line_axishellload();
    inpdesign_point_axishellcos();
 #endif
+#ifdef D_LS
+if (genprob.probtyp==prb_twophase)
+{
+/*------------------------------- input of surface stability definition */   
+   inpdesign_surf_stability();
+}
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
