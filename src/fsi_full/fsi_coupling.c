@@ -323,6 +323,7 @@ for (i=0;i<numanp;i++)
    dsassert(actagnode->dirich->dirich_onoff.a.iv[j]==0,"wrong onoff() at ale node!\n");       
 }
 /*------------------------------------------------ print out coupling */
+if (genprob.visual==0)
 out_fsi(fluidfield);
 
 /*--------------------------------------------------------------------*/
