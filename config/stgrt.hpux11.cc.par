@@ -48,6 +48,7 @@ VISUAL3_INC=""
 VISUAL3_LIB=""
 
 LIBS="-lmetis_$BIT -lF90 -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared -lmpi"
+PLAIN_LIBS="-lmetis_$BIT -lF90 -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared"
 
 # fast elements
 LOOPL="-DLOOPL=64"
