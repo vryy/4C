@@ -49,6 +49,10 @@ Maintainer: Malte Neumann
 #include <aztec21/lib/az_aztec.h>
 #endif
 
+#ifdef BULL
+#include "../../../../lib_bull/aztec21/lib/az_aztec.h"
+#endif
+
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
 #ifdef HPUXITA
