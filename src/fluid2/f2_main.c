@@ -7,6 +7,7 @@
 \addtogroup FLUID2 
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
+#include "fluid2.h"
 #include "fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -26,9 +27,6 @@ extern struct _GENPROB     genprob;
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
-/*----------------------------------------------------------------------*
- | global dense matrices for element routines             genk 04/02    |
- *----------------------------------------------------------------------*/
 
 /*!---------------------------------------------------------------------
 \brief main fluid2 control routine
@@ -50,8 +48,7 @@ extern struct _FIELD      *field;
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid2(
-            PARTITION   *actpart,
+void fluid2(PARTITION   *actpart,
             INTRA       *actintra,
             ELEMENT     *ele,             
             ELEMENT     *eleke,             
@@ -73,16 +70,25 @@ void fluid2(
 static INT              numff;      /* actual number of fluid field     */
 static INT              viscstr;
 static FLUID_DATA      *data;      
+FLUID_DYNAMIC          *fdyn;
 static FLUID_DYN_CALC  *dynvar;
+static FLUID_DYN_ML    *mlvar;
+static FLUID_ML_SMESH  *submesh;
+static FLUID_ML_SMESH  *ssmesh;
+static INT              ndum;       /* dummy variable                   */
+static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 FIELD                  *actfield;   /* actual field                     */
+int smisal;
+
 #ifdef DEBUG 
 dstrc_enter("fluid2");
 #endif
 
+fdyn = alldyn[0].fdyn;
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
-/*------------------------------------------------------ initialisation */
+/*------------------------------------------------------ initialization */
 case calc_fluid_init:
 /* ----------------------------------------- find number of fluid field */
    dynvar = &(alldyn[genprob.numff].fdyn->dynvar);
@@ -95,6 +101,28 @@ case calc_fluid_init:
 	     etforce_global,eiforce_global,edforce_global,
 	     NULL,NULL,0,0,1);
    f2_iedg(NULL,ele,-1,1);
+/*---------------------------------------------------- multi-level FEM? */   
+  if (fdyn->mlfem==1) 
+  {  
+    mlvar   = &(alldyn[numff].fdyn->mlvar);
+    submesh = &(alldyn[numff].fdyn->mlvar.submesh);
+    ssmesh  = &(alldyn[numff].fdyn->mlvar.ssmesh);
+/*------- determine number of submesh elements in coordinate directions */   
+    math_intextract(mlvar->smelenum,&ndum,&xele,&yele,&zele);
+/*------------------------------------- create submesh on parent domain */   
+    f2_pdsubmesh(submesh,xele,yele,mlvar->smorder,0);
+/*-------------------- three-level FEM, i.e. dynamic subgrid viscosity? */   
+    if (mlvar->smsgvi>2) 
+    {
+/*--- determine number of sub-submesh elements in coordinate directions */   
+      math_intextract(mlvar->ssmelenum,&ndum,&xele,&yele,&zele);
+/*--------------------------------- create sub-submesh on parent domain */   
+      f2_pdsubmesh(ssmesh,xele,yele,mlvar->ssmorder,1);
+    }
+/*----------------------- init the element routines for multi-level FEM */   
+    f2_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+             etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
+  }     	    
 break;
 
 case calc_fluid_initvort:
@@ -108,6 +136,21 @@ break;
 
 /*------------------------------------------- call the element routines */
 case calc_fluid:
+/*---------------------------------------------------- multi-level FEM? */   
+if (fdyn->mlfem==1) 
+{
+  smisal = ele->e.f2->smisal;
+  if (smisal!=1) 
+  {
+/*------------------------------ create element submesh if not yet done */   
+    f2_elesubmesh(ele,submesh,0);
+/*-------------------------- create element sub-submesh if not yet done */   
+    if (mlvar->smsgvi>2) f2_elesubmesh(ele,ssmesh,1);
+  }  
+  f2_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+           etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
+}	      
+else  
    f2_calele(data,dynvar,ele,eleke,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,

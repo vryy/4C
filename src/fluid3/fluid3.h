@@ -58,6 +58,15 @@ INT                fs_on;    /*! element belongs to free surface          */
 /*-------------------------------------------------------- stress results */
 struct _ARRAY      stress_ND; /*!< nodal stresses                         */
 
+/*------------------------------------------------- structure for submesh */
+INT                smisal;        /* flag for element submesh creation    */
+DOUBLE             smcml;	  /* charact. mesh length for submesh 	  */
+struct _ARRAY      xyzsm;         /* coordinates of submesh nodes         */
+struct _ARRAY      solsm;         /* sol. of current and last timestep    */
+struct _ARRAY      solsmn;        /* sol. of last timestep                */
+        
+/*--------------------------------------------- structure for sub-submesh */
+struct _ARRAY      xyzssm;        /* coordinates of sub-submeshnodes      */
 } FLUID3;
 
 #endif

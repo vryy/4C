@@ -280,6 +280,9 @@ else
 fluid_init(actpart,actintra,actfield,fdyn,action,&container,num_sol,str);
 actpos=0;
 
+/*------------------------------------ initialize multilevel algorithm */
+if (fdyn->mlfem==1) fluid_ml_init(actfield,fdyn);		     
+
 /*--------------------------------------- init all applied time curves -*/
 for (actcurve=0; actcurve<numcurve; actcurve++)
 dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);   
@@ -609,6 +612,9 @@ if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1)
            and transform kinematic to real pressure --------------------*/
 solserv_sol_copy(actfield,0,1,0,3,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
+
+/*-- copy solution on level 2 at (n+1) to place (n) for multi-level FEM */
+if (fdyn->mlfem==1) fluid_smcopy(actpart,fdyn);		     
 
 /*--------------------------------------- write solution to .flavia.res */
 if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0) 

@@ -251,8 +251,12 @@ if (ierr==1)
        ele->e.f2->ivisc=1;
    else if (strncmp(buffer,"GLS+",4)==0)
        ele->e.f2->ivisc=2;
-   else if (strncmp(buffer,"no",2)==0) 
+   else if (strncmp(buffer,"USFEM",5)==0)
+       ele->e.f2->ivisc=3;
+   else if (strncmp(buffer,"no_GLS",6)==0) 
        ele->e.f2->ivisc=0;
+   else if (strncmp(buffer,"no_USFEM",8)==0) 
+       ele->e.f2->ivisc=-1;
    else 
        dserror("Reading of FLUID2 element failed: IVISC\n");       
 }
@@ -423,6 +427,8 @@ ele->e.f2->itau[2] = itauc;
 /*----------------------------- set initial value for free surface flag */
 ele->e.f2->fs_on=0;
    
+/*-------------------------------------------------------- submesh data */
+ele->e.f2->smisal = 0;   
 /*--------------------------------------------------------------------- */
 #ifdef DEBUG 
 dstrc_exit();

@@ -28,6 +28,7 @@ extern struct _FIELD      *field;
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             genk 04/02    |
  *----------------------------------------------------------------------*/
+static FLUID_DATA      *data;
 
 /*!---------------------------------------------------------------------                                         
 \brief main fluid3 control routine
@@ -48,8 +49,7 @@ extern struct _FIELD      *field;
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid3(
-            PARTITION   *actpart,
+void fluid3(PARTITION   *actpart,
             INTRA       *actintra,
             ELEMENT     *ele,
             ARRAY       *estif_global,
@@ -67,50 +67,89 @@ void fluid3(
 static INT              numff;      /* number of fluid field            */
 DOUBLE                 *intforce;
 MATERIAL               *actmat;     /* actual material                  */
-static FLUID_DATA      *data;
 FLUID_DYNAMIC          *fdyn;
 static FLUID_DYN_CALC  *dynvar;
+static FLUID_DYN_ML    *mlvar;
+static FLUID_ML_SMESH  *submesh;
+static FLUID_ML_SMESH  *ssmesh;
+static INT              ndum;       /* dummy variable                   */
+static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 FIELD                  *actfield;   /* actual field                     */
+INT smisal;
 
 #ifdef DEBUG 
 dstrc_enter("fluid3");
 #endif
 
+fdyn = alldyn[0].fdyn;
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
-/*------------------------------------------------------ initialisation */
+/*------------------------------------------------------ initialization */
 case calc_fluid_init:
 /* ----------------------------------------- find number of fluid field */
-   for (numff=0;numff<genprob.numfld;numff++)
-   {
-      actfield=&(field[numff]);
-      if (actfield->fieldtyp==fluid)
-      break;
-   }
-   dynvar = &(alldyn[numff].fdyn->dynvar);
-   data   = &(alldyn[numff].fdyn->dynvar.data);
+  for (numff=0;numff<genprob.numfld;numff++)
+  {
+     actfield=&(field[numff]);
+     if (actfield->fieldtyp==fluid)
+     break;
+  }
+  dynvar = &(alldyn[numff].fdyn->dynvar);
+  data   = &(alldyn[numff].fdyn->dynvar.data);
 /*------------------------------------------- init the element routines */   
-   f3_intg(data,0);
-   f3_calele(data,dynvar,NULL,
-             estif_global,emass_global,
-	     etforce_global,eiforce_global,edforce_global,
-	     NULL,NULL,1);
+  f3_intg(data,0);
+  f3_calele(data,dynvar,NULL,estif_global,emass_global,etforce_global,
+            eiforce_global,edforce_global,NULL,NULL,1);
+/*---------------------------------------------------- multi-level FEM? */   
+  if (fdyn->mlfem==1) 
+  {  
+    mlvar   = &(alldyn[numff].fdyn->mlvar);
+    submesh = &(alldyn[numff].fdyn->mlvar.submesh);
+    ssmesh  = &(alldyn[numff].fdyn->mlvar.ssmesh);
+/*------- determine number of submesh elements in coordinate directions */   
+    math_intextract(mlvar->smelenum,&ndum,&xele,&yele,&zele);
+/*------------------------------------- create submesh on parent domain */   
+    f3_pdsubmesh(submesh,xele,yele,zele,mlvar->smorder,0);
+/*-------------------- three-level FEM, i.e. dynamic subgrid viscosity? */   
+    if (mlvar->smsgvi>2) 
+    {
+/*--- determine number of sub-submesh elements in coordinate directions */   
+      math_intextract(mlvar->ssmelenum,&ndum,&xele,&yele,&zele);
+/*--------------------------------- create sub-submesh on parent domain */   
+      f3_pdsubmesh(ssmesh,xele,yele,zele,mlvar->ssmorder,1);
+    }
+/*----------------------- init the element routines for multi-level FEM */   
+    f3_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+             etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
+  }     	    
 break;
 
 /*------------------------------------------- call the element routines */
 case calc_fluid:
-   f3_calele(data,dynvar,ele,
-             estif_global,emass_global,
-	     etforce_global,eiforce_global,edforce_global,
-	     hasdirich,hasext,0);
+/*---------------------------------------------------- multi-level FEM? */   
+if (fdyn->mlfem==1) 
+{
+  smisal = ele->e.f3->smisal;
+  if (smisal!=1) 
+  {
+/*------------------------------ create element submesh if not yet done */   
+    f3_elesubmesh(ele,submesh,0);
+/*-------------------------- create element sub-submesh if not yet done */   
+    if (mlvar->smsgvi>2) f3_elesubmesh(ele,ssmesh,1);
+  }  
+  f3_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+           etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
+}	      
+else  
+  f3_calele(data,dynvar,ele,estif_global,emass_global,etforce_global,
+                 eiforce_global,edforce_global,hasdirich,hasext,0);
 break;
 
 /*----------------------------------------------------------------------*/
 default:
    dserror("action unknown\n");
 break;
-} /* end swtich (*action) */
+} /* end switch (*action) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -121,3 +160,4 @@ dstrc_exit();
 /*----------------------------------------------------------------------*/
 return; 
 } /* end of fluid3 */
+

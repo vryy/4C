@@ -786,6 +786,7 @@ fdyn->adaptive=0;	/* default: no adaptive time stepping */
 fdyn->time_rhs=1;	/* default: build time rhs as W.A. Wall describes */
 fdyn->lte = 1.0e-03;	/* default: local truncation error for adapt. time*/
 fdyn->max_dt = 1.0;	/* default: maximal time step size to 1.0 */
+fdyn->mlfem = 0;	/* default: no multi-level algorithm */
 
  
 if (frfind("-FLUID DYNAMIC")==0) goto end;
@@ -1021,6 +1022,40 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("TIME_RHS unknown!");     
    }
+   frchar("CONVECTERM"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"convective",10)==0) 
+         fdyn->dynvar.conte=0;
+      else if (strncmp(buffer,"divergence",10)==0) 
+         fdyn->dynvar.conte=1;                      
+      else if (strncmp(buffer,"skew_symmetric",14)==0) 
+         fdyn->dynvar.conte=2;                      
+      else
+         dserror("Unknown convective term!");
+   }   
+   frchar("VISCTERM"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"conventional",12)==0) 
+         fdyn->dynvar.vite=0;
+      else if (strncmp(buffer,"stress_divergence",17)==0) 
+         fdyn->dynvar.vite=1;                      
+      else
+         dserror("Unknown viscous term!");
+   }   
+   frchar("SUBGRIDVISC"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no",2)==0) 
+         fdyn->dynvar.sgvisc=0;
+      else if (strncmp(buffer,"artificial",10)==0) 
+         fdyn->dynvar.sgvisc=1;                      
+      else if (strncmp(buffer,"Smagorinsky",11)==0) 
+         fdyn->dynvar.sgvisc=2;                      
+      else
+         dserror("Unknown subgrid viscosity!");
+   }   
 
 /*--------------read INT */
    frint("NUMCONT"    ,&(fdyn->numcont)       ,&ierr);
@@ -1065,6 +1100,193 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("SC_COORD_Y"  ,&(fdyn->coord_scale[1]),&ierr);
    frdouble("MAX_DT"      ,&(fdyn->max_dt),&ierr);
    frdouble("LOC_TRUN_ERR",&(fdyn->lte)   ,&ierr);
+   frdouble("SMAGCONST",&(fdyn->dynvar.smagcon),&ierr);
+
+   frread();
+}
+frrewind();
+
+/*----------------------------------------------------------------------*/
+if (frfind("-MULTILEVEL FLUID DYNAMIC")==0) goto end;
+frread();
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+/*--------------read chars */
+   frchar("MULEVELFEM"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no",2)==0) 
+         fdyn->mlfem=0;
+      else if (strncmp(buffer,"yes",3)==0) 
+         fdyn->mlfem=1;
+      else
+         dserror("unknown Multilevel");
+   }
+   frchar("TRANSTERM"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no_approx",9)==0) 
+         fdyn->mlvar.transterm=0;
+      else if (strncmp(buffer,"neglect_sst",11)==0) 
+         fdyn->mlvar.transterm=1;
+      else if (strncmp(buffer,"neglect_lst",11)==0) 
+         fdyn->mlvar.transterm=2;
+      else if (strncmp(buffer,"neglect_both",12)==0) 
+         fdyn->mlvar.transterm=3;
+      else
+         dserror("unknown treatment of transient term");
+   }
+   frchar("QUASTATBUB"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no",2)==0) 
+         fdyn->mlvar.quastabub=0;
+      else if (strncmp(buffer,"yes",3)==0) 
+         fdyn->mlvar.quastabub=1;
+      else
+         dserror("unknown quasi-static bubbles");
+   }
+   frchar("CONVECVEL"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no_approx",9)==0) 
+         fdyn->mlvar.convel=0;
+      else if (strncmp(buffer,"ls_approx",9)==0) 
+         fdyn->mlvar.convel=1;
+      else
+         dserror("unknown convective velocity");
+   }	 
+   frchar("SMSGVISC"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no",2)==0) 
+         fdyn->mlvar.smsgvi=0;
+      else if (strncmp(buffer,"artificial",10)==0) 
+         fdyn->mlvar.smsgvi=1;                      
+      else if (strncmp(buffer,"Smagorinsky",11)==0) 
+         fdyn->mlvar.smsgvi=2;                      
+      else if (strncmp(buffer,"dynamic",7)==0) 
+         fdyn->mlvar.smsgvi=3;                      
+      else
+         dserror("Unknown submesh subgrid viscosity!");
+   }   
+   frchar("SMSTABI"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no",2)==0) 
+         fdyn->mlvar.smstabi=0;
+      else if (strncmp(buffer,"yes",3)==0) 
+         fdyn->mlvar.smstabi=1;
+      else
+         dserror("unknown submesh stabilization");
+   }
+   frchar("SMSTABDO"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"USFEM_instat",12)==0) 
+         fdyn->mlvar.smstado=-1;
+      else if (strncmp(buffer,"USFEM_CDR",9)==0) 
+         fdyn->mlvar.smstado=-2;
+      else if (strncmp(buffer,"USFEM_stat",10)==0) 
+         fdyn->mlvar.smstado=-3;
+      else if (strncmp(buffer,"GLS-_instat",11)==0) 
+         fdyn->mlvar.smstado=1;
+      else if (strncmp(buffer,"GLS-_CDR",8)==0) 
+         fdyn->mlvar.smstado=2;
+      else if (strncmp(buffer,"GLS-_stat",9)==0) 
+         fdyn->mlvar.smstado=3;
+      else
+         dserror("unknown differential operator for submesh stabilization");
+   }
+   frchar("SMSTABNORM"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"L_1",3)==0) 
+         fdyn->mlvar.smstano=1;
+      else if (strncmp(buffer,"L_2",3)==0) 
+         fdyn->mlvar.smstano=2;
+      else
+         dserror("unknown submesh stabilization norm");
+   }
+   frchar("SMSTABMK"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"-1",2)==0) 
+         fdyn->mlvar.smstamk=-1;
+      else if (strncmp(buffer,"0",1)==0) 
+         fdyn->mlvar.smstamk=0;
+      else if (strncmp(buffer,"1",1)==0) 
+         fdyn->mlvar.smstamk=1;
+      else
+         dserror("unknown submesh mk");
+   }
+   frchar("SMSTABNINTHS"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"at_center",9)==0) 
+         fdyn->mlvar.smstani=0;
+      else if (strncmp(buffer,"every_intpt",11)==0) 
+         fdyn->mlvar.smstani=1;
+      else
+         dserror("unknown submesh number of int. points for elesize");
+   }
+   frchar("SMORDER"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"linear",6)==0) 
+         fdyn->mlvar.smorder=1;
+      else if (strncmp(buffer,"quadratic",9)==0) 
+         fdyn->mlvar.smorder=2;
+      else
+         dserror("unknown submesh element order");
+   }
+   frchar("SMNONUNIF"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no",2)==0) 
+         fdyn->mlvar.smnunif=0;
+      else if (strncmp(buffer,"shishkin_type",13)==0) 
+         fdyn->mlvar.smnunif=1;
+      else if (strncmp(buffer,"quadratic",9)==0) 
+         fdyn->mlvar.smnunif=2;
+      else if (strncmp(buffer,"cubic",5)==0) 
+         fdyn->mlvar.smnunif=3;
+      else
+         dserror("unknown sub-submesh element order");
+   }
+   frchar("SSMORD"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"linear",6)==0) 
+         fdyn->mlvar.ssmorder=1;
+      else if (strncmp(buffer,"quadratic",9)==0) 
+         fdyn->mlvar.ssmorder=2;
+      else
+         dserror("unknown sub-submesh element order");
+   }
+   frchar("SSMNNUN"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"no",2)==0) 
+         fdyn->mlvar.ssmnunif=0;
+      else if (strncmp(buffer,"shishkin_type",13)==0) 
+         fdyn->mlvar.ssmnunif=1;
+      else if (strncmp(buffer,"quadratic",9)==0) 
+         fdyn->mlvar.ssmnunif=2;
+      else if (strncmp(buffer,"cubic",5)==0) 
+         fdyn->mlvar.ssmnunif=3;
+      else
+         dserror("unknown sub-submesh element order");
+   }
+/*--------------read int */
+   frint("SMELESIZE"      ,&(fdyn->mlvar.smesize)  ,&ierr);
+   frint("SMSTABPAR"      ,&(fdyn->mlvar.smstapa)  ,&ierr);
+   frint("SMELEMENTS"     ,&(fdyn->mlvar.smelenum) ,&ierr);
+   frint("SMNUMGP"        ,&(fdyn->mlvar.smnumgp)  ,&ierr);
+   frint("SSMELEM"        ,&(fdyn->mlvar.ssmelenum),&ierr);
+   frint("SSMNGP"         ,&(fdyn->mlvar.ssmnumgp) ,&ierr);
+/*--------------read double */
+   frdouble("SMSMAGCON"   ,&(fdyn->mlvar.smsmagcon),&ierr);
 
    frread();
 }

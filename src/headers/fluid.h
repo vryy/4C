@@ -25,6 +25,79 @@ DOUBLE        txgt[MAXTINTP][MAXTINTC];   /*!< coordinates in t for TRIS and TET
 DOUBLE        twgt[MAXTINTP][MAXTINTC];   /*!< weights for TRIS and TETS*/
 } FLUID_DATA;
 
+/*!----------------------------------------------------------------------
+\brief submesh parameters                                              
+
+<pre>                                                       gravem 05/03 
+
+In this structure, the parameters for the submesh (and sub-submesh) 
+are stored.
+
+</pre>
+
+------------------------------------------------------------------------*/
+typedef struct _FLUID_ML_SMESH
+{
+INT                numnp;	   /* number of nodes in this field */ 
+INT                numele;	   /* number of elements in this field */
+INT                numeq;	   /* number of unknowns */
+INT                numen;	   /* number of element nodes */
+INT                ngpr;
+INT                ngps;
+INT                ngpt;
+INT                ntyp;
+enum _DIS_TYP      typ;            /* my actual discretization type */
+
+struct _ARRAY      xyzpd;	   /* coordinates on parent domain */
+struct _ARRAY      id;  	   /* id-array */
+struct _ARRAY      ien; 	   /* ien-array */
+struct _ARRAY      mat; 	   /* matrix */
+struct _ARRAY      rhs; 	   /* rhs */
+struct _ARRAY      ipiv;	   /* pivot-array for solver lapack */
+} FLUID_ML_SMESH;
+
+/*!----------------------------------------------------------------------
+\brief multi-level calculation parameter                                              
+
+<pre>                                                        gravem 05/03  
+
+In this structure all parameters for the elementwise multi-level 
+algorithm are stored.
+
+</pre>
+
+------------------------------------------------------------------------*/
+typedef struct _FLUID_DYN_ML                
+{
+DOUBLE   smsmagcon;     /*!< submesh Smagorinsky constant */
+INT      transterm;     /*!< treatment of transient terms */
+INT      quastabub;     /*!< quasi-static bubbles? */
+INT      convel;        /*!< treatment of convective velocity */
+INT      smsgvi;        /*!< type of submesh subgrid viscosity */
+INT      smesize;       /*!< size of submesh elements */
+INT      smstabi;       /*!< stabilization on submesh? */
+INT      smstado;       /*!< differential operator for stabilization */
+INT      smstapa;       /*!< parameter for stabilization */
+INT      smstano;       /*!< norm for stabilization */
+INT      smstamk;       /*!< value Mk for stabilization */
+INT      smstani;       /*!< number of integration points for elesize */
+INT      smelenum;      /*!< number of submesh elements in x/y/z */
+INT      smorder;       /*!< order of submesh elements */
+INT      smnumgp;       /*!< number of Gauss points on submesh elements */
+INT      smnunif;       /*!< non-uniform submesh? */
+INT      ssmelenum;     /*!< number of sub-submesh elements in x/y/z */
+INT      ssmorder;      /*!< order of sub-submesh elements */
+INT      ssmnumgp;      /*!< number of Gauss points on sub-submesh elements */
+INT      ssmnunif;      /*!< non-uniform sub-submesh? */
+DOUBLE   smsgvisc;      /*!< submesh subgrid viscosity       */
+DOUBLE   smtau;         /*!< submesh stabilization parameter       */
+
+INT      nvbub; 	/* number of velocity bubbles */
+INT      npbub; 	/* number of pressure bubbles */
+INT      nelbub;	/* overall number of element bubbles */
+struct _FLUID_ML_SMESH submesh;
+struct _FLUID_ML_SMESH ssmesh;
+} FLUID_DYN_ML;
 
 /*!----------------------------------------------------------------------
 \brief calculation parameter                                              
@@ -59,6 +132,11 @@ DOUBLE theta;    /*!< integration parameter */
 DOUBLE washvel;  /*!< wall shear velocity */   
 DOUBLE totarea;  /*!< total area of fluid field */
 DOUBLE coord_scale[2];  /*!<coordinates for scaling the turbulence variables */   
+DOUBLE sugrvisc; /*!< subgrid viscosity       */
+DOUBLE smagcon;  /*!< Smagorinsky constant       */
+INT    conte;    /*!< form of convective term                        */
+INT    vite;     /*!< form of viscous term                           */
+INT    sgvisc;   /*!< type of subgrid viscosity                      */
 INT    gen_alpha; /*!< general alpha time integration */
 INT    iprerhs;  /*!< treatment of pressure in time discr. */
 INT    surftens; /*!< include surface tension effects */
@@ -109,6 +187,7 @@ stored.
 typedef struct _FLUID_DYNAMIC               
 {
 INT                dyntyp;       /*!< dynamictype */
+INT                mlfem;        /*!< multilevel algorithm? */
 INT                numdf;        /*!< number of dofs of the fluid elements */
 INT                iop;          /* !<time integration method */
 INT                numcont;      /*!< number of continuation steps */
@@ -156,6 +235,7 @@ DOUBLE             ittol;        /*!< tolerance for iteration convergence check 
 DOUBLE             sttol;        /*!< tolerance for steady state check */
 DOUBLE             thetas;       /*!< constant for starting algorithm) */
 struct _FLUID_DYN_CALC dynvar;
+struct _FLUID_DYN_ML   mlvar;
 } FLUID_DYNAMIC;
 
 /*!----------------------------------------------------------------------
