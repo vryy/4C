@@ -10,6 +10,7 @@
 # -DD_FLUID     defines general fluid problem
 # -DD_BRICK1    defines element brick1
 # -DD_SHELL8    defines element shell8
+# -DD_SHELL9    defines element shell9
 # -DD_FLUID2    defines element fluid2
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
@@ -39,7 +40,7 @@ FXX=f90
 CCX=cc
 LDX=cc
 PFL=   -DHPUX11 -DD_SHELL8 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-       -DAZTEC_PACKAGE -DMLIB_PACKAGE -DUMFPACK
+       -DD_SHELL9 -DD_OPTIM -DAZTEC_PACKAGE -DMLIB_PACKAGE -DUMFPACK
 #
 #--------------------------------------------------------------------
 #

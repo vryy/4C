@@ -7,6 +7,7 @@
 # -DD_FLUID      defines general fluid problem
 # -DD_BRICK1    defines element brick1
 # -DD_SHELL8    defines element shell8
+# -DD_SHELL9    defines element shell9
 # -DD_FLUID2    defines element fluid2
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
@@ -32,7 +33,7 @@
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
 #
 # 
-PFL       =  -DSUN -DD_SHELL8 -DD_BRICK1 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1  \
+PFL       =  -DSUN -DD_SHELL8 -DD_SHELL9 -DD_BRICK1 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1  \
              -DPARALLEL -DSPOOLES_PACKAGE -DAZTEC_PACKAGE
 #
 # set correct paths
@@ -113,11 +114,11 @@ include ./Makefile.objects
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS_OPT)
+                $(OBJS15) $(OBJS16) $(OBJS_OPT)
 		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) -o $(PROGRAM)"
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-		$(OBJS15) $(OBJS_OPT) $(LIBS) -o $(PROGRAM)
+		$(OBJS15) $(OBJS16) $(OBJS_OPT) $(LIBS) -o $(PROGRAM)
 
 
 		@echo "done"
@@ -191,6 +192,11 @@ $(OBJS15):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
+$(OBJS16):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
+		@echo "MainMake is back."
+#
 $(OBJS_OPT):     
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
@@ -208,5 +214,5 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS_OPT) 
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS_OPT) 
 
