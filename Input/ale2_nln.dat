@@ -1,8 +1,21 @@
+//
+// Maintainer: Christiane Foerster
+//             foerster@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/foerster/index.html
+//             0711 - 685-6127
+// 
+// necessary defines: -DD_ALE -DRESULTTEST
+//
+// #define MAXNOD           (4)
+// #define MAXELE           (4)
+// #define MAXDOFPERNODE    (2)
+// #define MAXGAUSS         (4)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-moving hole, ale2-test
+mOVING hOLE, nonlinear ale2-test
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS         392 
 NODES            438
