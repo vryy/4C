@@ -79,6 +79,10 @@ Maintainer: Malte Neumann
 #include <aztec21/az_aztec.h>
 #endif
 
+#ifdef WIN
+#include <aztec21/az_aztec.h>
+#endif
+
 #ifdef BULL
 #include <aztec21/az_aztec.h>
 #endif

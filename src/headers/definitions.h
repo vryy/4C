@@ -60,6 +60,10 @@ typedef char      CHAR;
 #define CCA_APPEND_U (1)
 #endif
 
+#ifdef WIN 
+#define CCA_APPEND_U (1)
+#endif
+
 #ifdef LINUX_MUENCH
 #define CCA_APPEND_U (1)
 #endif
