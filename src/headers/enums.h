@@ -220,9 +220,15 @@ typedef enum _SOLVER_TYP
                        umfpack,       /* solver package umfpack, matrix in compressed column format */
                        MLPCG          /* solver package umfpack, matrix in compressed column format */
 } SOLVER_TYP;                         
-/*----------------------------------------------------------------------*
- | enum MATRIX_TYP                                          mn 05/03    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief enum of possible matrix types
+
+<pre>                                                              mn 05/03
+This enums contains all special sparse matrix types. If no special matrix
+type is chosen, the type matching the solver is used.
+</pre>
+
+*----------------------------------------------------------------------*/
 typedef enum _MATRIX_TYP
 {
                        oll_matrix,           /* */
@@ -321,12 +327,17 @@ typedef enum _FLUID_STRESS
      str_liftdrag,
      str_all
 }  FLUID_STRESS; 
-/*----------------------------------------------------------------------*
- | enum MATRIX_TYP                                          mn 05/03    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief enum of DLINE types                                            
+
+<pre>                                                              mn 05/03
+This is the enumeration of all types for DLINEs
+</pre>
+
+*----------------------------------------------------------------------*/
 typedef enum _DLINE_TYP
 {
-                       stline,            /* */
-                       nurbline,          /* */
-                       arcline            /* */
+                       stline,            /* straight line */
+                       nurbline,          /* nurb line */
+                       arcline            /* arc line */
 } DLINE_TYP;                         

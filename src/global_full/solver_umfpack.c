@@ -11,9 +11,27 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*----------------------------------------------------------------------*
-|  control solver Umpfack                                      mn 05/03 |
+
+
+/*!----------------------------------------------------------------------
+\brief controls the solver umfpack
+
+<pre>                                                              mn 05/03
+This functions controls the solution with the solver umfpack.
+</pre>
+\param *actsolv    SOLVAR       (i)   the active solver
+\param *actintra   INTRA        (i)   the intra communicator
+\param *ccf        CCF          (i)   the system matrix in ccf format
+\param *sol        DIST_VECTOR  (o)   the distributed solution vector
+\param *rhs        DIST_VECTOR  (i)   the distributed rhs vector
+\param options     INT          (i)   flag for init or not
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
 *----------------------------------------------------------------------*/
+
 void solver_umfpack(struct _SOLVAR         *actsolv,
                     struct _INTRA          *actintra,
                     struct _CCF            *ccf,

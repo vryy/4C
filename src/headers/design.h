@@ -58,11 +58,11 @@ typedef struct _DLINE
    enum _DLINE_TYP           typ   ;        /* typ of the dline (st,nurb,arc) */
    INT                       ncond;         /* number of conditions associated with me (not used at the moment) */
 
-     union                                      /* union pointer to elementformulation */
-     {
-     struct _ARCLINE        *arcline;               /* arcline */
-     struct _STLINE         *stline;                /* stline */
-     }                          props;              /* name of union */ 
+   union                                    /* union pointer to arcline properties */
+   {
+     struct _ARCLINE        *arcline;       /* arcline */
+     struct _STLINE         *stline;        /* stline */
+   }                          props;        /* name of union */ 
 
    /*------- design topology section */
    INT                       my_dnodeId[2]; /* IDs of design nodes to me */
@@ -91,25 +91,35 @@ typedef struct _DLINE
 } DLINE;
 
 
-/*----------------------------------------------------------------------*
- | arcline                                                  mn 05/03    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief structure ARCLINE                                            
+
+<pre>                                                              mn 05/03
+This structure contains all geometric properties of an arcline. 
+</pre>
+
+*----------------------------------------------------------------------*/
 typedef struct _ARCLINE
 {
-   DOUBLE                     radius;            /*  */
-   DOUBLE                     initang;           /*  */
-   DOUBLE                     endang;            /*  */
-   DOUBLE                     center[2];         /*  */
-   DOUBLE                     total_length;      /*  */
+   DOUBLE                     radius;            /* radius of the arc */
+   DOUBLE                     initang;           /* angle in radians */
+   DOUBLE                     endang;            /* angle in radians */
+   DOUBLE                     center[2];         /* coords of the center point */
+   DOUBLE                     total_length;      /* total arc length */
 
 } ARCLINE;
 
-/*----------------------------------------------------------------------*
- | stline                                                   mn 05/03    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief structure STLINE                                            
+
+<pre>                                                              mn 05/03
+This structure contains all geometric properties of a straight line. 
+</pre>
+
+*----------------------------------------------------------------------*/
 typedef struct _STLINE
 {
-   DOUBLE                     total_length;      /*  */
+   DOUBLE                     total_length;      /* total length of the line */
 
 } STLINE;
 

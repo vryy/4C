@@ -59,8 +59,14 @@ DLINE inherits to its DNODEs if the DNODE does not have its own
 #ifdef D_FLUID
 inherit_dlinednode_freesurf(); 
 #endif
+/*
+ * thickness and axishellload conditions are inherited as follows:
+ * DLINE inherits to its DNODEs if the DNODE does not have its own
+ */
+#ifdef D_AXISHELL
 inherit_dlinednode_thickness(); 
 inherit_dlinednode_axishellload(); 
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -393,9 +399,18 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | inherit boundary conditions DLINE to DNODE                  mn 05/03 |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief inherit thickness conditions DLINE to DNODE
+
+<pre>                                                              mn 05/03
+inherit thickness conditions DLINE to DNODE
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 static void inherit_dlinednode_thickness()
 {
 #ifdef D_AXISHELL
@@ -410,13 +425,13 @@ dstrc_enter("inherit_dlinednode_thickness");
 for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
-   /*-------------------- do nothing if DLINE has no dirichlet condition */
+   /*-------------------- do nothing if DLINE has no thickness condition */
    if (actdline->thickness==NULL) continue;
    /*------------------------------- loop the DNODEs related to actdline */
    for (j=0; j<actdline->ndnode; j++)
    {
       actdnode = actdline->dnode[j];
-      /*-------- if actdnode has its own dirichlet condition check value */
+      /*-------- if actdnode has its own thickness condition check value */
       if (actdnode->thickness != NULL) 
       {
         if (actdnode->thickness->value[0] !=  actdline->thickness->value[j])
@@ -439,9 +454,18 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | inherit boundary conditions DLINE to DNODE                  mn 05/03 |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief inherit axishell_load conditions DLINE to DNODE
+
+<pre>                                                              mn 05/03
+inherit axishell_load conditions DLINE to DNODE
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 static void inherit_dlinednode_axishellload()
 {
 #ifdef D_AXISHELL 
@@ -451,18 +475,18 @@ DLINE          *actdline;
 #ifdef DEBUG 
 dstrc_enter("inherit_dlinednode_axishellload");
 #endif
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*--------------------------------------------------------- loop DLINE */
 for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
-   /*-------------------- do nothing if DLINE has no dirichlet condition */
+   /*-------------------- do nothing if DLINE has no axishell_load condition */
    if (actdline->axishellload==NULL) continue;
-   /*------------------------------- loop the DNODEs related to actdline */
+   /*----------------------------- loop the DNODEs related to actdline */
    for (j=0; j<actdline->ndnode; j++)
    {
       actdnode = actdline->dnode[j];
-      /*-------- if actdnode has its own dirichlet condition check value */
+      /*-- if actdnode has its own axishell_load condition check value */
       if (actdnode->axishellload != NULL) 
       {
         if (actdnode->axishellload->pv[0] !=  actdline->axishellload->pv[j] ||

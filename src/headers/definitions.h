@@ -194,12 +194,12 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of nodes to an element                                |
  *----------------------------------------------------------------------*/
-#define MAXNOD           (4)
+#define MAXNOD           (27)
 
 /*----------------------------------------------------------------------*
  | maximum number of elements to a node                                 |
  *----------------------------------------------------------------------*/
-#define MAXELE           (10)
+#define MAXELE           (30)
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
@@ -209,7 +209,7 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
-#define MAXGAUSS         (4)  /* Maxgauss=numlay*lr*ls*lt   */
+#define MAXGAUSS         (27)  /* Maxgauss=numlay*lr*ls*lt   */
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |

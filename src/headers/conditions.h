@@ -85,19 +85,34 @@ typedef struct _FLUID_FREESURF_CONDITION
      struct _ARRAY             fixed_onoff;     /* flags for local slippage model */     
 } FLUID_FREESURF_CONDITION;
 
-/*----------------------------------------------------------------------*
- | axishell thickness condition                             mn 03/05    |
- | for linear varying thickness along a dline                           |        
- *----------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief axishell thickness condition
+
+<pre>                                                              mn 05/03
+axishell thickness condition for linear varying thickness along a dline
+</pre>
+
+*----------------------------------------------------------------------*/
 typedef struct _SAXI_THICK_CONDITION
 {
   DOUBLE            value[2];          /* thickness at the two dnodes of the line */
 } SAXI_THICK_CONDITION;
 
-/*----------------------------------------------------------------------*
- | axishell thickness condition                             mn 03/05    |
- | for linear varying thickness along a dline                           |        
- *----------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief axishell load condition
+
+<pre>                                                              mn 05/03
+axishell load condition for linear varying loads along a dline in four 
+directions:
+ - global vertical   pv
+ - global horizontal ph
+ - local tangential  px
+ - local normal      pw
+</pre>
+
+*----------------------------------------------------------------------*/
 typedef struct _SAXI_LOAD_CONDITION
 {
   DOUBLE            pv[2];          /* vertical load at the two dnodes of the line */

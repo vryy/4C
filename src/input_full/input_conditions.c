@@ -1773,10 +1773,22 @@ return;
 } /* end of inpdesign_line_freesurf */
 #endif
 
+
+
+
 #ifdef D_AXISHELL
-/*----------------------------------------------------------------------*
- | input of line axishell thickness conditions on design       mn 05/03 |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief input of line axishell thickness conditions on design
+
+<pre>                                                              mn 05/03
+This routine reads an axishell thickness conditions.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 static void inpdesign_line_thickness()
 {
 INT    i,j;
@@ -1844,9 +1856,18 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | input of line axishell load conditions on design            mn 05/03 |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief input of line axishell load conditions on design
+
+<pre>                                                              mn 05/03
+This routine reads an axishell load conditions.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 static void inpdesign_line_axishellload()
 {
 INT    i,j;
@@ -1989,9 +2010,18 @@ return;
 } /* end of inpdesign_line_axishellload */
 
 
-/*----------------------------------------------------------------------*
- | input of line axishell point cos conditions on design       mn 05/03 |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief input of line axishell coordinate system conditions on design
+
+<pre>                                                              mn 05/03
+This routine reads an axishell coordinate system conditions.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 static void inpdesign_point_axishellcos()
 {
 INT     i,j;

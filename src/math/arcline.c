@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief  
+\brief collection of function for stlines and arclines 
 
 *-----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
@@ -12,9 +12,23 @@
  *----------------------------------------------------------------------*/
 extern struct _DESIGN *design;
 
-/*-----------------------------------------------------------------------*
- | calculate linear operator matrix at point xsi=s/l       lch 05/03     |
- *----------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief calculates xi for a node on a arcline 
+
+<pre>                                                              mn 05/03
+This function calculates the relative distance xi of a node on a arcline
+from the beginning of the dline
+</pre>
+\param *dline     DLINE   (i)   the arcline the node must be on
+\param *node      NODE    (i)   the node that should be on the dline
+\param *xi        DOUBLE  (o)   the relative distance
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 void arcline_xi(DLINE    *dline,
                 NODE     *node,
                 DOUBLE   *xi)
@@ -70,9 +84,22 @@ return;
 
 
 
-/*-----------------------------------------------------------------------*
- | calculate linear operator matrix at point xsi=s/l       lch 05/03     |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief calculates xi for a node on a stline 
+
+<pre>                                                              mn 05/03
+This function calculates the relative distance xi of a node on a stline
+from the beginning of the dline
+</pre>
+\param *dline     DLINE   (i)   the stline the node must be on
+\param *node      NODE    (i)   the node that should be on the dline
+\param *xi        DOUBLE  (o)   the relative distance
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 void stline_xi(DLINE    *dline,
                NODE     *node,
                DOUBLE   *xi)
@@ -108,9 +135,21 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | calc arcline properties                                  mn 05/03    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief calculates geometric properties of an arcline
+
+<pre>                                                              mn 05/03
+This function calculates several geometric properties for an arcline.
+These are:
+ - the coordinates of the center point
+</pre>
+\param *dline     DLINE   (i)   the stline the node must be on
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 void calc_arc_props(DLINE *dline)
 {
   DOUBLE    radius;
@@ -148,9 +187,20 @@ return;
 
 
 
-/*-----------------------------------------------------------------------*
- | interpolate axishell conditions to the nodes             mn 05/03     |
- *-----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief interpolate axishell conditions to the node
+
+<pre>                                                              mn 05/03
+This function interpolates the axishell load and thickness conditions of 
+a dline onto the nodes on this dline.
+</pre>
+\param *actdis     DISCRET   (i)   the discretization to be used
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 void interpolate_axishell_conds(
     DISCRET      *actdis )
 {
@@ -310,9 +360,6 @@ for (i=0; i<actdis->numele; i++)
       break;
   } /* END of switch (actele->distyp) */
 } /* END of for all elements */
-
-
-
 
 
 /*----------------------------------------------------------------------*/
