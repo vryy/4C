@@ -156,15 +156,25 @@ OBJS8	      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \
                 src/parallel/par_assignmesh.o
 #                brick1
-OBJS9	      = src/brick1/b1_inpele.o \
-                src/brick1/b1_intg.o \
-                src/brick1/b1_static_ke.o \
-                src/brick1/b1_funcderiv.o \
-                src/brick1/b1_bop.o \
-                src/brick1/b1_jaco.o \
-                src/brick1/b1_mat_linel.o \
-                src/brick1/b1_call_stiff.o \
-                src/brick1/b1_main.o
+OBJS9	      = src/brick1/c1_bop.o \
+                src/brick1/c1_call_mat.o \
+                src/brick1/c1_call_stiff.o \
+                src/brick1/c1_funcderiv.o \
+                src/brick1/c1_inpele.o \
+                src/brick1/c1_intg.o \
+                src/brick1/c1_jaco.o \
+                src/brick1/c1_main.o \
+                src/brick1/c1_mat_linel.o \
+                src/brick1/c1_cint.o \
+                src/brick1/c1_cal_deriv.o \
+                src/brick1/c1_mat_plast_mises.o \
+                src/brick1/c1_mat_plast_hashdel.o \
+                src/brick1/c1_mat_plast_mises_ls.o \
+                src/brick1/c1_cal_eps.o \
+                src/brick1/c1_init.o \
+                src/brick1/c1_eas_service.o \
+                src/brick1/c1_cstr.o \
+                src/brick1/c1_load.o
 #                math
 OBJS10	      = src/math/sort_find.o \
                 src/math/math1.o
@@ -231,7 +241,8 @@ OBJS15        = src/fluid_full/fluid_dyn.o \
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS13           = src/fortran/colsol.o \
                    src/fortran/mpcg_futils.o \
-                   src/fortran/vis2_qat2v2.o
+                   src/fortran/vis2_qat2v2.o \
+                   src/fortran/hex_fserv.o
 
 #---------------------------------------------  fortran parallel on HPUX11.0
 #            

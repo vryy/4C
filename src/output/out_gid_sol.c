@@ -1106,7 +1106,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       {
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_brick1 || actele->numnp !=8) continue;
-         stress=actele->e.b1->stress_GP.a.d3[place];
+         stress=actele->e.c1->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][gaussperm8[0]],
@@ -1154,7 +1154,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       {
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_brick1 || actele->numnp !=20) continue;
-         stress=actele->e.b1->stress_GP.a.d3[place];
+         stress=actele->e.c1->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][gaussperm27[0]],
