@@ -708,10 +708,12 @@ static INT ale_quality_ca;
 static INT ale_quality_Je;
 static INT funct_range;     /* warning 5 */
 static INT funct_line;      /* warning 6 */
-static INT max_nod;             /* warning 7 */
-static INT max_ele;             /* warning 8 */
-static INT max_dofpernode;      /* warning 9 */
-static INT max_gauss;           /* warning 10 */
+static INT dirich_fsi_line; /* warning 7 */
+static INT max_nod;         /* warning 8 */    
+static INT max_ele;         /* warning 9 */    
+static INT max_dofpernode;  /* warning 10 */   
+static INT max_gauss;       /* warning 11 */
+static INT rescheck_nonode; /* warning 12 */
 /* DEFINE your new warning flag here!!! */
 
 FILE   *err = allfiles.out_err;
@@ -732,10 +734,12 @@ switch (task)
     ale_quality_Je = 0;
     funct_range = 0;
     funct_line  = 0;
+    dirich_fsi_line=0;
     max_nod        = 0;
     max_ele        = 0 ;
     max_dofpernode = 0;
     max_gauss      = 0;
+    rescheck_nonode= 0;
     /* INITIALISE your new warning here!!! */
   break;
   /*------------------------------------------------- create warning ---*/
@@ -754,13 +758,19 @@ switch (task)
     else if (warning == 6)
       funct_line++;
     else if (warning == 7)
-      max_nod++;
+      dirich_fsi_line++;
     else if (warning == 8)
-      max_ele++;
+      max_nod++;
     else if (warning == 9)
-      max_dofpernode++;
+      max_ele++;
     else if (warning ==10)
+      max_dofpernode++;
+    else if (warning ==11)
       max_gauss++;
+    else if (warning ==12)
+      rescheck_nonode++;
+    else
+      dserror("warning out of range!\n");
     /* COUNT your new warning here!!! */
   break;
   /*------------------------------------------------- write warnings ---*/
@@ -829,7 +839,11 @@ switch (task)
         printf("\n WARNING PROC %i: Function used for points not on the defined line!!\n", par.myrank);
         fprintf(err,"\n WARNING PROC %i: Function used for points not on the defined line!!\n", par.myrank);
       }
-
+      if (dirich_fsi_line)
+      {
+        printf("\n %d WARNINGS PROC %i: dirich- and fsi-coupling condition defined on same DLINE\n", dirich_fsi_line,par.myrank);
+        fprintf(err,"\n %d WARNINGS PROC %i: dirich- and fsi-coupling condition defined on same DLINE\n", dirich_fsi_line,par.myrank);
+      }
       if (max_nod)
       {
         printf("\n WARNING PROC %i: The given value for MAXNOD was too large!! This will reduce the performance!!\n", par.myrank);
@@ -852,6 +866,12 @@ switch (task)
       {
         printf("\n WARNING PROC %i: The given value for MAXGAUSS was too large!! This will reduce the performance!!\n", par.myrank);
         fprintf(err,"\n WARNING PROC %i: The given value for MAXGAUSS was too large!! This will reduce the performance!!\n", par.myrank);
+      }
+
+      if (rescheck_nonode)
+      {
+        printf("\n %d WARNINGS PROC %i: The given node for result check was not found in actual partition.\n", rescheck_nonode,par.myrank);
+        fprintf(err,"\n %d WARNINGS PROC %i: The given node for result check was not found in actual partition.\n", rescheck_nonode,par.myrank);
       }
       /* ADD more warning messages here!!! */
   #ifdef PARALLEL
