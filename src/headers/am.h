@@ -49,11 +49,11 @@ enum
    }                Typ;               /* enum type of field */
 union
    {
-     double   ***d3;
-     double  ****d4;
-     int      ***i3;
-     int     ****i4;
-   }                a;                 /* ptr used for calculations        */
+     double   ***d3;                   /* 3D - double array */
+     double  ****d4;                   /* 4D - double array */
+     int      ***i3;                   /* 3D - integer array */
+     int     ****i4;                   /* 4D - integer array */
+   }                a;                 /* name of union */
 #ifdef DEBUG 
 int                 place_in_trace;    /* place in bugtracing system       */
 #endif

@@ -1,4 +1,39 @@
 /*----------------------------------------------------------------------*
+ | cal_nlnstatic_control.c                               m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void stanln();
+void conpre(
+            FIELD         *actfield,
+            SOLVAR        *actsolv,
+            PARTITION     *actpart,
+            INTRA         *actintra,
+            int            kstep,
+            int            actsysarray,
+            DIST_VECTOR   *rsd,
+            DIST_VECTOR   *dispi,
+            int            cdof,
+            STANLN        *nln_data,
+            NR_CONTROLTYP  controltyp
+          );
+void conequ(
+            FIELD         *actfield,
+            SOLVAR        *actsolv,
+            PARTITION     *actpart,
+            INTRA         *actintra,
+            int            kstep,
+            int           *itnum,
+            int            actsysarray,
+            DIST_VECTOR   *rsd,
+            DIST_VECTOR   *dispi,
+            DIST_VECTOR   *re,
+            int            cdof,
+            STANLN        *nln_data,
+            NR_CONTROLTYP  controltyp
+          );
+void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof);
+void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
+                     double renorm, double energy, double dnorm, double rrnorm);
+/*----------------------------------------------------------------------*
  | global_calelm.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void calelm(FIELD      *actfield, 
@@ -155,6 +190,31 @@ void  ucchb_make_a(FIELD         *actfield,
                      INTRA         *actintra,
                      UCCHB         *ucchb,
                      int          **dof_connect);
+/*----------------------------------------------------------------------*
+ |  global_mask_rcptr.c                                  m.gee 01/02    |
+ *----------------------------------------------------------------------*/
+void mask_rc_ptr(FIELD         *actfield, 
+                 PARTITION     *actpart, 
+                 SOLVAR        *actsolv,
+                 INTRA         *actintra, 
+                 RC_PTR        *rc_ptr);
+void  rc_ptr_update(FIELD         *actfield, 
+                   PARTITION     *actpart, 
+                   SOLVAR        *actsolv,
+                   INTRA         *actintra,
+                   RC_PTR        *rc_ptr);
+void  rc_ptr_nnz_topology(FIELD         *actfield, 
+                         PARTITION    *actpart, 
+                         SOLVAR       *actsolv,
+                         INTRA        *actintra,
+                         RC_PTR       *rc_ptr,
+                         int         **dof_connect);
+void  rc_ptr_make_bindx(FIELD         *actfield, 
+                       PARTITION     *actpart, 
+                       SOLVAR        *actsolv,
+                       RC_PTR        *rc_ptr,
+                       int          **dof_connect);
+void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr);
 /*----------------------------------------------------------------------*
  |  solver_add_data.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/

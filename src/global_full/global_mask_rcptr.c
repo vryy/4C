@@ -81,7 +81,7 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order   m.gee 1/02  |
  *----------------------------------------------------------------------*/
-int  rc_ptr_update(FIELD         *actfield, 
+void  rc_ptr_update(FIELD         *actfield, 
                    PARTITION     *actpart, 
                    SOLVAR        *actsolv,
                    INTRA         *actintra,
@@ -185,7 +185,7 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate number of nonzero entries and dof topology    m.gee 1/02  |
  *----------------------------------------------------------------------*/
-int  rc_ptr_nnz_topology(FIELD         *actfield, 
+void  rc_ptr_nnz_topology(FIELD         *actfield, 
                          PARTITION    *actpart, 
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
@@ -493,7 +493,7 @@ return;
  |  make the DMSR vector bindx                              m.gee 1/02  |
  | for format see Aztec manual                                          |
  *----------------------------------------------------------------------*/
-int  rc_ptr_make_bindx(FIELD         *actfield, 
+void  rc_ptr_make_bindx(FIELD         *actfield, 
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        RC_PTR        *rc_ptr,
@@ -528,11 +528,13 @@ dstrc_exit();
 #endif
 return;
 } /* end of rc_ptr_make_bindx */
+
+
 /*----------------------------------------------------------------------*
  |  make the vectors                                        m.gee 1/02  |
  | irn_loc, jcn_loc, rowptr from update and bindx                       |
  *----------------------------------------------------------------------*/
-int  rc_ptr_make_sparsity(RC_PTR        *rc_ptr)
+void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr)
 {
 int        i,j,k,l;
 int        start,end;

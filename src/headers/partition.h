@@ -6,8 +6,8 @@ typedef struct _PAR
 int               myrank;                /* the individual processor number */
 int               nprocs;                /* total number of processors */
 #ifdef PARALLEL 
-int               numfld;                /* number of intra-communicators */
-struct _INTRA    *intra;                 /* vector of intra-communicator-structures */
+int               numfld;                /* number of intra-communicators == number of fields */
+struct _INTRA    *intra;                 /* vector of intra-communicator-structures correspondent to vector of FIELDs */
 #endif
 } PAR;
 
@@ -21,7 +21,7 @@ int                 intra_rank;          /* proc's intra-rank */
 int                 intra_nprocs;        /* number of procs in this intracomm. */
 #ifdef PARALLEL 
 MPI_Comm            MPI_INTRA_COMM;      /* the intra-communicator itself */
-MPI_Group           MPI_INTRA_GROUP;     /* ? */
+MPI_Group           MPI_INTRA_GROUP;     /* not needed, but for some reason you cannot have an intra-communicator without group */
 #endif
 } INTRA;
 
@@ -32,7 +32,7 @@ typedef struct _PARTITION
 {
 enum   _FIELDTYP    fieldtyp;            /* type of field */
 
-int                 numnp;               /* total number of nodes on this parition */
+int                 numnp;               /* total number of nodes on this parition including boundary nodes */
 int                 numele;              /* total number of elements on this partition */
 struct _NODE      **node;                /* ptrs to nodes on this part. */
 struct _ELEMENT   **element;             /* ptrs to elements on this partition */

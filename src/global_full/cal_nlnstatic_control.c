@@ -247,7 +247,7 @@ return;
 /*----------------------------------------------------------------------*
  |  PERFORM LINEAR PREDICTOR STEP                            m.gee 11/01|
  *----------------------------------------------------------------------*/
-int conpre(
+void conpre(
             FIELD         *actfield,
             SOLVAR        *actsolv,
             PARTITION     *actpart,
@@ -341,7 +341,7 @@ return;
 /*----------------------------------------------------------------------*
  |  PERFORM EQUILLIBRIUM ITERATION                           m.gee 11/01|
  *----------------------------------------------------------------------*/
-int conequ(
+void conequ(
             FIELD         *actfield,
             SOLVAR        *actsolv,
             PARTITION     *actpart,
@@ -638,7 +638,7 @@ return;
 /*----------------------------------------------------------------------*
  |  print out iteration head                                 m.gee 11/01|
  *----------------------------------------------------------------------*/
-int conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof)
+void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof)
 {
 #ifdef DEBUG 
 dstrc_enter("conequ_printhead");
@@ -719,7 +719,7 @@ return;
 /*----------------------------------------------------------------------*
  |  print out iteration info                                 m.gee 11/01|
  *----------------------------------------------------------------------*/
-int conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
+void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
                      double renorm, double energy, double dnorm, double rrnorm)
 {
 #ifdef DEBUG 

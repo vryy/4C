@@ -20,7 +20,7 @@ struct _DVOL *dvol;        /* vector of design volumes */
  *----------------------------------------------------------------------*/
 typedef struct _DNODE
 {
-int             Id;
+int             Id;           /* Id of this design node */
 
 int             mynode;       /* global Id of my FE-node */
 struct _NODE    *node;        /* ptr to my FE-node */
@@ -32,7 +32,7 @@ struct _FIELD   *field;       /* ptr to FIELD this design belongs to */
  *----------------------------------------------------------------------*/
 typedef struct _DLINE
 {
-int              Id;
+int              Id;          /* Id of this design line */
 
 ARRAY            mynode;      /* vector of global Ids of FE-nodes */
 struct _NODE   **node;        /* vector of ptrs to FE-nodes */
@@ -44,7 +44,7 @@ struct _FIELD   *field;       /* ptr to FIELD this design belongs to */
  *----------------------------------------------------------------------*/
 typedef struct _DSURF
 {
-int              Id;
+int              Id;          /* Id of this design surface */
 
 ARRAY            mynode;      /* vector of global Ids of FE-nodes */
 struct _NODE   **node;        /* vector of ptrs to FE-nodes */
@@ -56,7 +56,7 @@ struct _FIELD   *field;       /* ptr to FIELD this design belongs to */
  *----------------------------------------------------------------------*/
 typedef struct _DVOL
 {
-int              Id;
+int              Id;          /* Id of this design volume */
 
 ARRAY            mynode;      /* vector of global Ids of FE-nodes */
 struct _NODE   **node;        /* vector of ptrs to FE-nodes */

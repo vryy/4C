@@ -6,20 +6,20 @@
  *----------------------------------------------------------------------*/
 typedef struct _COND_NODE
 {
-     int                       curve;
+     int                       curve;            /* number of the curve to a time dependent condition */
 
-     int                       isneum;
-     struct _ARRAY             neum_onoff;
-     struct _ARRAY             neum_val;
+     int                       isneum;           /* flag for neumann condition */
+     struct _ARRAY             neum_onoff;       /* array holding flags for each dof of node */
+     struct _ARRAY             neum_val;         /* array holding values for each dof of node */
 
-     int                       isdirich;
-     struct _ARRAY             dirich_onoff;
-     struct _ARRAY             dirich_val;
+     int                       isdirich;         /* flag for dirichlet condition on this node */
+     struct _ARRAY             dirich_onoff;     /* array holding flags for each dof of node */
+     struct _ARRAY             dirich_val;       /* aray holding values for each dof of node */
 
-     int                       iscoupled;                          
-     struct _ARRAY             couple;
+     int                       iscoupled;        /* flag whether this node is coupled to another node */                  
+     struct _ARRAY             couple;           /* array holding flags foreach dof of node */
 
-     int                       fsi_iscoupled;                          
+     int                       fsi_iscoupled;    /* flag for an fsi coupled node */                      
 
 } COND_NODE;
 
@@ -28,20 +28,20 @@ typedef struct _COND_NODE
  *----------------------------------------------------------------------*/
 typedef enum _COND_ELE_TYP
 {
-                       ne_live,
-                       ne_dead
+                       ne_live,   /* given neumann or dirichlet values */
+                       ne_dead    /* neuman value is computed from the specific weight of element */
 } COND_ELE_TYP;
 /*----------------------------------------------------------------------*
  |  element conditions                                    m.gee 5/01    |
  *----------------------------------------------------------------------*/
 typedef struct _COND_ELEMENT
 {
-     enum _COND_ELE_TYP        condtyp;
-     int                       curve;
+     enum _COND_ELE_TYP        condtyp;      /* type of element condition */
+     int                       curve;        /* number of time curve for time dependent condition */
 
-     int                       isneum;
-     struct _ARRAY             neum_onoff;
-     struct _ARRAY             neum_val;
+     int                       isneum;       /* flag for neumann condition */
+     struct _ARRAY             neum_onoff;   /* array holding flags for each dof of node */
+     struct _ARRAY             neum_val;     /* array holding values for each dof of node */
 
 } COND_ELEMENT;
 

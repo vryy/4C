@@ -187,7 +187,7 @@ C.......................................................................
    static as third argument. This routine will fail with any other 
    combination of static or dynamic 2D arrays
  *----------------------------------------------------------------------*/
-int s8_tettr(double x[3][3], double **a, double b[3][3])
+void s8_tettr(double x[3][3], double **a, double b[3][3])
 {
 int    i,j,k;
 double t[3][3];

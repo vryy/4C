@@ -3,10 +3,10 @@
  *----------------------------------------------------------------------*/
 #ifdef AZTEC_PACKAGE
 #ifdef PARALLEL 
-/* with mpi */
+/*-------------------------------- with mpi parallel version of aztec2.1*/
 #include </bau/stat33/users/statik/lib/AZTEC21_MPI/az_aztec.h>
 #else
-/* without mpi */
+/*------------------------ without mpi , sequentiel version of aztec2.1 */
 #include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
 #endif
 #endif /* end of ifdef AZTEC_PACKAGE */
@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*
  | includes for solver package HYPRE 1.6.0               m.gee 10/01    |
  *----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL/*---------------- HYPRE exists only in parallel version */ 
 #ifdef HYPRE_PACKAGE
 #include "utilities.h"
 #include "HYPRE.h"
@@ -28,7 +28,7 @@
 /*----------------------------------------------------------------------*
  | includes for solver package SuperLU_DIST              m.gee 10/01    |
  *----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL/*---------------- HYPRE exists only in parallel version */ 
 #ifdef PARSUPERLU_PACKAGE
 #include "superlu_ddefs.h"
 #endif /* end of ifdef PARSUPERLU_PACKAGE */
@@ -53,16 +53,17 @@ typedef enum _SPARSE_TYP
 typedef union _SPARSE_ARRAY
 {
 
-struct _AZ_ARRAY_MSR   *msr;
-struct _H_PARCSR       *parcsr;
-struct _UCCHB          *ucchb;
-struct _DENSE          *dense;
-struct _RC_PTR         *rc_ptr;
+struct _AZ_ARRAY_MSR   *msr;    /* pointer to Aztec's DMSR matrix */
+struct _H_PARCSR       *parcsr; /*         to HYPRE's ParCSR matrix */
+struct _UCCHB          *ucchb;  /*         to Superlu's UCCHB matrix */
+struct _DENSE          *dense;  /*         to dense matrix */
+struct _RC_PTR         *rc_ptr; /*         to Mump's row/column ptr matrix */
 
 } SPARSE_ARRAY;
 
 /*----------------------------------------------------------------------*
  | distr. sparse matrices, vectors and general solver data    m.gee 5/01|
+ | this is the main structure used by all types of solvers              |
  *----------------------------------------------------------------------*/
 typedef struct _SOLVAR
 {
@@ -70,22 +71,20 @@ enum   _FIELDTYP        fieldtyp;          /* type of field */
 enum   _PART_TYP        parttyp;           /* typ of partition */
 enum   _SOLVER_TYP      solvertyp;         /* typ of chosen solver */
 
-
-
 struct _AZVAR          *azvar;             /* variables needed for solver aztec */
 struct _HYPREVARS      *hyprevar;          /* variables needed for HYPRE EuclidCG */
 struct _PSUPERLUVARS   *psuperluvars;      /* variables needed for Parallel SuperLU */
 struct _LAPACKVARS     *lapackvars;        /* variables needed for Lapack */
-struct _MUMPSVARS       *mumpsvars;          /* variables needed for MUMPS */
+struct _MUMPSVARS      *mumpsvars;         /* variables needed for MUMPS */
 
 int                     nsysarray;         /* number of global sparse arrays for this field */   
-enum  _SPARSE_TYP      *sysarray_typ;      /* types for all sparse arrays */
-union _SPARSE_ARRAY    *sysarray;          /* sparse arrays */
+enum  _SPARSE_TYP      *sysarray_typ;      /* vector of types for all sparse arrays */
+union _SPARSE_ARRAY    *sysarray;          /* vector of sparse arrays */
 
 int                     nrhs;              /* number of distributed rhs-vectors */
-struct _DIST_VECTOR    *rhs;               /* distributed rhs-vector */
+struct _DIST_VECTOR    *rhs;               /* vector of distributed rhs-vectors */
 int                     nsol;              /* number of distributed solution vectors */
-struct _DIST_VECTOR    *sol;               /* dist. solution vectors */
+struct _DIST_VECTOR    *sol;               /* vector of dist. solution vectors */
 } SOLVAR;
 
 /*----------------------------------------------------------------------*
@@ -93,7 +92,7 @@ struct _DIST_VECTOR    *sol;               /* dist. solution vectors */
  *----------------------------------------------------------------------*/
 typedef struct _MUMPSVARS
 {
-int                     i;
+int                     i;                   /* this is in progress.... */
 } MUMPSVARS;
 
 /*----------------------------------------------------------------------*
@@ -101,18 +100,18 @@ int                     i;
  *----------------------------------------------------------------------*/
 typedef struct _AZVAR
 {
-enum   _AZSOLVERTYP     azsolvertyp;        
-enum   _AZPRECTYP       azprectyp;
-int                     azreuse;
-int                     azgfill;
-int                     aziter;
-int                     azsub;
-int                     azgraph;
-int                     azpoly;
-double                  azdrop;
-double                  azfill;
-double                  aztol;
-double                  azomega;
+enum   _AZSOLVERTYP     azsolvertyp;        /* subtype of aztec solver, see enums.h */
+enum   _AZPRECTYP       azprectyp;          /* type of aztec preconditioner, see enums.h */
+int                     azreuse;            /* reuse of preconditioning feature, important, but not yet implemented */
+int                     azgfill;            /* percentage fill in allowed */
+int                     aziter;             /* maximum number of iterations allowed */
+int                     azsub;              /* number of krylov subspaces for vertain solvers (e.g. gmres) */
+int                     azgraph;            /* forgot about it.... */
+int                     azpoly;             /* integer parameter with different meanings dependent on type of precond. */
+double                  azdrop;             /* numerical drop tolerance for preconditioners using it, default: 0.0 */
+double                  azfill;             /* allowed fill-in in percent of the memory used by the sparse matrix */             
+double                  aztol;              /* tolerance */
+double                  azomega;            /* relaxation parameter for some preconditioners */
 } AZVAR;
 
 /*----------------------------------------------------------------------*
@@ -120,9 +119,9 @@ double                  azomega;
  *----------------------------------------------------------------------*/
 typedef struct _HYPREVARS
 {
-enum _HYPREPRECTYP      hypre_prectyp;
-int                     io;
-int                     maxiter;
+enum _HYPREPRECTYP      hypre_prectyp;    /* type of hypre preconditioner */
+int                     io;               /* flag to set solver quiet */
+int                     maxiter;          /* max iterations allowed */
 int                     numiter;
 double                  resnorm;
 int                     reuse;

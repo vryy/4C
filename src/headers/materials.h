@@ -1,18 +1,19 @@
 /*----------------------------------------------------------------------*
  | materials                                              m.gee 4/01    |
+ | structure to hold all types of material laws                         |
  *----------------------------------------------------------------------*/
 typedef struct _MATERIAL
 {
-     int                       Id;
+     int                       Id;           /* Id of the material */
 
-     enum _MATERIAL_TYP        mattyp;
+     enum _MATERIAL_TYP        mattyp;       /* type of material */
 
      union
      {
-     struct _LINEAR_ELASTIC   *lin_el;
-     struct _NEO_HOOKE        *neohooke;
-     struct _FLUID            *fluid;
-     }                         m;
+     struct _LINEAR_ELASTIC   *lin_el;       /* St. Venant-Kirchhoff material */
+     struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
+     struct _FLUID            *fluid;        /* fluid material */
+     }                         m;            /* union pointer to material specific structure */
 
 } MATERIAL;
 
@@ -21,23 +22,25 @@ typedef struct _MATERIAL
 
 
 /*----------------------------------------------------------------------*
- | linear-elastic material                                m.gee 4/01    |
+ | St. Venant-Kirchhoff material                          m.gee 4/01    |
  *----------------------------------------------------------------------*/
 typedef struct _LINEAR_ELASTIC
 {
-     double                    youngs;
-     double                    possionratio;
+     double                    youngs;         /* Young's modulus */
+     double                    possionratio;   /* Possion ratio */
+     double                    spec_weight;    /* material specific weight */
 } LINEAR_ELASTIC;
 
 
 
 /*----------------------------------------------------------------------*
- | neo_hooke material                                     m.gee 4/01    |
+ | Neo Hooke material                                     m.gee 4/01    |
  *----------------------------------------------------------------------*/
 typedef struct _NEO_HOOKE
 {
-     double                    youngs;
-     double                    possionratio;
+     double                    youngs;         /* Young's modulus */
+     double                    possionratio;   /* Possion ratio */
+     double                    spec_weight;    /* material specific weight */
 } NEO_HOOKE;
 
 

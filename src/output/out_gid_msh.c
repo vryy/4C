@@ -286,7 +286,7 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to write all nodal coordinates of all fields m.gee 12/01    |
  *----------------------------------------------------------------------*/
-int out_gid_allcoords(FILE *out)
+void out_gid_allcoords(FILE *out)
 {
 int           i,j;
 FIELD        *actfield;

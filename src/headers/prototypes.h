@@ -52,6 +52,17 @@ void find_assign_coupset(FIELD *actfield,
                             int    coupleID, 
                             int   *counter);
 /*----------------------------------------------------------------------*
+ |  out_gid_sol.c                                        m.gee 12/01    |
+ *----------------------------------------------------------------------*/
+void out_gid_sol_init();
+void out_gid_domains(FIELD *actfield);
+void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step);
+/*----------------------------------------------------------------------*
+ |  out_gid_msh.c                                        m.gee 12/01    |
+ *----------------------------------------------------------------------*/
+void out_gid_msh();
+void out_gid_allcoords(FILE *out);
+/*----------------------------------------------------------------------*
  |  input_cond_couple.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void inp_couple(FIELD *field);
