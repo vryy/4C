@@ -140,13 +140,22 @@ struct _DISCRET   *dis;           /* structure holding a number of discretisatio
  *----------------------------------------------------------------------*/
 typedef struct _DISCRET
 {
-int               numnp;          /* number of nodes in this field */                          
-int               numele;         /* number of elements in this field */
-int               numeq;          /* number of unknowns */
-int               numdf;          /* number of degrees of freedom */
+int                numnp;          /* number of nodes in this field */                          
+int                numele;         /* number of elements in this field */
+int                numeq;          /* number of unknowns */
+int                numdf;          /* number of degrees of freedom */
 
 struct _ELEMENT   *element;       /* vector of elements */
 struct _NODE      *node;          /* vector of nodes */
+
+int                ngnode;        /* number of geometry points */        
+int                ngline;        /* number of geometry lines */        
+int                ngsurf;        /* number of geometry surfaces */        
+int                ngvol;         /* number of geometry volumes */        
+struct _GNODE     *gnode;         /* vector of geometry points */    
+struct _GLINE     *gline;         /* vector of geometry lines */    
+struct _GSURF     *gsurf;         /* vector of geometry surfaces */    
+struct _GVOL      *gvol;          /* vector of geometry volumes */    
 } DISCRET;
 
 
@@ -164,7 +173,6 @@ int               ndim;          /* dimension of problem (2 or 3) */
 int               nmat;          /* total number of material laws */
 int               numfld;        /* number of fields */
 int               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
-int               design;        /* need design information or not */
 int               restart;       /* is restart or not (not used yet) */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */

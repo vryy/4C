@@ -1,0 +1,123 @@
+#include "../headers/standardtypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate design if needed                                 |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _DESIGN *design;
+/*----------------------------------------------------------------------*
+ | functions only accessible in this file                    m.gee 3/02 |
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | inherit boundary conditions from design to GNODEs         m.gee 3/02 |
+ *----------------------------------------------------------------------*/
+void inherit_design_dis_dirichlet(DISCRET *actdis)
+{
+int     i;
+GNODE  *actgnode;
+#ifdef DEBUG 
+dstrc_enter("inherit_design_dis_dirichlet");
+#endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<actdis->ngnode; i++)
+{
+   actgnode = &(actdis->gnode[i]);
+   switch(actgnode->ondesigntyp)
+   {
+   case ondnode:    actgnode->dirich = actgnode->d.dnode->dirich;   break;
+   case ondline:    actgnode->dirich = actgnode->d.dline->dirich;   break;
+   case ondsurf:    actgnode->dirich = actgnode->d.dsurf->dirich;   break;
+   case ondvol:     actgnode->dirich = actgnode->d.dvol->dirich;    break;
+   case ondnothing: dserror("GNODE not owned by any design object");break;
+   default: dserror("Cannot inherit dirichlet condition");          break;
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inherit_design_dis_dirichlet */
+/*----------------------------------------------------------------------*
+ | inherit couple conditions from design to GNODEs           m.gee 3/02 |
+ *----------------------------------------------------------------------*/
+void inherit_design_dis_couple(DISCRET *actdis)
+{
+int     i;
+GNODE  *actgnode;
+#ifdef DEBUG 
+dstrc_enter("inherit_design_dis_couple");
+#endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<actdis->ngnode; i++)
+{
+   actgnode = &(actdis->gnode[i]);
+   switch(actgnode->ondesigntyp)
+   {
+   case ondnode:    actgnode->couple = actgnode->d.dnode->couple;   break;
+   case ondline:    actgnode->couple = actgnode->d.dline->couple;   break;
+   case ondsurf:    actgnode->couple = actgnode->d.dsurf->couple;   break;
+   case ondvol:     actgnode->couple = actgnode->d.dvol->couple;    break;
+   case ondnothing: dserror("GNODE not owned by any design object");break;
+   default: dserror("Cannot inherit couple condition");             break;
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inherit_design_dis_couple */
+/*----------------------------------------------------------------------*
+ | inherit neumann conditions from design to discretization  m.gee 3/02 |
+ *----------------------------------------------------------------------*/
+void inherit_design_dis_neum(DISCRET *actdis)
+{
+int     i;
+GNODE  *actgnode;
+GLINE  *actgline;
+GSURF  *actgsurf;
+GVOL   *actgvol;
+#ifdef DEBUG 
+dstrc_enter("inherit_design_dis_neum");
+#endif
+/*----------------------------------------------------------------------*/
+/* GNODES inherit neumann condition from DNODES if they are on a DNODE */
+/*                                   otherwise, GNODE inherits nothing */
+for (i=0; i<actdis->ngnode; i++)
+{
+   actgnode = &(actdis->gnode[i]);
+   switch(actgnode->ondesigntyp)
+   {
+   case ondnode:    actgnode->neum   = actgnode->d.dnode->neum;     break;
+   case ondnothing: dserror("GNODE not owned by any design object");break;
+   }
+}
+/*-------------------------------------- GLINE inherits from its DLINE */
+for (i=0; i<actdis->ngline; i++)
+{
+   /*------------------------------- check whether gline is on a dline */
+   if (actdis->gline[i].dline)
+   actdis->gline[i].neum = actdis->gline[i].dline->neum;
+}
+/*----------------------- GSURF inherit from DSURF, if it is on a DSURF */
+for (i=0; i<actdis->ngsurf; i++)
+{
+   if (actdis->gsurf[i].dsurf)
+   actdis->gsurf[i].neum = actdis->gsurf[i].dsurf->neum;
+}
+/* GVOL inherits from DVOL if it is inside a DVOL (which always should be true)*/
+for (i=0; i<actdis->ngvol; i++)
+{
+   dsassert(actdis->gvol[i].dvol!=NULL,"volume fe-element outside any design volume");
+   actdis->gvol[i].neum = actdis->gvol[i].dvol->neum;   
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inherit_design_dis_neum */
+
+
+

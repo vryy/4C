@@ -1,49 +1,45 @@
 /*----------------------------------------------------------------------*
- | type definitions conditions                            m.gee 4/01    |
+ | neumann condition                                      m.gee 3/02    |
+ |                                                                      |
+ | this structure holds a neumann condition                             |
+ | depend on number of dofs to a fe-node and type of element it is      |
+ | is connected to, the arrays can be defined in several styles         |
  *----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
- |  nodal conditions                            m.gee 4/01    |
- *----------------------------------------------------------------------*/
-typedef struct _COND_NODE
+typedef struct _NEUM_CONDITION
 {
-     int                       curve;            /* number of the curve to a time dependent condition */
+     int                       curve;        /* number of load curve associated with this conditions */        
 
-     int                       isneum;           /* flag for neumann condition */
-     struct _ARRAY             neum_onoff;       /* array holding flags for each dof of node */
-     struct _ARRAY             neum_val;         /* array holding values for each dof of node */
+     struct _ARRAY             neum_onoff;   /* array of on-off flags */
+     struct _ARRAY             neum_val;     /* values of this condition */    
 
-     int                       isdirich;         /* flag for dirichlet condition on this node */
-     struct _ARRAY             dirich_onoff;     /* array holding flags for each dof of node */
-     struct _ARRAY             dirich_val;       /* aray holding values for each dof of node */
-
-     int                       iscoupled;        /* flag whether this node is coupled to another node */                  
-     struct _ARRAY             couple;           /* array holding flags foreach dof of node */
-
-     int                       fsi_iscoupled;    /* flag for an fsi coupled node */                      
-
-} COND_NODE;
-
+} NEUM_CONDITION;
 /*----------------------------------------------------------------------*
- | element neumann/dirichlet condition types             m.gee 10/01    |
+ | dirichlet condition                                    m.gee 3/02    |
+ |                                                                      |
+ | this structure holds a dirichlet condition                           |
+ | depend on number of dofs to a fe-node and type of element it is      |
+ | is connected to, the arrays can be defined in several styles         |
  *----------------------------------------------------------------------*/
-typedef enum _COND_ELE_TYP
+typedef struct _DIRICH_CONDITION
 {
-                       ne_live,   /* given neumann or dirichlet values */
-                       ne_dead    /* neuman value is computed from the specific weight of element */
-} COND_ELE_TYP;
+     int                       curve;        /* number of load curve associated with this conditions */                 
+
+     struct _ARRAY             dirich_onoff; /* array of on-off flags */
+     struct _ARRAY             dirich_val;   /* values of this condition */    
+
+
+} DIRICH_CONDITION;
 /*----------------------------------------------------------------------*
- |  element conditions                                    m.gee 5/01    |
+ | coupling condition                                     m.gee 3/02    |
+ |                                                                      |
+ | this structure is assigned to nodes, which are coupled in some or    |
+ | all of their dofs                                                    |
  *----------------------------------------------------------------------*/
-typedef struct _COND_ELEMENT
+typedef struct _COUPLE_CONDITION
 {
-     enum _COND_ELE_TYP        condtyp;      /* type of element condition */
-     int                       curve;        /* number of time curve for time dependent condition */
+     enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
 
-     int                       isneum;       /* flag for neumann condition */
-     struct _ARRAY             neum_onoff;   /* array holding flags for each dof of node */
-     struct _ARRAY             neum_val;     /* array holding values for each dof of node */
+     struct _ARRAY             couple;          /* array of the coupling conditions */
+     int                       fsi_iscoupled;   /* flag for fsi coupling */
 
-} COND_ELEMENT;
-
-
-
+} COUPLE_CONDITION;

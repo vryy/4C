@@ -10,11 +10,7 @@ extern struct _FILES  allfiles;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-#ifdef SUSE73
-extern DYNAMIC *dyn;   
-#else
 extern struct _DYNAMIC *dyn;   
-#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |

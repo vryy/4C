@@ -80,15 +80,19 @@ design->ndvol  = numdvol;
 /*----------------------------------------------allocate design vectors */
 design->dnode = (DNODE*)CALLOC(design->ndnode,sizeof(DNODE));
 if (!design->dnode) dserror("Allocation of design nodes failed");
+for (i=0; i<design->ndnode; i++) design->dnode[i].Id = i;
 
 design->dline = (DLINE*)CALLOC(design->ndline,sizeof(DLINE));
 if (!design->dline) dserror("Allocation of design lines failed");
+for (i=0; i<design->ndline; i++) design->dline[i].Id = i;
 
 design->dsurf = (DSURF*)CALLOC(design->ndsurf,sizeof(DSURF));
 if (!design->dsurf) dserror("Allocation of design surfaces failed");
+for (i=0; i<design->ndsurf; i++) design->dsurf[i].Id = i;
 
 design->dvol = (DVOL*)CALLOC(design->ndvol,sizeof(DVOL));
 if (!design->dvol) dserror("Allocation of design volumes failed");
+for (i=0; i<design->ndvol; i++) design->dvol[i].Id = i;
 /*-------------------------------------------------------------- rewind */
 frrewind();
 /*----------------------------------------------------------------------*/
@@ -118,33 +122,9 @@ dstrc_enter("inp_dnode");
 #endif
 /*-------------------------------------------------------------- rewind */
 frrewind();
-/*------------------------------- find fe-nodes belonging to this dnode */
-for (i=0; i<design->ndnode; i++)
-{
-   design->dnode[i].Id=i;
-   frfind("-DESIGN-FE TOPOLOGY");
-   frread();
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DNODE",&dnode,&ierr);
-      if (ierr==1)
-      {
-         if (dnode==i+1)
-         {
-            frint("NODE",&(design->dnode[i].mynode),&ierr);
-            (design->dnode[i].mynode)--;
-            goto nextdnode;
-         }
-      }
-      frread();
-   }
-   nextdnode:
-   frrewind();
-}
 /*------------------------ now read the description of the design nodes */
-frfind("--DESIGN DESCRIPTION");
-for (i=0; i<4; i++) frread();
-
+frfind("--DESIGN POINTS");
+frread();
 for (i=0; i<design->ndnode; i++)
 {
    actdnode = &(design->dnode[i]);
@@ -171,8 +151,8 @@ dstrc_enter("read_1_dnode");
 #endif
 /*----------------------------------------------------------------------*/
 ierr=0;
-frchk("{POINT",&ierr);
-while (!ierr) {frread(); frchk("{POINT",&ierr);}
+frchk("POINT",&ierr);
+while (!ierr) {frread(); frchk("POINT",&ierr);}
 
 frchk("Num:",&ierr);
 while (!ierr) {frread(); frchk("Num:",&ierr);}
@@ -220,52 +200,9 @@ int    readID;
 dstrc_enter("inp_dline");
 #endif
 
-/*-------------------------------------------------------------- rewind */
-frrewind();
-/*---------------------------------- count number of nodes on this line */
-for (i=0; i<design->ndline; i++)
-{
-   design->dline[i].Id = i;
-   counter=0;
-   frfind("-DESIGN-FE TOPOLOGY");
-   frread();
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DLINE",&dline,&ierr);
-      if (ierr==1)
-      {
-         if (dline==i+1) counter++;
-      }
-      frread();
-   }
-   amdef("dline_node",&(design->dline[i].mynode),counter,1,"IV");
-   frrewind();
-}
-/*------------------------------- find fe-nodes belonging to this dline */
-for (i=0; i<design->ndline; i++)
-{
-   frfind("-DESIGN-FE TOPOLOGY");
-   frread();
-   counter=0;
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DLINE",&dline,&ierr);
-      if (ierr==1)
-      {
-         if (dline==i+1)
-         {
-            frint("NODE",&(design->dline[i].mynode.a.iv[counter]),&ierr);
-            (design->dline[i].mynode.a.iv[counter])--;
-            counter++;
-         } 
-      }
-      frread();
-   }
-   frrewind();
-}
 /*------------------------ now read the description of the design lines */
-frfind("--DESIGN DESCRIPTION");
-for (i=0; i<4; i++) frread();
+frfind("--DESIGN LINES");
+frread();
 
 for (i=0; i<design->ndline; i++)
 {
@@ -281,7 +218,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_dline */
-
 /*----------------------------------------------------------------------*
  | input of one design line                               m.gee 1/02    |
  *----------------------------------------------------------------------*/
@@ -297,8 +233,8 @@ dstrc_enter("read_1_dline");
 ierr=0;
 frchk("LINE",&ierr);
 while (!ierr) {frread(); frchk("LINE",&ierr);}
-frchk("{STLINE",&isnurb);
-frchk("{NURBLINE",&isnurb);
+frchk("STLINE",&isnurb);
+frchk("NURBLINE",&isnurb);
 
 frchk("Num:",&ierr);
 while (!ierr) {frread(); frchk("Num:",&ierr);}
@@ -316,6 +252,7 @@ frint_n("Points:",dline->my_dnodeId,2,&ierr);
 if (!ierr) dserror("Cannot read DLINE");
 dline->my_dnodeId[0]--;
 dline->my_dnodeId[1]--;
+dline->ndnode=2;
 
 frchk("END",&ierr);
 while (!ierr) {frread(); frchk("END",&ierr);}
@@ -344,54 +281,9 @@ int    readId;
 #ifdef DEBUG 
 dstrc_enter("inp_dsurface");
 #endif
-
-/*-------------------------------------------------------------- rewind */
-frrewind();
-/*---------------------------------- count number of nodes on this surf */
-for (i=0; i<design->ndsurf; i++)
-{
-   design->dsurf[i].Id = i;
-   counter=0;
-   frfind("-DESIGN-FE TOPOLOGY");
-   frread();
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DSURFACE",&dsurf,&ierr);
-      if (ierr==1)
-      {
-         if (dsurf==i+1) counter++;
-      }
-      frread();
-   }
-   amdef("dsurf_node",&(design->dsurf[i].mynode),counter,1,"IV");
-   frrewind();
-}
-/*------------------------------- find fe-nodes belonging to this dsurf */
-for (i=0; i<design->ndsurf; i++)
-{
-   frfind("-DESIGN-FE TOPOLOGY");
-   frread();
-   counter=0;
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DSURFACE",&dsurf,&ierr);
-      if (ierr==1)
-      {
-         if (dsurf==i+1)
-         {
-            frint("NODE",&(design->dsurf[i].mynode.a.iv[counter]),&ierr);
-            (design->dsurf[i].mynode.a.iv[counter])--;
-            counter++;
-         } 
-      }
-      frread();
-   }
-   frrewind();
-}
 /*------------------------ now read the description of the design lines */
-frfind("--DESIGN DESCRIPTION");
-for (i=0; i<4; i++) frread();
-
+frfind("--DESIGN SURFACES");
+frread();
 for (i=0; i<design->ndsurf; i++)
 {
    actdsurf = &(design->dsurf[i]);
@@ -413,15 +305,14 @@ return;
 void read_1_dsurf(DSURF *dsurf, int readId)
 {
 int    i,ierr;
-int    nline;
 char   buffer[100];
 #ifdef DEBUG 
 dstrc_enter("read_1_dsurf");
 #endif
 /*----------------------------------------------------------------------*/
 ierr=0;
-frchk("{NURBSURFACE",&ierr);
-while (!ierr) {frread(); frchk("{NURBSURFACE",&ierr);}
+frchk("NURBSURFACE",&ierr);
+while (!ierr) {frread(); frchk("NURBSURFACE",&ierr);}
 
 frchk("Num:",&ierr);
 while (!ierr) {frread(); frchk("Num:",&ierr);}
@@ -435,13 +326,13 @@ if (!ierr) dserror("Cannot read DSURF");
 
 frchk("NumLines:",&ierr);
 while (!ierr) {frread(); frchk("NumLines:",&ierr);}
-frint("NumLines:",&nline,&ierr);
+frint("NumLines:",&(dsurf->ndline),&ierr);
 if (!ierr) dserror("Cannot read DSURF");
-amdef("my_dlineIDs",&(dsurf->my_dlineId),nline,2,"IA");
+amdef("my_dlineIDs",&(dsurf->my_dlineId),dsurf->ndline,2,"IA");
 
 frchk("Line:",&ierr);
 while (!ierr) {frread(); frchk("Line:",&ierr);}
-for (i=0; i<nline; i++)
+for (i=0; i<dsurf->ndline; i++)
 {
    frint("Line:",&(dsurf->my_dlineId.a.ia[i][0]),&ierr);
    if (!ierr) dserror("Cannot read DSURF");
@@ -481,53 +372,9 @@ int   readId;
 dstrc_enter("inp_dvolume");
 #endif
 
-/*-------------------------------------------------------------- rewind */
-frrewind();
-/*---------------------------------- count number of nodes on this vol */
-for (i=0; i<design->ndvol; i++)
-{
-   design->dvol[i].Id = i;
-   counter=0;
-   frfind("-DESIGN-FE TOPOLOGY");
-   frread();
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DVOLUME",&dvol,&ierr);
-      if (ierr==1)
-      {
-         if (dvol==i+1) counter++;
-      }
-      frread();
-   }
-   amdef("dvol_node",&(design->dvol[i].mynode),counter,1,"IV");
-   frrewind();
-}
-/*------------------------------- find fe-nodes belonging to this vol */
-for (i=0; i<design->ndvol; i++)
-{
-   frfind("-DESIGN-FE TOPOLOGY");
-   frread();
-   counter=0;
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DVOLUME",&dvol,&ierr);
-      if (ierr==1)
-      {
-         if (dvol==i+1)
-         {
-            frint("NODE",&(design->dvol[i].mynode.a.iv[counter]),&ierr);
-            (design->dvol[i].mynode.a.iv[counter])--;
-            counter++;
-         } 
-      }
-      frread();
-   }
-   frrewind();
-}
 /*---------------------- now read the description of the design volumes */
-frfind("--DESIGN DESCRIPTION");
-for (i=0; i<4; i++) frread();
-
+frfind("--DESIGN VOLUMES");
+frread();
 for (i=0; i<design->ndvol; i++)
 {
    actdvol = &(design->dvol[i]);
@@ -549,15 +396,14 @@ return;
 void read_1_dvol(DVOL *dvol, int readId)
 {
 int    i,ierr;
-int    nsurf;
 char   buffer[100];
 #ifdef DEBUG 
 dstrc_enter("read_1_dvol");
 #endif
 /*----------------------------------------------------------------------*/
 ierr=0;
-frchk("{VOLUME",&ierr);
-while (!ierr) {frread(); frchk("{VOLUME",&ierr);}
+frchk("VOLUME",&ierr);
+while (!ierr) {frread(); frchk("VOLUME",&ierr);}
 
 frchk("Num:",&ierr);
 while (!ierr) {frread(); frchk("Num:",&ierr);}
@@ -571,13 +417,13 @@ if (!ierr) dserror("Cannot read DVOL");
 
 frchk("NumSurfaces:",&ierr);
 while (!ierr) {frread(); frchk("NumSurfaces:",&ierr);}
-frint("NumSurfaces:",&nsurf,&ierr);
+frint("NumSurfaces:",&(dvol->ndsurf),&ierr);
 if (!ierr) dserror("Cannot read DVOL");
-amdef("my_dsurfIDs",&(dvol->my_dsurfId),nsurf,2,"IA");
+amdef("my_dsurfIDs",&(dvol->my_dsurfId),dvol->ndsurf,2,"IA");
 
 frchk("Surface:",&ierr);
 while (!ierr) {frread(); frchk("Surface:",&ierr);}
-for (i=0; i<nsurf; i++)
+for (i=0; i<dvol->ndsurf; i++)
 {
    frint("Surface:",&(dvol->my_dsurfId.a.ia[i][0]),&ierr);
    if (!ierr) dserror("Cannot read DVOL");

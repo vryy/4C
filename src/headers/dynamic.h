@@ -3,8 +3,8 @@
  *----------------------------------------------------------------------*/
 typedef union _ALLDYNA                 
 {
-   struct _STRUCT_DYNAMIC    *sdyn;
-   struct _FLUID_DYNAMIC     *fdyn;
+   struct _STRUCT_DYNAMIC    *sdyn; /* ptr for allocation of structural dynamic data */
+   struct _FLUID_DYNAMIC     *fdyn; /* ptr for allocation of fluid dynamic data */
 } ALLDYNA;
 
 
@@ -14,21 +14,21 @@ typedef union _ALLDYNA
  *----------------------------------------------------------------------*/
 typedef struct _STRUCT_DYNAMIC                 
 {
-char               dyntyp[50];
-int                nstep;    /* this all is in progress... */
-int                step;
-int                damp;     
-int                iter;
-int                maxiter;
-double             toldisp;
-double             dt;
-double             maxtime;
-double             time;
-double             beta;
+char               dyntyp[50]; /* type of algorithm */
+int                nstep;      /* number of steps */
+int                step;       /* actual step */
+int                damp;       /* flag to switch damping on/off */
+int                iter;       /* number of active iteration */
+int                maxiter;    /* maximum number of iterations */
+double             toldisp;    /* displacement tolerance */
+double             dt;         /* stepsize */
+double             maxtime;    /* maximum total time */
+double             time;       /* actual time */
+double             beta;       /* time integration coefficients */
 double             gamma;
 double             alpha_m;
 double             alpha_f;
-double             m_damp;
+double             m_damp;     /* factors for Raleigh damping */
 double             k_damp;
 } STRUCT_DYNAMIC;
 /*----------------------------------------------------------------------*
@@ -36,16 +36,16 @@ double             k_damp;
  *----------------------------------------------------------------------*/
 typedef struct _STRUCT_DYN_CALC                
 {
-double             rldfac;
-double             rnorm;
+double             rldfac;          /* ? */
+double             rnorm;           /* ? */
 
-double             constants[20];
+double             constants[20];   /* derived constants for time integration */
 
 
-double             epot;
-double             eout;
-double             etot;
-double             ekin;
+double             epot;            /* potential energy */
+double             eout;            /* external energy */
+double             etot;            /* total energy */
+double             ekin;            /* kinetic energy */
 
 double             dinorm;  /* square of the L2-norm of the residual displacements */
 double             dnorm;   /* square of the L2-norm of the displacements increment */

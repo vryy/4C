@@ -1,13 +1,16 @@
 /*----------------------------------------------------------------------*
  | curve types                                            m.gee 2/02    |
+ | there can be different types of load curves                          |
  *----------------------------------------------------------------------*/
 typedef enum _CURVTYP
 {
                        curve_none,
-                       curve_polygonal       
+                       curve_polygonal   /* polygonal, piecewise linear curve */    
 } CURVTYP;
 /*----------------------------------------------------------------------*
- | general dynamic-curves                              m.gee 4/01    |
+ | general dynamic-curves                                 m.gee 4/01    |
+ | the arrays time and value are dependent on type of load curve and    |
+ | size of the curve                                                    |
  *----------------------------------------------------------------------*/
 typedef struct _CURVE
 {

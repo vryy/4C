@@ -143,12 +143,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp("Dynamic",buffer,7)==0) genprob.timetyp=time_dynamic;
    }
 
-   frchar("DESIGN"    ,buffer,            &ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"on",2)==0) genprob.design=1;
-      else                           genprob.design=0;
-   }
    frint("RESTART"    ,&(genprob.restart),&ierr);
    
    frint("NUMFIELD",&(genprob.numfld),&ierr);

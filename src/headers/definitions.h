@@ -12,7 +12,30 @@
  *----------------------------------------------------------------------*/
 
 
+/*----------------------------------------------------------------------*
+ | some definitions that are important for dynamic memory management    |
+ *----------------------------------------------------------------------*/
+#ifdef SIXTYFOUR /*--------------- a 64 bit pointer is of size long int */
+typedef long int PTRSIZE;
+#else/*-------------------------------- a 32 bit pointer is of size int */
+typedef int PTRSIZE;
+#endif
 
+/*----------------------------------------------------------------------*
+ | basic data types, do not use int, double or char !                   |
+ *----------------------------------------------------------------------*/
+#ifdef INT
+#undef INT
+#endif
+typedef int       INT;
+#ifdef DOUBLE
+#undef DOUBLE
+#endif
+typedef double    DOUBLE;
+#ifdef CHAR
+#undef CHAR
+#endif
+typedef char      CHAR;
 
 /*----------------------------------------------------------------------*
  | absolut value of an integer                                          |
@@ -27,31 +50,31 @@
 /*----------------------------------------------------------------------*
  | square of a double                                                   |
  *----------------------------------------------------------------------*/
-static double dsqrarg;
+static DOUBLE dsqrarg;
 #define DSQR(a) ((dsqrarg=(a)) == 0.0 ? 0.0 : dsqrarg*dsqrarg)
 
 /*----------------------------------------------------------------------*
  | the larger of two doubles (fast version)                             |
  *----------------------------------------------------------------------*/
-static double dmaxarg1,dmaxarg2;
+static DOUBLE dmaxarg1,dmaxarg2;
 #define DMAX(a,b) (dmaxarg1=(a),dmaxarg2=(b), (dmaxarg1) > (dmaxarg2) ? (dmaxarg1) : (dmaxarg2))
 
 /*----------------------------------------------------------------------*
  | the smaller of two doubles (fast version)                            |
  *----------------------------------------------------------------------*/
-static double dminarg1,dminarg2;
+static DOUBLE dminarg1,dminarg2;
 #define DMIN(a,b) (dminarg1=(a),dminarg2=(b), (dminarg1) < (dminarg2) ? (dminarg1) : (dminarg2))
 
 /*----------------------------------------------------------------------*
  | the larger of two integer (fast version)                             |
  *----------------------------------------------------------------------*/
-static int imaxarg1,imaxarg2;
+static INT imaxarg1,imaxarg2;
 #define IMAX(a,b) (imaxarg1=(a),imaxarg2=(b), (imaxarg1) > (imaxarg2) ? (imaxarg1) : (imaxarg2))
 
 /*----------------------------------------------------------------------*
  | the smaller of two integer (fast version)                            |
  *----------------------------------------------------------------------*/
-static int iminarg1,iminarg2;
+static INT iminarg1,iminarg2;
 #define IMIN(a,b) (iminarg1=(a),iminarg2=(b), (iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2))
 
 /*----------------------------------------------------------------------*

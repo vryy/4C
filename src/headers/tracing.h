@@ -9,15 +9,15 @@
  *----------------------------------------------------------------------*/
 typedef struct _TRACEROUT
 {
-struct _TRACEROUT   *prev;
-struct _TRACEROUT   *next;
-char                 name[50];
+struct _TRACEROUT   *prev;          /* ptr to previous structure in chained list */
+struct _TRACEROUT   *next;          /* ptr to next structure in chained list */
+char                 name[50];      /* name of routine */
 enum 
    {
     dsnone,
     dsin,
     dsout
-   }                 dsroutcontrol;
+   }                 dsroutcontrol; /* status of routine, inside, outside, unknown */
    
 } TRACEROUT;
 
@@ -35,20 +35,19 @@ enum
  *----------------------------------------------------------------------*/
 typedef struct _TRACEARRAY
 {
-   struct _TRACEARRAY   *prev;
-   struct _TRACEARRAY   *next;
+   struct _TRACEARRAY   *prev;     /* ptr to previous structure in chained list */
+   struct _TRACEARRAY   *next;     /* ptr to next structure in chained list */
    enum
    {
       array_none,
       array_2d,
       array_4d
-   }                     arraytyp;
+   }                     arraytyp; /* type of array traced by this structure */
    union
    {
-      struct _ARRAY      *a2;
-      struct _ARRAY4D    *a4;
-   }                     a;
-
+      struct _ARRAY      *a2;      /* ptr to the 2D array */
+      struct _ARRAY4D    *a4;      /* ptr to the 3D array */
+   }                     a;        /* name of union */
 } TRACEARRAY;
 
 
