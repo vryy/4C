@@ -139,7 +139,7 @@ switch (funct[funct_num].functtyp)
       dswarning(1,5);
 
     /* calculate function value at point p */
-    fac = 1.0 - (4/(length*length)) * (xi - length/2.0)*(xi - length/2.0);
+    fac = 1.0 - 4 * (xi - 1.0/2.0)*(xi - 1.0/2.0);
     break;
 
 
