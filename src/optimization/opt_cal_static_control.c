@@ -269,7 +269,7 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
 /*--------------------------------------------- printout results to gid */
 if (ioflags.struct_disp_gid==1 && par.myrank==0 && stalact!=calsta_init)
 {
-   out_gid_sol("displacement",actfield,actintra,opt->optstep,0);
+   out_gid_sol("displacement",actfield,actintra,opt->optstep,0,ZERO);
    /* out_gid_domains(actfield); */
 }
 /*------------------------------------------ perform stress calculation */
@@ -286,7 +286,8 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1 && stalact!=ca
    container.kstep = 0;
    calreduce(actfield,actpart,actintra,action,&container);
    out_sol(actfield,actpart,actintra,0,0);
-   if (par.myrank==0 && stalact!=calsta_init) out_gid_sol("stress",actfield,actintra,opt->optstep,0);
+   if (par.myrank==0 && stalact!=calsta_init) 
+   out_gid_sol("stress",actfield,actintra,opt->optstep,0,ZERO);
 }
 /*----------------------------------------------------------------------*/
 end:
