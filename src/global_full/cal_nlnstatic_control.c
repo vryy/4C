@@ -741,7 +741,7 @@ solserv_result_resid(
                      0,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
-                    );
+                     );
 /*-- put incremental displacements to the nodes (needed for material...)*/              
 solserv_result_incre(
                      actfield,
@@ -749,8 +749,9 @@ solserv_result_incre(
                      &(dispi[0]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
-                    );
+                     &(actsolv->sysarray_typ[actsysarray]),
+		     actsysarray
+		     );
 /*---------------------------------------------initialize system matrix */
 solserv_zero_mat(
                  actintra,

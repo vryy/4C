@@ -411,7 +411,7 @@ solserv_result_total(actfield,actintra, &dispi[0],0,
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+                     &(actsolv->sysarray_typ[stiff_array]),0);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

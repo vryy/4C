@@ -678,7 +678,9 @@ solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,actintra, 
+                   &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),
+		   &(actsolv->sysarray_typ[stiff_array]));
 
 /*--------------------------------------- make testprintout for contact */
 /*
@@ -689,7 +691,9 @@ if (par.myrank==0 && ioflags.struct_disp_gid)
 }
 */
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_incre(actfield,actintra,&dispi[0],0,
+                     &(actsolv->sysarray[stiff_array]),
+		     &(actsolv->sysarray_typ[stiff_array]),0);
 
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
 /*----------------------------------------------------------------------*/
@@ -826,7 +830,9 @@ solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
+                     &(actsolv->sysarray[stiff_array]),
+		     &(actsolv->sysarray_typ[stiff_array]));
 
 /*--------------------------------------- make testprintout for contact */
 /*
@@ -837,7 +843,9 @@ if (par.myrank==0 && ioflags.struct_disp_gid)
 }
 */
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_incre(actfield,actintra,&dispi[0],0,
+                    &(actsolv->sysarray[stiff_array]),
+		    &(actsolv->sysarray_typ[stiff_array]),0);
 
 #ifdef WALLCONTACT
 wall_contact_update(actfield,actintra);
@@ -951,7 +959,9 @@ if (timeadapt)
       /* zero the incremental displacements */
       solserv_zero_vec(&dispi[0]);
       /* zero the residual displacements */
-      solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+      solserv_result_incre(actfield,actintra,&dispi[0],0,
+                          &(actsolv->sysarray[stiff_array]),
+			  &(actsolv->sysarray_typ[stiff_array]),0);
       /* set old total displacements */
       solserv_result_total(actfield,actintra,&(actsolv->sol[0]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
       /* set element internal variables bacl to the last step */
