@@ -341,10 +341,9 @@ for (i=0;i<numnp_total;i++)
          if (actagnode->freesurf->fixed_onoff.a.iv[j]==0)
 	 {
             actanode->sol_increment.a.da[0][j] 
-	       = actanode->sol_mf.a.da[0][j] + actfnode->sol_mf.a.da[0][j]*dt
-	       - actanode->sol_mf.a.da[0][j];
+	       = actfnode->sol_mf.a.da[0][j]*dt;
 	    actanode->sol.a.da[actpos][j] 
-	       = actanode->sol_increment.a.da[0][j];
+	       = actanode->sol_mf.a.da[0][j] + actfnode->sol_mf.a.da[0][j]*dt;
 	 }
 	 else 
 	 {
