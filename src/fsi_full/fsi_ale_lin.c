@@ -116,7 +116,6 @@ determine Relaxation parameter via steepest descent relaxation.
 
 \param  *actfield   FIELD          (i)     ale field 			  
 \param   mctrl      INT            (i)     control flag		  
-\param   numfa      INT            (i)     number of ale field	  
 \warning 
 \return void  
                                              
@@ -126,11 +125,11 @@ determine Relaxation parameter via steepest descent relaxation.
 *----------------------------------------------------------------------*/
 void fsi_ale_lin(
                   FIELD            *actfield,
-                  INT               mctrl,
-                  INT               numfa
+                  INT               mctrl
 	       )
 {
 INT        	i;		  /* a counter  		                        */
+static INT      numaf;            /* actual number of ale field                         */
 static INT 	numeq;  	  /* number of equations on this proc                   */
 static INT 	numeq_total;	  /* total number of equations over all procs           */
 INT        	init;		  /* init flag for solver                               */
@@ -162,8 +161,9 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1: 
-adyn   = alldyn[genprob.numaf].adyn;
-fsidyn = alldyn[genprob.numaf+1].fsidyn;
+numaf  = genprob.numaf;
+adyn   = alldyn[numaf].adyn;
+fsidyn = alldyn[numaf+1].fsidyn;
 adyn->dt=fsidyn->dt;
 adyn->maxtime=fsidyn->maxtime;
 adyn->nstep=fsidyn->nstep;
@@ -178,13 +178,13 @@ restartstep=0;
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
-actsolv     = &(solv[numfa]);
-actpart     = &(partition[numfa]);
-action      = &(calc_action[numfa]);
+actsolv     = &(solv[numaf]);
+actpart     = &(partition[numaf]);
+action      = &(calc_action[numaf]);
 container.fieldtyp  = actfield->fieldtyp;
 
 #ifdef PARALLEL 
-actintra    = &(par.intra[numfa]);
+actintra    = &(par.intra[numaf]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
@@ -280,9 +280,13 @@ if (genprob.restart!=0)
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numfa,0,0,adyn->time);
+{
+   out_monitor(actfield,numaf,ZERO,1);
+   monitoring(actfield,numaf,actpos,adyn->time);
+}
 
 /*------------------------------------------- print out results to .out */
+out_sol(actfield,actpart,actintra,adyn->step,actpos);
 #ifdef PARALLEL 
 /*if (ioflags.ale_disp_gid==1 && par.myrank==0)
 out_gid_domains(actfield);*/
@@ -309,9 +313,11 @@ if (par.myrank==0)
    printf("\n");
 }
 
-/*--------------------------------------- sequential staggered schemes: 
+/*--------------------------------------- sequential staggered schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
-if (fsidyn->ifsi<3) solserv_sol_copy(actfield,0,3,3,1,0);
+if (fsidyn->ifsi<3 && fsidyn->ifsi>0) 
+solserv_sol_copy(actfield,0,3,3,1,0);
+
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
    
@@ -345,17 +351,10 @@ solver_control(
                   &(actsolv->rhs[actsysarray]),
                     init
                  );
-/*-------------------------allreduce the result and put it to the nodes */
-#if 0
-solserv_result_total(
-                     actfield,
-                     actintra,
-                     &(actsolv->sol[actsysarray]),
-                     actpos,
-                     &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
-                    );
-#endif
+                 
+/*---------------------------- dirchvalues have to be in xyz* co-system */
+locsys_trans_sol_dirich(actfield,0,1,0,0); 
+
 /*---------------------allreduce the result and put it to sol_increment */
 solserv_result_incre(
                      actfield,
@@ -365,22 +364,29 @@ solserv_result_incre(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
                      0);
+
+/*--------------------------------- solution has to be in XYZ co-system */
+locsys_trans_sol(actfield,0,1,0,1); 
    
 /*----------------- copy from nodal sol_increment[0][j] to sol_mf[1][j] */
 solserv_sol_copy(actfield,0,1,3,0,1);
 
-if (fsidyn->ifsi>=4)
+if (fsidyn->ifsi>=4 || fsidyn->ifsi<0)
 break;
 
 /*======================================================================* 
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
-/*------------------------------------ for iterative staggared schemes:
+/*------------------------------------ for iterative staggared schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
-if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,1,0);
+if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1) 
+   solserv_sol_copy(actfield,0,3,3,1,0);
+/*--------------------- to get the corrected free surface position copy 
+  --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
+solserv_sol_copy(actfield,0,3,0,0,actpos);
 
-/*------------------------------------------- print out results to .out */
+/*---------------------------------------------- increment output flags */
 outstep++;
 pssstep++;
 restartstep++;
@@ -395,19 +401,15 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
    actpos++;
 }
 
-/*----------- copy solution from sol_increment[0][j] to sol_[actpos][j] */
-solserv_sol_copy(actfield,0,1,0,0,actpos);
-
 if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
 { 
     outstep=0;
     out_sol(actfield,actpart,actintra,adyn->step,actpos);
-/*    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);*/
 }
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numfa,actpos,adyn->step,adyn->time);
+monitoring(actfield,numaf,actpos,adyn->time);
 
 
 /*------------------------------------------------- write restart data */
@@ -503,11 +505,6 @@ case 99:
 /* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
 if (actintra->intra_fieldtyp != ale) break;
 if (pssstep==0) actpos--;
-
-/*---------------------------------------------- print out to .mon file */
-if (ioflags.monitor==1 && par.myrank==0)
-out_monitor(actfield,numfa);
-
 
 /*------------------------------------------- print out results to .out */
 if (outstep!=0 && ioflags.ale_disp_file==1)
