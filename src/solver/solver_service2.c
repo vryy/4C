@@ -277,6 +277,9 @@ switch(*sysarray_typ)
 case msr:
    update = sysarray->msr->update.a.iv;
 break;
+case spoolmatrix:
+   update = sysarray->spo->update.a.iv;
+break;
 case parcsr:
    update = sysarray->parcsr->update.a.ia[imyrank];
 break;
