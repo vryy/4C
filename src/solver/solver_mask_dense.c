@@ -15,7 +15,6 @@ void mask_dense(FIELD         *actfield,
 {
 int       i,j,k,l;
 int       numeq;
-int     **dof_connect;
 #ifdef DEBUG 
 dstrc_enter("mask_dense");
 #endif

@@ -44,7 +44,7 @@ mds_make_colstr_rowind(actsolv, mds,dof_connect, mds->numeq);
 /*---------------------------------------- delete the array dof_connect */
  for (i=0; i<mds->numeq; i++)
 {
-   if (!dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) FREE(dof_connect[i]);
 }
 FREE(dof_connect);
 /*----------------------------------------------------------------------*/

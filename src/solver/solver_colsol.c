@@ -125,6 +125,11 @@ case 0:
    /*---------- set flag, that this matrix is factored and count solves */
    sky->ncall++;
    sky->is_factored=1;
+   /*------------------------------------- deallocate temporary vectors */
+   amdel(&b_a);
+#ifdef PARALLEL 
+   amdel(&tmp_a);
+#endif
 break;
 /*----------------------------------------------------------------------*/
 /*                                             end of calculation phase */
