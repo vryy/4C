@@ -3,13 +3,27 @@
 \brief shape functions and their natural derivatives for fluid2 element
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 static double Q12 = ONE/TWO;
 static double Q14 = ONE/FOUR;
 static double Q16 = ONE/SIX;
-/*!---------------------------------------------------------------------                                         
+static double Q52 = FIVE/TWO;
+static double C23 = FIVE*FOUR+THREE;
+/*----------------------------------------------------------- prototype */
+void fluid_mf(int mctrl);
+void dyn_fsi(int mctrl);
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*!---------------------------------------------------------------------
 \brief shape functions and their natural derivatives for rectangles
 
 <pre>                                                         genk 04/02
@@ -330,7 +344,143 @@ dstrc_exit();
 return;
 } /* end of f2_rec */
 
-/*!---------------------------------------------------------------------                                         
+/*!--------------------------------------------------------------------- 
+\brief extroplation for  rectangles
+
+<pre>                                                         genk 10/02
+
+In this routine function values at the gauss points are extrapolated to 
+the element nodes.
+   icode = 0: only evaluation of function parameters
+   icode = 1: evaluationn of function parameters and extrapolation
+   icode = 2: only extrapolation
+		     
+</pre>
+\param  *funval      double   (o)    function value at the element nodes 
+\param  *fpar        double   (i/o)  function parameters
+\param   r           double   (i)    local coord. in r direction 
+\param   s           double   (i)    local coord. in s direction 
+\param   fval        double   (i)    function values at gauss points
+\param   igauss      int      (i)    number of gauss points
+\param   icode       int      (i)    evaluation flag
+\return  void                                                                      
+------------------------------------------------------------------------*/
+void f2_recex(
+	      double           *funval,     
+	      double           *fpar,
+	      double            r,    
+	      double            s,
+              double           *fval,         
+	      int               igauss,
+	      int               icode
+            )
+{
+double p1,p2,p3,p4,p5,p6,p7,p8,p9;
+double f1,f2,f3,f4,f5;
+
+#ifdef DEBUG 
+dstrc_enter("f2recex");
+#endif
+
+/*------------------------evaluate function parameters-------------------*/
+if (icode==0 || icode==1)
+{
+   if (igauss >= 1) 
+      p1 = fval[0];
+   if (igauss >= 4) 
+   {
+      p2 = fval[1];
+      p3 = fval[2];
+      p4 = fval[3];
+   }/*--end of if(igauss >=4)--*/
+   if (igauss==8) dserror("extrapolation for 8-noded quad not implemented yet!\n");
+   if (igauss >= 9)
+   {
+      p5 = fval[4];
+      p6 = fval[5];
+      p7 = fval[6];
+      p8 = fval[7];
+      p9 = fval[8];
+   }/*--end of if(igauss >=9)--*/
+
+   if (igauss == 1)
+      fpar[0] = p1;
+   else if (igauss == 4)
+   {
+      f1 = ONE/FOUR;
+      f2 = f1*sqrt(THREE);
+      f3 = f1*THREE;
+      fpar[0] = f2 * (-p1+p3-p2+p4);
+      fpar[1] = f3 * ( p1-p3-p2+p4);
+      fpar[2] = f2 * (-p1-p3+p2+p4);
+      fpar[3] = f1 * ( p1+p3+p2+p4);
+   }
+   else if (igauss == 8)
+      dserror("extrapolation for 8-noded quad not implemented yet!\n"); 
+   else if (igauss == 9)
+   {
+      f3 = FIVE/SIX;
+      f4 = f3/TWO;
+      f1 = f3*f3;
+      f2 = f1*sqrt(THREE/FIVE);
+      f5 = f3*sqrt(THREE/FIVE);
+      fpar[0] = f1*( p1+p7+p3+p9-TWO*(p4+p2+p8+p6)+FOUR*p5);
+      fpar[1] = f2*(-p1-p7+p3+p9+TWO*(p4-p6));
+      fpar[2] = f2*(-p1+p7-p3+p9+TWO*(p2-p8));
+      fpar[3] = f3*( p2+p8-TWO*p5);
+      fpar[4] = f4*( p1-p7-p3+p9);
+      fpar[5] = f3*( p4+p6-TWO*p5);
+      fpar[6] = f5*(-p2+p8);
+      fpar[7] = f5*(-p4+p6);
+      fpar[8] = p5;
+   }/*--end of if(igauss ==1)--*/
+   else
+     dserror ("extropolation for number of gauss point not implemented yet!\n");
+   icode++;
+} /* endif (icode==0) || (icode==1) */
+
+/*---------calculate function value f(r,s)------*/
+if (icode==2)
+{
+   if (igauss==1)
+   { 
+      *funval = fpar[0];	
+   }
+   else if (igauss==4)
+   {
+      p1 = fpar[0];
+      p2 = fpar[1];
+      p3 = fpar[2];
+      p4 = fpar[3];
+      *funval = p1*r + p2*r*s + p3*s +p4;
+   }
+   else if (igauss==8) 
+      dserror("extrapolation of 8-noded quads not implemented yet!\n");
+   else if (igauss==9)
+   {
+      p1 = fpar[0];
+      p2 = fpar[1];
+      p3 = fpar[2];
+      p4 = fpar[3];
+      p5 = fpar[4];
+      p6 = fpar[5];
+      p7 = fpar[6];
+      p8 = fpar[7];
+      p9 = fpar[8];
+      *funval = p1*r*s*r*s+p2*r*s*r+p3*r*s*s+p4*r*r+p5*r*s+p6*s*s+p7*r+p8*s+p9;
+   }/*--end of if (igauss ==1)--*/ 
+   else
+     dserror ("extropolation for number of gauss point not implemented yet!\n");   
+} /* endif (icode==2) */
+	
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return ;
+} /* end of f2recex */
+
+/*!---------------------------------------------------------------------
 \brief shape functions and their natural derivatives for triangles
 
 <pre>                                                         genk 06/02
@@ -361,7 +511,7 @@ void f2_tri(
 	   )
 {
 
-double rr,rs,rrr,ss,sss,rrs,rss;
+double rr,rs,ss;
 
 #ifdef DEBUG 
 dstrc_enter("f2_tri");
@@ -395,10 +545,6 @@ case tri6: /* QUADRATIC shape functions and ther natural derivatives ---*/
    rr=r*r;
    ss=s*s;
    rs=r*s;
-   rrr=rr*r;
-   rrs=rr*s;
-   rss=r*ss;
-   sss=ss*s;
 
    funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
    funct[1]=TWO*rr-r;
@@ -467,9 +613,255 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of f2_rec */
+} /* end of f2_tri */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
+\brief extroplation for  triangles
+
+<pre>                                                         genk 10/02
+
+In this routine function values at the gauss points are extrapolated to 
+the element nodes.
+   icode = 0: only evaluation of function parameters
+   icode = 1: evaluationn of function parameters and extrapolation
+   icode = 2: only extrapolation
+		     
+</pre>
+\param  *funval      double   (o)    function value at the element nodes 
+\param  *fpar        double   (i/o)  function parameters
+\param   r           double   (i)    local coord. in r direction 
+\param   s           double   (i)    local coord. in s direction 
+\param   fval        double   (i)    function values at gauss points
+\param   igauss      int      (i)    number of gauss points
+\param   icode       int      (i)    evaluation flag
+\return  void                                                                      
+------------------------------------------------------------------------*/
+void f2_triex(
+	      double           *funval,     
+	      double           *fpar,
+	      double            r,    
+	      double            s,
+              double           *fval,         
+	      int               igauss,
+	      int               icode
+            )
+{
+
+#ifdef DEBUG 
+dstrc_enter("f2_triex");
+#endif
+
+/*------------------------evaluate function parameters-------------------*/
+if (icode==0 || icode==1)
+{
+   if (igauss==1) 
+      fpar[0] = fval[0];
+   else if (igauss==3) 
+   {
+      fpar[0] = TWO*(fval[1]-fval[2]);
+      fpar[1] = TWO*(fval[1]-fval[0]);
+      fpar[2] = fval[0]-fval[1]+fval[2];
+   }
+   else if (igauss==4)
+   {
+      fpar[0] = -Q52*(fval[0]-fval[1]);
+      fpar[1] = -Q52*(fval[0]-fval[2]); 
+      fpar[2] = C23*fval[0]-SEVEN*(fval[1]+fval[2])+THREE*fval[3];
+      fpar[2] = fpar[2]/TWELVE;            
+   }/*--end of if(igauss >=9)--*/
+   else if (igauss==6)
+   {
+      fpar[0] = 0.372483342138412E+01*fval[0]				    
+   	      + 0.372483342138411E+01*fval[1]				    
+   	      - 0.165973973290167E+00*fval[2]				    
+   	      - 0.799630368687822E+01*fval[3]				    
+   	      + 0.356305408700079E+00*fval[4]				    
+   	      + 0.356305408700074E+00*fval[5];				    
+      fpar[1] = 0.761564081605845E+01*fval[0]				    
+   	      - 0.165973973290160E+00*fval[1]				    
+   	      - 0.165973973290163E+00*fval[2]				    
+   	      - 0.799630368687823E+01*fval[3]				    
+   	      + 0.870891450427838E+01*fval[4]				    
+   	      - 0.799630368687823E+01*fval[5];				    
+      fpar[2] = 0.372483342138411E+01*fval[0]				    
+   	      - 0.165973973290164E+00*fval[1]				    
+   	      + 0.372483342138411E+01*fval[2]				    
+   	      + 0.356305408700076E+00*fval[3]				    
+   	      + 0.356305408700076E+00*fval[4]				    
+   	      - 0.799630368687821E+01*fval[5];				    
+      fpar[3] =-0.545993310748378E+01*fval[0]				    
+   	      - 0.198973373528444E+01*fval[1]				    
+   	      + 0.165973973290165E+00*fval[2]				    
+   	      + 0.799630368687822E+01*fval[3]				    
+   	      - 0.112120572260041E+01*fval[4]				    
+   	      + 0.408594905200256E+00*fval[5];				    
+      fpar[4] =-0.545993310748379E+01*fval[0]				    
+   	      + 0.165973973290164E+00*fval[1]				    
+   	      - 0.198973373528444E+01*fval[2]				    
+   	      + 0.408594905200259E+00*fval[3]				    
+   	      - 0.112120572260041E+01*fval[4]				    
+   	      + 0.799630368687821E+01*fval[5];				    
+      fpar[5] = 0.187365927351161E+01*fval[0]				    
+   	      + 0.138559587411937E+00*fval[1]				    
+   	      + 0.138559587411936E+00*fval[2]				    
+   	      - 0.638559587411938E+00*fval[3]				    
+   	      + 0.126340726488395E+00*fval[4]				    
+   	      - 0.638559587411938E+00*fval[5];	  
+   }
+   else if (igauss==7)
+   {
+      fpar[0] = 3.843171599376112E+00*fval[0]				    
+    	      - 5.788952456939242E+00*fval[1]				    
+    	      + 3.843171599376112E+00*fval[2]				    
+    	      + 8.165917142333541E-01*fval[3]				    
+    	      - 5.128422945129115E-02*fval[4]				    
+    	      + 8.165917142333529E-01*fval[5]				    
+    	      - 3.479289940828401E+00*fval[6];
+      fpar[1] = 7.737627428203517E+00*fval[0]
+    	      - 5.788952456939243E+00*fval[1]				    
+    	      - 5.128422945129109E-02*fval[2]				    
+    	      + 7.422135885405950E+00*fval[3]				    
+    	      - 5.128422945129107E-02*fval[4]				    
+    	      - 5.788952456939244E+00*fval[5]
+    	      - 3.479289940828401E+00*fval[6];				    
+      fpar[2] = 3.843171599376112E+00*fval[0]
+    	      + 8.165917142333533E-01*fval[1]				    
+    	      - 5.128422945129116E-02*fval[2]				    
+    	      + 8.165917142333544E-01*fval[3]				    
+    	      + 3.843171599376113E+00*fval[4]
+    	      - 5.788952456939242E+00*fval[5]				    
+    	      - 3.479289940828402E+00*fval[6];				    
+      fpar[3] =-5.674119101307225E+00*fval[0]
+    	      + 5.788952456939242E+00*fval[1]				    
+    	      - 2.012224097445000E+00*fval[2]				    
+    	      - 1.485644212302241E+00*fval[3]
+    	      + 5.128422945129113E-02*fval[4]				    
+    	      - 1.475392161644655E-01*fval[5]				    
+    	      + 3.479289940828402E+00*fval[6];				    
+      fpar[4] =-5.674119101307225E+00*fval[0]
+    	      - 1.475392161644663E-01*fval[1]				    
+    	      + 5.128422945129116E-02*fval[2]
+    	      - 1.485644212302242E+00*fval[3]				    
+    	      - 2.012224097445000E+00*fval[4]				    
+    	      + 5.788952456939242E+00*fval[5]				    
+    	      + 3.479289940828402E+00*fval[6];				    
+      fpar[5] = 1.974392460120363E+00*fval[0]
+    	      - 4.126757274200198E-01*fval[1]				    
+    	      + 1.434449581892504E-01*fval[2]				    
+    	      + 2.563767706488678E-01*fval[3]				    
+    	      + 1.434449581892504E-01*fval[4]				    
+    	      - 4.126757274200199E-01*fval[5]				    
+    	      - 6.923076923076923E-01*fval[6];	 
+   }
+   else
+      dserror("tri-extrapolation for number of igauss>7 not implemented yet!\n");
+   icode++;
+} /* endif (icode==0) || (icode==1) */
+
+/*---------calculate function value f(r,s)------*/
+if (icode==2)
+{
+   if (igauss==1)   
+      *funval = fpar[0];	   
+   else if (igauss==3)   
+      *funval = fpar[0]*r + fpar[1]*s + fpar[2];   
+   else if (igauss==4) 
+      *funval = fpar[0]*r + fpar[1]*s + fpar[2];
+   else if (igauss==6) 
+      *funval = fpar[0]*r*r + fpar[1]*r*s + fpar[2]*s*s
+               +fpar[3]*r   + fpar[4]*s   + fpar[5];
+   else if (igauss==7)
+      *funval = fpar[0]*r*r + fpar[1]*r*s + fpar[2]*s*s
+               +fpar[3]*r   + fpar[4]*s   + fpar[5];     
+   else
+     dserror ("extropolation for number of gauss point not implemented yet!\n");   
+} /* endif (icode==2) */
+	
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return ;
+} /* end of f2_triex */
+
+/*!---------------------------------------------------------------------
+\brief degnenerateed shape functions and their natural derivatives 
+
+<pre>                                                         genk 06/02
+
+In this routine the degnerated shape function and their natural first 
+derivative with respect to r is evaluated for T R I A N G L E S 
+and  RECTANGLES. They are used for the integrals over the element 
+edges.
+		     
+</pre>
+\param  *funct     double   (o)    shape functions
+\param **deriv     double   (o)    1st natural deriv. of shape funct.
+\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
+\param   r 	   double   (i)    coordinate
+\param   typ 	   DIS_TYP  (i)    element type
+\param   icode	   int	    (i)    evaluation flag
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_degrectri(
+                    double     *funct, 
+                    double    **deriv, 
+                    double      r, 
+                    DIS_TYP     typ,
+                    int         option
+		 )
+{
+double         rr,rp,rm,r2;
+
+#ifdef DEBUG 
+dstrc_enter("f2_degrectri");
+#endif
+
+/*----------------------------------------------------------------------*/
+/* if option ==0 only funtion evaluation, if option==1 also derivatives */
+/*----------------------------------------------------------------------*/
+rr = r*r;
+rp = ONE+r;
+rm = ONE-r;
+r2 = ONE-rr;
+
+switch(typ)
+{
+/*------------------------------------------------ rectangular elements */
+case quad4: case tri3:/*-------------- linear rectangular interpolation */
+   funct[0] = Q12*rm;
+   funct[1] = Q12*rp;
+   if (option==1)              /*--- check for derivative evaluation ---*/
+   {
+      deriv[0][0]= -Q12;
+      deriv[0][1]=  Q12;
+   }
+break;
+case quad8: case quad9: case tri6:/*---------- quadratic interpolation  */
+   funct[0] = -Q12*r*rm;
+   funct[1] = r2;
+   funct[2] = Q12*r*rp;
+   if (option==1)              /*--- check for derivative evaluation ---*/
+   {
+      deriv[0][0]= -Q12+r;
+      deriv[0][1]= -TWO*r;
+      deriv[0][2]=  Q12+r;                                              
+   }
+break;
+default:
+   dserror("unknown typ of interpolation");
+break;
+} /* end of switch typ */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of f2_degrectri */
+
+/*!---------------------------------------------------------------------
 \brief jacobian matrix
 
 <pre>                                                         genk 04/02
@@ -477,21 +869,23 @@ return;
 In this routine the jacobian matrix and its determinant is calculated
 		     
 </pre>
+\param **xyze      double   (i)    nodal coordinates
 \param  *funct     double   (i)    natural shape functions
 \param **deriv     double   (i)    natural deriv. of shape funcs
 \param **xjm       double   (o)    jacobian matrix
 \param  *det       double   (o)    determinant of jacobian matrix
-\param  *ele       ELEMENT  (i)    actual element
 \param   iel       int      (i)    num. of nodes of act. ele
+\param  *ele       ELEMENT  (i)    actual element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_jaco(double     *funct,    
+void f2_jaco(double    **xyze,
+             double     *funct,    
              double    **deriv,   
              double    **xjm,     
-             double     *det,     
-             ELEMENT    *ele,     
-             int         iel        
+             double     *det,          
+             int         iel,        
+             ELEMENT    *ele
 	    )
 
 {
@@ -502,27 +896,43 @@ dstrc_enter("f2_jaco");
 #endif	 
 
 /*---------------------------------- determine jacobian at point r,s ---*/       
-xjm[0][0] = 0.0 ;
-xjm[0][1] = 0.0 ;
-xjm[1][0] = 0.0 ;
-xjm[1][1] = 0.0 ;
+xjm[0][0] = ZERO ;
+xjm[0][1] = ZERO ;
+xjm[1][0] = ZERO ;
+xjm[1][1] = ZERO ;
 
 for (k=0; k<iel; k++) /* loop all nodes of the element */
 {
-     xjm[0][0] += deriv[0][k] * ele->node[k]->x[0] ;
-     xjm[0][1] += deriv[0][k] * ele->node[k]->x[1] ;
-     xjm[1][0] += deriv[1][k] * ele->node[k]->x[0] ;
-     xjm[1][1] += deriv[1][k] * ele->node[k]->x[1] ;
+     xjm[0][0] += deriv[0][k] * xyze[0][k] ;
+     xjm[0][1] += deriv[0][k] * xyze[1][k] ;
+     xjm[1][0] += deriv[1][k] * xyze[0][k] ;
+     xjm[1][1] += deriv[1][k] * xyze[1][k] ;
 } /* end loop over iel */
 
 /*------------------------------------------ determinant of jacobian ---*/        
 *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
     
-if(*det<0.0)
+if(*det<ZERO)
 {   
    printf("\n");
    printf("GLOBAL ELEMENT %i\n",ele->Id);
-   dserror("NEGATIVE JACOBIAN DETERMINANT\n");
+   printf("NEGATIVE JACOBIAN DETERMINANT\n");
+   printf("STOPPING ...");
+#ifdef PARALLEL
+   dserror("not regulary!\n");
+#else
+   if (genprob.probtyp==prb_fluid && genprob.numfld==2) 
+   {
+      fluid_mf(99);
+      dserror("regulary!\n");
+   }
+   else if (genprob.probtyp==prb_fsi) 
+   {
+      dyn_fsi(99);
+      dserror("regulary!\n");
+   }
+   else dserror("not regulary!\n");
+#endif
 }
    
 /*----------------------------------------------------------------------*/
@@ -533,7 +943,128 @@ dstrc_exit();
 return;
 } /* end of f2_jaco */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
+\brief jacobian matrix
+
+<pre>                                                         genk 10/02
+
+In this routine the jacobian matrix and its determinant is calculated;
+no check if det<ZERO!!!
+		     
+</pre>
+\param **xyze      double   (i)    nodal coordinates
+\param  *funct     double   (i)    natural shape functions
+\param **deriv     double   (i)    natural deriv. of shape funcs
+\param **xjm       double   (o)    jacobian matrix
+\param  *det       double   (o)    determinant of jacobian matrix
+\param   iel       int      (i)    num. of nodes of act. ele
+\param  *ele       ELEMENT  (i)    actual element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_jaco2(double    **xyze,
+             double     *funct,    
+             double    **deriv,   
+             double    **xjm,     
+             double     *det,          
+             int         iel,        
+             ELEMENT    *ele
+	    )
+
+{
+int k;
+
+#ifdef DEBUG 
+dstrc_enter("f2_jaco");
+#endif	 
+
+/*---------------------------------- determine jacobian at point r,s ---*/       
+xjm[0][0] = ZERO ;
+xjm[0][1] = ZERO ;
+xjm[1][0] = ZERO ;
+xjm[1][1] = ZERO ;
+
+for (k=0; k<iel; k++) /* loop all nodes of the element */
+{
+     xjm[0][0] += deriv[0][k] * xyze[0][k] ;
+     xjm[0][1] += deriv[0][k] * xyze[1][k] ;
+     xjm[1][0] += deriv[1][k] * xyze[0][k] ;
+     xjm[1][1] += deriv[1][k] * xyze[1][k] ;
+} /* end loop over iel */
+
+/*------------------------------------------ determinant of jacobian ---*/        
+*det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+      
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_jaco */
+
+/*!---------------------------------------------------------------------
+\brief jacobian matrix for integration over the element edges
+
+<pre>                                                         genk 04/02
+
+In this routine the jacobian matrix and its determinant is calculated
+		     
+</pre>
+\param **xyze      double   (i)    nodal coordinates
+\param  *funct     double   (i)    natural shape functions
+\param **deriv     double   (i)    natural deriv. of shape funcs
+\param **xjm       double   (o)    jacobian matrix
+\param  *det       double   (o)    determinant of jacobian matrix
+\param   iel       int      (i)    num. of nodes of act. ele
+\param  *iedgnod   int      (i)    edgenodes
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_edgejaco(
+                 double    **xyze,
+                 double     *funct,    
+                 double    **deriv,   
+                 double    **xjm,     
+                 double     *det,          
+                 int         iel,
+                 int        *iedgnod
+	        )
+
+{
+int k;
+int node;
+
+#ifdef DEBUG 
+dstrc_enter("f2_edgejaco");
+#endif	 
+
+/*---------------------------------- determine jacobian at point r,s ---*/       
+xjm[0][0] = ZERO ;
+xjm[0][1] = ZERO ;
+
+for (k=0; k<iel; k++) /* loop all nodes of the element */
+{
+     node=iedgnod[k];
+     xjm[0][0] += deriv[0][k] * xyze[0][node] ;
+     xjm[0][1] += deriv[0][k] * xyze[1][node] ;
+} /* end loop over iel */
+
+/*------------------------------------------ determinant of jacobian ---*/        
+*det = sqrt(xjm[0][0]* xjm[0][0] + xjm[0][1]* xjm[0][1]);
+    
+if(*det<ZERO)
+dserror("NEGATIVE JACOBIAN DETERMINANT ALONG EDGE\n");
+   
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_edgejaco */
+
+/*!---------------------------------------------------------------------
 \brief global derivates
 
 <pre>                                                         genk 04/02
@@ -588,7 +1119,7 @@ dstrc_exit();
 return;
 } /* end of f2_gder */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief global coordinates
 
 <pre>                                                         genk 04/02
@@ -597,16 +1128,16 @@ In this routine the global coordinates for given shape function values
 are set.
 		     
 </pre>
-\param *funct      double   (i)    shape functions
-\param *ele        double   (i)    actual element
-\param  iel        double   (i)    number of nodes in act. element
-\param *gcoor      double   (o)    global coordinates
+\param **xyze       double   (i)    nodal coordinates
+\param  *funct      double   (i)    shape functions
+\param   iel        double   (i)    number of nodes in act. element
+\param  *gcoor      double   (o)    global coordinates
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_gcoor(
-              double     *funct,      
-              ELEMENT    *ele,      
+              double    **xyze,
+	      double     *funct,            
 	      int         iel,      
 	      double     *gcoor     
 	     )
@@ -622,8 +1153,8 @@ gcoor[1]=ZERO;
 
 for(i=0;i<iel;i++) /* loop all nodes of the element */
 {
-   gcoor[0] += funct[i] * ele->node[i]->x[0];
-   gcoor[1] += funct[i] * ele->node[i]->x[1];
+   gcoor[0] += funct[i] * xyze[0][i];
+   gcoor[1] += funct[i] * xyze[1][i];
 } /* end of loop over iel */
 
 /*----------------------------------------------------------------------*/
@@ -634,7 +1165,7 @@ dstrc_exit();
 return;
 } /* end of f2_gcoor */
 
-/*!---------------------------------------------------------------------                                         
+/*!--------------------------------------------------------------------- 
 \brief second global derivatives
 
 <pre>                                                         genk 04/02
@@ -644,6 +1175,7 @@ are calculated.
 		     
 </pre>
 \param  *ele 	   ELEMENT  (i)    actual element
+\param **xyze      double   (i)    element coordinates
 \param **xjm 	   double   (i)    jacobian matrix
 \param **bi 	   double   (-)    working array
 \param **xder2     double   (-)    working array
@@ -655,7 +1187,8 @@ are calculated.
 
 ------------------------------------------------------------------------*/
 void f2_gder2(
-               ELEMENT     *ele,     
+               ELEMENT     *ele,
+	       double     **xyze,     
 	       double     **xjm,      
                double     **bi,     
 	       double     **xder2,  
@@ -715,12 +1248,12 @@ for (i=0;i<iel;i++)
 /*----------------------- determine 2nd derivatives of coord.-functions */
 for (i=0;i<iel;i++) /* loop all nodes of the element */
 {
-   xder2[0][0] += deriv2[0][i] * ele->node[i]->x[0];
-   xder2[1][0] += deriv2[1][i] * ele->node[i]->x[0];
-   xder2[2][0] += deriv2[2][i] * ele->node[i]->x[0];
-   xder2[0][1] += deriv2[0][i] * ele->node[i]->x[1];
-   xder2[1][1] += deriv2[1][i] * ele->node[i]->x[1];
-   xder2[2][1] += deriv2[2][i] * ele->node[i]->x[1];
+   xder2[0][0] += deriv2[0][i] * xyze[0][i];
+   xder2[1][0] += deriv2[1][i] * xyze[0][i];
+   xder2[2][0] += deriv2[2][i] * xyze[0][i];
+   xder2[0][1] += deriv2[0][i] * xyze[1][i];
+   xder2[1][1] += deriv2[1][i] * xyze[1][i];
+   xder2[2][1] += deriv2[2][i] * xyze[1][i];    
 } /* end loop over iel */
 
 /*--------------------------------- calculate second global derivatives */
@@ -743,4 +1276,7 @@ dstrc_exit();
 return;
 } /* end of f2_gder2 */
 
+
+
 #endif
+/*! @} (documentation module close)*/
