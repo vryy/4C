@@ -16,6 +16,19 @@ Maintainer: Steffen Genkinger
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "fluid2pro_prototypes.h"
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -40,13 +53,14 @@ void f2pro_calset(
 	        DOUBLE          *epren
 	      )
 {
-INT i ;              /* simply some counters                            */
+INT i, veln;         /* simply some counters                            */
 NODE *actnode;       /* actual node for element                         */
 
 #ifdef DEBUG
 dstrc_enter("f2pro_calset");
 #endif
 
+veln = ipos.veln;
 /*--------------------------------------------- set element coordinates */
 for(i=0;i<elevel->numnp;i++)
 {
@@ -56,10 +70,10 @@ for(i=0;i<elevel->numnp;i++)
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
- |       sol_increment[0][i]: solution at (n-1)                        |
- |	 sol_increment[1][i]: solution at (n)                          |
- |	 sol_increment[2][i]: solution at (n+g)                        |
- |	 sol_increment[3][i]: solution at (n+1)                        |
+ |       sol_increment[ipos][i]: solution at some time level           |
+ |       ipos.velnp .. solution at time n+1                            |
+ |       ipos.veln  .. solution at time n                              |
+ |       ipos.velnm .. solution at time n-1                            |
  *---------------------------------------------------------------------*/
 
 /* -> computation of time forces -------------------
@@ -69,8 +83,8 @@ for(i=0;i<elevel->numnp;i++)
       {
          actnode=elevel->node[i];
 /*------------------------------------- set element velocities at (n) */
-         eveln[0][i]=actnode->sol_increment.a.da[1][0];
-	 eveln[1][i]=actnode->sol_increment.a.da[1][1];
+         eveln[0][i]=actnode->sol_increment.a.da[veln][0];
+	 eveln[1][i]=actnode->sol_increment.a.da[veln][1];
 /*------------------------------------------------- set pressures (n) */
       } /* end of loop over nodes of element for velocity */
 
@@ -83,7 +97,7 @@ for(i=0;i<elevel->numnp;i++)
       for(i=0;i<elepre->numnp;i++) /* loop nodes of element for pressure  */
       {
          actnode=elepre->node[i];
-	 epren[i]   =actnode->sol_increment.a.da[1][0];
+	 epren[i]   =actnode->sol_increment.a.da[veln][0];
       } /* end of loop over nodes of element  for pressure */
 
 /*---------------------------------------------------------------------*/
