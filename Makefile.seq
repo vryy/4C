@@ -31,7 +31,7 @@
 FXX=f90
 CCX=cc
 LDX=cc
-PFL=   -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+PFL=   -DD_SHELL8 -DD_FLUID2 -DD_ALE -DD_BRICK1 -DD_WALL1 \
        -DAZTEC_PACKAGE -DMLIB_PACKAGE 
 #
 #--------------------------------------------------------------------
