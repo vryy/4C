@@ -44,6 +44,7 @@ extern struct _FIELD      *field;
 \param	*edforce_global  ARRAY        (o)    ele dirichl. force vector
 \param	*action	         CALC_ACTION  (i)
 \param	*hasdirich	 int          (o)    flag
+\param  *hasext          int          (o)    flag
 \return void
 
 ------------------------------------------------------------------------*/
@@ -57,7 +58,8 @@ void fluid3(
 	    ARRAY       *eiforce_global,
 	    ARRAY       *edforce_global,
             CALC_ACTION *action,
-	    int         *hasdirich
+	    int         *hasdirich,
+	    int         *hasext     	    
 	   )
 {
 #ifdef D_FLUID3 
@@ -92,7 +94,7 @@ case calc_fluid_init:
    f3_calele(data,dynvar,NULL,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     NULL,1);
+	     NULL,NULL,1);
 break;
 
 /*------------------------------------------- call the element routines */
@@ -100,7 +102,7 @@ case calc_fluid:
    f3_calele(data,dynvar,ele,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     hasdirich,0);
+	     hasdirich,hasext,0);
 break;
 
 /*----------------------------------------------------------------------*/

@@ -64,6 +64,7 @@ void calelm_fluid(FIELD        *actfield,
 {
 int               i;
 int               hasdirich=0;      /* flag                             */
+int               hasext=0;         /* flag                             */
 ELEMENT          *actele;           /* actual element                   */
 SPARSE_TYP        sysarray1_typ;     
 SPARSE_TYP        sysarray2_typ;
@@ -210,13 +211,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       fluid2(actpart,actintra,actele,
              &estif_global,&emass_global,
              &etforce_global,&eiforce_global,&edforce_global,
-	     action,&hasdirich); 
+	     action,&hasdirich,&hasext); 
    break;
    case el_fluid3:
       fluid3(actpart,actintra,actele,
              &estif_global,&emass_global,
              &etforce_global,&eiforce_global,&edforce_global,
-	     action,&hasdirich);    
+	     action,&hasdirich,&hasext);    
    break;
    case el_ale3:
    break;
@@ -253,7 +254,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    if (nif!=0)
       assemble_intforce(actele,ftimerhs,global_numeq,&etforce_global);
    /*-------------- assemble the vector eiforce_global to iteration rhs */
-   if (nii!=0)
+   if (nii+hasext!=0)
       assemble_intforce(actele,fiterhs,global_numeq,&eiforce_global); 
    /*-------------- assemble the vector edforce_global to iteration rhs */
    if (hasdirich!=0)
@@ -381,7 +382,7 @@ if (is_fluid2==1)
    fluid2(actpart,NULL,NULL,
           &estif_global,&emass_global,
           &etforce_global,&eiforce_global,&edforce_global,
-          action,NULL);
+          action,NULL,NULL);
 }
 /*-------------------------------- init all kind of routines for fluid3 */
 if (is_fluid3==1)
@@ -389,7 +390,7 @@ if (is_fluid3==1)
    fluid3(actpart,NULL,NULL,
           &estif_global,&emass_global,
           &etforce_global,&eiforce_global,&edforce_global,
-          action,NULL);
+          action,NULL,NULL);
 }
 /*----------------------------------- init all kind of routines for ale */
 if (is_ale3==1)

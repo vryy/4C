@@ -31,6 +31,7 @@ time-RHS for one fluid2 element is calculated
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
+\param  *hasext    int             (i)    element flag
 \param **estif     double	   (o)    element stiffness matrix
 \param **emass     double	   (o)    element mass matrix
 \param  *etforce   double	   (o)    element time force vector
@@ -44,6 +45,8 @@ time-RHS for one fluid2 element is calculated
 \param **eveln     double	   (i)    ele vel. at time n
 \param **evelng    double	   (i)    ele vel. at time n+g
 \param  *epren     double	   (-)    ele pres. at time n
+\param  *edeadn    double	   (-)    ele dead load (selfweight) at n 
+\param  *edeadng   double	   (-)    ele dead load (selfweight) at n+1
 \param  *velint    double	   (-)    vel at integration point
 \param  *vel2int   double	   (-)    vel at integration point
 \param  *covint    double	   (-)    conv. vel. at integr. point
@@ -59,6 +62,7 @@ void f2_calint(
                FLUID_DATA      *data,     
 	       ELEMENT         *ele,     
 	       FLUID_DYN_CALC  *dynvar, 
+               int             *hasext,
                double         **estif,   
 	       double         **emass,   
 	       double          *etforce, 
@@ -72,6 +76,8 @@ void f2_calint(
 	       double         **eveln,   
 	       double         **evelng,  
 	       double          *epren,   
+	       double          *edeadn,
+	       double          *edeadng,	        	       
 	       double          *velint,  
 	       double          *vel2int, 
 	       double          *covint,  
@@ -233,23 +239,12 @@ for (lr=0;lr<nir;lr++)
          if (ele->e.f2->ipres!=0)
 	    f2_calstabkpp(dynvar,estif,derxy,fac,iel);  
       } /* endif (ele->e.f2->istabi>0) */
- 
-/*----------------------------------------------------------------------*
- |       compute "external" Force Vector                                |
- |   (at the moment there are no external forces implemented)           |
- |  but there can be due to self-weight /magnetism / etc. (b)           |
- *----------------------------------------------------------------------*/
-/*-------------------- compute galerkin part of external RHS (vel dofs) *
-         f2_calgalexfv();
-/*--------------- compute stabilisation part of external RHS (vel dofs) *
-         f2_calstabexfv();
-/*--------------- compute stabilistaion part of external RHS (pre dofs) *
-         f2_calgalexfp(); 
-*/
 
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
  |      (for Newton iteration and for fixed-point iteration)            |
+ |  at the moment only fixed-point-like iteration is used so this part  |
+ |        was not checked yet!!! Thanx for your help!!!!                |
  *----------------------------------------------------------------------*/ 
       if (dynvar->nii!=0)
       {
@@ -264,12 +259,31 @@ for (lr=0;lr<nir;lr++)
 	                  derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
             if (ele->e.f2->ipres!=0)
-               f2_calstabifp(dynvar,eiforce,covint,derxy,fac,iel);
+               f2_calstabifp(dynvar,&(eiforce[2*iel]),covint,derxy,fac,iel);
 	 } /* endif (ele->e.f2->istabi>0) */
       } /* endif (dynvar->nii!=0) */
-    
+
 /*----------------------------------------------------------------------*
- |         compute "Time" Force Vectors                                 |
+ |       compute "external" Force Vector                                |
+ |   (at the moment there are no external forces implemented)           |
+ |  but there can be due to self-weight /magnetism / etc. (b)           |
+ |  dead load may vary over time, but stays constant over               |
+ |  the whole domain --> no interpolation with shape funcs              |
+ |  parts changing during the nonlinear iteration are added to          |
+ |  Iteration Force Vector                                              |
+ *----------------------------------------------------------------------*/
+      if (*hasext!=0 && ele->e.f2->istabi>0)
+      {
+/*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
+         f2_calstabexfv(dynvar,ele,eiforce,derxy,derxy2,edeadng,
+	                 velint,fac,visc,iel,ihoel,1); 
+/*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
+         if (ele->e.f2->ipres!=0)
+            f2_calstabexfp(dynvar,&(eiforce[2*iel]),derxy,edeadng,fac,iel,1);  
+      } /* endif (*hasext!=0 && ele->e.f2->istabi>0)  */
+
+/*----------------------------------------------------------------------*
+ |         compute "Time" Force Vector                                  |
  *----------------------------------------------------------------------*/
       if (dynvar->nif!=0)
       {
@@ -336,6 +350,29 @@ for (lr=0;lr<nir;lr++)
 	       f2_calstabtfp(dynvar,&(etforce[2*iel]),derxy,vderxy2,
 	                     velint,covint,pderxy,visc,fac,ihoel,iel);
          } /* endif (ele->e.f2->istabi>0) */
+/*----------------------------------------------------------------------*
+            | compute "external" Force Vector                           |
+            | (at the moment there are no external forces implemented)  |
+            |  but there can be due to self-weight /magnetism / etc. (b)|
+            |  dead load may vary over time, but stays constant over    |
+	    |  the whole domain --> no interpolation with shape funcs   |
+            |  parts staying constant during nonlinear iteration are    |
+            |  add to Time Force Vector                                 |
+/*----------------------------------------------------------------------*/
+         if (*hasext!=0)
+	 {
+/*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
+            f2_calgalexfv(dynvar,etforce,funct,edeadn,edeadng,fac,iel);
+	    if (ele->e.f2->istabi>0)
+	    {
+/*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
+               f2_calstabexfv(dynvar,ele,etforce,derxy,derxy2,edeadn,
+	                      velint,fac,visc,iel,ihoel,0);
+/*--------------- compute stabilistaion part of external RHS (pre dofs) */
+               if (ele->e.f2->ipres!=0)
+                  f2_calstabexfp(dynvar,&(etforce[2*iel]),derxy,edeadn,fac,iel,0); 
+            } /* endif (ele->e.f2->istabi>0) */
+         } /* endif (*hasext!=0) */
       } /* endif  (dynvar->nif!=0) */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */

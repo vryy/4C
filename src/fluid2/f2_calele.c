@@ -5,8 +5,6 @@
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -32,7 +30,8 @@ This routine controls the element evaluation:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
-\param*  hasdirich       int	        (o)   element flag
+\param  *hasdirich       int	        (o)   element flag
+\param  *hasext          int	        (o)   element flag
 \param   init	         int	        (i)   init flag
 \return void                                               
                                  
@@ -45,17 +44,23 @@ void f2_calele(
                 ARRAY          *emass_global,   
 	        ARRAY          *etforce_global,       
 	        ARRAY          *eiforce_global, 
-		ARRAY          *edforce_global,	
+		ARRAY          *edforce_global,		
 		int            *hasdirich,      
+                int            *hasext,
 		int             init            
 	       )
 {
+int              hasdead;
 static ARRAY     eveln_a;  /* element velocities at (n)                 */
 static double  **eveln;
 static ARRAY     evelng_a; /* element velocities at (n+gamma)           */
 static double  **evelng;
 static ARRAY     epren_a;  /* element pressures at (n)	                */
 static double   *epren;
+static ARRAY     edeadn_a; /* element dead load (selfweight)            */
+static double   *edeadng;
+static ARRAY     edeadng_a;/* element dead load (selfweight)            */
+static double   *edeadn;
 static ARRAY     funct_a;  /* shape functions                           */
 static double   *funct;
 static ARRAY     deriv_a;  /* first natural derivatives                 */
@@ -99,6 +104,8 @@ if (init==1) /* allocate working arrays and set pointers */
    eveln   = amdef("evln"   ,&eveln_a  ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
    evelng  = amdef("evelng" ,&evelng_a ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
    epren   = amdef("epren"  ,&epren_a  ,MAXNOD_F2,1,"DV");
+   edeadn  = amdef("edeadn" ,&edeadn_a ,2,1,"DV");
+   edeadng = amdef("edeadng",&edeadng_a,2,1,"DV");      
    funct   = amdef("funct"  ,&funct_a  ,MAXNOD_F2,1,"DV");
    deriv   = amdef("deriv"  ,&deriv_a  ,2,MAXNOD_F2,"DA");
    deriv2  = amdef("deriv2" ,&deriv2_a ,3,MAXNOD_F2,"DA");
@@ -129,19 +136,20 @@ amzero(eiforce_global);
 amzero(etforce_global);
 amzero(edforce_global);
 *hasdirich=0;
+*hasext=0;
 
 /*---------------------------------------------------- set element data */
-f2_calset(dynvar,ele,eveln,evelng,epren);
+f2_calset(dynvar,ele,eveln,evelng,epren,edeadn,edeadng,hasext);
 
 /*-------------------------- calculate element size and stab-parameter: */
 f2_calelesize(ele,data,dynvar,funct,deriv,deriv2,xjm,evelng,velint,wa1);
 
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-f2_calint(data,ele,dynvar,
+f2_calint(data,ele,dynvar,hasext,
           estif,emass,etforce,eiforce,
 	  funct,deriv,deriv2,xjm,derxy,derxy2,
-	  eveln,evelng,epren,
+	  eveln,evelng,epren,edeadn,edeadng,
 	  velint,vel2int,covint,vderxy,pderxy,vderxy2,
 	  wa1,wa2);
 
@@ -153,7 +161,7 @@ if (dynvar->nif!=0)
    f2_permeforce(etforce,wa1,ele->numnp);
 
 /*--------------------------------- permute element load vector eiforce */
-if (dynvar->nii!=0)
+if (dynvar->nii+(*hasext)!=0)
    f2_permeforce(eiforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */

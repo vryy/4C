@@ -2,11 +2,21 @@
 \file
 \brief service routines for fluid3 element 
 
-------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
 #ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+
 static int PREDOF = 3;
+
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -24,6 +34,9 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param  **eveln    double	   (o)    ele vels at time n
 \param  **evelng   double	   (o)    ele vels at time n+g
 \param   *epren    double	   (o)    ele pres at time n
+\param   *edeadn   double          (o)    ele dead load at n (selfweight)
+\param   *edeadng  double          (o)    ele dead load at n+g (selfweight)
+\param   *hasext   int             (o)    flag for external loads
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -32,11 +45,17 @@ void f3_calset(
 	        ELEMENT         *ele,
                 double         **eveln,
 	        double         **evelng,
-	        double          *epren
+	        double          *epren,
+		double          *edeadn,
+		double          *edeadng,
+		int             *hasext		
 	      )
 {
 int i,j,irow;
-NODE *actnode;
+int    actmat  ;    /* material number of the element                   */
+double dens;        /* density                                          */
+NODE  *actnode;     /* actual node                                      */
+GVOL  *actgvol;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calset");
@@ -123,6 +142,29 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
          epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
       } /* end of loop over nodes */
 } /* endif (dynvar->nif!=0) */
+
+/*------------------------------------------------ check for dead load */
+actgvol = ele->g.gvol;
+if (actgvol->neum!=NULL)
+{
+   actmat=ele->mat-1;
+   dens = mat[actmat].m.fluid->density;
+   for (i=0;i<3;i++)     
+   {
+      if (actgvol->neum->neum_onoff.a.iv[i]==0)
+      {
+         edeadn[i]  = ZERO;
+	 edeadng[i] = ZERO;
+      }
+      if (actgvol->neum->neum_type==neum_dead  &&
+          actgvol->neum->neum_onoff.a.iv[i]!=0)
+      {
+         edeadn[i]  = actgvol->neum->neum_val.a.dv[i]*dens;
+	 edeadng[i] = actgvol->neum->neum_val.a.dv[i]*dens;
+	 (*hasext)++;
+      }
+   }
+}
 
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG 
