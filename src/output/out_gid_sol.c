@@ -2110,24 +2110,48 @@ if (strncmp(string,"stress",stringlenght)==0)
    /*---------------|| actele->numnp !=4--- */
          if (actele->eltyp != el_wall1 ) continue;
          stress =actele->e.w1->stress_GP.a.d3[place];
-	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             actele->Id+1,
-			     stress[0][gaussperm4[0]],
-			     stress[1][gaussperm4[0]],
-			     stress[2][gaussperm4[0]],
-			     stress[3][gaussperm4[0]],
-			     actele->e.w1->elewa[0].ipwa[gaussperm4[0]].damage,
-			     actele->e.w1->elewa[0].ipwa[gaussperm4[0]].aequistrain
-			     );
-         for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             stress[0][gaussperm4[j]],
-			     stress[1][gaussperm4[j]],
-			     stress[2][gaussperm4[j]],
-			     stress[3][gaussperm4[j]],
-                       actele->e.w1->elewa[0].ipwa[gaussperm4[j]].damage,
-                       actele->e.w1->elewa[0].ipwa[gaussperm4[j]].aequistrain
-                             );
+         if (actele->e.w1->elewa != NULL)
+         {
+	   fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               actele->Id+1,
+	          	     stress[0][gaussperm4[0]],
+	          	     stress[1][gaussperm4[0]],
+	          	     stress[2][gaussperm4[0]],
+	          	     stress[3][gaussperm4[0]],
+	          	     actele->e.w1->elewa[0].ipwa[gaussperm4[0]].damage,
+	          	     actele->e.w1->elewa[0].ipwa[gaussperm4[0]].aequistrain
+	          	     );
+           for (j=1; j<ngauss; j++)
+           fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               stress[0][gaussperm4[j]],
+	          	     stress[1][gaussperm4[j]],
+	          	     stress[2][gaussperm4[j]],
+	          	     stress[3][gaussperm4[j]],
+                               actele->e.w1->elewa[0].ipwa[gaussperm4[j]].damage,
+                               actele->e.w1->elewa[0].ipwa[gaussperm4[j]].aequistrain
+                               );
+         }
+         else
+         {
+	   fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               actele->Id+1,
+	          	     stress[0][gaussperm4[0]],
+	          	     stress[1][gaussperm4[0]],
+	          	     stress[2][gaussperm4[0]],
+	          	     stress[3][gaussperm4[0]],
+	          	     0.0,
+	          	     0.0
+	          	     );
+           for (j=1; j<ngauss; j++)
+           fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               stress[0][gaussperm4[j]],
+	          	     stress[1][gaussperm4[j]],
+	          	     stress[2][gaussperm4[j]],
+	          	     stress[3][gaussperm4[j]],
+                               0.0,
+                               0.0
+                               );
+         }
       }
       fprintf(out,"END VALUES\n");
       
@@ -2167,24 +2191,48 @@ if (strncmp(string,"stress",stringlenght)==0)
 /*---------------|| actele->numnp < 8--- */
          if (actele->eltyp != el_wall1 ) continue;
          stress=actele->e.w1->stress_GP.a.d3[place];
-	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             actele->Id+1,
-			     stress[0][gaussperm9[0]],
-			     stress[1][gaussperm9[0]],
-			     stress[2][gaussperm9[0]],
-			     stress[3][gaussperm9[0]],
-			     actele->e.w1->elewa[0].ipwa[gaussperm9[0]].damage,
-			     actele->e.w1->elewa[0].ipwa[gaussperm9[0]].aequistrain
-			     );
-         for (j=1; j<ngauss; j++)
-	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             stress[0][gaussperm9[j]],
-			     stress[1][gaussperm9[j]],
-			     stress[2][gaussperm9[j]],
-			     stress[3][gaussperm9[j]],
-			     actele->e.w1->elewa[0].ipwa[gaussperm9[j]].damage,
-			     actele->e.w1->elewa[0].ipwa[gaussperm9[j]].aequistrain
-                             );
+         if (actele->e.w1->elewa != NULL)
+         {
+	   fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               actele->Id+1,
+	          	     stress[0][gaussperm9[0]],
+	          	     stress[1][gaussperm9[0]],
+	          	     stress[2][gaussperm9[0]],
+	          	     stress[3][gaussperm9[0]],
+	          	     actele->e.w1->elewa[0].ipwa[gaussperm9[0]].damage,
+	          	     actele->e.w1->elewa[0].ipwa[gaussperm9[0]].aequistrain
+	          	     );
+           for (j=1; j<ngauss; j++)
+	   fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               stress[0][gaussperm9[j]],
+	          	     stress[1][gaussperm9[j]],
+	          	     stress[2][gaussperm9[j]],
+	          	     stress[3][gaussperm9[j]],
+	          	     actele->e.w1->elewa[0].ipwa[gaussperm9[j]].damage,
+	          	     actele->e.w1->elewa[0].ipwa[gaussperm9[j]].aequistrain
+                               );
+         }
+         else
+         {
+	   fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               actele->Id+1,
+	          	     stress[0][gaussperm9[0]],
+	          	     stress[1][gaussperm9[0]],
+	          	     stress[2][gaussperm9[0]],
+	          	     stress[3][gaussperm9[0]],
+	          	     0.0,
+	          	     0.0
+	          	     );
+           for (j=1; j<ngauss; j++)
+	   fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                               stress[0][gaussperm9[j]],
+	          	     stress[1][gaussperm9[j]],
+	          	     stress[2][gaussperm9[j]],
+	          	     stress[3][gaussperm9[j]],
+	          	     0.0,
+	          	     0.0
+                               );
+         }
       }
       fprintf(out,"END VALUES\n");
 /*----------------------------------------------------------------------*/      
