@@ -179,40 +179,44 @@ if (iel>4)
       P[st][place_P+3] = e1e2; 
       place_P+=4;
    break;
-   case 6:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
-      place_P+=6;
-   break;
-   case 8:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
-      place_P+=8;
-   break;
-   case 9:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = 1.0-3.0*e1e1; 
-      P[st][place_P+5] = 1.0-3.0*e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
-      P[st][place_P+8] = 1.0-9.0*e1e1e2e2; 
-      place_P+=9;
-   break;
-   default:
-      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4,5,8,9");
+   /*these Parametersettings are not working -> the inversion of the Dtilde-Matrix will fail
+                                                                                 sh 07/03*/
+/*   case 6:
+/*      P[st][place_P]   = 1.0; 
+/*      P[st][place_P+1] = e1; 
+/*      P[st][place_P+2] = e2; 
+/*      P[st][place_P+3] = e1e2; 
+/*      P[st][place_P+4] = e1e1; 
+/*      P[st][place_P+5] = e2e2; 
+/*      place_P+=6;
+/*   break;
+/*   case 8:
+/*      P[st][place_P]   = 1.0; 
+/*      P[st][place_P+1] = e1; 
+/*      P[st][place_P+2] = e2; 
+/*      P[st][place_P+3] = e1e2; 
+/*      P[st][place_P+4] = e1e1; 
+/*      P[st][place_P+5] = e2e2; 
+/*      P[st][place_P+6] = e1e1e2; 
+/*      P[st][place_P+7] = e1e2e2; 
+/*      place_P+=8;
+/*   break;
+/*   case 9:
+/*      P[st][place_P]   = 1.0; 
+/*      P[st][place_P+1] = e1; 
+/*      P[st][place_P+2] = e2; 
+/*      P[st][place_P+3] = e1e2; 
+/*      P[st][place_P+4] = 1.0-3.0*e1e1; 
+/*      P[st][place_P+5] = 1.0-3.0*e2e2; 
+/*      P[st][place_P+6] = e1e1e2; 
+/*      P[st][place_P+7] = e1e2e2; 
+/*      P[st][place_P+8] = 1.0-9.0*e1e1e2e2; 
+/*      place_P+=9;
+/*   break;
+*/
+    default:
+/*      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4,5,8,9");*/
+      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4");
    }
 /*----------------------------------------------------------------------
       QUERSCHUB: E13,E23 KONSTANT
