@@ -1,0 +1,93 @@
+==========
+Zweck:
+==========
+
+resulter.exe ist ein standalone Programm mit Menusteuerung 
+zum jonglieren mit grossen (aber auch kleinen) .flavia.res Dateien, 
+also mit output-Daten zur Visualisierung mit gid.
+Es ist jedoch so angelegt, dass es in seiner Funktionalitaet auch auf
+eine Datenbearbeitung anderer Ergebnisse erweitert werden kann.
+resulter ist sequentiell und es existiert ein Makefile nur fuer HPUX10.20, da
+es i.d.R. lokal auf der Arbeitsplatzmaschine verwendet werden kann.
+(Das so compilierte exe laeuft jedoch auch unter HPUX11 und HPUX11i)
+
+==========
+Aufruf:
+==========
+
+resulter.exe  info.txt  .msh  .res  .res  .res  .res  .res  ... (150 Stueck erlaubt (das wird ja wohl reichen, oder?))
+
+
+==========
+Programmlayout
+==========
+Das Programm ist so angelegt, dass es zu keinem Zeitpunkt ganze Datensaetze einliest, es
+speichert nur die Namen und Anzahl der Ergebnisse in jeder input-.flavia.res Datei. Bei
+den auszufuehrenden Operationen wird jeweils nur zeilenweise gelesen und geschrieben, so
+dass resulter so gut wie keinen Speicherbedarf hat. Dies ermoeglicht auch das Handling von extrem
+grossen Ergebnis-Files (bis 20 Dateien a 2GB ausprobiert) auf jedem Rechner. 
+
+Weiter wurde darauf geachtet, dass das Programm die Typen der Files auf der command-line prueft,
+sowie Ergebnisdateien im read-only Modus oeffnet, um sicherzustellen, dass durch 
+evt. fehlerhafte Anwendung (oder bugs im resulter) auf keinen Fall u.U. kostbare Ergebnisse
+zerstoert werden koennen.
+
+Bei Ergaenzung des Funktionsaumfangs sollte auf die Beibehaltung dieser Eigenschaften geachtet werden.
+
+
+
+==========
+Funktionsumfang:
+==========
+
+Im Hauptmenue sind momentan die folgenden Punkte enthalten:
+
+==========
+merge files (m)
+==========
+
+aus den auf der command-line angegeben .flavia.res Dateien wird eine grosse Datei erzeugt
+(Ueber die Groesse muss sich der Nutzer selbst im klaren sein, gid schluckt Files bis ca. 1GB)
+
+
+==========
+select steps from file by offset (o)
+==========
+
+Alle auf der command-line angegebenen .flavia.res Files werden einzeln durchgegangen. In
+einem Submenu werden die einzelnen Typen von Ergebnissen gezeigt 
+(z.B. stresses, displacements, domains, etc) die im jeweiligen File enthalten sind,
+und es kann gewaehlt werden, ob man sie haben moechte oder nicht.
+In info.txt sind alle Ergebnisstypen und Anzahl der Ergebnisse eines Typs beschrieben, man
+kann dann einen offset angeben, so dass resulter z.B. nur jedes 10. Ergebnis 
+vom Typ 'displacements' nimmt.
+Wenn die .flavia.es Dateien in der Reihenfolge der gemachten restarts auf der command-line angegeben wurden,
+so zeigt resulter auch den letzten Schritt aus dem letzten File sowie den ersten Schritt aus dem naechsten File,
+so dass man die Moeglichkeit bekommt Uberlappungen der Ergebnisse, die durch den restart enstanden sind
+herauszuschneiden.
+Passend zu jedem .flavia.res wird ein output - .flavia.res erzeugt.
+
+
+
+
+==========
+select single steps from file (s)
+==========
+
+Alle auf der command-line angegebenen .flavia.res Files werden einzeln durchgegangen. In
+einem Submenu werden die einzelnen Typen von Ergebnissen gezeigt 
+(z.B. stresses, displacements, domains, etc) die im jeweiligen File enthalten sind,
+und es kann gewaehlt werden, ob man sie haben moechte oder nicht.
+In info.txt sind alle Ergebnisstypen und Anzahl der Ergebnisse eines Typs beschrieben, jedes 
+einzelne Ergebnis wird angezeigt und zur Auswahl angeboten. 
+Passend zu jedem .flavia.res wird ein output - .flavia.res erzeugt.
+
+
+
+
+==========
+quit (q)
+==========
+
+Beendet resulter
+

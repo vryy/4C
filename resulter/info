@@ -1,0 +1,12 @@
+FILE 0restart/hout___0.flavia.res
+RESULT first          0 last          0 total          1 Domains
+RESULT first          0 last          7 total          8 displacement
+
+FILE 1restart/hout___0.flavia.res
+RESULT first          0 last          0 total          1 Domains
+RESULT first          9 last         24 total          6 displacement
+
+FILE 2restart/hout___0.flavia.res
+RESULT first          0 last          0 total          1 Domains
+RESULT first         27 last         36 total          4 displacement
+
