@@ -123,7 +123,10 @@ OBJS5	      = src/fluid3/f3_calele.o \
                 src/fluid3/f3_inpele.o \
                 src/fluid3/f3_intg.o \
                 src/fluid3/f3_massrhs.o \
-                src/fluid3/f3_main.o 
+                src/fluid3/f3_main.o \
+		src/fluid3/f3_calstress.o \
+		src/fluid3/f3_liftdrag.o \
+		src/fluid3/f3_out.o
 #                shell8
 OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_restart.o \
