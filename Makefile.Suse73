@@ -23,7 +23,7 @@ SRC       =  /home/gee/wdir/ccarat/src
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 #
 # 
-PFL       =  -DSUSE73 -DDEBUG -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE
+PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE
 #
 # utilities
 #
@@ -31,8 +31,15 @@ CC	 = gcc
 F77      = g77
 LD       = $(CC)
 RM	 = /bin/rm -f
-CFLAGS	 = -v -g -ansi $(PFL)
-FFLAGS	 = -g
+# this is debug
+CFLAGS  = -v -g -ansi $(PFL) -DDEBUG
+FFLAGS  = -g
+PROGRAM  = cca_seq_debglinux.exe
+# this is fast 
+#CFLAGS   = -v -O -ansi $(PFL)
+#FFLAGS   = -O
+#PROGRAM  = cca_seq_fastlinux.exe
+#
 LDFLAGS	 = -Xlinker -defsym -Xlinker MAIN__=main
 OPENGL   = /opt/graphics/OpenGL
 INCLUDES = -I/usr/include/  
@@ -194,7 +201,6 @@ OBJS13	      = ${SRC}/fortran/colsol.o
 #
 # targets
 #
-PROGRAM       = cca_seq_linux.exe
 #
 # dependencies
 #
