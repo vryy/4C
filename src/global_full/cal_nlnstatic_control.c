@@ -412,6 +412,22 @@ solserv_dot_vec(actintra,&(actsolv->rhs[actsysarray]),&(rsd[0]),&spi);
 if (ABS(nln_data->sp1) <= EPS14) nln_data->sp1 = spi;
 if (ABS(spi)           <= EPS14) nln_data->csp = 1.0;
 else                             nln_data->csp = nln_data->sp1 / spi;
+/*----------- use current stiffness parameter to check for limit points */
+/*
+sp1 = gradient of controlled load path in first increment
+spi = gradient of controlled load path in current increment
+
+csp =  sp1/spi is a relation of the current gradient of the load curve to 
+the initial gradient in the first step, so
+if csp turns to zero, a limit or saddle point is reached, and if
+csp takes negative values we are on a branch which is going downwards
+(neg. gradient)
+Dependent on the type of constraint that it used (e.g. displacement/arclenght control)
+there is no sign to the predictor, so the predictor is always positive,
+that means pointing upwards. To get a better predictor on a descending path
+rldiff takes the sign of csp:
+*/
+rldiff *= nln_data->csp/ABS(nln_data->csp);
 /*--------------------------------------------------------- save values */
 nln_data->rlnew = nln_data->rlold + rldiff;
 /*---------- create the correct displacmements after predictor solution */
