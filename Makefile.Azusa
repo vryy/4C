@@ -8,7 +8,9 @@
 # -DD_BRICK1     defines element brick1
 # -DD_FLUID2     defines element fluid2
 # -DD_FLUID2_PRO defines element fluid2 with projection method
+# -DFLUID2_ML    defines element fluid2 with multilevel 
 # -DD_FLUID3     defines element fluid3
+# -DFLUID3_ML    defines element fluid3 with multilevel 
 # -DD_SHELL8     defines element shell8
 # -DD_SHELL9     defines element shell9
 # -DD_WALL1      defines element wall1
