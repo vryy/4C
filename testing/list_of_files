@@ -30,7 +30,7 @@ Input/f3_beltrami_umfpack_fastass.dat   -        -        -        -
 Input/f3_ew_Q1_27x.dat                  x        x        x        x
 Input/f3f_beltrami.dat                  x        x        x        x
 Input/f3f_ew_Q1_27x.dat                 x        x        x        x
-Input/ffsi_ow3D.dat                     x        x        x        x
+Input/ffsi_ow3D.dat                     x        -        x        -
 Input/fsi_mtr_dc4x4.dat                 x        x        x        x
 Input/fsi_ow32x32.dat                   x        x        x        x
 Input/fsi_tank20x10.dat                 x        x        x        x
