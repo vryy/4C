@@ -781,8 +781,6 @@ if (fdyn->nis==0 && mlvar->transterm==0 ||
 /*-----------------------------------------------------------------------
    Calculate bubble part of convective forces (convective part):                           
 ----------------------------------------------------------------------- */
-if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*-----------------------------------------------------------------------
     /
    |  - v * u_old * grad(f_bub)   d_omega
@@ -821,7 +819,6 @@ if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       } /* end loop over irn */
     } /* end loop over icn */
   }  
-}    
 
 /*-----------------------------------------------------------------------
    Calculate bubble part of convective forces (reactive part):                           

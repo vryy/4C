@@ -135,53 +135,50 @@ else
 /*----------------------------------------------------------------------*
    Calculate velocity bubble part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*----------------------------------------------------------------------*
     /
    |  v * u_old * grad(u_bub)     d_omega
   /
  *----------------------------------------------------------------------*/
-  icol=0;
-  for (icn=0;icn<iel;icn++)
-  {
-     irow=0;  
-     for (irn=0;irn<iel;irn++)
-     {
-  	aux = (velint[0]*vbubderxy[0][icn] \
-  	      +velint[1]*vbubderxy[1][icn])*funct[irn]*fac;
-        estif[irow][icol]     += aux;
-  	estif[irow+1][icol+1] += aux;
-  	irow += 2;	
-     } /* end loop over irn */
-     icol += 2;
-  } /* end loop over icn */
-  
-  if (fdyn->conte!=0)  
-  {
+icol=0;
+for (icn=0;icn<iel;icn++)
+{
+   irow=0;  
+   for (irn=0;irn<iel;irn++)
+   {
+      aux = (velint[0]*vbubderxy[0][icn] \
+            +velint[1]*vbubderxy[1][icn])*funct[irn]*fac;
+      estif[irow][icol]     += aux;
+      estif[irow+1][icol+1] += aux;
+      irow += 2;      
+   } /* end loop over irn */
+   icol += 2;
+} /* end loop over icn */
+
+if (fdyn->conte!=0)  
+{
 /*----------------------------------------------------------------------*
     /
    | beta * v * u_bub * div(u_old)   d_omega
   /
  *----------------------------------------------------------------------*/
-    if (fdyn->conte==1) beta = ONE;
-    else beta = ONE/TWO;
-    divv= vderxy[0][0]+vderxy[1][1]; 
-    icol=0;
-    for (icn=0;icn<iel;icn++)
+  if (fdyn->conte==1) beta = ONE;
+  else beta = ONE/TWO;
+  divv= vderxy[0][0]+vderxy[1][1]; 
+  icol=0;
+  for (icn=0;icn<iel;icn++)
+  {
+    irow=0;  
+    aux = beta*vbubint[icn]*divv*fac;
+    for (irn=0;irn<iel;irn++)
     {
-      irow=0;  
-      aux = beta*vbubint[icn]*divv*fac;
-      for (irn=0;irn<iel;irn++)
-      {
-        estif[irow][icol]     += aux*funct[irn];
-  	estif[irow+1][icol+1] += aux*funct[irn];
-  	irow += 2;	
-      } /* end loop over irn */
-      icol += 2;
-    } /* end loop over icn */
-  }
-} /* endif (fdyn->nic != 0) */
+      estif[irow][icol]     += aux*funct[irn];
+      estif[irow+1][icol+1] += aux*funct[irn];
+      irow += 2;      
+    } /* end loop over irn */
+    icol += 2;
+  } /* end loop over icn */
+}
 
 /*----------------------------------------------------------------------*
    Calculate velocity bubble part of matrix Nr(u):
@@ -345,53 +342,50 @@ else
 /*----------------------------------------------------------------------*
    Calculate pressure bubble part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*----------------------------------------------------------------------*
                   /
  sum over j=1,2  |  v * u_old * grad(p_bub(j))     d_omega
                 /
  *----------------------------------------------------------------------*/
-  for (icol=0;icol<iel;icol++)
+for (icol=0;icol<iel;icol++)
+{
+  aux0 = (velint[0]*pbubderxy[0][0][icol] \
+         +velint[1]*pbubderxy[1][0][icol])*fac;
+  aux1 = (velint[0]*pbubderxy[0][1][icol] \
+         +velint[1]*pbubderxy[1][1][icol])*fac;
+  irow=0;  
+  posc = icol + 2*iel;
+  for (irn=0;irn<iel;irn++)
   {
-    aux0 = (velint[0]*pbubderxy[0][0][icol] \
-           +velint[1]*pbubderxy[1][0][icol])*fac;
-    aux1 = (velint[0]*pbubderxy[0][1][icol] \
-           +velint[1]*pbubderxy[1][1][icol])*fac;
-    irow=0;  
-    posc = icol + 2*iel;
-    for (irn=0;irn<iel;irn++)
-    {
-      estif[irow][posc]   += aux0*funct[irn];
-      estif[irow+1][posc] += aux1*funct[irn];
-      irow += 2;	
-    } /* end loop over irn */
-  } /* end loop over icn */
-  
-  if (fdyn->conte!=0)  
-  {
+    estif[irow][posc]   += aux0*funct[irn];
+    estif[irow+1][posc] += aux1*funct[irn];
+    irow += 2;        
+  } /* end loop over irn */
+} /* end loop over icn */
+
+if (fdyn->conte!=0)  
+{
 /*----------------------------------------------------------------------*
                    /
   sum over j=1,2  | beta * v * p_bub(j) * div(u_old)   d_omega
                  /
  *----------------------------------------------------------------------*/
-    if (fdyn->conte==1) beta = ONE;
-    else beta = ONE/TWO;
-    divv= vderxy[0][0]+vderxy[1][1]; 
-    for (icol=0;icol<iel;icol++)
+  if (fdyn->conte==1) beta = ONE;
+  else beta = ONE/TWO;
+  divv= vderxy[0][0]+vderxy[1][1]; 
+  for (icol=0;icol<iel;icol++)
+  {
+    irow=0;  
+    posc = icol + 2*iel;
+    aux = beta*divv*fac;
+    for (irn=0;irn<iel;irn++)
     {
-      irow=0;  
-      posc = icol + 2*iel;
-      aux = beta*divv*fac;
-      for (irn=0;irn<iel;irn++)
-      {
-        estif[irow][posc]   += aux*funct[irn]*pbubint[0][icol];
-  	estif[irow+1][posc] += aux*funct[irn]*pbubint[1][icol];
-  	irow += 2;	
-      } /* end loop over irn */
-    } /* end loop over icn */
-  }
-} /* endif (fdyn->nic != 0) */
+      estif[irow][posc]   += aux*funct[irn]*pbubint[0][icol];
+      estif[irow+1][posc] += aux*funct[irn]*pbubint[1][icol];
+      irow += 2;      
+    } /* end loop over irn */
+  } /* end loop over icn */
+}
 
 /*----------------------------------------------------------------------*
    Calculate pressure bubble part of matrix Nr(u):
