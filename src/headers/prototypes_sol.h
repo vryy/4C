@@ -320,6 +320,33 @@ void   skyline_make_red_dof_connect(FIELD         *actfield,
                                    ARRAY         *red_dof_connect);
 void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect);
 /*----------------------------------------------------------------------*
+ |  global_mask_spooles.c                                m.gee 05/02    |
+ *----------------------------------------------------------------------*/
+void mask_spooles(FIELD         *actfield, 
+                  PARTITION     *actpart, 
+                  SOLVAR        *actsolv,
+                  INTRA         *actintra, 
+                  SPOOLMAT      *spo);
+void     spo_make_sparsity(SPOOLMAT        *spo,
+                           int           *bindx);
+void    spo_make_bindx(FIELD         *actfield, 
+                       PARTITION     *actpart, 
+                       SOLVAR        *actsolv,
+                       SPOOLMAT      *spo,
+                       int          **dof_connect,
+                       int           *bindx);
+void  spo_nnz_topology(FIELD         *actfield, 
+                       PARTITION    *actpart, 
+                       SOLVAR       *actsolv,
+                       INTRA        *actintra,
+                       SPOOLMAT     *spo,
+                       int         **dof_connect);
+void spo_update(FIELD         *actfield, 
+                PARTITION     *actpart, 
+                SOLVAR        *actsolv,
+                INTRA         *actintra,
+                SPOOLMAT      *spo);
+/*----------------------------------------------------------------------*
  |  solver_add_data.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void assemble(
@@ -449,6 +476,23 @@ void exchange_coup_rc_ptr(
                          RC_PTR        *rc_ptr
                         );
 /*----------------------------------------------------------------------*
+ |  solver_add_spooles.c                                 m.gee 05/02    |
+ *----------------------------------------------------------------------*/
+void  add_spo(struct _PARTITION     *actpart,
+              struct _SOLVAR        *actsolv,
+              struct _INTRA         *actintra,
+              struct _ELEMENT       *actele,
+              struct _SPOOLMAT      *spo1,
+              struct _SPOOLMAT      *spo2);
+void add_spo_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
+                      double **dsend,double **estif, int numsend);
+void exchange_coup_spo(
+                         PARTITION     *actpart,
+                         SOLVAR        *actsolv,
+                         INTRA         *actintra,
+                         SPOOLMAT      *spo
+                        );
+/*----------------------------------------------------------------------*
  |  solver_colsol.c                                       m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void solver_colsol(struct _SOLVAR         *actsolv,
@@ -482,6 +526,17 @@ void solver_az_msr(
                       struct _SOLVAR         *actsolv,
                       struct _INTRA          *actintra,
                       struct _AZ_ARRAY_MSR   *msr_array,
+                      struct _DIST_VECTOR    *sol,
+                      struct _DIST_VECTOR    *rhs,
+                      int                     option
+                     );
+/*----------------------------------------------------------------------*
+ |  solver_spooles.c                                     m.gee 05/02    |
+ *----------------------------------------------------------------------*/
+void solver_spooles( 
+                      struct _SOLVAR         *actsolv,
+                      struct _INTRA          *actintra,
+                      struct _SPOOLMAT       *spo,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
                       int                     option
@@ -880,10 +935,44 @@ void solver_psuperlu_ucchb(
                       int                     option
                      );
 /*----------------------------------------------------------------------*
- |  input_sol.c                                  m.gee 11/01    |
+ |  input_sol.c                                          m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void inpctrsol(SOLVAR *solv);
 
+/*----------------------------------------------------------------------*
+ |  restart_control.c                                    m.gee 05/02    |
+ *----------------------------------------------------------------------*/
+void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
+                                STRUCT_DYN_CALC *dynvar,
+                                FIELD           *actfield,
+                                PARTITION       *actpart,
+                                INTRA           *actintra,
+                                CALC_ACTION     *action,
+                                int nrhs,  DIST_VECTOR *rhs,
+                                int nsol,  DIST_VECTOR *sol,
+                                int ndis,  DIST_VECTOR *dispi,
+                                int nvel,  DIST_VECTOR *vel,
+                                int nacc,  DIST_VECTOR *acc,
+                                int nfie,  DIST_VECTOR *fie,
+                                int nwork, DIST_VECTOR *work,
+                                ARRAY *intforce_a,
+                                ARRAY *dirich_a);
+void restart_read_nlnstructdyn(int restart,
+                               STRUCT_DYNAMIC  *sdyn,
+                               STRUCT_DYN_CALC *dynvar,
+                               FIELD           *actfield,
+                               PARTITION       *actpart,
+                               INTRA           *actintra,
+                               CALC_ACTION     *action,
+                               int nrhs,  DIST_VECTOR *rhs,
+                               int nsol,  DIST_VECTOR *sol,
+                               int ndis,  DIST_VECTOR *dispi,
+                               int nvel,  DIST_VECTOR *vel,
+                               int nacc,  DIST_VECTOR *acc,
+                               int nfie,  DIST_VECTOR *fie,
+                               int nwork, DIST_VECTOR *work,
+                               ARRAY *intforce_a,
+                               ARRAY *dirich_a);
 /*---------------------------------------------------------------------*
  | routine to find the maximum value of a distributed vector           |
  | ab =  0 absolut maximum value                                       |

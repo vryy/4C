@@ -715,8 +715,8 @@ void pss_status_to_err(void);
 /*----------------------------------------------------------------------*
  | routine to initialise the cpu - time                  genk 05/02     |
  *----------------------------------------------------------------------*/
-void ds_cputime_init();
+void ds_cputime_init(void);
 /*----------------------------------------------------------------------*
  | routine to meassure the cpu - time                    genk 05/02     |
  *----------------------------------------------------------------------*/
-double ds_cputime();
+double ds_cputime(void);
