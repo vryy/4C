@@ -382,9 +382,8 @@ void f2_inbu(FLUID_DATA      *data,
  | f2_mlservice.c                                                       |
  ************************************************************************/
 void f2_lsset(ELEMENT	      *ele,
-              DOUBLE	     **eveln,
+              DOUBLE	     **ehist,
 	      DOUBLE	     **evel,
-	      DOUBLE	      *epren,
 	      DOUBLE	      *epre,
 	      DOUBLE	      *edeadn,
 	      DOUBLE	      *edead,
