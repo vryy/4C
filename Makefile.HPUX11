@@ -145,6 +145,8 @@ OBJS12	      = ${SRC}/wall1/w1_init.o \
                 ${SRC}/wall1/w1_main.o
 #                fortran
 OBJS13	      = ${SRC}/fortran/fortran_dummy.o
+#OBJS13	      = ${SRC}/fortran/bi_f77_get_constants.o \
+#                ${SRC}/fortran/mumps_interface.o
 #
 #
 # targets
