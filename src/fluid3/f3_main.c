@@ -101,6 +101,7 @@ case calc_fluid_init:
   f3_calele(data,dynvar,NULL,estif_global,emass_global,etforce_global,
             eiforce_global,edforce_global,NULL,NULL,1);
 /*---------------------------------------------------- multi-level FEM? */   
+#ifdef FLUID3_ML
   if (fdyn->mlfem==1) 
   {  
     mlvar   = &(alldyn[numff].fdyn->mlvar);
@@ -120,13 +121,15 @@ case calc_fluid_init:
     }
 /*----------------------- init the element routines for multi-level FEM */   
     f3_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
-             etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
+          etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
   }     	    
+#endif
 break;
 
 /*------------------------------------------- call the element routines */
 case calc_fluid:
 /*---------------------------------------------------- multi-level FEM? */   
+#ifdef FLUID3_ML
 if (fdyn->mlfem==1) 
 {
   smisal = ele->e.f3->smisal;
@@ -141,6 +144,7 @@ if (fdyn->mlfem==1)
            etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
 }	      
 else  
+#endif
   f3_calele(data,dynvar,ele,estif_global,emass_global,etforce_global,
                  eiforce_global,edforce_global,hasdirich,hasext,0);
 break;

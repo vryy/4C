@@ -281,7 +281,9 @@ fluid_init(actpart,actintra,actfield,fdyn,action,&container,num_sol,str);
 actpos=0;
 
 /*------------------------------------ initialize multilevel algorithm */
+#if defined(FLUID2_ML) || defined(FLUID3_ML)
 if (fdyn->mlfem==1) fluid_ml_init(actfield,fdyn);		     
+#endif
 
 /*--------------------------------------- init all applied time curves -*/
 for (actcurve=0; actcurve<numcurve; actcurve++)
@@ -574,6 +576,7 @@ for (i=0; i<2; i++)
 #endif
 
    /*-------------------------------------------------------- output ---*/
+#ifdef D_Fluid2
    if(par.myrank == 0)
    {
       printf("Drag (global x-direction) = %lf\n",   liftdrag[0]);
@@ -581,6 +584,7 @@ for (i=0; i<2; i++)
    }
    if (par.myrank == 0)
       f2_plot_liftdrag(fdyn->time, liftdrag);
+#endif
 }
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
@@ -614,7 +618,9 @@ solserv_sol_copy(actfield,0,1,0,3,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
 /*-- copy solution on level 2 at (n+1) to place (n) for multi-level FEM */
+#if defined(FLUID2_ML) || defined(FLUID3_ML)
 if (fdyn->mlfem==1) fluid_smcopy(actpart,fdyn);		     
+#endif
 
 /*--------------------------------------- write solution to .flavia.res */
 if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0) 

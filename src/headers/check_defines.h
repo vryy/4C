@@ -61,4 +61,14 @@
 #if defined(D_FSI) && defined(GEMM)
 #error "FSI not possible with GEMM."
 #endif
+
+/* no fluid2_ml without fluid2 */
+#if defined(FLUID2_ML) && !defined(D_FLUID2)
+#error "FLUID2_ML not possible without FLUID2."
+#endif
+
+/* no fluid3_ml without fluid3 */
+#if defined(FLUID3_ML) && !defined(D_FLUID3)
+#error "FLUID3_ML not possible without FLUID3."
+#endif
 /*----------------------------------------------------------------------*/

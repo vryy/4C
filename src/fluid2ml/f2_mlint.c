@@ -12,7 +12,7 @@ Maintainer:  name
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef FLUID2_ML
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fluid2/fluid2_prototypes.h"
