@@ -125,8 +125,6 @@ return;
 } /* end of solserv_add_vec */
 
 
-
-
 /*----------------------------------------------------------------------*
  |  copy contents of the vector vec_from to vec_to           m.gee 11/01|
  |  vec_to->vec.a.dv[i] = vec_from->vec.a.dv[i]                         |
@@ -869,7 +867,7 @@ return;
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
+                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ,int ndis)
 {
 INT      i,j;
 INT      max;
@@ -892,9 +890,9 @@ result = amdef("result",&result_a,numeq_total,1,"DV");
          amzero(&result_a);
 solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
 /*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->dis[0].numnp; i++)
+for (i=0; i<actfield->dis[ndis].numnp; i++)
 {
-   actnode = &(actfield->dis[0].node[i]);
+   actnode = &(actfield->dis[ndis].node[i]);
    /*------------------------------ enlarge sol_increment, if necessary */
    if (place >= actnode->sol_increment.fdim)
    {
