@@ -796,15 +796,6 @@ void w1_fint( double **stress,           /* 2.PK stresses               */
               double  *fint,             /* internal forces             */ 
               double   fac,              /* detJ*wr*ws*thickness        */ 
               int      nd);              /* Element-DOF                 */
-/*----------------------------------------------------------------------*
- | integration of element loads                              ah 07/02   |
- | in here, line and surface loads are integrated                       |
- *----------------------------------------------------------------------*/
-void w1_eleload(ELEMENT  *ele,
-                W1_DATA  *data,
-                MATERIAL *mat,
-                double	*loadvec,
-                int	 init);
 /*----------------------------------------------------------------------*/
 /*  w1_call_mat.c                                         ah 06/02      */
 /* get density out of material law                                      */
