@@ -111,6 +111,7 @@ if (fdyn->step<=fdyn->nums) /* set parameter for starting phase */
 {
    fdyn->iop    = iops_s;
    fdyn->theta  = thetas_s;
+   fdyn->dynvar.omt  = 1.0 - thetas_s;
    *nfrastep    = 1;
    if (iops_s==5)
       *nfrastep = 3;
@@ -124,6 +125,7 @@ else if (fdyn->step==(fdyn->nums+1)) /* set original parameter */
 {
    fdyn->iop    = iop_s;
    fdyn->theta  = theta_s;
+   fdyn->dynvar.omt  = 1.0 - theta_s;
    *nfrastep    = 1;
    if (iop_s==5)
       *nfrastep = 3;
@@ -1718,7 +1720,7 @@ else
 {
    if (par.myrank==0) 
    {      
-      printf("      iteration step: %3d / 3d \n",  
+      printf("      iteration step: %3d / %3d \n",  
                               itnum, fdyn->itemax) ;          
       if(itnum==fdyn->itemax)
       {
