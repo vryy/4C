@@ -25,6 +25,7 @@ typedef struct _MATERIAL
      struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
      struct _MFOC             *mfoc;         /* metal foam, open cell  */
      struct _MFCC             *mfcc;         /* metal foam, closed cell  */
+     struct _NHMFCC           *nhmfcc;       /* foam, closed cell, based on modified Neo Hook */
      struct _MULTI_LAYER      *multi_layer;  /* multi layer material*/
      struct _ORTHOTROPIC      *orthotropic;  /* linear elastic, orthotropic material*/
      }                         m;            /* union pointer to material specific structure */
@@ -270,6 +271,21 @@ typedef struct _MFCC
      double                    cce;            /* exponent  */
      double                    ccf;            /* factor    */
 } MFCC;
+/*----------------------------------------------------------------------*
+ | foam, closed cell, based on modified Neo Hook             al 4/01    |
+ *----------------------------------------------------------------------*/
+typedef struct _NHMFCC
+{
+     double                    es;             /* Young's modulus (cell) */
+     double                    pr;             /* Possion ratio */
+     double                    dens;           /* density foam  */
+     double                    denss;          /* density (bulk) */
+     double                    denmin;         /* min. dens. foam (opti.)*/
+     double                    denmax;         /* max. dens. foam (opti.)*/
+     double                    refdens;        /* reference density */
+     double                    cce;            /* exponent  */
+     double                    ccf;            /* factor    */
+} NHMFCC;
 /*----------------------------------------------------------------------*
  | multi layer material  -> shell9                          sh 10/02    |
  | material, that can have differnt materials in different layers       |
