@@ -1426,7 +1426,7 @@ for (node=0; node<iel; node++)
 
 /*------------------------------------- compute dimensless shearstress
             (ATTENTION: you've to divide with the square of flow rate) */
-      actnode->c_f_shear += 2*visc*(vderxy[0][1]+vderxy[1][0])/actnode->numele;       
+      actnode->fluid_varia->c_f_shear += 2*visc*(vderxy[0][1]+vderxy[1][0])/actnode->numele;       
 
 /*------------------- compute shearvelocity for the scaned coordinates */
       if (FABS(actnode->x[0]-dynvar->coord_scale[0])<EPS7 && FABS(actnode->x[1]-dynvar->coord_scale[1])<EPS15)

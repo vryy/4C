@@ -11,7 +11,6 @@ typedef struct _NODE
      int                        proc;          /* my owner intra-proc */
 
      double                     x[3];          /* my coordinates */
-     double                     c_f_shear;     /* dim. shearstress c_f of node   */
 
      struct _ARRAY              sol;           /* my solution history */
      struct _ARRAY              sol_increment; /* my incremental solution */
@@ -24,6 +23,9 @@ typedef struct _NODE
      struct _ELEMENT          **element;       /* ptrs to elements to me */
 
      struct _GNODE             *gnode;         /* ptr to my gnode */
+#ifdef D_FLUID   
+     struct _FLUID_VARIA       *fluid_varia;   /* ptr to my fluid_varia */
+#endif
 } NODE;
 
 

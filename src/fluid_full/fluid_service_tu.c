@@ -99,7 +99,6 @@ for (i=0;i<numnp_total;i++)
    actnode=&(actfield->dis[0].node[i]);
    amredef(&(actnode->sol_increment),4,numdf*2,"DA");
    amzero(&(actnode->sol_increment));
-   actnode->c_f_shear=ZERO;
 }
 
 /*----------------------------------------------------------------------*/

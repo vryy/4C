@@ -134,3 +134,17 @@ struct _ARRAY      start;        /*!< starting field */
 struct _FLUID_DYN_CALC dynvar;
 } FLUID_DYNAMIC;
 
+/*!----------------------------------------------------------------------
+\brief fluid parameters                                              
+
+<pre>                                                         he  06/03  
+
+In this structure all fluid variables needed on node are stored.
+
+</pre>
+
+------------------------------------------------------------------------*/
+typedef struct _FLUID_VARIA               
+{
+double             c_f_shear;     /*!< dim. shearstress c_f of node     */
+} FLUID_VARIA;

@@ -1366,7 +1366,7 @@ numnp_total = actfield->dis[0].numnp;
 for (i=0; i<numnp_total; i++) /* loop nodes */
 {
    actnode = &(actfield->dis[0].node[i]);
-   MPI_Bcast(&(actnode->c_f_shear),1,MPI_DOUBLE,actnode->proc,
+   MPI_Bcast(&(actnode->fluid_varia->c_f_shear),1,MPI_DOUBLE,actnode->proc,
              actintra->MPI_INTRA_COMM);
 /*------------------- compute shearvelocity for the scaned coordinates */
    if (FABS(actnode->x[0]-dynvar->coord_scale[0])<EPS7 && FABS(actnode->x[1]-dynvar->coord_scale[1])<EPS15)
@@ -1376,7 +1376,7 @@ for (i=0; i<numnp_total; i++) /* loop nodes */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_exit();
+dstrc_exit(); 
 #endif
 
 #endif
@@ -1421,7 +1421,7 @@ if (imyrank!=0 || myrank!=0)
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
  actnode = &(actfield->dis[0].node[i]);
- actnode->c_f_shear = ZERO;
+ actnode->fluid_varia->c_f_shear = ZERO;
 }
 
 /*----------------------------------------------------------------------*/
