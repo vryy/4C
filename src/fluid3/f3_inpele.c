@@ -16,14 +16,14 @@ char buffer[50];
 dstrc_enter("f3inp");
 #endif
 /*------------------------------------------------ allocate the element */      
-ele->e.f3 = (FLUID3*)calloc(1,sizeof(FLUID3));
+ele->e.f3 = (FLUID3*)CALLOC(1,sizeof(FLUID3));
 if (ele->e.f3==NULL) dserror("Allocation of element FLUID3 failed");
 /*---------------------------------------------- read the element nodes */
 frchk("HEX8",&ierr);
 if (ierr==1)
 {
    ele->numnp=8;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -32,7 +32,7 @@ frchk("HEX20",&ierr);
 if (ierr==1)
 {
    ele->numnp=20;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -41,7 +41,7 @@ frchk("TET4",&ierr);
 if (ierr==1)
 {
    ele->numnp=4;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -50,7 +50,7 @@ frchk("TET10",&ierr);
 if (ierr==1)
 {
    ele->numnp=10;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET10",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");

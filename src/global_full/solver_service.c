@@ -17,7 +17,7 @@ dstrc_enter("solserv_create_vec");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------ allocate the vectors */
-*vector = (DIST_VECTOR*)calloc(numvectors,sizeof(DIST_VECTOR));
+*vector = (DIST_VECTOR*)CALLOC(numvectors,sizeof(DIST_VECTOR));
 if (*vector==NULL) dserror("Allocation of DIST_VECTOR failed");
 /*--------------------------- loop the created vectors and perfrom init */
 for (i=0; i<numvectors; i++)

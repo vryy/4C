@@ -11,7 +11,7 @@ int  ierr=0;
 dstrc_enter("winp");
 #endif
 /*------------------------------------------------ allocate the element */      
-ele->e.w1 = (WALL1*)calloc(1,sizeof(WALL1));
+ele->e.w1 = (WALL1*)CALLOC(1,sizeof(WALL1));
 if (ele->e.w1==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
@@ -19,7 +19,7 @@ if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");

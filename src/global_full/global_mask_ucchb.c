@@ -46,7 +46,7 @@ ucchb_update(actfield,actpart,actsolv,actintra,ucchb);
       dof_connect[i][2] = dof
       dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
    */
-dof_connect = (int**)calloc(ucchb->numeq_total,sizeof(int*));
+dof_connect = (int**)CALLOC(ucchb->numeq_total,sizeof(int*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 ucchb_nnz_topology(actfield,actpart,actsolv,actintra,ucchb,dof_connect);
 /*---------------------------------------- make nnz_total, a, asub, xa  */
@@ -54,9 +54,9 @@ ucchb_make_a(actfield,actpart,actsolv,actintra,ucchb,dof_connect);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<ucchb->numeq_total; i++)
 {
-   if (!dof_connect[i]) free(dof_connect[i]);
+   if (!dof_connect[i]) FREE(dof_connect[i]);
 }
-free(dof_connect);
+FREE(dof_connect);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -198,8 +198,8 @@ else /*----------------------------------------------- parallel version */
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->coupledofs.fdim)*(inprocs);
-sendbuff = (int*)calloc(sendsize,sizeof(int));
-recvbuff = (int*)calloc(sendsize,sizeof(int));
+sendbuff = (int*)CALLOC(sendsize,sizeof(int));
+recvbuff = (int*)CALLOC(sendsize,sizeof(int));
 if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
 counter=0;
 for (i=0; i<actpart->coupledofs.fdim; i++)
@@ -225,7 +225,7 @@ for (i=0; i<actpart->coupledofs.fdim; i++)
       counter++;
    }
 }
-free(sendbuff);free(recvbuff);
+FREE(sendbuff);FREE(recvbuff);
 #endif
 /*------- count number of equations on partition including coupled dofs */
 /*---------------------------------------- count the coupled ones first */
@@ -284,7 +284,7 @@ for (i=0; i<actpart->numnp; i++)
 */
 if (inprocs > 1)
 {
-   tmp = (int*)calloc(inprocs,sizeof(int));
+   tmp = (int*)CALLOC(inprocs,sizeof(int));
    if (!tmp) dserror("Allocation of temporary memory failed");
    for (i=0; i<actpart->coupledofs.fdim; i++)/*------ loop coupled eqns */
    {
@@ -321,7 +321,7 @@ if (inprocs > 1)
          tmp[proc] += 1;
       }
    }/* end loop over coupling eqns */
-   free(tmp);
+   FREE(tmp);
 }
 /* procs who have not become owner of a coupling equation have to reduce there
    number of equations */
@@ -552,7 +552,7 @@ for (i=0; i<numeq; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)calloc(counter2+3,sizeof(int));
+   dof_connect[dof] = (int*)CALLOC(counter2+3,sizeof(int));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0; 
@@ -636,7 +636,7 @@ for (i=0; i<coupledofs->fdim; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)calloc(counter2+3,sizeof(int));
+   dof_connect[dof] = (int*)CALLOC(counter2+3,sizeof(int));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = dofflag;
@@ -686,7 +686,7 @@ for (i=0; i<coupledofs->fdim; i++)
             /*----------------------------------- get lenght of message */
             MPI_Get_count(&status,MPI_INT,&recvlenght);
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)realloc(dof_connect[dof],
+            dof_connect[dof] = (int*)REALLOC(dof_connect[dof],
                                              (dof_connect[dof][0]+recvlenght)*
                                              sizeof(int));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
@@ -717,7 +717,7 @@ for (i=0; i<coupledofs->fdim; i++)
                }
             }
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)realloc(dof_connect[dof],
+            dof_connect[dof] = (int*)REALLOC(dof_connect[dof],
                                              counter2*sizeof(int));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             dof_connect[dof][0] = counter2;

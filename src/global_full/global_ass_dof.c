@@ -95,7 +95,7 @@ for (i=0; i<genprob.numfld; i++)
    counter=0;
    for (j=0; j<actfield->numnp; j++)
    {
-      actfield->node[j].dof  = (int*)calloc(actfield->node[j].numdf,sizeof(int));
+      actfield->node[j].dof  = (int*)CALLOC(actfield->node[j].numdf,sizeof(int));
       if (!(actfield->node[j].dof)) 
          dserror("Allocation of dof in NODE failed");
       /*------------------------- allocate the arrays to hold solutions */

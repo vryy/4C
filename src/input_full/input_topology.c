@@ -17,7 +17,7 @@ for (i=0; i<field->numele; i++)
 {
    actele = &(field->element[i]);
 /*--------------------------------- allocate the ELEMENTs node-pointers */
-   actele->node = (NODE**)calloc(actele->numnp,sizeof(NODE*));
+   actele->node = (NODE**)CALLOC(actele->numnp,sizeof(NODE*));
    if (actele->node==NULL) dserror("Allocation of node pointers failed");
    
    for (j=0; j<actele->numnp; j++)
@@ -50,7 +50,7 @@ for (i=0; i<field->numele; i++)
 for (i=0; i<field->numnp; i++)
 {
    actnode = &(field->node[i]);
-   actnode->element = (ELEMENT**)calloc(actnode->numele,sizeof(ELEMENT*));
+   actnode->element = (ELEMENT**)CALLOC(actnode->numele,sizeof(ELEMENT*));
    if (actnode->element==NULL) dserror("Allocation of element pointers failed");
    for (j=0; j<actnode->numele; j++) actnode->element[j]=NULL;
 }

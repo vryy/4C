@@ -41,7 +41,7 @@ if (genprob.probtyp == prb_fsi)
 {
    if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
    
-   field = (FIELD*)calloc(genprob.numfld,sizeof(FIELD));
+   field = (FIELD*)CALLOC(genprob.numfld,sizeof(FIELD));
    if (field==NULL) dserror("Allocation of fields failed");
 
    field[0].fieldtyp = structure;
@@ -62,7 +62,7 @@ if (genprob.probtyp == prb_fsi)
 if (genprob.probtyp==prb_structure)
 {
    if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
-   field = (FIELD*)calloc(genprob.numfld,sizeof(FIELD));
+   field = (FIELD*)CALLOC(genprob.numfld,sizeof(FIELD));
    if (field==NULL) dserror("Allocation of fields failed");
 
    field[0].fieldtyp = structure;
@@ -72,7 +72,7 @@ if (genprob.probtyp==prb_structure)
 if (genprob.probtyp==prb_fluid)
 {
    if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
-   field = (FIELD*)calloc(genprob.numfld,sizeof(FIELD));
+   field = (FIELD*)CALLOC(genprob.numfld,sizeof(FIELD));
    if (field==NULL) dserror("Allocation of fields failed");
    
    field[0].fieldtyp = fluid;
@@ -148,7 +148,7 @@ for (i=0; i<genprob.nnode; i++)
 }
 field->numnp=counter;
 /*-------------------------------------- Allocate the nodes to the field */
-field->node = (NODE*)calloc(field->numnp,sizeof(NODE));
+field->node = (NODE*)CALLOC(field->numnp,sizeof(NODE));
 if (field->node==NULL) dserror("Allocation of nodes failed");
 /*---------------- assign the node Ids and coords to the NODE structure */
 counter=0;
@@ -247,7 +247,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 structfield->numele = counter;
 /*--------------------------------------------------- allocate elements */
-structfield->element=(ELEMENT*)calloc(structfield->numele,sizeof(ELEMENT));
+structfield->element=(ELEMENT*)CALLOC(structfield->numele,sizeof(ELEMENT));
 if (structfield->element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
@@ -349,7 +349,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 fluidfield->numele = counter;
 /*--------------------------------------------------- allocate elements */
-fluidfield->element=(ELEMENT*)calloc(fluidfield->numele,sizeof(ELEMENT));
+fluidfield->element=(ELEMENT*)CALLOC(fluidfield->numele,sizeof(ELEMENT));
 if (fluidfield->element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
@@ -436,7 +436,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 alefield->numele = counter;
 /*--------------------------------------------------- allocate elements */
-alefield->element=(ELEMENT*)calloc(alefield->numele,sizeof(ELEMENT));
+alefield->element=(ELEMENT*)CALLOC(alefield->numele,sizeof(ELEMENT));
 if (alefield->element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();

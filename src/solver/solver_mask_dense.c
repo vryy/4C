@@ -180,8 +180,8 @@ else /*----------------------------------------------- parallel version */
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->coupledofs.fdim)*(inprocs);
-sendbuff = (int*)calloc(sendsize,sizeof(int));
-recvbuff = (int*)calloc(sendsize,sizeof(int));
+sendbuff = (int*)CALLOC(sendsize,sizeof(int));
+recvbuff = (int*)CALLOC(sendsize,sizeof(int));
 if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
 counter=0;
 for (i=0; i<actpart->coupledofs.fdim; i++)
@@ -207,7 +207,7 @@ for (i=0; i<actpart->coupledofs.fdim; i++)
       counter++;
    }
 }
-free(sendbuff);free(recvbuff);
+FREE(sendbuff);FREE(recvbuff);
 #endif
 /*------- count number of equations on partition including coupled dofs */
 /*---------------------------------------- count the coupled ones first */
@@ -266,7 +266,7 @@ for (i=0; i<actpart->numnp; i++)
 */
 if (inprocs > 1)
 {
-   tmp = (int*)calloc(inprocs,sizeof(int));
+   tmp = (int*)CALLOC(inprocs,sizeof(int));
    if (!tmp) dserror("Allocation of temporary memory failed");
    for (i=0; i<actpart->coupledofs.fdim; i++)/*------ loop coupled eqns */
    {
@@ -303,7 +303,7 @@ if (inprocs > 1)
          tmp[proc] += 1;
       }
    }/* end loop over coupling eqns */
-   free(tmp);
+   FREE(tmp);
 }
 /* procs who have not become owner of a coupling equation have to reduce there
    number of equations */

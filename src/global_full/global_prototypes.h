@@ -203,6 +203,10 @@ void create_communicators();
 /*----------------------------------------------------------------------*
  |  pss_am.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
+void *MALLOC(int size);
+void *CALLOC(int num, int size);
+void *REALLOC(void *oldptr, int size);
+void *FREE(void *oldptr);
 void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[]);
 void* amredef(ARRAY *a,int newfdim, int newsdim, char newtypstr[]);
 void  amdel(ARRAY *array);
@@ -230,6 +234,7 @@ void* am4redef(ARRAY4D *array,
 /*----------------------------------------------------------------------*
  |  pss_ds.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
+void dsmemreport();
 void dserror(char string[]);
 void dsinit();
 void dstrc_enter(char string[]);

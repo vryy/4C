@@ -27,7 +27,7 @@ for (i=0; i<actpart->numele; i++)
      mat[actele->mat-1].mattyp == m_pl_dp )
   {
     size_i = 1;
-    actele->e.w1->elewa = (W1_ELE_WA*)calloc(size_i,sizeof(W1_ELE_WA));
+    actele->e.w1->elewa = (W1_ELE_WA*)CALLOC(size_i,sizeof(W1_ELE_WA));
     if (actele->e.w1->elewa==NULL)
     {
       dserror("Allocation of elewa in ELEMENT failed");
@@ -36,7 +36,7 @@ for (i=0; i<actpart->numele; i++)
     
     size_j = actele->e.w1->nGP[0] + actele->e.w1->nGP[1];
     actele->e.w1->elewa[0].ipwa = 
-                               (W1_IP_WA*)calloc(size_j,sizeof(W1_IP_WA));
+                               (W1_IP_WA*)CALLOC(size_j,sizeof(W1_IP_WA));
     if (actele->e.w1->elewa[0].ipwa==NULL)
     {
       dserror("Allocation of ipwa in ELEMENT failed");

@@ -30,13 +30,13 @@ void dofdof_realloc(int dof1,int **dof_dof)
   #endif
 /*----------------------------------------------------------------------*/
   ac = dof_dof[dof1][1];                /* number of allocated integers */
-  hivec = (int*)calloc(ac ,sizeof(int));
+  hivec = (int*)CALLOC(ac ,sizeof(int));
   for (i=0; i<ac; i++) hivec[i] = dof_dof[dof1][i];/*copy to 2nd vector */
-  free(dof_dof[dof1]);                                       /* realloc */
-  dof_dof[dof1] = (int*)calloc(ac+numdofconected ,sizeof(int));
+  FREE(dof_dof[dof1]);                                       /* realloc */
+  dof_dof[dof1] = (int*)CALLOC(ac+numdofconected ,sizeof(int));
   for (j=0; j<ac; j++) dof_dof[dof1][j] = hivec[j];         /*copy back */
   dof_dof[dof1][1]  += numdofconected;  /* number of allocated integers */
-  free(hivec);
+  FREE(hivec);
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_exit();
@@ -154,7 +154,7 @@ void dofconnectivity(FIELD        *actfield,
       if(dof1>=actfield->numeq) continue;
       if(dof_dof[dof1]==NULL)
       {
-        dof_dof[dof1]    = (int*)calloc(numdofconected ,sizeof(int));
+        dof_dof[dof1]    = (int*)CALLOC(numdofconected ,sizeof(int));
         dof_dof[dof1][0] = 0;
         dof_dof[dof1][1] = numdofconected;
       }

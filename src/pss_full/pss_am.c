@@ -8,17 +8,163 @@
 extern struct _TRACE         trace;
 #endif
 
+
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | global variable  num_byte_allocated                                  |
+ | long int num_byte_allocated                                          |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+long int num_byte_allocated;
+#endif
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | in debug mode all memory is allocated one double bigger then         |
+ | asked for, so the size of what was allocated can be stored           |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+#define DWORD  (sizeof(double)) /* Be sure it's not smaller than double */
+#define MYBYTE (sizeof(unsigned char)) /*  exactly one byte (hopefully) */ 
+#endif
+
+
+/*----------------------------------------------------------------------*
+ | redefinition of malloc DEBUG version                       m.gee 2/02|
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+void *MALLOC(int size)
+{
+char *buf;
+
+buf = (char*)malloc((size_t)(size+DWORD));
+if (buf)
+{
+   ((int*)buf)[0] = size;
+   num_byte_allocated += (size+DWORD);
+   return (void*)(buf+DWORD);
+}
+else return (void*)(NULL);
+}/* end of MALLOC */
+/*----------------------------------------------------------------------*
+ | redefinition of malloc FAST version                        m.gee 2/02|
+ *----------------------------------------------------------------------*/
+#else
+void *MALLOC(int size)
+{
+void *buf;
+buf = malloc((size_t)size);
+return (void*)(buf);
+}/* end of MALLOC */
+#endif
+
+
+
+/*----------------------------------------------------------------------*
+ | redefinition of calloc DEBUG version                   m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+void *CALLOC(int num, int size)
+{
+char *buf;
+
+buf = (char*)calloc((size_t)(num*size+DWORD),(size_t)MYBYTE);
+if (buf)
+{
+   ((int*)buf)[0] = size*num;
+   num_byte_allocated += (num*size+DWORD);
+   return (void*)(buf+DWORD);
+}
+else return (void*)(NULL);
+}/* end of CALLOC */
+/*----------------------------------------------------------------------*
+ | redefinition of calloc FAST version                    m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#else
+void *CALLOC(int num, int size)
+{
+void *buf;
+buf = calloc((size_t)num,(size_t)size);
+return (void *)(buf);
+}/* end of CALLOC */
+#endif
+
+
+
+/*----------------------------------------------------------------------*
+ | redefinition of realloc DEBUG version                  m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+void *REALLOC(void *oldptr, int size)
+{
+int   n;
+char *buf = ((char*)oldptr) - DWORD;
+if (!oldptr) dserror("Tried to realloc NULL pointer");
+if (!buf)    dserror("Tried to realloc NULL-DWORD pointer");
+n = ((int*)buf)[0];
+num_byte_allocated -= (n+DWORD);
+
+buf = (char*)realloc(buf,(size_t)(size+DWORD));
+if (buf)
+{
+   ((int*)buf)[0] = size;
+   num_byte_allocated += (size+DWORD);
+   return (void*)(buf+DWORD);
+}
+else return (void*)(NULL);
+}/* end of REALLOC */
+/*----------------------------------------------------------------------*
+ | redefinition of realloc FAST version                  m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#else
+void *REALLOC(void *oldptr, int size)
+{
+void *buf;
+buf = realloc(oldptr,(size_t)size);
+return (void*)(buf);
+}/* end of REALLOC */
+#endif
+
+
+
+/*----------------------------------------------------------------------*
+ | redefinition of free DEBUG version                     m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+void *FREE(void *oldptr)
+{
+int   n;
+char *p = ((char*)oldptr) - DWORD;
+if (!oldptr) dserror("Tried to free NULL pointer");
+if (!p)      dserror("Tried to free NULL-DWORD pointer");
+n = ((int*)p)[0];
+*((int*) p) = 0;
+num_byte_allocated -= (n+DWORD);
+free(p);
+return (oldptr=NULL);
+}/* end of FREE */
+/*----------------------------------------------------------------------*
+ | redefinition of free FAST version                      m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+#else
+void *FREE(void *oldptr)
+{
+free(oldptr);
+return (oldptr=NULL);
+}/* end of FREE */
+#endif
+
+
+
 /*----------------------------------------------------------------------*
  | define array                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[])
 {
 register int i=0;
-
 #ifdef DEBUG 
 dstrc_enter("amdef");
 #endif
-
 /*----------------------------------------------------------------------*/
 strncpy(a->name,namstr,9);
 a->fdim = fdim;
@@ -31,29 +177,29 @@ next:
 switch (a->Typ)
 {
 case DA: /* -----------------------------------------------double array */
-a->a.da    = (double**)malloc((size_t)(fdim*sizeof(double*)));
+a->a.da    = (double**)MALLOC((fdim*sizeof(double*)));
 if (!(a->a.da))    dserror("Allocation of memory failed");
-a->a.da[0] = (double*) malloc((size_t)(fdim*sdim*sizeof(double)));
+a->a.da[0] = (double*) MALLOC((fdim*sdim*sizeof(double)));
 if (!(a->a.da[0])) dserror("Allocation of memory failed");
 for (i=1; i<fdim; i++) a->a.da[i] = &(a->a.da[0][i*sdim]);
 break;
 
 
 case IA: /* ----------------------------------------------integer array */
-a->a.ia    = (int**)malloc((size_t)(fdim*sizeof(int*)));
+a->a.ia    = (int**)MALLOC((fdim*sizeof(int*)));
 if (!(a->a.ia))    dserror("Allocation of memory failed");
-a->a.ia[0] = (int*) malloc((size_t)(fdim*sdim*sizeof(int)));
+a->a.ia[0] = (int*) MALLOC((fdim*sdim*sizeof(int)));
 if (!(a->a.ia[0])) dserror("Allocation of memory failed");
 for (i=1; i<fdim; i++) a->a.ia[i] = &(a->a.ia[0][i*sdim]);
 break;
 
 case DV: /* ----------------------------------------------double vector */
-a->a.dv = (double*)malloc((size_t)(fdim*sdim*sizeof(double)));
+a->a.dv = (double*)MALLOC((fdim*sdim*sizeof(double)));
 if (!(a->a.dv)) dserror("Allocation of memory failed");
 break;
 
 case IV: /* ---------------------------------------------integer vector */
-a->a.iv = (int*)malloc((size_t)(fdim*sdim*sizeof(int)));
+a->a.iv = (int*)MALLOC((fdim*sdim*sizeof(int)));
 if (!(a->a.iv)) dserror("Allocation of memory failed");
 break;
 
@@ -269,24 +415,20 @@ strncpy(array->name,"DELETED",9);
 switch(array->Typ)
 {
 case DA:
-   if (array->sdim) free(array->a.da[0]);
-   if (array->fdim) free(array->a.da);
-   array->a.da=NULL;
+   if (array->sdim)             FREE(array->a.da[0]);
+   if (array->fdim) array->a.da=FREE(array->a.da);
 break;
 case IA:
-   if (array->sdim) free(array->a.ia[0]);
-   if (array->fdim) free(array->a.ia);
-   array->a.ia=NULL;
+   if (array->sdim)             FREE(array->a.ia[0]);
+   if (array->fdim) array->a.ia=FREE(array->a.ia);
 break;
 case DV:
    size = array->fdim * array->sdim;
-   if (size) free(array->a.dv);
-   array->a.dv=NULL;
+   if (size) array->a.dv=FREE(array->a.dv);
 break;
 case IV:
    size = array->fdim * array->sdim;
-   if (size) free(array->a.iv);
-   array->a.iv=NULL;
+   if (size) array->a.iv=FREE(array->a.iv);
 break;
 default:
 dserror("Unknown type of array given");
@@ -546,11 +688,11 @@ switch (a->Typ)
 {
 case D3: /* --------------------------------------------double D3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
-a->a.d3       = (double***)malloc((size_t)(fdim*sizeof(double**)));
+a->a.d3       = (double***)MALLOC((fdim*sizeof(double**)));
 if (!(a->a.d3))       dserror("Allocation of memory failed");
-a->a.d3[0]    = (double**) malloc((size_t)(fdim*sdim*sizeof(double*)));
+a->a.d3[0]    = (double**) MALLOC((fdim*sdim*sizeof(double*)));
 if (!(a->a.d3[0]))    dserror("Allocation of memory failed");
-a->a.d3[0][0] = (double*)  malloc((size_t)(fdim*sdim*tdim*sizeof(double)));
+a->a.d3[0][0] = (double*)  MALLOC((fdim*sdim*tdim*sizeof(double)));
 if (!(a->a.d3[0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.d3[i]    = &(a->a.d3[0][i*sdim]);
@@ -560,11 +702,11 @@ break;
 
 case I3: /* ----------------------------------------------int I3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
-a->a.i3       = (int***)malloc((size_t)(fdim*sizeof(int**)));
+a->a.i3       = (int***)MALLOC((fdim*sizeof(int**)));
 if (!(a->a.i3))       dserror("Allocation of memory failed");
-a->a.i3[0]    = (int**) malloc((size_t)(fdim*sdim*sizeof(int*)));
+a->a.i3[0]    = (int**) MALLOC((fdim*sdim*sizeof(int*)));
 if (!(a->a.i3[0]))    dserror("Allocation of memory failed");
-a->a.i3[0][0] = (int*)  malloc((size_t)(fdim*sdim*tdim*sizeof(int)));
+a->a.i3[0][0] = (int*)  MALLOC((fdim*sdim*tdim*sizeof(int)));
 if (!(a->a.i3[0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.i3[i]    = &(a->a.i3[0][i*sdim]);
@@ -573,13 +715,13 @@ for (i=1; i<endloop; i++) a->a.i3[0][i] = &(a->a.i3[0][0][i*tdim]);
 break;
 
 case D4: /* --------------------------------------------double D4 array */
-a->a.d4          = (double****)malloc((size_t)(fdim*sizeof(double***)));
+a->a.d4          = (double****)MALLOC((fdim*sizeof(double***)));
 if (!(a->a.d4))          dserror("Allocation of memory failed");
-a->a.d4[0]       = (double***) malloc((size_t)(fdim*sdim*sizeof(double**)));
+a->a.d4[0]       = (double***) MALLOC((fdim*sdim*sizeof(double**)));
 if (!(a->a.d4[0]))       dserror("Allocation of memory failed");
-a->a.d4[0][0]    = (double**)  malloc((size_t)(fdim*sdim*tdim*sizeof(double*)));
+a->a.d4[0][0]    = (double**)  MALLOC((fdim*sdim*tdim*sizeof(double*)));
 if (!(a->a.d4[0][0]))    dserror("Allocation of memory failed");
-a->a.d4[0][0][0] = (double*)   malloc((size_t)(fdim*sdim*tdim*fodim*sizeof(double)));
+a->a.d4[0][0][0] = (double*)   MALLOC((fdim*sdim*tdim*fodim*sizeof(double)));
 if (!(a->a.d4[0][0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.d4[i]       = &(a->a.d4[0][i*sdim]);
@@ -590,13 +732,13 @@ for (i=1; i<endloop; i++) a->a.d4[0][0][i] = &(a->a.d4[0][0][0][i*fodim]);
 break;
 
 case I4: /* ----------------------------------------------int I4 array */
-a->a.i4          = (int****)malloc((size_t)(fdim*sizeof(int***)));
+a->a.i4          = (int****)MALLOC((fdim*sizeof(int***)));
 if (!(a->a.i4))          dserror("Allocation of memory failed");
-a->a.i4[0]       = (int***) malloc((size_t)(fdim*sdim*sizeof(int**)));
+a->a.i4[0]       = (int***) MALLOC((fdim*sdim*sizeof(int**)));
 if (!(a->a.i4[0]))       dserror("Allocation of memory failed");
-a->a.i4[0][0]    = (int**)  malloc((size_t)(fdim*sdim*tdim*sizeof(int*)));
+a->a.i4[0][0]    = (int**)  MALLOC((fdim*sdim*tdim*sizeof(int*)));
 if (!(a->a.i4[0][0]))    dserror("Allocation of memory failed");
-a->a.i4[0][0][0] = (int*)   malloc((size_t)(fdim*sdim*tdim*fodim*sizeof(int)));
+a->a.i4[0][0][0] = (int*)   MALLOC((fdim*sdim*tdim*fodim*sizeof(int)));
 if (!(a->a.i4[0][0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.i4[i]       = &(a->a.i4[0][i*sdim]);
@@ -643,30 +785,26 @@ array->fodim=0;
 switch(array->Typ)
 {
 case D3:
-   free(array->a.d3[0][0]);
-   free(array->a.d3[0]);
-   free(array->a.d3);
-   array->a.d3=NULL;
+   FREE(array->a.d3[0][0]);
+   FREE(array->a.d3[0]);
+   array->a.d3=FREE(array->a.d3);
 break;
 case I3:
-   free(array->a.i3[0][0]);
-   free(array->a.i3[0]);
-   free(array->a.i3);
-   array->a.i3=NULL;
+   FREE(array->a.i3[0][0]);
+   FREE(array->a.i3[0]);
+   array->a.i3=FREE(array->a.i3);
 break;
 case D4:
-   free(array->a.d4[0][0][0]);
-   free(array->a.d4[0][0]);
-   free(array->a.d4[0]);
-   free(array->a.d4);
-   array->a.d4=NULL;
+   FREE(array->a.d4[0][0][0]);
+   FREE(array->a.d4[0][0]);
+   FREE(array->a.d4[0]);
+   array->a.d4=FREE(array->a.d4);
 break;
 case I4:
-   free(array->a.i4[0][0][0]);
-   free(array->a.i4[0][0]);
-   free(array->a.i4[0]);
-   free(array->a.i4);
-   array->a.i4=NULL;
+   FREE(array->a.i4[0][0][0]);
+   FREE(array->a.i4[0][0]);
+   FREE(array->a.i4[0]);
+   array->a.i4=FREE(array->a.i4);
 break;
 default:
 dserror("Unknown type of array given");
@@ -1020,3 +1158,7 @@ dstrc_exit();
 #endif
 return((void*)(array->a.d3));
 } /* end of am4redef */
+
+
+
+

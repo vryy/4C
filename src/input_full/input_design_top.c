@@ -61,7 +61,7 @@ for (i=0; i<design->ndvol; i++)
 for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
-   actdline->dnode = (DNODE**)calloc(2,sizeof(DNODE*));
+   actdline->dnode = (DNODE**)CALLOC(2,sizeof(DNODE*));
    if (!actdline->dnode) dserror("Allocation of memory failed");
    for (k=0; k<2; k++)
    {
@@ -83,7 +83,7 @@ for (i=0; i<design->ndline; i++)
       actdnode = actdline->dnode[j];
       if (actdnode->dline==NULL)
       {
-         actdnode->dline = (DLINE**)calloc(actdnode->ndline,sizeof(DLINE*));
+         actdnode->dline = (DLINE**)CALLOC(actdnode->ndline,sizeof(DLINE*));
          if (!actdnode->dline) dserror("Allocation of memory failed");
          actdnode->dline[0] = actdline;
       }
@@ -101,7 +101,7 @@ for (i=0; i<design->ndline; i++)
 for (i=0; i<design->ndsurf; i++)
 {
    actdsurf = &(design->dsurf[i]);
-   actdsurf->dline = (DLINE**)calloc(actdsurf->my_dlineId.fdim,sizeof(DLINE*));
+   actdsurf->dline = (DLINE**)CALLOC(actdsurf->my_dlineId.fdim,sizeof(DLINE*));
    if (!actdsurf->dline) dserror("Allocation of memory failed");
    for (k=0; k<actdsurf->my_dlineId.fdim; k++)
    {
@@ -123,7 +123,7 @@ for (i=0; i<design->ndsurf; i++)
       actdline = actdsurf->dline[j];
       if (actdline->dsurf==NULL)
       {
-         actdline->dsurf = (DSURF**)calloc(actdline->ndsurf,sizeof(DSURF*));
+         actdline->dsurf = (DSURF**)CALLOC(actdline->ndsurf,sizeof(DSURF*));
          if (!actdline->dsurf) dserror("Allocation of memory failed");
          actdline->dsurf[0] = actdsurf;
       }
@@ -141,7 +141,7 @@ for (i=0; i<design->ndsurf; i++)
 for (i=0; i<design->ndvol; i++)
 {
    actdvol = &(design->dvol[i]);
-   actdvol->dsurf = (DSURF**)calloc(actdvol->my_dsurfId.fdim,sizeof(DSURF**));
+   actdvol->dsurf = (DSURF**)CALLOC(actdvol->my_dsurfId.fdim,sizeof(DSURF**));
    if (!actdvol->dsurf) dserror("Allocation of memory failed");
    for (k=0; k<actdvol->my_dsurfId.fdim; k++)
    {
@@ -163,7 +163,7 @@ for (i=0; i<design->ndvol; i++)
       actdsurf = actdvol->dsurf[j];
       if (actdsurf->dvol==NULL)
       {
-         actdsurf->dvol = (DVOL**)calloc(actdsurf->ndvol,sizeof(DVOL*));
+         actdsurf->dvol = (DVOL**)CALLOC(actdsurf->ndvol,sizeof(DVOL*));
          if (!actdsurf->dvol) dserror("Allocation of memory failed");
          actdsurf->dvol[0] = actdvol;
       }
@@ -226,7 +226,7 @@ exit1:;
 for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
-   actdline->node = (NODE**)calloc(actdline->mynode.fdim,sizeof(NODE*));
+   actdline->node = (NODE**)CALLOC(actdline->mynode.fdim,sizeof(NODE*));
    if (actdline->node==NULL) dserror("Allocation of DLINE ptr to NODE failed");
 /*------------------------------- find the field this design is part off */   
    for (j=0; j<genprob.numfld; j++)
@@ -259,7 +259,7 @@ for (i=0; i<design->ndline; i++)
 for (i=0; i<design->ndsurf; i++)
 {
    actdsurf = &(design->dsurf[i]);
-   actdsurf->node = (NODE**)calloc(actdsurf->mynode.fdim,sizeof(NODE*));
+   actdsurf->node = (NODE**)CALLOC(actdsurf->mynode.fdim,sizeof(NODE*));
    if (actdsurf->node==NULL) dserror("Allocation of DSURF ptr to NODE failed");
 /*------------------------------- find the field this design is part off */   
    for (j=0; j<genprob.numfld; j++)
@@ -292,7 +292,7 @@ for (i=0; i<design->ndsurf; i++)
 for (i=0; i<design->ndvol; i++)
 {
    actdvol = &(design->dvol[i]);
-   actdvol->node = (NODE**)calloc(actdvol->mynode.fdim,sizeof(NODE*));
+   actdvol->node = (NODE**)CALLOC(actdvol->mynode.fdim,sizeof(NODE*));
    if (actdvol->node==NULL) dserror("Allocation of DVOL ptr to NODE failed");
 /*------------------------------- find the field this design is part off */   
    for (j=0; j<genprob.numfld; j++)

@@ -103,7 +103,7 @@ action      = &(calc_action[0]);
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 #else
-actintra    = (INTRA*)calloc(1,sizeof(INTRA));
+actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
 actintra->intra_fieldtyp = structure;
 actintra->intra_rank   = 0;
@@ -219,7 +219,7 @@ solserv_result_total(
 /*----------------------------------------------------------------------*/
 end:
 #ifndef PARALLEL 
-free(actintra);
+FREE(actintra);
 #endif
 #ifdef DEBUG 
 dstrc_exit();

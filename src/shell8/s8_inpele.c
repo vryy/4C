@@ -24,7 +24,7 @@ int  nhyb=0;
 dstrc_enter("s8inp");
 #endif
 /*------------------------------------------------ allocate the element */      
-ele->e.s8 = (SHELL8*)calloc(1,sizeof(SHELL8));
+ele->e.s8 = (SHELL8*)CALLOC(1,sizeof(SHELL8));
 if (ele->e.s8==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
@@ -32,7 +32,7 @@ if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -42,7 +42,7 @@ if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -52,7 +52,7 @@ if (ierr==1)
 {
    ele->distyp = quad9;
    ele->numnp=9;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -62,7 +62,7 @@ if (ierr==1)
 {
    ele->distyp = tri3;
    ele->numnp=3;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -72,7 +72,7 @@ if (ierr==1)
 {
    ele->distyp = tri6;
    ele->numnp=6;
-   ele->lm = (int*)calloc(ele->numnp,sizeof(int));
+   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");

@@ -19,13 +19,67 @@ extern struct _FILES  allfiles;
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | global variable  num_byte_allocated                                  |
+ | long int num_byte_allocated                                          |
+ *----------------------------------------------------------------------*/
+#ifdef DEBUG
+extern long int num_byte_allocated;
+#endif
+
+
+/*----------------------------------------------------------------------*
+ | report the amount of actual allocated memory           m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+void dsmemreport()
+{
+#ifdef DEBUG 
+char   *colptr;
+char    message[300];
+double  mbyte;
+/*----------------------------------------------------------------------*/
+mbyte = (double)num_byte_allocated;
+mbyte /= 1048576.0;
+
+if (trace.trace_on==1)
+{
+   strcpy(message,"PROC ");
+   colptr = message + strlen(message); 
+   sprintf(colptr,"%d",par.myrank);
+   colptr = message + strlen(message);
+   strcpy(colptr," memory used in ");
+   colptr = message + strlen(message);
+   strcpy(colptr,trace.actroutine->name);
+   colptr = message + strlen(message); 
+   strcpy(colptr," : ");
+   colptr = message + strlen(message);
+   sprintf(colptr,"%.6f MegaByte\n",mbyte); 
+}
+else
+{
+   strcpy(message,"PROC ");
+   colptr = message + strlen(message); 
+   sprintf(colptr,"%d",par.myrank);
+   colptr = message + strlen(message);
+   strcpy(colptr," memory used : ");
+   colptr = message + strlen(message);
+   sprintf(colptr,"%.6f MegaByte\n",mbyte); 
+}
+fprintf(allfiles.out_err,"%s",message);
+printf (                 "%s",message);
+/*----------------------------------------------------------------------*/
+#endif
+return;
+} /* end of dserror */
+
+
 
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void dserror(char string[])
 {
-
 int i=0;
 char message[300];
 char *colptr=NULL;
@@ -47,11 +101,8 @@ strcpy(colptr,string);
 
 fprintf(allfiles.out_err,"================================================================\n");
 fprintf(allfiles.out_err,"%s\n",message); 
-
 printf("=========================================================================\n");
 printf("%s\n",message); 
-
-
 
 fprintf(allfiles.out_err,"This routine was called by:\n");
 printf("This routine was called by:\n");
@@ -62,10 +113,6 @@ routhis = routhis->prev;
 fprintf(allfiles.out_err,"%s\n",routhis->name);
 printf("%s\n",routhis->name);
 }
-
-
-
-
 
 fprintf(allfiles.out_err,"================================================================\n");
 printf("=========================================================================\n");
@@ -90,10 +137,8 @@ MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
 exit(EXIT_FAILURE);
 #endif
-
 return;
 } /* end of dserror */
-
 
 
 /*----------------------------------------------------------------------*
@@ -103,12 +148,27 @@ void dsinit()
 {
 #ifdef DEBUG 
 int i=0;
+/*====================================================tracing of memory */
+/* 
+   num_byte_allocated is a global variable which can be seen here and in
+   pss_am.c, where it is defined
+*/   
+num_byte_allocated=0;
+/*---------------------------------------------- check for memory sizes */
+/*
+the routine CALLOC uses unsigned char to allocate internally, so it is
+necessary, that unsigned char is exactly one byte in DEBUG mode 
+*/
+if (sizeof(unsigned char) != 1)
+{
+   dserror("unsigned char not 1 byte - will have CALLOC problems !!!");
+}
 /*================================================tracing of arrays=====*/
 trace.num_arrays=0;
 /*----------- start with the possibility to trace 1000 int and doubles; */
 trace.size_arrays=1000;
 /*------------------------allocate space for the pointers to the arrays */
-trace.arrays    = (ARRAY**)calloc(trace.size_arrays,sizeof(ARRAY*));
+trace.arrays    = (ARRAY**)CALLOC(trace.size_arrays,sizeof(ARRAY*));
 if (trace.arrays == NULL) dserror("Allocation of memory failed\n");
 /*-------------------------------------------------------init with NULL */
 for (i=0; i<trace.size_arrays; i++) trace.arrays[i]=NULL;
@@ -140,10 +200,8 @@ strcpy(trace.routine[2].name,"ntaini");
 trace.routine[2].dsroutcontrol = dsin;
 
 trace.actroutine = &(trace.routine[2]);
-
 /*======================================================tracing of time */
 /* nothing implemented yet */
-
 #endif
 return;
 } /* end of dsinit */
@@ -158,11 +216,8 @@ void dstrc_enter(char string[])
 if (trace.trace_on==1)
 {
 trace.actroutine = trace.actroutine->next;
-
 strncpy(trace.actroutine->name,string,49);
-
 trace.actroutine->dsroutcontrol=dsin;
-
 trace.deepness++;
 }
 #endif
@@ -205,7 +260,7 @@ dstrc_enter("dstracesize");
    }
    else /*----------------------------------tracing is enlarged in steps of 200 */
    {
-      trace.arrays=realloc(trace.arrays,(trace.size_arrays+1000)*sizeof(ARRAY*));
+      trace.arrays=REALLOC(trace.arrays,(trace.size_arrays+1000)*sizeof(ARRAY*));
       if (trace.arrays==NULL) dserror("Enlargement of tracing failed");
       for (i=trace.size_arrays; i<trace.size_arrays+1000; i++)
       {
@@ -213,8 +268,6 @@ dstrc_enter("dstracesize");
       }
       trace.size_arrays+=1000;
    }
-
-
 dstrc_exit();
 #endif
 return;

@@ -63,7 +63,7 @@ dstrc_enter("inpctr");
    {
       if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
       
-      solv = (SOLVAR*)calloc(genprob.numfld,sizeof(SOLVAR));
+      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
       if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[0].fieldtyp = structure;
@@ -79,7 +79,7 @@ dstrc_enter("inpctr");
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
       
-      solv = (SOLVAR*)calloc(genprob.numfld,sizeof(SOLVAR));
+      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
       if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[0].fieldtyp = structure;
@@ -219,7 +219,7 @@ dstrc_enter("inpctrstat");
 #endif
 /*----------------------------------------------------------------------*/
 /*----------------------------------------- allocate a structure STATIC */
-statvar = (STATIC_VAR*)calloc(1,sizeof(STATIC_VAR));
+statvar = (STATIC_VAR*)CALLOC(1,sizeof(STATIC_VAR));
 if (!statvar) dserror("Allocation of STATIC failed");
 /*------------------------------------------------------- start reading */
 frfind("-STATIC");
@@ -301,7 +301,7 @@ FIELD *actfield;
 dstrc_enter("inpctrdyn");
 #endif
 /*----------------------------------------------------------------------*/
-dyn = (DYNAMIC*)calloc(genprob.numfld,sizeof(DYNAMIC));
+dyn = (DYNAMIC*)CALLOC(genprob.numfld,sizeof(DYNAMIC));
 if (!dyn) dserror("Allocation of DYNAMIC failed");
 /*----------------------------------------------------------------------*/
 for (i=0; i<genprob.numfld; i++)
@@ -314,7 +314,7 @@ for (i=0; i<genprob.numfld; i++)
    case ale:
    break;
    case structure:
-      dyn[i].sdyn = (STRUCT_DYNAMIC*)calloc(1,sizeof(STRUCT_DYNAMIC));
+      dyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));
       if (!dyn[i].sdyn) dserror("Allocation of DYNAMIC failed");
       inpctr_dyn_struct(dyn[i].sdyn);
    break;

@@ -55,7 +55,7 @@ dstrc_enter("part_assignfield");
 #endif
 /*----------------------------------------------------------------------*/
 /*---------------------------------- every proc alloc numfld PARTITIONs */
-partition = (PARTITION*)calloc(genprob.numfld,sizeof(PARTITION));
+partition = (PARTITION*)CALLOC(genprob.numfld,sizeof(PARTITION));
 if (partition==NULL) dserror("Allocation of PARTITION failed");
 /*----------------------------------------------------- loop all fields */
 for (i=0; i<genprob.numfld; i++)
@@ -66,7 +66,7 @@ for (i=0; i<genprob.numfld; i++)
 #ifdef PARALLEL 
    actintra = &(par.intra[i]);
 #else
-   actintra    = (INTRA*)calloc(1,sizeof(INTRA));
+   actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
    if (!actintra) dserror("Allocation of INTRA failed");
    actintra->intra_fieldtyp = actfield->fieldtyp;
    actintra->intra_rank   = 0;
@@ -84,8 +84,8 @@ for (i=0; i<genprob.numfld; i++)
       actpart->bou_numele  = 0;
       actpart->bou_element = NULL;
       actpart->bou_node    = NULL;
-      actpart->element = (ELEMENT**)calloc(actpart->numele,sizeof(ELEMENT*));
-      actpart->node    = (NODE**)calloc(actpart->numnp,sizeof(NODE*));
+      actpart->element = (ELEMENT**)CALLOC(actpart->numele,sizeof(ELEMENT*));
+      actpart->node    = (NODE**)CALLOC(actpart->numnp,sizeof(NODE*));
       if (actpart->element==NULL) dserror("Allocation of element pointer in PARTITION failed");
       if (actpart->node==NULL)    dserror("Allocation of node pointer in PARTITION failed");
       for (j=0; j<actfield->numele; j++) actpart->element[j] = &(actfield->element[j]);
@@ -125,7 +125,7 @@ for (i=0; i<genprob.numfld; i++)
             }
          }
          actpart->numele  = counter;
-         actpart->element = (ELEMENT**)calloc(counter,sizeof(ELEMENT*));
+         actpart->element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
          if (actpart->element == NULL) dserror("Allocation of ELEMENT ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->numele; j++)
@@ -147,7 +147,7 @@ for (i=0; i<genprob.numfld; i++)
             if (actfield->node[j].proc == imyrank) counter++;
          }
          actpart->numnp = counter;
-         actpart->node = (NODE**)calloc(counter,sizeof(NODE*));
+         actpart->node = (NODE**)CALLOC(counter,sizeof(NODE*));
          if (actpart->node==NULL) dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->numnp; j++)
@@ -185,8 +185,8 @@ for (i=0; i<genprob.numfld; i++)
          }
          actpart->inner_numele = counter;
          actpart->bou_numele   = counter2;
-         actpart->inner_element = (ELEMENT**)calloc(counter,sizeof(ELEMENT*));
-         actpart->bou_element = (ELEMENT**)calloc(counter2,sizeof(ELEMENT*));
+         actpart->inner_element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
+         actpart->bou_element = (ELEMENT**)CALLOC(counter2,sizeof(ELEMENT*));
          if (actpart->inner_element==NULL || actpart->bou_element==NULL)
          dserror("Allocation of PARTITION to ELEMENT pointer failed");
          counter=0;
@@ -230,7 +230,7 @@ for (i=0; i<genprob.numfld; i++)
             if (actfield->element[j].proc == imyrank) counter++;
          }
          actpart->numele = counter;
-         actpart->element = (ELEMENT**)calloc(counter,sizeof(ELEMENT*));
+         actpart->element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
          if (actpart->element==NULL) dserror("Allocation of ELEMENT ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->numele; j++)
@@ -257,7 +257,7 @@ for (i=0; i<genprob.numfld; i++)
             }
          }
          actpart->numnp = counter;
-         actpart->node = (NODE**)calloc(counter,sizeof(NODE*));
+         actpart->node = (NODE**)CALLOC(counter,sizeof(NODE*));
          if (actpart->node==NULL) dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->numnp; j++)
@@ -300,8 +300,8 @@ for (i=0; i<genprob.numfld; i++)
          }
          actpart->inner_numnp=counter;
          actpart->bou_numnp  =counter2;
-         actpart->inner_node = (NODE**)calloc(counter,sizeof(NODE*));
-         actpart->bou_node   = (NODE**)calloc(counter2,sizeof(NODE*));
+         actpart->inner_node = (NODE**)CALLOC(counter,sizeof(NODE*));
+         actpart->bou_node   = (NODE**)CALLOC(counter2,sizeof(NODE*));
          if (actpart->inner_node==NULL || actpart->bou_node==NULL)
          dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
@@ -337,7 +337,7 @@ for (i=0; i<genprob.numfld; i++)
 
    } /* end of inprocs > 1 */
 #ifndef PARALLEL 
-free(actintra);
+FREE(actintra);
 #endif
 }/* end of loop over fields */
 /*----------------------------------------------------------------------*/

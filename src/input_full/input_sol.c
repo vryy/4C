@@ -54,7 +54,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("MLIB package is not compiled in");
 #endif
          solv->solvertyp = mlib_d_sp;
-         solv->mlvar = (MLVAR*)calloc(1,sizeof(MLVAR));
+         solv->mlvar = (MLVAR*)CALLOC(1,sizeof(MLVAR));
          if (!(solv->mlvar)) dserror("Allocation of MLVAR failed");
          mlvar = solv->mlvar;
       }
@@ -65,7 +65,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Aztec package is not compiled in");
 #endif
          solv->solvertyp = aztec_msr;
-         solv->azvar = (AZVAR*)calloc(1,sizeof(AZVAR));
+         solv->azvar = (AZVAR*)CALLOC(1,sizeof(AZVAR));
          if (!(solv->azvar)) dserror("Allocation of AZVAR failed");
          azvar = solv->azvar;
       }
@@ -76,7 +76,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Hypre package is not compiled in");
 #endif
          solv->solvertyp = hypre_amg;
-         solv->hyprevar = (HYPREVARS*)calloc(1,sizeof(HYPREVARS));
+         solv->hyprevar = (HYPREVARS*)CALLOC(1,sizeof(HYPREVARS));
          if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
@@ -87,7 +87,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Hypre package is not compiled in");
 #endif
          solv->solvertyp = hypre_pcg;
-         solv->hyprevar = (HYPREVARS*)calloc(1,sizeof(HYPREVARS));
+         solv->hyprevar = (HYPREVARS*)CALLOC(1,sizeof(HYPREVARS));
          if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
@@ -98,7 +98,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Hypre package is not compiled in");
 #endif
          solv->solvertyp = hypre_gmres;
-         solv->hyprevar = (HYPREVARS*)calloc(1,sizeof(HYPREVARS));
+         solv->hyprevar = (HYPREVARS*)CALLOC(1,sizeof(HYPREVARS));
          if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
@@ -109,7 +109,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Hypre package is not compiled in");
 #endif
          solv->solvertyp = hypre_bicgstab;
-         solv->hyprevar = (HYPREVARS*)calloc(1,sizeof(HYPREVARS));
+         solv->hyprevar = (HYPREVARS*)CALLOC(1,sizeof(HYPREVARS));
          if (!(solv->hyprevar)) dserror("Allocation of HYPREVARS failed");
          hyprevars = solv->hyprevar;
       }
@@ -120,7 +120,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("ParSuperLU package is not compiled in");
 #endif
          solv->solvertyp = parsuperlu;
-         solv->psuperluvars = (PSUPERLUVARS*)calloc(1,sizeof(PSUPERLUVARS));
+         solv->psuperluvars = (PSUPERLUVARS*)CALLOC(1,sizeof(PSUPERLUVARS));
          if (!(solv->psuperluvars)) dserror("Allocation of PSUPERLUVARS failed");
          psuperluvars = solv->psuperluvars;
       }
@@ -128,7 +128,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp("LAPACK_sym",buffer,10)==0) 
       {
          solv->solvertyp = lapack_sym;
-         solv->lapackvars = (LAPACKVARS*)calloc(1,sizeof(LAPACKVARS));
+         solv->lapackvars = (LAPACKVARS*)CALLOC(1,sizeof(LAPACKVARS));
          if (!(solv->lapackvars)) dserror("Allocation of LAPACKVARS failed");
          lapackvars = solv->lapackvars;
       }
@@ -136,7 +136,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp("LAPACK_nonsym",buffer,13)==0) 
       {
          solv->solvertyp = lapack_nonsym;
-         solv->lapackvars = (LAPACKVARS*)calloc(1,sizeof(LAPACKVARS));
+         solv->lapackvars = (LAPACKVARS*)CALLOC(1,sizeof(LAPACKVARS));
          if (!(solv->lapackvars)) dserror("Allocation of LAPACKVARS failed");
          lapackvars = solv->lapackvars;
       }
@@ -147,7 +147,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("MUMPS package is not compiled in");
 #endif
          solv->solvertyp = mumps_sym;
-         solv->mumpsvars = (MUMPSVARS*)calloc(1,sizeof(MUMPSVARS));
+         solv->mumpsvars = (MUMPSVARS*)CALLOC(1,sizeof(MUMPSVARS));
          if (!(solv->mumpsvars)) dserror("Allocation of MUMPSVARS failed");
          mumpsvars = solv->mumpsvars;
       }
@@ -158,7 +158,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("MUMPS package is not compiled in");
 #endif
          solv->solvertyp = mumps_nonsym;
-         solv->mumpsvars = (MUMPSVARS*)calloc(1,sizeof(MUMPSVARS));
+         solv->mumpsvars = (MUMPSVARS*)CALLOC(1,sizeof(MUMPSVARS));
          if (!(solv->mumpsvars)) dserror("Allocation of MUMPSVARS failed");
          mumpsvars = solv->mumpsvars;
       }
@@ -166,7 +166,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp("Colsol",buffer,6)==0) 
       {
          solv->solvertyp = colsol_solver;
-         solv->colsolvars = (COLSOLVARS*)calloc(1,sizeof(COLSOLVARS));
+         solv->colsolvars = (COLSOLVARS*)CALLOC(1,sizeof(COLSOLVARS));
          if (!(solv->colsolvars)) dserror("Allocation of COLSOLVARS failed");
          colsolvars = solv->colsolvars;
       }

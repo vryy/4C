@@ -43,7 +43,7 @@ fprintf(out,"# P_CARAT postprocessing output to GID\n");
 fprintf(out,"#-------------------------------------------------------------------------------\n");
 /*----------------------------------------------------------------------*/
 /*------------------------- check number of fields and allocate storage */
-gid = (GIDSET*)calloc(genprob.numfld,sizeof(GIDSET));
+gid = (GIDSET*)CALLOC(genprob.numfld,sizeof(GIDSET));
 if (!gid) dserror("Allocation of memory failed");
 /*--------------------------------------- loop all fields and init data */
 for (i=0; i<genprob.numfld; i++)

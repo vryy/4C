@@ -122,7 +122,7 @@ for (i=0; i<genprob.numfld; i++)
 #ifdef PARALLEL 
    actintra = &(par.intra[i]);
 #else
-   actintra    = (INTRA*)calloc(1,sizeof(INTRA));
+   actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
    if (!actintra) dserror("Allocation of INTRA failed");
    actintra->intra_rank     = 0;
    actintra->intra_nprocs   = 1;
@@ -214,7 +214,7 @@ fprintf(out,"___________________________________________________________________
 /*----------------------------------------------------------------------*/
 fflush(out);
 #ifndef PARALLEL 
-free(actintra);
+FREE(actintra);
 #endif
 #ifdef DEBUG 
 dstrc_exit();

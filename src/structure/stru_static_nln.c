@@ -110,7 +110,7 @@ action      = &(calc_action[0]);
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
 #else
-actintra    = (INTRA*)calloc(1,sizeof(INTRA));
+actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
 actintra->intra_fieldtyp = structure;
 actintra->intra_rank     = 0;
@@ -253,6 +253,8 @@ if (par.myrank==0)
 /*----------------------------------------------------------------------*/
 for (kstep=0; kstep<nstep; kstep++)
 {
+   /*---------------------------------------------- write memory report */
+   dsmemreport(actintra);
    /*--------------------------------------------------- make predictor */
    /*dstrace_to_err();*/
    conpre(
@@ -270,7 +272,6 @@ for (kstep=0; kstep<nstep; kstep++)
            controltyp
          );
    /*-------------------------------------- make equillibrium iteration */  
-   /*dstrace_to_err();*/
    conequ(
            actfield,
            actsolv,
@@ -287,7 +288,6 @@ for (kstep=0; kstep<nstep; kstep++)
           &nln_data,
            controltyp
          );    
-   /*dstrace_to_err();*/
    /*-- update for nonlinear material models - new stress/strain values */  
    *action = calc_struct_update_istep;
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,action);
@@ -317,7 +317,7 @@ for (kstep=0; kstep<nstep; kstep++)
 /*----------------------------------------------------------------------*/
 end:
 #ifndef PARALLEL 
-free(actintra);
+FREE(actintra);
 #endif
 #ifdef DEBUG 
 dstrc_exit();

@@ -49,7 +49,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    if (actnode->c==NULL)
    {
-      actnode->c=(COND_NODE*)calloc(1,sizeof(COND_NODE));
+      actnode->c=(COND_NODE*)CALLOC(1,sizeof(COND_NODE));
       if (actnode->c==NULL) dserror("Allocation of   COND_NODE failed"); 
       actnode->c->isneum=0;
       actnode->c->isdirich=0;
@@ -143,7 +143,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    if (actnode->c==NULL)
    {
-      actnode->c=(COND_NODE*)calloc(1,sizeof(COND_NODE));
+      actnode->c=(COND_NODE*)CALLOC(1,sizeof(COND_NODE));
       if (actnode->c==NULL) dserror("Allocation of   COND_NODE failed"); 
       actnode->c->dirich_onoff.a.iv=NULL;
       actnode->c->dirich_val.a.iv  =NULL;

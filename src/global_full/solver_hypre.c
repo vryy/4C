@@ -889,11 +889,11 @@ dstrc_enter("hypre_create_precond_euclid");
 err+=HYPRE_EuclidCreate(actintra->MPI_INTRA_COMM,precond);
 /*----------------------------------- allocate char space for arguments */
 numarg=4;
-args = (char**)calloc(numarg,sizeof(char*));
+args = (char**)CALLOC(numarg,sizeof(char*));
 if (!args) dserror("Allocation for Euclid failed");
 for (i=0; i<numarg; i++) 
 {
-   args[i] = (char*)calloc(15,sizeof(char));
+   args[i] = (char*)CALLOC(15,sizeof(char));
    if (!args[i]) dserror("Allocation for Euclid failed");
 }
 /*------------------------------------------- set fill level for ilu(k) */
@@ -914,8 +914,8 @@ sprintf(args[3],"-bj 0");
 /*-------------------------------------------- pass arguments to Euclid */
 err+=HYPRE_EuclidSetParams(*precond,numarg,args);
 /*-------------------------------------------- free space for arguments */
-for (i=0; i<numarg; i++) free(args[i]);
-free(args);
+for (i=0; i<numarg; i++) FREE(args[i]);
+FREE(args);
 /*----------------------------------------------------------------------*/
 if (err) dserror("error in calling solver package HYPRE");   
 /*----------------------------------------------------------------------*/

@@ -50,7 +50,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    if (actnode->c==NULL)
    {
-      actnode->c=(COND_NODE*)calloc(1,sizeof(COND_NODE));
+      actnode->c=(COND_NODE*)CALLOC(1,sizeof(COND_NODE));
       if (actnode->c==NULL) dserror("Allocation of COND_NODE failed"); 
       actnode->c->isneum=0;
       actnode->c->isdirich=0;
@@ -125,7 +125,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    if (actnode->c==NULL)
    {
-      actnode->c=(COND_NODE*)calloc(1,sizeof(COND_NODE));
+      actnode->c=(COND_NODE*)CALLOC(1,sizeof(COND_NODE));
       if (actnode->c==NULL) dserror("Allocation of COND_NODE failed"); 
       actnode->c->isneum=0;
       actnode->c->isdirich=0;
@@ -222,7 +222,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------- allocate a condition structure to the element */   
    if (actele->c==NULL)
    {
-      actele->c = (COND_ELEMENT*)calloc(1,sizeof(COND_ELEMENT));
+      actele->c = (COND_ELEMENT*)CALLOC(1,sizeof(COND_ELEMENT));
       if (actele->c==0) dserror("Allocation of COND_ELEMENT failed");
       actele->c->neum_onoff.a.iv=NULL;
       actele->c->neum_val.a.iv=NULL;
