@@ -3,6 +3,7 @@
 \brief read fluid2 element
 
 ------------------------------------------------------------------------*/
+#ifdef D_FLUID2 
 #include "../headers/standardtypes.h" 
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
@@ -54,3 +55,4 @@ dstrc_exit();
 return;
 } /* end of f2tu_dis */
 
+#endif

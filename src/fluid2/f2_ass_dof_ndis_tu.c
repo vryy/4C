@@ -3,7 +3,7 @@
 \brief assign dofs to nodes for one fluid2 element for turbulence
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID
 #include "../headers/standardtypes.h"
 
 /*----------------------------------------------------------------------*
