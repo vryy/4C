@@ -162,12 +162,12 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
 #endif
 
   fprintf(err,"actual = %24.16f, given = %24.16f\n", actresult, givenresult);
-  if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult))) {
+  if (!(FABS(FABS(actresult-givenresult)-FABS(actresult-givenresult)) < res->tolerance)) {
     printf("RESULTCHECK: %s is NAN!\n", res->name);
     ret = 1;
   }
   else if (FABS(actresult-givenresult) > res->tolerance) {
-    printf("RESULTCHECK: %s not correct!\n", res->name);
+    printf("RESULTCHECK: %s not correct. actresult=%f, givenresult=%f\n", res->name, actresult, givenresult);
     ret = 1;
   }
 
