@@ -16,6 +16,7 @@ typedef struct _NEUM_CONDITION
      {
      neum_none,
      neum_live,
+     pres_domain_load,
      neum_consthydro_z,
      neum_increhydro_z
      }                         neum_type;
