@@ -22,7 +22,7 @@ int     **dof_connect;
 dstrc_enter("mask_mds");
 #endif
 /*------------------------------------------- put total size of problem */
- mds->numeq = actfield->numeq;
+ mds->numeq = actfield->dis[0].numeq;
 /*---------------------------------------------- allocate vector colstr */
  amdef("colstr1",&(mds->colstr),numeq,1,"IV");
  amzero(&(mds->colstr));

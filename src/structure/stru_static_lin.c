@@ -78,7 +78,6 @@ void stalin()
 int           i;                /* a counter */
 int           numeq;            /* number of equations on this proc */
 int           numeq_total;      /* total number of equations over all procs */
-int           numdf;            /* number of dofs over all procs */
 int           init;             /* init flag for solver */
 int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
@@ -112,7 +111,6 @@ actintra->intra_nprocs   = 1;
 /*- there are only procs allowed in here, that belong to the structural */
 /*    intracommunicator (in case of linear statics, this should be all) */
 if (actintra->intra_fieldtyp != structure) goto end;
-numdf       = actfield->numdf;
 /*------------------------------------------------ typ of global matrix */
 array_typ   = actsolv->sysarray_typ[actsysarray];
 switch(array_typ)

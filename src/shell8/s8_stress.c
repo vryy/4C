@@ -312,9 +312,9 @@ inprocs = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
 buffer = amdef("tmp",&mpi_buffer,18,MAXGAUSS,"DA");
 /*----------------------------------------------------------------------*/
-for (i=0; i<actfield->numele; i++)
+for (i=0; i<actfield->dis[0].numele; i++)
 {
-   actele = &(actfield->element[i]);
+   actele = &(actfield->dis[0].element[i]);
    /*-------------------- there could be other elements in here as well */
    if (actele->eltyp != el_shell8) continue;
    /* check the size of the array to store stresses, should be at least */

@@ -131,8 +131,15 @@ int               struct_stress_gid;   /* write structural stresses to .flavia.r
  *----------------------------------------------------------------------*/
 typedef struct _FIELD
 {
-enum _FIELDTYP    fieldtyp;       /* typ of field */
-
+enum _FIELDTYP     fieldtyp;      /* typ of field */
+int                ndis;          /* number of discretizations in this field */
+struct _DISCRET   *dis;           /* structure holding a number of discretisations */
+} FIELD;
+/*----------------------------------------------------------------------*
+ | this structure hold one discretization of a field      m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+typedef struct _DISCRET
+{
 int               numnp;          /* number of nodes in this field */                          
 int               numele;         /* number of elements in this field */
 int               numeq;          /* number of unknowns */
@@ -140,8 +147,7 @@ int               numdf;          /* number of degrees of freedom */
 
 struct _ELEMENT   *element;       /* vector of elements */
 struct _NODE      *node;          /* vector of nodes */
-
-} FIELD;
+} DISCRET;
 
 
 

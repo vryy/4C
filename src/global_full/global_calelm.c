@@ -243,9 +243,9 @@ dstrc_enter("calinit");
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 /*--------------------what kind of elements are there in this example ? */
-for (i=0; i<actfield->numele; i++)
+for (i=0; i<actfield->dis[0].numele; i++)
 {
-   actele = &(actfield->element[i]);
+   actele = &(actfield->dis[0].element[i]);
    switch(actele->eltyp)
    {
    case el_shell8:
@@ -334,9 +334,9 @@ dstrc_enter("calreduce");
 #endif
 /*----------------------------------------------------------------------*/
 /*--------------------what kind of elements are there in this example ? */
-for (i=0; i<actfield->numele; i++)
+for (i=0; i<actfield->dis[0].numele; i++)
 {
-   actele = &(actfield->element[i]);
+   actele = &(actfield->dis[0].element[i]);
    switch(actele->eltyp)
    {
    case el_shell8:

@@ -304,7 +304,7 @@ break;
 coupledofs = &(actpart->coupledofs);
 numsend = 0;
 numrecv = 0;
-numeq   = actfield->numeq;
+numeq   = actfield->dis[0].numeq;
 /* 
    An inter-proc coupled equation produces communications calculating the 
    sparsity mask of the matrix

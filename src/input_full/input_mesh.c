@@ -131,9 +131,9 @@ dstrc_enter("inp_assign_nodes");
 amdef("nodeflag",&nodeflag,genprob.nnode,1,"IV");
 aminit(&nodeflag,&minusone);
 /*----------------  set a flag to the node_id for each node in the field */
-for (i=0; i<field->numele; i++)
+for (i=0; i<field->dis[0].numele; i++)
 {
-   actele = &(field->element[i]);
+   actele = &(field->dis[0].element[i]);
    for (j=0; j<actele->numnp; j++)
    {
       node_Id = actele->lm[j];
@@ -146,20 +146,20 @@ for (i=0; i<genprob.nnode; i++)
 {
    if (nodeflag.a.iv[i]!=-1) counter++;
 }
-field->numnp=counter;
+field->dis[0].numnp=counter;
 /*-------------------------------------- Allocate the nodes to the field */
-field->node = (NODE*)CALLOC(field->numnp,sizeof(NODE));
-if (field->node==NULL) dserror("Allocation of nodes failed");
+field->dis[0].node = (NODE*)CALLOC(field->dis[0].numnp,sizeof(NODE));
+if (field->dis[0].node==NULL) dserror("Allocation of nodes failed");
 /*---------------- assign the node Ids and coords to the NODE structure */
 counter=0;
 for (i=0; i<genprob.nnode; i++)
 {
    if (nodeflag.a.iv[i]!=-1)
    {
-      field->node[counter].Id = nodeflag.a.iv[i];
+      field->dis[0].node[counter].Id = nodeflag.a.iv[i];
       for (j=0; j<3; j++)
       {
-         field->node[counter].x[j] = tmpnodes1.a.da[i][j];
+         field->dis[0].node[counter].x[j] = tmpnodes1.a.da[i][j];
       }
       counter++;
    }
@@ -235,6 +235,10 @@ char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_struct_field");
 #endif
+/*----------------------------------------- allocate one discretization */
+structfield->ndis=1;
+structfield->dis = (DISCRET*)CALLOC(structfield->ndis,sizeof(DISCRET));
+if (!structfield->dis) dserror("Allocation of memory failed");
 /*-------------------------------------------- count number of elements */
 frrewind();
 frfind("--STRUCTURE ELEMENTS");
@@ -245,10 +249,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 frrewind();
-structfield->numele = counter;
+structfield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
-structfield->element=(ELEMENT*)CALLOC(structfield->numele,sizeof(ELEMENT));
-if (structfield->element==NULL) dserror("Allocation of ELEMENT failed");
+structfield->dis[0].element=(ELEMENT*)CALLOC(structfield->dis[0].numele,sizeof(ELEMENT));
+if (structfield->dis[0].element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
 frfind("--STRUCTURE ELEMENTS");
@@ -258,7 +262,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    colpointer = allfiles.actplace;
    elenumber  = strtol(colpointer,&colpointer,10);
-   structfield->element[counter].Id = --elenumber;
+   structfield->dis[0].element[counter].Id = --elenumber;
 /*---------- read the typ of element and call element readning function */
 /*------------------------------------------------ elementtyp is SHELL8 */
    frchk("SHELL8",&ierr);
@@ -271,8 +275,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_SHELL8 
    if (ierr==1) 
    {
-      structfield->element[counter].eltyp=el_shell8;
-      s8inp(&(structfield->element[counter]));
+      structfield->dis[0].element[counter].eltyp=el_shell8;
+      s8inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*------------------------------------------------ elementtyp is BRICK1 */
@@ -286,8 +290,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_BRICK1 
    if (ierr==1) 
    {
-      structfield->element[counter].eltyp=el_brick1;
-      b1inp(&(structfield->element[counter]));
+      structfield->dis[0].element[counter].eltyp=el_brick1;
+      b1inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*------------------------------------------------ elementtyp is WALL  */
@@ -301,8 +305,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_WALL1 
    if (ierr==1) 
    {
-      structfield->element[counter].eltyp=el_wall1;
-      w1inp(&(structfield->element[counter]));
+      structfield->dis[0].element[counter].eltyp=el_wall1;
+      w1inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*--------------------------------------------other structural elements */
@@ -337,6 +341,10 @@ char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_fluid_field");
 #endif
+/*----------------------------------------- allocate one discretization */
+fluidfield->ndis=1;
+fluidfield->dis = (DISCRET*)CALLOC(fluidfield->ndis,sizeof(DISCRET));
+if (!fluidfield->dis) dserror("Allocation of memory failed");
 /*-------------------------------------------- count number of elements */
 frrewind();
 frfind("--FLUID ELEMENTS");
@@ -347,10 +355,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 frrewind();
-fluidfield->numele = counter;
+fluidfield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
-fluidfield->element=(ELEMENT*)CALLOC(fluidfield->numele,sizeof(ELEMENT));
-if (fluidfield->element==NULL) dserror("Allocation of ELEMENT failed");
+fluidfield->dis[0].element=(ELEMENT*)CALLOC(fluidfield->dis[0].numele,sizeof(ELEMENT));
+if (fluidfield->dis[0].element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
 frfind("--FLUID ELEMENTS");
@@ -360,7 +368,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    colpointer = allfiles.actplace;
    elenumber  = strtol(colpointer,&colpointer,10);
-   fluidfield->element[counter].Id = --elenumber;
+   fluidfield->dis[0].element[counter].Id = --elenumber;
 /*---------- read the typ of element and call element readning function */
 /*------------------------------------------------ elementtyp is FLUID3 */
    frchk("FLUID3",&ierr);
@@ -373,8 +381,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_FLUID3 
    if (ierr==1) 
    {
-      fluidfield->element[counter].eltyp=el_fluid3;
-      f3inp(&(fluidfield->element[counter]));
+      fluidfield->dis[0].element[counter].eltyp=el_fluid3;
+      f3inp(&(fluidfield->dis[0].element[counter]));
    }
 #endif
 /*------------------------------------------------ elementtyp is FLUID1 */
@@ -388,7 +396,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_FLUID1 
    if (ierr==1) 
    {
-      fluidfield->element[counter].eltyp=el_fluid1;
+      fluidfield->dis[0].element[counter].eltyp=el_fluid1;
       /* not implemented reading of one fluid1 line */
    }
 #endif
@@ -424,6 +432,10 @@ char *colpointer;
 dstrc_enter("inp_ale_field");
 #endif
 
+/*----------------------------------------- allocate one discretization */
+alefield->ndis=1;
+alefield->dis = (DISCRET*)CALLOC(alefield->ndis,sizeof(DISCRET));
+if (!alefield->dis) dserror("Allocation of memory failed");
 /*-------------------------------------------- count number of elements */
 frrewind();
 frfind("--ALE ELEMENTS");
@@ -434,10 +446,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 frrewind();
-alefield->numele = counter;
+alefield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
-alefield->element=(ELEMENT*)CALLOC(alefield->numele,sizeof(ELEMENT));
-if (alefield->element==NULL) dserror("Allocation of ELEMENT failed");
+alefield->dis[0].element=(ELEMENT*)CALLOC(alefield->dis[0].numele,sizeof(ELEMENT));
+if (alefield->dis[0].element==NULL) dserror("Allocation of ELEMENT failed");
 /*------------------------------------------------------- read elements */
 frrewind();
 frfind("--ALE ELEMENTS");
@@ -447,7 +459,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    colpointer = allfiles.actplace;
    elenumber  = strtol(colpointer,&colpointer,10);
-   alefield->element[counter].Id = --elenumber;
+   alefield->dis[0].element[counter].Id = --elenumber;
 /*---------- read the typ of element and call element reading function */
 /*------------------------------------------------ elementtyp is ALE */
    frchk("ALE3",&ierr);
@@ -460,8 +472,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_ALE 
    if (ierr==1) 
    {
-      alefield->element[counter].eltyp=el_ale;
-      ale3inp(&(alefield->element[counter]));
+      alefield->dis[0].element[counter].eltyp=el_ale;
+      ale3inp(&(alefield->dis[0].element[counter]));
    }
 #endif
    counter++;

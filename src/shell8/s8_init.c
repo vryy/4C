@@ -20,9 +20,9 @@ double     **collaverdir;
 dstrc_enter("s8init");
 #endif
 /*----------------------------------------------------------------------*/
-for (i=0; i<actfield->numele; i++)
+for (i=0; i<actfield->dis[0].numele; i++)
 {
-   actele = &(actfield->element[i]);
+   actele = &(actfield->dis[0].element[i]);
    if (actele->eltyp != el_shell8) continue;
    /*------------------------------------------ init integration points */
    s8intg(actele,&data,0);
@@ -35,9 +35,9 @@ for (i=0; i<actfield->numele; i++)
 /*------------------------------ allocate space for directors at a node */
 collaverdir = amdef("averdir",&collaverdir_a,3,MAXELE,"DA");
 /*----------------------------------------------------------------------*/
-for (i=0; i<actfield->numnp; i++)
+for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   actnode = &(actfield->node[i]);
+   actnode = &(actfield->dis[0].node[i]);
    numa3=0;
    for (j=0; j<actnode->numele; j++)
    {

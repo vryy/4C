@@ -78,8 +78,8 @@ for (i=0; i<genprob.numfld; i++)
    /*--------------- if there is only one proc, theres is nothing to do */
    if (inprocs<=1)
    {
-      actpart->numnp       = actfield->numnp;
-      actpart->numele      = actfield->numele;
+      actpart->numnp       = actfield->dis[0].numnp;
+      actpart->numele      = actfield->dis[0].numele;
       actpart->bou_numnp   = 0;
       actpart->bou_numele  = 0;
       actpart->bou_element = NULL;
@@ -88,8 +88,10 @@ for (i=0; i<genprob.numfld; i++)
       actpart->node    = (NODE**)CALLOC(actpart->numnp,sizeof(NODE*));
       if (actpart->element==NULL) dserror("Allocation of element pointer in PARTITION failed");
       if (actpart->node==NULL)    dserror("Allocation of node pointer in PARTITION failed");
-      for (j=0; j<actfield->numele; j++) actpart->element[j] = &(actfield->element[j]);
-      for (j=0; j<actfield->numnp; j++)  actpart->node[j] = &(actfield->node[j]);
+      for (j=0; j<actfield->dis[0].numele; j++) 
+      actpart->element[j] = &(actfield->dis[0].element[j]);
+      for (j=0; j<actfield->dis[0].numnp; j++)  
+      actpart->node[j] = &(actfield->dis[0].node[j]);
       
    }
    else
@@ -113,11 +115,11 @@ for (i=0; i<genprob.numfld; i++)
       {
       /*----------- loop and count elements, do pointers to my elements */
          counter=0;
-         for (j=0; j<actfield->numele; j++)
+         for (j=0; j<actfield->dis[0].numele; j++)
          {
-            for (k=0; k<actfield->element[j].numnp; k++)
+            for (k=0; k<actfield->dis[0].element[j].numnp; k++)
             {
-               if (actfield->element[j].node[k]->proc == imyrank)
+               if (actfield->dis[0].element[j].node[k]->proc == imyrank)
                {
                   counter++;
                   break;
@@ -128,13 +130,13 @@ for (i=0; i<genprob.numfld; i++)
          actpart->element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
          if (actpart->element == NULL) dserror("Allocation of ELEMENT ptr in PARTITION failed");
          counter=0;
-         for (j=0; j<actfield->numele; j++)
+         for (j=0; j<actfield->dis[0].numele; j++)
          {
-            for (k=0; k<actfield->element[j].numnp; k++)
+            for (k=0; k<actfield->dis[0].element[j].numnp; k++)
             {
-               if (actfield->element[j].node[k]->proc == imyrank)
+               if (actfield->dis[0].element[j].node[k]->proc == imyrank)
                {
-                  actpart->element[counter] = &(actfield->element[j]);
+                  actpart->element[counter] = &(actfield->dis[0].element[j]);
                   counter++;
                   break;
                }
@@ -142,19 +144,19 @@ for (i=0; i<genprob.numfld; i++)
          }
       /*------------------ loop and count nodes, do pointers to my nodes */   
          counter=0;
-         for (j=0; j<actfield->numnp; j++)
+         for (j=0; j<actfield->dis[0].numnp; j++)
          {
-            if (actfield->node[j].proc == imyrank) counter++;
+            if (actfield->dis[0].node[j].proc == imyrank) counter++;
          }
          actpart->numnp = counter;
          actpart->node = (NODE**)CALLOC(counter,sizeof(NODE*));
          if (actpart->node==NULL) dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
-         for (j=0; j<actfield->numnp; j++)
+         for (j=0; j<actfield->dis[0].numnp; j++)
          {
-            if (actfield->node[j].proc == imyrank) 
+            if (actfield->dis[0].node[j].proc == imyrank) 
             {
-               actpart->node[counter] = &(actfield->node[j]);
+               actpart->node[counter] = &(actfield->dis[0].node[j]);
                counter++;
             }
          }
@@ -225,28 +227,28 @@ for (i=0; i<genprob.numfld; i++)
       {
       /* loop and count elements, every element belongs exactly to one proc */
          counter=0;
-         for (j=0; j<actfield->numele; j++)
+         for (j=0; j<actfield->dis[0].numele; j++)
          {
-            if (actfield->element[j].proc == imyrank) counter++;
+            if (actfield->dis[0].element[j].proc == imyrank) counter++;
          }
          actpart->numele = counter;
          actpart->element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
          if (actpart->element==NULL) dserror("Allocation of ELEMENT ptr in PARTITION failed");
          counter=0;
-         for (j=0; j<actfield->numele; j++)
+         for (j=0; j<actfield->dis[0].numele; j++)
          {
-            if (actfield->element[j].proc == imyrank) 
+            if (actfield->dis[0].element[j].proc == imyrank) 
             {
-               actpart->element[counter] = &(actfield->element[j]);
+               actpart->element[counter] = &(actfield->dis[0].element[j]);
                counter++;
             }
          }
       /* loop and counter nodes, every node belonging to one of the partitions
          elements belongs to this partition */
          counter=0;
-         for (j=0; j<actfield->numnp; j++)
+         for (j=0; j<actfield->dis[0].numnp; j++)
          {
-            actnode = &(actfield->node[j]);
+            actnode = &(actfield->dis[0].node[j]);
             for (k=0; k<actnode->numele; k++)
             {
                if (actnode->element[k]->proc == imyrank)
@@ -260,9 +262,9 @@ for (i=0; i<genprob.numfld; i++)
          actpart->node = (NODE**)CALLOC(counter,sizeof(NODE*));
          if (actpart->node==NULL) dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
-         for (j=0; j<actfield->numnp; j++)
+         for (j=0; j<actfield->dis[0].numnp; j++)
          {
-            actnode = &(actfield->node[j]);
+            actnode = &(actfield->dis[0].node[j]);
             for (k=0; k<actnode->numele; k++)
             {
                if (actnode->element[k]->proc == imyrank)

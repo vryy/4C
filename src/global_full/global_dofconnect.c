@@ -143,15 +143,15 @@ void dofconnectivity(FIELD        *actfield,
   dstrc_enter("dofconnectivity");
   #endif
 /*----------------------------------------------------------------------*/
-  for (j=0; j<actfield->numnp; j++)
+  for (j=0; j<actfield->dis[0].numnp; j++)
   {
-    actnode = &(actfield->node[j]);
+    actnode = &(actfield->dis[0].node[j]);
     if(actnode->proc!=par.myrank) continue;
     /* loop dofs on this node */
     for (l=0; l<actnode->numdf; l++)
     {/*dofloop01*/
       dof1 = actnode->dof[l];
-      if(dof1>=actfield->numeq) continue;
+      if(dof1>=actfield->dis[0].numeq) continue;
       if(dof_dof[dof1]==NULL)
       {
         dof_dof[dof1]    = (int*)CALLOC(numdofconected ,sizeof(int));
@@ -163,7 +163,7 @@ void dofconnectivity(FIELD        *actfield,
       {
         dof2 = actnode->dof[k];
        /* if(dof1!=dof2 && dof2<actfield->numeq)*/
-        if(dof2<actfield->numeq)
+        if(dof2<actfield->dis[0].numeq)
         {
           cc = dof_dof[dof1][0];
           if(cc>=dof_dof[dof1][1]-2)  dofdof_realloc(dof1,dof_dof); /*realloc*/
@@ -184,7 +184,7 @@ void dofconnectivity(FIELD        *actfield,
           for (n=0; n<partnernode->numdf; n++)
           {
             dof2 = partnernode->dof[n];
-            if(dof2>=actfield->numeq) continue;
+            if(dof2>=actfield->dis[0].numeq) continue;
             cc = dof_dof[dof1][0];
             if(cc>=dof_dof[dof1][1]-2) dofdof_realloc(dof1, dof_dof); /*realloc*/
             dof_dof[dof1][cc+2] = dof2;
@@ -203,7 +203,7 @@ void dofconnectivity(FIELD        *actfield,
 /*---------------------------------------------------------- count nonzeroes---*/
 
   *nnz = 0;
-  for (dof1=0; dof1<actfield->numeq; dof1++)
+  for (dof1=0; dof1<actfield->dis[0].numeq; dof1++)
   {
     *nnz += dof_dof[dof1][0];
   }

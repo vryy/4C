@@ -31,7 +31,7 @@ dstrc_enter("inp_cond_nodal_struct");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------ init the condition pointer */
-for (i=0; i<field->numnp; i++) field->node[i].c==NULL;
+for (i=0; i<field->dis[0].numnp; i++) field->dis[0].node[i].c==NULL;
 /*------------------------------------------------- read the conditions */
 /*------------------------------------------- read dirichlet conditions */
 frfind("--STRUCT NODAL DIRICH CONDITIONS");
@@ -40,11 +40,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    nodeid = strtol(allfiles.actplace,&colpointer,10);
    nodeid--;
-   for (j=0; j<field->numnp; j++)
+   for (j=0; j<field->dis[0].numnp; j++)
    {
-      if (field->node[j].Id == nodeid) 
+      if (field->dis[0].node[j].Id == nodeid) 
       {
-         actnode = &(field->node[j]);
+         actnode = &(field->dis[0].node[j]);
          break;
       }
    }
@@ -115,11 +115,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    nodeid = strtol(allfiles.actplace,&colpointer,10);
    nodeid--;
-   for (j=0; j<field->numnp; j++)
+   for (j=0; j<field->dis[0].numnp; j++)
    {
-      if (field->node[j].Id == nodeid) 
+      if (field->dis[0].node[j].Id == nodeid) 
       {
-         actnode = &(field->node[j]);
+         actnode = &(field->dis[0].node[j]);
          break;
       }
    }
@@ -202,7 +202,7 @@ dstrc_enter("inp_cond_ele_struct");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------ init the condition pointer */
-for (i=0; i<field->numele; i++) field->element[i].c==NULL;
+for (i=0; i<field->dis[0].numele; i++) field->dis[0].element[i].c==NULL;
 /*------------------------------------------------------- start reading */
 frfind("--STRUCTURAL ELEMENT CONDITIONS");
 frread();
@@ -211,11 +211,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*------------------------ read element number and find correct element */
    eleid = strtol(allfiles.actplace,&colpointer,10);
    eleid--;
-   for (j=0; j<field->numele; j++)
+   for (j=0; j<field->dis[0].numele; j++)
    {
-      if (field->element[j].Id == eleid) 
+      if (field->dis[0].element[j].Id == eleid) 
       {
-         actele = &(field->element[j]);
+         actele = &(field->dis[0].element[j]);
          break;
       }
    }

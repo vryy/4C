@@ -553,9 +553,9 @@ solserv_reddistvec(
                       actintra
                      );
 /*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->numnp; i++)
+for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   actnode = &(actfield->node[i]);
+   actnode = &(actfield->dis[0].node[i]);
    /*---------------------------------------- enlarge sol, if necessary */
    if (place >= actnode->sol.fdim)
    {
@@ -623,9 +623,9 @@ solserv_reddistvec(
                       actintra
                      );
 /*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->numnp; i++)
+for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   actnode = &(actfield->node[i]);
+   actnode = &(actfield->dis[0].node[i]);
    /*------------------------------ enlarge sol_increment, if necessary */
    if (place >= actnode->sol.fdim)
    {
@@ -694,9 +694,9 @@ solserv_reddistvec(
                       actintra
                      );
 /*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->numnp; i++)
+for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   actnode = &(actfield->node[i]);
+   actnode = &(actfield->dis[0].node[i]);
    /*------------------------------- enlarge sol_residual, if necessary */
    if (place >= actnode->sol.fdim)
    {

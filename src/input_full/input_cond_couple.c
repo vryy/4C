@@ -51,11 +51,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (strcmp(buffer,"ale")==0) is_ale=1;
    nodeid = strtol(allfiles.actplace,&colpointer,10);
    nodeid--;
-   for (i=0; i<field->numnp; i++)
+   for (i=0; i<field->dis[0].numnp; i++)
    {
-      if (field->node[i].Id == nodeid)
+      if (field->dis[0].node[i].Id == nodeid)
       {
-         actnode = &(field->node[i]);
+         actnode = &(field->dis[0].node[i]);
          break;
       }
    }

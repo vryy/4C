@@ -29,7 +29,7 @@ dstrc_enter("mask_skyline");
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
 /*------------------------------------------- put total size of problem */
-sky->numeq_total = actfield->numeq;
+sky->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
                                                                  matrix */
 msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
@@ -119,7 +119,7 @@ for (i=0; i<actpart->numnp; i++)
    {
       dof = actnode->dof[l];
       /* dirichlet condition on dof */
-      if (dof >= actfield->numeq) continue;
+      if (dof >= actfield->dis[0].numeq) continue;
       /* no condition on dof */
       if (actnode->c==NULL)
       {
@@ -255,7 +255,7 @@ for (i=0; i<numeq; i++)
          actnode = actele->node[k];
          for (l=0; l<actnode->numdf; l++)
          {
-            if (actnode->dof[l] < actfield->numeq)
+            if (actnode->dof[l] < actfield->dis[0].numeq)
             {
                if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
                dofpatch.a.iv[counter] = actnode->dof[l];
@@ -338,7 +338,7 @@ for (i=0; i<coupledofs->fdim; i++)
                actnode = actele->node[m];
                for (l=0; l<actnode->numdf; l++)
                {
-                  if (actnode->dof[l] < actfield->numeq)
+                  if (actnode->dof[l] < actfield->dis[0].numeq)
                   {
                      if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
                      dofpatch.a.iv[counter] = actnode->dof[l];

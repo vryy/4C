@@ -31,7 +31,7 @@ dstrc_enter("inp_cond_nodal_fluid");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------ init the condition pointer */
-for (i=0; i<field->numnp; i++) field->node[i].c==NULL;
+for (i=0; i<field->dis[0].numnp; i++) field->dis[0].node[i].c==NULL;
 /*------------------------------------------------- read the conditions */
 frfind("--FLUID NODAL CONDITIONS");
 frread();
@@ -39,11 +39,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    nodeid = strtol(allfiles.actplace,&colpointer,10);
    nodeid--;
-   for (j=0; j<field->numnp; j++)
+   for (j=0; j<field->dis[0].numnp; j++)
    {
-      if (field->node[j].Id == nodeid) 
+      if (field->dis[0].node[j].Id == nodeid) 
       {
-         actnode = &(field->node[j]);
+         actnode = &(field->dis[0].node[j]);
          break;
       }
    }
@@ -125,7 +125,7 @@ NODE *actnode;
 dstrc_enter("inp_cond_nodal_ale");
 #endif
 /*------------------------------------------ init the condition pointer */
-for (i=0; i<field->numnp; i++) field->node[i].c==NULL;
+for (i=0; i<field->dis[0].numnp; i++) field->dis[0].node[i].c==NULL;
 /*------------------------------------------------- read the conditions */
 frfind("--ALE NODAL CONDITIONS");
 frread();
@@ -133,11 +133,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    nodeid = strtol(allfiles.actplace,&colpointer,10);
    nodeid--;
-   for (j=0; j<field->numnp; j++)
+   for (j=0; j<field->dis[0].numnp; j++)
    {
-      if (field->node[j].Id == nodeid) 
+      if (field->dis[0].node[j].Id == nodeid) 
       {
-         actnode = &(field->node[j]);
+         actnode = &(field->dis[0].node[j]);
          break;
       }
    }

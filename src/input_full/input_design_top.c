@@ -210,11 +210,11 @@ for (i=0; i<design->ndnode; i++)
    {
       actfield = &(field[j]);
 /*----------------------------------------- loop the nodes in this field */      
-      for (k=0; k<actfield->numnp; k++)
+      for (k=0; k<actfield->dis[0].numnp; k++)
       {
-         if (actfield->node[k].Id == actdnode->mynode)
+         if (actfield->dis[0].node[k].Id == actdnode->mynode)
          {
-            actdnode->node = &(actfield->node[k]);
+            actdnode->node = &(actfield->dis[0].node[k]);
             actdnode->field = actfield;
             goto exit1;
          }
@@ -232,9 +232,9 @@ for (i=0; i<design->ndline; i++)
    for (j=0; j<genprob.numfld; j++)
    {
       actfield = &(field[j]);
-      for (k=0; k<actfield->numnp; k++)
+      for (k=0; k<actfield->dis[0].numnp; k++)
       {
-         if (actfield->node[k].Id == actdline->mynode.a.iv[0])
+         if (actfield->dis[0].node[k].Id == actdline->mynode.a.iv[0])
          {
             actdline->field = actfield;
             goto exit2;
@@ -245,11 +245,11 @@ for (i=0; i<design->ndline; i++)
 /*--------------------- found the right field, so now find all the nodes */
    for (l=0; l<actdline->mynode.fdim; l++)
    {
-      for (k=0; k<actfield->numnp; k++)
+      for (k=0; k<actfield->dis[0].numnp; k++)
       {
-         if (actfield->node[k].Id == actdline->mynode.a.iv[l])
+         if (actfield->dis[0].node[k].Id == actdline->mynode.a.iv[l])
          {
-            actdline->node[l] = &(actfield->node[k]);
+            actdline->node[l] = &(actfield->dis[0].node[k]);
             break;
          }
       }
@@ -265,9 +265,9 @@ for (i=0; i<design->ndsurf; i++)
    for (j=0; j<genprob.numfld; j++)
    {
       actfield = &(field[j]);
-      for (k=0; k<actfield->numnp; k++)
+      for (k=0; k<actfield->dis[0].numnp; k++)
       {
-         if (actfield->node[k].Id == actdsurf->mynode.a.iv[0])
+         if (actfield->dis[0].node[k].Id == actdsurf->mynode.a.iv[0])
          {
             actdsurf->field = actfield;
             goto exit3;
@@ -278,11 +278,11 @@ for (i=0; i<design->ndsurf; i++)
 /*--------------------- found the right field, so now find all the nodes */
    for (l=0; l<actdsurf->mynode.fdim; l++)
    {
-      for (k=0; k<actfield->numnp; k++)
+      for (k=0; k<actfield->dis[0].numnp; k++)
       {
-         if (actfield->node[k].Id == actdsurf->mynode.a.iv[l])
+         if (actfield->dis[0].node[k].Id == actdsurf->mynode.a.iv[l])
          {
-            actdsurf->node[l] = &(actfield->node[k]);
+            actdsurf->node[l] = &(actfield->dis[0].node[k]);
             break;
          }
       }
@@ -298,9 +298,9 @@ for (i=0; i<design->ndvol; i++)
    for (j=0; j<genprob.numfld; j++)
    {
       actfield = &(field[j]);
-      for (k=0; k<actfield->numnp; k++)
+      for (k=0; k<actfield->dis[0].numnp; k++)
       {
-         if (actfield->node[k].Id == actdvol->mynode.a.iv[0])
+         if (actfield->dis[0].node[k].Id == actdvol->mynode.a.iv[0])
          {
             actdvol->field = actfield;
             goto exit4;
@@ -311,11 +311,11 @@ for (i=0; i<design->ndvol; i++)
 /*--------------------- found the right field, so now find all the nodes */
    for (l=0; l<actdvol->mynode.fdim; l++)
    {
-      for (k=0; k<actfield->numnp; k++)
+      for (k=0; k<actfield->dis[0].numnp; k++)
       {
-         if (actfield->node[k].Id == actdvol->mynode.a.iv[l])
+         if (actfield->dis[0].node[k].Id == actdvol->mynode.a.iv[l])
          {
-            actdvol->node[l] = &(actfield->node[k]);
+            actdvol->node[l] = &(actfield->dis[0].node[k]);
             break;
          }
       }

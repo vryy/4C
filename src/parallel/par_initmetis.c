@@ -68,8 +68,10 @@ if (par.nprocs<=1)
    for (i=0; i<genprob.numfld; i++)
    {
       actfield = &(field[i]);
-      for (j=0; j<actfield->numele; j++) actfield->element[j].proc = 0;
-      for (j=0; j<actfield->numnp; j++)  actfield->node[j].proc    = 0;
+      for (j=0; j<actfield->dis[0].numele; j++) 
+      actfield->dis[0].element[j].proc = 0;
+      for (j=0; j<actfield->dis[0].numnp; j++)  
+      actfield->dis[0].node[j].proc    = 0;
    }
 }
 imyrank=0;
@@ -90,24 +92,24 @@ for (i=0; i<genprob.numfld; i++)
 /*---------------------------- init the local numbering of the elements */   
 /*------------------------------ numbering is c style, starts with zero */
    counter=0;
-   for (j=0; j<actfield->numele; j++)
+   for (j=0; j<actfield->dis[0].numele; j++)
    {
-      actfield->element[j].Id_loc = counter;
+      actfield->dis[0].element[j].Id_loc = counter;
       counter++;
    }   
 /*--------------------------------------init the numbering of the nodes */   
    counter=0; 
-   for (j=0; j<actfield->numnp; j++)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      actfield->node[j].Id_loc = counter;
+      actfield->dis[0].node[j].Id_loc = counter;
       counter++;
    }
 /*------------------------------------------------- calculate the graph */   
 /*--------------------------------------- size of ARRAY xadj is numnp+1 */   
-   amdef("xadj",&(xadj[i]),(actfield->numnp+1),1,"IV");
+   amdef("xadj",&(xadj[i]),(actfield->dis[0].numnp+1),1,"IV");
    amzero(&(xadj[i]));
 /*------------------------------------- the vertex weights of the graph */
-   amdef("vwgt",&(vwgt[i]),(actfield->numnp)  ,1,"IV");
+   amdef("vwgt",&(vwgt[i]),(actfield->dis[0].numnp)  ,1,"IV");
    aminit(&(vwgt[i]),&ione);
 /*----------------------------- size of array adjncy has to be computed */  
    amdef("stack",&stack,1,1,"IV");
@@ -117,10 +119,10 @@ for (i=0; i<genprob.numfld; i++)
    amzero(&(adjncy[i]));
    adjcounter=0;
 /*----------------------------------------------- loop the fields nodes */
-   for (j=0; j<actfield->numnp; j++)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
       counter=0;
-      actnode = &(actfield->node[j]);
+      actnode = &(actfield->dis[0].node[j]);
 /*--------------------------------------------- determine size of stack */
       for (k=0; k<actnode->numele; k++)
       {
@@ -193,7 +195,7 @@ for (i=0; i<genprob.numfld; i++)
       continue;
    }
 /*----------------- now allocate the rest of the arrays needed by metis */   
-   amdef("part",&part,actfield->numnp,1,"IV");   
+   amdef("part",&part,actfield->dis[0].numnp,1,"IV");   
 /*---- set the default options of metis (play with other options later) */
    options[0]=0;
    options[1]=3;
@@ -209,7 +211,7 @@ for (i=0; i<genprob.numfld; i++)
       if (nparts < 8) /*----- better for a smaller number of partitions */
       {
       METIS_PartGraphRecursive(
-                               &(actfield->numnp),
+                               &(actfield->dis[0].numnp),
                                &(xadj[i].a.iv[0]),
                                &(adjncy[i].a.iv[0]),
                                &(vwgt[i].a.iv[0]),
@@ -225,7 +227,7 @@ for (i=0; i<genprob.numfld; i++)
       else /*----------------- better for a larger number of partitions */
       {
       METIS_PartGraphKway(
-                          &(actfield->numnp),
+                          &(actfield->dis[0].numnp),
                           &(xadj[i].a.iv[0]),
                           &(adjncy[i].a.iv[0]),
                           &(vwgt[i].a.iv[0]),
@@ -248,9 +250,9 @@ for (i=0; i<genprob.numfld; i++)
              actintra->MPI_INTRA_COMM);
 #endif
 /*------------------------------------ put the proc number to the nodes */
-   for (j=0; j<actfield->numnp; j++)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      actfield->node[j].proc=part.a.iv[j];
+      actfield->dis[0].node[j].proc=part.a.iv[j];
    }
    amdel(&part);
 /*---------- check the nodes of all elements and assign element to proc */   
@@ -260,9 +262,9 @@ for (i=0; i<genprob.numfld; i++)
    amzero(&part_proc);
    amdef("ele_proc",&ele_per_proc,nparts,1,"IV");
    amzero(&ele_per_proc);
-   for (j=0; j<actfield->numele; j++)
+   for (j=0; j<actfield->dis[0].numele; j++)
    {
-      actele = &(actfield->element[j]);
+      actele = &(actfield->dis[0].element[j]);
       amzero(&part);
       amzero(&part_proc);
       for (k=0; k<actele->numnp; k++)
@@ -290,7 +292,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       if (counter>1)
       {
-         min=100000000;
+         min=VERYLARGEINT;
          for (k=0; k<part_proc.fdim; k++)
          {
             if (part_proc.a.iv[k]==1 && ele_per_proc.a.iv[k]<min)
@@ -321,9 +323,9 @@ for (i=0; i<genprob.numfld; i++)
    actfield = &(field[i]);
    if (actfield->fieldtyp!=ale) continue;
 /*--------------------------------------------------- loop ale elements */   
-   for (j=0; j<actfield->numele; j++)
+   for (j=0; j<actfield->dis[0].numele; j++)
    {
-      actele = &(actfield->element[j]);
+      actele = &(actfield->dis[0].element[j]);
       actele->proc = actele->e.ale->my_fluid->proc;
 /*----------------------------------------------- loop nodes of element */
       for (k=0; k<actele->numnp; k++)

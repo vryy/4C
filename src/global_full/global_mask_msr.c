@@ -28,7 +28,7 @@ dstrc_enter("mask_msr");
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
 /*------------------------------------------- put total size of problem */
-msr->numeq_total = actfield->numeq;
+msr->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
                                                                  matrix */
 msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
@@ -103,14 +103,14 @@ amdef("coupledofs",&(actpart->coupledofs),5000,1,"IV");
 amzero(&(actpart->coupledofs));
 counter=0;
 /*-------------------------------- loop all nodes and find coupled dofs */
-for (i=0; i<actfield->numnp; i++)
+for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   actnode = &(actfield->node[i]);
+   actnode = &(actfield->dis[0].node[i]);
    if (actnode->c==NULL) continue;
    if (actnode->c->iscoupled==0) continue;
    for (l=0; l<actnode->numdf; l++)
    {
-      if (actnode->dof[l]>=actfield->numeq) continue;
+      if (actnode->dof[l]>=actfield->dis[0].numeq) continue;
       /* there is coupling on this dof */
       if (actnode->c->couple.a.ia[l][0] != 0 ||
           actnode->c->couple.a.ia[l][1] != 0 )
@@ -118,7 +118,7 @@ for (i=0; i<actfield->numnp; i++)
          if (counter>=actpart->coupledofs.fdim) 
          amredef(&(actpart->coupledofs),(actpart->coupledofs.fdim+5000),1,"IV");
       /* the coupled dof could be dirichlet conditioned */
-         if (actnode->dof[l]<actfield->numeq)
+         if (actnode->dof[l]<actfield->dis[0].numeq)
          {
             actpart->coupledofs.a.iv[counter] = actnode->dof[l];
             counter++;
@@ -255,7 +255,7 @@ for (i=0; i<actpart->numnp; i++)
       }
       if (iscoupled==0) 
       {
-         if (dof < actfield->numeq)
+         if (dof < actfield->dis[0].numeq)
          counter++;
       }
    }
@@ -391,7 +391,7 @@ for (i=0; i<actpart->numnp; i++)
    {
       dof = actnode->dof[l];
       /* dirichlet condition on dof */
-      if (dof >= actfield->numeq) continue;
+      if (dof >= actfield->dis[0].numeq) continue;
       /* no condition on dof */
       if (actnode->c==NULL)
       {
@@ -528,7 +528,7 @@ for (i=0; i<numeq; i++)
          actnode = actele->node[k];
          for (l=0; l<actnode->numdf; l++)
          {
-            if (actnode->dof[l] < actfield->numeq)
+            if (actnode->dof[l] < actfield->dis[0].numeq)
             {
                if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
                dofpatch.a.iv[counter] = actnode->dof[l];
@@ -611,7 +611,7 @@ for (i=0; i<coupledofs->fdim; i++)
                actnode = actele->node[m];
                for (l=0; l<actnode->numdf; l++)
                {
-                  if (actnode->dof[l] < actfield->numeq)
+                  if (actnode->dof[l] < actfield->dis[0].numeq)
                   {
                      if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
                      dofpatch.a.iv[counter] = actnode->dof[l];

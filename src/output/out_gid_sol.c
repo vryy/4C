@@ -92,9 +92,9 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_ale_22    = 0;
    actgid->is_ale_222   = 0;
    /*---------------------------- check for different types of elements */
-   for (j=0; j<actfield->numele; j++)
+   for (j=0; j<actfield->dis[0].numele; j++)
    {
-      actele = &(actfield->element[j]);
+      actele = &(actfield->dis[0].element[j]);
       switch(actele->eltyp)
       {
       case el_shell8: 
@@ -299,9 +299,9 @@ if (actgid->is_shell8_22)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell8_22_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<4; j++)
@@ -319,9 +319,9 @@ if (actgid->is_shell8_33)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell8_33_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<9; j++)
@@ -339,9 +339,9 @@ if (actgid->is_brick1_222)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->brick1_222_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_brick1 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<8; j++)
@@ -359,9 +359,9 @@ if (actgid->is_brick1_333)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->brick1_333_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_brick1 || (actele->numnp != 20 || actele->numnp != 27)) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<27; j++)
@@ -379,9 +379,9 @@ if (actgid->is_fluid3_222)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->fluid3_222_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_fluid3 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<8; j++)
@@ -399,9 +399,9 @@ if (actgid->is_fluid3_333)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->fluid3_333_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_fluid3 || (actele->numnp != 20 || actele->numnp != 27)) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<27; j++)
@@ -419,9 +419,9 @@ if (actgid->is_ale_22)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                          sign,actgid->ale_22_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<4; j++)
@@ -439,9 +439,9 @@ if (actgid->is_ale_222)
    fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->ale_222_name,sign);
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numele; i++)
+   for (i=0; i<actfield->dis[0].numele; i++)
    {
-      actele = &(actfield->element[i]);
+      actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5#E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<8; j++)
@@ -546,9 +546,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
                                                        sign,componentnames[2],sign
                                                        );
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->numnp; i++)
+   for (i=0; i<actfield->dis[0].numnp; i++)
    {
-      actnode = &(actfield->node[i]);
+      actnode = &(actfield->dis[0].node[i]);
       fprintf(out," %6d %18.5#E %18.5#E %18.5#E\n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[0][0],
@@ -594,9 +594,9 @@ if (strncmp(string,"stress",stringlenght)==0)
               sign,sign,
               sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->numele; i++)
+      for (i=0; i<actfield->dis[0].numele; i++)
       {
-         actele = &(actfield->element[i]);
+         actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
@@ -640,9 +640,9 @@ if (strncmp(string,"stress",stringlenght)==0)
               sign,sign,
               sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->numele; i++)
+      for (i=0; i<actfield->dis[0].numele; i++)
       {
-         actele = &(actfield->element[i]);
+         actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
@@ -698,9 +698,9 @@ if (strncmp(string,"stress",stringlenght)==0)
               sign,sign,
               sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->numele; i++)
+      for (i=0; i<actfield->dis[0].numele; i++)
       {
-         actele = &(actfield->element[i]);
+         actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
@@ -744,9 +744,9 @@ if (strncmp(string,"stress",stringlenght)==0)
               sign,sign,
               sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->numele; i++)
+      for (i=0; i<actfield->dis[0].numele; i++)
       {
-         actele = &(actfield->element[i]);
+         actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",

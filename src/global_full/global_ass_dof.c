@@ -40,14 +40,14 @@ for (i=0; i<genprob.numfld; i++)
 /*--------------------------------------------- find new node numbering */
 /* notice: bandwith opimization has been done by gid, so just do a
    field-local renumbering of this */
-   for (j=0; j<actfield->numnp; j++) actfield->node[j].Id_loc = j;
+   for (j=0; j<actfield->dis[0].numnp; j++) actfield->dis[0].node[j].Id_loc = j;
 
 /* loop all elements and put numdf to their nodes depending on kind of
    element. Notice that nodes which couple different kind of elements have
    the higher number of dofs */
-   for (j=0; j<actfield->numele; j++)
+   for (j=0; j<actfield->dis[0].numele; j++)
    {
-      actele = &(actfield->element[j]);
+      actele = &(actfield->dis[0].element[j]);
       switch(actele->eltyp)
       {
       case el_shell8:
@@ -93,29 +93,29 @@ for (i=0; i<genprob.numfld; i++)
    }
 /*---------------------------------------- assign the dofs to the nodes */
    counter=0;
-   for (j=0; j<actfield->numnp; j++)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      actfield->node[j].dof  = (int*)CALLOC(actfield->node[j].numdf,sizeof(int));
-      if (!(actfield->node[j].dof)) 
+      actfield->dis[0].node[j].dof  = (int*)CALLOC(actfield->dis[0].node[j].numdf,sizeof(int));
+      if (!(actfield->dis[0].node[j].dof)) 
          dserror("Allocation of dof in NODE failed");
       /*------------------------- allocate the arrays to hold solutions */
-      amdef("sol",&(actfield->node[j].sol),1,actfield->node[j].numdf,"DA");
-      amzero(&(actfield->node[j].sol));
+      amdef("sol",&(actfield->dis[0].node[j].sol),1,actfield->dis[0].node[j].numdf,"DA");
+      amzero(&(actfield->dis[0].node[j].sol));
 
-      amdef("sol_incr",&(actfield->node[j].sol_increment),1,actfield->node[j].numdf,"DA");
-      amzero(&(actfield->node[j].sol_increment));
+      amdef("sol_incr",&(actfield->dis[0].node[j].sol_increment),1,actfield->dis[0].node[j].numdf,"DA");
+      amzero(&(actfield->dis[0].node[j].sol_increment));
 
-      amdef("sol_res",&(actfield->node[j].sol_residual),1,actfield->node[j].numdf,"DA");
-      amzero(&(actfield->node[j].sol_residual));
+      amdef("sol_res",&(actfield->dis[0].node[j].sol_residual),1,actfield->dis[0].node[j].numdf,"DA");
+      amzero(&(actfield->dis[0].node[j].sol_residual));
       /*------------------------------------------- init all dofs to -2 */
-      for (l=0; l<actfield->node[j].numdf; l++) actfield->node[j].dof[l]=-2;
+      for (l=0; l<actfield->dis[0].node[j].numdf; l++) actfield->dis[0].node[j].dof[l]=-2;
    }   
 /*------- eliminate geostationary coupling conditions that conflict with 
    dofcoupling sets by putting the geostat coupling to the coupling set */
    coupleID=0;
-   for (j=0; j<actfield->numnp; j++)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      actnode = &(actfield->node[j]);
+      actnode = &(actfield->dis[0].node[j]);
       if (actnode->c==NULL) continue;
       if (actnode->c->iscoupled==0) continue;
       for (l=0; l<actnode->numdf; l++)
@@ -142,9 +142,9 @@ for (i=0; i<genprob.numfld; i++)
    }
 
 /*--------------------------------------------------------- assign dofs */
-   for (j=0; j<actfield->numnp; j++)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      actnode = &(actfield->node[j]);
+      actnode = &(actfield->dis[0].node[j]);
 /*------------------------------- the node does not have any conditions */
       if (actnode->c==NULL)
       {
@@ -232,10 +232,10 @@ for (i=0; i<genprob.numfld; i++)
    } /* end of loop over nodes */
    /* Now all free dofs are numbered, so now number the dirichlet conditioned
       dofs from here on */
-   actfield->numeq = counter;
-   for (j=0; j<actfield->numnp; j++)
+   actfield->dis[0].numeq = counter;
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      actnode = &(actfield->node[j]);
+      actnode = &(actfield->dis[0].node[j]);
       if (actnode->c==NULL) continue;
       for (l=0; l<actnode->numdf; l++)
       {
@@ -246,7 +246,7 @@ for (i=0; i<genprob.numfld; i++)
          }
       }
    }
-   actfield->numdf = counter;   
+   actfield->dis[0].numdf = counter;   
 } /* end of loop over fields */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

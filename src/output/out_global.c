@@ -145,32 +145,32 @@ break;
 }
 fprintf(out,"================================================================================\n");
 fprintf(out,"________________________________________________________________________________\n\n");
-fprintf(out,"Number of Elements  in this field : %d\n",actfield->numele);
-fprintf(out,"Number of Nodes     in this field : %d\n",actfield->numnp);
-fprintf(out,"Number of Dofs      in this field : %d\n",actfield->numdf);
-fprintf(out,"Number of Equations in this field : %d\n",actfield->numeq);
+fprintf(out,"Number of Elements  in this field : %d\n",actfield->dis[0].numele);
+fprintf(out,"Number of Nodes     in this field : %d\n",actfield->dis[0].numnp);
+fprintf(out,"Number of Dofs      in this field : %d\n",actfield->dis[0].numdf);
+fprintf(out,"Number of Equations in this field : %d\n",actfield->dis[0].numeq);
 fprintf(out,"________________________________________________________________________________\n\n");
 fprintf(out,"Element connectivity in global Ids:\n");
-for (j=0; j<actfield->numele; j++)
+for (j=0; j<actfield->dis[0].numele; j++)
 {
-actele = &(actfield->element[j]);
+actele = &(actfield->dis[0].element[j]);
 fprintf(out,"glob_Id %6d Nnodes %2d Nodes: ",actele->Id,actele->numnp);
 for (k=0; k<actele->numnp; k++) fprintf(out,"%6d ",actele->node[k]->Id);
 fprintf(out,"\n");
 }
 fprintf(out,"Element connectivity in field-local Ids:\n");
-for (j=0; j<actfield->numele; j++)
+for (j=0; j<actfield->dis[0].numele; j++)
 {
-actele = &(actfield->element[j]);
+actele = &(actfield->dis[0].element[j]);
 fprintf(out,"loc_Id %6d Nnodes %2d Nodes: ",actele->Id_loc,actele->numnp);
 for (k=0; k<actele->numnp; k++) fprintf(out,"%6d ",actele->node[k]->Id_loc);
 fprintf(out,"\n");
 }
 fprintf(out,"________________________________________________________________________________\n\n");
 fprintf(out,"Element types:\n");
-for (j=0; j<actfield->numele; j++)
+for (j=0; j<actfield->dis[0].numele; j++)
 {
-actele = &(actfield->element[j]);
+actele = &(actfield->dis[0].element[j]);
 switch(actele->eltyp)
 {
 case el_shell8:
@@ -195,9 +195,9 @@ break;
 }
 fprintf(out,"________________________________________________________________________________\n\n");
 fprintf(out,"Nodal Coordinates:\n");
-for (j=0; j<actfield->numnp; j++)
+for (j=0; j<actfield->dis[0].numnp; j++)
 {
-actnode = &(actfield->node[j]);
+actnode = &(actfield->dis[0].node[j]);
 fprintf(out,"NODE glob_Id %6d loc_Id %6d    %-18.5#f %-18.5#f %-18.5#f \n",
         actnode->Id,actnode->Id_loc,actnode->x[0],actnode->x[1],actnode->x[2]);
 }
@@ -274,9 +274,9 @@ fprintf(out,"Converged Solution in step %d\n",step);
 fprintf(out,"================================================================================\n");
 /*-------------------------------------------------- print nodal values */
 if (ioflags.struct_disp_file==1)
-for (j=0; j<actfield->numnp; j++)
+for (j=0; j<actfield->dis[0].numnp; j++)
 {
-   actnode = &(actfield->node[j]);
+   actnode = &(actfield->dis[0].node[j]);
    fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
    for (k=0; k<actnode->numdf; k++) 
    {
@@ -288,9 +288,9 @@ for (j=0; j<actfield->numnp; j++)
 fprintf(out,"________________________________________________________________________________\n\n");
 /*------------------------------------------------ print element values */
 if (ioflags.struct_stress_file==1)
-for (j=0; j<actfield->numele; j++)
+for (j=0; j<actfield->dis[0].numele; j++)
 {
-   actele = &(actfield->element[j]);
+   actele = &(actfield->dis[0].element[j]);
    switch(actele->eltyp)
    {
    case el_shell8:

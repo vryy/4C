@@ -21,12 +21,12 @@ dstrc_enter("calstatserv_findcontroldof");
 #endif
 /*----------------------------------------------------------------------*/
 *node = NULL;
-for (i=0; i<actfield->numnp; i++)
+for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   if (actfield->node[i].Id == control_node_global)
+   if (actfield->dis[0].node[i].Id == control_node_global)
    {
-      *node = &(actfield->node[i]);
-      *cdof = actfield->node[i].dof[control_dof-1];
+      *node = &(actfield->dis[0].node[i]);
+      *cdof = actfield->dis[0].node[i].dof[control_dof-1];
       break;
    }
 }

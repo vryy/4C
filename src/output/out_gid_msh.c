@@ -66,9 +66,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -96,9 +96,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -126,9 +126,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_brick1 || actele->numnp !=8) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -156,9 +156,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_brick1 || actele->numnp !=27) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -186,9 +186,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_fluid3 || actele->numnp !=8) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -216,9 +216,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_fluid3 || actele->numnp !=27) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -246,9 +246,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -276,9 +276,9 @@ for (i=0; i<genprob.numfld; i++)
       }
       /*------------------------------------------------ print elements */
       fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->numele; j++)
+      for (j=0; j<actfield->dis[0].numele; j++)
       {
-         actele = &(actfield->element[j]);
+         actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_ale || actele->numnp !=8) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
@@ -316,9 +316,9 @@ dstrc_enter("out_gid_allcoords");
 for (i=0; i<genprob.numfld; i++)
 {
    actfield = &(field[i]);
-   for (j=0; j<actfield->numnp; j++)
+   for (j=0; j<actfield->dis[0].numnp; j++)
    {
-      actnode = &(actfield->node[j]);
+      actnode = &(actfield->dis[0].node[j]);
       fprintf(out,"%6d %-18.5#f %-18.5#f %-18.5#f\n",
                                                      actnode->Id+1,
                                                      actnode->x[0],
