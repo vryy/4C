@@ -882,15 +882,16 @@ void vis3caf(INT numff, INT numaf, INT numsf);
 void vis3caf(INT numff, INT numaf, INT numsf);
 
 /*----------------------------------------------------------------------*
- | visual_readflavares.c                                   genk 01/04   |
+ | visual_readflaviares.c                                  genk 01/04   |
  *----------------------------------------------------------------------*/
 void visual_readflaviares(FIELD   *actfield, 
                           INT     *ntsteps,  
 		          ARRAY   *time_a,
+			  ARRAY   *step_a,
 			  INT     *FIRSTSTEP,
 			  INT     *LASTSTEP,
 			  INT     *DSTEP	 
-		         ) ;
+		         )  ;
 /*!---------------------------------------------------------------------                                         
 \brief input of optimization data 
 
