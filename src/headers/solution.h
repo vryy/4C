@@ -137,7 +137,13 @@ Maintainer: Malte Neumann
  | includes for solver package UMFPACK              s.offermanns 5/02    |
  *----------------------------------------------------------------------*/
 #ifdef UMFPACK
+
+#ifdef SUSE73
+#include "../../../lib_linux/umfpack/include/umfpack.h"
+#else
 #include "/bau/stat16/users/statik/lib/UMFPACK/include/umfpack.h"
+#endif
+
 #endif
 
 /*----------------------------------------------------------------------*
