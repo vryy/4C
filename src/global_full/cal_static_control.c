@@ -242,16 +242,16 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 /*--------------------------------------------- printout results to gid */
 if (ioflags.struct_disp_gid==1 && par.myrank==0)
 {
-   out_gid_sol("displacement",actfield,actintra,0,0);
+   out_gid_sol("displacement",actfield,actintra,0,0,ZERO);
    out_gid_domains(actfield);
 #ifdef D_AXISHELL
-   out_gid_sol("thickness",actfield,actintra,0,0);
+   out_gid_sol("thickness",actfield,actintra,0,0,ZERO);
 #endif
 }
 /*---------------------------------------------- printout stress to gid */
 if ( (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) && par.myrank==0)
 {
-   out_gid_sol("stress"      ,actfield,actintra,0,0);
+   out_gid_sol("stress"      ,actfield,actintra,0,0,ZERO);
 }
 /*----------------------------------------------------------------------*/
 end:

@@ -607,13 +607,13 @@ if (par.myrank==0)
    if (mod_disp==0)
    if (ioflags.struct_disp_gid==1)
    {
-      out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
-      out_gid_sol("velocities",actfield,actintra,sdyn->step,1);
-      out_gid_sol("accelerations",actfield,actintra,sdyn->step,2);
+      out_gid_sol("displacement",actfield,actintra,sdyn->step,0,ZERO);
+      out_gid_sol("velocities",actfield,actintra,sdyn->step,1,ZERO);
+      out_gid_sol("accelerations",actfield,actintra,sdyn->step,2,ZERO);
    }
    if (mod_stress==0)
    if (ioflags.struct_stress_gid==1)
-   out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0);
+   out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0,ZERO);
 }
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)

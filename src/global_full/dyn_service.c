@@ -1361,7 +1361,7 @@ for (i=0; i<numeq; i++)
 solserv_result_total(actfield,actintra, &(distvecs[i]),i,
                      &(actsolv->sysarray[0]),
                      &(actsolv->sysarray_typ[0]));
-out_gid_sol("eigenmodes",actfield,actintra,0,numeq);
+out_gid_sol("eigenmodes",actfield,actintra,0,numeq,ZERO);
 /*----------------------------------------------------------------------*/
 fprintf(allfiles.out_err,"------------------Eigenanalysis of SYMMETRIC (K-lambda*I)*phi=0-----\n");
 fprintf(allfiles.out_err,"Eigenvalues in ascending order:\n");
