@@ -30,6 +30,6 @@ UMFPACK_LIB="-lumfpack -lamd"
 
 LIBS="-lc -lm -lmkl_lapack64 -lmkl -lguide -lmetis"
 
-CFLAGS="-Wall -ansi -w2 -O3 -tpp7 -xW -ip -p -vec_report3 -opt_report_levelmin"
-FFLAGS="-Wall -w2 -O3 -tpp7 -xW -ip -p -vec_report3 -opt_report_levelmin"
-LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main -nofor_main -O3 -tpp7 -xW -ip -p -vec_report3 -opt_report_levelmin"
+CFLAGS="-Wall -ansi -w2 -O3 -tpp7 -xW -ip -vec_report3 -opt_report_levelmin"
+FFLAGS="-Wall -w2 -O3 -tpp7 -xW -ip -vec_report3 -opt_report_levelmin"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main -nofor_main -O3 -tpp7 -xW -ip -vec_report3 -opt_report_levelmin"
