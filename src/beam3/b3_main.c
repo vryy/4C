@@ -81,12 +81,12 @@ switch (*action)
 case calc_struct_init:
    b3_init(actpart, mat);
    b3_cal_ele(NULL,NULL,NULL,NULL,NULL,NULL,1);
-   b3_boplin3D(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1);
+   b3_boplin3D(NULL,NULL,NULL,NULL,NULL,NULL,ZERO,ZERO,ZERO,ZERO,0,1);
    b3_trans_stf(NULL,NULL,NULL,NULL,1);
    b3_load(NULL,NULL,NULL,NULL,NULL,1);
-   b3_loadlin(NULL,NULL,NULL,NULL,NULL,NULL,1);
+   b3_loadlin(NULL,NULL,NULL,ZERO,ZERO,NULL,1);
    b3_cal_force(NULL,NULL,NULL,1);
-   b3_mat_plast_mises(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1);
+   b3_mat_plast_mises(ZERO,ZERO,ZERO,ZERO,ZERO,ZERO,NULL,NULL,0,NULL,NULL,0,0,1);
    b3_setdirich(actfield);
 
    
