@@ -93,37 +93,38 @@ extern struct _MATERIAL  *mat;
    fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
    fdyn->tau[2]: stability parameter continuity (tau_c)
 </pre>
-\param  *ele     ELEMENT	       (i)   actual element
-\param  *data    FLUID_DATA	       (i)
-\param  *funct   DOUBLE 	       (-)   shape functions
-\param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
-\param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
-\param **derxy   DOUBLE 	       (-)   global derivatives
-\param **xjm     DOUBLE 	       (-)   jacobian matrix
-\param **evel    DOUBLE 	       (i)   element velocities
-\param  *velint  DOUBLE 	       (-)   vel. at integr. point
-\param **cutp    DOUBLE 	       (-)   cutting points
+\param  *ele     ELEMENT         (i)   actual element
+\param  *data    FLUID_DATA      (i)
+\param **xzye    DOUBLE          (-)   nodal coordinates
+\param  *funct   DOUBLE          (-)   shape functions
+\param **deriv   DOUBLE          (-)   deriv. of shape funcs
+\param **deriv2  DOUBLE          (-)   2nd deriv. of sh. funcs
+\param **derxy   DOUBLE          (-)   global derivatives
+\param **xjm     DOUBLE          (-)   jacobian matrix
+\param **evel    DOUBLE          (i)   element velocities
+\param **cutp    DOUBLE          (-)   cutting points
 \return void             
 
 ------------------------------------------------------------------------*/			     
 void f3_calelesize(
-	           ELEMENT         *ele,
-		   FLUID_DATA      *data,
-	           DOUBLE          *funct,
-	           DOUBLE         **deriv,
-	           DOUBLE         **deriv2,	       
-                   DOUBLE         **derxy,
-		   DOUBLE         **xjm,
-		   DOUBLE         **evel,	       
-		   DOUBLE          *velint,
-		   DOUBLE         **wa1		
+                     ELEMENT         *ele,
+                     FLUID_DATA      *data,
+                     DOUBLE         **xyze,
+                     DOUBLE          *funct,
+                     DOUBLE         **deriv,
+                     DOUBLE         **deriv2,	       
+                     DOUBLE         **derxy,
+                     DOUBLE         **xjm,
+                     DOUBLE         **evel,	       
+                     DOUBLE         **wa1,
+                     INT              cpele		
                   )
 {
+INT i;
 INT ieval = 0;       /* evaluation flag			                */
-INT ilen, inod;    /* simply a counter	        		*/
+INT ilen, inod;      /* simply a counter                                */
 INT istrnint;        /* evaluation flag		     	                */
 INT ishvol;          /* evaluation flag		        	        */
-INT ntyp;            /* element type (TET or HEX)  		        */
 INT actmat;          /* number of actual material		        */
 INT iel;             /* number of nodes of actual element               */
 DOUBLE visc;         /* fluid viscosity                                 */
@@ -136,6 +137,7 @@ DOUBLE e1,e2,e3;     /* natural coordinates of inegration point         */
 DOUBLE fac,facr;     /* factors                                         */
 DOUBLE facs,fact;    /* factors                                         */
 DOUBLE velino[3];    /* normed velocity vector at integration point     */
+DOUBLE velint[3];
 DIS_TYP typ;
 STAB_PAR_GLS *gls;   /* pointer to GLS stabilisation parameters	        */
 FLUID_DYNAMIC *fdyn;
@@ -145,14 +147,13 @@ dstrc_enter("f3_calelesize");
 #endif		
 
 /*---------------------------------------------------------- initialise */
-ntyp   = ele->e.f3->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f3->stabi.gls;
 fdyn   = alldyn[genprob.numff].fdyn;
 
-if (ele->e.f3->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f3->stab_type == stab_gls,
+        "routine with no or wrong stabilisation called");
 
 istrnint = gls->istrle * gls->ninths;
 ishvol  = fdyn->ishape * gls->iareavol;
@@ -172,9 +173,9 @@ if (ishvol==1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:   /* --> hex - element */
+   case hex8: case hex20: case hex27:   /* --> hex - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
@@ -183,7 +184,7 @@ if (ishvol==1)
       fact = data->qwgt[0][0]; 
       f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,2);
    break;        
-   case 2:  /* --> tet - element */
+   case tet4: case tet10:   /* --> tet - element */		  	
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -193,41 +194,40 @@ if (ishvol==1)
       f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,2);      
    break;
    default:
-      facr = facs= fact = 0.0;
-      e1 = e2 = e3 = 0.0;
-      dserror("ntyp unknown!"); 
-   } /*end switch(ntyp) */
+      dserror("typ unknown!\n");
+   } /*end switch(typ) */
+
    ieval++;
 /* ------------------------------------------- compute jacobian matrix */        
-   f3_jaco(funct,deriv,xjm,&det,ele,iel);
+   f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
    fac=facr*facs*fact*det;
    vol += fac;
    if (istrnint==1)    /* compute streamlength */
    {
-      f3_veli(velint,funct,evel,iel);      
+      f3_veci(velint,funct,evel,iel);      
       f3_gder(derxy,deriv,xjm,wa1,det,iel); 
       ieval++;
       val = ZERO;
       velno=sqrt( velint[0]*velint[0] \
                 + velint[1]*velint[1] \
-		+ velint[2]*velint[2]);
+                + velint[2]*velint[2]);
       if(velno>=EPS6)
       {
-	 velino[0] = velint[0]/velno;
+         velino[0] = velint[0]/velno;
          velino[1] = velint[1]/velno;
          velino[2] = velint[2]/velno;
       }
       else
       {
          velino[0] = ONE;
-	 velino[1] = ZERO;
-	 velino[2] = ZERO;
+         velino[1] = ZERO;
+         velino[2] = ZERO;
       }         
       for (inod=0;inod<iel;inod++) /* loop element nodes */
       {
          val += FABS(velino[0]*derxy[0][inod] \
 	            +velino[1]*derxy[1][inod] \
-		    +velino[2]*derxy[2][inod]);
+                    +velino[2]*derxy[2][inod]);
       } /* end of loop over elements */
       strle=TWO/val;      
    } /* endif (istrnint==1) */
@@ -261,9 +261,9 @@ else if (istrnint==1 && ishvol !=1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:   /* --> hex - element */
+   case hex8: case hex20: case hex27:   /* --> hex - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
@@ -272,7 +272,7 @@ else if (istrnint==1 && ishvol !=1)
       fact = data->qwgt[0][0]; 
       f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,2);
    break;        
-   case 2:  /* --> tet - element */
+   case tet4: case tet10:   /* --> tet - element */		  	
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -282,12 +282,12 @@ else if (istrnint==1 && ishvol !=1)
       f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,2);
    break;
    default:
-      dserror("ntyp unknown!"); 
-   } /*end switch(ntyp) */ 
+      dserror("typ unknown!"); 
+   } /*end switch(typ) */ 
 /* ------------------------------------------- compute jacobian matrix */        
-   f3_jaco(funct,deriv,xjm,&det,ele,iel);
+   f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
 /* --------------------------------------------- compute stream length */    
-   f3_veli(velint,funct,evel,iel);	
+   f3_veci(velint,funct,evel,iel);	
    f3_gder(derxy,deriv,xjm,wa1,det,iel); 
    ieval++;
    val = ZERO;
@@ -332,9 +332,9 @@ if(gls->istapc==1 || istrnint==1)
    case 0:
 /*------ get only values of integration parameters and shape functions
         no derivatives -------------------------------------------------*/
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> quad - element */
+      case hex8: case hex20: case hex27:   /* --> hex - element */
          e1   = data->qxg[0][0];
          facr = data->qwgt[0][0];
          e2   = data->qxg[0][0];
@@ -343,7 +343,7 @@ if(gls->istapc==1 || istrnint==1)
          fact = data->qwgt[0][0]; 
          f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,2);
       break;
-      case 2:       /* --> tet - element */              
+      case tet4: case tet10:   /* --> tet - element */		  	
          e1   = data->txgr[0][0];
          facr = data->twgt[0][0];
          e2   = data->txgs[0][0];
@@ -353,12 +353,12 @@ if(gls->istapc==1 || istrnint==1)
          f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,2);
       break;      
       default:
-         dserror("ntyp unknown!");
-      } /* end switch (ntyp) */
-      f3_veli(velint,funct,evel,iel);
+         dserror("typ unknown!");
+      } /* end switch (typ) */
+      f3_veci(velint,funct,evel,iel);
    break;
    case 1:            
-      f3_veli(velint,funct,evel,iel);
+      f3_veci(velint,funct,evel,iel);
    break;
    case 2:
    break;
@@ -368,8 +368,16 @@ if(gls->istapc==1 || istrnint==1)
 /*----------------------------------- calculate stabilisation parameter */               
    actmat=ele->mat-1;
    visc = mat[actmat].m.fluid->viscosity;
-   f3_calstabpar(ele,velint,visc,iel,ntyp,-1);    
+   f3_calstabpar(ele,velint,visc,iel,typ,-1);    
 } /* endif (ele->e.f3->istapc==1 || istrnint==1) */
+
+/*--------------------------------------------- copy stabpar to element */
+if (cpele==1)
+{
+   for (i=0;i<3;i++)
+      ele->e.f3->tau_old[i]=fdyn->tau[i];
+}
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -388,30 +396,30 @@ in this routine the element size and the stabilisation parameter
 is calculated for one element during the integration loop
 		     
 </pre>
-\param  *ele     ELEMENT	        (i)    actual element
-\param  *velint  DOUBLE 		(-)    vel at intpoint
-\param  *derxy   DOUBLE 		(-)    global derivatives
-\param   visc    DOUBLE 		(i)    fluid viscosity
-\param   iel     INT		        (i)    act. num. of ele nodes
-\param   ntyp    INT		        (i)    element type
+\param  *ele     ELEMENT         (i)    actual element
+\param  *velint  DOUBLE          (-)    vel at intpoint
+\param  *derxy   DOUBLE          (-)    global derivatives
+\param   visc    DOUBLE          (i)    fluid viscosity
+\param   iel     INT             (i)    act. num. of ele nodes
+\param   typ     DIS_TYP         (i)    element type
 \return void                                               
 \sa f3_calelesize()                               
 
 ------------------------------------------------------------------------*/
 void f3_calelesize2(
-	             ELEMENT         *ele,
+                     ELEMENT         *ele,
                      DOUBLE          *velint,	       
                      DOUBLE         **derxy,	       	
-		     DOUBLE           visc,
-		     INT              iel,
-		     INT              ntyp
-		  ) 
+                     DOUBLE           visc,
+                     INT              iel,
+                     DIS_TYP          typ
+                   )
 {
 INT    ilen, inod; /* simply a counter                                  */
 INT    istrnint;   /* evaluation flag                                   */
 DOUBLE strle;      /* stream length                                     */
-DOUBLE val;	   /* temporary calculation value                       */
-DOUBLE velno;	   /* velocity norm                                     */
+DOUBLE val;        /* temporary calculation value                       */
+DOUBLE velno;      /* velocity norm                                     */
 DOUBLE velino[3];  /* normed velocity vector at integration point       */
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
@@ -424,14 +432,14 @@ gls      = ele->e.f3->stabi.gls;
 istrnint = gls->istrle * gls->ninths;
 val = ZERO;
 
-if (ele->e.f3->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f3->stab_type != stab_gls,
+         "routine with no or wrong stabilisation called");
 
 if (istrnint==2)
 {
 /*------------------------------------------------ compute streamlength */
    velno=sqrt( velint[0]*velint[0] \
-   	     + velint[1]*velint[1] \
+             + velint[1]*velint[1] \
      	     + velint[2]*velint[2]);
    if(velno>=EPS6)
    {
@@ -448,8 +456,8 @@ if (istrnint==2)
    for (inod=0;inod<iel;inod++)
    {
       val += FABS(velino[0]*derxy[0][inod] \
-     		 +velino[1]*derxy[1][inod] \
-     		 +velino[2]*derxy[2][inod]);      
+                 +velino[1]*derxy[1][inod] \
+                 +velino[2]*derxy[2][inod]);      
    }
    strle=TWO/val;
 /*--------------------------------------------------- set element sizes *
@@ -461,7 +469,7 @@ if (istrnint==2)
    } /* end of loop over ilen */
 } /* endif (istrnint==2) */
 /*----------------------------------- calculate stabilisation parameter */               
-f3_calstabpar(ele,velint,visc,iel,ntyp,1); 
+f3_calstabpar(ele,velint,visc,iel,typ,1); 
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
