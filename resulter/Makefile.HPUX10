@@ -10,21 +10,6 @@ FXX     = f77
 CCX     = cc
 LDX     = cc
 PFL     = 
-AZTEC   = -laztec_seriell21
-UMFPACK = -lumfpack40_hpux10_32
-##--------------------------------------------------------------------
-#
-# parallel part (not implemented!!!)
-#--------------------------------------------------------------------
-#PROGRAM_NAME  = resulter.exe
-#FXX     = /opt/mpi/bin/mpif77
-#CCX     = /opt/mpi/bin/mpicc
-#LDX     = /opt/mpi/bin/mpicc
-#PFL     = -DPARALLEL  -DD_FLUID2  -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-#          -DAZTEC_PACKAGE -DUMFPACK
-#AZTEC   = -laztec_par21
-#UMFPACK = -lumfpack40_hpux10_32
-#
 #--------------------------------------------------------------------
 #
 CC	 = $(CCX)
@@ -42,19 +27,12 @@ FFLAGS        = -g -I/opt/mpi/include/
 #FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
-INCLUDES = -I/opt/mpi/include/ \
-           -L/bau/stat33/users/statik/lib \
-           -lblas \
-
-# sparsekit is not used at the moment
-#           -lskit 
-# libHYPRE_superlu.a convlicts with libsuperlu_hppa.a
-#           -lHYPRE_superlu
-
 LDOPTS        = -a archive -v
 
+INCLUDES = 
 
-LIBS	      =  
+LIBS     = -lblas
+
 #
 # binaries
 #                main
@@ -64,10 +42,7 @@ OBJS1         = main.o \
                 take_every.o \
                 merge.o \
                 pss_am.o
-#                fortran
-#OBJS13	      = ${SRC}/fortran/colsol.o
-#
-#
+
 # targets
 #
 PROGRAM       = $(PROGRAM_NAME)
@@ -84,12 +59,7 @@ $(OBJS1):
 		@echo "Making $@ ..."
 		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
 		@echo "MainMake is back."
-# fortran
-#$(OBJS13):     
-#		@echo "Making $@ ..."
-#		cd ${@D}; $(FXX) $(FFLAGS)  -c  $<
-#		@echo "MainMake is back."
-##
+
 .c.o:
 	@ echo "$@ wird kompiliert...."
 	$(CC) $(CFLAGS) $(INCLUDES) -c  $<
