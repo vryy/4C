@@ -100,166 +100,151 @@ void f3_calelestress(
   typ  = ele->distyp;
 
 
-#if 0
-  switch(viscstr)
+  /* only real pressure */
+  /* use the rear part of stress_ND */
+  for (i=0;i<iel;i++)
   {
-    case 0: /* only real pressure */
-#endif
-      for (i=0;i<iel;i++)
-      {
-        actnode=ele->node[i];
-        ele->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[3][3]*dens;
-        ele->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[3][3]*dens;
-        ele->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[3][3]*dens;
-        ele->e.f3->stress_ND.a.da[i][3]= ZERO;
-        ele->e.f3->stress_ND.a.da[i][4]= ZERO;
-        ele->e.f3->stress_ND.a.da[i][5]= ZERO;
-      }
-#if 0
+    actnode=ele->node[i];
+    ele->e.f3->stress_ND.a.da[i][6]=-actnode->sol_increment.a.da[3][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][7]=-actnode->sol_increment.a.da[3][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][8]=-actnode->sol_increment.a.da[3][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][9]= ZERO;
+    ele->e.f3->stress_ND.a.da[i][10]= ZERO;
+    ele->e.f3->stress_ND.a.da[i][11]= ZERO;
+  }
+
+
+  /* real pressure + viscose stresses */
+  /* sigma = -p_real*I + 2*nue * eps(u) */ 
+
+  /* get integraton data  */
+  switch (ntyp)
+  {
+    case 1:  /* hex - element */
+      icode = 2;
+      nir = ele->e.f3->nGP[0];
+      nis = ele->e.f3->nGP[1];
+      nit = ele->e.f3->nGP[2];
       break;
 
-
-    case 1: /* real pressure + viscose stresses */
-#endif
-      /* sigma = -p_real*I + 2*nue * eps(u) */ 
-      /* calculate deformation velocity tensor */
-      /*------------------------------------------------ get integraton data  */
-      switch (ntyp)
-      {
-        case 1:  /* hex - element */
-          icode = 2;
-          nir = ele->e.f3->nGP[0];
-          nis = ele->e.f3->nGP[1];
-          nit = ele->e.f3->nGP[2];
-          break;
-
-        case 2: /* tet - element */  
-          if (iel>4)
-            icode   = 2;
-          /* initialise integration */
-          nir  = ele->e.f3->nGP[0];
-          nis  = 1;
-          nit  = 1; 
-          intc = ele->e.f3->nGP[1];  
-          break;
-        default:
-          dserror("ntyp unknown!");
-      } /* end switch(ntyp) */
-
-
-      /* set element velocities, real pressure and coordinates */
-      for (j=0;j<iel;j++)
-      {
-        evel[0][j] = ele->node[j]->sol_increment.a.da[3][0];
-        evel[1][j] = ele->node[j]->sol_increment.a.da[3][1];
-        evel[2][j] = ele->node[j]->sol_increment.a.da[3][2];
-        epre[j]    = ele->node[j]->sol_increment.a.da[3][3]*dens;
-        xyze[0][j] = ele->node[j]->x[0];
-        xyze[1][j] = ele->node[j]->x[1];
-        xyze[2][j] = ele->node[j]->x[2];
-      }/*end for (j=0;j<iel;j++) */
-
-
-      /* loop over integration points */
-      iv=0;
-      twovisc=TWO*visc;
-      for (lr=0;lr<nir;lr++)
-      {    
-        for (ls=0;ls<nis;ls++)
-        {
-          for (lt=0;lt<nit;lt++)
-          {
-
-            /* get values of  shape functions and their derivatives */
-            switch(ntyp)  
-            {
-              case 1:   /* --> hex - element */
-                e1   = data->qxg[lr][nir-1];
-                e2   = data->qxg[ls][nis-1];
-                e3   = data->qxg[lt][nit-1];
-                f3_hex(funct,deriv,NULL,e1,e2,e3,typ,icode);
-                xgr[lr] = e1;
-                xgs[ls] = e2;
-                xgt[lt] = e3;
-                break;
-              case 2:   /* --> tet - element */		  	
-                e1   = data->txgr[lr][intc];
-                e2   = data->txgs[lr][intc];
-                e3   = data->txgt[lr][intc]; 
-                f3_tet(funct,deriv,NULL,e1,e2,e3,typ,icode); 
-                break;
-              default:
-                dserror("ntyp unknown!");
-            } /* end switch (ntyp) */
-
-
-            /* compute Jacobian matrix */
-            f3_jaco(funct,deriv,xjm,&det,ele,iel);
-
-            /* compute global derivates */
-            f3_gder(derxy,deriv,xjm,wa1,det,iel);
-
-            /* get velocity  derivatives at integration point */
-            f3_vder(vderxy,derxy,evel,iel);
-
-            /* get pressure at integration point */         
-            f3_prei(&preint,funct,epre,iel);
-
-
-            /*
-                        | Ux,x    Ux,y    Ux,z |
-                        |                      |
-               vderxy = | Uy,x    Uy,y    Uy,z |
-                        |                      |
-                        | Uz,x    Uz,y    Uz,z |
-
-
-                            | Ux,x+Ux,x   Ux,y+Uy,x   Ux,z+Uz,x |
-                            |                                   |
-               eps(u) = 1/2 |             Uy,y+Uy,y   Uy,z+Uz,y |
-                            |                                   |
-                            |   symm.                 Uz,z+Uz,z |
-
-
-               SIGMA = -p_real*I + 2*nue * eps(u)
-            */
-
-
-            sigmaint[iv][0] = -preint + twovisc * vderxy[0][0];
-            sigmaint[iv][1] = -preint + twovisc * vderxy[1][1];
-            sigmaint[iv][2] = -preint + twovisc * vderxy[2][2];
-            sigmaint[iv][3] = (vderxy[0][1] + vderxy[1][0])*visc;
-            sigmaint[iv][4] = (vderxy[1][2] + vderxy[2][1])*visc;
-            sigmaint[iv][5] = (vderxy[0][2] + vderxy[2][0])*visc;
-
-            iv++;			     
-
-          } /* end loop over nit */
-        } /* end loop over nis */
-      } /* end loop over nir */
-
-
-      /* extrapolate stresses to the nodes */
-      f3_sext(
-          ele->e.f3->stress_ND.a.da,
-          sigmaint,
-          xgr,
-          xgs,
-          xgt,
-          nir,
-          nis,
-          nit,
-          iel);
-#if 0
+    case 2: /* tet - element */  
+      if (iel>4)
+        icode   = 2;
+      /* initialise integration */
+      nir  = ele->e.f3->nGP[0];
+      nis  = 1;
+      nit  = 1; 
+      intc = ele->e.f3->nGP[1];  
       break;
-
-
     default:
-      dserror("Wrong flag for viscstr !!");
-      break;
+      dserror("ntyp unknown!");
+  } /* end switch(ntyp) */
 
-  } /* end of switch(viscstr) */
-#endif
+
+  /* set element velocities, real pressure and coordinates */
+  for (j=0;j<iel;j++)
+  {
+    evel[0][j] = ele->node[j]->sol_increment.a.da[3][0];
+    evel[1][j] = ele->node[j]->sol_increment.a.da[3][1];
+    evel[2][j] = ele->node[j]->sol_increment.a.da[3][2];
+    epre[j]    = ele->node[j]->sol_increment.a.da[3][3]*dens;
+    xyze[0][j] = ele->node[j]->x[0];
+    xyze[1][j] = ele->node[j]->x[1];
+    xyze[2][j] = ele->node[j]->x[2];
+  }/*end for (j=0;j<iel;j++) */
+
+
+  /* loop over integration points */
+  iv=0;
+  twovisc=TWO*visc;
+  for (lr=0;lr<nir;lr++)
+  {    
+    for (ls=0;ls<nis;ls++)
+    {
+      for (lt=0;lt<nit;lt++)
+      {
+
+        /* get values of  shape functions and their derivatives */
+        switch(ntyp)  
+        {
+          case 1:   /* --> hex - element */
+            e1   = data->qxg[lr][nir-1];
+            e2   = data->qxg[ls][nis-1];
+            e3   = data->qxg[lt][nit-1];
+            f3_hex(funct,deriv,NULL,e1,e2,e3,typ,icode);
+            xgr[lr] = e1;
+            xgs[ls] = e2;
+            xgt[lt] = e3;
+            break;
+          case 2:   /* --> tet - element */		  	
+            e1   = data->txgr[lr][intc];
+            e2   = data->txgs[lr][intc];
+            e3   = data->txgt[lr][intc]; 
+            f3_tet(funct,deriv,NULL,e1,e2,e3,typ,icode); 
+            break;
+          default:
+            dserror("ntyp unknown!");
+        } /* end switch (ntyp) */
+
+
+        /* compute Jacobian matrix */
+        f3_jaco(funct,deriv,xjm,&det,ele,iel);
+
+        /* compute global derivates */
+        f3_gder(derxy,deriv,xjm,wa1,det,iel);
+
+        /* get velocity  derivatives at integration point */
+        f3_vder(vderxy,derxy,evel,iel);
+
+        /* get pressure at integration point */         
+        f3_prei(&preint,funct,epre,iel);
+
+
+        /*
+                    | Ux,x    Ux,y    Ux,z |
+                    |                      |
+           vderxy = | Uy,x    Uy,y    Uy,z |
+                    |                      |
+                    | Uz,x    Uz,y    Uz,z |
+
+
+                        | Ux,x+Ux,x   Ux,y+Uy,x   Ux,z+Uz,x |
+                        |                                   |
+           eps(u) = 1/2 |             Uy,y+Uy,y   Uy,z+Uz,y |
+                        |                                   |
+                        |   symm.                 Uz,z+Uz,z |
+
+
+           SIGMA = -p_real*I + 2*nue * eps(u)
+        */
+
+
+        sigmaint[iv][0] = -preint + twovisc * vderxy[0][0];
+        sigmaint[iv][1] = -preint + twovisc * vderxy[1][1];
+        sigmaint[iv][2] = -preint + twovisc * vderxy[2][2];
+        sigmaint[iv][3] = (vderxy[0][1] + vderxy[1][0])*visc;
+        sigmaint[iv][4] = (vderxy[1][2] + vderxy[2][1])*visc;
+        sigmaint[iv][5] = (vderxy[0][2] + vderxy[2][0])*visc;
+
+        iv++;			     
+
+      } /* end loop over nit */
+    } /* end loop over nis */
+  } /* end loop over nir */
+
+
+  /* extrapolate stresses to the nodes */
+  f3_sext(
+      ele->e.f3->stress_ND.a.da,
+      sigmaint,
+      xgr,
+      xgs,
+      xgt,
+      nir,
+      nis,
+      nit,
+      iel);
+
 
 #ifdef DEBUG 
   dstrc_exit();
@@ -451,7 +436,7 @@ void f3_hxsm (
       f3_lgpl (j,nis,xgs,sk,&xls);
       for (k=0; k<nit; k++) {
         f3_lgpl (k,nit,xgt,tk,&xlt);
-        for (ns=0; ns<kkk; ns++)  fp[6+ns] += xlr*xls*xlt*f[ns][ngp];
+        for (ns=0; ns<kkk; ns++)  fp[ns] += xlr*xls*xlt*f[ns][ngp];
         ngp = ngp + 1;
       }
     }

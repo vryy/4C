@@ -303,12 +303,12 @@ void f3_liftdrag(
 
           /* compute stress vector at gauss point *
              force = sigma * n  (Cauchy's law) */
-          /* pressure */
+          /* viscous */
           forceline[0] = sigmaint[0]*vn[0] + sigmaint[3]*vn[1] + sigmaint[5]*vn[2];
           forceline[1] = sigmaint[3]*vn[0] + sigmaint[1]*vn[1] + sigmaint[4]*vn[2];
           forceline[2] = sigmaint[5]*vn[0] + sigmaint[4]*vn[1] + sigmaint[2]*vn[2];
 
-          /* viscous */
+          /* only pressure */
           forceline[3] =  sigmaint[6]*vn[0] +  sigmaint[9]*vn[1] + sigmaint[11]*vn[2];
           forceline[4] =  sigmaint[9]*vn[0] +  sigmaint[7]*vn[1] + sigmaint[10]*vn[2];
           forceline[5] = sigmaint[11]*vn[0] + sigmaint[10]*vn[1] +  sigmaint[8]*vn[2];
@@ -325,7 +325,7 @@ void f3_liftdrag(
           }
 
 
-          /* pressure */
+          /* viscous */
           /* lift and drag forces in global coordinate system */
           container->liftdrag[ld_id*6+0] -= forceline[0] * fac;
           container->liftdrag[ld_id*6+1] += forceline[1] * fac;
@@ -342,7 +342,7 @@ void f3_liftdrag(
             ( forceline[0]*xyz[1] - forceline[1]*xyz[0] ) * fac;
 
 
-          /* viscous */
+          /* only pressure */
           /* lift and drag forces in global coordinate system */
           container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+0] -= forceline[3] * fac;
           container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+1] += forceline[4] * fac;

@@ -186,12 +186,13 @@ if (init>0)
        liftdrag[i] = recv[i];
 #endif
 
-   /* pressure */
+   /* viscous */
    /* calculate the sums of all liftdrag conditions */ 
    for (j=0; j<6; j++) 
      for (i=0; i<FLUID_NUM_LD; i++)
        liftdrag[FLUID_NUM_LD*6+j] += liftdrag[i*6+j];
    
+   /* only pressure */
    /* calculate the sums of all liftdrag conditions */ 
    for (j=0; j<6; j++) 
      for (i=0; i<FLUID_NUM_LD; i++)
@@ -200,7 +201,7 @@ if (init>0)
    /*-------------------------------------------------------- output ---*/
    if(par.myrank == 0)
    {
-     /* pressure */
+     /* viscous */
      printf("F_x = ");
      for (i=0; i<FLUID_NUM_LD+1; i++)
        printf(" %12.4E ",  liftdrag[i*6+0]);
@@ -231,7 +232,7 @@ if (init>0)
        printf(" %12.4E ",  liftdrag[i*6+5]);
      printf("\n\n");
 
-     /* viscous */
+     /* only pressure */
      printf("F_x = ");
      for (i=0; i<FLUID_NUM_LD+1; i++)
        printf(" %12.4E ",  liftdrag[(FLUID_NUM_LD +1+i)*6+0]);
