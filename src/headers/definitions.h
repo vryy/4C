@@ -60,6 +60,7 @@ typedef char      CHAR;
 #endif
 
 #ifdef CCA_APPEND_U
+#define dgesv               dgesv_
 #define dsytrf              dsytrf_
 #define dsytri              dsytri_
 #define dsytrs              dsytrs_
