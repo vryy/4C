@@ -939,11 +939,15 @@ C       ****************************************************************
        TITL='HOT PICS!!!!'
        CMFILE='/bau/stat34/opt/vis2/spec.col'
 
-       CALL V2_INIT(TITL,IOPT,CMNCOL,CMFILE,CMUNIT,
-     &              XYPIX,XYMIN,XYMAX,
-     &		    NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,
-     &		    MNODE,MPTRI,MPPTRI,
-     &		    MFACE,MPFACE,MEDGE,MPEDGE)
+       WRITE(*,*) 'call of V2_INIT not compiled in!!!' 
+       WRITE(*,*) 'change in /src/fortran/vis2_qat2v2.f'
+       STOP
+       
+C       CALL V2_INIT(TITL,IOPT,CMNCOL,CMFILE,CMUNIT,
+C     &              XYPIX,XYMIN,XYMAX,
+C     &		    NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,
+C     &		    MNODE,MPTRI,MPPTRI,
+C     &		    MFACE,MPFACE,MEDGE,MPEDGE)
 	
 	RETURN
 	END
