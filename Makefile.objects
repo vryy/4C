@@ -253,32 +253,62 @@ OBJS12	      = src/wall1/w1_bop.o \
 OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \
                 src/fluid2/f2_calele.o \
+                src/fluid2/f2_calele_tu.o \
+                src/fluid2/f2_calele_tu_1.o \
+                src/fluid2/f2_calelesize_tu.o \
+                src/fluid2/f2_calelesize_tu_1.o \
                 src/fluid2/f2_calextrhs.o \
                 src/fluid2/f2_calfuncderiv.o \
                 src/fluid2/f2_calint.o \
+                src/fluid2/f2_calint_tu.o \
+                src/fluid2/f2_calint_tu_1.o \
                 src/fluid2/f2_caliterrhs.o \
+                src/fluid2/f2_caliterrhs_tu.o \
+                src/fluid2/f2_caliterrhs_tu_1.o \
                 src/fluid2/f2_calgalmat.o \
+                src/fluid2/f2_calgalmat_tu.o \
+                src/fluid2/f2_calgalmat_tu_1.o \
                 src/fluid2/f2_calservice.o \
+                src/fluid2/f2_calservice_tu.o \
+                src/fluid2/f2_calservice_tu_1.o \
                 src/fluid2/f2_calstabpar.o \
+                src/fluid2/f2_calstabpar_tu.o \
+                src/fluid2/f2_calstabpar_tu_1.o \
                 src/fluid2/f2_calstabmat.o \
+                src/fluid2/f2_calstabmat_tu.o \
+                src/fluid2/f2_calstabmat_tu_1.o \
                 src/fluid2/f2_calstress.o \
                 src/fluid2/f2_calsurfrhs.o \
                 src/fluid2/f2_caltimerhs.o \
+                src/fluid2/f2_caltimerhs_tu.o \
+                src/fluid2/f2_caltimerhs_tu_1.o \
+                src/fluid2/f2_caltimerhspro_tu.o \
+                src/fluid2/f2_caltimerhspro_tu_1.o \
+                src/fluid2/f2_caltuvisc.o \
                 src/fluid2/f2_calvort.o \
                 src/fluid2/f2_inpele.o \
+                src/fluid2/f2_inpele_tu.o \
                 src/fluid2/f2_intg.o \
-                src/fluid2/f2_main.o 
+                src/fluid2/f2_main.o \
+                src/fluid2/f2_main_tu.o \
+                src/fluid2/f2_ass_dof_ndis_tu.o 
 #                fluid_full
 OBJS15        = src/fluid_full/fluid_curvature.o \
                 src/fluid_full/fluid_dyn.o \
                 src/fluid_full/fluid_dirich.o \
+                src/fluid_full/fluid_dirich_tu.o \
+                src/fluid_full/fluid_dirich_tu_1.o \
                 src/fluid_full/fluid_freesurf.o \
                 src/fluid_full/fluid_imp_semimp.o \
+                src/fluid_full/fluid_imp_semimp_tu.o\
+                src/fluid_full/fluid_imp_semimp_tu_1.o\
                 src/fluid_full/fluid_mf.o \
                 src/fluid_full/fluid_mfcoupling.o \
                 src/fluid_full/fluid_pr_mcorr.o \
                 src/fluid_full/fluid_stationary.o \
                 src/fluid_full/fluid_service.o \
+                src/fluid_full/fluid_service_tu.o\
+                src/fluid_full/fluid_service_tu_1.o\
 		src/fluid_full/inp_fluid_start_data.o
 #                fluid_full
 OBJS16        = src/fsi_full/fsi_aitken.o \
