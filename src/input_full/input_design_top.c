@@ -28,6 +28,7 @@ DLINE *actdline;
 DSURF *actdsurf;
 DVOL  *actdvol;
 FIELD *actfield;
+NODE  *actnode;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_topology");
 #endif
@@ -50,8 +51,8 @@ for (i=0; i<design->ndnode; i++)
          }
       }
    }
+exit1:;
 }
-exit1:
 /*----------------------------------------------- loop the design lines */
 for (i=0; i<design->ndline; i++)
 {
@@ -150,6 +151,47 @@ for (i=0; i<design->ndvol; i++)
          }
       }
    }
+}
+/*-- we made all pointers design -> FE-nodes, now make FE-nodes->design */
+/*--------------------------------------- start with the design volumes */
+for (i=0; i<design->ndvol; i++)
+{
+   actdvol = &(design->dvol[i]);
+   for (j=0; j<actdvol->mynode.fdim; j++)
+   {
+      actnode            = actdvol->node[j];
+      actnode->downertyp = dvol_owned;
+      actnode->d.dvol   = actdvol;
+   }
+}
+/*------------------------------------- make FE-nodes owned by surfaces */
+for (i=0; i<design->ndsurf; i++)
+{
+   actdsurf = &(design->dsurf[i]);
+   for (j=0; j<actdsurf->mynode.fdim; j++)
+   {
+      actnode            = actdsurf->node[j];
+      actnode->downertyp = dsurf_owned;
+      actnode->d.dsurf   = actdsurf;
+   }
+}
+/*--------------------------------------- make FE-nodes owned by dlines */
+for (i=0; i<design->ndline; i++)
+{
+   actdline = &(design->dline[i]);
+   for (j=0; j<actdline->mynode.fdim; j++)
+   {
+      actnode            = actdline->node[j];
+      actnode->downertyp = dline_owned;
+      actnode->d.dline   = actdline;
+   }
+}
+/*--------------------------------------- make FE-nodes owned by dnodes */
+for (i=0; i<design->ndnode; i++)
+{
+   actdnode                  = &(design->dnode[i]);
+   actdnode->node->downertyp = dnode_owned;
+   actdnode->node->d.dnode   = actdnode;
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -68,7 +68,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*--------------------------------------------- lowest dnodenumber is 0 */
-design->ndnode = maxdnode+1;
+design->ndnode = maxdnode;
 /*------------------------------------------------allocate design nodes */
 design->dnode = (DNODE*)calloc(design->ndnode,sizeof(DNODE));
 if (design->dnode==NULL) dserror("Allocation of design nodes failed");
@@ -85,7 +85,7 @@ for (i=0; i<design->ndnode; i++)
       frint("DNODE",&dnode,&ierr);
       if (ierr==1)
       {
-         if (dnode==i)
+         if (dnode==i+1)
          {
             frint("NODE",&(design->dnode[i].mynode),&ierr);
             (design->dnode[i].mynode)--;
@@ -133,7 +133,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*--------------------------------------------- lowest dlinenumber is 0 */
-design->ndline = maxdline+1;
+design->ndline = maxdline;
 /*------------------------------------------------allocate design nodes */
 design->dline = (DLINE*)calloc(design->ndline,sizeof(DLINE));
 if (design->dline==NULL) dserror("Allocation of design lines failed");
@@ -151,7 +151,7 @@ for (i=0; i<design->ndline; i++)
       frint("DLINE",&dline,&ierr);
       if (ierr==1)
       {
-         if (dline==i) counter++;
+         if (dline==i+1) counter++;
       }
       frread();
    }
@@ -169,7 +169,7 @@ for (i=0; i<design->ndline; i++)
       frint("DLINE",&dline,&ierr);
       if (ierr==1)
       {
-         if (dline==i)
+         if (dline==i+1)
          {
             frint("NODE",&(design->dline[i].mynode.a.iv[counter]),&ierr);
             (design->dline[i].mynode.a.iv[counter])--;
@@ -217,7 +217,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*--------------------------------------------- lowest dsurfnumber is 0 */
-design->ndsurf = maxdsurf+1;
+design->ndsurf = maxdsurf;
 /*------------------------------------------------allocate design nodes */
 design->dsurf  = (DSURF*)calloc(design->ndsurf,sizeof(DSURF));
 if (design->dsurf==NULL) dserror("Allocation of design surfaces failed");
@@ -235,7 +235,7 @@ for (i=0; i<design->ndsurf; i++)
       frint("DSURFACE",&dsurf,&ierr);
       if (ierr==1)
       {
-         if (dsurf==i) counter++;
+         if (dsurf==i+1) counter++;
       }
       frread();
    }
@@ -253,7 +253,7 @@ for (i=0; i<design->ndsurf; i++)
       frint("DSURFACE",&dsurf,&ierr);
       if (ierr==1)
       {
-         if (dsurf==i)
+         if (dsurf==i+1)
          {
             frint("NODE",&(design->dsurf[i].mynode.a.iv[counter]),&ierr);
             (design->dsurf[i].mynode.a.iv[counter])--;
@@ -300,7 +300,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*--------------------------------------------- lowest dsurfnumber is 0 */
-design->ndvol = maxdvol+1;
+design->ndvol = maxdvol;
 /*------------------------------------------------allocate design nodes */
 design->dvol  = (DVOL*)calloc(design->ndvol,sizeof(DVOL));
 if (design->dvol==NULL) dserror("Allocation of design volumes failed");
@@ -318,7 +318,7 @@ for (i=0; i<design->ndvol; i++)
       frint("DVOLUME",&dvol,&ierr);
       if (ierr==1)
       {
-         if (dvol==i) counter++;
+         if (dvol==i+1) counter++;
       }
       frread();
    }
@@ -336,7 +336,7 @@ for (i=0; i<design->ndvol; i++)
       frint("DVOLUME",&dvol,&ierr);
       if (ierr==1)
       {
-         if (dvol==i)
+         if (dvol==i+1)
          {
             frint("NODE",&(design->dvol[i].mynode.a.iv[counter]),&ierr);
             (design->dvol[i].mynode.a.iv[counter])--;

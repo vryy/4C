@@ -20,7 +20,22 @@ typedef struct _NODE
      struct _ELEMENT          **element;       /* ptrs to elements to me */
 
      struct _COND_NODE         *c;             /* my conditions, if any, else NULL */
-     
+
+     enum                                      /* type of design object that owns me */
+       {
+          dnode_owned,
+          dline_owned,
+          dsurf_owned,
+          dvol_owned
+       }                        downertyp;
+     union                                     /* union pointer to design object that owns me */
+       {
+       struct _DNODE  *dnode;
+       struct _DLINE  *dline;
+       struct _DSURF  *dsurf;
+       struct _DVOL   *dvol;
+       }                        d;
+       
 } NODE;
 
 
@@ -36,10 +51,8 @@ typedef struct _ELEMENT
      int                       *lm;             /* only used for reading from input (this will be eliminated)*/
      struct _NODE             **node;           /* ptrs to my nodes */
      int                        mat;            /* number of material law associated with me */
-     
      enum _ELEMENT_TYP          eltyp;          /* my element type */
      enum _DIS_TYP              distyp;         /* my actual discretization type */
-
      union                                      /* union pointer to elementformulation */
      {
      struct _SHELL8   *s8;                      /* shell8 element */
@@ -48,9 +61,7 @@ typedef struct _ELEMENT
      struct _FLUID3   *f3;                      /* 3D fluid element */
      struct _ALE      *ale;                     /* pseudo structural 2D or 3D ale element */
      }                          e;              /* name of union */ 
-
      struct _COND_ELEMENT      *c;              /* my conditions, if any, else NULL */
-
 } ELEMENT;
 
 
