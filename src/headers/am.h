@@ -11,11 +11,11 @@ int                 fdim;              /* first dimension of field         */
 int                 sdim;              /* scnd dimension of field          */
 enum         
    {
-    XX,                                /* not defined    */
-    DA,                                /* double array   */
-    DV,                                /* double vector  */
-    IA,                                /* integer array  */
-    IV                                 /* integer vector */
+    cca_XX,                            /* not defined    */
+    cca_DA,                            /* double array   */
+    cca_DV,                            /* double vector  */
+    cca_IA,                            /* integer array  */
+    cca_IV                             /* integer vector */
    }                Typ;               /* enum type of field */
 union
    {
@@ -41,11 +41,11 @@ int                 tdim;              /* third dimension of field         */
 int                 fodim;             /* fourth dimension of field        */
 enum         
    {
-    XX4D,                              /* not defined    */
-    D3,                                /* double 3D-array   */
-    D4,                                /* double 4D-array  */
-    I3,                                /* integer 3D-array  */
-    I4                                 /* integer 4D-array  */
+    cca_XX4D,                              /* not defined    */
+    cca_D3,                                /* double 3D-array   */
+    cca_D4,                                /* double 4D-array  */
+    cca_I3,                                /* integer 3D-array  */
+    cca_I4                                 /* integer 4D-array  */
    }                Typ;               /* enum type of field */
 union
    {

@@ -30,7 +30,7 @@ dstrc_enter("calrhs");
 sysarraytyp = &(actsolv->sysarray_typ[actsysarray]);
 sysarray    = &(actsolv->sysarray[actsysarray]);            
 /*-------------------- create a temporary vector of redundant full size */
-if (rhs_a.Typ != DV)
+if (rhs_a.Typ != cca_DV)
 {
    rhs = amdef("tmprhs",&rhs_a,rhs1->numeq_total,1,"DV");
 }
@@ -41,7 +41,7 @@ if (rhs_a.fdim < rhs1->numeq_total)
 }
 amzero(&rhs_a);
 #ifdef PARALLEL 
-if (rhsrecv_a.Typ != DV)
+if (rhsrecv_a.Typ != cca_DV)
 {
    rhsrecv = amdef("tmprhs",&rhsrecv_a,rhs1->numeq_total,1,"DV");
 }

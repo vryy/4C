@@ -26,6 +26,16 @@
 #endif/* end of ifdef PARALLEL */
 
 /*----------------------------------------------------------------------*
+ | includes for solver package Spooles                    m.gee 4/02    |
+ *----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+#ifdef SPOOLES_PACKAGE
+#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#endif
+#endif
+
+
+/*----------------------------------------------------------------------*
  | includes for solver package SuperLU_DIST              m.gee 10/01    |
  *----------------------------------------------------------------------*/
 #ifdef PARALLEL/*---------------- HYPRE exists only in parallel version */ 
@@ -33,6 +43,8 @@
 #include "superlu_ddefs.h"
 #endif /* end of ifdef PARSUPERLU_PACKAGE */
 #endif/* end of ifdef PARALLEL */
+
+
 
 /*----------------------------------------------------------------------*
  | an enum which describes all types of sparse matrices   m.gee 5/01    |
@@ -46,7 +58,8 @@ typedef enum _SPARSE_TYP
      ucchb,                  /* unsymmetric column compressed Harwell-Boeing format */
      dense,                  /* dense matrix for Lapack */
      rc_ptr,                 /* row column pointer format for mumps */
-     skymatrix               /* skyline format for solver colsol */  
+     skymatrix,              /* skyline format for solver colsol */  
+     spoolmatrix             /* matrix object for solver spooles */
 } SPARSE_TYP;
 
 /*----------------------------------------------------------------------*
@@ -62,6 +75,7 @@ struct _UCCHB          *ucchb;  /*         to Superlu's UCCHB matrix */
 struct _DENSE          *dense;  /*         to dense matrix */
 struct _RC_PTR         *rc_ptr; /*         to Mump's row/column ptr matrix */
 struct _SKYMATRIX      *sky;    /*         to Colsol's skyline matrix */
+struct _SPOOLMAT       *spo;    /*         to Spoole's matrix */
 
 } SPARSE_ARRAY;
 
@@ -417,6 +431,57 @@ struct _ARRAY          *couple_d_recv;
 struct _ARRAY          *couple_i_recv;
 #endif
 } AZ_ARRAY_MSR;
+
+
+/*----------------------------------------------------------------------*
+ | a Spoole Matrix                                        m.gee 4/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _SPOOLMAT
+{
+int                     is_init;          /* was this matrix initialized ? */
+int                     is_factored;      /* does precond. information exist ? */
+int                     ncall;            /* how often was this matrix solved */
+int                     numeq_total;      /* total number of unknowns */
+int                     numeq;            /* number of unknowns updated on this proc */ 
+int                     nnz;              /* number of nonzeros on this proc */
+
+struct _ARRAY           update;          /* list of dofs updated on this proc */
+struct _ARRAY           irn_loc;         /* proc-local row pointer vector */
+struct _ARRAY           jcn_loc;         /* proc-local column pointer vector */
+struct _ARRAY           rowptr;          /* int vector holding the begin of each row in irn_loc */
+struct _ARRAY           A_loc;           /* the values of the matrix */
+
+#ifdef SPOOLES_PACKAGE
+FrontMtx               *frontmtx ;
+InpMtx                 *mtxA;            /* the sparse matrix object */
+DenseMtx               *mtxY;
+DenseMtx               *mtxX;
+Graph                  *graph;
+IVL                    *adjIVL;
+ETree                  *frontETree;
+IVL                    *symbfacIVL ;
+SubMtxManager          *mtxmanager;
+SubMtxManager          *solvemanager ;
+ChvManager             *chvmanager ;
+Chv                    *rootchv ;
+IV                     *oldToNewIV;
+IV                     *newToOldIV;
+IV                     *ownersIV;
+IV                     *vtxmapIV;
+#endif
+
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
+#ifdef PARALLEL 
+int                     numcoupsend;     /* number of coupling information to be send by this proc */
+int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
+struct _ARRAY          *couple_i_send;
+struct _ARRAY          *couple_d_recv;
+struct _ARRAY          *couple_i_recv;
+#endif
+} SPOOLMAT;
+
+
 
 
 /*----------------------------------------------------------------------*

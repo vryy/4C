@@ -46,6 +46,7 @@ int isdense      =0;
 int ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
 int isrc_ptr     =0;
 int iscolsol     =0;
+int isspooles    =0;
 FIELD      *actfield;      /* the active field */
 PARTITION  *actpart;       /* my partition of the active field */
 SOLVAR     *actsolv;       /* the active SOLVAR */
@@ -117,7 +118,7 @@ for (i=0; i<genprob.numfld; i++)
    if (actsolv->solvertyp==mumps_sym || actsolv->solvertyp==mumps_nonsym)
    {
       if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
+      dserror("Partitioning has to be Cut_Elements for solution with MUMPS"); 
       else isrc_ptr=1;
    }
    /*------------------------------ matrix is skyline format for colsol */
@@ -126,6 +127,13 @@ for (i=0; i<genprob.numfld; i++)
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with Colsol"); 
       else iscolsol=1;
+   }
+   /*-------------------- matrix is matrix objec for solver lib Spooles */
+   if (actsolv->solvertyp==SPOOLES_sym || actsolv->solvertyp==SPOOLES_nonsym)
+   {
+      if (actsolv->parttyp != cut_elements)
+      dserror("Partitioning has to be Cut_Elements for solution with SPOOLES"); 
+      else isspooles=1;
    }
    /* allocate only one sparse matrix for each field. The sparsity
       pattern of the matrices for mass and damping and stiffness are  
@@ -165,6 +173,23 @@ for (i=0; i<genprob.numfld; i++)
       }
       mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].msr);
       isaztec_msr=0;
+   }
+   /*------------------------------------- matrix is Spooles's matrix  */
+   if (isspooles==1)
+   {
+      actsolv->nsysarray = 1;
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      if (!actsolv->sysarray_typ || !actsolv->sysarray)
+         dserror("Allocation of SPARSE_ARRAY failed");
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+         actsolv->sysarray_typ[i] = spoolmatrix;
+         actsolv->sysarray[i].spo = (SPOOLMAT*)CALLOC(1,sizeof(SPOOLMAT));
+         if (actsolv->sysarray[i].spo==NULL) dserror("Allocation of SPOOLMAT failed");
+      }
+      mask_spooles(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].spo);
+      isspooles=0;
    }
    /*------------------------------------------- matrix is hypre_parcsr */
    if (ishypre==1)

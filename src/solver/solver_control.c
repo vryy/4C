@@ -48,6 +48,9 @@ break;
 case skymatrix:/*---------------------- system matrix is skyline matrix */
    solver_colsol(actsolv,actintra,sysarray->sky,sol,rhs,option);
 break;
+case spoolmatrix:/*-------------------- system matrix is skyline matrix */
+   solver_spooles(actsolv,actintra,sysarray->spo,sol,rhs,option);
+break;
 default:
    dserror("Unknown format typ of system matrix");
 break;   

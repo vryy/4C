@@ -10,7 +10,9 @@ static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to);
 static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
 static void solserv_cp_densemask(DENSE *from, DENSE *to);
+static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to);
 static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,double *work1,double *work2);
+static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,double *work1,double *work2);
 static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,double *work1,double *work2);
 static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,double *work1,double *work2);
 static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,double *work1,double *work2);
@@ -48,6 +50,9 @@ case dense:
 break;
 case rc_ptr:
    amscal(&(A->rc_ptr->A_loc),&factor);
+break;
+case spoolmatrix:
+   amscal(&(A->spo->A_loc),&factor);
 break;
 case skymatrix:
    amscal(&(A->sky->A),&factor);
@@ -110,6 +115,9 @@ break;
 case rc_ptr:
    amadd(&(A->rc_ptr->A_loc),&(B->rc_ptr->A_loc),factor,0);
 break;
+case spoolmatrix:
+   amadd(&(A->spo->A_loc),&(B->spo->A_loc),factor,0);
+break;
 case skymatrix:
    amadd(&(A->sky->A),&(B->sky->A),factor,0);
 break;
@@ -171,6 +179,10 @@ break;
 case skymatrix:
    *numeq       = mat.sky->numeq;
    *numeq_total = mat.sky->numeq_total;
+break;
+case spoolmatrix:
+   *numeq       = mat.spo->numeq;
+   *numeq_total = mat.spo->numeq_total;
 break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
@@ -247,6 +259,10 @@ case skymatrix:
    amzero(&(mat->sky->A));
    mat->sky->is_factored=0;
 break;
+case spoolmatrix:
+   amzero(&(mat->spo->A_loc));
+   mat->spo->is_factored=0;
+break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -321,6 +337,11 @@ case skymatrix:
    if (!matto->sky) dserror("Allocation of memory failed");
    solserv_cp_skymask(matfrom->sky,matto->sky);
 break;
+case spoolmatrix:
+   matto->spo = (SPOOLMAT*)CALLOC(1,sizeof(SPOOLMAT));
+   if (!matto->spo) dserror("Allocation of memory failed");
+   solserv_cp_spomask(matfrom->spo,matto->spo);
+break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -334,6 +355,41 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_alloc_cp_sparsemask */
+
+
+/*----------------------------------------------------------------------*
+ |  copies the sparsity mask of a spoole matrix              m.gee 02/02|
+ |  for the new sparsity mask, all memory is allocated                  |
+ |  called by solserv_alloc_cp_sparsemask only!                         |
+ *----------------------------------------------------------------------*/
+static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to)
+{
+int i;
+#ifdef DEBUG 
+dstrc_enter("solserv_cp_spomask");
+#endif
+/*----------------------------------------------------------------------*/
+/* copy all information, which is directly included in the structure */
+*to = *from;
+
+/* alloccopy update */
+am_alloc_copy(&(from->update),&(to->update));
+/* alloccopy irn_loc */
+am_alloc_copy(&(from->irn_loc),&(to->irn_loc));
+/* alloccopy jcn_loc */
+am_alloc_copy(&(from->jcn_loc),&(to->jcn_loc));
+/* alloccopy rowptr */
+am_alloc_copy(&(from->rowptr),&(to->rowptr));
+/* alloccopy A_loc */
+am_alloc_copy(&(from->A_loc),&(to->A_loc));
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_cp_spomask */
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -559,8 +615,8 @@ static double *work2;
 dstrc_enter("solserv_sparsematvec");
 #endif
 /*----------------------------------------------------------------------*/
-if (work1_a.Typ != DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
-if (work2_a.Typ != DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
+if (work2_a.Typ != cca_DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
 if (work1_a.fdim < vec->numeq_total)
 {
            amdel(&work1_a);
@@ -599,6 +655,11 @@ case rc_ptr:
    solserv_matvec_rc_ptr(actintra,mat->rc_ptr,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+case spoolmatrix:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_matvec_spo(actintra,mat->spo,work1,work2);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+break;
 case skymatrix:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_sky(actintra,mat->sky,work1,work2);
@@ -618,6 +679,66 @@ dstrc_exit();
 return;
 } /* end of solserv_sparsematvec */
 
+
+
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication with spooles matrix    m.gee 04/02|
+ |  called by solserv_sparsematvec only !                               |
+ *----------------------------------------------------------------------*/
+static void solserv_matvec_spo(INTRA        *actintra,
+                                  SPOOLMAT       *spo,
+                                  double       *work1,
+                                  double       *work2)/* work2 is the result */
+{
+#ifdef SPOOLES_PACKAGE
+int         i,j,dof;
+int         start,end,lenght,j_index;
+int         myrank;
+int         nprocs;
+int         numeq;
+int         numeq_total;
+int        *update;
+int        *row,*irn,*jcn;
+double     *A;
+int         rowstart,rowend;
+int         col;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_matvec_spo");
+#endif
+/*----------------------------------------------------------------------*/
+myrank     = actintra->intra_rank;
+nprocs     = actintra->intra_nprocs;
+numeq_total= spo->numeq_total;
+numeq      = spo->numeq;
+update     = spo->update.a.iv;
+row        = spo->rowptr.a.iv;
+irn        = spo->irn_loc.a.iv;
+jcn        = spo->jcn_loc.a.iv;
+A          = spo->A_loc.a.dv;
+/*------------------------------------------- now loop my own equations */
+for (i=0; i<numeq; i++)
+{
+   dof = update[i];
+   work2[dof]=0.0;
+   rowstart  = row[i];
+   rowend    = row[i+1];
+   for (j=rowstart; j<rowend;j++)
+   {
+      col = jcn[j];
+      work2[dof] += A[j] * work1[col];
+   }
+}
+/* every proc added his complete part to the full-sized vector work2.
+   There is no need to alreduce this vector here, because it will anyway
+   bre distributed to a DIS_VECTOR */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+# endif /* end of #ifdef SPOOLES_PACKAGE */
+return;
+} /* end of solserv_matvec_spo */
 
 
 /*----------------------------------------------------------------------*
@@ -678,8 +799,6 @@ dstrc_exit();
 # endif /* end of #ifdef MUMPS_PACKAGE */
 return;
 } /* end of solserv_matvec_rc_ptr */
-
-
 
 
 

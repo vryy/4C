@@ -170,6 +170,22 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (!(solv->colsolvars)) dserror("Allocation of COLSOLVARS failed");
          colsolvars = solv->colsolvars;
       }
+      /*------------------------------------------------- solver Spooles */
+      if (strncmp("SPOOLES_nonsym",buffer,11)==0) 
+      {
+#ifndef SPOOLES_PACKAGE
+         dserror("SPOOLES package is not compiled in");
+#endif
+         solv->solvertyp = SPOOLES_nonsym;
+      }
+      /*------------------------------------------------- solver Spooles */
+      if (strncmp("SPOOLES_sym",buffer,11)==0) 
+      {
+#ifndef SPOOLES_PACKAGE
+         dserror("SPOOLES package is not compiled in");
+#endif
+         solv->solvertyp = SPOOLES_sym;
+      }
    }/* end of (ierr==1) */
 /*------------------------------------------- read solver specific data */
    switch (solv->solvertyp)
@@ -387,6 +403,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    case mumps_nonsym:/*------------------------------ read solver MUMPS */
    break;
    case colsol_solver:/*---------------------------- read solver Colsol */
+   break;
+   case SPOOLES_nonsym:/*-------------------------- read solver Spooles */
+   break;
+   case SPOOLES_sym:/*----------------------------- read solver Spooles */
    break;
    default:/*-------------------------------------------- reading error */
       dserror("Unknown solvertyp - error in reading");

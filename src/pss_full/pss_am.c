@@ -238,14 +238,14 @@ dstrc_enter("amdef");
 strncpy(a->name,namstr,9);
 a->fdim = fdim;
 a->sdim = sdim;
-if (strncmp("DA",typstr,2)==0) { a->Typ=DA; goto next;}
-if (strncmp("IA",typstr,2)==0) { a->Typ=IA; goto next;}
-if (strncmp("DV",typstr,2)==0) { a->Typ=DV; goto next;}
-if (strncmp("IV",typstr,2)==0) { a->Typ=IV; goto next;}
+if (strncmp("DA",typstr,2)==0) { a->Typ=cca_DA; goto next;}
+if (strncmp("IA",typstr,2)==0) { a->Typ=cca_IA; goto next;}
+if (strncmp("DV",typstr,2)==0) { a->Typ=cca_DV; goto next;}
+if (strncmp("IV",typstr,2)==0) { a->Typ=cca_IV; goto next;}
 next:
 switch (a->Typ)
 {
-case DA: /* -----------------------------------------------double array */
+case cca_DA: /* -------------------------------------------double array */
 a->a.da    = (double**)MALLOC((fdim*sizeof(double*)));
 if (!(a->a.da))    dserror("Allocation of memory failed");
 a->a.da[0] = (double*) MALLOC((fdim*sdim*sizeof(double)));
@@ -254,7 +254,7 @@ for (i=1; i<fdim; i++) a->a.da[i] = &(a->a.da[0][i*sdim]);
 break;
 
 
-case IA: /* ----------------------------------------------integer array */
+case cca_IA: /* ------------------------------------------integer array */
 a->a.ia    = (int**)MALLOC((fdim*sizeof(int*)));
 if (!(a->a.ia))    dserror("Allocation of memory failed");
 a->a.ia[0] = (int*) MALLOC((fdim*sdim*sizeof(int)));
@@ -262,12 +262,12 @@ if (!(a->a.ia[0])) dserror("Allocation of memory failed");
 for (i=1; i<fdim; i++) a->a.ia[i] = &(a->a.ia[0][i*sdim]);
 break;
 
-case DV: /* ----------------------------------------------double vector */
+case cca_DV: /* ------------------------------------------double vector */
 a->a.dv = (double*)MALLOC((fdim*sdim*sizeof(double)));
 if (!(a->a.dv)) dserror("Allocation of memory failed");
 break;
 
-case IV: /* ---------------------------------------------integer vector */
+case cca_IV: /* -----------------------------------------integer vector */
 a->a.iv = (int*)MALLOC((fdim*sdim*sizeof(int)));
 if (!(a->a.iv)) dserror("Allocation of memory failed");
 break;
@@ -342,7 +342,7 @@ case newIV:/*---------------------------------------------new typ is IV */
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
 
-   case IV: /*------------------------------------- conversion IV to IV */
+   case cca_IV: /*------------------------------------- conversion IV to IV */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"IV");
@@ -352,7 +352,7 @@ case newIV:/*---------------------------------------------new typ is IV */
       amdel(&copyarray);
    goto end;
    
-   case IA: /*------------------------------------- conversion IA to IV */
+   case cca_IA: /*------------------------------------- conversion IA to IV */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"IV");
@@ -374,7 +374,7 @@ case newIV:/*---------------------------------------------new typ is IV */
 case newIA:/*---------------------------------------------new typ is IA */ 
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
-   case IV: /*------------------------------------- conversion IV to IA */
+   case cca_IV: /*------------------------------------- conversion IV to IA */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"IA");
@@ -388,7 +388,7 @@ case newIA:/*---------------------------------------------new typ is IA */
       amdel(&copyarray);   
    goto end;
 
-   case IA: /*--------------------------------------conversion IA to IA */
+   case cca_IA: /*--------------------------------------conversion IA to IA */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"IA");
@@ -412,7 +412,7 @@ case newIA:/*---------------------------------------------new typ is IA */
 case newDV:/*---------------------------------------------new typ is DV */ 
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
-   case DV:/*---------------------------------------conversion DV to DV */
+   case cca_DV:/*---------------------------------------conversion DV to DV */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"DV");
@@ -422,7 +422,7 @@ case newDV:/*---------------------------------------------new typ is DV */
       amdel(&copyarray);
    goto end;
 
-   case DA:/*---------------------------------------conversion DA to DV */
+   case cca_DA:/*---------------------------------------conversion DA to DV */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"DV");
@@ -443,7 +443,7 @@ case newDV:/*---------------------------------------------new typ is DV */
 case newDA:/*---------------------------------------------new typ is DA */ 
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
-   case DV:/*---------------------------------------conversion DV to DA */
+   case cca_DV:/*---------------------------------------conversion DV to DA */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"DA");
@@ -457,7 +457,7 @@ case newDA:/*---------------------------------------------new typ is DA */
       amdel(&copyarray);   
    goto end;
 
-   case DA:/*---------------------------------------conversion DA to DA */
+   case cca_DA:/*---------------------------------------conversion DA to DA */
       am_alloc_copy(a,&copyarray);
       amdel(a);
       amdef(copyarray.name,a,newfdim,newsdim,"DA");
@@ -513,19 +513,19 @@ strncpy(array->name,"DELETED",9);
 /*-------------------------------------------------------free the space */
 switch(array->Typ)
 {
-case DA:
+case cca_DA:
    if (array->sdim)             FREE(array->a.da[0]);
    if (array->fdim) array->a.da=FREE(array->a.da);
 break;
-case IA:
+case cca_IA:
    if (array->sdim)             FREE(array->a.ia[0]);
    if (array->fdim) array->a.ia=FREE(array->a.ia);
 break;
-case DV:
+case cca_DV:
    size = array->fdim * array->sdim;
    if (size) array->a.dv=FREE(array->a.dv);
 break;
-case IV:
+case cca_IV:
    size = array->fdim * array->sdim;
    if (size) array->a.iv=FREE(array->a.iv);
 break;
@@ -536,7 +536,7 @@ dserror("Unknown type of array given");
 array->fdim=0;
 array->sdim=0;
 /*----------------------------------------------------- delete the type */
-array->Typ = XX;
+array->Typ = cca_XX;
 /*------------------------- delete the array from the bugtracing system */
 #ifdef DEBUG 
 if (trace.trace_on==1) dsdeletearray(array,1);
@@ -570,19 +570,19 @@ dstrc_enter("amzero");
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
 {
-case DA:
+case cca_DA:
    dptr = array->a.da[0];
    for (i=0; i<dim; i++) *(dptr++) = 0.0;
    break; 
-case DV:
+case cca_DV:
    dptr = array->a.dv;
    for (i=0; i<dim; i++) *(dptr++) = 0.0;
    break;
-case IA:
+case cca_IA:
    iptr = array->a.ia[0];
    for (i=0; i<dim; i++) *(iptr++) = 0; 
    break; 
-case IV:
+case cca_IV:
    iptr = array->a.iv;
    for (i=0; i<dim; i++) *(iptr++) = 0; 
    break; 
@@ -624,22 +624,22 @@ dstrc_enter("amscal");
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
 {
-case DA:
+case cca_DA:
    dvalue = (double*)value;
    dptr   = array->a.da[0];
    for (i=0; i<dim; i++) *(dptr++) *= (*dvalue);
    break; 
-case DV:
+case cca_DV:
    dvalue = (double*)value;
    dptr = array->a.dv;
    for (i=0; i<dim; i++) *(dptr++) *= (*dvalue);
    break;
-case IA:
+case cca_IA:
    ivalue = (int*)value;
    iptr = array->a.ia[0];
    for (i=0; i<dim; i++) *(iptr++) *= (*ivalue);
    break; 
-case IV:
+case cca_IV:
    ivalue = (int*)value;
    iptr = array->a.iv;
    for (i=0; i<dim; i++) *(iptr++) *= (*ivalue); 
@@ -679,22 +679,22 @@ dstrc_enter("aminit");
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
 {
-case DA:
+case cca_DA:
    dvalue = (double*)value;
    dptr   = array->a.da[0];
    for (i=0; i<dim; i++) *(dptr++) = *dvalue;
    break; 
-case DV:
+case cca_DV:
    dvalue = (double*)value;
    dptr = array->a.dv;
    for (i=0; i<dim; i++) *(dptr++) = *dvalue;
    break;
-case IA:
+case cca_IA:
    ivalue = (int*)value;
    iptr = array->a.ia[0];
    for (i=0; i<dim; i++) *(iptr++) = *ivalue;
    break; 
-case IV:
+case cca_IV:
    ivalue = (int*)value;
    iptr = array->a.iv;
    for (i=0; i<dim; i++) *(iptr++) = *ivalue; 
@@ -733,25 +733,25 @@ dstrc_enter("am_alloc_copy");
 dim = array_from->fdim * array_from->sdim;
 switch (array_from->Typ)
 {
-case DA:
+case cca_DA:
    amdef(array_from->name,array_to,array_from->fdim,array_from->sdim,"DA");
    dptr_from = array_from->a.da[0];
    dptr_to   = array_to->a.da[0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
    break; 
-case DV:
+case cca_DV:
    amdef(array_from->name,array_to,array_from->fdim,array_from->sdim,"DV");
    dptr_from = array_from->a.dv;
    dptr_to   = array_to->a.dv;
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
    break;
-case IA:
+case cca_IA:
    amdef(array_from->name,array_to,array_from->fdim,array_from->sdim,"IA");
    iptr_from = array_from->a.ia[0];
    iptr_to   = array_to->a.ia[0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
    break; 
-case IV:
+case cca_IV:
    amdef(array_from->name,array_to,array_from->fdim,array_from->sdim,"IV");
    iptr_from = array_from->a.iv;
    iptr_to   = array_to->a.iv;
@@ -799,22 +799,22 @@ if (array_from->Typ != array_to->Typ)
 /*----------------------------------------------------------------------*/
 switch (array_from->Typ)
 {
-case DA:
+case cca_DA:
    dptr_from = array_from->a.da[0];
    dptr_to   = array_to->a.da[0];
    for (i=0; i<dim1; i++) *(dptr_to++) = *(dptr_from++);
    break; 
-case DV:
+case cca_DV:
    dptr_from = array_from->a.dv;
    dptr_to   = array_to->a.dv;
    for (i=0; i<dim1; i++) *(dptr_to++) = *(dptr_from++);
    break;
-case IA:
+case cca_IA:
    iptr_from = array_from->a.ia[0];
    iptr_to   = array_to->a.ia[0];
    for (i=0; i<dim1; i++) *(iptr_to++) = *(iptr_from++);
    break; 
-case IV:
+case cca_IV:
    iptr_from = array_from->a.iv;
    iptr_to   = array_to->a.iv;
    for (i=0; i<dim1; i++) *(iptr_to++) = *(iptr_from++);
@@ -848,7 +848,7 @@ return((void*)(array_to->a.iv));
  | ==1 array_to is initialized to zero                                  |
  | else values are assembled to array_to                                |
  *----------------------------------------------------------------------*/
-void amadd(ARRAY *array_to, ARRAY *array_from, DOUBLE factor, INT init)
+void amadd(ARRAY *array_to, ARRAY *array_from, double factor, int init)
 {
 register int i,j;
 int          fdim, sdim;
@@ -866,7 +866,7 @@ if (init==1) amzero(array_to);
 /*----------------------------------------------------------------------*/
 switch (array_from->Typ)
 {
-case DA:
+case cca_DA:
    fdim = DMIN(array_to->fdim,array_from->fdim);
    sdim = DMIN(array_to->sdim,array_from->sdim);
    dafrom = array_from->a.da;
@@ -875,7 +875,7 @@ case DA:
    for (j=0; j<sdim; j++)
    dato[i][j] += dafrom[i][j] * factor;
 break; 
-case DV:
+case cca_DV:
    fdim   = array_to->fdim * array_to->sdim;
    sdim   = array_from->fdim * array_from->sdim;
    fdim   = DMIN(fdim,sdim);
@@ -884,7 +884,7 @@ case DV:
    for (i=0; i<fdim; i++)
    dvto[i] += dvfrom[i] * factor;
 break;
-case IA:
+case cca_IA:
    fdim = DMIN(array_to->fdim,array_from->fdim);
    sdim = DMIN(array_to->sdim,array_from->sdim);
    iafrom = array_from->a.ia;
@@ -893,7 +893,7 @@ case IA:
    for (j=0; j<sdim; j++)
    iato[i][j] += (int)((double)iafrom[i][j] * factor);
 break; 
-case IV:
+case cca_IV:
    fdim   = array_to->fdim * array_to->sdim;
    sdim   = array_from->fdim * array_from->sdim;
    fdim   = DMIN(fdim,sdim);
@@ -954,14 +954,14 @@ a->fdim =  fdim;
 a->sdim =  sdim;
 a->tdim =  tdim;
 a->fodim = fodim;
-if (strncmp("D3",typstr,2)==0) { a->Typ=D3; goto next;}
-if (strncmp("D4",typstr,2)==0) { a->Typ=D4; goto next;}
-if (strncmp("I3",typstr,2)==0) { a->Typ=I3; goto next;}
-if (strncmp("I4",typstr,2)==0) { a->Typ=I4; goto next;}
+if (strncmp("D3",typstr,2)==0) { a->Typ=cca_D3; goto next;}
+if (strncmp("D4",typstr,2)==0) { a->Typ=cca_D4; goto next;}
+if (strncmp("I3",typstr,2)==0) { a->Typ=cca_I3; goto next;}
+if (strncmp("I4",typstr,2)==0) { a->Typ=cca_I4; goto next;}
 next:
 switch (a->Typ)
 {
-case D3: /* --------------------------------------------double D3 array */
+case cca_D3: /* --------------------------------------------double D3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
 a->a.d3       = (double***)MALLOC((fdim*sizeof(double**)));
 if (!(a->a.d3))       dserror("Allocation of memory failed");
@@ -975,7 +975,7 @@ endloop=fdim*sdim;
 for (i=1; i<endloop; i++) a->a.d3[0][i] = &(a->a.d3[0][0][i*tdim]);
 break;
 
-case I3: /* ----------------------------------------------int I3 array */
+case cca_I3: /* ----------------------------------------------int I3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
 a->a.i3       = (int***)MALLOC((fdim*sizeof(int**)));
 if (!(a->a.i3))       dserror("Allocation of memory failed");
@@ -989,7 +989,7 @@ endloop=fdim*sdim;
 for (i=1; i<endloop; i++) a->a.i3[0][i] = &(a->a.i3[0][0][i*tdim]);
 break;
 
-case D4: /* --------------------------------------------double D4 array */
+case cca_D4: /* --------------------------------------------double D4 array */
 a->a.d4          = (double****)MALLOC((fdim*sizeof(double***)));
 if (!(a->a.d4))          dserror("Allocation of memory failed");
 a->a.d4[0]       = (double***) MALLOC((fdim*sdim*sizeof(double**)));
@@ -1006,7 +1006,7 @@ endloop=fdim*sdim*tdim;
 for (i=1; i<endloop; i++) a->a.d4[0][0][i] = &(a->a.d4[0][0][0][i*fodim]);
 break;
 
-case I4: /* ----------------------------------------------int I4 array */
+case cca_I4: /* ----------------------------------------------int I4 array */
 a->a.i4          = (int****)MALLOC((fdim*sizeof(int***)));
 if (!(a->a.i4))          dserror("Allocation of memory failed");
 a->a.i4[0]       = (int***) MALLOC((fdim*sdim*sizeof(int**)));
@@ -1060,23 +1060,23 @@ array->fodim=0;
 /*-------------------------------------------------------free the space */
 switch(array->Typ)
 {
-case D3:
+case cca_D3:
    FREE(array->a.d3[0][0]);
    FREE(array->a.d3[0]);
    array->a.d3=FREE(array->a.d3);
 break;
-case I3:
+case cca_I3:
    FREE(array->a.i3[0][0]);
    FREE(array->a.i3[0]);
    array->a.i3=FREE(array->a.i3);
 break;
-case D4:
+case cca_D4:
    FREE(array->a.d4[0][0][0]);
    FREE(array->a.d4[0][0]);
    FREE(array->a.d4[0]);
    array->a.d4=FREE(array->a.d4);
 break;
-case I4:
+case cca_I4:
    FREE(array->a.i4[0][0][0]);
    FREE(array->a.i4[0][0]);
    FREE(array->a.i4[0]);
@@ -1086,7 +1086,7 @@ default:
 dserror("Unknown type of array given");
 }
 /*----------------------------------------------------- delete the type */
-array->Typ = XX4D;
+array->Typ = cca_XX4D;
 /*------------------------- delete the array from the bugtracing system */
 #ifdef DEBUG 
 if (trace.trace_on==1) dsdeletearray(array,2);
@@ -1114,22 +1114,22 @@ dstrc_enter("am4zero");
 /*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
-case D3:
+case cca_D3:
    dim = (array->fdim) * (array->sdim) * (array->tdim);
    dptr = array->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr++) = 0.0;
 break; 
-case D4:
+case cca_D4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    dptr = array->a.d4[0][0][0];
    for (i=0; i<dim; i++) *(dptr++) = 0.0;
 break;
-case I3:
+case cca_I3:
    dim = (array->fdim) * (array->sdim) * (array->tdim);
    iptr = array->a.i3[0][0];
    for (i=0; i<dim; i++) *(iptr++) = 0; 
 break; 
-case I4:
+case cca_I4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    iptr = array->a.i4[0][0][0];
    for (i=0; i<dim; i++) *(iptr++) = 0; 
@@ -1165,25 +1165,25 @@ dstrc_enter("am4init");
 /*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
-case D3:
+case cca_D3:
    dim = (array->fdim) * (array->sdim) * (array->tdim);
    dvalue = (double*)value;
    dptr   = array->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr++) = *dvalue;
 break; 
-case D4:
+case cca_D4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    dvalue = (double*)value;
    dptr = array->a.d4[0][0][0];
    for (i=0; i<dim; i++) *(dptr++) = *dvalue;
 break;
-case I3:
+case cca_I3:
    dim = (array->fdim) * (array->sdim) * (array->tdim);
    ivalue = (int*)value;
    iptr = array->a.i3[0][0];
    for (i=0; i<dim; i++) *(iptr++) = *ivalue;
 break; 
-case I4:
+case cca_I4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    ivalue = (int*)value;
    iptr = array->a.i4[0][0][0];
@@ -1217,7 +1217,7 @@ dstrc_enter("am4_alloc_copy");
 /*----------------------------------------------------------------------*/
 switch (array_from->Typ)
 {
-case D3:
+case cca_D3:
    dim = array_from->fdim * array_from->sdim * array_from->tdim;
    am4def(array_from->name,
           array_to,
@@ -1230,7 +1230,7 @@ case D3:
    dptr_to   = array_to->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
 break; 
-case D4:
+case cca_D4:
    dim = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    am4def(array_from->name,
           array_to,
@@ -1243,7 +1243,7 @@ case D4:
    dptr_to   = array_to->a.d4[0][0][0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
 break;
-case I3:
+case cca_I3:
    dim = array_from->fdim * array_from->sdim * array_from->tdim;
    am4def(array_from->name,
           array_to,
@@ -1256,7 +1256,7 @@ case I3:
    iptr_to   = array_to->a.i3[0][0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
 break; 
-case I4:
+case cca_I4:
    dim = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    am4def(array_from->name,
           array_to,
@@ -1302,7 +1302,7 @@ if (array_from->Typ != array_to->Typ)
 /*----------------------------------------------------------------------*/
 switch (array_from->Typ)
 {
-case D3:
+case cca_D3:
    dim    = array_from->fdim * array_from->sdim * array_from->tdim;
    dimnew = array_to->fdim * array_to->sdim * array_to->tdim;
    if (dim != dimnew) dserror("mismatching dimensions, cannot copy ARRAY4D");
@@ -1310,7 +1310,7 @@ case D3:
    dptr_to   = array_to->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
 break; 
-case D4:
+case cca_D4:
    dim    = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    dimnew = array_to->fdim * array_to->sdim * array_to->tdim * array_to->fodim;
    if (dim != dimnew) dserror("mismatching dimensions, cannot copy ARRAY4D");
@@ -1318,7 +1318,7 @@ case D4:
    dptr_to   = array_to->a.d4[0][0][0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
 break;
-case I3:
+case cca_I3:
    dim    = array_from->fdim * array_from->sdim * array_from->tdim;
    dimnew = array_to->fdim * array_to->sdim * array_to->tdim;
    if (dim != dimnew) dserror("mismatching dimensions, cannot copy ARRAY4D");
@@ -1326,7 +1326,7 @@ case I3:
    iptr_to   = array_to->a.i3[0][0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
 break; 
-case I4:
+case cca_I4:
    dim = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    dimnew = array_to->fdim * array_to->sdim * array_to->tdim * array_to->fodim;
    if (dim != dimnew) dserror("mismatching dimensions, cannot copy ARRAY4D");
@@ -1371,7 +1371,7 @@ dstrc_enter("am4redef");
 /*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
-case D3:
+case cca_D3:
    am4_alloc_copy(array,&copyarray);
    am4del(array);
    am4def(copyarray.name,array,newfdim,newsdim,newtdim,0,"D3");
@@ -1385,7 +1385,7 @@ case D3:
    array->a.d3[i][j][k] = copyarray.a.d3[i][j][k];
    am4del(&copyarray);
 break;
-case D4:
+case cca_D4:
    am4_alloc_copy(array,&copyarray);
    am4del(array);
    am4def(copyarray.name,array,newfdim,newsdim,newtdim,newfodim,"D4");
@@ -1401,7 +1401,7 @@ case D4:
    array->a.d4[i][j][k][l] = copyarray.a.d4[i][j][k][l];
    am4del(&copyarray);
 break;
-case I3:
+case cca_I3:
    am4_alloc_copy(array,&copyarray);
    am4del(array);
    am4def(copyarray.name,array,newfdim,newsdim,newtdim,0,"I3");
@@ -1415,7 +1415,7 @@ case I3:
    array->a.i3[i][j][k] = copyarray.a.i3[i][j][k];
    am4del(&copyarray);
 break;
-case I4:
+case cca_I4:
    am4_alloc_copy(array,&copyarray);
    am4del(array);
    am4def(copyarray.name,array,newfdim,newsdim,newtdim,newfodim,"I4");

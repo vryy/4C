@@ -1,0 +1,354 @@
+#include "../headers/standardtypes.h"
+#include "../headers/solution.h"
+/*----------------------------------------------------------------------*
+ |  control solver lib SPOOLES                           m.gee 4/02     |
+ *----------------------------------------------------------------------*/
+void solver_spooles( 
+                      struct _SOLVAR         *actsolv,
+                      struct _INTRA          *actintra,
+                      struct _SPOOLMAT       *spo,
+                      struct _DIST_VECTOR    *sol,
+                      struct _DIST_VECTOR    *rhs,
+                      int                     option
+                     )
+{
+#ifdef SPOOLES_PACKAGE
+int        i,j;
+int        imyrank;
+int        inprocs;
+int        nnz,numeq,numeq_total;
+int        seed = 10101;
+int        nedges;
+int       *irn,*jcn;
+int       *update;
+int       *rowind1;
+double    *A_loc;
+double    *b;
+double    *x;
+double    *opcounts,minops,cutoff,cpus[20],tau=100.;
+int        root,firsttag=0,error,stats[20];
+DV        *cumopsDV;
+int       *newToOld,*oldToNew;
+
+/* for debugging */
+int   msglvl=2;
+FILE *msgFile;
+char  buffer[50];
+if (msglvl)
+{
+   sprintf(buffer,"spooles.msg%d",actintra->intra_rank);
+   msgFile = fopen(buffer,"a+");
+}
+
+#ifdef DEBUG 
+dstrc_enter("solver_spooles");
+#endif
+/*----------------------------------------------------------------------*/
+imyrank      = actintra->intra_rank;
+inprocs      = actintra->intra_nprocs;
+/*----------------------------------------------------------------------*/
+switch(option)
+{
+/*----------------------------------------------------------------------*/
+/*                                                           init phase */
+/*----------------------------------------------------------------------*/
+case 1:
+   /*--------------------------------------- create the spooles objects */
+   spo->mtxA = InpMtx_new();
+   /*-------------------------------- make the solution and rhs objects */
+   spo->mtxY = DenseMtx_new();
+   spo->mtxX = DenseMtx_new();
+   /*-------------------------------------------------- set some values */
+   irn         = spo->irn_loc.a.iv;
+   jcn         = spo->jcn_loc.a.iv;
+   update      = spo->update.a.iv;
+   nnz         = spo->nnz; 
+   numeq       = spo->numeq; 
+   numeq_total = spo->numeq_total;
+   
+   
+   
+   spo->is_init    =1;
+   spo->ncall      =0;
+   spo->is_factored=0;
+break;
+/*----------------------------------------------------------------------*/
+/*                                                    end of init phase */
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*                                                    calculation phase */
+/*----------------------------------------------------------------------*/
+case 0:
+   if (spo->is_init!=1) dserror("Sparse matrix has not been initialized");
+   /*---------------------------------- set some pointers to the matrix */
+   irn    = spo->irn_loc.a.iv;
+   jcn    = spo->jcn_loc.a.iv;
+   update = spo->update.a.iv;
+   A_loc  = spo->A_loc.a.dv;
+   b      = rhs->vec.a.dv;
+   x      = sol->vec.a.dv;
+   nnz    = spo->nnz; 
+   numeq  = spo->numeq; 
+   numeq_total = spo->numeq_total;   
+/*----------------------------------------------------------------------*/
+/*
+   --------------------------------------------
+   STEP 1: read the entries 
+           and create the InpMtx object
+   --------------------------------------------
+*/
+   spo->mtxA = InpMtx_new();
+   InpMtx_init(spo->mtxA,INPMTX_BY_ROWS,1,nnz,0);
+   for (i=0; i<nnz; i++)
+   InpMtx_inputRealEntry(spo->mtxA,irn[i],jcn[i],A_loc[i]);
+   InpMtx_changeStorageMode(spo->mtxA,INPMTX_BY_VECTORS) ;
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n input matrix") ;
+      InpMtx_writeForHumanEye(spo->mtxA, msgFile) ;
+   }
+/*----------------------------------------------------------------------*/
+/*
+   -------------------------------------------------
+   STEP 2 : find a low-fill ordering
+   (1) create the Graph object
+   (2) order the graph using multiple minimum degree
+   -------------------------------------------------
+*/
+   spo->graph  = Graph_new();
+   spo->adjIVL = InpMtx_fullAdjacency(spo->mtxA);
+   nedges = IVL_tsize(spo->adjIVL);
+   Graph_init2(spo->graph,0,numeq,0,nedges,numeq,nedges,spo->adjIVL,
+               NULL,NULL);
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n graph of the input matrix");
+      Graph_writeForHumanEye(spo->graph,msgFile);
+      fflush(msgFile);
+   }
+   spo->frontETree = orderViaMMD(spo->graph,seed,msglvl,msgFile);
+   /* debug */
+   if (msglvl)
+   {
+   fprintf(msgFile,"\n\n front tree from ordering");
+   ETree_writeForHumanEye(spo->frontETree, msgFile);
+   fflush(msgFile);
+   }
+/*----------------------------------------------------------------------*/
+/*
+   -----------------------------------------------------
+   STEP 3: get the permutation, permute the matrix and 
+           front tree and get the symbolic factorization
+   -----------------------------------------------------
+*/
+   spo->oldToNewIV = ETree_oldToNewVtxPerm(spo->frontETree);
+   oldToNew = IV_entries(spo->oldToNewIV);
+   spo->newToOldIV = ETree_newToOldVtxPerm(spo->frontETree);
+   newToOld   = IV_entries(spo->newToOldIV);
+   ETree_permuteVertices(spo->frontETree,spo->oldToNewIV);
+   InpMtx_permute(spo->mtxA,oldToNew,oldToNew);
+   InpMtx_mapToUpperTriangle(spo->mtxA);
+   InpMtx_changeCoordType(spo->mtxA,INPMTX_BY_CHEVRONS);
+   InpMtx_changeStorageMode(spo->mtxA,INPMTX_BY_VECTORS);
+   spo->symbfacIVL = SymbFac_initFromInpMtx(spo->frontETree,spo->mtxA);
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n old-to-new permutation vector");
+      IV_writeForHumanEye(spo->oldToNewIV, msgFile);
+      fprintf(msgFile, "\n\n new-to-old permutation vector");
+      IV_writeForHumanEye(spo->newToOldIV, msgFile);
+      fprintf(msgFile, "\n\n front tree after permutation");
+      ETree_writeForHumanEye(spo->frontETree, msgFile);
+      fprintf(msgFile, "\n\n input matrix after permutation");
+      InpMtx_writeForHumanEye(spo->mtxA, msgFile);
+      fprintf(msgFile, "\n\n symbolic factorization");
+      IVL_writeForHumanEye(spo->symbfacIVL, msgFile);
+      fflush(msgFile);
+   }
+/*--------------------------------------------------------------------*/
+/*
+   ------------------------------------------
+   STEP 4: initialize the front matrix object
+   ------------------------------------------
+*/
+   spo->frontmtx = FrontMtx_new();
+   spo->mtxmanager = SubMtxManager_new();
+   SubMtxManager_init(spo->mtxmanager,NO_LOCK,0);
+   FrontMtx_init(spo->frontmtx,spo->frontETree,spo->symbfacIVL,1,0, 
+                 FRONTMTX_DENSE_FRONTS,SPOOLES_NO_PIVOTING,NO_LOCK, 
+                 0,NULL,spo->mtxmanager,msglvl,msgFile);
+/*--------------------------------------------------------------------*/
+/*
+   -----------------------------------------
+   STEP 5: compute the numeric factorization
+   -----------------------------------------
+*/
+   spo->chvmanager = ChvManager_new();
+   ChvManager_init(spo->chvmanager,NO_LOCK,1);
+   DVfill(10,cpus,0.0);
+   IVfill(20,stats,0);
+   spo->rootchv = FrontMtx_factorInpMtx(spo->frontmtx,spo->mtxA,tau,0.0,
+                                        spo->chvmanager,&error,cpus,stats,
+                                        msglvl,msgFile) ;
+   ChvManager_free(spo->chvmanager) ;
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n factor matrix") ;
+      FrontMtx_writeForHumanEye(spo->frontmtx, msgFile) ;
+      fflush(msgFile) ;
+   }
+   if (spo->rootchv != NULL) dserror("Singular Matrix detected");
+   if ( error >= 0 )      dserror("Spooles: Error in Multifrontal LU ");
+/*--------------------------------------------------------------------*/
+/*
+   --------------------------------------
+   STEP 6: post-process the factorization
+   --------------------------------------
+*/
+   FrontMtx_postProcess(spo->frontmtx,msglvl,msgFile);
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n factor matrix after post-processing");
+      FrontMtx_writeForHumanEye(spo->frontmtx, msgFile);
+      fflush(msgFile);
+   }
+/*--------------------------------------------------------------------*/
+/*
+   -----------------------------------------
+   STEP 7: read the right hand side matrix B
+   -----------------------------------------
+*/
+   spo->mtxY = DenseMtx_new();
+   DenseMtx_init(spo->mtxY,1,0,0,numeq,1,1,numeq) ;
+   DenseMtx_zero(spo->mtxY);
+   for (i=0; i<numeq; i++)
+   DenseMtx_setRealEntry(spo->mtxY,i,0,b[i]) ;
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n rhs matrix in original ordering");
+      DenseMtx_writeForHumanEye(spo->mtxY,msgFile);
+      fflush(msgFile);
+   }
+/*--------------------------------------------------------------------*/
+/*
+   ---------------------------------------------------------
+   STEP 8: permute the right hand side into the new ordering
+   ---------------------------------------------------------
+*/
+   DenseMtx_permuteRows(spo->mtxY,spo->oldToNewIV);
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n right hand side matrix in new ordering") ;
+      DenseMtx_writeForHumanEye(spo->mtxY,msgFile);
+      fflush(msgFile);
+   }
+/*--------------------------------------------------------------------*/
+/*
+   -------------------------------
+   STEP 9: solve the linear system
+   -------------------------------
+*/
+   spo->mtxX = DenseMtx_new();
+   DenseMtx_init(spo->mtxX,1,0,0,numeq,1,1,numeq) ;
+   DenseMtx_zero(spo->mtxX) ;
+   FrontMtx_solve(spo->frontmtx,spo->mtxX,spo->mtxY,spo->mtxmanager,
+                  cpus,msglvl,msgFile) ;
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n solution matrix in new ordering");
+      DenseMtx_writeForHumanEye(spo->mtxX,msgFile);
+      fflush(msgFile);
+   }
+/*--------------------------------------------------------------------*/
+/*
+   --------------------------------------------------------
+   STEP 10: permute the solution into the original ordering
+   --------------------------------------------------------
+*/
+   DenseMtx_permuteRows(spo->mtxX,spo->newToOldIV);
+   /*----------------------------------------------- get the solution */
+   for (i=0; i<numeq; i++)
+   x[i] = spo->mtxX->entries[i];
+   /* debug */
+   if (msglvl)
+   {
+      fprintf(msgFile, "\n\n solution matrix in original ordering");
+      DenseMtx_writeForHumanEye(spo->mtxX,msgFile);
+      fflush(msgFile);
+   }
+/*--------------------------------------------------------------------*/
+/*
+   -----------
+   free memory
+   -----------
+*/
+   DenseMtx_free(spo->mtxX);
+   DenseMtx_free(spo->mtxY);
+   FrontMtx_free(spo->frontmtx);
+   IV_free(spo->newToOldIV);
+   IV_free(spo->oldToNewIV);
+   InpMtx_free(spo->mtxA);
+   ETree_free(spo->frontETree);
+   IVL_free(spo->symbfacIVL);
+   SubMtxManager_free(spo->mtxmanager);
+   Graph_free(spo->graph);
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   spo->is_factored=1;
+   spo->ncall++;
+break;
+/*----------------------------------------------------------------------*/
+/*                                             end of calculation phase */
+/*----------------------------------------------------------------------*/
+default:
+   dserror("Unknown option for solver call to Aztec");
+break;   
+}
+/*----------------------------------------------------------------------*/
+if (msglvl) fclose(msgFile);
+
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif /* end of ifdef SPOOLES_PACKAGE */
+return;
+} /* end of solver_spooles */
+
+
+
+

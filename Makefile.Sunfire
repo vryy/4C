@@ -23,6 +23,7 @@
 # -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
 # -DSUPERLU_PACKAGE    defines interface to solver library SuperLU (not impl. yet)
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
+# -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
 #
 # 
 PFL       =  -DSUN -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE -DD_WALL1 -DMUMPS_PACKAGE -DPARALLEL
@@ -100,6 +101,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_mask_dense.o \
                 ${SRC}/global_full/global_mask_rcptr.o \
                 ${SRC}/global_full/global_mask_skyline.o \
+                ${SRC}/global_full/global_mask_spooles.o \
                 ${SRC}/global_full/global_calelm.o \
                 ${SRC}/global_full/global_calelm_dyn.o \
                 ${SRC}/global_full/global_calrhs.o \
@@ -114,6 +116,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_add_dense.o \
                 ${SRC}/global_full/solver_add_rcptr.o \
                 ${SRC}/global_full/solver_add_skyline.o \
+                ${SRC}/global_full/solver_add_spooles.o \
                 ${SRC}/global_full/solver_mlib.o \
                 ${SRC}/global_full/solver_aztec.o \
                 ${SRC}/global_full/solver_hypre.o \
@@ -121,6 +124,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_lapack.o \
                 ${SRC}/global_full/solver_mumps.o \
                 ${SRC}/global_full/solver_colsol.o \
+                ${SRC}/global_full/solver_spooles.o \
                 ${SRC}/global_full/restart_control.o \
                 ${SRC}/global_full/machine_hpux.o 
 #                pss_full

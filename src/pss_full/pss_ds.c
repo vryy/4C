@@ -257,28 +257,28 @@ while (acttracer->next != NULL)
    if (acttracer->arraytyp == array_2d)
       switch(acttracer->a.a2->Typ)
       {
-      case DA:
+      case cca_DA:
 fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DOUBLE-ARRAY \n",
         i,
         acttracer->a.a2->name,
         acttracer->a.a2->fdim,
         acttracer->a.a2->sdim);
         break;
-      case DV:
+      case cca_DV:
 fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DOUBLE-VECTOR \n",
         i,
         acttracer->a.a2->name,
         acttracer->a.a2->fdim,
         acttracer->a.a2->sdim);
         break;
-      case IA:
+      case cca_IA:
 fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: INTEGER-ARRAY \n",
         i,
         acttracer->a.a2->name,
         acttracer->a.a2->fdim,
         acttracer->a.a2->sdim);
         break;
-      case IV:
+      case cca_IV:
 fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: INTEGER-VECTOR \n",
         i,
         acttracer->a.a2->name,
@@ -297,7 +297,7 @@ fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DAMAGED TYPE
    if (acttracer->arraytyp == array_4d)
       switch(acttracer->a.a4->Typ)
       {
-      case D3:
+      case cca_D3:
 fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DOUBLE 3D ARRAY\n",
         i,
         acttracer->a.a4->name,
@@ -307,7 +307,7 @@ fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DO
         acttracer->a.a4->fodim
         );
       break;
-      case D4:
+      case cca_D4:
 fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DOUBLE 4D ARRAY\n",
         i,
         acttracer->a.a4->name,
@@ -317,7 +317,7 @@ fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DO
         acttracer->a.a4->fodim
         );
       break;
-      case I3:
+      case cca_I3:
 fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: INTEGER 3D ARRAY\n",
         i,
         acttracer->a.a4->name,
@@ -327,7 +327,7 @@ fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: IN
         acttracer->a.a4->fodim
         );
       break;
-      case I4:
+      case cca_I4:
 fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: INTEGER 4D ARRAY\n",
         i,
         acttracer->a.a4->name,

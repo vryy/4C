@@ -142,7 +142,9 @@ typedef enum _SOLVER_TYP
                        lapack_nonsym, /* unsymmetric lapack LU decomposition, matrix is dense */
                        mumps_sym,     /* solver package mumps, multifrontal parallel LU, matrixin row/column pointer format */
                        mumps_nonsym,  /* same but unsymmetric */
-                       colsol_solver
+                       colsol_solver, /* colsol */
+                       SPOOLES_sym,   /* spooles parallel direct solver */
+                       SPOOLES_nonsym /* spooles parallel direct solver */
 } SOLVER_TYP;                         
 /*----------------------------------------------------------------------*
  | enum AZSOLVERTYP                                        m.gee 9/01  |

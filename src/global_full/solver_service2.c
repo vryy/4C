@@ -60,7 +60,7 @@ for (i=0; i<numvectors; i++)
    actvector = &((*vector)[i]);
    amdel(&(actvector->vec));
 }
-*vector = FREE(*vector);
+FREE(*vector);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -451,7 +451,7 @@ dstrc_enter("solserv_reddistvec");
 if (dim != distvec->numeq_total) dserror("Dimension mismatch");
 /*------------------------- allocate communication buffer, if necessary */
 #ifdef PARALLEL 
-if (recv.Typ != DV) 
+if (recv.Typ != cca_DV) 
 {
    recvbuff = amdef("recvbuff",&recv,dim,1,"DV");
 }
@@ -547,6 +547,17 @@ case rc_ptr:
 #endif
 break;
 
+case spoolmatrix:
+   for (i=0; i<sysarray->spo->numeq; i++)
+   {
+      dof = sysarray->spo->update.a.iv[i];
+      fullvec[dof] = distvec->vec.a.dv[i];
+   }
+#ifdef PARALLEL 
+   MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+   for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
+#endif
+break;
 
 
 case skymatrix:
@@ -662,6 +673,14 @@ case rc_ptr:
    for (i=0; i<sysarray->rc_ptr->numeq; i++)
    {
       dof = sysarray->rc_ptr->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+case spoolmatrix:
+   for (i=0; i<sysarray->spo->numeq; i++)
+   {
+      dof = sysarray->spo->update.a.iv[i];
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
@@ -925,6 +944,8 @@ for (i=0; i<actdis->numnp; i++)
    {
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
       actnode->sol.a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
+/* this is special for the ortiz example */
+  /*    actnode->sol.a.da[place][j] *= actnode->x[0];*/
    }   
 }
 /*----------------------------------------------------------------------*/

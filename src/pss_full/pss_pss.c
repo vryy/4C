@@ -144,16 +144,16 @@ dimensions[0]=array->fdim;
 dimensions[1]=array->sdim;
 switch (array->Typ)
 {
-   case DA:
+   case cca_DA:
    dimensions[2]=sizeof(double);
    break;
-   case DV:
+   case cca_DV:
    dimensions[2]=sizeof(double);
    break;
-   case IA:
+   case cca_IA:
    dimensions[2]=sizeof(int);
    break;
-   case IV:
+   case cca_IV:
    dimensions[2]=sizeof(int);
    break;
 }
@@ -163,7 +163,7 @@ if (write_error!=3) dserror("Error writing pss-file");
 /*--------------------------------------------------- write the record */
 switch (array->Typ)
 {
-   case DA:
+   case cca_DA:
       write_error = fwrite(
                            array->a.da[0],
                            sizeof(double),
@@ -174,7 +174,7 @@ switch (array->Typ)
       dserror("Error writing pss-file");
       else *ierr=1;
    break;
-   case DV:
+   case cca_DV:
       write_error = fwrite(
                            array->a.dv,
                            sizeof(double),
@@ -185,7 +185,7 @@ switch (array->Typ)
       dserror("Error writing pss-file");
       else *ierr=1;
    break;
-   case IA:
+   case cca_IA:
       write_error = fwrite(
                            array->a.ia[0],
                            sizeof(int),
@@ -196,7 +196,7 @@ switch (array->Typ)
       dserror("Error writing pss-file");
       else *ierr=1;
    break;
-   case IV:
+   case cca_IV:
       write_error = fwrite(
                            array->a.iv,
                            sizeof(int),

@@ -290,7 +290,7 @@ if (damp_array>0)
                    &(actsolv->sysarray[damp_array]),
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
-                   sdyn->k_damp);  
+                   sdyn->m_damp);  
 }
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
@@ -417,6 +417,10 @@ if (sdyn->step==65) sdyn->dt = 0.005;*/
 if (sdyn->step==50) sdyn->dt = 0.01;
 if (sdyn->step==80) sdyn->dt = 0.005;*/
 /* kegel_big3.dat
+if (sdyn->step==50) sdyn->dt = 0.01;
+if (sdyn->step==80) sdyn->dt = 0.005;
+if (sdyn->step==134) sdyn->dt = 0.002;*/
+/* oritz_5600_.dat
 if (sdyn->step==50) sdyn->dt = 0.01;
 if (sdyn->step==80) sdyn->dt = 0.005;
 if (sdyn->step==134) sdyn->dt = 0.002;*/
