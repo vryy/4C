@@ -196,28 +196,38 @@ INT       nhor,nver;  /* number of nodes in horizontal/vertical dir.    */
 INT       iel;        /* number of large-scale element nodes            */
 DOUBLE    r[2];       /* coordinates on parent domain                   */
 DOUBLE    funct[9];   /* large-scale element shape functions            */
-DOUBLE    deriv[2][9];/* large-scale element shape function derivatives */
-DOUBLE    deriv2[3][9];/* l-s element shape function 2nd derivatives    */      
+DOUBLE    deriv_b[2*9];/* large-scale element shape function derivatives */
+DOUBLE   *deriv[2];
+DOUBLE    deriv2_b[3*9];/* l-s element shape function 2nd derivatives    */
+DOUBLE   *deriv2[3];
 DIS_TYP   typ;	      /* element type                                   */
 
 #ifdef DEBUG 
 dstrc_enter("f2_elesubmesh");
 #endif
 
+/* Hack */
+deriv[0] = &deriv_b[0];
+deriv[1] = &deriv_b[9];
+
+deriv2[0] = &deriv2_b[0];
+deriv2[1] = &deriv2_b[9];
+deriv2[2] = &deriv2_b[18];
+
 /*------------------------------------------------------- define arrays */
 switch (flag)
 {
 /*--------------------------------------------------------- sub-submesh */
 case 1:
-  amdef("xyzssm",&(ele->e.f2->xyzssm),2,smesh->numnp,"DA");
+  (DOUBLE**)amdef("xyzssm",&(ele->e.f2->xyzssm),2,smesh->numnp,"DA");
   amzero(&(ele->e.f2->xyzssm));
 break;
 /*------------------------------------------------------------- submesh */
 default:
   nelbub = 3*ele->numnp + 2;
-  amdef("xyzsm" ,&(ele->e.f2->xyzsm) ,2,smesh->numnp     ,"DA");
-  amdef("solsm" ,&(ele->e.f2->solsm) ,smesh->numeq,nelbub,"DA");
-  amdef("solsmn",&(ele->e.f2->solsmn),smesh->numeq,nelbub,"DA");
+  (DOUBLE**)amdef("xyzsm" ,&(ele->e.f2->xyzsm) ,2,smesh->numnp     ,"DA");
+  (DOUBLE**)amdef("solsm" ,&(ele->e.f2->solsm) ,smesh->numeq,nelbub,"DA");
+  (DOUBLE**)amdef("solsmn",&(ele->e.f2->solsmn),smesh->numeq,nelbub,"DA");
   amzero(&(ele->e.f2->xyzsm));
   amzero(&(ele->e.f2->solsm));
   amzero(&(ele->e.f2->solsmn));

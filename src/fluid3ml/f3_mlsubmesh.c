@@ -196,28 +196,42 @@ INT       nx,ny,nz;   /* number of nodes in coordinate directions       */
 INT       iel;        /* number of large-scale element nodes            */
 DOUBLE    r[3];       /* coordinates on parent domain                   */
 DOUBLE    funct[8];   /* large-scale element shape functions            */
-DOUBLE    deriv[3][8];/* large-scale element shape function derivatives */
-DOUBLE    deriv2[6][8];/* l-s element shape function 2nd derivatives    */      
+DOUBLE    deriv_b[3*8];/* large-scale element shape function derivatives */
+DOUBLE   *deriv[3];
+DOUBLE    deriv2_b[6*8];/* l-s element shape function 2nd derivatives    */      
+DOUBLE   *deriv2[6];
 DIS_TYP   typ;	      /* element type                                   */
 
 #ifdef DEBUG 
 dstrc_enter("f3_elesubmesh");
 #endif
 
+/* Hack */
+deriv[0] = &deriv_b[0];
+deriv[1] = &deriv_b[8];
+deriv[2] = &deriv_b[16];
+
+deriv2[0] = &deriv2_b[0];
+deriv2[1] = &deriv2_b[8];
+deriv2[2] = &deriv2_b[16];
+deriv2[3] = &deriv2_b[24];
+deriv2[4] = &deriv2_b[32];
+deriv2[5] = &deriv2_b[40];
+
 /*------------------------------------------------------- define arrays */
 switch (flag)
 {
 /*--------------------------------------------------------- sub-submesh */
 case 1:
-  amdef("xyzssm",&(ele->e.f3->xyzssm),3,smesh->numnp,"DA");
+  (DOUBLE**)amdef("xyzssm",&(ele->e.f3->xyzssm),3,smesh->numnp,"DA");
   amzero(&(ele->e.f3->xyzssm));
 break;
 /*------------------------------------------------------------- submesh */
 default:
   nelbub = 4*ele->numnp + 3;
-  amdef("xyzsm",&(ele->e.f3->xyzsm),3,smesh->numnp,"DA");
-  amdef("solsm" ,&(ele->e.f3->solsm) ,smesh->numeq,nelbub,"DA");
-  amdef("solsmn",&(ele->e.f3->solsmn),smesh->numeq,nelbub,"DA");
+  (DOUBLE**)amdef("xyzsm",&(ele->e.f3->xyzsm),3,smesh->numnp,"DA");
+  (DOUBLE**)amdef("solsm" ,&(ele->e.f3->solsm) ,smesh->numeq,nelbub,"DA");
+  (DOUBLE**)amdef("solsmn",&(ele->e.f3->solsmn),smesh->numeq,nelbub,"DA");
   amzero(&(ele->e.f3->xyzsm));
   amzero(&(ele->e.f3->solsm));
   amzero(&(ele->e.f3->solsmn));
