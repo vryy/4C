@@ -592,7 +592,60 @@ dstrc_exit();
 }
 
 
+/*!---------------------------------------------------------------------
+\brief Gauss point contributions for integration of boundary forces
 
+<pre>                                                         chfoe 03/05
+
+This routine evaluates the Gauss point vaulues of the residual vector 
+of one element taking stabilisation effects into account. Only the 
+residual of the momentum equation R_M is calculated.
+
+R_M = u + timefac u * grad u - timefac * 2 nu div epsilon(u) 
+    + timefac grad p - rhsint
+
+The residual contains stabilisation of the type
+
+Sum_over_k (R_M, tau L_M)_k with
+
+L_M = v + timefac u_old * grad v + timefac v * grad u_old 
+    - timefac * 2 nu alpha div epsilon (v) + timefac beta grad q
+
+where alpha = -1
+      beta  = -1 
+
+timefac depends on the time integration scheme:
+
+One-step theta:
+
+timefac = theta * dt
+
+BDF2:
+
+timefac = 2/3 * dt
+
+NOTE: this works perfectly only when the fluid is solved via usfem
+
+</pre>
+\param  *eforce	   DOUBLE    (o)    element force vector (residual)
+\param  *velint    DOUBLE    (i)    (converged) vel. at int.-point
+\param   histvec   DOUBLE    (i)    histroy data
+\param **vderxy    DOUBLE    (i)    velocity gradient at int.-point
+\param **vderxy2   DOUBLE    (i)    second vel. derivatives at int.-point
+\param  *funct     DOUBLE    (i)    natural shape functions
+\param **derxy     DOUBLE    (i)    shape function derivatives
+\param **derxy2    DOUBLE    (i)    second shape funct. derivs
+\param  *edeadng   DOUBLE    (i)    body forces
+\param  *press     DOUBLE    (i)    pressure at Gauss point
+\param   gradp[2]  DOUBLE    (i)    pressure gradient at GP
+\param   fac       DOUBLE    (i)    integration factor
+\param   visc      DOUBLE    (i)    fluid viscosity
+\param   iel       INT       (i)    number of elemental nodes
+\param  *hasext    INT       (i)    flag, if there is body force
+\param   is_ale    INT       (i)    flag, if it's ale or Euler
+\return void                                              
+
+------------------------------------------------------------------------*/
 void f2_calresvec(  DOUBLE  *eforce,  
                     DOUBLE  *velint,
                     DOUBLE   histvec[2], 
