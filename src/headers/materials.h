@@ -219,6 +219,7 @@ typedef struct _PL_DP
      DOUBLE                    Sigy;
      DOUBLE                    Hard;
      DOUBLE                    PHI;
+     DOUBLE                    GF;
      DOUBLE                    betah;
 } PL_DP;
 /*----------------------------------------------------------------------*
@@ -240,6 +241,8 @@ typedef struct _PL_EPC
      DOUBLE                    gc;         /* compressive fracture energy */
      DOUBLE                    gamma1;     /* fitting factor yield function 1 */
      DOUBLE                    gamma2;     /* symm. biaxial compression stressfactor */
+     DOUBLE                    gamma3;     /* fitting parameter to account for HPC -> Haufe (=1/3 for normal concrete)*/
+     DOUBLE                    gamma4;     /* fitting parameter to account for HPC -> Haufe (=4/3 for normal concrete*/
      DOUBLE                    dfac;       /* dammage factor: 0.0 plastic - 1.0 full damaged */
      /* tension stiffening */
      INT                       nstiff;     /* ==1 in consideration of tension stiffening */
@@ -399,11 +402,11 @@ typedef struct _MULTIMAT
      union
      {
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
+     struct _EL_ORTH          *el_orth;      /* linear elastic orthotropic material */
+     struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
      struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
      struct _PL_DP            *pl_dp;        /* Drucker Prager material */
-     struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
-     struct _EL_ORTH          *el_orth;      /* linear elastic orthotropic material */
      }                         m;            /* union pointer to material specific structure */
 
 } MULTIMAT;
