@@ -48,7 +48,7 @@ PROGRAMNAME=cca_linux_seq
 CFLAGS_OPT="-O3"
 FFLAGS_OPT="-O"
 LDFLAGS_OPT="-O"
-CFLAGS="-v -ansi -Wall"
+CFLAGS="-ansi -Wall"
 FFLAGS="-Wall"
 LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
 
