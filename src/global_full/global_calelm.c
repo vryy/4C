@@ -614,6 +614,12 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
     case calc_ale_rhs                : break;
     case calc_fluid                  :
       actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
+    case calc_fluid_liftdrag:
+    case calc_fluid_vort:
+    case calc_fluid_stress:
+    case calc_fluid_f2pro:
+    case calc_fluid_amatrix:
+    case calc_fluid_f2pro_rhs_both: break;
     default: dserror("Unknown type of assembly 4"); break;
   }
 }
