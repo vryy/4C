@@ -19,6 +19,10 @@ AZTEC_LIB="-laztec"
 SPOOLES_INC=""
 SPOOLES_LIB="-lspoolesMPI -lspooles"
 
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack -lamd"
+
 #LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec"
 LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
 

@@ -20,6 +20,10 @@ AZTEC_LIB="-laztec -lmpi"
 SPOOLES_INC=""
 SPOOLES_LIB="-lspoolesMPI -lspooles"
 
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack -lamd"
+
 LIBS="-llapack -lmetis"
 
 CFLAGS=

@@ -24,6 +24,10 @@ AZTEC_LIB="-laztec"
 SPOOLES_INC=""
 SPOOLES_LIB="-lspoolesMPI -lspooles"
 
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack -lamd"
+
 LIBS="-lm -lg2c -llapack -lmetis"
 
 CFLAGS="-Wall -ansi -D_HPUX_SOURCE"

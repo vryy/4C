@@ -144,6 +144,10 @@ Maintainer: Malte Neumann
 
 #ifdef SUSE73
 #include "../../../lib_linux/umfpack/include/umfpack.h"
+#elif defined(LINUX_MUENCH)
+#include <umfpack.h>
+#elif defined(HPUX_MUENCH)
+#include <umfpack.h>
 #else
 #include "/bau/stat16/users/statik/lib/UMFPACK/include/umfpack.h"
 #endif
