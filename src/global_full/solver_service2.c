@@ -35,6 +35,34 @@ return;
 } /* end of solserv_create_vec */
 
 
+/*----------------------------------------------------------------------*
+ |   delete number of distributed vectors - collective call ! m.gee 2/02|
+ *----------------------------------------------------------------------*/
+int solserv_del_vec(
+                           DIST_VECTOR         **vector,
+                           int                   numvectors)
+{
+int                  i;
+DIST_VECTOR *actvector;
+#ifdef DEBUG 
+dstrc_enter("solserv_del_vec");
+#endif
+/*--------------------------- loop the created vectors and delete them */
+for (i=0; i<numvectors; i++)
+{
+   actvector = &((*vector)[i]);
+   amdel(&(actvector->vec));
+}
+*vector = FREE(*vector);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_del_vec */
+
+
+
 
 /*----------------------------------------------------------------------*
  |  init a distributed vector to zero - collective call !    m.gee 10/01|
@@ -302,13 +330,14 @@ return;
 /*----------------------------------------------------------------------*
  |  Allreduce a distributed vector in an INTRACOMM           m.gee 10/01|
  |  This is a collective call!                                          |
+ |  distributed vector to full redundant vector                         |
  *----------------------------------------------------------------------*/
 void solserv_reddistvec(DIST_VECTOR  *distvec,
-                          SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP   *sysarray_typ,
-                          double       *fullvec,
-                          int           dim,
-                          INTRA        *actintra)
+                        SPARSE_ARRAY *sysarray,
+                        SPARSE_TYP   *sysarray_typ,
+                        double       *fullvec,
+                        int           dim,
+                        INTRA        *actintra)
 {
 int             i;
 int             dof,dofperm;
@@ -343,6 +372,7 @@ inprocs = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
 switch(*sysarray_typ)
 {
+
 case msr:
    for (i=0; i<sysarray->msr->numeq; i++)
    {
@@ -354,15 +384,10 @@ case msr:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+
+
+
 case parcsr:
-/*
-   for (i=0; i<sysarray->parcsr->numeq; i++)
-   {
-      dof     = sysarray->parcsr->update.a.ia[imyrank][i];
-      dofperm = sysarray->parcsr->perm.a.ia[imyrank][i];
-      fullvec[dof] = distvec->vec.a.dv[dofperm];
-   }
-*/
    for (i=0; i<sysarray->parcsr->numeq; i++)
    {
       dof     = sysarray->parcsr->update.a.ia[imyrank][i];
@@ -373,6 +398,9 @@ case parcsr:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+
+
+
 case ucchb:
    for (i=0; i<sysarray->ucchb->numeq; i++)
    {
@@ -384,6 +412,9 @@ case ucchb:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+
+
+
 case dense:
    for (i=0; i<sysarray->dense->numeq; i++)
    {
@@ -395,12 +426,18 @@ case dense:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+
+
+
 case mds:
    for (i=0; i<sysarray->mds->numeq; i++)
    {
       fullvec[i] = distvec->vec.a.dv[i];
    }
 break;
+
+
+
 case rc_ptr:
    for (i=0; i<sysarray->rc_ptr->numeq; i++)
    {
@@ -412,6 +449,9 @@ case rc_ptr:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+
+
+
 case skymatrix:
    for (i=0; i<sysarray->sky->numeq; i++)
    {
@@ -423,6 +463,9 @@ case skymatrix:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+
+
+
 default:
    dserror("Unknown typ of system matrix given");
 break;
@@ -433,6 +476,118 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_reddistvec */
+
+
+
+/*----------------------------------------------------------------------*
+ |  distribute a full redundant vector                       m.gee 02/02|
+ |  This is a collective call!                                          |
+ |  full redundant vector to distributed vector                         |
+ *----------------------------------------------------------------------*/
+int solserv_distribdistvec(DIST_VECTOR  *distvec,
+                           SPARSE_ARRAY *sysarray,
+                           SPARSE_TYP   *sysarray_typ,
+                           double       *fullvec,
+                           int           dim,
+                           INTRA        *actintra)
+{
+int             i;
+int             dof,dofperm;
+double         *dfrom;
+int             imyrank;
+int             inprocs;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_distribdistvec");
+#endif
+/*----------------------------------------------------------------------*/
+if (dim != distvec->numeq_total) dserror("Dimension mismatch");
+/*----------------------------------------------------------------------*/
+imyrank = actintra->intra_rank;
+inprocs = actintra->intra_nprocs;
+/*----------------------------------------------------------------------*/
+switch(*sysarray_typ)
+{
+
+case msr:
+   for (i=0; i<sysarray->msr->numeq; i++)
+   {
+      dof = sysarray->msr->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+
+
+case parcsr:
+   for (i=0; i<sysarray->parcsr->numeq; i++)
+   {
+      dof = sysarray->parcsr->update.a.ia[imyrank][i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+
+
+case ucchb:
+   for (i=0; i<sysarray->ucchb->numeq; i++)
+   {
+      dof = sysarray->ucchb->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+
+
+case dense:
+   for (i=0; i<sysarray->dense->numeq; i++)
+   {
+      dof = sysarray->dense->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+
+
+case mds:
+   for (i=0; i<sysarray->mds->numeq; i++)
+   {
+      distvec->vec.a.dv[i] = fullvec[i];
+   }
+break;
+
+
+
+case rc_ptr:
+   for (i=0; i<sysarray->rc_ptr->numeq; i++)
+   {
+      dof = sysarray->rc_ptr->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+
+
+case skymatrix:
+   for (i=0; i<sysarray->sky->numeq; i++)
+   {
+      dof = sysarray->sky->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+
+
+default:
+   dserror("Unknown typ of system matrix given");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_distribdistvec */
 
 
 
