@@ -5,14 +5,14 @@
    and internal forces for shell8 element                m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void s8static_keug(ELEMENT   *ele,                         /* the element structure */
-                    S8_DATA   *data,                       /* element integration data */
-                    MATERIAL  *mat,                        /* the material structure */
-                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
-                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
-                    double    *force,                      /* global vector for internal forces (initialized!) */
-                    int        iforce,                     /* size of force */
-                    int        kstep,                      /* actual step in nonlinear analysis */
-                    int        init)                       /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+                   S8_DATA   *data,                       /* element integration data */
+                   MATERIAL  *mat,                        /* the material structure */
+                   ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
+                   ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
+                   double    *force,                      /* global vector for internal forces (initialized!) */
+                   int        iforce,                     /* size of force */
+                   int        kstep,                      /* actual step in nonlinear analysis */
+                   int        init)                       /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
 /*----------------------------------------------------------------------*/
 /* if force==NULL no internal forces are calculated                     */
 /*----------------------------------------------------------------------*/
@@ -125,12 +125,15 @@ static ARRAY        eashelp_a;   static double  *eashelp;   /* working vector fo
 
 
 /* arrays for ANS */
+int                 ansq;
 const int           nsansmax=6;
 int                 nsansq;                                  /* number of sampling points for ans */
 double              xr1[6];                                  /* coordinates of collocation points for ANS */
 double              xs1[6];
 double              xr2[6];
 double              xs2[6];                     
+double              frq[6];
+double              fsq[6];
 
 static ARRAY       funct1q_a[6];  static double  *funct1q[6];    /* shape functions at collocation points */
 static ARRAY       deriv1q_a[6];  static double **deriv1q[6];    /* derivation of these shape functions */
@@ -146,6 +149,22 @@ static ARRAY       akonc1q_a[6];  static double **akonc1q[6];
 static ARRAY       amkovc1q_a[6]; static double **amkovc1q[6];
 static ARRAY       amkonc1q_a[6]; static double **amkonc1q[6];
 static ARRAY       a3kvpc1q_a[6]; static double **a3kvpc1q[6];
+
+
+static ARRAY       funct2q_a[6];  static double  *funct2q[6];    /* shape functions at collocation points */
+static ARRAY       deriv2q_a[6];  static double **deriv2q[6];    /* derivation of these shape functions */
+
+static ARRAY       akovr2q_a[6];  static double **akovr2q[6];
+static ARRAY       akonr2q_a[6];  static double **akonr2q[6];
+static ARRAY       amkovr2q_a[6]; static double **amkovr2q[6];
+static ARRAY       amkonr2q_a[6]; static double **amkonr2q[6];
+static ARRAY       a3kvpr2q_a[6]; static double **a3kvpr2q[6];
+
+static ARRAY       akovc2q_a[6];  static double **akovc2q[6];
+static ARRAY       akonc2q_a[6];  static double **akonc2q[6];
+static ARRAY       amkovc2q_a[6]; static double **amkovc2q[6];
+static ARRAY       amkonc2q_a[6]; static double **amkonc2q[6];
+static ARRAY       a3kvpc2q_a[6]; static double **a3kvpc2q[6];
 
 #ifdef DEBUG 
 dstrc_enter("s8static_keug");
@@ -218,21 +237,29 @@ eashelp   = amdef("eashelp",&eashelp_a ,MAXHYB_SHELL8        ,1                 
 /* for ans */
 for (i=0; i<nsansmax; i++) funct1q[i]  = amdef("funct1q",&(funct1q_a[i]),MAXNOD_SHELL8,1,"DV");
 for (i=0; i<nsansmax; i++) deriv1q[i]  = amdef("deriv1q",&(deriv1q_a[i]),2,MAXNOD_SHELL8,"DA");
-
 for (i=0; i<nsansmax; i++) akovr1q[i]  = amdef("akovr1q" ,&(akovr1q_a[i]) ,3,3,"DA");
 for (i=0; i<nsansmax; i++) akonr1q[i]  = amdef("akonr1q" ,&(akonr1q_a[i]) ,3,3,"DA");
 for (i=0; i<nsansmax; i++) amkovr1q[i] = amdef("amkovr1q",&(amkovr1q_a[i]),3,3,"DA");
 for (i=0; i<nsansmax; i++) amkonr1q[i] = amdef("amkonr1q",&(amkonr1q_a[i]),3,3,"DA");
 for (i=0; i<nsansmax; i++) a3kvpr1q[i] = amdef("a3kvpr1q",&(a3kvpr1q_a[i]),3,2,"DA");
-
 for (i=0; i<nsansmax; i++) akovc1q[i]  = amdef("akovc1q" ,&(akovc1q_a[i]) ,3,3,"DA");
 for (i=0; i<nsansmax; i++) akonc1q[i]  = amdef("akonc1q" ,&(akonc1q_a[i]) ,3,3,"DA");
 for (i=0; i<nsansmax; i++) amkovc1q[i] = amdef("amkovc1q",&(amkovc1q_a[i]),3,3,"DA");
 for (i=0; i<nsansmax; i++) amkonc1q[i] = amdef("amkonc1q",&(amkonc1q_a[i]),3,3,"DA");
 for (i=0; i<nsansmax; i++) a3kvpc1q[i] = amdef("a3kvpc1q",&(a3kvpc1q_a[i]),3,2,"DA");
 
-
-
+for (i=0; i<nsansmax; i++) funct2q[i]  = amdef("funct2q",&(funct2q_a[i]),MAXNOD_SHELL8,1,"DV");
+for (i=0; i<nsansmax; i++) deriv2q[i]  = amdef("deriv2q",&(deriv2q_a[i]),2,MAXNOD_SHELL8,"DA");
+for (i=0; i<nsansmax; i++) akovr2q[i]  = amdef("akovr2q" ,&(akovr2q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) akonr2q[i]  = amdef("akonr2q" ,&(akonr2q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) amkovr2q[i] = amdef("amkovr2q",&(amkovr2q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) amkonr2q[i] = amdef("amkonr2q",&(amkonr2q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) a3kvpr2q[i] = amdef("a3kvpr2q",&(a3kvpr2q_a[i]),3,2,"DA");
+for (i=0; i<nsansmax; i++) akovc2q[i]  = amdef("akovc2q" ,&(akovc2q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) akonc2q[i]  = amdef("akonc2q" ,&(akonc2q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) amkovc2q[i] = amdef("amkovc2q",&(amkovc2q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) amkonc2q[i] = amdef("amkonc2q",&(amkonc2q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) a3kvpc2q[i] = amdef("a3kvpc2q",&(a3kvpc2q_a[i]),3,2,"DA");
 
 goto end;
 }
@@ -402,15 +429,25 @@ for (k=0; k<iel; k++)
 }
 /*============ metric and shape functions at collocation points (ANS=1) */
 /*----------------------------------------------------- 4-noded element */
-if (ele->e.s8->ans==1 || ele->e.s8->ans==3)/* querschub_ans */
+if (ele->e.s8->ans==1 || ele->e.s8->ans==3)/*------------ querschub_ans */
 {
+                 ansq=1;
    if (iel==4) nsansq=2;
    if (iel==9) nsansq=6;
-   s8_ans_colloqcoords(xr1,xs1,xr2,xs2,iel,ele->e.s8->ans);
-   for (i=0; i<nsansq; i++)
-   {
-     s8_funct_deriv(funct1q[i],deriv1q[i],xr1[i],xs1[i],ele->distyp,1);
-   }
+   s8_ans_colloqpoints(nsansq,iel,ele->e.s8->ans,ele->distyp,
+                       xr1,xs1,xr2,xs2,
+                       funct1q,deriv1q,funct2q,deriv2q,
+                       xrefe,a3r,xcure,a3c,
+                       akovr1q,akonr1q,amkovr1q,amkonr1q,a3kvpr1q,
+                       akovc1q,akonc1q,amkovc1q,amkonc1q,a3kvpc1q,
+                       akovr2q,akonr2q,amkovr2q,amkonr2q,a3kvpr2q,
+                       akovc2q,akonc2q,amkovc2q,amkonc2q,a3kvpc2q,
+                       &detr,&detc);
+}
+else
+{
+   ansq=0;
+   nsansq=0;
 }
 /*=============================== metric of element mid point (for eas) */
 if (nhyb>0)
@@ -436,6 +473,8 @@ for (lr=0; lr<nir; lr++)
       facs = data->wgts[ls];
       /*-------------------- shape functions at gp e1,e2 on mid surface */
       s8_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
+      /*----------------------------- shape functions for querschub-ans */
+      if (ansq==1) s8_ansq_funct(frq,fsq,e1,e2,iel,nsansq);
       /*-------- init mid surface material tensor and stress resultants */
       amzero(&D_a);
       for (i=0; i<12; i++) stress_r[i]=0.0;
@@ -470,7 +509,11 @@ for (lr=0; lr<nir; lr++)
          math_matvecdense(epsh,transP,alfa,12,nhyb,0,1.0);
       }
       /*------------------------ make B-operator for compatible strains */
-      s8_tvbo(e1,e2,bop,funct,deriv,iel,numdf,akovc,a3kvpc);
+      s8_tvbo(e1,e2,bop,funct,deriv,iel,numdf,akovc,a3kvpc,nsansq);
+      /*-------------------------------------- modifications due to ans */
+      if (ansq==1)
+      s8_ans_bbar_q(bop,frq,fsq,funct1q,funct2q,deriv1q,deriv2q,
+                    akovr1q,akovr2q,a3kvpr1q,a3kvpr2q,iel,numdf,nsansq);
       /*============================== loop GP in thickness direction t */
       for (lt=0; lt<nit; lt++)
       {
@@ -486,6 +529,12 @@ for (lr=0; lr<nir; lr++)
          /*--------------------------------- metric at gp in shell body */     
          s8_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
                  amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3);     
+         /*- modifications to metric of shell body due to querschub-ans */
+         if (ansq==1)
+         s8_ans_tvhe_q(gmkovr,gmkovc,gmkonr,gmkonc,&detr,&detc,
+                       amkovr1q,amkovc1q,akovr1q,akovc1q,a3kvpr1q,a3kvpc1q,
+                       amkovr2q,amkovc2q,akovr2q,akovc2q,a3kvpr2q,a3kvpc2q,
+                       frq,fsq,e3,nsansq,iel);
          /*----------- calc shell shifter and put it in the weight fact */
          xnu   = (1.0/condfac)*(detr/da);
          fact *= xnu; 
