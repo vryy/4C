@@ -370,8 +370,8 @@ ale_setdirich(actfield,adyn,0);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
-ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,
-        numeq_total,0,&container,action);
+ale_rhs(actsolv,actpart,actintra,actsysarray,-1,dirich,
+        numeq_total,&container,action);
 
 /*------------------------ add rhs from prescribed displacements to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
@@ -508,8 +508,8 @@ ale_setdirich(actfield,adyn,6);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
-ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,
-        numeq_total,0,&container,action);
+ale_rhs(actsolv,actpart,actintra,actsysarray,-1,dirich,
+        numeq_total,&container,action);
 
 /*------ add rhs from fsi coupling (-> prescribed displacements) to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),

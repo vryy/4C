@@ -517,7 +517,7 @@ if (restartstep==fsidyn->uprestart)
 
 /*--------------------------------------- do mesh quality statistics ---*/
 if (container.quality)
-  plot_ale_quality(actfield,fsidyn->step,actintra,actpart);
+  plot_ale_quality(actfield,fsidyn->step,fsidyn->time,actintra,actpart);
 /*--------------------------------------------------------------------- */
 
 break;
@@ -564,8 +564,8 @@ ale_setdirich(actfield,adyn,6);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
-ale_rhs(actfield,actsolv,actpart,actintra,constsysarray,-1,dirich,
-        numeq_total,0,&container,action);
+ale_rhs(actsolv,actpart,actintra,constsysarray,-1,dirich,
+        numeq_total,&container,action);
 
 /*------ add rhs from fsi coupling (-> prescribed displacements) to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[constsysarray]),
