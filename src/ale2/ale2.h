@@ -158,7 +158,8 @@ void write_element_quality(ELEMENT  *ele,
                            INT       quality, 
 			   DOUBLE  **xyz, 
 			   DOUBLE    min_detF);
-void ale_quality(FIELD *field,INT step);
+void ale_quality(FIELD *field,INT step, 
+                 INTRA  *actintra, PARTITION    *actpart);
 /*----------------------------------------------------------------------*/
 #endif
 /*! @} (documentation module close)*/
