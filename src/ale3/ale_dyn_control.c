@@ -563,8 +563,8 @@ solserv_result_incre(
 		     &(actsolv->sol[actsysarray]),
 		     0,
 		     &(actsolv->sysarray[actsysarray]),
-		     &(actsolv->sysarray_typ[actsysarray])
-		    );
+		     &(actsolv->sysarray_typ[actsysarray]),
+		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
 solserv_sol_add(actfield,0,1,1,0,1,1.0);
@@ -794,8 +794,8 @@ solserv_result_incre(
 		     &(actsolv->sol[actsysarray]),
 		     0,
 		     &(actsolv->sysarray[actsysarray]),
-		     &(actsolv->sysarray_typ[actsysarray])
-		    );
+		     &(actsolv->sysarray_typ[actsysarray]),
+		     0);
 /*-------------------------------------- reset system matrix to zero ---*/
 solserv_zero_mat(
      		 actintra,
@@ -859,8 +859,8 @@ solserv_result_incre(actfield,
      		    &(actsolv->sol[actsysarray]),
      		     0,
      		    &(actsolv->sysarray[actsysarray]),
-     		    &(actsolv->sysarray_typ[actsysarray])
-     		    );
+     		    &(actsolv->sysarray_typ[actsysarray]),
+     		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
 solserv_sol_add(actfield,0,1,1,0,1,1.0);
@@ -1101,8 +1101,8 @@ solserv_result_incre(
 		     &(actsolv->sol[actsysarray]),
 		     0,
 		     &(actsolv->sysarray[actsysarray]),
-		     &(actsolv->sysarray_typ[actsysarray])
-		    );
+		     &(actsolv->sysarray_typ[actsysarray]),
+		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
 solserv_sol_add(actfield,0,1,1,0,1,1.0);
@@ -1345,8 +1345,8 @@ solserv_result_incre(
 		     &(actsolv->sol[actsysarray]),
 		     0,
 		     &(actsolv->sysarray[actsysarray]),
-		     &(actsolv->sysarray_typ[actsysarray])
-		    );
+		     &(actsolv->sysarray_typ[actsysarray]),
+		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
 solserv_sol_add(actfield,0,1,1,0,1,1.0);
