@@ -118,23 +118,22 @@ void mat_pl_hoff_serv(DOUBLE     DKDL[6],
  |  plasticity model based on the von Mises yield criterion             |
  |  -> combined linear iso./kin. hardening law                          |
  *----------------------------------------------------------------------*/
-void mat_pl_mises_lin_main(
-             DOUBLE   ym,       /*!< young's modulus */
-             DOUBLE   pv,       /*!< poisson's ration */
-             DOUBLE   sigy,     /*!< uniaxial yield stress */
-             DOUBLE   hard,     /*!< hardening modulus */
-             DOUBLE   gf,       /*!< fracture energy */
-             DOUBLE   betah,    /*!< controls the iso/kin hardening */
-             DOUBLE  *stress,   /*!< ele stress (-resultant) vector */      
-             DOUBLE   strain[6],/*!< actual strains from displacements */
-             DOUBLE **d,        /*!< material matrix 3D */
-             INT     *iupd,     /*!< controls update of new stresses to wa */
-             INT     *yip,      /*!< from WA */
-             DOUBLE  *epstn,    /*!< from WA */
-             DOUBLE   sig[6],   /*!< stresses from WA */
-             DOUBLE   eps[6],   /*!< strains from WA */
-             DOUBLE   qn[6],    /*!< backstress vector from WA */
-             DOUBLE   dia);     /*!< internal length parameter from WA */
+void mat_pl_mises_lin_main(DOUBLE   ym,       
+                           DOUBLE   pv,       
+                           DOUBLE   sigy,     
+                           DOUBLE   hard,     
+                           DOUBLE   gf,       
+                           DOUBLE   betah,    
+                           DOUBLE  *stress,   
+                           DOUBLE   strain[6],
+                           DOUBLE **d,        
+                           INT     *iupd,     
+                           INT     *yip,      
+                           DOUBLE  *epstn,    
+                           DOUBLE   sig[6],   
+                           DOUBLE   eps[6],   
+                           DOUBLE   qn[6],    
+                           DOUBLE   dia);     
 void mat_pl_mises_lin_yilcr(DOUBLE  E, 
                             DOUBLE  Eh,
                             DOUBLE  betah,
@@ -172,22 +171,23 @@ void mat_pl_mises_lin_mapl(DOUBLE   e,
  |  -> combined linear iso./kin. hardening law                          |
  |  for theory see Dis. Menrath                                         |
  *----------------------------------------------------------------------*/
-void mat_pl_dp_lin_main(
-             DOUBLE   ym,       /*!< young's modulus */
-             DOUBLE   pv,       /*!< poisson's ration */
-             DOUBLE   sigy,     /*!< uniaxial yield stress */
-             DOUBLE   eh,       /*!< hardening modulus */
-             DOUBLE   betah,    /*!< controls the iso/kin hardening */
-             DOUBLE   phi,      /*!< angle of friction */
-             DOUBLE   stress[6],/*!< ele stress (-resultant) vector */      
-             DOUBLE   strain[6],/*!< actual strains from displacements */
-             DOUBLE **d,        /*!< material matrix 3D */
-             INT     *iupd,     /*!< controls update of new stresses to wa */
-             INT     *yip,      /*!< from WA */
-             DOUBLE  *epstn,    /*!< from WA */
-             DOUBLE   sig[6],   /*!< stresses from WA */
-             DOUBLE   eps[6],   /*!< strains from WA */
-             DOUBLE   qn[6]);   /*!< backstress vector from WA */
+void mat_pl_dp_lin_main(DOUBLE   ym,       
+                        DOUBLE   pv,       
+                        DOUBLE   sigy,     
+                        DOUBLE   eh,       
+                        DOUBLE   gf,       
+                        DOUBLE   betah,    
+                        DOUBLE   phi,      
+                        DOUBLE   stress[6],
+                        DOUBLE   strain[6],
+                        DOUBLE **d,        
+                        INT     *iupd,     
+                        INT     *yip,      
+                        DOUBLE  *epstn,    
+                        DOUBLE   sig[6],   
+                        DOUBLE   eps[6],   
+                        DOUBLE   qn[6],    
+                        DOUBLE   dia);      
 void mat_pl_dp_lin_radi(DOUBLE  hards, 
                         DOUBLE  betah,
                         DOUBLE *epstn,
