@@ -57,8 +57,14 @@ liftdrag[2]     angular momentum
 
 *-----------------------------------------------------------------------*/
 #ifdef D_FLUID
-void plot_liftdrag(DOUBLE time, DOUBLE *liftdrag)
+void plot_liftdrag(
+    DOUBLE   time,
+    DOUBLE  *liftdrag
+    )
 {
+
+  INT            i;
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("plot_liftdrag");
@@ -69,8 +75,13 @@ dstrc_enter("plot_liftdrag");
 if (par.myrank != 0) goto end;
 #endif
 
-fprintf(allfiles.gnu,"%10.5f  %8.7f  %8.7f  %8.7f\n", 
-        time, liftdrag[0], liftdrag[1], liftdrag[2]);
+fprintf(allfiles.gnu,"%10.5f  ", time);
+for (i=0; i<FLUID_NUM_LD+1; i++)
+  fprintf(allfiles.gnu,"%8.7f  %8.7f  %8.7f  %8.7f  %8.7f  %8.7f  ", 
+      liftdrag[i*6+0], liftdrag[i*6+1], liftdrag[i*6+2],
+      liftdrag[i*6+3], liftdrag[i*6+4], liftdrag[i*6+5]);
+fprintf(allfiles.gnu,"\n");
+
 fflush(allfiles.gnu);
 
 /*----------------------------------------------------------------------*/
@@ -82,6 +93,7 @@ dstrc_exit();
 
 return;
 } /* end of plot_liftdrag */
+
 
 
 /*!---------------------------------------------------------------------
