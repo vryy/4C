@@ -541,6 +541,7 @@ container.fiterhs      = fvelrhs1;
 container.nii          = 1;
 container.ftimerhs     = fvelrhs2;
 container.nif          = 1;
+container.nim          = 0;
 container.fidrichrhs   = fdirich;
 container.global_numeq = numeq_total[veldis]; 
 container.kstep        = 0;
