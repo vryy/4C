@@ -3,11 +3,24 @@
 \brief setting dirichlet conditions for fluid
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "fluid_prototypes.h"
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par; 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -25,7 +38,7 @@ extern struct _MATERIAL  *mat;
 extern int            numcurve;
 extern struct _CURVE *curve;
 
-/*!---------------------------------------------------------------------                                         
+/*!--------------------------------------------------------------------- 
 \brief routine to initialise the dirichlet boundary conditions
 
 <pre>                                                         genk 04/02
@@ -42,24 +55,26 @@ elements are initialised:
                                  |        |         |
                             time (n)      |         |               
                           initial value from input  |               
-                                       factor from timecurve (T=0.0)			     
+                                       factor from timecurve (T=0.0)
 
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
 \param *fdyn	 FLUID_DYNAMIC (i)    
 
-\return void                                                                             
+\return void                                            
 
 ------------------------------------------------------------------------*/
-void fluid_initdirich(FIELD  *actfield, FLUID_DYNAMIC *fdyn)
+void fluid_initdirich(  FIELD          *actfield, 
+                        FLUID_DYNAMIC  *fdyn
+		     )
 {
 int        i,j;
 int        numnp_total;               /* total number of fluid nodes    */
 int        numele_total;              /* total number of fluid elements */
 int        predof;	              /* number of pressure dof	        */
-int        actmat;	              /* number of actual material      */
 int        numdf;	              /* number of fluid dofs	        */
 int        actcurve;	              /* actual timecurve  	        */
+int        numveldof;
 double     dens;	              /* density			*/
 double     timefac[MAXTIMECURVE];     /* factors from time-curve        */
 double     T=0.0;	              /* starting time		        */
@@ -69,6 +84,8 @@ GNODE     *actgnode;	              /* actual GNODE		        */
 NODE      *actnode;	              /* actual NODE		        */
 ELEMENT   *actele;	              /* actual ELEMENT		        */
 
+int counter=0;
+
 #ifdef DEBUG 
 dstrc_enter("fluid_initdirich");
 #endif  
@@ -77,6 +94,12 @@ numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele; 
 numdf        = fdyn->numdf; 
 predof       = numdf-1;
+numveldof    = numdf-1;
+
+/*-------------------------- since different materials are not allowed
+              one can work with the material parameters of any element */
+actele = &(actfield->dis[0].element[0]);
+dens  = mat[actele->mat-1].m.fluid->density;
 
 /*------------------------------------------ check dirichlet conditions */
 for (i=0;i<numnp_total;i++) /* loop all nodes */
@@ -85,32 +108,30 @@ for (i=0;i<numnp_total;i++) /* loop all nodes */
    actgnode = actnode->gnode; 
    if (actgnode->dirich==NULL)
       continue;
-   for (j=0;j<numdf;j++) /* loop all dofs */   
-   {
-      if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-         continue;
-         actcurve = actgnode->dirich->curve.a.iv[j];
-	 if(actcurve>numcurve)
-	    dserror("Load curve: actual curve > number defined curves\n");   
-   } /* end of loop over all dofs */
+   if (actgnode->dirich->dirich_type==dirich_FSI)
+      counter++;
+   if (actgnode->dirich->dirich_type==dirich_none)
+   { 
+      for (j=0;j<actnode->numdf;j++) /* loop all dofs */    
+      {
+         if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
+            continue;
+            actcurve = actgnode->dirich->curve.a.iv[j];
+	    if(actcurve>numcurve)
+	       dserror("Load curve: actual curve > number defined curves\n");   
+      } /* end of loop over all dofs */
+      /* transform real pressure from input to kinematic pressure ---*/
+      if (actgnode->dirich->dirich_onoff.a.iv[predof]!=0)      
+          actgnode->dirich->dirich_val.a.dv[predof] /= dens; 
+   }
 } /* end of loop over all nodes */
 
-
-/*------------ transform real pressure from input to kinematic pressure */
-for (i=0;i<numele_total;i++)
+if (counter>0 && par.myrank==0)
 {
-   actele = &(actfield->dis[0].element[i]);
-   actmat = actele->mat-1;
-   dens   = mat[actmat].m.fluid->density;
-   for(j=0;j<actele->numnp;j++)
-   {
-      actgnode = actele->node[j]->gnode;
-      if (actgnode->dirich==NULL)
-         continue;
-      if (actgnode->dirich->dirich_onoff.a.iv[predof]!=0)
-         actgnode->dirich->dirich_val.a.dv[predof] /= dens;
-   } /*end loop over nodes */
-} /* end loop over elements */
+printf("\n");
+printf("          | FIELD FLUID     | number of nodes coupled with structure: %d \n",counter);
+printf("\n");
+}
 
 /*---------- set dirichlet conditions at time (0) for zero intial field */
 if (fdyn->init==0)
@@ -127,21 +148,37 @@ if (fdyn->init==0)
       actgnode = actnode->gnode;      
       if (actgnode->dirich==NULL)
          continue;
-      for (j=0;j<numdf;j++) /* loop all dofs */
+      switch(actgnode->dirich->dirich_type)
       {
-         if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-            continue;
-         actcurve = actgnode->dirich->curve.a.iv[j]-1;
-         if (actcurve<0)
-            acttimefac = ONE;
-         else
-            acttimefac = timefac[actcurve];
-         initval  = actgnode->dirich->dirich_val.a.dv[j];               
-         actnode->sol_increment.a.da[1][j] = initval*acttimefac;
-	 actnode->sol.a.da[0][j] = initval*acttimefac;
-      } /* end loop over dofs */
+      case dirich_none:
+         for (j=0;j<actnode->numdf;j++) /* loop all dofs */
+         {
+            if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
+               continue;
+            actcurve = actgnode->dirich->curve.a.iv[j]-1;
+            if (actcurve<0)
+               acttimefac = ONE;
+            else
+               acttimefac = timefac[actcurve];
+            initval  = actgnode->dirich->dirich_val.a.dv[j];               
+            actnode->sol_increment.a.da[1][j] = initval*acttimefac;
+	    actnode->sol.a.da[0][j] = initval*acttimefac;
+         } /* end loop over dofs */
+      break;
+      case dirich_FSI: /* FSI --> dirichvalues = grid velocity!!! */
+	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
+	 {
+	    initval = actnode->sol_increment.a.da[4][j];  
+	    actnode->sol_increment.a.da[1][j] = initval; 
+	    actnode->sol.a.da[0][j] = initval;
+	 }
+      break;
+      default:
+         dserror("dirch_type unknown!\n");
+      } /* end switch */
    } /*end loop over nodes */   
 } /* endif fdyn->init */
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -151,7 +188,7 @@ dstrc_exit();
 return;
 } /* end of fluid_initdirich*/
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to set dirichlet boundary conditions at time <time>
 
 <pre>                                                         genk 04/02
@@ -164,27 +201,30 @@ nodes:
                                  |        |         |
                             time (n+1)    |         |               
                           initial value from input  |               
-                                       factor from timecurve			     
+                                       factor from timecurve
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
 \param *fdyn	 FLUID_DYNAMIC (i)  
 
-\return void                                                                             
+\return void     
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich(FIELD  *actfield, FLUID_DYNAMIC *fdyn)
+void fluid_setdirich(   FIELD           *actfield, 
+                        FLUID_DYNAMIC   *fdyn
+	            )
 {
 int        i,j;
 int        numnp_total;              /* total number of fluid nodes     */
 int        numele_total;             /* total number of fluid elements  */
 int        numdf;	             /* number of fluid dofs    	*/
 int        actcurve;	             /* actual timecurve		*/
+int        numveldof;
 double     timefac[MAXTIMECURVE];    /* factors from time-curve         */
 double     T;		             /* actual time		        */
 double     acttimefac;               /* actual factor from timecurve    */
 double     initval;	             /* intial dirichlet value	        */
 GNODE     *actgnode;	             /* actual GNODE		        */
-NODE      *actnode;	             /* actual NODE		        */
+NODE      *actnode;                  /* actual NODE                     */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_setdirich");
@@ -195,6 +235,7 @@ numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
 T            = fdyn->time;
 numdf        = fdyn->numdf;
+numveldof    = numdf-1;
 
 /*------------------------------------------ get values from time curve */
 for (actcurve=0;actcurve<numcurve;actcurve++)
@@ -209,18 +250,30 @@ for (i=0;i<numnp_total;i++)
    actgnode = actnode->gnode;      
    if (actgnode->dirich==NULL)
          continue;
-   for (j=0;j<numdf;j++) /* loop dofs */
+   switch(actgnode->dirich->dirich_type)
    {
-      if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-         continue;
-      actcurve = actgnode->dirich->curve.a.iv[j]-1;
-      if (actcurve<0)
-         acttimefac = ONE;
-      else
-         acttimefac = timefac[actcurve];
-      initval  = actgnode->dirich->dirich_val.a.dv[j];               
-      actnode->sol_increment.a.da[3][j] = initval*acttimefac;
-   } /* end loop over dofs */
+   case dirich_none:
+      for (j=0;j<actnode->numdf;j++) /* loop dofs */
+      {
+         if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
+            continue;
+         actcurve = actgnode->dirich->curve.a.iv[j]-1;
+         if (actcurve<0)
+            acttimefac = ONE;
+         else
+            acttimefac = timefac[actcurve];
+         initval  = actgnode->dirich->dirich_val.a.dv[j];               
+         actnode->sol_increment.a.da[3][j] = initval*acttimefac;	 
+      } /* end loop over dofs */
+   break;
+   case dirich_FSI: /* dirichvalues = grid velocity!!! */     
+      for (j=0;j<numveldof;j++)  /* loop vel-dofs */
+         actnode->sol_increment.a.da[3][j]
+	=actnode->sol_increment.a.da[4][j];
+   break;
+   default:
+      dserror("dirch_type unknown!\n");
+   } /* end switch */
 } /*end loop over nodes */
 
 /*----------------------------------------------------------------------*/
@@ -231,7 +284,7 @@ dstrc_exit();
 return;
 } /* end of fluid_settdirich*/
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to calculate the element dirichlet load vector
 
 <pre>                                                         genk 04/02
@@ -254,15 +307,15 @@ the element load vector 'dforce' is calculated by eveluating
 
 ------------------------------------------------------------------------*/
 void fluid_caldirich(
-                     ELEMENT   *actele,  
-		     double    *dforces, 
-                     double   **estif,   
-		     int       *hasdirich
+                        ELEMENT         *actele,  
+		        double          *dforces, 
+                        double         **estif,   
+		        int             *hasdirich
 		    )     
 {
 
 int         i,j;
-int         dof;
+int         nrow;
 int         numdf;                      /* number of fluid dofs         */
 int         nd=0;                      
 double      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
@@ -302,6 +355,7 @@ for (i=0; i<nd; i++)
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 /*                               dirichlet values at (n+1) were already */
 /*                           written to the nodes (sol_increment[3][j]) */
+nrow=0;
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
    numdf    = actele->node[i]->numdf;
@@ -310,10 +364,12 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
    for (j=0; j<numdf; j++) /* loop dofs */
    {
       if (actgnode->dirich==NULL) continue;
-      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[i*numdf+j] = actnode->sol_increment.a.da[3][j];
+      dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+      dirich[nrow+j] = actnode->sol_increment.a.da[3][j];
    } /* end loop over dofs */
+   nrow+=numdf;
 } /* end loop over nodes */
+dsassert(nrow==nd,"failure during calculation of dirich forces\n");
 /*----------------------------------------- loop rows of element matrix */
 for (i=0; i<nd; i++)
 {
@@ -337,3 +393,4 @@ return;
 } /* end of fluid_caldirich*/ 
 
 #endif
+/*! @} (documentation module close)*/
