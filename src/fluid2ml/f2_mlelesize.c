@@ -3,12 +3,10 @@
 \brief calculate submesh element size and streamlength for fluid2
 
 <pre>
-Maintainer:  name
-             e-mail
-             homepage
-             telephone number
-
-
+Maintainer: Volker Gravemeier
+            vgravem@stanford.edu
+            
+            
 </pre>
 
 ------------------------------------------------------------------------*/

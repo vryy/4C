@@ -1,8 +1,17 @@
 /*!----------------------------------------------------------------------
 \file
 \brief contains the routines
- - s9_Ccacu_sym:   which transforms a symmetric consitutive matrix from cartesian
-                   to curvilinear coordinate system 
+ - s9_Ccacu_sym:   which transforms a symmetric consitutive matrix from
+ cartesian to curvilinear coordinate system 
+
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

@@ -3,12 +3,10 @@
 \brief evaluate stabilization part of submesh matrices for fluid2
 
 <pre>
-Maintainer:  name
-             e-mail
-             homepage
-             telephone number
-
-
+Maintainer: Volker Gravemeier
+            vgravem@stanford.edu
+            
+            
 </pre>
 
 ------------------------------------------------------------------------*/

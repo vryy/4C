@@ -3,6 +3,13 @@
 \brief This module 'Ale' contains all routines and structures necessary
 for the 2D and 3D Ale-elements. 
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 This module 'Ale' contains all routines and structures necessary
 for the 2D and 3D Ale-elements. It provides routines to control the 
 'academic' pure ale problemtype and to calculate the element stiffness

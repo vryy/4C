@@ -2,6 +2,13 @@
 \file
 \brief service routines for fluid3 element 
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 
 /*----------------------------------------------------------------------*/
 #ifdef D_FLUID3 

@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file
+\brief 
+
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"

@@ -4,6 +4,13 @@
 'ale_setdirich_increment', 'ale_caldirich_increment' and 
 'check_ale_dirich'
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"

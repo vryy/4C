@@ -3,6 +3,13 @@
 \brief contains the routine 'dyn_ale' which controles the calculation
 of the problemtype ale
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "ale3.h"

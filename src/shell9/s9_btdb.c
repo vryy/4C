@@ -3,6 +3,14 @@
 \brief contains the routine 
  - s9_BtDB: which calculates the stiffness matrix Ke
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

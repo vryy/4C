@@ -4,6 +4,13 @@
 'b3_compr_stress', 'b3_blowup_strain', 'b3_compr_strain', 'b3_compr_Cep',
 'b3_kronecker', 'b3_cal_volCel', 'b3_cal_devCel', 'b3_cal_Cel', 'b3_condense'
 
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 #include "../headers/standardtypes.h"

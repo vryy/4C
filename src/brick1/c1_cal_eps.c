@@ -3,6 +3,13 @@
 \brief contains the routine 'c1_eps' which evaluates linear/nonlinear 
                                      strains from displacement derivatives 
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 

@@ -2,6 +2,20 @@
 \file
 \brief assign dofs 
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 ------------------------------------------------------------------------*/
 /*! 
 \addtogroup FLUID2_PRO 

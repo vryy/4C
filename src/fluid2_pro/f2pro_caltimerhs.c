@@ -12,6 +12,13 @@
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for vel dofs
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 <pre>                                                        basol 11/02
 
 In this routine the galerkin part of the time forces for vel dofs

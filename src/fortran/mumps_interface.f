@@ -1,3 +1,10 @@
+c
+c     Maintainer: Malte Neumann 
+c                 neumann@statik.uni-stuttgart.de 
+c                 http://www.uni-stuttgart.de/ibs/members/neumann/ 
+c                 0711 - 685-6121 
+c
+c     ---------------------------------------------------------------  
       SUBROUTINE mumps_interface(job,parproc,comm,sym,icntl,n,nz,
      *                           nz_loc,irn_loc,jcn_loc,irn,jcn,a_loc,b)
       INCLUDE '/opt/mpi/include/mpif.h'

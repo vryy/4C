@@ -2,6 +2,13 @@
 \file
 \brief headerfile for 3D hex element, containing structures and prototypes
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 #include "brick1_doxygen.h"
@@ -13,6 +20,13 @@
 
 /*!----------------------------------------------------------------------
 \brief 3D hex element data
+
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
 
 <pre>                                                             al 06/01
 This structure contains the coordinates and weights for numerical

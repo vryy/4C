@@ -2,11 +2,16 @@
 \file
 \brief contains the routines to control nonlinear static execution
        for optimization
-*----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
-/*----------------------------------------------------------------------*/
 
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"

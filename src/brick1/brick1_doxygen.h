@@ -3,6 +3,13 @@
 \brief This module 'BRICK1' contains all routines and structures necessary
 for the 3D hexahedral and tetrahedral-elements. 
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 This module 'BRICK1' contains all routines and structures necessary
 for the 3D hexahedral and tetrahedral-elements. 
 

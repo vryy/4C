@@ -3,12 +3,10 @@
 \brief multilevel element control routine for fluid3
 
 <pre>
-Maintainer:  name
-             e-mail
-             homepage
-             telephone number
-
-
+Maintainer: Volker Gravemeier
+            vgravem@stanford.edu
+            
+            
 </pre>
 
 ------------------------------------------------------------------------*/

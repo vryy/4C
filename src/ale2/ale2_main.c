@@ -2,6 +2,13 @@
 \file
 \brief contains the routine 'ale2', the main routine of the 2d ale element 
 
+<pre>
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6127
+</pre>
+
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "ale2.h"

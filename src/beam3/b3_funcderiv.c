@@ -3,6 +3,13 @@
 \brief contains the routine 'b3_funct_deriv' which calculates the values
 of the shape functions and the correspondent derivatives at point r
 
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 #include "../headers/standardtypes.h"

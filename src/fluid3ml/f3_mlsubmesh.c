@@ -3,12 +3,10 @@
 \brief submesh creation for multilevel fluid3 element
 
 <pre>
-Maintainer:  name
-             e-mail
-             homepage
-             telephone number
-
-
+Maintainer: Volker Gravemeier
+            vgravem@stanford.edu
+            
+            
 </pre>
 
 ------------------------------------------------------------------------*/

@@ -3,6 +3,13 @@
 \brief contains the routine 'ale3_intg' which gives the coordinates and
 weight factors for numerical integration of a 3D ale element
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"

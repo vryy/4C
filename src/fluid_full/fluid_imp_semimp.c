@@ -2,6 +2,13 @@
 \file
 \brief implicit and semi-implicit time integration algorithm for fluid
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 ------------------------------------------------------------------------*/
 /*! 
 \addtogroup FLUID

@@ -3,6 +3,13 @@
 \brief contains the routine 'c1_mat_neohook' to establish local material law
        stress-strain law for isotropic material for a 3D hex element
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 

@@ -3,6 +3,13 @@
 \brief contains the routine 'ale2_hourglass' which calculates the 
 hourglass stabilization matrix for a 2D ale element
 
+<pre>
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6127
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"

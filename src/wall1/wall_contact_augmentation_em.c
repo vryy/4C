@@ -3,6 +3,13 @@
 \brief contains wall_contact_augmentation_em routine used for the update 
 of Lagrange Multipliers in case of Energy-Momentum conserving Int. scheme 
 
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
 ---------------------------------------------------------------------*/
 #ifdef GEMM
 #ifdef WALLCONTACT

@@ -7,6 +7,13 @@
 /*!----------------------------------------------------------------------
 \brief file pointers
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
 and the type is in standardtypes.h                                                  

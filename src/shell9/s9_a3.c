@@ -11,6 +11,22 @@
                    calculation of the element surface loads ('s9_load1').
                    Here no averaged director is used!
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

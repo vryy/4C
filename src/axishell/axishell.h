@@ -3,6 +3,13 @@
 \brief headerfile for axisymmetric shell element, 
        containing structures and prototypes
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_AXISHELL
 
@@ -12,6 +19,13 @@
 
 /*!----------------------------------------------------------------------
 \brief axisymmetric shell element
+
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
 
 <pre>                                                            mn 05/03
 This structure contains all specific information for the axisymmetric

@@ -1,16 +1,14 @@
 /*!----------------------------------------------------------------------
 \file
 \brief evaluate bubble parts of large-scale matrices for fluid3
+<pre>                                                       gravem 07/03
 
 <pre>
-Maintainer:  name
-             e-mail
-             homepage
-             telephone number
-
-
+Maintainer: Volker Gravemeier
+            vgravem@stanford.edu
+            
+            
 </pre>
-
 ------------------------------------------------------------------------*/
 #ifdef FLUID3_ML 
 #include "../headers/standardtypes.h"
@@ -20,6 +18,7 @@ Maintainer:  name
 \brief evaluate bubble part of matrix Kvv for fluid3
 
 <pre>                                                       gravem 07/03
+
 
 In this routine, the bubble part of the matrix Kvv is calculated.
 

@@ -3,6 +3,13 @@
 \brief contains wall_contact_mid routine used to determine the closest point
 projection at mid configuration.
 
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
 ---------------------------------------------------------------------*/
 #ifdef GEMM
 #ifdef WALLCONTACT

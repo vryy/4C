@@ -6,6 +6,14 @@
  - 's9_mat_stress1' which calculates the PK_II-Stresses from the green
                   lagrange strains
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

@@ -18,6 +18,14 @@
  - s9_Cmaca:       which transforms the constitutive matrix from material/laminat to
                    cartesian coord. sys
     
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

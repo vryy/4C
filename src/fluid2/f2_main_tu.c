@@ -2,6 +2,13 @@
 \file
 \brief main routine fluid2 element
 
+<pre>
+Maintainer: Thomas Hettich
+            hettich@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hettich/
+            0771 - 685-6575
+</pre>
+
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"

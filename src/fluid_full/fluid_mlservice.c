@@ -3,16 +3,14 @@
 \brief service routines for multi-level fluid
 
 <pre>
-Maintainer:  name
-             e-mail
-             homepage
-             telephone number
-
-
+Maintainer: Volker Gravemeier
+            vgravem@stanford.edu
+            
+            
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef FLUID_ML
+#if defined(FLUID2_ML) || defined(FLUID3_ML)
 #include "../headers/standardtypes.h"
 #include "fluid_prototypes.h"
 

@@ -2,6 +2,13 @@
 \file
 \brief writing and reading data for visual2/3 to/from pss-file
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"

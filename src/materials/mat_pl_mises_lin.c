@@ -11,6 +11,14 @@
  - mat_pl_mises_lin_radi: which performs the radial return algorithm
  - mat_pl_mises_lin_mapl: which calculates the elasto-plastic consistent
                           material matrix
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_MAT
 #include "../headers/standardtypes.h"

@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file
+\brief 
+
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"

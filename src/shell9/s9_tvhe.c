@@ -4,6 +4,14 @@
  - s9_tvhe: re-calculates the metrics (geom. linear/nonlinear)
  - s9_tvhe_lin: re-calculates the metrics (geom. linear) -> not used
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

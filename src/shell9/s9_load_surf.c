@@ -7,6 +7,14 @@
  - 's9_surf_onoff' switches the <neum_onoff> to 1 if the differential vector 
                    component is to be loaded  -> Point loads!  
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

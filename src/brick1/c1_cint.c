@@ -3,6 +3,13 @@
 \brief contains the control program 'c1_cint' for integration over
        the element volume for a 3D hex element
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 

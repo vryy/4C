@@ -2,6 +2,13 @@
 \file
 \brief subroutine to encode and decode grdobj, grdcon and var when linking is used   AS 03/03
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/

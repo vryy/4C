@@ -1,3 +1,10 @@
+c
+c     Maintainer: Malte Neumann 
+c                 neumann@statik.uni-stuttgart.de 
+c                 http://www.uni-stuttgart.de/ibs/members/neumann/ 
+c                 0711 - 685-6121 
+c
+c     ---------------------------------------------------------------  
 C***********************************************************************
 C   File:  @(#)solver_column_height.ftn	1.1   01/09/96   
 C***********************************************************************

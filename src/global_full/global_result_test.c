@@ -1,14 +1,26 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Testing of results
+\brief 
 
 <pre>
-Maintainer:  Steffen Genkinger
-             genk@statik.uni-stuttgart.de
-             http://www.uni-stuttgart.de/ibs/members/genkinger/index.html
-
-
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
 </pre>
+
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
+*----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\file
+\brief Testing of results
+
 
 ------------------------------------------------------------------------*/
 #ifdef RESULTTEST

@@ -3,6 +3,13 @@
 \brief contains wall_contact_update routine used to update some
 variables within each Newton iteraion
 
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
 ---------------------------------------------------------------------*/
 #ifdef WALLCONTACT
 /*!----------------------------------------------------------------------

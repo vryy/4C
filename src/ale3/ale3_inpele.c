@@ -2,6 +2,13 @@
 \file
 \brief contains the routine 'ale3inp' which reads a 3d ale element
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"

@@ -3,6 +3,13 @@
 \brief contains the routine 'b3_cal_lst', 'b3_cal_sec', 
 'b3_cal_trn', 'b3_con_dof', 'b3_trans_stf', 'b3_keku'
 
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 #include "../headers/standardtypes.h"

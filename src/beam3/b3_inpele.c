@@ -2,6 +2,14 @@
 \file
 \brief contains the routines 'b3inp' which reads the beam element from
 input file
+
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 #include "../headers/standardtypes.h"

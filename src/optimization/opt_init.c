@@ -3,6 +3,13 @@
 \brief contains the routine 'opcini',
        initialize execution stage of optimization 
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/

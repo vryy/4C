@@ -13,6 +13,14 @@ contains the routines:
 - s9_out_gid_sol_str:   writes the physical stresses, extrapolated from GP to nodal points
                         to the flavia.res file   
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

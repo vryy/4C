@@ -2,6 +2,13 @@
 \file
 \brief contains the routines to serve the element stiffness matrices
 
+<pre>
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6127
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"

@@ -2,6 +2,13 @@
 \file
 \brief The 3D fluid element
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 ------------------------------------------------------------------------*/
 /*!---------------------------------------------------------------------
 \brief fluid2                                                 

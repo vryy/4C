@@ -3,6 +3,13 @@
 \brief contains the routine 'w1_boplin' which calculates the 
        boplin operator matrix for a wall element at point r,s
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"

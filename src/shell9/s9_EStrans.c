@@ -5,6 +5,14 @@
  - s9_Ecuca: transforms strains (E) from curvilinear to cartesian
  - s9_Scacu: transforms stresses (S) from cartesian to curvilinear
  - s9_Scuca: transforms stresses (S) from curvilinear to cartesian
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

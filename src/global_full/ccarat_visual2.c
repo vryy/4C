@@ -2,6 +2,13 @@
 \file
 \brief Call and control VISUAL2 
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #ifdef VISUAL2_PACKAGE

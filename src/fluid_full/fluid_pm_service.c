@@ -15,6 +15,13 @@
 /*----------------------------------------------------------------------*
 \brief  matrix product mat1 * lumped mat2 
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 <pre>                                                      basol 11/02
                                                            genk  10/03
 In this routine the matrix product:

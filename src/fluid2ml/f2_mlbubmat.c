@@ -1,14 +1,13 @@
 /*!----------------------------------------------------------------------
 \file
 \brief evaluate bubble parts of large-scale matrices for fluid2
+<pre>                                                       gravem 07/03
 
 <pre>
-Maintainer:  name
-             e-mail
-             homepage
-             telephone number
-
-
+Maintainer: Volker Gravemeier
+            vgravem@stanford.edu
+            
+            
 </pre>
 
 ------------------------------------------------------------------------*/
@@ -20,6 +19,7 @@ Maintainer:  name
 \brief evaluate bubble part of matrix Kvv for fluid2
 
 <pre>                                                       gravem 07/03
+
 
 In this routine, the bubble part of the matrix Kvv is calculated.
 

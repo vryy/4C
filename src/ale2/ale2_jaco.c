@@ -5,6 +5,13 @@ matrix for a 2d ale element and the routine 'ale2_min_jaco' which searches
 for the smalles Jacobian determinant of a quad4-element as well as
 'ale2_el_area'
 
+<pre>
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6127
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"

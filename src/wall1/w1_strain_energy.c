@@ -3,6 +3,13 @@
 \brief contains the routine 'w1_strain_energy' which calculates the strain_energy
 of an element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
 *-----------------------------------------------------------------------------*/
 #ifdef GEMM
 #include "../headers/standardtypes.h"

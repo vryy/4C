@@ -1,3 +1,9 @@
+c
+c     Maintainer: Michael Gee 
+c                 gee@statik.uni-stuttgart.de 
+c                 http://www.uni-stuttgart.de/ibs/members/gee/ 
+c                 0711 - 685-6572 
+c
 c-----------------------------------------------------------------------
       subroutine iluk(n,a,ja,ia,lfil,alu,jlu,ju,levs,iwk,w,jw,ierr)
       implicit none 

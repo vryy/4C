@@ -1,3 +1,10 @@
+c
+c     Maintainer: Steffen Genkinger 
+c                 genkinger@statik.uni-stuttgart.de 
+c                 http://www.uni-stuttgart.de/ibs/members/genkinger/ 
+c                 0711 - 685-6127 
+c
+c     ---------------------------------------------------------------  
 	subroutine qat2v2(pcell, wcell, kcell, wnode, knode, wface, 
      &                    mtri, mptri, medge, mpedge, mface, mpface,
      &                    ptri, ctri, itri, ktri, pptri, kptri,

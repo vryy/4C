@@ -4,6 +4,13 @@
 \brief wallcontact.h headerfile for 2-D bilinear contact interfaces, containing
 structures and prototypes 
 
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
 ------------------------------------------------------------------------*/
 /*! 
 \addtogroup CONTACT 

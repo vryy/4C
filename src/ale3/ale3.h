@@ -2,6 +2,13 @@
 \file
 \brief headerfile for 3D ale element, containing structures and prototypes
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 /*! 
@@ -11,6 +18,13 @@
 
 /*!----------------------------------------------------------------------
 \brief 3D ale element
+
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
 
 <pre>                                                              mn 06/02
 This structure contains all specific information for a 3D ale element

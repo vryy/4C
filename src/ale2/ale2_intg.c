@@ -3,6 +3,13 @@
 \brief contains the routine 'ale2_intg' which gives the coordinates and
 weight factors for numerical integration of a 2D ale element
 
+<pre>
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6127
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"

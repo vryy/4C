@@ -3,6 +3,13 @@
 \brief contains the routine 'brick1', the main routine of the 3D Hexahedral
 /Tetrahedral element 
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "brick1.h"

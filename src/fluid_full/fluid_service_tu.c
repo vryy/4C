@@ -2,6 +2,13 @@
 \file
 \brief service routines for fluid time algorithms
 
+<pre>
+Maintainer: Thomas Hettich
+            hettich@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hettich/
+            0771 - 685-6575
+</pre>
+
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"

@@ -2,6 +2,13 @@
 \file
 \brief headerfile for 2D ale element, containing structures and prototypes
 
+<pre>
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6127
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 
@@ -11,6 +18,13 @@
 
 /*!----------------------------------------------------------------------
 \brief 2D ale element
+
+<pre>
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6127
+</pre>
 
 <pre>                                                              mn 06/02
 This structure contains all specific information for a 2D ale element

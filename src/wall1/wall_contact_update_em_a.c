@@ -3,6 +3,13 @@
 \brief includes wall_contact_update_em_a routine used to update some 
 variables within each Newton iteration for E-M conserving INT. scheme
 
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
 ---------------------------------------------------------------------*/
 #ifdef GEMM
 #ifdef WALLCONTACT

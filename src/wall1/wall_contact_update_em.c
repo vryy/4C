@@ -3,6 +3,13 @@
 \brief contains wall_contact_update_em routine used to update some
  history variables within E-M conserving INT. scheme.
 
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
 ---------------------------------------------------------------------*/
 #ifdef GEMM
 #ifdef WALLCONTACT

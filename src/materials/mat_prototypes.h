@@ -3,6 +3,14 @@
 \brief headerfile for all 3D formulated material laws containing all the 
        prototypes; sorting [11,22,33,12,23,13]
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_MAT
 

@@ -3,6 +3,13 @@
 \brief contains the routine 'c1_mat_plast_mises' to establish local material law
        stress-strain law for mises material for a 3D hex element
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 #include "../headers/standardtypes.h"

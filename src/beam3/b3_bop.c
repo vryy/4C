@@ -3,6 +3,13 @@
 \brief contains the routine 'b3_boplin3D' and 'b3_boplin' which 
 calculates the B-Operator matrix for a 3d / 1d spatial beam element
 
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 #include "../headers/standardtypes.h"
@@ -15,6 +22,13 @@ calculates the B-Operator matrix for a 3d / 1d spatial beam element
 
 /*!----------------------------------------------------------------------
 \brief calculates the B-Operator matrix for a 3d beam element
+
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
 
 <pre>                                                              fh 02/03
 This routine calculates the B-Operator matrix for a 3D-beam element with 3 

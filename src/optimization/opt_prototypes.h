@@ -1,4 +1,11 @@
 /*----------------------------------------------------------------------*
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
  |  routine to control linear static structural analysis       al 6/01  |
  *----------------------------------------------------------------------*/
 void opt_stalin(CALSTA_EXEC stalact);

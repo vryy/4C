@@ -3,6 +3,13 @@
 \brief contains the routine 'saxi_eleload' which computes the right hand
        side of the symmetric shell element
        
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *-----------------------------------------------------------------------*/
 #ifdef D_AXISHELL
 #include "../headers/standardtypes.h"

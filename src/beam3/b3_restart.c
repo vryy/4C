@@ -4,6 +4,13 @@
 /*!----------------------------------------------------------------------
 \brief file pointers
 
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
+
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
 and the type is in standardtypes.h                                                  

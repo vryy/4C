@@ -3,6 +3,13 @@
 \brief contains the routine 'beam3' which is the main beam3 control 
 routine
 
+<pre>
+Maintainer: Frank Huber
+            huber@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/huber/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "beam3.h"

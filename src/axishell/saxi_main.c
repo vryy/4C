@@ -3,6 +3,13 @@
 \brief contains the routine 'axishell' the main routine for the 
  axisymmetric shell element
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "axishell.h"

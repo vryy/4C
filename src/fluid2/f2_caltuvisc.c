@@ -2,6 +2,13 @@
 \file
 \brief evaluate turbulent eddy vicosity
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"

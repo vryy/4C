@@ -6,6 +6,14 @@
                  nodal points and stores it in 'ele_stress -ARRAY'
    - s9_stress_reduce: make redundant stresses to the shell9 elements
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

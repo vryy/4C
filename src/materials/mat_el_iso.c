@@ -5,6 +5,14 @@
                elastic, isotropic material (St. Venant-Kirchhoff)
                formulated in cartesian coordinate system, 
                general 3D with the sorting [11,22,33,12,23,13]
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_MAT
 #include "../headers/standardtypes.h"

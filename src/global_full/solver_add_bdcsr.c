@@ -1,8 +1,15 @@
-/*!---------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file
 \brief contains assembly routines for multilevel preconditioned cg
 
----------------------------------------------------------------------*/
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"

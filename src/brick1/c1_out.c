@@ -3,6 +3,13 @@
 \brief contains the routine 'c1_out_gid_sol_str' which 
        writes data for a 3D hex element for gid post processing
 
+<pre>
+Maintainer: Andreas Lipka
+            lipka@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/lipka/
+            0771 - 685-6575
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 

@@ -3,6 +3,13 @@
 \brief contains the routine 'w1_history' which is used to update 
        B_bar operator and 2_nd PK at each integration point ip
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef GEMM
 #include "../headers/standardtypes.h"

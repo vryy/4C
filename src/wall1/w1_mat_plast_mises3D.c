@@ -22,6 +22,13 @@
  contains the routine 'mapl_mises_lin' which forms the elasto-plastic
  consistent tangent material tensor - 3D
  
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"

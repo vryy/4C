@@ -2,6 +2,13 @@
 \file
 \brief fluid_prototypes
 
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 ------------------------------------------------------------------------*/
 /* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!

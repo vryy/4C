@@ -3,6 +3,13 @@
 \brief contains the routine 'w1_update_history' which is the main routine
  used to update state variables related with E-M Int. Scheme
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
 *---------------------------------------------------------------------------*/
 #ifdef GEMM
 #include "../headers/standardtypes.h"

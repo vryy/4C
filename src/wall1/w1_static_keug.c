@@ -3,6 +3,13 @@
 \brief contains the routine 'w1static_keug' which forms the nonlinear
        stiffnes keug for wall1 element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"

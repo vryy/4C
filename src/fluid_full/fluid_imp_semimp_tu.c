@@ -2,6 +2,13 @@
 \file
 \brief implicit and semi-implicit time integration algorithm for fluid
 
+<pre>
+Maintainer: Thomas Hettich
+            hettich@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hettich/
+            0771 - 685-6575
+</pre>
+
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"

@@ -12,6 +12,14 @@
  - 's9_ans_tvhe_q': Modifies the metrics due to Querschub-ANS
  - 's9_ans_tvkg': Calculates the geometric stiffness Matrix due to Querschub-ANS
 
+
+<pre>
+Maintainer: Stefan Hartmann
+            hartmann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hartmann/
+            0771 - 685-6120
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"

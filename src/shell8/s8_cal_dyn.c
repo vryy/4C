@@ -1,3 +1,27 @@
+/*!----------------------------------------------------------------------
+\file
+\brief 
+
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
+*----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\file
+\brief 
+
+<pre>
+Maintainer: Michael Gee
+            gee@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/gee/
+            0771 - 685-6572
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"

@@ -1,3 +1,10 @@
+c
+c     Maintainer: Andreas Lipka 
+c                 lipka@statik.uni-stuttgart.de 
+c                 http://www.uni-stuttgart.de/ibs/members/lipka/ 
+c                 0711 - 685-6575 
+c
+c     ---------------------------------------------------------------  
 C-----------------------------------------------------------------------
       SUBROUTINE  FSDOC  (VAR,DF,DG,ETAI,ETHA,XDGO,RESU,RESL,VARUP,
      *                    VARLO,NUMVAR,BETA,ACCIT,DELTA,IPRINT )
