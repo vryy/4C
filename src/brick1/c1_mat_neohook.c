@@ -42,7 +42,6 @@ void c1_mat_neohook(DOUBLE youngs,     /* young's modulus              */
 /*----------------------------------------------------------------------*/
 INT i,j,k,l;
 /*----------------------------------------------------------------------*/
-DOUBLE d1,d2,d3;
 DOUBLE ym,pv;/*------------------------------------------ mat constants */
 /*----------------------------------------------------------------------*/
 DOUBLE xl, g, xj, J, f1;
@@ -56,11 +55,10 @@ DOUBLE F[3][3];  /* deformation gradient                    */
 DOUBLE FTF[9];
 DOUBLE FFT[9];
 DOUBLE C[9];
-DOUBLE invC[9];
 DOUBLE Ct[3][3];
 DOUBLE b[9];
 DOUBLE bt[3][3];
-DOUBLE Wene,Ib,Ic;
+DOUBLE Wene,Ib;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_mat_neohook");
@@ -260,8 +258,6 @@ INT i,j,k,l;
 /*----------------------------------------------------------------------*/
 DOUBLE es, ym, pv, dens, denss, cce, ccf, denmin, denmax;
 /*----------------------------------------------------------------------*/
-DOUBLE d1,d2,d3;
-/*----------------------------------------------------------------------*/
 DOUBLE xl, g, xj, J, f1;
 DOUBLE sp[3][3];
 DOUBLE c[3][3][3][3];
@@ -273,7 +269,6 @@ DOUBLE F[3][3];  /* deformation gradient                    */
 DOUBLE FTF[9];
 DOUBLE FFT[9];
 DOUBLE C[9];
-DOUBLE invC[9];
 DOUBLE Ct[3][3];
 DOUBLE b[9];
 DOUBLE bt[3][3];
@@ -496,11 +491,8 @@ INT i,j,k,l;
 /*----------------------------------------------------------------------*/
 DOUBLE es, ym, dym, pv, dens, denss, cce, ccf, denmin, denmax;
 /*----------------------------------------------------------------------*/
-DOUBLE d1,d2,d3;
-/*----------------------------------------------------------------------*/
 DOUBLE xl, g, xj, J, f1;
 DOUBLE sp[3][3];
-DOUBLE str[6];
 DOUBLE c[3][3][3][3];
 DOUBLE gk[3][3] = {1.,0.,0.,0.,1.,0.,0.,0.,1.};
 /*----------------------------------------------------------------------*/
@@ -510,7 +502,6 @@ DOUBLE F[3][3];  /* deformation gradient                    */
 DOUBLE FTF[9];
 DOUBLE FFT[9];
 DOUBLE C[9];
-DOUBLE invC[9];
 DOUBLE Ct[3][3];
 DOUBLE b[9];
 DOUBLE bt[3][3];
