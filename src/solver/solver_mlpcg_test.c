@@ -13,8 +13,7 @@ Maintainer: Michael Gee
 
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/prototypes_mlpcg.h"
+#include "../solver/solver.h"
 #include "../shell8/shell8.h"
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure

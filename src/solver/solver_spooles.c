@@ -11,8 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  |  control solver lib SPOOLES                           m.gee 4/02     |
  | -only the unsymmetric solve is working                               |

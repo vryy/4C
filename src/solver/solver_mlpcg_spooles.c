@@ -13,9 +13,7 @@ Maintainer: Michael Gee
 
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/prototypes_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 /*! 
 \addtogroup MLPCG 
 *//*! @{ (documentation module open)*/

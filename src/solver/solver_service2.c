@@ -11,8 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  |  create number of distributed vectors - collective call ! m.gee 10/01|
  |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |

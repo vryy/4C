@@ -11,8 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 
 /*----------------------------------------------------------------------*
  |                                                           m.gee 03/02|

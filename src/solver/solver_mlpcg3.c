@@ -13,8 +13,7 @@ Maintainer: Michael Gee
 
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
 /*!----------------------------------------------------------------------

@@ -11,8 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 
 /*----------------------------------------------------------------------*
  |  control solver lib MUMPS                             m.gee 11/01    |

@@ -11,8 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+/*#include "../solver/solver.h"*/
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
  | (defined in global_calelm.c, so they are extern here)                |                

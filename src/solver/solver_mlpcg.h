@@ -13,8 +13,8 @@ Maintainer: Michael Gee
 
 ---------------------------------------------------------------------*/
 
-#ifndef SOLUTION_MLPCG_H
-#define SOLUTION_MLPCG_H
+#ifndef SOLVER_MLPCG_H
+#define SOLVER_MLPCG_H
 
 /*! 
 \addtogroup MLPCG 
@@ -195,6 +195,8 @@ struct _ARRAY              q;           /*!< iterate vector of the cg-algorithm 
 
 
 /*! @} (documentation module close)*/
+
+#include "solver_mlpcg_prototypes.h"
 
 
 #endif

@@ -13,14 +13,84 @@ Maintainer: Michael Gee
 
 ---------------------------------------------------------------------*/
 
-#ifndef PROTOTYPES_MLPCG_H
-#define PROTOTYPES_MLPCG_H
+#ifndef SOLVER_MLPCG_PROTOTYPES_H
+#define SOLVER_MLPCG_PROTOTYPES_H
 
-#include "solution_mlpcg.h"
+
+void solver_mlpcg(
+    struct _SOLVAR         *actsolv,
+    struct _INTRA          *actintra,
+    struct _DBCSR          *bdcsr,
+    struct _DIST_VECTOR    *sol,
+    struct _DIST_VECTOR    *rhs,
+    INT                     option);
+
+void mlpcg_solver_create(
+    struct _DBCSR       *bdcsr, 
+    DIST_VECTOR *sol,
+    DIST_VECTOR *rhs,
+    MLPCGVARS   *mlpcgvars);
+
+void mlpcg_pcg(
+    struct _DBCSR       *bdcsr, 
+    DIST_VECTOR *sol,
+    DIST_VECTOR *rhs,
+    INTRA       *actintra);
+
+void mlpcg_solver_init(
+    struct _DBCSR       *bdcsr, 
+    DIST_VECTOR *sol,
+    DIST_VECTOR *rhs,
+    INTRA       *actintra);
+
+void mask_bdcsr(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra, 
+    struct _DBCSR         *bdcsr);
+
+void bdcsr_make_csr(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    struct _DBCSR         *bdcsr,
+    INT          **dof_connect);
+
+void  bdcsr_nnz_topology(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    struct _DBCSR         *bdcsr,
+    INT          **dof_connect);
+
+void bdcsr_update(
+    FIELD          *actfield, 
+    PARTITION      *actpart, 
+    SOLVAR         *actsolv,
+    INTRA          *actintra,
+    struct _DBCSR          *bdcsr);
+
+void bdcsr_numeq(
+    FIELD         *actfield, 
+    PARTITION     *actpart, 
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    INT           *numeq);
+
+void  add_bdcsr(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _DBCSR         *bdcsr1,
+    struct _DBCSR         *bdcsr2);
 
 void mlpcg_precond_create(struct _DBCSR     *bdcsr, 
-                          MLPCGVARS *mlpcgvars,
-                          INTRA     *actintra);
+    MLPCGVARS *mlpcgvars,
+    INTRA     *actintra);
+
 void mlpcg_precond_init(struct _DBCSR  *bdcsr,MLPCGVARS *mlpcgvars, INTRA *actintra);
 void mlpcg_precond_restrictK(MLLEVEL  *actlev, MLLEVEL *nextlev, INTRA *actintra);
 void mlpcg_precond_getdirs(void);

@@ -13,8 +13,6 @@ Maintainer: Michael Gee
 
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/prototypes_mlpcg.h"
 #include "../shell8/shell8.h"
 /*! 
 \addtogroup MLPCG 
