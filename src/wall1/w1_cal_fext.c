@@ -186,7 +186,6 @@ for (i=0; i<ngline; i++)
    lineneum[i] = gline[i]->neum;
    if (lineneum[i]==NULL) continue;
    if (lineneum[i]->neum_type==neum_FSI) lineneum[i]=NULL;
-   if (gline[i]->proc!=imyrank) lineneum[i]=NULL;
    if (lineneum[i]) foundline=1; 
 }
 if (foundline==0) goto endline;
@@ -458,7 +457,6 @@ for (i=0; i<ngline; i++)
 {
    gline[i] = ele->g.gsurf->gline[i];
    lineneum[i] = gline[i]->neum;
-   if (gline[i]->proc!=imyrank) lineneum[i]=NULL;
    if(lineneum[i]==NULL) continue;
    if (lineneum[i]->neum_type==neum_FSI) foundline=1;
    else lineneum[i]=NULL ;
