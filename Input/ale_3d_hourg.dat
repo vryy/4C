@@ -4,12 +4,12 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 // 
-// necessary defines: D_ALE RESULTTEST
+// necessary defines: D_ALE RESULTTEST CHECK_MAX
 //
 // #define MAXNOD           (8)
-// #define MAXELE           (8)
+// #define MAXELE           (4)
 // #define MAXDOFPERNODE    (3)
-// #define MAXGAUSS         (8)
+// #define MAXGAUSS         (1)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -23,9 +23,9 @@ DIM                3
 MATERIALS          1
 NUMDF        6
 MAXNOD 8
-MAXELE 8
+MAXELE 4
 MAXDOFPERNODE 3
-MAXGAUSS 8
+MAXGAUSS 1
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Ale
 NUMFIELD     1

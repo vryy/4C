@@ -4,10 +4,10 @@
 //             http://www.uni-stuttgart.de/ibs/members/lipka/index.html
 //             0711 - 685-6575
 // 
-// necessary defines: D_BRICK1
+// necessary defines: D_BRICK1 CHECK_MAX
 //
-// #define MAXNOD           (27)
-// #define MAXELE           (25)
+// #define MAXNOD           (20)
+// #define MAXELE           (1)
 // #define MAXDOFPERNODE    (3)
 // #define MAXGAUSS         (27)
 //
@@ -22,8 +22,8 @@ NODES             20
 DIM                3
 MATERIALS          1
 NUMDF        6
-MAXNOD 27
-MAXELE 25
+MAXNOD 20
+MAXELE 1
 MAXDOFPERNODE 3
 MAXGAUSS 27
 -------------------------------------------------------PROBLEM TYP

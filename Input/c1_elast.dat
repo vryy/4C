@@ -4,11 +4,11 @@
 //             http://www.uni-stuttgart.de/ibs/members/lipka/index.html
 //             0711 - 685-6575
 // 
-// necessary defines: D_BRICK1 RESULTTEST
+// necessary defines: D_BRICK1 RESULTTEST CHECK_MAX
 //
-// #define MAXNOD           (27)
-// #define MAXELE           (25)
-// #define MAXDOFPERNODE    (3)
+// #define MAXNOD           (20)
+// #define MAXELE            (2)
+// #define MAXDOFPERNODE     (3)
 // #define MAXGAUSS         (27)
 //
 ==================================================================
@@ -22,8 +22,8 @@ NODES            104
 DIM                3
 MATERIALS          1
 NUMDF              6
-MAXNOD 27
-MAXELE 25
+MAXNOD 20
+MAXELE 2
 MAXDOFPERNODE 3
 MAXGAUSS 27
 -------------------------------------------------------PROBLEM TYP

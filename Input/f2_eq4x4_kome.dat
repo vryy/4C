@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/hettich/
 //             0711 - 685-6575
 // 
-// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE UMFPACK 
+// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE UMFPACK  CHECK_MAX
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)

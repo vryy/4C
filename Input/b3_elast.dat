@@ -4,10 +4,10 @@
 //             http://www.uni-stuttgart.de/ibs/members/huber/index.html
 //             0711 - 685-6120
 // 
-// necessary defines: D_BEAM3 RESULTTEST
+// necessary defines: D_BEAM3 RESULTTEST CHECK_MAX
 //
 // #define MAXNOD           (2)
-// #define MAXELE           (2)
+// #define MAXELE           (4)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (2)
 //
@@ -19,11 +19,11 @@ ELEMENTS           9
 NODES             10
 DIM                3
 MATERIALS          1
-NUMDF        6
-MAXNOD 2
-MAXELE 2
-MAXDOFPERNODE 6
-MAXGAUSS 2
+NUMDF              6
+MAXNOD             2
+MAXELE             4
+MAXDOFPERNODE      6
+MAXGAUSS           2
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1

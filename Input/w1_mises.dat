@@ -4,12 +4,12 @@
 //             http://www.uni-stuttgart.de/ibs/members/hund/
 //             0711 - 685-6122
 // 
-// necessary defines: D_WALL1
+// necessary defines: D_WALL1 CHECK_MAX
 //
-// #define MAXNOD           (9)
-// #define MAXELE           (9)
-// #define MAXDOFPERNODE    (6)
-// #define MAXGAUSS         (9)
+// #define MAXNOD           (4)
+// #define MAXELE           (2)
+// #define MAXDOFPERNODE    (2)
+// #define MAXGAUSS         (4)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -22,10 +22,10 @@ NODES              8
 DIM                2
 MATERIALS          1
 NUMDF        2
-MAXNOD 9
-MAXELE 9
-MAXDOFPERNODE 6
-MAXGAUSS 9
+MAXNOD 4
+MAXELE 2
+MAXDOFPERNODE 2
+MAXGAUSS 4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1

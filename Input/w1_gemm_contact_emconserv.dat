@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/gee/
 //             0711 - 685-6572
 // 
-// necessary defines: D_WALL1 D_CONTACT WALLCONTACT GEMM SPOOLES_PACKAGE
+// necessary defines: D_WALL1 D_CONTACT WALLCONTACT GEMM SPOOLES_PACKAGE CHECK_MAX
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)

@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/foerster/index.html
 //             0711 - 685-6127
 // 
-// necessary defines: D_ALE RESULTTEST
+// necessary defines: D_ALE RESULTTEST CHECK_MAX
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)

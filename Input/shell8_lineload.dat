@@ -4,10 +4,10 @@
 //             http://www.uni-stuttgart.de/ibs/members/gee/
 //             0711 - 685-6572
 // 
-// necessary defines: D_SHELL8
+// necessary defines: D_SHELL8 CHECK_MAX
 //
 // #define MAXNOD           (9)
-// #define MAXELE           (4)
+// #define MAXELE           (2)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (18)
 //
@@ -23,7 +23,7 @@ DIM                3
 MATERIALS          1
 NUMDF        6
 MAXNOD 9
-MAXELE 4
+MAXELE 2
 MAXDOFPERNODE 6
 MAXGAUSS 18
 -------------------------------------------------------PROBLEM TYP

@@ -4,12 +4,12 @@
 //             http://www.lnm.mw.tum.de/Members/irhan/
 //             089 - 289-15236
 // 
-// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE UMFPACK RESULTTEST D_LS D_XFEM
+// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE UMFPACK RESULTTEST D_LS D_XFEM CHECK_MAX
 //
-// #define MAXNOD           (4)
-// #define MAXELE           (4)
+// #define MAXNOD           (3)
+// #define MAXELE           (6)
 // #define MAXDOFPERNODE    (5)
-// #define MAXGAUSS         (4)
+// #define MAXGAUSS         (12)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -22,10 +22,10 @@ NODES           4662
 DIM                2
 MATERIALS          1
 NUMDF        6
-MAXNOD 4
-MAXELE 4
+MAXNOD 3
+MAXELE 6
 MAXDOFPERNODE 5
-MAXGAUSS 4
+MAXGAUSS 12
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Two_Phase_Fluid_Flow
 NUMFIELD     2

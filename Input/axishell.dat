@@ -4,12 +4,12 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 // 
-// necessary defines: D_AXISHELL RESULTTEST
+// necessary defines: D_AXISHELL RESULTTEST CHECK_MAX
 //
 // #define MAXNOD           (2)
 // #define MAXELE           (2)
 // #define MAXDOFPERNODE    (3)
-// #define MAXGAUSS         (3)
+// #define MAXGAUSS         (5)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -25,7 +25,7 @@ NUMDF        3
 MAXNOD 2
 MAXELE 2
 MAXDOFPERNODE 3
-MAXGAUSS 3
+MAXGAUSS 5
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1

@@ -4,12 +4,12 @@
 //             http://www.uni-stuttgart.de/ibs/members/lipka/index.html
 //             0711 - 685-6575
 // 
-// necessary defines: D_BRICK1 RESULTTEST
+// necessary defines: D_BRICK1 RESULTTEST CHECK_MAX
 //
-// #define MAXNOD           (27)
-// #define MAXELE           (25)
+// #define MAXNOD           (8)
+// #define MAXELE           (4)
 // #define MAXDOFPERNODE    (3)
-// #define MAXGAUSS         (27)
+// #define MAXGAUSS         (8)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -22,10 +22,10 @@ NODES             32
 DIM                3
 MATERIALS          1
 NUMDF        3
-MAXNOD 27
-MAXELE 25
+MAXNOD 8
+MAXELE 4
 MAXDOFPERNODE 3
-MAXGAUSS 27
+MAXGAUSS 8
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
