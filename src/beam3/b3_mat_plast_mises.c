@@ -496,7 +496,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of b3_mat_plast_mises */
-#endif
 
 /*!----------------------------------------------------------------------
 \brief calculates stress tensor (3*3) out of stress vector (6*1)

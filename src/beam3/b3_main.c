@@ -4,7 +4,6 @@
 routine
 
 *----------------------------------------------------------------------*/
-#ifdef D_BEAM3
 #include "../headers/standardtypes.h"
 #include "beam3.h"
 #include "beam3_prototypes.h"
@@ -61,6 +60,7 @@ void beam3(FIELD       *actfield,
            CALC_ACTION *action,
 	   CONTAINER   *container)
 {
+#ifdef D_BEAM3
 B3_DATA      actdata;  /* actual data */
 MATERIAL    *actmat;   /* actual material */
 
@@ -136,7 +136,7 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+#endif
 return; 
 } /* end of beam3 */
-#endif
 /*! @} (documentation module close)*/
