@@ -37,6 +37,13 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern ALLDYNA        *alldyn;   
 /*----------------------------------------------------------------------*
+ |                                                          al 08/02    |
+ | pointer to allocate eigensolution variables                          |
+ | dedfined in global_control.c                                         |
+ | struct _ALLEIG       *alleig;                                        |
+ *----------------------------------------------------------------------*/
+extern ALLEIG              *alleig;   
+/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
  | defined in global_control.c                                          |
@@ -436,6 +443,101 @@ dstrc_exit();
 return;
 } /* end of inpctrstat */
 
+
+/*----------------------------------------------------------------------*
+ | input of data for eigensolution                           al 8/02    |
+ *----------------------------------------------------------------------*/
+void inpctreig()
+{
+INT    ierr;
+INT    i;
+char   buffer[50];
+FIELD *actfield;
+#ifdef DEBUG 
+dstrc_enter("inpctreig");
+#endif
+/*----------------------------------------------------------------------*/
+alleig = (ALLEIG*)CCACALLOC(1,sizeof(ALLEIG));
+if (!alleig) dserror("Allocation of ALLEIG failed");
+/*----------------------------------------------------------------------*/
+for (i=0; i<genprob.numfld; i++)
+{
+   actfield = &(field[i]);
+   switch(actfield->fieldtyp)
+   {
+   case fluid:
+   break;
+   case ale:
+   break;
+   case structure:
+      inpctr_eig_struct(alleig);
+   break;
+   case none:
+      dserror("Cannot find type of field");
+   break;
+   default:
+      dserror("Cannot find type of field");
+   break;
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpctreig */
+
+/*----------------------------------------------------------------------*
+ | input of eigensolution problem data                       al 8/02    |
+ *----------------------------------------------------------------------*/
+void inpctr_eig_struct(ALLEIG *alleig)
+{ 
+
+INT    ierr;
+INT    i;
+char   buffer[50];
+#ifdef DEBUG 
+dstrc_enter("inpctr_eig_struct");
+#endif
+
+frfind("--EIGENVALUE ANALYSIS");
+frread();
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+/*--------------read chars */
+   frchar("SOLTYP"   ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"SUBSPACE",8)==0)
+          
+          alleig->soltyp=subspace;
+      else
+          alleig->soltyp=eig_none;
+   }
+/*--------------read int */
+   frint("STURM ",&(alleig->sturm ),&ierr);
+   frint("SUBTYP",&(alleig->subtyp),&ierr);
+   frint("IFSH"  ,&(alleig->ifsh  ),&ierr);
+   frint("ILMP"  ,&(alleig->ilmp  ),&ierr);
+   frint("RANGE" ,&(alleig->range ),&ierr);
+   frint("NUMVEC",&(alleig->numvec),&ierr);
+   frint("NROOT" ,&(alleig->nroot ),&ierr);
+   frint("ITEMAX",&(alleig->itemax),&ierr);
+   frint("IFCTR" ,&(alleig->ifctr ),&ierr);
+/*--------------read double */
+   frdouble("TOLEIG",&(alleig->toleig),&ierr);
+   frdouble("SHIFT" ,&(alleig->shift ),&ierr);
+   frdouble("BOULO" ,&(alleig->boulo ),&ierr);
+   frdouble("BOUUP" ,&(alleig->bouup ),&ierr);
+   frread();
+}
+frrewind();
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpctr_eig_struct */
 
 
 
