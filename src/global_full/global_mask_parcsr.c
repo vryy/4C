@@ -192,7 +192,9 @@ INT      *p_sizes;
 INT     **perm;
 ARRAY     tmp;
 ARRAY     recv_a;
+#ifdef PARALLEL
 INT      *recvbuff;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("parcsr_update_perm");
@@ -291,9 +293,11 @@ INT       *update;
 INT        numeq;
 INT        actdof;
 INT        dofflag;
+#ifdef PARALLEL
 INT        dofmaster;
 INT        dofslave;
 INT        recvlenght;
+#endif
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;

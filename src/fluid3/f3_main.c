@@ -73,17 +73,17 @@ void fluid3(PARTITION   *actpart,
 #ifdef D_FLUID3 
 static INT              numff;      /* number of fluid field            */
 static INT              viscstr;
-DOUBLE                 *intforce;
-MATERIAL               *actmat;     /* actual material                  */
 FLUID_DYNAMIC          *fdyn;
+#ifdef FLUID3_ML
 static FLUID_DYN_ML    *mlvar;
 static FLUID_ML_SMESH  *submesh;
 static FLUID_ML_SMESH  *ssmesh;
 static INT              ndum;       /* dummy variable                   */
 static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
-FIELD                  *actfield;   /* actual field                     */
 INT smisal;
+#endif
 
+  FIELD                  *actfield;   /* actual field                     */
   INT       i;        /* simply a counter */
   INT       ldflag;
   GVOL     *actgvol;

@@ -40,8 +40,10 @@ LAPACKVARS    *lapackvar;
 
 ARRAY          b_a;
 DOUBLE        *b;
+#ifdef PARALLEL
 ARRAY          tmp_a;
 DOUBLE        *tmp;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("solver_lapack_dense");

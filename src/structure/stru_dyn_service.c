@@ -425,7 +425,10 @@ return;
 void dyn_ekin(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, INTRA *actintra, CALC_ACTION *action,
              CONTAINER *container, INT stiff_array, INT mass_array)
 {
+#ifdef PARALLEL
 DOUBLE send;
+#endif
+
 #ifdef DEBUG 
 dstrc_enter("dyn_ekin");
 #endif

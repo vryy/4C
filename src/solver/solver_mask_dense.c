@@ -74,7 +74,9 @@ INT       i,j,k,l;
 INT       counter;
 INT       dof;
 INT       iscoupled;
+#ifdef PARALLEL
 INT      *sendbuff,*recvbuff, sendsize;
+#endif
 INT      *tmp;
 INT       inter_proc;
 long int  min;

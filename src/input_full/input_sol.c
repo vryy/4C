@@ -31,14 +31,30 @@ void inpctrsol(SOLVAR *solv)
 {
 INT           ierr;
 char          buffer[50];
-MLVAR        *mlvar;
-AZVAR        *azvar;
-HYPREVARS    *hyprevars;
-PSUPERLUVARS *psuperluvars;
-LAPACKVARS   *lapackvars;
-MUMPSVARS    *mumpsvars;
-COLSOLVARS   *colsolvars;
-MLPCGVARS    *mlpcgvars;
+
+#ifdef MLIB_PACKAGE
+MLVAR        *mlvar = NULL;
+#endif
+
+#ifdef AZTEC_PACKAGE
+AZVAR        *azvar = NULL;
+#endif
+
+#ifdef HYPRE_PACKAGE
+HYPREVARS    *hyprevars = NULL;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
+PSUPERLUVARS *psuperluvars = NULL;
+#endif
+
+LAPACKVARS   *lapackvars = NULL;
+
+#ifdef MUMPS_PACKAGE
+MUMPSVARS    *mumpsvars = NULL;
+#endif
+COLSOLVARS   *colsolvars = NULL;
+MLPCGVARS    *mlpcgvars = NULL;
 #ifdef DEBUG  
 dstrc_enter("inpctrsol");
 #endif
@@ -74,70 +90,77 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
 #ifndef MLIB_PACKAGE
          dserror("MLIB package is not compiled in");
-#endif
+#else
          solv->solvertyp = mlib_d_sp;
          solv->mlvar = (MLVAR*)CCACALLOC(1,sizeof(MLVAR));
          mlvar = solv->mlvar;
+#endif
       }
       /*-------------------------------------------------- Aztec solver */
       if (strncmp("Aztec_MSR",buffer,9)==0) 
       {
 #ifndef AZTEC_PACKAGE
          dserror("Aztec package is not compiled in");
-#endif
+#else
          solv->solvertyp = aztec_msr;
          solv->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
          azvar = solv->azvar;
+#endif
       }
       /*---------------------------------------- HYPRE solver BoomerAMG */
       if (strncmp("HYPRE_BoomerAMG",buffer,15)==0) 
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
-#endif
+#else
          solv->solvertyp = hypre_amg;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
          hyprevars = solv->hyprevar;
+#endif
       }
       /*---------------------------------------------- HYPRE solver PCG */
       if (strncmp("HYPRE_PCG",buffer,9)==0) 
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
-#endif
+#else
          solv->solvertyp = hypre_pcg;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
          hyprevars = solv->hyprevar;
+#endif
       }
       /*-------------------------------------------- HYPRE solver Gmres */
       if (strncmp("HYPRE_GMRES",buffer,11)==0) 
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
-#endif
+#else
          solv->solvertyp = hypre_gmres;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
          hyprevars = solv->hyprevar;
+#endif
       }
       /*----------------------------------------- HYPRE solver BiCGstab */
       if (strncmp("HYPRE_BiCGStab",buffer,14)==0) 
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
-#endif
+#else
          solv->solvertyp = hypre_bicgstab;
          solv->hyprevar = (HYPREVARS*)CCACALLOC(1,sizeof(HYPREVARS));
          hyprevars = solv->hyprevar;
+#endif
       }
       /*------------------------------------------------ solver SuperLU */
       if (strncmp("ParSuperLU",buffer,10)==0) 
       {
 #ifndef PARSUPERLU_PACKAGE
          dserror("ParSuperLU package is not compiled in");
-#endif
+#else
          solv->solvertyp = parsuperlu;
          solv->psuperluvars = (PSUPERLUVARS*)CCACALLOC(1,sizeof(PSUPERLUVARS));
          psuperluvars = solv->psuperluvars;
+#endif
       }
       /*------------------------------------------------- solver Lapack */
       if (strncmp("LAPACK_sym",buffer,10)==0) 
@@ -158,28 +181,31 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
 #ifndef MUMPS_PACKAGE
          dserror("MUMPS package is not compiled in");
-#endif
+#else
          solv->solvertyp = mumps_sym;
          solv->mumpsvars = (MUMPSVARS*)CCACALLOC(1,sizeof(MUMPSVARS));
          mumpsvars = solv->mumpsvars;
+#endif
       }
       /*-------------------------------------------------- solver Mumps */
       if (strncmp("MUMPS_nonsym",buffer,12)==0) 
       {
 #ifndef MUMPS_PACKAGE
          dserror("MUMPS package is not compiled in");
-#endif
+#else
          solv->solvertyp = mumps_nonsym;
          solv->mumpsvars = (MUMPSVARS*)CCACALLOC(1,sizeof(MUMPSVARS));
          mumpsvars = solv->mumpsvars;
+#endif
       }
       /*------------------------------------------------ solver Umfpack */
       if (strncmp("UMFPACK",buffer,7)==0) 
       {
 #ifndef UMFPACK
          dserror("UMFPACK is not compiled in");
-#endif
+#else
          solv->solvertyp = umfpack;
+#endif
       }
       /*------------------------------------------------- solver Colsol */
       if (strncmp("Colsol",buffer,6)==0) 
@@ -193,16 +219,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
 #ifndef SPOOLES_PACKAGE
          dserror("SPOOLES package is not compiled in");
-#endif
+#else
          solv->solvertyp = SPOOLES_nonsym;
+#endif
       }
       /*------------------------------------------------- solver Spooles */
       if (strncmp("SPOOLES_sym",buffer,11)==0) 
       {
 #ifndef SPOOLES_PACKAGE
          dserror("SPOOLES package is not compiled in");
-#endif
+#else
          solv->solvertyp = SPOOLES_sym;
+#endif
       }
       /*--------------------------------------------------- solver MLPCG */
       if (strncmp("MLPCG",buffer,5)==0) 
@@ -215,6 +243,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*------------------------------------------- read solver specific data */
    switch (solv->solvertyp)
    {
+#ifdef AZTEC_PACKAGE
    case aztec_msr:/*--------------------------------- read solver aztec */
       frchar("AZSOLVE"   ,buffer,&ierr);
       if (ierr==1)
@@ -253,6 +282,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("AZTOL"  ,&(azvar->aztol)   ,&ierr);
       frdouble("AZOMEGA",&(azvar->azomega) ,&ierr);
    break;
+#endif
+
+#ifdef HYPRE_PACKAGE
    case hypre_amg:/*----------------------------- read solver boomeramg */
       hyprevars->hypre_prectyp = hypreprec_none;
 
@@ -399,6 +431,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("HYPRE_PARATHR" ,&(hyprevars->parathresh),&ierr);
       frdouble("HYPRE_PARAFILT",&(hyprevars->parafilter),&ierr);
    break;
+#endif
+
+#ifdef MLIB_PACKAGE
    case mlib_d_sp:/*---------------------- read hp's direct mlib solver */
       frint("SYMM"   ,&(mlvar->symm  ),&ierr);
       frint("MSGLVL" ,&(mlvar->msglvl),&ierr);
@@ -418,6 +453,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (strncmp("MET",buffer,5)==0) mlvar->order = 6;
       }
    break;
+#endif
    case parsuperlu:/*--------------------- read solver parallel SuperLU */
    break;
    case lapack_sym:/*------------------------------- read solver LAPACK */

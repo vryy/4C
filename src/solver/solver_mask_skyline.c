@@ -199,7 +199,7 @@ void  skyline_nnz_topology(FIELD      *actfield,
                          SKYMATRIX    *sky,
                          INT         **dof_connect)
 {
-INT        i,j,k,l,m,n;
+INT        i,j,k,l,m;
 INT        counter,counter2;
 INT        dof;
 INT        nnz;
@@ -207,10 +207,6 @@ INT        iscoupled;
 INT       *update;
 INT        numeq;
 INT        actdof;
-INT        dofmaster;
-INT        dofslave;
-INT        sendlenght,recvlenght;
-INT        recvflag;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -435,9 +431,6 @@ void   skyline_make_red_dof_connect(FIELD         *actfield,
 {
 INT        i,j;
 
-INT        imyrank;
-INT        inprocs;
-
 INT      **reddof;
 
 INT        max_dof_connect;
@@ -485,7 +478,7 @@ return;
  *----------------------------------------------------------------------*/
 void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect)
 {
-INT        i,j,k,l;
+INT        i,j;
 INT      **reddof;
 INT       *maxa;
 INT        actdof;

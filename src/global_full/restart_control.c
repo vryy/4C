@@ -365,14 +365,12 @@ void restart_read_nlnstructdyn(INT restart,
                                ARRAY *dirich_a,
                                CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
-INT                  i,j;
+INT                  i;
 INT                  ierr;
 long int             reshandle;
 INT                  byte;
 INT                  dims[3];
 INT                  numnp;
-INT                  fdim;
-INT                  sender;
 long int           **node_handles;
 INT                  numele;
 long int           **ele_handles;
@@ -382,6 +380,13 @@ RESTART_DYNSTRUCT    res;
 DIST_VECTOR         *distread;
 NODE                *actnode;
 ELEMENT             *actele;
+
+#ifdef PARALLEL
+INT                  fdim;
+INT                  j;
+INT                  sender;
+#endif
+
 #ifdef DEBUG 
 dstrc_enter("restart_read_nlnstructdyn");
 #endif
@@ -943,35 +948,40 @@ return;
  | read restart                                                                     ah 08/02 |
  | of nln-structural statics                                                                 |
  *-------------------------------------------------------------------------------------------*/
-void restart_read_nlnstructstat(INT restart,   /*--------------------------- restart step  --*/
-                STATIC_VAR     *statvar,       /*---------------------------- static input --*/                  
-                STANLN          *nln_data,     /*-- control variables for global NR-Iterat --*/
-                FIELD           *actfield,     /*---------------------------- actual field --*/
-                PARTITION       *actpart,      /*------------------------ actual partition --*/
-                INTRA           *actintra,     /*---------------- actual intra comunicator --*/
-                CALC_ACTION     *action,       /*---------- element action = write-restart --*/
-                INT nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
-                INT nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
-                INT ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--      --*/
+void restart_read_nlnstructstat(INT restart,   /* restart step */
+                STATIC_VAR     *statvar,       /* static input */                  
+                STANLN          *nln_data,     /* control variables for global NR-Iterat */
+                FIELD           *actfield,     /* actual field */
+                PARTITION       *actpart,      /* actual partition */
+                INTRA           *actintra,     /* actual intra comunicator */
+                CALC_ACTION     *action,       /* element action = write-restart */
+                INT nrhs,  DIST_VECTOR *rhs,   /* Fext processorpart of actual load step */
+                INT nsol,  DIST_VECTOR *sol,   /* solution processorpart     --"--       */
+                INT ndis,  DIST_VECTOR *dispi, /* displacement processorpart  --"--      */
                 CONTAINER    *container)       /*!< contains variables defined in container.h */
 {                                                
-INT                  i,j;                      /*-------------------------------- counters --*/
-INT                  ierr;                     /*------------------------------ error-flag --*/
-long int             reshandle;                /*-------------------------- restart handle --*/
-INT                  byte;                     /*------------------- length of binary file --*/
-INT                  dims[3];                  /*-------------- dimensions of actnode->sol --*/
-INT                  numnp;                    /*------------------ number of nodal points --*/
-INT                  fdim;                     /*------ fdim = actfield->actnode->sol.fdim --*/
-INT                  sender;                   /*--------- sender in parallel comunication --*/
-long int           **node_handles;             /*----------- handles for node- information --*/
-INT                  numele;                   /*---------------------- number of elements --*/
-long int           **ele_handles;              /*-------- handles for element - information--*/
-char                 resname[100];             /*-------- restartname = restart+stepnumber --*/
-FILE                *in;                       /*--------------------- file to be read in  --*/
-RESTART_STATSTRUCT  res;                       /*------- res has acces to all restart info --*/
-DIST_VECTOR         *distread;                 /*------------- array, which has to be read --*/
-NODE                *actnode;                  /*----------------------------- actual node --*/
-ELEMENT             *actele;                   /*-------------------------- actual element --*/
+INT                  i;                      /* counters */
+INT                  ierr;                     /* error-flag */
+long int             reshandle;                /* restart handle */
+INT                  byte;                     /* length of binary file */
+INT                  dims[3];                  /* dimensions of actnode->sol */
+INT                  numnp;                    /* number of nodal points */
+long int           **node_handles;             /* handles for node- information */
+INT                  numele;                   /* number of elements */
+long int           **ele_handles;              /* handles for element - information */
+char                 resname[100];             /* restartname = restart+stepnumber */
+FILE                *in;                       /* file to be read in  */
+RESTART_STATSTRUCT  res;                       /* res has acces to all restart info */
+DIST_VECTOR         *distread;                 /* array, which has to be read */
+NODE                *actnode;                  /* actual node */
+ELEMENT             *actele;                   /* actual element */
+
+#ifdef PARALLEL
+INT                  j;                      /* counters */
+INT                  fdim;                     /* fdim = actfield->actnode->sol.fdim */
+INT                  sender;                   /* sender in parallel comunication */
+#endif
+
 #ifdef DEBUG                                   
 dstrc_enter("restart_read_nlnstructstat");
 #endif
@@ -1435,7 +1445,7 @@ void restart_read_fluiddyn(INT restart,
 			   CALC_ACTION     *action,
 			   CONTAINER       *container)
 {
-INT                  i,j;
+INT                  i;
 INT                  ierr;
 long int             reshandle;
 INT                  byte;
@@ -1443,14 +1453,18 @@ INT                  dims[3];
 INT                  numnp;
 INT                  numele;
 long int           **ele_handles;
-INT                  fdim;
-INT                  sender;
 long int           **node_handles;
 char                 resname[100];
 FILE                *in;
 RESTART_DYNFLUID     res;
 NODE                *actnode;
 ELEMENT             *actele;
+
+#ifdef PARALLEL
+INT                  j;
+INT                  fdim;
+INT                  sender;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("restart_read_fluiddyn");
@@ -1665,8 +1679,6 @@ INT                  i;
 INT                  ierr;
 INT                  numnp;
 long int           **node_handles;
-INT                  numele;
-long int           **ele_handles;
 char                 resname[100];
 long int             longdummy;
 FILE                *out;
@@ -1792,19 +1804,24 @@ void restart_read_aledyn(INT          restart,
                          PARTITION   *actpart,
                          INTRA	     *actintra)
 {
-INT                  i,j;
+INT                  i;
 INT                  ierr;
 long int             reshandle;
 INT                  byte;
 INT                  dims[3];
 INT                  numnp;
-INT                  fdim;
-INT                  sender;
 long int           **node_handles;
 char                 resname[100];
 FILE                *in;
 RESTART_DYNALE       res;
 NODE                *actnode;
+
+#ifdef PARALLEL
+INT                  j;
+INT                  fdim;
+INT                  sender;
+#endif
+
 #ifdef DEBUG 
 dstrc_enter("restart_read_aledyn");
 #endif

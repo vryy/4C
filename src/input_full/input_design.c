@@ -112,7 +112,6 @@ for (i=0; i<design->ndvol; i++) design->dvol[i].Id = i;
 frrewind();
 /*----------------------------------------------------------------------*/
 
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -150,7 +149,6 @@ for (i=0; i<design->ndnode; i++)
 }
 /*----------------------------------------------------------------------*/
 
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -229,7 +227,6 @@ for (i=0; i<design->ndline; i++)
 }
 /*----------------------------------------------------------------------*/
 
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -243,7 +240,6 @@ return;
 void read_1_dline(DLINE *dline, INT readId)
 {
 INT    i,ierr;
-INT    isnurb;
 
 #ifdef DEBUG 
 dstrc_enter("read_1_dline");
@@ -348,7 +344,6 @@ for (i=0; i<design->ndsurf; i++)
 }
 /*----------------------------------------------------------------------*/
 
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -441,7 +436,6 @@ for (i=0; i<design->ndvol; i++)
 }
 /*----------------------------------------------------------------------*/
 
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

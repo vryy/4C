@@ -168,7 +168,9 @@ void  add_oll(
   INT         numeq_total;           /* total number of equations */
   INT         numeq;                 /* number of equations on this proc */
   INT         lm[MAXDOFPERELE];      /* location vector for this element */
+#ifdef PARALLEL
   INT         owner[MAXDOFPERELE];   /* the owner of every dof */
+#endif
   INT         myrank;                /* my intra-proc number */
   INT         nprocs;                /* my intra- number of processes */
   DOUBLE    **estif;                 /* element matrix to be added to system matrix */
@@ -176,11 +178,11 @@ void  add_oll(
   INT        *update;                /* vector update see AZTEC manual */
   INT       **cdofs;                 /* list of coupled dofs and there owners, see init_assembly */
   INT         ncdofs;                /* total number of coupled dofs */
-  INT       **isend1;                /* pointer to sendbuffer to communicate coupling conditions */
-  DOUBLE    **dsend1;                /* pointer to sendbuffer to communicate coupling conditions */
-  INT       **isend2;                /* pointer to sendbuffer to communicate coupling conditions */
-  DOUBLE    **dsend2;                /* pointer to sendbuffer to communicate coupling conditions */
-  INT         nsend;
+  INT       **isend1 = NULL;         /* p to sendbuffer to communicate coupling cond */
+  DOUBLE    **dsend1 = NULL;         /* p to sendbuffer to communicate coupling cond */
+  INT       **isend2 = NULL;         /* p to sendbuffer to communicate coupling cond */
+  DOUBLE    **dsend2 = NULL;         /* p to sendbuffer to communicate coupling cond */
+  INT         nsend = 0;
 #ifdef DEBUG 
   dstrc_enter("add_oll");
 #endif
@@ -305,6 +307,8 @@ void exchange_coup_oll(
     INTRA         *actintra,
     OLL           *oll)
 {
+
+#ifdef PARALLEL 
   INT            i;
   INT            ii,jj;
   INT            tag;
@@ -320,7 +324,6 @@ void exchange_coup_oll(
   INT            imyrank;
   INT            inprocs;
 
-#ifdef PARALLEL 
   MPI_Status    *irecv_status;
   MPI_Status    *drecv_status;
 

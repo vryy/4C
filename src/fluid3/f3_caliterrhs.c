@@ -217,6 +217,7 @@ if (gls->ivisc!=0 && ihoel!=0)
       sign = -ONE;
    break;
    default:
+      sign = 0;
       dserror("viscous stabilisation parameter unknown: IVISC");
    } /* end switch (ele->e.f3->ivisc) */
    

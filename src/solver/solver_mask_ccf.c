@@ -219,9 +219,11 @@ INT       *update;
 INT        numeq;
 INT        actdof;
 INT        dofflag;
+#ifdef PARALLEL
 INT        dofmaster;
 INT        dofslave;
 INT        recvlenght;
+#endif
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -522,8 +524,10 @@ INT        i,j;
 INT        max_dof_connect_send;
 INT        max_dof_connect_recv;
 
+#ifdef PARALLEL
 ARRAY      tmps_a;
 INT      **tmps;
+#endif
 INT      **reddof;
 
 #ifdef DEBUG 

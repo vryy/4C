@@ -90,7 +90,6 @@ return;
  *----------------------------------------------------------------------*/
 void solserv_zero_vec(DIST_VECTOR *disvector)
 {
-INT                  i;
 #ifdef DEBUG 
 dstrc_enter("solserv_zero_vec");
 #endif
@@ -265,13 +264,14 @@ void solserv_getele_vec(INTRA*actintra,SPARSE_TYP *sysarray_typ,
                         SPARSE_ARRAY *sysarray,DIST_VECTOR *dist_vec,
                         INT indiz,DOUBLE *result)
 {
-INT                  i;
 INT                  imyrank;
 INT                  inprocs;
+#ifdef PARALLEL
 INT                  bcaster;
 INT                  recvbuff;
-INT                  index;
-INT                 *update;
+#endif
+INT                  index =0;
+INT                 *update = NULL;
 DOUBLE              *vec;
 INT                  numeq;
 #ifdef DEBUG 
@@ -365,7 +365,9 @@ void solserv_dot_vec(INTRA *actintra,DIST_VECTOR *dist_vec1,
 {
 INT                  i;
 DOUBLE               localsum;
+#ifdef PARALLEL
 DOUBLE               globalsum;
+#endif
 DOUBLE              *vec1;
 DOUBLE              *vec2;
 
@@ -458,8 +460,7 @@ void solserv_reddistvec(DIST_VECTOR *distvec,SPARSE_ARRAY *sysarray,
                         INT dim,INTRA *actintra)
 {
 INT             i;
-INT             dof,dofperm;
-DOUBLE         *dfrom;
+INT             dof;
 INT             imyrank;
 INT             inprocs;
 #ifdef PARALLEL 
@@ -690,8 +691,7 @@ void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
                             INT dim,INTRA *actintra)
 {
 INT             i;
-INT             dof,dofperm;
-DOUBLE         *dfrom;
+INT             dof;
 INT             imyrank;
 INT             inprocs;
 

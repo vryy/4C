@@ -76,9 +76,9 @@ INT               i,kk;
 INT               hasdirich=0;      /* flag                             */
 INT               hasext=0;         /* flag                             */
 ELEMENT          *actele;
+#if defined(D_FLUID2) || defined(D_FLUID2_PRO)
 ELEMENT          *actele2;
-SPARSE_TYP        sysarray1_typ;
-SPARSE_TYP        sysarray2_typ;
+#endif
 ASSEMBLE_ACTION   assemble_action;
 
 #ifdef DEBUG 
@@ -446,7 +446,8 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_fluid_amatrix          : assemble_action = assemble_do_nothing; break;
    case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_matrix; break;
    case calc_ls                     : assemble_action = assemble_two_matrix; break;
-   default: dserror("Unknown type of assembly 1"); break;
+   default: assemble_action = assemble_do_nothing;
+            dserror("Unknown type of assembly 1"); break;
    }
    /*--------------------------- assemble one or two system matrices */
 #ifdef PERF

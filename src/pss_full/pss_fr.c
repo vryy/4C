@@ -466,7 +466,6 @@ to hold the string
 ------------------------------------------------------------------------*/
 void frchar(char string[],char *var, INT *ierr)
 {
-INT  i=0;
 char *foundit = NULL;
 
 #ifdef DEBUG 
@@ -508,7 +507,6 @@ checks for a keyword in actual line of input_file
 ------------------------------------------------------------------------*/
 void frchk(char string[], INT *ierr)
 {
-INT  i=0;
 char *foundit = NULL;
 
 foundit = strstr(allfiles.input_file[allfiles.actrow],string);

@@ -348,10 +348,12 @@ see dsinit()
 ------------------------------------------------------------------------*/
 void dstrace_to_err()
 {
+
+#ifdef DEBUG 
 INT         i=0;
 TRACEARRAY *acttracer;
 
-#ifdef DEBUG 
+
 if (trace.trace_on==1)
 {
 acttracer = trace.arraychain;
@@ -585,11 +587,13 @@ return;
 void dserror(char string[], ...)
 {
   va_list ap;
-  INT i=0;
-  TRACEROUT *routhis = NULL;
   char line[] = "=========================================================================\n";
   
 #ifdef DEBUG 
+  INT i=0;
+  TRACEROUT *routhis = NULL;
+
+
   if (trace.trace_on==1)
   {
     char message[300];
@@ -684,7 +688,10 @@ warning	= 1	when trinangular ale elements are monitored with wrong
 ------------------------------------------------------------------------*/
 void dswarning(INT task, INT warning)
 {
-INT   i;                                /* a counter                    */
+#ifdef PARALLEL
+INT     i;                                /* a counter                    */
+INTRA  *actintra;
+#endif
 static INT called;                      /* flag, if warnings occured    */
 static INT ale_quality_min_J_triangles;
 static INT ale_quality_ar;
@@ -695,7 +702,6 @@ static INT funct_line;      /* warning 6 */
 /* DEFINE your new warning flag here!!! */
 
 FILE   *err = allfiles.out_err;
-INTRA          *actintra;
 
 #ifdef DEBUG
 dstrc_enter("dswarning");

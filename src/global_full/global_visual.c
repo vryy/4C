@@ -56,9 +56,11 @@ VISUAL2
 void ntavisual()
 {
 INT    i;        /* simply a counter                                    */
+#ifdef VISUAL2_PACKAGE
 INT    actnum;   /* field number to visualise                           */
 INT    screen;
 INT    dummy;
+#endif
 FIELD *actfield; /* actual field                                        */
 
 #ifdef DEBUG 

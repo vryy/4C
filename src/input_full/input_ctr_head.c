@@ -60,7 +60,6 @@ while ( strncmp(allfiles.input_file[i],"------",6) != 0)
 }
 frrewind();
 
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -74,9 +73,10 @@ return;
  *----------------------------------------------------------------------*/
 void inptrace()
 {
+
+#ifdef DEBUG 
 char buffer[40];
 INT  ierr=0;
-#ifdef DEBUG 
 
 frrewind();
 if (frfind("TRACE")==0) return;

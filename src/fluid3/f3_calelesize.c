@@ -193,6 +193,8 @@ if (ishvol==1)
       f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,2);      
    break;
    default:
+      facr = facs= fact = 0.0;
+      e1 = e2 = e3 = 0.0;
       dserror("ntyp unknown!"); 
    } /*end switch(ntyp) */
    ieval++;

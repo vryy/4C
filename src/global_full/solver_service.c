@@ -41,7 +41,6 @@ static void oll_matvec(INTRA *actintra, OLL *oll, DOUBLE *work1, DOUBLE *work2);
  *----------------------------------------------------------------------*/
 void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,DOUBLE factor)
 {
-INT      i;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_scal_mat");
@@ -113,7 +112,6 @@ void solserv_add_mat(INTRA *actintra,
                      SPARSE_ARRAY *B,
                      DOUBLE factor)
 {
-INT      i;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_add_mat");
@@ -267,11 +265,19 @@ return;
  *----------------------------------------------------------------------*/
 void solserv_zero_mat(INTRA *actintra, SPARSE_ARRAY *mat,SPARSE_TYP *mattyp)
 {
+
 INT                  imyrank;
 INT                  inprocs;
+
+#ifdef HYPRE_PACKAGE
 INT                  ilower,iupper,jlower,jupper;
 INT                  err=1;
+#endif
+
+#ifdef D_CONTACT
 INT                  minusone=-1;
+#endif
+
 #ifdef DEBUG 
 dstrc_enter("solserv_zero_mat");
 #endif
@@ -463,7 +469,6 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to)
 {
-INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_spomask");
 #endif
@@ -494,7 +499,6 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to)
 {
-INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_spomask");
 #endif
@@ -527,7 +531,6 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to)
 {
-INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_rc_ptrmask");
 #endif
@@ -571,7 +574,6 @@ return;
 
 static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to)
 {
-INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_ccfmask");
 #endif
@@ -606,7 +608,6 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to)
 {
-INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_ucchbmask");
 #endif
@@ -646,7 +647,6 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to)
 {
-INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_skymask");
 #endif
@@ -684,7 +684,6 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to)
 {
-INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_msrmask");
 #endif
@@ -1242,7 +1241,7 @@ static void solserv_matvec_dense(INTRA        *actintra,
                           DOUBLE       *work1,
                           DOUBLE       *work2)
 {
-INT      i,j,k;
+INT      i,j;
 INT      I,J;
 DOUBLE   sum;
 DOUBLE **A;
@@ -1281,7 +1280,7 @@ static void oll_matvec(
     DOUBLE       *work1,
     DOUBLE       *work2)        /* work2 is the result */
 {
-  INT         i,j,dof;
+  INT         i,dof;
   INT         numeq;
   INT         numeq_total;
   INT        *update;

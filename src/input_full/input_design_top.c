@@ -782,7 +782,10 @@ GVOL         *actgvol;
 GNODE        *actgnode;
 INT           ngnode;
 ELEMENT      *actele;
-INT           firstnode,scndnode,thirdnode,fourthnode;
+INT           firstnode  = 0;
+INT           scndnode   = 0;
+INT           thirdnode  = 0;
+INT           fourthnode = 0;
 INT           firstmatch,scndmatch,thirdmatch,fourthmatch;
 INT           nodeId;
 

@@ -36,7 +36,6 @@ void  add_skyline(struct _PARTITION     *actpart,
 INT               i,j,counter;           /* some counter variables */
 INT               ii,jj;                 /* counter variables for system matrix */
 INT               nd;                    /* size of estif */
-INT               nnz;                   /* number of nonzeros in sparse system matrix */
 INT               numeq_total;           /* total number of equations */
 INT               numeq;                 /* number of equations on this proc */
 INT               lm[MAXDOFPERELE];      /* location vector for this element */
@@ -154,12 +153,14 @@ void redundant_skyline(
                         SKYMATRIX     *sky2
                         )
 {
-INT      i;
+
+#ifdef PARALLEL
 INT      imyrank;
 INT      inprocs;
 
 ARRAY    recv_a;
 DOUBLE  *recv;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("redundant_skyline");

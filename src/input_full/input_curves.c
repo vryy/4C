@@ -117,7 +117,7 @@ INT      ierr;
 INT      i;
 INT      counter=0;
 char     buffer[50];
-CURVE   *actcurve;
+CURVE   *actcurve = NULL;
 char    *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_read_curve");

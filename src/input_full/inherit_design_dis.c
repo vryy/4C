@@ -193,12 +193,18 @@ dstrc_enter("inherit_design_dis_neum");
 /*                                   otherwise, GNODE inherits nothing */
 for (i=0; i<actdis->ngnode; i++)
 {
-   actgnode = &(actdis->gnode[i]);
-   switch(actgnode->ondesigntyp)
-   {
-   case ondnode:    actgnode->neum   = actgnode->d.dnode->neum;     break;
-   case ondnothing: dserror("GNODE not owned by any design object");break;
-   }
+  actgnode = &(actdis->gnode[i]);
+  switch(actgnode->ondesigntyp)
+  {
+    case ondnode:
+      actgnode->neum   = actgnode->d.dnode->neum;
+      break;
+    case ondnothing:
+      dserror("GNODE not owned by any design object");
+      break;
+    default:
+      break;
+  }
 }
 /*-------------------------------------- GLINE inherits from its DLINE */
 for (i=0; i<actdis->ngline; i++)

@@ -60,7 +60,6 @@ void pss_write(char          *name,
                FILE          *out, 
                INT           *ierr)
 {
-INT          err=0;
 INT          name_size=0;
 INT          write_error=0;
 INT          dimensions[3];
@@ -129,7 +128,6 @@ void pss_write_array(const ARRAY *array,
                      FILE        *out, 
                      INT         *ierr)
 {
-INT           err=0;
 INT           name_size=0;
 INT           write_error=0;
 INT           dimensions[3];
@@ -162,18 +160,21 @@ dimensions[0]=array->fdim;
 dimensions[1]=array->sdim;
 switch (array->Typ)
 {
-   case cca_DA:
-   dimensions[2]=sizeof(DOUBLE);
-   break;
-   case cca_DV:
-   dimensions[2]=sizeof(DOUBLE);
-   break;
-   case cca_IA:
-   dimensions[2]=sizeof(INT);
-   break;
-   case cca_IV:
-   dimensions[2]=sizeof(INT);
-   break;
+  case cca_DA:
+    dimensions[2]=sizeof(DOUBLE);
+    break;
+  case cca_DV:
+    dimensions[2]=sizeof(DOUBLE);
+    break;
+  case cca_IA:
+    dimensions[2]=sizeof(INT);
+    break;
+  case cca_IV:
+    dimensions[2]=sizeof(INT);
+    break;
+  default:
+    dserror("Wrong array type!");
+    break;
 }
 write_error = fwrite(dimensions,sizeof(INT),3,out);
 if (write_error!=3) dserror("Error writing pss-file");
@@ -225,6 +226,9 @@ switch (array->Typ)
       dserror("Error writing pss-file");
       else *ierr=1;
    break;
+  default:
+    dserror("Wrong array type!");
+    break;
 }
 fflush(out);
 
@@ -270,7 +274,6 @@ void pss_read_name(char      *name,
 {
 long int      cur_pos = 0;
 long int      offset = 0;
-INT           i;
 INT           err=0;
 INT           foundit=0;
 INT           name_size=0;

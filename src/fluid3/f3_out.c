@@ -108,8 +108,6 @@ void f3_out_gid_sol_str(
   }
 
 
-end:;
-
 #ifdef DEBUG 
     dstrc_exit();
 #endif

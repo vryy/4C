@@ -69,7 +69,9 @@ void oll_numeq(
   INT       counter;
   INT       dof;
   INT       iscoupled;
+#ifdef PARALLEL
   INT      *sendbuff,*recvbuff, sendsize;
+#endif
   INT      *tmp;
   INT       inter_proc;
   long int  min;
@@ -444,9 +446,11 @@ void oll_nnz_topology(
   INT        numeq;
   INT        actdof;
   INT        dofflag;
+#ifdef PARALLEL
   INT        dofmaster;
   INT        dofslave;
   INT        recvlength;
+#endif
   NODE      *centernode;
   NODE      *actnode;
   ELEMENT   *actele;
@@ -1075,7 +1079,7 @@ void oll_gnupattern(
 {
   MATENTRY  **row;
   MATENTRY   *actentry;
-  INT         i,j;
+  INT         i;
   INT         nn;
   FILE        *gnu = allfiles.gnu;
 
@@ -1113,7 +1117,10 @@ if (par.myrank != 0) goto end;
   fprintf(gnu,"# nn:   %4d \n",nn);
   fprintf(gnu,"# ============================================ \n");
 
+#ifdef PARALLEL
 end:
+#endif
+
 #ifdef DEBUG 
   dstrc_exit();
 #endif

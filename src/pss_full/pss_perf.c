@@ -87,6 +87,10 @@ DOUBLE perf_time ()
   t1 =  (double)_tstart.tv_sec + (double)_tstart.tv_usec/(1000*1000);
   ret = t1;
 #endif
+  
+#ifdef WIN
+  ret = 0.0;
+#endif
 
 
 #ifdef SX6

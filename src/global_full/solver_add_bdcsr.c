@@ -43,18 +43,18 @@ void  add_bdcsr(struct _PARTITION     *actpart,
                 struct _DBCSR         *bdcsr1,
                 struct _DBCSR         *bdcsr2)
 {
-INT         i,j,k,l,counter;          /* some counter variables */
+INT         i,j,counter;          /* some counter variables */
 INT         start,index,lenght;       /* some more special-purpose counters */
 INT         ii,jj;                    /* counter variables for system matrix */
-INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
 INT         ii_index;                 /* place of ii in dmsr format */
-INT         jj_index;                 /* place of jj in dmsr format */
 INT         nd,ndnd;                  /* size of estif */
 INT         nnz;                      /* number of nonzeros in sparse system matrix */
 INT         numeq_total;              /* total number of equations */
 INT         numeq;                    /* number of equations on this proc */
 INT         lm[MAXDOFPERELE];         /* location vector for this element */
+#ifdef PARALLEL
 INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+#endif
 INT         myrank;                   /* my intra-proc number */
 INT         nprocs;                   /* my intra- number of processes */
 DOUBLE    **estif;                    /* element matrix to be added to system matrix */

@@ -57,14 +57,16 @@ void mask_bdcsr(FIELD         *actfield,
                 DBCSR         *bdcsr)
 {
 INT            i,j,counter;
+#ifdef PARALLEL
 INT            imyrank;
 INT            inproc;
+PARTDISCRET   *actpdiscret;
+#endif
 INT            numeq;
 INT            numdf;
 INT          **dof_connect;
 INT            actdof; 
 INT          **blocks;
-PARTDISCRET   *actpdiscret;
 NODE          *actnode;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -233,9 +235,11 @@ INT       *update;
 INT        numeq;
 INT        actdof;
 INT        dofflag;
+#ifdef PARALLEL
 INT        dofmaster;
 INT        dofslave;
 INT        recvlenght;
+#endif
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -762,7 +766,9 @@ INT       i,j,k,l;
 INT       counter;
 INT       dof;
 INT       iscoupled;
+#ifdef PARALLEL
 INT      *sendbuff,*recvbuff, sendsize;
+#endif
 INT      *tmp;
 INT       inter_proc;
 long int  min;

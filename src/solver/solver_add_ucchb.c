@@ -143,12 +143,14 @@ void redundant_ucchb(
                         UCCHB         *ucchb
                         )
 {
-INT     i;
+
+#ifdef PARALLEL 
 INT     imyrank;
 INT     inprocs;
 
 ARRAY   recv_a;
 DOUBLE *recv;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("redundant_ucchb");

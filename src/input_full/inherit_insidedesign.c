@@ -26,10 +26,14 @@ static void inherit_dlinednode_dirich(void);
 static void inherit_dvoldsurf_couple(void);
 static void inherit_dsurfdline_couple(void);
 static void inherit_dlinednode_couple(void);
+#ifdef D_FSI
 static void inherit_dlinednode_fsicouple(void);
+#endif
 static void inherit_dlinednode_freesurf(void);
+#ifdef D_AXISHELL
 static void inherit_dlinednode_thickness(void);
 static void inherit_dlinednode_axishellload(void);
+#endif
 /*----------------------------------------------------------------------*
  | inherit boundary conditions inside design                 m.gee 3/02 |
  *----------------------------------------------------------------------*/
@@ -331,12 +335,14 @@ dstrc_exit();
 return;
 } /* end of inherit_dlinednode_couple */
 
+
+
+#ifdef D_FSI
 /*----------------------------------------------------------------------*
  | inherit fsicoupling conditions DLINE to DNODE             genk 10/02 |
  *----------------------------------------------------------------------*/
 static void inherit_dlinednode_fsicouple()
 {
-#ifdef D_FSI
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
@@ -368,9 +374,10 @@ for (i=0; i<design->ndline; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif
 return;
 } /* end of inherit_dlinednode_fsicouple */
+#endif
+
 
 /*----------------------------------------------------------------------*
  | inherit freesurface conditions DLINE to DNODE             genk 01/03 |
@@ -414,6 +421,8 @@ return;
 
 
 
+
+#ifdef D_AXISHELL
 /*!----------------------------------------------------------------------
 \brief inherit thickness conditions DLINE to DNODE
 
@@ -428,7 +437,6 @@ inherit thickness conditions DLINE to DNODE
 *----------------------------------------------------------------------*/
 static void inherit_dlinednode_thickness()
 {
-#ifdef D_AXISHELL
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
@@ -462,13 +470,14 @@ for (i=0; i<design->ndline; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif
 return;
 } /* end of inherit_dlinednode_thickness */
+#endif
 
 
 
 
+#ifdef D_AXISHELL 
 /*!----------------------------------------------------------------------
 \brief inherit axishell_load conditions DLINE to DNODE
 
@@ -483,7 +492,6 @@ inherit axishell_load conditions DLINE to DNODE
 *----------------------------------------------------------------------*/
 static void inherit_dlinednode_axishellload()
 {
-#ifdef D_AXISHELL 
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
@@ -523,9 +531,9 @@ for (i=0; i<design->ndline; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif
 return;
 } /* end of inherit_dlinednode_axishellload */
+#endif
 
 
 

@@ -157,6 +157,7 @@ case 0:
       c_mk=Q13;
 break;   
 default:
+   c_mk = 0.0;
    dserror("mk > 0 not implemented yet!");
 } /* end swtich (ele->e.f3->mk) */
 /*---------------------------------- choose stability-parameter version */

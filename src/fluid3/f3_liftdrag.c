@@ -76,7 +76,6 @@ void f3_liftdrag(
   INT              ngsurf;
   INT              ngnode;
   INT              surf;
-  GSURF           *gsurf[6];
   INT              ngr, ngs, ngt;
   DOUBLE           xgp[3], ygp[3], zgp[3];
   DOUBLE           wgx[3], wgy[3], wgz[3];
@@ -351,7 +350,6 @@ void f3_liftdrag(
   }/* end loop surf over surfs */
 
 
-end:
   /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();

@@ -268,6 +268,7 @@ case -7: /* Kim-Moin-Flow */
 break;
    
 default:
+   fac = 0.0;
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
 } /* end switch(numex) */
 

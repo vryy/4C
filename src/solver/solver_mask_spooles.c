@@ -222,9 +222,11 @@ INT       *update;
 INT        numeq;
 INT        actdof;
 INT        dofflag;
+#ifdef PARALLEL
 INT        dofmaster;
 INT        dofslave;
 INT        recvlenght;
+#endif
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;

@@ -183,7 +183,6 @@ return;
 void inpctrprob()
 {
 INT  ierr;
-INT  i;
 INT  restart;
 char buffer[50];
 #ifdef DEBUG 
@@ -410,7 +409,6 @@ return;
 void inpctrstat()
 {
 INT  ierr;
-INT  i;
 char buffer[50];
 INT  counter;
 #ifdef DEBUG 
@@ -563,9 +561,7 @@ return;
  *----------------------------------------------------------------------*/
 void inpctreig()
 {
-INT    ierr;
 INT    i;
-char   buffer[50];
 FIELD *actfield;
 #ifdef DEBUG 
 dstrc_enter("inpctreig");
@@ -610,7 +606,6 @@ void inpctr_eig_struct(ALLEIG *alleig)
 { 
 
 INT    ierr;
-INT    i;
 char   buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctr_eig_struct");
@@ -664,9 +659,7 @@ return;
  *----------------------------------------------------------------------*/
 void inpctrdyn()
 {
-INT    ierr;
 INT    i;
-char   buffer[50];
 FIELD *actfield;
 #ifdef DEBUG 
 dstrc_enter("inpctrdyn");
@@ -745,7 +738,6 @@ for (i=0; i<genprob.numfld; i++)
 void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn)
 {
 INT    ierr;
-INT    i;
 char   buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctr_dyn_struct");

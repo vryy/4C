@@ -37,16 +37,19 @@ This routine has to be called for discretisations of the fluid field only!
 *----------------------------------------------------------------------*/ 
 void inherit_design_ele(DISCRET *actdis)
 {
+
 INT 	 i;
 ELEMENT	*actele;
+
 #ifdef D_FLUID2
 FLUID2	*fluid2;
+DSURF	*actdsurf;
 #endif
+
 #ifdef D_FLUID3
 FLUID3	*fluid3;
-#endif
-DSURF	*actdsurf;
 DVOL	*actdvol; 
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("inherit_design_ele");

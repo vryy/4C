@@ -34,8 +34,11 @@ INT            inprocs;
 
 ARRAY          b_a;
 DOUBLE        *b;
+
+#ifdef PARALLEL
 ARRAY          tmp_a;
 DOUBLE        *tmp;
+#endif
 
 INT            ione=1;
 INT            izero=0;

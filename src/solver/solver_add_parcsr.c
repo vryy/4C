@@ -45,9 +45,11 @@ INT         jj_index;
 INT         jj_iscouple;              /* flag whether ii is a coupled dof */
 INT         jj_owner;                 /* who is owner of dof ii -> procnumber */
 
+#ifdef HYPRE_PACKAGE
 INT         err;
-
 const INT   nrows=1;
+#endif
+
 INT         rows[1];
 INT         ncols[1];
 INT         colcounter;
@@ -100,6 +102,10 @@ if (parcsr->couple_i_send)
    dsend = parcsr->couple_d_send->a.da;
    nsend = parcsr->couple_i_send->fdim;
 }
+#else
+   isend = NULL;
+   dsend = NULL;
+   nsend = NULL;
 #endif
 /*---------------------------------------------- make location vector lm*/
 counter=0;
@@ -210,8 +216,8 @@ for (i=0; i<nd; i++)
                                     cols,
                                     values
                                    );
-#endif
       if (err) dserror("Error occured adding to ParCSR matrix");
+#endif
    }/* end of adding myself */
    /*----------------------------- if ii is coupled and I am slave owner */
    /*----- add to the sendbuffer, sendbuffer is initialized in calelm */
@@ -244,7 +250,7 @@ return;
 void add_parcsr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                     DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
-INT         k,l;
+INT         k;
 #ifdef DEBUG 
 dstrc_enter("add_parcsr_sendbuff");
 #endif
@@ -268,7 +274,7 @@ return;
  *----------------------------------------------------------------------*/
 void add_parcsr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,INT *isowner, INT nprocs)
 {
-INT         i,j,k;
+INT         i,k;
 #ifdef DEBUG 
 dstrc_enter("add_parcsr_checkcouple");
 #endif
@@ -307,6 +313,8 @@ void exchange_coup_parcsr(
                              H_PARCSR      *parcsr
                             )
 {
+
+#ifdef PARALLEL 
 INT            i,j,k;
 INT            ii,ii_index;
 INT            jj,jj_index;
@@ -329,7 +337,10 @@ DOUBLE       **drecv;
 INT            imyrank;
 INT            inprocs;
 
+#ifdef HYPRE_PACKAGE
 INT            err;
+#endif
+
 INT            iiperm;
 INT            jjperm;
 const INT      nrows=1;
@@ -339,7 +350,6 @@ INT            colcounter;
 INT            cols[MAX_NNZPERROW];
 DOUBLE         values[MAX_NNZPERROW];
 
-#ifdef PARALLEL 
 MPI_Status    *irecv_status;
 MPI_Status    *drecv_status;
 
@@ -466,8 +476,8 @@ for (i=0; i<numrecv; i++)
                                  cols,
                                  values
                                 );
-#endif
    if (err) dserror("Error occured adding to ParCSR matrix");
+#endif
 }/*---------------------------------------------- end of receiving loop */
 /*-------------------------------------------- free allocated MPI-stuff */
 if (numrecv){CCAFREE(irecv_status);CCAFREE(drecv_status);}

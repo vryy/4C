@@ -35,15 +35,17 @@ INT  add_mds(struct _PARTITION     *actpart,
              struct _ELEMENT       *actele,
              struct _ML_ARRAY_MDS  *mds)
 {
-  INT         i,j,k,l,counter; /* some counter variables */
+  INT         i,j,counter; /* some counter variables */
   INT         ii,jj;           /* counter variables for system matrix */
   INT         nd;              /* size of estif */
   INT         numeq;           /* number of equations on this proc */
   INT         lm[MAXDOFPERELE];/* location vector for this element */
   DOUBLE      value;
   DOUBLE    **estif;     /* element matrix to be added to system matrix */
+#ifdef PARALLEL
   INT         owner[MAXDOFPERELE];      /* the owner of every dof */
-MLVAR       *mlvar;
+#endif
+  MLVAR       *mlvar;
 /*----------------------------------------------------------------------*/
   mlvar = actsolv->mlvar;
 /*----------------------------------------------------------------------*/
@@ -83,7 +85,7 @@ MLVAR       *mlvar;
       /*---------------------------------- check for boundary condition */
       if (jj>=numeq) continue;
       
-      if(ii>=jj && mlvar->symm || !mlvar->symm) /* lower triangular of full*/
+      if ( (ii>=jj && mlvar->symm) || !mlvar->symm) /* lower triangular of full*/
       {
         value = estif[i][j];
       
@@ -95,7 +97,9 @@ MLVAR       *mlvar;
         ii--;
         jj--;
       }
+#ifdef MLIB_PACKAGE
       if(mds->ierr!=0) exit; 
+#endif
     } /* end loop over j */
   }/* end loop over i */
 /*-- print additional information, depends on the stage of execution ---*/

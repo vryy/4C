@@ -159,12 +159,14 @@ void redundant_ccf(PARTITION *actpart,
                    CCF       *ccf1,
                    CCF       *ccf2)
 {
-INT      i;
+
+#ifdef PARALLEL 
 INT      imyrank;
 INT      inprocs;
 
 ARRAY    recv_a;
 DOUBLE  *recv;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("redundant_ccf");

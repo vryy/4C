@@ -262,7 +262,7 @@ return;
  *----------------------------------------------------------------------*/
 void inp_assign_nodes(DISCRET *actdis)
 {
-INT  i,j,k;
+INT  i,j;
 INT  node_Id;
 INT counter;
 INT minusone=-1;
@@ -344,34 +344,37 @@ if (frfind("--DISCRETISATION")==0) goto end;
 frread();
 switch(actfield->fieldtyp)
 {
-case fluid: 
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
+  case fluid: 
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
       frint("NUMFLUIDDIS", &(actfield->ndis),&ierr);
       frread();
-   }
-break;
-case structure:
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
+    }
+    break;
+  case structure:
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
       frint("NUMSTRUCDIS", &(actfield->ndis),&ierr);
       frread();
-   }
-break;
-case ale:
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
+    }
+    break;
+  case ale:
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
       frint("NUMALEDIS", &(actfield->ndis),&ierr);
       frread();
-   }
-break;
-case levelset:
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
+    }
+    break;
+  case levelset:
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
       frint("NUMLEVELSETDIS", &(actfield->ndis),&ierr);
       frread();
-   }
-break; 
+    }
+    break; 
+  default:
+    dserror("Unknown fieldtype");
+    break;
 }   
 frrewind();
 /*----------------------------------------------------------------------*/
@@ -418,7 +421,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 /*----------------------------------------------------------------------*/
 
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -617,7 +619,9 @@ void inp_fluid_field(FIELD *fluidfield)
 {
 INT  ierr;
 INT  counter=0;
+#if defined(D_FLUID2) || defined(D_FLUID2_PRO)
 INT  cpro=0;
+#endif
 INT  elenumber;
 char *colpointer;
 
@@ -743,7 +747,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
 #endif
 /*----------------------------------------------------------------------*/
+#ifdef D_FLUID2_PRO 
 read:
+#endif
    counter++;
    frread();
 }
@@ -860,11 +866,9 @@ return;
 
 void inp_ls_field(FIELD *lsfield)
 {
-  INT        i;
   INT        ierr;
   INT        counter=0;
   INT        elenumber;
-  INT        isquad;
   char      *colpointer;
   
 #ifdef DEBUG 

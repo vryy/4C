@@ -77,9 +77,10 @@ To create the intra-communicators the followin gsteps are done:
 ------------------------------------------------------------------------*/
 void create_communicators()
 {
+
+#ifdef PARALLEL 
 INT         i,j;
 INT        *ranklist;
-#ifdef PARALLEL 
 MPI_Group   MPI_WORLD_GROUP;
 #endif
 

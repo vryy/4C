@@ -157,6 +157,7 @@ case 1:  /* --> hex - element */
    nir = ele->e.f3->nGP[0];
    nis = ele->e.f3->nGP[1];
    nit = ele->e.f3->nGP[2];
+   intc= 0;
    break;
 case 2: /* --> tet - element */  
    if (iel>4)
@@ -171,6 +172,10 @@ case 2: /* --> tet - element */
    intc = ele->e.f3->nGP[1];  
    break;
 default:
+   intc = 0;
+   nir  = 0;
+   nis  = 0;
+   nit  = 0; 
    dserror("ntyp unknown!");
 } /* end switch (ntyp) */
 
@@ -205,6 +210,8 @@ for (lt=0;lt<nit;lt++)
       f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,icode); 
       break;
    default:
+      facr = facs = fact = 0.0;
+      e1 = e2 = e3 = 0.0;
       dserror("ntyp unknown!");
    } /* end switch (ntyp) */
 /*-------------------------------------------- compute Jacobian matrix */  

@@ -136,8 +136,10 @@ if (genprob.timetyp==time_dynamic)
 global_result_test();
 #endif
 
-/*----------------------------------------------------------------------*/
-end:;
+
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
+end:
+#endif
 /*--------------------------------------------------- write warnings ---*/
 dswarning(2,0);
 /*----------------------------------------------------------------------*/

@@ -37,7 +37,6 @@ void assemble(
                 )
 /*----------------------------------------------------------------------*/
 {
-INT         i,j,k;
 enum  _SPARSE_TYP    sysa1_typ;
 union _SPARSE_ARRAY *sysa1;
 enum  _SPARSE_TYP    sysa2_typ;
@@ -358,6 +357,8 @@ void init_assembly(
 		       INT                     actndis
                      )
 {
+
+#ifdef PARALLEL 
 INT         i,j,k,counter;
 INT         numeq;
 INT         numsend;
@@ -376,6 +377,7 @@ ARRAY     **couple_i_send_ptr;
 ARRAY     **couple_d_recv_ptr;
 ARRAY     **couple_i_recv_ptr;
 ARRAY      *dummyarray;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("init_assembly");
@@ -729,7 +731,9 @@ void sum_vec(INTRA        *actintra,
 INT                   i;
 INT                   dof;
 INT                   imyrank;
+#ifdef PARALLEL
 DOUBLE                recv;
+#endif
 ML_ARRAY_MDS         *mds_array;
 AZ_ARRAY_MSR         *msr_array;
 H_PARCSR             *parcsr_array;
@@ -857,7 +861,9 @@ void assemble_intforce(ELEMENT *actele,ARRAY *elevec_a,CONTAINER *container,
 INT                   i,j;
 INT                   dof;
 INT                   numdf;
+#ifdef PARALLEL 
 INT                   imyrank;
+#endif
 INT                   irow;
 DOUBLE               *elevec;
 #ifdef DEBUG 
@@ -906,9 +912,7 @@ return;
 void assemble_dirich(ELEMENT *actele, ARRAY *estif_global, CONTAINER *container)
 {
 INT                   i,j;
-INT                   dof;
 INT                   numdf;
-INT                   iel;
 INT                   nd=0;
 DOUBLE              **estif;
 DOUBLE                dirich[MAXDOFPERELE];

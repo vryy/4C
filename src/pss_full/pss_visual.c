@@ -175,7 +175,7 @@ void visual_readpss(FIELD   *actfield,
 		      ARRAY   *time_a	 
 		     )
 {
-INT                  i,j;              /* simply some counters          */
+INT                  i;              /* simply some counters          */
 INT                  ierr;             /* error flag                    */
 INT                  byte;             /* byte size                     */
 INT                  dims[3];          /* dims for reading an array     */
@@ -197,20 +197,23 @@ in = allfiles.in_pss;
 /*---------------------------------------- and if it exists, we read it */
 switch (actfield->fieldtyp)
 {
-case fluid:
-   pss_chck("fluidvis",&vishandle,in,&ierr);  
-   if (ierr != 1) dserror("Cannot visualise fluid, data don't exist in vis.pss-file\n");
-   pss_read_name_handle("fluidvis",&i,&i,&byte,&vis,&vishandle,in,&ierr);
-   if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
-break;
-case structure:
-break;
-case ale:
-   pss_chck("alevis",&vishandle,in,&ierr);  
-   if (ierr != 1) dserror("Cannot visualise fluid, data don't exist in vis.pss-file\n");
-   pss_read_name_handle("alevis",&i,&i,&byte,&vis,&vishandle,in,&ierr);
-   if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
-break;
+  case fluid:
+    pss_chck("fluidvis",&vishandle,in,&ierr);  
+    if (ierr != 1) dserror("Cannot visualise fluid, data don't exist in vis.pss-file\n");
+    pss_read_name_handle("fluidvis",&i,&i,&byte,&vis,&vishandle,in,&ierr);
+    if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
+    break;
+  case structure:
+    break;
+  case ale:
+    pss_chck("alevis",&vishandle,in,&ierr);  
+    if (ierr != 1) dserror("Cannot visualise fluid, data don't exist in vis.pss-file\n");
+    pss_read_name_handle("alevis",&i,&i,&byte,&vis,&vishandle,in,&ierr);
+    if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
+    break;
+  default:
+    dserror("Unknown fieldtype");
+    break;
 }
 
 *ntsteps=vis.step;

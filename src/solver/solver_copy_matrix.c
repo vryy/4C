@@ -42,7 +42,7 @@ void solver_copy_csr(
                      )
 {
 
-int     i,j,k,l;
+int     i,j,k;
 int     iptr,iptr2;
 int     icount;
 int    *bindx;

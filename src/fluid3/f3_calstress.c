@@ -71,7 +71,8 @@ void f3_calelestress(
 {
   INT     i,j,lr,ls,lt;   /* some counters */
   INT     iel,nir,nis,nit;     /* number of nodes/integr. points */
-  INT     intc,icode;          /* flags */
+  INT     intc;                /* flags */
+  INT     icode = 0;           /* flags */
   INT     actmat;              /* actual material number */
   INT     ntyp;                /* flag for element type */
   INT     iv;                  /* counter for GAUSS points */
@@ -124,6 +125,7 @@ void f3_calelestress(
       nir = ele->e.f3->nGP[0];
       nis = ele->e.f3->nGP[1];
       nit = ele->e.f3->nGP[2];
+      intc = 0;
       break;
 
     case 2: /* tet - element */  
@@ -136,6 +138,8 @@ void f3_calelestress(
       intc = ele->e.f3->nGP[1];  
       break;
     default:
+      nir = nis = nit = 0.0;
+      intc = icode = 0;
       dserror("ntyp unknown!");
   } /* end switch(ntyp) */
 
@@ -313,6 +317,7 @@ DOUBLE f3_rsn (
 
   else
   {
+    ret_val = 0.0;
     dserror("unknown number of nodes in hex element");
   }
   /*----------------------------------------------------------------------*/

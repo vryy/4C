@@ -368,9 +368,11 @@ DOUBLE aux;
 DOUBLE taumu,taump,tauc; 
 DOUBLE facsr;
 DOUBLE facpr;
-DOUBLE fvts,fvtsr,fvvtsr;
+DOUBLE fvts   = 0.0;
+DOUBLE fvtsr  = 0.0;
+DOUBLE fvvtsr = 0.0;
 DOUBLE fact[3];
-DOUBLE sign;
+DOUBLE sign = 0;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 

@@ -81,10 +81,10 @@ INT actdis       =0;
 INT numeq;
 INT numeq_total;
 
-FIELD      *actfield;      /* the active field */
-PARTITION  *actpart;       /* my partition of the active field */
-SOLVAR     *actsolv;       /* the active SOLVAR */
-INTRA      *actintra;      /* the field's intra-communicator */
+FIELD      *actfield;        /* the active field */
+PARTITION  *actpart;         /* my partition of the active field */
+SOLVAR     *actsolv;         /* the active SOLVAR */
+INTRA      *actintra = NULL; /* the field's intra-communicator */
 #ifdef DEBUG 
 dstrc_enter("mask_global_matrices");
 #endif

@@ -171,21 +171,20 @@ void inp_detailed_topology(DISCRET   *actdis)
   INT        i,j,k,counter;
   INT        nsurfelement;
   INT        nsurftovol;
-  INT        nsurf;
   INT        nlineelement;
   INT        nlinetosurf;
-  INT        nline;
-  INT        nnodeperline;
+  INT        nline = 0;
+  INT        nnodeperline = 0;
   INT        surfnodes[6][4];
   INT        linenodes[12][3];
-  ELEMENT   *actele;
+  ELEMENT   *actele = NULL;
   ELEMENT   *otherele;
-  GVOL      *actgvol;
-  GSURF     *actgsurf;
+  GVOL      *actgvol = NULL;
+  GSURF     *actgsurf = NULL;
   GSURF     *tmpgsurf;
   GLINE     *tmpgline;
-  GLINE    **gline;
-  GLINE     *actgline;
+  GLINE    **gline = NULL;
+  GLINE     *actgline = NULL;
   GNODE     *actgnode;
   ELEMENT   *elepatch[400];
   INT        nelepatch;
@@ -240,6 +239,8 @@ void inp_detailed_topology(DISCRET   *actdis)
       case tet10: 
         counter++; 
         break;
+      default:
+        break;
     }
   }
   actdis->ngvol=counter;
@@ -289,6 +290,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         nsurftovol += actdis->gvol[counter].ngsurf;
         counter++; 
         break;
+      default:
+        break;
     }
   }
 
@@ -309,6 +312,8 @@ void inp_detailed_topology(DISCRET   *actdis)
       case tri6:  
         nsurfelement++; 
         break; 
+      default:
+        break;
     }
   }
   /* an upper estimate to the number of surfaces is nsurfelement+nsurftovol */
@@ -415,6 +420,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         counter++;
         dsassert(counter<=actdis->ngsurf,"Initial guess of ngsurf too small");
         break; 
+      default:
+        break;
     }
   }
   dsassert(counter-nsurftovol==nsurfelement,"surfaces of 2D elements got mixed up with 3D elements");
@@ -558,6 +565,8 @@ void inp_detailed_topology(DISCRET   *actdis)
       case line3: 
         nlineelement++; 
         break; 
+      default:
+        break;
     }
   }
   /* -an upper estimate to the number of lines is nlineelement+nlinetosurf */
@@ -614,7 +623,9 @@ void inp_detailed_topology(DISCRET   *actdis)
         nline = actele->g.gvol->ngline;  
         gline = actele->g.gvol->gline;   
         break;
-      default: dserror("Unknown type of discretization 3"); break;
+      default: 
+        dserror("Unknown type of discretization 3");
+        break;
     }
     /*----------------------------------------- loop all lines to element */
     for (j=0; j<nline; j++)
@@ -681,6 +692,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         counter++;
         dsassert(counter<=actdis->ngline,"Initial guess of ngline too small");
         break; 
+      default:
+        break;
     }
   }
   dsassert(counter-nlinetosurf==nlineelement,"lines of 1D elements got mixed up with 2D elements");
@@ -1709,12 +1722,12 @@ static void inptop_findadjele(ELEMENT *centerele, ELEMENT *elepatch[400], INT ne
                               ELEMENT *adjele[400], INT adjelelinenum[400], INT *nadjele,
                               INT linenodes[3])
 {
-INT        i,j,k,counter;
+INT        i,j,counter;
 ELEMENT   *actele;
 INT        firstnode,scndnode,thirdnode;
 INT        matchfirst,matchscnd,matchthird;
 INT        searchlnodes[12][3];
-INT        ngline;
+INT        ngline = 0;
 #ifdef DEBUG 
 dstrc_enter("inptop_findadjele");
 #endif
@@ -1784,7 +1797,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inptop_makelinestoele(ELEMENT *actele, INT linenodes[12][3])
 {
-INT        nsurf;
+
 #ifdef DEBUG 
 dstrc_enter("inptop_makelinestoele");
 #endif
@@ -2081,12 +2094,12 @@ static void inptop_findotherele(ELEMENT *firstele, ELEMENT **otherele, INT *face
                                 ELEMENT *elepatch[400], INT npatch, INT surfnodes[4])
 {
 INT        i,j,k;
-ELEMENT   *actele;
+ELEMENT   *actele = NULL;
 GVOL      *actgvol;
 INT        surfnodesother[6][4];
-INT        matchfirst=0,matchscnd=0,matchthird=0,foundsurface;
+INT        matchfirst=0,matchscnd=0,matchthird=0,foundsurface=0;
 INT        firstnode,scndnode,thirdnode;
-INT        nodespersurf;
+INT        nodespersurf=0;
 #ifdef DEBUG 
 dstrc_enter("inptop_findotherele");
 #endif

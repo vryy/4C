@@ -105,7 +105,10 @@ INT             i;                  /* simply a counter */
 INT             numeq;              /* number of equations on this proc */
 INT             numeq_total;        /* total number of equations */
 INT             init;               /* flag for solver_control call */
-INT             itnum,itstore;      /* counter for NR-Iterations */
+#ifdef S8CONTACT
+INT             itstore;      /* counter for NR-Iterations */
+#endif
+INT             itnum;      /* counter for NR-Iterations */
 INT             convergence;        /* convergence flag */
 INT             mod_disp,mod_stress;
 INT             mod_res_write;
@@ -152,18 +155,24 @@ INT             contactflag = 0;    /* flag for contact onoff */
 ARRAY           contactforce_a;     /* redundant vector of full length for contact forces */
 DOUBLE         *cforce;
 DIST_VECTOR    *con;                /*  contact forces */              
+
+#if defined(S8CONTACT) || defined(WALLCONTACT)
 INT             augon=0;
 INT             actaug=0;
 INT             aug_number=5;       /*  # of augmentation loops */
 DOUBLE          contactdt;
+#endif
 
 INT             timeadapt;          /* flag to switch time adaption on/off */
 INT             itwant;
 DOUBLE          maxdt;
 DOUBLE          resultdt;
+
+#if 0
 DOUBLE          newdt;
 DOUBLE          olddt;
 DOUBLE          eta;
+#endif 
 INT             repeatcount;
 DOUBLE          lowtime,uptime,writetime;
 DOUBLE          remain;

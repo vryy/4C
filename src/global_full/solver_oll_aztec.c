@@ -227,12 +227,16 @@ void solver_az_oll(
          */
       switch (actsolv->fieldtyp)
       {
-        case structure: azname=1; break;
-        case fluid:     azname=2; break;
-        case ale:       azname=3; break;
+        case structure: 
+          azname=1; break;
+        case fluid:     
+          azname=2; break;
+        case ale:       
+          azname=3; break;
         default:
-                        dserror("Unknown type of field");
-                        break;
+          azname=0;
+          dserror("Unknown type of field");
+          break;
       }
       /*--------------------------------------------- check the reuse feature */
       if (msr_array->is_factored==0) amcopy(&(msr_array->val),&(msr_array->val_backup));

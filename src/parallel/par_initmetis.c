@@ -94,11 +94,10 @@ INT      proc, proc2;
 INT      sameproc;
 INT      ngline;
 
-INTRA   *actintra;
 INT      imyrank;
 INT      inprocs;
 NODE    *actnode;
-FIELD   *actfield;
+FIELD   *actfield = NULL;
 GNODE   *actgnode;
 GLINE   *actgline;
 ELEMENT *actele;
@@ -114,9 +113,6 @@ ARRAY    vwgt[MAXFIELD];
 
 INT      ione=1;
 INT      options[5];
-INT      numflag=0;
-INT      edgecut;
-INT      wgtflag=2;
 INT      nparts;
 ARRAY    part;
 ARRAY    part_proc;
@@ -125,6 +121,14 @@ ARRAY    gl_per_proc_a;
 INT     *gl_per_proc;
 ARRAY    lineproc_a;
 INT     *lineproc;
+
+#ifdef PARALLEL
+INTRA   *actintra;
+INT      numflag=0;
+INT      edgecut;
+INT      wgtflag=2;
+#endif
+
 #ifdef DEBUG 
 dstrc_enter("part_fields");
 #endif

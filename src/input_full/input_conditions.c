@@ -76,7 +76,9 @@ static void inpdesign_line_couple(void);
 static void inpdesign_surf_couple(void);
 static void inpdesign_vol_couple(void);
 
+#ifdef D_FSI
 static void inpdesign_line_fsicouple(void);
+#endif
 static void inpdesign_nodal_freesurf(void);
 static void inpdesign_line_freesurf(void);
 static void inpdesign_line_liftdrag(void);
@@ -84,19 +86,21 @@ static void inpdesign_surf_liftdrag(void);
 static void inpdesign_surf_stability(void);
 static void inpdesign_vol_stability(void);
 
+#ifdef D_AXISHELL
 static void inpdesign_line_thickness(void);
 static void inpdesign_line_axishellload(void);
 static void inpdesign_point_axishellcos(void);
+#endif
 
+#ifdef WALLCONTACT
 static void inpdesign_line_contact(void);
+#endif
 
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 4/01    |
  *----------------------------------------------------------------------*/
 void inp_conditions()
 {
-INT  ierr;
-INT  i;
 #ifdef DEBUG 
 dstrc_enter("inp_conditions");
 #endif
@@ -1747,7 +1751,6 @@ INT    dnodeId;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
-INT    coupleId;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_nodal_freesurf");
@@ -1834,7 +1837,6 @@ INT    dlineId;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-INT    coupleId;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_line_freesurf");
@@ -1929,9 +1931,7 @@ static void inpdesign_line_liftdrag()
   INT    ndline;
   INT    dlineId;
   char  *colptr;
-  char   buffer[200];
   DLINE *actdline;
-  INT    coupleId;
 
 #ifdef DEBUG 
   dstrc_enter("inpdesign_line_liftdrag");
@@ -2020,9 +2020,7 @@ static void inpdesign_surf_liftdrag()
   INT    ndsurf;
   INT    dsurfId;
   char  *colptr;
-  char   buffer[200];
   DSURF *actdsurf;
-  INT    coupleId;
 
 #ifdef DEBUG 
   dstrc_enter("inpdesign_surf_liftdrag");

@@ -601,9 +601,11 @@ case control_arc:
    rldiff = (statvar->stepsize) / (sqrt(prenorm*prenorm + statvar->arcscl*statvar->arcscl));
 break;
 case control_none:
+   rldiff = 0.0;
    dserror("Unknown typ of path following control");
 break;
 default:
+   rldiff = 0.0;
    dserror("Unknown typ of path following control");
 break;
 }

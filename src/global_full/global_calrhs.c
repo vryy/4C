@@ -123,8 +123,10 @@ INT             i,j;
 INT             dof;
 NODE           *actnode;
 NEUM_CONDITION *actneum;
+#ifdef D_SHELL9
 INT             nsurf;     /* 1=MID; 2=TOP; 3=BOT */
 INT             numklay;   /* number of kinematic layers if shell9 */
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("rhs_point_neum");
