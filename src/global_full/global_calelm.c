@@ -242,6 +242,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
             &estif_global,&emass_global,&intforce_global,
             action, container);
    break;
+#ifdef D_FLUID
    case el_fluid2: 
       if(container->turbu==2 || container->turbu==3) actele2 = actpart->pdis[1].element[i];
       else                                           actele2 = NULL;
@@ -270,6 +271,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
              &etforce_global,&eiforce_global,&edforce_global,
 	     action,&hasdirich,&hasext,container); 
    break;
+#endif   
    case el_ale3:
 	ale3(actpart,actintra,actele,
         &estif_global,
