@@ -524,6 +524,7 @@ return;
  *----------------------------------------------------------------------*/
 void ds_cputime_init()
 {
+#ifndef SUSE73
 #ifdef PARALLEL
 
 #else
@@ -556,6 +557,7 @@ seq_start=time(NULL);
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+#endif
 return;
 }
 
@@ -565,6 +567,7 @@ return;
  *----------------------------------------------------------------------*/
 double ds_cputime()
 {
+#ifndef SUSE73
 #ifdef PARALLEL
 double par_end;
 #else
@@ -604,4 +607,5 @@ diff = difftime(seq_end,seq_start);
 dstrc_exit();
 #endif
 return ((double)(diff)); 
+#endif
 }
