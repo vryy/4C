@@ -1,0 +1,513 @@
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+scordelis
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS          16 
+NODES             25
+DIM                3
+MATERIALS          1
+NUMDF        27
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+NUMFIELD     1
+TIMETYP      Static
+TRACE        secure
+RESTART      0
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE         No
+STRUCT_STRESS_FILE       No
+STRUCT_DISP_GID          No
+STRUCT_STRESS_GID        No
+STRUCT_STRESS_GID_SMO    No
+FLUID_SOL_FILE           No
+FLUID_SOL_GID            No
+FLUID_VIS_FILE           No
+------------------------------------------------------------STATIC
+NONLINEAR
+KINTYP       Geo_Lin
+//KINTYP       Tot_Lagr
+NEWTONRAPHSO Displacement_Control
+NUMSTEP      5
+MAXITER      20
+TOLRESID     1.0E-07
+TOLDISP      1.0E-07
+STEPSIZE     -1.2E-2
+IARC         No
+ARCSCL       1.0
+SIGNCHCSP    No
+RESEVRYDISP  15
+RESEVRYSTRS  20
+RESTARTEVRY  125
+-----------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Gen_Alfa
+EIGEN        0
+RESEVRYDISP  10
+RESEVRYSTRS  20
+RESTARTEVRY  20
+TIMESTEP     0.05 
+NUMSTEP      200 
+MAXTIME      5.0
+BETA         0.25 
+GAMMA        0.5 
+ALPHA_M      0.5 
+ALPHA_F      0.5
+DAMPING      Yes 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
+TOLDISP      1.0E-08
+MAXITER      50
+CONTACT      0
+TIMEADAPT    0
+ITWANT       4
+MAXDT        0.07
+RESULTDT     0.05
+-----------------------------------------------------FLUID DYNAMIC
+DYNAMICTYP   Nlin_Time_Int
+TIMEINTEGR   One_Step_Theta
+NUMDF        3
+VISCSTRESS   no
+FREESURFACE  no
+IPRERHS      1
+NUMCONT      1
+UPPSS        1
+UPOUT        1
+MAXTIME      1000.0
+NUMSTEP      200  
+TIMESTEP     0.05
+ALPHA        1.00
+THETA        0.50
+GAMMA        1.00
+NONLINITER   fixed_point_like
+ITEMAX       3
+CONVCHECK    L_2_norm
+CONVTOL      1.0E-6
+STEADYCHECK  L_2_norm
+STEADYSTEP   5
+STEADYTOL    1.0E-6
+STARTINGALGO One_Step_Theta
+NUMSTASTEPS  0
+START_THETA  0.67
+INITIALFIELD zero_field
+STARTFUNCNO  2
+TURBULENCE   No
+INT_LENGHT   1.0
+ROUGHTNESS   1.0
+SC_COORD_X   0.0
+SC_COORD_Y   0.0
+DISC_CAPT    No
+-------------------------------------------------------FSI DYNAMIC
+MAXTIME      1000.0
+TIMESTEP     0.05
+NUMSTEP      200
+UPPSS        1
+IALE         Pseudo_Structure
+COUPALGO     sequ_staggerd
+PREDICTOR    d(n)
+CONVCRIT     ||g(i)||:sqrt(neq)
+ENERGYCHECK  yes
+TOLENCHECK   1.0E-6
+RELAX        1.0
+ITEMAX       1
+CONVTOL      1.0E-6
+NESTEDITER   no
+ISDMAX       0
+ICHMAX       0
+ITECHAPP     20
+ICHOPT       no
+-------------------------------------------------------ALE DYNAMIC
+TIMESTEP     0.1
+NUMSTEP      200
+MAXTIME      5.0
+NUM_INITSTEP 0
+ALE_TYPE     classic_lin
+RESEVRYDISP  10
+QUALITY      none
+------------------------------------------------------OPTIMIZATION
+OPT_NUMITER   10 total number of iteration steps
+OPT_TYPE      Topo type of optimization
+OPT_STRATEGY  FSD type of optimization strategy
+//
+FSD_GRAD      Explicit gradientenbestimmung  
+FSD_NUMITER   10 number of iteration steps with fsd
+FSD_ACC       1.0E-07 erforderliche genauigkeit                  
+FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
+FSD_BETA      0.55 schreitweitenfaktor                        
+FSD_DELTA     0.25 schrittweitenbegrenzung                    
+FSD_GAMMA     0.0 gleichheitsrestriktionswert                
+//
+OPT_SMO       ON smooth gradients or other values
+SMO_TYPE      gradient
+SMO_ERAD      1.1 radius
+SMO_EXPO      2.2 exponent
+//
+OPT_OBJ       Stiffness objective
+//
+OV_VAR 1 global opt. variables
+  ELEofMAT 1 TYPE DENS  DL 1.0E-4  DU 1.0E0 SCL 1.
+OV_END
+//
+OC_ICO 0 global inequality constraints
+//
+OC_ECO 1 global   equality constraints
+      DVOLU 1 TYP WEIGHT  SCL 1. 
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        BiCGSTAB
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         1.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+//SOLVER         SPOOLES_nonsym
+SOLVER         Colsol
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 4
+NDLINE  4
+NDSURF  1
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 7.600000
+END POINT
+POINT
+Num: 2 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 4.885186 0.000000 5.821938
+END POINT
+POINT
+Num: 3 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 7.600000 7.600000
+END POINT
+POINT
+Num: 4 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Coord: 4.885186 7.600000 5.821938
+END POINT
+------------------------------------------------------DESIGN LINES
+ARCLINE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 1 2
+2D center=-2.494846,6.854533 radius=7.599998 initang=4.712389 endang=5.410521
+Transformation Matrix:
+m[1,1]=1.000000  m[1,2]=0.000000  m[1,3]=0.000000  m[1,4]=0.000000  
+m[2,1]=0.000000  m[2,2]=0.000000  m[2,3]=-1.000000  m[2,4]=0.000000  
+m[3,1]=0.000000  m[3,2]=1.000000  m[3,3]=0.000000  m[3,4]=0.000000  
+m[4,1]=2.494846  m[4,2]=0.000000  m[4,3]=6.854534  m[4,4]=1.000000  
+TotalLength= 5.300493
+END ARCLINE
+ARCLINE
+Num: 2 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 3 4
+2D center=-2.494846,6.854533 radius=7.599998 initang=4.712389 endang=5.410521
+Transformation Matrix:
+m[1,1]=1.000000  m[1,2]=0.000000  m[1,3]=0.000000  m[1,4]=0.000000  
+m[2,1]=0.000000  m[2,2]=0.000000  m[2,3]=-1.000000  m[2,4]=0.000000  
+m[3,1]=0.000000  m[3,2]=1.000000  m[3,3]=0.000000  m[3,4]=0.000000  
+m[4,1]=2.494846  m[4,2]=7.600000  m[4,3]=6.854534  m[4,4]=1.000000  
+TotalLength= 5.300493
+END ARCLINE
+STLINE
+Num: 3 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=5,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 1 3
+END STLINE
+STLINE
+Num: 4 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 2 4
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 0 conditions: 4 material: 5
+LAYER: Layer0
+Meshing Info: (num=1,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 3 Orientation: SAME1ST
+Line: 2 Orientation: SAME1ST
+Line: 4 Orientation: DIFF1ST
+Line: 1 Orientation: DIFF1ST
+Number of Control Points= 2 3 Degree= 1 2
+Point 1,1 coords:0.000000,0.000000,7.600000
+Point 1,2 coords:0.000000,7.600000,7.600000
+Point 2,1 coords:2.766176,-0.000000,7.600003
+Point 2,2 coords:2.766176,7.600000,7.600003
+Point 3,1 coords:4.885186,0.000000,5.821938
+Point 3,2 coords:4.885186,7.600000,5.821938
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 6
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=0.000000
+knot 4 value=1.000000
+knot 5 value=1.000000
+knot 6 value=1.000000
+Rational weights:
+1.000000 
+1.000000 
+0.939692 
+0.939692 
+1.000000 
+1.000000 
+IsTrimmed: 0
+Center: 2.599354 3.800000 7.141665
+Normal: -0.342020 0.000000 -0.939693
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 3
+ E 1 -   1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 2 -   0 1 0 0 1 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 3 -   1 0 0 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DLINE 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
+DSURF 1
+ E 1 -   none 0 0 1 0 0 0 0.0 0.0 -1.0 0.0 0.0 0.0 Live Mid 
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DLINE 0
+-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT FIELD FIXED FIXED FIXED FIXED FIXED FIXED
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0
+------------------------------------------------CONTACT CONDITIONS
+DLINE 0
+-------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL COS POINT CONDITIONS
+DPOINT 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE      25 DNODE 1
+NODE      20 DNODE 2
+NODE      12 DNODE 3
+NODE       1 DNODE 4
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE      25 DLINE 1
+NODE      24 DLINE 1
+NODE      23 DLINE 1
+NODE      21 DLINE 1
+NODE      20 DLINE 1
+NODE      12 DLINE 2
+NODE       8 DLINE 2
+NODE       5 DLINE 2
+NODE       2 DLINE 2
+NODE       1 DLINE 2
+NODE      25 DLINE 3
+NODE      22 DLINE 3
+NODE      18 DLINE 3
+NODE      14 DLINE 3
+NODE      12 DLINE 3
+NODE      20 DLINE 4
+NODE      15 DLINE 4
+NODE       7 DLINE 4
+NODE       3 DLINE 4
+NODE       1 DLINE 4
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE      25 DSURFACE 1
+NODE      20 DSURFACE 1
+NODE      12 DSURFACE 1
+NODE       1 DSURFACE 1
+NODE      24 DSURFACE 1
+NODE      23 DSURFACE 1
+NODE      21 DSURFACE 1
+NODE       8 DSURFACE 1
+NODE       5 DSURFACE 1
+NODE       2 DSURFACE 1
+NODE      22 DSURFACE 1
+NODE      18 DSURFACE 1
+NODE      14 DSURFACE 1
+NODE      15 DSURFACE 1
+NODE       7 DSURFACE 1
+NODE       3 DSURFACE 1
+NODE      19 DSURFACE 1
+NODE      13 DSURFACE 1
+NODE      10 DSURFACE 1
+NODE      17 DSURFACE 1
+NODE      11 DSURFACE 1
+NODE       6 DSURFACE 1
+NODE      16 DSURFACE 1
+NODE       9 DSURFACE 1
+NODE       4 DSURFACE 1
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 4.885185633620000e+00     7.600000000000000e+00     5.821937767700000e+00   
+NODE            2     COORD 3.799999237060547e+00     7.599999904632568e+00     6.581792831420898e+00   
+NODE            3     COORD 4.885185633620000e+00     5.699999999999999e+00     5.821937767700000e+00   
+NODE            4     COORD 3.800000151686061e+00     5.699999920648419e+00     6.581794423659698e+00   
+NODE            5     COORD 2.599352836608887e+00     7.599999904632568e+00     7.141663551330566e+00   
+NODE            6     COORD 2.599353529619937e+00     5.699999918765733e+00     7.141665492649569e+00   
+NODE            7     COORD 4.885185633620000e+00     3.800000000000000e+00     5.821937767700000e+00   
+NODE            8     COORD 1.319726347923279e+00     7.599999904632568e+00     7.484538078308105e+00   
+NODE            9     COORD 3.800000144005056e+00     3.799999954372902e+00     6.581794428094335e+00   
+NODE           10     COORD 1.319726663681043e+00     5.699999917725703e+00     7.484539991057913e+00   
+NODE           11     COORD 2.599353503256033e+00     3.799999947839694e+00     7.141665502245243e+00   
+NODE           12     COORD 0.000000000000000e+00     7.600000000000000e+00     7.600000000000000e+00   
+NODE           13     COORD 1.319726617481064e+00     3.799999945020206e+00     7.484539999204187e+00   
+NODE           14     COORD 0.000000000000000e+00     5.699999999999999e+00     7.600000000000000e+00   
+NODE           15     COORD 4.885185633620000e+00     1.900000000000000e+00     5.821937767700000e+00   
+NODE           16     COORD 3.800000136324051e+00     1.899999988097383e+00     6.581794432528969e+00   
+NODE           17     COORD 2.599353476892129e+00     1.899999976913654e+00     7.141665511840917e+00   
+NODE           18     COORD 0.000000000000000e+00     3.800000000000000e+00     7.600000000000000e+00   
+NODE           19     COORD 1.319726571281085e+00     1.899999972314712e+00     7.484540007350461e+00   
+NODE           20     COORD 4.885185633620000e+00     0.000000000000000e+00     5.821937767700000e+00   
+NODE           21     COORD 3.799999237060547e+00     1.913497627015204e-08     6.581792831420898e+00   
+NODE           22     COORD 0.000000000000000e+00     1.900000000000000e+00     7.600000000000000e+00   
+NODE           23     COORD 2.599352836608887e+00     -2.857218107943371e-11     7.141663551330566e+00   
+NODE           24     COORD 1.319726347923279e+00     -1.176467723240648e-08     7.484538078308105e+00   
+NODE           25     COORD 0.000000000000000e+00     0.000000000000000e+00     7.600000000000000e+00   
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 SHELL9 QUAD4      22     19     24     25 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      2 SHELL9 QUAD4      18     13     19     22 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      3 SHELL9 QUAD4      14     10     13     18 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      4 SHELL9 QUAD4      12      8     10     14 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      5 SHELL9 QUAD4      19     17     23     24 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      6 SHELL9 QUAD4      13     11     17     19 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      7 SHELL9 QUAD4      10      6     11     13 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      8 SHELL9 QUAD4       8      5      6     10 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+      9 SHELL9 QUAD4      17     16     21     23 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+     10 SHELL9 QUAD4      11      9     16     17 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+     11 SHELL9 QUAD4       6      4      9     11 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+     12 SHELL9 QUAD4       5      2      4      6 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+     13 SHELL9 QUAD4      16     15     20     21 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+     14 SHELL9 QUAD4       9      7     15     16 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+     15 SHELL9 QUAD4       4      3      7      9 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+     16 SHELL9 QUAD4       2      1      3      4 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS 
+//MAT       1 MAT_Multilayer  NUM_KLAY 1 SEC_KLAY 100
+MAT       1 MAT_Multilayer  NUM_KLAY 2 SEC_KLAY 50,50 
+//MAT       1 MAT_Multilayer  NUM_KLAY 3 SEC_KLAY 33.33333,33.33334,33.33333
+//MAT       1 MAT_Multilayer  NUM_KLAY 4 SEC_KLAY 25,25,25,25
+//MAT       1 MAT_Multilayer  NUM_KLAY 5 SEC_KLAY 20,20,20,20,20
+//MAT       1 MAT_Multilayer  NUM_KLAY 8 SEC_KLAY 12.5,12.5,12.5,12.5,12.5,12.5,12.5,12.5
+     KINLAY 1 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
+     KINLAY 2 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  2  SEC_PHI  0.0  SEC_ROT  3
+//     KINLAY 3 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
+//     KINLAY 4 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
+//     KINLAY 5 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
+//     KINLAY 6 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
+//     KINLAY 7 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
+//     KINLAY 8 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
+----------------------------------------------MULTILAYER MATERIALS
+//
+//  11=22  &  22=11 -> passt bis auf Fall1 sehr gut
+//
+// FALL 1
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
+// SH11T  12.6  SH11C 4.2   SH22T  12.6  SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//
+// FALL 2
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
+// SH11T  4.2   SH11C 12.6  SH22T  4.2   SH22C 12.6  SH33T  4.2   SH33C 4.2  SH12 2.4   SH23 2.4   SH13 2.4 
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//
+// FALL 3
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
+// SH11T  4.2   SH11C 4.2   SH22T  12.6  SH22C 12.6  SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//
+// FALL 4
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
+// SH11T  12.6  SH11C 12.6  SH22T  4.2   SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//
+// FALL 5
+MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2
+ S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
+ SH11T  4.2   SH11C 4.2   SH22T  4.2   SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
+ HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//
+//MULTIMAT 1  MAT_Struct_StVenantKirchhoff  YOUNG 21e3 NUE 0.0 DENS 0.0
+MULTIMAT    2 MAT_MisesPlastic  YOUNG 21e3  NUE  0.0  Xsi 0.0  Sigy 4.2  Hard  0.1
+------------------------------------------------------CONTROL NODE
+NODE       1 DOF 3 
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+---------------------------------------------------------------END
+// END
