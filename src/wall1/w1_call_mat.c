@@ -1,29 +1,20 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_call_mat' which selects the proper 
+       material law for a wall element
+       contains the routine 'w1_getdensity' which gets the density
+       out of the material law
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
-/*-----------------------------------------------------------------------|
-|      topic: kondense 3D conditions                              sh 7/02|
-|             to plane stress/strain conditions                          |
-|-----------------------------------------------------------------------*/
-void w1mat_trans_down (double **d,/*current material matrix d14-d44     */
-                     ELEMENT   *ele,                                        
-                     WALL_TYPE wtype,
-                     double  *stress,  /*actuel stress [4]              */
-                     double  *strain,  /*actual strain [4]              */
-                     double  *qn,
-                     double  **bop);
-/*-----------------------------------------------------------------------|
-|      topic: blowing up plane stress/strain conditions           sh 7/02|
-|             to 3D --> 3D-Material Law                                  |
-|-----------------------------------------------------------------------*/
-void w1mat_trans_up (double **d,/*current material matrix d14-d44       */
-                     ELEMENT   *ele,                                        
-                     WALL_TYPE wtype,
-                     double  *stress,  /*actuel stress [4]              */
-                     double  *strain,  /*actual strain [4]              */
-                     double  *qn,
-                     double  **bop);
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | select proper material law                               al 01/02    |
  *----------------------------------------------------------------------*/
@@ -99,6 +90,7 @@ dstrc_enter("w1_call_mat");
                        mat->m.pl_mises->Sigy,
                        mat->m.pl_mises->Hard,
                        mat->m.pl_mises->GF,
+                       mat->m.pl_mises->betah,
                        ele,
                        wtype,
                        bop,
@@ -111,34 +103,23 @@ dstrc_enter("w1_call_mat");
                        newval);
   break;
   case m_pl_mises_3D:/*--------------------- von mises material law -> 3D---*/
-    w1mat_trans_up(d,
-                   ele,
-                   wtype,
-                   stress,
-                   strain,
-                   qn,
-                   bop);
-    /*mat_plast_mises_3D(mat->m.pl_mises->youngs,
-                       mat->m.pl_mises->possionratio,
-                       mat->m.pl_mises->ALFAT,
-                       mat->m.pl_mises->Sigy,
-                       mat->m.pl_mises->Hard,
-                       mat->m.pl_mises->GF,
-                       ele,
-                       wtype,
-                       bop,
-                       ip,
-                       stress,
-                       d,
-                       istore,
-                       newval);*/
-    w1mat_trans_down(d,
-                   ele,
-                   wtype,
-                   stress,
-                   strain,
-                   qn,
-                   bop);
+    w1_mat_plast_mises_3D(mat->m.pl_mises->youngs,
+                          mat->m.pl_mises->possionratio,
+                          mat->m.pl_mises->ALFAT,
+                          mat->m.pl_mises->Sigy,
+                          mat->m.pl_mises->Hard,
+                          mat->m.pl_mises->GF,
+                          mat->m.pl_mises->betah,
+                          ele,
+                          wtype,
+                          bop,
+                          gop,
+                          alpha,
+                          ip,
+                          stress,
+                          d,
+                          istore,
+                          newval);
   break;
   case m_pl_dp:/*------------------- drucker prager material law ---*/
     w1_mat_plast_dp(   mat->m.pl_dp->youngs,
@@ -234,6 +215,9 @@ break;
 case m_pl_mises:/*--------------------------- von mises material law ---*/
   dserror("Ilegal typ of material for this element");
 break;
+case m_pl_mises_3D:/*-------------Stefan's von mises 3D material law ---*/
+  dserror("Ilegal typ of material for this element");
+break;
 case m_pl_dp:/*------------------------- drucker prager material law ---*/
    dserror("Ilegal typ of material for this element");
 break;
@@ -248,4 +232,6 @@ dstrc_exit();
 return;
 } /* end of w1_getdensity */
 #endif
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

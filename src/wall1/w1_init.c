@@ -1,7 +1,18 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1init' which initializes the element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+#include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | initialize the element                                    al 6/01    |
  *----------------------------------------------------------------------*/
@@ -76,6 +87,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   
   /* for plasticity */
   if(mat[actele->mat-1].mattyp == m_pl_mises || 
+     mat[actele->mat-1].mattyp == m_pl_mises_3D ||  /*Stefan's mises 3D*/ 
      mat[actele->mat-1].mattyp == m_pl_dp || 
      mat[actele->mat-1].mattyp == m_pl_epc )
   {/*matplast01*/
@@ -100,6 +112,14 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       actele->e.w1->elewa[0].ipwa[k].epstn = 0.;
       actele->e.w1->elewa[0].ipwa[k].yip   = -1;
       actele->e.w1->elewa[0].ipwa[k].qn = (double*)CCACALLOC(4,sizeof(double));
+
+      /*additional values needed for condensation       sh 08/02*/
+      if(mat[actele->mat-1].mattyp == m_pl_mises_3D )
+      {
+      actele->e.w1->elewa[0].ipwa[k].sigi = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].epsi = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].di   = (double*)CCACALLOC(4,sizeof(double));
+      }
 
       if(mat[actele->mat-1].mattyp == m_pl_epc )
       {
@@ -133,6 +153,12 @@ for (i=0; i<actpart->pdis[0].numele; i++)
         actele->e.w1->elewa[0].ipwa[k].sig[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].eps[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].qn[ j] = 0.;
+        if(mat[actele->mat-1].mattyp == m_pl_mises_3D )
+        {
+        actele->e.w1->elewa[0].ipwa[k].sigi[j] = 0.;
+        actele->e.w1->elewa[0].ipwa[k].epsi[j] = 0.;
+        actele->e.w1->elewa[0].ipwa[k].di[  j] = 0.;
+        }
         if(mat[actele->mat-1].mattyp == m_pl_epc )
         {
         actele->e.w1->elewa[0].ipwa[k].sigc[j] = 0.;
@@ -144,8 +170,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       }
     }/*matplast02*/
   /*------------------------------------- calculate element diameter ---*/
-    if(mat[actele->mat-1].mattyp == m_pl_mises && 
-     (fabs(0.0001 - mat[actele->mat-1].m.pl_mises->GF) > 0.0001) )
+    if( (mat[actele->mat-1].mattyp == m_pl_mises && 
+        (fabs(0.0001 - mat[actele->mat-1].m.pl_mises->GF) > 0.0001) )
+      || (mat[actele->mat-1].mattyp == m_pl_mises_3D && 
+         (fabs(0.0001 - mat[actele->mat-1].m.pl_mises->GF) > 0.0001) ) )
     {
        w1cdia(actele, &data, funct_h, deriv_h, xjm_h);
     }
@@ -202,4 +230,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1init */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
