@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 
 /*----------------------------------------------------------------------*
@@ -40,9 +40,9 @@ dirich=1;
 if (actnode->gnode->couple != NULL)
 {
    dserror("coupling conditions for FLUID2_TU not implemented yet!\n");
-   /*---------- dof has geostationary coupling condition */
-   /* if (actnode->gnode->couple->couple.a.ia[2][0]!=0) geocouple=1;
-   /*------------------------ dof has coupling condition */
+   /*---------- dof has geostationary coupling condition             */
+   /* if (actnode->gnode->couple->couple.a.ia[2][0]!=0) geocouple=1; */
+   /*------------------------ dof has coupling condition             */
    /* if (actnode->gnode->couple->couple.a.ia[2][1]!=0)    couple=1; */
 }
 /*-------------------------------------------------------*/
