@@ -661,6 +661,9 @@ static INT ale_quality_min_J_triangles;
 static INT ale_quality_ar;
 static INT ale_quality_ca;
 static INT ale_quality_Je;
+
+static INT funct_range;     /* warning 5 */
+static INT funct_line;      /* warning 6 */
 /*----------------------------------------------------------------------*/
 switch (task)
 {
@@ -670,6 +673,9 @@ switch (task)
       ale_quality_ar = 0;
       ale_quality_ca = 0;
       ale_quality_Je = 0;
+
+      funct_range = 0;
+      funct_line  = 0;
    break;
    /*------------------------------------------------ create warning ---*/
    case 1:
@@ -681,6 +687,10 @@ switch (task)
          ale_quality_ca++;	 
       else if (warning == 4)
          ale_quality_Je++;
+      else if (warning == 5)
+         funct_range++;
+      else if (warning == 6)
+         funct_line++;
    break;
    /*------------------------------------------------ write warnings ---*/
    case 2:
@@ -695,6 +705,11 @@ switch (task)
          printf("\n Warning: corner_angle quality monitoring for one of the distyps not implemented!!\n");
       if (ale_quality_Je)
          printf("\n Warning: min_J quality monitoring for one of the distyps not implemented!!\n");
+
+      if (funct_range)
+         printf("\n WARNING: Function used for points outside the range 0<xi<1 !!\n");
+      if (funct_line)
+         printf("\n WARNING: Function used for points not on the defined line!!\n");
    break;
    /*------------------------------------------------------- default ---*/
    default:
