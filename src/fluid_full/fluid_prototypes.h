@@ -221,8 +221,33 @@ void fluid_mlcaldirich(
 		       DOUBLE    *dforces, 
                        DOUBLE   **estif,   
 		       INT       *hasdirich
-		      );     
-
+		      );  
+/************************************************************************
+ | fluid_adapt_service.c                                                |
+ ************************************************************************/
+void fluid_acceleration(	FIELD 		*actfield,
+				INT 	 	iop,
+				FLUID_DYN_CALC 	*dynvar,
+				FLUID_DYNAMIC	*fdyn
+			);
+void fluid_prep_rhs(FIELD 		*actfield,
+		    FLUID_DYN_CALC 	*dynvar,
+		    FLUID_DYNAMIC	*fdyn);
+void fluid_predictor(FIELD *actfield, INT iop, FLUID_DYN_CALC *dynvar);
+void fluid_lte(	FIELD	 	*actfield,
+		INT 		 iop,
+		FLUID_DYN_CALC 	*dynvar,
+		FLUID_DYNAMIC	*fdyn );
+void fluid_lte_norm(
+			PARTITION 	*actpart,
+			INTRA		*actintra,
+			FLUID_DYN_CALC	*dynvar,
+                        FLUID_DYNAMIC	*fdyn,
+			INT		*iststep,
+			INT		*repeat,
+			INT		*repeated,
+			INT		 itnum
+			);
 /************************************************************************
  | fluid_service.c                                                      |
  ************************************************************************/
@@ -307,28 +332,6 @@ void fluid_reducestress(
 			  INT                numdf, 
 			  FLUID_STRESS       str
 		       );
-void fluid_acceleration(	FIELD 		*actfield, 
-				INT 	 	iop, 
-				FLUID_DYN_CALC 	*dynvar,
-				FLUID_DYNAMIC	*fdyn
-			);
-void fluid_prep_rhs(FIELD 		*actfield, 
-		    FLUID_DYN_CALC 	*dynvar,
-		    FLUID_DYNAMIC	*fdyn);
-void fluid_predictor(FIELD *actfield, INT iop, FLUID_DYN_CALC *dynvar);
-void fluid_lte(	FIELD	 	*actfield, 
-		INT 		 iop, 
-		FLUID_DYN_CALC 	*dynvar,
-		FLUID_DYNAMIC	*fdyn );
-void fluid_lte_norm(	
-			PARTITION 	*actpart,
-			INTRA		*actintra,
-			FLUID_DYN_CALC	*dynvar,
-                        FLUID_DYNAMIC	*fdyn,
-			INT		*iststep,
-			INT		*repeat,
-			INT		*repeated
-			);	       
 /************************************************************************
  | fluid_service_tu.c                                                   |
  ************************************************************************/
