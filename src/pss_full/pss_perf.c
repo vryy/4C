@@ -16,6 +16,11 @@ double cputime_thread();
 #include "../headers/standardtypes.h"
 #include <sys/time.h>
 
+#ifdef LINUX_MUENCH
+#include <unistd.h>
+#include <sys/times.h>
+#endif
+
 #ifdef PERF
 static DOUBLE begtime[100];
 static DOUBLE sumtime[100];
@@ -77,12 +82,13 @@ DOUBLE perf_time ()
 #endif
 
 #ifdef LINUX_MUENCH
-  struct timeval _tstart;
-  DOUBLE t1;
+  /*ret = clock();*/
+  DOUBLE clk_tck;
+  struct tms buf;
 
-  gettimeofday(&_tstart, NULL);
-  t1 =  (double)_tstart.tv_sec + (double)_tstart.tv_usec/(1000*1000);
-  ret = t1;
+  times(&buf);
+  clk_tck = (DOUBLE)sysconf(_SC_CLK_TCK);
+  ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
 #endif
 
 #ifdef BULL
