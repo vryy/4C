@@ -34,6 +34,7 @@ void ntadev(int argc, char *argv[])
 {
 char  *charpointer; 
 char  *resptr;  
+char  *vismode;
 int    isrestart;
 int    length;
 int    lasthandle,nrecords;
@@ -59,6 +60,20 @@ int    lasthandle,nrecords;
    }    
    else
    {
+/*--------------------------------------- check for visualisation mode */ 
+/* visulisation mode is called by:
+   cca.exe '$$vis2$$' input.dat output */
+     genprob.visual=0;
+     vismode=argv[1];
+     length = strlen(argv[1]);
+     if (length == 8)
+     {
+        if (strncmp("$$vis2$$",vismode,length)==0) genprob.visual+=2;
+	if (strncmp("$$VIS2$$",vismode,length)==0) genprob.visual+=2;
+	if (strncmp("$$vis3$$",vismode,length)==0) genprob.visual+=3;
+	if (strncmp("$$VIS3$$",vismode,length)==0) genprob.visual+=3;
+     }
+     if (genprob.visual) goto visualisation ;
 /*-----------------------------get input file name and open input file */
      if (par.myrank==0)
      {
@@ -211,8 +226,53 @@ if (par.myrank==0)
 }     
 /*--------------------------to open any other file just add block here */
 
+visualisation:
+if (genprob.visual>0)
+{
+   /*------------------------------------------ check number of procs */
+   if (par.nprocs-1) printf("Visualisation only with one proc!\n");
+#ifdef PARALLEL 
+       MPI_Finalize();
+#endif
+   /*------------------------------ open files for visual2 or visual3 */
+   if (genprob.visual==2 || genprob.visual==3)
+   {
+/*---------------------------- at the moment the informations of the 
+  input file is used for visualisation with Visual 2 / Visual 3       */
+/*-----------------------------get input file name and open input file */
+      allfiles.inputfile_name=argv[2];
+      if ( (allfiles.in_input=fopen(allfiles.inputfile_name,"r"))==NULL)
+      {
+         printf("Opening of input file %s failed\n",allfiles.inputfile_name);
+         exit(1);
+      }
+      printf("input is read from           %s\n",allfiles.inputfile_name);   
+/*------------------------------------- kenner of pss file and open it */
+     allfiles.vispsslength=strlen(argv[3]);
+     allfiles.vispssfile_kenner=argv[3];    
+     strcpy(allfiles.vispssfile_name,allfiles.vispssfile_kenner);
+     charpointer=allfiles.vispssfile_name+strlen(allfiles.vispssfile_kenner);
+     charpointer = allfiles.vispssfile_name+strlen(allfiles.vispssfile_name); 
 
+     strncpy(charpointer,".pss",4);
+     if ( (allfiles.in_pss=fopen(allfiles.vispssfile_name,"a+b"))==NULL)
+     {
+        printf("Opening of visual data file .pss failed\n");
+     }
+    printf("visual data are read from    %s\n",allfiles.vispssfile_name);
    }
-
+/*------------------------------------------------------open .err file */     
+     strcpy(allfiles.outputfile_name,allfiles.vispssfile_kenner);
+     charpointer=allfiles.outputfile_name+strlen(allfiles.vispssfile_kenner);     
+     strncpy(charpointer,".vis.err",8);
+     if ( (allfiles.out_err=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of output file .err failed\n");
+        exit(1);
+     }
+    printf("errors are reported to       %s\n",allfiles.outputfile_name);   
+}
+/*----------------------------------------------- end of visualisation */
+   }
 return;
 }/* end of ntadev */
