@@ -57,7 +57,7 @@ msr_make_bindx(actfield,actpart,actsolv,msr,dof_connect);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<msr->numeq_total; i++)
 {
-   if (!dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) FREE(dof_connect[i]);
 }
 FREE(dof_connect);
 /*----------------------------------------------------------------------*/

@@ -54,7 +54,7 @@ ucchb_make_a(actfield,actpart,actsolv,actintra,ucchb,dof_connect);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<ucchb->numeq_total; i++)
 {
-   if (!dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) FREE(dof_connect[i]);
 }
 FREE(dof_connect);
 /*----------------------------------------------------------------------*/

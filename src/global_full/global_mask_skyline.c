@@ -70,7 +70,7 @@ skyline_make_sparsity(sky,&red_dof_connect);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<sky->numeq_total; i++)
 {
-   if (!dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) FREE(dof_connect[i]);
 }
 FREE(dof_connect);
 amdel(&red_dof_connect);

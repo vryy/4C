@@ -69,7 +69,7 @@ rc_ptr_make_sparsity(rc_ptr,bindx);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<rc_ptr->numeq_total; i++)
 {
-   if (!dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) FREE(dof_connect[i]);
 }
 FREE(dof_connect);
 amdel(&bindx_a);

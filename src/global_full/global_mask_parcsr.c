@@ -55,7 +55,7 @@ parcsr_update_perm(actintra,parcsr);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<parcsr->numeq_total; i++)
 {
-   if (!dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) FREE(dof_connect[i]);
 }
 FREE(dof_connect);
 /*----------------------------------------------------------------------*/
