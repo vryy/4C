@@ -1,3 +1,7 @@
+/* NOT USED ANY MORE 
+   NEW FILE NAME IS fluid_dyn.c
+*/
+
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 #include "fluid_prototypes.h"    

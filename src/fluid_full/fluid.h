@@ -1,3 +1,6 @@
+/* NOT USED ANY MORE !!!!!!!!!!!!!!!!!!!! 
+   YOU CAN FIND THE ACUTAL fluid.h in ../headers 
+*/   
 #ifdef D_FLUID2
 #include "../fluid2/fluid2.h"
 typedef union _FLUID_DATA
