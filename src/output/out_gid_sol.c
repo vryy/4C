@@ -134,6 +134,7 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
       case el_shell9: 
+#ifdef D_SHELL9
          if (actele->numnp==4)  
          {
              if (actele->e.s9->nGP[0]==2 && actele->e.s9->nGP[1]==2)
@@ -173,6 +174,7 @@ for (i=0; i<genprob.numfld; i++)
                  actgid->shell9_9_33_name = "shell9_9_33";
              }
          }
+#endif
       break;
       case el_brick1: 
          if (actele->numnp==8)  
