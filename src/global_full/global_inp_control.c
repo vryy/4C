@@ -100,7 +100,9 @@ inherit_design_dis_couple(&(field[i].dis[j]));
 /*-------------------------------------------------- input of materials */
 inp_material();
 /*------------------------------------- input of initial data for fluid */
+#ifdef D_FLUID
 inp_fluid_start_data();
+#endif
 /*--------------------------------------------- all reading is over here*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
