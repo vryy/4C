@@ -16,7 +16,8 @@ void brick1(      PARTITION   *actpart,
                   ELEMENT     *ele,
                   ARRAY       *estif_global,
                   ARRAY       *emass_global,
-                  CALC_ACTION *action)
+                  CALC_ACTION *action,
+                  CONTAINER   *container)   /*!< contains variables defined in container.h */
 {
 int  i;
 B1_DATA      actdata;
