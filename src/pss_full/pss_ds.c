@@ -60,12 +60,9 @@ struct _TRACE         trace;
 #ifdef PARALLEL
 double par_start;
 #else
-#ifdef DEBUG
-double seq_start;
-#else
 time_t seq_start;
 #endif
-#endif
+
 /*!---------------------------------------------------------------------
 \brief Initialize bugtracing systems                                              
 
@@ -143,7 +140,8 @@ trace.routine[2].dsroutcontrol = dsin;
 
 trace.actroutine = &(trace.routine[2]);
 /*======================================================tracing of time */
-/* nothing implemented yet */
+/*----------------------------------------- initialise CPU-time tracing */
+ds_cputime_init();
 #endif
 return;
 } /* end of dsinit */
@@ -648,8 +646,7 @@ routine to initialise the cpu - time
 ------------------------------------------------------------------------*/
 void ds_cputime_init()
 {
-#ifndef SUSE73
-#ifdef PARALLEL
+/*#ifdef PARALLEL
 
 #else
 #ifdef DEBUG
@@ -657,7 +654,7 @@ struct timeval tv;
 struct timezone tz;
 double sec, usec;
 #endif
-#endif
+#endif*/
 
 
 #ifdef DEBUG
@@ -666,21 +663,20 @@ dstrc_enter("ds_cputime_init");
 
 #ifdef PARALLEL
 par_start=MPI_Wtime();
-#else
+/*#else
 #ifdef DEBUG  
 gettimeofday(&tv, &tz);   
 sec = (double)(tv.tv_sec); 
 usec = (double)(tv.tv_usec);
-seq_start=sec+0.000001*usec;
+seq_start=sec+0.000001*usec;*/
 #else
 seq_start=time(NULL);
 #endif
-#endif
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
-#endif
 #endif
 return;
 }
@@ -700,15 +696,14 @@ double ds_cputime()
 #ifndef SUSE73
 #ifdef PARALLEL
 double par_end;
-#else
+/*#else
 #ifdef DEBUG
 double seq_end;
 struct timeval tv;
 struct timezone tz;
-double sec, usec;
+double sec, usec;*/
 #else
 time_t seq_end;
-#endif
 #endif
 double diff;
 
@@ -719,17 +714,16 @@ dstrc_enter("ds_cputime");
 #ifdef PARALLEL
 par_end=MPI_Wtime();
 diff=par_end-par_start;
-#else
+/*#else
 #ifdef DEBUG
 gettimeofday(&tv, &tz);   
 sec = (double)(tv.tv_sec);
 usec = (double)(tv.tv_usec);
 seq_end=sec+0.000001*usec;
-diff=seq_end-seq_start;
+diff=seq_end-seq_start;*/
 #else
 seq_end=time(NULL);
 diff = difftime(seq_end,seq_start);
-#endif
 #endif
 
 /*----------------------------------------------------------------------*/
