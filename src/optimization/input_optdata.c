@@ -4,6 +4,9 @@
        optimization control data
 
 *----------------------------------------------------------------------*/
+/*! 
+\addtogroup OPTIMIZATION 
+*//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
