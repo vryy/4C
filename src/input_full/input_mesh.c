@@ -168,7 +168,7 @@ return;
  *----------------------------------------------------------------------*/
 void inpnodes()
 {
-int  ierr;
+int  ierr=0;
 int  counter;
 #ifdef DEBUG 
 dstrc_enter("inpnodes");
@@ -273,6 +273,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       structfield->element[counter].eltyp=el_brick1;
       b1inp(&(structfield->element[counter]));
+   }
+#endif
+/*------------------------------------------------ elementtyp is WALL  */
+   frchk("WALL",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_WALL1 
+      dserror("WALL1 needed but not defined in Makefile");
+#endif
+   }
+#ifdef D_WALL1 
+   if (ierr==1) 
+   {
+      structfield->element[counter].eltyp=el_wall1;
+      w1inp(&(structfield->element[counter]));
    }
 #endif
 /*--------------------------------------------other structural elements */

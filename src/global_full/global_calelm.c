@@ -135,6 +135,10 @@ for (i=0; i<actpart->numele; i++)
       shell8(actfield,actpart,actintra,actele,&estif_global,&emass_global,dvec,global_numeq,kstep,calc_option);
    break;
    case el_brick1:
+      brick1(actpart,actintra,actele,&estif_global,&emass_global,calc_option);
+   break;
+   case el_wall1:
+      wall1( actpart,actintra,actele,&estif_global,&emass_global,calc_option);
    break;
    case el_fluid1: 
    break;
@@ -199,6 +203,7 @@ void calinit(FIELD      *actfield,   /* the actove physical field */
 int i;                        /* a counter */
 int is_shell8=0;              /* flags to check for presents of certain element types */
 int is_brick1=0;
+int is_wall1 =0;
 int is_fluid1=0;
 int is_fluid3=0;
 int is_ale=0;
@@ -221,6 +226,9 @@ for (i=0; i<actfield->numele; i++)
    break;
    case el_brick1:
       is_brick1=1;
+   break;
+   case el_wall1:
+      is_wall1=1;
    break;
    case el_fluid1:
       is_fluid1=1;
@@ -245,6 +253,12 @@ if (is_shell8==1)
 /*-------------------------------- init all kind of routines for brick1 */
 if (is_brick1==1)
 {
+   brick1(actpart,NULL,NULL,&estif_global,&emass_global,0);
+}
+/*-------------------------------- init all kind of routines for wall1  */
+if (is_wall1==1)
+{
+   wall1(actpart,NULL,NULL,&estif_global,&emass_global,0);
 }
 /*-------------------------------- init all kind of routines for fluid1 */
 if (is_fluid1==1)
@@ -344,6 +358,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of calreduce */
+
 
 
 
