@@ -47,7 +47,7 @@ DOUBLE two   = 2.0;
 DOUBLE three = 3.0;
 
 DOUBLE  q12, q13, q16, q23;
-DOUBLE  xgr[13][8],xgs[13][8],wgtt[13][8];
+static DOUBLE  xgr[13][8],xgs[13][8],wgtt[13][8];
 static DOUBLE xg[6][6],wgt[6][6];
 #ifdef DEBUG 
 dstrc_enter("w1intg");
@@ -420,6 +420,25 @@ else
         data->xgss[i] = xg[ i][ele->e.w1->nGP[1]-1];
         data->wgts[i] = wgt[i][ele->e.w1->nGP[1]-1];
       }                                                       
+/*----------------- TRIANGLES ------------------------------------------*/
+      for (i=0;i<MAXTINTP;i++)
+      {
+       for (k=0;k<MAXTINTC;k++)
+       {
+        data->txgr[i][k]=xgr[i][k];
+        data->txgs[i][k]=xgs[i][k];
+	  data->twgt[i][k]=wgtt[i][k];
+       } /* end loop over k */
+      } /* end loop over i */
+/*------ needed for integration of lines from TRIANGLES ----------------*/
+     for (i=0;i<MAXQINTP;i++)
+     {
+      for (k=0;k<MAXQINTC;k++)
+      {
+        data->qxg[i][k]=xg[i][k];
+        data->qwgt[i][k]=wgt[i][k];
+      } /* end loop over k */
+     } /* end loop over i */
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------*/

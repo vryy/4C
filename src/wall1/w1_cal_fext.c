@@ -61,6 +61,31 @@ static ARRAY xjm_a;   static DOUBLE **xjm;    /* jacobian matrix            */
  |                 s                            s                        |
  *----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+/*----------------------------------------------------------------------*
+ | integration of element loads                              he 05/03   |
+ | in here, line and surface loads are integrated                       |
+ *----------------------------------------------------------------------*/
+ /*----------------------------------------------------------------------*
+ |                  s                                                   |
+ |                 |                                                    |
+ |                 2                                                    |
+ |                ||                                                    |
+ |               | |                                                    |
+ |              l  |                                                    |
+ |             i   l                                                    |
+ |            n    i                                                    |
+ |           e     n                                                    |
+ |          3      e                                                    |
+ |         |       2                                                    |
+ |        |        |                                                    |
+ |       |         |                                                    |
+ |      |          |                                                    |
+ |  r--0--line 1---1--r                                                 |
+ |    |                                                                 |
+ |   s                                                                  |
+ *----------------------------------------------------------------------*/
+
 void w1_eleload(ELEMENT  *ele,     /* actual element                  */
                 W1_DATA  *data,    /* wall1- Data                     */
                 DOUBLE	 *loadvec, /* global element load vector fext */
@@ -71,10 +96,15 @@ INT          lr,ls;              /* integration directions          */
 INT          i,j,k;              /* some loopers                    */
 INT          inode,idof;         /* some loopers                    */
 INT          nir,nis;            /* number of GP's in r-s direction */
+INT          nil;                /* number of GP's in for triangle  */
 INT          iel;                /* number of element nodes         */
 INT          nd;                 /* element DOF                     */
+INT          intc;               /* "integration case" for tri-element */
 const INT    numdf  = 2;         /* dof per node                    */
 INT          foundsurface;       /* flag for surfaceload present    */
+INT          iedgnod[3];
+INT          node;
+INT          irow;
 
 /* DOUBLE       thickness;            */
 DOUBLE       e1,e2;              /* GP-koordinates in r-s-system   */
@@ -134,8 +164,22 @@ amzero(&eload_a);
 /*-------------------------------------------- init the gaussian points */
 w1intg(ele,data,1);
 
-nir     = ele->e.w1->nGP[0];
-nis     = ele->e.w1->nGP[1];
+/*------- get integraton data ---------------------------------------- */
+switch (ele->distyp)
+{
+case quad4: case quad8: case quad9:  /* --> quad - element */
+   nir = ele->e.w1->nGP[0];
+   nis = ele->e.w1->nGP[1];
+break;
+case tri3: /* --> tri - element */  
+   nir  = ele->e.w1->nGP[0];
+   nis  = 1;
+   intc = ele->e.w1->nGP[1]-1;  
+break;
+default:
+   dserror("ele->distyp unknown! in 'w1_cal_fext.c' ");
+} /* end switch(ele->distyp) */
+
 iel     = ele->numnp;
 nd      = iel*numdf;
 
@@ -155,22 +199,34 @@ if (imyrank==ele->proc)
 
    for (lr=0; lr<nir; lr++)/*------------------------- loop r-direction */
    {
-      /*============================ gaussian point and weight at it ===*/
-      e1   = data->xgrr[lr];
-      facr = data->wgtr[lr];
-      for (ls=0; ls<nis; ls++)/*---------------------- loop s direction */
+    for (ls=0; ls<nis; ls++)/*------------------------ loop s direction */
+    {
+/*--------------- get values of  shape functions and their derivatives */
+      switch(ele->distyp)  
       {
-         /*========================= gaussian point and weight at it ===*/
-         e2   = data->xgss[ls];
-         facs = data->wgts[ls];
-         /*-------- shape functions (and (not needed)their derivatives) */
-         w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-         /*-------------------------------------------- jacobian matrix */       
-         w1_jaco (funct,deriv,xjm,&det,ele,iel); 
-         /*---------------------------------------- integration factor  */ 
-         fac = facr * facs * det; 
-         /*---------------------------------------------- surface-load  */
-         w1_fextsurf(ele,eload,funct,fac,iel); 
+       case quad4: case quad8: case quad9:  /* --> quad - element */
+       e1   = data->xgrr[lr];
+       facr = data->wgtr[lr];
+       e2   = data->xgss[ls];
+       facs = data->wgts[ls];
+      break;
+      case tri3:   /* --> tri - element */              
+	 e1   = data->txgr[lr][intc];
+	 facr = data->twgt[lr][intc];
+	 e2   = data->txgs[lr][intc];
+	 facs = ONE;
+      break;
+      default:
+         dserror("ele->distyp unknown!");
+      } /* end switch(ele->distyp) */
+      /*-------- shape functions (and (not needed)their derivatives) */
+      w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
+      /*-------------------------------------------- jacobian matrix */       
+      w1_jaco (funct,deriv,xjm,&det,ele,iel); 
+      /*---------------------------------------- integration factor  */ 
+      fac = facr * facs * det; 
+      /*---------------------------------------------- surface-load  */
+      w1_fextsurf(ele,eload,funct,fac,iel); 
       }/*========================================== end of loop over ls */ 
    }/*============================================= end of loop over lr */
    foundsurface=1;
@@ -207,6 +263,22 @@ for (line=0; line<ngline; line++)
    /*--------- original GP-coordinates and weights for area-integration */
    ngr = nir; 
    ngs = nis; 
+
+   switch (ele->distyp)
+   {
+    case quad4: case quad8: case quad9:  /* --> quad - element */
+/*--------------- get values of  shape functions and their derivatives */
+    for (i=0; i<ngr; i++) 
+    {      
+      xgp[i] = data->xgrr[i];
+      wgx[i] = data->wgtr[i]; 
+    }
+    for (i=0; i<ngs; i++) 
+    { 
+      ygp[i] = data->xgss[i];
+      wgy[i] = data->wgts[i]; 
+    }
+
     for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
                             wgx[i] = data->wgtr[i]; }
     for (i=0; i<ngs; i++) { ygp[i] = data->xgss[i];
@@ -288,6 +360,46 @@ for (line=0; line<ngline; line++)
        }/*========================================== end of loop over ls */ 
     }/*============================================= end of loop over lr */
     /* line number lie has been done,switch of the neumann pointer of it */
+   break;
+   case tri3:   /* --> tri - element */              
+
+      /*------------------------------------------------ get edge nodes */
+      w1_iedg(iedgnod,ele,line,0);
+      
+      /*--------------------------------------- set number of gauss points */
+      nil = IMAX(nir,2);
+
+      /*------------------------------ integration loop on actual gline */
+      for (lr=0;lr<nil;lr++)
+      {
+      /*---------- get values of  shape functions and their derivatives */
+     	 e1   = data->qxg[lr][nil-1];
+	 facr = data->qwgt[lr][nil-1];
+	 w1_degrectri(funct,deriv,e1,ele->distyp,1);
+      /*---------------------------------- compute jacobian determinant */
+     	 w1_edgejaco(ele,funct,deriv,xjm,&det,ngnode,iedgnod);
+     	 fac = det*facr;
+      /*-------------------------------------------------------------*/
+      /*                                uniform prescribed line load */
+      /*-------------------------------------------------------------*/
+             for (i=0; i<numdf; i++)
+             {
+                forceline[i] = gline[line]->neum->neum_val.a.dv[i];
+             }
+             /*-------- add load vector component to element load vector */
+            
+             for (j=0; j<ngnode; j++)
+             {
+              irow = iedgnod[j];
+                 for (i=0; i<numdf; i++)
+                 {
+                    eload[i][irow] += funct[j] *  forceline[i] * fac;
+                 }
+             }
+       }
+ break;
+ } /* end switch */
+
    ele->g.gsurf->gline[line]->neum=NULL;
 }/* end loop line over lines */
 /*-----------------------------------------------------------------------*/
@@ -636,11 +748,10 @@ else if (init==0)
    break;
    case tri3:
       for(i=0;i<2;i++) iegnod[i] = iegt[i][line][0];
-      dserror("iegnode for tri3 not tested yet\n");
    break;
    case tri6:
       for(i=0;i<3;i++) iegnod[i] = iegt[i][line][1];
-      dserror("iegnode for tri3 not tested yet\n");
+      dserror("iegnode for tri6 not tested yet\n");
    break;
    default:
       dserror("distyp unknown\n");

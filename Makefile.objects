@@ -294,7 +294,8 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
 		src/wall1/w1_update_history.o	\
                 src/wall1/w1_mat_dam_mp.o \
                 src/wall1/w1_mat_damage.o \
-                src/wall1/w1_dam_service.o
+                src/wall1/w1_dam_service.o \
+                src/wall1/w1_tri_service.o
 #                fluid2
 OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \

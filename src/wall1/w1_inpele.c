@@ -64,6 +64,16 @@ if (ierr==1)
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
+frchk("TRI3",&ierr);
+if (ierr==1)
+{
+   ele->distyp = tri3;
+   ele->numnp=3;
+   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
+   frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
+}
 /*------------------------------------------ reduce node numbers by one */
 for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 /*-------------------------------------------- read the material number */

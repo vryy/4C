@@ -37,6 +37,8 @@ typedef struct _GIDSET
      char                      *shell9_9_22_name;
      INT                        is_shell9_9_33;         /* 9-noded shell9 3x3 GP */
      char                      *shell9_9_33_name;
+     INT                        is_wall1_11;            /* 3-noded wall1 1x1 GP */
+     char                      *wall1_11_name;
      INT                        is_wall1_22;            /* 4-noded wall1 2x2 GP */
      char                      *wall1_22_name;
      INT                        is_wall1_33;            /* 8/9-noded wall1 3x3 GP */

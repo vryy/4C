@@ -34,6 +34,11 @@ DOUBLE        wgtr[13];         /*!< weights at natural coordinates r */
 
 DOUBLE        xgss[13];         /*!< natural coordinates s of gaussian points */
 DOUBLE        wgts[13];         /*!< weights at natural coordinates s */
+DOUBLE        txgr[MAXTINTP][MAXTINTC];   /*!< coordinates in r for TRIS and TETS */
+DOUBLE        txgs[MAXTINTP][MAXTINTC];   /*!< coordinates in s for TRIS and TETS*/
+DOUBLE        twgt[MAXTINTP][MAXTINTC];   /*!< weights for TRIS and TETS*/
+DOUBLE        qxg[MAXQINTP][MAXQINTC];    /*!< coordinates for QUADS and HEX */
+DOUBLE        qwgt[MAXQINTP][MAXQINTC];   /*!< weights for QUADS and HEX */
 } W1_DATA;
 /*----------------------------------------------------------------------*
  | working array                                             al 6/01    |

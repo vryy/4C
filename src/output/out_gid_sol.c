@@ -153,6 +153,7 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_ale_tri_3 = 0;
    actgid->is_ale_111   = 0;
    actgid->is_ale_222   = 0;
+   actgid->is_wall1_11  = 0;
    actgid->is_wall1_22  = 0;
    actgid->is_wall1_33  = 0;
    actgid->is_beam3_21  = 0;
@@ -363,6 +364,11 @@ for (i=0; i<genprob.numfld; i++)
 /*---------------------------------------------------------fh 06/02----*/
 #ifdef D_WALL1
       case el_wall1:    
+         if (actele->e.w1->nGP[0]==1)  
+         {
+            actgid->is_wall1_11    = 1;
+            actgid->wall1_11_name  = "wall1_11";
+         }
          if (actele->e.w1->nGP[0]==2)  
          {
             actgid->is_wall1_22    = 1;
@@ -798,6 +804,18 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"END GAUSSPOINTS\n");
    }
 /*---------------------------------------------------------fh 06/02----*/
+   if (actgid->is_wall1_11)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s WALL1 1x1/ GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle %c%s%c\n",
+                                                                   sign,actgid->wall1_11_name,sign,
+                                                                   sign,actgid->wall1_11_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
    if (actgid->is_wall1_22)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1403,6 +1421,23 @@ if (actgid->is_ale_tet_4)
 
 
 /*---------------------------------------------------------fh 06/02----*/
+if (actgid->is_wall1_11)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->wall1_11_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->wall1_11_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_wall1 || actele->numnp != 3) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   }
+   fprintf(out,"END VALUES\n");
+}
+
 if (actgid->is_wall1_22)
 {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -2254,6 +2289,54 @@ if (strncmp(string,"stress",stringlenght)==0)
                                0.0
                                );
          }
+      }
+      fprintf(out,"END VALUES\n");
+      
+   }
+/*---------------------------------------------------------he  04/03----*/
+   /*------------------ now go through the meshes and print the results */
+   /*================== wall1 triangle-element with 1x1 gausspoint  */
+   /* these walls have 4 stresses, do 1D Matrix */
+   if (actgid->is_wall1_11)
+   {
+      ngauss=1;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->wall1_11_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdamage%c,%c||u||%c\n",
+             sign,sign,
+             sign,sign,
+             sign,sign,
+	       sign,sign,
+	       sign,sign,
+	       sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_wall1 ) continue;
+         stress=actele->e.w1->stress_GP.a.d3[place];
+	   fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                       actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+			     stress[3][0],
+                       0.0,
+                       0.0
+                       );
       }
       fprintf(out,"END VALUES\n");
       

@@ -45,6 +45,7 @@ INT                 iel;              /* numnp to this element */
 INT                 dof;
 INT                 nd;
 INT                 ip;
+INT                 intc;      /* "integration case" for tri-element */
 INT	              it=0;      /* flag for transformation global/local   */
 INT                 istore = 0;/* controls storing of new stresses to wa */
 INT                 newval = 1;/* controls evaluation of new stresses    */
@@ -119,11 +120,25 @@ goto end;
 /*------------------------------------------- integration parameters ---*/
 w1intg(ele,data,1);
 /*------------------------------------------- integration parameters ---*/
-nir     = ele->e.w1->nGP[0];
-nis     = ele->e.w1->nGP[1];
 iel     = ele->numnp;
 nd      = numdf * iel;
+/*------- get integraton data ---------------------------------------- */
+switch (ele->distyp)
+{
+case quad4: case quad8: case quad9:  /* --> quad - element */
+   nir = ele->e.w1->nGP[0];
+   nis = ele->e.w1->nGP[1];
+break;
+case tri3: /* --> tri - element */  
+   nir  = ele->e.w1->nGP[0];
+   nis  = 1;
+   intc = ele->e.w1->nGP[1]-1;  
+break;
+default:
+   dserror("ele->distyp unknown!");
+} /* end switch(ele->distyp) */
 npoint  = nir*nis;
+
 if(ele->e.w1->modeltype == incomp_mode)
 {
  /*------------------ shape functions and their derivatives at r,s=0 ---*/
@@ -169,16 +184,24 @@ if(ele->e.w1->modeltype == incomp_mode)
 ip = -1;
 for (lr=0; lr<nir; lr++)
 {
-   /*=============================== gaussian point and weight at it ===*/
-   e1   = data->xgrr[lr];
-   facr = data->wgtr[lr];
    for (ls=0; ls<nis; ls++)
    {
+/*--------------- get values of  shape functions and their derivatives */
+      switch(ele->distyp)  
+      {
+      case quad4: case quad8: case quad9:  /* --> quad - element */
+       e1   = data->xgrr[lr];
+       e2   = data->xgss[ls];
+      break;
+      case tri3:   /* --> tri - element */              
+	 e1   = data->txgr[lr][intc];
+	 e2   = data->txgs[lr][intc];
+      break;
+      default:
+         dserror("ele->distyp unknown!");
+      } /* end switch(ele->distyp) */
       ip++;
-      /*============================ gaussian point and weight at it ===*/
-      e2   = data->xgss[ls];
-      facs = data->wgts[ls];
-      /*------------------------- shape functions and their derivatives */
+       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*------------------------------------ compute jacobian matrix ---*/       
       w1_jaco (funct,deriv,xjm,&det,ele,iel);                         
@@ -441,6 +464,7 @@ dstrc_enter("w1recs");
     if (icode == 1) {
 	if (igauss >= 1) {
 	    p1 = fval[1];
+	    p2 = fval[2];
 	}
 	if (igauss >= 4) {
 	    p2 = fval[2];
@@ -466,6 +490,10 @@ dstrc_enter("w1recs");
 	if (igauss == 1) {
 /*----------------------------------------- constant stress function ---*/
 	    fpar[1] = p1;
+	} else if (igauss == 2) {
+/*------------------------ constant stress function for TRIANGLES ------*/
+	    fpar[1] = p1;
+	    fpar[2] = p2;
 	} else if (igauss == 4) {
 /*------------------------------------------- linear stress function ---*/
 	    f1 = .25;
@@ -558,6 +586,11 @@ dstrc_enter("w1recs");
     if (igauss == 1) {
 /*---------------------------------- constant function extrapolation ---*/
 	*funval = fpar[1];
+    } else if (igauss == 2) {
+/*----------------- constant function extrapolation for TRIANGLES ------*/
+	p1 = fpar[1];
+	p2 = fpar[2];
+	*funval = (p1+p2)/2.0;
     } else if (igauss == 4) {
 /*------------------------------------ linear function extrapolation ---*/
 	p1 = fpar[1];

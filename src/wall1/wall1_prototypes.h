@@ -1294,6 +1294,22 @@ void w1_history(ELEMENT *ele,                           /*actual element*/
 	   INT      nd,       /* total number degrees of freedom of ele.*/
 	   INT      ip);                     /*Integration point counter*/	   
 /*----------------------------------------------------------------------*/                                             
+/*----------------------------------------------------------------------*/
+/*  w1_tri_service.c                                                    */
+/*----------------------------------------------------------------------*/                                                           
+void w1_degrectri(DOUBLE     *funct, 
+                  DOUBLE    **deriv, 
+                  DOUBLE      r, 
+                  DIS_TYP     typ,
+                  INT         option);
+void w1_edgejaco(ELEMENT    *ele, 
+                 DOUBLE     *funct,    
+                 DOUBLE    **deriv,   
+                 DOUBLE    **xjm,     
+                 DOUBLE     *det,          
+                 INT         iel,
+                 INT        *iedgnod);
+/*----------------------------------------------------------------------*/                                             
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
                                                                         

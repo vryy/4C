@@ -154,7 +154,21 @@ case quad9:/*---------------- quadratic interpolation with central node */
    }
 break;
 /*------------------------------------------------- triangular elements */
-case tri3:
+case tri3: /* LINEAR shape functions and their natural derivatives -----*/
+/*----------------------------------------------------------------------*/
+   funct[0]=ONE-r-s;
+   funct[1]=r;
+   funct[2]=s; 
+
+   if(option==1) /* --> first derivative evaluation */
+   {
+      deriv[0][0]=-ONE;
+      deriv[1][0]=-ONE;
+      deriv[0][1]= ONE;
+      deriv[1][1]=ZERO;
+      deriv[0][2]=ZERO;
+      deriv[1][2]= ONE;
+   } /* endif (option==1) */
 break;
 case tri6:
 break;

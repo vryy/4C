@@ -37,6 +37,7 @@ INT                 lr, ls;           /* loopers over GP           */
 INT                 iel;              /* numnp to this element     */
 INT                 nd;               /* dof of this element       */
 INT                 ip;
+INT                 intc;                /* "integration case" for tri-element     */
 INT                 istore = 0;          /* controls storing of new stresses to wa */
 INT                 newval = 0;          /* controls evaluation of new stresses    */
 const INT           numdf  = 2;          /* number dof per node                    */
@@ -167,8 +168,6 @@ else
 /*   thick   = NULL;*/
 }   
 /*------------------------------------------- integration parameters ---*/
-nir     = ele->e.w1->nGP[0];
-nis     = ele->e.w1->nGP[1];
 iel     = ele->numnp;
 nd      = numdf * iel;
 /*-------------- some of the fields have to be reinitialized to zero ---*/
@@ -195,19 +194,46 @@ if(ele->e.w1->kintype==updated_lagr)
 {
  dserror("action unknown");
 }  
+/*------- get integraton data ---------------------------------------- */
+switch (ele->distyp)
+{
+case quad4: case quad8: case quad9:  /* --> quad - element */
+   nir = ele->e.w1->nGP[0];
+   nis = ele->e.w1->nGP[1];
+break;
+case tri3: /* --> tri - element */  
+   nir  = ele->e.w1->nGP[0];
+   nis  = 1;
+   intc = ele->e.w1->nGP[1]-1;  
+break;
+default:
+   dserror("ele->distyp unknown! in 'w1_statik_ke.c' ");
+} /* end switch(ele->distyp) */
 /*================================================ integration loops ===*/
 ip = -1;
 for (lr=0; lr<nir; lr++)
 {
-   /*=============================== gaussian point and weight at it ===*/
-   e1   = data->xgrr[lr];
-   facr = data->wgtr[lr];
    for (ls=0; ls<nis; ls++)
    {
+/*--------------- get values of  shape functions and their derivatives */
+      switch(ele->distyp)  
+      {
+      case quad4: case quad8: case quad9:  /* --> quad - element */
+       e1   = data->xgrr[lr];
+       facr = data->wgtr[lr];
+       e2   = data->xgss[ls];
+       facs = data->wgts[ls];
+      break;
+      case tri3:   /* --> tri - element */              
+	 e1   = data->txgr[lr][intc];
+	 facr = data->twgt[lr][intc];
+	 e2   = data->txgs[lr][intc];
+	 facs = ONE;
+      break;
+      default:
+         dserror("ele->distyp unknown!");
+      } /* end switch(ele->distyp) */
       ip++;
-      /*============================ gaussian point and weight at it ===*/
-      e2   = data->xgss[ls];
-      facs = data->wgts[ls];
       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*------------------------------------ compute jacobian matrix ---*/       

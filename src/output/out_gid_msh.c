@@ -819,6 +819,36 @@ for (i=0; i<genprob.numfld; i++)
 
 
 /*---------------------------------------------------------fh 06/02------*/     
+   if (actgid->is_wall1_11)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s WALL1 1x1 GP\n",actgid->wall1_11_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Triangle NNODE 3\n",actgid->wall1_11_name);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_wall1 || actele->numnp !=3) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+
+
    if (actgid->is_wall1_22)
    {
       /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
