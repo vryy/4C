@@ -1,0 +1,239 @@
+/*!-----------------------------------------------------------------------
+\file
+\brief contains the routine 'if_static_ke' which calculates the usual
+stiffness matrix for a interface element
+
+*-----------------------------------------------------------------------*/
+#ifdef D_INTERF
+#include "../headers/standardtypes.h"
+#include "interf.h"
+#include "interf_prototypes.h"
+
+/*! 
+\addtogroup INTERF
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculates usual stiffness matrix  
+
+<pre>                                                              mn 05/03
+This routine calculates usual stiffness matrix for small strains
+formulation.
+
+</pre>
+\param **s       DOUBLE    (o)  blablabla 
+\param   dl      DOUBLE    (i)  blablabal
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling:  ---; 
+    caled by: interf();
+
+*----------------------------------------------------------------------*/
+
+
+void ifstatic_ke(ELEMENT       *ele, 
+                 INTERF_DATA   *data, 
+                 MATERIAL      *mat,
+                 ARRAY         *estif_global,
+                 DOUBLE        *force,  /* global vector for internal forces (initialized!) */
+                 INT            init)
+{
+const DOUBLE    q12 = ONE/TWO;
+const DOUBLE    q14 = ONE/FOUR;
+INT             iel;         /* numnp to this element     */
+INT             i,k,lr;        /* some loopers     */
+DOUBLE          det;         /* determinant of jacobian matrix  */
+DOUBLE          fac;         /* integration factor  */
+DOUBLE          facr;        /* weight at gaussian point                                      */
+DOUBLE          e1;          /* xi-coordinate of gaussian point                               */
+INT             nir;         /* number of gaussian points                                     */
+DOUBLE          Thick;       /* element thickness perpendicular to wall plane                    */
+DOUBLE          x1,x2,y1,y2; /* coordinates of endpoints on xi-axis (-> element orientation)     */
+DOUBLE          deltax,deltay;/* differences between coordinates */
+DOUBLE          breite;       /* Elementbreite */
+DOUBLE          beta;        /* angle between xi-axis and X-Y system in [0,pi/4] */
+DOUBLE          alpha;       /* angle between xi-axis and X-Y system in [0,..2 pi] */
+DOUBLE          c,s;         /* cosinus alpha and sin alpha  */
+INT             flag=0;      /* flag for distinction between differnet element orientation cases  */
+INT             ip;
+INT             istore = 0;  /* controls storing of new stresses to wa */
+INT             newval = 0;  /* controls evaluation of new stresses    */
+
+
+static ARRAY    xrefe_a;     /* coordinates of element nodes */     
+static DOUBLE **xrefe;         
+static ARRAY    D_a;         /* material tensor */     
+static DOUBLE **D;         
+static ARRAY    funct_a;     /* shape functions */    
+static DOUBLE  *funct;     
+static ARRAY    bop_a;       /* lets call it B-operator */   
+static DOUBLE **bop;     
+static ARRAY    deltaK_a;    /* element lengh-stiffness */   
+static DOUBLE **deltaK;     
+       
+static DOUBLE **estif;       /* element stiffness matrix ke */
+
+DOUBLE T[2];                 /* stress */
+DOUBLE L[4];                 /* lengh of element edges */
+DOUBLE B[8];                 /* B-operator for lengh stiffness */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("ifstatic_ke");
+#endif
+/*------------------------------------------------- some working arrays */
+istore = 0;
+if (init==1)
+{
+xrefe     = amdef("xrefe"  ,&xrefe_a, 2,4, "DA");
+funct     = amdef("funct"  ,&funct_a ,2,1 ,"DV");       
+D         = amdef("D"      ,&D_a     ,2,2 ,"DA");           
+bop       = amdef("bop"    ,&bop_a   ,2,8 ,"DA");           
+deltaK    = amdef("deltaK"    ,&deltaK_a   ,8,8 ,"DA");           
+goto end;
+}
+/*----------------------------------------------------------------------*/
+/* uninit phase        (init=-1)                                        */
+/*----------------------------------------------------------------------*/
+else if (init==-1)
+{
+   amdel(&xrefe_a);   
+   amdel(&funct_a);
+   amdel(&D_a);
+   amdel(&bop_a);
+   amdel(&deltaK_a);
+   goto end;  
+}
+else if(init==2)
+{
+  istore = 1;
+}
+/*----------------------------------------------------------------------*/
+/*----------- check orientation of element (which is my xi direction)---*/
+iel     = ele->numnp;
+for (k=0; k<iel; k++)
+{
+ xrefe[0][k] = ele->node[k]->x[0];          /* coordinates in x-direction */
+ xrefe[1][k] = ele->node[k]->x[1];          /* coordinates in y-direction */              
+}
+L[0] = sqrt( (xrefe[0][1] - xrefe[0][0]) * (xrefe[0][1] - xrefe[0][0])
+     +       (xrefe[1][1] - xrefe[1][0]) * (xrefe[1][1] - xrefe[1][0]));
+L[1] = sqrt( (xrefe[0][2] - xrefe[0][1]) * (xrefe[0][2] - xrefe[0][1])
+     +       (xrefe[1][2] - xrefe[1][1]) * (xrefe[1][2] - xrefe[1][1]));
+L[2] = sqrt( (xrefe[0][3] - xrefe[0][2]) * (xrefe[0][3] - xrefe[0][2])
+     +       (xrefe[1][3] - xrefe[1][2]) * (xrefe[1][3] - xrefe[1][2]));
+L[3] = sqrt( (xrefe[0][0] - xrefe[0][3]) * (xrefe[0][0] - xrefe[0][3])
+     +       (xrefe[1][0] - xrefe[1][3]) * (xrefe[1][0] - xrefe[1][3]));
+/*--------------------------------------------- integration parameters---*/
+ifintg(data);
+if(L[0]>L[1])
+{
+ det  = q14 * (L[0] + L[2]);
+ breite = q12 * (L[1] + L[3]);
+ x1   = q12*(xrefe[0][0] + xrefe[0][3]);
+ y1   = q12*(xrefe[1][0] + xrefe[1][3]);
+ x2   = q12*(xrefe[0][1] + xrefe[0][2]);
+ y2   = q12*(xrefe[1][1] + xrefe[1][2]);
+ flag = 1;
+}
+else if (L[1]>L[0])
+{
+ det  = q14 * (L[1] + L[3]);
+ breite= q12 * (L[0] + L[2]);
+ x1   = q12*(xrefe[0][0] + xrefe[0][1]);
+ y1   = q12*(xrefe[1][0] + xrefe[1][1]);
+ x2   = q12*(xrefe[0][2] + xrefe[0][3]);
+ y2   = q12*(xrefe[1][2] + xrefe[1][3]);
+ flag = 2;
+}
+deltax = x2 - x1;
+deltay = y2 - y1;
+beta = atan( deltay / deltax ); /* angle between X and xi direction in [0,..pi/4] */
+if(deltay >=0 && deltax >0)
+{
+ alpha = beta;
+}
+else if (deltay > 0 && deltax ==0)
+{
+ alpha =  PI/2;
+}
+else if (deltax <0)
+{
+ alpha = beta + PI;
+}
+else if (deltay < 0 && deltax ==0)
+{
+ alpha =  3/2*PI;
+}
+else if (deltay < 0 && deltax >0)
+{
+ alpha =  beta + 2*PI;
+}
+c     = cos (alpha);
+s     = sin (alpha);  
+Thick = ele->e.interf->thick;
+nir   = ele->e.interf->nGP;
+
+/*-------------------------------------------- reinitalization to zero---*/
+amzero(estif_global);
+estif     = estif_global->a.da;
+/*--Achtung, muss ich nicht auch interne Kraefte Nullinitialisieren??!!--*/
+/*================================================= integration loops ===*/
+ip = -1;
+for (lr=0; lr<nir; lr++)
+{   
+   ip++;
+   /*================================ gaussian point and weight at it ===*/
+   e1   = data->xgr[lr];
+   facr = data->wgtr[lr];
+   /*-------------------------------------------- integration factor ---*/
+   fac  = facr * det * Thick; 
+   /*----------------------------------------------- shape functions ---*/
+   funct[0] = q12 * (1 - e1);
+   funct[1] = q12 * (1 + e1);
+   /*------------------------------------------ calculate operator B ---*/
+   amzero(&bop_a);
+   if_bop(bop,B,funct,c,s,flag);
+   /*--------------------------------------------- call material law ---*/
+   if_mat(ele,mat,bop,D,T,ip,istore,newval);
+   /*-------------------------------------------------------------------*/
+   if(istore==0)
+   {
+     /*--------------------------------- element stiffness matrix ke ---*/
+      if_ke(estif,bop,B,D,fac,breite,deltaK);
+     /*--------------------------------------- internal nodal forces ---*/        
+      if (force)
+      { 
+        if_fint(T,fac,bop,force);
+      }                    
+    } 
+}/*================================================ end of loop over lr */
+ amadd(estif_global,&deltaK_a,1.0,0);
+
+
+/*----------------------------------------------------------------------*/
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return; 
+} /* end of ifstatic_ke */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*----------------------------------------------------------------------*/
+#endif /*D_INTERF*/
+/*! @} (documentation module close)*/

@@ -1,0 +1,111 @@
+/*!-----------------------------------------------------------------------
+\file
+\brief contains the routine 'if_bop' which calculates the linear operator 
+matrix for a interface element at gaussian points
+
+*-----------------------------------------------------------------------*/
+#ifdef D_INTERF
+#include "../headers/standardtypes.h"
+#include "interf.h"
+#include "interf_prototypes.h"
+
+/*! 
+\addtogroup INTERF
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculate operator matrix at gaussian point                                           
+
+<pre>                                                             mn 05/03 
+This routine calcuates the operator matrix B at the given gaussian point
+for an interface element.
+
+</pre>
+\param **B       DOUBLE  (o)   the calculated operator matrix
+\param   xsi     DOUBLE  (i)   blabla
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: if_static_ke()
+
+*----------------------------------------------------------------------*/
+void if_bop(DOUBLE   **bop,
+            DOUBLE    *B,
+            DOUBLE    *funct,
+            DOUBLE     c,
+            DOUBLE     s,
+            DOUBLE     flag)
+{
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("if_bop");
+#endif
+
+/*----------------------- compute operator B = func*L*transformation -- */
+if(flag == 1)
+{
+bop[0][0] = -funct[0]*c;
+bop[1][0] =  funct[0]*s;
+bop[0][1] = -funct[0]*s;
+bop[1][1] = -funct[0]*c;
+bop[0][2] = -funct[1]*c;
+bop[1][2] =  funct[1]*s;
+bop[0][3] = -funct[1]*s;
+bop[1][3] = -funct[1]*c;
+bop[0][4] =  funct[1]*c;
+bop[1][4] = -funct[1]*s;
+bop[0][5] =  funct[1]*s;
+bop[1][5] =  funct[1]*c;
+bop[0][6] =  funct[0]*c;
+bop[1][6] = -funct[0]*s;
+bop[0][7] =  funct[0]*s;
+bop[1][7] =  funct[0]*c;
+
+B[0]      =  -c/FOUR;
+B[1]      =  -s/FOUR;
+B[2]      =   c/FOUR;
+B[3]      =   s/FOUR;
+B[4]      =   c/FOUR;
+B[5]      =   s/FOUR;
+B[6]      =  -c/FOUR;
+B[7]      =  -s/FOUR;
+}
+else if (flag == 2)
+{
+bop[0][0] =  funct[0]*c;
+bop[1][0] = -funct[0]*s;
+bop[0][1] =  funct[0]*s;
+bop[1][1] =  funct[0]*c;
+bop[0][2] = -funct[0]*c;
+bop[1][2] =  funct[0]*s;
+bop[0][3] = -funct[0]*s;
+bop[1][3] = -funct[0]*c;
+bop[0][4] = -funct[1]*c;
+bop[1][4] =  funct[1]*s;
+bop[0][5] = -funct[1]*s;
+bop[1][5] = -funct[1]*c;
+bop[0][6] =  funct[1]*c;
+bop[1][6] = -funct[1]*s;
+bop[0][7] =  funct[1]*s;
+bop[1][7] =  funct[1]*c;
+
+B[0]      =  -c/FOUR;
+B[1]      =  -s/FOUR;
+B[2]      =  -c/FOUR;
+B[3]      =  -s/FOUR;
+B[4]      =   c/FOUR;
+B[5]      =   s/FOUR;
+B[6]      =   c/FOUR;
+B[7]      =   s/FOUR;
+}
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of if_bop */
+
+/*----------------------------------------------------------------------*/
+#endif /*D_INTERF*/
+/*! @} (documentation module close)*/
