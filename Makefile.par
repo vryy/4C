@@ -42,7 +42,7 @@ RM	 = /bin/rm -f
 #
 #------------------------------------------------ this is debug-32bit
 PROGRAM_NAME  = cca_par_32_debg.exe
-CFLAGS        = -D__HP__ -Aa -Ae -g ${PFL} -DDEBUG
+CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
 FFLAGS        = -g 
 LDFLAGS       = -v
 BLAS          = -lblas
@@ -53,7 +53,7 @@ MUMPS         = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lb
 FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 
 #------------------------------------------------- this is fast-32bit
 #PROGRAM_NAME  = cca_par_32_fast.exe
-#CFLAGS        = -D__HP__ -Aa -Ae -O ${PFL} 
+#CFLAGS        = -D__HP__ -Aa -Ae -O +w1 ${PFL} 
 #FFLAGS        = -O
 #LDFLAGS       = -v
 #BLAS          = -lblas
@@ -64,7 +64,7 @@ FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77
 #FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 
 #------------------------------------------------ this is debug-64bit
 #PROGRAM_NAME  = cca_par_64_debg.exe
-#CFLAGS        = -D__HP__ -Aa -Ae +DD64 -g ${PFL} -DDEBUG -DSIXTYFOUR
+#CFLAGS        = -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
 #FFLAGS        = +DA2.0W -g
 #LDFLAGS       = -v +DA2.0W 
 #BLAS          = 
@@ -75,7 +75,7 @@ FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77
 #FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77 
 #------------------------------------------------- this is fast-64bit
 #PROGRAM_NAME  = cca_par_64_fast.exe
-#CFLAGS        = -D__HP__ -Aa -Ae +DD64 -O ${PFL} -DSIXTYFOUR
+#CFLAGS        = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
 #FFLAGS        = +DA2.0W -O
 #LDFLAGS       = -v +DD64
 #BLAS          = 
