@@ -204,22 +204,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
    amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
@@ -236,9 +220,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdnode->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdnode->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
+     else
+       strtod(colptr,&colptr);
    /*---------------------------------- read the curvenumbers or "none" */
    for (i=0; i<6; i++)
    {
@@ -327,21 +315,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
    amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
@@ -358,9 +331,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdline->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdline->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
+     else
+       strtod(colptr,&colptr);
    /*---------------------------------- read the curvenumbers or "none" */
    for (i=0; i<6; i++)
    {
@@ -448,22 +425,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
    amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
@@ -480,9 +441,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdsurf->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdsurf->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
+     else
+       strtod(colptr,&colptr);   
    /*----------------------------------- read the curvenumber or "none" */
    for (i=0; i<6; i++)
    {
@@ -570,22 +535,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
    amdef("onoff",&(actdvol->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV"); 
@@ -602,9 +551,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdvol->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdvol->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
+     else
+       strtod(colptr,&colptr);   
    /*----------------------------------- read the curvenumber or "none" */
    for (i=0; i<6; i++)
    {
@@ -724,9 +677,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdnode->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdnode->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+     else
+       strtod(colptr,&colptr);
    /*----------- read if load is applied on surface -> shell elements */
    frchk("Mid",&ierr);
    if (ierr) actdnode->neum->neum_surf = mid;
@@ -829,9 +786,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdline->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdline->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+     else
+       strtod(colptr,&colptr);
    /*----------- read if load is applied on surface -> shell elements */
    frchk("Mid",&ierr);
    if (ierr) actdline->neum->neum_surf = mid;
@@ -934,9 +895,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdsurf->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdsurf->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+     else
+       strtod(colptr,&colptr);
    /*----------- read if load is applied on surface -> shell elements */
    frchk("Mid",&ierr);
    if (ierr) actdsurf->neum->neum_surf = mid;
@@ -1052,9 +1017,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdvol->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        actdvol->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+     else
+       strtod(colptr,&colptr);
    /*----------------------------------- read type of neumann condition */
    frchk("Dead",&ierr);
    if (ierr) actdvol->neum->neum_type = neum_dead;   
@@ -1175,6 +1144,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        dofflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
@@ -1186,6 +1157,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        geoflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
@@ -1300,6 +1273,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        dofflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
@@ -1311,6 +1286,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        geoflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
@@ -1426,6 +1403,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        dofflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
@@ -1437,6 +1416,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        geoflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
@@ -1552,6 +1533,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        dofflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
@@ -1563,6 +1546,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
        geoflags[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
