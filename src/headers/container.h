@@ -39,17 +39,17 @@ DOUBLE         max_stiff;
 INT            pos;          /*<! sol_increment[pos] contains dbc in ale */
 
 #ifdef D_FLUID               /*!< ab hier fuer fluid */ 
-double        *ftimerhs;       
-double        *fiterhs;
-double        *fidrichrhs;   /*!< for storing the pressure rhs values */
-double        *ftimerhs_pro;
-int            nii;
-int            nif;
+DOUBLE        *ftimerhs;       
+DOUBLE        *fiterhs;
+DOUBLE        *fidrichrhs;   /*!< for storing the pressure rhs values */
+DOUBLE        *ftimerhs_pro;
+INT            nii;
+INT            nif;
 struct _DBCSR *gradmatrix;   /*!< gradient matrix Projection Method */
 struct _DBCSR *lumpedmass;   /*!< gradient matrix Projection Method */
-int            turbu;
-int            niturbu_pro;
-int            niturbu_n;
+INT            turbu;
+INT            niturbu_pro;
+INT            niturbu_n;
 enum _FLUID_STRESS str;         
 INT            is_relax;      /*!< flag, if calculation is for relaxation parameter */
                               /*!< is_relax = 0 -> fluid results are read from sol_increment[3][i] */
