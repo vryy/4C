@@ -2,6 +2,11 @@
 PLATFORM=HPUX10
 PARALLEL=no
 
+if [ x$BIT = "x64" ] ; then
+    echo $0: Warning: Only 32 bit executable on platform HPUX10.
+    BIT=32
+fi
+
 F77=f77
 CC=cc
 LD=cc

@@ -2,6 +2,12 @@
 PLATFORM=SUSE73
 PARALLEL=yes
 
+if [ x$BIT = "x64" ] ; then
+    echo $0: Warning: Only 32 bit executable on platform Linux.
+    BIT=32
+fi
+
+
 F77=mpif77
 CC=mpicc
 LD=mpicc

@@ -47,10 +47,16 @@ VISUAL3_LIB=""
 LIBS="-lmetis_ita2_64 -lcl -lc -lm -lveclib -llapack -lmpi"
 
 # FAST
-PROGRAMNAME=cca_ita2_par
+PROGRAMNAME=cca_ita2_par64
 CFLAGS_OPT="+O3 +Onolimit +Optrs_to_globals +Odataprefetch +Onoinitcheck +Oinline +Oclone"
 FFLAGS_OPT="+O3 +Onolimit +Onoptrs_to_globals +Oinline"
 LDFLAGS_OPT="-O"
-CFLAGS="+DSitanium -Aa -Ae +DD64 +w1 -z -DSIXTYFOUR"
+CFLAGS="+DSitanium -Aa -Ae +DD64 +w1 -z"
 FFLAGS="+DSitanium +DD64"
 LDFLAGS="+DSitanium +DD64 -v +A"
+
+if [ x$BIT = "x32" ] ; then
+    echo $0: Warning: Only 64 bit executable on platform HPUXita2.
+    BIT=64
+    CFLAGS=" -DSIXTYFOUR $CFLAGS"
+fi

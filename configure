@@ -39,6 +39,13 @@ CC=cc
 F77=f77
 LD=f77
 
+# 64 bit exe?
+if grep '^SIXTYFOUR' "$2" 2>&1 > /dev/null ; then
+   BIT=64
+else
+   BIT=32   
+fi
+
 
 # source config file
 # Here we get all the variables.
@@ -107,6 +114,10 @@ if grep '^VISUAL2_PACKAGE' "$2" 2>&1 > /dev/null ; then
         echo $0: Error: Variable VISUAL2_LIB undefined but VISUAL2_PACKAGE requested.
         exit 1
     fi
+    if [ x$BIT = "x64" ] ; then
+        echo $0: Error: VISUAL2 not possible in 64 bit executable.
+        exit 1
+    fi
     LIBS="$VISUAL2_LIB $LIBS"
     INCLUDEDIRS="$INCLUDEDIRS $VISUAL2_INC"
 fi
@@ -119,6 +130,10 @@ if grep '^VISUAL3_PACKAGE' "$2" 2>&1 > /dev/null ; then
     fi
     if [ "x$VISUAL3_LIB" = "x" ] ; then
         echo $0: Error: Variable VISUAL3_LIB undefined but VISUAL3_PACKAGE requested.
+        exit 1
+    fi
+    if [ x$BIT = "x64" ] ; then
+        echo $0: Error: VISUAL3 not possible in 64 bit executable.
         exit 1
     fi
     LIBS="$VISUAL3_LIB $LIBS"

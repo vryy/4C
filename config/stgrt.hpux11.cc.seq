@@ -13,7 +13,7 @@ LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0"
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seq21_32"
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seq21_$BIT"
 
 # spooles
 if grep '^SPOOLES_PACKAGE' "$2" 2>&1 > /dev/null ; then
@@ -25,7 +25,7 @@ SPOOLES_LIB=""
 
 # umfpack
 UMFPACK_INC=""
-UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_32"
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_$BIT"
 
 # visual2
 VISUAL2_INC=""
@@ -42,9 +42,17 @@ VISUAL3_LIB=""
 LIBS="-lcl -lc -lm -lveclib -llapack"
 
 # FAST
-PROGRAMNAME=cca_11_seq
+PROGRAMNAME=cca_11_seq$BIT
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
+LDFLAGS_OPT=""
 CFLAGS="-D__HP__  +e -Ae +w1 -v"
 FFLAGS=""
 LDFLAGS=""
+
+# additional Flags for 64 bit
+if [ x$BIT = "x64" ] ; then
+    CFLAGS=" +DD64 $CFLAGS"
+    FFLAGS=" +DA2.0W $FFLAGS"
+    LDFLAGS=" +DA2.0W -v $LDFLAGS"
+fi

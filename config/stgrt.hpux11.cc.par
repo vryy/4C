@@ -9,20 +9,23 @@ LD=/opt/mpi/bin/mpicc
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
 
 INCLUDEDIRS="-I/opt/mpi/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/opt/fortran90/lib/pa2.0"
-LIBDIRS="$LIBDIRS -L$BASEDIR/metis -L/opt/fortran90/lib" 
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/opt/fortran90/lib/pa2.0 -L$BASEDIR/metis"
+if [ x$BIT = "x32" ] ; then
+    LIBDIRS="-L/opt/fortran90/lib $LIBDIRS"
+fi
+
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_par21_32"
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_par21_$BIT"
 
 # spooles
 SPOOLES_INC=""
-SPOOLES_LIB="-L$BASEDIR/spooles -lspoolesMPI_32 -lspooles_32"
+SPOOLES_LIB="-L$BASEDIR/spooles -lspoolesMPI_$BIT -lspooles_$BIT"
 
 # umfpack
 UMFPACK_INC=""
-UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_32"
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_$BIT"
 
 # visual2
 if grep '^VISUAL2_PACKAGE' "$2" 2>&1 > /dev/null ; then
@@ -40,12 +43,20 @@ fi
 VISUAL3_INC=""
 VISUAL3_LIB=""
 
-LIBS="-lmetis_32 -lF90 -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared -lmpi"
+LIBS="-lmetis_$BIT -lF90 -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared -lmpi"
 
 # FAST
-PROGRAMNAME=cca_11_par
+PROGRAMNAME=cca_11_par$BIT
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
 CFLAGS="-D__HP__  +e -Ae +w1 -v"
 FFLAGS=""
 LDFLAGS=""
+
+# additional Flags & Libs for 64 bit
+if [ x$BIT = "x64" ] ; then
+    LIBDIRS="-L/opt/fortran90/lib/pa20_64 $LIBDIRS"
+    CFLAGS=" +DD64 $CFLAGS"
+    FFLAGS=" +DA2.0W $FFLAGS"
+    LDFLAGS=" +DA2.0W -v $LDFLAGS"
+fi
