@@ -80,6 +80,7 @@ INT                   numele_total;
 INT                   actcurve;
 INT                   numff,numsf;
 INT                   dim;
+DOUBLE     funct_fac;	             /* factor from spatial function */
 DOUBLE                timefac[ALENUMTIMECURVE];
 DOUBLE                T;
 DOUBLE                dt;
@@ -127,6 +128,7 @@ for (i=0;i<numnp_total;i++)
             acttimefac = 1.0;
           else
             acttimefac = timefac[actcurve];
+          funct_fac = actagnode->d_funct[j];
           initval  = actagnode->dirich->dirich_val.a.dv[j];
           /*=====================================================================*
             |    example: rotating hole (dirich_val.a.dv == 90)                   |
@@ -135,14 +137,16 @@ for (i=0;i<numnp_total;i++)
            *=====================================================================*/
           if (FABS(initval-90.0) > EPS13)
           {
-            actanode->sol_increment.a.da[0][j] = initval*acttimefac;
+            actanode->sol_increment.a.da[0][j] = initval*acttimefac*funct_fac;
           }
           else
           {
-            cx = actanode->x[0];
-            cy = actanode->x[1];
+            cx = actanode->x[0]-0.2;
+            cy = actanode->x[1]-0.2;
             win = (initval * acttimefac * 3.14159265359)/180.0;
-            wino= atan(cy/cx);
+            if(FABS(cx) < EPS12) wino=3.14159265359/2.0;
+            else
+               wino= atan(cy/cx);
             dd = sqrt(cx*cx+cy*cy);
             if(cx < 0.0) wino += 3.14159265359;
             if (j==0)
@@ -178,11 +182,11 @@ for (i=0;i<numnp_total;i++)
         {
 	   if (readstructpos != 6) /* 'ordinary' calculation */
              actanode->sol_increment.a.da[0][j] =
-  	               actanode->sol_mf.a.da[3][j];
+  	               actanode->sol_mf.a.da[3][j]; 
            else if(readstructpos == 6) /* steepest descent method */
              actanode->sol_increment.a.da[0][j] =
-  	               actanode->sol_mf.a.da[3][j] -
-                       actanode->sol_mf.a.da[0][j];
+  	               actanode->sol_mf.a.da[3][j] - 
+                       actanode->sol_mf.a.da[0][j];  
            else dserror("parameter readstructpos not known in ale_setdirich()!!!\n");
         } /* readstructpos = 0 for 'ordinary' calculation *
                            = 6 for calculation for Relaxation parameter via
@@ -279,6 +283,7 @@ INT                   actcurve;
 INT                   diff,max;
 INT                   numff,numsf;
 INT                   dim;
+DOUBLE     funct_fac;	             /* factor from spatial function */
 DOUBLE                timefac[ALENUMTIMECURVE];
 DOUBLE                T;
 DOUBLE                dt;
@@ -334,9 +339,41 @@ for (i=0;i<numnp_total;i++)
           else
             acttimefac = timefac[actcurve];
           initval  = actagnode->dirich->dirich_val.a.dv[j];
-          actanode->sol_increment.a.da[0][j] = initval*acttimefac
-            - actanode->sol_increment.a.da[1][j];
+          funct_fac = actagnode->d_funct[j];
           /* actanode->sol.a.da[actpos][j] = initval*acttimefac; */
+
+          /*=====================================================================*
+            |    example: rotating hole (dirich_val.a.dv == 90)                   |
+            |    sonst: Normalfall:                                               |
+            |    actanode->sol.a.da[0][j] = initval*acttimefac;                   |
+           *=====================================================================*/
+          if (FABS(initval-90.0) > EPS13)
+          {
+             actanode->sol_increment.a.da[0][j] = initval*funct_fac*acttimefac
+               - actanode->sol_increment.a.da[1][j];
+          }
+          else
+          {
+            DOUBLE cx, cy, win, wino, dd;
+            cx = actanode->x[0]-0.2;
+            cy = actanode->x[1]-0.2;
+            win = (initval * acttimefac * 3.14159265359)/180.0;
+            if(FABS(cx) < EPS12) wino=3.14159265359/2.0;
+            else
+               wino= atan(cy/cx);
+            dd = sqrt(cx*cx+cy*cy);
+            if(cx < 0.0) wino += 3.14159265359;
+            if (j==0)
+            {
+              actanode->sol_increment.a.da[0][j] = dd * cos(win+wino) - cx
+               - actanode->sol_increment.a.da[1][j];
+            }
+            else
+            {
+              actanode->sol_increment.a.da[0][j] = dd * sin(win+wino) - cy
+               - actanode->sol_increment.a.da[1][j];
+            }
+          }
         }
         break;
 
@@ -411,6 +448,7 @@ void ale_setdirich_increment(
   DOUBLE                T;
   DOUBLE                T_prev;
   DOUBLE                acttimefac, prevtimefac;
+  DOUBLE     funct_fac;	             /* factor from spatial function */
   DOUBLE                initval;
 
   DOUBLE                cx,cy,win,wino,winp,dd;
@@ -456,13 +494,14 @@ for (i=0;i<numnp_total;i++)
         prevtimefac = timefac[1][actcurve];
       }
       initval  = actgnode->dirich->dirich_val.a.dv[j];
+      funct_fac = actgnode->d_funct[j];
       /*=====================================================================*
         |    example: rotating hole (dirich_val.a.dv == 90)                   |
         |    sonst: Normalfall:                                               |
         |     actnode->sol.a.da[0][j] = initval*acttimefac;                   |
        *=====================================================================*/
       if (FABS(initval-90.0) > EPS13)
-        actnode->sol_increment.a.da[0][j] = initval*(acttimefac-prevtimefac);
+        actnode->sol_increment.a.da[0][j] = initval*funct_fac*(acttimefac-prevtimefac);
       else
       {
         cx = actnode->x[0];
@@ -758,12 +797,14 @@ INT check_ale_dirich(
     }
   }
 
+/*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return hasdirich;
+return hasdirich;
+
 }
 
 #endif
