@@ -15,7 +15,7 @@
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-dynamic-test-example
+Incompatible-Mode-Test-example
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           1 
 NODES              4
@@ -25,7 +25,7 @@ NUMDF        2
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
-TIMETYP      Dynamic
+TIMETYP      Static
 TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
@@ -35,25 +35,32 @@ STRUCT_DISP_GID    Yes
 STRUCT_STRESS_GID  Yes
 FLUID_SOL_FILE     No
 ------------------------------------------------------------STATIC
-GEOLINEAR
------------------------------------------------EIGENVALUE ANALYSIS
+GEONONLINEAR
+NEWTONRAPHSO Displacement_Control
+NUMSTEP      20
+MAXITER      20
+TOLRESID     1.0E-06
+TOLDISP      1.0E-07
+STEPSIZE     0.01
+IARC         No
+ARCSCL       1.0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  1
+RESEVRYDISP  10
 RESEVRYSTRS  20
 RESTARTEVRY  20
-TIMESTEP     0.005 
-NUMSTEP      600 
-MAXTIME      3.0
+TIMESTEP     0.001 
+NUMSTEP      200 
+MAXTIME      5.0
 BETA         0.25 
 GAMMA        0.5 
 ALPHA_M      0.5 
 ALPHA_F      0.5
-DAMPING      No 
-M_DAMP       0.0 
-K_DAMP       0.0
-ITERATION    mod 
+DAMPING      Yes 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
@@ -66,8 +73,8 @@ NUMCONT      1
 UPPSS        100
 SAVESTEP     100
 MAXTIME      5.0
-NUMSTEP      2000  
-TIMESTEP     0.005
+NUMSTEP      200  
+TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
 GAMMA        1.00
@@ -97,11 +104,9 @@ AZSUB          50
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         5  
-//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Colsol
-//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
 SOLVER         Aztec_MSR
@@ -117,7 +122,6 @@ AZSUB          50
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         5  
-//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
@@ -126,40 +130,40 @@ NDSURF  1
 NDVOL   0
 -----------------------------------------------------DESIGN POINTS
 POINT
-Num: 1 HigherEntity: 2 conditions: 1 material: 0
-Coord: 0.500000 -2.000000 0.000000
+Num: 1 HigherEntity: 2 conditions: 3 material: 0
+Coord: -1.000000 -1.000000 0.000000
 END POINT
 POINT
-Num: 2 HigherEntity: 2 conditions: 2 material: 0
-Coord: 2.000000 1.000000 0.000000
+Num: 2 HigherEntity: 2 conditions: 3 material: 0
+Coord: 1.000000 -1.000000 0.000000
 END POINT
 POINT
-Num: 3 HigherEntity: 2 conditions: 1 material: 0
-Coord: -0.200000 1.500000 0.000000
+Num: 3 HigherEntity: 2 conditions: 2 material: 0
+Coord: 1.000000 1.000000 0.000000
 END POINT
 POINT
-Num: 4 HigherEntity: 2 conditions: 1 material: 0
-Coord: -2.000000 -0.500000 0.000000
+Num: 4 HigherEntity: 2 conditions: 2 material: 0
+Coord: -1.000000 1.000000 0.000000
 END POINT
 ------------------------------------------------------DESIGN LINES
 STLINE
 Num: 1 HigherEntity: 1 conditions: 1 material: 0
-Meshing Info: (num=2,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
 Points: 1 2
 END STLINE
 STLINE
 Num: 2 HigherEntity: 1 conditions: 1 material: 0
-Meshing Info: (num=3,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
 Points: 2 3
 END STLINE
 STLINE
 Num: 3 HigherEntity: 1 conditions: 1 material: 0
-Meshing Info: (num=2,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
 Points: 3 4
 END STLINE
 STLINE
-Num: 4 HigherEntity: 1 conditions: 2 material: 0
-Meshing Info: (num=3,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Num: 4 HigherEntity: 1 conditions: 1 material: 0
+Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
 Points: 4 1
 END STLINE
 ---------------------------------------------------DESIGN SURFACES
@@ -172,10 +176,10 @@ Line: 1 Orientation: SAME1ST
 Line: 2 Orientation: SAME1ST
 Line: 3 Orientation: SAME1ST
 Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-2.207500,2.200000,0.000000
-Point 1,2 coords:-2.207500,-2.200000,0.000000
-Point 2,1 coords:2.357500,2.200000,0.000000
-Point 2,2 coords:2.357500,-2.200000,0.000000
+Point 1,1 coords:-1.100000,1.100000,0.000000
+Point 1,2 coords:-1.100000,-1.100000,0.000000
+Point 2,1 coords:1.100000,1.100000,0.000000
+Point 2,2 coords:1.100000,-1.100000,0.000000
 Number of knots in U= 4
 knot 1 value=0.000000
 knot 2 value=0.000000
@@ -188,17 +192,20 @@ knot 3 value=1.000000
 knot 4 value=1.000000
 Non rational
 IsTrimmed: 1
-Center: 0.075000 0.000000 0.000000
+Center: -0.000000 0.000000 0.000000
 Normal: 0.000000 0.000000 1.000000
 END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS 
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT 0
+DPOINT 2
+ E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 2 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+// E 3 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+// E 4 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
 -------------------------------------DESIGN LINE DIRICH CONDITIONS 
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 1
- E 4 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+DLINE 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS 
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
@@ -207,8 +214,10 @@ DSURF 0
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
-DPOINT 1
- E 2 -   1 1 0 0 0 0 0 10000.0 0.0 0.0 0.0 0.0 0.0 
+DPOINT 3
+ E 2 -   none 1 0 0 0 0 0  100.0 0.0 0.0 0.0 0.0 0.0 
+ E 3 -   none 1 0 0 0 0 0 -100.0 0.0 0.0 0.0 0.0 0.0 
+ E 4 -   none 1 0 0 0 0 0  100.0 0.0 0.0 0.0 0.0 0.0 
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
 DLINE 0
@@ -231,43 +240,42 @@ DSURF 0
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
 DVOL 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
-NODE       3 DNODE 1
-NODE       1 DNODE 2
-NODE       2 DNODE 3
-NODE       4 DNODE 4
+NODE       1 DNODE 1
+NODE       3 DNODE 2
+NODE       4 DNODE 3
+NODE       2 DNODE 4
 -----------------------------------------------DLINE-NODE TOPOLOGY
-NODE       3 DLINE 1
 NODE       1 DLINE 1
-NODE       1 DLINE 2
-NODE       2 DLINE 2
-NODE       2 DLINE 3
+NODE       3 DLINE 1
+NODE       3 DLINE 2
+NODE       4 DLINE 2
 NODE       4 DLINE 3
-NODE       4 DLINE 4
-NODE       3 DLINE 4
+NODE       2 DLINE 3
+NODE       2 DLINE 4
+NODE       1 DLINE 4
 -----------------------------------------------DSURF-NODE TOPOLOGY
-NODE       3 DSURFACE 1
 NODE       1 DSURFACE 1
-NODE       2 DSURFACE 1
+NODE       3 DSURFACE 1
 NODE       4 DSURFACE 1
+NODE       2 DSURFACE 1
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
-NODE 1  COORD 2.000000  1.000000  0.000000
-NODE 2  COORD -0.200000  1.500000  0.000000
-NODE 3  COORD 0.500000  -2.000000  0.000000
-NODE 4  COORD -2.000000  -0.500000  0.000000
+NODE 1  COORD -1.000000  -1.000000  0.000000
+NODE 2  COORD -1.000000   1.000000  0.000000
+NODE 3  COORD  1.000000  -1.000000  0.000000
+NODE 4  COORD  1.000000   1.000000  0.000000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 WALL QUAD4       3      1      2      4 MAT       1 THICK 0.1 GP 2 2 PLANE_STRESS W_TotalLagr 
+ 1 WALL QUAD4       1      3      4      2 MAT       1 THICK 0.1 GP 2 2 PLANE_STRESS W_GeoLin Incomp_Mode
+// 1 WALL QUAD4       1      3      4      2 MAT       1 THICK 0.1 GP 3 3 PLANE_STRESS W_GeoLin  
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 200000.0 NUE 0.2 DENS 5.0
+MAT      1 MAT_MisesPlastic  YOUNG 200000.0  NUE  0.2  Xsi 0.0  Sigy 500.0  Hard 0.001
 ------------------------------------------------------CONTROL NODE
+NODE       2 DOF 1 
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 1.0 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 0.6 FACTOR 1.0 0.0 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.6 3.01 FACTOR 0.0 0.0 
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4

@@ -1,8 +1,21 @@
+//
+// Maintainer: Andrea Hund
+//             hund@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/hund/
+//             0711 - 685-6122
+// 
+// necessary defines: -DD_WALL1
+//
+// #define MAXNOD           (9)
+// #define MAXELE           (9)
+// #define MAXDOFPERNODE    (6)
+// #define MAXGAUSS         (9)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-walltest01
+vMises-Plasticity-test-example
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           3 
 NODES              8
@@ -18,8 +31,8 @@ RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No
 STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    No
-STRUCT_STRESS_GID  No
+STRUCT_DISP_GID    Yes
+STRUCT_STRESS_GID  Yes
 FLUID_SOL_FILE     No
 ------------------------------------------------------------STATIC
 GEONONLINEAR
