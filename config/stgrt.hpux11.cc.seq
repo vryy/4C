@@ -12,7 +12,7 @@ PLAIN_LD=f90
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
 
-INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
+INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include/hpux_11"
 LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0"
 
 # aztec

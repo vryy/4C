@@ -18,7 +18,7 @@ PLAIN_LD=gcc
 
 BASEDIR="/home/ccarat/lib/linux"
 
-INCLUDEDIRS="-I/opt/mpich/include/ -I/home/ccarat/include"
+INCLUDEDIRS="-I/opt/mpich/include/ -I/home/ccarat/include/linux"
 LIBDIRS="-L/usr/lib -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -L$BASEDIR/lapack -L$BASEDIR/blas -L$BASEDIR/metis"
 
 # aztec

@@ -18,7 +18,7 @@ PLAIN_LD=cc
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
 
-INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
+INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include/hpux_10"
 LIBDIRS="-L$BASEDIR/lapack -L$BASEDIR/metis"
 
 # aztec

@@ -19,7 +19,7 @@ BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
 OPENGLDIR="/opt/graphics/OpenGL/lib"
 PEX5DIR="/opt/graphics/PEX5/lib"
 
-INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
+INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include/hpux_10"
 LIBDIRS="-L$BASEDIR/lapack -L/usr/lib -L/opt/fortran/lib"
 
 # aztec

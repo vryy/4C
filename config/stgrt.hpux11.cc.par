@@ -12,7 +12,7 @@ PLAIN_LD=f90
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
 
-INCLUDEDIRS="-I/opt/mpi/include -I/bau/stat16/users/statik/ccarat/include"
+INCLUDEDIRS="-I/opt/mpi/include -I/bau/stat16/users/statik/ccarat/include/hpux_11"
 LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/opt/fortran90/lib/pa2.0 -L$BASEDIR/metis"
 if [ x$BIT = "x32" ] ; then
     LIBDIRS="-L/opt/fortran90/lib $LIBDIRS"
