@@ -83,6 +83,7 @@ typedef struct _DLINE
 #endif
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
+   INT                       liftdrag;
 #endif
 #ifdef D_AXISHELL
    struct _SAXI_THICK_CONDITION   *thickness;
