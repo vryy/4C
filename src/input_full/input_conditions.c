@@ -76,13 +76,16 @@ static void inpdesign_line_couple(void);
 static void inpdesign_surf_couple(void);
 static void inpdesign_vol_couple(void);
 
-#ifdef D_FSI
-static void inpdesign_line_fsicouple(void);
-#endif
-
 #ifdef D_FLUID
+#ifdef D_FSI
+static void inpdesign_nodal_fsicouple(void);
+static void inpdesign_line_fsicouple(void);
+static void inpdesign_surf_fsicouple(void);
 static void inpdesign_nodal_freesurf(void);
 static void inpdesign_line_freesurf(void);
+static void inpdesign_surf_freesurf(void);
+static void inpdesign_line_slipdirich(void);
+#endif
 static void inpdesign_line_liftdrag(void);
 static void inpdesign_surf_liftdrag(void);
 static void inpdesign_surf_stability(void);
@@ -110,8 +113,10 @@ dstrc_enter("inp_conditions");
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------ input of time curves */
 inp_cond_curve();
-/* input of spatial functions */
+/*------------------------------------------ input of spatial functions */
 inp_cond_funct();
+/*---------------------------------- input of local co-ordinate systems */
+inp_cond_locsys();
 /*--------------------------------- input of nodal dirichlet conditions */
 inpdesign_nodal_dirich();
 /*---------------------------------- input of line dirichlet conditions */
@@ -141,21 +146,29 @@ inpdesign_vol_couple();
 inpdesign_line_contact();
 #endif
 
-/*------------------------------- input of line FSI coupling conditions */
 #ifdef D_FSI
-if (genprob.probtyp==prb_fsi)
+if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 {
+/*------------------------------ input of nodal FSI coupling conditions */
+   inpdesign_nodal_fsicouple();
+/*------------------------------- input of line FSI coupling conditions */
    inpdesign_line_fsicouple();
+/*---------------------------- input of surface FSI coupling conditions */
+   inpdesign_surf_fsicouple();
 }
 #endif
 
 #ifdef D_FLUID
 if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 {
+#ifdef D_FSI
 /*------------------------------ input of nodal free surface conditions */
    inpdesign_nodal_freesurf();
 /*------------------------------- input of line free surface conditions */   
    inpdesign_line_freesurf();
+/*---------------------------- input of surface free surface conditions */   
+   inpdesign_surf_freesurf();
+#endif
 /*---------------------------------- input of line lift&drag definition */   
    inpdesign_line_liftdrag();
 /*---------------------------------- input of surf lift&drag definition */   
@@ -164,6 +177,10 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
    inpdesign_surf_stability();
 /*-------------------------------- input of volume stability definition */   
    inpdesign_vol_stability();
+/*------------------------------ input of line slip dirichlet condition */
+#ifdef D_FSI
+   inpdesign_line_slipdirich();
+#endif
 }
 #endif
 
@@ -238,8 +255,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdnode!=NULL,"Cannot read design-nodal dirichlet conditions");
    /*----------- allocate space for a dirichlet condition in this dnode */
    actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-   if (!actdnode->dirich) dserror("Allocation of memory failed");
-   /*--------------------------------- move pointer behind the "-" sign */
+  /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
    colptr++;
@@ -353,7 +369,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdline!=NULL,"Cannot read design-line dirichlet conditions");
    /*----------- allocate space for a dirichlet condition in this dline */
    actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-   if (!actdline->dirich) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
@@ -469,7 +484,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdsurf!=NULL,"Cannot read design-surf dirichlet conditions");
    /*----------- allocate space for a dirichlet condition in this dsurf */
    actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-   if (!actdsurf->dirich) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-surf dirichlet conditions");
@@ -584,7 +598,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdvol!=NULL,"Cannot read design-vol dirichlet conditions");
    /*------------ allocate space for a dirichlet condition in this dvol */
    actdvol->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-   if (!actdvol->dirich) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-vol dirichlet conditions");
@@ -701,7 +714,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdnode!=NULL,"Cannot read design-nodal neumann conditions");
    /*----------- allocate space for a neumann condition in this dnode */
    actdnode->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
-   if (!actdnode->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-nodal neumann conditions");
@@ -807,7 +819,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdline!=NULL,"Cannot read design-line neumann conditions");
    /*----------- allocate space for a neumann condition in this dline */
    actdline->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
-   if (!actdline->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-line neumann conditions");
@@ -913,7 +924,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdsurf!=NULL,"Cannot read design-surf neumann conditions");
    /*----------- allocate space for a neumann condition in this dsurf */
    actdsurf->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
-   if (!actdsurf->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-surf neumann conditions");
@@ -976,6 +986,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr) actdsurf->neum->neum_type = neum_increhydro_z;
    frchk("orthopressure",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_orthopressure;
+   frchk("LAS",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_LAS;
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -1032,7 +1044,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdvol!=NULL,"Cannot read design-vol neumann conditions");
    /*------------ allocate space for a neumann condition in this dvol */
    actdvol->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
-   if (!actdvol->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-vol neumann conditions");
@@ -1078,6 +1089,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read type of neumann condition */
    frchk("Dead",&ierr);
    if (ierr) actdvol->neum->neum_type = neum_dead;   
+   frchk("LAS",&ierr);
+   if (ierr) actdvol->neum->neum_type = neum_LAS;
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -1150,7 +1163,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdnode!=NULL,"Cannot read design-nodal coupling conditions");
    /*----------- allocate space for a coupling condition in this dnode */
    actdnode->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
-   if (!actdnode->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-nodal coupling conditions");
@@ -1278,7 +1290,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdline!=NULL,"Cannot read design-line coupling conditions");
    /*----------- allocate space for a coupling condition in this dline */
    actdline->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
-   if (!actdline->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-line coupling conditions");
@@ -1407,7 +1418,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdsurf!=NULL,"Cannot read design-nodal coupling conditions");
    /*----------- allocate space for a coupling condition in this dsurf */
    actdsurf->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
-   if (!actdsurf->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-nodal coupling conditions");
@@ -1536,7 +1546,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdvol!=NULL,"Cannot read design-nodal coupling conditions");
    /*----------- allocate space for a coupling condition in this dvol */
    actdvol->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
-   if (!actdvol->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-nodal coupling conditions");
@@ -1615,10 +1624,144 @@ dstrc_exit();
 return;
 } /* end of inpdesign_vol_couple */
 
-#ifdef D_FSI
+#ifdef D_FLUID
+
 /*----------------------------------------------------------------------*
  | input of line  fsi coupling conditions on design          genk 10/02 |
  *----------------------------------------------------------------------*/
+#ifdef D_FSI
+static void inpdesign_nodal_fsicouple()
+{
+INT    i;
+INT    ierr;
+INT    ndnode;
+INT    dnodeId;
+char  *colptr;
+char   buffer[200];
+DNODE *actdnode;
+INT    coupleId;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_nodal_fsicouple");
+#endif
+
+/*----------------------------------------------------------------------*/
+for (i=0; i<design->ndnode; i++)
+{
+   actdnode = &(design->dnode[i]);
+   actdnode->fsicouple = NULL;
+}
+/*------------------ find the beginning of node fsi coupling conditions */
+if (frfind("--DESIGN FSI COUPLING POINT CONDITIONS")==0) goto end;
+frread();
+/*------------------------ read number of design nodes with conditions */
+frint("DPOINT",&ndnode,&ierr);
+dsassert(ierr==1,"Cannot read design-node fsi coupling conditions");
+frread();
+/*-------------------------------------- start reading the design nodes */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design node Id */
+   frint("E",&dnodeId,&ierr);
+   dsassert(ierr==1,"Cannot read design-node fsi coupling conditions");
+   dnodeId--;
+   /*--------------------------------------------------- find the dnode */
+   actdnode=NULL;
+   for (i=0; i<design->ndnode; i++)
+   {
+      if (design->dnode[i].Id ==  dnodeId) 
+      {
+         actdnode = &(design->dnode[i]);
+         break;
+      }
+   }
+   dsassert(actdnode!=NULL,"Cannot read design-node fsi coupling conditions");
+   /*----------- allocate space for a coupling condition in this dnode */
+   actdnode->fsicouple = (FSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(FSI_COUPLE_CONDITION));
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-node fsi coupling conditions");
+   colptr++;
+   /*----------------------------------------- read the  fsi couplingId */
+   coupleId=-1;
+   coupleId = strtol(colptr,&colptr,10);
+   dsassert(coupleId>0,"Cannot reading fsi coupling conditions");
+   actdnode->fsicouple->fsi_coupleId=coupleId;
+   /*------------------------------------------------ read the fieldtyp */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot readingfsi  coupling conditions");
+   if (strncmp(buffer,"structure",9)==0) 
+   {
+       actdnode->fsicouple->fieldtyp=structure;
+       colptr = strstr(colptr,"structure");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=9;
+   }
+   if (strncmp(buffer,"fluid",5)==0) 
+   {
+      actdnode->fsicouple->fieldtyp=fluid;
+       colptr = strstr(colptr,"fluid");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=5;
+   }
+   if (strncmp(buffer,"ale",3)==0) 
+   {
+      actdnode->fsicouple->fieldtyp=ale;
+       colptr = strstr(colptr,"ale");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=3;
+   }
+   /*-------------------------------------------------- read the mesh */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot reading fsi coupling conditions");
+   if (strncmp(buffer,"conforming",10)==0) 
+   {
+       actdnode->fsicouple->fsi_mesh=conforming;
+       colptr = strstr(colptr,"conforming");
+       dsassert(colptr!=NULL,"Cannot reading coupling conditions");
+       colptr+=10;
+   }
+   if (strncmp(buffer,"non-conforming",14)==0) 
+   {
+       actdnode->fsicouple->fsi_mesh=non_conforming;
+       colptr = strstr(colptr,"non-conforming");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=14;
+   }
+   /*----------------------------------------------------- read the typ */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot reading fsi coupling conditions");
+   if (strncmp(buffer,"fsi_real",10)==0) 
+   {
+       actdnode->fsicouple->fsi_typ=fsi_real;
+       colptr = strstr(colptr,"fsi_real");
+       dsassert(colptr!=NULL,"Cannot reading coupling conditions");
+       colptr+=8;
+   }
+   if (strncmp(buffer,"fsi_pseudo",14)==0) 
+   {
+       actdnode->fsicouple->fsi_typ=fsi_pseudo;
+       colptr = strstr(colptr,"fsi_pseudo");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=10;
+   }
+
+   frread();
+}
+/*----------------------------------------------------------------------*/
+
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_nodal_fsicouple */
+#endif
+
+/*----------------------------------------------------------------------*
+ | input of line  fsi coupling conditions on design          genk 10/02 |
+ *----------------------------------------------------------------------*/
+#ifdef D_FSI
 static void inpdesign_line_fsicouple()
 {
 INT    i;
@@ -1635,6 +1778,11 @@ dstrc_enter("inpdesign_line_fsicouple");
 #endif
 
 /*----------------------------------------------------------------------*/
+for (i=0; i<design->ndline; i++)
+{
+   actdline = &(design->dline[i]);
+   actdline->fsicouple = NULL;
+}
 /*------------------ find the beginning of line fsi coupling conditions */
 if (frfind("--DESIGN FSI COUPLING LINE CONDITIONS")==0) goto end;
 frread();
@@ -1662,7 +1810,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdline!=NULL,"Cannot read design-line fsi coupling conditions");
    /*----------- allocate space for a coupling condition in this dline */
    actdline->fsicouple = (FSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(FSI_COUPLE_CONDITION));
-   if (!actdline->fsicouple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-line fsi coupling conditions");
@@ -1740,14 +1887,131 @@ end:
 dstrc_exit();
 #endif
 return;
-} /* end of inpdesign_line_couple */
+} /* end of inpdesign_line_fsicouple */
+#endif
+
+/*----------------------------------------------------------------------*
+ | input of surf  fsi coupling conditions on design          genk 02/04 |
+ *----------------------------------------------------------------------*/
+#ifdef D_FSI
+static void inpdesign_surf_fsicouple()
+{
+INT    i;
+INT    ierr;
+INT    ndsurf;
+INT    dsurfId;
+char  *colptr;
+char   buffer[200];
+DSURF *actdsurf;
+INT    coupleId;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_surf_fsicouple");
+#endif
+
+/*----------------------------------------------------------------------*/
+for (i=0; i<design->ndsurf; i++)
+{
+   actdsurf = &(design->dsurf[i]);
+   actdsurf->fsicouple = NULL;
+}
+
+/*------------------ find the beginning of surf fsi coupling conditions */
+if (frfind("--DESIGN FSI COUPLING SURF CONDITIONS")==0) goto end;
+frread();
+/*------------------------ read number of design surfs with conditions */
+frint("DSURF",&ndsurf,&ierr);
+dsassert(ierr==1,"Cannot read design-surf fsi coupling conditions");
+frread();
+/*-------------------------------------- start reading the design surfs */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design surf Id */
+   frint("E",&dsurfId,&ierr);
+   dsassert(ierr==1,"Cannot read design-surf fsi coupling conditions");
+   dsurfId--;
+   /*--------------------------------------------------- find the dsurf */
+   actdsurf=NULL;
+   for (i=0; i<design->ndsurf; i++)
+   {
+      if (design->dsurf[i].Id ==  dsurfId) 
+      {
+         actdsurf = &(design->dsurf[i]);
+         break;
+      }
+   }
+   dsassert(actdsurf!=NULL,"Cannot read design-surf fsi coupling conditions");
+   /*------------ allocate space for a coupling condition in this dsurf */
+   actdsurf->fsicouple = (FSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(FSI_COUPLE_CONDITION));
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-surf fsi coupling conditions");
+   colptr++;
+   /*----------------------------------------- read the  fsi couplingId */
+   coupleId=-1;
+   coupleId = strtol(colptr,&colptr,10);
+   dsassert(coupleId>0,"Cannot reading fsi coupling conditions");
+   actdsurf->fsicouple->fsi_coupleId=coupleId;
+   /*------------------------------------------------ read the fieldtyp */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot reading fsi  coupling conditions");
+   if (strncmp(buffer,"structure",9)==0) 
+   {
+       actdsurf->fsicouple->fieldtyp=structure;
+       colptr = strstr(colptr,"structure");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=9;
+   }
+   if (strncmp(buffer,"fluid",5)==0) 
+   {
+      actdsurf->fsicouple->fieldtyp=fluid;
+       colptr = strstr(colptr,"fluid");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=5;
+   }
+   if (strncmp(buffer,"ale",3)==0) 
+   {
+      actdsurf->fsicouple->fieldtyp=ale;
+       colptr = strstr(colptr,"ale");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=3;
+   }
+   /*-------------------------------------------------- read the mesh */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot reading fsi coupling conditions");
+   if (strncmp(buffer,"conforming",10)==0) 
+   {
+       actdsurf->fsicouple->fsi_mesh=conforming;
+       colptr = strstr(colptr,"conforming");
+       dsassert(colptr!=NULL,"Cannot reading coupling conditions");
+       colptr+=10;
+   }
+   if (strncmp(buffer,"non-conforming",14)==0) 
+   {
+       actdsurf->fsicouple->fsi_mesh=non_conforming;
+       colptr = strstr(colptr,"non-conforming");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=14;
+   }
+
+   frread();
+}
+/*----------------------------------------------------------------------*/
+
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_surf_couple */
+
 #endif
 
 
-#ifdef D_FLUID
 /*----------------------------------------------------------------------*
  | input of nodal fluid freesurface conditions on design     genk 01/03 |
  *----------------------------------------------------------------------*/
+#ifdef D_FSI
 static void inpdesign_nodal_freesurf()
 {
 INT    i;
@@ -1763,21 +2027,26 @@ dstrc_enter("inpdesign_nodal_freesurf");
 #endif
 
 /*----------------------------------------------------------------------*/
-/*---- find the beginning of line fluid freesurface coupling conditions */
+for (i=0; i<design->ndnode; i++)
+{
+   actdnode = &(design->dnode[i]);
+   actdnode->freesurf = NULL; 
+}
+/*---- find the beginning of point fluid freesurface coupling conditions */
 if (frfind("--DESIGN FLUID FREE SURFACE POINT CONDITIONS")==0) goto end;
 frread();
-/*------------------------ read number of design lines with conditions */
+/*------------------------ read number of design points with conditions */
 frint("DPOINT",&ndnode,&ierr);
-dsassert(ierr==1,"Cannot read design-line fsi coupling conditions");
+dsassert(ierr==1,"Cannot read design-point fsi coupling conditions");
 frread();
-/*-------------------------------------- start reading the design lines */
+/*-------------------------------------- start reading the design points */
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
-   /*------------------------------------------ read the design line Id */
+   /*------------------------------------------ read the design point Id */
    frint("E",&dnodeId,&ierr);
    dsassert(ierr==1,"Cannot read design-point fsi coupling conditions");
    dnodeId--;
-   /*--------------------------------------------------- find the dline */
+   /*--------------------------------------------------- find the dpoint */
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
@@ -1788,13 +2057,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       }
    }
    dsassert(actdnode!=NULL,"Cannot read design-point freesurface conditions");
-   /*----------- allocate space for a coupling condition in this dline */
+   /*----------- allocate space for a coupling condition in this dpoint */
    actdnode->freesurf = (FLUID_FREESURF_CONDITION*)CCACALLOC(1,sizeof(FLUID_FREESURF_CONDITION));
-   if (!actdnode->freesurf) dserror("Allocation of memory failed");
 
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
-   dsassert(colptr!=NULL,"Cannot read design-line freesurf conditions");
+   dsassert(colptr!=NULL,"Cannot read design-point freesurf conditions");
    colptr++;
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
@@ -1813,10 +2081,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        dsassert(colptr!=NULL,"Cannot reading freesurface coupling conditions");
        colptr+=3;
    }
-   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */ 
+#if 0
+   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */
+   /* this is not used at the moment */
    amdef("fixed",&(actdnode->freesurf->fixed_onoff),MAXDOFPERNODE,1,"IV");
    for (i=0; i<MAXDOFPERNODE; i++)
    actdnode->freesurf->fixed_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+#endif
 
    frread();
 }
@@ -1827,13 +2098,14 @@ end:
 dstrc_exit();
 #endif
 return;
-} /* end of inpdesign_line_freesurf */
-
+} /* end of inpdesign_nodal_freesurf */
+#endif
 
 
 /*----------------------------------------------------------------------*
  | input of line  fluid freesurface conditions on design     genk 01/03 |
  *----------------------------------------------------------------------*/
+#ifdef D_FSI
 static void inpdesign_line_freesurf()
 {
 INT    i;
@@ -1849,6 +2121,12 @@ dstrc_enter("inpdesign_line_freesurf");
 #endif
 
 /*----------------------------------------------------------------------*/
+for (i=0; i<design->ndline; i++)
+{
+  actdline = &(design->dline[i]);
+  actdline->freesurf = NULL;
+}
+
 /*---- find the beginning of line fluid freesurface coupling conditions */
 if (frfind("--DESIGN FLUID FREE SURFACE LINE CONDITIONS")==0) goto end;
 frread();
@@ -1876,7 +2154,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdline!=NULL,"Cannot read design-line freesurface conditions");
    /*----------- allocate space for a coupling condition in this dline */
    actdline->freesurf = (FLUID_FREESURF_CONDITION*)CCACALLOC(1,sizeof(FLUID_FREESURF_CONDITION));
-   if (!actdline->freesurf) dserror("Allocation of memory failed");
 
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -1900,10 +2177,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        colptr+=3;
    }
   
-   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */ 
+#if 0
+   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */
+   /* this is not used at the moment */
    amdef("fixed",&(actdline->freesurf->fixed_onoff),MAXDOFPERNODE,1,"IV");
    for (i=0; i<MAXDOFPERNODE; i++)
    actdline->freesurf->fixed_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+#endif
    
    frread();
 }
@@ -1915,7 +2195,103 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_freesurf */
+#endif
 
+/*----------------------------------------------------------------------*
+ | input of surf  fluid freesurface conditions on design     genk 02/04 |
+ *----------------------------------------------------------------------*/
+#ifdef D_FSI
+static void inpdesign_surf_freesurf()
+{
+INT    i;
+INT    ierr;
+INT    ndsurf;
+INT    dsurfId;
+char  *colptr;
+char   buffer[200];
+DSURF *actdsurf;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_surf_freesurf");
+#endif
+
+/*----------------------------------------------------------------------*/
+for (i=0; i<design->ndsurf; i++)
+{
+  actdsurf = &(design->dsurf[i]); 
+  actdsurf->freesurf = NULL;
+}
+
+/*---- find the beginning of line fluid freesurface coupling conditions */
+if (frfind("--DESIGN FLUID FREE SURFACE SURF CONDITIONS")==0) goto end;
+frread();
+/*------------------------ read number of design lines with conditions */
+frint("DSURF",&ndsurf,&ierr);
+dsassert(ierr==1,"Cannot read design-line freesurface conditions");
+frread();
+/*-------------------------------------- start reading the design surfs */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design surf Id */
+   frint("E",&dsurfId,&ierr);
+   dsassert(ierr==1,"Cannot read design-surf freesurface conditions");
+   dsurfId--;
+   /*--------------------------------------------------- find the dsurf */
+   actdsurf=NULL;
+   for (i=0; i<design->ndsurf; i++)
+   {
+      if (design->dsurf[i].Id ==  dsurfId) 
+      {
+         actdsurf = &(design->dsurf[i]);
+         break;
+      }
+   }
+   dsassert(actdsurf!=NULL,"Cannot read design-line freesurface conditions");
+   /*----------- allocate space for a coupling condition in this dsurf */
+   actdsurf->freesurf = (FLUID_FREESURF_CONDITION*)CCACALLOC(1,sizeof(FLUID_FREESURF_CONDITION));
+
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-line freesurf conditions");
+   colptr++;
+   /*------------------------------------------------ read the fieldtyp */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read freesurface conditions");
+   if (strncmp(buffer,"fluid",5)==0) 
+   {
+       actdsurf->freesurf->fieldtyp=fluid;
+       colptr = strstr(colptr,"fluid");
+       dsassert(colptr!=NULL,"Cannot reading free surface conditions");
+       colptr+=5;
+   }
+   if (strncmp(buffer,"ale",3)==0) 
+   {
+       actdsurf->freesurf->fieldtyp=ale;
+       colptr = strstr(colptr,"ale");
+       dsassert(colptr!=NULL,"Cannot reading free surface conditions");
+       colptr+=3;
+   }
+  
+#if 0
+   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */
+   /* this is not used at the moment */
+   amdef("fixed",&(actdline->freesurf->fixed_onoff),MAXDOFPERNODE,1,"IV");
+   for (i=0; i<MAXDOFPERNODE; i++)
+   actdline->freesurf->fixed_onoff.a.iv[i] = strtol(colptr,&colptr,10);
+#endif
+   
+   frread();
+}
+/*----------------------------------------------------------------------*/
+
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_surf_freesurf */
+
+#endif
 
 
 /*!----------------------------------------------------------------------
@@ -2095,6 +2471,140 @@ end:
 } /* end of inpdesign_surf_liftdrag */
 
 
+/*----------------------------------------------------------------------*
+ | input of line slip dirichlet conditions on design      genk 05/04    |
+ *----------------------------------------------------------------------*/
+#ifdef D_FSI
+static void inpdesign_line_slipdirich()
+{
+INT    i;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+char  *colptr;
+char   buffer[200];
+DOUBLE xloc[3];
+DOUBLE norm;
+DLINE *actdline;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_line_slipdirich");
+#endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<design->ndline; i++) design->dline->slipdirich=NULL;
+
+/*--------------------- find the beginning of line dirichlet conditions */
+if (frfind("---DESIGN LINE FLUID SLIP DIRICHLET CONDITIONS")==0) goto end;
+frread();
+/*------------------------- read number of design lines with conditions */
+frint("DLINE",&ndline,&ierr);
+dsassert(ierr==1,"Cannot read design-line slip dirichlet conditions");
+frread();
+/*-------------------------------------- start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design line Id */
+   frint("E",&dlineId,&ierr);
+   dsassert(ierr==1,"Cannot read design-line slip dirichlet conditions");
+   dlineId--;
+   /*--------------------------------------------------- find the dline */
+   actdline=NULL;
+   for (i=0; i<design->ndline; i++)
+   {
+      if (design->dline[i].Id ==  dlineId) 
+      {
+         actdline = &(design->dline[i]);
+         break;
+      }
+   }
+   dsassert(actdline!=NULL,"Cannot read design-line slip dirichlet conditions");
+   /*----------- allocate space for a dirichlet condition in this dline */
+   actdline->slipdirich = (SLIPDIRICH_CONDITION*)CCACALLOC(1,
+                        sizeof(SLIPDIRICH_CONDITION));
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
+   colptr++;
+   /*----------------------------------------- read the dirichlet value */
+   actdline->slipdirich->dirich_val = strtod(colptr,&colptr);
+   /*----------------------------------- read the curvenumber or "none" */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read design-line slip dirichlet conditions");
+   if (strncmp(buffer,"none",4)==0) 
+   {
+     actdline->slipdirich->curve = 0;
+     colptr = strstr(colptr,"none");
+     dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
+     colptr += 4; 
+   }
+   else
+   {
+     ierr=sscanf(colptr," %d ",&(actdline->slipdirich->curve));
+     dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
+     colptr = strpbrk(colptr,"1234567890");
+     colptr++;
+   }
+   /* read length */
+   actdline->slipdirich->length = strtod(colptr,&colptr);
+
+   /*------------------------------------- allocate dirichlet condition */
+   if (actdline->dirich!=NULL)
+      dserror("Dirich and Slipdirich condition on same DLINE!\n");
+   actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+
+   /*----------------------------------- allocate and initialise arrays */
+   amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
+   amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
+   amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
+   amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
+   amzero(&(actdline->dirich->dirich_onoff));
+   amzero(&(actdline->dirich->dirich_val));
+   amzero(&(actdline->dirich->curve));
+   amzero(&(actdline->dirich->funct));
+   actdline->dirich->dirich_type=dirich_slip;
+   
+   /*---------------------------- slip dirichlet conditions means:
+       prescribed value in local x-direction, ZERO in local y-direction */
+   dsassert(genprob.ndim==2,"slip dirichlet condition only in 2D!\n");
+   actdline->dirich->dirich_onoff.a.iv[0]=1;
+   actdline->dirich->dirich_onoff.a.iv[1]=1;   
+   /*-------------------------------------------------- determine alpha */
+   for (i=0;i<3;i++)
+      xloc[i] = actdline->dnode[1]->x[i] - actdline->dnode[0]->x[i];
+   /* NOTE: xloc has to point into the fluid domain, so first point has 
+            to be at the free surface - 
+            this is checked later in the program                        */
+   dsassert(FABS(xloc[2])<EPS15,"slip DLINE not in xy-plane!\n");
+   /*-------------------------------------------------------- normalise */
+   norm = sqrt(DSQR(xloc[0])+DSQR(xloc[1])+DSQR(xloc[2]));
+   /*------------------------------------------ angle by scalar product */   
+   actdline->slipdirich->alpha=acos(xloc[0]/norm);
+   if (FABS(FABS(actdline->slipdirich->alpha)-ONE)<EPS2)
+      dserror("angle too small for slip dirichlet condition \n");
+   /*------------------------------- check if there's a local co-system */
+   if (FABS(FABS(actdline->slipdirich->alpha)-PI/TWO)>EPS8)
+   {
+      if (actdline->locsysId==0)
+      {
+         dserror("no locsys defined on inclined line with slip DBC!\n");
+      }
+   }
+   /*------------------------------------------------ init node pointer */
+   actdline->slipdirich->firstnode=NULL;
+   actdline->slipdirich->lastnode=NULL;
+   /*--------------------------------------------------- read next line */
+   frread();
+}
+/*----------------------------------------------------------------------*/
+
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_line_slipdirich */
+#endif
+
 /*!----------------------------------------------------------------------
 \brief input of surface stability parameters
 
@@ -2195,29 +2705,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     /*-- allocate space for stabilisation parameters at this dsurf ---*/
     actdsurf->stabi.gls = (STAB_PAR_GLS*)CCACALLOC(1,sizeof(STAB_PAR_GLS));
     gls = actdsurf->stabi.gls;
-    
-    /*------------------------------------------------ read ISTABI ---*/
-    ierr=sscanf(colptr," %s ",buffer);
-    dsassert(ierr==1,"Cannot read design surface stabilisation ISTABI");
-    if (strncmp(buffer,"yes",3)==0)
-    {
-      gls->istabi=1;
-      /* move pointer after "yes" */
-      while (colptr[0] == ' ')
-        colptr++;
-      colptr += 3;
-    }
-    else if (strncmp(buffer,"no",2)==0)
-    {
-      gls->istabi=0;
-      /* move pointer after "no" */
-      while (colptr[0] == ' ')
-        colptr++;
-      colptr += 2;
-    }
-    else
-      dserror("Cannot read design surface stabilisation ISTABI");     
-    
+        
     /*------------------------------------------------ read IADVEC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation IADVEC");
@@ -2589,29 +3077,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     /*-- allocate space for stabilisation parameters at this dsurf ---*/
     actdvol->stabi.gls = (STAB_PAR_GLS*)CCACALLOC(1,sizeof(STAB_PAR_GLS));
     gls = actdvol->stabi.gls;
-    
-    /*------------------------------------------------ read ISTABI ---*/
-    ierr=sscanf(colptr," %s ",buffer);
-    dsassert(ierr==1,"Cannot read design volume stabilisation ISTABI");
-    if (strncmp(buffer,"yes",3)==0)
-    {
-      gls->istabi=1;
-      /* move pointer after "yes" */
-      while (colptr[0] == ' ')
-        colptr++;
-      colptr += 3;
-    }
-    else if (strncmp(buffer,"no",2)==0)
-    {
-      gls->istabi=0;
-      /* move pointer after "no" */
-      while (colptr[0] == ' ')
-        colptr++;
-      colptr += 2;
-    }
-    else
-      dserror("Cannot read design volume stabilisation ISTABI");     
-    
+       
     /*------------------------------------------------ read IADVEC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation IADVEC");
@@ -2882,7 +3348,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_vol_stability */
-#endif
+#endif /* D_FLUID */
 
 
 
@@ -2940,7 +3406,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdline!=NULL,"Cannot read design-line thickness conditions");
    /*----------- allocate space for a coupling condition in this dline */
    actdline->thickness = (SAXI_THICK_CONDITION*)CCACALLOC(1,sizeof(SAXI_THICK_CONDITION));
-   if (!actdline->thickness) dserror("Allocation of memory failed");
 
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -3019,7 +3484,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(actdline!=NULL,"Cannot read design-line thickness conditions");
    /*----------- allocate space for a coupling condition in this dline */
    actdline->axishellload = (SAXI_LOAD_CONDITION*)CCACALLOC(1,sizeof(SAXI_LOAD_CONDITION));
-   if (!actdline->axishellload) dserror("Allocation of memory failed");
 
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -3239,7 +3703,6 @@ frint("DLINE",&ndline,&ierr);
 dsassert(ierr==1,"Cannot read design-line contact conditions");
 contact.ndline = ndline;
 contact.dline = (DLINE**)CCACALLOC(ndline,sizeof(DLINE*));
-if (!(contact.dline)) dserror("Allocation of memory failed");
 frread();
 /*-------------------------------------- start reading the design lines */
 while(strncmp(allfiles.actplace,"------",6)!=0)
