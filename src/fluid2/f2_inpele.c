@@ -3,6 +3,9 @@
 \brief read fluid2 element
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h" 
 #include "fluid2_prototypes.h"
@@ -13,10 +16,11 @@
 <pre>                                                         genk 03/02
 </pre>
 \param  *ele	   ELEMENT	   (o)	   actual element
+\param   counter   int             (i)     counter for first element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_inp(ELEMENT *ele)
+void f2_inp(ELEMENT *ele, int counter)
 {
 int        i;             /* simply a counter                           */
 int        ndum;          /* dummy value                                */
@@ -25,9 +29,8 @@ int        ierr=0;        /* error flag                                 */
 int        itaumu;        /*                                            */ 
 int        itaump;	  /*						*/
 int        itauc;	  /* element flags                              */
-long int  topology[100];
-char     *colpointer;
 char      buffer[50];
+static int cmat;
 
 #ifdef DEBUG 
 dstrc_enter("f2inp");
@@ -98,6 +101,8 @@ for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 frint("MAT",&(ele->mat),&ierr);
 if (ierr!=1) dserror("Reading of FLUID2 element failed\n");
 if (ele->mat==0) dserror("No material defined for FLUID2 element\n");
+if (counter==0) cmat=ele->mat;
+else dsassert(ele->mat==cmat,"no different materials for fluid elements allowed!\n");
 /*-------------------------------------------- read the gaussian points */
 if (ele->numnp==4 || ele->numnp==8 || ele->numnp==9)
 {
@@ -397,6 +402,9 @@ if (ele->e.f2->iarea==1 && ele->e.f2->istapc!=1)
 ele->e.f2->itau[0] = itaumu;
 ele->e.f2->itau[1] = itaump;
 ele->e.f2->itau[2] = itauc;
+
+/*----------------------------- set initial value for free surface flag */
+ele->e.f2->fs_on=0;
    
 /*--------------------------------------------------------------------- */
 #ifdef DEBUG 
@@ -408,3 +416,4 @@ return;
 
 
 #endif
+/*! @} (documentation module close)*/
