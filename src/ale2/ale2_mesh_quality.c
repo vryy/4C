@@ -285,7 +285,7 @@ for (i=0; i<3; i++) edge[i] = sqrt(sqed[i]);
 /*----------------------------------------------------- aspect ratio ---*/
 ratio = (2.0*(sqed[0]*sqed[1] + sqed[1]*sqed[2] + sqed[2]*sqed[0])
             - sqed[0]*sqed[0] - sqed[1]*sqed[1] - sqed[2]*sqed[2] )
-	 /( (edge[0]+edge[1]+edge[2])*edge[0]*edge[1]*edge[2] )/4.0;
+	 /( (edge[0]+edge[1]+edge[2])*edge[0]*edge[1]*edge[2] ); 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
