@@ -4,9 +4,6 @@
 the 64bit linker expects an underslash appended to calls for
 fortran90 subroutines:
 */
-#ifdef SIXTYFOUR 
-#define colsol   colsol_
-#endif
 /*----------------------------------------------------------------------*
  |  control solver colsol                                m.gee 01/02    |
  *----------------------------------------------------------------------*/
