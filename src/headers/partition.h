@@ -29,8 +29,10 @@ typedef struct _PAR
 INT               myrank;                /*!< the individual processor number */
 INT               nprocs;                /*!< total number of processors */
 #ifdef PARALLEL
-INT               numfld;                /*!< number of intra-communicators == number of fields */
-struct _INTRA    *intra;                 /*!< vector of intra-communicator-structures correspondent to vector of FIELDs */
+INT               numfld;                /*!< number of intra-communicators 
+                                           == number of fields */
+struct _INTRA    *intra;                 /*!< vector of intra-communicator-structures
+                                           correspondent to vector of FIELDs */
 #endif
 } PAR;
 
