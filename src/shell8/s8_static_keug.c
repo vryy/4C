@@ -19,6 +19,12 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
 {
 int                 i,j,k,l;                                /* some loopers */
 double              sum;
+
+int                 imass;                                  /* flag for calculating mass matrix */
+double              density;                                /* density of the material */
+double              facv,facw,facvw;                        /* variables for mass integration */
+double             *thick;
+
 int                 dof;
 int                 nir,nis,nit;                            /* num GP in r/s/t direction */
 int                 lr, ls, lt;                             /* loopers over GP */
@@ -27,7 +33,7 @@ int                 nd;                                     /* ndofs to this ele
 const int           numdf=NUMDOF_SHELL8;                    /* ndofs per node to this element */
 
 double              e1,e2,e3;                               /*GP-coords*/
-double              facr,facs,fact;                         /* weights at GP */
+double              fac,facr,facs,fact;                     /* weights at GP */
 double              xnu;                                    /* value of shell shifter */
 double              weight;
 
@@ -96,6 +102,7 @@ static ARRAY        gmkonc_a;    static double **gmkonc;    /* kontravar.-------
 
 static ARRAY        bop_a;       static double **bop;       /* B-Operator for compatible strains */
                                  static double **estif;     /* element stiffness matrix ke */
+                                 static double **emass;     /* element mass matrix */
 static ARRAY        work_a;      static double **work;      /* working array to do Bt*D*B */
 
 /* arrays for eas */
@@ -296,6 +303,22 @@ if (nhyb>0)
    math_matvecdense(alfa,oldDtildinv,eashelp,nhyb,nhyb,1,-1.0);
 
 }
+/*------------------------------------ check calculation of mass matrix */
+if (emass_global) 
+{
+   imass = 1;
+   amzero(emass_global);
+   emass = emass_global->a.da;
+   s8_getdensity(mat,&density);
+   thick = ele->e.s8->thick_node.a.dv;
+} 
+else 
+{
+   imass   = 0;
+   emass   = NULL;
+   density = 0.0; 
+   thick   = NULL;
+}   
 /*----------------- some of the fields have to be reinitialized to zero */
 amzero(&D_a);
 amzero(estif_global);
@@ -360,6 +383,13 @@ for (lr=0; lr<nir; lr++)
       /*-------- init mid surface material tensor and stress resultants */
       amzero(&D_a);
       for (i=0; i<12; i++) stress_r[i]=0.0;
+      /*------------------------------------ init mass matrix variables */
+      if (imass)
+      {
+         facv  = 0.0;
+         facw  = 0.0;
+         facvw = 0.0;
+      }
       /*------------------------------------- metrics at gaussian point */
       s8_tvmr(xrefe,a3r,akovr,akonr,amkovr,amkonr,&detr,
                  funct,deriv,iel,a3kvpr,0);
@@ -410,6 +440,13 @@ for (lr=0; lr<nir; lr++)
                     gkovc,gkonc,gkovr,gkonr,detc,detr,e3,0);
          /*---------------- do thickness integration of material tensor */           
          s8_tvma(D,C,stress,stress_r,e3,fact,condfac);
+         /*-------------------------- mass matrix thickness integration */
+         if (imass)
+         {
+            facv  += data->wgtt[lt] * detr;
+            facw  += data->wgtt[lt] * detr * DSQR(e3);
+            facvw += data->wgtt[lt] * detr * e3;
+         }
       }/*========================================== end of loop over lt */
       /*------------ product of all weights and jacobian of mid surface */
       weight = facr*facs*da;
@@ -419,6 +456,15 @@ for (lr=0; lr<nir; lr++)
       s8_tvkg(estif,stress_r,funct,deriv,numdf,iel,weight,e1,e2);
       /*-------------------------------- calculation of internal forces */
       if (force) s8_intforce(intforce,stress_r,bop,iel,numdf,12,weight);
+      /*------------- mass matrix : gaussian point on shell mid surface */
+      if (imass)
+      {
+         fac    = facr * facs * density;
+         facv  *= fac;
+         facw  *= fac;
+         facvw *= fac;
+         s8_tmas(funct,thick,emass,iel,numdf,facv,facw,facvw);
+      }
       /*----------------------------------- integration of eas matrices */
       if (nhyb>0)
       {
@@ -496,18 +542,18 @@ for (i=0; i<nd; i++)
       if (i==j); 
       else
       {
-         sum = estif[i][j] - estif[j][i];
+         sum = emass[i][j] - emass[j][i];
          sum = FABS(sum);
          if (sum > EPS11)
          {
-            printf("estif[%d][%d]=%f estif[%d][%d]=%f diff=%20.10E\n",
-            i,j,estif[i][j],
-            j,i,estif[j][i],
+            printf("emass[%d][%d]=%f emass[%d][%d]=%f diff=%20.10E\n",
+            i,j,emass[i][j],
+            j,i,emass[j][i],
             sum);
          }
       }
    }
-}
+}*/
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG 

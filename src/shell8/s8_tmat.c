@@ -34,6 +34,7 @@ case m_stvenant:/*-------------------------- ST.VENANT-KIRCHHOFF-MATERIAL */
    s8_mat_stress1(stress,strain,C);
 break;
 case m_neohooke:/*------------------------------ kompressible neo-hooke */
+   dserror("neohooke not yet implemented");
 break;
 default:
    dserror("Ilegal typ of material for this element");
@@ -45,3 +46,34 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8_tmat */
+
+
+
+/*----------------------------------------------------------------------*
+ | get density out of material law                        m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+void s8_getdensity(MATERIAL   *mat, double *density)
+{
+#ifdef DEBUG 
+dstrc_enter("s8_getdensity");
+#endif
+/*----------------------------------------------------------------------*/
+/*------------------------------------------------ switch material type */
+switch(mat->mattyp)
+{
+case m_stvenant:/*-------------------------- ST.VENANT-KIRCHHOFF-MATERIAL */
+   *density = mat->m.stvenant->density;
+break;
+case m_neohooke:/*------------------------------ kompressible neo-hooke */
+   *density = mat->m.neohooke->density;
+break;
+default:
+   dserror("Ilegal typ of material for this element");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s8_getdensity */
