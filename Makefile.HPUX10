@@ -147,6 +147,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/cal_static_control.o \
                 ${SRC}/global_full/cal_nlnstatic_control.o \
                 ${SRC}/global_full/cal_nlndyn_struct.o \
+                ${SRC}/global_full/cal_nlndyn_stru_expl.o \
                 ${SRC}/global_full/cal_static_service.o \
                 ${SRC}/global_full/dyn_timecurve.o \
                 ${SRC}/global_full/dyn_service.o \
