@@ -160,6 +160,10 @@ FILE             *out_tur;                /* file-pointer .tur  file     */
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
 FILE             *gidres;                 /* file pointer .flavia.res    */
 FILE             *gnu;                    /* file pointer .plt */
+#ifdef D_MLSTRUCT
+FILE             *gidsubmesh;             /* file pointer .submesh    */
+FILE             *gidmicrores;            /* file pointer .microres    */
+#endif
 
 /*---------------------- variables needed by the free-field-input system */
 char              title[5][500];          /* problem title                */
@@ -188,6 +192,8 @@ INT               struct_stress_file;     /* write structural stress to .out */
 INT               struct_disp_gid;        /* write structural displacements to .flavia.res */
 INT               struct_stress_gid;      /* write structural stresses to .flavia.res */
 INT               struct_stress_gid_smo;  /* write structural smoothed/unsmoothed stresses to .flavia.res */
+INT               struct_sm_disp_gid;     /* write structural submesh displacements to .microres */
+INT               struct_sm_stress_gid;   /* write structural submesh stresses to .microres */
 INT               fluid_sol_file;         /* write vel/pre to .out */
 INT               fluid_sol_gid;          /* write vel/pre to .flavia.res */
 INT               fluid_stress_gid;       /* write stresses to .flavia.res */
@@ -255,6 +261,7 @@ INT               maxnode;       /* largest node id in the problem */
 INT               nodeshift;     /* shift of node ids for second dis */
 INT               ndim;          /* dimension of problem (2 or 3) */
 INT               nmat;          /* total number of material laws */
+INT               nmat_sm;       /* total number of material laws in submesh */
 INT               numfld;        /* number of fields */
 INT               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
 INT               restart;       /* is restart or not */
@@ -264,6 +271,7 @@ INT               numff;         /* actual number of fluid field */
 INT               numaf;         /* actual number of ale field */
 INT               numls;         /* actual number of ls field */
 INT               graderw;       /* flag is gradient enhanced material model */
+INT               multisc_struct;/* flag is structural multiscale analysis */
 
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */

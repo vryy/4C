@@ -18,6 +18,7 @@ typedef struct _STATIC_VAR
 {
 INT                 linear;             /* is linear calculation */
 INT                 nonlinear;          /* is nonlinear calculation */
+INT                 multiscale;         /* flag if multiscale model */
 enum _KINTYP        kintyp;             /* type of kinematic used in nonlinear calculation*/
 enum _NR_CONTROLTYP nr_controltyp;      /* type of control */
 INT                 nstep;              /* number of steps */
@@ -32,6 +33,7 @@ INT                 resevry_disp;       /* write result very updevry step */
 INT                 resevry_stress;     /* write result very updevry step */
 INT                 resevery_restart;   /* write restart every res_write_evry step */
 INT                 graderw;            /* is gradient damage model */
+INT                 praedictor;         /* is it praedictor -> 1 first corrector: ->2 else: 3 */
 
 
 struct _NODE       *controlnode;        /* ptr to control node */
@@ -45,6 +47,9 @@ INT                 numcurve;           /* number of entries in actstep and acts
 
 INT                 reldisnode_ID[6];     /* ID's of relative-displacement-output-nodes*/
 INT                 reldis_dof[6];        /* dof we want in output for relative displacement */
+#ifdef D_MLSTRUCT
+DOUBLE              eps_equiv;            /* strain measure, for which multiscale is activated */
+#endif
 } STATIC_VAR;
 
 /*----------------------------------------------------------------------*

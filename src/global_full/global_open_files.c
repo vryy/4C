@@ -299,6 +299,38 @@ if (par.myrank==0)
     allfiles.num_flaviaresfiles = 1;
     printf("output is written to       %s\n",allfiles.outputfile_name);
 }
+/*-------------------------------------------------open .submesh file */
+#ifdef D_MLSTRUCT
+if (par.myrank==0)
+{     
+     strncpy(charpointer,".submesh",11);
+     if ( (allfiles.gidsubmesh=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of output file .submesh failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    printf("submesh is written to   %s" ,allfiles.outputfile_name);
+    printf("-> this name needs to be changed to newname.flavia.msh! \n" );
+}     
+/*-------------------------------------------------open .microres file */
+if (par.myrank==0)
+{     
+     strncpy(charpointer,".microres",11);
+     if ( (allfiles.gidmicrores=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of output file .microres failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    printf("submeshresults are written to  %s" ,allfiles.outputfile_name);
+    printf("-> this name needs to be changed to newname.flavia.res! \n" );
+}
+#endif /*ifdef D_MLSTRUCT*/
 /*--------------------------to open any other file just add block here */
 
 visualisation:

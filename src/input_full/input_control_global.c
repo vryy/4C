@@ -210,6 +210,8 @@ ioflags.struct_stress_file    =0;
 ioflags.struct_disp_gid       =0;
 ioflags.struct_stress_gid     =0;
 ioflags.struct_stress_gid_smo =0;
+ioflags.struct_sm_disp_gid    =0;
+ioflags.struct_sm_stress_gid  =0;
 ioflags.fluid_sol_gid         =0;
 ioflags.fluid_stress_gid      =0;
 ioflags.fluid_sol_file        =0;
@@ -251,6 +253,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("NUMFIELD",&(genprob.numfld),&ierr);
 
   frint("GRADERW",&(genprob.graderw),&ierr);
+
+  frint("MULTISC_STRUCT",&(genprob.multisc_struct),&ierr);
   frread();
 }
 
@@ -314,6 +318,20 @@ if (frfind("---IO")==1)
       if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_gid_smo=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid_smo=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid_smo=1;
+    }
+    frchar("STRUCT_SM_DISP_GID",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_disp_gid=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_disp_gid=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_disp_gid=1;
+    }
+    frchar("STRUCT_SM_STRESS_GID",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_stress_gid=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_stress_gid=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_stress_gid=1;
     }
     frchar("FLUID_STRESS_GID",buffer,&ierr);
     if (ierr)
@@ -392,6 +410,7 @@ statvar->resevry_disp=1;
 statvar->resevry_stress=1;
 statvar->resevery_restart=1;
 statvar->isrelstepsize=0;
+statvar->multiscale=0;
 /*------------------------------------------------------- start reading */
 if (frfind("-STATIC")==1)
 {
@@ -402,6 +421,14 @@ if (frfind("-STATIC")==1)
     if (ierr==1) {statvar->linear=1;statvar->nonlinear=0;}
     frchk("NONLINEAR",&ierr);
     if (ierr==1) {statvar->nonlinear=1;statvar->linear=0;}
+    /*------------------------- read if multiscale model */   
+    frchar("MULTISCALE",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) statvar->multiscale=1;
+      if (strncmp(buffer,"YES",3)==0) statvar->multiscale=1;
+      if (strncmp(buffer,"Yes",3)==0) statvar->multiscale=1;
+    }
     /*------------------------- read for typ of kinematic sh 03/03 */
     frchar("KINTYP",buffer,&ierr);
     if (ierr==1)
@@ -516,6 +543,21 @@ if (statvar->isrelstepsize==1)
     if(counter>19)  dserror("not more than 20 different stepsizes!");
   }
 }
+/*----------------------------------------------------------------*/
+#ifdef D_MLSTRUCT
+if (genprob.multisc_struct == 1)
+{
+  if (frfind("--SMVALUES")==1)
+  {
+     frread();
+     while(strncmp(allfiles.actplace,"------",6)!=0)
+     {
+        frdouble("EPS_EQUIVAL",&(statvar->eps_equiv),&ierr);
+        frread();
+     }
+  }
+}
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

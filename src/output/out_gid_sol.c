@@ -26,6 +26,7 @@ Maintainer: Malte Neumann
 #include "../axishell/axishell.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
+#include "../struct2_ml/s2ml.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -37,6 +38,11 @@ extern struct _IO_FLAGS     ioflags;
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
+/*----------------------------------------------------------------------*
+ |                                                       ah 03/04       |
+ | vector of numfld submesh-FIELDs, defined in global_control.c         |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *sm_field;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -2973,7 +2979,12 @@ if (strncmp(string,"stress",stringlenght)==0)
                                                              resultplace,
                                                              sign,gpset,sign
                                                              );
-      actele = &(actfield->dis[0].element[0]);
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_interf) continue;
+         if (actele->eltyp == el_interf) break;
+      }
       switch(actele->e.interf->stresstyp)
       {
       /*---------------------------------- local stresses are asked for ---*/
@@ -3038,7 +3049,7 @@ if (strncmp(string,"stress",stringlenght)==0)
    if (actgid->is_interf_33)
    {
      /* ------------------------------------------------ write stresses */
-      ngauss=4;
+      ngauss=9;
       resulttype        = "MATRIX";
       resultplace       = "ONGAUSSPOINTS";
       gpset             = actgid->interf_33_name;
@@ -3054,7 +3065,12 @@ if (strncmp(string,"stress",stringlenght)==0)
                                                              resultplace,
                                                              sign,gpset,sign
                                                              );
-      actele = &(actfield->dis[0].element[0]);
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_interf) continue;
+         if (actele->eltyp == el_interf) break;
+      }
       switch(actele->e.interf->stresstyp)
       {
       /*---------------------------------- local stresses are asked for ---*/
@@ -3195,11 +3211,6 @@ if (strncmp(string,"stress",stringlenght)==0)
          stress =actele->e.wallge->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
-                        /*
-			     stress[0][gaussperm4[0]],
-			     stress[1][gaussperm4[0]],
-			     stress[2][gaussperm4[0]],
-                       */
 			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].sig[0],
 			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].sig[1],
 			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].sig[2],
@@ -3209,11 +3220,6 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     );
          for (j=1; j<ngauss; j++)
          fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             /*
-                             stress[0][gaussperm4[j]],
-			     stress[1][gaussperm4[j]],
-			     stress[2][gaussperm4[j]],
-                       */
 			     actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[0],
 			     actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[1],
 			     actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[2],
@@ -3547,3 +3553,641 @@ dstrc_exit();
 #endif
 return;
 } /* end of out_gid_sol */
+
+#ifdef D_MLSTRUCT
+/*----------------------------------------------------------------------*
+ |  init output of multiscale-submesh-results for GID       ah 06/04    |
+ *----------------------------------------------------------------------*/
+void out_gid_smsol_init()
+{
+INT               j;
+FIELD            *actsmfield;
+GIDSET           *actsmgid;
+ELEMENT          *actsmele;
+FILE             *out       = allfiles.gidmicrores;
+char             *charptr;
+char              sign='"';
+
+#ifdef DEBUG 
+dstrc_enter("out_gid_smsol_init");
+#endif
+/*----------------------------------------------------------------------*/
+fprintf(out,"Gid Post Results File 1.0\n");
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"# CCARAT postprocessing output to GID for submesh-solutions\n");
+fprintf(out,"# For postprocessing with gid, this file has to be copied to 'newprojectname.flavia.res'\n");
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+/*----------------------------------------------------------------------*/
+/*------------------------- check number of fields and allocate storage */
+sm_gid = (GIDSET*)CCACALLOC(1,sizeof(GIDSET));
+if (!sm_gid) dserror("Allocation of memory failed");
+/*------------------------------------------------------- init the data */
+actsmfield         = &(sm_field[0]);
+actsmgid           = &(sm_gid[0]);
+actsmgid->fieldtyp = structure;
+/*--------------------------------------------------- set the fieldname */
+actsmgid->fieldnamelenght = 9;
+actsmgid->fieldname       = "structure";
+/*---------------------------------------------------- set range tables */
+strncpy(actsmgid->standardrangetable,"standard_         ",18);
+charptr = actsmgid->standardrangetable + 9;
+strncpy(charptr,actsmgid->fieldname,actsmgid->fieldnamelenght);
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"# RANGETABLES %s\n",actsmgid->fieldname);
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"RESULTRANGESTABLE %c%s%c\n",sign,actsmgid->standardrangetable,sign);
+fprintf(out,"            - -1000000.0 : %cvery small%c\n",sign,sign);
+fprintf(out," -1000000.0 -  1000000.0 : %cnormal%c\n",sign,sign);
+fprintf(out,"  1000000.0 -            : %cvery large%c\n",sign,sign);
+fprintf(out,"END RESULTRANGESTABLE\n");
+/*--------------------------- find and set meshes and gausspointsets */
+actsmgid->is_shell8_22 = 0;
+actsmgid->is_shell8_33 = 0;
+actsmgid->is_shell9_4_22 = 0;
+actsmgid->is_shell9_4_33 = 0;
+actsmgid->is_shell9_8_22 = 0;
+actsmgid->is_shell9_8_33 = 0;
+actsmgid->is_shell9_9_22 = 0;
+actsmgid->is_shell9_9_33 = 0;
+actsmgid->is_brick1_222= 0;
+actsmgid->is_brick1_333= 0;
+actsmgid->is_fluid2_22 = 0;
+actsmgid->is_fluid2_33 = 0;
+actsmgid->is_fluid2_pro_22 = 0;
+actsmgid->is_fluid2_pro_33 = 0;
+actsmgid->is_fluid3_222= 0;
+actsmgid->is_fluid3_333= 0;
+actsmgid->is_ale_11    = 0;
+actsmgid->is_ale_22    = 0;
+actsmgid->is_ale_tri_1 = 0;
+actsmgid->is_ale_tri_3 = 0;
+actsmgid->is_ale_111   = 0;
+actsmgid->is_ale_222   = 0;
+actsmgid->is_wall1_22  = 0;
+actsmgid->is_wall1_33  = 0;
+actsmgid->is_beam3_21  = 0;
+actsmgid->is_beam3_22  = 0;
+actsmgid->is_beam3_32  = 0;
+actsmgid->is_beam3_33  = 0;
+actsmgid->is_ale_tet_1 = 0;
+actsmgid->is_ale_tet_4 = 0;
+actsmgid->is_axishell  = 0;
+actsmgid->is_interf_22  = 0;
+actsmgid->is_interf_33  = 0;
+actsmgid->is_wallge_22  = 0;
+actsmgid->is_wallge_33  = 0;
+/*---------------------------- check for different types of elements */
+for (j=0; j<actsmfield->dis[0].numele; j++)
+{
+   actsmele = &(actsmfield->dis[0].element[j]);
+   switch(actsmele->eltyp)
+   {
+#ifdef D_WALL1
+   case el_wall1:    
+      if (actsmele->e.w1->nGP[0]==2)  
+      {
+         actsmgid->is_wall1_22    = 1;
+         actsmgid->wall1_22_name  = "wall1_22";
+      }
+      if (actsmele->e.w1->nGP[0]==3)  
+      {
+         actsmgid->is_wall1_33   = 1;
+         actsmgid->wall1_33_name = "wall1_33";
+      }
+   break;
+#endif /*D_WALL1*/
+#ifdef D_INTERF
+   case el_interf:    
+      if (actsmele->e.interf->nGP==2)  
+      {
+         actsmgid->is_interf_22    = 1;
+         actsmgid->interf_22_name  = "interf_22";
+      }
+      if (actsmele->e.interf->nGP==3)  
+      {
+         actsmgid->is_interf_33    = 1;
+         actsmgid->interf_33_name  = "interf_33";
+      }
+   break;
+#endif /*D_INTERF*/
+   default:
+      dserror("Unknown type of element");
+   break;
+   }
+} /* end of (j=0; j<actamfield->numele; j++) */
+/*----------------------------- now we can write the gausspoint sets */
+if (actsmgid->is_wall1_22)
+{
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"# GAUSSPOINTSET FOR FIELD %s WALL1 2x2 GP\n",actsmgid->fieldname);
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+                                                                sign,actsmgid->wall1_22_name,sign,
+                                                                sign,actsmgid->wall1_22_name,sign);
+fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+fprintf(out,"NATURAL COORDINATES: Internal\n");
+fprintf(out,"END GAUSSPOINTS\n");
+}
+if (actsmgid->is_wall1_33)
+{
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"# GAUSSPOINTSET FOR FIELD %s WALL1 3x3 GP\n",actsmgid->fieldname);
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+                                                                 sign,actsmgid->wall1_33_name,sign,
+                                                                 sign,actsmgid->wall1_33_name,sign);
+fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+fprintf(out,"NATURAL COORDINATES: Internal\n");
+fprintf(out,"END GAUSSPOINTS\n");
+}
+/* ---------------------------------------------------------------- */
+if (actsmgid->is_interf_22)
+{
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"# GAUSSPOINTSET FOR FIELD %s INTERFACE 2(+2) GP\n",actsmgid->fieldname);
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actsmgid->interf_22_name,sign);
+fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+fprintf(out,"Nodes not included\n");
+fprintf(out,"NATURAL COORDINATES: Internal\n");
+fprintf(out,"END GAUSSPOINTS\n");
+}
+/* ---------------------------------------------------------------- */
+if (actsmgid->is_interf_33)
+{
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"# GAUSSPOINTSET FOR FIELD %s INTERFACE 3(+2x3) GP\n",actsmgid->fieldname);
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actsmgid->interf_33_name,sign);
+fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+fprintf(out,"Nodes not included\n");
+fprintf(out,"NATURAL COORDINATES: Internal\n");
+fprintf(out,"END GAUSSPOINTS\n");
+}
+/*----------------------------------------------------------------------*/
+fflush(out);
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_gid_smsol_init */
+#endif /* D_MLSTRUCT */
+
+
+
+#ifdef D_MLSTRUCT
+/*----------------------------------------------------------------------*
+ |  routine to write submesh small-scale displacements to GID  ah 8/04  |
+ *----------------------------------------------------------------------*/
+void out_gid_smdisp(char string[], INT step)
+{
+INT           i,j;
+FILE         *out = allfiles.gidmicrores;
+FIELD        *actsmfield;     /* the submesh-field */
+FIELD        *actmafield;     /* the "macro"-field */
+GIDSET       *actsmgid;
+ELEMENT      *actmaele;       /* the actual macro-element */
+NODE         *actsmnode;      /* the actual submesh-node */
+INT           GlobalID;       /* pseudo global element number of submesh elements */
+
+char          sign='"';
+char         *resulttype;
+char         *resultplace;
+char         *gpset;
+char         *rangetable;
+INT           ncomponent;
+char         *componentnames[2];
+
+#ifdef DEBUG 
+dstrc_enter("out_gid_smdisp");
+#endif
+/*----------------------------------------------------------------------*/
+actsmfield = &(sm_field[0]);
+actmafield = &(field[0]);
+actsmgid   = &(sm_gid[0]);
+/*----------------------------------------------------------------------*/
+resulttype        = "VECTOR";
+resultplace       = "ONNODES";
+gpset             = ""; 
+rangetable        = actsmgid->standardrangetable;
+ncomponent        = 2;
+componentnames[0] = "x-displ";
+componentnames[1] = "y-displ";
+/*-----------------------------------------------------------------------*/
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"# RESULT %s on FIELD %s\n",string,actsmgid->fieldname);
+fprintf(out,"#-------------------------------------------------------------------------------\n");
+fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
+                                                          sign,string,sign,
+                                                          sign,sign,
+                                                          step,
+                                                          resulttype,
+                                                          resultplace
+                                                          );
+fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+                                         sign,actsmgid->standardrangetable,sign
+                                         );
+fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c\n",
+                                                sign,componentnames[0],sign,
+                                                sign,componentnames[1],sign
+                                                );
+fprintf(out,"VALUES\n");
+/*-------------------------- print the submesh fine scale displacements */
+/*--------------------------------------------- loop over macroelements */
+for (i=0; i<actmafield->dis[0].numele; i++)
+{
+  actmaele = &(actmafield->dis[0].element[i]);
+  if(actmaele->e.w1->isinomegaprime == 1)
+  {
+  /*-------------------------- write NodeID and Nodecoordinates to file */
+    for (j=0; j<actsmfield->dis[0].numnp; j++)
+    {
+       actsmnode = &(actsmfield->dis[0].node[j]);
+       GlobalID  = i * actsmfield->dis[0].numnp + (actsmnode->Id + 1);
+       fprintf(out," %6d %18.5E %18.5E \n",
+                                           GlobalID,
+                                           actmaele->e.w1->sm_nodaldata[actsmnode->Id].displ_mi[0],
+                                           actmaele->e.w1->sm_nodaldata[actsmnode->Id].displ_mi[1]
+                                            );
+    }
+  }
+}
+fprintf(out,"END VALUES\n");
+/*----------------------------------------------------------------------*/
+fflush(out);
+/*-------------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_gid_smdisp */
+#endif /* D_MLSTRUCT */
+
+
+#ifdef D_MLSTRUCT
+/*----------------------------------------------------------------------*
+ |  routine to write submesh stressses to GID                  ah 8/04  |
+ *----------------------------------------------------------------------*/
+void out_gid_smstress(char string[], INT step)
+{
+INT           i,j,a,b;
+
+FILE         *out = allfiles.gidmicrores;
+FIELD        *actsmfield;     /* the submesh-field */
+FIELD        *actmafield;     /* the "macro"-field */
+GIDSET       *actsmgid;
+ELEMENT      *actsmele;       /* the actual submesh-element */
+ELEMENT      *actmaele;       /* the actual macro-element */
+INT           GlobalID;       /* pseudo global element number of submesh elements */
+DOUBLE        stress[9][4];
+DOUBLE        damage[9];
+
+char          sign='"';
+char         *resulttype;
+char         *resultplace;
+char         *gpset;
+char         *rangetable;
+INT           ngauss;
+/* 
+   gausspoint permutation :
+   On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
+   have to be written
+*/   
+INT           gaussperm4[4] = {3,1,0,2};
+INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
+
+#ifdef DEBUG 
+dstrc_enter("out_gid_smstress");
+#endif
+/*----------------------------------------------------------------------*/
+actsmfield = &(sm_field[0]);
+actmafield = &(field[0]);
+actsmgid   = &(sm_gid[0]);
+/*----------------------------------------------------------------------*/
+/*------------------------------------------ print the submesh stresses */
+if (actsmgid->is_wall1_22)
+{ 
+   ngauss=4;
+   resulttype        = "MATRIX";
+   resultplace       = "ONGAUSSPOINTS";
+   gpset             = actsmgid->wall1_22_name;
+   rangetable        = actsmgid->standardrangetable;
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT wall1_stresses in the submesh on FIELD %s\n",actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                          sign,sign,
+                                                          sign,sign,
+                                                          step,
+                                                          resulttype,
+                                                          resultplace,
+                                                          sign,gpset,sign
+                                                          );
+   fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdamage%c,%cdummy%c\n",
+          sign,sign,
+        sign,sign,
+        sign,sign,
+        sign,sign,
+        sign,sign,
+        sign,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     actmaele = &(actmafield->dis[0].element[i]);
+     if(actmaele->e.w1->isinomegaprime == 1)
+     {
+       for (j=0; j<actsmfield->dis[0].numele; j++)
+       {
+         actsmele = &(actsmfield->dis[0].element[j]);
+         if (actsmele->eltyp != el_wall1 ) continue;
+         GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+       
+         for (a=0; a<ngauss; a++)
+         {
+           damage[a] = actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[a].damage;
+           for (b=0; b<4; b++)
+              stress[a][b] = actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[a].stress[b];
+          }
+	    fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                   GlobalID,
+	             stress[gaussperm4[0]][0],
+	             stress[gaussperm4[0]][1],
+	             stress[gaussperm4[0]][2],
+	             stress[gaussperm4[0]][3],
+	             damage[gaussperm4[0]],
+	             0.0
+	             );
+           for (a=1; a<ngauss; a++)
+             fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                     stress[gaussperm4[a]][0],
+	               stress[gaussperm4[a]][1],
+	               stress[gaussperm4[a]][2],
+	               stress[gaussperm4[a]][3],
+                     damage[gaussperm4[a]],
+                     0.0
+                     );
+       }
+     }
+   }/* end: for (i=0; i<actmafield->dis[0].numele; i++) */
+   fprintf(out,"END VALUES\n");
+} /* end: if (actsmgid->is_wall1_22) */
+/*----------------------------------------------------------------------*/
+if (actsmgid->is_wall1_33)
+{
+   ngauss=9;
+   resulttype        = "MATRIX";
+   resultplace       = "ONGAUSSPOINTS";
+   gpset             = actsmgid->wall1_33_name;
+   rangetable        = actsmgid->standardrangetable;
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                          sign,sign,
+                                                          sign,sign,
+                                                          step,
+                                                          resulttype,
+                                                          resultplace,
+                                                          sign,gpset,sign
+                                                          );
+   fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdamage%c,%cdummy%c\n",
+          sign,sign,
+          sign,sign,
+          sign,sign,
+          sign,sign,
+          sign,sign,
+          sign,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     actmaele = &(actmafield->dis[0].element[i]);
+     if(actmaele->e.w1->isinomegaprime == 1)
+     {
+       for (j=0; j<actsmfield->dis[0].numele; j++)
+       {
+         actsmele = &(actsmfield->dis[0].element[j]);
+         if (actsmele->eltyp != el_wall1 ) continue;
+         GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+         
+         for (a=0; a<ngauss; a++)
+         {
+           damage[a] = actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[a].damage;
+           for (b=0; b<4; b++)
+              stress[a][b] = actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[a].stress[b];
+          }
+          fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                     GlobalID,
+                     stress[gaussperm9[0]][0],
+                     stress[gaussperm9[0]][1],
+                     stress[gaussperm9[0]][2],
+                     stress[gaussperm9[0]][3],
+                     damage[gaussperm9[0]],
+                     0.0
+                     );
+          for (a=1; a<ngauss; a++)
+             fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                     stress[gaussperm9[a]][0],
+                     stress[gaussperm9[a]][1],
+                     stress[gaussperm9[a]][2],
+                     stress[gaussperm9[a]][3],
+                     damage[gaussperm9[a]],
+                     0.0
+                     );
+       }
+     }
+   }/* end: for (i=0; i<actmafield->dis[0].numele; i++) */
+   fprintf(out,"END VALUES\n");
+} /* end: if (actsmgid->is_wall1_33) */
+/*----------------------------------------------------------------------*/
+if (actsmgid->is_interf_22)
+{ 
+   resulttype        = "MATRIX";
+   resultplace       = "ONGAUSSPOINTS";
+   gpset             = actsmgid->interf_22_name;
+   rangetable        = actsmgid->standardrangetable;
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT INTERFACE on FIELD %s\n",actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cinterface_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+                                                          sign,sign,
+                                                          sign,sign,
+                                                          step,
+                                                          resulttype,
+                                                          resultplace,
+                                                          sign,gpset,sign
+                                                          );
+   fprintf(out,"COMPONENTNAMES %cstress-tang%c,%cstress-normal%c,%cdummy%c,%cD-nomal%c,%cD-tang%c,%cdummy%c\n",
+           sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     actmaele = &(actmafield->dis[0].element[i]);
+     if(actmaele->e.w1->isinomegaprime == 1)
+     {
+       for (j=0; j<actsmfield->dis[0].numele; j++)
+       {
+         actsmele = &(actsmfield->dis[0].element[j]);
+         if (actsmele->eltyp != el_interf) continue;
+         GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+         /*  gid's 1.and 4.GP get values of my 1.GP */
+         /*  gid's 2.and 3.GP get values of my 2.GP */
+         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         GlobalID,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dt,
+                               0.0
+                         );
+         fprintf(out,"       %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dt,
+                               0.0
+                         );
+       }
+     }
+   }/* end: for (i=0; i<actmafield->dis[0].numele; i++) */
+   fprintf(out,"END VALUES\n");
+}/* end: if (actsmgid->is_interf_22) */
+/*----------------------------------------------------------------------*/
+if (actsmgid->is_interf_33)
+{ 
+   resulttype        = "MATRIX";
+   resultplace       = "ONGAUSSPOINTS";
+   gpset             = actsmgid->interf_33_name;
+   rangetable        = actsmgid->standardrangetable;
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT INTERFACE on FIELD %s\n",actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cinterface_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+                                                          sign,sign,
+                                                          sign,sign,
+                                                          step,
+                                                          resulttype,
+                                                          resultplace,
+                                                          sign,gpset,sign
+                                                          );
+   fprintf(out,"COMPONENTNAMES %cstress-tang%c,%cstress-normal%c,%cdummy%c,%cD-normal%c,%cD-tang%c,%cdummy%c\n",
+           sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     actmaele = &(actmafield->dis[0].element[i]);
+     if(actmaele->e.w1->isinomegaprime == 1)
+     {
+       for (j=0; j<actsmfield->dis[0].numele; j++)
+       {
+         actsmele = &(actsmfield->dis[0].element[j]);
+         if (actsmele->eltyp != el_interf) continue;
+         GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+        /*  gid's 1.and 4.and 8. GP get values of my 1.GP */
+        /*  gid's 5.and 7.and 9. GP get values of my 2.GP */
+        /*  gid's 2.and 3.and 6. GP get values of my 3.GP */
+         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         GlobalID,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[2].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[0].dt,
+                               0.0
+                         );
+         fprintf(out,"      %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[0],
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].T[1],
+                         0.0,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dn,
+                         actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[1].dt,
+                               0.0
+                         );
+       }
+     }
+   }/*end: for (i=0; i<actmafield->dis[0].numele; i++) */
+   fprintf(out,"END VALUES\n");
+} /*end: if (actgid->is_interf_33) */
+/*----------------------------------------------------------------------*/
+fflush(out);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_gid_smstress */
+
+#endif /* D_MLSTRUCT */

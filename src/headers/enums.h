@@ -165,6 +165,7 @@ typedef enum _MATERIAL_TYP
                        m_nhmfcc,      /* foam, closed cell, based on modified Neo Hook */
                        m_multi_layer, /* multilayer material -> shell9*/
                        m_ifmat,        /* interface surface elasto-damage-plasto material*/
+                       m_interf_therm, /* themodyn. based interface elasto-damage surface material*/
                        m_dam_mp,       /* isotropic damage model -> mazars/pijadier-cabot*/
                        m_damage_ge     /* isotropic gradient enhanced damage model */
 } MATERIAL_TYP;

@@ -53,6 +53,15 @@ and the type is in partition.h
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
+
+#ifdef D_MLSTRUCT
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld submeshFIELDs, defined in global_control.c          |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *sm_field;
+#endif /* D_MLSTRUCT */
+
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
@@ -60,6 +69,9 @@ void ntacal()
 {
 INT i,j;
 FIELD *actfield;
+#ifdef D_MLSTRUCT
+FIELD *actsmfield;
+#endif /* D_MLSTRUCT */
 
 #ifdef DEBUG
 dstrc_enter("ntacal");
@@ -98,6 +110,16 @@ if (genprob.graderw>0) wge_setdof();
 #ifdef PERF
   perf_end(13);
 #endif
+/*--------------------------------- assign dofs to nodes in the submesh */
+#ifdef D_MLSTRUCT
+if (genprob.multisc_struct == 1)
+{
+   actsmfield = &(sm_field[0]); 
+   assign_dof(actsmfield);
+   if (actsmfield->dis[0].numeq >= 3000)
+      dserror(">3000 submesh-DOF's->size of fields ele.e.w1.fint_mi,..for static cond.have to be enlarged\n");
+}
+#endif /* D_MLSTRUCT */
 /*--------make the procs know their own nodes and elements a bit better */
 #ifdef PERF
   perf_begin(14);
@@ -124,6 +146,12 @@ part_assignfield();
 #ifdef PERF
   perf_end(15);
 #endif
+#ifdef D_MLSTRUCT
+if (genprob.multisc_struct == 1)
+{
+  mask_submesh_matrices();
+}
+#endif /* D_MLSTRUCT */
 
 /*------------------- inherit local co-ordinate systems to the elements */
 locsys_inherit_to_node();

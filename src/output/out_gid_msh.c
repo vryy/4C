@@ -31,6 +31,11 @@ extern struct _IO_FLAGS     ioflags;
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
 /*----------------------------------------------------------------------*
+ |                                                       ah 03/04       |
+ | vector of numfld submesh-FIELDs, defined in global_control.c         |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *sm_field;
+/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
@@ -1137,6 +1142,188 @@ return;
 } /* end of out_gid_msh */
 
 
+#ifdef D_MLSTRUCT
+/*----------------------------------------------------------------------*
+ |  routine to write the submesh to gid                      ah 8/04    |
+ *----------------------------------------------------------------------*/
+void out_gid_submesh()
+{
+INT           i,j,k;
+FILE         *out = allfiles.gidsubmesh;
+FIELD        *actsmfield;     /* the submesh-field */
+FIELD        *actmafield;     /* the "macro"-field */
+GIDSET       *actsmgid;
+ELEMENT      *actsmele;       /* the actual submesh-element */
+ELEMENT      *firstsmele;     /* the first submesh-element */
+INT           GlobalID;       /* pseudo global element number of submesh elements */
+
+INT           is_firstmesh;
+
+#ifdef DEBUG 
+dstrc_enter("out_gid_submesh");
+#endif
+/*----------------------------------------------------------------------*/
+/*-------------------------------------------------------- print a head */
+fprintf(out,"#--------------------------------------------------------------------------------\n");
+fprintf(out,"# CCARAT postprocessing output to GiD - SUBMESH file\n");
+fprintf(out,"# For postprocessing with gid, this file has to be copied to 'newprojectname.flavia.msh'\n");
+fprintf(out,"#--------------------------------------------------------------------------------\n");
+/*----------------------------------------------------------------------*/
+actsmfield = &(sm_field[0]);
+actmafield = &(field[0]);
+actsmgid   = &(sm_gid[0]);
+/*---------------------------------------- outpunt of nodal coordinates */
+is_firstmesh=1;
+/*----------------------------------------------------------------------*/
+if (actsmgid->is_wall1_22)
+{
+   /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+   firstsmele = &(actsmfield->dis[0].element[0]);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# MESH %s FOR FIELD %s WALL1 2x2 GP\n",actsmgid->wall1_22_name,actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE %d \n",actsmgid->wall1_22_name,firstsmele->numnp);
+   /*-------------- if this is first mesh, print coodinates of nodes */
+   if (is_firstmesh)
+   {
+      is_firstmesh=0;
+      fprintf(out,"# printout ALL nodal coordinates of ALL submeshes in first element type only\n");
+      fprintf(out,"COORDINATES\n");
+      out_gid_allsmcoords(out);
+      fprintf(out,"END COORDINATES\n");
+   }
+   /*------------------------------------------------ print elements */
+   fprintf(out,"ELEMENTS\n");
+   /*--------------------------------------- loop over macroelements */
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     for (j=0; j<actsmfield->dis[0].numele; j++)
+     {
+       actsmele = &(actsmfield->dis[0].element[j]);
+       if (actsmele->eltyp != el_wall1 ) continue;
+       GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+       fprintf(out," %6d ",GlobalID);
+       for (k=0; k<actsmele->numnp; k++)
+          fprintf(out,"%6d ",i * actsmfield->dis[0].numnp + (actsmele->node[k]->Id+1));
+       fprintf(out,"\n");
+     }
+   }
+   fprintf(out,"END ELEMENTS\n");
+}
+/*----------------------------------------------------------------------*/
+if (actsmgid->is_wall1_33)
+{
+   /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+   firstsmele = &(actsmfield->dis[0].element[0]);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# MESH %s FOR FIELD %s WALL1 3x3 GP\n",actsmgid->wall1_33_name,actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Quadrilateral NNODE  %d \n",actsmgid->wall1_33_name,firstsmele->numnp);
+   /*-------------- if this is first mesh, print coodinates of nodes */
+   if (is_firstmesh)
+   {
+      is_firstmesh=0;
+      fprintf(out,"# printout ALL nodal coordinates of ALL submeshes in first element type only\n");
+      fprintf(out,"COORDINATES\n");
+      out_gid_allsmcoords(out);
+      fprintf(out,"END COORDINATES\n");
+   }
+   /*------------------------------------------------ print elements */
+   fprintf(out,"ELEMENTS\n");
+   /*--------------------------------------- loop over macroelements */
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     for (j=0; j<actsmfield->dis[0].numele; j++)
+     {
+       actsmele = &(actsmfield->dis[0].element[j]);
+       if (actsmele->eltyp != el_wall1 ) continue;
+       GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+       fprintf(out," %6d ",GlobalID);
+       for (k=0; k<actsmele->numnp; k++)
+          fprintf(out,"%6d ",i * actsmfield->dis[0].numnp + (actsmele->node[k]->Id+1));
+       fprintf(out,"\n");
+     }
+   }
+   fprintf(out,"END ELEMENTS\n");
+}  
+/*----------------------------------------------------------------------*/
+if (actsmgid->is_interf_22)
+{
+   firstsmele = &(actsmfield->dis[0].element[0]);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# MESH %s FOR FIELD %s INERFACE 2(+2) GP\n",actsmgid->interf_22_name,actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE  %d \n",actsmgid->interf_22_name,firstsmele->numnp);
+   /*-------------- if this is first mesh, print coodinates of nodes */
+   if (is_firstmesh)
+   {
+      is_firstmesh=0;
+      fprintf(out,"# printout ALL nodal coordinates of ALL submeshes in first element type only\n");
+      fprintf(out,"COORDINATES\n");
+      out_gid_allsmcoords(out);
+      fprintf(out,"END COORDINATES\n");
+   }
+   /*------------------------------------------------ print elements */
+   fprintf(out,"ELEMENTS\n");
+   /*--------------------------------------- loop over macroelements */
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     for (j=0; j<actsmfield->dis[0].numele; j++)
+     {
+       actsmele = &(actsmfield->dis[0].element[j]);
+       if (actsmele->eltyp != el_interf) continue;
+       GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+       fprintf(out," %6d ",GlobalID);
+       for (k=0; k<actsmele->numnp; k++)
+          fprintf(out,"%6d ",i * actsmfield->dis[0].numnp + (actsmele->node[k]->Id+1));
+       fprintf(out,"\n");
+     }
+   }
+   fprintf(out,"END ELEMENTS\n");
+}
+/*----------------------------------------------------------------------*/
+if (actsmgid->is_interf_33)
+{
+   firstsmele = &(actsmfield->dis[0].element[0]);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# MESH %s FOR FIELD %s INERFACE 3(+2x3) GP\n",actsmgid->interf_33_name,actsmgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE  %d \n",actsmgid->interf_33_name,firstsmele->numnp);
+   /*-------------- if this is first mesh, print coodinates of nodes */
+   if (is_firstmesh)
+   {
+      is_firstmesh=0;
+      fprintf(out,"# printout ALL nodal coordinates of ALL submeshes in first element type only\n");
+      fprintf(out,"COORDINATES\n");
+      out_gid_allsmcoords(out);
+      fprintf(out,"END COORDINATES\n");
+   }
+   /*------------------------------------------------ print elements */
+   fprintf(out,"ELEMENTS\n");
+   /*--------------------------------------- loop over macroelements */
+   for (i=0; i<actmafield->dis[0].numele; i++)
+   {
+     for (j=0; j<actsmfield->dis[0].numele; j++)
+     {
+       actsmele = &(actsmfield->dis[0].element[j]);
+       if (actsmele->eltyp != el_interf) continue;
+       GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
+       fprintf(out," %6d ",GlobalID);
+       for (k=0; k<actsmele->numnp; k++)
+          fprintf(out,"%6d ",i * actsmfield->dis[0].numnp + (actsmele->node[k]->Id+1));
+       fprintf(out,"\n");
+     }
+   }
+   fprintf(out,"END ELEMENTS\n");
+}
+/*----------------------------------------------------------------------*/
+fflush(out);
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_gid_submesh */
+#endif /* D_MLSTRUCT */
 
 /*----------------------------------------------------------------------*
  |  routine to write all nodal coordinates of all fields m.gee 12/01    |
@@ -1185,53 +1372,62 @@ return;
 } /* end of out_gid_allcoords */
 
 
-
-
+#ifdef D_MLSTRUCT
 /*----------------------------------------------------------------------*
- |  routine to write all nodal coordinates of all fields m.gee 12/01    |
+ |  routine to write all nodal coordinates of all submeshes  ah 08/04   |
  *----------------------------------------------------------------------*/
-void out_gid_allcoords_trial(FILE *out)
+void out_gid_allsmcoords(FILE *out)
 {
 INT           i,j,k;
-FIELD        *actfield;
-NODE         *actnode;
-#ifdef DEBUG
-dstrc_enter("out_gid_allcoords_trial");
+FIELD        *actmafield;
+FIELD        *actsmfield;
+NODE         *actsmnode;
+INT           ielema;          /* number of nodes per macroelement */
+INT           GlobalID;        /* pseudo global node number of submesh nodes */
+DOUBLE        translation[2];/* x/y Translations of submesh-prototyp
+                              (prototyp has always x=0/y=0 at left down corner) */
+
+#ifdef DEBUG 
+dstrc_enter("out_gid_allsmcoords");
 #endif
-/*---------------------------------------------------- loop over fields */
-for (i=0; i<genprob.numfld; i++)
+/*----------------------------------------------------------------- */
+actsmfield = &(sm_field[0]);
+actmafield = &(field[0]);
+
+ielema = actmafield->dis[0].element[0].numnp;
+/*----------------------------------------- loop over macroelements */
+for (i=0; i<actmafield->dis[0].numele; i++)
 {
-  actfield = &(field[i]);
-  for (j=0; j<actfield->ndis; j++)
+  translation[0] = actmafield->dis[0].element[i].node[0]->x[0];
+  translation[1] = actmafield->dis[0].element[i].node[0]->x[1];
+  /*----------------------- find coord. of nodes with lowest values */
+  for (k=0; k<ielema; k++)
   {
-    for (k=0; k<actfield->dis[j].numnp; k++)
+    if (actmafield->dis[0].element[i].node[k]->x[0]<=translation[0] && 
+        actmafield->dis[0].element[i].node[k]->x[1]<=translation[1])
     {
-      actnode = &(actfield->dis[j].node[k]);
-      switch (genprob.ndim)
-      {
-          case 3:
-            fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",
-                    actnode->Id+1,
-                    actnode->x[0],
-                    actnode->x[1],
-                    actnode->x[2]);
-            break;
-          case 2:
-            fprintf(out,"%6d %-18.5f %-18.5f \n",
-                    actnode->Id+1,
-                    actnode->x[0],
-                    actnode->x[1]);
-             break;
-          default:
-            dserror("Unknown number of dimensions");
-            break;
-      }
+      translation[0] = actmafield->dis[0].element[i].node[k]->x[0];
+      translation[1] = actmafield->dis[0].element[i].node[k]->x[1];
     }
   }
-} /* end of (i=0; i<genprob.numfld; i++) */
+  /*---------------------- write NodeID and Nodecoordinates to file */
+  for (j=0; j<actsmfield->dis[0].numnp; j++)
+  {
+     actsmnode = &(actsmfield->dis[0].node[j]);
+     GlobalID  = i * actsmfield->dis[0].numnp + (actsmnode->Id + 1);
+     fprintf(out,"%6d %-18.5f %-18.5f \n",
+                                                  GlobalID,
+                                                  (actsmnode->x[0]+translation[0]),
+                                                  (actsmnode->x[1]+translation[1]));
+  }
+}
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of out_gid_allcoords_trial */
+} /* end of out_gid_allsmcoords */
+
+#endif /*D_MLSTRUCT*/
+

@@ -49,8 +49,6 @@ INT      create_dis;
 void interpolate_axishell_conds(DISCRET  *actdis);
 #endif /* D_AXISHELL */
 
-
-
 /*----------------------------------------------------------------------*
  | input of control, element and load information         m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -320,6 +318,11 @@ if (genprob.probtyp==prb_structure)
     interpolate_axishell_conds(&(field[genprob.numsf].dis[j]));
 }
 #endif
+/*---------------------------- input of submesh for material-multiscale */
+#ifdef D_MLSTRUCT
+if (genprob.multisc_struct == 1)  inp_submesh();
+#endif /* D_MLSTRUCT */
+
 #ifdef PERF
   perf_end(11);
 #endif

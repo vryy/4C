@@ -24,6 +24,10 @@ typedef struct _NODE
 
      DOUBLE                     x[3];          /* my coordinates */
 
+#ifdef D_MLSTRUCT
+     struct  _SM_MACRO_INFO    *sm_macroinfo;  /* Information on submesh nodes about Macro-values  */
+#endif
+
      struct _ARRAY              sol;           /* my solution history */
      struct _ARRAY              sol_increment; /* my incremental solution */
      struct _ARRAY              sol_residual ; /* my residual solution */

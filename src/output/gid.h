@@ -97,4 +97,8 @@ typedef struct _GIDSET
 } GIDSET;
 /*------------------------ global variable needed by gid postprocessing */
 GIDSET *gid;
-/*----------------------------------------------------------------------*/
+
+#ifdef D_MLSTRUCT
+/*----------------------------- the same for submesh gid postprocessing */
+GIDSET *sm_gid;
+#endif /* D_MLSTRUCT */
