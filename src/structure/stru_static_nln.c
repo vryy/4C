@@ -125,6 +125,10 @@ array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
 switch(array_typ)
 {
+case mds:/*--------------------------------- system array is mds matrix */
+   numeq       = actsolv->sysarray[actsysarray].mds->numeq;
+   numeq_total = numeq;
+break;
 case msr:/*--------------------------------- system array is msr matrix */
    numeq       = actsolv->sysarray[actsysarray].msr->numeq;
    numeq_total = actsolv->sysarray[actsysarray].msr->numeq_total;
@@ -239,6 +243,7 @@ nln_data.rlpre = 0.0;
 amdef("arcfac",&(nln_data.arcfac),nstep,1,"DV");
 amzero(&(nln_data.arcfac));
 /*----------------------------------------- output to GID postprozessor */
+if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
 if (par.myrank==0) 
 {
    out_gid_domains(actfield);
@@ -283,6 +288,9 @@ for (kstep=0; kstep<nstep; kstep++)
            controltyp
          );    
    /*dstrace_to_err();*/
+   /*-- update for nonlinear material models - new stress/strain values */  
+   *action = calc_struct_update_istep;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,action);
     /*-------------------------------------- perform stress calculation */
     if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
     {
@@ -293,7 +301,10 @@ for (kstep=0; kstep<nstep; kstep++)
        calreduce(actfield,actpart,actintra,action,0);
     }
     /*---------------------------------------- print out results to out */
-    out_sol(actfield,actpart,actintra,kstep,0);
+    if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
+    {
+      out_sol(actfield,actpart,actintra,kstep,0);
+    }
     /*----------------------------------------- printout results to gid */
     if (par.myrank==0) 
     {
