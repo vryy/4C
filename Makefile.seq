@@ -24,6 +24,7 @@
 # -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
 # -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
+# -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
 #--------------------------------------------------------------------
