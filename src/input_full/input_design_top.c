@@ -21,7 +21,7 @@ extern struct _DESIGN *design;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -39,8 +39,6 @@ static void inpdesign_dpoint_fenode(DISCRET *actdis);
 static void inpdesign_dline_feline(DISCRET *actdis);
 static void inpdesign_dsurf_fesurf(DISCRET *actdis);
 static void inpdesign_dvol_fevol(DISCRET *actdis);
-
-static void calc_arc_props(DLINE *dline);
 
 /*----------------------------------------------------------------------*
  | global variables in this file in this file                      3/02 |

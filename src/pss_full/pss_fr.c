@@ -207,7 +207,7 @@ while ( strstr(allfiles.input_file[i],string) == NULL )
 #ifdef DEBUG 
       dstrc_exit();
 #endif
-      return 0;
+      return(0);
    }
    i++;
 }
@@ -217,7 +217,7 @@ allfiles.actplace=strstr(allfiles.input_file[i],string);
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-return 1;
+return(1);
 } /* end of frfind */
 
 
