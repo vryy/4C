@@ -46,6 +46,7 @@ if (opt==NULL) dserror("Allocation of OPTIMIZATION failed");
 /*------------------------------------------------- initialize data ----*/
   opt->opttype   = ot_topology_optimization;
   opt->numiter   = 0;
+  opt->optstep   = 0;
   opt->strategy  = os_none;
   opt->objective = oj_none;
 /*----------------------------------------------------------------------*/

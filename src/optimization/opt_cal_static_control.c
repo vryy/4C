@@ -66,6 +66,13 @@ and the type is in partition.h
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
+/*!----------------------------------------------------------------------
+\brief the optimization main structure
+<pre>                                                            al 06/01   
+defined in opt_cal_main.c
+</pre>
+*----------------------------------------------------------------------*/
+ struct _OPTI *opt;
 
 
 /*----------------------------------------------------------------------*
@@ -203,7 +210,7 @@ if(stalact==calsta_init || stalact==calsta_init_solve)
   calinit(actfield,actpart,action,&container);
 }
 /*----------------------------------------- write output of mesh to gid */
-if (par.myrank==0)
+if (par.myrank==0&&opt->optstep==0)
 if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
    out_gid_msh();
 /*------call element routines to calculate & assemble stiffness matrice */
@@ -254,13 +261,13 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
                     );
 }
 /*--------------------------------------------- printout results to gid */
-if (ioflags.struct_disp_gid==1 && par.myrank==0)
+if (ioflags.struct_disp_gid==1 && par.myrank==0 && stalact!=calsta_init)
 {
-   out_gid_sol("displacement",actfield,actintra,0,0);
-   out_gid_domains(actfield);
+   out_gid_sol("displacement",actfield,actintra,opt->optstep,0);
+   /* out_gid_domains(actfield); */
 }
 /*------------------------------------------ perform stress calculation */
-if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1 && stalact!=calsta_init)
 {
    *action = calc_struct_stress;
    container.dvec         = NULL;
@@ -273,7 +280,7 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    container.kstep = 0;
    calreduce(actfield,actpart,actintra,action,&container);
    out_sol(actfield,actpart,actintra,0,0);
-   if (par.myrank==0) out_gid_sol("stress"      ,actfield,actintra,0,0);
+   if (par.myrank==0 && stalact!=calsta_init) out_gid_sol("stress",actfield,actintra,opt->optstep,0);
 }
 /*----------------------------------------------------------------------*/
 end:

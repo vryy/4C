@@ -103,6 +103,8 @@ gcounter=0;
 printf("graphical output requested every %d steps \n",graph_out);
 for (fsdstep=0; fsdstep<max_fsdstep; fsdstep++)
 {
+/*----------------------------------------------------------------------*/
+  opt->optstep   = fsdstep;          /* store current optimization step */
 /*---------------------------------------- initialize optimization step */
   for (i=0; i<numvar; i++) grdobj[i] =0.0;   
   for (i=0; i<numvar; i++) grdcon[i] =0.0;

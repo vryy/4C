@@ -15,6 +15,7 @@ typedef struct _OPTI
      }                    opttype;
 
      INT                  numiter;  /* total number of iteration steps  */
+     INT                  optstep;  /* current iteration step           */
      INT                  graph_out;/* graphical output every ? step AS */
                                
      enum 
