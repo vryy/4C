@@ -244,7 +244,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("RESTART"    ,&(restart),&ierr);
   if (ierr==1)
   {
-     if (genprob.restart==0 && restart>0)
+     if (genprob.restart==0 && restart != 0)
      dserror("Restart defined in input file but not as program argument!\n");
      genprob.restart=restart;
   }
@@ -1054,9 +1054,9 @@ fdyn->viscstr=0;        /* default: do not include viscose stresses */
 fdyn->freesurf=0;       /* default: no free surface */
 fdyn->surftens=0;       /* default: do not include surface tension */
 fdyn->checkarea=0;
-fdyn->liftdrag=0;
+fdyn->liftdrag=ld_none;
 fdyn->adaptive=0;	/* default: no adaptive time stepping */
-fdyn->time_rhs=1;	/* default: build time rhs as W.A. Wall describes */
+fdyn->stresspro=0;      /* default: do no stress projection step */
 
 /* turbulence flags */
 fdyn->turbu=0;
@@ -1091,6 +1091,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"Stationary",10)==0)
          fdyn->iop=0;
       else if (strncmp(buffer,"Gen_Alfa",8)==0)
+         fdyn->iop=1;
+      else if (strncmp(buffer,"Gen_Alpha",9)==0)
          fdyn->iop=1;
       else if (strncmp(buffer,"One_Step_Theta",14)==0)
          fdyn->iop=4;
@@ -1185,6 +1187,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("VISCSTRESS unknown!\n");
    }
+   frchar("STRESSPRO"   ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"yes",3)==0 ||
+          strncmp(buffer,"YES",3)==0 ||
+	  strncmp(buffer,"Yes",3)==0    )
+         fdyn->stresspro=1;
+      else if (strncmp(buffer,"No",2)==0 ||
+               strncmp(buffer,"NO",2)==0 ||
+	       strncmp(buffer,"no",2)==0   )
+         fdyn->stresspro=0;
+      else
+         dserror("VISCSTRESS unknown!\n");
+   }
    frchar("FREESURFACE"  ,buffer    ,&ierr);
    if (ierr==1)
    {
@@ -1242,13 +1258,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||
-	  strncmp(buffer,"Yes",3)==0    )
-         fdyn->liftdrag=1;
+               strncmp(buffer,"YES",3)==0 ||
+	       strncmp(buffer,"Yes",3)==0    )
+         fdyn->liftdrag=ld_nodeforce;
+      else if (strncmp(buffer,"nodeforce",9)==0 ||
+               strncmp(buffer,"NODEFORCE",9)==0 ||
+	       strncmp(buffer,"Nodeforce",9)==0    )
+         fdyn->liftdrag=ld_nodeforce;
+      else if (strncmp(buffer,"stress",6)==0 ||
+               strncmp(buffer,"STRESS",6)==0 ||
+	       strncmp(buffer,"Stress",6)==0    )
+         fdyn->liftdrag=ld_stress;
       else if (strncmp(buffer,"No",2)==0 ||
                strncmp(buffer,"NO",2)==0 ||
 	       strncmp(buffer,"no",2)==0   )
-         fdyn->liftdrag=0;
+         fdyn->liftdrag=ld_none;
       else
          dserror("LIFTDRAG unknown!\n");
    }
@@ -1293,16 +1317,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->adaptive=1;
       else
          dserror("ADAPT_TIME can not be read (yes/no)!");
-   }
-   frchar("TIME_RHS"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"mass",4)==0)
-         fdyn->time_rhs=0;
-      else if (strncmp(buffer,"classic",7)==0)
-         fdyn->time_rhs=1;
-      else
-         dserror("TIME_RHS unknown!");
    }
    frchar("CONVECTERM"  ,buffer    ,&ierr);
    if (ierr==1)
