@@ -21,7 +21,7 @@ defined in solver_mlpcg.c
 *----------------------------------------------------------------------*/
 extern struct _MLPRECOND mlprecond;
 
-#if 1 /* debugging */
+#if 0 /* debugging */
 extern struct _FILES  allfiles;
 #endif
 /*!---------------------------------------------------------------------
@@ -91,17 +91,26 @@ double     col[1000],colP[1000];
 int        rcol[1000],rcolP[1000];
 int        nrow,ncol;
 
+int     ***icol;     /* these are tricky column pointers to the incsr matrix */
+int       *colsize;
+double  ***dcol;
+
+int        shift;
+int        bins[1000];
+
 int        numeq_cscP,*update_cscP,*ia_cscP,*ja_cscP;
 double    *a_cscP;
 int        numeq_in,*update_in,*ia_in,*ja_in;
 double    *a_in;
+
+double     t1,t2;
 
 #ifdef PARALLEL 
 MPI_Status   status;  
 MPI_Request  *request;   
 #endif
 
-#if 1 /* for development and debugging */
+#if 0 /* for development and debugging */
 ARRAY      sdense_in, rdense_in, sdense_P, rdense_P, dense_work, dense_out;
 ARRAY      sw,rw;
 ARRAY      so,ro;
@@ -116,7 +125,7 @@ dstrc_enter("mlpcg_precond_PtKP");
 myrank = actintra->intra_rank;
 nproc  = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
-#if 1 /*------------------- debugging, make dense copies of P and incsr */
+#if 0 /*------------------- debugging, make dense copies of P and incsr */
 amdef("tmp",&sdense_in,incsr->numeq_total,incsr->numeq_total,"DA");
 amdef("tmp",&rdense_in,incsr->numeq_total,incsr->numeq_total,"DA");
 amzero(&sdense_in);
@@ -259,6 +268,11 @@ fflush(allfiles.out_err);
 
 /*- do a distributed compressed sparse column copy of the prolongator P */
 mlpcg_csr_csrtocsc(P,actintra);
+/*------------------ construct the column pointers for the incsr matrix */
+t1 = ds_cputime();
+mlpcg_extractcollocal_init(incsr,&colsize,&icol,&dcol);
+t2 = ds_cputime();
+if (myrank==0) printf("collocal_init            : %20.10f\n",t2-t1);
 /*--------------------------------------------------- set some pointers */
 numeq_cscP  = P->csc->numeq;
 update_cscP = P->csc->update.a.iv;
@@ -288,6 +302,7 @@ for (n=0; n<nproc; n++)
 /*======================================================================*/
 /* do interproc computation work = Ptransposed * incsr   part I         */
 /*======================================================================*/
+t1 = ds_cputime();
 /*--------- loop columns in P which as rows in work do not belong to me */
 /*-------------------------- make a list of the owners of these columns */
 /*---------------------- count how many rows I have to send to somebody */
@@ -339,14 +354,16 @@ for (i=0; i<numeq_cscP; i++)/* loop remote columns in P */
    for (j=0; j<incsr->numeq_total; j++) /* loop all columns in incsr */
    {
       actcol = j;
-      mlpcg_extractcollocal(incsr,actcol,col,rcol,&nrow);
+/*      mlpcg_extractcollocal(incsr,actcol,col,rcol,&nrow);*/
+      mlpcg_extractcollocal_fast(incsr,actcol,col,rcol,&nrow,colsize,icol,dcol);
       if (nrow==0)
          continue;
       foundit = 0;
       sum     = 0.0;
+      init_quick_find(rcol,nrow,&shift,bins);
       for (k=0; k<ncol; k++)
       {
-         index = find_index(rcolP[k],rcol,nrow);
+         index = quick_find(rcolP[k],rcol,nrow,shift,bins);
          if (index==-1) continue;
          foundit=1;
          sum += colP[k]*col[index];
@@ -391,15 +408,20 @@ for (n=0; n<nproc; n++)
    }
 }
 dsassert(counter==2*nsend,"number of sends wrong");
+/*----------------------------------------------------------------------*/
+t2 = ds_cputime();
+if (myrank==0) printf("work = Pt*incsr inter I  : %20.10f\n",t2-t1);
 #endif
 /*======================================================================*/
 /*                   do local computation of work = Ptransposed * incsr */
 /*======================================================================*/
+t1 = ds_cputime();
 for (i=0; i<incsr->numeq_total; i++)/* loop all columns of work */
 {
    actcol = i;
    /* extract the column from incsr */
-   mlpcg_extractcollocal(incsr,actcol,col,rcol,&nrow);
+/*   mlpcg_extractcollocal(incsr,actcol,col,rcol,&nrow);*/
+   mlpcg_extractcollocal_fast(incsr,actcol,col,rcol,&nrow,colsize,icol,dcol);
    if (nrow==0) continue;
    for (j=0; j<work->numeq; j++) /* loop the local rows */
    {
@@ -411,9 +433,10 @@ for (i=0; i<incsr->numeq_total; i++)/* loop all columns of work */
       /* make the multiplication */
       foundit = 0;
       sum     = 0.0;
+      init_quick_find(rcol,nrow,&shift,bins);
       for (k=0; k<ncol; k++)
       {
-         index = find_index(rcolP[k],rcol,nrow);
+         index = quick_find(rcolP[k],rcol,nrow,shift,bins);
          if (index==-1) continue;
          foundit=1;
          sum += colP[k]*col[index];
@@ -422,10 +445,13 @@ for (i=0; i<incsr->numeq_total; i++)/* loop all columns of work */
          mlpcg_csr_addentry(work,sum,actrow,actcol,actintra);
    }
 }
+t2 = ds_cputime();
+if (myrank==0) printf("work = Pt*incsr local    : %20.10f\n",t2-t1);
 /*======================================================================*/
 /* do interproc computation work = Ptransposed * incsr   part II        */
 /*======================================================================*/
 #ifdef PARALLEL 
+t1 = ds_cputime();
 irecv = amdef("irbuff",&irbuff,1000,1,"IV");
 drecv = amdef("drbuff",&drbuff,1000,1,"IV");
 while (nrecv!=0)
@@ -478,13 +504,18 @@ for (n=0; n<nproc; n++)
 amdel(&irbuff);
 amdel(&drbuff);
 FREE(request);
+t2 = ds_cputime();
+if (myrank==0) printf("work = Pt*incsr inter II : %20.10f\n",t2-t1);
 #endif
 /*======================================================================*/
 /*                                         close the work matrix        */
 /*======================================================================*/
+t1 = ds_cputime();
 mlpcg_csr_close(work);
+t2 = ds_cputime();
+if (myrank==0) printf("work close               : %20.10f\n",t2-t1);
 /*------------------------------debugging */
-#if 1/* make dense printout from work */
+#if 0/* make dense printout from work */
 amdef("sw",&sw,work->numeq_total,incsr->numeq_total,"DA");
 amzero(&sw);
 amdef("rw",&rw,work->numeq_total,incsr->numeq_total,"DA");
@@ -532,6 +563,7 @@ fflush(allfiles.out_err);
 /*             do interproc computation out = work * P   part I         */
 /*======================================================================*/
 #ifdef PARALLEL 
+t1 = ds_cputime();
 /*------------------------------ send my prolongator to all other procs */
 nsend = nproc-1;
 nrecv = nproc-1;
@@ -552,10 +584,13 @@ for (n=0; n<nproc; n++)
    counter++;
 }
 dsassert(counter==4*nsend,"Number of sends wrong");
+t2 = ds_cputime();
+if (myrank==0) printf("out  = work * P inter I  : %20.10f\n",t2-t1);
 #endif
 /*======================================================================*/
 /*                               do local computation of out = work * P */
 /*======================================================================*/
+t1 = ds_cputime();
 for (i=0; i<work->numeq; i++)/* loop all my rows of work */
 {
    actrow = work->update.a.iv[i];
@@ -571,9 +606,10 @@ for (i=0; i<work->numeq; i++)/* loop all my rows of work */
       /* make the multiplication */
       foundit = 0;
       sum     = 0.0;
+      init_quick_find(rcol,nrow,&shift,bins);
       for (k=0; k<ncol; k++)
       {
-         index = find_index(rcolP[k],rcol,nrow);
+         index = quick_find(rcolP[k],rcol,nrow,shift,bins);
          if (index==-1) continue;
          foundit=1;
          sum += colP[k]*col[index];
@@ -582,11 +618,14 @@ for (i=0; i<work->numeq; i++)/* loop all my rows of work */
          mlpcg_csr_addentry(outcsr,sum,actrow,actcol,actintra);
    }
 }
+t2 = ds_cputime();
+if (myrank==0) printf("out  = work * P local    : %20.10f\n",t2-t1);
 /*======================================================================*/
 /*             do interproc computation out = work * P   part II        */
 /*======================================================================*/
 /*-------------------------------------------- allocate receive buffers */
 #ifdef PARALLEL 
+t1 = ds_cputime();
 amdef("upd",&rupdate,1,1,"IV");
 amdef("ia" ,&ria    ,1,1,"IV");
 amdef("ja" ,&rja    ,1,1,"IV");
@@ -642,9 +681,10 @@ while(nrecv!=0)
          /* make the multiplication */
          foundit = 0;
          sum     = 0.0;
+         init_quick_find(rcolP,nrow,&shift,bins);
          for (k=0; k<ncol; k++)
          {
-            index = find_index(rcol[k],rcolP,nrow);
+            index = quick_find(rcol[k],rcolP,nrow,shift,bins);
             if (index==-1) continue;
             foundit=1;
             sum += col[k]*colP[index]; 
@@ -656,6 +696,8 @@ while(nrecv!=0)
 }
 /*----------------------------------------------- wait for all messages */
 for (n=0; n<(nproc-1)*4; n++) MPI_Wait(&(request[n]),&status);
+t2 = ds_cputime();
+if (myrank==0) printf("out  = work * P inter II : %20.10f\n",t2-t1);
 /*======================================================================*/
 /*                                                       tidy up        */
 /*======================================================================*/
@@ -665,8 +707,11 @@ amdel(&ria);
 amdel(&rja);
 amdel(&ra);
 #endif
+/*--------------- uninitialize the column pointers of the incsr matrix */
+mlpcg_extractcollocal_uninit(incsr,&colsize,&icol,&dcol);
+/*----------------------------------------------------------------------*/
 /*------------------------------debugging */
-#if 1/* make dense printout from work */
+#if 0 /* make dense printout from work */
 mlpcg_csr_close(outcsr);
 amdef("so",&so,outcsr->numeq_total,outcsr->numeq_total,"DA");
 amzero(&so);

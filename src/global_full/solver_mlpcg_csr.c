@@ -23,6 +23,194 @@ extern struct _MLPRECOND mlprecond;
 
 
 /*!---------------------------------------------------------------------
+\brief extract a local column from a   DBCSR  matrix , init call                                        
+
+<pre>                                                        m.gee 11/02 
+
+</pre>
+\param matrix     DBCSR*       (i/o) the matrix
+\return void                                               
+
+------------------------------------------------------------------------*/
+int mlpcg_extractcollocal_init(DBCSR      *matrix,
+                                int      **sizes,
+                                int    ****icol,
+                                double ****dcol)
+{
+int           i,j,k,counter;
+int           *ia,*ja,*update,numeq,numeq_total;
+double        *a;
+int            actrow,actcol,colstart,colend;
+
+int           *tmp;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_extractcollocal_init");
+#endif
+/*----------------------------------------------------------------------*/
+numeq       = matrix->numeq;
+numeq_total = matrix->numeq_total;
+ia          = matrix->ia.a.iv;
+ja          = matrix->ja.a.iv;
+update      = matrix->update.a.iv;
+a           = matrix->a.a.dv;
+/*----------------------------------------------------------------------*/
+(*sizes) = (int*)CALLOC(numeq_total,sizeof(int));
+tmp      = (int*)CALLOC(numeq_total,sizeof(int));
+(*icol)  = (int***)MALLOC(numeq_total*sizeof(int**));
+(*dcol)  = (double***)MALLOC(numeq_total*sizeof(int**));
+if ( (*sizes)==NULL || (*icol)==NULL || (*dcol)==NULL || !tmp)
+   dserror("Allocation of memory failed"); 
+/*--------------------------------------- count the size of the columns */
+for (i=0; i<numeq; i++)
+{
+   colstart = ia[i];
+   colend   = ia[i+1];
+   for (j=colstart; j<colend; j++)
+      ((*sizes)[ja[j]])++;
+}
+/*---------------------------------------- allocate the pointer vectors */
+for (k=0; k<numeq_total; k++)
+{
+   counter = (*sizes)[k];
+   if (counter==0)
+   {
+      (*icol)[k]=NULL;
+      (*dcol)[k]=NULL;
+      continue;
+   }
+   (*icol)[k] = (int**)MALLOC(counter*sizeof(int*));
+   (*dcol)[k] = (double**)MALLOC(counter*sizeof(double*));
+   if ( (*icol)[k]==NULL || (*dcol)[k]==NULL )
+      dserror("Allocation of memory failed");
+}
+/*------------------- set the pointers to the rownumbers and the values */
+for (i=0; i<numeq; i++)
+{
+   colstart = ia[i];
+   colend   = ia[i+1];
+   for (j=colstart; j<colend; j++)
+   {
+      actcol = ja[j];
+      if (tmp[actcol] >= (*sizes)[actcol]) dserror("Memory override happened");
+      (*icol)[actcol][tmp[actcol]] = &(update[i]);
+      (*dcol)[actcol][tmp[actcol]] = &(a[j]);
+      tmp[actcol]++;
+   }
+}
+FREE(tmp);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_extractcollocal_init */
+
+
+/*!---------------------------------------------------------------------
+\brief extract a local column from a   DBCSR  matrix , uninit call                                        
+
+<pre>                                                        m.gee 11/02 
+
+</pre>
+\param matrix     DBCSR*       (i/o) the matrix
+\return void                                               
+
+------------------------------------------------------------------------*/
+int mlpcg_extractcollocal_uninit(DBCSR *matrix,
+                                  int      **sizes,
+                                  int    ****icol,
+                                  double ****dcol)
+{
+int           i,j,numeq_total;
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_extractcollocal_uninit");
+#endif
+/*----------------------------------------------------------------------*/
+numeq_total = matrix->numeq_total;
+for (i=0; i<numeq_total; i++)
+{
+   if ( (*sizes)[i]==0 )
+      continue;
+   if ( (*icol)[i] != NULL )
+      FREE((*icol)[i]);
+   if ( (*dcol)[i] != NULL )
+      FREE((*dcol)[i]);
+}
+/*----------------------------------------------------------------------*/
+FREE((*sizes));
+FREE((*icol));
+FREE((*dcol));
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_extractcollocal_uninit */
+
+
+
+
+/*!---------------------------------------------------------------------
+\brief extract a local column from a   DBCSR  matrix                                         
+
+<pre>                                                        m.gee 11/02 
+
+</pre>
+\param matrix     DBCSR*       (i/o) the Prolongator
+\param actcol     int          (i)   the column to be extracted
+\param block      double[][500](i)   working matrix
+\param rindex     int*         (i)   row indize of block
+\param nrow       int*         (i)   row dimension of block
+\param sizes      int*         (i)   sizes of all columns 
+\param icol       int***       (i)   pointers to row indizes of all columns in matrix
+\param dcol       double***    (i)   pointers to values of all columns in matrix
+\return void                                               
+\sa mlpcg_extractcollocal_init mlpcg_extractcollocal_uninit
+------------------------------------------------------------------------*/
+void mlpcg_extractcollocal_fast(DBCSR *matrix, int actcol, 
+                                double *col,int *rcol, int *nrow,
+                                int *sizes, int ***icol, double ***dcol)
+{
+int           i,j,counter;
+int          **ic;
+double       **dc;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_extractcollocal_fast");
+#endif
+/*----------------------------------------------------------------------*/
+if (sizes[actcol]==0)
+{
+   *nrow=0;
+   goto exit;
+}
+
+if (sizes[actcol]>1000) dserror("col row dimension too small (=1000)"); 
+
+*nrow   = counter = sizes[actcol];
+ic      = icol[actcol];
+dc      = dcol[actcol];
+
+for (i=0; i<counter; i++)
+{
+   rcol[i] = *(ic[i]);
+   col[i]  = *(dc[i]);
+}
+/*----------------------------------------------------------------------*/
+exit:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_extractcollocal_fast */
+
+
+
+
+/*!---------------------------------------------------------------------
 \brief extract a local column from a   DBCSR  matrix                                         
 
 <pre>                                                        m.gee 10/02 
@@ -80,6 +268,126 @@ dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_extractcollocal */
+
+
+/*!---------------------------------------------------------------------
+\brief extract a local column from a CSC matrix                                          
+
+<pre>                                                        m.gee 10/02 
+there must not be any ellbow room in the matrix!
+</pre>
+\param col    int       (i) column to extract
+\param update int*      (i) update vector of csc matrix 
+\param ia     int*      (i) ia vector of csc matrix    
+\param ja     int*      (i) ja vector of csc matrix    
+\param a      double*   (i) a vector of csc matrix    
+\param col    double[]  (o) column vector, maxlength 1000 !             
+\param rcol   int[]     (o) row indizes vector, maxlength 1000 !             
+\param nrow   int*      (o) number of rows in column
+\return void                                               
+
+------------------------------------------------------------------------*/
+void mlpcg_extractcolcsc(int     col,
+                         int     numeq,
+                         int    *update,
+                         int    *ia,
+                         int    *ja,
+                         double *a,
+                         double  col_out[],
+                         int     rcol_out[],
+                         int     *nrow)
+{
+int           i,j,k;
+int           index,rowstart,rowend;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_extractcolcsc");
+#endif
+/*----------------------------------------------------------------------*/
+index = find_index(col,update,numeq);
+if (index==-1)
+{
+   *nrow = 0;
+   goto exit;
+}
+/*-------------------------------------------------- extract the column */
+rowstart = ia[index];
+rowend   = ia[index+1];
+*nrow    = rowend-rowstart;
+if (*nrow > 1000) dserror("Column too large to extract (>1000)");
+k=0;
+for (i=rowstart; i<rowend; i++)
+{
+   col_out[k] = a[i];
+   rcol_out[k] = ja[i];
+   k++;
+}
+/*----------------------------------------------------------------------*/
+exit:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_extractcolcsc */
+/*!---------------------------------------------------------------------
+\brief extract a local row from a CSR matrix                                          
+
+<pre>                                                        m.gee 10/02 
+there must not be any ellbow room in the matrix!
+</pre>
+\param col    int       (i) column to extract
+\param update int*      (i) update vector of csc matrix 
+\param ia     int*      (i) ia vector of csc matrix    
+\param ja     int*      (i) ja vector of csc matrix    
+\param a      double*   (i) a vector of csc matrix    
+\param col    double[]  (o) column vector, maxlength 1000 !             
+\param rcol   int[]     (o) row indizes vector, maxlength 1000 !             
+\param nrow   int*      (o) number of rows in column
+\return void                                               
+
+------------------------------------------------------------------------*/
+void mlpcg_extractrowcsr(int     row,
+                         int     numeq,
+                         int    *update,
+                         int    *ia,
+                         int    *ja,
+                         double *a,
+                         double  row_out[],
+                         int     rrow_out[],
+                         int     *ncol)
+{
+int           i,j,k;
+int           index,rowstart,rowend;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_extractrowcsr");
+#endif
+/*----------------------------------------------------------------------*/
+index = find_index(row,update,numeq);
+if (index==-1)
+{
+   *ncol = 0;
+   goto exit;
+}
+/*-------------------------------------------------- extract the column */
+rowstart = ia[index];
+rowend   = ia[index+1];
+*ncol    = rowend-rowstart;
+if (*ncol > 1000) dserror("Column too large to extract (>1000)");
+k=0;
+for (i=rowstart; i<rowend; i++)
+{
+   row_out[k] = a[i];
+   rrow_out[k] = ja[i];
+   k++;
+}
+/*----------------------------------------------------------------------*/
+exit:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_extractrowcsr */
 
 /*!---------------------------------------------------------------------
 \brief opens a matrix for adding                                          
@@ -312,6 +620,11 @@ if (matrix->csc)
    mlpcg_csr_destroy(matrix->csc);
    matrix->csc = FREE(matrix->csc);
 }
+if (matrix->ilu)
+{
+   mlpcg_csr_destroy(matrix->ilu);
+   matrix->ilu = FREE(matrix->ilu);
+}
 #ifdef PARALLEL
 if (matrix->status != NULL) 
    FREE(matrix->status);
@@ -324,6 +637,119 @@ dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_csr_destroy */
+
+
+
+/*!---------------------------------------------------------------------
+\brief extract a block from a csr matrix to an open csr matrix                                         
+
+<pre>                                                        m.gee 11/02 
+extract a block from a csr matrix to an open csr matrix   
+the matrix to must be opened and empty
+</pre>
+\param from      DBCSR*    (i) the csr to be extracted from
+\param to        DBCSR*    (o) the csr to be extracted to
+\param rstart    int       (i) rowstart of the block
+\param rend      int       (i) rowend of the block 
+\param cstart    int       (i) columnstart of the block
+\param cend      int       (i) columnend of the block
+\param actintra  INTRA*    (i)   the intra-communicator of this field  
+\return void                                               
+
+------------------------------------------------------------------------*/
+int mlpcg_csr_extractsubblock(DBCSR *from, DBCSR *to,
+                               int    rstart,
+                               int    rend,
+                               int    cstart,
+                               int    cend,
+                               INTRA *actintra)
+{
+int        i,j,k;
+int        numeq_from,*update_from,*ia_from,*ja_from;
+double    *a_from;
+int        actrow,actcol;
+int        colstart,colend;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_csr_extractsubblock");
+#endif
+/*----------------------------------------------------------------------*/
+numeq_from  = from->numeq;
+update_from = from->update.a.iv;
+ia_from     = from->ia.a.iv;
+ja_from     = from->ja.a.iv;
+a_from      = from->a.a.dv;
+/*----------------------------------------------------------------------*/
+for (i=0; i<numeq_from; i++)
+{
+   actrow   = update_from[i];
+   if (actrow < rstart || actrow > rend) 
+      continue;
+   colstart = ia_from[i];
+   colend   = ia_from[i+1];
+   for (j=colstart; j<colend; j++)
+   {
+      actcol = ja_from[j];
+      if (actcol < cstart || actcol > cend)
+         continue;
+      mlpcg_csr_setentry(to,a_from[j],actrow,actcol,actintra);
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_csr_extractsubblock */
+
+
+
+/*!---------------------------------------------------------------------
+\brief change global dofs to local dofs in fortran style                                        
+
+<pre>                                                        m.gee 11/02 
+</pre>
+\param matrix      DBCSR*    (i) the csr to be extracted from
+\return void                                               
+
+------------------------------------------------------------------------*/
+int mlpcg_csr_localnumsf(DBCSR *matrix)
+{
+int        i,j,k;
+int        numeq,*update,*ia,*ja;
+double    *a;
+int        actrow,actcol;
+int        colstart,colend;
+int        offset;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_csr_localnumsf");
+#endif
+/*----------------------------------------------------------------------*/
+numeq  = matrix->numeq;
+update = matrix->update.a.iv;
+ia     = matrix->ia.a.iv;
+ja     = matrix->ja.a.iv;
+a      = matrix->a.a.dv;
+offset = update[0];
+/*----------------------------------------------------------------------*/
+for (i=0; i<numeq; i++)
+{
+   actrow   = update[i];
+   colstart = ia[i];
+   colend   = ia[i+1];
+   for (j=colstart; j<colend; j++)
+      ja[j] = ja[j] - offset + 1;
+}
+for (i=0; i<numeq; i++)
+   ia[i]++;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_csr_localnumsf */
+
 
 
 
@@ -880,7 +1306,7 @@ DBCSR.update, DBCSR.a, DBCSR.ja, DBCSR.ia have to be alloacted.
 \param actintra    INTRA*    (i)   the intra-communicator of this field  
 \return void                                               
 ------------------------------------------------------------------------*/
-void mlpcg_csr_setentry(DBCSR*   matrix,
+int mlpcg_csr_setentry(DBCSR*   matrix,
                         double  val,
                         int     rindex,
                         int     cindex,
@@ -1322,124 +1748,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_csr_csrtocsc */
-/*!---------------------------------------------------------------------
-\brief extract a local column from a CSC matrix                                          
-
-<pre>                                                        m.gee 10/02 
-there must not be any ellbow room in the matrix!
-</pre>
-\param col    int       (i) column to extract
-\param update int*      (i) update vector of csc matrix 
-\param ia     int*      (i) ia vector of csc matrix    
-\param ja     int*      (i) ja vector of csc matrix    
-\param a      double*   (i) a vector of csc matrix    
-\param col    double[]  (o) column vector, maxlength 1000 !             
-\param rcol   int[]     (o) row indizes vector, maxlength 1000 !             
-\param nrow   int*      (o) number of rows in column
-\return void                                               
-
-------------------------------------------------------------------------*/
-void mlpcg_extractcolcsc(int     col,
-                         int     numeq,
-                         int    *update,
-                         int    *ia,
-                         int    *ja,
-                         double *a,
-                         double  col_out[],
-                         int     rcol_out[],
-                         int     *nrow)
-{
-int           i,j,k;
-int           index,rowstart,rowend;
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("mlpcg_extractcolcsc");
-#endif
-/*----------------------------------------------------------------------*/
-index = find_index(col,update,numeq);
-if (index==-1)
-{
-   *nrow = 0;
-   goto exit;
-}
-/*-------------------------------------------------- extract the column */
-rowstart = ia[index];
-rowend   = ia[index+1];
-*nrow    = rowend-rowstart;
-if (*nrow > 1000) dserror("Column too large to extract (>1000)");
-k=0;
-for (i=rowstart; i<rowend; i++)
-{
-   col_out[k] = a[i];
-   rcol_out[k] = ja[i];
-   k++;
-}
-/*----------------------------------------------------------------------*/
-exit:
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of mlpcg_extractcolcsc */
-/*!---------------------------------------------------------------------
-\brief extract a local row from a CSR matrix                                          
-
-<pre>                                                        m.gee 10/02 
-there must not be any ellbow room in the matrix!
-</pre>
-\param col    int       (i) column to extract
-\param update int*      (i) update vector of csc matrix 
-\param ia     int*      (i) ia vector of csc matrix    
-\param ja     int*      (i) ja vector of csc matrix    
-\param a      double*   (i) a vector of csc matrix    
-\param col    double[]  (o) column vector, maxlength 1000 !             
-\param rcol   int[]     (o) row indizes vector, maxlength 1000 !             
-\param nrow   int*      (o) number of rows in column
-\return void                                               
-
-------------------------------------------------------------------------*/
-void mlpcg_extractrowcsr(int     row,
-                         int     numeq,
-                         int    *update,
-                         int    *ia,
-                         int    *ja,
-                         double *a,
-                         double  row_out[],
-                         int     rrow_out[],
-                         int     *ncol)
-{
-int           i,j,k;
-int           index,rowstart,rowend;
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("mlpcg_extractrowcsr");
-#endif
-/*----------------------------------------------------------------------*/
-index = find_index(row,update,numeq);
-if (index==-1)
-{
-   *ncol = 0;
-   goto exit;
-}
-/*-------------------------------------------------- extract the column */
-rowstart = ia[index];
-rowend   = ia[index+1];
-*ncol    = rowend-rowstart;
-if (*ncol > 1000) dserror("Column too large to extract (>1000)");
-k=0;
-for (i=rowstart; i<rowend; i++)
-{
-   row_out[k] = a[i];
-   rrow_out[k] = ja[i];
-   k++;
-}
-/*----------------------------------------------------------------------*/
-exit:
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of mlpcg_extractrowcsr */
 
 
 
