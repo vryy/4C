@@ -41,6 +41,10 @@ inpctr();
 if (genprob.design==1) inpdesign();
 /*------------------------------------------------------input of meshes */
 inpfield();
+/*--------------------------------------- input of general dynamic data */
+if (genprob.timetyp==time_dynamic) inpctrdyn();
+/*---------------------------------------- input of general static data */
+else inpctrstat();
 /*-----------------------------------design-design & design-fe topology */
 if (genprob.design==1) 
 {
