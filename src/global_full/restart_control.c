@@ -304,12 +304,14 @@ void restart_read_nlnstructdyn(int restart,
                                ARRAY *intforce_a,
                                ARRAY *dirich_a)
 {
-int                  i;
+int                  i,j;
 int                  ierr;
 long int             reshandle;
 int                  byte;
 int                  dims[3];
 int                  numnp;
+int                  fdim;
+int                  sender;
 long int           **node_handles;
 int                  numele;
 long int           **ele_handles;
@@ -322,6 +324,7 @@ ELEMENT             *actele;
 dstrc_enter("restart_read_nlnstructdyn");
 #endif
 /*----------------------------------------------------------------------*/
+/*pss_status_to_err();
 /*----------------------------------- check the step that shall be read */
 sprintf(resname,"res%d",restart);
 pss_chck(resname,&reshandle,&ierr);
@@ -531,6 +534,38 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 /*----------------------------- delete the handle array of the elements */
 free(res.ele_handles[0]);
 free(res.ele_handles);
+/*----------------------------------------------------------------------*/
+/* 
+   now we have to make the arrays node->sol, node->sol_increment, 
+   node->sol_residual redundant for the whole field
+*/
+numnp = actfield->dis[0].numnp;  
+for (i=0; i<numnp; i++)
+{
+   actnode = &(actfield->dis[0].node[i]);
+   sender  = actnode->proc;
+   /* now we make sol */
+   fdim = actnode->sol.fdim;
+   MPI_Bcast(&fdim,1,MPI_INT,sender,actintra->MPI_INTRA_COMM);
+   if (fdim != actnode->sol.fdim)
+   amredef(&(actnode->sol),fdim,actnode->sol.sdim,"DA");
+   j = actnode->sol.fdim * actnode->sol.sdim;
+   MPI_Bcast(actnode->sol.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
+   /* now we make sol_increment */
+   fdim = actnode->sol_increment.fdim;
+   MPI_Bcast(&fdim,1,MPI_INT,sender,actintra->MPI_INTRA_COMM);
+   if (fdim != actnode->sol_increment.fdim)
+   amredef(&(actnode->sol_increment),fdim,actnode->sol_increment.sdim,"DA");
+   j = actnode->sol_increment.fdim * actnode->sol_increment.sdim;
+   MPI_Bcast(actnode->sol_increment.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
+   /* now we make sol_residual */
+   fdim = actnode->sol_residual.fdim;
+   MPI_Bcast(&fdim,1,MPI_INT,sender,actintra->MPI_INTRA_COMM);
+   if (fdim != actnode->sol_residual.fdim)
+   amredef(&(actnode->sol_residual),fdim,actnode->sol_residual.sdim,"DA");
+   j = actnode->sol_residual.fdim * actnode->sol_residual.sdim;
+   MPI_Bcast(actnode->sol_residual.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
+} 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
