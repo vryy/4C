@@ -127,7 +127,7 @@ AZREUSE        0
 AZDROP         0.0  
 AZFILL         2.0  
 AZGFILL        0  
-AZTOL          1.0E-08  
+AZTOL          1.0E-12  
 AZITER         2500  
 AZSUB          50  
 AZOMEGA        1.0  
