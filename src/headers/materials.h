@@ -43,6 +43,7 @@ typedef struct _MATERIAL
      struct _NHMFCC           *nhmfcc;       /* foam, closed cell, based on modified Neo Hook */
      struct _MULTI_LAYER      *multi_layer;  /* multi layer material*/
      struct _IFMAT            *ifmat;        /* interface elasto-damage-plasto surface material*/
+     struct _INTERF_THERM     *interf_therm; /* themodyn. based interface elasto-damage surface material*/
      struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
      struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
      }                         m;            /* union pointer to material specific structure */
@@ -461,6 +462,23 @@ typedef struct _IFMAT
      DOUBLE                    deltat;
      DOUBLE                    mu;
 } IFMAT;
+/*----------------------------------------------------------------------*
+ | themodyn. based interface elasto-damage surface material   ah 09/04 |
+ *----------------------------------------------------------------------*/
+typedef struct _INTERF_THERM
+{
+     DOUBLE                    emod;         
+     DOUBLE                    nu;         
+     DOUBLE                    dick;         
+     INT                       equival;
+     INT                       damtyp;
+     DOUBLE                    kappa0_n;         
+     DOUBLE                    alpha_n;         
+     DOUBLE                    beta_n;         
+     DOUBLE                    kappa0_t;         
+     DOUBLE                    alpha_t;         
+     DOUBLE                    beta_t;         
+} INTERF_THERM;
 /*----------------------------------------------------------------------*
  | isotropic damage material (mazars-pijadier-cabot)        ah 10/03    |
  *----------------------------------------------------------------------*/
