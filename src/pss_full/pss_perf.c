@@ -395,9 +395,9 @@ double cputime_thread (void)
     index = pthread_self();
     if ( index < 0 ) index = 0;
 #else
-    index=0;
+    index = 0;
 #endif
-    
+
     base_time[index] = ((double) cputime) * sec_per_itick;
     first_call = 0;
     return( (double) 0 );
@@ -410,10 +410,10 @@ double cputime_thread (void)
   __lw_get_thread_times( HP_USER_CPU_TIME , &cputime , &walltime );
 
 #ifndef HPUX11
-    index = pthread_self();
-    if ( index < 0 ) index = 0;
+  index = pthread_self();
+  if ( index < 0 )  index = 0;
 #else
-    index=0;
+    index = 0;
 #endif
 
   return( ((double) cputime) * sec_per_itick - base_time[index] );
