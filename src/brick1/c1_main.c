@@ -103,11 +103,11 @@ break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
 case calc_struct_eleload:
    imyrank = actintra->intra_rank;
-   if (imyrank==ele->proc) 
-   {
+/*   if (imyrank==ele->proc) 
+   {*/
       actmat = &(mat[ele->mat-1]);
       c1_eleload(ele,&actdata,intforce,0);
-   }
+/*   }*/
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------- update after incremental step */
 case calc_struct_update_istep:
