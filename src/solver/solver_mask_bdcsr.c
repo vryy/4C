@@ -16,8 +16,7 @@ Maintainer: Michael Gee
 \brief the header of everything
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 
 
 INT cmp_int(const void *a, const void *b );
