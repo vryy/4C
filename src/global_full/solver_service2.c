@@ -812,7 +812,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
    /*------------------------------ enlarge sol_increment, if necessary */
-   if (place >= actnode->sol.fdim)
+   if (place >= actnode->sol_increment.fdim)
    {
       diff = place - actnode->sol_increment.fdim;
       max  = IMAX(diff,5);
@@ -872,7 +872,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
    /*------------------------------- enlarge sol_residual, if necessary */
-   if (place >= actnode->sol.fdim)
+   if (place >= actnode->sol_residual.fdim)
    {
       diff = place - actnode->sol_residual.fdim;
       max  = IMAX(diff,5);
@@ -893,6 +893,89 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_result_resid */
+
+/*---------------------------------------------------------------------*
+ | routine to find the maximum value of a distributed vector           |
+ | ab =  0 absolut maximum value                                       |
+ | ab =  1 maxium value                                                |
+ | ab = -1 minimum value                                               |
+ |                                                         genk 03/02  |
+ *---------------------------------------------------------------------*/ 
+/*void solserv_dmax_distvec(
+			  DIST_VECTOR  *distvec,
+			  double *res,   /* result */
+/*			  int ab        /* flag */
+/*			  )
+{
+int i;
+int numeq;
+double dm;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_dmax_distvec");
+#endif
+
+numeq=distvec->numeq;
+
+switch(ab)
+{
+case 1:      /* maximum value */
+/*dm=distvec->vec.a.dv[0];
+for(i=1;i<numeq;i++)
+{
+   dm=DMAX(dm,distvec->vec.a.dv[i]);
+}
+/*------------- get maximum value from all procs to proc 0 */
+/*#ifdef PARALLEL
+MPI_Reduce(*dm,res,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
+#else
+*res=dm;
+#endif
+break;
+
+case 0:    /* maximum absolut value */
+/*dm=FABS(distvec->vec.a.dv[0]);
+for(i=1;i<numeq;i++)
+{
+   dm=DMAX(dm,FABS(distvec->vec.a.dv[i]));
+}
+/*------------- get maximum value from all procs to proc 0 */
+/*#ifdef PARALLEL
+MPI_Reduce(*dm,res,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
+#else
+*res=dm;
+#endif
+break;
+
+case -1:   /* minimum value */
+/*dm=distvec->vec.a.dv[0];
+for(i=1;i<numeq;i++)
+{
+   dm=DMIN(dm,distvec->vec.a.dv[i]);
+}
+/*------------- get minimum value from all procs to proc 0 */
+/*#ifdef PARALLEL
+MPI_Reduce(*dm,res,1,MPI_DOUBLE,MPI_MIN,0,MPI_COMM_WORLD);
+#else
+*res=dm;
+#endif
+break;
+default:
+   dserror("flag ab wrong!");
+}
+/*--------------------- distribute maximum / minumum value to all procs */
+/*#ifdef PARALLEL
+MPI_Bcast(res,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+#endif
+/*----------------------------------------------------------------------*/
+/*#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+}
+/* end of solverv_dmax_distvec */ 
+ 
+ 
 
 
 

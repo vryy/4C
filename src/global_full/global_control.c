@@ -58,10 +58,13 @@ void ntam(int argc, char *argv[])
 {
 int ierr;
 int handle;
+double t0,ti,tc;
 /*---------------------------------------- init devices, tracing, etc...*/
 ntaini(argc,argv);
 /*--------------------------------input phase, input of all information */
+t0=ds_cputime();
 ntainp();
+ti=ds_cputime()-t0;
 /*------------------------ write output of all preprocessor information */
 if (par.myrank==0 && genprob.restart==0)
 {
@@ -82,9 +85,19 @@ if (genprob.restart!=0)
    /* nothing implemented yet */
 }
 /*----------------------------------------------------calculation phase */
+t0=ds_cputime();
 ntacal();
-
-
+tc=ds_cputime();
+#ifdef PARALLEL 
+MPI_Barrier(MPI_COMM_WORLD);
+#endif
+if (par.myrank==0)
+{
+ printf("\n");
+ printf("Total CPU Time for INPUT:       %10.3#E sec \n",ti);
+ printf("Total CPU Time for CALCULATION: %10.3#E sec \n",tc);
+ printf("\n"); 
+}
  
 
 #ifdef DEBUG 

@@ -30,7 +30,7 @@ typedef struct _NEUM_CONDITION
  *----------------------------------------------------------------------*/
 typedef struct _DIRICH_CONDITION
 {
-     int                       curve;        /* number of load curve associated with this conditions */                 
+     struct _ARRAY             curve;
 
      struct _ARRAY             dirich_onoff; /* array of on-off flags */
      struct _ARRAY             dirich_val;   /* values of this condition */    

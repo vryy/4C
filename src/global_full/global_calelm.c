@@ -176,7 +176,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             &estif_global,&emass_global,&intforce_global,
             action);
    break;
-   case el_fluid1: 
+   case el_fluid2: 
    break;
    case el_fluid3: 
    break;
@@ -296,7 +296,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
    case el_wall1:
       is_wall1=1;
    break;
-   case el_fluid1:
+   case el_fluid2:
       is_fluid1=1;
    break;
    case el_fluid3:
@@ -387,7 +387,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
    case el_wall1:
       is_wall1=1;
    break;
-   case el_fluid1:
+   case el_fluid2:
       is_fluid1=1;
    break;
    case el_fluid3:

@@ -18,6 +18,8 @@ dsinit();
 #endif
 /*-------------------------------------------------------initialize I/O */
 ntadev(argc,argv);
+/*----------------------------------------- initialise CPU-time tracing */
+ds_cputime_init();
 /*------------------------------------------initialize free-field-input */
 frinit();
 

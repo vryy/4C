@@ -162,6 +162,7 @@ static INT iminarg1,iminarg2;
 #define EPS12            (1.0E-12)
 #define EPS13            (1.0E-13)
 #define EPS14            (1.0E-14)
+#define EPS15            (1.0E-15)
 /*----------------------------------------------------------------------*
  | a set of numbers                                                     |
  *----------------------------------------------------------------------*/
@@ -182,7 +183,12 @@ static INT iminarg1,iminarg2;
  | brick8                                                               |
  *----------------------------------------------------------------------*/
 #define MAXNOD_BRICK1    (20)
-
-
-
-
+/*----------------------------------------------------------------------*
+ | fluid2                                                               |
+ *----------------------------------------------------------------------*/
+#define MAXQINTC (6)   /* max. number of implemented integration cases for QUADS */
+#define MAXQINTP (6)   /* max. number of integration parameters  for QUADS */ 
+#define MAXTINTC (11)  /* max. number of implemented integration cases for TRIS */
+#define MAXTINTP (13)  /* max. number of integration parameters  for TRIS */
+#define NUM_F2_VELDOF (2) /* number of velocity dofs per node */
+#define MAXNOD_F2 (9)  /* max. number of nodes per element */
