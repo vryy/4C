@@ -344,7 +344,14 @@ case 6:
 fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d\n",
         actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4],actnode->dof[5]);
 break;
+case 7:
+fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d   %6d   %6d   %6d   %6d   %6d\n",
+        actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1],actnode->dof[2],actnode->dof[3],actnode->dof[4],actnode->dof[5],actnode->dof[6]);
+break;
 default:
+#if 0
+   dserror("no output for actual numdf!\n");
+#endif
 break;
 }
 }
@@ -380,7 +387,6 @@ void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
 INT        i,j,k,kk;
 #ifdef D_SHELL9
 INT        is_shell9;    /*->shell9*/
-/*INT        num_klay,kl;*/  /*->shell9*/
 #endif
 FILE      *out = allfiles.out_out;
 NODE      *actnode;
@@ -419,14 +425,15 @@ default:
 dserror("Cannot print fieldtype");
 break;
 }
-fprintf(out,"================================================================================\n");
-fprintf(out,"Converged Solution in step %d\n",step); 
-fprintf(out,"================================================================================\n");
 /*-------------------------------------------------- print nodal values */
 switch(actfield->fieldtyp)
 {
 case structure:
    if (ioflags.struct_disp_file==1)
+   {
+   fprintf(out,"================================================================================\n");
+   fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step); 
+   fprintf(out,"================================================================================\n");
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actnode = &(actfield->dis[0].node[j]);
@@ -466,30 +473,37 @@ case structure:
       fprintf(out,"\n");     
    }
    fprintf(out,"________________________________________________________________________________\n\n");  
+   }
 break;
 case fluid:
    if (ioflags.fluid_sol_file==1)
-   for (kk=0;kk<actfield->ndis;kk++)
    {
-   fprintf(out,"================================================================================\n");
-   fprintf(out,"Converged Solution of Discretisation %d\n",kk); 
-   fprintf(out,"================================================================================\n");
-   for (j=0; j<actfield->dis[kk].numnp; j++)
-   {
-      actnode = &(actfield->dis[kk].node[j]);
-      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-      for (k=0; k<actnode->numdf; k++) 
+      for (kk=0;kk<actfield->ndis;kk++)
       {
-         if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-         fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
+         fprintf(out,"================================================================================\n");
+         fprintf(out,"Converged Solution of Discretisation %d in step %d \n",kk,step); 
+         fprintf(out,"================================================================================\n");
+         for (j=0; j<actfield->dis[kk].numnp; j++)
+         {
+            actnode = &(actfield->dis[kk].node[j]);
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+            for (k=0; k<actnode->sol.sdim; k++) 
+            {
+               if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+               fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
+            }
+            fprintf(out,"\n");
+         }
       }
-      fprintf(out,"\n");
+      fprintf(out,"________________________________________________________________________________\n\n");
    }
-   }
-fprintf(out,"________________________________________________________________________________\n\n");
 break;
 case ale:
    if (ioflags.ale_disp_file==1)
+   {
+   fprintf(out,"================================================================================\n");
+   fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step); 
+   fprintf(out,"================================================================================\n");
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actnode = &(actfield->dis[0].node[j]);
@@ -502,6 +516,7 @@ case ale:
       fprintf(out,"\n");
    }
    fprintf(out,"________________________________________________________________________________\n\n");
+   }
 break;
 default: dserror("Cannot print fieldtype");
 }
@@ -836,7 +851,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        fprintf(out,"Gaussian         Nx           Vy           Vz           Mx           My           Mz\n");
        for (i=0; i<ngauss; i++)
        {
-       fprintf(out,"Gauss %d       %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       fprintf(out,"Gauss %d       %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
        i,
        actele->e.b3->force_GP.a.d3[place][0][i],
        actele->e.b3->force_GP.a.d3[place][1][i],
@@ -1162,7 +1177,7 @@ for (i=0;i<fluidfield->dis[0].numnp;i++)
 }
 fprintf(out,"________________________________________________________________________________\n\n");
 fprintf(out,"================================================================================\n");
-fprintf(out,"Fluid multiefield node connectivity global Ids:\n");
+fprintf(out,"Fluid multiefield node connectivity local Ids:\n");
 fprintf(out,"================================================================================\n");
 fprintf(out,"\n");
 fprintf(out,"FLUID          ALE          \n");
@@ -1275,6 +1290,7 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 {
    actnode2 = &(actfield->dis[0].node[j]);
    actgnode2 = actnode2->gnode;      
+   if (actgnode2->dirich==NULL) continue;
    if(actgnode2->dirich->dirich_onoff.a.iv[0]==1 && actgnode2->dirich->dirich_onoff.a.iv[1]==1)
    {
     if(actnode2->sol_increment.a.da[3][0] == 0.0 && actnode2->sol_increment.a.da[3][1] == 0.0)
