@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
+
+#ifndef SOLUTION_H
+#define SOLUTION_H
+
 /*----------------------------------------------------------------------*
  | includes for solver package AZTEC 2.1                 m.gee 10/01    |
  *----------------------------------------------------------------------*/
@@ -818,3 +822,5 @@ typedef struct _MATENTRY
   struct _MATENTRY *cnext;    /*!< pointer to next value in column */
 } MATENTRY;
 
+
+#endif

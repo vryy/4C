@@ -10,6 +10,12 @@ Maintainer: Michael Gee
 </pre>
 
 ---------------------------------------------------------------------*/
+
+#ifndef PROTOTYPES_MLPCG_H
+#define PROTOTYPES_MLPCG_H
+
+#include "solution_mlpcg.h"
+
 void mlpcg_precond_create(DBCSR     *bdcsr, 
                           MLPCGVARS *mlpcgvars,
                           INTRA     *actintra);
@@ -215,3 +221,4 @@ void mlpcg_csr_overlap(DBCSR *csr, DBCSR *ocsr, DBCSR *ilu, INT overlap, INTRA *
 void mlpcg_csr_localnumsf_overlap(DBCSR *matrix);
 void mlpcg_precond_P_fish(MLLEVEL  *actlev, INTRA *actintra);
 
+#endif

@@ -11,6 +11,9 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#ifndef PROTOTYPES_SOL_H
+#define PROTOTYPES_SOL_H
+
 #include "standardtypes.h"
 
 /*----------------------------------------------------------------------*
@@ -1435,3 +1438,5 @@ void oll_copy(
     struct _OLL            *from,
     struct _OLL            *to);
 
+
+#endif

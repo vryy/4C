@@ -11,6 +11,9 @@ Maintainer: Michael Gee
 
 ---------------------------------------------------------------------*/
 
+#ifndef SOLUTION_MLPCG_H
+#define SOLUTION_MLPCG_H
+
 /*! 
 \addtogroup MLPCG 
 *//*! @{ (documentation module open)*/
@@ -244,3 +247,5 @@ struct _ARRAY              q;           /*!< iterate vector of the cg-algorithm 
 
 /*! @} (documentation module close)*/
 
+
+#endif
