@@ -114,7 +114,7 @@ void fsi_fluid(
 	      )
 {
 static INT             itnum;              /* counter for nonlinear iteration  */
-INT                    i;                  /* simply a counter                 */
+INT                    i,j;		   /* counters				*/
 static INT             numeq;              /* number of equations on this proc */
 static INT             numeq_total;        /* total number of equations        */
 INT                    init;               /* flag for solver_control call     */
@@ -130,6 +130,12 @@ INT                    calstress=1;        /* flag for stress calculation      *
 INT                    converged=0;        /* convergence flag                 */
 INT                    steady=0;           /* flag for steady state            */
 INT                    step_s;
+
+DOUBLE			liftdrag[3];	/* array with lift & drag coeff.*/
+DOUBLE			recv[3];	
+
+DLINE		      *actdline;
+
 static INT             actpos;             /* actual position in sol. history  */
 DOUBLE                 vrat,prat;
 static DOUBLE          grat;               /* convergence ratios               */
@@ -307,6 +313,12 @@ if (fdyn->surftens!=0 && restart==0)
    *action = calc_fluid_curvature;
    fluid_curvature(actfield,actpart,actintra,action);
 }
+
+/*------------------------- init lift&drag calculation real FSI-problem */
+if (fdyn->liftdrag==3)
+
+/*----------------------------------------init lift&drag calculation ---*/
+fluid_liftdrag(0,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
@@ -522,7 +534,6 @@ if (fsidyn->ifsi>0)
    solserv_sol_zero(actfield,0,3,1);
    fsi_fluidstress_result(actfield,fdyn->numdf);
 }
-
 if (fsidyn->ifsi>=4)
 break;
 
@@ -530,6 +541,15 @@ break;
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
+
+/*----------------------------------------------- lift&drag computation */
+if (fdyn->liftdrag>0)
+{
+   *action = calc_fluid_liftdrag;
+   container.str=str_liftdrag;
+   fluid_liftdrag(fdyn->liftdrag,action,&container,actfield,
+                  actsolv,actpart,actintra,fdyn);
+}
 
 /*---------------------- for multifield fluid problems with freesurface */
 /*-------------- copy solution from sol_increment[3][j] to sol_mf[0][j] */
