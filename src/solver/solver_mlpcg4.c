@@ -186,7 +186,7 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_oneP0(AGG     *actagg,
+int mlpcg_precond_oneP0(AGG     *actagg,
                          double   aggblock[][500],
                          int      rindex[],
                          int      cindex[],
@@ -431,7 +431,7 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_smoothP(DBCSR *P, double block[][500], int *rindex, int *cindex,
+int mlpcg_smoothP(DBCSR *P, double block[][500], int *rindex, int *cindex,
                   int *nrow, int *ncol, DBCSR *actstiff, 
                   AGG *agg, int nagg, INTRA *actintra)
 {

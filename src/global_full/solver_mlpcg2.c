@@ -191,7 +191,7 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_coarsesolv(double *z, double *r, MLLEVEL *lev, INTRA *actintra)
+int mlpcg_precond_coarsesolv(double *z, double *r, MLLEVEL *lev, INTRA *actintra)
 {
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -531,7 +531,7 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_restrictK(MLLEVEL  *actlev, MLLEVEL *nextlev, INTRA *actintra)
+int mlpcg_precond_restrictK(MLLEVEL  *actlev, MLLEVEL *nextlev, INTRA *actintra)
 {
 int        i,j,counter;
 int        myrank,nproc;
@@ -619,7 +619,7 @@ row in the matrix
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_check_fcd(DBCSR *matrix, INTRA *actintra)
+int mlpcg_precond_check_fcd(DBCSR *matrix, INTRA *actintra)
 {
 int           i,j,n,actrow,actcol,colstart,colend;
 int           myrank,nproc;
@@ -683,7 +683,7 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_checkdirich(DBCSR *matrix, INTRA *actintra)
+int mlpcg_precond_checkdirich(DBCSR *matrix, INTRA *actintra)
 {
 int           i,j,actrow,actcol,colstart,colend;
 int           foundit;

@@ -392,7 +392,7 @@ initialized by this routine before
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_matvec_init(DBCSR       *bdcsr, 
+int mlpcg_matvec_init(DBCSR       *bdcsr, 
                        INTRA       *actintra)
 {
 int        i,j,k,counter;

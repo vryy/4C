@@ -616,7 +616,7 @@ In the one processor or sequentiell case this is not done
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_renumberdofs(int            myrank,
+int mlpcg_renumberdofs(int            myrank,
                         int            nproc,
                         FIELD         *actfield, 
                         PARTDISCRET   *actpdiscret, 
