@@ -1,7 +1,52 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1yilcr' which calculates the yield criterion
+       for material model - Plasticity: Mises
+ contains the routine 'w1radi' - radial return for element with mises
+       material model
+ contains the routine 'w1mapl' which forms the elasto-plastic consistent
+       tangent material tensor for comined, linear isotropic and kinematic
+       hardening for mises material model
+ contains the routine 'w1yilcr_dp' which calculates the yield criterion
+       for material model - Plasticity: Drucker-Prager
+ contains the routine 'w1radi_dp' - radial return for element with 
+       Drucker-Prager material model
+ contains the routine 'w1maplg' which forms the elasto-plastic consistent
+       tangent material tensor for Drucker-Prager material model
+       (generalized for the multisurface problem: including the apex)
+ contains the routine 'w1radcap' - radial return for element with 
+       elastoplastic material model (concrete) - Cap region
+ contains the routine 'w1mplcap' which forms the elasto-plastic consistent
+       tangent material tensor for elastoplastic material model (concrete)
+       - Cap region
+ contains the routine 'w1cradi' - radial return for element with elasto-
+       plastic material model (concrete)
+ contains the routine 'w1mapl2' which forms the elasto-plastic consistent
+       tangent material tensor 
+ contains the routine 'w1cradms' - radial return for element with elasto-
+       plastic material model (concrete) - multisurface problem
+ contains the routine 'w1_mat_rebar' which calculates the constitutive
+       matrix - forces - plastic - rebar
+ contains the routine 'w1cdia' which calculates the element diameter
+       (equivalent length)
+ contains the routine 'w1cpreva' which calculates some prevalues
+ contains the routine 'w1conver' which converts some arrays
+ contains the routine 'w1arcs' which computes the average crack spacing
+ contains the routine 'w1cpreds' which calculates the gradients of the 
+       elastic predictor deviatoric/hydrostatic stresses
+ and contains some mathematical routines
+      
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  |                                                        al    9/01    |
  |   TOPIC : WALL1 - YIELD CRITERION PLANE_STRESS                       |
@@ -12,6 +57,7 @@
  *----------------------------------------------------------------------*/
 void w1yilcr(double E, 
              double Eh,
+             double betah,
              double sigy,
              double epstn,
              int    isoft,
@@ -20,8 +66,8 @@ void w1yilcr(double E,
              double *ft)
 {
 /*----------------------------------------------------------------------*/
-double sx, sy, sxy, sigym, hards, epstmax;
-double betah = 1.;
+double J2, sx, sy, sz, sxy, sigym, hards, epstmax;
+/*double betah = 1.;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1yilcr");
@@ -30,6 +76,7 @@ dstrc_enter("w1yilcr");
   sx  = tau[0];
   sy  = tau[1];
   sxy = tau[2];
+  sz  = tau[3];
 /*----------------------------------------------------------------------*/
   if(isoft==0)
   {
@@ -52,20 +99,23 @@ dstrc_enter("w1yilcr");
     else sigym = 0.01*sigy;    
   }
 /*-------------------------------------------------------- von mises ---*/
-  *ft = sqrt(sx*sx - sx*sy + sy*sy+ 3.0 * (sxy*sxy)) - sigym;
+  J2 = 1./3. * (sx*sx + sy*sy + sz*sz -sx*sy - sx*sz - sy*sz) + sxy*sxy;
+  *ft = sqrt(3.* J2) - sigym;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of w1yilcr */
+
 /*----------------------------------------------------------------------*
  |                                                        al    9/01    |
  |   radial return for elements with mises material model               |
- |                                                                      |
+ |                                              modified by sh  8/02    |
  *----------------------------------------------------------------------*/
 void w1radi(double e, 
             double eh,
+            double betah,
             double sigy,
             double vnu,
             double dia,
@@ -80,21 +130,26 @@ void w1radi(double e,
 int i;
 int isoft1 = 0;
 int nsoft  = 1;
-double half, ro23, q13, g, c1, c2, g1, xsi1, xsi2, xsi3, hard2, hards;
+double half, ro23, q13, g, c1, c2, xsi1, xsi2, xsi3, hard2, hards;
 double f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, epstmax, df, dfi; 
-double dum, xsi4, stps, dlf, dlfi;
+double J2, xsi4, stps, dlf, dlfi, dum;
 double hd11, hd21, hd12, hd22, hd33, hd44;
 double hm11, hm21, hm12, hm22, hm33;
 double dm11, dm21, dm12, dm22, dm33;
-double betah = 1.0;
+/*double betah = 1.0;
+/**/
+double fac;
+double x1,x2,x3,x4;
+double ft;
+/**/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1radi");
 #endif
 /*----------------------------------------------------------------------*/
     half = .5;
-    ro23 = sqrt(.66666666666666663);
-    q13 = .33333333333333331;
+    ro23 = sqrt(2./3.);
+    q13  = 1./3.;
 /*----------------------------------------------------------------------*/
   if(isoft==0)
   {
@@ -117,6 +172,12 @@ dstrc_enter("w1radi");
   }
  /*----------------------------------------------------------------------*/
    g = e / (vnu * 2. + 2.);
+
+   fac= ro23 * ( 1. - betah ) * hards;
+/*--------------------------------------------- initialize variables ---*/
+   i = 0;
+   *dlam = 0.;
+
 /*===================================================== plane stress ===*/
   switch(wtype)
   {
@@ -124,7 +185,6 @@ dstrc_enter("w1radi");
 /*----------------------------------------------------------------------*/
     c1 = e / (3. - vnu * 3.) + (1. - betah) * 2. * hards / 3.;
     c2 = g * 2. + (1. - betah) * 2. * hards / 3.;
-    g1 = g + (1. - betah) * hards / 3.;
 
     xsi1 = sigma[0] + sigma[1];
     xsi2 = sigma[1] - sigma[0];
@@ -134,9 +194,6 @@ dstrc_enter("w1radi");
 |       max. number of iteration is set by imax                          |
 |-----------------------------------------------------------------------*/
     f2 = xsi2 * xsi2 / 2. + xsi3 * xsi3 * 2.;
-/*--------------------------------------------- initialize variables ---*/
-    i = 0;
-    *dlam = 0.;
 /*------------------- projection on yield surface - newton iteration ---*/
 
 L500:
@@ -149,7 +206,7 @@ L500:
 
 	epst = *epstn + *dlam * fr * ro23;
 
-/*------------ isotrope Materialverfestigung bei von Mises Bedingung ---*/
+/*------------ isotropic hardening for Mises yield criteria ------------*/
 /*--------------- HARD2 (Ausgangswert) statt HARDS (evtl. upgedatet) ---*/
 	if (isoft1 == 0) {
 	    if (nsoft == 1) {
@@ -169,10 +226,10 @@ L500:
 	    esig = sigy * .01;
 	    hards = 1e-4;
 	}
-/*-------------------------------------------------- Fliessbedingung ---*/
+/*-------------------------------------------------- yield criteria ----*/
 	f4 = esig * esig / 3.;
 	f = f / 2. - f4;
-/*------------------------------------ Ableitung der Fliessbedingung ---*/
+/*------------------------------------ derivative of yield criteria ----*/
 	dfdl = -c1 * f1 * f1 / ((c1 * *dlam + 1.) * 6.) - c2 * f2 / 
               (f3 * f3 * f3);
 	f4 = esig * (betah * hards) * ro23 * 2. / 3.;
@@ -224,70 +281,45 @@ L500:
 /*----------------------------------------------------------------------*/
   break;
   case plane_strain:
+
 /*===================================================== plane strain ===*/
 	xsi1 = sigma[0];
 	xsi2 = sigma[1];
 	xsi3 = sigma[3]; /*!!!*/
 	xsi4 = sigma[2];
 /*---------------------------------- increment of plastic multiplier ---*/
-	dum = q13 * (xsi1 * (xsi1 * 2. - xsi2 - xsi3) + xsi2 * (xsi2 * 2. - 
-		xsi1 - xsi3) + xsi3 * (xsi3 * 2. - xsi1 - xsi2)) + xsi4 * 2. *
-		 xsi4;
-	stps = pow(dum, half);
-/*------- iteration scheme to obtain increment of plastic multiplier ---*/
-L600:
-	++i;
-	dlf = *dlam * 2. * (g + (1. - betah) * hards / 3.) + 1.;
-/*--------------------------------- new plastic uniaxial deformation ---*/
-	epst = *epstn + *dlam / dlf * ro23 * stps;
-	esig = sigy + betah * hards * epst;
-/*----------------------------------- apply von mises yield criteria ---*/
-	f = 1. / (dlf * 2. * dlf) * stps * stps - q13 * esig * esig;
-/*--------- derivative of the yield criteria with respect to plastic ---*/
-/*---------                                                increment ---*/
-	dfdl = -stps / (dlf * dlf) * (stps / dlf * 2. * (g + (1.-betah) * 
-		hards / 3.)+pow(ro23, 3.) * esig * betah * hards);
-/*-------------------------------------------- new plastic increment ---*/
-	*dlam -= f / dfdl;
-/*------------------------------------------------ check convergence ---*/
-	if (esig == 0.) {
-	    if (fabs(f) > 1e-5) {
-		if (i > 30) {
-		    dserror("local iteration exceeds limit");
-		}
-		goto L600;
-	    }
-	} else {
-	    if ((dum = f / esig, fabs(dum)) > 1e-5) {
-		if (i > 30) {
-		    dserror("local iteration exceeds limit");
-		}
-		goto L600;
-	    }
-	}
-	*epstn = epst;
-/*-----------------------------------------------------------------------|
-|        NEW STRESS STATE  SIGMA = DM * H * SIGMA(PRED)                  |  
-|        WITH MODIFIED CONSTITUTIVE TENSOR (COMPLIANCE)                  |
-|        HM = H + DLAM * P                                               |
-|        HD = INV[H]*INV[D]                                              |
-|        IN 3D-CONTINUUM: HD11=HD22=HD33; HD12=HD13=HD21=HD23=HD31=HD32  |
-|-----------------------------------------------------------------------*/
-	dlf = *dlam * 2. * (g + (1. - betah) * hards / 3.) + 1.;
-	dlfi = 1. / dlf;
+   J2 = 1./3. * (xsi1*xsi1 + xsi2*xsi2 + xsi3*xsi3 - 
+                 xsi1*xsi2 - xsi1*xsi3 - xsi2*xsi3) + xsi4*xsi4;
+   stps = sqrt(2.* J2);    /*norm of devaiatoric praedictor stresses*/     
 
-	hd11 = q13 * (dlfi * 2. + 1.);
-	hd12 = q13 * (1. - dlfi);
-	hd44 = dlfi;
+/*-------- direct evaluation of dlam  see Simo & Hughes p.120f ---------*/
+/*------------- only possible for linear hardening ---------------------*/
 
-	sigma[0] = hd11 * xsi1 + hd12 * xsi2 + hd12 * xsi3;
-	sigma[1] = hd12 * xsi1 + hd11 * xsi2 + hd12 * xsi3;
-	sigma[3] = hd12 * xsi1 + hd12 * xsi2 + hd11 * xsi3;
-	sigma[2] = hd44 * xsi4;
+   esig = ro23 * (sigy + betah * hards * *epstn);
+   ft = sqrt (2.*J2) - esig;
+   *dlam = ft/(2.*g + (2./3.) * hards);
 
-	for (i = 0; i < 3; ++i) {
-	    qn[i] += sigma[i] * 2. * (1. - betah) * hards * *dlam / 3.;
-	}
+/*-------- update of uniaxial plastic strain, stresses & backstress ----*/
+   *epstn = *epstn + ro23 * *dlam;
+
+/*-------- components of gradient n ------------------------------------*/
+   x1= (2. * xsi1 - xsi2 - xsi3 ) / 3. / stps;
+   x2= (2. * xsi2 - xsi1 - xsi3 ) / 3. / stps;
+   x3= (2. * xsi3 - xsi1 - xsi2 ) / 3. / stps;
+   x4= xsi4 / stps;
+
+/*-- see equation (3.3.3) in Simo & Hughes on p.121 --------------------*/
+   sigma[0] = sigma[0] - (2.*g + ro23*fac)* *dlam*x1;   
+   sigma[1] = sigma[1] - (2.*g + ro23*fac)* *dlam*x2;   
+   sigma[3] = sigma[3] - (2.*g + ro23*fac)* *dlam*x3;   
+   sigma[2] = sigma[2] - (2.*g + ro23*fac)* *dlam*x4;   
+         
+/*-- backstress vector: qn = qn_trial + fac2 * dlam * grad (3.3.1) -----*/
+   qn[0]  = qn[0] + ro23*fac * *dlam * x1;
+   qn[1]  = qn[1] + ro23*fac * *dlam * x2;
+   qn[3]  = qn[3] + ro23*fac * *dlam * x3;
+   qn[2]  = qn[2] + ro23*fac * *dlam * x4;
+   
 /*----------------------------------------------------------------------*/
   break;
 /*============================================== rotational symmetry ===*/
@@ -301,16 +333,22 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1radi */
+
 /*----------------------------------------------------------------------*
  |                                                        al    9/01    |
  |   forms the elasto-plastic consistent tangent material tensor        |
+ |   for combined, linear isotropic and kinematic hardening             |
+ |                                                modified sh 8/02      |
+ |   see Simo & Huges: plane_strain: S.124                              |
+ |                     plane_stress: S.130                              |
  *----------------------------------------------------------------------*/
 void w1mapl(double e, 
             double eh,
+            double betah,
             double sigy,
             double vnu,
             double dia,
-            double *tau,
+            double *tau,       /* !! predictor stresses if plane_strain */
             int    isoft,
             double *epstn,
             double *dlam,
@@ -320,14 +358,17 @@ void w1mapl(double e,
 /*----------------------------------------------------------------------*/
 int i, j;
 int nsoft  = 1;
-double fkh, fkg, gamma1, gamma2, beta,x1,x2,x3,abeta,fact,x4,fact1;
+double gamma1, gamma2, beta,x1,x2,x3,x4,abeta,fact,fact1;
 double vect[4];
 double dm[4][4];
-double xsi1, xsi2, xsi3, hards, g, epstmax, df, det, dum, xsi4;
+double xsi1, xsi2, xsi3, xsi4, hards, g, epstmax, df, det, dum;
 double d11, d21, d12, d22, d33;
 double hm11, hm21, hm12, hm22, hm33, hm44;
 double dm11, dm21, dm12, dm22, dm33;
-double betah = 1.;
+/*double betah = 1.;*/
+
+double k,fac,fac1,fac2;
+double stps,J2;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1mapl");
@@ -354,9 +395,9 @@ dstrc_enter("w1mapl");
             dserror("WRONG NUMBER OF NSOFT");
 	}
     }
-    g = e / (vnu * 2. + 2.);
-    fkh = e / ((1. - vnu * 2.) * 3.);
-    fkg = g * 2. / (((g + (1. - betah) * hards / 3.) * 2. * *dlam + 1.) * 3.);
+    g = e / (vnu * 2. + 2.);           /*Schubmodul*/
+    k = e / ((1. - vnu * 2.) * 3.);    /*Kompressionsmodul*/
+
 /*===================================================== plane stress ===*/
   switch(wtype)
   {
@@ -433,86 +474,63 @@ dstrc_enter("w1mapl");
 /*----------------------------------------------------------------------*/
   break;
   case plane_strain:
+
 /*===================================================== plane strain ===*/
-	fact = 1. - betah * 2. * hards * *dlam / 3.;
-	fact = betah * 2. * hards / 3. / fact;
+   xsi1 = tau[0];
+   xsi2 = tau[1];
+   xsi3 = tau[3];
+   xsi4 = tau[2];
+/*------- Grad n  -> Normiert  -----------------------------------------*/
+   J2 = 1./3. * (xsi1*xsi1 + xsi2*xsi2 + xsi3*xsi3 - 
+                 xsi1*xsi2 - xsi1*xsi3 - xsi2*xsi3) + xsi4*xsi4;
+   stps = sqrt(2.* J2); /*norm of devaiatoric predictor stresses*/     
 
-	xsi1 = tau[0];
-	xsi2 = tau[1];
-	xsi3 = tau[3];
-	xsi4 = tau[2];
+   x1= (2. * xsi1 - xsi2 - xsi3 ) / 3. / stps;
+   x2= (2. * xsi2 - xsi1 - xsi3 ) / 3. / stps;
+   x3= (2. * xsi2 - xsi1 - xsi2 ) / 3. / stps;
+   x4= xsi4 / stps;
+/*------- Vorfaktoren  -------------------------------------------------*/
+   fac  = (2.*g* *dlam)/ (stps);
+   fac1 = 1. - fac;
+   fac2 = 1./(1.+ hards/(3.*g)) - fac ;      
+/*-------- Cep_alg nach Simo & Hughes  ---------------------------------*/
 
-	fact = fact * 2. * (xsi1 * xsi1 + xsi2 * xsi2 + xsi3 * xsi3 - xsi1 * 
-		xsi2 - xsi1 * xsi3 - xsi2 * xsi3 + xsi4 * xsi4 * 3.) / 3.;
-
-/*-----------------------------------------------------------------------|
-|        inverse modified constitutive tensor (compliance)               |
-|                 D  =  D(INV) + P * DLAM                                |
-|        inverse material stiffness tensor     DM = INV (D(INV) + P*DLAM |
-|           (HM11=HM22=HM33,HM12=HM23=HM21=HM32=HM13,H44)                |
-|-----------------------------------------------------------------------*/
-	hm11 = fkh + fkg * 2.;
-	hm12 = fkh - fkg;
-	hm44 = fkg * 1.5;
-/*-----------------------------------------------------------------------|
-|        product  P * TAU                                                |
-|-----------------------------------------------------------------------*/
-	x1 = (xsi1 * 2. - xsi2 - xsi3) / 3.;
-	x2 = (-xsi1 + xsi2 * 2. - xsi3) / 3.;
-	x3 = (-xsi1 - xsi2 + xsi3 * 2.) / 3.;
-	x4 = xsi4 * 2.;
-/*-----------------------------------------------------------------------|
-|        product  HM * P * TAU                                           |
-|-----------------------------------------------------------------------*/
-	vect[0] = hm11 * x1 + hm12 * x2 + hm12 * x3;
-	vect[1] = hm12 * x1 + hm11 * x2 + hm12 * x3;
-	vect[2] = hm12 * x1 + hm12 * x2 + hm11 * x3;
-	vect[3] = hm44 * x4;
-/*-----------------------------------------------------------------------|
-|        scalar product  TAU * P * HM * P * TAU                          |
-|-----------------------------------------------------------------------*/
-	fact1 = x1 * vect[0] + x2 * vect[1] + x3 * vect[2] + x4 * vect[3];
-	fact1 = 1. / (fact1 + fact);
-/*-----------------------------------------------------------------------|
-|        form consistent 4x4 material matrix                             |
-|-----------------------------------------------------------------------*/
-	for (i = 0; i < 4; i++) {
-	for (j = 0; j < 4; j++) {
-	    dm[i][j] = 0.;
-	     d[i][j] = 0.;
-	}}
-        dm[0][0] = hm11;
-        dm[0][1] = hm12;
-        dm[0][2] = hm12;
-        dm[1][0] = hm12;
-        dm[1][1] = hm11;
-        dm[1][2] = hm12;
-        dm[2][0] = hm12;
-        dm[2][1] = hm12;
-        dm[2][2] = hm11;
-        dm[3][3] = hm44;
-
-	for (i = 0; i < 4; i++) {
-	for (j = 0; j < 4; j++) {
-	    dm[i][j] -= fact1 * vect[i] * vect[j];
-	}}
-
-        d[0][0] = dm[0][0];
-        d[1][0] = dm[1][0]; 
-        d[2][0] = dm[3][0];
-        d[3][0] = dm[2][0];
-        d[0][1] = dm[0][1];
-        d[1][1] = dm[1][1];
-        d[2][1] = dm[3][1];
-        d[3][1] = dm[2][1];
-        d[0][2] = dm[0][3];
-        d[1][2] = dm[1][3];
-        d[2][2] = dm[3][3]; 
-        d[3][2] = dm[2][3];
-        d[0][3] = dm[0][2];
-        d[1][3] = dm[1][2];
-        d[2][3] = dm[3][2];
-        d[3][3] = dm[2][2];              
+   dm[0][0] = k + 2.*g*fac1*( 2./3.) - 2.*g*fac2*x1*x1;
+   dm[1][1] = k + 2.*g*fac1*( 2./3.) - 2.*g*fac2*x2*x2;
+   dm[2][2] = k + 2.*g*fac1*( 2./3.) - 2.*g*fac2*x3*x3;
+   dm[3][3] =     2.*g*fac1*( 1./2 ) - 2.*g*fac2*x4*x4;
+           
+   dm[0][1] = k + 2.*g*fac1*(-1./3.) - 2.*g*fac2*x1*x2;
+   dm[1][0] = dm[0][1];
+   dm[0][2] = k + 2.*g*fac1*(-1./3.) - 2.*g*fac2*x1*x3;
+   dm[2][0] = dm[0][2];
+   dm[1][2] = k + 2.*g*fac1*(-1./3.) - 2.*g*fac2*x2*x3;
+   dm[2][1] = dm[1][2];
+     
+   dm[0][3] =                        - 2.*g*fac2*x1*x4;
+   dm[3][0] = dm[0][3];
+   dm[1][3] =                        - 2.*g*fac2*x2*x4;
+   dm[3][1] = dm[1][3];
+   dm[2][3] =                        - 2.*g*fac2*x3*x4;
+   dm[3][2] = dm[2][3];
+   
+   /*Sorting back rows/columns 2 <-> 3 */
+   d[0][0] = dm[0][0];
+   d[1][0] = dm[1][0]; 
+   d[2][0] = dm[3][0];
+   d[3][0] = dm[2][0];
+   d[0][1] = dm[0][1];
+   d[1][1] = dm[1][1];
+   d[2][1] = dm[3][1];
+   d[3][1] = dm[2][1];
+   d[0][2] = dm[0][3];
+   d[1][2] = dm[1][3];
+   d[2][2] = dm[3][3]; 
+   d[3][2] = dm[2][3];
+   d[0][3] = dm[0][2];
+   d[1][3] = dm[1][2];
+   d[2][3] = dm[3][2];
+   d[3][3] = dm[2][2];              
 /*----------------------------------------------------------------------*/
   break;
 /*============================================== rotational symmetry ===*/
@@ -527,6 +545,7 @@ dstrc_exit();
 return;
 } /* end of w1mapl */
 /*----------------------------------------------------------------------*/
+
 /*----------------------------------------------------------------------*
  |                                                        al    9/01    |
  |   TOPIC : WALL1 - YIELD CRITERION PLANE_STRESS                       |
@@ -2890,7 +2909,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_rebar */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
 
 
 
