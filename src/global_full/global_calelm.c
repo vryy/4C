@@ -273,14 +273,17 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_struct_linstiff        : assemble_action = assemble_one_matrix; break;
    case calc_struct_nlnstiff        : assemble_action = assemble_one_matrix; break;
    case calc_struct_nlnstiffmass    : assemble_action = assemble_two_matrix; break;
+   case calc_struct_linstifflmass   : assemble_action = assemble_one_matrix; break;
    case calc_struct_internalforce   : assemble_action = assemble_do_nothing; break;
    case calc_struct_eleload         : assemble_action = assemble_do_nothing; break;
-   case calc_struct_fsiload      : assemble_action = assemble_do_nothing; break;
+   case calc_struct_fsiload         : assemble_action = assemble_do_nothing; break;
    case calc_struct_stress          : assemble_action = assemble_do_nothing; break;
    case calc_struct_ste             : assemble_action = assemble_do_nothing; break;
    case calc_struct_stm             : assemble_action = assemble_do_nothing; break;
+   case calc_struct_def             : assemble_action = assemble_do_nothing; break;
    case calc_struct_stv             : assemble_action = assemble_do_nothing; break;
    case calc_struct_dee             : assemble_action = assemble_do_nothing; break;
+   case calc_deriv_self_adj         : assemble_action = assemble_do_nothing; break;
    case calc_struct_dmc             : assemble_action = assemble_do_nothing; break;
    case update_struct_odens         : assemble_action = assemble_do_nothing; break;
    case calc_struct_update_istep    : assemble_action = assemble_do_nothing; break;
@@ -373,15 +376,18 @@ case calc_struct_linstiff        : assemble_action = assemble_one_exchange; brea
 case calc_struct_nlnstiff        : assemble_action = assemble_one_exchange; break;
 case calc_struct_internalforce   : assemble_action = assemble_do_nothing;   break;
 case calc_struct_nlnstiffmass    : assemble_action = assemble_two_exchange; break;
+case calc_struct_linstifflmass   : assemble_action = assemble_one_exchange; break;
 case calc_struct_eleload         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_fsiload         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stress          : assemble_action = assemble_do_nothing;   break;
 case calc_struct_ste             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stm             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_def             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stv             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dmc             : assemble_action = assemble_do_nothing;   break;
 case update_struct_odens         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
+case calc_deriv_self_adj         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
 case calc_ale_stiff              : assemble_action = assemble_one_exchange; break;
@@ -416,15 +422,18 @@ case calc_struct_linstiff        : assemble_action = assemble_close_1matrix; bre
 case calc_struct_nlnstiff        : assemble_action = assemble_close_1matrix; break;
 case calc_struct_internalforce   : assemble_action = assemble_do_nothing;   break;
 case calc_struct_nlnstiffmass    : assemble_action = assemble_close_2matrix; break;
+case calc_struct_linstifflmass   : assemble_action = assemble_close_1matrix; break;
 case calc_struct_eleload         : assemble_action = assemble_do_nothing;    break;
 case calc_struct_fsiload         : assemble_action = assemble_do_nothing;    break;
 case calc_struct_stress          : assemble_action = assemble_do_nothing;    break;
 case calc_struct_ste             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stm             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_def             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stv             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dmc             : assemble_action = assemble_do_nothing;   break;
 case update_struct_odens         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
+case calc_deriv_self_adj         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
 case calc_ale_stiff              : assemble_action = assemble_close_1matrix; break;
@@ -461,8 +470,10 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
     case calc_struct_stress          :
     case calc_struct_ste             :
     case calc_struct_stm             :
+    case calc_struct_def             :
     case calc_struct_stv             :
     case calc_struct_dee             :
+    case calc_deriv_self_adj         : 
     case calc_struct_dmc             :
     case update_struct_odens         :
     case calc_struct_update_istep    :
