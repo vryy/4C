@@ -2,11 +2,13 @@
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "../shell8/shell8.h"
+#include "../shell9/shell9.h"
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
+
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -188,6 +190,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              &estif_global,&emass_global,&intforce_global,
              action,container);
    break;
+   case el_shell9:
+      container->handsize = 0;
+      container->handles  = NULL;
+      shell9(actfield,actpart,actintra,actele,
+             &estif_global,&emass_global,&intforce_global,
+             action,container);
+   break;
    case el_brick1:
       brick1(actpart,actintra,actele,
              &estif_global,&emass_global,&intforce_global,
@@ -357,6 +366,7 @@ void calinit(FIELD       *actfield,   /* the active physical field */
 {
 int i;                        /* a counter */
 int is_shell8=0;              /* flags to check for presents of certain element types */
+int is_shell9=0;   
 int is_brick1=0;
 int is_wall1 =0;
 int is_fluid2=0;
@@ -384,6 +394,9 @@ for (i=0; i<actfield->dis[0].numele; i++)
    {
    case el_shell8:
       is_shell8=1;
+   break;
+   case el_shell9:
+      is_shell9=1;
    break;
    case el_brick1:
       is_brick1=1;
@@ -416,6 +429,14 @@ if (is_shell8==1)
    container->handsize = 0;
    container->handles  = NULL;
    shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+          action,container);
+}
+/*------------------------------- init all kind of routines for shell9  */
+if (is_shell9==1)
+{
+   container->handsize = 0;
+   container->handles  = NULL;
+   shell9(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
           action,container);
 }
 /*-------------------------------- init all kind of routines for brick1 */
@@ -481,6 +502,7 @@ void calreduce(FIELD       *actfield, /* the active field */
 {
 int i;
 int is_shell8=0;
+int is_shell9=0;
 int is_brick1=0;
 int is_wall1 =0;
 int is_fluid1=0;
@@ -499,6 +521,9 @@ for (i=0; i<actfield->dis[0].numele; i++)
    {
    case el_shell8:
       is_shell8=1;
+   break;
+   case el_shell9:
+      is_shell9=1;
    break;
    case el_brick1:
       is_brick1=1;
@@ -526,6 +551,13 @@ if (is_shell8==1)
    container->handsize = 0;
    container->handles  = NULL;
    shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,action,container);
+}
+/*-------------------------------------------reduce results for shell9  */
+if (is_shell9==1)
+{
+   container->handsize = 0;
+   container->handles  = NULL;
+   shell9(actfield,actpart,actintra,NULL,NULL,NULL,NULL,action,container);
 }
 /*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)

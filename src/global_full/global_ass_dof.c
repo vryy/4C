@@ -1,4 +1,8 @@
 #include "../headers/standardtypes.h"
+
+#ifdef D_SHELL9
+   #include "../shell9/shell9.h"
+#endif /*D_SHELL9*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -28,6 +32,9 @@ int couple,geocouple,dirich;       /* flags for conditions */
 ELEMENT *actele;                   /* the element in progress */
 NODE    *actnode, *partnernode;    /* node and coupling partner in progress */
 int max;
+
+int numklay;                       /* number of kinematic layers if shell9 element */
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("assign_dof");
 #endif
@@ -50,6 +57,15 @@ for (j=0; j<actfield->dis[0].numele; j++)
       {
 	 if (actele->node[k]->numdf < NUMDOF_SHELL8) actele->node[k]->numdf=NUMDOF_SHELL8;
       }
+      break;
+   case el_shell9:
+      #ifdef D_SHELL9
+      /* set number of dofs of actele  ==>   actele->e.s9->numdf */
+      for (k=0; k<actele->numnp; k++)
+      {
+         actele->node[k]->numdf = actele->e.s9->numdf;
+      }
+      #endif /*D_SHELL9*/
       break;
    case el_brick1:
       for (k=0; k<actele->numnp; k++)
@@ -170,6 +186,19 @@ for (j=0; j<actfield->dis[0].numnp; j++)
       }
       else/* the node does have dirichlet and/or coupling conditions */
       {
+       /*for shell9 element with more than 6 dofs, the dirichlet conditions have to be */
+       /*spread over the differential vectors                                 sh 12/02 */
+       if (actnode->numdf > 6)
+       {
+         numklay = (actnode->numdf-3)/3;
+         for (i=1; i<numklay; i++)
+         {
+          actnode->gnode->dirich->dirich_onoff.a.iv[3+3*i] = actnode->gnode->dirich->dirich_onoff.a.iv[3]; /*wx*/
+          actnode->gnode->dirich->dirich_onoff.a.iv[4+3*i] = actnode->gnode->dirich->dirich_onoff.a.iv[4]; /*wy*/
+          actnode->gnode->dirich->dirich_onoff.a.iv[5+3*i] = actnode->gnode->dirich->dirich_onoff.a.iv[5]; /*wz*/
+         }
+       }
+
 	 for (l=0; l<actnode->numdf; l++)
 	 {
 	    dirich=0;

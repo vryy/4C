@@ -3,6 +3,7 @@
 #include "../headers/solution.h"
 #include "../headers/restart.h"
 #include "../shell8/shell8.h"
+#include "../shell9/shell9.h"
 #include "../wall1/wall1.h"
 
 /*----------------------------------------------------------------------*
@@ -221,6 +222,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = 5;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
+             NULL,NULL,NULL,action,container);
+   break;
+   case el_shell9:
+      container->kstep    = 0;      
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
+      shell9(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
@@ -532,6 +540,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+   case el_shell9:
+      container->kstep    = 0;  
+      container->handsize = 5;
+      container->handles  = ele_handles[i];       
+      shell9(actfield,actpart,actintra,actele,
+             NULL,NULL,NULL,action,container);
+   break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
    break;
@@ -761,6 +776,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = 5;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
+             NULL,NULL,NULL,action,container);
+   break;
+   case el_shell9:
+      container->kstep    = 0;   
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
+      shell9(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
@@ -1027,6 +1049,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = 5;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
+             NULL,NULL,NULL,action,container);
+   break;
+   case el_shell9:
+      container->kstep    = 0;    
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
+      shell9(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
