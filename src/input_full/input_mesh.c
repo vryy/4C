@@ -53,6 +53,10 @@ extern INT      create_dis;
 static ARRAY tmpnodes1;
 static ARRAY tmpnodes2;
 
+#ifdef D_LS
+void inp_ls_field(FIELD *lsfield);
+#endif
+
 /*----------------------------------------------------------------------*
  | input of fields                                        m.gee 4/01    |
  *----------------------------------------------------------------------*/

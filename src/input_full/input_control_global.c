@@ -79,6 +79,10 @@ extern struct _FIELD       *field;
 extern struct _WALL_CONTACT contact;
 #endif
 
+#ifdef D_LS
+void inpctr_dyn_ls(LS_DYNAMIC *lsdyn);
+#endif
+
 void inpctr()
 {
 #ifdef DEBUG 
