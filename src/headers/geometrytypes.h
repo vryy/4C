@@ -130,6 +130,8 @@ typedef struct _GNODE
      }                             d;           /* ptr to the design object I am positioned on */
    /* boundary and coupling conditions */
      struct _DIRICH_CONDITION     *dirich;      /* a dirichlet condition on this gnode, else NULL */
+     DOUBLE                        d_funct[MAXDOFPERNODE];  /* factors of the spatial functions  at this gnode 
+                                                   for the dirich conditins */
      struct _COUPLE_CONDITION     *couple;      /* a coupling conditions on this gnode, else NULL */
      struct _NEUM_CONDITION       *neum;        /* a neumann condition on this gnode, else NULL */
 #ifdef D_FSI

@@ -53,7 +53,8 @@ typedef struct _NEUM_CONDITION
  *----------------------------------------------------------------------*/
 typedef struct _DIRICH_CONDITION
 {
-     struct _ARRAY             curve;
+     struct _ARRAY             curve;        /* time curve */
+     struct _ARRAY             funct;        /* spatial function */
 
      struct _ARRAY             dirich_onoff; /* array of on-off flags */
      struct _ARRAY             dirich_val;   /* values of this condition */    

@@ -97,6 +97,8 @@ dstrc_enter("inp_conditions");
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------ input of time curves */
 inp_cond_curve();
+/* input of spatial functions */
+inp_cond_funct();
 /*--------------------------------- input of nodal dirichlet conditions */
 inpdesign_nodal_dirich();
 /*---------------------------------- input of line dirichlet conditions */
@@ -125,11 +127,6 @@ inpdesign_vol_couple();
 #ifdef WALLCONTACT
 inpdesign_line_contact();
 #endif
-
-
-
-
-
 
 /*------------------------------- input of line FSI coupling conditions */
 #ifdef D_FSI
@@ -161,6 +158,11 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_conditions */
+
+
+
+
+
 
 
 
@@ -219,12 +221,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
+   amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
 
    /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
 #ifdef D_SHELL9
    amzero(&(actdnode->dirich->dirich_onoff));
    amzero(&(actdnode->dirich->dirich_val));
    amzero(&(actdnode->dirich->curve));
+   amzero(&(actdnode->dirich->funct));
 #endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
@@ -261,6 +265,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        colptr++;
      }   
    } 
+   /* read function number */
+   for (i=0; i<6; i++)
+     if (i < MAXDOFPERNODE)
+       actdnode->dirich->funct.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -330,12 +340,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
+   amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
 
    /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
 #ifdef D_SHELL9
    amzero(&(actdline->dirich->dirich_onoff));
    amzero(&(actdline->dirich->dirich_val));
    amzero(&(actdline->dirich->curve));
+   amzero(&(actdline->dirich->funct));
 #endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
@@ -372,6 +384,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        colptr++;
      }
    }   
+   /* read function number */
+   for (i=0; i<6; i++)
+     if (i < MAXDOFPERNODE)
+       actdline->dirich->funct.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -440,12 +458,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
+   amdef("function",&(actdsurf->dirich->funct),MAXDOFPERNODE,1,"IV");
 
    /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
 #ifdef D_SHELL9
    amzero(&(actdsurf->dirich->dirich_onoff));
    amzero(&(actdsurf->dirich->dirich_val));
    amzero(&(actdsurf->dirich->curve));
+   amzero(&(actdsurf->dirich->funct));
 #endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
@@ -482,6 +502,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        colptr++;
      }
    } 
+   /* read function number */
+   for (i=0; i<6; i++)
+     if (i < MAXDOFPERNODE)
+       actdsurf->dirich->funct.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -550,12 +576,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdvol->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+   amdef("function",&(actdvol->dirich->funct),MAXDOFPERNODE,1,"IV");
 
    /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
 #ifdef D_SHELL9
    amzero(&(actdvol->dirich->dirich_onoff));
    amzero(&(actdvol->dirich->dirich_val));
    amzero(&(actdvol->dirich->curve));
+   amzero(&(actdvol->dirich->funct));
 #endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
@@ -592,6 +620,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        colptr++;
      }  
    }   
+   /* read function number */
+   for (i=0; i<6; i++)
+     if (i < MAXDOFPERNODE)
+       actdvol->dirich->funct.a.iv[i] = strtol(colptr,&colptr,10);
+     else
+       strtol(colptr,&colptr,10);
    /*--------------------------------------------------- read next line */
    frread();
 }

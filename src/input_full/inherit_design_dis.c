@@ -25,7 +25,7 @@ extern struct _DESIGN *design;
  *----------------------------------------------------------------------*/
 void inherit_design_dis_dirichlet(DISCRET *actdis)
 {
-INT     i;
+INT     i,j;
 GNODE  *actgnode;
 #ifdef DEBUG 
 dstrc_enter("inherit_design_dis_dirichlet");
@@ -42,6 +42,17 @@ for (i=0; i<actdis->ngnode; i++)
    case ondvol:     actgnode->dirich = actgnode->d.dvol->dirich;    break;
    case ondnothing: dserror("GNODE not owned by any design object");break;
    default: dserror("Cannot inherit dirichlet condition");          break;
+   }
+   /* calculate factors for spatial functions */
+   if (actgnode->dirich != NULL)
+   {
+     for (j=0; j<MAXDOFPERNODE; j++)
+     {
+       if (actgnode->dirich->funct.a.iv[j] == 0)
+         actgnode->d_funct[j] = 1.0;
+       else
+         cal_dirich_fac(actgnode,j);
+     }
    }
 }
 /*----------------------------------------------------------------------*/
