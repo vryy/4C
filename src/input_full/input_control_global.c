@@ -406,13 +406,6 @@ if (frfind("---IO")==1)
       if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp_gid=1;
     }
-    frchar("MONITOR"   ,buffer,            &ierr);
-    if (ierr==1)
-    {
-      if (strncmp("yes" ,buffer,3)==0) ioflags.monitor=1;
-      if (strncmp("YES" ,buffer,3)==0) ioflags.monitor=1;
-      if (strncmp("Yes" ,buffer,3)==0) ioflags.monitor=1;
-    }
     frint("RELATIVE_DISP_NUM",&(ioflags.relative_displ),&ierr);
     frread();
   }
@@ -896,10 +889,10 @@ fdyn->itchk=1;
 fdyn->itnorm=2;
 fdyn->stchk=0;
 fdyn->init=0;
+fdyn->iprerhs=1;
 fdyn->viscstr=0;
 fdyn->liftdrag=0;
 fdyn->numdf=genprob.ndim+1;  
-fdyn->numcont=0;
 fdyn->uppss=1;  
 fdyn->upout=1;  
 fdyn->upres=1;  
@@ -907,7 +900,6 @@ fdyn->res_write_evry=20;
 fdyn->nstep=1;
 fdyn->stchk=5;  
 fdyn->nums=0;
-fdyn->iprerhs=1;
 fdyn->itemax=3;
 fdyn->dt=0.01;    
 fdyn->maxtime=1000.0;
@@ -974,7 +966,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else if (strncmp(buffer,"Newton",6)==0) 
          fdyn->ite=2;                  
       else if (strncmp(buffer,"fixed_point",11)==0) 
-         fdyn->ite=3;
+         dserror("fixed_point iteration scheme removed!\n");
       else
          dserror("NONLINITER-Type unknown!");     
    }
@@ -1033,6 +1025,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->init=1;
       else if (strncmp(buffer,"field_by_function",17)==0) 
          fdyn->init=-1;                      
+      else if (strncmp(buffer,"SOLWAVE",7)==0) 
+         fdyn->init=6;
+      else if (strncmp(buffer,"WAVEBREAKING",12)==0) 
+         fdyn->init=7;
       else if (strncmp(buffer,"BELTRAMI-FLOW",13)==0) 
          fdyn->init=8;
       else if (strncmp(buffer,"KIM-MOIN-FLOW",13)==0) 
@@ -1063,10 +1059,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
           strncmp(buffer,"NO",2)==0 ||
 	  strncmp(buffer,"no",2)==0   ) 
          fdyn->freesurf=0;
-      else if (strncmp(buffer,"explicit",8)==0) 
+      else if (strncmp(buffer,"loclag_exp",10)==0
+               && strlen(buffer)==10) 
          fdyn->freesurf=1;
-      else if (strncmp(buffer,"implicit",8)==0) 
+      else if (strncmp(buffer,"loclag_imp",10)==0
+               && strlen(buffer)==10) 
          fdyn->freesurf=2;                  
+      else if (strncmp(buffer,"hf_vert_sep",11)==0
+               && strlen(buffer)==11)
+         fdyn->freesurf=3;                        
+      else if (strncmp(buffer,"hf_vert_imp",11)==0
+               && strlen(buffer)==11)
+         fdyn->freesurf=5;                        
+      else if (strncmp(buffer,"genfs",5)==0
+               && strlen(buffer)==5)
+         fdyn->freesurf=6;                        
       else
          dserror("Parameter FREESURFACE unknown!\n");     
    }
@@ -1200,7 +1207,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }   
 
 /*--------------read INT */
-   frint("NUMCONT"    ,&(fdyn->numcont)       ,&ierr);
    frint("UPPSS"      ,&(fdyn->uppss)         ,&ierr);
    frint("UPOUT"      ,&(fdyn->upout)         ,&ierr);
    frint("UPRES"      ,&(fdyn->upres)         ,&ierr);
@@ -1557,12 +1563,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       length = strlen(buffer);
-      if ((strncmp(buffer,"No",2)==0 ||
-           strncmp(buffer,"NO",2)==0 ||
+      if ((strncmp(buffer,"No",2)==0  ||
+           strncmp(buffer,"NO",2)==0  ||
 	   strncmp(buffer,"no",2)==0) && length==2) 
          fsidyn->ichecke=0;
-      else if ((strncmp(buffer,"yes",3)==0 ||
-                strncmp(buffer,"YES",3)==0 ||                 
+      else if ((strncmp(buffer,"yes",3)==0  ||
+                strncmp(buffer,"YES",3)==0  ||                 
 	        strncmp(buffer,"Yes",3)==0) && length==3) 
          fsidyn->ichecke=1;
       else
@@ -1573,8 +1579,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       length = strlen(buffer);
-      if ((strncmp(buffer,"No",2)==0 ||
-           strncmp(buffer,"NO",2)==0 ||
+      if ((strncmp(buffer,"No",2)==0  ||
+           strncmp(buffer,"NO",2)==0  ||
 	   strncmp(buffer,"no",2)==0) && length==2) 
          fsidyn->inest=0;
       else if (strncmp(buffer,"fluid+structure",15)==0 && length==15) 
@@ -1679,6 +1685,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else if (strncmp(buffer,"two_step",8)==0) adyn->typ = two_step;
       else if (strncmp(buffer,"springs",7)==0) adyn->typ = springs;
       else if (strncmp(buffer,"laplace",7)==0) adyn->typ = laplace;
+      else if (strncmp(buffer,"LAS",3)==0) adyn->typ = LAS;
       else dserror("unknown ALE_TYPE");
    }
    frchar("QUALITY",buffer,&ierr);
