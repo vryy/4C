@@ -17,6 +17,17 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 
 /*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+/*!----------------------------------------------------------------------
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
@@ -1684,6 +1695,81 @@ dstrc_exit();
 #endif
 return((void*)(array->a.d3));
 } /* end of am4redef */
+
+
+void amprint(ARRAY *a,INT fdim, INT sdim)
+{
+INT i,j;
+FILE *err=allfiles.out_err;
+
+#ifdef DEBUG 
+dstrc_enter("amprint");
+#endif
+
+/*----------------------------------------------------------------------*/
+if (fdim>a->fdim)
+dserror("fdim for amprint too large!\n");
+if (sdim>a->sdim)
+dserror("sdim for amprint too large!\n");
+
+switch (a->Typ)
+{
+case cca_DA: /* -------------------------------------------DOUBLE array */
+   for (i=0;i<fdim;i++)
+   {
+      fprintf(err,"%3d: ",i);
+      for(j=0;j<sdim;j++)
+      {
+         fprintf(err,"%6.16lf ",a->a.da[i][j]);
+      } 
+      fprintf(err,"\n");
+   }
+break;
+case cca_IA: /* ------------------------------------------integer array */
+   for (i=0;i<fdim;i++)
+   {
+      fprintf(err,"%3d: ",i);
+      for(j=0;j<sdim;j++)
+      {
+         fprintf(err,"%6d ",a->a.ia[i][j]);
+      } 
+      fprintf(err,"\n");
+   }
+break;
+
+case cca_DV: /* ------------------------------------------DOUBLE vector */
+   for (i=0;i<fdim;i++)
+   {
+      fprintf(err,"%3d: ",i);
+      fprintf(err,"%6.16lf ",a->a.dv[i]);
+      fprintf(err,"\n");
+   }
+break;
+
+case cca_IV: /* -----------------------------------------integer vector */
+   for (i=0;i<fdim;i++)
+   {
+      fprintf(err,"%3d: ",i);
+      fprintf(err,"%6d ",a->a.iv[i]);
+      fprintf(err,"\n");
+   }
+break;
+
+default:
+dserror("Unknown type of array given");
+}
+fprintf(err,"\n");
+
+/*------------------- make report about new array to bugtraceing system */
+#ifdef DEBUG 
+if (trace.trace_on==1) dsreportarray(a,1);
+
+dstrc_exit();
+#endif
+/*----------------------------------------------------------------------*/
+return;
+} /* end of amdef */
+
 
 
 /*! @} (documentation module close)*/
