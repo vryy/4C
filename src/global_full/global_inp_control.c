@@ -192,10 +192,17 @@ inp_conditions();
 #ifdef D_FSI
 if (genprob.probtyp==prb_fsi) fsi_createfsicoup();  
 #endif
+#ifdef D_FLUID
 /*----------------- inherit the freesurface condition inside the design 
    condition is transformed into a dirichlet condition for ale fiedl    */
-#ifdef D_FLUID
 if (genprob.numff>=0 && genprob.numfld>1) fluid_createfreesurf();
+/*------ inherit stabilisation condition from design to the elements ---*/
+for (i=0; i<genprob.numfld; i++)
+{
+  if (field[i].fieldtyp == fluid)
+    for (j=0; j<field[i].ndis; j++)
+      inherit_design_ele(&(field[i].dis[j]));
+}
 #endif   
 /*----- inherit the dirichlet and coupling conditions inside the design */
 /* conditions are inherited 'downwards': DVOL->DSURF->DLINE->DNODE      */
