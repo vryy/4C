@@ -123,6 +123,11 @@ void w1_funct_deriv(double     *funct,  /* shape function values        */
                     double      s,      /* r/s coordinates              */
                     DIS_TYP     typ,    /* quad4, quad8, quad9 ...      */
                     int         option);/* index for function evaluation*/ 
+void w1_degfuncderiv(double     *funct, 
+                      double    **deriv, 
+                      double      r, 
+                      DIS_TYP     typ,
+                      int         option);
 /*-----------------------------------------------------------------------*
 |  w1_init.c                                                 al 9/01     |
 |  initialize the element                                                |
@@ -822,10 +827,17 @@ void w1_tram(double   **xjm, /* Elements of Jacobian Matrix             */
  | w1_cal_fext.c                                             ah 07/02   |
  | element line and surface loads                                       |
  *----------------------------------------------------------------------*/
-void w1_eleload(ELEMENT  *ele,           /* actuell element             */
-                W1_DATA  *data,          /* wall1-data                  */
-                double	*loadvec,        /* loadvector                  */
-                int	 init);          /* flag -> init or calculation */
+void w1_eleload(ELEMENT  *ele,     /* actual element                  */
+                W1_DATA  *data,    /* wall1- Data                     */
+                double	 *loadvec, /* global element load vector fext */
+                int	  init,    /* flag if init or calculation     */
+                int       imyrank);        
+void w1_fsiload(ELEMENT  *ele,     /* actual element                  */
+                W1_DATA  *data,    /* wall1- Data                     */
+                double	 *loadvec, /* global element load vector fext */
+                int	  init,    /* flag if init or calculation     */
+                int       imyrank);
+void w1_iedg(int *iegnod, ELEMENT *ele, int line, int init);		
 /*----------------------------------------------------------------------*
  | w1_cal_fext.c                                             ah 07/02   |
  | integration of element loads                                         |
