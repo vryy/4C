@@ -2,6 +2,55 @@
 #include "../headers/solution.h"
 
 /*----------------------------------------------------------------------*
+ |  make A = A * factor                                      m.gee 02/02|
+ *----------------------------------------------------------------------*/
+void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,double factor)
+{
+int      i;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_scal_mat");
+#endif
+/*----------------------------------------------------------------------*/
+switch (*Atyp)
+{
+case mds:
+   dserror("not implemented for MLIB yet");
+break;
+case msr:
+   amscal(&(A->msr->val),&factor);
+break;
+case parcsr:
+   dserror("not implemented for HYPRE yet");
+break;
+case ucchb:
+   amscal(&(A->ucchb->a),&factor);
+break;
+case dense:
+   amscal(&(A->dense->A),&factor);
+break;
+case rc_ptr:
+   amscal(&(A->rc_ptr->A_loc),&factor);
+break;
+case skymatrix:
+   amscal(&(A->sky->A),&factor);
+break;
+case sparse_none:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+default:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_scal_mat */
+
+
+/*----------------------------------------------------------------------*
  |  make A = A + B * factor                                  m.gee 02/02|
  *----------------------------------------------------------------------*/
 void solserv_add_mat(INTRA *actintra,
@@ -256,7 +305,7 @@ return;
  |  copies the sparsity mask of a rc_ptr matrix              m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
  *----------------------------------------------------------------------*/
-int solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to)
+void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to)
 {
 int i;
 #ifdef DEBUG 
@@ -304,7 +353,7 @@ return;
  |  copies the sparsity mask of a ucchb matrix               m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
  *----------------------------------------------------------------------*/
-int solserv_cp_ucchbmask(UCCHB *from, UCCHB *to)
+void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to)
 {
 int i;
 #ifdef DEBUG 
@@ -343,7 +392,7 @@ return;
  |  copies the sparsity mask of a skyline matrix             m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
  *----------------------------------------------------------------------*/
-int solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to)
+void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to)
 {
 int i;
 #ifdef DEBUG 
@@ -380,7 +429,7 @@ return;
  |  copies the sparsity mask of a msr matrix                 m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
  *----------------------------------------------------------------------*/
-int solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to)
+void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to)
 {
 int i;
 #ifdef DEBUG 
@@ -419,7 +468,7 @@ return;
  |  copies the sparsity mask of a dense matrix               m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
  *----------------------------------------------------------------------*/
-int solserv_cp_densemask(DENSE *from, DENSE *to)
+void solserv_cp_densemask(DENSE *from, DENSE *to)
 {
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_densemask");
@@ -450,11 +499,11 @@ return;
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication                        m.gee 02/02|
  *----------------------------------------------------------------------*/
-int solserv_sparsematvec(INTRA        *actintra,
-                         DIST_VECTOR  *result,
-                         SPARSE_ARRAY *mat,
-                         SPARSE_TYP   *mattyp,
-                         DIST_VECTOR  *vec)
+void solserv_sparsematvec(INTRA        *actintra,
+                          DIST_VECTOR  *result,
+                          SPARSE_ARRAY *mat,
+                          SPARSE_TYP   *mattyp,
+                          DIST_VECTOR  *vec)
 {
 static ARRAY   work1_a;
 static double *work1;
@@ -530,10 +579,10 @@ return;
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with dense matrix      m.gee 02/02|
  *----------------------------------------------------------------------*/
-int solserv_matvec_msr(INTRA        *actintra,
-                       AZ_ARRAY_MSR *msr,
-                       double       *work1,
-                       double       *work2)
+void solserv_matvec_msr(INTRA        *actintra,
+                        AZ_ARRAY_MSR *msr,
+                        double       *work1,
+                        double       *work2)
 {
 #ifdef AZTEC_PACKAGE
 int         i,j,dof;
@@ -599,10 +648,10 @@ C     *  UNIVERSITAET  STUTTGART  *  04.05.92/           O. PETERSEN   *
 C     ******************************************************************
          ported to C                                     m.gee
  *----------------------------------------------------------------------*/
-int solserv_matvec_sky(INTRA        *actintra,
-                       SKYMATRIX    *sky,
-                       double       *work1,
-                       double       *work2)
+void solserv_matvec_sky(INTRA        *actintra,
+                        SKYMATRIX    *sky,
+                        double       *work1,
+                        double       *work2)
 {
 int     i,j,kl,ku,kdiff;
 int     nrn,neq1,neq;
@@ -625,11 +674,11 @@ for (i=0; i<neq; i++)
    kl    = maxa[i];
    ku    = maxa[i+1];
    kdiff = ku-kl;
-   for (j=0; j<kdiff; j++)
+   work2[i] += A[kl] * work1[i];
+   for (j=1; j<kdiff; j++)
    {
       work2[i-j] += A[kl+j] * work1[i];
-      if ( (kl+j) != kl )
-      work2[i] += A[kl+j] * work1[i-j];
+      work2[i]   += A[kl+j] * work1[i-j];
    }
 }
 /*----------------------------------------------------------------------*/
@@ -644,17 +693,17 @@ return;
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with dense matrix      m.gee 02/02|
  *----------------------------------------------------------------------*/
-int solserv_matvec_dense(INTRA        *actintra,
-                         DENSE        *dense,
-                         double       *work1,
-                         double       *work2)
+void solserv_matvec_dense(INTRA        *actintra,
+                          DENSE        *dense,
+                          double       *work1,
+                          double       *work2)
 {
 int      i,j,k;
 int      I,J;
 double   sum;
 double **A;
 #ifdef DEBUG 
-dstrc_enter("solserv_sparsematvec");
+dstrc_enter("solserv_matvec_dense");
 #endif
 /*---------------------- the dense matrix is redundant on all processes */
 I = dense->numeq_total;
@@ -675,4 +724,4 @@ for (i=0; i<I; i++)
 dstrc_exit();
 #endif
 return;
-} /* end of solserv_sparsematvec */
+} /* end of solserv_matvec_dense */

@@ -211,26 +211,18 @@ void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[]);
 void* amredef(ARRAY *a,int newfdim, int newsdim, char newtypstr[]);
 void  amdel(ARRAY *array);
 void  amzero(ARRAY *array);
+void  amscal(ARRAY *array, void *value);
 void  aminit(ARRAY *array, void *value);
 void* am_alloc_copy(ARRAY *array_from, ARRAY *array_to);
 void* amcopy(ARRAY *array_from, ARRAY *array_to);
-void* am4def(char    *namstr,
-             ARRAY4D *a,
-             int      fdim, 
-             int      sdim,
-             int      tdim,
-             int      fodim, 
-             char     typstr[]);
+void  amadd(ARRAY *array_to, ARRAY *array_from, double factor, int init);
+void* am4def(char *namstr, ARRAY4D *a, int fdim, int sdim, int tdim, int fodim, char typstr[]);
 void  am4del(ARRAY4D *array);
 void  am4zero(ARRAY4D *array);
 void  am4init(ARRAY4D *array, void *value);
 void* am4_alloc_copy(ARRAY4D *array_from, ARRAY4D *array_to);
 void* am4copy(ARRAY4D *array_from, ARRAY4D *array_to);
-void* am4redef(ARRAY4D *array, 
-               int newfdim, 
-               int newsdim, 
-               int newtdim,
-               int newfodim);
+void* am4redef(ARRAY4D *array, int newfdim, int newsdim, int newtdim, int newfodim);
 /*----------------------------------------------------------------------*
  |  pss_ds.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/

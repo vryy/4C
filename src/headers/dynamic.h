@@ -16,12 +16,14 @@ typedef struct _STRUCT_DYNAMIC
 {
 char               dyntyp[50];
 int                nstep;    /* this all is in progress... */
+int                step;
 int                damp;     
 int                iter;
 int                maxiter;
 double             toldisp;
 double             dt;
 double             maxtime;
+double             time;
 double             beta;
 double             gamma;
 double             alpha_m;
@@ -39,10 +41,15 @@ double             rnorm;
 
 double             constants[20];
 
+
 double             epot;
 double             eout;
 double             etot;
 double             ekin;
+
+double             dinorm;  /* square of the L2-norm of the residual displacements */
+double             dnorm;   /* square of the L2-norm of the displacements increment */
+
 } STRUCT_DYN_CALC;
 
 

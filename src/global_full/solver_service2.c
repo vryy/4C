@@ -3,12 +3,8 @@
 /*----------------------------------------------------------------------*
  |  create number of distributed vectors - collective call ! m.gee 10/01|
  *----------------------------------------------------------------------*/
-void solserv_create_vec(
-                           DIST_VECTOR         **vector,
-                           int                   numvectors,
-                           int                   numeq_total,
-                           int                   numeq,
-                           char                  typstr[])
+void solserv_create_vec(DIST_VECTOR **vector,int numvectors,int numeq_total,
+                        int numeq,char typstr[])
 {
 int                  i;
 DIST_VECTOR *actvector;
@@ -38,9 +34,7 @@ return;
 /*----------------------------------------------------------------------*
  |   delete number of distributed vectors - collective call ! m.gee 2/02|
  *----------------------------------------------------------------------*/
-int solserv_del_vec(
-                           DIST_VECTOR         **vector,
-                           int                   numvectors)
+void solserv_del_vec(DIST_VECTOR **vector,int numvectors)
 {
 int                  i;
 DIST_VECTOR *actvector;
@@ -86,8 +80,7 @@ return;
 /*----------------------------------------------------------------------*
  |  add contents of the vector vec_from to vec_to            m.gee 10/01|
  *----------------------------------------------------------------------*/
-void solserv_add_vec(DIST_VECTOR *vec_from, 
-                        DIST_VECTOR *vec_to)
+void solserv_add_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to,double factor)
 {
 int                  i,dim;
 double              *dfrom;
@@ -102,7 +95,7 @@ dserror("Cannot copy distributed vectors, not same dimension");
 dim   = vec_from->vec.fdim;
 dfrom = vec_from->vec.a.dv;
 dto   = vec_to->vec.a.dv;
-for (i=0; i<dim; i++) *(dto++) += *(dfrom++);
+for (i=0; i<dim; i++) *(dto++) += (*(dfrom++) * factor);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -114,8 +107,7 @@ return;
 /*----------------------------------------------------------------------*
  |  copy contents of the vector vec_from to vec_to           m.gee 11/01|
  *----------------------------------------------------------------------*/
-void solserv_copy_vec(DIST_VECTOR *vec_from, 
-                        DIST_VECTOR *vec_to)
+void solserv_copy_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to)
 {
 int                  i,dim;
 double              *dfrom;
@@ -144,9 +136,7 @@ return;
 /*----------------------------------------------------------------------*
  |  make euclidian norm of a distributed vector              m.gee 11/01|
  *----------------------------------------------------------------------*/
-void solserv_vecnorm_euclid(INTRA       *actintra,
-                            DIST_VECTOR *dist_vec, 
-                            double      *result)
+void solserv_vecnorm_euclid(INTRA *actintra,DIST_VECTOR *dist_vec,double *result)
 {
 int                  i;
 double              *vec;
@@ -176,15 +166,47 @@ dstrc_exit();
 return;
 } /* end of solserv_vecnorm_euclid */
 
+
+/*----------------------------------------------------------------------*
+ |  find  absolute maximum value in a vector (Linf-Norm)     m.gee 02/02|
+ *----------------------------------------------------------------------*/
+void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,double *result)
+{
+int                  i;
+double              *vec;
+double               sendbuff=0.0;;
+int                  numeq;
+#ifdef DEBUG 
+dstrc_enter("solserv_vecnorm_Linf");
+#endif
+/*----------------------------------------------------------------------*/
+vec      = dist_vec->vec.a.dv;
+numeq    = dist_vec->numeq;
+sendbuff = 0.0;
+for (i=0; i<dist_vec->numeq; i++)
+{
+   if (FABS(vec[i])>sendbuff) sendbuff = FABS(vec[i]);
+}
+#ifdef PARALLEL 
+MPI_Allreduce(&sendbuff,result,1,MPI_DOUBLE,MPI_MAX,actintra->MPI_INTRA_COMM);
+#else
+*result = sendbuff;
+#endif
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_vecnorm_Linf */
+
+
+
 /*----------------------------------------------------------------------*
  |  get a certain entry from a distr. vector to all procs    m.gee 11/01|
  *----------------------------------------------------------------------*/
-void solserv_getele_vec(INTRA       *actintra,
-                        SPARSE_TYP   *sysarray_typ,
-                        SPARSE_ARRAY *sysarray,
-                        DIST_VECTOR *dist_vec,
-                        int          indiz, 
-                        double      *result)
+void solserv_getele_vec(INTRA*actintra,SPARSE_TYP *sysarray_typ,
+                        SPARSE_ARRAY *sysarray,DIST_VECTOR *dist_vec,
+                        int indiz,double *result)
 {
 int                  i;
 int                  imyrank;
@@ -260,10 +282,8 @@ return;
 /*----------------------------------------------------------------------*
  |  make dot product between 2 distr. vectors                m.gee 11/01|
  *----------------------------------------------------------------------*/
-void solserv_dot_vec(INTRA       *actintra,
-                     DIST_VECTOR *dist_vec1,
-                     DIST_VECTOR *dist_vec2,
-                     double      *dot)
+void solserv_dot_vec(INTRA *actintra,DIST_VECTOR *dist_vec1,
+                     DIST_VECTOR *dist_vec2,double *dot)
 {
 int                  i;
 double               localsum;
@@ -302,8 +322,7 @@ return;
 /*----------------------------------------------------------------------*
  |  make product between scalar and distr. vector            m.gee 11/01|
  *----------------------------------------------------------------------*/
-void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,
-                            double       scalar)
+void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,double scalar)
 {
 int                  i;
 int                  dim;
@@ -332,12 +351,9 @@ return;
  |  This is a collective call!                                          |
  |  distributed vector to full redundant vector                         |
  *----------------------------------------------------------------------*/
-void solserv_reddistvec(DIST_VECTOR  *distvec,
-                        SPARSE_ARRAY *sysarray,
-                        SPARSE_TYP   *sysarray_typ,
-                        double       *fullvec,
-                        int           dim,
-                        INTRA        *actintra)
+void solserv_reddistvec(DIST_VECTOR *distvec,SPARSE_ARRAY *sysarray,
+                        SPARSE_TYP *sysarray_typ,double *fullvec,
+                        int dim,INTRA *actintra)
 {
 int             i;
 int             dof,dofperm;
@@ -484,12 +500,9 @@ return;
  |  This is a collective call!                                          |
  |  full redundant vector to distributed vector                         |
  *----------------------------------------------------------------------*/
-int solserv_distribdistvec(DIST_VECTOR  *distvec,
-                           SPARSE_ARRAY *sysarray,
-                           SPARSE_TYP   *sysarray_typ,
-                           double       *fullvec,
-                           int           dim,
-                           INTRA        *actintra)
+void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
+                            SPARSE_TYP *sysarray_typ,double *fullvec,
+                            int dim,INTRA *actintra)
 {
 int             i;
 int             dof,dofperm;
@@ -517,8 +530,6 @@ case msr:
    }
 break;
 
-
-
 case parcsr:
    for (i=0; i<sysarray->parcsr->numeq; i++)
    {
@@ -526,8 +537,6 @@ case parcsr:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
-
-
 
 case ucchb:
    for (i=0; i<sysarray->ucchb->numeq; i++)
@@ -537,8 +546,6 @@ case ucchb:
    }
 break;
 
-
-
 case dense:
    for (i=0; i<sysarray->dense->numeq; i++)
    {
@@ -547,16 +554,12 @@ case dense:
    }
 break;
 
-
-
 case mds:
    for (i=0; i<sysarray->mds->numeq; i++)
    {
       distvec->vec.a.dv[i] = fullvec[i];
    }
 break;
-
-
 
 case rc_ptr:
    for (i=0; i<sysarray->rc_ptr->numeq; i++)
@@ -566,8 +569,6 @@ case rc_ptr:
    }
 break;
 
-
-
 case skymatrix:
    for (i=0; i<sysarray->sky->numeq; i++)
    {
@@ -575,8 +576,6 @@ case skymatrix:
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
-
-
 
 default:
    dserror("Unknown typ of system matrix given");
@@ -598,14 +597,8 @@ return;
  |  Result has to be allreduced and are put to the whole                |
  |  field on each proc                                                  |
  *----------------------------------------------------------------------*/
-void solserv_result_total(
-                          FIELD          *actfield,
-                          INTRA          *actintra,
-                          DIST_VECTOR    *sol,
-                          int             place,
-                          SPARSE_ARRAY   *sysarray,
-                          SPARSE_TYP     *sysarray_typ
-                         )
+void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
+                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
 {
 int      i,j;
 int      max;
@@ -668,14 +661,8 @@ return;
  |  Result have to bee allreduced and are put to the whole              |
  |  field on each proc                                                  |
  *----------------------------------------------------------------------*/
-void solserv_result_incre(
-                          FIELD          *actfield,
-                          INTRA          *actintra,
-                          DIST_VECTOR    *sol,
-                          int             place,
-                          SPARSE_ARRAY   *sysarray,
-                          SPARSE_TYP     *sysarray_typ
-                         )
+void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
+                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
 {
 int      i,j;
 int      max;
@@ -739,14 +726,8 @@ return;
  |  Result have to bee allreduced and are put to the whole              |
  |  field on each proc                                                  |
  *----------------------------------------------------------------------*/
-void solserv_result_resid(
-                          FIELD          *actfield,
-                          INTRA          *actintra,
-                          DIST_VECTOR    *sol,
-                          int             place,
-                          SPARSE_ARRAY   *sysarray,
-                          SPARSE_TYP     *sysarray_typ
-                         )
+void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
+                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
 {
 int      i,j;
 int      max;

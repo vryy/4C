@@ -393,7 +393,7 @@ void hypre_create_precond_boomeramg(HYPRE_Solver *precond, INTRA *actintra,
                                       HYPREVARS *hyprevars);
 #endif
 /*----------------------------------------------------------------------*
- |  solver_lapack.c                                  m.gee 11/01    |
+ |  solver_lapack.c                                      m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void solver_lapack_dense( 
                               struct _SOLVAR         *actsolv,
@@ -404,67 +404,85 @@ void solver_lapack_dense(
                               int                     option
                              );
 /*----------------------------------------------------------------------*
- |  solver_service.c                                  m.gee 11/01    |
+ |  solver_service.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void solserv_create_vec(
-                           DIST_VECTOR         **vector,
-                           int                   numvectors,
-                           int                   numeq_total,
-                           int                   numeq,
-                           char                  typstr[]);
-void solserv_zero_vec(DIST_VECTOR *disvector);
-void solserv_zero_mat(INTRA *actintra, SPARSE_ARRAY *mat,SPARSE_TYP *mattyp);
-void solserv_add_vec(DIST_VECTOR *vec_from, 
-                        DIST_VECTOR *vec_to);
-void solserv_copy_vec(DIST_VECTOR *vec_from, 
-                        DIST_VECTOR *vec_to);
-void solserv_vecnorm_euclid(INTRA       *actintra,
-                            DIST_VECTOR *dist_vec, 
-                            double      *result);
-void solserv_getele_vec(INTRA       *actintra,
-                        SPARSE_TYP   *sysarray_typ,
-                        SPARSE_ARRAY *sysarray,
-                        DIST_VECTOR *dist_vec,
-                        int          indiz, 
-                        double      *result);
-void solserv_dot_vec(INTRA       *actintra,
-                     DIST_VECTOR *dist_vec1,
-                     DIST_VECTOR *dist_vec2,
-                     double      *dot);
-void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,
-                            double       scalar);
-void solserv_reddistvec(DIST_VECTOR  *distvec,
-                          SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP   *sysarray_typ,
-                          double       *fullvec,
-                          int           dim,
-                          INTRA        *actintra);
-void solserv_result_total(
-                          FIELD          *actfield,
-                          INTRA          *actintra,
-                          DIST_VECTOR    *sol,
-                          int             place,
-                          SPARSE_ARRAY   *sysarray,
-                          SPARSE_TYP     *sysarray_typ
-                         );
-void solserv_result_incre(
-                          FIELD          *actfield,
-                          INTRA          *actintra,
-                          DIST_VECTOR    *sol,
-                          int             place,
-                          SPARSE_ARRAY   *sysarray,
-                          SPARSE_TYP     *sysarray_typ
-                         );
-void solserv_result_resid(
-                          FIELD          *actfield,
-                          INTRA          *actintra,
-                          DIST_VECTOR    *sol,
-                          int             place,
-                          SPARSE_ARRAY   *sysarray,
-                          SPARSE_TYP     *sysarray_typ
-                         );
+/* A = A * factor */
+void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,double factor);
+/* A = A + B * factor */
+void solserv_add_mat(INTRA *actintra,SPARSE_TYP *Atyp,SPARSE_ARRAY *A,SPARSE_TYP *Btyp,SPARSE_ARRAY *B,double factor);
+/* extracts numeq and numeq_total from ditributed sparse matrix */
+void solserv_getmatdims(SPARSE_ARRAY mat,SPARSE_TYP mattyp,int *numeq, int *numeq_total);
+/* initializes matrix by zero */
+void solserv_zero_mat(INTRA *actintra,SPARSE_ARRAY *mat,SPARSE_TYP *mattyp);
+/* copies the mask of a sparse matrix, space is allocated */
+void solserv_alloc_cp_sparsemask(INTRA *actintra,SPARSE_TYP *typfrom,SPARSE_ARRAY *matfrom,SPARSE_TYP *typto,SPARSE_ARRAY *matto);
+/*internal routine called by solserv_alloc_cp_sparsemask */
+void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to);
+/*internal routine called by solserv_alloc_cp_sparsemask */
+void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to);
+/*internal routine called by solserv_alloc_cp_sparsemask */
+void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
+/*internal routine called by solserv_alloc_cp_sparsemask */
+void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
+/*internal routine called by solserv_alloc_cp_sparsemask */
+void solserv_cp_densemask(DENSE *from, DENSE *to);
+/* performs matrix vector product */
+void solserv_sparsematvec(INTRA *actintra,DIST_VECTOR *result,SPARSE_ARRAY *mat,SPARSE_TYP *mattyp,DIST_VECTOR *vec);
+/*internal routine called by solserv_sparsematvec */
+void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,double *work1,double *work2);
+/*internal routine called by solserv_sparsematvec */
+void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,double *work1,double *work2);
+/*internal routine called by solserv_sparsematvec */
+void solserv_matvec_dense(INTRA *actintra,DENSE *dense,double *work1,double *work2);
+
 /*----------------------------------------------------------------------*
- |  solver_superlu.c                                  m.gee 11/01    |
+ |  solver_service2.c                                    m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+/* create and allocate a vector of DIST_VECTORS */
+void solserv_create_vec(DIST_VECTOR **vector,int numvectors,int numeq_total,
+                        int numeq,char typstr[]);
+/* delete a vector of DIST_VECTORS */
+void solserv_del_vec(DIST_VECTOR **vector,int numvectors);
+/* init a DIST_VECTOR by zero */
+void solserv_zero_vec(DIST_VECTOR *disvector);
+/* perform a = a *  b * factor */
+void solserv_add_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to,double factor);
+/* copy a to b */
+void solserv_copy_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to);
+/* make euclidian vector norm of a DIST_VECTOR */
+void solserv_vecnorm_euclid(INTRA *actintra,DIST_VECTOR *dist_vec,double *result);
+/* make Linf norm of a vector (absolute maximum value) */
+void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,double *result);
+/* extract redundantly a certain entry a[i] with a given i */
+void solserv_getele_vec(INTRA*actintra,SPARSE_TYP *sysarray_typ,
+                        SPARSE_ARRAY *sysarray,DIST_VECTOR *dist_vec,
+                        int indiz,double *result);
+/* perform scalar = a * b */
+void solserv_dot_vec(INTRA *actintra,DIST_VECTOR *dist_vec1,
+                     DIST_VECTOR *dist_vec2,double *dot);
+/* perform a = a * scalar */
+void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,double scalar);
+/* extract a full-sizez redundant vector from a distributed vector */
+void solserv_reddistvec(DIST_VECTOR *distvec,SPARSE_ARRAY *sysarray,
+                        SPARSE_TYP *sysarray_typ,double *fullvec,
+                        int dim,INTRA *actintra);
+/* make a disrtibuted vector (by a format given through a sparse matrix) from a redundant full vector */
+void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
+                            SPARSE_TYP *sysarray_typ,double *fullvec,
+                            int dim,INTRA *actintra);
+/* returns values a[i] to the structures NODE.sol in a certain row of sol */
+void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
+                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ);
+
+/* returns values a[i] to the structures NODE.sol_increment in a certain row of sol_increment */
+void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
+                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ);
+
+/* returns values a[i] to the structures NODE.sol_residual in a certain row of sol_residual */
+void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
+                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ);
+/*----------------------------------------------------------------------*
+ |  solver_superlu.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void solver_psuperlu_ucchb( 
                       struct _SOLVAR         *actsolv,

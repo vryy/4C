@@ -197,7 +197,7 @@ calrhs(
           action
       );
 /*--------------------------------------------- add the two rhs vectors */
-solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
+solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]),1.0);
 solserv_copy_vec(&(actsolv->rhs[actsysarray]),&(actsolv->rhs[actsysarray+1]));
 /*----------------------------------------------------------------------*/
 /*          The original rhs vector is now on actsolv->rhs[actsysarray] */
@@ -476,8 +476,8 @@ rlpre               = nln_data->rlpre;
 stepsize            = statvar->stepsize;
 itemax              = statvar->maxiter;
 /*-------------------------------- update total displacements on sol[0] */
-solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]));
-/*------- put actsolv->sol[kstep] to the elements (total displacements) */ 
+solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]),1.0);
+/*---------- put actsolv->sol[kstep] to the nodes (total displacements) */ 
 solserv_result_total(
                      actfield,
                      actintra,
@@ -616,7 +616,7 @@ break;
 rlnew += rli;
 nln_data->rlnew = rlnew;
 /*------------------------------------ update of load and displacements */
-solserv_add_vec(&(rsd[0]),&(actsolv->sol[0]));
+solserv_add_vec(&(rsd[0]),&(actsolv->sol[0]),1.0);
 /*----------------------------- put actual total displacements to nodes */
 solserv_result_total(
                      actfield,
@@ -817,9 +817,9 @@ C-----------------------------------------------------------------------
 /*---------------------- make dispi[0] = dispi[0] + rsd[1]*rli + rsd[2] */
 solserv_copy_vec(&(rsd[1]),&(rsd[0]));
 solserv_scalarprod_vec(&(rsd[0]),*rli);
-solserv_add_vec(&(rsd[0]),&(dispi[0]));
-solserv_add_vec(&(rsd[2]),&(rsd[0]));
-solserv_add_vec(&(rsd[2]),&(dispi[0]));
+solserv_add_vec(&(rsd[0]),&(dispi[0]),1.0);
+solserv_add_vec(&(rsd[2]),&(rsd[0]),1.0);
+solserv_add_vec(&(rsd[2]),&(dispi[0]),1.0);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -866,9 +866,9 @@ solserv_getele_vec(actintra,
 /*---------------------- make dispi[0] = dispi[0] + rsd[1]*rli + rsd[2] */
 solserv_copy_vec(&(rsd[1]),&(rsd[0]));
 solserv_scalarprod_vec(&(rsd[0]),*rli);
-solserv_add_vec(&(rsd[0]),&(dispi[0]));
-solserv_add_vec(&(rsd[2]),&(rsd[0]));
-solserv_add_vec(&(rsd[2]),&(dispi[0]));
+solserv_add_vec(&(rsd[0]),&(dispi[0]),1.0);
+solserv_add_vec(&(rsd[2]),&(rsd[0]),1.0);
+solserv_add_vec(&(rsd[2]),&(dispi[0]),1.0);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

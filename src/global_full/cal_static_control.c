@@ -193,7 +193,7 @@ calrhs(
           action
          );
 /*--------------------------------------------- add the two rhs vectors */
-solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
+solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]),1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
 solver_control(
