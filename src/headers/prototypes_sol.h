@@ -9,11 +9,11 @@ void conpre(
             PARTITION     *actpart,      /* the partition of the proc */
             INTRA         *actintra,     /* the intra-communicator of this field */
             CALC_ACTION   *action,       /* calculation flag */
-            int            kstep,        /* the load or time step we are in */
-            int            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            INT            kstep,        /* the load or time step we are in */
+            INT            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
             DIST_VECTOR   *rsd,          /* dist. vector of incremental residual forces used for iteration in conequ */
             DIST_VECTOR   *dispi,        /* dist. vector of incremental displacements */
-            int            cdof,         /* number of the dof to be controlled */
+            INT            cdof,         /* number of the dof to be controlled */
             STANLN        *nln_data,     /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,    /* type of control algorithm */
             CONTAINER     *container     /*!< contains variables defined in container.h */
@@ -25,38 +25,38 @@ void conequ(
             PARTITION     *actpart,       /* the partition of the proc */
             INTRA         *actintra,      /* the intra-communicator of this field */
             CALC_ACTION   *action,        /* calculation flag */
-            int            kstep,         /* the load or time step we are in */
-            int           *itnum,         /* number of corrector steps taken by this routine */
-            int            actsysarray,   /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            INT            kstep,         /* the load or time step we are in */
+            INT           *itnum,         /* number of corrector steps taken by this routine */
+            INT            actsysarray,   /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
             DIST_VECTOR   *rsd,           /* dist. vector of incremental residual forces used for iteration in conequ */
             DIST_VECTOR   *dispi,         /* dist. vector of incremental displacements */
             DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
-            int            cdof,          /* number of dof to be controlled */
+            INT            cdof,          /* number of dof to be controlled */
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,     /* type of control algorithm */
             CONTAINER     *container      /*!< contains variables defined in container.h */
           );
           
-void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof, double csp);
-void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
-                     double renorm, double energy, double dnorm, double rrnorm);
+void conequ_printhead(INT kstep, NR_CONTROLTYP  controltyp, INT cdof, DOUBLE csp);
+void conequ_printiter(INT itnum, DOUBLE disval, DOUBLE rlnew, DOUBLE dinorm,
+                     DOUBLE renorm, DOUBLE energy, DOUBLE dnorm, DOUBLE rrnorm);
 void increment_controlarc(INTRA         *actintra,
                           SOLVAR        *actsolv,
-                          int            actsysarray,
+                          INT            actsysarray,
                           DIST_VECTOR   *rsd,
                           DIST_VECTOR   *dispi,
                           DIST_VECTOR   *disp,
-                          double         rlnew,
-                          double         rlold, 
-                          double         stepsize,  
-                          double        *rli);
+                          DOUBLE         rlnew,
+                          DOUBLE         rlold, 
+                          DOUBLE         stepsize,  
+                          DOUBLE        *rli);
 void increment_controldisp(INTRA *actintra,
                           SOLVAR        *actsolv,
-                          int            actsysarray,
-                          int            cdof,
+                          INT            actsysarray,
+                          INT            cdof,
                           DIST_VECTOR   *rsd,
                           DIST_VECTOR   *dispi,   
-                          double        *rli);
+                          DOUBLE        *rli);
 /*----------------------------------------------------------------------*
  | cal_nlndyn_struct.c                                   m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -69,19 +69,19 @@ void dyn_nln_stru_expl(void);
  | dyn_service.c                                         m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void dyn_eigen(FIELD *actfield, PARTITION *actpart, SOLVAR *actsolv,
-               INTRA *actintra, int stiff, int mass);
+               INTRA *actintra, INT stiff, INT mass);
 void kefnln_struct(STRUCT_DYN_CALC *dynvar, 
                   STRUCT_DYNAMIC  *sdyn,
                   FIELD           *actfield,
                   SOLVAR          *actsolv,
                   INTRA           *actintra,
                   DIST_VECTOR     *work,
-                  int              stiff_array,
-                  int              mass_array,
-                  int              damp_array);
+                  INT              stiff_array,
+                  INT              mass_array,
+                  INT              damp_array);
 void dyn_keff_expl(INTRA *actintra,
                    SPARSE_TYP *sysarray_typ, SPARSE_ARRAY *sysarray,
-                   int stiff_array, int mass_array, int damp_array,
+                   INT stiff_array, INT mass_array, INT damp_array,
                    STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn);
 void pefnln_struct(STRUCT_DYN_CALC *dynvar, 
                   STRUCT_DYNAMIC  *sdyn,
@@ -92,8 +92,8 @@ void pefnln_struct(STRUCT_DYN_CALC *dynvar,
                   DIST_VECTOR     *vel,
                   DIST_VECTOR     *acc,
                   DIST_VECTOR     *work,
-                  int              mass_array,
-                  int              damp_array);
+                  INT              mass_array,
+                  INT              damp_array);
 void dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
            DIST_VECTOR *dispi, /* converged incremental displacements */
            DIST_VECTOR *fie1,  /* internal forces at time t-dt */
@@ -104,11 +104,11 @@ void dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLV
 void dyne(STRUCT_DYN_CALC *dynvar,
          INTRA           *actintra,
          SOLVAR          *actsolv,
-         int              mass_array,
+         INT              mass_array,
          DIST_VECTOR     *vel,
          DIST_VECTOR     *work);
-void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt);
-void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt);
+void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, DOUBLE dt);
+void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, DOUBLE dt);
 void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar, 
                       STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
                       DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
@@ -118,12 +118,12 @@ void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
                       DIST_VECTOR *work2);
 void dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn);
 void dyn_nlnstru_outhead_expl(void);
-void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter, double dt);
+void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INT numiter, DOUBLE dt);
 void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global, 
                          ARRAY *emass_global, CONTAINER *container);
-void dyn_epot(FIELD *actfield, int disnum, INTRA *actintra, STRUCT_DYN_CALC *dynvar, double *deltaepot);
+void dyn_epot(FIELD *actfield, INT disnum, INTRA *actintra, STRUCT_DYN_CALC *dynvar, DOUBLE *deltaepot);
 void dyn_ekin(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, INTRA *actintra, CALC_ACTION *action,
-             CONTAINER *container, int stiff_array, int mass_array);
+             CONTAINER *container, INT stiff_array, INT mass_array);
 void dyn_eout(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
               DIST_VECTOR *dispi, /* converged incremental displacements */
               DIST_VECTOR *rhs1,  /* load at time t                      */ 
@@ -138,8 +138,8 @@ void calelm(FIELD        *actfield,     /* active field */
             SOLVAR       *actsolv,      /* active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* my intra-communicator */
-            int           sysarray1,    /* number of first sparse system matrix */
-            int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+            INT           sysarray1,    /* number of first sparse system matrix */
+            INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
             CONTAINER    *container,    /*!< contains variables defined in container.h */
             CALC_ACTION  *action);       /* calculation option passed to element routines */            
             
@@ -160,11 +160,11 @@ void calrhs(FIELD        *actfield,     /* the active field */
             SOLVAR       *actsolv,      /* the active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* the field's intra-communicator */
-            int           actsysarray,  /* the active sparse array */
+            INT           actsysarray,  /* the active sparse array */
             DIST_VECTOR  *rhs1,         /* 2 dist. vectors for rhs */
             CALC_ACTION  *action,       /* action to be passed to element routines */
             CONTAINER    *container);    /*!< contains variables defined in container.h */
-void rhs_point_neum(double *rhs, int dimrhs, PARTITION *actpart);     
+void rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart);     
 /*----------------------------------------------------------------------*
  | global_mask_dense.c                                   m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -177,7 +177,7 @@ void  dense_numeq(FIELD         *actfield,
                     PARTITION    *actpart, 
                     SOLVAR       *actsolv,
                     INTRA        *actintra,
-                    int          *numeq);
+                    INT          *numeq);
 void  dense_update(FIELD         *actfield, 
                      PARTITION     *actpart, 
                      SOLVAR        *actsolv,
@@ -203,12 +203,12 @@ void  parcsr_nnz_topology(FIELD         *actfield,
                             SOLVAR       *actsolv,
                             INTRA        *actintra,
                             H_PARCSR     *parcsr,
-                            int         **dof_connect);
+                            INT         **dof_connect);
 void parcsr_make_bindx(FIELD         *actfield, 
                           PARTITION     *actpart, 
                           SOLVAR        *actsolv,
                           H_PARCSR      *parcsr,
-                          int          **dof_connect);
+                          INT          **dof_connect);
 /*----------------------------------------------------------------------*
  | global_mask_mds.c                                        al 02/03    |
  *----------------------------------------------------------------------*/
@@ -225,12 +225,12 @@ void mask_msr(FIELD         *actfield,
               SOLVAR        *actsolv,
               INTRA         *actintra, 
               AZ_ARRAY_MSR  *msr,
-	      int            actdis);
+	      INT            actdis);
 void msr_numeq(FIELD         *actfield, 
                   PARTITION    *actpart, 
                   SOLVAR       *actsolv,
                   INTRA        *actintra,
-                  int          *numeq);
+                  INT          *numeq);
 void msr_update(FIELD         *actfield, 
                    PARTITION     *actpart, 
                    SOLVAR        *actsolv,
@@ -241,14 +241,14 @@ void msr_nnz_topology(FIELD         *actfield,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          AZ_ARRAY_MSR *msr,
-                         int         **dof_connect);
-void dof_in_coupledofs(int dof, PARTITION *actpart, int *iscoupled);
-void dof_find_centernode(int dof, PARTITION *actpart, NODE **centernode);
+                         INT         **dof_connect);
+void dof_in_coupledofs(INT dof, PARTITION *actpart, INT *iscoupled);
+void dof_find_centernode(INT dof, PARTITION *actpart, NODE **centernode);
 void msr_make_bindx(FIELD         *actfield, 
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        AZ_ARRAY_MSR  *msr,
-                       int          **dof_connect);
+                       INT          **dof_connect);
 /*----------------------------------------------------------------------*
  |  global_mask_ucchb.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -261,7 +261,7 @@ void ucchb_numeq(FIELD      *actfield,
                    PARTITION    *actpart, 
                    SOLVAR       *actsolv,
                    INTRA        *actintra,
-                   int          *numeq);
+                   INT          *numeq);
 void  ucchb_update(FIELD     *actfield, 
                      PARTITION *actpart, 
                      SOLVAR    *actsolv,
@@ -272,13 +272,13 @@ void  ucchb_nnz_topology(FIELD      *actfield,
                            SOLVAR     *actsolv,
                            INTRA      *actintra,
                            UCCHB      *ucchb,
-                           int       **dof_connect);
+                           INT       **dof_connect);
 void  ucchb_make_a(FIELD         *actfield, 
                      PARTITION     *actpart, 
                      SOLVAR        *actsolv,
                      INTRA         *actintra,
                      UCCHB         *ucchb,
-                     int          **dof_connect);
+                     INT          **dof_connect);
 /*----------------------------------------------------------------------*
  |  global_mask_rcptr.c                                  m.gee 01/02    |
  *----------------------------------------------------------------------*/
@@ -292,7 +292,7 @@ void rc_ptr_red_dof_connect(FIELD        *actfield,
                             SOLVAR       *actsolv,
                             INTRA        *actintra,
                             RC_PTR       *rc_ptr,
-                            int         **dof_connect);
+                            INT         **dof_connect);
 void  rc_ptr_update(FIELD         *actfield, 
                    PARTITION     *actpart, 
                    SOLVAR        *actsolv,
@@ -303,15 +303,15 @@ void  rc_ptr_nnz_topology(FIELD         *actfield,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          RC_PTR       *rc_ptr,
-                         int         **dof_connect);
+                         INT         **dof_connect);
 void  rc_ptr_make_bindx(FIELD         *actfield, 
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        RC_PTR        *rc_ptr,
-                       int          **dof_connect,
-                       int           *bindx);
+                       INT          **dof_connect,
+                       INT           *bindx);
 void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr,
-                           int           *bindx);
+                           INT           *bindx);
 /*----------------------------------------------------------------------*
  |  global_mask_ccf.c                              s.offermanns 04/02    |
  *----------------------------------------------------------------------*/
@@ -325,7 +325,7 @@ void  ccf_red_dof_connect(FIELD        *actfield,
                           SOLVAR       *actsolv,
                           INTRA        *actintra,
                           CCF          *ccf,
-                          int         **dof_connect,
+                          INT         **dof_connect,
                           ARRAY        *red_dof_connect);
 void  ccf_update(FIELD         *actfield, 
                  PARTITION     *actpart, 
@@ -337,15 +337,15 @@ void  ccf_nnz_topology(FIELD        *actfield,
                        SOLVAR       *actsolv,
                        INTRA        *actintra,
                        CCF          *ccf,
-                       int         **dof_connect);
+                       INT         **dof_connect);
 void  ccf_make_bindx(FIELD         *actfield, 
                      PARTITION     *actpart, 
                      SOLVAR        *actsolv,
                      CCF           *ccf,
-                     int           *bindx,
+                     INT           *bindx,
                      ARRAY         *red_dof_connect);
 void  ccf_make_sparsity(CCF        *ccf,
-                        int        *bindx);
+                        INT        *bindx);
 /*----------------------------------------------------------------------*
  |  global_mask_skyline.c                                m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -364,13 +364,13 @@ void  skyline_nnz_topology(FIELD      *actfield,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          SKYMATRIX    *sky,
-                         int         **dof_connect);
+                         INT         **dof_connect);
 void   skyline_make_red_dof_connect(FIELD         *actfield, 
                                    PARTITION     *actpart, 
                                    SOLVAR        *actsolv,
                                    INTRA         *actintra,
                                    SKYMATRIX     *sky,
-                                   int          **dof_connect,
+                                   INT          **dof_connect,
                                    ARRAY         *red_dof_connect);
 void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect);
 /*----------------------------------------------------------------------*
@@ -382,19 +382,19 @@ void mask_spooles(FIELD         *actfield,
                   INTRA         *actintra, 
                   SPOOLMAT      *spo);
 void     spo_make_sparsity(SPOOLMAT        *spo,
-                           int           *bindx);
+                           INT           *bindx);
 void    spo_make_bindx(FIELD         *actfield, 
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        SPOOLMAT      *spo,
-                       int          **dof_connect,
-                       int           *bindx);
+                       INT          **dof_connect,
+                       INT           *bindx);
 void  spo_nnz_topology(FIELD         *actfield, 
                        PARTITION    *actpart, 
                        SOLVAR       *actsolv,
                        INTRA        *actintra,
                        SPOOLMAT     *spo,
-                       int         **dof_connect);
+                       INT         **dof_connect);
 void spo_update(FIELD         *actfield, 
                 PARTITION     *actpart, 
                 SOLVAR        *actsolv,
@@ -404,9 +404,9 @@ void spo_update(FIELD         *actfield,
  |  solver_add_data.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void assemble(
-                 int                    sysarray1, /* number of first sparse system matrix */
+                 INT                    sysarray1, /* number of first sparse system matrix */
                  struct _ARRAY         *elearray1, /* pointer to first dense element matrix */
-                 int                    sysarray2, /* number of first sparse system matrix or -1 if not given */
+                 INT                    sysarray2, /* number of first sparse system matrix or -1 if not given */
                  struct _ARRAY         *elearray2, /* pointer to second dense element matrix or NULL is not present*/
                  struct _PARTITION     *actpart,   /* my partition of theactive field */
                  struct _SOLVAR        *actsolv,   /* the active SOLVAR */
@@ -419,15 +419,15 @@ void init_assembly(
                        struct _SOLVAR         *actsolv,
                        struct _INTRA          *actintra,
                        struct _FIELD          *actfield,
-                       int                     actsysarray,
-		       int                     actndis
+                       INT                     actsysarray,
+		       INT                     actndis
                      );
 void assemble_vec(INTRA        *actintra,
                     SPARSE_TYP   *sysarraytyp,
                     SPARSE_ARRAY *sysarray,
                     DIST_VECTOR  *rhs,
-                    double       *drhs,
-                    double        factor);
+                    DOUBLE       *drhs,
+                    DOUBLE        factor);
 void assemble_intforce(ELEMENT *actele, ARRAY *elevec_a, CONTAINER *container, INTRA *actintra);
 void assemble_dirich(ELEMENT *actele,ARRAY *estif_global,CONTAINER *container);
 /*----------------------------------------------------------------------*
@@ -455,10 +455,10 @@ void  add_msr(struct _PARTITION     *actpart,
                 struct _ELEMENT       *actele,
                 struct _AZ_ARRAY_MSR  *msr1,
                 struct _AZ_ARRAY_MSR  *msr2);
-void add_msr_checkcouple(int ii,int **cdofs,int ncdofs,int *iscouple,
-                           int *isowner, int nprocs);
-void add_msr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                    double **dsend,double **estif, int numsend);
+void add_msr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,
+                           INT *isowner, INT nprocs);
+void add_msr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
+                    DOUBLE **dsend,DOUBLE **estif, INT numsend);
 void exchange_coup_msr(
                          PARTITION     *actpart,
                          SOLVAR        *actsolv,
@@ -472,9 +472,9 @@ void  add_parcsr(struct _PARTITION     *actpart,
                    struct _INTRA         *actintra,
                    struct _ELEMENT       *actele,
                    struct _H_PARCSR      *parcsr);
-void add_parcsr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                    double **dsend,double **estif, int numsend);
-void add_parcsr_checkcouple(int ii,int **cdofs,int ncdofs,int *iscouple,int *isowner, int nprocs);
+void add_parcsr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
+                    DOUBLE **dsend,DOUBLE **estif, INT numsend);
+void add_parcsr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,INT *isowner, INT nprocs);
 void exchange_coup_parcsr(
                              PARTITION     *actpart,
                              SOLVAR        *actsolv,
@@ -520,8 +520,8 @@ void  add_rc_ptr(struct _PARTITION     *actpart,
                 struct _ELEMENT       *actele,
                 struct _RC_PTR        *rc_ptr1,
                 struct _RC_PTR        *rc_ptr2);
-void add_rcptr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                    double **dsend,double **estif, int numsend);
+void add_rcptr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
+                    DOUBLE **dsend,DOUBLE **estif, INT numsend);
 void exchange_coup_rc_ptr(
                          PARTITION     *actpart,
                          SOLVAR        *actsolv,
@@ -551,19 +551,19 @@ void  add_spo(struct _PARTITION     *actpart,
               struct _ELEMENT       *actele,
               struct _SPOOLMAT      *spo1,
               struct _SPOOLMAT      *spo2);
-void add_spo_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                      double **dsend,double **estif, int numsend);
+void add_spo_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
+                      DOUBLE **dsend,DOUBLE **estif, INT numsend);
 void exchange_coup_spo(
                          PARTITION     *actpart,
                          SOLVAR        *actsolv,
                          INTRA         *actintra,
                          SPOOLMAT      *spo
                         );
-void add_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
-void set_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
+void add_val_spo(INT ii,INT index, INT jj, struct _SPOOLMAT *spo, DOUBLE val, INTRA *actintra);
+void set_val_spo(INT ii,INT index, INT jj, struct _SPOOLMAT *spo, DOUBLE val, INTRA *actintra);
 void close_spooles_matrix(struct _SPOOLMAT *spo, INTRA *actintra);
 void add_spooles_matrix(struct _SPOOLMAT *to, struct _SPOOLMAT *from,
-                       double factor, int init, INTRA *actintra);
+                       DOUBLE factor, INT init, INTRA *actintra);
 /*----------------------------------------------------------------------*
  |  solver_colsol.c                                       m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -572,7 +572,7 @@ void solver_colsol(struct _SOLVAR         *actsolv,
                    struct _SKYMATRIX      *sky,
                    struct _DIST_VECTOR    *sol,
                    struct _DIST_VECTOR    *rhs,
-                   int                     option);
+                   INT                     option);
 /*----------------------------------------------------------------------*
  |  solver_hypre.c                                       m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -581,7 +581,7 @@ void  solver_hypre_parcsr(struct _SOLVAR         *actsolv,
                           struct _H_PARCSR       *parcsr,
                           struct _DIST_VECTOR    *sol,
                           struct _DIST_VECTOR    *rhs,
-                          int                     option);
+                          INT                     option);
 /*----------------------------------------------------------------------*
  |  solver_mumps.c                                       m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -590,7 +590,7 @@ void solver_mumps(struct _SOLVAR         *actsolv,
                   struct _RC_PTR         *rc_ptr,
                   struct _DIST_VECTOR    *sol,
                   struct _DIST_VECTOR    *rhs,
-                  int                     option);
+                  INT                     option);
 /*----------------------------------------------------------------------*
  |  solver_umfpack.c                              s.offermanns 02/02    |
  *----------------------------------------------------------------------*/
@@ -599,7 +599,7 @@ void solver_umfpack(struct _SOLVAR         *actsolv,
                     struct _CCF            *ccf,
                     struct _DIST_VECTOR    *sol,
                     struct _DIST_VECTOR    *rhs,
-                    int                     option);
+                    INT                     option);
 /*----------------------------------------------------------------------*
  |  solver_aztec.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -609,7 +609,7 @@ void solver_az_msr(
                       struct _AZ_ARRAY_MSR   *msr_array,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
-                      int                     option
+                      INT                     option
                      );
 /*----------------------------------------------------------------------*
  |  solver_spooles.c                                     m.gee 05/02    |
@@ -620,7 +620,7 @@ void solver_spooles(
                       struct _SPOOLMAT       *spo,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
-                      int                     option
+                      INT                     option
                      );
 /*----------------------------------------------------------------------*
  |  solver_control.c                                     m.gee 11/01    |
@@ -632,7 +632,7 @@ void solver_control(
                        union  _SPARSE_ARRAY   *sysarray,
                        struct _DIST_VECTOR    *sol,
                        struct _DIST_VECTOR    *rhs,
-                       int                     option
+                       INT                     option
                       );
 /*----------------------------------------------------------------------*
  |  solver_hypre.c                                       m.gee 11/01    |
@@ -644,15 +644,15 @@ void  solver_hypre_parcsr(
                             struct _H_PARCSR       *parcsr,
                             struct _DIST_VECTOR    *sol,
                             struct _DIST_VECTOR    *rhs,
-                            int                     option
+                            INT                     option
                            );
-void hypre_vector_create(int              myrank,
+void hypre_vector_create(INT              myrank,
                            H_PARCSR        *parcsr,
                            INTRA           *actintra,
                            HYPRE_IJVector  *ijvector);
 void hypre_vector_assemble(HYPRE_IJVector  *ijvector,
                              HYPRE_ParVector *parcsr_vector);
-void hypre_matrix_create(int              myrank,
+void hypre_matrix_create(INT              myrank,
                            H_PARCSR        *parcsr,
                            INTRA           *actintra,
                            HYPRE_IJMatrix  *ijmatrix);
@@ -677,7 +677,7 @@ void solver_lapack_dense(
                               struct _DENSE          *dense,
                               struct _DIST_VECTOR    *sol,
                               struct _DIST_VECTOR    *rhs,
-                              int                     option
+                              INT                     option
                              );
 /*----------------------------------------------------------------------*
  |  solver_service.c                                     m.gee 11/01    |
@@ -686,9 +686,9 @@ void solver_lapack_dense(
  |  make A = A * factor                                      m.gee 02/02|
  | SPARSE_TYP *Atyp (i)        type of sparse matrix                    |
  | SPARSE_ARRAY *A  (i/o)      sparse matrix                            |
- | double factor    (i)        factor                                   |
+ | DOUBLE factor    (i)        factor                                   |
  *----------------------------------------------------------------------*/
-void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,double factor);
+void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,DOUBLE factor);
 /*----------------------------------------------------------------------*
  |  make A = A + B * factor                                  m.gee 02/02|
  | INTRA *actintra  (i)     intra-communicator the matrices live on     |
@@ -696,21 +696,21 @@ void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,double factor);
  | SPARSE_ARRAY *A  (i/o)   sparse matrix                               |
  | SPARSE_TYP *Btyp (i)     type of sparse matrix                       |
  | SPARSE_ARRAY *B  (i)     sparse matrix                               |
- | double factor    (i)     factor                                      |
+ | DOUBLE factor    (i)     factor                                      |
  *----------------------------------------------------------------------*/
 void solserv_add_mat(INTRA *actintra,
                      SPARSE_TYP *Atyp,SPARSE_ARRAY *A,
                      SPARSE_TYP *Btyp, SPARSE_ARRAY *B,
-                     double factor);
+                     DOUBLE factor);
 /*----------------------------------------------------------------------*
  |  get dimensions of sparse matrix                          m.gee 02/02|
  | SPARSE_ARRAY mat  (i)     sparse matrix                              |
  | SPARSE_TYP mattyp (i)     type of sparse matrix                      |
- | int *numeq        (o)     proc-local dimension of sparse matrix      |
- | int *numeq_total  (o)     global dimension of sparse matrix          |
+ | INT *numeq        (o)     proc-local dimension of sparse matrix      |
+ | INT *numeq_total  (o)     global dimension of sparse matrix          |
  *----------------------------------------------------------------------*/
 void solserv_getmatdims(SPARSE_ARRAY mat,SPARSE_TYP mattyp,
-                        int *numeq, int *numeq_total);
+                        INT *numeq, INT *numeq_total);
 /*----------------------------------------------------------------------*
  |  init a distributed matrix to zero - collective call !    m.gee 10/01|
  | INTRA *actintra  (i)     intra-communicator the matrices live on     |
@@ -750,23 +750,23 @@ void solserv_sparsematvec(INTRA *actintra,DIST_VECTOR *result,
  |  create number of distributed vectors - collective call ! m.gee 10/01|
  |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |
  |                             DIST_VECTORs will be allocated to        |
- |  int numvectors       (i)   number of DIST_VECTORs to allocate       |
- |  int numeq_total      (i)   proc-global dimension of the DIST_VECTORs|
- |  int numeq            (i)   proc_local  dimension of the DIST_VECTORs|
- |  char typstr[]        (i)   ="DV" for double-DIST_VECTORs            |
+ |  INT numvectors       (i)   number of DIST_VECTORs to allocate       |
+ |  INT numeq_total      (i)   proc-global dimension of the DIST_VECTORs|
+ |  INT numeq            (i)   proc_local  dimension of the DIST_VECTORs|
+ |  char typstr[]        (i)   ="DV" for DOUBLE-DIST_VECTORs            |
  |  the values in the DIST_VECTORs is NOT initialized                   |
  *----------------------------------------------------------------------*/
-void solserv_create_vec(DIST_VECTOR **vector,int numvectors,
-                        int numeq_total,
-                        int numeq,        char typstr[]);
+void solserv_create_vec(DIST_VECTOR **vector,INT numvectors,
+                        INT numeq_total,
+                        INT numeq,        char typstr[]);
 /*----------------------------------------------------------------------*
  |   delete number of distributed vectors - collective call ! m.gee 2/02|
  |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |
  |                             DIST_VECTORs is allocated to             |
- |  int numvectors       (i)   number of DIST_VECTORs to free           |
+ |  INT numvectors       (i)   number of DIST_VECTORs to free           |
  |  the routine frees all DIST_VECTORs in vector and sets vector=NULL   |
  *----------------------------------------------------------------------*/
-void solserv_del_vec(DIST_VECTOR **vector,int numvectors);
+void solserv_del_vec(DIST_VECTOR **vector,INT numvectors);
 /*----------------------------------------------------------------------*
  |  init a distributed vector to zero - collective call !    m.gee 10/01|
  |  DIST_VECTOR *disvector (i/o) adress of a DIST_VECTOR to be set to 0.0|
@@ -777,10 +777,10 @@ void solserv_zero_vec(DIST_VECTOR *disvector);
  |  vec_to->vec.a.dv[i] += vec_from->vec.a.dv[i]*factor                 |
  |  DIST_VECTOR *vec_from (i)   vector to be added to another vector    |
  |  DIST_VECTOR *vec_to   (i/o) vector to be added to                   |
- |  double factor         (i)   scaling factor                          |
+ |  DOUBLE factor         (i)   scaling factor                          |
  *----------------------------------------------------------------------*/
 void solserv_add_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to,
-                     double factor);
+                     DOUBLE factor);
 /*----------------------------------------------------------------------*
  |  copy contents of the vector vec_from to vec_to           m.gee 11/01|
  |  vec_to->vec.a.dv[i] = vec_from->vec.a.dv[i]                         |
@@ -794,19 +794,19 @@ void solserv_copy_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to);
  |  result = sqrt( sumof(vec[i]*vec[i]) )                               |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
- |  double *result        (o) norm of the vector                        |
+ |  DOUBLE *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
 void solserv_vecnorm_euclid(INTRA *actintra,DIST_VECTOR *dist_vec,
-                            double *result);
+                            DOUBLE *result);
 /*----------------------------------------------------------------------*
  |  find  absolute maximum value in a vector (Linf-Norm)     m.gee 02/02|
  |  *result = MAX( ABS(vec[i]) )                                        |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
- |  double *result        (o) norm of the vector                        |
+ |  DOUBLE *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
 void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,
-                          double *result);
+                          DOUBLE *result);
 /*----------------------------------------------------------------------*
  |  get a certain entry from a distr. vector to all procs    m.gee 11/01|
  |  returns the value of dof indiz in the vector dist_vec on all procs  |
@@ -815,31 +815,31 @@ void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,
  |  SPARSE_ARRAY *sysarray   (i) sparse matrix the vector matches in    |
  |                               distribution                           | 
  |  DIST_VECTOR  *dist_vec   (i) vector the value shall be taken from   |
- |  int           indiz      (i) field-local (unsupported) dof number   |
- |  double       *result     (o) value in vector at the given dof       |
+ |  INT           indiz      (i) field-local (unsupported) dof number   |
+ |  DOUBLE       *result     (o) value in vector at the given dof       |
  |                               returned redundant on all procs        |
  *----------------------------------------------------------------------*/
 void solserv_getele_vec(INTRA*actintra,SPARSE_TYP *sysarray_typ,
                         SPARSE_ARRAY *sysarray,DIST_VECTOR *dist_vec,
-                        int indiz,double *result);
+                        INT indiz,DOUBLE *result);
 /*----------------------------------------------------------------------*
  |  make dot product between 2 distr. vectors                m.gee 11/01|
  |  *dot = sumover_i( vec1[i]*vec2[i] )                                 |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTORs live on     |
  |  DIST_VECTOR *dist_vec1 (i) first vector to be multiplied            |
  |  DIST_VECTOR *dist_vec2 (i) scnd  vector to be multiplied            |
- |  double      *dot       (o) result of vector-vector multiplication   |
+ |  DOUBLE      *dot       (o) result of vector-vector multiplication   |
  |                             returned redundant on all procs          |
  *----------------------------------------------------------------------*/
 void solserv_dot_vec(INTRA *actintra,DIST_VECTOR *dist_vec1,
-                     DIST_VECTOR *dist_vec2,double *dot);
+                     DIST_VECTOR *dist_vec2,DOUBLE *dot);
 /*----------------------------------------------------------------------*
  |  make product between scalar and distr. vector            m.gee 11/01|
  |  vec[i] = vec[i] * scalar                                            |
  |  DIST_VECTOR *dist_vec (i/o) vector to be multiplied by scalar       |
- |  double       scalar   (o)   scalar value                            |
+ |  DOUBLE       scalar   (o)   scalar value                            |
  *----------------------------------------------------------------------*/
-void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,double scalar);
+void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,DOUBLE scalar);
 /*----------------------------------------------------------------------*
  |  Allreduce a distributed vector in an INTRACOMM           m.gee 10/01|
  |  This is a collective call!                                          |
@@ -858,14 +858,14 @@ void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,double scalar);
  |  SPARSE_ARRAY *sysarray (i) sparse matrix matching the distribution  |
  |                             of distvec                               |
  |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
- |  double *fullvec (o) vector of lenght numeq_total will be holding    |
+ |  DOUBLE *fullvec (o) vector of lenght numeq_total will be holding    |
  |                      the values from distvec in correct dof-ordering:|
  |                      fullvec[dof] = value of a certain dof           |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  *----------------------------------------------------------------------*/
 void solserv_reddistvec(DIST_VECTOR *distvec,SPARSE_ARRAY *sysarray,
-                        SPARSE_TYP *sysarray_typ,double *fullvec,
-                        int dim,INTRA *actintra);
+                        SPARSE_TYP *sysarray_typ,DOUBLE *fullvec,
+                        INT dim,INTRA *actintra);
 /*----------------------------------------------------------------------*
  |  distribute a full redundant vector                       m.gee 02/02|
  |  This is a collective call!                                          |
@@ -881,14 +881,14 @@ void solserv_reddistvec(DIST_VECTOR *distvec,SPARSE_ARRAY *sysarray,
  |  SPARSE_ARRAY *sysarray (i) sparse matrix matching the distribution  |
  |                             of distvec                               |
  |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
- |  double *fullvec (o) vector of lenght numeq_total  holding           |
+ |  DOUBLE *fullvec (o) vector of lenght numeq_total  holding           |
  |                      the values  correct dof-ordering:               |
  |                      fullvec[dof] = value of a certain dof           |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  *----------------------------------------------------------------------*/
 void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
-                            SPARSE_TYP *sysarray_typ,double *fullvec,
-                            int dim,INTRA *actintra);
+                            SPARSE_TYP *sysarray_typ,DOUBLE *fullvec,
+                            INT dim,INTRA *actintra);
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 10/01|
  |  certain place  in ARRAY sol                                         |
@@ -897,7 +897,7 @@ void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
  |  FIELD *actfield (i) the active field                                |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  |  DIST_VECTOR *sol (i) vector of values to be put to the nodes        |
- |  int place        (i) place in the ARRAY node->sol where to put the  |
+ |  INT place        (i) place in the ARRAY node->sol where to put the  |
  |                       values. Every structure NODE has an ARRAY sol  |
  |                       of type sol.a.da[place][0..numdf-1]            |
  |                       if place >= actual dimensions of the ARRAY sol |
@@ -908,7 +908,7 @@ void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
  |                                                                      |
  *----------------------------------------------------------------------*/
 void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,
+                          INT place,SPARSE_ARRAY *sysarray,
                           SPARSE_TYP *sysarray_typ);
 
 /*----------------------------------------------------------------------*
@@ -919,7 +919,7 @@ void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,
+                          INT place,SPARSE_ARRAY *sysarray,
                           SPARSE_TYP *sysarray_typ);
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 11/01|
@@ -929,7 +929,7 @@ void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ);
+                          INT place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ);
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       genk 01/03 |
  |  certain place in ARRAY sol_mf                                       |
@@ -938,29 +938,29 @@ void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_mf(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,
+                          INT place,SPARSE_ARRAY *sysarray,
                           SPARSE_TYP *sysarray_typ);
 /*----------------------------------------------------------------------*
  |  solver_service3.c                                    m.gee 04/03    |
  *----------------------------------------------------------------------*/
-void solserv_sol_zero(FIELD *actfield, int disnum, int arraynum, int place);
-void solserv_sol_copy(FIELD *actfield, int disnum, int arrayfrom, int arrayto, 
-                      int from, int to);
-void solserv_sol_add(FIELD *actfield, int disnum, int arrayfrom, int arrayto, 
-                      int from, int to, double fac);
-void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, double *localvec, int arraynum,
-                              int place);
-void solserv_putdirich_to_dof(FIELD *actfield, int disnum, int arraynum, double scale, 
-                              int place);
-void solserv_adddirich(FIELD *actfield, int disnum, int arraynum,
-                              int from1,int from2,int to,
-                              double facfrom1, double facfrom2);
-void solserv_assdirich_fac(FIELD *actfield, int disnum, int arraynum,
-                           int from1,int from2,int to, 
-                           double facfrom1, double facfrom2);
-void solserv_cpdirich(FIELD *actfield, int disnum, int arraynum,
-                      int from,int to);
-void solserv_zerodirich(FIELD *actfield, int disnum, int arraynum, int place);
+void solserv_sol_zero(FIELD *actfield, INT disnum, INT arraynum, INT place);
+void solserv_sol_copy(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto, 
+                      INT from, INT to);
+void solserv_sol_add(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto, 
+                      INT from, INT to, DOUBLE fac);
+void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, DOUBLE *localvec, INT arraynum,
+                              INT place);
+void solserv_putdirich_to_dof(FIELD *actfield, INT disnum, INT arraynum, DOUBLE scale, 
+                              INT place);
+void solserv_adddirich(FIELD *actfield, INT disnum, INT arraynum,
+                              INT from1,INT from2,INT to,
+                              DOUBLE facfrom1, DOUBLE facfrom2);
+void solserv_assdirich_fac(FIELD *actfield, INT disnum, INT arraynum,
+                           INT from1,INT from2,INT to, 
+                           DOUBLE facfrom1, DOUBLE facfrom2);
+void solserv_cpdirich(FIELD *actfield, INT disnum, INT arraynum,
+                      INT from,INT to);
+void solserv_zerodirich(FIELD *actfield, INT disnum, INT arraynum, INT place);
 /*----------------------------------------------------------------------*
  |  solver_superlu.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -970,7 +970,7 @@ void solver_psuperlu_ucchb(
                       struct _UCCHB          *ucchb,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
-                      int                     option
+                      INT                     option
                      );
 /*----------------------------------------------------------------------*
  |  input_sol.c                                          m.gee 11/01    |
@@ -986,30 +986,30 @@ void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
                                 PARTITION       *actpart,
                                 INTRA           *actintra,
                                 CALC_ACTION     *action,
-                                int nrhs,  DIST_VECTOR *rhs,
-                                int nsol,  DIST_VECTOR *sol,
-                                int ndis,  DIST_VECTOR *dispi,
-                                int nvel,  DIST_VECTOR *vel,
-                                int nacc,  DIST_VECTOR *acc,
-                                int nfie,  DIST_VECTOR *fie,
-                                int nwork, DIST_VECTOR *work,
+                                INT nrhs,  DIST_VECTOR *rhs,
+                                INT nsol,  DIST_VECTOR *sol,
+                                INT ndis,  DIST_VECTOR *dispi,
+                                INT nvel,  DIST_VECTOR *vel,
+                                INT nacc,  DIST_VECTOR *acc,
+                                INT nfie,  DIST_VECTOR *fie,
+                                INT nwork, DIST_VECTOR *work,
                                 ARRAY *intforce_a,
                                 ARRAY *dirich_a,
                                 CONTAINER    *container);     /*!< contains variables defined in container.h */
-void restart_read_nlnstructdyn(int restart,
+void restart_read_nlnstructdyn(INT restart,
                                STRUCT_DYNAMIC  *sdyn,
                                STRUCT_DYN_CALC *dynvar,
                                FIELD           *actfield,
                                PARTITION       *actpart,
                                INTRA           *actintra,
                                CALC_ACTION     *action,
-                               int nrhs,  DIST_VECTOR *rhs,
-                               int nsol,  DIST_VECTOR *sol,
-                               int ndis,  DIST_VECTOR *dispi,
-                               int nvel,  DIST_VECTOR *vel,
-                               int nacc,  DIST_VECTOR *acc,
-                               int nfie,  DIST_VECTOR *fie,
-                               int nwork, DIST_VECTOR *work,
+                               INT nrhs,  DIST_VECTOR *rhs,
+                               INT nsol,  DIST_VECTOR *sol,
+                               INT ndis,  DIST_VECTOR *dispi,
+                               INT nvel,  DIST_VECTOR *vel,
+                               INT nacc,  DIST_VECTOR *acc,
+                               INT nfie,  DIST_VECTOR *fie,
+                               INT nwork, DIST_VECTOR *work,
                                ARRAY *intforce_a,
                                ARRAY *dirich_a,
                                CONTAINER    *container);     /*!< contains variables defined in container.h */ 
@@ -1019,21 +1019,21 @@ void restart_write_nlnstructstat(STATIC_VAR     *statvar,/*------------ static i
              PARTITION       *actpart,   /*------------------------ actual partition --*/
              INTRA           *actintra,  /*---------------- actual intra comunicator --*/
              CALC_ACTION     *action,    /*---------- element action = write-restart --*/
-             int kstep,                  /*------------------------ actual load step --*/
-             int nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
-             int nsol,  DIST_VECTOR *sol,/* solution processorpart of actual load step */
-             int ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
+             INT kstep,                  /*------------------------ actual load step --*/
+             INT nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
+             INT nsol,  DIST_VECTOR *sol,/* solution processorpart of actual load step */
+             INT ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
              CONTAINER    *container);     /*!< contains variables defined in container.h */
-void restart_read_nlnstructstat(int restart,   /*------------------------ restart step ??? --*/
+void restart_read_nlnstructstat(INT restart,   /*------------------------ restart step ??? --*/
                 STATIC_VAR     *statvar,       /*---------------------------- static input --*/                  
                 STANLN          *nln_data,     /*-- control variables for global NR-Iterat --*/
                 FIELD           *actfield,     /*---------------------------- actual field --*/
                 PARTITION       *actpart,      /*------------------------ actual partition --*/
                 INTRA           *actintra,     /*---------------- actual intra comunicator --*/
                 CALC_ACTION     *action,       /*---------- element action = write-restart --*/
-                int nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
-                int nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
-                int ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--     --*/
+                INT nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
+                INT nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
+                INT ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--     --*/
                  CONTAINER    *container);       /*!< contains variables defined in container.h */
 /*---------------------------------------------------------------------*
  | routine to find the maximum value of a distributed vector           |
@@ -1044,8 +1044,8 @@ void restart_read_nlnstructstat(int restart,   /*------------------------ restar
  *---------------------------------------------------------------------*/ 
 void solserv_dmax_distvec(
 			  DIST_VECTOR  *distvec,
-			  double *res,   /* result */
-			  int ab        /* flag */
+			  DOUBLE *res,   /* result */
+			  INT ab        /* flag */
 			  );
 /*----------------------------------------------------------------------*
  | ale_dyn_control.c                                          mn 06/02  |
@@ -1055,8 +1055,8 @@ void dyn_ale(void);
  | ale_rhs.c                                                  mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale_rhs(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
-             INTRA *actintra, int sysarray1, int sysarray2, double *dirich,
-             int global_numeq, int kstep, CONTAINER *container, CALC_ACTION *action);
+             INTRA *actintra, INT sysarray1, INT sysarray2, DOUBLE *dirich,
+             INT global_numeq, INT kstep, CONTAINER *container, CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  | mlpcg prototypes                                          m.gee9/02  |
  *----------------------------------------------------------------------*/
@@ -1066,7 +1066,7 @@ void solver_mlpcg(struct _SOLVAR         *actsolv,
                   struct _DBCSR          *bdcsr,
                   struct _DIST_VECTOR    *sol,
                   struct _DIST_VECTOR    *rhs,
-                  int                     option);
+                  INT                     option);
 void mlpcg_solver_create(DBCSR       *bdcsr, 
                          DIST_VECTOR *sol,
                          DIST_VECTOR *rhs,
@@ -1088,13 +1088,13 @@ void bdcsr_make_csr(FIELD         *actfield,
                     PARTITION     *actpart, 
                     SOLVAR        *actsolv,
                     DBCSR         *bdcsr,
-                    int          **dof_connect);
+                    INT          **dof_connect);
 void  bdcsr_nnz_topology(FIELD         *actfield, 
                          PARTITION     *actpart, 
                          SOLVAR        *actsolv,
                          INTRA         *actintra,
                          DBCSR         *bdcsr,
-                         int          **dof_connect);
+                         INT          **dof_connect);
 void bdcsr_update(FIELD          *actfield, 
                   PARTITION      *actpart, 
                   SOLVAR         *actsolv,
@@ -1104,7 +1104,7 @@ void bdcsr_numeq(FIELD         *actfield,
                  PARTITION     *actpart, 
                  SOLVAR        *actsolv,
                  INTRA         *actintra,
-                 int           *numeq);
+                 INT           *numeq);
 void  add_bdcsr(struct _PARTITION     *actpart,
                 struct _SOLVAR        *actsolv,
                 struct _INTRA         *actintra,
@@ -1118,7 +1118,7 @@ void solver_copy_csr(
                        SPARSE_ARRAY  *amatrix,
                        SPARSE_TYP    *amatrix_typ,
                        DBCSR         *amatrix_csr,
-		       int            numeq_total
+		       INT            numeq_total
                      );
 
 /*----------------------------------------------------------------------*
@@ -1129,9 +1129,9 @@ void s8_contact_detection(FIELD        *actfield,
                           INTRA        *actintra, 
                           SPARSE_ARRAY *matrix, 
                           SPARSE_TYP   *matrix_type, 
-                          double       *cforce,
-                          int          *iscontact,
-                          double       *maxdt);
+                          DOUBLE       *cforce,
+                          INT          *iscontact,
+                          DOUBLE       *maxdt);
 #endif
 
 /************************************************************************
@@ -1141,12 +1141,12 @@ void fluid_result_incre(
                           FIELD             *actfield,    
                           INTRA             *actintra,   
 			  DIST_VECTOR       *sol,        
-                          int                place,      
+                          INT                place,      
 			  SPARSE_ARRAY      *sysarray,      
 			  SPARSE_TYP        *sysarray_typ,
-			  double            *vrat,        
-			  double            *prat,
-                          double            *grat,
+			  DOUBLE            *vrat,        
+			  DOUBLE            *prat,
+                          DOUBLE            *grat,
 			  FLUID_DYNAMIC     *fdyn           
 		       );		        
 
@@ -1156,13 +1156,13 @@ void fluid_result_incre(
 void fluid_result_incre_tu(FIELD         *actfield,    
                            INTRA         *actintra,   
 			         DIST_VECTOR   *sol,        
-                           int            place,      
+                           INT            place,      
 			         SPARSE_ARRAY  *sysarray,      
 			         SPARSE_TYP    *sysarray_typ,
-			         double        *kapepsrat,        
+			         DOUBLE        *kapepsrat,        
 		               FLUID_DYNAMIC *fdyn,
-                           double         lower_limit_kappa,
-                           double         lower_limit_eps          
+                           DOUBLE         lower_limit_kappa,
+                           DOUBLE         lower_limit_eps          
 		              );
 
 void fluid_eddy_update(FIELD         *actfield, 
@@ -1171,7 +1171,7 @@ void fluid_eddy_update(FIELD         *actfield,
 
 void fluid_lenght_update(FIELD         *actfield, 
                          DIST_VECTOR   *sol,   
-		             double        *lenghtrat, 
+		             DOUBLE        *lenghtrat, 
                          FLUID_DYNAMIC *fdyn      
                         );
 /************************************************************************
@@ -1180,13 +1180,13 @@ void fluid_lenght_update(FIELD         *actfield,
 void fluid_result_incre_tu_1(FIELD       *actfield,    
                            INTRA         *actintra,   
 			         DIST_VECTOR   *sol,        
-                           int            place,      
+                           INT            place,      
 			         SPARSE_ARRAY  *sysarray,      
 			         SPARSE_TYP    *sysarray_typ,
-			         double        *kapomegarat,        
+			         DOUBLE        *kapomegarat,        
 		               FLUID_DYNAMIC *fdyn,
-                           double         lower_limit_kappa,
-                           double         lower_limit_omega         
+                           DOUBLE         lower_limit_kappa,
+                           DOUBLE         lower_limit_omega         
 		              );
 
 void fluid_eddy_update_1(FIELD         *actfield, 
@@ -1195,7 +1195,7 @@ void fluid_eddy_update_1(FIELD         *actfield,
 
 void fluid_lenght_update_1(FIELD         *actfield, 
                           DIST_VECTOR   *sol,   
-		              double        *lenghtrat, 
+		              DOUBLE        *lenghtrat, 
                           FLUID_DYNAMIC *fdyn      
                          );
 /* -------------------------------------------------------------------- *
@@ -1208,8 +1208,8 @@ void add_oll_sendbuff(
     INT                   j,
     INT                   ii_owner,
     INT                 **isend,
-    double              **dsend,
-    double              **estif,
+    DOUBLE              **dsend,
+    DOUBLE              **estif,
     INT                   numsend);
 void add_oll_checkcouple(
     INT                   ii,

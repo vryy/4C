@@ -22,7 +22,7 @@ their weights for a numerical integration
 </pre>
 \param  const ELEMENT *ele    (i) element array of actual element
 \param  S9_DATA       *data   (o) coordinates and weights at GP
-\param  int            option (i) ?
+\param  INT            option (i) ?
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -33,9 +33,9 @@ their weights for a numerical integration
 *----------------------------------------------------------------------*/
 void s9intg(const ELEMENT   *ele,
             S9_DATA         *data,
-            int              option)
+            INT              option)
 {
-double b,wgt,wgt0;
+DOUBLE b,wgt,wgt0;
 #ifdef DEBUG 
 dstrc_enter("s9intg");
 #endif

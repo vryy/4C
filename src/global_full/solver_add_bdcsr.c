@@ -36,26 +36,26 @@ void  add_bdcsr(struct _PARTITION     *actpart,
                 struct _DBCSR         *bdcsr1,
                 struct _DBCSR         *bdcsr2)
 {
-int         i,j,k,l,counter;          /* some counter variables */
-int         start,index,lenght;       /* some more special-purpose counters */
-int         ii,jj;                    /* counter variables for system matrix */
-int         ii_owner;                 /* who is owner of dof ii -> procnumber */
-int         ii_index;                 /* place of ii in dmsr format */
-int         jj_index;                 /* place of jj in dmsr format */
-int         nd,ndnd;                  /* size of estif */
-int         nnz;                      /* number of nonzeros in sparse system matrix */
-int         numeq_total;              /* total number of equations */
-int         numeq;                    /* number of equations on this proc */
-int         lm[MAXDOFPERELE];         /* location vector for this element */
-int         owner[MAXDOFPERELE];      /* the owner of every dof */
-int         myrank;                   /* my intra-proc number */
-int         nprocs;                   /* my intra- number of processes */
-double    **estif;                    /* element matrix to be added to system matrix */
-double    **emass;                    /* element matrix to be added to system matrix */
-int        *update;                   /* csr-vector update see AZTEC manual */
-int        *ja;                       /*    "       ja           "         */
-int        *ia;                       /*    "       ia           "         */
-double     *a1,*a2;                   /*    "       a            "         */
+INT         i,j,k,l,counter;          /* some counter variables */
+INT         start,index,lenght;       /* some more special-purpose counters */
+INT         ii,jj;                    /* counter variables for system matrix */
+INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
+INT         ii_index;                 /* place of ii in dmsr format */
+INT         jj_index;                 /* place of jj in dmsr format */
+INT         nd,ndnd;                  /* size of estif */
+INT         nnz;                      /* number of nonzeros in sparse system matrix */
+INT         numeq_total;              /* total number of equations */
+INT         numeq;                    /* number of equations on this proc */
+INT         lm[MAXDOFPERELE];         /* location vector for this element */
+INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+INT         myrank;                   /* my intra-proc number */
+INT         nprocs;                   /* my intra- number of processes */
+DOUBLE    **estif;                    /* element matrix to be added to system matrix */
+DOUBLE    **emass;                    /* element matrix to be added to system matrix */
+INT        *update;                   /* csr-vector update see AZTEC manual */
+INT        *ja;                       /*    "       ja           "         */
+INT        *ia;                       /*    "       ia           "         */
+DOUBLE     *a1,*a2;                   /*    "       a            "         */
 #ifdef DEBUG 
 dstrc_enter("add_bdcsr");
 #endif

@@ -4,10 +4,10 @@
 /*----------------------------------------------------------------------*
  | calculate Ke += Bt * D * B                             m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_BtDB(double **estif, double **bop, double **D, int iel,
-                int numdf, double weight, double **work)
+void s8_BtDB(DOUBLE **estif, DOUBLE **bop, DOUBLE **D, INT iel,
+                INT numdf, DOUBLE weight, DOUBLE **work)
 {
-int dim;
+INT dim;
 #ifdef DEBUG 
 dstrc_enter("s8_BtDB");
 #endif

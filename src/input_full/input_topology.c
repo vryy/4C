@@ -3,18 +3,18 @@
  | prototypes of routines which are only to be called inside this file  | 
  |                                                        m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inptop_findadjele(ELEMENT *centerele, ELEMENT *elepatch[400], int nelepatch,
-                              ELEMENT *adjele[400], int adjelelinenum[400], int *nadjele,
-                              int linenodes[3]);
+static void inptop_findadjele(ELEMENT *centerele, ELEMENT *elepatch[400], INT nelepatch,
+                              ELEMENT *adjele[400], INT adjelelinenum[400], INT *nadjele,
+                              INT linenodes[3]);
 
-static void inptop_makelinestoele(ELEMENT *actele, int linenodes[12][3]);
+static void inptop_makelinestoele(ELEMENT *actele, INT linenodes[12][3]);
 
-static void inptop_findotherele(ELEMENT *firstele, ELEMENT **otherele, int *facenumber,
-                                ELEMENT *elepatch[400], int npatch, int surfnodes[4]);
+static void inptop_findotherele(ELEMENT *firstele, ELEMENT **otherele, INT *facenumber,
+                                ELEMENT *elepatch[400], INT npatch, INT surfnodes[4]);
 
-static void inptop_makepatch(ELEMENT *centerele, ELEMENT *elepatch[400], int *nelepatch);
+static void inptop_makepatch(ELEMENT *centerele, ELEMENT *elepatch[400], INT *nelepatch);
 
-static void inptop_makesurfnodes(ELEMENT *actele, int surfnodes[6][4]);
+static void inptop_makesurfnodes(ELEMENT *actele, INT surfnodes[6][4]);
 
 
 
@@ -24,8 +24,8 @@ static void inptop_makesurfnodes(ELEMENT *actele, int surfnodes[6][4]);
  *----------------------------------------------------------------------*/
 void inp_topology(DISCRET *actdis)
 {
-int  i,j,k;
-int  node_id;
+INT  i,j,k;
+INT  node_id;
 ELEMENT *actele;
 NODE    *actnode;
 #ifdef DEBUG 
@@ -153,14 +153,14 @@ return;
 void inp_detailed_topology(DISCRET   *actdis)
 {
 PTRSIZE    ptrdistance;
-int        i,j,k,counter;
-int        nsurfelement;
-int        nsurftovol;
-int        nsurf;
-int        nline;
-int        nnodeperline;
-int        surfnodes[6][4];
-int        linenodes[12][3];
+INT        i,j,k,counter;
+INT        nsurfelement;
+INT        nsurftovol;
+INT        nsurf;
+INT        nline;
+INT        nnodeperline;
+INT        surfnodes[6][4];
+INT        linenodes[12][3];
 ELEMENT   *actele;
 ELEMENT   *otherele;
 GVOL      *actgvol;
@@ -171,13 +171,13 @@ GLINE    **gline;
 GLINE     *actgline;
 GNODE     *actgnode;
 ELEMENT   *elepatch[400];
-int        nelepatch;
+INT        nelepatch;
 ELEMENT   *adjelepatch[400];
-int        adjelelinenum[400];
-int        nadjelepatch;
+INT        adjelelinenum[400];
+INT        nadjelepatch;
 
-int        facenumber;
-int        isgvol;
+INT        facenumber;
+INT        isgvol;
 #ifdef DEBUG 
 dstrc_enter("inp_detailed_topology");
 #endif
@@ -1600,16 +1600,16 @@ return;
  | to a given element and a given line find the           m.gee 3/02    |
  | elements on the patch conected to this line                          |
  *----------------------------------------------------------------------*/
-static void inptop_findadjele(ELEMENT *centerele, ELEMENT *elepatch[400], int nelepatch,
-                              ELEMENT *adjele[400], int adjelelinenum[400], int *nadjele,
-                              int linenodes[3])
+static void inptop_findadjele(ELEMENT *centerele, ELEMENT *elepatch[400], INT nelepatch,
+                              ELEMENT *adjele[400], INT adjelelinenum[400], INT *nadjele,
+                              INT linenodes[3])
 {
-int        i,j,k,counter;
+INT        i,j,k,counter;
 ELEMENT   *actele;
-int        firstnode,scndnode,thirdnode;
-int        matchfirst,matchscnd,matchthird;
-int        searchlnodes[12][3];
-int        ngline;
+INT        firstnode,scndnode,thirdnode;
+INT        matchfirst,matchscnd,matchthird;
+INT        searchlnodes[12][3];
+INT        ngline;
 #ifdef DEBUG 
 dstrc_enter("inptop_findadjele");
 #endif
@@ -1675,9 +1675,9 @@ return;
 /*----------------------------------------------------------------------*
  | fill an array with all nodes of the lines to an element    m.gee 3/02|
  *----------------------------------------------------------------------*/
-static void inptop_makelinestoele(ELEMENT *actele, int linenodes[12][3])
+static void inptop_makelinestoele(ELEMENT *actele, INT linenodes[12][3])
 {
-int        nsurf;
+INT        nsurf;
 #ifdef DEBUG 
 dstrc_enter("inptop_makelinestoele");
 #endif
@@ -1959,16 +1959,16 @@ return;
  | to a given element and a given surface find the        m.gee 3/02    |
  | volumetric element on the patch which is on the other side           |
  *----------------------------------------------------------------------*/
-static void inptop_findotherele(ELEMENT *firstele, ELEMENT **otherele, int *facenumber,
-                                ELEMENT *elepatch[400], int npatch, int surfnodes[4])
+static void inptop_findotherele(ELEMENT *firstele, ELEMENT **otherele, INT *facenumber,
+                                ELEMENT *elepatch[400], INT npatch, INT surfnodes[4])
 {
-int        i,j,k;
+INT        i,j,k;
 ELEMENT   *actele;
 GVOL      *actgvol;
-int        surfnodesother[6][4];
-int        matchfirst=0,matchscnd=0,matchthird=0,foundsurface;
-int        firstnode,scndnode,thirdnode;
-int        nodespersurf;
+INT        surfnodesother[6][4];
+INT        matchfirst=0,matchscnd=0,matchthird=0,foundsurface;
+INT        firstnode,scndnode,thirdnode;
+INT        nodespersurf;
 #ifdef DEBUG 
 dstrc_enter("inptop_findotherele");
 #endif
@@ -2059,9 +2059,9 @@ return;
 /*----------------------------------------------------------------------*
  | make element patch around a given element              m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inptop_makepatch(ELEMENT *centerele, ELEMENT *elepatch[400], int *nelepatch)
+static void inptop_makepatch(ELEMENT *centerele, ELEMENT *elepatch[400], INT *nelepatch)
 {
-int        i,j,counter;
+INT        i,j,counter;
 ELEMENT   *actele;
 ELEMENT   *patch[400];
 #ifdef DEBUG 
@@ -2110,9 +2110,9 @@ return;
 /*----------------------------------------------------------------------*
  | fill an array with all nodes of the surfaces               m.gee 3/02|
  *----------------------------------------------------------------------*/
-static void inptop_makesurfnodes(ELEMENT *actele, int surfnodes[6][4])
+static void inptop_makesurfnodes(ELEMENT *actele, INT surfnodes[6][4])
 {
-int        nsurf;
+INT        nsurf;
 #ifdef DEBUG 
 dstrc_enter("inptop_makesurfnodes");
 #endif

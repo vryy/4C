@@ -7,13 +7,13 @@
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
-static double Q12  = ONE/TWO;
-static double Q13  = ONE/THREE;
-static double Q14  = ONE/FOUR;
-static double Q16  = ONE/SIX;
-static double Q124 = ONE/SIX/FOUR;
-static double Q430 = FOUR/FIVE/SIX;
-static double Q9120= NINE/FOUR/FIVE/SIX;
+static DOUBLE Q12  = ONE/TWO;
+static DOUBLE Q13  = ONE/THREE;
+static DOUBLE Q14  = ONE/FOUR;
+static DOUBLE Q16  = ONE/SIX;
+static DOUBLE Q124 = ONE/SIX/FOUR;
+static DOUBLE Q430 = FOUR/FIVE/SIX;
+static DOUBLE Q9120= NINE/FOUR/FIVE/SIX;
 /*----------------------------------------------------------------------*
  | integration points                                      genk 03/02   |
  | this routine is a try to organise the integration parameters         |
@@ -21,14 +21,14 @@ static double Q9120= NINE/FOUR/FIVE/SIX;
  | routine has to be (hopefully) called only once!!!                    |
  *----------------------------------------------------------------------*/
 void f3_intg(FLUID_DATA      *data,
-             int              option)
+             INT              option)
 {
-int i, k;
+INT i, k;
 
-double  xgr[MAXTINTP][MAXTINTC],xgs[MAXTINTP][MAXTINTC],xgt[MAXTINTP][MAXTINTC];
-double  wgtt[MAXTINTP][MAXTINTC]; 
-double  xg[MAXQINTP][MAXQINTC],wgt[MAXQINTP][MAXQINTC];
-double  palpha, pbeta;
+DOUBLE  xgr[MAXTINTP][MAXTINTC],xgs[MAXTINTP][MAXTINTC],xgt[MAXTINTP][MAXTINTC];
+DOUBLE  wgtt[MAXTINTP][MAXTINTC]; 
+DOUBLE  xg[MAXQINTP][MAXQINTC],wgt[MAXQINTP][MAXQINTC];
+DOUBLE  palpha, pbeta;
 
 #ifdef DEBUG 
 dstrc_enter("f3_intg");

@@ -1,10 +1,10 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 
-static int kk;
+static INT kk;
 /*----------------------------------------------------------------------*
  |  calculate the mask of an msr matrix                  m.gee 5/01     |
  *----------------------------------------------------------------------*/
@@ -13,11 +13,11 @@ void mask_msr(FIELD         *actfield,
               SOLVAR        *actsolv,
               INTRA         *actintra, 
               AZ_ARRAY_MSR  *msr,
-	      int            actndis)
+	      INT            actndis)
 {
-int       i;
-int       numeq;
-int     **dof_connect;
+INT       i;
+INT       numeq;
+INT     **dof_connect;
 #ifdef DEBUG 
 dstrc_enter("mask_msr");
 #endif
@@ -52,7 +52,7 @@ msr_update(actfield,actpart,actsolv,actintra,msr);
       dof_connect[i][2] = dof
       dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
    */
-dof_connect = (int**)CCACALLOC(msr->numeq_total,sizeof(int*));
+dof_connect = (INT**)CCACALLOC(msr->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 msr_nnz_topology(actfield,actpart,actsolv,actintra,msr,dof_connect);
 /*---------------------------------------------- allocate bindx and val */
@@ -85,19 +85,19 @@ void msr_numeq(FIELD         *actfield,
                PARTITION    *actpart, 
                SOLVAR       *actsolv,
                INTRA        *actintra,
-               int          *numeq)
+               INT          *numeq)
 {
-int       i,j,k,l;
-int       counter;
-int       dof;
-int       iscoupled;
-int      *sendbuff,*recvbuff, sendsize;
-int      *tmp;
-int       inter_proc;
+INT       i,j,k,l;
+INT       counter;
+INT       dof;
+INT       iscoupled;
+INT      *sendbuff,*recvbuff, sendsize;
+INT      *tmp;
+INT       inter_proc;
 long int  min;
-int       proc;
-int       inprocs;
-int       imyrank;
+INT       proc;
+INT       inprocs;
+INT       imyrank;
 NODE     *actnode;
 #ifdef DEBUG 
 dstrc_enter("msr_numeq");
@@ -209,8 +209,8 @@ else /*----------------------------------------------- parallel version */
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->pdis[kk].coupledofs.fdim)*(inprocs);
-sendbuff = (int*)CCACALLOC(sendsize,sizeof(int));
-recvbuff = (int*)CCACALLOC(sendsize,sizeof(int));
+sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
+recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
 if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
 counter=0;
 for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
@@ -295,7 +295,7 @@ for (i=0; i<actpart->pdis[kk].numnp; i++)
 */
 if (inprocs > 1)
 {
-   tmp = (int*)CCACALLOC(inprocs,sizeof(int));
+   tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
    if (!tmp) dserror("Allocation of temporary memory failed");
    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/*  loop coupled eqns */
    {
@@ -371,13 +371,13 @@ void msr_update(FIELD         *actfield,
                 INTRA         *actintra,
                 AZ_ARRAY_MSR  *msr)
 {
-int       i,k,l;
-int       counter;
-int      *update;
-int       dof;
-int       foundit;
-int       imyrank;
-int       inprocs;
+INT       i,k,l;
+INT       counter;
+INT      *update;
+INT       dof;
+INT       foundit;
+INT       imyrank;
+INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
 #ifdef DEBUG 
@@ -448,7 +448,7 @@ for (i=0; i<actpart->pdis[kk].numnp; i++)
 /*----------- check whether the correct number of dofs has been counted */
 if (counter != msr->numeq) dserror("Number of dofs in MSR-vector update wrong");
 /*---------------------------- sort the vector update just to make sure */
-qsort((int*) update, counter, sizeof(int), cmp_int);
+qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
@@ -469,27 +469,27 @@ void msr_nnz_topology(FIELD         *actfield,
                       SOLVAR        *actsolv,
                       INTRA         *actintra,
                       AZ_ARRAY_MSR  *msr,
-                      int          **dof_connect)
+                      INT          **dof_connect)
 {
-int        i,j,k,l,m;
-int        counter,counter2;
-int        dof;
-int        nnz;
-int        iscoupled;
-int       *update;
-int        numeq;
-int        actdof;
-int        dofflag;
-int        dofmaster;
-int        dofslave;
-int        recvlenght;
+INT        i,j,k,l,m;
+INT        counter,counter2;
+INT        dof;
+INT        nnz;
+INT        iscoupled;
+INT       *update;
+INT        numeq;
+INT        actdof;
+INT        dofflag;
+INT        dofmaster;
+INT        dofslave;
+INT        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
 ARRAY      dofpatch;
 ARRAY     *coupledofs;
-int        imyrank;
-int        inprocs;
+INT        imyrank;
+INT        inprocs;
 
 #ifdef PARALLEL 
 MPI_Status status;
@@ -559,7 +559,7 @@ for (i=0; i<numeq; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0; 
@@ -643,7 +643,7 @@ for (i=0; i<coupledofs->fdim; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = dofflag;
@@ -693,9 +693,9 @@ for (i=0; i<coupledofs->fdim; i++)
             /*----------------------------------- get lenght of message */
             MPI_Get_count(&status,MPI_INT,&recvlenght);
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
+            dof_connect[dof] = (INT*)CCAREALLOC(dof_connect[dof],
                                              (dof_connect[dof][0]+recvlenght)*
-                                             sizeof(int));
+                                             sizeof(INT));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             /*----------------------------------------- receive message */
             MPI_Recv(&(dof_connect[dof][ dof_connect[dof][0] ]),recvlenght,MPI_INT,
@@ -724,8 +724,8 @@ for (i=0; i<coupledofs->fdim; i++)
                }
             }
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
-                                             counter2*sizeof(int));
+            dof_connect[dof] = (INT*)CCAREALLOC(dof_connect[dof],
+                                             counter2*sizeof(INT));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             dof_connect[dof][0] = counter2;
          }
@@ -757,7 +757,7 @@ msr->nnz=nnz;
 for (i=0; i<numeq; i++)
 {
    dof = update[i];
-   qsort((int*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(int), cmp_int);
+   qsort((INT*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(INT), cmp_int);
 }
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
@@ -777,9 +777,9 @@ return;
 /*----------------------------------------------------------------------*
  |  check whether this dof is in coupledofs              m.gee 6/01     |
  *----------------------------------------------------------------------*/
-void dof_in_coupledofs(int dof, PARTITION *actpart, int *iscoupled)
+void dof_in_coupledofs(INT dof, PARTITION *actpart, INT *iscoupled)
 {
-int       i;
+INT       i;
 #ifdef DEBUG 
 dstrc_enter("dof_in_coupledofs");
 #endif
@@ -807,9 +807,9 @@ return;
 /*----------------------------------------------------------------------*
  |  find the node to this dof in partition               m.gee 6/01     |
  *----------------------------------------------------------------------*/
-void dof_find_centernode(int dof, PARTITION *actpart, NODE **centernode)
+void dof_find_centernode(INT dof, PARTITION *actpart, NODE **centernode)
 {
-int       j,k;
+INT       j,k;
 #ifdef DEBUG 
 dstrc_enter("dof_find_centernode");
 #endif
@@ -845,11 +845,11 @@ void msr_make_bindx(FIELD         *actfield,
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        AZ_ARRAY_MSR  *msr,
-                       int          **dof_connect)
+                       INT          **dof_connect)
 {
-int        i,j;
-int        count1,count2;
-int        dof;
+INT        i,j;
+INT        count1,count2;
+INT        dof;
 
 #ifdef DEBUG 
 dstrc_enter("msr_make_bindx");

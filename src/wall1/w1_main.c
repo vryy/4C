@@ -30,13 +30,13 @@ void wall1(PARTITION   *actpart,
            CONTAINER   *container)   /* contains variables defined in container.h */
 {
 #ifdef D_WALL1
-int  i, iloc;
+INT  i, iloc;
 W1_DATA      actdata;
 MATERIAL    *actmat;
 
-int          imyrank;
-double      *intforce;
-double       getval;
+INT          imyrank;
+DOUBLE      *intforce;
+DOUBLE       getval;
 
 #ifdef DEBUG 
 dstrc_enter("wall1");

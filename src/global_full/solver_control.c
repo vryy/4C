@@ -28,10 +28,10 @@ void solver_control(
                        union  _SPARSE_ARRAY   *sysarray,
                        struct _DIST_VECTOR    *sol,
                        struct _DIST_VECTOR    *rhs,
-                       int                     option
+                       INT                     option
                       )
 {
-double t0,t1;
+DOUBLE t0,t1;
 #ifdef DEBUG 
 dstrc_enter("solver_control");
 #endif

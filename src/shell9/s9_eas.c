@@ -22,44 +22,44 @@ This routine gets the shape functions for EAS.
 NOTE: The numbering of strains/stresses in shell8/9 is different,
       shell8:[11,12,13,22,23,33]  <=>  shell9:[11,12,22,13,23,33],
 </pre>
-\param  const int    nhyb (i)  total number of alfa-values
-\param  const double e1   (i)  natural coordinate of GP (xsi=r)
-\param  const double e2   (i)  natural coordinate of GP (eta=s)
-\param  int          iel  (i)  number of nodes to this element
-\param  const int   *eas  (i)  holds the different types of EAS which can be chosen
-\param  double     **P    (o)  shape function matrix (M) for EAS
+\param  const INT    nhyb (i)  total number of alfa-values
+\param  const DOUBLE e1   (i)  natural coordinate of GP (xsi=r)
+\param  const DOUBLE e2   (i)  natural coordinate of GP (eta=s)
+\param  INT          iel  (i)  number of nodes to this element
+\param  const INT   *eas  (i)  holds the different types of EAS which can be chosen
+\param  DOUBLE     **P    (o)  shape function matrix (M) for EAS
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_eas(const int    nhyb,
-            const double e1,
-            const double e2,
-            const int    iel, 
-            const int   *eas, 
-            double     **P)
+void s9_eas(const INT    nhyb,
+            const DOUBLE e1,
+            const DOUBLE e2,
+            const INT    iel, 
+            const INT   *eas, 
+            DOUBLE     **P)
 {
-int       place_P=0;
-const int nrr=0;    /*alfa11*/
-const int nss=2;    /*alfa22*/
-const int nrs=1;    /*alfa12*/
-const int mrr=6;    /*beta11*/
-const int mss=8;    /*beta22*/
-const int mrs=7;    /*beta12*/
-const int qr=3;     /*alfa13*/
-const int qs=4;     /*alfa23*/
-const int qt=5;     /*alfa33*/
-const int sr=9;     /*beta13*/
-const int ss=10;    /*beta23*/
-const int st=11;    /*beta33*/
-double    e1e2;
-double    e1e1;
-double    e2e2;
-double    e1e1e2;
-double    e1e2e2;
-double    e1e1e2e2;
+INT       place_P=0;
+const INT nrr=0;    /*alfa11*/
+const INT nss=2;    /*alfa22*/
+const INT nrs=1;    /*alfa12*/
+const INT mrr=6;    /*beta11*/
+const INT mss=8;    /*beta22*/
+const INT mrs=7;    /*beta12*/
+const INT qr=3;     /*alfa13*/
+const INT qs=4;     /*alfa23*/
+const INT qt=5;     /*alfa33*/
+const INT sr=9;     /*beta13*/
+const INT ss=10;    /*beta23*/
+const INT st=11;    /*beta33*/
+DOUBLE    e1e2;
+DOUBLE    e1e1;
+DOUBLE    e2e2;
+DOUBLE    e1e1e2;
+DOUBLE    e1e2e2;
+DOUBLE    e1e1e2e2;
 #ifdef DEBUG 
 dstrc_enter("s9_eas");
 #endif
@@ -496,34 +496,34 @@ This routine gets the shape functions for EAS.
 NOTE: There is a different numbering of strains/stresses in shell8/9
        shell8:[11,12,13,22,23,33]  <=>  shell9:[11,12,22,13,23,33] 
 </pre>
-\param  double   **P      (i)  shape function matrix (M) for EAS
-\param  double   **transP (o)  transformed shape function matrix (M) for EAS
-\param  double   **T      (-)  Transformation matrix
-\param  double  ***akovr  (i)  kovariant metrics in all the middle surfaces of kinematic layers at GP
-\param  double   **akonr0 (i)  kovariant metrics in reference layer of total shell at midpoint
-\param  int        nhyb   (i)  total number of alfa-values
-\param  int        klay   (i)  actual kinematic layer
+\param  DOUBLE   **P      (i)  shape function matrix (M) for EAS
+\param  DOUBLE   **transP (o)  transformed shape function matrix (M) for EAS
+\param  DOUBLE   **T      (-)  Transformation matrix
+\param  DOUBLE  ***akovr  (i)  kovariant metrics in all the middle surfaces of kinematic layers at GP
+\param  DOUBLE   **akonr0 (i)  kovariant metrics in reference layer of total shell at midpoint
+\param  INT        nhyb   (i)  total number of alfa-values
+\param  INT        klay   (i)  actual kinematic layer
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_transeas(double      **P, 
-                 double      **transP,
-                 double      **T,
-                 double     ***akovr,
-                 double      **akonr0,
-                 double        detr,
-                 double        detr0,
-                 int           nhyb,
-                 int           klay)
+void s9_transeas(DOUBLE      **P, 
+                 DOUBLE      **transP,
+                 DOUBLE      **T,
+                 DOUBLE     ***akovr,
+                 DOUBLE      **akonr0,
+                 DOUBLE        detr,
+                 DOUBLE        detr0,
+                 INT           nhyb,
+                 INT           klay)
 {
-int          i,j,k;
-const double two=2.0;
-double       t11,t12,t13,t21,t22,t23,t31,t32,t33;
-double       factor;
-double       sum;
+INT          i,j,k;
+const DOUBLE two=2.0;
+DOUBLE       t11,t12,t13,t21,t22,t23,t31,t32,t33;
+DOUBLE       factor;
+DOUBLE       sum;
 #ifdef DEBUG 
 dstrc_enter("s9_transeas");
 #endif

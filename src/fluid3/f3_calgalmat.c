@@ -32,27 +32,27 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)  ele stiffness matrix
-\param  *velint    double	   (i)    vel at int point
-\param **vderxy    double	   (i)    global vel derivatives
-\param  *funct     double	   (i)    nat. shape funcs
-\param **derxy     double	   (i)    global coord. deriv.
-\param   fac 	   double	   (i)    weighting factor	      
-\param   visc      double	   (i)    fluid viscosity	     
-\param   iel	   int  	   (i)	  number of nodes of act. ele
+\param **estif     DOUBLE	   (i/o)  ele stiffness matrix
+\param  *velint    DOUBLE	   (i)    vel at INT point
+\param **vderxy    DOUBLE	   (i)    global vel derivatives
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param **derxy     DOUBLE	   (i)    global coord. deriv.
+\param   fac 	   DOUBLE	   (i)    weighting factor	      
+\param   visc      DOUBLE	   (i)    fluid viscosity	     
+\param   iel	   INT  	   (i)	  number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calkvv(
                 FLUID_DYN_CALC  *dynvar,
-		double         **estif,
-		double          *velint,
-		double         **vderxy,
-		double          *funct,
-		double         **derxy,
-		double           fac,
-		double           visc,
-		int              iel		 
+		DOUBLE         **estif,
+		DOUBLE          *velint,
+		DOUBLE         **vderxy,
+		DOUBLE          *funct,
+		DOUBLE         **derxy,
+		DOUBLE           fac,
+		DOUBLE           visc,
+		INT              iel		 
               )
 {
 /*----------------------------------------------------------------------*
@@ -62,8 +62,8 @@ void f3_calkvv(
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |  
 /*----------------------------------------------------------------------*/
-int     irow, icol,irn,icn;
-double  c,aux;
+INT     irow, icol,irn,icn;
+DOUBLE  c,aux;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calkvv");
@@ -193,20 +193,20 @@ NOTE: there's only one elestif
       --> Kpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)] 
       
 </pre>
-\param **estif     double	   (i/o)  ele stiffness matrix
-\param  *funct     double	   (i)    nat. shape funcs
-\param **derxy     double	   (i)    global coord. deriv.
-\param   fac       double	   (i)    weighting factor
-\param   iel       int  	   (i)    number of nodes of act. ele
+\param **estif     DOUBLE	   (i/o)  ele stiffness matrix
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param **derxy     DOUBLE	   (i)    global coord. deriv.
+\param   fac       DOUBLE	   (i)    weighting factor
+\param   iel       INT  	   (i)    number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calkvp(
-		double         **estif,
-		double          *funct,
-		double         **derxy,
-		double           fac,
-		int              iel                
+		DOUBLE         **estif,
+		DOUBLE          *funct,
+		DOUBLE         **derxy,
+		DOUBLE           fac,
+		INT              iel                
               )
 {
 /*----------------------------------------------------------------------*
@@ -218,9 +218,9 @@ void f3_calkvp(
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
 /*----------------------------------------------------------------------*/
-int     irow, icol,irn,ird;  
-int     posc;
-double  aux;
+INT     irow, icol,irn,ird;  
+INT     posc;
+DOUBLE  aux;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calkvp");
@@ -280,18 +280,18 @@ NOTE: there's only one elestif
       --> Mvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)] 
       
 </pre>
-\param **emass     double	   (i/o)  ele mass matrix
-\param  *funct     double	   (i)    nat. shape funcs
-\param   fac       double	   (i)    weighting factor
-\param   iel       int   	   (i)    number of nodes of act. ele
+\param **emass     DOUBLE	   (i/o)  ele mass matrix
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param   fac       DOUBLE	   (i)    weighting factor
+\param   iel       INT   	   (i)    number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calmvv(
-		double         **estif,
-		double          *funct,
-		double           fac,
-		int              iel  
+		DOUBLE         **estif,
+		DOUBLE          *funct,
+		DOUBLE           fac,
+		INT              iel  
               )
 {
 /*----------------------------------------------------------------------*
@@ -301,9 +301,9 @@ void f3_calmvv(
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |  
 /*----------------------------------------------------------------------*/
-int     irow, icol,irn,icn;  
-int     nvdfe;             /* number of velocity dofs of actual element */
-double  aux;
+INT     irow, icol,irn,icn;  
+INT     nvdfe;             /* number of velocity dofs of actual element */
+DOUBLE  aux;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calmvv");

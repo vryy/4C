@@ -20,13 +20,13 @@ main structure all kinds of contact stuff is kept in
 -------------------------------------------------------------------------*/
 typedef struct _SHELLCONTACT
 {
-int                       numnp;      /*!< number of contact nodes */
+INT                       numnp;      /*!< number of contact nodes */
 struct _SHELLNODE        *cnode;      /*!< vector of contact nodes */
 /* searching stuff for nested sector algorithm from HALQUIST 1990 */
-double                    maxdiag;    /*!< maximum diagonal of an element */
-double                    buckdim[3]; /*!< the dimension of a searching bucket */
-double                    min[3];     /*!< minimum coordinates */
-int                       nbuck[3];   /*!< number of uckets in each dimension */
+DOUBLE                    maxdiag;    /*!< maximum diagonal of an element */
+DOUBLE                    buckdim[3]; /*!< the dimension of a searching bucket */
+DOUBLE                    min[3];     /*!< minimum coordinates */
+INT                       nbuck[3];   /*!< number of uckets in each dimension */
 struct _CONTACTSLICE     *slice;
 } SHELLCONTACT;
 /*!------------------------------------------------------------------------
@@ -72,10 +72,10 @@ one special contact node for shell contact
 typedef struct _SHELLNODE
 {
 struct _NODE             *node;     /*!< ptr to node */
-double                    xr[6];    /*!< reference coodinates of point including director of true length */            
-double                    xc[6];    /*!< current   coodinates of point including director of true length */    
+DOUBLE                    xr[6];    /*!< reference coodinates of point including director of true length */            
+DOUBLE                    xc[6];    /*!< current   coodinates of point including director of true length */    
 /* geometry history */
-double                    xc_his[6]; /*! current configuration of the last converged step */
+DOUBLE                    xc_his[6]; /*! current configuration of the last converged step */
 
 enum _SHELLCONTACTFLAG    topflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      topproj;  /*!< flag to indicate projection onto a top or bottom surface */
@@ -83,23 +83,23 @@ ARRAY                     forcetop; /*!< the contact force */
 ARRAY                     stifftop; /*!< the contact stiffness */
 ARRAY                     lmtop;    /*!< location matrix for stiffness contributions */
 ELEMENT                  *topele;   /*!< the element this node is contacting to, otherwise NULL */
-double                    xitop[2]; /*!< local coordinates of projection point */
-double                    topgap;   /*!< gap function value of the top of this node */
-double                    top_tn;   /*!< contact normal force */
-double                    top_ln;   /*!< augmented langrangian normal contact parameter (== contact force) */
-double                    top_lt[2];/*!< augmented langrangian normal frictional parameter (== frictional force) */
-double                    top_tT[2];/*!< contact frictional force */
+DOUBLE                    xitop[2]; /*!< local coordinates of projection point */
+DOUBLE                    topgap;   /*!< gap function value of the top of this node */
+DOUBLE                    top_tn;   /*!< contact normal force */
+DOUBLE                    top_ln;   /*!< augmented langrangian normal contact parameter (== contact force) */
+DOUBLE                    top_lt[2];/*!< augmented langrangian normal frictional parameter (== frictional force) */
+DOUBLE                    top_tT[2];/*!< contact frictional force */
 
 
 /* history of the top */
 enum _SHELLCONTACTFLAG    histopflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      histopproj;  /*!< flag to indicate projection onto a top or bottom surface */
 ELEMENT                  *histopele;   /*!< the element this node is contacting to, otherwise NULL */
-double                    hisxitop[2]; /*!< local coordinates of projection point */
-double                    oldhisxitop[2]; /*!< local coordinates of projection point */
-double                    histopgap;   /*!< gap function value of the top of this node */
-double                    his_top_ln;
-double                    his_top_lt[2];
+DOUBLE                    hisxitop[2]; /*!< local coordinates of projection point */
+DOUBLE                    oldhisxitop[2]; /*!< local coordinates of projection point */
+DOUBLE                    histopgap;   /*!< gap function value of the top of this node */
+DOUBLE                    his_top_ln;
+DOUBLE                    his_top_lt[2];
 
 
 enum _SHELLCONTACTFLAG    botflag;  /*!< flag to indicate active contact */
@@ -108,23 +108,23 @@ ARRAY                     forcebot; /*!< the contact force */
 ARRAY                     stiffbot; /*!< the contact stiffness */
 ARRAY                     lmbot;    /*!< location matrix for stiffness contributions */
 ELEMENT                  *botele;   /*!< the element this node is contacting to, otherwise NULL */
-double                    xibot[2]; /*!< local coordinates of projection point */
-double                    botgap;   /*!< gap function value of the bot of this node */
-double                    bot_tn;
-double                    bot_ln;
-double                    bot_lt[2];
-double                    bot_tT[2];
+DOUBLE                    xibot[2]; /*!< local coordinates of projection point */
+DOUBLE                    botgap;   /*!< gap function value of the bot of this node */
+DOUBLE                    bot_tn;
+DOUBLE                    bot_ln;
+DOUBLE                    bot_lt[2];
+DOUBLE                    bot_tT[2];
 /* history of the bot */
 enum _SHELLCONTACTFLAG    hisbotflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      hisbotproj;  /*!< flag to indicate projection onto a top or bottom surface */
 ELEMENT                  *hisbotele;   /*!< the element this node is contacting to, otherwise NULL */
-double                    hisxibot[2]; /*!< local coordinates of projection point */
-double                    oldhisxibot[2]; /*!< local coordinates of projection point */
-double                    hisbotgap;   /*!< gap function value of the bot of this node */
-double                    his_bot_ln;
-double                    his_bot_lt[2];
+DOUBLE                    hisxibot[2]; /*!< local coordinates of projection point */
+DOUBLE                    oldhisxibot[2]; /*!< local coordinates of projection point */
+DOUBLE                    hisbotgap;   /*!< gap function value of the bot of this node */
+DOUBLE                    his_bot_ln;
+DOUBLE                    his_bot_lt[2];
 
-int                       nneigh;
+INT                       nneigh;
 struct _NODE             *neighbours[30];
 struct _CONTACTBUCKET    *buck;
 } SHELLNODE;
@@ -139,20 +139,20 @@ one special contact node for shell contact
 typedef struct _SHELLNODERES
 {
 /* geometry history */
-double                    xc_his[6]; /*! current configuration of the last converged step */
+DOUBLE                    xc_his[6]; /*! current configuration of the last converged step */
 
 enum _SHELLCONTACTFLAG    topflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      topproj;  /*!< flag to indicate projection onto a top or bottom surface */
-double                    top_ln;
-double                    top_lt[2];
+DOUBLE                    top_ln;
+DOUBLE                    top_lt[2];
 /* history of the top */
 enum _SHELLCONTACTFLAG    histopflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      histopproj;  /*!< flag to indicate projection onto a top or bottom surface */
 
 enum _SHELLCONTACTFLAG    botflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      botproj;  /*!< flag to indicate projection onto a top or bottom surface */
-double                    bot_ln;
-double                    bot_lt[2];
+DOUBLE                    bot_ln;
+DOUBLE                    bot_lt[2];
 /* history of the bot */
 enum _SHELLCONTACTFLAG    hisbotflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      hisbotproj;  /*!< flag to indicate projection onto a top or bottom surface */
@@ -167,7 +167,7 @@ structure to restart the contact stuff
 -------------------------------------------------------------------------*/
 typedef struct _RESTARTCONTACT
 {
-int                        numnp;       /*!< number of nodes in field */     
+INT                        numnp;       /*!< number of nodes in field */     
 long int                   mainhandle;
 long int                  *handles;     /*!< the handles for the cnodes */
 } RESTARTCONTACT;
@@ -205,9 +205,9 @@ slice of the bucket search algorithm
 -------------------------------------------------------------------------*/
 typedef struct _CONTACTBUCKET
 {
-int                       ncnode;        /*!< number of cnode in this bucket */    
+INT                       ncnode;        /*!< number of cnode in this bucket */    
 struct _SHELLNODE       **cnode;         /*!< ptrs to cnodes in this bucket */
-int                       ijk[3];        /*!< ijk indizes of this bucket */
+INT                       ijk[3];        /*!< ijk indizes of this bucket */
 } CONTACTBUCKET;
 
 
@@ -220,53 +220,53 @@ int                       ijk[3];        /*!< ijk indizes of this bucket */
  *----------------------------------------------------------------------*/
 void s8_contact_make(SHELLNODE *actcnode,
                      ELEMENT   *actele,
-                     double    *xi,
-                     int        ssurf,
-                     int        msurf);
+                     DOUBLE    *xi,
+                     INT        ssurf,
+                     INT        msurf);
 /*----------------------------------------------------------------------*
  |  s8_contact_gap.c                                      m.gee 3/03    |
  *----------------------------------------------------------------------*/
 void s8_contact_gapfunction(SHELLNODE  *actcnode,
-                            int        *ssurf,
-                            int        *msurf,
+                            INT        *ssurf,
+                            INT        *msurf,
                             ELEMENT    *actele,
-                            double      xi[],
-                            double     *g);
+                            DOUBLE      xi[],
+                            DOUBLE     *g);
 /*----------------------------------------------------------------------*
  |  s8_contact_project.c                                  m.gee 3/03    |
  *----------------------------------------------------------------------*/
 void s8_contact_orthproject(SHELLNODE  *actcnode,
-                            int        *ssurf,
-                            int        *msurf,
+                            INT        *ssurf,
+                            INT        *msurf,
                             ELEMENT    *actele,
-                            double      xires[],
-                            double     *distance,
-                            int        *success,
-                            double     *nue);
-void s8_contact_functderiv(double     funct[], 
-                           double    deriv[][4], 
-                           double    deriv2[],
-                           double      r, 
-                           double      s);
-void s8_contact_metrics(double x[][4],
-                        double a3[][4],
-                        double e3,
-                        double gkov[][3],
-                        double gkon[][3],
-                        double gmkov[][3],
-                        double gmkon[][3],
-                        double funct[],
-                        double deriv[][4],
-                        int    iel);
-void s8_contact_inv3(double a[][3], double *det);
-void s8_contact_trans(double a[][3], int n);
-void s8_contact_deta(double gkov[][3], double *deta);
+                            DOUBLE      xires[],
+                            DOUBLE     *distance,
+                            INT        *success,
+                            DOUBLE     *nue);
+void s8_contact_functderiv(DOUBLE     funct[], 
+                           DOUBLE    deriv[][4], 
+                           DOUBLE    deriv2[],
+                           DOUBLE      r, 
+                           DOUBLE      s);
+void s8_contact_metrics(DOUBLE x[][4],
+                        DOUBLE a3[][4],
+                        DOUBLE e3,
+                        DOUBLE gkov[][3],
+                        DOUBLE gkon[][3],
+                        DOUBLE gmkov[][3],
+                        DOUBLE gmkon[][3],
+                        DOUBLE funct[],
+                        DOUBLE deriv[][4],
+                        INT    iel);
+void s8_contact_inv3(DOUBLE a[][3], DOUBLE *det);
+void s8_contact_trans(DOUBLE a[][3], INT n);
+void s8_contact_deta(DOUBLE gkov[][3], DOUBLE *deta);
 void s8_contact_timeguess(SHELLNODE *actcnode,
                          ELEMENT   *actele,
-                         double    *xi,
-                         double     distance,
-                         double    *nue,
-                         double    *dt);
+                         DOUBLE    *xi,
+                         DOUBLE     distance,
+                         DOUBLE    *nue,
+                         DOUBLE    *dt);
 /*----------------------------------------------------------------------*
  |  s8_contact_init.c                                     m.gee 3/03    |
  *----------------------------------------------------------------------*/
@@ -274,27 +274,27 @@ void s8contact_init(FIELD *actfield, PARTITION* actpart, INTRA *actintra);
 /*----------------------------------------------------------------------*
  |  s8_contact_nearestnode.c                              m.gee 3/03    |
  *----------------------------------------------------------------------*/
-void s8_contact_searchupdate(INTRA *actintra, double dt);
+void s8_contact_searchupdate(INTRA *actintra, DOUBLE dt);
 void s8_contact_nearestnode(SHELLNODE  *actcnode,
                             SHELLNODE **nearcnodetop,
                             SHELLNODE **nearcnodebot,
-                            int        *msurftop,
-                            int        *msurfbot,
-                            double     *distop,
-                            double     *disbot);
+                            INT        *msurftop,
+                            INT        *msurfbot,
+                            DOUBLE     *distop,
+                            DOUBLE     *disbot);
 void s8_contact_nearestnode_bruteforce(SHELLNODE  *actcnode,
                             SHELLNODE **nearcnodetop,
                             SHELLNODE **nearcnodebot,
-                            int        *msurftop,
-                            int        *msurfbot,
-                            double     *distop,
-                            double     *disbot);
+                            INT        *msurftop,
+                            INT        *msurfbot,
+                            DOUBLE     *distop,
+                            DOUBLE     *disbot);
 /*----------------------------------------------------------------------*
  |  s8_contact_history.c                                  m.gee 3/03    |
  *----------------------------------------------------------------------*/
 void s8_contact_history(INTRA *actintra);
-void s8_contact_restartwrite(INTRA *actintra,int step);
-void s8_contact_restartread(INTRA *actintra,int step);
+void s8_contact_restartwrite(INTRA *actintra,INT step);
+void s8_contact_restartread(INTRA *actintra,INT step);
 void s8_contact_setlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra);
 void s8_contact_updlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra);
 void s8_contact_historyback(INTRA *actintra);

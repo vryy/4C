@@ -5,8 +5,8 @@
 prototypes from prototypes_sol.h which are necessary here, but prototypes_sol.h
 shall not be included here
 */
-void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, double *localvec, int arraynum,
-                              int place);
+void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, DOUBLE *localvec, INT arraynum,
+                              INT place);
 void dyn_ekin_local(ELEMENT *actele,ARRAY *emass, CONTAINER  *container);
 
 /*----------------------------------------------------------------------*
@@ -30,10 +30,10 @@ void shell8(FIELD      *actfield,
             CONTAINER  *container)    /* contains variables defined in container.h */
 {
 #ifdef D_SHELL8
-int          i;
-int          imyrank;
+INT          i;
+INT          imyrank;
 
-double      *intforce;
+DOUBLE      *intforce;
 
 S8_DATA      actdata;
 MATERIAL    *actmat;

@@ -25,8 +25,8 @@ shell9 element
 </pre>
 \param  ELEMENT  *ele     (i)  element array
 \param  S9_DATA  *data    (i)  natural coordinates of GP and their weights
-\param  double   *loadvec(i/o) loadvector to be modified (loadvec +=)
-\param  int	      init    (i)  flag for initializing some arrays
+\param  DOUBLE   *loadvec(i/o) loadvector to be modified (loadvec +=)
+\param  INT	      init    (i)  flag for initializing some arrays
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -35,69 +35,69 @@ shell9 element
 *----------------------------------------------------------------------*/
 void s9eleload(ELEMENT  *ele,
                S9_DATA  *data,
-               double	*loadvec,
-               int	 init)
+               DOUBLE	*loadvec,
+               INT	 init)
 {
-int          lr,ls;
-int          i,j,k,kl;
-int          inode,idof,dof;
-int          nir;
-int          nis;
-int          nit;
-int          iel;
-int          nd;
-int          foundsurface;
+INT          lr,ls;
+INT          i,j,k,kl;
+INT          inode,idof,dof;
+INT          nir;
+INT          nis;
+INT          nit;
+INT          iel;
+INT          nd;
+INT          foundsurface;
 
-double      *klayhgt;                           /* hight of kinematic layer in percent of total thicknes of element*/
-double      *mlayhgt;                           /* hight of material layer in percent of adjacent kinematic layer*/
-double       h2; 
-double       condfac;
+DOUBLE      *klayhgt;                           /* hight of kinematic layer in percent of total thicknes of element*/
+DOUBLE      *mlayhgt;                           /* hight of material layer in percent of adjacent kinematic layer*/
+DOUBLE       h2; 
+DOUBLE       condfac;
 
-double       hte[MAXNOD_SHELL9];                /* element thickness at nodal points */
-/*double      *hte;                               /* element thickness at nodal points */
-double       e1,e2,e3;
-double       facr,facs,wgt;
-double       deta;
-double       xi,yi,zi;
+DOUBLE       hte[MAXNOD_SHELL9];                /* element thickness at nodal points */
+/*DOUBLE      *hte;                               /* element thickness at nodal points */
+DOUBLE       e1,e2,e3;
+DOUBLE       facr,facs,wgt;
+DOUBLE       deta;
+DOUBLE       xi,yi,zi;
 
-int          num_klay;    /* number of kinematic layers to this element*/
-int          numdf;         /* number of dofs per node to this element */
-int          numdof_shell9;
-int          nsurf;                             /* 1=MID; 2= TOP; 3=BOT */
-double       detau,detao,detzbo,detzto,shift;   /* variables for shell shifter -> Top, Bottom */
+INT          num_klay;    /* number of kinematic layers to this element*/
+INT          numdf;         /* number of dofs per node to this element */
+INT          numdof_shell9;
+INT          nsurf;                             /* 1=MID; 2= TOP; 3=BOT */
+DOUBLE       detau,detao,detzbo,detzto,shift;   /* variables for shell shifter -> Top, Bottom */
 
-static ARRAY eload1_a; static double **eload1;  /*local eload vector to allow for NSURF = TOP, BOT, ..*/
+static ARRAY eload1_a; static DOUBLE **eload1;  /*local eload vector to allow for NSURF = TOP, BOT, ..*/
 
-static ARRAY eload_a; static double **eload;    /*eload vector on which loads are added*/
-static ARRAY x_a;     static double **x;
-static ARRAY xc_a;    static double **xc;
-static ARRAY funct_a; static double *funct;
-static ARRAY deriv_a; static double **deriv;
-static ARRAY xjm_a;   static double **xjm;
-static ARRAY a3ref_a; static double **a3ref;
+static ARRAY eload_a; static DOUBLE **eload;    /*eload vector on which loads are added*/
+static ARRAY x_a;     static DOUBLE **x;
+static ARRAY xc_a;    static DOUBLE **xc;
+static ARRAY funct_a; static DOUBLE *funct;
+static ARRAY deriv_a; static DOUBLE **deriv;
+static ARRAY xjm_a;   static DOUBLE **xjm;
+static ARRAY a3ref_a; static DOUBLE **a3ref;
 
-static ARRAY4D a3r_a; static double ***a3r;     /* a3 in reference config -> for each kinematic layer */
-static ARRAY4D a3c_a; static double ***a3c;     /* a3 in current   config (a3r + disp) */
+static ARRAY4D a3r_a; static DOUBLE ***a3r;     /* a3 in reference config -> for each kinematic layer */
+static ARRAY4D a3c_a; static DOUBLE ***a3c;     /* a3 in current   config (a3r + disp) */
 
 S9_DATA      actdata;
 NODE        *actnode;
 
 /*--------------------- variables needed for integration of line loads */
-int             ngline;
-int             ngnode;
-int             gnode[3];
-int             line;
-int             foundline;
+INT             ngline;
+INT             ngnode;
+INT             gnode[3];
+INT             line;
+INT             foundline;
 GLINE          *gline[4];
 NEUM_CONDITION *lineneum[4];
-int             ngp;
-int             gp;
-double          xgp[3];
-double          xgp_n[3];
-double          wgp[3];
-int             dir;
-double          ds;
-double          ap[3],ar[3];
+INT             ngp;
+INT             gp;
+DOUBLE          xgp[3];
+DOUBLE          xgp_n[3];
+DOUBLE          wgp[3];
+INT             dir;
+DOUBLE          ds;
+DOUBLE          ap[3],ar[3];
 
 #ifdef DEBUG 
 dstrc_enter("s9eleload");
@@ -378,7 +378,7 @@ for (line=0; line<ngline; line++)
    {
       /*------------------------------------ gaussian point and weight */
       e1 = xgp[gp];          /* gp-coordinate in integration direction */
-      e2 = xgp_n[gp];        /* gp    "       normal to int. direction */
+      e2 = xgp_n[gp];        /* gp    "       normal to INT. direction */
       e3 = 0.0;              /* here mid-surface only */
       facr = wgp[gp];        /* weight at gaussian point */
       /*---------------- shape functions and derivatives at this point */
@@ -417,7 +417,7 @@ for (line=0; line<ngline; line++)
          ar[i] = ar[i] * 
                  facr  *
                  ds    * 
-                 (double)(lineneum[line]->neum_onoff.a.iv[i]) *
+                 (DOUBLE)(lineneum[line]->neum_onoff.a.iv[i]) *
                  (lineneum[line]->neum_val.a.dv[i]);
       }
       /*------------------ add load components to element load vector */
@@ -487,14 +487,14 @@ return;
 This routine performs the integration surface loads for a shell9 element
 </pre>
 \param  ELEMENT  *ele     (i)  element array
-\param  double  **eload1 (i/o) element load vector (including top,bot,mid)
-\param  double    wgt     (i)  total weight at GP
-\param  double  **xjm     (i)  jacobian matrix
-\param  double   *funct   (i)  shape functions at GP
-\param  double  **deriv   (i)  shape function derivatives at GP
-\param  int       iel     (i)  number of nodes to this element
-\param  double    xi,yi,zi(i)  coordinates at GP
-\param  double    shift   (i)  value of shell shifter (->surface loads)
+\param  DOUBLE  **eload1 (i/o) element load vector (including top,bot,mid)
+\param  DOUBLE    wgt     (i)  total weight at GP
+\param  DOUBLE  **xjm     (i)  jacobian matrix
+\param  DOUBLE   *funct   (i)  shape functions at GP
+\param  DOUBLE  **deriv   (i)  shape function derivatives at GP
+\param  INT       iel     (i)  number of nodes to this element
+\param  DOUBLE    xi,yi,zi(i)  coordinates at GP
+\param  DOUBLE    shift   (i)  value of shell shifter (->surface loads)
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -502,23 +502,23 @@ This routine performs the integration surface loads for a shell9 element
 
 *----------------------------------------------------------------------*/
 void s9loadGP(ELEMENT    *ele,
-              double    **eload1,
-              double      wgt,
-              double    **xjm,
-              double     *funct,
-              double    **deriv,
-              int         iel,
-              double      xi,
-              double      yi,
-              double      zi,
-              double      shift)    /*shell shifter if top,bot */
+              DOUBLE    **eload1,
+              DOUBLE      wgt,
+              DOUBLE    **xjm,
+              DOUBLE     *funct,
+              DOUBLE    **deriv,
+              INT         iel,
+              DOUBLE      xi,
+              DOUBLE      yi,
+              DOUBLE      zi,
+              DOUBLE      shift)    /*shell shifter if top,bot */
 {
-int          i,j;
-double       ap[3];
-double       ar[3];
-double       val;
-double       pressure;
-double       height;
+INT          i,j;
+DOUBLE       ap[3];
+DOUBLE       ar[3];
+DOUBLE       val;
+DOUBLE       pressure;
+DOUBLE       height;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9loadGP");
@@ -552,7 +552,7 @@ case neum_live:
    {
       ar[i] = wgt   * 
               ar[i] * 
-              (double)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) * 
+              (DOUBLE)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) * 
               (ele->g.gsurf->neum->neum_val.a.dv[i]);
    }
 /*-------------------- add load vector component to element load vector */

@@ -17,16 +17,16 @@
  | compute displacement derivatives                          al 9/01    |
  *----------------------------------------------------------------------*/
 void w1_disd(ELEMENT   *ele,
-             double   **bop, 
-             double    *gop, 
-             double    *alpha, 
+             DOUBLE   **bop, 
+             DOUBLE    *gop, 
+             DOUBLE    *alpha, 
              WALL_TYPE wtype,
-             double   *disd)
+             DOUBLE   *disd)
 {
 /*----------------------------------------------------------------------*/
-int i,inode, node_start;
-double dum;
-double xji[2][2];
+INT i,inode, node_start;
+DOUBLE dum;
+DOUBLE xji[2][2];
 #ifdef DEBUG 
 dstrc_enter("w1_disd");
 #endif

@@ -22,8 +22,8 @@ void ale_init(
 		    FIELD *actfield
              )     
 {
-int i;
-int numnp_total;
+INT i;
+INT numnp_total;
 NODE *actnode;
 
 #ifdef DEBUG 

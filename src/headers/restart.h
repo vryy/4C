@@ -4,7 +4,7 @@
  *----------------------------------------------------------------------*/
 typedef struct _RESTART_DYNSTRUCT
 {
-int                          step;     
+INT                          step;     
 struct _STRUCT_DYNAMIC       sdyn;
 struct _STRUCT_DYN_CALC      dynvar;
 
@@ -20,13 +20,13 @@ long int                     intforce;
 long int                     dirich;
 
 long int                     handle_of_node_handles;
-int                          node_fdim;
-int                          node_sdim;
+INT                          node_fdim;
+INT                          node_sdim;
 long int                   **node_handles;
 
 long int                     handle_of_ele_handles;
-int                          ele_fdim;
-int                          ele_sdim;
+INT                          ele_fdim;
+INT                          ele_sdim;
 long int                   **ele_handles;
 
 } RESTART_DYNSTRUCT;
@@ -37,7 +37,7 @@ long int                   **ele_handles;
  *----------------------------------------------------------------------*/
 typedef struct _RESTART_STATSTRUCT
 {
-int                          step;     
+INT                          step;     
 struct _STATIC_VAR           statvar;
 struct _STANLN               nln_data;
 
@@ -46,13 +46,13 @@ long int                     dist_vec_sol[10];
 long int                     dist_vec_dispi[10];
 
 long int                     handle_of_node_handles;
-int                          node_fdim;
-int                          node_sdim;
+INT                          node_fdim;
+INT                          node_sdim;
 long int                   **node_handles;
 
 long int                     handle_of_ele_handles;
-int                          ele_fdim;
-int                          ele_sdim;
+INT                          ele_fdim;
+INT                          ele_sdim;
 long int                   **ele_handles;
 
 } RESTART_STATSTRUCT;

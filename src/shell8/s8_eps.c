@@ -4,7 +4,7 @@
 /*----------------------------------------------------------------------*
  | calc green lagrange strains from shell metrics         m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_eps(double *strain,double **gmkovc, double **gmkovr)
+void s8_eps(DOUBLE *strain,DOUBLE **gmkovc, DOUBLE **gmkovr)
 {
 #ifdef DEBUG 
 dstrc_enter("s8_eps");

@@ -21,23 +21,23 @@
 void w1_call_mat(ELEMENT   *ele,
                  MATERIAL  *mat, 
                  WALL_TYPE wtype,
-                 double **bop,
-                 double  *gop,
-                 double  *alpha,
-                 double **xjm,
-                 int ip,       
-                 double *stress,
-                 double **d,
-                 int istore,/* controls storing of new stresses to wa */
-                 int newval)/* controls evaluation of new stresses    */
+                 DOUBLE **bop,
+                 DOUBLE  *gop,
+                 DOUBLE  *alpha,
+                 DOUBLE **xjm,
+                 INT ip,       
+                 DOUBLE *stress,
+                 DOUBLE **d,
+                 INT istore,/* controls storing of new stresses to wa */
+                 INT newval)/* controls evaluation of new stresses    */
 {
-int i;
-int j;
-double disd2;
-double disd[4];
+INT i;
+INT j;
+DOUBLE disd2;
+DOUBLE disd[4];
 /*----------------------------------------------------------------------*/
-double strain[6];
-double *qn;
+DOUBLE strain[6];
+DOUBLE *qn;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_call_mat");
@@ -194,7 +194,7 @@ return;
 /*----------------------------------------------------------------------*/
 /* get density out of material law                        ah 06/02      */
 /*----------------------------------------------------------------------*/
-void w1_getdensity(MATERIAL   *mat, double *density)
+void w1_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
 #ifdef DEBUG 
 dstrc_enter("w1_getdensity");

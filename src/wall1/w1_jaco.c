@@ -16,15 +16,15 @@
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
-void w1_jaco(double     *funct,
-             double    **deriv,
-             double    **xjm,
-             double     *det,
+void w1_jaco(DOUBLE     *funct,
+             DOUBLE    **deriv,
+             DOUBLE    **xjm,
+             DOUBLE     *det,
              ELEMENT    *ele,
-             int         iel)
+             INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int k;
+INT k;
 #ifdef DEBUG 
 dstrc_enter("w1_jaco");
 #endif

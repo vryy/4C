@@ -18,16 +18,16 @@
 /*----------------------------------------------------------------------*
  | calculate linear operator matrix at point r,s            ah 06/02    |
  *----------------------------------------------------------------------*/
-void w1_boplin(double    **boplin,
-               double    **deriv,
-               double    **xjm,
-               double      det,
-               int         iel)
+void w1_boplin(DOUBLE    **boplin,
+               DOUBLE    **deriv,
+               DOUBLE    **xjm,
+               DOUBLE      det,
+               INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int inode, dnode;
-double dum;
-double xji[2][2];
+INT inode, dnode;
+DOUBLE dum;
+DOUBLE xji[2][2];
 #ifdef DEBUG 
 dstrc_enter("w1_bop");
 #endif

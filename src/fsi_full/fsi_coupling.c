@@ -39,8 +39,8 @@ and into Dirichlet conditions for fluid and ale.
 ------------------------------------------------------------------------*/
 void fsi_createfsicoup()
 {
-int i;                                    /* simply some counters       */
-int hasdirich,hascouple,hasfsi,hasneum;   /* different flags            */
+INT i;                                    /* simply some counters       */
+INT hasdirich,hascouple,hasfsi,hasneum;   /* different flags            */
 
 DLINE    *actdline;
 FIELDTYP  fieldtyp;
@@ -147,14 +147,14 @@ void fsi_initcoupling(
 		          FIELD       *alefield
 		      )
 {
-int     numfnp, numsnp, numanp;              /* number of nodes         */  
-int     numdf;                               /* number of dofs          */
-int     numc;                                /* number of columns in mf */
-int     numaf,numsf,numff;
-int     i,j;                                 /* simply some counters    */
-int     ierr;                                /* flag                    */
-int     sfound,afound;                       /* flag                    */          
-double  tol=EPS8;                            /* tolerance for node dist */
+INT     numfnp, numsnp, numanp;              /* number of nodes         */  
+INT     numdf;                               /* number of dofs          */
+INT     numc;                                /* number of columns in mf */
+INT     numaf,numsf,numff;
+INT     i,j;                                 /* simply some counters    */
+INT     ierr;                                /* flag                    */
+INT     sfound,afound;                       /* flag                    */          
+DOUBLE  tol=EPS8;                            /* tolerance for node dist */
 NODE   *actfnode, *actsnode, *actanode;      /* actual nodes            */
 GNODE  *actfgnode,*actsgnode,*actagnode;     /* actual gnodes           */
 
@@ -352,12 +352,12 @@ void fsi_struct_intdofs(
 			  FSI_DYNAMIC *fsidyn
 		       )
 {
-int    i,j;                    /* some counters                         */
-int    numnp_total;            /* total number of structure dofs        */             
-int    dof;                    /* actual dof                            */
-int    counter=0;              
-int    numaf;
-int   *sid;                    /* structural interface dofs             */
+INT    i,j;                    /* some counters                         */
+INT    numnp_total;            /* total number of structure dofs        */             
+INT    dof;                    /* actual dof                            */
+INT    counter=0;              
+INT    numaf;
+INT   *sid;                    /* structural interface dofs             */
 NODE  *actsnode, *actanode;    /* actual nodes                          */
 GNODE *actsgnode, *actagnode;  /* actual gnodes                         */
 

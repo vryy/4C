@@ -3,32 +3,32 @@
 /*----------------------------------------------------------------------*
  |  compare the integers - qsort routine                  a.lipka 5/01  |
  |                                                                      |
- |  the call for the sorter of an int vector is then                    |
+ |  the call for the sorter of an INT vector is then                    |
  |                                                                      |
- |  qsort((int*) vector, lenght, sizeof(int), cmp_int);                 |
+ |  qsort((INT*) vector, lenght, sizeof(INT), cmp_int);                 |
  |                                                                      |
  *----------------------------------------------------------------------*/
-int cmp_int(const void *a, const void *b )
+INT cmp_int(const void *a, const void *b )
 {
-    return *(int *)a - * (int *)b;
+    return *(INT *)a - * (INT *)b;
 }
 /*----------------------------------------------------------------------*
  |  compare the doubles - qsort routine                   a.lipka 5/01  |
  |                                                                      |
- |  the call for the sorter of a double vector is then                  |
+ |  the call for the sorter of a DOUBLE vector is then                  |
  |                                                                      |
- |  qsort((double*) vector, lenght, sizeof(double), cmp_double);        |
+ |  qsort((DOUBLE*) vector, lenght, sizeof(DOUBLE), cmp_double);        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-double cmp_double(const void *a, const void *b )
+DOUBLE cmp_double(const void *a, const void *b )
 {
-    return *(double *)a - * (double *)b;
+    return *(DOUBLE *)a - * (DOUBLE *)b;
 }
 
 
 /******************************************************************************/
 
-void mg_sort(int list[], int N, int list2[], double list3[])
+void mg_sort(INT list[], INT N, INT list2[], DOUBLE list3[])
 
 /*******************************************************************************
 
@@ -67,9 +67,9 @@ void mg_sort(int list[], int N, int list2[], double list3[])
 
   /* local variables */
 
-  int    l, r, RR, K, j, i, flag;
-  int    RR2;
-  double RR3;
+  INT    l, r, RR, K, j, i, flag;
+  INT    RR2;
+  DOUBLE RR3;
 
   /**************************** execution begins ******************************/
 
@@ -284,7 +284,7 @@ void mg_sort(int list[], int N, int list2[], double list3[])
 
 /******************************************************************************/
 
-int quick_find(int key, int list[], int length, int shift, int bins[])
+INT quick_find(INT key, INT list[], INT length, INT shift, INT bins[])
 
 /*******************************************************************************
 
@@ -321,7 +321,7 @@ int quick_find(int key, int list[], int length, int shift, int bins[])
 
   /* local variables */
 
-  int i, loc, oldkey;
+  INT i, loc, oldkey;
 
   /**************************** execution begins ******************************/
 
@@ -344,7 +344,7 @@ int quick_find(int key, int list[], int length, int shift, int bins[])
 } /* quick_find */
 /******************************************************************************/
 
-void init_quick_find(int list[], int length, int *shift, int *bins)
+void init_quick_find(INT list[], INT length, INT *shift, INT *bins)
 
 /*******************************************************************************
 
@@ -391,8 +391,8 @@ void init_quick_find(int list[], int length, int *shift, int *bins)
 
   /* local variables */
 
-  register int i, j = 0;
-  int          range, temp;
+  register INT i, j = 0;
+  INT          range, temp;
 
   /**************************** execution begins ******************************/
 
@@ -418,7 +418,7 @@ void init_quick_find(int list[], int length, int *shift, int *bins)
 } /* init_quick_find */
 /******************************************************************************/
 
-int find_index(int key, int list[], int length)
+INT find_index(INT key, INT list[], INT length)
 
 /*******************************************************************************
 
@@ -427,7 +427,7 @@ int find_index(int key, int list[], int length)
   Author:          Ray Tuminaro, SNL, 1422
   =======
 
-  Return code:     int, -1 = key not found, i = list[i] = key
+  Return code:     INT, -1 = key not found, i = list[i] = key
   ============
 
   Parameter list:
@@ -445,8 +445,8 @@ int find_index(int key, int list[], int length)
 
   /* local variables */
 
-  int start, end;
-  int mid;
+  INT start, end;
+  INT mid;
 
   /**************************** execution begins ******************************/
 

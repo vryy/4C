@@ -19,14 +19,14 @@
 void w1_call_matgeononl(ELEMENT   *ele,
                         MATERIAL  *mat, 
                         WALL_TYPE  wtype,
-                        double   **boplin,
-                        double   **xjm,
-                        int        ip,       
-                        double    *strain,
-                        double   **stress,
-                        double   **d,
-                        int        istore,
-                        int        numeps)
+                        DOUBLE   **boplin,
+                        DOUBLE   **xjm,
+                        INT        ip,       
+                        DOUBLE    *strain,
+                        DOUBLE   **stress,
+                        DOUBLE   **d,
+                        INT        istore,
+                        INT        numeps)
 {
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

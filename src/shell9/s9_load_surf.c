@@ -25,22 +25,22 @@
 This routine calcuates the loadvector if the load is applied on the surface
 of a multilayerd shell element (shell9)  -> Line and Surface Loads!
 </pre>
-\param **eload   double  (i/o) the modified loadvector of the element
-\param   nsurf   int     (i)   1=MID; 2=TOP; 3=BOT
-\param   numklay int     (i)   number of kinematic layers to this element
-\param   iel     int     (i)   number of nodes to this element
+\param **eload   DOUBLE  (i/o) the modified loadvector of the element
+\param   nsurf   INT     (i)   1=MID; 2=TOP; 3=BOT
+\param   numklay INT     (i)   number of kinematic layers to this element
+\param   iel     INT     (i)   number of nodes to this element
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9eleload(), s9loadGP()
 
 *-----------------------------------------------------------------------*/
-void s9_surf(double **eload, int nsurf, int numklay, int iel)
+void s9_surf(DOUBLE **eload, INT nsurf, INT numklay, INT iel)
 {
-int     i,j,l;
-int     midlay;   /* middle layer if uneven number of numklay */
-int     fact;     /* factor depending on the norm of a3 */
-int     mod;
+INT     i,j,l;
+INT     midlay;   /* middle layer if uneven number of numklay */
+INT     fact;     /* factor depending on the norm of a3 */
+INT     mod;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_surf");
@@ -151,21 +151,21 @@ return;
 This routine calcuates the loadvector if the load is applied on the surface
 of a multilayerd shell element (shell9)  -> Point loads!
 </pre>
-\param  *pload   double  (i/o) the modified loadvector of the node
-\param   nsurf   int     (i)   1=MID; 2=TOP; 3=BOT
-\param   numklay int     (i)   number of kinematic layers to this node
+\param  *pload   DOUBLE  (i/o) the modified loadvector of the node
+\param   nsurf   INT     (i)   1=MID; 2=TOP; 3=BOT
+\param   numklay INT     (i)   number of kinematic layers to this node
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: rhs_point_neum()
 
 *-----------------------------------------------------------------------*/
-void s9_surf_P(double *pload, int nsurf, int numklay)
+void s9_surf_P(DOUBLE *pload, INT nsurf, INT numklay)
 {
-int     i,j,l;
-int     midlay;   /*middle layer if uneven number of numklay */
-int     fact;     /* factor depending on the norm of a3 */
-int     mod;
+INT     i,j,l;
+INT     midlay;   /*middle layer if uneven number of numklay */
+INT     fact;     /* factor depending on the norm of a3 */
+INT     mod;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_surf_P");
@@ -257,20 +257,20 @@ return;
 This routine switches the <neum_onoff> to 1 if the differential vector 
 component is to be loaded -> shell element (shell9)  -> Point loads!
 </pre>
-\param  *pload   int   (i/o) the modified loadvector of the node
-\param   nsurf   int     (i)   1=MID; 2=TOP; 3=BOT
-\param   numklay int     (i)   number of kinematic layers to this node
+\param  *pload   INT   (i/o) the modified loadvector of the node
+\param   nsurf   INT     (i)   1=MID; 2=TOP; 3=BOT
+\param   numklay INT     (i)   number of kinematic layers to this node
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: rhs_point_neum()
 
 *-----------------------------------------------------------------------*/
-void s9_surf_onoff(int *pload, int nsurf, int numklay)
+void s9_surf_onoff(INT *pload, INT nsurf, INT numklay)
 {
-int     i,j,l;
-int     midlay;   /*middle layer if uneven number of numklay */
-int     mod;
+INT     i,j,l;
+INT     midlay;   /*middle layer if uneven number of numklay */
+INT     mod;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_surf_onoff");

@@ -15,13 +15,13 @@ typedef enum _CURVTYP
  *----------------------------------------------------------------------*/
 typedef struct _CURVE
 {
-int                    Id;            /* Id of the load curve */
+INT                    Id;            /* Id of the load curve */
 enum _CURVTYP          curvetyp;      /* type of load curve */
-int                    bystep;        /* flag whether curve operated by number of steps or in absolut time */
-int                    numex;         /* number of explicit function */
+INT                    bystep;        /* flag whether curve operated by number of steps or in absolut time */
+INT                    numex;         /* number of explicit function */
 ARRAY                  time;          /* array for time steps */
 ARRAY                  value;         /* array for values at time steps */
-double                 T;             /* forgot about it..... */
-double                 c1;            /* constant for explicit functions */
-double                 c2;            /* constant for explicit functions */
+DOUBLE                 T;             /* forgot about it..... */
+DOUBLE                 c1;            /* constant for explicit functions */
+DOUBLE                 c2;            /* constant for explicit functions */
 } CURVE;

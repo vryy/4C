@@ -1,8 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 
 
 /*----------------------------------------------------------------------*
@@ -15,9 +15,9 @@ void mask_mds(FIELD        *actfield,
               INTRA        *actintra, 
               ML_ARRAY_MDS *mds)
 {
-int       i;
-int       nnz;
-int     **dof_connect;
+INT       i;
+INT       nnz;
+INT     **dof_connect;
 #ifdef DEBUG 
 dstrc_enter("mask_mds");
 #endif
@@ -27,7 +27,7 @@ dstrc_enter("mask_mds");
  amdef("colstr1",&(mds->colstr),mds->numeq,1,"IV");
  amzero(&(mds->colstr));
 /*---------------------------------- calculate dof connectivity list ---*/
- dof_connect = (int**)CCACALLOC(mds->numeq,sizeof(int*));
+ dof_connect = (INT**)CCACALLOC(mds->numeq,sizeof(INT*));
  if (!dof_connect) dserror("Allocation of dof_connect failed");
 
  dofconnectivity(actfield,dof_connect,&nnz);

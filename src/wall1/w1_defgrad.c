@@ -17,15 +17,15 @@
 /*----------------------------------------------------------------------*
  | calc deformation gradient and GL strain  at gausian point r,s  ah06/02|
  *----------------------------------------------------------------------*/
-void w1_defgrad(double    *F,
-                double    *strain,
-                double    **xrefe,
-                double    **xcure,
-                double    **boplin,
-                int         iel)
+void w1_defgrad(DOUBLE    *F,
+                DOUBLE    *strain,
+                DOUBLE    **xrefe,
+                DOUBLE    **xcure,
+                DOUBLE    **boplin,
+                INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int inode;
+INT inode;
 #ifdef DEBUG 
 dstrc_enter("w1_defgrad");
 #endif

@@ -9,48 +9,48 @@ C.......................................................................
 C!    GEAENDERTE METRIK DES VERF. SCHALENRAUMS INFOLGE ENHANCED STRAIN .
 C.......................................................................
 */
-void s8_tvkg(double **estif,
-             double  *stress_r,
-             double  *funct,
-             double **deriv,
-             int      numdf,
-             int      iel,
-             double   weight,
-             double   e1,
-             double   e2)
+void s8_tvkg(DOUBLE **estif,
+             DOUBLE  *stress_r,
+             DOUBLE  *funct,
+             DOUBLE **deriv,
+             INT      numdf,
+             INT      iel,
+             DOUBLE   weight,
+             DOUBLE   e1,
+             DOUBLE   e2)
 {
-int     inode,jnode;
-int     i_indiz,j_indiz;
-double  pi;
-double  pj;
-double  d11;
-double  d12;
-double  d21;
-double  d22;
+INT     inode,jnode;
+INT     i_indiz,j_indiz;
+DOUBLE  pi;
+DOUBLE  pj;
+DOUBLE  d11;
+DOUBLE  d12;
+DOUBLE  d21;
+DOUBLE  d22;
 
-double  pd1ij;
-double  pd1ji;
-double  pd2ij;
-double  pd2ji;
+DOUBLE  pd1ij;
+DOUBLE  pd1ji;
+DOUBLE  pd2ij;
+DOUBLE  pd2ji;
 
-double  xn;
-double  xm;
-double  yu;
-double  yo;
-double  yy;
-double  z;
+DOUBLE  xn;
+DOUBLE  xm;
+DOUBLE  yu;
+DOUBLE  yo;
+DOUBLE  yy;
+DOUBLE  z;
 
-double  sn11;
-double  sn21;
-double  sn31;
-double  sn22;
-double  sn32;
-double  sn33;
-double  sm11;
-double  sm21;
-double  sm31;
-double  sm22;
-double  sm32;
+DOUBLE  sn11;
+DOUBLE  sn21;
+DOUBLE  sn31;
+DOUBLE  sn22;
+DOUBLE  sn32;
+DOUBLE  sn33;
+DOUBLE  sm11;
+DOUBLE  sm21;
+DOUBLE  sm31;
+DOUBLE  sm22;
+DOUBLE  sm32;
 
 #ifdef DEBUG 
 dstrc_enter("s8_tvkg");

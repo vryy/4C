@@ -152,7 +152,7 @@ void optsmo(DOUBLE *vvar, INT init)
       }
     }
     /*---- determine all elements in the neigbourhood of one element ---*/
-    nbele = (int**   )CCACALLOC(actfield->dis[0].numele,sizeof(int*   ));
+    nbele = (INT**   )CCACALLOC(actfield->dis[0].numele,sizeof(INT*   ));
     nbelv = (DOUBLE**)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE*));
     
     

@@ -55,8 +55,8 @@ static void inpdesign_line_freesurf(void);
  *----------------------------------------------------------------------*/
 void inp_conditions()
 {
-int  ierr;
-int  i;
+INT  ierr;
+INT  i;
 #ifdef DEBUG 
 dstrc_enter("inp_conditions");
 #endif
@@ -117,11 +117,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_dirich()
 {
-int    i,j;
-int    ierr;
-int    ndnode;
-int    dnodeId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndnode;
+INT    dnodeId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
@@ -235,11 +235,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_dirich()
 {
-int    i,j;
-int    ierr;
-int    ndline;
-int    dlineId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
@@ -353,11 +353,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_surf_dirich()
 {
-int    i,j;
-int    ierr;
-int    ndsurf;
-int    dsurfId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndsurf;
+INT    dsurfId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
@@ -471,11 +471,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_vol_dirich()
 {
-int    i,j;
-int    ierr;
-int    ndvol;
-int    dvolId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndvol;
+INT    dvolId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DVOL  *actdvol;
@@ -591,11 +591,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_neum()
 {
-int    i,j;
-int    ierr;
-int    ndnode;
-int    dnodeId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndnode;
+INT    dnodeId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
@@ -694,11 +694,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_neum()
 {
-int    i,j;
-int    ierr;
-int    ndline;
-int    dlineId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
@@ -797,11 +797,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_surf_neum()
 {
-int    i,j;
-int    ierr;
-int    ndsurf;
-int    dsurfId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndsurf;
+INT    dsurfId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
@@ -913,11 +913,11 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_vol_neum()
 {
-int    i,j;
-int    ierr;
-int    ndvol;
-int    dvolId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndvol;
+INT    dvolId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DVOL  *actdvol;
@@ -1023,19 +1023,19 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_couple()
 {
-int    i,j;
-int    ierr;
-int    ndnode;
-int    dnodeId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndnode;
+INT    dnodeId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
-int    coupleId;
-int    dofcouple;
-int    dofflags[MAXDOFPERNODE];
-int    geocouple;
-int    geoflags[MAXDOFPERNODE];
+INT    coupleId;
+INT    dofcouple;
+INT    dofflags[MAXDOFPERNODE];
+INT    geocouple;
+INT    geoflags[MAXDOFPERNODE];
 #ifdef DEBUG 
 dstrc_enter("inpdesign_nodal_couple");
 #endif
@@ -1144,19 +1144,19 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_couple()
 {
-int    i,j;
-int    ierr;
-int    ndline;
-int    dlineId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-int    coupleId;
-int    dofcouple;
-int    dofflags[MAXDOFPERNODE];
-int    geocouple;
-int    geoflags[MAXDOFPERNODE];
+INT    coupleId;
+INT    dofcouple;
+INT    dofflags[MAXDOFPERNODE];
+INT    geocouple;
+INT    geoflags[MAXDOFPERNODE];
 #ifdef DEBUG 
 dstrc_enter("inpdesign_line_couple");
 #endif
@@ -1266,19 +1266,19 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_surf_couple()
 {
-int    i,j;
-int    ierr;
-int    ndsurf;
-int    dsurfId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndsurf;
+INT    dsurfId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
-int    coupleId;
-int    dofcouple;
-int    dofflags[MAXDOFPERNODE];
-int    geocouple;
-int    geoflags[MAXDOFPERNODE];
+INT    coupleId;
+INT    dofcouple;
+INT    dofflags[MAXDOFPERNODE];
+INT    geocouple;
+INT    geoflags[MAXDOFPERNODE];
 #ifdef DEBUG 
 dstrc_enter("inpdesign_surf_couple");
 #endif
@@ -1388,19 +1388,19 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_vol_couple()
 {
-int    i,j;
-int    ierr;
-int    ndvol;
-int    dvolId;
-int    foundit;
+INT    i,j;
+INT    ierr;
+INT    ndvol;
+INT    dvolId;
+INT    foundit;
 char  *colptr;
 char   buffer[200];
 DVOL *actdvol;
-int    coupleId;
-int    dofcouple;
-int    dofflags[MAXDOFPERNODE];
-int    geocouple;
-int    geoflags[MAXDOFPERNODE];
+INT    coupleId;
+INT    dofcouple;
+INT    dofflags[MAXDOFPERNODE];
+INT    geocouple;
+INT    geoflags[MAXDOFPERNODE];
 #ifdef DEBUG 
 dstrc_enter("inpdesign_vol_couple");
 #endif
@@ -1509,14 +1509,14 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_fsicouple()
 {
-int    i,j;
-int    ierr;
-int    ndline;
-int    dlineId;
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-int    coupleId;
+INT    coupleId;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_line_fsicouple");
@@ -1621,14 +1621,14 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_freesurf()
 {
-int    i,j;
-int    ierr;
-int    ndnode;
-int    dnodeId;
+INT    i,j;
+INT    ierr;
+INT    ndnode;
+INT    dnodeId;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
-int    coupleId;
+INT    coupleId;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_nodal_freesurf");
@@ -1708,14 +1708,14 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_freesurf()
 {
-int    i,j;
-int    ierr;
-int    ndline;
-int    dlineId;
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-int    coupleId;
+INT    coupleId;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_line_freesurf");

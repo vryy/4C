@@ -9,14 +9,14 @@
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
-static double Q12 = ONE/TWO;
-static double Q14 = ONE/FOUR;
-static double Q16 = ONE/SIX;
-static double Q52 = FIVE/TWO;
-static double C23 = FIVE*FOUR+THREE;
+static DOUBLE Q12 = ONE/TWO;
+static DOUBLE Q14 = ONE/FOUR;
+static DOUBLE Q16 = ONE/SIX;
+static DOUBLE Q52 = FIVE/TWO;
+static DOUBLE C23 = FIVE*FOUR+THREE;
 /*----------------------------------------------------------- prototype */
-void fluid_mf(int mctrl);
-void dyn_fsi(int mctrl);
+void fluid_mf(INT mctrl);
+void dyn_fsi(INT mctrl);
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -48,30 +48,30 @@ Numbering of the nodes:
               2     6     3
 
 </pre>
-\param  *funct     double   (o)    shape functions
-\param **deriv     double   (o)    1st natural deriv. of shape funct.
-\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
-\param   r 	   double   (i)    coordinate
-\param   s 	   double   (i)    coordinate
+\param  *funct     DOUBLE   (o)    shape functions
+\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r 	   DOUBLE   (i)    coordinate
+\param   s 	   DOUBLE   (i)    coordinate
 \param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   int	    (i)    evaluation flag
+\param   icode	   INT	    (i)    evaluation flag
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_rec(
-            double     *funct,     
-            double    **deriv,    
-            double    **deriv2,   
-	    double      r,        
-            double      s,        
+            DOUBLE     *funct,     
+            DOUBLE    **deriv,    
+            DOUBLE    **deriv2,   
+	    DOUBLE      r,        
+            DOUBLE      s,        
             DIS_TYP     typ,      
-            int         icode     
+            INT         icode     
 	   )
 {
-int    i,ii;
-double rp,rm,sp,sm,r2,s2;
-double rh,sh,rs;
-double rhm,shm,rhp,shp;
+INT    i,ii;
+DOUBLE rp,rm,sp,sm,r2,s2;
+DOUBLE rh,sh,rs;
+DOUBLE rhm,shm,rhp,shp;
 
 #ifdef DEBUG 
 dstrc_enter("f2_rec");
@@ -356,27 +356,27 @@ the element nodes.
    icode = 2: only extrapolation
 		     
 </pre>
-\param  *funval      double   (o)    function value at the element nodes 
-\param  *fpar        double   (i/o)  function parameters
-\param   r           double   (i)    local coord. in r direction 
-\param   s           double   (i)    local coord. in s direction 
-\param   fval        double   (i)    function values at gauss points
-\param   igauss      int      (i)    number of gauss points
-\param   icode       int      (i)    evaluation flag
+\param  *funval      DOUBLE   (o)    function value at the element nodes 
+\param  *fpar        DOUBLE   (i/o)  function parameters
+\param   r           DOUBLE   (i)    local coord. in r direction 
+\param   s           DOUBLE   (i)    local coord. in s direction 
+\param   fval        DOUBLE   (i)    function values at gauss points
+\param   igauss      INT      (i)    number of gauss points
+\param   icode       INT      (i)    evaluation flag
 \return  void                                                                      
 ------------------------------------------------------------------------*/
 void f2_recex(
-	      double           *funval,     
-	      double           *fpar,
-	      double            r,    
-	      double            s,
-              double           *fval,         
-	      int               igauss,
-	      int               icode
+	      DOUBLE           *funval,     
+	      DOUBLE           *fpar,
+	      DOUBLE            r,    
+	      DOUBLE            s,
+              DOUBLE           *fval,         
+	      INT               igauss,
+	      INT               icode
             )
 {
-double p1,p2,p3,p4,p5,p6,p7,p8,p9;
-double f1,f2,f3,f4,f5;
+DOUBLE p1,p2,p3,p4,p5,p6,p7,p8,p9;
+DOUBLE f1,f2,f3,f4,f5;
 
 #ifdef DEBUG 
 dstrc_enter("f2recex");
@@ -490,28 +490,28 @@ derivatives with respect to r/s are evaluated for
 T R I A N G L E S 
 		     
 </pre>
-\param  *funct     double   (o)    shape functions
-\param **deriv     double   (o)    1st natural deriv. of shape funct.
-\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
-\param   r 	   double   (i)    coordinate
-\param   s 	   double   (i)    coordinate
+\param  *funct     DOUBLE   (o)    shape functions
+\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r 	   DOUBLE   (i)    coordinate
+\param   s 	   DOUBLE   (i)    coordinate
 \param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   int	    (i)    evaluation flag
+\param   icode	   INT	    (i)    evaluation flag
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_tri(
-            double     *funct,      
-            double    **deriv,    
-            double    **deriv2,   
-	    double      r,        
-            double      s,	  
+            DOUBLE     *funct,      
+            DOUBLE    **deriv,    
+            DOUBLE    **deriv2,   
+	    DOUBLE      r,        
+            DOUBLE      s,	  
             DIS_TYP     typ,	  
-            int         icode	  
+            INT         icode	  
 	   )
 {
 
-double rr,rs,ss;
+DOUBLE rr,rs,ss;
 
 #ifdef DEBUG 
 dstrc_enter("f2_tri");
@@ -627,23 +627,23 @@ the element nodes.
    icode = 2: only extrapolation
 		     
 </pre>
-\param  *funval      double   (o)    function value at the element nodes 
-\param  *fpar        double   (i/o)  function parameters
-\param   r           double   (i)    local coord. in r direction 
-\param   s           double   (i)    local coord. in s direction 
-\param   fval        double   (i)    function values at gauss points
-\param   igauss      int      (i)    number of gauss points
-\param   icode       int      (i)    evaluation flag
+\param  *funval      DOUBLE   (o)    function value at the element nodes 
+\param  *fpar        DOUBLE   (i/o)  function parameters
+\param   r           DOUBLE   (i)    local coord. in r direction 
+\param   s           DOUBLE   (i)    local coord. in s direction 
+\param   fval        DOUBLE   (i)    function values at gauss points
+\param   igauss      INT      (i)    number of gauss points
+\param   icode       INT      (i)    evaluation flag
 \return  void                                                                      
 ------------------------------------------------------------------------*/
 void f2_triex(
-	      double           *funval,     
-	      double           *fpar,
-	      double            r,    
-	      double            s,
-              double           *fval,         
-	      int               igauss,
-	      int               icode
+	      DOUBLE           *funval,     
+	      DOUBLE           *fpar,
+	      DOUBLE            r,    
+	      DOUBLE            s,
+              DOUBLE           *fval,         
+	      INT               igauss,
+	      INT               icode
             )
 {
 
@@ -795,24 +795,24 @@ and  RECTANGLES. They are used for the integrals over the element
 edges.
 		     
 </pre>
-\param  *funct     double   (o)    shape functions
-\param **deriv     double   (o)    1st natural deriv. of shape funct.
-\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
-\param   r 	   double   (i)    coordinate
+\param  *funct     DOUBLE   (o)    shape functions
+\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r 	   DOUBLE   (i)    coordinate
 \param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   int	    (i)    evaluation flag
+\param   icode	   INT	    (i)    evaluation flag
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_degrectri(
-                    double     *funct, 
-                    double    **deriv, 
-                    double      r, 
+                    DOUBLE     *funct, 
+                    DOUBLE    **deriv, 
+                    DOUBLE      r, 
                     DIS_TYP     typ,
-                    int         option
+                    INT         option
 		 )
 {
-double         rr,rp,rm,r2;
+DOUBLE         rr,rp,rm,r2;
 
 #ifdef DEBUG 
 dstrc_enter("f2_degrectri");
@@ -869,27 +869,27 @@ return;
 In this routine the jacobian matrix and its determinant is calculated
 		     
 </pre>
-\param **xyze      double   (i)    nodal coordinates
-\param  *funct     double   (i)    natural shape functions
-\param **deriv     double   (i)    natural deriv. of shape funcs
-\param **xjm       double   (o)    jacobian matrix
-\param  *det       double   (o)    determinant of jacobian matrix
-\param   iel       int      (i)    num. of nodes of act. ele
+\param **xyze      DOUBLE   (i)    nodal coordinates
+\param  *funct     DOUBLE   (i)    natural shape functions
+\param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
+\param **xjm       DOUBLE   (o)    jacobian matrix
+\param  *det       DOUBLE   (o)    determinant of jacobian matrix
+\param   iel       INT      (i)    num. of nodes of act. ele
 \param  *ele       ELEMENT  (i)    actual element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_jaco(double    **xyze,
-             double     *funct,    
-             double    **deriv,   
-             double    **xjm,     
-             double     *det,          
-             int         iel,        
+void f2_jaco(DOUBLE    **xyze,
+             DOUBLE     *funct,    
+             DOUBLE    **deriv,   
+             DOUBLE    **xjm,     
+             DOUBLE     *det,          
+             INT         iel,        
              ELEMENT    *ele
 	    )
 
 {
-int k;
+INT k;
 
 #ifdef DEBUG 
 dstrc_enter("f2_jaco");
@@ -952,27 +952,27 @@ In this routine the jacobian matrix and its determinant is calculated;
 no check if det<ZERO!!!
 		     
 </pre>
-\param **xyze      double   (i)    nodal coordinates
-\param  *funct     double   (i)    natural shape functions
-\param **deriv     double   (i)    natural deriv. of shape funcs
-\param **xjm       double   (o)    jacobian matrix
-\param  *det       double   (o)    determinant of jacobian matrix
-\param   iel       int      (i)    num. of nodes of act. ele
+\param **xyze      DOUBLE   (i)    nodal coordinates
+\param  *funct     DOUBLE   (i)    natural shape functions
+\param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
+\param **xjm       DOUBLE   (o)    jacobian matrix
+\param  *det       DOUBLE   (o)    determinant of jacobian matrix
+\param   iel       INT      (i)    num. of nodes of act. ele
 \param  *ele       ELEMENT  (i)    actual element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_jaco2(double    **xyze,
-             double     *funct,    
-             double    **deriv,   
-             double    **xjm,     
-             double     *det,          
-             int         iel,        
+void f2_jaco2(DOUBLE    **xyze,
+             DOUBLE     *funct,    
+             DOUBLE    **deriv,   
+             DOUBLE    **xjm,     
+             DOUBLE     *det,          
+             INT         iel,        
              ELEMENT    *ele
 	    )
 
 {
-int k;
+INT k;
 
 #ifdef DEBUG 
 dstrc_enter("f2_jaco");
@@ -1011,29 +1011,29 @@ return;
 In this routine the jacobian matrix and its determinant is calculated
 		     
 </pre>
-\param **xyze      double   (i)    nodal coordinates
-\param  *funct     double   (i)    natural shape functions
-\param **deriv     double   (i)    natural deriv. of shape funcs
-\param **xjm       double   (o)    jacobian matrix
-\param  *det       double   (o)    determinant of jacobian matrix
-\param   iel       int      (i)    num. of nodes of act. ele
-\param  *iedgnod   int      (i)    edgenodes
+\param **xyze      DOUBLE   (i)    nodal coordinates
+\param  *funct     DOUBLE   (i)    natural shape functions
+\param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
+\param **xjm       DOUBLE   (o)    jacobian matrix
+\param  *det       DOUBLE   (o)    determinant of jacobian matrix
+\param   iel       INT      (i)    num. of nodes of act. ele
+\param  *iedgnod   INT      (i)    edgenodes
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_edgejaco(
-                 double    **xyze,
-                 double     *funct,    
-                 double    **deriv,   
-                 double    **xjm,     
-                 double     *det,          
-                 int         iel,
-                 int        *iedgnod
+                 DOUBLE    **xyze,
+                 DOUBLE     *funct,    
+                 DOUBLE    **deriv,   
+                 DOUBLE    **xjm,     
+                 DOUBLE     *det,          
+                 INT         iel,
+                 INT        *iedgnod
 	        )
 
 {
-int k;
-int node;
+INT k;
+INT node;
 
 #ifdef DEBUG 
 dstrc_enter("f2_edgejaco");
@@ -1073,23 +1073,23 @@ In this routine the global derivatives w.r.t. x,y at point r,s are
 calculated.
 		     
 </pre>
-\param **derxy     double   (o)    global derivatives wrt. x/y
-\param **deriv     double   (i)    derivatives of shape functions
-\param **xjm       double   (i)    jacobian matrix
-\param   det       double   (i)    jacobian determinant
-\param   iel       int      (i)    number of nodes in actual element
+\param **derxy     DOUBLE   (o)    global derivatives wrt. x/y
+\param **deriv     DOUBLE   (i)    derivatives of shape functions
+\param **xjm       DOUBLE   (i)    jacobian matrix
+\param   det       DOUBLE   (i)    jacobian determinant
+\param   iel       INT      (i)    number of nodes in actual element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_gder(
-              double   **derxy,     
-	      double   **deriv,    
-	      double   **xjm,      
-	      double     det,      
-	      int        iel       
+              DOUBLE   **derxy,     
+	      DOUBLE   **deriv,    
+	      DOUBLE   **xjm,      
+	      DOUBLE     det,      
+	      INT        iel       
 	    )
 {
-int    k;
+INT    k;
 
 #ifdef DEBUG 
 dstrc_enter("f2_gder");
@@ -1128,21 +1128,21 @@ In this routine the global coordinates for given shape function values
 are set.
 		     
 </pre>
-\param **xyze       double   (i)    nodal coordinates
-\param  *funct      double   (i)    shape functions
-\param   iel        double   (i)    number of nodes in act. element
-\param  *gcoor      double   (o)    global coordinates
+\param **xyze       DOUBLE   (i)    nodal coordinates
+\param  *funct      DOUBLE   (i)    shape functions
+\param   iel        DOUBLE   (i)    number of nodes in act. element
+\param  *gcoor      DOUBLE   (o)    global coordinates
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_gcoor(
-              double    **xyze,
-	      double     *funct,            
-	      int         iel,      
-	      double     *gcoor     
+              DOUBLE    **xyze,
+	      DOUBLE     *funct,            
+	      INT         iel,      
+	      DOUBLE     *gcoor     
 	     )
 {
-int i;
+INT i;
 
 #ifdef DEBUG 
 dstrc_enter("f2_gcoor");
@@ -1175,33 +1175,33 @@ are calculated.
 		     
 </pre>
 \param  *ele 	   ELEMENT  (i)    actual element
-\param **xyze      double   (i)    element coordinates
-\param **xjm 	   double   (i)    jacobian matrix
-\param **bi 	   double   (-)    working array
-\param **xder2     double   (-)    working array
-\param **derxy     double   (i)    glob. coord.. deriv.
-\param **derxy2    double   (o)    2nd. glob. coord. deriv.
-\param **deriv2    double   (i)    2nd. nat. deriv. of shape funcs
-\param   iel	   int	    (i)    number of nodes of actual ele
+\param **xyze      DOUBLE   (i)    element coordinates
+\param **xjm 	   DOUBLE   (i)    jacobian matrix
+\param **bi 	   DOUBLE   (-)    working array
+\param **xder2     DOUBLE   (-)    working array
+\param **derxy     DOUBLE   (i)    glob. coord.. deriv.
+\param **derxy2    DOUBLE   (o)    2nd. glob. coord. deriv.
+\param **deriv2    DOUBLE   (i)    2nd. nat. deriv. of shape funcs
+\param   iel	   INT	    (i)    number of nodes of actual ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_gder2(
                ELEMENT     *ele,
-	       double     **xyze,     
-	       double     **xjm,      
-               double     **bi,     
-	       double     **xder2,  
-	       double     **derxy,  
-	       double     **derxy2, 
-               double     **deriv2, 
-	       int          iel     
+	       DOUBLE     **xyze,     
+	       DOUBLE     **xjm,      
+               DOUBLE     **bi,     
+	       DOUBLE     **xder2,  
+	       DOUBLE     **derxy,  
+	       DOUBLE     **derxy2, 
+               DOUBLE     **deriv2, 
+	       INT          iel     
 	     )
 {
-int i;
-double x00,x01,x02,x10,x11,x12,x20,x21,x22;
-double det,dum;
-double r0,r1,r2;
+INT i;
+DOUBLE x00,x01,x02,x10,x11,x12,x20,x21,x22;
+DOUBLE det,dum;
+DOUBLE r0,r1,r2;
 
 #ifdef DEBUG 
 dstrc_enter("f2_gder2");

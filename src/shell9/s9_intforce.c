@@ -2,7 +2,7 @@
 \file
 \brief contains the routine 
  - s9_intforce: which calculates the internal forces: 
-                R = int (Bt * stress_r)
+                R = INT (Bt * stress_r)
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
@@ -18,25 +18,25 @@
 
 <pre>                     m.gee 11/01             modified by    sh 11/02
 This routine calculates the internal forces:
-      R = int (Bt * stress_r)
+      R = INT (Bt * stress_r)
 </pre>
-\param  double *intforce  (i/o) internal forces to be modified (intforce +=)
-\param  double *stress_r   (i)  stress resultants (integrated over thickness)
-\param  double **bop       (i)  B-Operator matrix
-\param  int      iel       (i)  number of nodes to this element
-\param  int      numdf     (i)  number of degrees of freedom to one node
-\param  int      nstress_r (i)  number of stress resultants (shell9 -> 12)
-\param  double   weight    (i)  weight at GP
+\param  DOUBLE *intforce  (i/o) internal forces to be modified (intforce +=)
+\param  DOUBLE *stress_r   (i)  stress resultants (integrated over thickness)
+\param  DOUBLE **bop       (i)  B-Operator matrix
+\param  INT      iel       (i)  number of nodes to this element
+\param  INT      numdf     (i)  number of degrees of freedom to one node
+\param  INT      nstress_r (i)  number of stress resultants (shell9 -> 12)
+\param  DOUBLE   weight    (i)  weight at GP
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_intforce(double *intforce, double *stress_r, double **bop,
-                 int iel, int numdf, int nstress_r, double weight)
+void s9_intforce(DOUBLE *intforce, DOUBLE *stress_r, DOUBLE **bop,
+                 INT iel, INT numdf, INT nstress_r, DOUBLE weight)
 {
-int nd;
+INT nd;
 
 #ifdef DEBUG 
 dstrc_enter("s9_intforce");

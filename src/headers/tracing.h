@@ -77,14 +77,14 @@ defined in pss_ds.c, declared in tracing.h
 typedef struct _TRACE
 {
 /* variables for watching the ARRAYS */
-int                 trace_on;             /*!< switches trace on/off */
-int                 num_arrays;           /*!< number of current int-arrays */
+INT                 trace_on;             /*!< switches trace on/off */
+INT                 num_arrays;           /*!< number of current INT-arrays */
 
 struct _TRACEARRAY *arraychain;           /*!< start of the linear chained list */
 struct _TRACEARRAY *endarraychain;        /*!< ptr to the actual end of the chain list */
 
 /* variables for watching the routines */
-int                 deepness;             /*!< the actual deepness of the calling tree */
+INT                 deepness;             /*!< the actual deepness of the calling tree */
 struct _TRACEROUT   routine[100];         /*!< chained list ring to trace routine */
 struct _TRACEROUT   *actroutine;          /*!< ptr to actual routine */
 } TRACE;

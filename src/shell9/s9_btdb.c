@@ -19,25 +19,25 @@
 This routine calculates the stiffness matrix Ke
                  Ke += Bt * D * B
 </pre>
-\param  double **estif   (i/o) element stiffness matrix to be modified
-\param  double **bop      (i)  B-Operator matrix
-\param  double **D        (i)  over thickness integrated material matrix
-\param  int      iel      (i)  number of nodes to this element
-\param  int      numdf    (i)  number of degrees of freedom to one node
-\param  double   weight   (i)  weight at GP
-\param  double **work     (i)  matrix to store interim values
+\param  DOUBLE **estif   (i/o) element stiffness matrix to be modified
+\param  DOUBLE **bop      (i)  B-Operator matrix
+\param  DOUBLE **D        (i)  over thickness integrated material matrix
+\param  INT      iel      (i)  number of nodes to this element
+\param  INT      numdf    (i)  number of degrees of freedom to one node
+\param  DOUBLE   weight   (i)  weight at GP
+\param  DOUBLE **work     (i)  matrix to store interim values
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_BtDB(double **estif, double **bop,    double **D,   int iel,
-             int      numdf, double   weight, double **work)
+void s9_BtDB(DOUBLE **estif, DOUBLE **bop,    DOUBLE **D,   INT iel,
+             INT      numdf, DOUBLE   weight, DOUBLE **work)
 {
-int i,j,k;
-int dim;
-double sum;
+INT i,j,k;
+INT dim;
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("s9_BtDB");
 #endif

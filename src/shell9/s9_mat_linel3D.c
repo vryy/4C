@@ -30,12 +30,12 @@ elastic isotropic material (3D-formulation). -> sorting [11,22,33,12,23,13]
 \sa calling: ---; called by: s9_call_mat()  [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_mat_linel3D(double youngs,
-                    double possionratio,
-                    double **d)
+void s9_mat_linel3D(DOUBLE youngs,
+                    DOUBLE possionratio,
+                    DOUBLE **d)
 {
-double d1,d2,d3;
-double ym,pv;/*------------------------------------------ mat constants */
+DOUBLE d1,d2,d3;
+DOUBLE ym,pv;/*------------------------------------------ mat constants */
 #ifdef DEBUG 
 dstrc_enter("s9_mat_linel3D");
 #endif

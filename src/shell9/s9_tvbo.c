@@ -18,46 +18,46 @@
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine calculates the B-Operator for compatible strains
 </pre>
-\param  double     e1,e2   (i)  natural coordinates at GP
-\param  double   **bop     (o)  B-Operator matrix
-\param  double    *funct   (i)  shape functions at GP
-\param  double   **deriv   (i)  shape function derivatives at GP
-\param  int        iel     (i)  number of nodes to this element
-\param  int        numdf   (i)  number of dofs to one node
-\param  double  ***akov    (i)  kovariant basis vectors at reference layer of each kinematic layer
-\param  double  ***a3kvp   (i)  partial derivatives of a3_L for each kinematic layer
-\param  int        num_klay(i)  number of kin layers to this element  
-\param  int        klay    (i)  actual kinematic layer  
-\param  int        nsansq  (i)  number of collocation points (ANS)
+\param  DOUBLE     e1,e2   (i)  natural coordinates at GP
+\param  DOUBLE   **bop     (o)  B-Operator matrix
+\param  DOUBLE    *funct   (i)  shape functions at GP
+\param  DOUBLE   **deriv   (i)  shape function derivatives at GP
+\param  INT        iel     (i)  number of nodes to this element
+\param  INT        numdf   (i)  number of dofs to one node
+\param  DOUBLE  ***akov    (i)  kovariant basis vectors at reference layer of each kinematic layer
+\param  DOUBLE  ***a3kvp   (i)  partial derivatives of a3_L for each kinematic layer
+\param  INT        num_klay(i)  number of kin layers to this element  
+\param  INT        klay    (i)  actual kinematic layer  
+\param  INT        nsansq  (i)  number of collocation points (ANS)
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_tvbo(double      e1,
-             double      e2,
-             double    **bop,
-             double     *funct,
-             double    **deriv,
-             int         iel,
-             int         numdf,
-             double   ***akov,
-             double   ***a3kvp,
-             int         num_klay,    /* number of kin layers to this element */  
-             int         klay,        /* actual kin layer */
-             double      condfac,
-             int         nsansq)
+void s9_tvbo(DOUBLE      e1,
+             DOUBLE      e2,
+             DOUBLE    **bop,
+             DOUBLE     *funct,
+             DOUBLE    **deriv,
+             INT         iel,
+             INT         numdf,
+             DOUBLE   ***akov,
+             DOUBLE   ***a3kvp,
+             INT         num_klay,    /* number of kin layers to this element */  
+             INT         klay,        /* actual kin layer */
+             DOUBLE      condfac,
+             INT         nsansq)
 {
-int    i,j,jlay,inode,node_start;
-int    numdof_shell9 = numdf;
-double a1x,a1y,a1z,a2x,a2y,a2z;
-double a3xi,a3yi,a3zi;
-double a3xj,a3yj,a3zj;
-double a31xj,a31yj,a31zj,a32xj,a32yj,a32zj;
-double pk,pk1,pk2;
-int    idof, jdof;
-double fac, fac1;
+INT    i,j,jlay,inode,node_start;
+INT    numdof_shell9 = numdf;
+DOUBLE a1x,a1y,a1z,a2x,a2y,a2z;
+DOUBLE a3xi,a3yi,a3zi;
+DOUBLE a3xj,a3yj,a3zj;
+DOUBLE a31xj,a31yj,a31zj,a32xj,a32yj,a32zj;
+DOUBLE pk,pk1,pk2;
+INT    idof, jdof;
+DOUBLE fac, fac1;
 #ifdef DEBUG 
 dstrc_enter("s9_tvbo");
 #endif

@@ -63,10 +63,10 @@ extern ALLDYNA      *alldyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -77,38 +77,38 @@ extern struct _CURVE *curve;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-double acttime;
+DOUBLE acttime;
 
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear dynamic structural analysis m.gee 02/02|
  *----------------------------------------------------------------------*/
 void dyn_nln_structural() 
 {
-int             i;                  /* simply a counter */
-int             numeq;              /* number of equations on this proc */
-int             numeq_total;        /* total number of equations */
-int             init;               /* flag for solver_control call */
-int             itnum,itstore;      /* counter for NR-Iterations */
-int             convergence;        /* convergence flag */
-int             mod_disp,mod_stress;
-int             mod_res_write;
-int             updevry_disp;
-int             restart;
-double          maxtime;
-double          t0_res,t1_res;
+INT             i;                  /* simply a counter */
+INT             numeq;              /* number of equations on this proc */
+INT             numeq_total;        /* total number of equations */
+INT             init;               /* flag for solver_control call */
+INT             itnum,itstore;      /* counter for NR-Iterations */
+INT             convergence;        /* convergence flag */
+INT             mod_disp,mod_stress;
+INT             mod_res_write;
+INT             updevry_disp;
+INT             restart;
+DOUBLE          maxtime;
+DOUBLE          t0_res,t1_res;
 
-double          dt;
-int             nstep;
-double          deltaepot=0.0;
+DOUBLE          dt;
+INT             nstep;
+DOUBLE          deltaepot=0.0;
 
-double          t0,t1;
+DOUBLE          t0,t1;
 
-double          dmax;               /* infinity norm of residual displacements */
+DOUBLE          dmax;               /* infinity norm of residual displacements */
 
-int             stiff_array;        /* indice of the active system sparse matrix */
-int             mass_array;         /* indice of the active system sparse matrix */
-int             damp_array;         /* indice of the active system sparse matrix */
-int             actcurve;           /* indice of active time curve */
+INT             stiff_array;        /* indice of the active system sparse matrix */
+INT             mass_array;         /* indice of the active system sparse matrix */
+INT             damp_array;         /* indice of the active system sparse matrix */
+INT             actcurve;           /* indice of active time curve */
 
 SOLVAR         *actsolv;            /* pointer to active solution structure */
 PARTITION      *actpart;            /* pointer to active partition */
@@ -124,34 +124,34 @@ DIST_VECTOR    *dispi;              /* distributed vector to hold incremental di
 DIST_VECTOR    *work;               /* working vectors */
 
 ARRAY           intforce_a;         /* redundant vector of full length for internal forces */
-double         *intforce;
+DOUBLE         *intforce;
 ARRAY           dirich_a;           /* redundant vector of full length for dirichlet-part of rhs */
-double         *dirich;             
-double          dirichfacs[10];     /* factors needed for dirichlet-part of rhs */
+DOUBLE         *dirich;             
+DOUBLE          dirichfacs[10];     /* factors needed for dirichlet-part of rhs */
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
-int             contact = 0;        /* flag for contact onoff */
+INT             contact = 0;        /* flag for contact onoff */
 ARRAY           contactforce_a;     /* redundant vector of full length for contact forces */
-double         *cforce;
+DOUBLE         *cforce;
 DIST_VECTOR    *con;                /*  contact forces */              
-int             augon=0;
-int             actaug;
-double          contactdt;
+INT             augon=0;
+INT             actaug;
+DOUBLE          contactdt;
 
-int             timeadapt;          /* flag to switch time adaption on/off */
-int             itwant;
-double          maxdt;
-double          resultdt;
-double          newdt;
-double          olddt;
-double          eta;
-int             repeatcount;
-double          lowtime,uptime,writetime;
-double          remain;
-double          low,up;
-int             ilow,iup;
-double          tau,tau2,tau3,fac;
+INT             timeadapt;          /* flag to switch time adaption on/off */
+INT             itwant;
+DOUBLE          maxdt;
+DOUBLE          resultdt;
+DOUBLE          newdt;
+DOUBLE          olddt;
+DOUBLE          eta;
+INT             repeatcount;
+DOUBLE          lowtime,uptime,writetime;
+DOUBLE          remain;
+DOUBLE          low,up;
+INT             ilow,iup;
+DOUBLE          tau,tau2,tau3,fac;
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn   = 1;                /* dynamic calculation */
@@ -854,7 +854,7 @@ augon = 0;
 adapt_bot:
 if (timeadapt)
 {
-   eta    = ((double)itwant)/((double)itnum); 
+   eta    = ((DOUBLE)itwant)/((DOUBLE)itnum); 
    olddt  = sdyn->dt;
    newdt  = sdyn->dt * pow(eta,0.3333333);
    if (newdt>1.5*(sdyn->dt)) 
@@ -868,7 +868,7 @@ if (timeadapt)
       if (repeatcount >= 10) dserror("No convergence after repeating step 10 times");
       if (par.myrank==0) printf("No convergence in maxiter steps - repeat step\n");
       /* reduce the step size drastically */
-      eta         = ((double)itwant)/40.0; 
+      eta         = ((DOUBLE)itwant)/40.0; 
       newdt       = sdyn->dt * pow(eta,0.3333333);
       sdyn->time -= sdyn->dt;
       sdyn->dt    = newdt;
@@ -1033,8 +1033,8 @@ if (timeadapt)
    uptime  = sdyn->time;
    low     = lowtime / resultdt;
    up      =  uptime / resultdt;
-   ilow    = (int)floor(low);
-   iup     = (int)ceil(up);
+   ilow    = (INT)floor(low);
+   iup     = (INT)ceil(up);
    remain  = fmod(uptime,iup*resultdt);
    if (remain<EPS12) iup++;
    for (i=ilow+1; i<iup; i++) 

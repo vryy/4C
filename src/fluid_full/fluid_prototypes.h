@@ -29,9 +29,9 @@ void fluid_setdirich(   FIELD           *actfield,
 	            );
 void fluid_caldirich(
                         ELEMENT         *actele,  
-		        double          *dforces, 
-                        double         **estif,   
-		        int             *hasdirich
+		        DOUBLE          *dforces, 
+                        DOUBLE         **estif,   
+		        INT             *hasdirich
 		    ); 
 
 /************************************************************************
@@ -40,16 +40,16 @@ void fluid_caldirich(
 void fluid_setdirich_tu(
                        FIELD  *actfield, 
                        FLUID_DYNAMIC *fdyn, 
-                       double   *lower_limit_kappa,
-                       double   *lower_limit_eps
+                       DOUBLE   *lower_limit_kappa,
+                       DOUBLE   *lower_limit_eps
                        );
 
 void fluid_caldirich_tu( 
                     FLUID_DYN_CALC  *dynvar, 
                      ELEMENT   *actele,  
-		        double    *dforces, 
-                    double   **estif,   
-		       int       *hasdirich
+		        DOUBLE    *dforces, 
+                    DOUBLE   **estif,   
+		       INT       *hasdirich
 		       );
                         
 /************************************************************************
@@ -58,16 +58,16 @@ void fluid_caldirich_tu(
 void fluid_setdirich_tu_1(
                        FIELD  *actfield, 
                        FLUID_DYNAMIC *fdyn, 
-                       double   *lower_limit_kappa,
-                       double   *lower_limit_omega
+                       DOUBLE   *lower_limit_kappa,
+                       DOUBLE   *lower_limit_omega
                        );
 
 void fluid_caldirich_tu_1( 
                          FLUID_DYN_CALC  *dynvar, 
                          ELEMENT   *actele,  
-		             double    *dforces, 
-                         double   **estif,   
-		             int       *hasdirich
+		             DOUBLE    *dforces, 
+                         DOUBLE   **estif,   
+		             INT       *hasdirich
 		             );     
 
 
@@ -100,7 +100,7 @@ void fluid_isi_tu_1(FLUID_DYNAMIC *fdyn);
 /************************************************************************
  | fluid_mf.c                                                           |
  ************************************************************************/
-void fluid_mf(int mctrl);
+void fluid_mf(INT mctrl);
 
 /************************************************************************
  | fluid_mfcoupling.c                                                   |
@@ -120,7 +120,7 @@ void fluid_pm(void);
  ************************************************************************/
 void fluid_startproc(
                           FLUID_DYNAMIC     *fdyn,
-		          int               *nfrastep 
+		          INT               *nfrastep 
 		    );
 void fluid_tcons(         
                           FLUID_DYNAMIC     *fdyn,
@@ -129,12 +129,12 @@ void fluid_tcons(
 void fluid_icons(         
                           FLUID_DYNAMIC     *fdyn,
                           FLUID_DYN_CALC    *dynvar,
-		          int                itnum           
+		          INT                itnum           
 		);
 void fluid_init(
 		          FIELD             *actfield,  
                           FLUID_DYNAMIC     *fdyn,
-		          int                numr,
+		          INT                numr,
 		          FLUID_STRESS       str	
 	       );
 
@@ -142,32 +142,32 @@ void fluid_init(
 void fluid_norm(          
                           FLUID_DYNAMIC     *fdyn, 	     
                           FIELD             *actfield,    
-		          int                numeq_total, 
-                          double            *vrat,        
-		          double            *prat         
+		          INT                numeq_total, 
+                          DOUBLE            *vrat,        
+		          DOUBLE            *prat         
 	       );
 void fluid_sol_copy(       
                           FIELD             *actfield,
-			  int                disnum,
-			  int                arrayfrom,
-			  int                arrayto,  
-                          int                from,     
-		          int                to,       
-		          int                numdf      
+			  INT                disnum,
+			  INT                arrayfrom,
+			  INT                arrayto,  
+                          INT                from,     
+		          INT                to,       
+		          INT                numdf      
 		  );
-int fluid_steadycheck(    
+INT fluid_steadycheck(    
                           FLUID_DYNAMIC     *fdyn, 	  
                           FIELD             *actfield,   
-		          int                numeq_total 
+		          INT                numeq_total 
 		     );
-int fluid_convcheck(      
+INT fluid_convcheck(      
                           FLUID_DYNAMIC     *fdyn,   
-                          double             vrat,  
-		          double             prat,
-			  double             grat,  
-                          int                itnum, 
-		          double             te,    
-		          double             ts     
+                          DOUBLE             vrat,  
+		          DOUBLE             prat,
+			  DOUBLE             grat,  
+                          INT                itnum, 
+		          DOUBLE             te,    
+		          DOUBLE             ts     
 		   );
 void fluid_algoout(       
                           FLUID_DYNAMIC     *fdyn, 
@@ -182,7 +182,7 @@ void fluid_nullshstr(INTRA             *actintra,
 void fluid_reducestress(  
                           INTRA             *actintra,
                           FIELD             *actfield,
-			  int                numdf, 
+			  INT                numdf, 
 			  FLUID_STRESS       str
 		       );
 	       
@@ -199,41 +199,41 @@ void fluid_tcons_tu(FLUID_DYNAMIC *fdyn,
 void fluid_set_check_tu(
                        FIELD  *actfield, 
                        FLUID_DYNAMIC *fdyn, 
-                       double lower_limit_kappa);
+                       DOUBLE lower_limit_kappa);
 
 void fluid_eddy_pro(FIELD         *actfield 
                   );
 
-int fluid_convcheck_tu(FLUID_DYNAMIC *fdyn,   
-                       double         kapepsrat,  
-                       int            itnum1, 
-		           double         te,    
-		           double         ts     
+INT fluid_convcheck_tu(FLUID_DYNAMIC *fdyn,   
+                       DOUBLE         kapepsrat,  
+                       INT            itnum1, 
+		           DOUBLE         te,    
+		           DOUBLE         ts     
 		          );
-int fluid_convcheck_test(
+INT fluid_convcheck_test(
                      FLUID_DYNAMIC *fdyn, 
                      FIELD         *actfield, 
-                     int            itnum_check 
+                     INT            itnum_check 
 		         );
 
 void fluid_icons_tu(FLUID_DYNAMIC *fdyn,
                     FLUID_DYN_CALC *dynvar,
-		        int itnum1,
-		        int itnumke,
-                    int itnum_n
+		        INT itnum1,
+		        INT itnumke,
+                    INT itnum_n
 		        );
 
 void fluid_copysol_tu(FLUID_DYNAMIC *fdyn, 
                        FIELD         *actfield,  
-                       int            from,     
-		           int            to,       
-		           int            flag      
+                       INT            from,     
+		           INT            to,       
+		           INT            flag      
 		          );
                        
 void fluid_copysol_test(FLUID_DYNAMIC *fdyn, 
                    FIELD         *actfield,  
-                   int            from,     
-                   int            to     
+                   INT            from,     
+                   INT            to     
 		       );
 
 void fluid_algoout_tu(FLUID_DYNAMIC  *fdyn, 
@@ -246,8 +246,8 @@ void fluid_algoout_tu(FLUID_DYNAMIC  *fdyn,
 void fluid_set_check_tu_1(
                        FIELD  *actfield, 
                        FLUID_DYNAMIC *fdyn, 
-                       double lower_limit_kappa,
-                       double lower_limit_omega
+                       DOUBLE lower_limit_kappa,
+                       DOUBLE lower_limit_omega
                        );
 
 /************************************************************************

@@ -4,10 +4,10 @@
 /*----------------------------------------------------------------------*
  | make internal forces                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_intforce(double *intforce, double *stress_r, double **bop,
-                 int iel, int numdf, int nstress_r, double weight)
+void s8_intforce(DOUBLE *intforce, DOUBLE *stress_r, DOUBLE **bop,
+                 INT iel, INT numdf, INT nstress_r, DOUBLE weight)
 {
-int nd;
+INT nd;
 
 #ifdef DEBUG 
 dstrc_enter("s8_intforce");

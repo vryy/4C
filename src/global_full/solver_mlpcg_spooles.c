@@ -54,7 +54,7 @@ InpMtx                 *newA;
 DenseMtx               *newY;
 SolveMap               *solvemap;
 #else
-int i; /* just a dummy to prevent empty structure */
+INT i; /* just a dummy to prevent empty structure */
 #endif
 } SPO_DATA;
 static struct _SPO_DATA sdata;
@@ -66,38 +66,38 @@ static struct _SPO_DATA sdata;
 <pre>                                                        m.gee 11/02 
 
 </pre>
-\param z            double*      (o)   the solution of the solve 
-\param r            double*      (i)   the rhs 
+\param z            DOUBLE*      (o)   the solution of the solve 
+\param r            DOUBLE*      (i)   the rhs 
 \param csr          DBCSR*       (i)   the matrix to be solved with 
 \param actintra     INTRA*       (i)   the intra-communicator of this field                  
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_spoolessolve(double *z, double *r, DBCSR *csr, INTRA *actintra)
+void mlpcg_precond_spoolessolve(DOUBLE *z, DOUBLE *r, DBCSR *csr, INTRA *actintra)
 {
 #ifdef SPOOLES_PACKAGE
-int              i,j;
-int              myrank,nproc;
-int              pivotingflag;
-int             *update,*ia,*ja;
-double          *a;
-int              numeq,numeq_total,nnz; 
-double           cpus[20];
-int              stats[20];
-int             *rowind1;
-int              nrow;
-int              msglvl = 0;
+INT              i,j;
+INT              myrank,nproc;
+INT              pivotingflag;
+INT             *update,*ia,*ja;
+DOUBLE          *a;
+INT              numeq,numeq_total,nnz; 
+DOUBLE           cpus[20];
+INT              stats[20];
+INT             *rowind1;
+INT              nrow;
+INT              msglvl = 0;
 FILE            *msgFile = NULL;
-int              nedges;
-int              seed = 10101;
-double          *opcounts,minops,cutoff,tau=100.0;
-double           droptol=0.0;
-int              root,firsttag=0,error=-1;
-int              sym=SPOOLES_NONSYMMETRIC;
-int              nmycol;
-double          *recv;
+INT              nedges;
+INT              seed = 10101;
+DOUBLE          *opcounts,minops,cutoff,tau=100.0;
+DOUBLE           droptol=0.0;
+INT              root,firsttag=0,error=-1;
+INT              sym=SPOOLES_NONSYMMETRIC;
+INT              nmycol;
+DOUBLE          *recv;
 ARRAY            recv_a;
-int              new;
+INT              new;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_spoolessolve");
@@ -106,7 +106,7 @@ dstrc_enter("mlpcg_precond_spoolessolve");
 myrank      = actintra->intra_rank;
 nproc       = actintra->intra_nprocs;
 dsmemreport();fflush(stdout);
-/*----------------------- int the inprocs=1 case pivoting does not work */
+/*----------------------- INT the inprocs=1 case pivoting does not work */
 if (nproc>1)   pivotingflag=1;
 else           pivotingflag=0;
 /*----------------------------------------------------------------------*/

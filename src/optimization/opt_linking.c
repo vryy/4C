@@ -57,12 +57,12 @@ extern struct _STATIC_VAR  *statvar;
 extern struct _MATERIAL  *mat;
 
 
-void linking (int phase, double *grdobj, double *grdcon, double *var, 
-             double *grdobj_lin, double *grdcon_lin, double *var_lin)
+void linking (INT phase, DOUBLE *grdobj, DOUBLE *grdcon, DOUBLE *var, 
+             DOUBLE *grdobj_lin, DOUBLE *grdcon_lin, DOUBLE *var_lin)
 {
 /* -------------------------------------------------------------------------- */
-  int i, numvarlin;              /* counter                          */
-  int n, o;                      /* new position, old position       */
+  INT i, numvarlin;              /* counter                          */
+  INT n, o;                      /* new position, old position       */
   ELEMENT *actele;              /* active element              */
   PARTITION    *actpart;        /* pointer to the fields PARTITION structure */
   FIELD        *actfield;       /* pointer to the structural FIELD */

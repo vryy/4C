@@ -28,16 +28,16 @@
  |              =4 AXISYMMETRIC                                         |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1_keku(double  **s, 
-             double  **bs, 
-             double  **d, 
-             double    fac, 
-             int       nd,
-             int       neps)
+void w1_keku(DOUBLE  **s, 
+             DOUBLE  **bs, 
+             DOUBLE  **d, 
+             DOUBLE    fac, 
+             INT       nd,
+             INT       neps)
 {
-int            i, j, k, l, m;
-double         dum;
-double         db[4];
+INT            i, j, k, l, m;
+DOUBLE         dum;
+DOUBLE         db[4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_keku");

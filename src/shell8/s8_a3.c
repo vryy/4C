@@ -7,21 +7,21 @@
  *----------------------------------------------------------------------*/
 void s8a3(ELEMENT   *ele,
           S8_DATA   *data,/* is' hier ueberfluessig, rausschmeissen!*/
-          int        option)
+          INT        option)
 {
-int        i,j;
-int        ialpha;
-int        idim;
-int        inode;
-int        iel;
-double     r,s;
-double     gkov[3][3];
-double     a3[3];
-double     a3norm;
-ARRAY      funct_a; double  *funct;
-ARRAY      deriv_a; double **deriv;
-double   **a3ref;
-double    *thick;
+INT        i,j;
+INT        ialpha;
+INT        idim;
+INT        inode;
+INT        iel;
+DOUBLE     r,s;
+DOUBLE     gkov[3][3];
+DOUBLE     a3[3];
+DOUBLE     a3norm;
+ARRAY      funct_a; DOUBLE  *funct;
+ARRAY      deriv_a; DOUBLE **deriv;
+DOUBLE   **a3ref;
+DOUBLE    *thick;
 
 #ifdef DEBUG 
 dstrc_enter("s8a3");
@@ -78,21 +78,21 @@ return;
 /*----------------------------------------------------------------------*
  | evaluation of directors at nodal points                m.gee 10/01   |
  *----------------------------------------------------------------------*/
-void s8a3ref_extern(double   *funct,
-                       double  **deriv,
-                       double   *thick,
-                       double  **a3ref,
+void s8a3ref_extern(DOUBLE   *funct,
+                       DOUBLE  **deriv,
+                       DOUBLE   *thick,
+                       DOUBLE  **a3ref,
                        ELEMENT  *ele)
 {
-int        i,j;
-int        ialpha;
-int        idim;
-int        inode;
-int        iel;
-double     r,s;
-double     gkov[3][3];
-double     a3[3];
-double     a3norm;
+INT        i,j;
+INT        ialpha;
+INT        idim;
+INT        inode;
+INT        iel;
+DOUBLE     r,s;
+DOUBLE     gkov[3][3];
+DOUBLE     a3[3];
+DOUBLE     a3norm;
 
 #ifdef DEBUG 
 dstrc_enter("s8a3ref_extern");
@@ -144,15 +144,15 @@ return;
 /*----------------------------------------------------------------------*
  | modified director bischoff style                       m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8averdir(double **dir_list, int numa3, double *a3)
+void s8averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3)
 {
-int        i;
-double     averdir[3];
-double     davn[3];
-double     normal[3];
-double     lenght;
-double     denom;
-double     alpha;
+INT        i;
+DOUBLE     averdir[3];
+DOUBLE     davn[3];
+DOUBLE     normal[3];
+DOUBLE     lenght;
+DOUBLE     denom;
+DOUBLE     alpha;
 #ifdef DEBUG 
 dstrc_enter("s8averdir");
 #endif

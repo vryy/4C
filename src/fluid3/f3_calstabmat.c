@@ -51,32 +51,32 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param **vderxy    double	   (i)     global vel. deriv.
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)	   weighting factor	   
-\param   visc	   double	   (i)	   fluid viscosity
-\param   iel	   int		   (i)	   num. of nodes in ele
-\param   ihoel	   int		   (i)	   flag for higer ord. ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param **vderxy    DOUBLE	   (i)     global vel. deriv.
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)	   weighting factor	   
+\param   visc	   DOUBLE	   (i)	   fluid viscosity
+\param   iel	   INT		   (i)	   num. of nodes in ele
+\param   ihoel	   INT		   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkvv(
                     ELEMENT         *ele,
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-		    double         **vderxy,
-		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,	 
-                    int              ihoel
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE         **vderxy,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,	 
+                    INT              ihoel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -86,14 +86,14 @@ void f3_calstabkvv(
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |  
 /*----------------------------------------------------------------------*/
-int    irow,icol,irn,icn,ird;
-double taumu;
-double taump;
-double tauc;
-double c,cc;
-double aux,auxr,auxc;
-double auxx, auxy, auxz;
-double sign;
+INT    irow,icol,irn,icn,ird;
+DOUBLE taumu;
+DOUBLE taump;
+DOUBLE tauc;
+DOUBLE c,cc;
+DOUBLE aux,auxr,auxc;
+DOUBLE auxx, auxy, auxz;
+DOUBLE sign;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabkvv");
@@ -436,30 +436,30 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   visc      double	   (i)     fluid viscosity
-\param   iel	   int  	   (i)	   num. of nodes in ele
-\param   ihoel     int  	   (i)	   flag for higer ord. ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   visc      DOUBLE	   (i)     fluid viscosity
+\param   iel	   INT  	   (i)	   num. of nodes in ele
+\param   ihoel     INT  	   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkvp(
                     ELEMENT         *ele,
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,
-		    int              ihoel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel		 
                    )
 {
 /*----------------------------------------------------------------------*
@@ -471,12 +471,12 @@ void f3_calstabkvp(
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |   
 /*----------------------------------------------------------------------*/
-int    irow,icol,irn,ird,posc;
-double taumu;
-double taump;
-double c;
-double aux;
-double sign;
+INT    irow,icol,irn,ird,posc;
+DOUBLE taumu;
+DOUBLE taump;
+DOUBLE c;
+DOUBLE aux;
+DOUBLE sign;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabkvp");
@@ -590,30 +590,30 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **emass     double	   (i/o)   ele mass matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   visc      double	   (i)     fluid viscosity
-\param   iel	   int  	   (i)	   num. of nodes in ele
-\param   ihoel     int  	   (i)	   flag for higer ord. ele
+\param **emass     DOUBLE	   (i/o)   ele mass matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   visc      DOUBLE	   (i)     fluid viscosity
+\param   iel	   INT  	   (i)	   num. of nodes in ele
+\param   ihoel     INT  	   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabmvv(
                     ELEMENT         *ele,
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-    		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,
-		    int              ihoel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+    		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel		 
                    )
 {
 /*----------------------------------------------------------------------*
@@ -623,12 +623,12 @@ void f3_calstabmvv(
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |   
 /*----------------------------------------------------------------------*/
-int    irow,icol,irn,icn,ird;
-double taumu;
-double taump;
-double c,cc;
-double aux,auxc,auxr;
-double sign;
+INT    irow,icol,irn,icn,ird;
+DOUBLE taumu;
+DOUBLE taump;
+DOUBLE c,cc;
+DOUBLE aux,auxc,auxr;
+DOUBLE sign;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabmvv");
@@ -749,31 +749,31 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)      
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param **vderxy    double	   (i)     global vel. deriv.
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   visc      double	   (i)     fluid viscosity
-\param   iel	   int  	   (i)	   num. of nodes in ele
-\param   ihoel     int  	   (i)	   flag for higer ord. ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param **vderxy    DOUBLE	   (i)     global vel. deriv.
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   visc      DOUBLE	   (i)     fluid viscosity
+\param   iel	   INT  	   (i)	   num. of nodes in ele
+\param   ihoel     INT  	   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpv(
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-		    double         **vderxy,
-		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,
-		    int              ihoel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE         **vderxy,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel		 
                    )
 {
 /*----------------------------------------------------------------------*
@@ -785,11 +785,11 @@ void f3_calstabkpv(
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
 /*----------------------------------------------------------------------*/
-int    irow,icol,irn,ird,icn,posr;
-double c;
-double aux;
-double sign;
-double taump;
+INT    irow,icol,irn,ird,icn,posr;
+DOUBLE c;
+DOUBLE aux;
+DOUBLE sign;
+DOUBLE taump;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabkpv");
@@ -913,19 +913,19 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param **derxy     double	   (i)     global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   iel	   int  	   (i)     num. of nodes in ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   iel	   INT  	   (i)     num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpp(
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double         **derxy,
-		    double           fac,
-		    int              iel		 
+		    DOUBLE         **estif,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    INT              iel		 
                    )
 {
 /*----------------------------------------------------------------------*
@@ -937,9 +937,9 @@ void f3_calstabkpp(
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
 /*----------------------------------------------------------------------*/
-int    irow,icol,posc,posr;
-double c;
-double taump;
+INT    irow,icol,posc,posr;
+DOUBLE c;
+DOUBLE taump;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabkpp");
@@ -994,22 +994,22 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **emass     double	   (i/o)   ele mass matrix
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   iel	   int		   (i)	   num. of nodes in ele
+\param **emass     DOUBLE	   (i/o)   ele mass matrix
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   iel	   INT		   (i)	   num. of nodes in ele
 
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabmpv(
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *funct,
-		    double         **derxy,
-		    double           fac,
-		    int              iel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    INT              iel		 
                    )
 {
 /*----------------------------------------------------------------------*
@@ -1021,10 +1021,10 @@ void f3_calstabmpv(
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
 /*----------------------------------------------------------------------*/
-int    irow,icol,icn,posr;
-double c;
-double taump;
-double auxc;
+INT    irow,icol,icn,posr;
+DOUBLE c;
+DOUBLE taump;
+DOUBLE auxc;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabmpv");

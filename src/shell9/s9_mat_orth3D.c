@@ -23,21 +23,21 @@ elastic orthotropic material (3D-formulation).
 -> sorting [11,22,33,12,23,13]
 </pre>
 \param   *mat  ORTHOTROPIC  (i)  Material proberties
-\param  **d    double       (o)  constitutive matrix
+\param  **d    DOUBLE       (o)  constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9_call_mat()  [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_mat_orth3D(ORTHOTROPIC *mat, double **d)
+void s9_mat_orth3D(ORTHOTROPIC *mat, DOUBLE **d)
 {
-double emod1,emod2,emod3;
-double gmod12,gmod13,gmod23;
-double xnue12,xnue13,xnue23;
-double xnue21,xnue32,xnue31;
-double emod;
-double delta;
+DOUBLE emod1,emod2,emod3;
+DOUBLE gmod12,gmod13,gmod23;
+DOUBLE xnue12,xnue13,xnue23;
+DOUBLE xnue21,xnue32,xnue31;
+DOUBLE emod;
+DOUBLE delta;
 #ifdef DEBUG 
 dstrc_enter("s9_mat_orth3D");
 #endif

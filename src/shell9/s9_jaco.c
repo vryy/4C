@@ -23,18 +23,18 @@ This routine calculates the jacobian matrix and the jacobi determinant,
 which is needed to calculate the shell shifter for evaluating load vectors
 if the load is applied on the surface of the shell.
 </pre>
-\param  double   *funct   (i) shape functions at GP
-\param  double  **deriv   (i) shape function derivatives at GP 
-\param  double  **x       (i) coordinates of nodal points (global coordinate system)
-\param  double  **xjm     (i) jacobian matrix
-\param  double   *hte     (i) thickness of shell at nodal points
-\param  double  **a3r     (i) normed (not shared) director in ref/cur config. (->s9a3ref_extern)
-\param  double    e3      (i) thickness direction of shell (1.0=top; 0.0=mit; -1.0=bot)
-\param  int       iel     (i) number of nodes to this element
-\param  double   *deta    (i) Determinant of jacobian
-\param  int       init    (i) flag for initializing arrays
-\param  int       num_klay(i) number of kinematic layers to this element
-\param  double   *klayhgt (i) hight of kin layer in % of total thickness of shell 
+\param  DOUBLE   *funct   (i) shape functions at GP
+\param  DOUBLE  **deriv   (i) shape function derivatives at GP 
+\param  DOUBLE  **x       (i) coordinates of nodal points (global coordinate system)
+\param  DOUBLE  **xjm     (i) jacobian matrix
+\param  DOUBLE   *hte     (i) thickness of shell at nodal points
+\param  DOUBLE  **a3r     (i) normed (not shared) director in ref/cur config. (->s9a3ref_extern)
+\param  DOUBLE    e3      (i) thickness direction of shell (1.0=top; 0.0=mit; -1.0=bot)
+\param  INT       iel     (i) number of nodes to this element
+\param  DOUBLE   *deta    (i) Determinant of jacobian
+\param  INT       init    (i) flag for initializing arrays
+\param  INT       num_klay(i) number of kinematic layers to this element
+\param  DOUBLE   *klayhgt (i) hight of kin layer in % of total thickness of shell 
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -42,49 +42,49 @@ if the load is applied on the surface of the shell.
                              shell9()      [s9_main.c]
 
 *----------------------------------------------------------------------*/
-void s9jaco(double    *funct,
-            double   **deriv,
-            double   **x,
-            double   **xjm,
-            double    *hte,
-            double  ***a3r,
-            double     e3,
-            int        iel,
-            double    *deta,
-            int        init,
-            int        num_klay,
-            double    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
-            double    *mlayhgt)     /* hight of mat layer in % of adjacent kin layer */
+void s9jaco(DOUBLE    *funct,
+            DOUBLE   **deriv,
+            DOUBLE   **x,
+            DOUBLE   **xjm,
+            DOUBLE    *hte,
+            DOUBLE  ***a3r,
+            DOUBLE     e3,
+            INT        iel,
+            DOUBLE    *deta,
+            INT        init,
+            INT        num_klay,
+            DOUBLE    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
+            DOUBLE    *mlayhgt)     /* hight of mat layer in % of adjacent kin layer */
 {
-int             i,j,k;
-double          x1r;
-double          x2r;
-double          x3r;
-double          x1s;
-double          x2s;
-double          x3s;
+INT             i,j,k;
+DOUBLE          x1r;
+DOUBLE          x2r;
+DOUBLE          x3r;
+DOUBLE          x1s;
+DOUBLE          x2s;
+DOUBLE          x3s;
 
-double          hgt;                               /* element thickness */
-double          det_dummy;
-int             mlay,klay,num_mlay;
-int             mod;
+DOUBLE          hgt;                               /* element thickness */
+DOUBLE          det_dummy;
+INT             mlay,klay,num_mlay;
+INT             mod;
 
-static ARRAY    gkov_a;  static double **gkov;
-static ARRAY    gkon_a;  static double **gkon;
-static ARRAY    gmkov_a; static double **gmkov;
-static ARRAY    gmkon_a; static double **gmkon;
+static ARRAY    gkov_a;  static DOUBLE **gkov;
+static ARRAY    gkon_a;  static DOUBLE **gkon;
+static ARRAY    gmkov_a; static DOUBLE **gmkov;
+static ARRAY    gmkon_a; static DOUBLE **gmkon;
 
 /* mid surface basis vectors and metric tensors -> help for s9_tvmr.c */
-static ARRAY        akovh_a;     static double **akovh;     
-static ARRAY        akonh_a;     static double **akonh;     
-static ARRAY        amkovh_a;    static double **amkovh;    
-static ARRAY        amkonh_a;    static double **amkonh;    
+static ARRAY        akovh_a;     static DOUBLE **akovh;     
+static ARRAY        akonh_a;     static DOUBLE **akonh;     
+static ARRAY        amkovh_a;    static DOUBLE **amkovh;    
+static ARRAY        amkonh_a;    static DOUBLE **amkonh;    
 
-static ARRAY4D  akov_a;  static double ***akov;    /* kovariant basis vectors at Int point ref.config. */
-static ARRAY4D  akon_a;  static double ***akon;    /* kontravar.--------------"----------- ref.config. */
-static ARRAY4D  amkov_a; static double ***amkov;   /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY4D  amkon_a; static double ***amkon;   /* kontravar.--------------"------------ ref.config. */
-static ARRAY4D  a3kvp_a; static double ***a3kvp;   /* partiel derivatives of normal vector ref.config. */
+static ARRAY4D  akov_a;  static DOUBLE ***akov;    /* kovariant basis vectors at Int point ref.config. */
+static ARRAY4D  akon_a;  static DOUBLE ***akon;    /* kontravar.--------------"----------- ref.config. */
+static ARRAY4D  amkov_a; static DOUBLE ***amkov;   /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY4D  amkon_a; static DOUBLE ***amkon;   /* kontravar.--------------"------------ ref.config. */
+static ARRAY4D  a3kvp_a; static DOUBLE ***a3kvp;   /* partiel derivatives of normal vector ref.config. */
 
 #ifdef DEBUG 
 dstrc_enter("s9jaco");

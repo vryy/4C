@@ -166,13 +166,13 @@ struct _MUMPSVARS      *mumpsvars;         /* variables needed for MUMPS */
 struct _COLSOLVARS     *colsolvars;        /* variables needed for colsol */
 struct _MLPCGVARS      *mlpcgvars;         /* variables needed for MLPCG */
 
-int                     nsysarray;         /* number of global sparse arrays for this field */   
+INT                     nsysarray;         /* number of global sparse arrays for this field */   
 enum  _SPARSE_TYP      *sysarray_typ;      /* vector of types for all sparse arrays */
 union _SPARSE_ARRAY    *sysarray;          /* vector of sparse arrays */
 
-int                     nrhs;              /* number of distributed rhs-vectors */
+INT                     nrhs;              /* number of distributed rhs-vectors */
 struct _DIST_VECTOR    *rhs;               /* vector of distributed rhs-vectors */
-int                     nsol;              /* number of distributed solution vectors */
+INT                     nsol;              /* number of distributed solution vectors */
 struct _DIST_VECTOR    *sol;               /* vector of dist. solution vectors */
 } SOLVAR;
 
@@ -181,12 +181,12 @@ struct _DIST_VECTOR    *sol;               /* vector of dist. solution vectors *
  *----------------------------------------------------------------------*/
 typedef struct _MLVAR
 {
-int                     symm  ;/* 1 -> symmetric , 0 -> nonsymm.       */
-int                     msglvl;/* 0..4 -> 4 complete debugging output  */
-int                     maxzer;/* additional fill in ,= 0 no fill in   */
-int                     order;
+INT                     symm  ;/* 1 -> symmetric , 0 -> nonsymm.       */
+INT                     msglvl;/* 0..4 -> 4 complete debugging output  */
+INT                     maxzer;/* additional fill in ,= 0 no fill in   */
+INT                     order;
 
-double                  pvttol;/* 0.0 reorder with minim. fill in      */
+DOUBLE                  pvttol;/* 0.0 reorder with minim. fill in      */
                                /* 1.0 best numerical stability         */
 } MLVAR;
 
@@ -195,7 +195,7 @@ double                  pvttol;/* 0.0 reorder with minim. fill in      */
  *----------------------------------------------------------------------*/
 typedef struct _COLSOLVARS
 {
-int                     i;                   /* this is in progress.... */
+INT                     i;                   /* this is in progress.... */
 } COLSOLVARS;
 
 
@@ -204,7 +204,7 @@ int                     i;                   /* this is in progress.... */
  *----------------------------------------------------------------------*/
 typedef struct _MUMPSVARS
 {
-int                     i;                   /* this is in progress.... */
+INT                     i;                   /* this is in progress.... */
 } MUMPSVARS;
 
 /*----------------------------------------------------------------------*
@@ -214,17 +214,17 @@ typedef struct _AZVAR
 {
 enum   _AZSOLVERTYP     azsolvertyp;        /* subtype of aztec solver, see enums.h */
 enum   _AZPRECTYP       azprectyp;          /* type of aztec preconditioner, see enums.h */
-int                     azreuse;            /* reuse of preconditioning feature, important, but not yet implemented */
-int                     azgfill;            /* percentage fill in allowed */
-int                     aziter;             /* maximum number of iterations allowed */
-int                     azsub;              /* number of krylov subspaces for vertain solvers (e.g. gmres) */
-int                     azgraph;            /* forgot about it.... */
-int                     azpoly;             /* integer parameter with different meanings dependent on type of precond. */
-double                  azdrop;             /* numerical drop tolerance for preconditioners using it, default: 0.0 */
-double                  azfill;             /* allowed fill-in in percent of the memory used by the sparse matrix */             
-double                  aztol;              /* tolerance */
-double                  azomega;            /* relaxation parameter for some preconditioners */
-int                     blockdiag;
+INT                     azreuse;            /* reuse of preconditioning feature, important, but not yet implemented */
+INT                     azgfill;            /* percentage fill in allowed */
+INT                     aziter;             /* maximum number of iterations allowed */
+INT                     azsub;              /* number of krylov subspaces for vertain solvers (e.g. gmres) */
+INT                     azgraph;            /* forgot about it.... */
+INT                     azpoly;             /* integer parameter with different meanings dependent on type of precond. */
+DOUBLE                  azdrop;             /* numerical drop tolerance for preconditioners using it, default: 0.0 */
+DOUBLE                  azfill;             /* allowed fill-in in percent of the memory used by the sparse matrix */             
+DOUBLE                  aztol;              /* tolerance */
+DOUBLE                  azomega;            /* relaxation parameter for some preconditioners */
+INT                     blockdiag;
 } AZVAR;
 
 /*----------------------------------------------------------------------*
@@ -233,23 +233,23 @@ int                     blockdiag;
 typedef struct _HYPREVARS
 {
 enum _HYPREPRECTYP      hypre_prectyp;    /* type of hypre preconditioner */
-int                     io;               /* flag to set solver quiet */
-int                     maxiter;          /* max iterations allowed */
-int                     numiter;          /* number of iterations taken */
-double                  resnorm;          /* residual norm achieved */
-int                     reuse;            /* reuse feature (not yet impl.) */
-double                  tol;              /* user-given tolerance */
-int                     kryldim;          /* dimension of krylov subspace */
-double                  threshold;        /* parameters for amg, see manual */
-int                     sweep[4];         
-int                     ifill;            /* fill in level for ilu */
-double                  dfill;            /* fill in level in percent of the original matrix for ilu and parasails */
-int                     bj;               /* ? */
+INT                     io;               /* flag to set solver quiet */
+INT                     maxiter;          /* max iterations allowed */
+INT                     numiter;          /* number of iterations taken */
+DOUBLE                  resnorm;          /* residual norm achieved */
+INT                     reuse;            /* reuse feature (not yet impl.) */
+DOUBLE                  tol;              /* user-given tolerance */
+INT                     kryldim;          /* dimension of krylov subspace */
+DOUBLE                  threshold;        /* parameters for amg, see manual */
+INT                     sweep[4];         
+INT                     ifill;            /* fill in level for ilu */
+DOUBLE                  dfill;            /* fill in level in percent of the original matrix for ilu and parasails */
+INT                     bj;               /* ? */
 
-int                     parasymm;         /* parasails preconditioner parameters */
-int                     paralevel;
-double                  parathresh;
-double                  parafilter;
+INT                     parasymm;         /* parasails preconditioner parameters */
+INT                     paralevel;
+DOUBLE                  parathresh;
+DOUBLE                  parafilter;
 } HYPREVARS;
 
 /*----------------------------------------------------------------------*
@@ -257,7 +257,7 @@ double                  parafilter;
  *----------------------------------------------------------------------*/
 typedef struct _PSUPERLUVARS
 {
-int                     reuse;            /* in progress.... */
+INT                     reuse;            /* in progress.... */
 } PSUPERLUVARS;
 
 /*----------------------------------------------------------------------*
@@ -265,7 +265,7 @@ int                     reuse;            /* in progress.... */
  *----------------------------------------------------------------------*/
 typedef struct _LAPACKVARS
 {
-int                     reuse;            /* in progress.... */
+INT                     reuse;            /* in progress.... */
 } LAPACKVARS;
 
 /*----------------------------------------------------------------------*
@@ -274,24 +274,24 @@ int                     reuse;            /* in progress.... */
  *----------------------------------------------------------------------*/
 typedef struct _SKYMATRIX
 {
-int                     is_init;         /* was this matrix initialized ? */
-int                     is_factored;     /* is this matrix already factored ? */
-int                     ncall;           /* how often was this matrix solved */
+INT                     is_init;         /* was this matrix initialized ? */
+INT                     is_factored;     /* is this matrix already factored ? */
+INT                     ncall;           /* how often was this matrix solved */
 
-int                     numeq_total;     /* total number of unknowns */
-int                     numeq;           /* number of unknowns updated on this proc */ 
-int                     nnz_total;       /* total number of nonzero entries */
-int                     nnz;             /* number of nonzeros on this proc */
+INT                     numeq_total;     /* total number of unknowns */
+INT                     numeq;           /* number of unknowns updated on this proc */ 
+INT                     nnz_total;       /* total number of nonzero entries */
+INT                     nnz;             /* number of nonzeros on this proc */
 
 struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
 struct _ARRAY           maxa;
 struct _ARRAY           maxaf;
 struct _ARRAY           A;
-double                  det;
+DOUBLE                  det;
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -307,17 +307,17 @@ struct _ARRAY          *couple_i_recv;
  *----------------------------------------------------------------------*/
 typedef struct _RC_PTR
 {
-int                     is_init;         /* was this matrix initialized ? */
-int                     is_factored;     /* is this matrix already factored ? */
-int                     ncall;           /* how often was this matrix solved */
+INT                     is_init;         /* was this matrix initialized ? */
+INT                     is_factored;     /* is this matrix already factored ? */
+INT                     ncall;           /* how often was this matrix solved */
 
-int                     numeq_total;     /* total number of unknowns */
-int                     numeq;           /* number of unknowns updated on this proc */ 
-int                     nnz_total;       /* total number of nonzero entries */
-int                     nnz;             /* number of nonzeros on this proc */
+INT                     numeq_total;     /* total number of unknowns */
+INT                     numeq;           /* number of unknowns updated on this proc */ 
+INT                     nnz_total;       /* total number of nonzero entries */
+INT                     nnz;             /* number of nonzeros on this proc */
 
-int                     icntl[20];
-int                     comm;
+INT                     icntl[20];
+INT                     comm;
 
 struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
 struct _ARRAY           irn_loc;         /* proc-local row pointer vector */
@@ -325,15 +325,15 @@ struct _ARRAY           irn_locf;        /* fortran style pointer vector of irn_
 struct _ARRAY           jcn_loc;         /* proc-local column pointer vector */
 struct _ARRAY           jcn_locf;        /* fortran style pointer vector of jcn_loc */
 struct _ARRAY           A_loc;           /* values of the matrix */
-struct _ARRAY           rowptr;          /* int vector holding the begin of each row in irn_loc */
+struct _ARRAY           rowptr;          /* INT vector holding the begin of each row in irn_loc */
 
 struct _ARRAY           irn_glob;        /* on imyrank=0 the global row/column pointer arrays */
 struct _ARRAY           jcn_glob;
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -349,16 +349,16 @@ struct _ARRAY          *couple_i_recv;
  *----------------------------------------------------------------------*/
 typedef struct _CCF
 {
-int                     is_init;         /* was this matrix initialized ? */
-int                     is_factored;     /* is this matrix already factored ? */
-int                     ncall;           /* how often was this matrix solved */
+INT                     is_init;         /* was this matrix initialized ? */
+INT                     is_factored;     /* is this matrix already factored ? */
+INT                     ncall;           /* how often was this matrix solved */
 
-int                     numeq_total;     /* total number of unknowns */
-int                     numeq;           /* number of unknowns updated on this proc */ 
-int                     nnz_total;       /* total number of nonzero entries */
-int                     nnz;             /* number of nonzeros on this proc */
+INT                     numeq_total;     /* total number of unknowns */
+INT                     numeq;           /* number of unknowns updated on this proc */ 
+INT                     nnz_total;       /* total number of nonzero entries */
+INT                     nnz;             /* number of nonzeros on this proc */
 
-int                     comm;
+INT                     comm;
 
 struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
 struct _ARRAY           Ap;              /* column pointer vector */
@@ -367,8 +367,8 @@ struct _ARRAY           Ax;              /* values of the matrix */
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -382,26 +382,26 @@ struct _ARRAY          *couple_i_recv;
  *----------------------------------------------------------------------*/
 typedef struct _DENSE
 {
-int                     is_init;         /* was this matrix initialized ? */
-int                     is_factored;     /* is this matrix already factored ? */
-int                     ncall;           /* how often was this matrix solved */
+INT                     is_init;         /* was this matrix initialized ? */
+INT                     is_factored;     /* is this matrix already factored ? */
+INT                     ncall;           /* how often was this matrix solved */
 
-int                     numeq_total;     /* total number of unknowns */
-int                     numeq;           /* number of unknowns updated on this proc */ 
-int                     nnz_total;       /* total number of nonzero entries */
-int                     nnz;             /* number of nonzeros on this proc */
+INT                     numeq_total;     /* total number of unknowns */
+INT                     numeq;           /* number of unknowns updated on this proc */ 
+INT                     nnz_total;       /* total number of nonzero entries */
+INT                     nnz;             /* number of nonzeros on this proc */
 
 struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
 struct _ARRAY           A;               /* the dense matrix */
 struct _ARRAY           ipiv;            /* pivoting information */
-int                     lwork;           /* work space for sym. Lapack solver */
+INT                     lwork;           /* work space for sym. Lapack solver */
 struct _ARRAY           work;            /* work space for sym. Lapack solver */
 
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -415,14 +415,14 @@ struct _ARRAY          *couple_i_recv;
  *----------------------------------------------------------------------*/
 typedef struct _UCCHB
 {
-int                     is_init;          /* was this matrix initialized ? */
-int                     is_factored;      /* is this matrix already factored ? */
-int                     ncall;            /* how often was this matrix solved */
+INT                     is_init;          /* was this matrix initialized ? */
+INT                     is_factored;      /* is this matrix already factored ? */
+INT                     ncall;            /* how often was this matrix solved */
 
-int                     numeq_total;      /* total number of unknowns */
-int                     numeq;            /* number of unknowns updated on this proc */ 
-int                     nnz_total;        /* total number of nonzero entries */
-int                     nnz;              /* number of nonzeros on this proc */
+INT                     numeq_total;      /* total number of unknowns */
+INT                     numeq;            /* number of unknowns updated on this proc */ 
+INT                     nnz_total;        /* total number of nonzero entries */
+INT                     nnz;              /* number of nonzeros on this proc */
 
 struct _ARRAY           update;           /* list of dofs updated on this proc */
 struct _ARRAY           a;                /* the ucchb matrix */
@@ -444,8 +444,8 @@ SuperMatrix             A;                /* the matrix structure */
 #endif
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -459,12 +459,12 @@ struct _ARRAY          *couple_i_recv;
  *----------------------------------------------------------------------*/
 typedef struct _H_PARCSR
 {
-int                     is_init;          /* was this matrix initialized ? */
-int                     is_factored;      /* does precond. information exist ? */
-int                     ncall;            /* how often was this matrix solved */
-int                     numeq_total;      /* total number of unknowns */
-int                     numeq;            /* number of unknowns updated on this proc */ 
-int                     nnz;              /* number of nonzeros on this proc */
+INT                     is_init;          /* was this matrix initialized ? */
+INT                     is_factored;      /* does precond. information exist ? */
+INT                     ncall;            /* how often was this matrix solved */
+INT                     numeq_total;      /* total number of unknowns */
+INT                     numeq;            /* number of unknowns updated on this proc */ 
+INT                     nnz;              /* number of nonzeros on this proc */
 
 struct _ARRAY           perm;                /* permutation of update for each proc, type is IA*/
 struct _ARRAY           perm_sizes;          /* size of perm on each proc, type is IV */
@@ -479,8 +479,8 @@ HYPRE_Solver            precond;             /* hypre preconditioner structure *
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -494,31 +494,31 @@ struct _ARRAY          *couple_i_recv;
  *----------------------------------------------------------------------*/
 typedef struct _AZ_ARRAY_MSR
 {
-int                     is_init;          /* was this matrix initialized ? */
-int                     is_factored;      /* does precond. information exist ? */
-int                     ncall;            /* how often was this matrix solved */
-int                     numeq_total;      /* total number of unknowns */
-int                     numeq;            /* number of unknowns updated on this proc */ 
-int                     nnz;              /* number of nonzeros on this proc */
+INT                     is_init;          /* was this matrix initialized ? */
+INT                     is_factored;      /* does precond. information exist ? */
+INT                     ncall;            /* how often was this matrix solved */
+INT                     numeq_total;      /* total number of unknowns */
+INT                     numeq;            /* number of unknowns updated on this proc */ 
+INT                     nnz;              /* number of nonzeros on this proc */
 
 struct _ARRAY           update;           /* list of dofs updated on this proc */
-int                     shift;            /* binary shift for searching in update */
-int                    *bins;             /* binary mirror of update */
+INT                     shift;            /* binary shift for searching in update */
+INT                    *bins;             /* binary mirror of update */
 struct _ARRAY           bindx;            /* the sparse matrix */
 struct _ARRAY           bindx_backup;     /* backup of bindx, as bindx is altered by solver */
 struct _ARRAY           val;              /* values of matrix */
 struct _ARRAY           val_backup;       /* backup of values of matrix as val is altered by solver */
 
 #ifdef AZTEC_PACKAGE
-double                  params[AZ_PARAMS_SIZE];    /* Aztec parameters */
-double                  status[AZ_STATUS_SIZE];    /* Aztec return status */
-int                     proc_config[AZ_PROC_SIZE]; /* MPI-configuration */
-int                     options[AZ_OPTIONS_SIZE];  /* Aztec options */
-int                    *data_org;                  /* Aztec internal data org. */
-int                    *external;                  /* list of external dofs often needed by this proc */
-int                    *update_index;              /* list of dofs updated on this proc */
-int                    *extern_index;              /* list of external related dofs */
-int                     N_external;                /* number of external dofs often needed by this proc */
+DOUBLE                  params[AZ_PARAMS_SIZE];    /* Aztec parameters */
+DOUBLE                  status[AZ_STATUS_SIZE];    /* Aztec return status */
+INT                     proc_config[AZ_PROC_SIZE]; /* MPI-configuration */
+INT                     options[AZ_OPTIONS_SIZE];  /* Aztec options */
+INT                    *data_org;                  /* Aztec internal data org. */
+INT                    *external;                  /* list of external dofs often needed by this proc */
+INT                    *update_index;              /* list of dofs updated on this proc */
+INT                    *extern_index;              /* list of external related dofs */
+INT                     N_external;                /* number of external dofs often needed by this proc */
 
 AZ_MATRIX              *Amat;                      /* the matrix object */
 AZ_PRECOND             *Aprec;                     /* the preconditioner object */
@@ -526,8 +526,8 @@ AZ_PRECOND             *Aprec;                     /* the preconditioner object 
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -545,17 +545,17 @@ struct _ARRAY          *couple_i_recv;
  *----------------------------------------------------------------------*/
 typedef struct _SPOOLMAT
 {
-int                     is_init;          /* was this matrix initialized ? */
-int                     is_factored;      /* does precond. information exist ? */
-int                     ncall;            /* how often was this matrix solved */
-int                     numeq_total;      /* total number of unknowns */
-int                     numeq;            /* number of unknowns updated on this proc */ 
-int                     nnz;              /* number of nonzeros on this proc */
+INT                     is_init;          /* was this matrix initialized ? */
+INT                     is_factored;      /* does precond. information exist ? */
+INT                     ncall;            /* how often was this matrix solved */
+INT                     numeq_total;      /* total number of unknowns */
+INT                     numeq;            /* number of unknowns updated on this proc */ 
+INT                     nnz;              /* number of nonzeros on this proc */
 
 struct _ARRAY           update;          /* list of dofs updated on this proc */
 struct _ARRAY           irn_loc;         /* proc-local row pointer vector */
 struct _ARRAY           jcn_loc;         /* proc-local column pointer vector */
-struct _ARRAY           rowptr;          /* int vector holding the begin of each row in irn_loc */
+struct _ARRAY           rowptr;          /* INT vector holding the begin of each row in irn_loc */
 struct _ARRAY           A_loc;           /* the values of the matrix */
 
 #ifdef SPOOLES_PACKAGE
@@ -584,8 +584,8 @@ SolveMap               *solvemap;
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+INT                     numcoupsend;     /* number of coupling information to be send by this proc */
+INT                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
 struct _ARRAY          *couple_i_send;
 struct _ARRAY          *couple_d_recv;
@@ -605,26 +605,26 @@ struct _ARRAY          *couple_i_recv;
 typedef struct _ML_ARRAY_MDS
 {
 char               arrayname[50];
-int                is_init;
+INT                is_init;
 
 /* input */
 
-int                numeq;       /* number of equations                  */
-int                nnz;         /* number of nonzeroes                  */
-int                output;      /* fortran unit number =6 -> screen     */
-double             cond;        /* condition number                     */
+INT                numeq;       /* number of equations                  */
+INT                nnz;         /* number of nonzeroes                  */
+INT                output;      /* fortran unit number =6 -> screen     */
+DOUBLE             cond;        /* condition number                     */
 struct _ARRAY      colstr;      /* gives the index in rowind of the
                                    first nonzero in the lower triangular
                                    part of column j of the matrix       */
 struct _ARRAY      rowind;      /* list of row indices for all nonzeros */
 /* output */
-double             rcond;       /* estimate the reciprocal of the l-norm
+DOUBLE             rcond;       /* estimate the reciprocal of the l-norm
                                    condition number                     */
-int                inrtia[3];   /* number of positive, negative and 
+INT                inrtia[3];   /* number of positive, negative and 
                                    an indicator if there are zero
                                    eigenvalues                          */
-double             global[150]; /* global communication array           */
-int                ierr;        /* = 0; normal return                   */                                   
+DOUBLE             global[150]; /* global communication array           */
+INT                ierr;        /* = 0; normal return                   */                                   
 } ML_ARRAY_MDS;
 
 
@@ -640,8 +640,8 @@ int                ierr;        /* = 0; normal return                   */
  *----------------------------------------------------------------------*/
 typedef struct _DIST_VECTOR
 {
-int                     numeq_total;     /* total size of distr. vector */
-int                     numeq;           /* local size of distr. vector */
+INT                     numeq_total;     /* total size of distr. vector */
+INT                     numeq;           /* local size of distr. vector */
 struct _ARRAY           vec;             /* local piece of distr. vector */
 } DIST_VECTOR;
 

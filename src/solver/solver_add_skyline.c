@@ -21,31 +21,31 @@ void  add_skyline(struct _PARTITION     *actpart,
                   struct _SKYMATRIX     *sky1,
                   struct _SKYMATRIX     *sky2)
 {
-int               i,j,counter;           /* some counter variables */
-int               ii,jj;                 /* counter variables for system matrix */
-int               nd;                    /* size of estif */
-int               nnz;                   /* number of nonzeros in sparse system matrix */
-int               numeq_total;           /* total number of equations */
-int               numeq;                 /* number of equations on this proc */
-int               lm[MAXDOFPERELE];      /* location vector for this element */
+INT               i,j,counter;           /* some counter variables */
+INT               ii,jj;                 /* counter variables for system matrix */
+INT               nd;                    /* size of estif */
+INT               nnz;                   /* number of nonzeros in sparse system matrix */
+INT               numeq_total;           /* total number of equations */
+INT               numeq;                 /* number of equations on this proc */
+INT               lm[MAXDOFPERELE];      /* location vector for this element */
 #ifdef PARALLEL 
-int               owner[MAXDOFPERELE];   /* the owner of every dof */
+INT               owner[MAXDOFPERELE];   /* the owner of every dof */
 #endif
-int               myrank;                /* my intra-proc number */
-int               nprocs;                /* my intra- number of processes */
-double          **estif;                  /* element matrix 1 to be added to system matrix */
-double          **emass;                  /* element matrix 2 to be added to system matrix */
-double           *A;                      /* the skyline matrix 1 */
-double           *B;                      /* the skyline matrix 2 */
-int              *maxa;
+INT               myrank;                /* my intra-proc number */
+INT               nprocs;                /* my intra- number of processes */
+DOUBLE          **estif;                  /* element matrix 1 to be added to system matrix */
+DOUBLE          **emass;                  /* element matrix 2 to be added to system matrix */
+DOUBLE           *A;                      /* the skyline matrix 1 */
+DOUBLE           *B;                      /* the skyline matrix 2 */
+INT              *maxa;
 
-int               startindex;
-int               height;
-int               distance;
-int               index;
+INT               startindex;
+INT               height;
+INT               distance;
+INT               index;
 /*
-int       **cdofs;
-int         ncdofs;
+INT       **cdofs;
+INT         ncdofs;
 */
 #ifdef DEBUG 
 dstrc_enter("add_skyline");
@@ -142,12 +142,12 @@ void redundant_skyline(
                         SKYMATRIX     *sky2
                         )
 {
-int      i;
-int      imyrank;
-int      inprocs;
+INT      i;
+INT      imyrank;
+INT      inprocs;
 
 ARRAY    recv_a;
-double  *recv;
+DOUBLE  *recv;
 
 #ifdef DEBUG 
 dstrc_enter("redundant_skyline");

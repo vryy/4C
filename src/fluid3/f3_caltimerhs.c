@@ -40,41 +40,41 @@ NOTE:
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param   *velint      double	      (i)    vel. at integr. point
-\param   *vel2int     double	      (i)    vel. at integr. point
-\param   *covint      double	      (i)    conv. vel. at integr. p.
-\param	 *funct       double	      (i)    nat. shape functions      
-\param	**derxy       double	      (i)    global derivatives
-\param	**vderxy      double	      (i/    global vel. deriv.
-\param	  preint      double	      (i)    pres. at integr. point
-\param	  visc	      double	      (i)    fluid viscosity
-\param	  fac	      double	      (i)    weighting factor
-\param	  iel	      int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param   *vel2int     DOUBLE	      (i)    vel. at integr. point
+\param   *covint      DOUBLE	      (i)    conv. vel. at integr. p.
+\param	 *funct       DOUBLE	      (i)    nat. shape functions      
+\param	**derxy       DOUBLE	      (i)    global derivatives
+\param	**vderxy      DOUBLE	      (i/    global vel. deriv.
+\param	  preint      DOUBLE	      (i)    pres. at integr. point
+\param	  visc	      DOUBLE	      (i)    fluid viscosity
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfv(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,    
-		  double          *velint,
-		  double          *vel2int,
-		  double          *covint,
-		  double          *funct,
-		  double         **derxy,
-		  double         **vderxy,
-		  double           preint,
-		  double           visc,
-		  double           fac,
-		  int              iel
+                  DOUBLE          *eforce,    
+		  DOUBLE          *velint,
+		  DOUBLE          *vel2int,
+		  DOUBLE          *covint,
+		  DOUBLE          *funct,
+		  DOUBLE         **derxy,
+		  DOUBLE         **vderxy,
+		  DOUBLE           preint,
+		  DOUBLE           visc,
+		  DOUBLE           fac,
+		  INT              iel
               )  
 {
-int    j,irow,isd,inode;  
-double c;
-double aux;
-double facsr;
-double facpr;
-double fact[3];
+INT    j,irow,isd,inode;  
+DOUBLE c;
+DOUBLE aux;
+DOUBLE facsr;
+DOUBLE facpr;
+DOUBLE fact[3];
  
  #ifdef DEBUG 
 dstrc_enter("f3_calgaltfv");
@@ -208,26 +208,26 @@ NOTE:
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param   *funct       double	      (i)    nat. shape functions
-\param  **vderxy      double	      (i)    global vel. deriv.
-\param    fac         double	      (i)    weighting factor	     
-\param	  iel	      int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param   *funct       DOUBLE	      (i)    nat. shape functions
+\param  **vderxy      DOUBLE	      (i)    global vel. deriv.
+\param    fac         DOUBLE	      (i)    weighting factor	     
+\param	  iel	      INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfp(
                    FLUID_DYN_CALC  *dynvar, 
-                   double          *eforce,    
-		   double          *funct,
-		   double         **vderxy,
-		   double           fac,
-		   int              iel
+                   DOUBLE          *eforce,    
+		   DOUBLE          *funct,
+		   DOUBLE         **vderxy,
+		   DOUBLE           fac,
+		   INT              iel
                   ) 
 {
-int      inode;
-double   aux;
-double   facsr;
+INT      inode;
+DOUBLE   aux;
+DOUBLE   facsr;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calgaltfp");
@@ -309,49 +309,49 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 </pre>
 \param   *dynvar     FLUID_DYN_CALC   (i)
 \param   *ele        ELEMENT	      (i)    actual element
-\param   *eforce     double	      (i/o)  element force vector
-\param   *velint     double	      (i)    vel. at integr. point
-\param   *vel2int    double	      (i)    vel. at integr. point
-\param	 *covint     double	      (i)    conv. vel. at integr. p.
-\param	**derxy      double	      (i)    global derivatives
-\param	**derxy2     double	      (i)    2nd global derivatives
-\param	**vderxy     double	      (i)    global vel. deriv.
-\param	**vderxy2    double	      (i)    2nd global vel. deriv.
-\param	 *pderxy     double	      (i)    global pressure deriv.
-\param	  fac	     double	      (i)    weighting factor
-\param	  visc	     double	      (i)    fluid viscosity
-\param	  ihoel      int	      (i)    flag for higer ord. ele
-\param	  iel	     int	      (i)    num. of nodes in ele
+\param   *eforce     DOUBLE	      (i/o)  element force vector
+\param   *velint     DOUBLE	      (i)    vel. at integr. point
+\param   *vel2int    DOUBLE	      (i)    vel. at integr. point
+\param	 *covint     DOUBLE	      (i)    conv. vel. at integr. p.
+\param	**derxy      DOUBLE	      (i)    global derivatives
+\param	**derxy2     DOUBLE	      (i)    2nd global derivatives
+\param	**vderxy     DOUBLE	      (i)    global vel. deriv.
+\param	**vderxy2    DOUBLE	      (i)    2nd global vel. deriv.
+\param	 *pderxy     DOUBLE	      (i)    global pressure deriv.
+\param	  fac	     DOUBLE	      (i)    weighting factor
+\param	  visc	     DOUBLE	      (i)    fluid viscosity
+\param	  ihoel      INT	      (i)    flag for higer ord. ele
+\param	  iel	     INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfv(
                    FLUID_DYN_CALC  *dynvar, 
                    ELEMENT         *ele,
-	           double          *eforce,    
-	 	   double          *velint,
-		   double          *vel2int,
-		   double          *covint,
-		   double         **derxy,
-		   double         **derxy2,
-		   double         **vderxy,
-		   double         **vderxy2,
-		   double          *pderxy,
-		   double           fac,
-		   double           visc,
-		   int              ihoel,
-		   int              iel
+	           DOUBLE          *eforce,    
+	 	   DOUBLE          *velint,
+		   DOUBLE          *vel2int,
+		   DOUBLE          *covint,
+		   DOUBLE         **derxy,
+		   DOUBLE         **derxy2,
+		   DOUBLE         **vderxy,
+		   DOUBLE         **vderxy2,
+		   DOUBLE          *pderxy,
+		   DOUBLE           fac,
+		   DOUBLE           visc,
+		   INT              ihoel,
+		   INT              iel
                   ) 
 {
-int    j,irow,isd,inode;
-double c,cc;
-double aux;
-double taumu,taump,tauc; 
-double facsr;
-double facpr;
-double fvts,fvtsr,fvvtsr;
-double fact[3];
-double sign;
+INT    j,irow,isd,inode;
+DOUBLE c,cc;
+DOUBLE aux;
+DOUBLE taumu,taump,tauc; 
+DOUBLE facsr;
+DOUBLE facpr;
+DOUBLE fvts,fvtsr,fvvtsr;
+DOUBLE fact[3];
+DOUBLE sign;
   
 #ifdef DEBUG 
 dstrc_enter("f3_calstabtfv");
@@ -660,38 +660,38 @@ NOTE:
       
 </pre>
 \param   *dynvar,     FLUID_DYN_CALC   (i)
-\param   *eforce,     double	       (i/o)  element force vector
-\param  **derxy,      double	       (i)    global derivatives
-\param  **vderxy2,    double	       (i)    2nd global vel. deriv.
-\param   *velint,     double	       (i)    vel. at integr. point
-\param	 *covint,     double	       (i)    conv. vel. at integr. p.
-\param	 *pderxy,     double	       (i)    global pressure deriv.
-\param	  visc,       double	       (i)    fluid viscosity
-\param	  fac,        double	       (i)    weighting factor
-\param	  ihoel,      int	       (i)    flag for higer ord. ele
-\param	  iel	      int	       (i)    num. of nodes in ele
+\param   *eforce,     DOUBLE	       (i/o)  element force vector
+\param  **derxy,      DOUBLE	       (i)    global derivatives
+\param  **vderxy2,    DOUBLE	       (i)    2nd global vel. deriv.
+\param   *velint,     DOUBLE	       (i)    vel. at integr. point
+\param	 *covint,     DOUBLE	       (i)    conv. vel. at integr. p.
+\param	 *pderxy,     DOUBLE	       (i)    global pressure deriv.
+\param	  visc,       DOUBLE	       (i)    fluid viscosity
+\param	  fac,        DOUBLE	       (i)    weighting factor
+\param	  ihoel,      INT	       (i)    flag for higer ord. ele
+\param	  iel	      INT	       (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfp(
                    FLUID_DYN_CALC  *dynvar, 
-                   double          *eforce,    
-     		   double         **derxy,
-		   double         **vderxy2,
-		   double          *velint,
-		   double          *covint,
-		   double          *pderxy,
-		   double           visc,
-		   double           fac,
-		   int              ihoel,
-		   int              iel
+                   DOUBLE          *eforce,    
+     		   DOUBLE         **derxy,
+		   DOUBLE         **vderxy2,
+		   DOUBLE          *velint,
+		   DOUBLE          *covint,
+		   DOUBLE          *pderxy,
+		   DOUBLE           visc,
+		   DOUBLE           fac,
+		   INT              ihoel,
+		   INT              iel
                   ) 
 {
-int      inode;
-double   aux;
-double   fact[3];
-double   facsr,facpr;
-double   taump;
+INT      inode;
+DOUBLE   aux;
+DOUBLE   fact[3];
+DOUBLE   facsr,facpr;
+DOUBLE   taump;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabtfp");

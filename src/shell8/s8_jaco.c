@@ -4,29 +4,29 @@
 /*----------------------------------------------------------------------*
  | calculate jacobian matrix                             m.gee 10/01    |
  *----------------------------------------------------------------------*/
-void s8jaco(double    *funct,
-               double   **deriv,
-               double   **x,
-               double   **xjm,
-               double    *hte,
-               double   **a3ref,
-               double     e3,
-               int        iel,
-               double    *det,
-               double    *deta,
-               int        init)
+void s8jaco(DOUBLE    *funct,
+               DOUBLE   **deriv,
+               DOUBLE   **x,
+               DOUBLE   **xjm,
+               DOUBLE    *hte,
+               DOUBLE   **a3ref,
+               DOUBLE     e3,
+               INT        iel,
+               DOUBLE    *det,
+               DOUBLE    *deta,
+               INT        init)
 {
-double       x1r;
-double       x2r;
-double       x3r;
-double       x1s;
-double       x2s;
-double       x3s;
+DOUBLE       x1r;
+DOUBLE       x2r;
+DOUBLE       x3r;
+DOUBLE       x1s;
+DOUBLE       x2s;
+DOUBLE       x3s;
 
-static ARRAY gkov_a;  static double **gkov;
-static ARRAY gkon_a;  static double **gkon;
-static ARRAY gmkov_a; static double **gmkov;
-static ARRAY gmkon_a; static double **gmkon;
+static ARRAY gkov_a;  static DOUBLE **gkov;
+static ARRAY gkon_a;  static DOUBLE **gkon;
+static ARRAY gmkov_a; static DOUBLE **gmkov;
+static ARRAY gmkon_a; static DOUBLE **gmkon;
 
 #ifdef DEBUG 
 dstrc_enter("s8jaco");

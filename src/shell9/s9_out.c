@@ -53,7 +53,7 @@ extern struct _FILES  allfiles;
 This routine writes the DOFs of a shell9 element to the outputfile
 </pre>
 \param  *actnode NODE    (i)   actual node for which the DOFs are written
-\param   j       int     (i)   number of actual node
+\param   j       INT     (i)   number of actual node
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -62,11 +62,11 @@ This routine writes the DOFs of a shell9 element to the outputfile
 /*----------------------------------------------------------------------*
  | Degrees of Freedom -> Output file                          sh 12/02  |
  *----------------------------------------------------------------------*/
-void s9out_dof(NODE *actnode,int j)
+void s9out_dof(NODE *actnode,INT j)
 {
-int        i;
-int        numdf;          /* Number of DOFs to this node */
-int        num_klay;       /* Number of kinematic layers to this node */
+INT        i;
+INT        numdf;          /* Number of DOFs to this node */
+INT        num_klay;       /* Number of kinematic layers to this node */
 FILE      *out = allfiles.out_out;
 
 /*----------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ This routine writes the displacements of several layers of a shell9 element
 to the outputfile
 </pre>
 \param  *actnode NODE    (i)   actual node for which the DOFs are written
-\param   place   int     (i)   actual load step
+\param   place   INT     (i)   actual load step
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -116,13 +116,13 @@ to the outputfile
 /*----------------------------------------------------------------------*
  | Nodal displacements -> Output file                         sh 12/02  |
  *----------------------------------------------------------------------*/
-void s9out_nodal_dis(NODE *actnode,int place)
+void s9out_nodal_dis(NODE *actnode,INT place)
 {
-int        i,j,klay,jlay;
-double     zeta,e3;
-int        numdf;          /* Number of DOFs to this node */
-int        num_klay;       /* Number of kinematic layers to this node */
-double     dis[3][3];      /* Displacement at top, mid, bot of each layer with x,y,z components */
+INT        i,j,klay,jlay;
+DOUBLE     zeta,e3;
+INT        numdf;          /* Number of DOFs to this node */
+INT        num_klay;       /* Number of kinematic layers to this node */
+DOUBLE     dis[3][3];      /* Displacement at top, mid, bot of each layer with x,y,z components */
 FILE      *out = allfiles.out_out;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -186,7 +186,7 @@ This routine calculates the coordinates of the nodal keypoints in the
 different layers and writes them to the flavia.msh file 
 </pre>
 \param  *out     FILE    (i)   file to be written on (flavia.msh)
-\param   type    int     (i)   element type (4/8/90-noded)
+\param   type    INT     (i)   element type (4/8/90-noded)
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -196,22 +196,22 @@ different layers and writes them to the flavia.msh file
  |  to visualize a multilayerd shell element with Hexahedra elements    |
  |  in gid                                                  sh 12/02    |
  *----------------------------------------------------------------------*/
-void s9_out_gid_allcoords(FILE *out,int type)
+void s9_out_gid_allcoords(FILE *out,INT type)
 {
-int           i,j,k,l,m,mlay,klay,jlay;
-double        zeta,e3;
-double        thick;              /*total thicknes of shell element*/
-double        klayhgt;            /*thickness of aktual layer in per cent of total thickness*/
-double        hl;                 /*thickness of aktual layer*/
-double        a3ref_l[3];         /*director a3 of aktual layer in ref. config*/
-int           numnp;              /*number of nodal points*/
-int           num_klay,num_mlay;
-double       *mlayhgt;
-double        sum_hgt,sum_hgt_mid;
-int           sum_lay,sum_lay_old;
-double        x[3],x_u[3],x_o[3]; /*coordinats*/
-int           node_ID;            /*nodal ID*/
-int           is_edge;            /*is_edge=1: actnode is a edge node to the element, else middle node*/
+INT           i,j,k,l,m,mlay,klay,jlay;
+DOUBLE        zeta,e3;
+DOUBLE        thick;              /*total thicknes of shell element*/
+DOUBLE        klayhgt;            /*thickness of aktual layer in per cent of total thickness*/
+DOUBLE        hl;                 /*thickness of aktual layer*/
+DOUBLE        a3ref_l[3];         /*director a3 of aktual layer in ref. config*/
+INT           numnp;              /*number of nodal points*/
+INT           num_klay,num_mlay;
+DOUBLE       *mlayhgt;
+DOUBLE        sum_hgt,sum_hgt_mid;
+INT           sum_lay,sum_lay_old;
+DOUBLE        x[3],x_u[3],x_o[3]; /*coordinats*/
+INT           node_ID;            /*nodal ID*/
+INT           is_edge;            /*is_edge=1: actnode is a edge node to the element, else middle node*/
 FIELD        *actfield;
 NODE         *actnode;
 ELEMENT      *actele;
@@ -428,7 +428,7 @@ This routine writes the topology of the calculated 3-D elements to the
 flavia.msh file
 </pre>
 \param  *out     FILE    (i)   file to be written on (flavia.msh)
-\param   type    int     (i)   element type (4/8/90-noded)
+\param   type    INT     (i)   element type (4/8/90-noded)
 \param  *actele  ELEMENT (i)   actual element
 
 \warning There is nothing special to this routine
@@ -438,16 +438,16 @@ flavia.msh file
  |  routine to write the element topology for a multilayerd shell       |
  |  element to visualize in gid -> Hexahedra elements       sh 12/02    |
  *----------------------------------------------------------------------*/
-void s9_out_gid_eletop(FILE *out,int type,ELEMENT *actele)
+void s9_out_gid_eletop(FILE *out,INT type,ELEMENT *actele)
 {
-int           i,k,klay,lay;
-int           numnp;            /*number of nodal points*/
-int           numele;           /*number of elements*/
-int           num_klay;
-int           num_mlay;
-int           sum_lay;          /*sum of all layers: kinematic and material*/
-int           node_ID;          /*nodal ID*/
-int           ele_ID;           /*element ID*/
+INT           i,k,klay,lay;
+INT           numnp;            /*number of nodal points*/
+INT           numele;           /*number of elements*/
+INT           num_klay;
+INT           num_mlay;
+INT           sum_lay;          /*sum of all layers: kinematic and material*/
+INT           node_ID;          /*nodal ID*/
+INT           ele_ID;           /*element ID*/
 FIELD        *actfield;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -589,20 +589,20 @@ component in the different layers and writes them to the flavia.res file
  |  routine to calcualate and to write nodal displacements of a shell9  |
  |  element to visualize in gid -> Hexahedra elements       sh 12/02    |
  *----------------------------------------------------------------------*/
-void s9_out_gid_sol_dis(FILE *out,FIELD *actfield,int place)
+void s9_out_gid_sol_dis(FILE *out,FIELD *actfield,INT place)
 {
-int           i,j,k,m,mlay,klay,jlay;
-int           numnp;                    /*number of nodal points*/
-double        thick;
-int           num_klay,num_mlay;
-double       *mlayhgt;
-double        sum_hgt,sum_hgt_mid;
-int           sum_lay,sum_lay_old;
-int           node_ID;                  /*nodal ID*/
-double        dis[3],dis_u[3],dis_o[3]; /*displacement x,y,z*/
-int           is_edge;                  /*is_edge=1: actnode is a edge node to the element, else middle node*/
-int           type;
-double        e3,zeta;
+INT           i,j,k,m,mlay,klay,jlay;
+INT           numnp;                    /*number of nodal points*/
+DOUBLE        thick;
+INT           num_klay,num_mlay;
+DOUBLE       *mlayhgt;
+DOUBLE        sum_hgt,sum_hgt_mid;
+INT           sum_lay,sum_lay_old;
+INT           node_ID;                  /*nodal ID*/
+DOUBLE        dis[3],dis_u[3],dis_o[3]; /*displacement x,y,z*/
+INT           is_edge;                  /*is_edge=1: actnode is a edge node to the element, else middle node*/
+INT           type;
+DOUBLE        e3,zeta;
 NODE         *actnode;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -810,21 +810,21 @@ The only problem is to write in the right order
  |  routine to calcualate and to write gp stresses of a shell9          |
  |  element to visualize in gid -> Hexahedra elements        sh 1/03    |
  *----------------------------------------------------------------------*/
-void s9_out_gid_sol_str(FILE *out,FIELD *actfield,int place)
+void s9_out_gid_sol_str(FILE *out,FIELD *actfield,INT place)
 {
-int           i,j,k,l,m,klay,lay;
-int           numnp;            /*number of nodal points in actfield */
-int           numele;           /*number of elements to actnode -> in plane*/
-int           num_node;         /*number of nodes to an element*/
-double      **stress;
-double        sum_str_u, sum_str_oo, sum_str_uo;
-double        strK[6],strKo[6],strK_save[6],strK_mid[6];          
-int           node_ID;                  /*nodal ID*/
-int           num_klay;
-int           num_mlay;
-int           sum_lay,sum_lay_old;
+INT           i,j,k,l,m,klay,lay;
+INT           numnp;            /*number of nodal points in actfield */
+INT           numele;           /*number of elements to actnode -> in plane*/
+INT           num_node;         /*number of nodes to an element*/
+DOUBLE      **stress;
+DOUBLE        sum_str_u, sum_str_oo, sum_str_uo;
+DOUBLE        strK[6],strKo[6],strK_save[6],strK_mid[6];          
+INT           node_ID;                  /*nodal ID*/
+INT           num_klay;
+INT           num_mlay;
+INT           sum_lay,sum_lay_old;
 NODE         *actnode;
-int           is_edge;                  /*is_edge=1: actnode is a edge node to the element, else middle node*/
+INT           is_edge;                  /*is_edge=1: actnode is a edge node to the element, else middle node*/
 
 
 /*----------------------------------------------------------------------*/

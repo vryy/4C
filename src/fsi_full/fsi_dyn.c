@@ -63,22 +63,22 @@ Implemented Algorithms:
 		     
 </pre>
 
-\param mctrl    int   (i)     evaluation flag
+\param mctrl    INT   (i)     evaluation flag
 
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void dyn_fsi(int mctrl)
+void dyn_fsi(INT mctrl)
 {
 
-static int      numfld;       /* number of fiels                        */
-static int      numsf;        
-static int      numff;
-static int      numaf;        /* actual number of fields                */
-const  int      mctrlpre=4;   /* control flag                           */
-int             actcurve;     /* actual curve                           */
-int             itnum=0;      /* iteration counter                      */
-int             converged;    /* convergence flag                       */
+static INT      numfld;       /* number of fiels                        */
+static INT      numsf;        
+static INT      numff;
+static INT      numaf;        /* actual number of fields                */
+const  INT      mctrlpre=4;   /* control flag                           */
+INT             actcurve;     /* actual curve                           */
+INT             itnum=0;      /* iteration counter                      */
+INT             converged;    /* convergence flag                       */
 static FIELD          *fluidfield;   
 static FIELD          *structfield;
 static FIELD          *alefield;

@@ -14,7 +14,7 @@ void calfrq(INT init);
  |                                                      a.lipka 5/01    |
  | control program for update of fem-arrays for act. variable           |
  *----------------------------------------------------------------------*/
-void optupd(int init);
+void optupd(INT init);
 /*----------------------------------------------------------------------*
  | control output of optimization data                      al 05/01    |
  *----------------------------------------------------------------------*/
@@ -22,13 +22,13 @@ void opt_g_out(OPT_GR_OUT gract);
 /*----------------------------------------------------------------------*
  | output of fe-mesh, loads, dirichlet conditions...        al 05/01    |
  *----------------------------------------------------------------------*/
-void og_write_mesh(int nmesh);
+void og_write_mesh(INT nmesh);
 /*----------------------------------------------------------------------*
  | output of element density in case of topoopt             al 05/01    |
  *----------------------------------------------------------------------*/
-void og_write_eledens(int numdataw);
+void og_write_eledens(INT numdataw);
 /*----------------------------------------------------------------------*/
-void og_write_displacements(int kstep);
+void og_write_displacements(INT kstep);
 /*----------------------------------------------------------------------*
  | initialize execution stage of optimization           a.lipka 5/01    |
  *----------------------------------------------------------------------*/
@@ -46,17 +46,17 @@ void updvar(void);
  |                                                      a.lipka 5/01    |
  | control program for calculation of objective functions               |
  *----------------------------------------------------------------------*/
-void optobj(double *objective);
+void optobj(DOUBLE *objective);
 /*----------------------------------------------------------------------*
  |                                                      a.lipka 5/01    |
  | control program for evaluation of equality constraints               |
  *----------------------------------------------------------------------*/
-void opteqc(double *constraint,int init);
+void opteqc(DOUBLE *constraint,INT init);
 /*----------------------------------------------------------------------*
  |                                                      a.lipka 5/01    |
  | evaluate values of objective function and constraints                |
  *----------------------------------------------------------------------*/
-void func(int *m, double *f, double *g);
+void func(INT *m, DOUBLE *f, DOUBLE *g);
 /*----------------------------------------------------------------------*
  |  routine to control static execution                  m.gee 6/01     |
  *----------------------------------------------------------------------*/
@@ -64,59 +64,59 @@ void opt_calsta(CALSTA_EXEC stalact);
 /*----------------------------------------------------------------------*
  | variational sensitivity analysis                         al 05/01    |
  *----------------------------------------------------------------------*/
-void optvsa(double *grdobj, double *grdcon,int init);
+void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init);
 /*----------------------------------------------------------------------*
  | variational sensitivity analysis                         al 05/01    |
  *----------------------------------------------------------------------*/
-void optsmo(double *vvar, int init);
+void optsmo(DOUBLE *vvar, INT init);
 /*----------------------------------------------------------------------*
  |                                                      a.lipka 5/01    |
  | create objective function with eigen frequencies or buckling         |
  *----------------------------------------------------------------------*/
-void objeig(double *objctval);
+void objeig(DOUBLE *objctval);
 /*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | control program for eigenvalue analysis                  al 05/01    |
  *----------------------------------------------------------------------*/
-void sspace(double *A, 
-            double *ACOP,
-            double *B,
-            int *MAXA,
-            double *R,
-            double *EIGV,
-            double *TT,
-            double *W,
-            double *AR,
-            double *BR,
-            double *VEC,
-            double *D,
-            double *RTOLV,
-            int *IND,
-            int *NN,
-            int *NNM,
-            int *NWK,
-            int *NWM,
-            int *NC,
-            int *NSTA,
-            int *ISOL,
-            int *NNZ,
-            double *EIGFOU,
-            double *RFOU,
-            int *NROOT,
-            int *NITEM,
-            int *NSMAX,
-            int *IFSS,
-            int *ISUB,
-            double *TOLEIG,
-            double *TOLJAC,
-            double *SHIFT,
-            int *ISTLDL,
-            int *INIT,
-            int *IPRINT);
-void fortranpow (double *V,double *R,double *RE);
-void fsdoc  (double *var,double *df,double *dg,double *etai,double *etha,
-             double *xdgo,double *resu,double *resl,double *varup,
-             double *varlo,int *numvar,double *beta,double *accit,
-             double *delta,int *iprint );
+void sspace(DOUBLE *A, 
+            DOUBLE *ACOP,
+            DOUBLE *B,
+            INT *MAXA,
+            DOUBLE *R,
+            DOUBLE *EIGV,
+            DOUBLE *TT,
+            DOUBLE *W,
+            DOUBLE *AR,
+            DOUBLE *BR,
+            DOUBLE *VEC,
+            DOUBLE *D,
+            DOUBLE *RTOLV,
+            INT *IND,
+            INT *NN,
+            INT *NNM,
+            INT *NWK,
+            INT *NWM,
+            INT *NC,
+            INT *NSTA,
+            INT *ISOL,
+            INT *NNZ,
+            DOUBLE *EIGFOU,
+            DOUBLE *RFOU,
+            INT *NROOT,
+            INT *NITEM,
+            INT *NSMAX,
+            INT *IFSS,
+            INT *ISUB,
+            DOUBLE *TOLEIG,
+            DOUBLE *TOLJAC,
+            DOUBLE *SHIFT,
+            INT *ISTLDL,
+            INT *INIT,
+            INT *IPRINT);
+void fortranpow (DOUBLE *V,DOUBLE *R,DOUBLE *RE);
+void fsdoc  (DOUBLE *var,DOUBLE *df,DOUBLE *dg,DOUBLE *etai,DOUBLE *etha,
+             DOUBLE *xdgo,DOUBLE *resu,DOUBLE *resl,DOUBLE *varup,
+             DOUBLE *varlo,INT *numvar,DOUBLE *beta,DOUBLE *accit,
+             DOUBLE *delta,INT *iprint );

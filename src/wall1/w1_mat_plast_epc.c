@@ -18,101 +18,101 @@
  | const. matrix - forces - elastoplastic concrete - 2D     al  9/01    |
  | plane stress, plane strain                                           |
  *----------------------------------------------------------------------*/
-void w1_mat_plast_epc(  double dens      ,
-                        double emod      ,
-                        double vnu       ,
-                        double alfat     ,
-                        double xsi       ,
-                        double sigyc     ,
-                        double ftm       ,
-                        double fcm       ,
-                        double gt        ,
-                        double gc        ,
-                        double gamma1    ,
-                        double gamma2    ,
-                        int    nstiff    ,
-                        int    maxreb    ,
-                        int    *rebar     ,
-                        double *reb_area  ,
-                        double *reb_ang   ,
-                        double *reb_so    ,
-                        double *reb_ds    ,
-                        double *reb_rgamma,
-                        double *reb_dens  ,
-                        double *reb_alfat ,
-                        double *reb_emod  ,
-                        double *reb_rebnue,
-                        double *reb_sigy  ,
-                        double *reb_hard  , 
+void w1_mat_plast_epc(  DOUBLE dens      ,
+                        DOUBLE emod      ,
+                        DOUBLE vnu       ,
+                        DOUBLE alfat     ,
+                        DOUBLE xsi       ,
+                        DOUBLE sigyc     ,
+                        DOUBLE ftm       ,
+                        DOUBLE fcm       ,
+                        DOUBLE gt        ,
+                        DOUBLE gc        ,
+                        DOUBLE gamma1    ,
+                        DOUBLE gamma2    ,
+                        INT    nstiff    ,
+                        INT    maxreb    ,
+                        INT    *rebar     ,
+                        DOUBLE *reb_area  ,
+                        DOUBLE *reb_ang   ,
+                        DOUBLE *reb_so    ,
+                        DOUBLE *reb_ds    ,
+                        DOUBLE *reb_rgamma,
+                        DOUBLE *reb_dens  ,
+                        DOUBLE *reb_alfat ,
+                        DOUBLE *reb_emod  ,
+                        DOUBLE *reb_rebnue,
+                        DOUBLE *reb_sigy  ,
+                        DOUBLE *reb_hard  , 
                         ELEMENT   *ele,
                         WALL_TYPE wtype,
-                        double **bop,
-                        double  *gop,
-                        double  *alph,
-                        double **xjm,
-                        int ip,
-                        double *stressc,       
-                        double **d,
-                        int istore,/* controls storing of new stresses to wa */
-                        int newval)/* controls evaluation of new stresses    */
+                        DOUBLE **bop,
+                        DOUBLE  *gop,
+                        DOUBLE  *alph,
+                        DOUBLE **xjm,
+                        INT ip,
+                        DOUBLE *stressc,       
+                        DOUBLE **d,
+                        INT istore,/* controls storing of new stresses to wa */
+                        INT newval)/* controls evaluation of new stresses    */
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
-int iupd, yipold, yip, yip2;
-double q23, betah; 
-double e1, e2, e3, a1, b1, c1, sum, epstn, acrs;
-double alpha[4];
-double hards[4];
-double alphac[2];
-double hardsc[2];
-double sigym[4];
-double gmod, com, dfac, cappaet, cappaut, cappae, cappauc;
-double sig3, fbd, hydv; 
-double epsi[4];
-double dfac1;
-int    iflag;
-double tau3[4];
-double devsig[4];
-double sm[4];
-double dev;
-double hyd;
-double dfaci;
-double epst2;
-double devsigt[4],smt[4],dev3,hyd3,facmin,dlam12;
-double angle, thick;
+INT i,j,k;
+INT iupd, yipold, yip, yip2;
+DOUBLE q23, betah; 
+DOUBLE e1, e2, e3, a1, b1, c1, sum, epstn, acrs;
+DOUBLE alpha[4];
+DOUBLE hards[4];
+DOUBLE alphac[2];
+DOUBLE hardsc[2];
+DOUBLE sigym[4];
+DOUBLE gmod, com, dfac, cappaet, cappaut, cappae, cappauc;
+DOUBLE sig3, fbd, hydv; 
+DOUBLE epsi[4];
+DOUBLE dfac1;
+INT    iflag;
+DOUBLE tau3[4];
+DOUBLE devsig[4];
+DOUBLE sm[4];
+DOUBLE dev;
+DOUBLE hyd;
+DOUBLE dfaci;
+DOUBLE epst2;
+DOUBLE devsigt[4],smt[4],dev3,hyd3,facmin,dlam12;
+DOUBLE angle, thick;
 
-double disd[5];
-double sig[4];
-double ft[4];
-double sigc[4];
-double sigi[4];
-double sigy[3];
-double stress[4];
-double di[4];
-double dnc[2][4];
-double gradc[2][4];
-double dn[3][4];
-double dcom[3][4];
-double tauc[4];
-double gradi[4];
-double grad[3][4];
-double eps[4];
-double epst[2];
-double strain[4];
-double delsig[4];
-double deleps[4];
-double tau[4];
-double qn[4];
-double tol = 1.0E-10;
-double tol2= 1.0E-5 ;
-double dlam[2];
-double dlamc;
-double rad;
-double hard = 0.;
-double phi = 0.;
-double dia = 0.;
-double pr  = 0.;
-int    isoft = 0;
+DOUBLE disd[5];
+DOUBLE sig[4];
+DOUBLE ft[4];
+DOUBLE sigc[4];
+DOUBLE sigi[4];
+DOUBLE sigy[3];
+DOUBLE stress[4];
+DOUBLE di[4];
+DOUBLE dnc[2][4];
+DOUBLE gradc[2][4];
+DOUBLE dn[3][4];
+DOUBLE dcom[3][4];
+DOUBLE tauc[4];
+DOUBLE gradi[4];
+DOUBLE grad[3][4];
+DOUBLE eps[4];
+DOUBLE epst[2];
+DOUBLE strain[4];
+DOUBLE delsig[4];
+DOUBLE deleps[4];
+DOUBLE tau[4];
+DOUBLE qn[4];
+DOUBLE tol = 1.0E-10;
+DOUBLE tol2= 1.0E-5 ;
+DOUBLE dlam[2];
+DOUBLE dlamc;
+DOUBLE rad;
+DOUBLE hard = 0.;
+DOUBLE phi = 0.;
+DOUBLE dia = 0.;
+DOUBLE pr  = 0.;
+INT    isoft = 0;
 WALL_TYPE local_wtype;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

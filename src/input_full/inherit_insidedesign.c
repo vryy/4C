@@ -67,7 +67,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inherit_dvoldsurf_dirich()
 {
-int             i,j;
+INT             i,j;
 DVOL           *actdvol;
 DSURF          *actdsurf;
 #ifdef DEBUG 
@@ -111,7 +111,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inherit_dsurfdline_dirich()
 {
-int             i,j;
+INT             i,j;
 DSURF          *actdsurf;
 DLINE          *actdline;
 #ifdef DEBUG 
@@ -150,7 +150,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inherit_dlinednode_dirich()
 {
-int             i,j;
+INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
 #ifdef DEBUG 
@@ -192,7 +192,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inherit_dvoldsurf_couple()
 {
-int             i,j;
+INT             i,j;
 DVOL           *actdvol;
 DSURF          *actdsurf;
 #ifdef DEBUG 
@@ -233,7 +233,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inherit_dsurfdline_couple()
 {
-int             i,j;
+INT             i,j;
 DSURF          *actdsurf;
 DLINE          *actdline;
 #ifdef DEBUG 
@@ -270,7 +270,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inherit_dlinednode_couple()
 {
-int             i,j;
+INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
 #ifdef DEBUG 
@@ -309,7 +309,7 @@ return;
 static void inherit_dlinednode_fsicouple()
 {
 #ifdef D_FSI
-int             i,j;
+INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
 #ifdef DEBUG 
@@ -350,7 +350,7 @@ return;
 static void inherit_dlinednode_freesurf()
 {
 #ifdef D_FLUID
-int             i,j;
+INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
 #ifdef DEBUG 

@@ -28,29 +28,29 @@ extern struct _FILES  allfiles;
  |                                                                      |
  | How does a record on pss-file look like:                             |
  |                                                                      |
- | int           number_chars_of_name                                   |
+ | INT           number_chars_of_name                                   |
  | char          name[]                                                 |
- | int           handle                                                 |
- | int           fdim                                                   |
- | int           sdim                                                   |
- | int           byte                                                   |
+ | INT           handle                                                 |
+ | INT           fdim                                                   |
+ | INT           sdim                                                   |
+ | INT           byte                                                   |
  | void          record[]                                               |
  |                                                                      |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_write(char          *name, 
-               int            fdim, 
-               int            sdim,
-               int            byte,
+               INT            fdim, 
+               INT            sdim,
+               INT            byte,
                const void    *startaddress,
                long int      *handle,
                FILE          *out, 
-               int           *ierr)
+               INT           *ierr)
 {
-int          err=0;
-int          name_size=0;
-int          write_error=0;
-int          dimensions[3];
+INT          err=0;
+INT          name_size=0;
+INT          write_error=0;
+INT          dimensions[3];
 #ifdef DEBUG 
 dstrc_enter("pss_write");
 #endif
@@ -63,7 +63,7 @@ name_size=strlen(name);
 *handle = ftell(out);
 
 /*---------------------------------------------------- right name_size */
-write_error = fwrite(&name_size,sizeof(int),1,out);
+write_error = fwrite(&name_size,sizeof(INT),1,out);
 if (write_error!=1) dserror("Error writing pss-file");
 
 /*----------------------------------------------- write name of record */
@@ -79,7 +79,7 @@ dimensions[0]=fdim;
 dimensions[1]=sdim;
 dimensions[2]=byte;
 
-write_error = fwrite(dimensions,sizeof(int),3,out);
+write_error = fwrite(dimensions,sizeof(INT),3,out);
 if (write_error!=3) dserror("Error writing pss-file");
 
 /*--------------------------------------------------- write the record */
@@ -107,19 +107,19 @@ return;
  | ierr=2     record with this name already exists                      |
  |                                                                      |
  | const ARRAY *array (input) adress of array to be written             |
- | int         *handle(output) unique handle returned by the pss-system |
- | int         *ierr  (output) success flag                             |
+ | INT         *handle(output) unique handle returned by the pss-system |
+ | INT         *ierr  (output) success flag                             |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_write_array(const ARRAY *array, 
                      long int    *handle,
                      FILE        *out, 
-                     int         *ierr)
+                     INT         *ierr)
 {
-int           err=0;
-int           name_size=0;
-int           write_error=0;
-int           dimensions[3];
+INT           err=0;
+INT           name_size=0;
+INT           write_error=0;
+INT           dimensions[3];
 #ifdef DEBUG 
 dstrc_enter("pss_write_array");
 #endif
@@ -133,7 +133,7 @@ if (name_size>9) name_size=9;
 *handle = ftell(out);
 
 /*---------------------------------------------------- right name_size */
-write_error = fwrite(&name_size,sizeof(int),1,out);
+write_error = fwrite(&name_size,sizeof(INT),1,out);
 if (write_error!=1) dserror("Error writing pss-file");
 
 /*----------------------------------------------- write name of record */
@@ -150,19 +150,19 @@ dimensions[1]=array->sdim;
 switch (array->Typ)
 {
    case cca_DA:
-   dimensions[2]=sizeof(double);
+   dimensions[2]=sizeof(DOUBLE);
    break;
    case cca_DV:
-   dimensions[2]=sizeof(double);
+   dimensions[2]=sizeof(DOUBLE);
    break;
    case cca_IA:
-   dimensions[2]=sizeof(int);
+   dimensions[2]=sizeof(INT);
    break;
    case cca_IV:
-   dimensions[2]=sizeof(int);
+   dimensions[2]=sizeof(INT);
    break;
 }
-write_error = fwrite(dimensions,sizeof(int),3,out);
+write_error = fwrite(dimensions,sizeof(INT),3,out);
 if (write_error!=3) dserror("Error writing pss-file");
 
 /*--------------------------------------------------- write the record */
@@ -171,7 +171,7 @@ switch (array->Typ)
    case cca_DA:
       write_error = fwrite(
                            array->a.da[0],
-                           sizeof(double),
+                           sizeof(DOUBLE),
                            (dimensions[0]*dimensions[1]),
                            out
                           );
@@ -182,7 +182,7 @@ switch (array->Typ)
    case cca_DV:
       write_error = fwrite(
                            array->a.dv,
-                           sizeof(double),
+                           sizeof(DOUBLE),
                            (dimensions[0]*dimensions[1]),
                            out
                           );
@@ -193,7 +193,7 @@ switch (array->Typ)
    case cca_IA:
       write_error = fwrite(
                            array->a.ia[0],
-                           sizeof(int),
+                           sizeof(INT),
                            (dimensions[0]*dimensions[1]),
                            out
                           );
@@ -204,7 +204,7 @@ switch (array->Typ)
    case cca_IV:
       write_error = fwrite(
                            array->a.iv,
-                           sizeof(int),
+                           sizeof(INT),
                            (dimensions[0]*dimensions[1]),
                            out
                           );
@@ -240,30 +240,30 @@ return;
  | ierr=2     record with this name doesn't exists                      |
  |                                                                      |
  | char *name (input) name of the record to read                        |
- | int  *fdim (output) first dimension of record                        |
- | int  *sdim (output) scnd dimension of record                         |
- | int  *byte (output) size in byte of one entry in record              |
+ | INT  *fdim (output) first dimension of record                        |
+ | INT  *sdim (output) scnd dimension of record                         |
+ | INT  *byte (output) size in byte of one entry in record              |
  | 
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_read_name(char      *name, 
-                   int       *fdim, 
-                   int       *sdim,
-                   int       *byte,
+                   INT       *fdim, 
+                   INT       *sdim,
+                   INT       *byte,
                    void      *ziel,
                    long int  *handle, 
                    FILE      *in,
-                   int       *ierr)
+                   INT       *ierr)
 {
 long int      cur_pos = 0;
 long int      offset = 0;
-int           i;
-int           err=0;
-int           foundit=0;
-int           name_size=0;
-int           sizename=0;
-int           write_error=0;
-int           dimensions[3];
+INT           i;
+INT           err=0;
+INT           foundit=0;
+INT           name_size=0;
+INT           sizename=0;
+INT           write_error=0;
+INT           dimensions[3];
 char          test_name[200];
 long int      handle_dummy;
 #ifdef DEBUG 
@@ -284,7 +284,7 @@ rewind(in);
 do
 {
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*----------------------------------------------- check for end of file */
 if ( feof(in) != 0)
 {
@@ -304,7 +304,7 @@ if ( strncmp(name,test_name,strlen(name)) != 0 )
 /*-------------------- not the right record, so jump it and start again */
    err=fread(&handle_dummy,sizeof(long int),1,in);
    if (err != 1) dserror("error reading pss-file");
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    offset = dimensions[0]*dimensions[1]*dimensions[2];
    err = fseek(in,offset,SEEK_CUR);
@@ -317,7 +317,7 @@ else
    err=fread(handle,sizeof(long int),1,in);
    if (err != 1) dserror("error reading pss-file");
 /*--------------------------------------- read the dimensions of record */
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    *fdim=dimensions[0];
    *sdim=dimensions[1];
@@ -357,22 +357,22 @@ return;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_read_name_handle(char       *name, 
-                          int	     *fdim, 
-                          int	     *sdim,
-                          int	     *byte,
+                          INT	     *fdim, 
+                          INT	     *sdim,
+                          INT	     *byte,
                           void       *ziel, 
                           long int   *handle,
                           FILE       *in, 
-                          int	     *ierr)
+                          INT	     *ierr)
 {
 long int      cur_pos=0;
 long int      offset=0;
-int           err=0;
-int           foundit=0;
-int           name_size=0;
-int           sizename=0;
-int           write_error=0;
-int           dimensions[3];
+INT           err=0;
+INT           foundit=0;
+INT           name_size=0;
+INT           sizename=0;
+INT           write_error=0;
+INT           dimensions[3];
 long int      handle_dummy;
 char          test_name[200];
 #ifdef DEBUG 
@@ -391,7 +391,7 @@ err = fseek(in,*handle,SEEK_SET);
 if (err == -1) dserror("error reading pss-file");
 
 /*--------------------------------------------------- read size of name */
-err = fread(&sizename,sizeof(int),1,in);
+err = fread(&sizename,sizeof(INT),1,in);
 if (err != 1) dserror("error reading pss-file");
 
 /*------------------------------------------------------ read test_name */ 
@@ -413,7 +413,7 @@ else
 {
    foundit=1;
 /*--------------------------------------- read the dimensions of record */
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    *fdim=dimensions[0];
    *sdim=dimensions[1];
@@ -462,16 +462,16 @@ void pss_read_array_name(char       *name,
                          ARRAY      *array,
                          long int   *handle,
                          FILE       *in,
-                         int        *ierr)
+                         INT        *ierr)
 {
 long int     cur_pos=0;
 long int     offset=0;
-int          err=0;
-int          foundit=0;
-int          name_size=0; 
-int          sizename=0;
-int          write_error=0;
-int          dimensions[3];
+INT          err=0;
+INT          foundit=0;
+INT          name_size=0; 
+INT          sizename=0;
+INT          write_error=0;
+INT          dimensions[3];
 long int     handle_dummy;
 char         test_name[200];
 #ifdef DEBUG 
@@ -492,7 +492,7 @@ rewind(in);
 do
 {
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*----------------------------------------------- check for end of file */
 if ( feof(in) != 0)
 {
@@ -512,7 +512,7 @@ if (err != 1) dserror("error reading pss-file");
 if ( strncmp(name,test_name,strlen(name)) != 0 )
 {
 /*-------------------- not the right record, so jump it and start again */
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    offset = dimensions[0]*dimensions[1]*dimensions[2];
    err = fseek(in,offset,SEEK_CUR);
@@ -524,39 +524,39 @@ else
 /*--------------------------------------------------------- read handle */
    *handle = handle_dummy;
 /*--------------------------------------- read the dimensions of record */
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
-   if ((unsigned)dimensions[2] == sizeof(int)) /* it's a int-record */
+   if ((unsigned)dimensions[2] == sizeof(INT)) /* it's a INT-record */
    {
-       if ( array->Typ == cca_IV )/* it's an int-vector */
+       if ( array->Typ == cca_IV )/* it's an INT-vector */
        {
           err=fread(&(array->a.iv[0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
-       else /* it's an int-array */
+       else /* it's an INT-array */
        {
           err=fread(&(array->a.ia[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
    }
-   else if ((unsigned)dimensions[2] == sizeof(double))/* it's a double-record */
+   else if ((unsigned)dimensions[2] == sizeof(DOUBLE))/* it's a DOUBLE-record */
    {
-       if ( array->Typ == cca_DV )/* it's a double-vector */
+       if ( array->Typ == cca_DV )/* it's a DOUBLE-vector */
        {
           err=fread(&(array->a.dv[0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
-       else /* it's a double-array */
+       else /* it's a DOUBLE-array */
        {
           err=fread(&(array->a.da[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }  
    }
-   else /* the size in byte does not fit to int or double, so it's unknown */
+   else /* the size in byte does not fit to INT or DOUBLE, so it's unknown */
    {
       dserror("error reading array from pss-file: unexpected byte size");
    }
@@ -599,16 +599,16 @@ void pss_read_array_name_handle(char       *name,
                                 ARRAY	   *array,
                                 long int   *handle,
                                 FILE       *in,
-                                int	   *ierr)
+                                INT	   *ierr)
 {
 long int    cur_pos = 0;
 long int    offset = 0;
-int         err=0; 
-int         foundit=0;
+INT         err=0; 
+INT         foundit=0;
 unsigned int name_size=0; 
-int         sizename=0;
-int         write_error=0;
-int         dimensions[3];
+INT         sizename=0;
+INT         write_error=0;
+INT         dimensions[3];
 long int    handle_dummy;
 char        test_name[200];
 #ifdef DEBUG 
@@ -627,7 +627,7 @@ err = fseek(in,*handle,SEEK_SET);
 if (err == -1) dserror("error reading pss-file");
 
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*------------------------------------------------------ read test_name */ 
 err=fread(test_name,sizeof(char),sizename,in);
 if (err != sizename) dserror("error reading pss-file");
@@ -645,39 +645,39 @@ else
 {
    foundit=1;
 /*--------------------------------------- read the dimensions of record */
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
-   if ((unsigned)dimensions[2] == sizeof(int)) /* it's a int-record */
+   if ((unsigned)dimensions[2] == sizeof(INT)) /* it's a INT-record */
    {
-       if ( array->Typ == cca_IV )/* it's an int-vector */
+       if ( array->Typ == cca_IV )/* it's an INT-vector */
        {
           err=fread(&(array->a.iv[0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
-       else /* it's an int-array */
+       else /* it's an INT-array */
        {
           err=fread(&(array->a.ia[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
    }
-   else if ((unsigned)dimensions[2] == sizeof(double))/* it's a double-record */
+   else if ((unsigned)dimensions[2] == sizeof(DOUBLE))/* it's a DOUBLE-record */
    {
-       if ( array->Typ == cca_DV )/* it's a double-vector */
+       if ( array->Typ == cca_DV )/* it's a DOUBLE-vector */
        {
           err=fread(&(array->a.dv[0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
-       else /* it's a double-array */
+       else /* it's a DOUBLE-array */
        {
           err=fread(&(array->a.da[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }  
    }
-   else /* the size in byte does not fit to int or double, so it's unknown */
+   else /* the size in byte does not fit to INT or DOUBLE, so it's unknown */
    {
       dserror("error reading array from pss-file: unexpected byte size");
    }
@@ -717,16 +717,16 @@ return;
 void pss_read_array_handle(ARRAY      *array,
                            long int   *handle,
                            FILE       *in,
-                           int        *ierr)
+                           INT        *ierr)
 {
 long int    cur_pos = 0;
 long int    offset = 0;
-int         err=0; 
-int         foundit=0;
+INT         err=0; 
+INT         foundit=0;
 unsigned int name_size=0; 
-int         sizename=0;
-int         write_error=0;
-int         dimensions[3];
+INT         sizename=0;
+INT         write_error=0;
+INT         dimensions[3];
 long int    handle_dummy;
 char        test_name[200];
 char        *name = "         "; 
@@ -744,7 +744,7 @@ name_size=strlen(name);
 /*----------------------------------------- set file to handle position */
 err = fseek(in,*handle,SEEK_SET);
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*------------------------------------------------------ read test_name */ 
 err=fread(test_name,sizeof(char),sizename,in);
 if (err != sizename) dserror("error reading pss-file");
@@ -765,39 +765,39 @@ else
    sizename = IMIN(sizename,9);
    strncpy(name,test_name,sizename);
 /*--------------------------------------- read the dimensions of record */
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
-   if ((unsigned)dimensions[2] == sizeof(int)) /* it's a int-record */
+   if ((unsigned)dimensions[2] == sizeof(INT)) /* it's a INT-record */
    {
-       if ( array->Typ == cca_IV )/* it's an int-vector */
+       if ( array->Typ == cca_IV )/* it's an INT-vector */
        {
           err=fread(&(array->a.iv[0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
-       else /* it's an int-array */
+       else /* it's an INT-array */
        {
           err=fread(&(array->a.ia[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
    }
-   else if ((unsigned)dimensions[2] == sizeof(double))/* it's a double-record */
+   else if ((unsigned)dimensions[2] == sizeof(DOUBLE))/* it's a DOUBLE-record */
    {
-       if ( array->Typ == cca_DV )/* it's a double-vector */
+       if ( array->Typ == cca_DV )/* it's a DOUBLE-vector */
        {
           err=fread(&(array->a.dv[0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }
-       else /* it's a double-array */
+       else /* it's a DOUBLE-array */
        {
           err=fread(&(array->a.da[0][0]),dimensions[2],(dimensions[0]*dimensions[1]),in);
           if (err != (dimensions[0]*dimensions[1]))
           dserror("error reading pss-file");
        }  
    }
-   else /* the size in byte does not fit to int or double, so it's unknown */
+   else /* the size in byte does not fit to INT or DOUBLE, so it's unknown */
    {
       dserror("error reading array from pss-file: unexpected byte size");
    }
@@ -830,15 +830,15 @@ return;
 void pss_chck(char       *name,
               long int   *handle, 
               FILE       *in,
-              int        *ierr)
+              INT        *ierr)
 {
 long int    cur_pos=0;
 long int    offset=0;
-int         foundit=0;
-int         sizename=0;
-int         err=0;
+INT         foundit=0;
+INT         sizename=0;
+INT         err=0;
 char        test_name[200];
-int         dimensions[3];
+INT         dimensions[3];
 long int    handle_dummy;
 #ifdef DEBUG 
 dstrc_enter("pss_chck");
@@ -854,7 +854,7 @@ rewind(in);
 do
 {
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*----------------------------------------------- check for end of file */
 if ( feof(in) != 0)
 {
@@ -875,7 +875,7 @@ if ( strncmp(name,test_name,strlen(name)) != 0 )
 /*-------------------- not the right record, so jump it and start again */
    err = fread(&handle_dummy,sizeof(long int),1,in);
    if (err != 1) dserror("error reading pss-file");
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    offset = dimensions[0]*dimensions[1]*dimensions[2];
    err = fseek(in,offset,SEEK_CUR);
@@ -915,13 +915,13 @@ return;
 void pss_chck_handle(char       *name,
                      long int   *handle, 
                      FILE       *in,
-                     int        *ierr)
+                     INT        *ierr)
 {
 long int    cur_pos=0;
 long int    offset=0;
-int         foundit=0;
-int         sizename=0;
-int         err=0;
+INT         foundit=0;
+INT         sizename=0;
+INT         err=0;
 char        test_name[200];
 long int    handle_dummy;
 #ifdef DEBUG 
@@ -935,7 +935,7 @@ cur_pos = ftell(in);
 err = fseek(in,*handle,SEEK_SET);
 
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*------------------------------------------------------ read test_name */ 
 err=fread(test_name,sizeof(char),sizename,in);
 if (err != sizename) dserror("error reading pss-file");
@@ -978,20 +978,20 @@ return;
  | returns it                                                           |
  *----------------------------------------------------------------------*/
 void pss_getdims_name(char       *name, 
-                      int	 *fdim,
-                      int	 *sdim,
-                      int	 *byte,
+                      INT	 *fdim,
+                      INT	 *sdim,
+                      INT	 *byte,
                       long int	 *handle,
                       FILE       *in,
-                      int	 *ierr)
+                      INT	 *ierr)
 {
 long int      cur_pos=0;
 long int      offset=0;
-int           foundit=0;
-int           sizename=0;
-int           err=0;
+INT           foundit=0;
+INT           sizename=0;
+INT           err=0;
 char          test_name[200];
-int           dimensions[3];
+INT           dimensions[3];
 long int      handle_dummy;
 #ifdef DEBUG 
 dstrc_enter("pss_getdims_name");
@@ -1007,7 +1007,7 @@ rewind(in);
 do
 {
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*----------------------------------------------- check for end of file */
 if ( feof(in) != 0)
 {
@@ -1027,7 +1027,7 @@ if (err != 1) dserror("error reading pss-file");
 if ( strncmp(name,test_name,strlen(name)) != 0 )
 {
 /*-------------------- not the right record, so jump it and start again */
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    offset = dimensions[0]*dimensions[1]*dimensions[2];
    err = fseek(in,offset,SEEK_CUR);
@@ -1036,7 +1036,7 @@ if ( strncmp(name,test_name,strlen(name)) != 0 )
 else
 {
    foundit=1;
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    *fdim=dimensions[0];
    *sdim=dimensions[1];
@@ -1068,20 +1068,20 @@ return;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void pss_getdims_name_handle(char       *name, 
-                             int	*fdim,
-                             int	*sdim,
-                             int	*byte,
+                             INT	*fdim,
+                             INT	*sdim,
+                             INT	*byte,
                              long int	*handle,
                              FILE       *in,
-                             int	*ierr)
+                             INT	*ierr)
 {
 long int      cur_pos=0;
 long int      offset=0;
-int           foundit=0;
-int           sizename=0;
-int           err=0;
+INT           foundit=0;
+INT           sizename=0;
+INT           err=0;
 char          test_name[200];
-int           dimensions[3];
+INT           dimensions[3];
 long int           handle_dummy;
 #ifdef DEBUG 
 dstrc_enter("pss_getdims_name_handle");
@@ -1094,7 +1094,7 @@ cur_pos = ftell(in);
 err = fseek(in,*handle,SEEK_SET);
 if (err == -1) dserror("error reading pss-file");
 /*--------------------------------------------------- read size of name */
-err=fread(&sizename,sizeof(int),1,in);
+err=fread(&sizename,sizeof(INT),1,in);
 /*------------------------------------------------------ read test_name */ 
 err=fread(test_name,sizeof(char),sizename,in);
 if (err != sizename) dserror("error reading pss-file");
@@ -1111,7 +1111,7 @@ if ( strncmp(name,test_name,strlen(name)) != 0 || handle_dummy != *handle)
 else
 {
    foundit=1;
-   err=fread(dimensions,sizeof(int),3,in);
+   err=fread(dimensions,sizeof(INT),3,in);
    if (err != 3) dserror("error reading pss-file");
    *fdim=dimensions[0];
    *sdim=dimensions[1];
@@ -1148,12 +1148,12 @@ long int cur_pos=0;
 long int current=0;
 long int endoffile=0;
 long int offset=0;
-int      sizename=0;
-int      err=0;
+INT      sizename=0;
+INT      err=0;
 char     test_name[200];
 char     writename[20];
-int      dimensions[3];
-int      counter=0;
+INT      dimensions[3];
+INT      counter=0;
 long int handle;
 #ifdef DEBUG 
 dstrc_enter("pss_status_to_err");
@@ -1175,7 +1175,7 @@ do
 /*--------------------------------------------------- read size of name */
    current=ftell(inout);
    if (current==endoffile) goto end;
-   err=fread(&sizename,sizeof(int),1,inout);
+   err=fread(&sizename,sizeof(INT),1,inout);
    if (err != 1) goto end;
 /*------------------------------------------------------ read test_name */ 
    err=fread(test_name,sizeof(char),sizename,inout);
@@ -1184,7 +1184,7 @@ do
    err=fread(&handle,sizeof(long int),1,inout);
    if (err != 1) goto end;
 /*----------------------------------------------------- read dimensions */
-   err=fread(dimensions,sizeof(int),3,inout);
+   err=fread(dimensions,sizeof(INT),3,inout);
    if (err != 3) goto end;
 /*----------------------------------------------------- jump the record */
    offset = dimensions[0]*dimensions[1]*dimensions[2];

@@ -10,10 +10,10 @@
  *----------------------------------------------------------------------*/
 void s8_kov_cuca(DOUBLE *t, const DOUBLE **gkon)
 {
-int i,j;
-double T[3][3],Tcart[3][3];
+INT i,j;
+DOUBLE T[3][3],Tcart[3][3];
 /*
-double c[3][3];
+DOUBLE c[3][3];
 */
 #ifdef DEBUG 
 dstrc_enter("s8_kov_cuca"); 
@@ -76,10 +76,10 @@ return;
  *----------------------------------------------------------------------*/
 void s8_kon_cacu(DOUBLE *t, const DOUBLE **gkon)
 {
-int i,j;
-double T[3][3],Tcart[3][3];
+INT i,j;
+DOUBLE T[3][3],Tcart[3][3];
 /*
-double c[3][3];
+DOUBLE c[3][3];
 */
 #ifdef DEBUG 
 dstrc_enter("s8_kon_cacu"); 
@@ -143,10 +143,10 @@ return;
  *----------------------------------------------------------------------*/
 void s8_kov_cacu(DOUBLE *t, const DOUBLE **gkov)
 {
-int i,j;
-double T[3][3],Tcart[3][3];
+INT i,j;
+DOUBLE T[3][3],Tcart[3][3];
 /*
-double c[3][3];
+DOUBLE c[3][3];
 */
 #ifdef DEBUG 
 dstrc_enter("s8_kov_cacu"); 
@@ -209,9 +209,9 @@ return;
  *----------------------------------------------------------------------*/
 void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], const DOUBLE **gkon)
 {
-int i,j,k,l;
-int m,n,p,q;
-double C[3][3][3][3];
+INT i,j,k,l;
+INT m,n,p,q;
+DOUBLE C[3][3][3][3];
 #ifdef DEBUG 
 dstrc_enter("s8_4kon_cacu"); 
 #endif
@@ -305,10 +305,10 @@ return;
  *----------------------------------------------------------------------*/
 void s8_mat_linel_cart(STVENANT *mat,DOUBLE C[][3][3][3],DOUBLE **CC,DOUBLE *strain)
 {
-double emod,nue;
-double l1,l2,ll2;
+DOUBLE emod,nue;
+DOUBLE l1,l2,ll2;
 /*
-double e[3][3];
+DOUBLE e[3][3];
 */
 #ifdef DEBUG 
 dstrc_enter("s8_mat_linel_cart"); 

@@ -48,8 +48,8 @@ VISUAL2
 ------------------------------------------------------------------------*/
 void ntavisual()
 {
-int    i;        /* simply a counter                                    */
-int    actnum;   /* field number to visualise                           */
+INT    i;        /* simply a counter                                    */
+INT    actnum;   /* field number to visualise                           */
 FIELD *actfield; /* actual field                                        */
 
 #ifdef DEBUG 

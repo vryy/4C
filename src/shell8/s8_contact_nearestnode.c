@@ -30,24 +30,24 @@ extern struct _SHELLCONTACT shellcontact;
 <pre>                                                        m.gee 2/03 
 </pre>
 \param actintra    INTRA*    (i)   the intracommunicator
-\param dt          double    (i)   the time step size
+\param dt          DOUBLE    (i)   the time step size
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void s8_contact_searchupdate(INTRA *actintra, double dt)
+void s8_contact_searchupdate(INTRA *actintra, DOUBLE dt)
 {
-int              i,j,k;
-int              a,b,c;
-int              myrank,nproc;                     /* parallel stuff */
-int              numnp;                            /* number of slave nodes (ususally all nodes) */
+INT              i,j,k;
+INT              a,b,c;
+INT              myrank,nproc;                     /* parallel stuff */
+INT              numnp;                            /* number of slave nodes (ususally all nodes) */
 SHELLNODE       *cnode;                            /* vector of contact nodes */
 SHELLNODE       *actcnode;                         /* the active contact node */
-double           xmin,xmax;
-double           ymin,ymax;
-double           zmin,zmax;
-double           x,y,z;
-double           dx,dy,dz;
-int              nx,ny,nz;
+DOUBLE           xmin,xmax;
+DOUBLE           ymin,ymax;
+DOUBLE           zmin,zmax;
+DOUBLE           x,y,z;
+DOUBLE           dx,dy,dz;
+INT              nx,ny,nz;
 CONTACTSLICE    *actslice;
 CONTACTSTRIPE   *actstripe;
 CONTACTBUCKET   *actbuck;
@@ -83,9 +83,9 @@ for (i=0; i<numnp; i++)
 dx = xmax - xmin;
 dy = ymax - ymin;
 dz = zmax - zmin;
-nx = (int)(dx / shellcontact.maxdiag);
-ny = (int)(dy / shellcontact.maxdiag);
-nz = (int)(dz / shellcontact.maxdiag);
+nx = (INT)(dx / shellcontact.maxdiag);
+ny = (INT)(dy / shellcontact.maxdiag);
+nz = (INT)(dz / shellcontact.maxdiag);
 nx = IMAX(1,nx);
 ny = IMAX(1,ny);
 nz = IMAX(1,nz);
@@ -163,9 +163,9 @@ for (i=0; i<numnp; i++)
       a > 0
       a < nbuck[0]
    */
-   a = (int)( (x-xmin)/shellcontact.buckdim[0] );
-   b = (int)( (y-ymin)/shellcontact.buckdim[1] );
-   c = (int)( (z-zmin)/shellcontact.buckdim[2] );
+   a = (INT)( (x-xmin)/shellcontact.buckdim[0] );
+   b = (INT)( (y-ymin)/shellcontact.buckdim[1] );
+   c = (INT)( (z-zmin)/shellcontact.buckdim[2] );
    if (a==nx) a--;   if (b==ny) b--;   if (c==nz) c--;
    if (a<0)   a = 0; if (b<0)   b = 0; if (c<0)   c = 0;
    actbuck = &(shellcontact.slice[a].stripe[b].buck[c]);
@@ -207,26 +207,26 @@ return;
 void s8_contact_nearestnode(SHELLNODE  *actcnode,
                             SHELLNODE **nearcnodetop,
                             SHELLNODE **nearcnodebot,
-                            int        *msurftop,
-                            int        *msurfbot,
-                            double     *distop,
-                            double     *disbot)
+                            INT        *msurftop,
+                            INT        *msurfbot,
+                            DOUBLE     *distop,
+                            DOUBLE     *disbot)
 {
-int            i,j,k;
-int            ii,jj,kk,idim,jdim,kdim;
-int            foundit;
-int            numnp;
-double         xs_top[3];
-double         xs_bot[3];
-double         xm_top[3];
-double         xm_bot[3];
-double         mindistancetop=1.0E+10;
-double         mindistancebot=1.0E+10;
-double         distance;
+INT            i,j,k;
+INT            ii,jj,kk,idim,jdim,kdim;
+INT            foundit;
+INT            numnp;
+DOUBLE         xs_top[3];
+DOUBLE         xs_bot[3];
+DOUBLE         xm_top[3];
+DOUBLE         xm_bot[3];
+DOUBLE         mindistancetop=1.0E+10;
+DOUBLE         mindistancebot=1.0E+10;
+DOUBLE         distance;
 SHELLNODE     *searchcnode;
 NODE          *node;
 CONTACTBUCKET *cbuck;
-int            nbuck;
+INT            nbuck;
 CONTACTBUCKET *buckstack[27];
 #ifdef DEBUG 
 dstrc_enter("s8_contact_nearestnode");
@@ -537,21 +537,21 @@ return;
 void s8_contact_nearestnode_bruteforce(SHELLNODE  *actcnode,
                             SHELLNODE **nearcnodetop,
                             SHELLNODE **nearcnodebot,
-                            int        *msurftop,
-                            int        *msurfbot,
-                            double     *distop,
-                            double     *disbot)
+                            INT        *msurftop,
+                            INT        *msurfbot,
+                            DOUBLE     *distop,
+                            DOUBLE     *disbot)
 {
-int          i,j,k,l;
-int          foundit;
-int          numnp;
-double       xs_top[3];
-double       xs_bot[3];
-double       xm_top[3];
-double       xm_bot[3];
-double       mindistancetop=1.0E+10;
-double       mindistancebot=1.0E+10;
-double       distance;
+INT          i,j,k,l;
+INT          foundit;
+INT          numnp;
+DOUBLE       xs_top[3];
+DOUBLE       xs_bot[3];
+DOUBLE       xm_top[3];
+DOUBLE       xm_bot[3];
+DOUBLE       mindistancetop=1.0E+10;
+DOUBLE       mindistancebot=1.0E+10;
+DOUBLE       distance;
 SHELLNODE   *searchcnode;
 NODE        *stack[1000];
 NODE        *node;

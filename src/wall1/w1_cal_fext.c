@@ -22,10 +22,10 @@ typedef enum _RSF
   rp, rn, ps, ns 
 } RSF;
 
-static ARRAY eload_a; static double **eload;  /* static element load vector */
-static ARRAY funct_a; static double  *funct;  /* ansatz-functions           */
-static ARRAY deriv_a; static double **deriv;  /* derivatives of ansatz-funct*/
-static ARRAY xjm_a;   static double **xjm;    /* jacobian matrix            */
+static ARRAY eload_a; static DOUBLE **eload;  /* static element load vector */
+static ARRAY funct_a; static DOUBLE  *funct;  /* ansatz-functions           */
+static ARRAY deriv_a; static DOUBLE **deriv;  /* derivatives of ansatz-funct*/
+static ARRAY xjm_a;   static DOUBLE **xjm;    /* jacobian matrix            */
 /*! 
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
@@ -56,39 +56,39 @@ static ARRAY xjm_a;   static double **xjm;    /* jacobian matrix            */
 
 void w1_eleload(ELEMENT  *ele,     /* actual element                  */
                 W1_DATA  *data,    /* wall1- Data                     */
-                double	 *loadvec, /* global element load vector fext */
-                int	  init,    /* flag if init or calculation     */
-                int       imyrank) 
+                DOUBLE	 *loadvec, /* global element load vector fext */
+                INT	  init,    /* flag if init or calculation     */
+                INT       imyrank) 
 {
-int          lr,ls;              /* integration directions          */
-int          i,j,k;              /* some loopers                    */
-int          inode,idof;         /* some loopers                    */
-int          nir,nis;            /* number of GP's in r-s direction */
-int          iel;                /* number of element nodes         */
-int          nd;                 /* element DOF                     */
-const int    numdf  = 2;         /* dof per node                    */
-int          foundsurface;       /* flag for surfaceload present    */
+INT          lr,ls;              /* integration directions          */
+INT          i,j,k;              /* some loopers                    */
+INT          inode,idof;         /* some loopers                    */
+INT          nir,nis;            /* number of GP's in r-s direction */
+INT          iel;                /* number of element nodes         */
+INT          nd;                 /* element DOF                     */
+const INT    numdf  = 2;         /* dof per node                    */
+INT          foundsurface;       /* flag for surfaceload present    */
 
-/* double       thickness;            */
-double       e1,e2;              /* GP-koordinates in r-s-system   */
-double       fac,facr,facs,wgt;  /* integration factor  GP-info    */
-double       det;                /* det of jacobian matrix         */
+/* DOUBLE       thickness;            */
+DOUBLE       e1,e2;              /* GP-koordinates in r-s-system   */
+DOUBLE       fac,facr,facs,wgt;  /* integration factor  GP-info    */
+DOUBLE       det;                /* det of jacobian matrix         */
 
 /*--------------------- variables needed for integration of line loads */
-int             foundline;   /* flag for lineload present or not       */
-int             ngline;      /* number of geometrylines to the element */
+INT             foundline;   /* flag for lineload present or not       */
+INT             ngline;      /* number of geometrylines to the element */
 GLINE          *gline[4];    /* geometrylines of the element           */
 NEUM_CONDITION *lineneum[4]; /* short grep on line-neum. conditions    */
-int             line;        /* looper over lines                      */
-int             ngnode;      /* number of geometry-nodes on g-line     */
-int             ngr,ngs;     /* number of GP'e for line-integration    */
-double          xgp[3];      /* Coordinates of GP'es                   */
-double          ygp[3];      /* Coordinates of GP'es                   */
-double          wgx[3];      /* weights at GP'es                       */
-double          wgy[3];      /* weights at GP'es                       */
-double          ds;       /* dx/dr line increment for line integration */
-double          facline;     /*integration factor for line integration */
-double          forceline[2];/* lineload value in x and y direction(inp)*/
+INT             line;        /* looper over lines                      */
+INT             ngnode;      /* number of geometry-nodes on g-line     */
+INT             ngr,ngs;     /* number of GP'e for line-integration    */
+DOUBLE          xgp[3];      /* Coordinates of GP'es                   */
+DOUBLE          ygp[3];      /* Coordinates of GP'es                   */
+DOUBLE          wgx[3];      /* weights at GP'es                       */
+DOUBLE          wgy[3];      /* weights at GP'es                       */
+DOUBLE          ds;       /* dx/dr line increment for line integration */
+DOUBLE          facline;     /*integration factor for line integration */
+DOUBLE          forceline[2];/* lineload value in x and y direction(inp)*/
 RSF rsgeo;                   /* integration direction on line          */
 
 /*---------------------------------------------------------------------*/
@@ -312,13 +312,13 @@ return;
  | integration of element loads                             ah 07/02    |
  *----------------------------------------------------------------------*/
 void w1_fextsurf(ELEMENT    *ele,
-                double    **eload,
-                double     *funct,
-                double      fac,
-                int         iel)
+                DOUBLE    **eload,
+                DOUBLE     *funct,
+                DOUBLE      fac,
+                INT         iel)
 {
-double    force[2];
-int i,j;        /*-loopers(i = loaddirection x or y)(j=node)------------*/
+DOUBLE    force[2];
+INT i,j;        /*-loopers(i = loaddirection x or y)(j=node)------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_fextsurf");
 #endif
@@ -380,53 +380,53 @@ are calculated.
 </pre>
 \param	*ele		 ELEMENT      (i)    actual element
 \param  *data            W1_DATA      (i)    WALL1-data
-\param  *loadvec         double       (o)    global element load vector
-\param   init            int          (i)    flag
-\param   imyrank         int          (i)    proc number
+\param  *loadvec         DOUBLE       (o)    global element load vector
+\param   init            INT          (i)    flag
+\param   imyrank         INT          (i)    proc number
 \return void
 
 ------------------------------------------------------------------------*/
 void w1_fsiload(ELEMENT  *ele,     
                 W1_DATA  *data,    
-                double	 *loadvec, 
-                int	  init,    
-                int       imyrank)
+                DOUBLE	 *loadvec, 
+                INT	  init,    
+                INT       imyrank)
 {
-int          lr,ls;              /* integration directions          */
-int          i,j,jj,k;           /* some loopers                    */
-int          inode,idof;         /* some loopers                    */
-int          nir,nis;            /* number of GP's in r-s direction */
-int          iel;                /* number of element nodes         */
-int          nd;                 /* element DOF                     */
-const int    numdf  = 2;         /* dof per node                    */
+INT          lr,ls;              /* integration directions          */
+INT          i,j,jj,k;           /* some loopers                    */
+INT          inode,idof;         /* some loopers                    */
+INT          nir,nis;            /* number of GP's in r-s direction */
+INT          iel;                /* number of element nodes         */
+INT          nd;                 /* element DOF                     */
+const INT    numdf  = 2;         /* dof per node                    */
 
-double       e1,e2;              /* GP-koordinates in r-s-system   */
-double       fac,facr,facs,wgt;  /* integration factor  GP-info    */
-double       det;                /* det of jacobian matrix         */
+DOUBLE       e1,e2;              /* GP-koordinates in r-s-system   */
+DOUBLE       fac,facr,facs,wgt;  /* integration factor  GP-info    */
+DOUBLE       det;                /* det of jacobian matrix         */
 
 /*--------------------- variables needed for integration of line loads */
-int             foundline;   /* flag for lineload present or not       */
-int             ngline;      /* number of geometrylines to the element */
+INT             foundline;   /* flag for lineload present or not       */
+INT             ngline;      /* number of geometrylines to the element */
 GLINE          *gline[4];    /* geometrylines of the element           */   
 NEUM_CONDITION *lineneum[4]; /* short grep on line-neum. conditions    */
 GNODE          *actsgnode;   /* actual structural gnode                */
 NODE           *actfnode;    /* actual fluid node                      */
 NODE           *actsnode;    /* actual structural node                 */
-int             line;        /* looper over lines                      */
-int             ngnode;      /* number of geometry-nodes on g-line     */
-int             ngr,ngs;     /* number of GP'e for line-integration    */
-int             iegnod[MAXNOD_WALL1];
-double          xgp[3];      /* Coordinates of GP'es                   */
-double          ygp[3];      /* Coordinates of GP'es                   */
-double          wgx[3];      /* weights at GP'es                       */
-double          wgy[3];      /* weights at GP'es                       */
-double          ds;          /* dx/dy line incr. for line integration  */
-double          vnx,vny;     /* comp, of normal vector at int point    */ 
-double          facline;     /*integration factor for line integration */
-double          forceline[2];/* lineload value in x and y direct.(inp) */
-double          sigmaint[3]; /* fluid stresses at integration point    */
-double          nsigma[3][MAXNOD_WALL1]; /* nodal fluid stresses       */
-double          xyzl[2][MAXNOD_WALL1]; /* nodal coordinates            */
+INT             line;        /* looper over lines                      */
+INT             ngnode;      /* number of geometry-nodes on g-line     */
+INT             ngr,ngs;     /* number of GP'e for line-integration    */
+INT             iegnod[MAXNOD_WALL1];
+DOUBLE          xgp[3];      /* Coordinates of GP'es                   */
+DOUBLE          ygp[3];      /* Coordinates of GP'es                   */
+DOUBLE          wgx[3];      /* weights at GP'es                       */
+DOUBLE          wgy[3];      /* weights at GP'es                       */
+DOUBLE          ds;          /* dx/dy line incr. for line integration  */
+DOUBLE          vnx,vny;     /* comp, of normal vector at INT point    */ 
+DOUBLE          facline;     /*integration factor for line integration */
+DOUBLE          forceline[2];/* lineload value in x and y direct.(inp) */
+DOUBLE          sigmaint[3]; /* fluid stresses at integration point    */
+DOUBLE          nsigma[3][MAXNOD_WALL1]; /* nodal fluid stresses       */
+DOUBLE          xyzl[2][MAXNOD_WALL1]; /* nodal coordinates            */
 RSF rsgeo;                   /* integration direction on line          */
 
 #ifdef DEBUG 
@@ -560,11 +560,11 @@ return;
 } /* end of w1_eleload */
 
 /*======================================================================*/
-void w1_iedg(int *iegnod, ELEMENT *ele, int line, int init)
+void w1_iedg(INT *iegnod, ELEMENT *ele, INT line, INT init)
 {
-int i;
-static int iegq[4][4][2];
-static int iegt[4][4][2];
+INT i;
+static INT iegq[4][4][2];
+static INT iegt[4][4][2];
 
 #ifdef DEBUG 
 dstrc_enter("w1iedg");

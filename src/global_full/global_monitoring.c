@@ -37,14 +37,14 @@ extern struct _MONITOR *moni;
 /*----------------------------------------------------------------------*
  | input of monitoring data                               genk 01/03    |
  *----------------------------------------------------------------------*/
-void monitoring(FIELD *actfield,int numf, int actpos, int actstep, double time)
+void monitoring(FIELD *actfield,INT numf, INT actpos, INT actstep, DOUBLE time)
 {
-int i,j;
-int actnum;
-int numnp;
-int numr;
-int nodepos;
-double actval;
+INT i,j;
+INT actnum;
+INT numnp;
+INT numr;
+INT nodepos;
+DOUBLE actval;
 MONITOR *actmoni;
 NODE *actnode;
 

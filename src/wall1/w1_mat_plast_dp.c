@@ -18,43 +18,43 @@
  | constitutive matrix - forces - Drucker Prager - 2D     al    9/01    |
  | plane stress, plane strain, rotational symmetry                      |
  *----------------------------------------------------------------------*/
-void w1_mat_plast_dp(   double ym,
-                        double pv,
-                        double ALFAT,
-                        double sigy,
-                        double hard,
-                        double phi,
+void w1_mat_plast_dp(   DOUBLE ym,
+                        DOUBLE pv,
+                        DOUBLE ALFAT,
+                        DOUBLE sigy,
+                        DOUBLE hard,
+                        DOUBLE phi,
                         ELEMENT   *ele,
                         WALL_TYPE wtype,
-                        double **bop,
-                        double  *gop,
-                        double  *alpha,
-                        int ip,
-                        double *stress,       
-                        double **d,
-                        int istore,/* controls storing of new stresses to wa */
-                        int newval)/* controls evaluation of new stresses    */
+                        DOUBLE **bop,
+                        DOUBLE  *gop,
+                        DOUBLE  *alpha,
+                        INT ip,
+                        DOUBLE *stress,       
+                        DOUBLE **d,
+                        INT istore,/* controls storing of new stresses to wa */
+                        INT newval)/* controls evaluation of new stresses    */
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
-int yip;
-int iupd;
-double e1, e2, e3, a1, b1, c1, sum, epstn, ft;
-double disd[5];
-double sig[4];
-double eps[4];
-double strain[4];
-double delsig[4];
-double deleps[4];
-double tau[4];
-double qn[4];
-double tol = 1.0E-10;
-double dlam;
-double sigym;
-double rad;
-double dia = 0.;
-int    isoft = 0;
-double betah = 1.;
+INT i,j,k;
+INT yip;
+INT iupd;
+DOUBLE e1, e2, e3, a1, b1, c1, sum, epstn, ft;
+DOUBLE disd[5];
+DOUBLE sig[4];
+DOUBLE eps[4];
+DOUBLE strain[4];
+DOUBLE delsig[4];
+DOUBLE deleps[4];
+DOUBLE tau[4];
+DOUBLE qn[4];
+DOUBLE tol = 1.0E-10;
+DOUBLE dlam;
+DOUBLE sigym;
+DOUBLE rad;
+DOUBLE dia = 0.;
+INT    isoft = 0;
+DOUBLE betah = 1.;
 
 #ifdef DEBUG 
 dstrc_enter("w1_mat_plast_dp");

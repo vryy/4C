@@ -21,12 +21,12 @@
 |      topic: condensed stress vector                                    |
 |             plane strain --> plane stress                              |
 |-----------------------------------------------------------------------*/
-void w1consig (double **d,/* current material matrix components d14-d44 */
-               double  *sigma,  /* current stresses (local)             */
-               double  *sigmac) /* condensed stress vector              */
+void w1consig (DOUBLE **d,/* current material matrix components d14-d44 */
+               DOUBLE  *sigma,  /* current stresses (local)             */
+               DOUBLE  *sigmac) /* condensed stress vector              */
 {
 /*----------------------------------------------------------------------*/
-    static int i;
+    static INT i;
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1consig");
@@ -45,11 +45,11 @@ void w1consig (double **d,/* current material matrix components d14-d44 */
 |      topic : condense the constitutive tensor                          |
 |              plane strain --> plane stress                             |
 |-----------------------------------------------------------------------*/
-void w1concep (double **d)   /* material matrix to be calculated        */
+void w1concep (DOUBLE **d)   /* material matrix to be calculated        */
 {
 /*----------------------------------------------------------------------*/
-  static int    i, j;
-  static double fac, dm[3][3];
+  static INT    i, j;
+  static DOUBLE fac, dm[3][3];
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1concep");
@@ -86,16 +86,16 @@ void w1concep (double **d)   /* material matrix to be calculated        */
 |    topic: evaluate the incremental strain in thickness direction       |              
 |           for wall element (plane stress)                              |
 |-----------------------------------------------------------------------*/
-void w1de33(double *sigi,  /* stresses from last iteration step         */
-            double *epsi,  /* strains from last iteration step          */
-            double *di,    /* components d41,d42,d43,d44 of the         */
+void w1de33(DOUBLE *sigi,  /* stresses from last iteration step         */
+            DOUBLE *epsi,  /* strains from last iteration step          */
+            DOUBLE *di,    /* components d41,d42,d43,d44 of the         */
                            /* const. tensor from last iteration step    */
-            double *strain)/* current strains (local)                   */
+            DOUBLE *strain)/* current strains (local)                   */
 {
 /*----------------------------------------------------------------------*/
-    static double dezz;
-    static int i;
-    static double de33;
+    static DOUBLE dezz;
+    static INT i;
+    static DOUBLE de33;
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1de33");

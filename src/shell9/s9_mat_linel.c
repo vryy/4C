@@ -26,21 +26,21 @@ NOTE: Sorting of stresses and strains differ in shell8 and shell9
       s8: [11,12,13,22,23,33] <=> s9: [11,12,22,13,23,33]
 </pre>
 \param  STVENANT  *mat   (i) Material properties
-\param  double   **g     (i) kovariant basis vector
-\param  double   **CC    (o) konsitutive matrix
+\param  DOUBLE   **g     (i) kovariant basis vector
+\param  DOUBLE   **CC    (o) konsitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_mat_linel(STVENANT *mat, double **g, double **CC)
+void s9_mat_linel(STVENANT *mat, DOUBLE **g, DOUBLE **CC)
 {
-int i,j,k,l;
-double xsi=1.0; /*----- shear correction coefficient not yet introduced */
-double C[3][3][3][3]; /*--------------------------- constitutive tensor */
-double l1,l2;/*----------------------------------------- lame constants */
-double emod,nue;/*--------------------------------------- mat constants */
+INT i,j,k,l;
+DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
+DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
+DOUBLE l1,l2;/*----------------------------------------- lame constants */
+DOUBLE emod,nue;/*--------------------------------------- mat constants */
 #ifdef DEBUG 
 dstrc_enter("s9_mat_linel");
 #endif
@@ -113,18 +113,18 @@ and the constitutive matrix
 NOTE: Sorting of stresses and strains differ in shell8 and shell9
       s8: [11,12,13,22,23,33] <=> s9: [11,12,22,13,23,33]
 </pre>
-\param  double   *stress  (o) PK II stresses
-\param  double   *strain  (i) green-lagrange strains
-\param  double  **CC      (i) konsitutive matrix
+\param  DOUBLE   *stress  (o) PK II stresses
+\param  DOUBLE   *strain  (i) green-lagrange strains
+\param  DOUBLE  **CC      (i) konsitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_mat_stress1(double *stress, double *strain, double **C)
+void s9_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C)
 {
-double E[6];
+DOUBLE E[6];
 #ifdef DEBUG 
 dstrc_enter("s9_mat_linel");
 #endif

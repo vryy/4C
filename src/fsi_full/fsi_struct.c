@@ -73,10 +73,10 @@ extern ALLDYNA      *alldyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -87,7 +87,7 @@ extern struct _CURVE *curve;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-double acttime;
+DOUBLE acttime;
 
 /*!---------------------------------------------------------------------                                         
 \brief structural control algorithm for fsi problems
@@ -103,9 +103,9 @@ as Neumann boundary conditions
 \param *fsidyn   FSI_DYNAMIC	(i)				
 \param *sdyn	 STRUCT_DYNAMIC	(i)				
 \param *actfield FIELD          (i)     actual field		
-\param  mctrl    int            (i)     evaluation flag		
-\param  numfs    int            (i)     number of struct field	
-\param  fsiitnum int            (i)     counter for Iterations over fields
+\param  mctrl    INT            (i)     evaluation flag		
+\param  numfs    INT            (i)     number of struct field	
+\param  fsiitnum INT            (i)     counter for Iterations over fields
 \return void 
 
 ------------------------------------------------------------------------*/
@@ -113,33 +113,33 @@ void fsi_struct(
                    FSI_DYNAMIC       *fsidyn,
                    STRUCT_DYNAMIC    *sdyn, 
 		   FIELD             *actfield, 
-		   int                mctrl, 
-		   int                numfs,
-		   int                fsiitnum
+		   INT                mctrl, 
+		   INT                numfs,
+		   INT                fsiitnum
 	       )
 {
-int                  i;		         /* simply a counter		                        */
-static int           numeq;		 /* number of equations on this proc                    */
-static int           numeq_total;	 /* total number of equations	                        */
-int                  init;		 /* flag for solver_control call                        */
-static int           itnum;		 /* counter for NR-Iterations	                        */
-int                  convergence;	 /* convergence flag		                        */
-static int           mod_disp,mod_stress;
-static int           mod_res_write;
-static int           restart;
-static int           nstep;
-static int           outstep;
-static double        maxtime;
-static double        t0_res,t1_res;
-static double        dt;
-static double        t0,t1;
-static double        dmax;		 /* infinity norm of residual displacements             */
+INT                  i;		         /* simply a counter		                        */
+static INT           numeq;		 /* number of equations on this proc                    */
+static INT           numeq_total;	 /* total number of equations	                        */
+INT                  init;		 /* flag for solver_control call                        */
+static INT           itnum;		 /* counter for NR-Iterations	                        */
+INT                  convergence;	 /* convergence flag		                        */
+static INT           mod_disp,mod_stress;
+static INT           mod_res_write;
+static INT           restart;
+static INT           nstep;
+static INT           outstep;
+static DOUBLE        maxtime;
+static DOUBLE        t0_res,t1_res;
+static DOUBLE        dt;
+static DOUBLE        t0,t1;
+static DOUBLE        dmax;		 /* infinity norm of residual displacements             */
 
-static int           stiff_array;	 /* indice of the active system sparse matrix           */
-static int           mass_array;	 /* indice of the active system sparse matrix           */
-static int           damp_array;	 /* indice of the active system sparse matrix           */
-static int           num_array; 	 /* indice of global stiffness matrices                 */
-static int           actcurve;  	 /* indice of active time curve                         */
+static INT           stiff_array;	 /* indice of the active system sparse matrix           */
+static INT           mass_array;	 /* indice of the active system sparse matrix           */
+static INT           damp_array;	 /* indice of the active system sparse matrix           */
+static INT           num_array; 	 /* indice of global stiffness matrices                 */
+static INT           actcurve;  	 /* indice of active time curve                         */
 
 static SOLVAR       *actsolv;		 /* pointer to active solution structure                */
 static PARTITION    *actpart;		 /* pointer to active partition                         */
@@ -153,10 +153,10 @@ static DIST_VECTOR  *dispi;		 /* distributed vector to hold incremental displacm
 static DIST_VECTOR  *work;		 /* working vectors                                     */
 
 static ARRAY         intforce_a;	 /* redundant vector of full length for internal forces */
-static double       *intforce;
+static DOUBLE       *intforce;
 static ARRAY         dirich_a;  	 /* red. vector of full length for dirich-part of rhs   */
-static double       *dirich;
-static double        dirichfacs[10];	 /* factors needed for dirichlet-part of rhs            */
+static DOUBLE       *dirich;
+static DOUBLE        dirichfacs[10];	 /* factors needed for dirichlet-part of rhs            */
 static STRUCT_DYN_CALC dynvar;           /* variables to perform dynamic structural simulation  */              
 static CONTAINER       container;        /* contains variables defined in container.h           */
 

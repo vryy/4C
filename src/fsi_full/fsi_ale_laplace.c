@@ -104,8 +104,8 @@ interface and at the free surface as Dirichlet boundary conditions
 \param  *fsidyn     FSI_DYNAMIC    (i)  			  
 \param  *adyn       STRUCT_DYNAMIC (i)  			  
 \param  *actfield   FIELD          (i)     ale field 			  
-\param   mctrl      int            (i)     control flag		  
-\param   numfa      int            (i)     number of ale field	  
+\param   mctrl      INT            (i)     control flag		  
+\param   numfa      INT            (i)     number of ale field	  
 \warning 
 \return void                                               
                                         

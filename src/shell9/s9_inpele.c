@@ -50,18 +50,18 @@ This routine reads all input data for a shell9 element
 *----------------------------------------------------------------------*/
 void s9inp(ELEMENT *ele)
 {
-int          i;
-int          ierr=0;
-int          quad;
-int          counter;
+INT          i;
+INT          ierr=0;
+INT          quad;
+INT          counter;
 long int     topology[100];
 char        *colpointer;
 char         buffer[50];
-int          nhyb=0;
-int          numdof_shell9;
-int          num_klay;
+INT          nhyb=0;
+INT          numdof_shell9;
+INT          num_klay;
 KINLAY      *actkinlay;
-int          dummy_int;
+INT          dummy_int;
 MATERIAL    *actmat;
 
 #ifdef DEBUG 
@@ -76,7 +76,7 @@ if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -86,7 +86,7 @@ if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -96,7 +96,7 @@ if (ierr==1)
 {
    ele->distyp = quad9;
    ele->numnp=9;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -106,7 +106,7 @@ if (ierr==1)
 {
    ele->distyp = tri3;
    ele->numnp=3;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -116,7 +116,7 @@ if (ierr==1)
 {
    ele->distyp = tri6;
    ele->numnp=6;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -136,7 +136,7 @@ if (actmat->mattyp != m_multi_layer) dserror("Wrong mattyp to SHELL9 element -> 
   numdof_shell9 = 3 + 3*ele->e.s9->num_klay;
   ele->e.s9->numdf = numdof_shell9;
   /*-------------- allocate vector for layerhgt of kinematic layers ------*/
-  ele->e.s9->klayhgt = (double*)CCACALLOC(ele->e.s9->num_klay,sizeof(double));
+  ele->e.s9->klayhgt = (DOUBLE*)CCACALLOC(ele->e.s9->num_klay,sizeof(DOUBLE));
   if (ele->e.s9->klayhgt==NULL) dserror("Allocation of SHELL9 element failed -> klayhgt");
   ele->e.s9->klayhgt = actmat->m.multi_layer->klayhgt;
   /*--------------------- allocate a kinlay for each kinematic layer ------*/

@@ -27,73 +27,73 @@ extern struct _MATERIAL  *mat;
 
 /*----------------------------------------------------------------------*/		    
 static ARRAY     eveln_a;  /* element velocities at (n)                 */
-static double  **eveln;
+static DOUBLE  **eveln;
 static ARRAY     evelng_a; /* element velocities at (n+gamma)           */
-static double  **evelng;
+static DOUBLE  **evelng;
 static ARRAY     ealecovn_a;  /* element ale-convective velocities      */
-static double  **ealecovn;    /* at (n)                                 */
+static DOUBLE  **ealecovn;    /* at (n)                                 */
 static ARRAY     ealecovng_a; /* element ale-convective velocities      */
-static double  **ealecovng;   /* at (n+gamma)                           */
+static DOUBLE  **ealecovng;   /* at (n+gamma)                           */
 static ARRAY     egridv_a; /* element grid velocity                     */
-static double  **egridv;
+static DOUBLE  **egridv;
 static ARRAY     epren_a;  /* element pressures at (n)	                */
-static double   *epren;
+static DOUBLE   *epren;
 static ARRAY     edeadn_a; /* element dead load (selfweight)            */
-static double   *edeadng;
+static DOUBLE   *edeadng;
 static ARRAY     edeadng_a;/* element dead load (selfweight)            */
-static double   *edeadn;
+static DOUBLE   *edeadn;
 static ARRAY     funct_a;  /* shape functions                           */
-static double   *funct;
+static DOUBLE   *funct;
 static ARRAY     deriv_a;  /* first natural derivatives                 */
-static double  **deriv;
+static DOUBLE  **deriv;
 static ARRAY     deriv2_a; /* second natural derivatives                */
-static double  **deriv2;
+static DOUBLE  **deriv2;
 static ARRAY     xyze_a;
-static double  **xyze;   
+static DOUBLE  **xyze;   
 static ARRAY     xyzen_a;
-static double  **xyzen;   
+static DOUBLE  **xyzen;   
 static ARRAY     xjm_a;    /* jocobian matrix                           */
-static double  **xjm;
+static DOUBLE  **xjm;
 static ARRAY     velint_a; /* velocities at integration point           */
-static double   *velint;
+static DOUBLE   *velint;
 static ARRAY     vel2int_a;/* velocities at integration point           */
-static double   *vel2int;
+static DOUBLE   *vel2int;
 static ARRAY     alecovint_a; /* ale-convective vel at integration point*/
-static double   *alecovint;
+static DOUBLE   *alecovint;
 static ARRAY     gridvint_a;  /* grid-vel at integration point          */
-static double   *gridvint;
+static DOUBLE   *gridvint;
 static ARRAY	 covint_a; /* convective velocities at integr. point    */
-static double   *covint;
+static DOUBLE   *covint;
 static ARRAY     vderxy_a; /* vel - derivatives                         */
-static double  **vderxy;
+static DOUBLE  **vderxy;
 static ARRAY     pderxy_a; /* pre -derivatives                          */
-static double   *pderxy;
+static DOUBLE   *pderxy;
 static ARRAY     vderxy2_a;/* vel - 2nd derivatives                     */
-static double  **vderxy2;
+static DOUBLE  **vderxy2;
 static ARRAY     derxy_a;  /* coordinate - derivatives                  */
-static double  **derxy;
+static DOUBLE  **derxy;
 static ARRAY     derxy2_a; /* 2nd coordinate - derivatives              */
-static double  **derxy2;
+static DOUBLE  **derxy2;
 static ARRAY     sigmaint_a; /* fluid stresses at integration point     */
-static double  **sigmaint;
+static DOUBLE  **sigmaint;
 static ARRAY     ekappan_a; /* surface curvature at (n)                  */
-static double   *ekappan;
+static DOUBLE   *ekappan;
 static ARRAY     ekappang_a; /* surface curvature at (n+1)               */
-static double   *ekappang;
+static DOUBLE   *ekappang;
 static ARRAY     w1_a;     /* working array of arbitrary chosen size    */
-static double  **wa1;      /* used in different element routines        */
+static DOUBLE  **wa1;      /* used in different element routines        */
 static ARRAY     w2_a;     /* working array of arbitrary chosen size    */
-static double  **wa2;      /* used in different element routines        */
-static double  **estif;    /* pointer to global ele-stif                */
-static double  **emass;    /* pointer to galerkin ele-stif              */
-static double   *etforce;  /* pointer to Time RHS                       */
-static double   *eiforce;  /* pointer to Iteration RHS                  */
-static double   *edforce;  /* pointer to RHS due to dirichl. conditions */
+static DOUBLE  **wa2;      /* used in different element routines        */
+static DOUBLE  **estif;    /* pointer to global ele-stif                */
+static DOUBLE  **emass;    /* pointer to galerkin ele-stif              */
+static DOUBLE   *etforce;  /* pointer to Time RHS                       */
+static DOUBLE   *eiforce;  /* pointer to Iteration RHS                  */
+static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
 
 static ARRAY     eddy_a;       /* element turbulent ken. energy  at (n+gamma)*/
-static double   *eddy;
+static DOUBLE   *eddy;
 
-static double    visc;
+static DOUBLE    visc;
 /*!--------------------------------------------------------------------- 
 \brief control routine for element integration of fluid2
 
@@ -117,11 +117,11 @@ This routine controls the element evaluation:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
-\param  *hasdirich       int	        (o)   element flag
-\param  *hasext          int	        (o)   element flag         
-\param   imyrank         int            (i)   proc number
-\param   velgrad	         int	        (i)   flag
-\param   init	         int	        (i)   init flag
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag         
+\param   imyrank         INT            (i)   proc number
+\param   velgrad	         INT	        (i)   flag
+\param   init	         INT	        (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
@@ -135,10 +135,10 @@ void f2_calele(
 	          ARRAY          *etforce_global,       
 	          ARRAY          *eiforce_global, 
 		    ARRAY          *edforce_global,		
-		    int            *hasdirich,      
-                int            *hasext,
-                int             imyrank,
-		    int             init            
+		    INT            *hasdirich,      
+                INT            *hasext,
+                INT             imyrank,
+		    INT             init            
 	       )
 {
 
@@ -280,21 +280,21 @@ return;
 </pre>
 
 \param     str     FLUID_STRESS   (i)    flag for stress calculation
-\param     viscstr int            (i)    viscose stresses yes/no?
+\param     viscstr INT            (i)    viscose stresses yes/no?
 \param    *data    FLUID_DATA     (i)
 \param    *ele     ELEMENt        (i)    actual element 
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
 void f2_stress(FLUID_STRESS  str, 
-               int           viscstr,
+               INT           viscstr,
 	       FLUID_DATA   *data, 
 	       ELEMENT      *ele      )
 {
-int       i;        /* simply a counter                                 */
-int       coupled;  /* flag for fsi interface element                   */
-int       iel;      /* number of nodes per element                      */
-int       actmat;   /* actual material number                           */
+INT       i;        /* simply a counter                                 */
+INT       coupled;  /* flag for fsi interface element                   */
+INT       iel;      /* number of nodes per element                      */
+INT       actmat;   /* actual material number                           */
 GNODE    *actgnode; /* actual gnode                                     */
 
 #ifdef DEBUG 
@@ -350,13 +350,13 @@ return;
 </pre>
 \param   *ele      ELEMENT	     (i)    actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param  **evel     double	     (i)    vel. at nodes
-\param  **vderxy    double	     (-)    vel. derivates
-\param  **xjm       double	     (-)    jacobi matrix
-\param  **deriv     double	     (-)    local deriv.
-\param  **deriv2    double	     (-)    local 2nd deriv.
-\param  **derxy     double	     (-)    global deriv.
-\param  *funct      double	     (-)    shape funct.
+\param  **evel     DOUBLE	     (i)    vel. at nodes
+\param  **vderxy    DOUBLE	     (-)    vel. derivates
+\param  **xjm       DOUBLE	     (-)    jacobi matrix
+\param  **deriv     DOUBLE	     (-)    local deriv.
+\param  **deriv2    DOUBLE	     (-)    local 2nd deriv.
+\param  **derxy     DOUBLE	     (-)    global deriv.
+\param  *funct      DOUBLE	     (-)    shape funct.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -365,12 +365,12 @@ void f2_shearstress(
                  FLUID_DYN_CALC  *dynvar 
                  )
 {
-double           det;    
-int              actmat;       /* material number of the element */
-int              iel,ntyp;
-double           r,s;
-int              icode,ihoel;
-int              node,i;
+DOUBLE           det;    
+INT              actmat;       /* material number of the element */
+INT              iel,ntyp;
+DOUBLE           r,s;
+INT              icode,ihoel;
+INT              node,i;
 DIS_TYP          typ;	      /* element type                    */
 
 GNODE *actgnode;
@@ -468,7 +468,7 @@ return;
 \param    *data    FLUID_DATA     (i)
 \param    *dynvar  FLUID_DYN_CALC (i)
 \param    *ele     ELEMENt        (i)    actual element 
-\param     imyrank int            (i)    proc number
+\param     imyrank INT            (i)    proc number
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
@@ -476,13 +476,13 @@ void f2_curvature(
 	           FLUID_DATA     *data,
 		   FLUID_DYN_CALC *dynvar,  
 	           ELEMENT        *ele,
-		   int             imyrank
+		   INT             imyrank
 		 )
 {
 #ifdef D_FSI
-int      i;
-int      ngline,foundline;
-double **kappa;
+INT      i;
+INT      ngline,foundline;
+DOUBLE **kappa;
 GLINE    *gline[4];
 FLUID_FREESURF_CONDITION *linefs[4];
 

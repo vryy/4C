@@ -44,14 +44,14 @@ void fsi_relax_intdisp(
 			    FSI_DYNAMIC    *fsidyn
 		      )
 {
-int     i,j;              /* simply some counters		        */
-int     numdf;            /* actual number of dofs		        */
-int     numnp_total;      /* number of struct nodes		        */
-int     numdf_total;      /* total number of struct dofs                */
-int     dof;              /* actual dof                                 */
-int    *sid;              /* structural interface dofs                  */
-double  relax;            /* actual relaxation parameter omega	        */
-double  fac;             
+INT     i,j;              /* simply some counters		        */
+INT     numdf;            /* actual number of dofs		        */
+INT     numnp_total;      /* number of struct nodes		        */
+INT     numdf_total;      /* total number of struct dofs                */
+INT     dof;              /* actual dof                                 */
+INT    *sid;              /* structural interface dofs                  */
+DOUBLE  relax;            /* actual relaxation parameter omega	        */
+DOUBLE  fac;             
 NODE   *actsnode;	  /* the actual struct	node 			*/
 
 #ifdef DEBUG 

@@ -20,16 +20,16 @@
 This routine calculates the green lagrange strains from the kovariant 
 shell9 metrics in current and reference configuration
 </pre>
-\param  double *strain   (o) green lagrange strains
-\param  double **gmkovc  (i) kovariant metric in current configuration
-\param  double **gmkovr  (i) kovariant metric in referent configuration
+\param  DOUBLE *strain   (o) green lagrange strains
+\param  DOUBLE **gmkovc  (i) kovariant metric in current configuration
+\param  DOUBLE **gmkovr  (i) kovariant metric in referent configuration
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_eps(double *strain,double **gmkovc, double **gmkovr)
+void s9_eps(DOUBLE *strain,DOUBLE **gmkovc, DOUBLE **gmkovr)
 {
 #ifdef DEBUG 
 dstrc_enter("s9_eps");

@@ -4,13 +4,13 @@
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel(STVENANT *mat, double **g, double **CC)
+void s8_mat_linel(STVENANT *mat, DOUBLE **g, DOUBLE **CC)
 {
-int i,j,k,l;
-double xsi=1.0; /*----- shear correction coefficient not yet introduced */
-double C[3][3][3][3]; /*--------------------------- constitutive tensor */
-double l1,l2;/*----------------------------------------- lame constants */
-double emod,nue;/*--------------------------------------- mat constants */
+INT i,j,k,l;
+DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
+DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
+DOUBLE l1,l2;/*----------------------------------------- lame constants */
+DOUBLE emod,nue;/*--------------------------------------- mat constants */
 #ifdef DEBUG 
 dstrc_enter("s8_mat_linel");
 #endif
@@ -76,9 +76,9 @@ return;
 /*----------------------------------------------------------------------*
  | PK II stresses                                         m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_mat_stress1(double *stress, double *strain, double **C)
+void s8_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C)
 {
-double E[6];
+DOUBLE E[6];
 #ifdef DEBUG 
 dstrc_enter("s8_mat_linel");
 #endif
@@ -100,21 +100,21 @@ return;
  | neohooke material from habil wriggers                  m.gee 3/03    |
  *----------------------------------------------------------------------*/
 void s8_mat_neohooke(NEO_HOOKE *mat, 
-                     double    *stress, 
-                     double   **CC,
-                     double   **gmkonr,
-                     double   **gmkonc,
-                     double     detr,
-                     double     detc)
+                     DOUBLE    *stress, 
+                     DOUBLE   **CC,
+                     DOUBLE   **gmkonr,
+                     DOUBLE   **gmkonc,
+                     DOUBLE     detr,
+                     DOUBLE     detc)
 {
-int i,j,k,l;
-double xsi=1.0; /*----- shear correction coefficient not yet introduced */
-double C[3][3][3][3]; /*--------------------------- constitutive tensor */
-double sp[3][3];/*---------------------------------------- PK2 stresses */
-double l1,l2;/*----------------------------------------- lame constants */
-double emod,nue;/*--------------------------------------- mat constants */
-double xj;
-double F1;
+INT i,j,k,l;
+DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
+DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
+DOUBLE sp[3][3];/*---------------------------------------- PK2 stresses */
+DOUBLE l1,l2;/*----------------------------------------- lame constants */
+DOUBLE emod,nue;/*--------------------------------------- mat constants */
+DOUBLE xj;
+DOUBLE F1;
 #ifdef DEBUG 
 dstrc_enter("s8_mat_neohooke"); 
 #endif

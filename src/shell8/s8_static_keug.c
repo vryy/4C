@@ -10,164 +10,164 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
                    MATERIAL  *mat,                        /* the material structure */
                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
-                   double    *force,                      /* for internal forces (initialized!) */
-                   int        kstep,                      /* actual step in nonlinear analysis */
-                   int        init)                       /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+                   DOUBLE    *force,                      /* for internal forces (initialized!) */
+                   INT        kstep,                      /* actual step in nonlinear analysis */
+                   INT        init)                       /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
 /*----------------------------------------------------------------------*/
 /* if force==NULL no internal forces are calculated                     */
 /*----------------------------------------------------------------------*/
 {
-int                 i,j,k,l;                                /* some loopers */
-double              sum;
-int                 ngauss;
-double diff;
-int                 imass;                                  /* flag for calculating mass matrix */
-double              density;                                /* density of the material */
-double              facv,facw,facvw;                        /* variables for mass integration */
-double             *thick;
+INT                 i,j,k,l;                                /* some loopers */
+DOUBLE              sum;
+INT                 ngauss;
+DOUBLE diff;
+INT                 imass;                                  /* flag for calculating mass matrix */
+DOUBLE              density;                                /* density of the material */
+DOUBLE              facv,facw,facvw;                        /* variables for mass integration */
+DOUBLE             *thick;
 
-int                 nir,nis,nit;                            /* num GP in r/s/t direction */
-int                 lr, ls, lt;                             /* loopers over GP */
-int                 iel;                                    /* numnp to this element */
-int                 nd;                                     /* ndofs to this element (=numdf*numnp) */
-const int           numdf=NUMDOF_SHELL8;                    /* ndofs per node to this element */
+INT                 nir,nis,nit;                            /* num GP in r/s/t direction */
+INT                 lr, ls, lt;                             /* loopers over GP */
+INT                 iel;                                    /* numnp to this element */
+INT                 nd;                                     /* ndofs to this element (=numdf*numnp) */
+const INT           numdf=NUMDOF_SHELL8;                    /* ndofs per node to this element */
 
-double              e1,e2,e3;                               /*GP-coords*/
-double              fac,facr,facs,fact;                     /* weights at GP */
-double              xnu;                                    /* value of shell shifter */
-double              weight;
+DOUBLE              e1,e2,e3;                               /*GP-coords*/
+DOUBLE              fac,facr,facs,fact;                     /* weights at GP */
+DOUBLE              xnu;                                    /* value of shell shifter */
+DOUBLE              weight;
 
-double              condfac;                                /* sdc conditioning factor */
-double              h2;                                     /* half nodal height */
+DOUBLE              condfac;                                /* sdc conditioning factor */
+DOUBLE              h2;                                     /* half nodal height */
 
-double              detr0;                                  /* jacobian determinant in ref conf. at mid point*/
-double              detc0;                                  /* jacobian determinant in cur conf. at mid point*/
-double              detr;                                   /* jacobian determinant in ref conf. at gp */
-double              detc;                                   /* jacobian determinant in cur conf. at gp */
+DOUBLE              detr0;                                  /* jacobian determinant in ref conf. at mid point*/
+DOUBLE              detc0;                                  /* jacobian determinant in cur conf. at mid point*/
+DOUBLE              detr;                                   /* jacobian determinant in ref conf. at gp */
+DOUBLE              detc;                                   /* jacobian determinant in cur conf. at gp */
 
-double              h[3];                                   /* working array */
-double              da;                                     /* area on mid surface */
+DOUBLE              h[3];                                   /* working array */
+DOUBLE              da;                                     /* area on mid surface */
 
-double              stress[6], stress_r[12];                 /* stress and stress resultants */
-double              strain[6];
+DOUBLE              stress[6], stress_r[12];                 /* stress and stress resultants */
+DOUBLE              strain[6];
 /*
-double              strain_r[12], strain_b[12], strain_m[12], strain_t[12]; 
-double              strain_work[12];
+DOUBLE              strain_r[12], strain_b[12], strain_m[12], strain_t[12]; 
+DOUBLE              strain_work[12];
 */
-double             *intforce;
+DOUBLE             *intforce;
 
-static ARRAY        C_a;         static double **C;         /* material tensor */
-static ARRAY        D_a;         static double **D;         /* material tensor integrated in thickness direction */
+static ARRAY        C_a;         static DOUBLE **C;         /* material tensor */
+static ARRAY        D_a;         static DOUBLE **D;         /* material tensor integrated in thickness direction */
 
-static ARRAY        a3r_a;       static double **a3r;       /* a3 in reference config (lenght h/2) */
-static ARRAY        a3c_a;       static double **a3c;       /* a3 in current   config (lenght h/2 + disp) */
+static ARRAY        a3r_a;       static DOUBLE **a3r;       /* a3 in reference config (lenght h/2) */
+static ARRAY        a3c_a;       static DOUBLE **a3c;       /* a3 in current   config (lenght h/2 + disp) */
 
-static ARRAY        a3kvpr_a;    static double **a3kvpr;    /* partiel derivatives of normal vector ref.config. */
-static ARRAY        a3kvpc_a;    static double **a3kvpc;    /* partiel derivatives of normal vector cur.config. */
+static ARRAY        a3kvpr_a;    static DOUBLE **a3kvpr;    /* partiel derivatives of normal vector ref.config. */
+static ARRAY        a3kvpc_a;    static DOUBLE **a3kvpc;    /* partiel derivatives of normal vector cur.config. */
 
-static ARRAY        xrefe_a;     static double **xrefe;     /* coords of midsurface in ref config */
-static ARRAY        xcure_a;     static double **xcure;     /* coords of midsurface in cur condig */
-                                        double **a3ref;     /* elements directors (lenght 1) */
+static ARRAY        xrefe_a;     static DOUBLE **xrefe;     /* coords of midsurface in ref config */
+static ARRAY        xcure_a;     static DOUBLE **xcure;     /* coords of midsurface in cur condig */
+                                        DOUBLE **a3ref;     /* elements directors (lenght 1) */
 
-static ARRAY        funct_a;     static double  *funct;     /* shape functions */
-static ARRAY        deriv_a;     static double **deriv;     /* derivatives of shape functions */
+static ARRAY        funct_a;     static DOUBLE  *funct;     /* shape functions */
+static ARRAY        deriv_a;     static DOUBLE **deriv;     /* derivatives of shape functions */
 
 /* mid surface basis vectors and metric tensors */
-static ARRAY        akovr_a;     static double **akovr;     /* kovariant basis vectors at Int point ref.config. */
-static ARRAY        akonr_a;     static double **akonr;     /* kontravar.--------------"----------- ref.config. */
-static ARRAY        amkovr_a;    static double **amkovr;    /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY        amkonr_a;    static double **amkonr;    /* kontravar.--------------"------------ ref.config. */
+static ARRAY        akovr_a;     static DOUBLE **akovr;     /* kovariant basis vectors at Int point ref.config. */
+static ARRAY        akonr_a;     static DOUBLE **akonr;     /* kontravar.--------------"----------- ref.config. */
+static ARRAY        amkovr_a;    static DOUBLE **amkovr;    /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY        amkonr_a;    static DOUBLE **amkonr;    /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY        akovc_a;     static double **akovc;     /* kovariant basis vectors at Int point current.config. */
-static ARRAY        akonc_a;     static double **akonc;     /* kontravar.--------------"----------- current.config. */
-static ARRAY        amkovc_a;    static double **amkovc;    /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY        amkonc_a;    static double **amkonc;    /* kontravar.--------------"------------ current.config. */
+static ARRAY        akovc_a;     static DOUBLE **akovc;     /* kovariant basis vectors at Int point current.config. */
+static ARRAY        akonc_a;     static DOUBLE **akonc;     /* kontravar.--------------"----------- current.config. */
+static ARRAY        amkovc_a;    static DOUBLE **amkovc;    /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY        amkonc_a;    static DOUBLE **amkonc;    /* kontravar.--------------"------------ current.config. */
 
-static ARRAY        akovr0_a;    static double **akovr0;    /* kovariant basis vectors at mid point ref.config. */
-static ARRAY        akonr0_a;    static double **akonr0;    /* kontravar.--------------"----------- ref.config. */
-static ARRAY        amkovr0_a;   static double **amkovr0;   /* kovaraiant metric tensor at mid point ref.config. */
-static ARRAY        amkonr0_a;   static double **amkonr0;   /* kontravar.--------------"------------ ref.config. */
+static ARRAY        akovr0_a;    static DOUBLE **akovr0;    /* kovariant basis vectors at mid point ref.config. */
+static ARRAY        akonr0_a;    static DOUBLE **akonr0;    /* kontravar.--------------"----------- ref.config. */
+static ARRAY        amkovr0_a;   static DOUBLE **amkovr0;   /* kovaraiant metric tensor at mid point ref.config. */
+static ARRAY        amkonr0_a;   static DOUBLE **amkonr0;   /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY        akovc0_a;    static double **akovc0;    /* kovariant basis vectors at mid point current.config. */
-static ARRAY        akonc0_a;    static double **akonc0;    /* kontravar.--------------"----------- current.config. */
-static ARRAY        amkovc0_a;   static double **amkovc0;   /* kovaraiant metric tensor at mid point current.config. */
-static ARRAY        amkonc0_a;   static double **amkonc0;   /* kontravar.--------------"------------ current.config. */
+static ARRAY        akovc0_a;    static DOUBLE **akovc0;    /* kovariant basis vectors at mid point current.config. */
+static ARRAY        akonc0_a;    static DOUBLE **akonc0;    /* kontravar.--------------"----------- current.config. */
+static ARRAY        amkovc0_a;   static DOUBLE **amkovc0;   /* kovaraiant metric tensor at mid point current.config. */
+static ARRAY        amkonc0_a;   static DOUBLE **amkonc0;   /* kontravar.--------------"------------ current.config. */
 
 /* shell body basis vectors and metric tensors */
-static ARRAY        gkovr_a;     static double **gkovr;     /* kovariant basis vectors at Int point ref.config. */
-static ARRAY        gkonr_a;     static double **gkonr;     /* kontravar.--------------"----------- ref.config. */
-static ARRAY        gmkovr_a;    static double **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY        gmkonr_a;    static double **gmkonr;    /* kontravar.--------------"------------ ref.config. */
+static ARRAY        gkovr_a;     static DOUBLE **gkovr;     /* kovariant basis vectors at Int point ref.config. */
+static ARRAY        gkonr_a;     static DOUBLE **gkonr;     /* kontravar.--------------"----------- ref.config. */
+static ARRAY        gmkovr_a;    static DOUBLE **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY        gmkonr_a;    static DOUBLE **gmkonr;    /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY        gkovc_a;     static double **gkovc;     /* kovariant basis vectors at Int point current.config. */
-static ARRAY        gkonc_a;     static double **gkonc;     /* kontravar.--------------"----------- current.config. */
-static ARRAY        gmkovc_a;    static double **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY        gmkonc_a;    static double **gmkonc;    /* kontravar.--------------"------------ current.config. */
+static ARRAY        gkovc_a;     static DOUBLE **gkovc;     /* kovariant basis vectors at Int point current.config. */
+static ARRAY        gkonc_a;     static DOUBLE **gkonc;     /* kontravar.--------------"----------- current.config. */
+static ARRAY        gmkovc_a;    static DOUBLE **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY        gmkonc_a;    static DOUBLE **gmkonc;    /* kontravar.--------------"------------ current.config. */
 
-static ARRAY        bop_a;       static double **bop;       /* B-Operator for compatible strains */
-                                 static double **estif;     /* element stiffness matrix ke */
-                                 static double **emass;     /* element mass matrix */
-static ARRAY        work_a;      static double **work;      /* working array to do Bt*D*B */
+static ARRAY        bop_a;       static DOUBLE **bop;       /* B-Operator for compatible strains */
+                                 static DOUBLE **estif;     /* element stiffness matrix ke */
+                                 static DOUBLE **emass;     /* element mass matrix */
+static ARRAY        work_a;      static DOUBLE **work;      /* working array to do Bt*D*B */
 
 /* arrays for eas */
-int                 nhyb;                                   /* scnd dim of P */
-double              epsh[12];                               /* transformed eas strains */
-double             *alfa;
-double            **oldDtildinv;
-double            **oldLt;
-double             *oldRtild;
-static ARRAY        P_a;         static double **P;         /* eas matrix M */
-static ARRAY        transP_a;    static double **transP;    /* eas matrix M */
-static ARRAY        T_a;         static double **T;         /* transformation matrix for eas */
-static ARRAY        workeas_a;   static double **workeas;   /* eas working array */
-static ARRAY        workeas2_a;  static double **workeas2;   /* eas working array */
-static ARRAY        Lt_a;        static double **Lt;        /* eas matrix L transposed */
-static ARRAY        Dtild_a;     static double **Dtild;     /* eas matrix Dtilde */
-static ARRAY        Dtildinv_a;  static double **Dtildinv;  /* inverse of eas matrix Dtilde */
-static ARRAY        Rtild_a;     static double  *Rtild;     /* eas part of internal forces */
-static ARRAY        eashelp_a;   static double  *eashelp;   /* working vector for eas */
+INT                 nhyb;                                   /* scnd dim of P */
+DOUBLE              epsh[12];                               /* transformed eas strains */
+DOUBLE             *alfa;
+DOUBLE            **oldDtildinv;
+DOUBLE            **oldLt;
+DOUBLE             *oldRtild;
+static ARRAY        P_a;         static DOUBLE **P;         /* eas matrix M */
+static ARRAY        transP_a;    static DOUBLE **transP;    /* eas matrix M */
+static ARRAY        T_a;         static DOUBLE **T;         /* transformation matrix for eas */
+static ARRAY        workeas_a;   static DOUBLE **workeas;   /* eas working array */
+static ARRAY        workeas2_a;  static DOUBLE **workeas2;   /* eas working array */
+static ARRAY        Lt_a;        static DOUBLE **Lt;        /* eas matrix L transposed */
+static ARRAY        Dtild_a;     static DOUBLE **Dtild;     /* eas matrix Dtilde */
+static ARRAY        Dtildinv_a;  static DOUBLE **Dtildinv;  /* inverse of eas matrix Dtilde */
+static ARRAY        Rtild_a;     static DOUBLE  *Rtild;     /* eas part of internal forces */
+static ARRAY        eashelp_a;   static DOUBLE  *eashelp;   /* working vector for eas */
 
 /* arrays for ANS */
-int                 ansq;
-const int           nsansmax=6;
-int                 nsansq;                                  /* number of sampling points for ans */
-double              xr1[6];                                  /* coordinates of collocation points for ANS */
-double              xs1[6];
-double              xr2[6];
-double              xs2[6];                     
-double              frq[6];
-double              fsq[6];
+INT                 ansq;
+const INT           nsansmax=6;
+INT                 nsansq;                                  /* number of sampling points for ans */
+DOUBLE              xr1[6];                                  /* coordinates of collocation points for ANS */
+DOUBLE              xs1[6];
+DOUBLE              xr2[6];
+DOUBLE              xs2[6];                     
+DOUBLE              frq[6];
+DOUBLE              fsq[6];
 
-static ARRAY       funct1q_a[6];  static double  *funct1q[6];    /* shape functions at collocation points */
-static ARRAY       deriv1q_a[6];  static double **deriv1q[6];    /* derivation of these shape functions */
+static ARRAY       funct1q_a[6];  static DOUBLE  *funct1q[6];    /* shape functions at collocation points */
+static ARRAY       deriv1q_a[6];  static DOUBLE **deriv1q[6];    /* derivation of these shape functions */
 
-static ARRAY       akovr1q_a[6];  static double **akovr1q[6];
-static ARRAY       akonr1q_a[6];  static double **akonr1q[6];
-static ARRAY       amkovr1q_a[6]; static double **amkovr1q[6];
-static ARRAY       amkonr1q_a[6]; static double **amkonr1q[6];
-static ARRAY       a3kvpr1q_a[6]; static double **a3kvpr1q[6];
+static ARRAY       akovr1q_a[6];  static DOUBLE **akovr1q[6];
+static ARRAY       akonr1q_a[6];  static DOUBLE **akonr1q[6];
+static ARRAY       amkovr1q_a[6]; static DOUBLE **amkovr1q[6];
+static ARRAY       amkonr1q_a[6]; static DOUBLE **amkonr1q[6];
+static ARRAY       a3kvpr1q_a[6]; static DOUBLE **a3kvpr1q[6];
 
-static ARRAY       akovc1q_a[6];  static double **akovc1q[6];
-static ARRAY       akonc1q_a[6];  static double **akonc1q[6];
-static ARRAY       amkovc1q_a[6]; static double **amkovc1q[6];
-static ARRAY       amkonc1q_a[6]; static double **amkonc1q[6];
-static ARRAY       a3kvpc1q_a[6]; static double **a3kvpc1q[6];
+static ARRAY       akovc1q_a[6];  static DOUBLE **akovc1q[6];
+static ARRAY       akonc1q_a[6];  static DOUBLE **akonc1q[6];
+static ARRAY       amkovc1q_a[6]; static DOUBLE **amkovc1q[6];
+static ARRAY       amkonc1q_a[6]; static DOUBLE **amkonc1q[6];
+static ARRAY       a3kvpc1q_a[6]; static DOUBLE **a3kvpc1q[6];
 
 
-static ARRAY       funct2q_a[6];  static double  *funct2q[6];    /* shape functions at collocation points */
-static ARRAY       deriv2q_a[6];  static double **deriv2q[6];    /* derivation of these shape functions */
+static ARRAY       funct2q_a[6];  static DOUBLE  *funct2q[6];    /* shape functions at collocation points */
+static ARRAY       deriv2q_a[6];  static DOUBLE **deriv2q[6];    /* derivation of these shape functions */
 
-static ARRAY       akovr2q_a[6];  static double **akovr2q[6];
-static ARRAY       akonr2q_a[6];  static double **akonr2q[6];
-static ARRAY       amkovr2q_a[6]; static double **amkovr2q[6];
-static ARRAY       amkonr2q_a[6]; static double **amkonr2q[6];
-static ARRAY       a3kvpr2q_a[6]; static double **a3kvpr2q[6];
+static ARRAY       akovr2q_a[6];  static DOUBLE **akovr2q[6];
+static ARRAY       akonr2q_a[6];  static DOUBLE **akonr2q[6];
+static ARRAY       amkovr2q_a[6]; static DOUBLE **amkovr2q[6];
+static ARRAY       amkonr2q_a[6]; static DOUBLE **amkonr2q[6];
+static ARRAY       a3kvpr2q_a[6]; static DOUBLE **a3kvpr2q[6];
 
-static ARRAY       akovc2q_a[6];  static double **akovc2q[6];
-static ARRAY       akonc2q_a[6];  static double **akonc2q[6];
-static ARRAY       amkovc2q_a[6]; static double **amkovc2q[6];
-static ARRAY       amkonc2q_a[6]; static double **amkonc2q[6];
-static ARRAY       a3kvpc2q_a[6]; static double **a3kvpc2q[6];
+static ARRAY       akovc2q_a[6];  static DOUBLE **akovc2q[6];
+static ARRAY       akonc2q_a[6];  static DOUBLE **akonc2q[6];
+static ARRAY       amkovc2q_a[6]; static DOUBLE **amkovc2q[6];
+static ARRAY       amkonc2q_a[6]; static DOUBLE **amkonc2q[6];
+static ARRAY       a3kvpc2q_a[6]; static DOUBLE **a3kvpc2q[6];
 
 #ifdef DEBUG 
 dstrc_enter("s8static_keug");

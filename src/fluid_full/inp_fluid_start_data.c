@@ -41,23 +41,23 @@ and stored in the array 'start'
 ------------------------------------------------------------------------*/
 void inp_fluid_start_data()
 {
-int irc=1;                        /* flag for file opening              */
-int k;                            /* counters                           */
-int ierr1=0;                      /* flag for reading form file         */
-int ierr2=0;                      /* flag for reading form file         */
-int ierr3=0;                      /* flag for reading form file         */
-int numnp, numdf;                 /* number of points, dof per node     */
-int num;                          /* actual number of node during input */
-int counter=0;                    
-int actnf;                        /* actual field number                */
-double time;                      
+INT irc=1;                        /* flag for file opening              */
+INT k;                            /* counters                           */
+INT ierr1=0;                      /* flag for reading form file         */
+INT ierr2=0;                      /* flag for reading form file         */
+INT ierr3=0;                      /* flag for reading form file         */
+INT numnp, numdf;                 /* number of points, dof per node     */
+INT num;                          /* actual number of node during input */
+INT counter=0;                    
+INT actnf;                        /* actual field number                */
+DOUBLE time;                      
 char line [500];
 char *foundit  = NULL;
 char *foundit1 = NULL;
 char *foundit2 = NULL;
 char *foundit3 = NULL;		  /* pointers for input                 */
 char *end;
-double **start;
+DOUBLE **start;
 FILE *file;
 FLUID_DYNAMIC *fdyn;              /* pointer to fluid dynamic input data*/
 FIELD *actfield;                  /* pointer to actual field            */

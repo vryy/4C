@@ -6,16 +6,16 @@
  | control_node_global                               global node number |
  | control_dof                                number of dof to look for |
  | **node           address of pointer to hold controlled node (output) |
- | *cdof                      adress of int to hold dof number (output) |
+ | *cdof                      adress of INT to hold dof number (output) |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void calstatserv_findcontroldof(FIELD     *actfield,
-                                int        control_node_global,
-                                int        control_dof,
+                                INT        control_node_global,
+                                INT        control_dof,
                                 NODE     **node,
-                                int       *cdof) 
+                                INT       *cdof) 
 {
-int        i;
+INT        i;
 #ifdef DEBUG 
 dstrc_enter("calstatserv_findcontroldof");
 #endif

@@ -256,7 +256,7 @@ return;
  *----------------------------------------------------------------------*/
 void s8_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3])
 {
-int i,j,k,l;
+INT i,j,k,l;
 #ifdef DEBUG 
 dstrc_enter("s8_ogden_Ccart");
 #endif
@@ -316,8 +316,8 @@ return;
  *----------------------------------------------------------------------*/
 void s8_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3])
 {
-int i,j;
-double dyad0[3][3],dyad1[3][3],dyad2[3][3];
+INT i,j;
+DOUBLE dyad0[3][3],dyad1[3][3],dyad2[3][3];
 #ifdef DEBUG 
 dstrc_enter("s8_ogden_cartPK2");
 #endif
@@ -470,13 +470,13 @@ return;
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/03    |
  *----------------------------------------------------------------------*/
-int s8_mat_lineltmp(double E, double nue, double **g, double **CC)
+INT s8_mat_lineltmp(DOUBLE E, DOUBLE nue, DOUBLE **g, DOUBLE **CC)
 {
-int i,j,k,l;
-double xsi=1.0; /*----- shear correction coefficient not yet introduced */
-double C[3][3][3][3]; /*--------------------------- constitutive tensor */
-double l1,l2;/*----------------------------------------- lame constants */
-double emod;/*--------------------------------------- mat constants */
+INT i,j,k,l;
+DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
+DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
+DOUBLE l1,l2;/*----------------------------------------- lame constants */
+DOUBLE emod;/*--------------------------------------- mat constants */
 #ifdef DEBUG 
 dstrc_enter("s8_mat_lineltmp");
 #endif
@@ -541,13 +541,13 @@ return;
 /*----------------------------------------------------------------------*
  |                                                        m.gee 5/03    |
  *----------------------------------------------------------------------*/
-int s8_mat_linel_carttmp(double emod, double nue, 
-                         double C[][3][3][3])
+INT s8_mat_linel_carttmp(DOUBLE emod, DOUBLE nue, 
+                         DOUBLE C[][3][3][3])
 {
-int i,j,k,l;
-double l1,l2,ll2;
+INT i,j,k,l;
+DOUBLE l1,l2,ll2;
 /*
-double e[3][3];
+DOUBLE e[3][3];
 */
 #ifdef DEBUG 
 dstrc_enter("s8_mat_linel_cart"); 
@@ -625,7 +625,7 @@ void s8_kov_CGcuca(DOUBLE T[3][3], const DOUBLE **gkon)
 INT i,j,k,l;
 DOUBLE Tcart[3][3];
 /*
-double c[3][3];
+DOUBLE c[3][3];
 */
 #ifdef DEBUG 
 dstrc_enter("s8_kov_CGcuca"); 

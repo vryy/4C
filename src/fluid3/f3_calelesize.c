@@ -53,7 +53,7 @@ extern struct _MATERIAL  *mat;
       5 = streamlength (element length in flow direction		
    ele->e.f3->ninths: number of integration points for streamlength	
       1 = at center of element  					
-      2 = at every int pt used for element.-stab.-matrices		
+      2 = at every INT pt used for element.-stab.-matrices		
    ele->e.f3->istapc: flag for stabilisation parameter calculation	
       1 = at center of element  					
       2 = at every integration point					
@@ -63,7 +63,7 @@ extern struct _MATERIAL  *mat;
    ele->e.f3->c3    /							
    ele->e.f3->istrle: has streamlength to be computed			
    ele->e.f3->iarea: calculation of area length 			
-   ele->e.f3->iduring: calculation during int.-pt.loop  		
+   ele->e.f3->iduring: calculation during INT.-pt.loop  		
    ele->e.f3->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
    ele->e.f3->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
    ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
@@ -76,14 +76,14 @@ extern struct _MATERIAL  *mat;
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *data    FLUID_DATA	       (i)
 \param  *dynvar  FLUID_DYN_CALC        (i/o)
-\param  *funct   double 	       (-)   shape functions
-\param **deriv   double 	       (-)   deriv. of shape funcs
-\param **deriv2  double 	       (-)   2nd deriv. of sh. funcs
-\param **derxy   double 	       (-)   global derivatives
-\param **xjm     double 	       (-)   jacobian matrix
-\param **evel    double 	       (i)   element velocities
-\param  *velint  double 	       (-)   vel. at integr. point
-\param **cutp    double 	       (-)   cutting points
+\param  *funct   DOUBLE 	       (-)   shape functions
+\param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
+\param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
+\param **derxy   DOUBLE 	       (-)   global derivatives
+\param **xjm     DOUBLE 	       (-)   jacobian matrix
+\param **evel    DOUBLE 	       (i)   element velocities
+\param  *velint  DOUBLE 	       (-)   vel. at integr. point
+\param **cutp    DOUBLE 	       (-)   cutting points
 \return void             
 
 ------------------------------------------------------------------------*/			     
@@ -91,33 +91,33 @@ void f3_calelesize(
 	           ELEMENT         *ele,
 		   FLUID_DATA      *data,
 		   FLUID_DYN_CALC  *dynvar,
-	           double          *funct,
-	           double         **deriv,
-	           double         **deriv2,	       
-                   double         **derxy,
-		   double         **xjm,
-		   double         **evel,	       
-		   double          *velint,
-		   double         **wa1		
+	           DOUBLE          *funct,
+	           DOUBLE         **deriv,
+	           DOUBLE         **deriv2,	       
+                   DOUBLE         **derxy,
+		   DOUBLE         **xjm,
+		   DOUBLE         **evel,	       
+		   DOUBLE          *velint,
+		   DOUBLE         **wa1		
                   )
 {
-int ieval = 0;       /* evaluation flag			                */
-int i,ilen, inod;    /* simply a counter	        		*/
-int istrnint;        /* evaluation flag		     	                */
-int ishvol;          /* evaluation flag		        	        */
-int ntyp;            /* element type (TET or HEX)  		        */
-int actmat;          /* number of actual material		        */
-int iel;             /* number of nodes of actual element               */
-double visc;         /* fluid viscosity                                 */
-double det;          /* determinant of jacobian                         */
-double vol;          /* element volume                                  */
-double val;          /* temporary calculation value                     */
-double velno;        /* velocity norm                                   */
-double strle;        /* streamlength                                    */
-double e1,e2,e3;     /* natural coordinates of inegration point         */
-double fac,facr;     /* factors                                         */
-double facs,fact;    /* factors                                         */
-double velino[3];    /* normed velocity vector at integration point     */
+INT ieval = 0;       /* evaluation flag			                */
+INT i,ilen, inod;    /* simply a counter	        		*/
+INT istrnint;        /* evaluation flag		     	                */
+INT ishvol;          /* evaluation flag		        	        */
+INT ntyp;            /* element type (TET or HEX)  		        */
+INT actmat;          /* number of actual material		        */
+INT iel;             /* number of nodes of actual element               */
+DOUBLE visc;         /* fluid viscosity                                 */
+DOUBLE det;          /* determinant of jacobian                         */
+DOUBLE vol;          /* element volume                                  */
+DOUBLE val;          /* temporary calculation value                     */
+DOUBLE velno;        /* velocity norm                                   */
+DOUBLE strle;        /* streamlength                                    */
+DOUBLE e1,e2,e3;     /* natural coordinates of inegration point         */
+DOUBLE fac,facr;     /* factors                                         */
+DOUBLE facs,fact;    /* factors                                         */
+DOUBLE velino[3];    /* normed velocity vector at integration point     */
 DIS_TYP typ;
 
 #ifdef DEBUG 
@@ -363,11 +363,11 @@ is calculated for one element during the integration loop
 </pre>
 \param  *ele     ELEMENT	        (i)    actual element
 \param  *dynvar  FLUID_DYN_CALC         (i/o)
-\param  *velint  double 		(-)    vel at intpoint
-\param  *derxy   double 		(-)    global derivatives
-\param   visc    double 		(i)    fluid viscosity
-\param   iel     int		        (i)    act. num. of ele nodes
-\param   ntyp    int		        (i)    element type
+\param  *velint  DOUBLE 		(-)    vel at intpoint
+\param  *derxy   DOUBLE 		(-)    global derivatives
+\param   visc    DOUBLE 		(i)    fluid viscosity
+\param   iel     INT		        (i)    act. num. of ele nodes
+\param   ntyp    INT		        (i)    element type
 \return void                                               
 \sa f3_calelesize()                               
 
@@ -375,19 +375,19 @@ is calculated for one element during the integration loop
 void f3_calelesize2(
 	             ELEMENT         *ele,
 		     FLUID_DYN_CALC  *dynvar,
-                     double          *velint,	       
-                     double         **derxy,	       	
-		     double           visc,
-		     int              iel,
-		     int              ntyp
+                     DOUBLE          *velint,	       
+                     DOUBLE         **derxy,	       	
+		     DOUBLE           visc,
+		     INT              iel,
+		     INT              ntyp
 		  ) 
 {
-int    ilen, inod; /* simply a counter                                  */
-int    istrnint;   /* evaluation flag                                   */
-double strle;      /* stream length                                     */
-double val;	   /* temporary calculation value                       */
-double velno;	   /* velocity norm                                     */
-double velino[3];  /* normed velocity vector at integration point       */
+INT    ilen, inod; /* simply a counter                                  */
+INT    istrnint;   /* evaluation flag                                   */
+DOUBLE strle;      /* stream length                                     */
+DOUBLE val;	   /* temporary calculation value                       */
+DOUBLE velno;	   /* velocity norm                                     */
+DOUBLE velino[3];  /* normed velocity vector at integration point       */
 
 #ifdef DEBUG 
 dstrc_enter("f3_calelesize2");

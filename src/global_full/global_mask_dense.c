@@ -1,8 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 
 
 /*----------------------------------------------------------------------*
@@ -14,7 +14,7 @@ void mask_dense(FIELD         *actfield,
                   INTRA         *actintra, 
                   DENSE         *dense)
 {
-int       numeq;
+INT       numeq;
 #ifdef DEBUG 
 dstrc_enter("mask_dense");
 #endif
@@ -56,19 +56,19 @@ void  dense_numeq(FIELD         *actfield,
                     PARTITION    *actpart, 
                     SOLVAR       *actsolv,
                     INTRA        *actintra,
-                    int          *numeq)
+                    INT          *numeq)
 {
-int       i,j,k,l;
-int       counter;
-int       dof;
-int       iscoupled;
-int      *sendbuff,*recvbuff, sendsize;
-int      *tmp;
-int       inter_proc;
+INT       i,j,k,l;
+INT       counter;
+INT       dof;
+INT       iscoupled;
+INT      *sendbuff,*recvbuff, sendsize;
+INT      *tmp;
+INT       inter_proc;
 long int  min;
-int       proc;
-int       inprocs;
-int       imyrank;
+INT       proc;
+INT       inprocs;
+INT       imyrank;
 NODE     *actnode;
 #ifdef DEBUG 
 dstrc_enter("dense_numeq");
@@ -180,8 +180,8 @@ else /*----------------------------------------------- parallel version */
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->pdis[0].coupledofs.fdim)*(inprocs);
-sendbuff = (int*)CCACALLOC(sendsize,sizeof(int));
-recvbuff = (int*)CCACALLOC(sendsize,sizeof(int));
+sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
+recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
 if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
 counter=0;
 for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
@@ -266,7 +266,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 */
 if (inprocs > 1)
 {
-   tmp = (int*)CCACALLOC(inprocs,sizeof(int));
+   tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
    if (!tmp) dserror("Allocation of temporary memory failed");
    for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)/*------ loop coupled eqns */
    {
@@ -341,13 +341,13 @@ void  dense_update(FIELD         *actfield,
                      INTRA         *actintra,
                      DENSE         *dense)
 {
-int       i,k,l;
-int       counter;
-int      *update;
-int       dof;
-int       foundit;
-int       imyrank;
-int       inprocs;
+INT       i,k,l;
+INT       counter;
+INT      *update;
+INT       dof;
+INT       foundit;
+INT       imyrank;
+INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
 #ifdef DEBUG 
@@ -417,7 +417,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 /*---------- check whether the correct number of dofs have been counted */
 if (counter != dense->numeq) dserror("Number of dofs in DENSE-vector update wrong");
 /*---------------------------- sort the vector update just to make sure */
-qsort((int*) update, counter, sizeof(int), cmp_int);
+qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/

@@ -33,7 +33,7 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 void out_gid_msh()
 {
-int           i,j,k;
+INT           i,j,k;
 FILE         *out = allfiles.gidmsh;
 FIELD        *actfield;
 GIDSET       *actgid;
@@ -41,10 +41,10 @@ ELEMENT      *actele;
 ELEMENT      *firstele;
 NODE         *actnode;
 
-double        a1,a2,a3,thick,scal;
-int           tot_numnp;
+DOUBLE        a1,a2,a3,thick,scal;
+INT           tot_numnp;
 
-int           is_firstmesh;
+INT           is_firstmesh;
 char          sign='"';
 
 #ifdef DEBUG 
@@ -800,7 +800,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_allcoords(FILE *out)
 {
-int           i,j;
+INT           i,j;
 FIELD        *actfield;
 NODE         *actnode;
 #ifdef DEBUG 

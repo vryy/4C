@@ -32,140 +32,140 @@ calculate contact stiffness and forces
 </pre>
 \param  actcnode    SHELLNODE*     (i/o)  the contacting slave node
 \param  actele      ELEMENT*       (i)    the element that is contacted
-\param  xi          double*        (i)    local coorinates of projection point
-\param  ssurf       int            (i)    indicates whether top or bottom of slave contated
-\param  msurf       int            (i)    indicates, whether top or bottom of element is contacted
+\param  xi          DOUBLE*        (i)    local coorinates of projection point
+\param  ssurf       INT            (i)    indicates whether top or bottom of slave contated
+\param  msurf       INT            (i)    indicates, whether top or bottom of element is contacted
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void s8_contact_make(SHELLNODE *actcnode,
                      ELEMENT   *actele,
-                     double    *xi,
-                     int        ssurf,
-                     int        msurf)
+                     DOUBLE    *xi,
+                     INT        ssurf,
+                     INT        msurf)
 {
-int              i,j,k,l;
-int              numdf;
-double           sum;
+INT              i,j,k,l;
+INT              numdf;
+DOUBLE           sum;
 
-double           tn;
+DOUBLE           tn;
 
-double           thetas,thetam;
+DOUBLE           thetas,thetam;
 
-double          *force;
-double         **stiff;
-int             *lm;
+DOUBLE          *force;
+DOUBLE         **stiff;
+INT             *lm;
 ELEMENT         *ele;
 
-double           funct[4];
-double           deriv[2][4];
-double           deriv2[4];
+DOUBLE           funct[4];
+DOUBLE           deriv[2][4];
+DOUBLE           deriv2[4];
 
-double           xinode[2];
-double           h2;
-double           xr[3][4];
-double           a3r[3][4];
-double           xc[3][4];
-double           a3c[3][4];
+DOUBLE           xinode[2];
+DOUBLE           h2;
+DOUBLE           xr[3][4];
+DOUBLE           a3r[3][4];
+DOUBLE           xc[3][4];
+DOUBLE           a3c[3][4];
 
-double           gkov[3][3];
-double           gkon[3][3];
-double           gmkov[3][3];
-double           gmkon[3][3];
+DOUBLE           gkov[3][3];
+DOUBLE           gkon[3][3];
+DOUBLE           gmkov[3][3];
+DOUBLE           gmkon[3][3];
 
-double           gkovc[3][3];
-double           gkonc[3][3];
-double           gmkovc[3][3];
-double           gmkonc[3][3];
-double           gkovcab[3];
+DOUBLE           gkovc[3][3];
+DOUBLE           gkonc[3][3];
+DOUBLE           gmkovc[3][3];
+DOUBLE           gmkonc[3][3];
+DOUBLE           gkovcab[3];
 
 
-double           nue[3];
-double           nuedum[3];
+DOUBLE           nue[3];
+DOUBLE           nuedum[3];
 
-double           detas,wgt;
+DOUBLE           detas,wgt;
 
-double           xs[3];
-double           xbar[3];
-double           diff[3];
-double           g;
-double           N[30];
-double           N1[30];
-double           N2[30];
-double           T1[30];
-double           T2[30];
-double           D1[30];
-double           D2[30];
-double           A[2][2],detA;
-double           Nbar1[30];
-double           Nbar2[30];
+DOUBLE           xs[3];
+DOUBLE           xbar[3];
+DOUBLE           diff[3];
+DOUBLE           g;
+DOUBLE           N[30];
+DOUBLE           N1[30];
+DOUBLE           N2[30];
+DOUBLE           T1[30];
+DOUBLE           T2[30];
+DOUBLE           D1[30];
+DOUBLE           D2[30];
+DOUBLE           A[2][2],detA;
+DOUBLE           Nbar1[30];
+DOUBLE           Nbar2[30];
 
-double           theta[30];
+DOUBLE           theta[30];
 
 /* for friction */
-int              friction = 0;
-int              slip = 0;
-double           tT_kov[2];                /* frictional tractions (kovariant components) */
-double           tTtrial_kov[2];           /* trial frictional tractions (kovariant components) */
-double           tTtrial_kon[2];           /* trial frictional tractions (kontravar. components) */
-double           tTabs;                    /* norm of the trial frictional tractions (same in kov and kontra) */
-double           lT[2];
-double           PHI;
-double           dxi[2];
-double           kappa1;
-double           kappa2;
-double           p_kov[2];
-double           p_kon[2];
-double           p[3];
-double           Akon[2][2];
+INT              friction = 0;
+INT              slip = 0;
+DOUBLE           tT_kov[2];                /* frictional tractions (kovariant components) */
+DOUBLE           tTtrial_kov[2];           /* trial frictional tractions (kovariant components) */
+DOUBLE           tTtrial_kon[2];           /* trial frictional tractions (kontravar. components) */
+DOUBLE           tTabs;                    /* norm of the trial frictional tractions (same in kov and kontra) */
+DOUBLE           lT[2];
+DOUBLE           PHI;
+DOUBLE           dxi[2];
+DOUBLE           kappa1;
+DOUBLE           kappa2;
+DOUBLE           p_kov[2];
+DOUBLE           p_kon[2];
+DOUBLE           p[3];
+DOUBLE           Akon[2][2];
 
-double           P1[30];
-double           P2[30];
-double           Pbar1[30];
-double           Pbar2[30];
-double           T11[30];
-double           T12[30];
-double           T21[30];
-double           T22[30];
-double           Tbar11[30];
-double           Tbar12[30];
-double           Tbar21[30];
-double           Tbar22[30];
-double           N12[30];
+DOUBLE           P1[30];
+DOUBLE           P2[30];
+DOUBLE           Pbar1[30];
+DOUBLE           Pbar2[30];
+DOUBLE           T11[30];
+DOUBLE           T12[30];
+DOUBLE           T21[30];
+DOUBLE           T22[30];
+DOUBLE           Tbar11[30];
+DOUBLE           Tbar12[30];
+DOUBLE           Tbar21[30];
+DOUBLE           Tbar22[30];
+DOUBLE           N12[30];
 
-double           gkovr[3][3];
-double           gkonr[3][3];
-double           gmkovr[3][3];
-double           gmkonr[3][3];
-double           gkovrab[3];
+DOUBLE           gkovr[3][3];
+DOUBLE           gkonr[3][3];
+DOUBLE           gmkovr[3][3];
+DOUBLE           gmkonr[3][3];
+DOUBLE           gkovrab[3];
 
-double           his_xi[2];
+DOUBLE           his_xi[2];
 ELEMENT         *his_ele;
 SHELLCONTACTFLAG his_flag;
 
-double           fac1,fac2,fac3;
-double           p1p1;
-double           p1p2;
-double           p2p1;
-double           p2p2;
-double           M11;
-double           M12;
-double           M21;
-double           M22;
+DOUBLE           fac1,fac2,fac3;
+DOUBLE           p1p1;
+DOUBLE           p1p2;
+DOUBLE           p2p1;
+DOUBLE           p2p2;
+DOUBLE           M11;
+DOUBLE           M12;
+DOUBLE           M21;
+DOUBLE           M22;
 
-double           slipstiff[30][30];
+DOUBLE           slipstiff[30][30];
 
-double           xctmp[6];
-double           xiout[2];
-double           distance;
-int              success;
+DOUBLE           xctmp[6];
+DOUBLE           xiout[2];
+DOUBLE           distance;
+INT              success;
 
 #ifdef DEBUG 
 dstrc_enter("s8_contact_make");
 #endif
 /*----------------------------------------------------------------------*/
-thetas = (double)ssurf;
-thetam = (double)msurf;
+thetas = (DOUBLE)ssurf;
+thetam = (DOUBLE)msurf;
 /*------------------------------------------------ make location matrix */
 numdf = actcnode->node->numdf;
 for (i=0; i<actele->numnp; i++)

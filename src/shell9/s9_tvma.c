@@ -20,45 +20,45 @@
 This routine integrates the material law and stresses in thickness 
 direction of multilayer shell element.
 </pre>
-\param  double **D       (o)  konstitutive matrix combining kinematic and static variables 
+\param  DOUBLE **D       (o)  konstitutive matrix combining kinematic and static variables 
                               of shell element (-> dimension [12][12])
-\param  double **C       (i)  konstitutive matrix from material law (-> dimension [6][6])
-\param  double  *stress  (i)  PK_II stresses from konsitutive law (-> dimenesion [6])
-\param  double  *stress_r(o)  stress resultants ("Schnittgroessen") (-> dimension [12])
-\param  double   e3      (i)  zeta of aktuel material layer
-\param  double   fact    (i)  factor including the shell shifter
-\param  double   h       (i)  total thickness of this element
-\param  double  *klayhgt (i)  hight of kin layer in % of total thickness of shell 
-\param  double  *mlayhgt (i)  hight of mat layer in % of adjacent kin layer 
-\param  int      num_klay(i)  number of kin layers to this element  
-\param  int      num_mlay(i)  number of mat layers to this kin layer 
-\param  int      klay    (i)  actual kin layer 
-\param  int      mlay    (i)  actual mat layer of this kin layer 
+\param  DOUBLE **C       (i)  konstitutive matrix from material law (-> dimension [6][6])
+\param  DOUBLE  *stress  (i)  PK_II stresses from konsitutive law (-> dimenesion [6])
+\param  DOUBLE  *stress_r(o)  stress resultants ("Schnittgroessen") (-> dimension [12])
+\param  DOUBLE   e3      (i)  zeta of aktuel material layer
+\param  DOUBLE   fact    (i)  factor including the shell shifter
+\param  DOUBLE   h       (i)  total thickness of this element
+\param  DOUBLE  *klayhgt (i)  hight of kin layer in % of total thickness of shell 
+\param  DOUBLE  *mlayhgt (i)  hight of mat layer in % of adjacent kin layer 
+\param  INT      num_klay(i)  number of kin layers to this element  
+\param  INT      num_mlay(i)  number of mat layers to this kin layer 
+\param  INT      klay    (i)  actual kin layer 
+\param  INT      mlay    (i)  actual mat layer of this kin layer 
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_tvma(double   **D,
-             double   **C,
-             double    *stress,
-             double    *stress_r,
-             double     e3,
-             double     fact,
-             double     h,           /* total thickness of this element */
-             double    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
-             double    *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
-             int        num_klay,    /* number of kin layers to this element */  
-             int        num_mlay,    /* number of mat layers to this kin layer */
-             int        klay,        /* actual kin layer */
-             int        mlay,        /* actual mat layer of this kin layer */
-             double     condfac)
+void s9_tvma(DOUBLE   **D,
+             DOUBLE   **C,
+             DOUBLE    *stress,
+             DOUBLE    *stress_r,
+             DOUBLE     e3,
+             DOUBLE     fact,
+             DOUBLE     h,           /* total thickness of this element */
+             DOUBLE    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
+             DOUBLE    *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
+             INT        num_klay,    /* number of kin layers to this element */  
+             INT        num_mlay,    /* number of mat layers to this kin layer */
+             INT        klay,        /* actual kin layer */
+             INT        mlay,        /* actual mat layer of this kin layer */
+             DOUBLE     condfac)
 {
-int i,i6,j,j6;
-double deltah, h_mlay, h_kl;
-double zeta_kl,zeta;
-double stress_fact, C_fact;
+INT i,i6,j,j6;
+DOUBLE deltah, h_mlay, h_kl;
+DOUBLE zeta_kl,zeta;
+DOUBLE stress_fact, C_fact;
 #ifdef DEBUG 
 dstrc_enter("s9_tvma");
 #endif

@@ -31,9 +31,9 @@ This routine controls the element evaluation:
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
 \param  *eproforce_global  ARRAY	        (o)   ele production force
-\param  *hasdirich       int	              (o)   element flag
-\param  *hasext          int	              (o)   element flag
-\param   init	        int	              (i)   init flag
+\param  *hasdirich       INT	              (o)   element flag
+\param  *hasext          INT	              (o)   element flag
+\param   init	        INT	              (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
@@ -48,68 +48,68 @@ void f2_calele_tu(
 	          ARRAY          *eiforce_global, 
                 ARRAY          *edforce_global,		
                 ARRAY          *eproforce_global,		
-                int            *hasdirich,      
-                int            *hasext,
-		    int             init            
+                INT            *hasdirich,      
+                INT            *hasext,
+		    INT             init            
 	         )
 {
-int              hasdead;
+INT              hasdead;
 static ARRAY     kapepsn_a;     /* element turbulent ken. energy  at (n)    */
-static double   *kapepsn;
+static DOUBLE   *kapepsn;
 static ARRAY     kapepsg_a;     /* element turbulent ken. energy  at (n+gamma)*/
-static double   *kapepsg; 
+static DOUBLE   *kapepsg; 
 static ARRAY     kapepspro_a;   /* kappa for Production-term              */
-static double   *kapepspro;
+static DOUBLE   *kapepspro;
 static ARRAY     kappa_a;       /* kappa for epsilon equation                */
-static double   *kappa;
+static DOUBLE   *kappa;
 static ARRAY     kappan_a;      /* kappan for epsilon equation               */
-static double   *kappan;
+static DOUBLE   *kappan;
 static ARRAY     epsilon_a;     /* epsilon for LOW-REYNOLD's MODEL          */
-static double   *epsilon;
+static DOUBLE   *epsilon;
 static ARRAY     eddyg_a;       /* element turbulent ken. energy  at (n+gamma)*/
-static double   *eddyg;
+static DOUBLE   *eddyg;
 static ARRAY     eddypro_a;     /* element turbulent ken. energy  for prod. term */
-static double   *eddypro;
+static DOUBLE   *eddypro;
 static ARRAY     kapepsderxy_a; /* kapeps - derivatives                         */
-static double   *kapepsderxy;
+static DOUBLE   *kapepsderxy;
 static ARRAY     kapepsderxy2_a;/* kapeps - 2nd derivatives                     */
-static double   *kapepsderxy2;
+static DOUBLE   *kapepsderxy2;
 static ARRAY     velint_dc_a;   /* element element velocity for DISC. CAPT. at integ.point */
-static double   *velint_dc;
+static DOUBLE   *velint_dc;
 
 static ARRAY     evel_a;        /* element velocities                        */
-static double  **evel;
+static DOUBLE  **evel;
 static ARRAY     velint_a;      /* element element velocity  at integ.point */
-static double   *velint;
+static DOUBLE   *velint;
 static ARRAY     vderxy_a;      /* vel  derivatives                         */
-static double  **vderxy;
+static DOUBLE  **vderxy;
 static ARRAY     vderxy2_a;     /* 2nd vel  derivatives                         */
-static double  **vderxy2;
+static DOUBLE  **vderxy2;
 
 static ARRAY     funct_a;       /* shape functions                           */
-static double   *funct;
+static DOUBLE   *funct;
 static ARRAY     deriv_a;       /* first natural derivatives                 */
-static double  **deriv;
+static DOUBLE  **deriv;
 static ARRAY     deriv2_a;      /* second natural derivatives                */
-static double  **deriv2;
+static DOUBLE  **deriv2;
 static ARRAY     xyze_a;
-static double  **xyze;   
+static DOUBLE  **xyze;   
 static ARRAY     xjm_a;         /* jocobian matrix                           */
-static double  **xjm;
+static DOUBLE  **xjm;
 static ARRAY     derxy_a;       /* coordinate - derivatives                  */
-static double  **derxy;
+static DOUBLE  **derxy;
 static ARRAY     derxy2_a;      /* 2nd coordinate - derivatives              */
-static double  **derxy2;
+static DOUBLE  **derxy2;
 static ARRAY     w1_a;     /* working array of arbitrary chosen size    */
-static double  **wa1;      /* used in different element routines        */
+static DOUBLE  **wa1;      /* used in different element routines        */
 static ARRAY     w2_a;     /* working array of arbitrary chosen size    */
-static double  **wa2;      /* used in different element routines        */
-static double  **estif;    /* pointer to global ele-stif                */
-static double  **emass;    /* pointer to galerkin ele-stif              */
-static double   *etforce;  /* pointer to Time RHS                       */
-static double   *eiforce;  /* pointer to Iteration RHS                  */
-static double   *edforce;  /* pointer to RHS due to dirichl. conditions */
-static double   *eproforce;  /* pointer to RHS due to dirichl. conditions */
+static DOUBLE  **wa2;      /* used in different element routines        */
+static DOUBLE  **estif;    /* pointer to global ele-stif                */
+static DOUBLE  **emass;    /* pointer to galerkin ele-stif              */
+static DOUBLE   *etforce;  /* pointer to Time RHS                       */
+static DOUBLE   *eiforce;  /* pointer to Iteration RHS                  */
+static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
+static DOUBLE   *eproforce;  /* pointer to RHS due to dirichl. conditions */
 
 
 #ifdef DEBUG 

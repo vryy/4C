@@ -55,7 +55,7 @@ extern struct _MATERIAL  *mat;
       5 = streamlength (element length in flow direction		
    ele->e.f2->ninths: number of integration points for streamlength	
       1 = at center of element  					
-      2 = at every int pt used for element.-stab.-matrices		
+      2 = at every INT pt used for element.-stab.-matrices		
    ele->e.f2->istapc: flag for stabilisation parameter calculation	
       1 = at center of element  					
       2 = at every integration point					
@@ -65,7 +65,7 @@ extern struct _MATERIAL  *mat;
    ele->e.f2->c3    /							
    ele->e.f2->istrle: has streamlength to be computed			
    ele->e.f2->iarea: calculation of area length 			
-   ele->e.f2->iduring: calculation during int.-pt.loop  		
+   ele->e.f2->iduring: calculation during INT.-pt.loop  		
    ele->e.f2->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
    ele->e.f2->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
    ele->e.f2->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
@@ -79,18 +79,18 @@ extern struct _MATERIAL  *mat;
 \param  *eleke   ELEMENT	       (i)   actual element (only for turbulence)
 \param  *data    FLUID_DATA	       (i)
 \param  *dynvar  FLUID_DYN_CALC        (i/o)
-\param **xzye    double                (-)   nodal coordinates
-\param  *funct   double 	       (-)   shape functions
-\param **deriv   double 	       (-)   deriv. of shape funcs
-\param **deriv2  double 	       (-)   2nd deriv. of sh. funcs
-\param **xjm     double 	       (-)   jacobian matrix
-\param **derxy   double 	       (-)   global derivatives
-\param **vderxy  double 	       (-)   global derivatives of velocity
-\param **evel    double 	       (i)   element velocities
-\param  *velint  double 	       (-)   vel. at integr. point
-\param  *eddyint  double 	       (-)   eddy-visc. at integr. point (only for turbulence)
-\param  *visc     double 	       (-)   viscosity
-\param **cutp    double 	       (-)   cutting points
+\param **xzye    DOUBLE                (-)   nodal coordinates
+\param  *funct   DOUBLE 	       (-)   shape functions
+\param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
+\param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
+\param **xjm     DOUBLE 	       (-)   jacobian matrix
+\param **derxy   DOUBLE 	       (-)   global derivatives
+\param **vderxy  DOUBLE 	       (-)   global derivatives of velocity
+\param **evel    DOUBLE 	       (i)   element velocities
+\param  *velint  DOUBLE 	       (-)   vel. at integr. point
+\param  *eddyint  DOUBLE 	       (-)   eddy-visc. at integr. point (only for turbulence)
+\param  *visc     DOUBLE 	       (-)   viscosity
+\param **cutp    DOUBLE 	       (-)   cutting points
 \return void             
 
 ------------------------------------------------------------------------*/
@@ -99,38 +99,38 @@ void f2_calelesize(
                  ELEMENT         *eleke,    
 		   FLUID_DATA      *data, 
 		   FLUID_DYN_CALC  *dynvar,
-	           double         **xyze,
-		   double          *funct,  
-	           double         **deriv,  
-	           double         **deriv2,  		 
-		   double         **xjm,    
-               double         **derxy, 
-               double         **vderxy,
-		   double         **evel,    		  
-		   double          *velint, 
-		   double         **cutp,    
-               double          *eddy,
-               double          *visc    
+	           DOUBLE         **xyze,
+		   DOUBLE          *funct,  
+	           DOUBLE         **deriv,  
+	           DOUBLE         **deriv2,  		 
+		   DOUBLE         **xjm,    
+               DOUBLE         **derxy, 
+               DOUBLE         **vderxy,
+		   DOUBLE         **evel,    		  
+		   DOUBLE          *velint, 
+		   DOUBLE         **cutp,    
+               DOUBLE          *eddy,
+               DOUBLE          *visc    
                   )
 {
 
-int     i,ilen;         /* simply a counter	        		*/
-int     ieval = 0;	/* evaluation flag			        */
-int     igc   = 0;	/* evaluation flag			        */
-int     istrnint;       /* evaluation flag			        */
-int     isharea;        /* evaluation flag			        */
-int     ntyp;           /* element type (TRI or QUAD)  		        */
-int     actmat;         /* number of actual material		        */
-int     iel;            /* number of nodes of actual element            */
-double  area;           /* element area                                 */
-double  det;            /* determinant of jacobian                      */
-double  strle;          /* streamlength                                 */
-double  e1,e2;          /* natural coordinates of inegration point      */
-double  fac,facr,facs;  /* factors                                      */
-double  dia,dia1,dia2;  /* values used for calculation of element size  */
-double  dx,dy;          /* values used for calculation of element size  */
-double  gcoor[2];       /* global coordinates                           */
-double  eddyint;        /* eddy-viscosity                               */
+INT     i,ilen;         /* simply a counter	        		*/
+INT     ieval = 0;	/* evaluation flag			        */
+INT     igc   = 0;	/* evaluation flag			        */
+INT     istrnint;       /* evaluation flag			        */
+INT     isharea;        /* evaluation flag			        */
+INT     ntyp;           /* element type (TRI or QUAD)  		        */
+INT     actmat;         /* number of actual material		        */
+INT     iel;            /* number of nodes of actual element            */
+DOUBLE  area;           /* element area                                 */
+DOUBLE  det;            /* determinant of jacobian                      */
+DOUBLE  strle;          /* streamlength                                 */
+DOUBLE  e1,e2;          /* natural coordinates of inegration point      */
+DOUBLE  fac,facr,facs;  /* factors                                      */
+DOUBLE  dia,dia1,dia2;  /* values used for calculation of element size  */
+DOUBLE  dx,dy;          /* values used for calculation of element size  */
+DOUBLE  gcoor[2];       /* global coordinates                           */
+DOUBLE  eddyint;        /* eddy-viscosity                               */
 DIS_TYP typ;
 
 #ifdef DEBUG 
@@ -370,13 +370,13 @@ is calculated for one element during the integration loop
 </pre>
 \param  *ele     ELEMENT	        (i)    actual element
 \param  *dynvar  FLUID_DYN_CALC         (i/o)
-\param  *xyze    double                 (-)    nodal coordinates
-\param  *funct   double 		(-)    natural shape funcs
-\param  *velint  double 		(-)    vel at intpoint
-\param **cutp    double 		(-)    cuttin points
-\param   visc    double 		(i)    fluid viscosity
-\param   iel     int		        (i)    act. num. of ele nodes
-\param   ntyp    int		        (i)    element type
+\param  *xyze    DOUBLE                 (-)    nodal coordinates
+\param  *funct   DOUBLE 		(-)    natural shape funcs
+\param  *velint  DOUBLE 		(-)    vel at intpoint
+\param **cutp    DOUBLE 		(-)    cuttin points
+\param   visc    DOUBLE 		(i)    fluid viscosity
+\param   iel     INT		        (i)    act. num. of ele nodes
+\param   ntyp    INT		        (i)    element type
 \return void                                               
 \sa f2_calelesize()                               
 
@@ -384,19 +384,19 @@ is calculated for one element during the integration loop
 void f2_calelesize2(			       
 	             ELEMENT         *ele,    
 	  	     FLUID_DYN_CALC  *dynvar, 
-                     double         **xyze,
-	             double          *funct,    		   
-		     double          *velint, 
-		     double         **cutp,   
-		     double           visc,   
-		     int              iel,    
-		     int              ntyp    
+                     DOUBLE         **xyze,
+	             DOUBLE          *funct,    		   
+		     DOUBLE          *velint, 
+		     DOUBLE         **cutp,   
+		     DOUBLE           visc,   
+		     INT              iel,    
+		     INT              ntyp    
                     )
 {
-int    ilen;       /* simply a counter                                  */
-int    istrnint;   /* evaluation flag                                   */
-double strle;      /* stream length                                     */
-double gcoor[2];   /* global coordinates                                */
+INT    ilen;       /* simply a counter                                  */
+INT    istrnint;   /* evaluation flag                                   */
+DOUBLE strle;      /* stream length                                     */
+DOUBLE gcoor[2];   /* global coordinates                                */
 
 #ifdef DEBUG 
 dstrc_enter("f2_calelesize2");
@@ -441,32 +441,32 @@ is only an approximation, since the boundaries are assumed to be
 straight.
 		     
 </pre>
-\param  *strle     double   (o)    streamlength
-\param  *velint    double   (i)    velocities at integr. point
-\param **xyze      double   (i)    nodal coordinates
+\param  *strle     DOUBLE   (o)    streamlength
+\param  *velint    DOUBLE   (i)    velocities at integr. point
+\param **xyze      DOUBLE   (i)    nodal coordinates
 \param  *ele 	   ELEMENT  (i)    actual element
-\param  *gcoor     double   (i)    global coord. of int. point
-\param **cutp      double   (-)    cutting points
-\param   ntyp	   int      (i)    flag for element type
+\param  *gcoor     DOUBLE   (i)    global coord. of INT. point
+\param **cutp      DOUBLE   (-)    cutting points
+\param   ntyp	   INT      (i)    flag for element type
 \return void                                               
 \sa f2_calelesize()                               
 
 ------------------------------------------------------------------------*/
 void f2_calstrlen(
-                   double   *strle,     
-                   double  **xyze,
-		   double   *velint,   
+                   DOUBLE   *strle,     
+                   DOUBLE  **xyze,
+		   DOUBLE   *velint,   
 		   ELEMENT  *ele,      
-                   double   *gcoor,    
-		   double  **cutp,             
-		   int       ntyp      
+                   DOUBLE   *gcoor,    
+		   DOUBLE  **cutp,             
+		   INT       ntyp      
                  )
 {
-int     nodcut=-1;
-int     nodmax;
-int     inod;
-double dl,dx,dy,dxh,dyh;
-double dsub,dval;
+INT     nodcut=-1;
+INT     nodmax;
+INT     inod;
+DOUBLE dl,dx,dy,dxh,dyh;
+DOUBLE dsub,dval;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstrlen");

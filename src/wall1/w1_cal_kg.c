@@ -24,16 +24,16 @@
  | NEPS    -->  ACTUAL NUMBER OF STRAIN COMPONENTS   =4                 |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1_kg(double  **kg, 
-           double  **boplin, 
-           double  **stress,
-           double    fac, 
-           int       nd,
-           int       neps)
+void w1_kg(DOUBLE  **kg, 
+           DOUBLE  **boplin, 
+           DOUBLE  **stress,
+           DOUBLE    fac, 
+           INT       nd,
+           INT       neps)
 {
-int            i, j, k, l, m;
-double         bsb;
-double         sb[4];
+INT            i, j, k, l, m;
+DOUBLE         bsb;
+DOUBLE         sb[4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_kg");

@@ -19,12 +19,12 @@
 void iscouple_find_node_comp(NODE  *actnode, 
                              FIELD *searchfield, 
                              NODE **partnernode,
-                             int    coupleID,
-                             int    dof)
+                             INT    coupleID,
+                             INT    dof)
 {
-int i;
-int ierr;
-double tol = EPS8;
+INT i;
+INT ierr;
+DOUBLE tol = EPS8;
 #ifdef DEBUG 
 dstrc_enter("iscouple_find_node_comp");
 #endif
@@ -67,11 +67,11 @@ return;
 /*----------------------------------------------------------------------*
  | check distance between nodes                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
-void cheque_distance(double *x1, double *x2, double tol, int *ierr)
+void cheque_distance(DOUBLE *x1, DOUBLE *x2, DOUBLE tol, INT *ierr)
 {
-int i;
-double v[3];
-double lenght;
+INT i;
+DOUBLE v[3];
+DOUBLE lenght;
 #ifdef DEBUG 
 dstrc_enter("cheque_distance");
 #endif
@@ -97,11 +97,11 @@ return;
  | assign a dofcoupling set                               m.gee 5/01    |
  *----------------------------------------------------------------------*/
 void find_assign_coupset(FIELD *actfield, 
-                            int    coupleID, 
-                            int   *counter)
+                            INT    coupleID, 
+                            INT   *counter)
 {
-int i,l;
-int dof;
+INT i,l;
+INT dof;
 #ifdef DEBUG 
 dstrc_enter("find_assign_coupset");
 #endif

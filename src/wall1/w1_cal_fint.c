@@ -17,16 +17,16 @@
 /*----------------------------------------------------------------------*
  | evaluate internal element forces for large def (total Lagr) ah 06/02  |
  *----------------------------------------------------------------------*/
-void w1_fint(double **stress,     /* 2.PK stresses        */ 
-             double  *F,          /* Deformation gradient */ 
-             double **boplin,     /* B-lin-operator       */ 
-             double  *fint,       /* internal forces      */ 
-             double   fac,        /* detJ*wr*ws*thickness */ 
-             int      nd)         /* Element-DOF          */
+void w1_fint(DOUBLE **stress,     /* 2.PK stresses        */ 
+             DOUBLE  *F,          /* Deformation gradient */ 
+             DOUBLE **boplin,     /* B-lin-operator       */ 
+             DOUBLE  *fint,       /* internal forces      */ 
+             DOUBLE   fac,        /* detJ*wr*ws*thickness */ 
+             INT      nd)         /* Element-DOF          */
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-double fs[4];
+INT i,j;
+DOUBLE fs[4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_fint");

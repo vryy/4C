@@ -6,16 +6,16 @@
 /*----------------------------------------------------------------------*
  | stiffness matrix  knc        (8*4)                           ah 9/02 |
  *----------------------------------------------------------------------*/
-void w1_knc(double  **knc,             /* stiffness knc= BT C G         */
-            double  **bop,             /* operator matrix               */
-            double   *gop,             /* additional opperator matrix   */
-            double  **d,               /* constitutive matrix           */
-            double    fac)             /* integration factor            */
+void w1_knc(DOUBLE  **knc,             /* stiffness knc= BT C G         */
+            DOUBLE  **bop,             /* operator matrix               */
+            DOUBLE   *gop,             /* additional opperator matrix   */
+            DOUBLE  **d,               /* constitutive matrix           */
+            DOUBLE    fac)             /* integration factor            */
 {
-int            i, j, k, l, m;
-double         dum;
-double         cg[4];
-double         g[3][4];
+INT            i, j, k, l, m;
+DOUBLE         dum;
+DOUBLE         cg[4];
+DOUBLE         g[3][4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_knc");
@@ -61,15 +61,15 @@ return;
 /*----------------------------------------------------------------------*
  | stiffness matrix  knn      (4*4)                             ah 9/02 |
  *----------------------------------------------------------------------*/
-void w1_knn(double  **knn,             /* stiffness knn= GT C G         */
-            double   *gop,             /* additional opperator matrix   */
-            double  **d,               /* constitutive matrix           */
-            double    fac)             /* integration factor            */
+void w1_knn(DOUBLE  **knn,             /* stiffness knn= GT C G         */
+            DOUBLE   *gop,             /* additional opperator matrix   */
+            DOUBLE  **d,               /* constitutive matrix           */
+            DOUBLE    fac)             /* integration factor            */
 {
-int            i, j, k, l, m;
-double         dum;
-double         cg[4];
-double         g[3][4];
+INT            i, j, k, l, m;
+DOUBLE         dum;
+DOUBLE         cg[4];
+DOUBLE         g[3][4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_knn");
@@ -115,13 +115,13 @@ return;
 /*----------------------------------------------------------------------*
  | evaluate internal element forces due to incomp. modes    ah 9/02     |
  *----------------------------------------------------------------------*/
-void w1_fintn(double  *F,              /* stress                        */
-              double   fac,            /* integration factor            */
-              double  *gop,            /* additional opperator matrix   */
-              double  *fintn)          /* int forces due to inc modes   */
+void w1_fintn(DOUBLE  *F,              /* stress                        */
+              DOUBLE   fac,            /* integration factor            */
+              DOUBLE  *gop,            /* additional opperator matrix   */
+              DOUBLE  *fintn)          /* INT forces due to inc modes   */
 {
 /*----------------------------------------------------------------------*/
-int j;
+INT j;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_fintn");
@@ -142,16 +142,16 @@ return;
 /*----------------------------------------------------------------------*
  | static kondensation: Kele = K- knc*inverse(knn)*kcn          ah 9/02 |
  *----------------------------------------------------------------------*/
-void  w1_stat_cond(double **knninv,/*I:stiffness inverse(knn) (4x4)     */
-                   double **knc,   /*I: knc = BT C G (8x4)              */
-                   double **deltak,/*O: knc*inverse(knn)*kcn            */ 
-                   double  *fintn, /*I: fintn=GT*singma                 */
-                   double  *deltaf,/*O: knc*inverse(knn)*fintn          */ 
+void  w1_stat_cond(DOUBLE **knninv,/*I:stiffness inverse(knn) (4x4)     */
+                   DOUBLE **knc,   /*I: knc = BT C G (8x4)              */
+                   DOUBLE **deltak,/*O: knc*inverse(knn)*kcn            */ 
+                   DOUBLE  *fintn, /*I: fintn=GT*singma                 */
+                   DOUBLE  *deltaf,/*O: knc*inverse(knn)*fintn          */ 
                    ELEMENT *ele)   /*I: actual element                  */
 {
-int            i, j, k, l, m;
-double         dumK,dumF;
-double         help[4];
+INT            i, j, k, l, m;
+DOUBLE         dumK,dumF;
+DOUBLE         help[4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_stat_cond");
@@ -211,17 +211,17 @@ return;
 /*----------------------------------------------------------------------*
  | update of internal dof alpha                                  ah 9/02 |
  *----------------------------------------------------------------------*/
-void  w1_updalpha(double  *alpha,  /*O: internal dof for incomp modes        */
+void  w1_updalpha(DOUBLE  *alpha,  /*O: internal dof for incomp modes        */
                   ELEMENT *ele,    /*I:actual element                        */
-                  double **knc,    /*I: mixed stiffness                      */
-                  double **knninv, /*I: inverse of incomp. stiffness         */
-                  double  *fintn,  /*I: int. forces of inc. modes            */
-                  int      istore) /*I: flag:update after loadstep->istore=1 */
+                  DOUBLE **knc,    /*I: mixed stiffness                      */
+                  DOUBLE **knninv, /*I: inverse of incomp. stiffness         */
+                  DOUBLE  *fintn,  /*I: INT. forces of inc. modes            */
+                  INT      istore) /*I: flag:update after loadstep->istore=1 */
 {
-int            i, j, k, l;
-double         dum,yip0,yip1,yip2,yip3;
-double         help[4];
-double         deltad[8];
+INT            i, j, k, l;
+DOUBLE         dum,yip0,yip1,yip2,yip3;
+DOUBLE         help[4];
+DOUBLE         deltad[8];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_updalpha");

@@ -65,22 +65,22 @@ variables needed by the MLPCG solver
 -------------------------------------------------------------------------*/
 typedef struct _MLPCGVARS
 {
-int                     numlev;      /*!< number of grids in the ml precond. */
-int                     reuse;       /*!< reuse of coarse grid information flag */
-int                     overlap;     /*!< degree of overlap for the ilu smoother */
-double                  p_omega;     /*!< damping of the prolongator smoother */
-int                     numdf;       /*!< number of coarse grid dofs per node */
-int                     ilu_n;       /*!< ilu(n) */
-double                  tol;         /*!< cg-tolerance */
-int                     maxiter;     /*!< max number of cg iterations */
-int                     typ;         /*!< typ=1: amg Fish-style, typ=2: amg Vanek-style */
-double                  gamma;
+INT                     numlev;      /*!< number of grids in the ml precond. */
+INT                     reuse;       /*!< reuse of coarse grid information flag */
+INT                     overlap;     /*!< degree of overlap for the ilu smoother */
+DOUBLE                  p_omega;     /*!< damping of the prolongator smoother */
+INT                     numdf;       /*!< number of coarse grid dofs per node */
+INT                     ilu_n;       /*!< ilu(n) */
+DOUBLE                  tol;         /*!< cg-tolerance */
+INT                     maxiter;     /*!< max number of cg iterations */
+INT                     typ;         /*!< typ=1: amg Fish-style, typ=2: amg Vanek-style */
+DOUBLE                  gamma;
 enum _MLPCG_COARSESOLVE coarsesolv;  /*!< coarsest level solver */
-int                     co_ilu_n;    /*!< coarsest level ilu(n) in case of ilu solver */
+INT                     co_ilu_n;    /*!< coarsest level ilu(n) in case of ilu solver */
 enum _MLPCG_PRESMOOTH   presmoother; /*!< upgoing smoother on levels */
-int                     presweep;    /*!< number of presmoothing sweeps */
+INT                     presweep;    /*!< number of presmoothing sweeps */
 enum _MLPCG_POSTMOOTH   postsmoother;/*!< upgoing smoother on levels */
-int                     postsweep;   /*!< number of postsmoothing sweeps */
+INT                     postsweep;   /*!< number of postsmoothing sweeps */
 struct _DISCRET        *fielddis;    /*!< warning: this is a pointer to the field original, not a copy! */
 struct _PARTDISCRET    *partdis;     /*!< warning: this is a pointer to the partition original, not a copy! */
 } MLPCGVARS;
@@ -94,15 +94,15 @@ matrix needed by the MLPCG solver on the finest grid only
 -------------------------------------------------------------------------*/
 typedef struct _DBCSR
 {
-int                     is_init;       /*!< was this matrix initialized ? */
-int                     is_factored;   /*!< is this matrix already factored ? */
-int                     ncall;         /*!< how often was this matrix solved */
+INT                     is_init;       /*!< was this matrix initialized ? */
+INT                     is_factored;   /*!< is this matrix already factored ? */
+INT                     ncall;         /*!< how often was this matrix solved */
 
-int                     numeq_total;   /*!< total number of unknowns */
-int                     numeq;         /*!< number of unknowns updated on this proc */ 
-int                     nnz;           /*!< number of nonzeros on this proc */
+INT                     numeq_total;   /*!< total number of unknowns */
+INT                     numeq;         /*!< number of unknowns updated on this proc */ 
+INT                     nnz;           /*!< number of nonzeros on this proc */
 
-int                     owner[MAXPROC][2]; /*!< contains for each proc the lowest and highest
+INT                     owner[MAXPROC][2]; /*!< contains for each proc the lowest and highest
                                                 dof number 
                                                 owner[proc][0] lowest dof on proc 
                                                 owner[proc][1] highest dof on proc */
@@ -129,7 +129,7 @@ struct _ARRAY           sendbuff;
 #ifdef PARALLEL
 MPI_Request            *request;       /*!< send request */
 #endif
-int                     firstcoupledof;/*!< dof number of the first dof that has interproc coupling */
+INT                     firstcoupledof;/*!< dof number of the first dof that has interproc coupling */
 
 struct _DBCSR          *csc;           /*!< the treansposed matrix in compressed sparse column format */
 struct _DBCSR          *ilu;           /*!< the ilu-decomposed asm - matrix */
@@ -149,15 +149,15 @@ one level of the multilevel preconditioner
 typedef struct _MLLEVEL
 {
 enum _MLPCG_COARSESOLVE coarsesolv;  /*!< coarsest level solver */
-int                     co_ilu_n;    /*!< coarsest level ilu(n) in case of ilu solver */
+INT                     co_ilu_n;    /*!< coarsest level ilu(n) in case of ilu solver */
 enum _MLPCG_PRESMOOTH   presmoother; /*!< upgoing smoother on levels */
-int                     presweep;    /*!< number of presmoothing sweeps */
+INT                     presweep;    /*!< number of presmoothing sweeps */
 enum _MLPCG_POSTMOOTH   postsmoother;/*!< upgoing smoother on levels */
-int                     postsweep;   /*!< number of postsmoothing sweeps */
+INT                     postsweep;   /*!< number of postsmoothing sweeps */
 
 struct _DBCSR          *csr;         /*!< the sparse matrix of this level */
 
-int                     nagg;        /*!< number of aggregates on this level */
+INT                     nagg;        /*!< number of aggregates on this level */
 struct _AGG            *agg;         /*!< vector of aggregates */
 
 struct _DBCSR          *P;           /*!< the prolongator from this level+1 to this level */
@@ -172,15 +172,15 @@ one level of the multilevel preconditioner
 -------------------------------------------------------------------------*/
 typedef struct _AGG
 {
-int                     nblock;      /*!<  number of blocks in this aggregate */          
-int                   **block;       /*!<  list of dof-blocks, which belong to this aggregate */
-int                     numdf;       /*!<  number of dofs of this aggregate */
-int                    *dof;         /*!<  dofs of the aggregate's supernode */
+INT                     nblock;      /*!<  number of blocks in this aggregate */          
+INT                   **block;       /*!<  list of dof-blocks, which belong to this aggregate */
+INT                     numdf;       /*!<  number of dofs of this aggregate */
+INT                    *dof;         /*!<  dofs of the aggregate's supernode */
 struct _ARRAY          *tentP;       /*!< this aggregates piece of tentative prolongator */
-int                     tentP_nrow;  /*!< number of rows in this piece of tent. Prolongator */
-int                    *tentP_rindex;/*!< the row indizes of this piece of tentative prolongator */
+INT                     tentP_nrow;  /*!< number of rows in this piece of tent. Prolongator */
+INT                    *tentP_rindex;/*!< the row indizes of this piece of tentative prolongator */
                                      /*   (the column indizes are the dofs) */
-double                  x[3];
+DOUBLE                  x[3];
 /*struct _ARRAY          *R;*/           /*  The R-part of the P=QR factorization */
 enum
    {
@@ -199,20 +199,20 @@ this structure holds the complete ml preconditioner
 -------------------------------------------------------------------------*/
 typedef struct _MLPRECOND
 {
-int                     numlev;          /*!< number of levels */
-int                     reuse;           /*!< reuse flag for coarse grid information */
-int                     mod;             /*!< reuse flag for coarse grid information */
-int                     ncall;           /*!< counting the call to the solver */
-int                     overlap;         /*!< degree of overlap for the ilu smoother */
-int                     typ;             /*!< typ=1: amg Fish-style, typ=2: amg Vanek-style */
-double                  gamma;           /*!< largest eigenvalues to be approximated exactly on coarse grid */
-int                     numdf;           /*! number of degrees of freedom maximal allowed for a coarse grid node */
+INT                     numlev;          /*!< number of levels */
+INT                     reuse;           /*!< reuse flag for coarse grid information */
+INT                     mod;             /*!< reuse flag for coarse grid information */
+INT                     ncall;           /*!< counting the call to the solver */
+INT                     overlap;         /*!< degree of overlap for the ilu smoother */
+INT                     typ;             /*!< typ=1: amg Fish-style, typ=2: amg Vanek-style */
+DOUBLE                  gamma;           /*!< largest eigenvalues to be approximated exactly on coarse grid */
+INT                     numdf;           /*! number of degrees of freedom maximal allowed for a coarse grid node */
 struct _MLLEVEL        *level;           /*!< vector of levels */
 struct _DISCRET        *fielddis;        /*!< warning: this is a pointer to the field original, not a copy! */
 struct _PARTDISCRET    *partdis;         /*!< warning: this is a pointer to the partition original, not a copy! */
 struct _ARRAY           director;        /*!< the nodal directors of the shell8 associated nodes */
 NODE                  **node;            /*!< ptr to the nodes of the partition */
-double                  omega;           /*!< damping factor of the prolongator smoother */
+DOUBLE                  omega;           /*!< damping factor of the prolongator smoother */
 } MLPRECOND;
 /*!------------------------------------------------------------------------
 \brief the ml solver
@@ -224,8 +224,8 @@ this structure holds everything for the ml-cg algorithm
 -------------------------------------------------------------------------*/
 typedef struct _MLSOLVER
 {
-double                     tol;         /*!< tolerance for the cg algorithm */
-int                        maxiter;     /*!< max number of iterations for the cg algorithm */
+DOUBLE                     tol;         /*!< tolerance for the cg algorithm */
+INT                        maxiter;     /*!< max number of iterations for the cg algorithm */
 struct _ARRAY              r;           /*!< iterate vector of the cg-algorithm */     
 struct _ARRAY              z;           /*!< iterate vector of the cg-algorithm */
 struct _ARRAY              p;           /*!< iterate vector of the cg-algorithm */

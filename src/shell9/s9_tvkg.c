@@ -20,66 +20,66 @@
 This routine performs the geometric striffness matrix for a shell9 element
 </pre>
 \param  ARRAY     *estif     (i/o) element stiffness matrix to be modified
-\param  double    *stress_r   (i)  stress resultants of actual step
-\param  double    *funct      (i)  shape functions at GP
-\param  double   **deriv      (i)  shape function derivatives at GP
-\param  int        numdf      (i)  number of dofs to one node
-\param  int        iel        (i)  number of nodes to this element
-\param  double     weight     (i)  weight at GP
-\param  int        num_klay   (i)  number of mat layers to this kin layer 
-\param  int        klay       (i)  actual kin layer 
+\param  DOUBLE    *stress_r   (i)  stress resultants of actual step
+\param  DOUBLE    *funct      (i)  shape functions at GP
+\param  DOUBLE   **deriv      (i)  shape function derivatives at GP
+\param  INT        numdf      (i)  number of dofs to one node
+\param  INT        iel        (i)  number of nodes to this element
+\param  DOUBLE     weight     (i)  weight at GP
+\param  INT        num_klay   (i)  number of mat layers to this kin layer 
+\param  INT        klay       (i)  actual kin layer 
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug()   [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_tvkg(double **estif,
-             double  *stress_r,
-             double  *funct,
-             double **deriv,
-             int      numdf,
-             int      iel,
-             double   weight,
-             int      klay,        /* actual kin layer */
-             int      num_klay)    /* number of kin layers to this element */  
+void s9_tvkg(DOUBLE **estif,
+             DOUBLE  *stress_r,
+             DOUBLE  *funct,
+             DOUBLE **deriv,
+             INT      numdf,
+             INT      iel,
+             DOUBLE   weight,
+             INT      klay,        /* actual kin layer */
+             INT      num_klay)    /* number of kin layers to this element */  
 {
-int     i,inode,jnode;
-int     idof,jdof;
-int     jlay;
-double  fac1;
+INT     i,inode,jnode;
+INT     idof,jdof;
+INT     jlay;
+DOUBLE  fac1;
 
-double  pi;
-double  pj;
-double  d11;
-double  d12;
-double  d21;
-double  d22;
+DOUBLE  pi;
+DOUBLE  pj;
+DOUBLE  d11;
+DOUBLE  d12;
+DOUBLE  d21;
+DOUBLE  d22;
 
-double  pd1ij;
-double  pd1ji;
-double  pd2ij;
-double  pd2ji;
+DOUBLE  pd1ij;
+DOUBLE  pd1ji;
+DOUBLE  pd2ij;
+DOUBLE  pd2ji;
 
-double  xn;
-double  xm;
-double  yu;
-double  yo;
-double  y1,y2;
-double  y;
-double  z;
+DOUBLE  xn;
+DOUBLE  xm;
+DOUBLE  yu;
+DOUBLE  yo;
+DOUBLE  y1,y2;
+DOUBLE  y;
+DOUBLE  z;
 
-double  sn11;
-double  sn21;
-double  sn31;
-double  sn22;
-double  sn32;
-double  sn33;
-double  sm11;
-double  sm21;
-double  sm31;
-double  sm22;
-double  sm32;
+DOUBLE  sn11;
+DOUBLE  sn21;
+DOUBLE  sn31;
+DOUBLE  sn22;
+DOUBLE  sn32;
+DOUBLE  sn33;
+DOUBLE  sm11;
+DOUBLE  sm21;
+DOUBLE  sm31;
+DOUBLE  sm22;
+DOUBLE  sm32;
 
 #ifdef DEBUG 
 dstrc_enter("s9_tvkg");

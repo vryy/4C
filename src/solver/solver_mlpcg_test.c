@@ -20,19 +20,19 @@ extern struct _MLPRECOND mlprecond;
 
 
 #if 0
-int dense_factor(DBCSR *asm, DBCSR *ilu)
+INT dense_factor(DBCSR *asm, DBCSR *ilu)
 {
-int i,j,k,l,n,ii,jj;
-int numeq;
-int *update,*ia,*ja;
-int actrow,actcol,colstart,colend;
-double *a;
-int    info;
+INT i,j,k,l,n,ii,jj;
+INT numeq;
+INT *update,*ia,*ja;
+INT actrow,actcol,colstart,colend;
+DOUBLE *a;
+INT    info;
 
-double **dense;
-int     *ipiv;
+DOUBLE **dense;
+INT     *ipiv;
 
-double   diff;
+DOUBLE   diff;
 
 numeq  = asm->numeq;
 update = asm->update.a.iv;
@@ -82,23 +82,23 @@ return;
 } 
 
 
-int dense_solve(DBCSR *ilu, double *r, double *z)
+INT dense_solve(DBCSR *ilu, DOUBLE *r, DOUBLE *z)
 {
-int i,j;
-int numeq;
-int    info=1;
+INT i,j;
+INT numeq;
+INT    info=1;
 
-double **dense;
-int     *ipiv;
+DOUBLE **dense;
+INT     *ipiv;
 char    trans[1];
-double *b;
-int     ione=1;
+DOUBLE *b;
+INT     ione=1;
 trans[0] = 'N';
 numeq  = ilu->numeq;
 dense  = ilu->dense->a.da;
 ipiv   = ilu->ipiv->a.iv;
 
-b = (double*)CCAMALLOC(numeq*sizeof(double));
+b = (DOUBLE*)CCAMALLOC(numeq*sizeof(DOUBLE));
 for (i=0; i<numeq; i++) b[i] = r[i];
 
 dgetrs(trans,&numeq,&ione,dense[0],&numeq,ipiv,b,&numeq,&info);
@@ -112,28 +112,28 @@ return;
 #endif
 
 #if 0
-int mlpcg_precond_oneP_vanek_test(AGG     *actagg,
-                             double   aggblock[][500],
-                             int      rindex[],
-                             int      cindex[],
-                             int     *nrow,
-                             int     *ncol,
+INT mlpcg_precond_oneP_vanek_test(AGG     *actagg,
+                             DOUBLE   aggblock[][500],
+                             INT      rindex[],
+                             INT      cindex[],
+                             INT     *nrow,
+                             INT     *ncol,
                              DBCSR   *actstiff,
                              MLLEVEL *prevlevel)
 {
-int           i,j,k,l,counter;
+INT           i,j,k,l,counter;
 AGG          *prevagg[200];
 AGG          *actprevagg;
 NODE         *node[200];
 NODE         *actnode;
 PARTDISCRET  *actpdis;
-int          *actblock;
-int           dof;
-double        x0,y0,z0,x,y,z,a1,a2,a3;
-int           index;
-int           foundit;
-int           shift,bins[5000];
-double      **R;
+INT          *actblock;
+INT           dof;
+DOUBLE        x0,y0,z0,x,y,z,a1,a2,a3;
+INT           index;
+INT           foundit;
+INT           shift,bins[5000];
+DOUBLE      **R;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_oneP_vanek");
@@ -159,7 +159,7 @@ for (i=0; i<actagg->nblock; i++)
       counter++;
    }
 dsassert(counter==*nrow,"Number of dofs in prolongator wrong");
-qsort((int*)rindex,*nrow,sizeof(int),cmp_int);
+qsort((INT*)rindex,*nrow,sizeof(INT),cmp_int);
 /*------------------------------ get the nodal patch from the partition */
 /*======================================================================*/
 /*======================================================================*/

@@ -23,12 +23,12 @@ element.
 </pre>
 \param  ELEMENT   *ele      (i)  the element structure -> 'ele->e.s9->stresses.a.d3'
 \param  MULTIMAT  *multimat (i)  the material structure (shell9 -> multimat)
-\param  double    *stress   (o)  PK_II stresses from constitutive law
-\param  double    *strain   (o)  green-lagrange strains from metrics
-\param  double   **C        (o)  constitutive matrix
-\param  double   **gmkovc,..(i)  all the metrics in ref/cur configuration
-\param  int        rot_axis (i)  rotation axis of laminat (1=x-; 2=y-; 3=z-axis)
-\param  double     phi      (i)  angle of rotation about rot_axis
+\param  DOUBLE    *stress   (o)  PK_II stresses from constitutive law
+\param  DOUBLE    *strain   (o)  green-lagrange strains from metrics
+\param  DOUBLE   **C        (o)  constitutive matrix
+\param  DOUBLE   **gmkovc,..(i)  all the metrics in ref/cur configuration
+\param  INT        rot_axis (i)  rotation axis of laminat (1=x-; 2=y-; 3=z-axis)
+\param  DOUBLE     phi      (i)  angle of rotation about rot_axis
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -38,19 +38,19 @@ element.
 *----------------------------------------------------------------------*/
 void s9_call_mat(ELEMENT    *ele,
                  MULTIMAT   *multimat,    /* material of actual material layer */
-                 double     *stress,
-                 double     *strain,
-                 double    **C,
-                 double    **gmkovc,
-                 double    **gmkonc,
-                 double    **gmkovr,
-                 double    **gmkonr,
-                 double    **gkovc,
-                 double    **gkonc,
-                 double    **gkovr,
-                 double    **gkonr,
-                 int         rot_axis,
-                 double      phi)
+                 DOUBLE     *stress,
+                 DOUBLE     *strain,
+                 DOUBLE    **C,
+                 DOUBLE    **gmkovc,
+                 DOUBLE    **gmkonc,
+                 DOUBLE    **gmkovr,
+                 DOUBLE    **gmkonr,
+                 DOUBLE    **gkovc,
+                 DOUBLE    **gkonc,
+                 DOUBLE    **gkovr,
+                 DOUBLE    **gkonr,
+                 INT         rot_axis,
+                 DOUBLE      phi)
 {
 #ifdef DEBUG 
 dstrc_enter("s9_call_mat");
@@ -130,14 +130,14 @@ return;
 This routine gets density out of material law
 </pre>
 \param  MATERIAL  *mat      (i)  the material structure
-\param  double    *density  (o)  density
+\param  DOUBLE    *density  (o)  density
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: -----
 
 *----------------------------------------------------------------------*/
-void s9_getdensity(MATERIAL   *mat, double *density)
+void s9_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
 #ifdef DEBUG 
 dstrc_enter("s9_getdensity");

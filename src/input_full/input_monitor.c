@@ -39,17 +39,17 @@ struct _MONITOR *moni;
  *----------------------------------------------------------------------*/
 void inp_monitor()
 {
-int i,j;
-int ierr;
-int cs=0;
-int cf=0;
-int ca=0;
-int counter=0;
-int numsf,numff,numaf;
-int **snode, **fnode, **anode;
-int actnum;
-int **aonoff, **fonoff, **sonoff;
-int actId;
+INT i,j;
+INT ierr;
+INT cs=0;
+INT cf=0;
+INT ca=0;
+INT counter=0;
+INT numsf,numff,numaf;
+INT **snode, **fnode, **anode;
+INT actnum;
+INT **aonoff, **fonoff, **sonoff;
+INT actId;
 MONITOR *smoni, *fmoni, *amoni;
 FIELD *actfield;
 NODE *actnode;

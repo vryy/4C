@@ -55,51 +55,51 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param    kapepsint   double	      (i)    vel. at integr. point
-\param   *velint      double	      (i)    vel. at integr. point
-\param    eddyint     double	      (i)    eddy-visc. at integr. point
-\param   *funct       double	      (i)    nat. shape functions      
-\param  **derxy       double	      (i)    global derivatives
-\param  **vderxy      double	      (i)    global vel. deriv.
-\param   *kapepsderxy double	      (i)    global kapeps deriv.
-\param    visc	    double	      (i)    fluid viscosity
-\param    fac	    double	      (i)    weighting factor
-\param    factor	    double	      (i)    factor
-\param    factor1	    double	      (i)    factor
-\param    factor2	    double	      (i)    factor
-\param    sig	    double	      (i)    factor
-\param    vderxy_12   double	      (i)    factor
-\param    production  double	      (i)    factor
-\param    iel	    int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param    kapepsint   DOUBLE	      (i)    vel. at integr. point
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param    eddyint     DOUBLE	      (i)    eddy-visc. at integr. point
+\param   *funct       DOUBLE	      (i)    nat. shape functions      
+\param  **derxy       DOUBLE	      (i)    global derivatives
+\param  **vderxy      DOUBLE	      (i)    global vel. deriv.
+\param   *kapepsderxy DOUBLE	      (i)    global kapeps deriv.
+\param    visc	    DOUBLE	      (i)    fluid viscosity
+\param    fac	    DOUBLE	      (i)    weighting factor
+\param    factor	    DOUBLE	      (i)    factor
+\param    factor1	    DOUBLE	      (i)    factor
+\param    factor2	    DOUBLE	      (i)    factor
+\param    sig	    DOUBLE	      (i)    factor
+\param    vderxy_12   DOUBLE	      (i)    factor
+\param    production  DOUBLE	      (i)    factor
+\param    iel	    INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calgaltfkapeps(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,    
-		      double           kapepsint,  
-                  double          *velint,   
-		      double           eddyint,
-                  double          *funct,    
-		      double         **derxy,    
-		      double         **vderxy,   
-		      double          *kapepsderxy,   
-                  double           visc,     
-		      double           fac,      
-                  double           factor,  
-                  double           factor1,  
-                  double           factor2,  
-                  double           sig,  
-                  double           vderxy_12,  
-                  double           production,  
-                  int              iel       
+                  DOUBLE          *eforce,    
+		      DOUBLE           kapepsint,  
+                  DOUBLE          *velint,   
+		      DOUBLE           eddyint,
+                  DOUBLE          *funct,    
+		      DOUBLE         **derxy,    
+		      DOUBLE         **vderxy,   
+		      DOUBLE          *kapepsderxy,   
+                  DOUBLE           visc,     
+		      DOUBLE           fac,      
+                  DOUBLE           factor,  
+                  DOUBLE           factor1,  
+                  DOUBLE           factor2,  
+                  DOUBLE           sig,  
+                  DOUBLE           vderxy_12,  
+                  DOUBLE           production,  
+                  INT              iel       
                   )  
 {
-int    j,irow,isd,inode;  
-double c;
-double aux;
-double facsr;
+INT    j,irow,isd,inode;  
+DOUBLE c;
+DOUBLE aux;
+DOUBLE facsr;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calgaltfkapeps");
@@ -299,54 +299,54 @@ LOW-REYNOLD's MODEL only for epsilon:
 </pre>
 \param   *dynvar        FLUID_DYN_CALC    (i)
 \param   *ele           ELEMENT	      (i)    actual element
-\param   *eforce        double	      (i/o)  element force vector
-\param    kapepsint     double	      (i)    kapeps at integr. point
-\param   *velint        double	      (i)    vel. at integr. point
-\param   *velint_dc     double	      (i)    vel. at integr. point for D.C.
-\param    eddyint       double	      (i)    eddy-visc. at integr. point
-\param  **derxy         double	      (i)    global derivatives
-\param   *kapepsderxy2  double	      (i)    kapeps 2nd derivatives
-\param  **vderxy        double	      (i)    global vel. deriv.
-\param   *kapepsderxy   double	      (i)    global kapeps deriv.
-\param    fac	      double	      (i)    weighting factor
-\param    visc	      double	      (i)    fluid viscosity
-\param    factor	      double	      (i)    factor
-\param    factor1	      double	      (i)    factor
-\param    factor2	      double	      (i)    factor
-\param    sig	      double	      (i)    factor
-\param    vderxy_12     double	      (i)    factor
-\param    production    double	      (i)    factor
-\param    iel	      int	            (i)    num. of nodes in ele
+\param   *eforce        DOUBLE	      (i/o)  element force vector
+\param    kapepsint     DOUBLE	      (i)    kapeps at integr. point
+\param   *velint        DOUBLE	      (i)    vel. at integr. point
+\param   *velint_dc     DOUBLE	      (i)    vel. at integr. point for D.C.
+\param    eddyint       DOUBLE	      (i)    eddy-visc. at integr. point
+\param  **derxy         DOUBLE	      (i)    global derivatives
+\param   *kapepsderxy2  DOUBLE	      (i)    kapeps 2nd derivatives
+\param  **vderxy        DOUBLE	      (i)    global vel. deriv.
+\param   *kapepsderxy   DOUBLE	      (i)    global kapeps deriv.
+\param    fac	      DOUBLE	      (i)    weighting factor
+\param    visc	      DOUBLE	      (i)    fluid viscosity
+\param    factor	      DOUBLE	      (i)    factor
+\param    factor1	      DOUBLE	      (i)    factor
+\param    factor2	      DOUBLE	      (i)    factor
+\param    sig	      DOUBLE	      (i)    factor
+\param    vderxy_12     DOUBLE	      (i)    factor
+\param    production    DOUBLE	      (i)    factor
+\param    iel	      INT	            (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabtfkapeps(
                    FLUID_DYN_CALC  *dynvar,
                    ELEMENT         *ele,      
-	            double          *eforce,  
-	 	      double           kapepsint,  
-       	      double          *velint,  
-       	      double          *velint_dc,  
-		      double           eddyint, 
-                  double         **derxy,   
-		      double          *kapepsderxy2,   
-                  double         **vderxy,  
-		      double          *kapepsderxy,
-                  double           fac,     
-		      double           visc,    
-                  double           factor,
-                  double           factor1,
-                  double           factor2,
-                  double           sig,
-                  double           vderxy_12,  
-                  double           production,  
-                  int              iel      
+	            DOUBLE          *eforce,  
+	 	      DOUBLE           kapepsint,  
+       	      DOUBLE          *velint,  
+       	      DOUBLE          *velint_dc,  
+		      DOUBLE           eddyint, 
+                  DOUBLE         **derxy,   
+		      DOUBLE          *kapepsderxy2,   
+                  DOUBLE         **vderxy,  
+		      DOUBLE          *kapepsderxy,
+                  DOUBLE           fac,     
+		      DOUBLE           visc,    
+                  DOUBLE           factor,
+                  DOUBLE           factor1,
+                  DOUBLE           factor2,
+                  DOUBLE           sig,
+                  DOUBLE           vderxy_12,  
+                  DOUBLE           production,  
+                  INT              iel      
                   )
 {
-int    j,irow,isd,inode;
-double aux,aux_dc;
-double taumu,taumu_dc;
-double facsr,facsr_dc;
+INT    j,irow,isd,inode;
+DOUBLE aux,aux_dc;
+DOUBLE taumu,taumu_dc;
+DOUBLE facsr,facsr_dc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabtfkapeps");

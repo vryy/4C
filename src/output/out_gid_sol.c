@@ -33,7 +33,7 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 void out_gid_sol_init()
 {
-int               i,j;
+INT               i,j;
 FIELD            *actfield;
 GIDSET           *actgid;
 ELEMENT          *actele;
@@ -623,7 +623,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_domains(FIELD *actfield)
 {
-int           i,j;
+INT           i,j;
 
 FILE         *out = allfiles.gidres;
 ELEMENT      *actele;
@@ -657,12 +657,12 @@ if (actgid->is_shell8_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
 #if 0
       for (j=1; j<4; j++)/* quadrilateral version */
 #endif
       for (j=1; j<8; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -679,9 +679,9 @@ if (actgid->is_shell8_33)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -702,10 +702,10 @@ if (actgid->is_shell9_4_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<4; j++)/* quadrilateral version */
       for (j=1; j<8; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -721,10 +721,10 @@ if (actgid->is_shell9_4_33)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<9; j++)/* quadrilateral version */
       for (j=1; j<27; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -741,10 +741,10 @@ if (actgid->is_shell9_8_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<4; j++)/* quadrilateral version */
       for (j=1; j<8; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -760,10 +760,10 @@ if (actgid->is_shell9_8_33)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<9; j++)/* quadrilateral version */
       for (j=1; j<27; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -780,10 +780,10 @@ if (actgid->is_shell9_9_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 9) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<4; j++)/* quadrilateral version */
       for (j=1; j<8; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -799,10 +799,10 @@ if (actgid->is_shell9_9_33)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell9 || actele->numnp != 9) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<9; j++)/* quadrilateral version */
       for (j=1; j<27; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -820,9 +820,9 @@ if (actgid->is_brick1_222)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_brick1 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -840,9 +840,9 @@ if (actgid->is_brick1_333)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_brick1 || (actele->numnp != 20 || actele->numnp != 27)) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<27; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -860,9 +860,9 @@ if (actgid->is_fluid3_222)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_fluid3 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -880,9 +880,9 @@ if (actgid->is_fluid3_333)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_fluid3 || (actele->numnp != 20 || actele->numnp != 27)) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<27; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -900,9 +900,9 @@ if (actgid->is_ale_11)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale2 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -920,9 +920,9 @@ if (actgid->is_ale_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale2 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -940,9 +940,9 @@ if (actgid->is_ale_tri_1)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale2 || actele->numnp != 3) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<3; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -960,9 +960,9 @@ if (actgid->is_ale_tri_3)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale2 || actele->numnp != 3) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<3; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -980,9 +980,9 @@ if (actgid->is_ale_111)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1000,9 +1000,9 @@ if (actgid->is_ale_222)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1020,9 +1020,9 @@ if (actgid->is_ale_tet_1)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale3 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1040,9 +1040,9 @@ if (actgid->is_ale_tet_4)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_ale3 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1061,9 +1061,9 @@ if (actgid->is_wall1_22)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_wall1) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1081,9 +1081,9 @@ if (actgid->is_wall1_33)
    {
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_wall1) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1103,10 +1103,10 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to write solution of a step to GID           m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step,
-                 int place)
+void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, INT step,
+                 INT place)
 {
-int           i,j;
+INT           i,j;
 
 FILE         *out = allfiles.gidres;
 
@@ -1118,31 +1118,31 @@ char         *resulttype;
 char         *resultplace;
 char         *gpset;
 char         *rangetable;
-int           ncomponent;
+INT           ncomponent;
 char         *componentnames[18];
 
 char          sign='"';
 
-int           stringlenght;
+INT           stringlenght;
 
-int           ngauss;
-double      **forces;/* for shell8 */
-double      **stress;
+INT           ngauss;
+DOUBLE      **forces;/* for shell8 */
+DOUBLE      **stress;
 
-double        a1,a2,a3,thick,scal,sdc; /* for shell8 */
-int           tot_numnp;
+DOUBLE        a1,a2,a3,thick,scal,sdc; /* for shell8 */
+INT           tot_numnp;
 
-int           numele;   /*for shell9/shell8*/
+INT           numele;   /*for shell9/shell8*/
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
    have to be written
 */   
 
-int           gaussperm4[4] = {3,1,0,2};
-int           gaussperm8[8] = {0,4,2,6,1,5,3,7};
-int           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-int           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};
+INT           gaussperm4[4] = {3,1,0,2};
+INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};
+INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
+INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};
 
 #ifdef DEBUG 
 dstrc_enter("out_gid_sol");

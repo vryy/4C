@@ -5,13 +5,13 @@
  |                                                        m.gee 2/02    |
  | calculation of gaussian points mass with update of displacements     |
  *----------------------------------------------------------------------*/
-void s8_tmas(double *funct, double *thick, double **emass, int iel, int numdf,
-             double facv, double facw, double facvw)
+void s8_tmas(DOUBLE *funct, DOUBLE *thick, DOUBLE **emass, INT iel, INT numdf,
+             DOUBLE facv, DOUBLE facw, DOUBLE facvw)
 {
-int           i,j,k;
-double        he,hehe;
-double        helpf;
-double        help;
+INT           i,j,k;
+DOUBLE        he,hehe;
+DOUBLE        helpf;
+DOUBLE        help;
 #ifdef DEBUG 
 dstrc_enter("s8_tmas");
 #endif

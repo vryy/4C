@@ -13,7 +13,7 @@ extern struct _DESIGN *design;
  *----------------------------------------------------------------------*/
 void inherit_design_dis_dirichlet(DISCRET *actdis)
 {
-int     i;
+INT     i;
 GNODE  *actgnode;
 #ifdef DEBUG 
 dstrc_enter("inherit_design_dis_dirichlet");
@@ -43,7 +43,7 @@ return;
  *----------------------------------------------------------------------*/
 void inherit_design_dis_couple(DISCRET *actdis)
 {
-int     i;
+INT     i;
 GNODE  *actgnode;
 #ifdef DEBUG 
 dstrc_enter("inherit_design_dis_couple");
@@ -75,7 +75,7 @@ return;
  *----------------------------------------------------------------------*/
 void inherit_design_dis_fsicouple(DISCRET *actdis)
 {
-int     i;
+INT     i;
 GNODE  *actgnode;
 #ifdef DEBUG 
 dstrc_enter("inherit_design_dis_fsicouple");
@@ -109,7 +109,7 @@ return;
  *----------------------------------------------------------------------*/
 void inherit_design_dis_freesurf(DISCRET *actdis)
 {
-int     i;
+INT     i;
 GNODE  *actgnode;
 
 #ifdef DEBUG 
@@ -156,7 +156,7 @@ return;
  *----------------------------------------------------------------------*/
 void inherit_design_dis_neum(DISCRET *actdis)
 {
-int     i;
+INT     i;
 GNODE  *actgnode;
 GLINE  *actgline;
 GSURF  *actgsurf;

@@ -20,12 +20,12 @@
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine calculates shape functions and derivatives
 </pre>
-\param  double    *funct   (o) shape functions at GP
-\param  double   **deriv   (o) shape function derivatives at GP
-\param  double     r       (i) natural coordinate of GP (xsi=r)
-\param  double     s       (i) natural coordinate of GP (eta=s)
+\param  DOUBLE    *funct   (o) shape functions at GP
+\param  DOUBLE   **deriv   (o) shape function derivatives at GP
+\param  DOUBLE     r       (i) natural coordinate of GP (xsi=r)
+\param  DOUBLE     s       (i) natural coordinate of GP (eta=s)
 \param  DIS_TYP    typ     (i) type of element (quad4/8/9 ..)
-\param  int        option  (i) (0: only shape functions; 1: also derivatives)
+\param  INT        option  (i) (0: only shape functions; 1: also derivatives)
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -36,19 +36,19 @@ This routine calculates shape functions and derivatives
                              s9_ans_colloqpoints()    [s9_ans.c]
 
 *----------------------------------------------------------------------*/
-void s9_funct_deriv(double     *funct, 
-                    double    **deriv, 
-                    double      r, 
-                    double      s,
+void s9_funct_deriv(DOUBLE     *funct, 
+                    DOUBLE    **deriv, 
+                    DOUBLE      r, 
+                    DOUBLE      s,
                     DIS_TYP     typ,
-                    int         option)
+                    INT         option)
 {
-int            i,ii;
-const double   q12 = 1.0/2.0;
-const double   q14 = 1.0/4.0;
-const double   q16 = 1.0/6.0;
-double         rr,ss,rp,rm,sp,sm,r2,s2;
-double         rh,sh,rs,rhp,rhm,shp,shm;
+INT            i,ii;
+const DOUBLE   q12 = 1.0/2.0;
+const DOUBLE   q14 = 1.0/4.0;
+const DOUBLE   q16 = 1.0/6.0;
+DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
+DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG 
 dstrc_enter("s9_funct_deriv");
 #endif

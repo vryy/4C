@@ -4,21 +4,21 @@
 /*----------------------------------------------------------------------*
  | B-Operator for compatible strains                      m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_tvbo(double      e1,
-             double      e2,
-             double    **bop,
-             double     *funct,
-             double    **deriv,
-             int         iel,
-             int         numdf,
-             double    **akov,
-             double    **a3kvp,
-             int         nsansq)
+void s8_tvbo(DOUBLE      e1,
+             DOUBLE      e2,
+             DOUBLE    **bop,
+             DOUBLE     *funct,
+             DOUBLE    **deriv,
+             INT         iel,
+             INT         numdf,
+             DOUBLE    **akov,
+             DOUBLE    **a3kvp,
+             INT         nsansq)
 {
-int inode,node_start;
-double a1x,a1y,a1z,a2x,a2y,a2z,a3x,a3y,a3z;
-double a31x,a31y,a31z,a32x,a32y,a32z;
-double pk,pk1,pk2;
+INT inode,node_start;
+DOUBLE a1x,a1y,a1z,a2x,a2y,a2z,a3x,a3y,a3z;
+DOUBLE a31x,a31y,a31z,a32x,a32y,a32z;
+DOUBLE pk,pk1,pk2;
 #ifdef DEBUG 
 dstrc_enter("s8_tvbo");
 #endif

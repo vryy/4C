@@ -20,18 +20,18 @@
 This routine calculates the metrics (akov, akon, amkov, amkon) in the 
 middle of each kinematic layer.
 </pre>
-\param  double   **x       (i)  coordinates at nodal points
-\param  double  ***a3      (i)  director of each kinematic layer
-\param  double  ***akov    (o)  kovariant basis vectors in reference layer of each kinematic layer
-\param  double  ***akon    (o)  kontravariant basis vectors in reference layer of each kinematic layer
-\param  double  ***amkov   (o)  kovariant metric in reference layer of each kinematic layer
-\param  double  ***amkon   (o)  kontravariant metric in reference layer of each kinematic layer
-\param  double    *det     (o)  det of akon
-\param  double    *funct   (i)  shape functions at GP
-\param  double   **deriv   (i)  shape function derivatives at GP
-\param  int        iel     (i)  number of nodes to this element
-\param  double  ***a3kvp   (o)  partial derivatives of a3_L for each kinematic layer
-\param  int        num_klay(i)  number of kin layers to this element  
+\param  DOUBLE   **x       (i)  coordinates at nodal points
+\param  DOUBLE  ***a3      (i)  director of each kinematic layer
+\param  DOUBLE  ***akov    (o)  kovariant basis vectors in reference layer of each kinematic layer
+\param  DOUBLE  ***akon    (o)  kontravariant basis vectors in reference layer of each kinematic layer
+\param  DOUBLE  ***amkov   (o)  kovariant metric in reference layer of each kinematic layer
+\param  DOUBLE  ***amkon   (o)  kontravariant metric in reference layer of each kinematic layer
+\param  DOUBLE    *det     (o)  det of akon
+\param  DOUBLE    *funct   (i)  shape functions at GP
+\param  DOUBLE   **deriv   (i)  shape function derivatives at GP
+\param  INT        iel     (i)  number of nodes to this element
+\param  DOUBLE  ***a3kvp   (o)  partial derivatives of a3_L for each kinematic layer
+\param  INT        num_klay(i)  number of kin layers to this element  
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -41,25 +41,25 @@ middle of each kinematic layer.
                              s9jaco()              [s9_jaco.c]
 
 *----------------------------------------------------------------------*/
-void s9_tvmr(double    **x,
-             double   ***a3,
-             double   ***akov,
-             double   ***akon,
-             double   ***amkov,
-             double   ***amkon,
-             double    **akovh,
-             double    **akonh,
-             double    **amkovh,
-             double    **amkonh,
-             double     *det,
-             double     *funct,
-             double    **deriv,
-             int         iel,
-             double   ***a3kvp,
-             int         num_klay)
+void s9_tvmr(DOUBLE    **x,
+             DOUBLE   ***a3,
+             DOUBLE   ***akov,
+             DOUBLE   ***akon,
+             DOUBLE   ***amkov,
+             DOUBLE   ***amkon,
+             DOUBLE    **akovh,
+             DOUBLE    **akonh,
+             DOUBLE    **amkovh,
+             DOUBLE    **amkonh,
+             DOUBLE     *det,
+             DOUBLE     *funct,
+             DOUBLE    **deriv,
+             INT         iel,
+             DOUBLE   ***a3kvp,
+             INT         num_klay)
 {
-int    i,j,k,klay,idim,ialpha,inode;
-double det_dummy;
+INT    i,j,k,klay,idim,ialpha,inode;
+DOUBLE det_dummy;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tvmr");

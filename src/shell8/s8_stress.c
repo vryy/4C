@@ -7,76 +7,76 @@
 void s8_stress(ELEMENT      *ele,
                S8_DATA      *data,
                MATERIAL     *mat,
-               int           kstep,
-               int           init)
+               INT           kstep,
+               INT           init)
 {
-int                 i,j,k;
-int                 nir,nis,nit;
-int                 ngauss;
+INT                 i,j,k;
+INT                 nir,nis,nit;
+INT                 ngauss;
 
-int                 lr,ls,lt;
-double              e1,e2,e3;
-double              facr,facs,fact;
+INT                 lr,ls,lt;
+DOUBLE              e1,e2,e3;
+DOUBLE              facr,facs,fact;
 
-int                 iel;
-int                 nd;
+INT                 iel;
+INT                 nd;
 
-double              condfac;
-double              h2;
-double            **a3ref;
+DOUBLE              condfac;
+DOUBLE              h2;
+DOUBLE            **a3ref;
 
-double              detsmr;
-double              detsmc;
-double              detsrr;
-double              detsrc;
+DOUBLE              detsmr;
+DOUBLE              detsmc;
+DOUBLE              detsrr;
+DOUBLE              detsrc;
  
 
-double              hte[MAXNOD_SHELL8];
-double              hhi;
-double              h[3];                                   /* working array */
-double              da;                                     /* area on mid surface */
+DOUBLE              hte[MAXNOD_SHELL8];
+DOUBLE              hhi;
+DOUBLE              h[3];                                   /* working array */
+DOUBLE              da;                                     /* area on mid surface */
 
-double              stress[6];                              /* stress and stress resultants */
-double              strain[6];                              /* strains */
+DOUBLE              stress[6];                              /* stress and stress resultants */
+DOUBLE              strain[6];                              /* strains */
 
-static ARRAY        stress_a;    static double **gp_stress; /* element array for stresses on gaussian points */
-                                      double ***ele_stress; /* pointer to array of stress history in element */
+static ARRAY        stress_a;    static DOUBLE **gp_stress; /* element array for stresses on gaussian points */
+                                      DOUBLE ***ele_stress; /* pointer to array of stress history in element */
 
-static ARRAY        C_a;         static double **C;         /* material tensor */
-static ARRAY        D_a;         static double **D;         /* material tensor integrated in thickness direction */
+static ARRAY        C_a;         static DOUBLE **C;         /* material tensor */
+static ARRAY        D_a;         static DOUBLE **D;         /* material tensor integrated in thickness direction */
 
-static ARRAY        a3r_a;       static double **a3r;       /* a3 in reference config (lenght h/2) */
-static ARRAY        a3c_a;       static double **a3c;       /* a3 in current   config (lenght h/2 + disp) */
+static ARRAY        a3r_a;       static DOUBLE **a3r;       /* a3 in reference config (lenght h/2) */
+static ARRAY        a3c_a;       static DOUBLE **a3c;       /* a3 in current   config (lenght h/2 + disp) */
 
-static ARRAY        xrefe_a;     static double **xrefe;     /* coords of midsurface in ref config */
-static ARRAY        xcure_a;     static double **xcure;     /* coords of midsurface in cur condig */
+static ARRAY        xrefe_a;     static DOUBLE **xrefe;     /* coords of midsurface in ref config */
+static ARRAY        xcure_a;     static DOUBLE **xcure;     /* coords of midsurface in cur condig */
 
-static ARRAY        funct_a;     static double  *funct;     /* shape functions */
-static ARRAY        deriv_a;     static double **deriv;     /* derivatives of shape functions */
+static ARRAY        funct_a;     static DOUBLE  *funct;     /* shape functions */
+static ARRAY        deriv_a;     static DOUBLE **deriv;     /* derivatives of shape functions */
 
-static ARRAY        akovr_a;     static double **akovr;     /* kovariant basis vectors at Int point ref.config. */
-static ARRAY        akonr_a;     static double **akonr;     /* kontravar.--------------"----------- ref.config. */
-static ARRAY        amkovr_a;    static double **amkovr;    /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY        amkonr_a;    static double **amkonr;    /* kontravar.--------------"------------ ref.config. */
+static ARRAY        akovr_a;     static DOUBLE **akovr;     /* kovariant basis vectors at Int point ref.config. */
+static ARRAY        akonr_a;     static DOUBLE **akonr;     /* kontravar.--------------"----------- ref.config. */
+static ARRAY        amkovr_a;    static DOUBLE **amkovr;    /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY        amkonr_a;    static DOUBLE **amkonr;    /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY        akovc_a;     static double **akovc;     /* kovariant basis vectors at Int point current.config. */
-static ARRAY        akonc_a;     static double **akonc;     /* kontravar.--------------"----------- current.config. */
-static ARRAY        amkovc_a;    static double **amkovc;    /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY        amkonc_a;    static double **amkonc;    /* kontravar.--------------"------------ current.config. */
+static ARRAY        akovc_a;     static DOUBLE **akovc;     /* kovariant basis vectors at Int point current.config. */
+static ARRAY        akonc_a;     static DOUBLE **akonc;     /* kontravar.--------------"----------- current.config. */
+static ARRAY        amkovc_a;    static DOUBLE **amkovc;    /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY        amkonc_a;    static DOUBLE **amkonc;    /* kontravar.--------------"------------ current.config. */
 
-static ARRAY        a3kvpr_a;    static double **a3kvpr;    /* partiel derivatives of normal vector ref.config. */
-static ARRAY        a3kvpc_a;    static double **a3kvpc;    /* partiel derivatives of normal vector cur.config. */
+static ARRAY        a3kvpr_a;    static DOUBLE **a3kvpr;    /* partiel derivatives of normal vector ref.config. */
+static ARRAY        a3kvpc_a;    static DOUBLE **a3kvpc;    /* partiel derivatives of normal vector cur.config. */
 
 /* shell body basis vectors and metric tensors */
-static ARRAY        gkovr_a;     static double **gkovr;     /* kovariant basis vectors at Int point ref.config. */
-static ARRAY        gkonr_a;     static double **gkonr;     /* kontravar.--------------"----------- ref.config. */
-static ARRAY        gmkovr_a;    static double **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY        gmkonr_a;    static double **gmkonr;    /* kontravar.--------------"------------ ref.config. */
+static ARRAY        gkovr_a;     static DOUBLE **gkovr;     /* kovariant basis vectors at Int point ref.config. */
+static ARRAY        gkonr_a;     static DOUBLE **gkonr;     /* kontravar.--------------"----------- ref.config. */
+static ARRAY        gmkovr_a;    static DOUBLE **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY        gmkonr_a;    static DOUBLE **gmkonr;    /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY        gkovc_a;     static double **gkovc;     /* kovariant basis vectors at Int point current.config. */
-static ARRAY        gkonc_a;     static double **gkonc;     /* kontravar.--------------"----------- current.config. */
-static ARRAY        gmkovc_a;    static double **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY        gmkonc_a;    static double **gmkonc;    /* kontravar.--------------"------------ current.config. */
+static ARRAY        gkovc_a;     static DOUBLE **gkovc;     /* kovariant basis vectors at Int point current.config. */
+static ARRAY        gkonc_a;     static DOUBLE **gkonc;     /* kontravar.--------------"----------- current.config. */
+static ARRAY        gmkovc_a;    static DOUBLE **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY        gmkonc_a;    static DOUBLE **gmkonc;    /* kontravar.--------------"------------ current.config. */
 
 #ifdef DEBUG 
 dstrc_enter("s8_stress");
@@ -293,14 +293,14 @@ return;
 void s8_stress_reduce(FIELD     *actfield,
                       PARTITION *actpart,
                       INTRA     *actintra,
-                      int        kstep)
+                      INT        kstep)
 {
-int          i,j,k;
-int          imyrank;
-int          inprocs;
+INT          i,j,k;
+INT          imyrank;
+INT          inprocs;
 ELEMENT     *actele;
 ARRAY        mpi_buffer;
-double     **buffer;
+DOUBLE     **buffer;
 
 #ifdef DEBUG 
 dstrc_enter("s8_stress_reduce");
@@ -356,11 +356,11 @@ return;
 /*----------------------------------------------------------------------*
  | strains nach bischoff seite 37                          m.gee 6/02   |
  *----------------------------------------------------------------------*/
-void s8_strains_res(double **akovr, double **akovc, double **a3kvpr, double **a3kvpc,
-                   double hh, double *strains)
+void s8_strains_res(DOUBLE **akovr, DOUBLE **akovc, DOUBLE **a3kvpr, DOUBLE **a3kvpc,
+                   DOUBLE hh, DOUBLE *strains)
 {
-int          i;
-double       a1r[3],a1c[3],a2r[3],a2c[3],a3r[3],a3c[3],a31r[3],a31c[3],a32r[3],a32c[3];
+INT          i;
+DOUBLE       a1r[3],a1c[3],a2r[3],a2c[3],a3r[3],a3c[3],a31r[3],a31c[3],a32r[3],a32c[3];
 #ifdef DEBUG 
 dstrc_enter("s8_strains_res");
 #endif

@@ -12,19 +12,19 @@ c!    in e3 quadratischen Anteile zu beruecksichtigen, d.h.
 c!    gmkovc_ij ungleich gkovc_i*gkovc_j                                         .
 C.......................................................................
 */
-void s8_tvhe_linear(double **gmkovr,
-                    double **gmkovc,
-                    double **gmkonr,
-                    double **gmkonc,
-                    double **gkovr,
-                    double **gkovc,
-                    double  *detr,
-                    double  *detc)
+void s8_tvhe_linear(DOUBLE **gmkovr,
+                    DOUBLE **gmkovc,
+                    DOUBLE **gmkonr,
+                    DOUBLE **gmkonc,
+                    DOUBLE **gkovr,
+                    DOUBLE **gkovc,
+                    DOUBLE  *detr,
+                    DOUBLE  *detc)
 {
-int i,j,k;
-double heps[3][3];
-double skalar;
-double det_dummy;
+INT i,j,k;
+DOUBLE heps[3][3];
+DOUBLE skalar;
+DOUBLE det_dummy;
 #ifdef DEBUG 
 dstrc_enter("s8_tvhe_linear");
 #endif

@@ -6,8 +6,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/prototypes_mlpcg.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 /*! 
 \addtogroup MLPCG 
 *//*! @{ (documentation module open)*/
@@ -31,18 +31,18 @@ number the dofs of a coarse level, but check,
 whether this has been done before
 </pre>
 \param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\param numdf      int          (i)   number of dofs per supernode
+\param numdf      INT          (i)   number of dofs per supernode
 \param actlev     MLLEVEL*     (i/o) the active level of the multilevel hierarchy
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_aggsetdofs(MLLEVEL *actlev,int numdf, INTRA *actintra)
+void mlpcg_precond_aggsetdofs(MLLEVEL *actlev,INT numdf, INTRA *actintra)
 {
-int           i,j;
-int           myrank,nproc;
-int           sendbuff[MAXPROC],recvbuff[MAXPROC];
-int           firstdof=0;
-int           foundit =0;
+INT           i,j;
+INT           myrank,nproc;
+INT           sendbuff[MAXPROC],recvbuff[MAXPROC];
+INT           firstdof=0;
+INT           foundit =0;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_aggsetdofs");
@@ -57,7 +57,7 @@ for (i=0; i<actlev->nagg; i++)
    /*---------------------------------- set number of dofs in aggregate */
    actlev->agg[i].numdf = numdf;
    /*--------------------------------- allocate vector for dofs numbers */
-   actlev->agg[i].dof = (int*)CCAMALLOC(numdf*sizeof(int));
+   actlev->agg[i].dof = (INT*)CCAMALLOC(numdf*sizeof(INT));
 }
 /*----------------------------- make total number of procs on each proc */
 /* This is very easy, 'cause there are no supported dofs on higher levels */
@@ -132,34 +132,34 @@ Aggregation is therefore done the following way:
 ------------------------------------------------------------------------*/
 void mlpcg_precond_agg(MLLEVEL *actlev,INTRA *actintra)
 {
-int           i,j,k,counter;
-int           myrank,nproc;
+INT           i,j,k,counter;
+INT           myrank,nproc;
 PARTDISCRET  *actpdis;
 DISCRET      *actdis;
 DBCSR        *A;
 AGG          *agg;
 AGG          *actagg;
 AGG          *neighagg;
-int           aggcounter;
-int         **blocks;
-int           nblock;
-int           numdf;
-int           dof;
-int           fcd;
-int          *ia,*ja,*update;
-int           numeq,numeq_total;
+INT           aggcounter;
+INT         **blocks;
+INT           nblock;
+INT           numdf;
+INT           dof;
+INT           fcd;
+INT          *ia,*ja,*update;
+INT           numeq,numeq_total;
 
-int           nlblock,niblock,nb;
-int         **lblock,**iblock;
-int           icounter=0, lcounter=0;
+INT           nlblock,niblock,nb;
+INT         **lblock,**iblock;
+INT           icounter=0, lcounter=0;
 
-int           nfreeblock;
-int         **freeblock;
+INT           nfreeblock;
+INT         **freeblock;
 
-int          *actblock,*neighblock;
-int          *bpatch[100];
-int           nbpatch;
-int           max;
+INT          *actblock,*neighblock;
+INT          *bpatch[100];
+INT           nbpatch;
+INT           max;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_agg");
@@ -183,7 +183,7 @@ numeq_total = A->numeq_total;
 /*--------- calculate an approx. number of aggregates and allocate them */
 if (actlev->nagg==0)
 {
-   actlev->nagg = (int)((double)nblock/4.0+(double)nblock/8.0);
+   actlev->nagg = (INT)((DOUBLE)nblock/4.0+(DOUBLE)nblock/8.0);
    if (actlev->nagg<1) actlev->nagg = 1;
    actlev->agg  = (AGG*)CCACALLOC(actlev->nagg,sizeof(AGG));
 }
@@ -191,10 +191,10 @@ if (actlev->nagg==0)
 /*- throw interproc blocks out of the list, make separate list for them */
 /*---------------- a guess for number of local blocks nlblock is nblock */
 nlblock = nblock;
-lblock = (int**)CCACALLOC(nlblock,sizeof(int*));
+lblock = (INT**)CCACALLOC(nlblock,sizeof(INT*));
 /*----------------------------------- a guess for niblock is nblock/2.0 */
-niblock = (int)(nblock/2);
-iblock = (int**)CCACALLOC(niblock,sizeof(int*));
+niblock = (INT)(nblock/2);
+iblock = (INT**)CCACALLOC(niblock,sizeof(INT*));
 /*---------------------- sort the blocks to the iblock or lblock vector */
 for (i=0; i<nblock; i++)
 {
@@ -222,8 +222,8 @@ for (i=0; i<nblock; i++)
       /* check size of ptr-vector iblock */
       if (icounter==niblock)
       {
-         niblock += (int)(nblock/2);
-         iblock = (int**)CCAREALLOC(iblock,niblock*sizeof(int*));
+         niblock += (INT)(nblock/2);
+         iblock = (INT**)CCAREALLOC(iblock,niblock*sizeof(INT*));
       }
    }
 }
@@ -238,7 +238,7 @@ nb          = nlblock;
 actblock    = NULL;
 neighblock  = NULL;
 max         = IMAX(nlblock,niblock);
-freeblock   = (int**)CCACALLOC(max,sizeof(int*));
+freeblock   = (INT**)CCACALLOC(max,sizeof(INT*));
 for (i=0; i<nb; i++) freeblock[i] = lblock[i];
 /*------------------------ loop until all blocks are part of aggregate  */
 while (nfreeblock != 0)
@@ -272,7 +272,7 @@ while (nfreeblock != 0)
    /* add this patch to an aggregate */
    actlev->agg[aggcounter].coupling = mlpcg_agglocal;
    actlev->agg[aggcounter].nblock   = nbpatch;
-   actlev->agg[aggcounter].block    = (int**)CCACALLOC(nbpatch,sizeof(int*));
+   actlev->agg[aggcounter].block    = (INT**)CCACALLOC(nbpatch,sizeof(INT*));
    for (i=0; i<nbpatch; i++) 
    actlev->agg[aggcounter].block[i] = bpatch[i];
    aggcounter++;
@@ -337,7 +337,7 @@ while (nfreeblock != 0)
    /* add this patch to an aggregate */
    actlev->agg[aggcounter].coupling = mlpcg_agginterproc;
    actlev->agg[aggcounter].nblock = nbpatch;
-   actlev->agg[aggcounter].block  = (int**)CCACALLOC(nbpatch,sizeof(int*));
+   actlev->agg[aggcounter].block  = (INT**)CCACALLOC(nbpatch,sizeof(INT*));
    for (i=0; i<nbpatch; i++) 
    actlev->agg[aggcounter].block[i] = bpatch[i];
    aggcounter++;
@@ -418,7 +418,7 @@ for (i=0; i<aggcounter; i++)
    if (neighagg==NULL) dserror("Cannot find aggregate to merge with");
    /*--------------------------------------------- enlarge the neighagg */
    neighagg->nblock++; /*----------- there will be one more block in it */
-   neighagg->block = (int**)CCAREALLOC(neighagg->block,neighagg->nblock*sizeof(int*));
+   neighagg->block = (INT**)CCAREALLOC(neighagg->block,neighagg->nblock*sizeof(INT*));
    /*------------------- put the lonely block to the neighbouraggregate */
    neighagg->block[neighagg->nblock-1] = actagg->block[0];
    /*------------------------------- delete the lonely aggregate actagg */
@@ -438,7 +438,7 @@ for (i=0; i<aggcounter; i++)
    {
       agg[counter].coupling = actagg->coupling;
       agg[counter].nblock   = actagg->nblock;
-      agg[counter].block = (int**)CCACALLOC(agg[counter].nblock,sizeof(int*));
+      agg[counter].block = (INT**)CCACALLOC(agg[counter].nblock,sizeof(INT*));
       for (j=0; j<agg[counter].nblock; j++)
          agg[counter].block[j] = actagg->block[j];
       actagg->block = CCAFREE(actagg->block);
@@ -475,24 +475,24 @@ to the patch and will serve as new starting point for an aggregate
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_getneightoagg(int **neighblock, 
-                                 int  *bpatch[],
-                                 int   nbpatch,
-                                 int **freeblock,
-                                 int   nfreeblock,
-                                 int   numeq,
-                                 int  *update,
-                                 int  *ia,
-                                 int  *ja)
+void mlpcg_precond_getneightoagg(INT **neighblock, 
+                                 INT  *bpatch[],
+                                 INT   nbpatch,
+                                 INT **freeblock,
+                                 INT   nfreeblock,
+                                 INT   numeq,
+                                 INT  *update,
+                                 INT  *ia,
+                                 INT  *ja)
 {
-int        i,j,k,l,m;
-int        dof;
-int        index;
-int        column;
-int        colstart,colend;
-int       *actblock;
-int        counter=0;
-int       *neighpatch[200];
+INT        i,j,k,l,m;
+INT        dof;
+INT        index;
+INT        column;
+INT        colstart,colend;
+INT       *actblock;
+INT        counter=0;
+INT       *neighpatch[200];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_getneightoagg");
@@ -650,22 +650,22 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_getfreenblocks(int  *actblock,
-                                  int **freeblock,
-                                  int   nfreeblock,
-                                  int  *bpatch[],
-                                  int  *nbpatch,
-                                  int   numeq,
-                                  int  *update,
-                                  int  *ia,
-                                  int  *ja)
+void mlpcg_precond_getfreenblocks(INT  *actblock,
+                                  INT **freeblock,
+                                  INT   nfreeblock,
+                                  INT  *bpatch[],
+                                  INT  *nbpatch,
+                                  INT   numeq,
+                                  INT  *update,
+                                  INT  *ia,
+                                  INT  *ja)
 {
-int        i,j,k,l,m;
-int        dof;
-int        index;
-int        column;
-int        colstart,colend;
-int        foundneigh;
+INT        i,j,k,l,m;
+INT        dof;
+INT        index;
+INT        column;
+INT        colstart,colend;
+INT        foundneigh;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_getfreenblocks");
@@ -740,29 +740,29 @@ return;
 
 
 #if 0
-int mlpcg_precond_mergeagg(MLLEVEL *actlev, INTRA *actintra)
+INT mlpcg_precond_mergeagg(MLLEVEL *actlev, INTRA *actintra)
 {
-int           i,j,k,l,n,m,max1,max2,max,counter;
-int           myrank,nproc;
+INT           i,j,k,l,n,m,max1,max2,max,counter;
+INT           myrank,nproc;
 DBCSR        *A;
 AGG          *agg,*iagg,*actagg,*aggptr;
-int           nagg;
-int           niaggs[MAXPROC],niagg[MAXPROC];
-int          *update,*ia,*ja,numeq,numeq_total;
-int           owner[MAXPROC][2],owners[MAXPROC][2];
+INT           nagg;
+INT           niaggs[MAXPROC],niagg[MAXPROC];
+INT          *update,*ia,*ja,numeq,numeq_total;
+INT           owner[MAXPROC][2],owners[MAXPROC][2];
 ARRAY4D       blocks_a,block_a;
-int       ****blocks,****block;
+INT       ****blocks,****block;
 ARRAY         bonaggs_a,bonagg_a;
-int         **bonaggs,**bonagg;
-int           nblock1,**bptr1;
-int           nblock2,**bptr2;
-int           needagg,nmatch;
-int           rdofs[1000];
-int           nrdofs;
-int           dof1;
-int           ncouple[MAXPROC];
-int           index,own,colstart,colend;
-int           aggcounter;
+INT         **bonaggs,**bonagg;
+INT           nblock1,**bptr1;
+INT           nblock2,**bptr2;
+INT           needagg,nmatch;
+INT           rdofs[1000];
+INT           nrdofs;
+INT           dof1;
+INT           ncouple[MAXPROC];
+INT           index,own,colstart,colend;
+INT           aggcounter;
 #ifdef PARALLEL
 MPI_Status    status;
 #endif
@@ -966,10 +966,10 @@ for (n=0; n<nproc; n++)/* loop over processors */
       if (myrank==n)/* n gets the blocks */
       {
          actagg->nrblock = nblock2;
-         actagg->rblock  = (int**)CCAMALLOC((actagg->nrblock)*sizeof(int*));
+         actagg->rblock  = (INT**)CCAMALLOC((actagg->nrblock)*sizeof(INT*));
          for (j=0; j<nblock2; j++)
          {
-            actagg->rblock[j] = (int*)CCACALLOC(bptr2[j][0]+1,sizeof(int));
+            actagg->rblock[j] = (INT*)CCACALLOC(bptr2[j][0]+1,sizeof(INT));
             for (k=0; k<bptr2[j][0]+1; k++)
             {
                actagg->rblock[j][k] = bptr2[j][k];
@@ -1009,11 +1009,11 @@ for (i=0; i<nagg; i++)
       continue;
    aggptr[aggcounter].coupling = actagg->coupling;
    aggptr[aggcounter].nblock   = actagg->nblock;
-   aggptr[aggcounter].block    = (int**)CCACALLOC(aggptr[aggcounter].nblock,sizeof(int*));
+   aggptr[aggcounter].block    = (INT**)CCACALLOC(aggptr[aggcounter].nblock,sizeof(INT*));
    if (actagg->nrblock != 0)
    {
       aggptr[aggcounter].nrblock  = actagg->nrblock;
-      aggptr[aggcounter].rblock   = (int**)CCACALLOC(aggptr[aggcounter].nrblock,sizeof(int*));
+      aggptr[aggcounter].rblock   = (INT**)CCACALLOC(aggptr[aggcounter].nrblock,sizeof(INT*));
       for (j=0; j<aggptr[aggcounter].nrblock; j++)
          aggptr[aggcounter].rblock[j] = actagg->rblock[j];
       actagg->rblock = CCAFREE(actagg->rblock);

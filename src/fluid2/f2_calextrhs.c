@@ -31,27 +31,27 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param	 *funct       double	      (i)    nat. shape functions      
-\param   *edeadn      double          (i)    ele dead load at n
-\param   *edeadng     double          (i)    ele dead load at n+1
-\param	  fac	      double	      (i)    weighting factor
-\param	  iel	      int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param	 *funct       DOUBLE	      (i)    nat. shape functions      
+\param   *edeadn      DOUBLE          (i)    ele dead load at n
+\param   *edeadng     DOUBLE          (i)    ele dead load at n+1
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calgalexfv(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,     
-		  double          *funct,       
-                  double          *edeadn,
-		  double          *edeadng,
-		  double           fac,      
-		  int              iel       
+                  DOUBLE          *eforce,     
+		  DOUBLE          *funct,       
+                  DOUBLE          *edeadn,
+		  DOUBLE          *edeadng,
+		  DOUBLE           fac,      
+		  INT              iel       
               ) 
 {
-double  facsl, facsr;
-int     inode,irow,isd;
+DOUBLE  facsl, facsr;
+INT     inode,irow,isd;
 
 /*--------------------------------------------------- set some factors */
 facsl = fac*dynvar->thsl;
@@ -130,40 +130,40 @@ NOTE: for ALE
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *ele         ELEMENT	      (i)    actual element
-\param   *eforce      double	      (i/o)  element force vector
-\param  **derxy,      double	      (i)    global derivatives
-\param  **derxy2,     double	      (i)    2nd. global derivatives    
-\param   *edead       double          (i)    ele dead load at n or n+1
-\param   *velint      double	      (i)    vel. at integr. point
-\param	  fac	      double	      (i)    weighting factor
-\param	  visc	      double	      (i)    fluid viscosity
-\param	  iel	      int	      (i)    num. of nodes in ele
-\param	  ihoel       int	      (i)    flag for higer ord. ele
-\param	  flag	      int	      (i)    flag for n or n+1
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param  **derxy,      DOUBLE	      (i)    global derivatives
+\param  **derxy2,     DOUBLE	      (i)    2nd. global derivatives    
+\param   *edead       DOUBLE          (i)    ele dead load at n or n+1
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  visc	      DOUBLE	      (i)    fluid viscosity
+\param	  iel	      INT	      (i)    num. of nodes in ele
+\param	  ihoel       INT	      (i)    flag for higer ord. ele
+\param	  flag	      INT	      (i)    flag for n or n+1
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabexfv(
                     FLUID_DYN_CALC  *dynvar, 
                     ELEMENT         *ele,  
-                    double          *eforce,     
-		    double         **derxy,
-		    double         **derxy2,      
-                    double          *edead,
-	 	    double          *velint,  
-		    double           fac,      
-                    double           visc,
-		    int              iel,
-		    int              ihoel,
-		    int              flag      
+                    DOUBLE          *eforce,     
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,      
+                    DOUBLE          *edead,
+	 	    DOUBLE          *velint,  
+		    DOUBLE           fac,      
+                    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel,
+		    INT              flag      
                    ) 
 {
 
-int    irow,inode,isd;
-double sign,aux;
-double taumu,taump;
-double c,fvts; 
-double fact[2];
+INT    irow,inode,isd;
+DOUBLE sign,aux;
+DOUBLE taumu,taump;
+DOUBLE c,fvts; 
+DOUBLE fact[2];
 /*--------------------------------------------------- set some factors */
 taumu = dynvar->tau[0];
 taump = dynvar->tau[1];
@@ -275,30 +275,30 @@ NOTE:
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param  **derxy,      double	      (i)    global derivatives    
-\param   *edead       double          (i)    ele dead load at n or n+1
-\param   *velint      double	      (i)    vel. at integr. point
-\param	  fac	      double	      (i)    weighting factor
-\param	  iel	      int	      (i)    num. of nodes in ele
-\param	  flag	      int	      (i)    flag for n or n+1
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param  **derxy,      DOUBLE	      (i)    global derivatives    
+\param   *edead       DOUBLE          (i)    ele dead load at n or n+1
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
+\param	  flag	      INT	      (i)    flag for n or n+1
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabexfp(
                     FLUID_DYN_CALC  *dynvar, 
-                    double          *eforce,     
-		    double         **derxy,       
-                    double          *edead,  
-		    double           fac,      
-		    int              iel,
-		    int              flag      
+                    DOUBLE          *eforce,     
+		    DOUBLE         **derxy,       
+                    DOUBLE          *edead,  
+		    DOUBLE           fac,      
+		    INT              iel,
+		    INT              flag      
                    ) 
 {
-int    inode;
-double c;
-double taump;
-double fact[2];
+INT    inode;
+DOUBLE c;
+DOUBLE taump;
+DOUBLE fact[2];
 
 /*--------------------------------------------------- set some factors */
 taump = dynvar->tau[1];

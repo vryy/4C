@@ -1,8 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 
 
 /*----------------------------------------------------------------------*
@@ -14,9 +14,9 @@ void mask_skyline(FIELD         *actfield,
                   INTRA         *actintra, 
                   SKYMATRIX     *sky)
 {
-int       i;
-int       numeq;
-int     **dof_connect;
+INT       i;
+INT       numeq;
+INT     **dof_connect;
 ARRAY     red_dof_connect;
 #ifdef DEBUG 
 dstrc_enter("mask_skyline");
@@ -49,7 +49,7 @@ skyline_update(actfield,actpart,actsolv,actintra,sky);
       dof_connect[i][2] = dof
       dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
    */
-dof_connect = (int**)CCACALLOC(sky->numeq_total,sizeof(int*));
+dof_connect = (INT**)CCACALLOC(sky->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 skyline_nnz_topology(actfield,actpart,actsolv,actintra,sky,dof_connect);
 /*------------------------------------------------------ make nnz_total */
@@ -89,13 +89,13 @@ void  skyline_update(FIELD         *actfield,
                     INTRA         *actintra,
                     SKYMATRIX     *sky)
 {
-int       i,k,l;
-int       counter;
-int      *update;
-int       dof;
-int       foundit;
-int       imyrank;
-int       inprocs;
+INT       i,k,l;
+INT       counter;
+INT      *update;
+INT       dof;
+INT       foundit;
+INT       imyrank;
+INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
 #ifdef DEBUG 
@@ -165,7 +165,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 /*---------- check whether the correct number of dofs have been counted */
 if (counter != sky->numeq) dserror("Number of dofs in update wrong");
 /*---------------------------- sort the vector update just to make sure */
-qsort((int*) update, counter, sizeof(int), cmp_int);
+qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
@@ -185,28 +185,28 @@ void  skyline_nnz_topology(FIELD      *actfield,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          SKYMATRIX    *sky,
-                         int         **dof_connect)
+                         INT         **dof_connect)
 {
-int        i,j,k,l,m,n;
-int        counter,counter2;
-int        dof;
-int        nnz;
-int        iscoupled;
-int       *update;
-int        numeq;
-int        actdof;
-int        dofmaster;
-int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+INT        i,j,k,l,m,n;
+INT        counter,counter2;
+INT        dof;
+INT        nnz;
+INT        iscoupled;
+INT       *update;
+INT        numeq;
+INT        actdof;
+INT        dofmaster;
+INT        dofslave;
+INT        sendlenght,recvlenght;
+INT        recvflag;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
 ARRAY      dofpatch;
 ARRAY     *coupledofs;
-int        imyrank;
-int        inprocs;
-int        actndis;
+INT        imyrank;
+INT        inprocs;
+INT        actndis;
 
 #ifdef PARALLEL 
 MPI_Status status;
@@ -291,7 +291,7 @@ for (i=0; i<numeq; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0; 
@@ -372,7 +372,7 @@ for (i=0; i<coupledofs->fdim; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0;
@@ -398,7 +398,7 @@ sky->nnz=nnz;
 /*--------- last thing to do is to order dof_connect in ascending order */
 for (i=0; i<numeq; i++)
 {
-   qsort((int*)(&(dof_connect[i][3])), dof_connect[i][0]-3, sizeof(int), cmp_int);
+   qsort((INT*)(&(dof_connect[i][3])), dof_connect[i][0]-3, sizeof(INT), cmp_int);
 }
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
@@ -418,17 +418,17 @@ void   skyline_make_red_dof_connect(FIELD         *actfield,
                                    SOLVAR        *actsolv,
                                    INTRA         *actintra,
                                    SKYMATRIX     *sky,
-                                   int          **dof_connect,
+                                   INT          **dof_connect,
                                    ARRAY         *red_dof_connect)
 {
-int        i,j;
+INT        i,j;
 
-int        imyrank;
-int        inprocs;
+INT        imyrank;
+INT        inprocs;
 
-int      **reddof;
+INT      **reddof;
 
-int        max_dof_connect;
+INT        max_dof_connect;
 /*----------------------------------------------------------------------*/
 /* communicate coupled dofs */
 /*----------------------------------------------------------------------*/
@@ -473,13 +473,13 @@ return;
  *----------------------------------------------------------------------*/
 void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect)
 {
-int        i,j,k,l;
-int      **reddof;
-int       *maxa;
-int        actdof;
-int        lenght;
-int        counter=0;
-int        mindof;
+INT        i,j,k,l;
+INT      **reddof;
+INT       *maxa;
+INT        actdof;
+INT        lenght;
+INT        counter=0;
+INT        mindof;
 #ifdef DEBUG 
 dstrc_enter("skyline_make_sparsity");
 #endif

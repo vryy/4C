@@ -40,10 +40,10 @@ matrix ke for a shell9 element
 \param  MATERIAL  *mat          (i)  the material structure
 \param  ARRAY     *estif_global (o)  element stiffness matrix (NOT initialized!)
 \param  ARRAY     *emass_global (o)  element mass matrix (NOT initialized!)
-\param  int        kintyp       (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr 
-\param  double    *force       (i/o) global vector for internal forces (initialized!)
-\param  int        kstep        (i)  actual step in nonlinear analysis
-\param  int        init         (i)  init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase
+\param  INT        kintyp       (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr 
+\param  DOUBLE    *force       (i/o) global vector for internal forces (initialized!)
+\param  INT        kstep        (i)  actual step in nonlinear analysis
+\param  INT        init         (i)  init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -55,175 +55,175 @@ void s9static_keug(ELEMENT   *ele,                        /* the element structu
                    MATERIAL  *mat,                        /* the material structure */
                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
                    ARRAY     *emass_global,               /* element mass matrix (NOT initialized!) */
-                   int        kintyp,                     /* typ of kinematic formulation */
-                   double    *force,                      /* global vector for internal forces (initialized!) */
-                   int        kstep,                      /* actual step in nonlinear analysis */
-                   int        init)                       /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+                   INT        kintyp,                     /* typ of kinematic formulation */
+                   DOUBLE    *force,                      /* global vector for internal forces (initialized!) */
+                   INT        kstep,                      /* actual step in nonlinear analysis */
+                   INT        init)                       /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
 /*----------------------------------------------------------------------*/
 /* if force==NULL no internal forces are calculated                     */
 /*----------------------------------------------------------------------*/
 {
-int                 i,j,k,l,kl,ml;                          /* some loopers */
-double              sum;
-int                 ngauss;
+INT                 i,j,k,l,kl,ml;                          /* some loopers */
+DOUBLE              sum;
+INT                 ngauss;
 
-int                 nir,nis,nit;                            /* num GP in r/s/t direction */
-int                 lr, ls, lt;                             /* loopers over GP */
-int                 iel;                                    /* numnp to this element */
-int                 nd;                                     /* ndofs to this element (=numdf*numnp) */
+INT                 nir,nis,nit;                            /* num GP in r/s/t direction */
+INT                 lr, ls, lt;                             /* loopers over GP */
+INT                 iel;                                    /* numnp to this element */
+INT                 nd;                                     /* ndofs to this element (=numdf*numnp) */
 
-int                 num_mlay;                               /* number of material layers to actual kinematic layer */  
-int                 num_klay;                               /* number of kinematic layers to this element*/
-int                 numdf;                                  /* ndofs per node to this element */
-int                 numdof_shell9; 
-double             *klayhgt;                                /* hight of kinematic layer in percent of total thicknes of element*/
-double             *mlayhgt;                                /* hight of material layer in percent of adjacent kinematic layer*/
+INT                 num_mlay;                               /* number of material layers to actual kinematic layer */  
+INT                 num_klay;                               /* number of kinematic layers to this element*/
+INT                 numdf;                                  /* ndofs per node to this element */
+INT                 numdof_shell9; 
+DOUBLE             *klayhgt;                                /* hight of kinematic layer in percent of total thicknes of element*/
+DOUBLE             *mlayhgt;                                /* hight of material layer in percent of adjacent kinematic layer*/
 MULTIMAT           *actmultimat;                            /* material of actual material layer */
-int                 rot_axis;                               /* rotation axis of laminat (1=x-; 2=y-; 3=z-axis) */
-double              phi;                                    /* angle of rotation about rot_axis */
+INT                 rot_axis;                               /* rotation axis of laminat (1=x-; 2=y-; 3=z-axis) */
+DOUBLE              phi;                                    /* angle of rotation about rot_axis */
 
-double              e1,e2,e3;                               /*GP-coords*/
-double              facr,facs,fact;                         /* weights at GP */
-double              xnu;                                    /* value of shell shifter */
-double              weight;
+DOUBLE              e1,e2,e3;                               /*GP-coords*/
+DOUBLE              facr,facs,fact;                         /* weights at GP */
+DOUBLE              xnu;                                    /* value of shell shifter */
+DOUBLE              weight;
 
-double              condfac;                                /* sdc conditioning factor */
-double              h2;                                     /* half nodal height */
-double              hgt;                                    /* element thickness */
-double              hte[MAXNOD_SHELL9];                     /* element thickness at nodal points */
+DOUBLE              condfac;                                /* sdc conditioning factor */
+DOUBLE              h2;                                     /* half nodal height */
+DOUBLE              hgt;                                    /* element thickness */
+DOUBLE              hte[MAXNOD_SHELL9];                     /* element thickness at nodal points */
 
-double              detr;                                   /* jacobian determinant in ref conf. at gp */
-double              detc;                                   /* jacobian determinant in cur conf. at gp */
+DOUBLE              detr;                                   /* jacobian determinant in ref conf. at gp */
+DOUBLE              detc;                                   /* jacobian determinant in cur conf. at gp */
 
-double              h[3];                                   /* working array */
-double              da;                                     /* area on mid surface */
+DOUBLE              h[3];                                   /* working array */
+DOUBLE              da;                                     /* area on mid surface */
 
-double              stress[6], stress_r[12];                /* stress and stress resultants */
-double              strain[6];                              /* strains */
-double             *intforce;
+DOUBLE              stress[6], stress_r[12];                /* stress and stress resultants */
+DOUBLE              strain[6];                              /* strains */
+DOUBLE             *intforce;
 
-static ARRAY        C_a;         static double **C;         /* material tensor */
-static ARRAY        D_a;         static double **D;         /* material tensor integrated in thickness direction */
+static ARRAY        C_a;         static DOUBLE **C;         /* material tensor */
+static ARRAY        D_a;         static DOUBLE **D;         /* material tensor integrated in thickness direction */
 
-static ARRAY4D      a3r_a;       static double ***a3r;      /* a3 in reference config -> for each kinematic layer */
-static ARRAY4D      a3c_a;       static double ***a3c;      /* a3 in current   config (a3r + disp) */
+static ARRAY4D      a3r_a;       static DOUBLE ***a3r;      /* a3 in reference config -> for each kinematic layer */
+static ARRAY4D      a3c_a;       static DOUBLE ***a3c;      /* a3 in current   config (a3r + disp) */
 
-static ARRAY4D      a3kvpr_a;    static double ***a3kvpr;   /* partiel derivatives of normal vector ref.config. */
-static ARRAY4D      a3kvpc_a;    static double ***a3kvpc;   /* partiel derivatives of normal vector cur.config. */
+static ARRAY4D      a3kvpr_a;    static DOUBLE ***a3kvpr;   /* partiel derivatives of normal vector ref.config. */
+static ARRAY4D      a3kvpc_a;    static DOUBLE ***a3kvpc;   /* partiel derivatives of normal vector cur.config. */
 
-static ARRAY        xrefe_a;     static double **xrefe;     /* coords of midsurface in ref config */
-static ARRAY        xcure_a;     static double **xcure;     /* coords of midsurface in cur condig */
-                                        double **a3ref;     /* elements directors (lenght 1) */
+static ARRAY        xrefe_a;     static DOUBLE **xrefe;     /* coords of midsurface in ref config */
+static ARRAY        xcure_a;     static DOUBLE **xcure;     /* coords of midsurface in cur condig */
+                                        DOUBLE **a3ref;     /* elements directors (lenght 1) */
 
-static ARRAY        funct_a;     static double  *funct;     /* shape functions */
-static ARRAY        deriv_a;     static double **deriv;     /* derivatives of shape functions */
+static ARRAY        funct_a;     static DOUBLE  *funct;     /* shape functions */
+static ARRAY        deriv_a;     static DOUBLE **deriv;     /* derivatives of shape functions */
 
 /* mid surface basis vectors and metric tensors */
-static ARRAY4D      akovr_a;     static double ***akovr;    /* kovariant basis vectors at Int point ref.config. */
-static ARRAY4D      akonr_a;     static double ***akonr;    /* kontravar.--------------"----------- ref.config. */
-static ARRAY4D      amkovr_a;    static double ***amkovr;   /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY4D      amkonr_a;    static double ***amkonr;   /* kontravar.--------------"------------ ref.config. */
+static ARRAY4D      akovr_a;     static DOUBLE ***akovr;    /* kovariant basis vectors at Int point ref.config. */
+static ARRAY4D      akonr_a;     static DOUBLE ***akonr;    /* kontravar.--------------"----------- ref.config. */
+static ARRAY4D      amkovr_a;    static DOUBLE ***amkovr;   /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY4D      amkonr_a;    static DOUBLE ***amkonr;   /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY4D      akovc_a;     static double ***akovc;    /* kovariant basis vectors at Int point current.config. */
-static ARRAY4D      akonc_a;     static double ***akonc;    /* kontravar.--------------"----------- current.config. */
-static ARRAY4D      amkovc_a;    static double ***amkovc;   /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY4D      amkonc_a;    static double ***amkonc;   /* kontravar.--------------"------------ current.config. */
+static ARRAY4D      akovc_a;     static DOUBLE ***akovc;    /* kovariant basis vectors at Int point current.config. */
+static ARRAY4D      akonc_a;     static DOUBLE ***akonc;    /* kontravar.--------------"----------- current.config. */
+static ARRAY4D      amkovc_a;    static DOUBLE ***amkovc;   /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY4D      amkonc_a;    static DOUBLE ***amkonc;   /* kontravar.--------------"------------ current.config. */
 
 /* mid surface basis vectors and metric tensors -> help for s9_tvmr.c */
-static ARRAY        akovh_a;     static double **akovh;     
-static ARRAY        akonh_a;     static double **akonh;     
-static ARRAY        amkovh_a;    static double **amkovh;    
-static ARRAY        amkonh_a;    static double **amkonh;    
+static ARRAY        akovh_a;     static DOUBLE **akovh;     
+static ARRAY        akonh_a;     static DOUBLE **akonh;     
+static ARRAY        amkovh_a;    static DOUBLE **amkovh;    
+static ARRAY        amkonh_a;    static DOUBLE **amkonh;    
 
 /* shell body basis vectors and metric tensors */
-static ARRAY        gkovr_a;     static double **gkovr;     /* kovariant basis vectors at Int point ref.config. */
-static ARRAY        gkonr_a;     static double **gkonr;     /* kontravar.--------------"----------- ref.config. */
-static ARRAY        gmkovr_a;    static double **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY        gmkonr_a;    static double **gmkonr;    /* kontravar.--------------"------------ ref.config. */
+static ARRAY        gkovr_a;     static DOUBLE **gkovr;     /* kovariant basis vectors at Int point ref.config. */
+static ARRAY        gkonr_a;     static DOUBLE **gkonr;     /* kontravar.--------------"----------- ref.config. */
+static ARRAY        gmkovr_a;    static DOUBLE **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY        gmkonr_a;    static DOUBLE **gmkonr;    /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY        gkovc_a;     static double **gkovc;     /* kovariant basis vectors at Int point current.config. */
-static ARRAY        gkonc_a;     static double **gkonc;     /* kontravar.--------------"----------- current.config. */
-static ARRAY        gmkovc_a;    static double **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY        gmkonc_a;    static double **gmkonc;    /* kontravar.--------------"------------ current.config. */
+static ARRAY        gkovc_a;     static DOUBLE **gkovc;     /* kovariant basis vectors at Int point current.config. */
+static ARRAY        gkonc_a;     static DOUBLE **gkonc;     /* kontravar.--------------"----------- current.config. */
+static ARRAY        gmkovc_a;    static DOUBLE **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY        gmkonc_a;    static DOUBLE **gmkonc;    /* kontravar.--------------"------------ current.config. */
 
-static ARRAY        bop_a;       static double **bop;       /* B-Operator for compatible strains */
-                                 static double **estif;     /* element stiffness matrix ke */
-                                 static double **emass;     /* element mass matrix */
-static ARRAY        work_a;      static double **work;      /* working array to do Bt*D*B */
+static ARRAY        bop_a;       static DOUBLE **bop;       /* B-Operator for compatible strains */
+                                 static DOUBLE **estif;     /* element stiffness matrix ke */
+                                 static DOUBLE **emass;     /* element mass matrix */
+static ARRAY        work_a;      static DOUBLE **work;      /* working array to do Bt*D*B */
 
 /* arrays for eas */
-double              fac;                                    /* factor for residual displacements -> alfa values*/
-double              detr0[MAXKLAY_SHELL9];                  /* jacobian determinant in ref conf. at mid point*/
-int                 nhyb;                                   /* scnd dim of P */
-double              epsh[12];                               /* transformed eas strains */
-double              mlhgt_eas[1];                           /* hight of material layer in percent of adjacent kinematic layer*/
+DOUBLE              fac;                                    /* factor for residual displacements -> alfa values*/
+DOUBLE              detr0[MAXKLAY_SHELL9];                  /* jacobian determinant in ref conf. at mid point*/
+INT                 nhyb;                                   /* scnd dim of P */
+DOUBLE              epsh[12];                               /* transformed eas strains */
+DOUBLE              mlhgt_eas[1];                           /* hight of material layer in percent of adjacent kinematic layer*/
 
-static ARRAY        alfa_a[MAXKLAY_SHELL9]; static double  *alfa[MAXKLAY_SHELL9];    /* alfa-values for each kinematic layer */
-static ARRAY        eashelp_a;              static double  *eashelp;                 /* working vector for eas */
+static ARRAY        alfa_a[MAXKLAY_SHELL9]; static DOUBLE  *alfa[MAXKLAY_SHELL9];    /* alfa-values for each kinematic layer */
+static ARRAY        eashelp_a;              static DOUBLE  *eashelp;                 /* working vector for eas */
 
-double            **oldDtildinv;
-double            **oldLt;
-double             *oldRtild;
+DOUBLE            **oldDtildinv;
+DOUBLE            **oldLt;
+DOUBLE             *oldRtild;
 
-static ARRAY        P_a;         static double **P;         /* eas matrix M */
-static ARRAY        transP_a;    static double **transP;    /* eas matrix M */
-static ARRAY        T_a;         static double **T;         /* transformation matrix for eas */
-static ARRAY        workeas_a;   static double **workeas;   /* eas working array */
-static ARRAY        workeas2_a;  static double **workeas2;  /* eas working array */
+static ARRAY        P_a;         static DOUBLE **P;         /* eas matrix M */
+static ARRAY        transP_a;    static DOUBLE **transP;    /* eas matrix M */
+static ARRAY        T_a;         static DOUBLE **T;         /* transformation matrix for eas */
+static ARRAY        workeas_a;   static DOUBLE **workeas;   /* eas working array */
+static ARRAY        workeas2_a;  static DOUBLE **workeas2;  /* eas working array */
 
-static ARRAY   LtKl_a[MAXKLAY_SHELL9];       static double **Lt_kl[MAXKLAY_SHELL9];       /* eas matrix L transposed      -> one kinematic Layer*/
-static ARRAY   DtildKl_a[MAXKLAY_SHELL9];    static double **Dtild_kl[MAXKLAY_SHELL9];    /* eas matrix Dtilde            -> one kinematic Layer*/
-static ARRAY   DtildinvKl_a[MAXKLAY_SHELL9]; static double **Dtildinv_kl[MAXKLAY_SHELL9]; /* eas matrix Dtilde            -> one kinematic Layer*/
-static ARRAY   RtildKl_a[MAXKLAY_SHELL9];    static double  *Rtild_kl[MAXKLAY_SHELL9];    /* eas part of internal forces  -> one kinematic Layer*/
+static ARRAY   LtKl_a[MAXKLAY_SHELL9];       static DOUBLE **Lt_kl[MAXKLAY_SHELL9];       /* eas matrix L transposed      -> one kinematic Layer*/
+static ARRAY   DtildKl_a[MAXKLAY_SHELL9];    static DOUBLE **Dtild_kl[MAXKLAY_SHELL9];    /* eas matrix Dtilde            -> one kinematic Layer*/
+static ARRAY   DtildinvKl_a[MAXKLAY_SHELL9]; static DOUBLE **Dtildinv_kl[MAXKLAY_SHELL9]; /* eas matrix Dtilde            -> one kinematic Layer*/
+static ARRAY   RtildKl_a[MAXKLAY_SHELL9];    static DOUBLE  *Rtild_kl[MAXKLAY_SHELL9];    /* eas part of internal forces  -> one kinematic Layer*/
 
 
-static ARRAY   akovr0_a[MAXKLAY_SHELL9];   static double **akovr0[MAXKLAY_SHELL9];  /* kovariant basis vectors at mid point ref.config. -> vor each kinematic layer */          
-static ARRAY   akonr0_a[MAXKLAY_SHELL9];   static double **akonr0[MAXKLAY_SHELL9];  /* kontravar.--------------"----------- ref.config. -> vor each kinematic layer */          
-static ARRAY   amkovr0_a[MAXKLAY_SHELL9];  static double **amkovr0[MAXKLAY_SHELL9]; /* kovaraiant metric tensor at mid point ref.config. -> vor each kinematic layer */          
-static ARRAY   amkonr0_a[MAXKLAY_SHELL9];  static double **amkonr0[MAXKLAY_SHELL9]; /* kontravar.--------------"------------ ref.config. -> vor each kinematic layer */          
+static ARRAY   akovr0_a[MAXKLAY_SHELL9];   static DOUBLE **akovr0[MAXKLAY_SHELL9];  /* kovariant basis vectors at mid point ref.config. -> vor each kinematic layer */          
+static ARRAY   akonr0_a[MAXKLAY_SHELL9];   static DOUBLE **akonr0[MAXKLAY_SHELL9];  /* kontravar.--------------"----------- ref.config. -> vor each kinematic layer */          
+static ARRAY   amkovr0_a[MAXKLAY_SHELL9];  static DOUBLE **amkovr0[MAXKLAY_SHELL9]; /* kovaraiant metric tensor at mid point ref.config. -> vor each kinematic layer */          
+static ARRAY   amkonr0_a[MAXKLAY_SHELL9];  static DOUBLE **amkonr0[MAXKLAY_SHELL9]; /* kontravar.--------------"------------ ref.config. -> vor each kinematic layer */          
 
 /* arrays for ANS */
-int                 ansq;
-const int           nsansmax=6;
-int                 nsansq;                                  /* number of sampling points for ans */
-double              xr1[6];                                  /* coordinates of collocation points for ANS */
-double              xs1[6];
-double              xr2[6];
-double              xs2[6];                     
-double              frq[6];
-double              fsq[6];
+INT                 ansq;
+const INT           nsansmax=6;
+INT                 nsansq;                                  /* number of sampling points for ans */
+DOUBLE              xr1[6];                                  /* coordinates of collocation points for ANS */
+DOUBLE              xs1[6];
+DOUBLE              xr2[6];
+DOUBLE              xs2[6];                     
+DOUBLE              frq[6];
+DOUBLE              fsq[6];
 
 /*a metric for each kinematic layer*/
-static ARRAY       funct1q_a[6];  static double   *funct1q[6];    /* shape functions at collocation points */
-static ARRAY       deriv1q_a[6];  static double  **deriv1q[6];    /* derivation of these shape functions */
+static ARRAY       funct1q_a[6];  static DOUBLE   *funct1q[6];    /* shape functions at collocation points */
+static ARRAY       deriv1q_a[6];  static DOUBLE  **deriv1q[6];    /* derivation of these shape functions */
 
-static ARRAY4D     akovr1q_a[6];  static double ***akovr1q[6];
-static ARRAY4D     akonr1q_a[6];  static double ***akonr1q[6];
-static ARRAY4D     amkovr1q_a[6]; static double ***amkovr1q[6];
-static ARRAY4D     amkonr1q_a[6]; static double ***amkonr1q[6];
-static ARRAY4D     a3kvpr1q_a[6]; static double ***a3kvpr1q[6];
+static ARRAY4D     akovr1q_a[6];  static DOUBLE ***akovr1q[6];
+static ARRAY4D     akonr1q_a[6];  static DOUBLE ***akonr1q[6];
+static ARRAY4D     amkovr1q_a[6]; static DOUBLE ***amkovr1q[6];
+static ARRAY4D     amkonr1q_a[6]; static DOUBLE ***amkonr1q[6];
+static ARRAY4D     a3kvpr1q_a[6]; static DOUBLE ***a3kvpr1q[6];
 
-static ARRAY4D     akovc1q_a[6];  static double ***akovc1q[6];
-static ARRAY4D     akonc1q_a[6];  static double ***akonc1q[6];
-static ARRAY4D     amkovc1q_a[6]; static double ***amkovc1q[6];
-static ARRAY4D     amkonc1q_a[6]; static double ***amkonc1q[6];
-static ARRAY4D     a3kvpc1q_a[6]; static double ***a3kvpc1q[6];
+static ARRAY4D     akovc1q_a[6];  static DOUBLE ***akovc1q[6];
+static ARRAY4D     akonc1q_a[6];  static DOUBLE ***akonc1q[6];
+static ARRAY4D     amkovc1q_a[6]; static DOUBLE ***amkovc1q[6];
+static ARRAY4D     amkonc1q_a[6]; static DOUBLE ***amkonc1q[6];
+static ARRAY4D     a3kvpc1q_a[6]; static DOUBLE ***a3kvpc1q[6];
 
 
-static ARRAY       funct2q_a[6];  static double   *funct2q[6];    /* shape functions at collocation points */
-static ARRAY       deriv2q_a[6];  static double  **deriv2q[6];    /* derivation of these shape functions */
+static ARRAY       funct2q_a[6];  static DOUBLE   *funct2q[6];    /* shape functions at collocation points */
+static ARRAY       deriv2q_a[6];  static DOUBLE  **deriv2q[6];    /* derivation of these shape functions */
 
-static ARRAY4D     akovr2q_a[6];  static double ***akovr2q[6];
-static ARRAY4D     akonr2q_a[6];  static double ***akonr2q[6];
-static ARRAY4D     amkovr2q_a[6]; static double ***amkovr2q[6];
-static ARRAY4D     amkonr2q_a[6]; static double ***amkonr2q[6];
-static ARRAY4D     a3kvpr2q_a[6]; static double ***a3kvpr2q[6];
+static ARRAY4D     akovr2q_a[6];  static DOUBLE ***akovr2q[6];
+static ARRAY4D     akonr2q_a[6];  static DOUBLE ***akonr2q[6];
+static ARRAY4D     amkovr2q_a[6]; static DOUBLE ***amkovr2q[6];
+static ARRAY4D     amkonr2q_a[6]; static DOUBLE ***amkonr2q[6];
+static ARRAY4D     a3kvpr2q_a[6]; static DOUBLE ***a3kvpr2q[6];
 
-static ARRAY4D     akovc2q_a[6];  static double ***akovc2q[6];
-static ARRAY4D     akonc2q_a[6];  static double ***akonc2q[6];
-static ARRAY4D     amkovc2q_a[6]; static double ***amkovc2q[6];
-static ARRAY4D     amkonc2q_a[6]; static double ***amkonc2q[6];
-static ARRAY4D     a3kvpc2q_a[6]; static double ***a3kvpc2q[6];
+static ARRAY4D     akovc2q_a[6];  static DOUBLE ***akovc2q[6];
+static ARRAY4D     akonc2q_a[6];  static DOUBLE ***akonc2q[6];
+static ARRAY4D     amkovc2q_a[6]; static DOUBLE ***amkovc2q[6];
+static ARRAY4D     amkonc2q_a[6]; static DOUBLE ***amkonc2q[6];
+static ARRAY4D     a3kvpc2q_a[6]; static DOUBLE ***a3kvpc2q[6];
 
 
 #ifdef DEBUG 

@@ -17,19 +17,19 @@
 /*----------------------------------------------------------------------*
  | shape functions and derivatives                               al 9/01|
  *----------------------------------------------------------------------*/
-void w1_funct_deriv(double     *funct, 
-                    double    **deriv, 
-                    double      r, 
-                    double      s,
+void w1_funct_deriv(DOUBLE     *funct, 
+                    DOUBLE    **deriv, 
+                    DOUBLE      r, 
+                    DOUBLE      s,
                     DIS_TYP   typ,
-                    int         option)
+                    INT         option)
 {
-int            i, ii;
-const double   q12 = ONE/TWO;
-const double   q14 = ONE/FOUR;
-const double   q16 = ONE/SIX;
-double         rr,ss,rp,rm,sp,sm,r2,s2;
-double         rh,sh,rs,rhp,rhm,shp,shm;
+INT            i, ii;
+const DOUBLE   q12 = ONE/TWO;
+const DOUBLE   q14 = ONE/FOUR;
+const DOUBLE   q16 = ONE/SIX;
+DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
+DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG 
 dstrc_enter("w1_funct_deriv");
 #endif
@@ -166,18 +166,18 @@ return;
  | shape functions and derivatives                        genk 10/02    |
  | for a degenerated 2D isoparametric element                           |
  *----------------------------------------------------------------------*/
-void w1_degfuncderiv(double     *funct, 
-                      double    **deriv, 
-                      double      r, 
+void w1_degfuncderiv(DOUBLE     *funct, 
+                      DOUBLE    **deriv, 
+                      DOUBLE      r, 
                       DIS_TYP     typ,
-                      int         option)
+                      INT         option)
 {
-int            i, ii;
-const double   q12 = ONE/TWO;
-const double   q14 = ONE/FOUR;
-const double   q16 = ONE/SIX;
-double         rr,ss,rp,rm,sp,sm,r2,s2;
-double         rh,sh,rs,rhp,rhm,shp,shm;
+INT            i, ii;
+const DOUBLE   q12 = ONE/TWO;
+const DOUBLE   q14 = ONE/FOUR;
+const DOUBLE   q16 = ONE/SIX;
+DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
+DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG 
 dstrc_enter("w1_edgefuncderiv");
 #endif

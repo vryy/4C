@@ -26,10 +26,10 @@
  |                       output = global                                |
  | G ... transformation matrix                                          |
  *----------------------------------------------------------------------*/
-void w1_gld(double **D,
-	    double **G, double **DGT)
+void w1_gld(DOUBLE **D,
+	    DOUBLE **G, DOUBLE **DGT)
 {
-int numeps=4;
+INT numeps=4;
 #ifdef DEBUG 
 dstrc_enter("w1_gld");
 #endif
@@ -46,16 +46,16 @@ return;
  | Transform stress and strain local-global                  fh 7/02    |
  | Local 3-direction is zero                                            |
  *----------------------------------------------------------------------*/
-void w1_lss(double    *a,
-            double    **G,
-            double    **GI,
-	    int         it)
+void w1_lss(DOUBLE    *a,
+            DOUBLE    **G,
+            DOUBLE    **GI,
+	    INT         it)
 {
 /*----------------------------------------------------------------------*/
-int numeps=4;
-int i;
-double ga[4];
-double dum;
+INT numeps=4;
+INT i;
+DOUBLE ga[4];
+DOUBLE dum;
 #ifdef DEBUG 
 dstrc_enter("w1_lss");
 #endif
@@ -68,7 +68,7 @@ dstrc_enter("w1_lss");
  |  it	=	2	Eps(global)  --->  Eps(local)       (i)    |
  |  it	=	3	Eps(local)   --->  Eps(global)      (i)    |
  |----------------------------------------------------------------*/
-switch ((int)it) {
+switch ((INT)it) {
 	case 0: goto L1;
 	case 1: goto L2;
 	case 2: goto L3;
@@ -125,18 +125,18 @@ return;
 /*----------------------------------------------------------------------*
  | Set Transformation Matrices G and GI                      fh 7/02    |
  *----------------------------------------------------------------------*/
-void w1_sett(double   **A,
-            double    **B,
-            double    **C)
+void w1_sett(DOUBLE   **A,
+            DOUBLE    **B,
+            DOUBLE    **C)
 {
 /*----------------------------------------------------------------------*/
-int numeps=4;
-int l;
-double a11,a12,a21,a22;
-double zero=0.;
-double one=1.;
-int i,j;
-double dum;
+INT numeps=4;
+INT l;
+DOUBLE a11,a12,a21,a22;
+DOUBLE zero=0.;
+DOUBLE one=1.;
+INT i,j;
+DOUBLE dum;
 #ifdef DEBUG 
 dstrc_enter("w1_sett");
 #endif
@@ -207,20 +207,20 @@ return;
 /*----------------------------------------------------------------------*
  | Calculate Transformation Matrices G and G(Inv)            fh 7/02    |
  *----------------------------------------------------------------------*/
-void w1_tram(double   **xjm,
-            double    **G,
-            double    **GI,
-	    double    **dum)
+void w1_tram(DOUBLE   **xjm,
+            DOUBLE    **G,
+            DOUBLE    **GI,
+	    DOUBLE    **dum)
 {
 /*----------------------------------------------------------------------*/
-int ndim=2;
-double xr[2];
-double xs[2];
-double xc[2];
-double x3n;
-double zero=0.;
-double one=1.;
-double length;
+INT ndim=2;
+DOUBLE xr[2];
+DOUBLE xs[2];
+DOUBLE xc[2];
+DOUBLE x3n;
+DOUBLE zero=0.;
+DOUBLE one=1.;
+DOUBLE length;
 
 #ifdef DEBUG 
 dstrc_enter("w1_tram");

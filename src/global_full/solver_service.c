@@ -14,22 +14,22 @@ static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
 static void solserv_cp_densemask(DENSE *from, DENSE *to);
 static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to);
 static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to);
-static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,double *work1,double *work2);
-static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,double *work1,double *work2);
-static void solserv_matvec_ccf(INTRA  *actintra,CCF *ccf,double *work1,double *work2);
-static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,double *work1,double *work2);
-static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,double *work1,double *work2);
-static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,double *work1,double *work2);
-static void oll_matvec(INTRA *actintra, OLL *oll, double *work1, double *work2);
+static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,DOUBLE *work1,DOUBLE *work2);
+static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,DOUBLE *work1,DOUBLE *work2);
+static void solserv_matvec_ccf(INTRA  *actintra,CCF *ccf,DOUBLE *work1,DOUBLE *work2);
+static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,DOUBLE *work1,DOUBLE *work2);
+static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,DOUBLE *work1,DOUBLE *work2);
+static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,DOUBLE *work1,DOUBLE *work2);
+static void oll_matvec(INTRA *actintra, OLL *oll, DOUBLE *work1, DOUBLE *work2);
 /*----------------------------------------------------------------------*
  |  make A = A * factor                                      m.gee 02/02|
  | SPARSE_TYP *Atyp (i)        type of sparse matrix                    |
  | SPARSE_ARRAY *A  (i/o)      sparse matrix                            |
- | double factor    (i)        factor                                   |
+ | DOUBLE factor    (i)        factor                                   |
  *----------------------------------------------------------------------*/
-void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,double factor)
+void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,DOUBLE factor)
 {
-int      i;
+INT      i;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_scal_mat");
@@ -92,16 +92,16 @@ return;
  | SPARSE_ARRAY *A  (i/o)   sparse matrix                               |
  | SPARSE_TYP *Btyp (i)     type of sparse matrix                       |
  | SPARSE_ARRAY *B  (i)     sparse matrix                               |
- | double factor    (i)     factor                                      |
+ | DOUBLE factor    (i)     factor                                      |
  *----------------------------------------------------------------------*/
 void solserv_add_mat(INTRA *actintra,
                      SPARSE_TYP *Atyp,
                      SPARSE_ARRAY *A,
                      SPARSE_TYP *Btyp,
                      SPARSE_ARRAY *B,
-                     double factor)
+                     DOUBLE factor)
 {
-int      i;
+INT      i;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_add_mat");
@@ -175,11 +175,11 @@ return;
  |  get dimensions of sparse matrix                          m.gee 02/02|
  | SPARSE_ARRAY mat  (i)     sparse matrix                              |
  | SPARSE_TYP mattyp (i)     type of sparse matrix                      |
- | int *numeq        (o)     proc-local dimension of sparse matrix      |
- | int *numeq_total  (o)     global dimension of sparse matrix          |
+ | INT *numeq        (o)     proc-local dimension of sparse matrix      |
+ | INT *numeq_total  (o)     global dimension of sparse matrix          |
  *----------------------------------------------------------------------*/
 void solserv_getmatdims(SPARSE_ARRAY mat,SPARSE_TYP mattyp,
-                        int *numeq, int *numeq_total)
+                        INT *numeq, INT *numeq_total)
 {
 #ifdef DEBUG 
 dstrc_enter("solserv_getmatdims");
@@ -255,11 +255,11 @@ return;
  *----------------------------------------------------------------------*/
 void solserv_zero_mat(INTRA *actintra, SPARSE_ARRAY *mat,SPARSE_TYP *mattyp)
 {
-int                  imyrank;
-int                  inprocs;
-int                  ilower,iupper,jlower,jupper;
-int                  err=1;
-int                  minusone=-1;
+INT                  imyrank;
+INT                  inprocs;
+INT                  ilower,iupper,jlower,jupper;
+INT                  err=1;
+INT                  minusone=-1;
 #ifdef DEBUG 
 dstrc_enter("solserv_zero_mat");
 #endif
@@ -450,7 +450,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_spomask");
 #endif
@@ -481,7 +481,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_spomask");
 #endif
@@ -514,7 +514,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_rc_ptrmask");
 #endif
@@ -558,7 +558,7 @@ return;
 
 static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_ccfmask");
 #endif
@@ -593,7 +593,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_ucchbmask");
 #endif
@@ -633,7 +633,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_skymask");
 #endif
@@ -671,7 +671,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_msrmask");
 #endif
@@ -752,9 +752,9 @@ void solserv_sparsematvec(INTRA        *actintra,
                           DIST_VECTOR  *vec)
 {
 static ARRAY   work1_a;
-static double *work1;
+static DOUBLE *work1;
 static ARRAY   work2_a;
-static double *work2;
+static DOUBLE *work2;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_sparsematvec");
@@ -845,21 +845,21 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_matvec_spo(INTRA        *actintra,
                                   SPOOLMAT       *spo,
-                                  double       *work1,
-                                  double       *work2)/* work2 is the result */
+                                  DOUBLE       *work1,
+                                  DOUBLE       *work2)/* work2 is the result */
 {
 #ifdef SPOOLES_PACKAGE
-int         i,j,dof;
-int         start,end,lenght,j_index;
-int         myrank;
-int         nprocs;
-int         numeq;
-int         numeq_total;
-int        *update;
-int        *row,*irn,*jcn;
-double     *A;
-int         rowstart,rowend;
-int         col;
+INT         i,j,dof;
+INT         start,end,lenght,j_index;
+INT         myrank;
+INT         nprocs;
+INT         numeq;
+INT         numeq_total;
+INT        *update;
+INT        *row,*irn,*jcn;
+DOUBLE     *A;
+INT         rowstart,rowend;
+INT         col;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_matvec_spo");
@@ -1022,19 +1022,19 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_matvec_msr(INTRA        *actintra,
                         AZ_ARRAY_MSR *msr,
-                        double       *work1,
-                        double       *work2)
+                        DOUBLE       *work1,
+                        DOUBLE       *work2)
 {
 #ifdef AZTEC_PACKAGE
-int         i,j,dof;
-int         start,end,lenght,j_index;
-int         myrank;
-int         nprocs;
-int         numeq;
-int         numeq_total;
-int        *update;
-int        *bindx;
-double     *val;
+INT         i,j,dof;
+INT         start,end,lenght,j_index;
+INT         myrank;
+INT         nprocs;
+INT         numeq;
+INT         numeq_total;
+INT        *update;
+INT        *bindx;
+DOUBLE     *val;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_matvec_msr");
@@ -1092,13 +1092,13 @@ C     ******************************************************************
  *----------------------------------------------------------------------*/
 static void solserv_matvec_sky(INTRA        *actintra,
                         SKYMATRIX    *sky,
-                        double       *work1,
-                        double       *work2)
+                        DOUBLE       *work1,
+                        DOUBLE       *work2)
 {
-int     i,j,kl,ku,kdiff;
-int     nrn,neq1,neq;
-double *A;
-int    *maxa;
+INT     i,j,kl,ku,kdiff;
+INT     nrn,neq1,neq;
+DOUBLE *A;
+INT    *maxa;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_matvec_sky");
@@ -1138,13 +1138,13 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_matvec_dense(INTRA        *actintra,
                           DENSE        *dense,
-                          double       *work1,
-                          double       *work2)
+                          DOUBLE       *work1,
+                          DOUBLE       *work2)
 {
-int      i,j,k;
-int      I,J;
-double   sum;
-double **A;
+INT      i,j,k;
+INT      I,J;
+DOUBLE   sum;
+DOUBLE **A;
 #ifdef DEBUG 
 dstrc_enter("solserv_matvec_dense");
 #endif
@@ -1177,13 +1177,13 @@ return;
 static void oll_matvec(
     INTRA        *actintra,
     OLL          *oll,
-    double       *work1,
-    double       *work2)        /* work2 is the result */
+    DOUBLE       *work1,
+    DOUBLE       *work2)        /* work2 is the result */
 {
-  int         i,j,dof;
-  int         numeq;
-  int         numeq_total;
-  int        *update;
+  INT         i,j,dof;
+  INT         numeq;
+  INT         numeq_total;
+  INT        *update;
   MATENTRY  **row;
   MATENTRY   *actentry;
 

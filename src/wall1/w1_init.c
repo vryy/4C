@@ -18,18 +18,18 @@
  *----------------------------------------------------------------------*/
 void w1init(PARTITION *actpart,MATERIAL *mat)
 {
-int          i,j,k,l,m,ncm;
-int          size_i, size_j;
+INT          i,j,k,l,m,ncm;
+INT          size_i, size_j;
 ELEMENT     *actele;
 NODE        *actnode;
 W1_DATA      data;
 
 ARRAY    funct_a_h;  /* shape functions */    
-double  *funct_h;     
+DOUBLE  *funct_h;     
 ARRAY    deriv_a_h;  /* derivatives of shape functions */   
-double **deriv_h;     
+DOUBLE **deriv_h;     
 ARRAY    xjm_a_h;    /* jacobian matrix */     
-double **xjm_h;         
+DOUBLE **xjm_h;         
 
 #ifdef DEBUG 
 dstrc_enter("w1init");
@@ -65,7 +65,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.w1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.w1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
+    actele->e.w1->elewa->matdata = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     if (actele->e.w1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -76,7 +76,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.w1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.w1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
+    actele->e.w1->elewa->optdata = (INT*)CCACALLOC(size_j,sizeof(INT));
     if (actele->e.w1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -111,33 +111,33 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     {/*matplast02*/
       actele->e.w1->elewa[0].ipwa[k].epstn = 0.;
       actele->e.w1->elewa[0].ipwa[k].yip   = -1;
-      actele->e.w1->elewa[0].ipwa[k].qn = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].qn = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
 
       /*additional values needed for condensation       sh 08/02*/
       if(mat[actele->mat-1].mattyp == m_pl_mises_3D )
       {
-      actele->e.w1->elewa[0].ipwa[k].sigi = (double*)CCACALLOC(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].epsi = (double*)CCACALLOC(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].di   = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].sigi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].epsi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].di   = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       }
 
       if(mat[actele->mat-1].mattyp == m_pl_epc )
       {
-      actele->e.w1->elewa[0].ipwa[k].sigc = (double*)CCACALLOC(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].grad = (double*)CCACALLOC(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].dlam = (double*)CCACALLOC(2,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].sigc = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].grad = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].dlam = (DOUBLE*)CCACALLOC(2,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].dlam[0] = 0.;
       actele->e.w1->elewa[0].ipwa[k].dlam[1] = 0.;
-      actele->e.w1->elewa[0].ipwa[k].sigi = (double*)CCACALLOC(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].epsi = (double*)CCACALLOC(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].di   = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].sigi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].epsi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].di   = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       
       ncm = mat[actele->mat-1].m.pl_epc->maxreb;
       
-      actele->e.w1->elewa[0].ipwa[k].rsig   = (double*)CCACALLOC(ncm,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].reps   = (double*)CCACALLOC(ncm,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].repstn = (double*)CCACALLOC(ncm,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].ryip   = (int*)CCACALLOC(ncm,sizeof(int));
+      actele->e.w1->elewa[0].ipwa[k].rsig   = (DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].reps   = (DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].repstn = (DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      actele->e.w1->elewa[0].ipwa[k].ryip   = (INT*)CCACALLOC(ncm,sizeof(INT));
       for (j=0; j<ncm; j++)
       {
         actele->e.w1->elewa[0].ipwa[k].rsig[j]   = 0.;

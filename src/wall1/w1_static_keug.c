@@ -21,61 +21,61 @@ void w1static_keug(ELEMENT   *ele,
                    MATERIAL  *mat,
                    ARRAY     *estif_global, /* global vector for stiffness ke+ku+kg */
                    ARRAY     *emass_global, /* global vector for mass */
-                   double    *force,        /* global vector for internal forces (initialized!)*/
-                   int        init)
+                   DOUBLE    *force,        /* global vector for internal forces (initialized!)*/
+                   INT        init)
 {
-int                 i,j,k,a,b;        /* some loopers              */
-int                 nir,nis;          /* num GP in r/s/t direction */
-int                 lr, ls;           /* loopers over GP           */
-int                 iel;              /* numnp to this element     */
-int                 nd;               /* dof of this element       */
-int                 ip;
-int                 istore = 0;          /* controls storing of new stresses to wa */
-int                 newval = 0;          /* controls evaluation of new stresses    */
-const int           numdf  = 2;          /* number dof per node                    */
-const int           numeps = 4;          /* number of strain components            */
+INT                 i,j,k,a,b;        /* some loopers              */
+INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 lr, ls;           /* loopers over GP           */
+INT                 iel;              /* numnp to this element     */
+INT                 nd;               /* dof of this element       */
+INT                 ip;
+INT                 istore = 0;          /* controls storing of new stresses to wa */
+INT                 newval = 0;          /* controls evaluation of new stresses    */
+const INT           numdf  = 2;          /* number dof per node                    */
+const INT           numeps = 4;          /* number of strain components            */
 
-double              fac,facm;            /* integration factors                    */
-double              e1,e2;               /*GP-coords                               */
-double              facr,facs;           /* weights at GP                          */
-double              thick,density;       /* for calculation of mass matrix         */
-int                 imass;               /* flag -> mass matrix is to evaluate?    */
+DOUBLE              fac,facm;            /* integration factors                    */
+DOUBLE              e1,e2;               /*GP-coords                               */
+DOUBLE              facr,facs;           /* weights at GP                          */
+DOUBLE              thick,density;       /* for calculation of mass matrix         */
+INT                 imass;               /* flag -> mass matrix is to evaluate?    */
 
 static ARRAY    D_a;      /* material matrix */     
-static double **D; 
+static DOUBLE **D; 
 static ARRAY    stress_a; /* stress matrix (2.PK for total lagr.) */     
-static double  **stress; 
+static DOUBLE  **stress; 
         
 static ARRAY    xcure_a;  /* coords in current config. */     
-static double **xcure; 
+static DOUBLE **xcure; 
 static ARRAY    xrefe_a;  /* coords in referenz config. */     
-static double **xrefe; 
+static DOUBLE **xrefe; 
 
 static ARRAY    funct_a;  /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    boplin_a; /* linear B-operator */   
-static double **boplin; 
+static DOUBLE **boplin; 
 
 static ARRAY    F_a;      /* deformation gradient */   
-static double  *F; 
+static DOUBLE  *F; 
 static ARRAY    strain_a; /* strain (Green-Lagr for total lagr.) */   
-static double  *strain; 
+static DOUBLE  *strain; 
 static ARRAY    keu_a;    /* element stiffness matrix keu */
-static double **keu;
+static DOUBLE **keu;
 static ARRAY    kg_a;    /* element stiffness matrix kg */
-static double **kg;      
+static DOUBLE **kg;      
 
 
-static double **estif;    /* element stiffness matrix keug */
-static double **emass;    /* mass matrix */
+static DOUBLE **estif;    /* element stiffness matrix keug */
+static DOUBLE **emass;    /* mass matrix */
 
-double fie[18];
+DOUBLE fie[18];
 
-double det;
+DOUBLE det;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

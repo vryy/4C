@@ -46,8 +46,8 @@ void add_oll_sendbuff(
     INT j,
     INT ii_owner,
     INT **isend,
-    double **dsend,
-    double **estif,
+    DOUBLE **dsend,
+    DOUBLE **estif,
     INT numsend)
 {
   INT         k;
@@ -164,15 +164,15 @@ void  add_oll(
   INT         owner[MAXDOFPERELE];   /* the owner of every dof */
   INT         myrank;                /* my intra-proc number */
   INT         nprocs;                /* my intra- number of processes */
-  double    **estif;                 /* element matrix to be added to system matrix */
-  double    **emass;                 /* element matrix to be added to system matrix */
+  DOUBLE    **estif;                 /* element matrix to be added to system matrix */
+  DOUBLE    **emass;                 /* element matrix to be added to system matrix */
   INT        *update;                /* vector update see AZTEC manual */
   INT       **cdofs;                 /* list of coupled dofs and there owners, see init_assembly */
   INT         ncdofs;                /* total number of coupled dofs */
   INT       **isend1;                /* pointer to sendbuffer to communicate coupling conditions */
-  double    **dsend1;                /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend1;                /* pointer to sendbuffer to communicate coupling conditions */
   INT       **isend2;                /* pointer to sendbuffer to communicate coupling conditions */
-  double    **dsend2;                /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend2;                /* pointer to sendbuffer to communicate coupling conditions */
   INT         nsend;
 #ifdef DEBUG 
   dstrc_enter("add_oll");
@@ -307,9 +307,9 @@ void exchange_coup_oll(
   INT            numrecv;
   INT           *update;
   INT          **isend;
-  double       **dsend;
+  DOUBLE       **dsend;
   INT          **irecv;
-  double       **drecv;
+  DOUBLE       **drecv;
   INT            imyrank;
   INT            inprocs;
 

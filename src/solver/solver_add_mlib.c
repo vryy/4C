@@ -18,19 +18,19 @@ extern struct _ARRAY emass_global;
  |                                                                      |
  |                                                         al   10/01   |
  *----------------------------------------------------------------------*/
-int  add_mds(struct _PARTITION     *actpart,
+INT  add_mds(struct _PARTITION     *actpart,
              struct _SOLVAR        *actsolv,
              struct _ELEMENT       *actele,
              struct _ML_ARRAY_MDS  *mds)
 {
-  int         i,j,k,l,counter; /* some counter variables */
-  int         ii,jj;           /* counter variables for system matrix */
-  int         nd;              /* size of estif */
-  int         numeq;           /* number of equations on this proc */
-  int         lm[MAXDOFPERELE];/* location vector for this element */
-  double      value;
-  double    **estif;     /* element matrix to be added to system matrix */
-  int         owner[MAXDOFPERELE];      /* the owner of every dof */
+  INT         i,j,k,l,counter; /* some counter variables */
+  INT         ii,jj;           /* counter variables for system matrix */
+  INT         nd;              /* size of estif */
+  INT         numeq;           /* number of equations on this proc */
+  INT         lm[MAXDOFPERELE];/* location vector for this element */
+  DOUBLE      value;
+  DOUBLE    **estif;     /* element matrix to be added to system matrix */
+  INT         owner[MAXDOFPERELE];      /* the owner of every dof */
 MLVAR       *mlvar;
 /*----------------------------------------------------------------------*/
   mlvar = actsolv->mlvar;

@@ -7,8 +7,8 @@
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
-static double Q13  = ONE/THREE;
-static double Q112 = ONE/TWELVE;
+static DOUBLE Q13  = ONE/THREE;
+static DOUBLE Q112 = ONE/TWELVE;
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate stability parameter                
 
@@ -47,7 +47,7 @@ static double Q112 = ONE/TWELVE;
       5 = streamlength (element length in flow direction		
    ele->e.f3->ninths: number of integration points for streamlength	
       1 = at center of element  					
-      2 = at every int pt used for element.-stab.-matrices		
+      2 = at every INT pt used for element.-stab.-matrices		
    ele->e.f3->istapc: flag for stabilisation parameter calculation	
       1 = at center of element  					
       2 = at every integration point					
@@ -57,7 +57,7 @@ static double Q112 = ONE/TWELVE;
    ele->e.f3->c3    /							
    ele->e.f3->istrle: has streamlength to be computed			
    ele->e.f3->iarea: calculation of area length 			
-   ele->e.f3->iduring: calculation during int.-pt.loop  		
+   ele->e.f3->iduring: calculation during INT.-pt.loop  		
    ele->e.f3->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
    ele->e.f3->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
    ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
@@ -71,32 +71,32 @@ static double Q112 = ONE/TWELVE;
 
 \param   *ele,        ELEMENT	      (i)    actual element
 \param   *dynvar,     FLUID_DYN_CALC  (i/o)
-\param   *velint,     double	      (i)    vel at center
-\param    visc,       double	      (i)    viscosity
-\param    iel,        int	      (i)    number of nodes	     
-\param	  ntyp,       int	      (i)    element type
-\param	  iflag       int	      (i)    flag for evaluation
+\param   *velint,     DOUBLE	      (i)    vel at center
+\param    visc,       DOUBLE	      (i)    viscosity
+\param    iel,        INT	      (i)    number of nodes	     
+\param	  ntyp,       INT	      (i)    element type
+\param	  iflag       INT	      (i)    flag for evaluation
 \return void                                                                       
 
 ------------------------------------------------------------------------*/ 
 void f3_calstabpar(
 	            ELEMENT         *ele,      
 		    FLUID_DYN_CALC  *dynvar,
-		    double          *velint,  
-		    double           visc,    
-		    int              iel,     
-		    int              ntyp,    
-		    int              iflag    
+		    DOUBLE          *velint,  
+		    DOUBLE           visc,    
+		    INT              iel,     
+		    INT              ntyp,    
+		    INT              iflag    
                   )
 {
-int    isp;
-double hdiv=ONE; 
-double velno;
-double c_mk;
-double dt;
-double re;
-double hk;
-double aux1;
+INT    isp;
+DOUBLE hdiv=ONE; 
+DOUBLE velno;
+DOUBLE c_mk;
+DOUBLE dt;
+DOUBLE re;
+DOUBLE hk;
+DOUBLE aux1;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabpar");

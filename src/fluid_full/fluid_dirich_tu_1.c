@@ -36,8 +36,8 @@ nodes:
 </pre>
 \param *actfield    FIELD         (i)  actual field (fluid)   
 \param *fdyn	  FLUID_DYNAMIC (i)  
-\param *lower_limit_kappa  double (o) lower limit for kappa  
-\param *lower_limit_omega  double (o) lower limit for epsilon
+\param *lower_limit_kappa  DOUBLE (o) lower limit for kappa  
+\param *lower_limit_omega  DOUBLE (o) lower limit for epsilon
 
 \return void                                                                              
 
@@ -45,16 +45,16 @@ nodes:
 void fluid_setdirich_tu_1(
                        FIELD  *actfield, 
                        FLUID_DYNAMIC *fdyn, 
-                       double   *lower_limit_kappa,
-                       double   *lower_limit_omega
+                       DOUBLE   *lower_limit_kappa,
+                       DOUBLE   *lower_limit_omega
                        )
 {
-int        i,j;
-int        numnp_total;              /* total number of fluid nodes     */
-int        numele_total;             /* total number of fluid elements  */
-int        numdf;	                   /* number of fluid dofs       	*/
-double     k_2,roughtness;
-double     visc,int_lenght;
+INT        i,j;
+INT        numnp_total;              /* total number of fluid nodes     */
+INT        numele_total;             /* total number of fluid elements  */
+INT        numdf;	                   /* number of fluid dofs       	*/
+DOUBLE     k_2,roughtness;
+DOUBLE     visc,int_lenght;
 GNODE     *actgnode;	             /* actual GNODE		            */
 NODE      *actnode;	             /* actual NODE		            */
 NODE      *actnode2;	             /* NODE from RANS                  */    
@@ -135,9 +135,9 @@ the element load vector 'dforce' is calculated by eveluating
 
 \param  *dynvar	 FLUID_DYN_CALC  (i)  
 \param  *actele    ELEMENT   (i)   actual element	  
-\param  *dforces   double    (o)   dirichlet force vector
-\param **estif     double    (i)   element stiffness matrix
-\param  *hasdirich int       (o)   flag if s.th. was written to dforces
+\param  *dforces   DOUBLE    (o)   dirichlet force vector
+\param **estif     DOUBLE    (i)   element stiffness matrix
+\param  *hasdirich INT       (o)   flag if s.th. was written to dforces
 
 \return void                                                                             
 
@@ -145,18 +145,18 @@ the element load vector 'dforce' is calculated by eveluating
 void fluid_caldirich_tu_1( 
                          FLUID_DYN_CALC  *dynvar, 
                          ELEMENT   *actele,  
-		             double    *dforces, 
-                         double   **estif,   
-		             int       *hasdirich
+		             DOUBLE    *dforces, 
+                         DOUBLE   **estif,   
+		             INT       *hasdirich
 		             )     
 {
 
-int         i,j;
-int         dof;
-int         numdf;                      /* number of fluid dofs         */
-int         nd=0;                      
-double      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
-int         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */ 
+INT         i,j;
+INT         dof;
+INT         numdf;                      /* number of fluid dofs         */
+INT         nd=0;                      
+DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
+INT         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */ 
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
 

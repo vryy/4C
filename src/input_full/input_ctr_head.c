@@ -25,8 +25,8 @@ extern struct _TRACE         trace;
  *----------------------------------------------------------------------*/
 void inpctrhed()
 {
-int  linecount=0;
-int  i=0;
+INT  linecount=0;
+INT  i=0;
 #ifdef DEBUG 
 dstrc_enter("inpctrhed");
 #endif
@@ -62,10 +62,10 @@ return;
  *----------------------------------------------------------------------*/
 void inptrace()
 {
-int  linecount=0;
-int  i=0;
+INT  linecount=0;
+INT  i=0;
 char buffer[40];
-int  ierr=0;
+INT  ierr=0;
 #ifdef DEBUG 
 
 frrewind();

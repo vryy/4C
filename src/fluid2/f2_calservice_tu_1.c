@@ -25,15 +25,15 @@ extern struct _MATERIAL  *mat;
 \param   *data     FLUID_DATA	     (i)
 \param   *ele      ELEMENT	     (i)    actual element
 \param   *elev     ELEMENT	     (i)    actual element for velocity
-\param   *kapomen    double	     (o)    kapome at time n
-\param   *kapomeg    double	     (o)    kapome at time n+g
-\param   *kapomepro  double	     (o)    kapome at time n+g
-\param   *eddyg      double	     (o)    eddy-visc. at time n+g
-\param   *eddypro    double	     (o)    eddy-visc. for prod. term
-\param   *kappan     double	     (o)    kappa at time n
-\param   *omega      double	     (o)    omega
-\param  **evel       double	     (o)    ele velocity
-\param  **xzye       double        (o)   nodal coordinates
+\param   *kapomen    DOUBLE	     (o)    kapome at time n
+\param   *kapomeg    DOUBLE	     (o)    kapome at time n+g
+\param   *kapomepro  DOUBLE	     (o)    kapome at time n+g
+\param   *eddyg      DOUBLE	     (o)    eddy-visc. at time n+g
+\param   *eddypro    DOUBLE	     (o)    eddy-visc. for prod. term
+\param   *kappan     DOUBLE	     (o)    kappa at time n
+\param   *omega      DOUBLE	     (o)    omega
+\param  **evel       DOUBLE	     (o)    ele velocity
+\param  **xzye       DOUBLE        (o)   nodal coordinates
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -42,19 +42,19 @@ void f2_calset_tu_1(
                     FLUID_DATA      *data,     
 	              ELEMENT         *ele,     
                     ELEMENT         *elev,
-                    double          *kapomen,    
-	              double          *kapomeg,
-	              double          *kapomepro,
-                    double          *eddyg,
-                    double          *eddypro,
-	              double          *kappan,    
-	              double          *omega,    
-	              double         **evel,
-	              double         **xyze
+                    DOUBLE          *kapomen,    
+	              DOUBLE          *kapomeg,
+	              DOUBLE          *kapomepro,
+                    DOUBLE          *eddyg,
+                    DOUBLE          *eddypro,
+	              DOUBLE          *kappan,    
+	              DOUBLE          *omega,    
+	              DOUBLE         **evel,
+	              DOUBLE         **xyze
                    )
 {
-int i,j;            /* simply a counter                                 */
-int kap_ome;
+INT i,j;            /* simply a counter                                 */
+INT kap_ome;
 NODE  *actnode;     /* actual node                                      */
 #ifdef DEBUG 
 dstrc_enter("f2_calset_tu_1");
@@ -136,21 +136,21 @@ return;
 <pre>                                                        he  02/03
 				      
 </pre>
-\param   *kapomeint   double        (o)   kapome at integration point
-\param   *funct       double        (i)   shape functions
-\param   *ekapome    double        (i)   kapome at element nodes
-\param    iel	    int           (i)   number of nodes in this element
+\param   *kapomeint   DOUBLE        (o)   kapome at integration point
+\param   *funct       DOUBLE        (i)   shape functions
+\param   *ekapome    DOUBLE        (i)   kapome at element nodes
+\param    iel	    INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_kapomei(
-             double  *kapomeint,     
-             double  *funct,    
-	       double  *kapome,     
-             int      iel       
+             DOUBLE  *kapomeint,     
+             DOUBLE  *funct,    
+	       DOUBLE  *kapome,     
+             INT      iel       
 	     ) 
 {
-int     j;
+INT     j;
 
 #ifdef DEBUG 
 dstrc_enter("f2_kapomei");
@@ -180,21 +180,21 @@ return;
 In this routine the derivatives of the kapeps w.r.t x/y are calculated
 				      
 </pre>
-\param   *kapomederxy   double        (o)   kapome derivativs
-\param  **derxy         double        (i)   global derivatives
-\param   *ekapome       double        (i)   kapome at element nodes
-\param    iel	      int           (i)   number of nodes in this element
+\param   *kapomederxy   DOUBLE        (o)   kapome derivativs
+\param  **derxy         DOUBLE        (i)   global derivatives
+\param   *ekapome       DOUBLE        (i)   kapome at element nodes
+\param    iel	      INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_kapomeder(
-             double  *kapomederxy,     
-             double **derxy,    
-	       double  *kapome,    
-             int      iel       
+             DOUBLE  *kapomederxy,     
+             DOUBLE **derxy,    
+	       DOUBLE  *kapome,    
+             INT      iel       
 	       ) 
 {
-int     i,j;
+INT     i,j;
 
 #ifdef DEBUG 
 dstrc_enter("f2_kapomeder");
@@ -227,21 +227,21 @@ In this routine the 2nd derivatives of the kapome
 w.r.t x/y are calculated
 				      
 </pre>
-\param   *kapomederxy2  double        (o)   2nd kapome derivativs
-\param  **derxy2        double        (i)   2nd global derivatives
-\param   *kapomen       double        (i)   kapome at element nodes
-\param    iel	      int           (i)   number of nodes in this element
+\param   *kapomederxy2  DOUBLE        (o)   2nd kapome derivativs
+\param  **derxy2        DOUBLE        (i)   2nd global derivatives
+\param   *kapomen       DOUBLE        (i)   kapome at element nodes
+\param    iel	      INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_kapomeder2(
-                   double  *kapomederxy2,    
-                   double **derxy2,    
-	             double  *kapomen,      
-	             int      iel        
+                   DOUBLE  *kapomederxy2,    
+                   DOUBLE **derxy2,    
+	             DOUBLE  *kapomen,      
+	             INT      iel        
 	           ) 
 {
-int     i,j;
+INT     i,j;
 
 #ifdef DEBUG 
 dstrc_enter("f2_kapomeder2");
@@ -270,18 +270,18 @@ return;
 <pre>                                                        he  02/03
 
 </pre>
-\param    *kapomederxy  double      (i)   kapome deriv. at integr. point
-\param    *omegaderxy   double      (i)   omega deriv. at integr. point
-\param     omegaint      double      (i)   omega at integr. point 
-\param    xi            double      (o)   factor
+\param    *kapomederxy  DOUBLE      (i)   kapome deriv. at integr. point
+\param    *omegaderxy   DOUBLE      (i)   omega deriv. at integr. point
+\param     omegaint      DOUBLE      (i)   omega at integr. point 
+\param    xi            DOUBLE      (o)   factor
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_xi_kappa(
-                  double  *kapomederxy,     
-                  double  *omegaderxy,    
-	            double   omegaint,     
-	            double  *xi     
+                  DOUBLE  *kapomederxy,     
+                  DOUBLE  *omegaderxy,    
+	            DOUBLE   omegaint,     
+	            DOUBLE  *xi     
 	           ) 
 {
 
@@ -307,31 +307,31 @@ return;
 <pre>                                                        he  02/03
 
 </pre>
-\param     xi           double      (i)   xi factor
-\param    eddyint       double      (i)   eddyvisc. at integration point
-\param    kapomeint     double      (i)   kapome at integration point
-\param    omegaint      double      (i)   omega at integration point
-\param    visc          double      (i)   viscosity
-\param    factor        double      (o)   factor
-\param    factor1       double      (o)   factor
-\param    factor2       double      (o)   factor
-\param    sig           double      (o)   factor
+\param     xi           DOUBLE      (i)   xi factor
+\param    eddyint       DOUBLE      (i)   eddyvisc. at integration point
+\param    kapomeint     DOUBLE      (i)   kapome at integration point
+\param    omegaint      DOUBLE      (i)   omega at integration point
+\param    visc          DOUBLE      (i)   viscosity
+\param    factor        DOUBLE      (o)   factor
+\param    factor1       DOUBLE      (o)   factor
+\param    factor2       DOUBLE      (o)   factor
+\param    sig           DOUBLE      (o)   factor
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_fac_kappa_1(
-                  double   xi,     
-                  double   eddyint,    
-                  double   kapomeint,    
-                  double   omegaint,    
-                  double   visc,    
-                  double  *factor,    
-                  double  *factor1,    
-                  double  *factor2,    
-	            double  *sig    
+                  DOUBLE   xi,     
+                  DOUBLE   eddyint,    
+                  DOUBLE   kapomeint,    
+                  DOUBLE   omegaint,    
+                  DOUBLE   visc,    
+                  DOUBLE  *factor,    
+                  DOUBLE  *factor1,    
+                  DOUBLE  *factor2,    
+	            DOUBLE  *sig    
 	           ) 
 {
-double f;
+DOUBLE f;
 
 #ifdef DEBUG 
 dstrc_enter("f2_fac_kappa_1");
@@ -362,19 +362,19 @@ return;
 <pre>                                                        he  02/03
 
 </pre>
-\param   **vderxy       double      (i)   vel. deriv. at integr. point
-\param    kapomeint     double      (i)   omega at integr. point 
-\param    xi            double      (o)   factor
+\param   **vderxy       DOUBLE      (i)   vel. deriv. at integr. point
+\param    kapomeint     DOUBLE      (i)   omega at integr. point 
+\param    xi            DOUBLE      (o)   factor
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_xi_ome(
-                  double  **vderxy,     
-	            double   kapomeint,     
-	            double  *xi     
+                  DOUBLE  **vderxy,     
+	            DOUBLE   kapomeint,     
+	            DOUBLE  *xi     
 	           ) 
 {
-double wert,zaehler;
+DOUBLE wert,zaehler;
 
 #ifdef DEBUG 
 dstrc_enter("f2_xi_ome");
@@ -405,29 +405,29 @@ return;
 <pre>                                                        he  02/03
 
 </pre>
-\param     xi           double      (i)   xi factor
-\param    ome_proint    double      (i)   omega at integration point
-\param    kappanint     double      (i)   kappan at integration point
-\param    visc          double      (i)   viscosity
-\param    factor        double      (o)   factor
-\param    factor1       double      (o)   factor
-\param    factor2       double      (o)   factor
-\param    sig           double      (o)   factor
+\param     xi           DOUBLE      (i)   xi factor
+\param    ome_proint    DOUBLE      (i)   omega at integration point
+\param    kappanint     DOUBLE      (i)   kappan at integration point
+\param    visc          DOUBLE      (i)   viscosity
+\param    factor        DOUBLE      (o)   factor
+\param    factor1       DOUBLE      (o)   factor
+\param    factor2       DOUBLE      (o)   factor
+\param    sig           DOUBLE      (o)   factor
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_fac_ome(
-                  double   xi,     
-                  double   ome_proint,    
-                  double   kappanint,    
-                  double   visc,    
-                  double  *factor,    
-                  double  *factor1,    
-                  double  *factor2,    
-	            double  *sig    
+                  DOUBLE   xi,     
+                  DOUBLE   ome_proint,    
+                  DOUBLE   kappanint,    
+                  DOUBLE   visc,    
+                  DOUBLE  *factor,    
+                  DOUBLE  *factor1,    
+                  DOUBLE  *factor2,    
+	            DOUBLE  *sig    
 	           ) 
 {
-double f;
+DOUBLE f;
 
 #ifdef DEBUG 
 dstrc_enter("f2_fac_ome");
@@ -458,21 +458,21 @@ In this routine velint_dc for DISC. CAPT. is calc.
 				      
 </pre>
 \param   *dynvar    FLUID_DYN_CALC    (i)
-\param   *velint        double        (i)   2nd kapeps derivativs
-\param   *velint_dc     double        (o)   2nd global derivatives
-\param   *kapomederxy   double        (i)   kapomederiv.
+\param   *velint        DOUBLE        (i)   2nd kapeps derivativs
+\param   *velint_dc     DOUBLE        (o)   2nd global derivatives
+\param   *kapomederxy   DOUBLE        (i)   kapomederiv.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_vel_dc_1(
 		       FLUID_DYN_CALC  *dynvar,
-                   double  *velint,    
-                   double  *velint_dc,    
-	             double  *kapomederxy      
+                   DOUBLE  *velint,    
+                   DOUBLE  *velint_dc,    
+	             DOUBLE  *kapomederxy      
 	         ) 
 {
-double skalar,square; 
-int    idum;
+DOUBLE skalar,square; 
+INT    idum;
 
 #ifdef DEBUG 
 dstrc_enter("f2_vel_dc_1");
@@ -511,25 +511,25 @@ return;
 <pre>                                                        he  12/02
 				      
 </pre>
-\param   *kappanint    double       (o)   kappan at integration point
-\param   *ome_proint   double       (o)   ome_pro at integration point
-\param   *funct        double       (i)   shape functions
-\param   *kappan       double       (i)   kappan (start-value) kappa equation
-\param   *kapomepro    double       (i)   omega for production term
-\param    iel	    int           (i)   number of nodes in this element
+\param   *kappanint    DOUBLE       (o)   kappan at integration point
+\param   *ome_proint   DOUBLE       (o)   ome_pro at integration point
+\param   *funct        DOUBLE       (i)   shape functions
+\param   *kappan       DOUBLE       (i)   kappan (start-value) kappa equation
+\param   *kapomepro    DOUBLE       (i)   omega for production term
+\param    iel	    INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_kappain(	          
-             double     *kappanint,     
-             double     *ome_proint,     
-             double     *funct,    
-             double     *kappan,    
-             double     *kapomepro,    
-             int         iel       
+             DOUBLE     *kappanint,     
+             DOUBLE     *ome_proint,     
+             DOUBLE     *funct,    
+             DOUBLE     *kappan,    
+             DOUBLE     *kapomepro,    
+             INT         iel       
 	     ) 
 {
-int     j;
+INT     j;
 
 #ifdef DEBUG 
 dstrc_enter("f2_kappain");

@@ -25,7 +25,7 @@ This routine selects proper material law evaluates element stresses.
 </pre>
 \param      ele ELEMENT * (i)   element data
 \param      mat MATERIAL* (i)   material data
-\param       ip int       (i)   integration point Id      
+\param       ip INT       (i)   integration point Id      
 \param   stress DOUBLE*   (o)   stress vector
 \param   strain DOUBLE*   (o)   strain vector
 \param        d DOUBLE**  (o)   constitutive matrix

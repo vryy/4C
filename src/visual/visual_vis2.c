@@ -53,22 +53,22 @@ extern struct _FILES  allfiles;
  |                                                        genk 07/02    |
  | all variables needed by VISUAL2 are defined extern                   |
  *----------------------------------------------------------------------*/
-static int      MPTRI,MPPTRI,MFACE;   /* see VISUAL2 manual             */
-static int      MPFACE,MEDGE,MPEDGE;  /* see VISUAL2 manual             */
-static int      KCELL;                /* number of visualised cells - 
+static INT      MPTRI,MPPTRI,MFACE;   /* see VISUAL2 manual             */
+static INT      MPFACE,MEDGE,MPEDGE;  /* see VISUAL2 manual             */
+static INT      KCELL;                /* number of visualised cells - 
                                  different from number of elements!     */
-static int      IOPT;                 /* program mode                   */
-static int      IVORT;                /* flag for vorticity calculation */
-static int      ITURBU;               /* flag for turbulence calc.      */
-static int      DSTEP;                /* increment of visualised steps  */
-static int      NUMA;                 /* number of ALE-FIELD            */
-static int      CMNCOL=300;           /* see VISUAL2 manual             */
-static int      CMUNIT=37;            /* see VISUAL2 manual             */
-static int      MNODE;                /* maximum number of nodes        */
-static int      NKEYS=14;              /* see VISUAL2 manual             */
-static int      XYPIX[2];             /* size of VISUAL2 window         */
-static int      IKEYS[]={112,115,118,102,120,121,97,116,102,92,109,107,100,110};
-static int      FKEYS[]={1,1,1,3,1,1,1,1,3,1,1,1,1,1};             
+static INT      IOPT;                 /* program mode                   */
+static INT      IVORT;                /* flag for vorticity calculation */
+static INT      ITURBU;               /* flag for turbulence calc.      */
+static INT      DSTEP;                /* increment of visualised steps  */
+static INT      NUMA;                 /* number of ALE-FIELD            */
+static INT      CMNCOL=300;           /* see VISUAL2 manual             */
+static INT      CMUNIT=37;            /* see VISUAL2 manual             */
+static INT      MNODE;                /* maximum number of nodes        */
+static INT      NKEYS=14;              /* see VISUAL2 manual             */
+static INT      XYPIX[2];             /* size of VISUAL2 window         */
+static INT      IKEYS[]={112,115,118,102,120,121,97,116,102,92,109,107,100,110};
+static INT      FKEYS[]={1,1,1,3,1,1,1,1,3,1,1,1,1,1};             
 static float    FLIMS[14][2];          /* data limits                    */
 static float    XYMIN[2], XYMAX[2];   /* min. and max. coordinates      */
 static struct  _ARRAY PCELL_A;
@@ -76,48 +76,48 @@ static struct  _ARRAY WCELL_A;
 static struct  _ARRAY WNODE_A;
 static struct  _ARRAY WFACE_A;
 static struct  _ARRAY CEDGE_A;        /* arrays needed in qat2v2        */
-static int    **PCELL;
-static int     *WCELL;
-static int     *WNODE;
-static int     *WFACE; 
-static int     *CEDGE;                /* pointers to arrays             */
+static INT    **PCELL;
+static INT     *WCELL;
+static INT     *WNODE;
+static INT     *WFACE; 
+static INT     *CEDGE;                /* pointers to arrays             */
 /*------------------------------- variables needed for own calculations */
-static int     numnp;	        /* number of nodes of actual field	*/
-static int     numele;	        /* number of elements of actual field	*/
-static int     ncols=1;         /* number of sol steps stored in sol	*/
-static int     nacols=1;        /* number of sol steps of ALE field     */
-static int     isstr=0;         /* flag for streamline calculation	*/
-static int     icol=-1;         /* act. num. of sol step to be visual.  */
-static int     hsize, vsize;    /* size for VISUAL2 window		*/
-static int     true=-1;         /* flag for v2_cursor			*/
-static int     false=0;         /* flag for v2_cursor			*/
-static int     STSTEP=-2;       /* stopping step                        */
-static int     IMOVIE=0;        /* counter to slow down for movie creat.*/
-static int     bgcolour;        /* background colour                    */
+static INT     numnp;	        /* number of nodes of actual field	*/
+static INT     numele;	        /* number of elements of actual field	*/
+static INT     ncols=1;         /* number of sol steps stored in sol	*/
+static INT     nacols=1;        /* number of sol steps of ALE field     */
+static INT     isstr=0;         /* flag for streamline calculation	*/
+static INT     icol=-1;         /* act. num. of sol step to be visual.  */
+static INT     hsize, vsize;    /* size for VISUAL2 window		*/
+static INT     true=-1;         /* flag for v2_cursor			*/
+static INT     false=0;         /* flag for v2_cursor			*/
+static INT     STSTEP=-2;       /* stopping step                        */
+static INT     IMOVIE=0;        /* counter to slow down for movie creat.*/
+static INT     bgcolour;        /* background colour                    */
 static float   sstrval=0.0;     /* stationary streamline value		*/
 static float   dx,dy,dxy;       /* for determination of coord. limits*/
 static float   ratio;	        /*					*/
-static double  yscale;	        /* scaling factors for y-direction	*/
-static double  velx;	        /*					*/
-static double  vely;	        /*					*/
-static double  pres;	        /*					*/
-static double  absv;	        /*					*/
-static double  vort;            /*                                      */
-static double  kappa;	        /*					*/
-static double  dissi;	        /*					*/
-static double  visco;	        /*					*/
-static double  xy;
-static double  minxy,maxxy;     /*					*/
-static double  minpre,maxpre;   /*					*/
-static double  minvx,maxvx;     /*					*/
-static double  minvy,maxvy;     /*					*/
-static double  minabsv,maxabsv; /*					*/
-static double  minvort,maxvort; /*					*/
-static double  minkappa,maxkappa; /*					*/
-static double  mindissi,maxdissi; /*					*/
-static double  minvisco,maxvisco; /*					*/
-static double  mingv,maxgv;     /* for determination of data limits	*/
-static double  minvort,maxvort; /*					*/
+static DOUBLE  yscale;	        /* scaling factors for y-direction	*/
+static DOUBLE  velx;	        /*					*/
+static DOUBLE  vely;	        /*					*/
+static DOUBLE  pres;	        /*					*/
+static DOUBLE  absv;	        /*					*/
+static DOUBLE  vort;            /*                                      */
+static DOUBLE  kappa;	        /*					*/
+static DOUBLE  dissi;	        /*					*/
+static DOUBLE  visco;	        /*					*/
+static DOUBLE  xy;
+static DOUBLE  minxy,maxxy;     /*					*/
+static DOUBLE  minpre,maxpre;   /*					*/
+static DOUBLE  minvx,maxvx;     /*					*/
+static DOUBLE  minvy,maxvy;     /*					*/
+static DOUBLE  minabsv,maxabsv; /*					*/
+static DOUBLE  minvort,maxvort; /*					*/
+static DOUBLE  minkappa,maxkappa; /*					*/
+static DOUBLE  mindissi,maxdissi; /*					*/
+static DOUBLE  minvisco,maxvisco; /*					*/
+static DOUBLE  mingv,maxgv;     /* for determination of data limits	*/
+static DOUBLE  minvort,maxvort; /*					*/
 ELEMENT       *actele;          /* actual element			*/
 NODE          *actnode;         /* actual node				*/
 NODE          *actanode;        /* actual ale-node                      */
@@ -135,14 +135,14 @@ FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
 
 <pre>                                                         genk 07/02      
 </pre>  
-\param  numf   int      (i)       actual number of fluid field
+\param  numf   INT      (i)       actual number of fluid field
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void vis2caf(int numff, int numaf, int numsf) 
+void vis2caf(INT numff, INT numaf, INT numsf) 
 {
 
-int iscan, i,j,k;
+INT iscan, i,j,k;
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 PARTITION      *actpart;            /* pointer to active partition      */
@@ -649,25 +649,25 @@ use QAT2V2 to make VISUAL2 structures
 this routine is called by VISUAL2 during the visualisation
 
 </pre>  
-\param  *KNODE     int   (o)    Number of nodes
-\param	*PTRI	   int	 (o)	PolyTri pointers to nodes
-\param	*CTRI	   int	 (o)	PolyTri pointers to neighbouring cells
-\param	*ITRI	   int	 (o)	PolyTri pointers to original cells
-\param	*KPTRI	   int	 (o)	Number of PolyTri strips
-\param	*PPTRI	   int	 (o)	Pointers to ends of strips
-\param	*PFACE	   int	 (o)	Face PolyLine pointers to nodes
-\param	*KPFACE    int	 (o)	Number of face PolyLines
-\param	*PPFACE    int	 (o)	Pointers to ends of face PolyLines
-\param	*PEDGE	   int	 (o)	Edge PolyLine pointers to nodes
-\param	*KPEDGE    int	 (o)	Number of Edge PolyLines
-\param	*PPEDGE    int	 (o)	Pointers to ends of edge PolyLines
+\param  *KNODE     INT   (o)    Number of nodes
+\param	*PTRI	   INT	 (o)	PolyTri pointers to nodes
+\param	*CTRI	   INT	 (o)	PolyTri pointers to neighbouring cells
+\param	*ITRI	   INT	 (o)	PolyTri pointers to original cells
+\param	*KPTRI	   INT	 (o)	Number of PolyTri strips
+\param	*PPTRI	   INT	 (o)	Pointers to ends of strips
+\param	*PFACE	   INT	 (o)	Face PolyLine pointers to nodes
+\param	*KPFACE    INT	 (o)	Number of face PolyLines
+\param	*PPFACE    INT	 (o)	Pointers to ends of face PolyLines
+\param	*PEDGE	   INT	 (o)	Edge PolyLine pointers to nodes
+\param	*KPEDGE    INT	 (o)	Number of Edge PolyLines
+\param	*PPEDGE    INT	 (o)	Pointers to ends of edge PolyLines
 \return void                                                                       
 ------------------------------------------------------------------------*/
-void v2data(int *KNODE, int *PTRI, int *CTRI, int *ITRI, int *KPPTRI, 
-            int *PPTRI, int *PFACE, int *KPFACE, int *PPFACE, 
-	    int *PEDGE, int *KPEDGE, int *PPEDGE) 
+void v2data(INT *KNODE, INT *PTRI, INT *CTRI, INT *ITRI, INT *KPPTRI, 
+            INT *PPTRI, INT *PFACE, INT *KPFACE, INT *PPFACE, 
+	    INT *PEDGE, INT *KPEDGE, INT *PPEDGE) 
 {
-int KPTRI, KEDGE, KFACE;
+INT KPTRI, KEDGE, KFACE;
 
 #ifdef DEBUG 
 dstrc_enter("V2DATA");
@@ -729,7 +729,7 @@ void v2grid(float XY[][2], float *XYDELT, float *XYMINP, float *XYMAXP,
             float *XYMINF, float *XYMAXF, float *XYMINE, float *XYMAXE) 
 {
 
-int i;
+INT i;
 
 #ifdef DEBUG 
 dstrc_enter("V2GRID");
@@ -807,16 +807,16 @@ icol is set every timestep in v2update
 
 
 </pre>  
-\param  *JKEY      int    (i)  Index of key			 
+\param  *JKEY      INT    (i)  Index of key			 
 \param	*S         float  (o)  Scalar function at nodes or cells 
 \return void                                                                       
 \sa v2update
 
 ------------------------------------------------------------------------*/
-void v2scal(int *JKEY, float *S) 
+void v2scal(INT *JKEY, float *S) 
 {
 
-int i;
+INT i;
 float vx,vy;
 
 #ifdef DEBUG 
@@ -1015,16 +1015,16 @@ position icol.
 icol is set every timestep in v2update
 
 </pre>  
-\param  *JKEY      int    (i)  Index of key			 
+\param  *JKEY      INT    (i)  Index of key			 
 \param	*V         float  (o)  Vector function at nodes or cells 
 \return void                                                                       
 \sa v2update
 
 ------------------------------------------------------------------------*/
-void v2vect(int *JKEY, float V[][2]) 
+void v2vect(INT *JKEY, float V[][2]) 
 {
 
-int i;
+INT i;
 float vx,vy;
 
 #ifdef DEBUG 
@@ -1106,7 +1106,7 @@ icol is also updated
 ------------------------------------------------------------------------*/
 void v2update(float *TIME) 
 {
-int i;
+INT i;
 
 #ifdef DEBUG 
 dstrc_enter("V2UPDATE");
@@ -1220,8 +1220,8 @@ return;
 ------------------------------------------------------------------------*/
 void v2cell(FIELD *actfield) 
 {
-int i,j,k;
-int inel;
+INT i,j,k;
+INT inel;
 
 #ifdef DEBUG 
 dstrc_enter("v2cell");
@@ -1443,11 +1443,11 @@ VIS2-routines are not compiled into the program
 
 ------------------------------------------------------------------------*/
 void v2_init(
-             char *titl, int *iopt, int *cmncol, char *cmfile, int *cmunit,
-	     int *xypix, float *xymin, float *xymax,
-	     int *nkeys, int *ikeys, int *tkeys, int *fkeys, float **flims,
-	     int *mnode, int *mptri, int *mpptri,
-	     int *mface, int *mpface, int *medge, int *mpedge
+             char *titl, INT *iopt, INT *cmncol, char *cmfile, INT *cmunit,
+	     INT *xypix, float *xymin, float *xymax,
+	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,
+	     INT *mnode, INT *mptri, INT *mpptri,
+	     INT *mface, INT *mpface, INT *medge, INT *mpedge
 	    )   
 {
 dserror("VISUAL2 PACKAGE not compiled into programm\n");

@@ -25,18 +25,18 @@
  | NEPS    -->  ACTUAL NUMBER OF STRAIN COMPONENTS   =4                 |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1_keu(double  **keu, 
-            double  **boplin, 
-            double  **D,
-            double   *F,
-            double    fac, 
-            int       nd,
-            int       neps)
+void w1_keu(DOUBLE  **keu, 
+            DOUBLE  **boplin, 
+            DOUBLE  **D,
+            DOUBLE   *F,
+            DOUBLE    fac, 
+            INT       nd,
+            INT       neps)
 {
-int       i, j, r, s, t, l, m;
-double    bfcfb;
-double    fb[4], cfb[4], fcfb[4];
-double    Fmatrix[4][4];
+INT       i, j, r, s, t, l, m;
+DOUBLE    bfcfb;
+DOUBLE    fb[4], cfb[4], fcfb[4];
+DOUBLE    Fmatrix[4][4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_keu");

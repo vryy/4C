@@ -7,8 +7,8 @@
 #include "../headers/solution_mlpcg.h"
 #include "../headers/prototypes_mlpcg.h"
 #include "../shell8/shell8.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -74,58 +74,58 @@ ABOUT THE PROLONGATOR!
 \return void                                               
 ------------------------------------------------------------------------*/
 void mlpcg_precond_PtKP(DBCSR *P, DBCSR *incsr, DBCSR *outcsr, DBCSR *work,
-                        AGG *agg, int nagg, INTRA *actintra)
+                        AGG *agg, INT nagg, INTRA *actintra)
 {
-int        i,j,k,m,n,counter,foundit,ilength,tag;
-int        nproc,myrank;
-double     sum;
-int        index;
-int        owner;
-int        ownertmp[MAXPROC][2];
-int        nsend,nrecv;
-int        numeq;
+INT        i,j,k,m,n,counter,foundit,ilength,tag;
+INT        nproc,myrank;
+DOUBLE     sum;
+INT        index;
+INT        owner;
+INT        ownertmp[MAXPROC][2];
+INT        nsend,nrecv;
+INT        numeq;
 
-int        sendtos[MAXPROC][MAXPROC],sendtor[MAXPROC][MAXPROC];
+INT        sendtos[MAXPROC][MAXPROC],sendtor[MAXPROC][MAXPROC];
 ARRAY      isbuff[MAXPROC];
 ARRAY      dsbuff[MAXPROC];
 ARRAY      irbuff;
 ARRAY      drbuff;
-ARRAY      rupdate; int *updateP;
-ARRAY      ria;     int *iaP;
-ARRAY      rja;     int *jaP;
-ARRAY      ra;   double *aP;
-int        rcounter[MAXPROC];
-int       *isend,*irecv;
-double    *dsend,*drecv;
+ARRAY      rupdate; INT *updateP;
+ARRAY      ria;     INT *iaP;
+ARRAY      rja;     INT *jaP;
+ARRAY      ra;   DOUBLE *aP;
+INT        rcounter[MAXPROC];
+INT       *isend,*irecv;
+DOUBLE    *dsend,*drecv;
  
-int        actrow,actcol;
-int        colstart,colend;
+INT        actrow,actcol;
+INT        colstart,colend;
 
-double     block[500][500];
-int        rindex[500];
-int        cindex[500];
+DOUBLE     block[500][500];
+INT        rindex[500];
+INT        cindex[500];
 
-double     *col,*colP;
-int        *rcol,*rcolP;
-int        scol = 5000, scolP = 5000;
-int        nrow,ncol;
+DOUBLE     *col,*colP;
+INT        *rcol,*rcolP;
+INT        scol = 5000, scolP = 5000;
+INT        nrow,ncol;
 
  /* these are tricky column pointers to the incsr matrix */
-int     ***icol;    
-int       *colsize;
-double  ***dcol;
+INT     ***icol;    
+INT       *colsize;
+DOUBLE  ***dcol;
 
-int        shift;
-int        bins[1000];
+INT        shift;
+INT        bins[1000];
 
-int        numeq_cscP,*update_cscP,*ia_cscP,*ja_cscP;
-double    *a_cscP;
-int        numeq_in,*update_in,*ia_in,*ja_in;
-double    *a_in;
+INT        numeq_cscP,*update_cscP,*ia_cscP,*ja_cscP;
+DOUBLE    *a_cscP;
+INT        numeq_in,*update_in,*ia_in,*ja_in;
+DOUBLE    *a_in;
 #if 0
-double     t1,t2;
+DOUBLE     t1,t2;
 #endif
-int        min1,max1,min2,max2;
+INT        min1,max1,min2,max2;
 
 #ifdef PARALLEL 
 MPI_Status   status;  
@@ -144,10 +144,10 @@ dstrc_enter("mlpcg_precond_PtKP");
 #endif
 /*----------------------------------------------------------------------*/
 /*--------------------------- allocate row and column extractor buffers */
-rcol  = (int*)   CCAMALLOC(scol*sizeof(int));
-col   = (double*)CCAMALLOC(scol*sizeof(double));
-rcolP = (int*)   CCAMALLOC(scolP*sizeof(int));
-colP  = (double*)CCAMALLOC(scolP*sizeof(double));
+rcol  = (INT*)   CCAMALLOC(scol*sizeof(INT));
+col   = (DOUBLE*)CCAMALLOC(scol*sizeof(DOUBLE));
+rcolP = (INT*)   CCAMALLOC(scolP*sizeof(INT));
+colP  = (DOUBLE*)CCAMALLOC(scolP*sizeof(DOUBLE));
 /*----------------------------------------------------------------------*/
 myrank = actintra->intra_rank;
 nproc  = actintra->intra_nprocs;
@@ -306,9 +306,9 @@ mlpcg_csr_csrtocsc(P,actintra);
 t1 = ds_cputime();
 */
 
-colsize = (int*)CCACALLOC(incsr->numeq_total,sizeof(int));
-icol    = (int***)CCAMALLOC(incsr->numeq_total*sizeof(int**));
-dcol    = (double***)CCAMALLOC(incsr->numeq_total*sizeof(double**));
+colsize = (INT*)CCACALLOC(incsr->numeq_total,sizeof(INT));
+icol    = (INT***)CCAMALLOC(incsr->numeq_total*sizeof(INT**));
+dcol    = (DOUBLE***)CCAMALLOC(incsr->numeq_total*sizeof(DOUBLE**));
 mlpcg_extractcollocal_init(incsr,colsize,icol,dcol);
 /*
 t2 = ds_cputime();
@@ -400,7 +400,7 @@ for (i=0; i<numeq_cscP; i++)/* loop remote columns in P */
    dsassert(rcounter[owner]<isbuff[owner].fdim,"sendbuffer not enough rows");
    isend    = &(isbuff[owner].a.ia[rcounter[owner]][0]);   
    dsend    = &(dsbuff[owner].a.da[rcounter[owner]][0]);
-   dsend[0] = (double)actrow;
+   dsend[0] = (DOUBLE)actrow;
    rcounter[owner]++;
    mlpcg_extractcolcsc(actrow,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
                        &colP,&rcolP,&scolP,&ncol);
@@ -554,12 +554,12 @@ for (n=0; n<nproc; n++)
    }
    /*-------------------------------------- receive the integer message */
    MPI_Recv(irecv,ilength,MPI_INT,n,tag,actintra->MPI_INTRA_COMM,&status);
-   /*---------------------------------- receive matching double-message */
+   /*---------------------------------- receive matching DOUBLE-message */
    MPI_Recv(drecv,ilength,MPI_DOUBLE,n,tag+1,actintra->MPI_INTRA_COMM,&status);
    /*--------------------------- decrease number of unreceived messages */
    nrecv--;
    /*---------------------------------------------- check for right row */
-   actrow = (int)drecv[0];
+   actrow = (INT)drecv[0];
    owner = mlpcg_getowner(actrow,work->owner,nproc);
    if (owner != myrank) 
    {
@@ -968,9 +968,9 @@ return;
 void mlpcg_printfmatrix(DBCSR     *bdcsr, 
                         INTRA     *actintra)
 {
-int        i,j;
+INT        i,j;
 ARRAY      sdense,rdense;
-int        actrow,actcol,colstart,colend;
+INT        actrow,actcol,colstart,colend;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_printfmatrix");
@@ -1037,7 +1037,7 @@ return;
 <pre>                                                        m.gee 11/02 
 
 </pre>
-\param z            double*      (i)   the distributed vector to print
+\param z            DOUBLE*      (i)   the distributed vector to print
 \param csr          DBCSR*       (i)   the matching csr matrix
 \param fielddis     DISCRET*     (i)   the field
 \param partdis      PARTDISCRET* (i)   the partition of the field
@@ -1045,21 +1045,21 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_printvec(int          iter,
-                   double      *z, 
+void mlpcg_printvec(INT          iter,
+                   DOUBLE      *z, 
                    DBCSR*       csr,
                    DISCRET     *fielddis,
                    PARTDISCRET *partdis,
                    INTRA       *actintra)
 {
-int        i,dof;
+INT        i,dof;
 FILE      *out = allfiles.out_err;
 ARRAY      send_a,recv_a;
-double    *zs,*zr;
+DOUBLE    *zs,*zr;
 char       sign='"';
 NODE      *actnode;
-double     x[3],a[3],scal,sdc;
-int        nnode;
+DOUBLE     x[3],a[3],scal,sdc;
+INT        nnode;
 nnode = genprob.nnode;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

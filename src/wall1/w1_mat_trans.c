@@ -22,32 +22,32 @@
 |      topic: blowing up plane stress/strain conditions           sh 7/02|
 |             to 3D --> 3D-Material Law                                  |
 |-----------------------------------------------------------------------*/
-void w1mat_trans_up (double     ym,
-                     double     pv,
+void w1mat_trans_up (DOUBLE     ym,
+                     DOUBLE     pv,
                      ELEMENT   *ele,                                        
                      WALL_TYPE  wtype,
-                     double   **bop,
-                     double    *gop,
-                     double    *alpha,
-                     int        ip,
-                     double    *stress,    /*actuel stress condensed        */
-                     double    *stress3D,  /*actuel stress condensed [6]    */
-                     double    *strain3D,  /*strains to be calculated [6]   */
-                     double    *sig3D,     /*stresses from last update [6]  */ 
-                     double    *eps3D,     /*strains from last update [6]   */
-                     double    *qn3D,      /*backstress vektor [6]          */
-                     int        newval)    /*controls evaluation of new stresses*/           
+                     DOUBLE   **bop,
+                     DOUBLE    *gop,
+                     DOUBLE    *alpha,
+                     INT        ip,
+                     DOUBLE    *stress,    /*actuel stress condensed        */
+                     DOUBLE    *stress3D,  /*actuel stress condensed [6]    */
+                     DOUBLE    *strain3D,  /*strains to be calculated [6]   */
+                     DOUBLE    *sig3D,     /*stresses from last update [6]  */ 
+                     DOUBLE    *eps3D,     /*strains from last update [6]   */
+                     DOUBLE    *qn3D,      /*backstress vektor [6]          */
+                     INT        newval)    /*controls evaluation of new stresses*/           
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-double disd[5];
-double sig[4];      /*stresses from last update -> WA*/
-double eps[4];      /*strains from last update -> WA*/
-double strain[4];   /*actual strains from displacements*/
-double qn[4];       /*backstress vektor from last update -> WA*/
-double sigi[4];     /*stress from last iteration step (not condensed*/
-double epsi[4];     /*strains from last iteration step (with e33)*/
-double di[4];       /*components d41,d42,d43,d44 of th const. tensor from
+INT i,j;
+DOUBLE disd[5];
+DOUBLE sig[4];      /*stresses from last update -> WA*/
+DOUBLE eps[4];      /*strains from last update -> WA*/
+DOUBLE strain[4];   /*actual strains from displacements*/
+DOUBLE qn[4];       /*backstress vektor from last update -> WA*/
+DOUBLE sigi[4];     /*stress from last iteration step (not condensed*/
+DOUBLE epsi[4];     /*strains from last iteration step (with e33)*/
+DOUBLE di[4];       /*components d41,d42,d43,d44 of th const. tensor from
                       last iteration step*/
 WALL_TYPE local_wtype;
 /*----------------------------------------------------------------------*/
@@ -162,24 +162,24 @@ dstrc_exit();
 |      topic: kondense 3D conditions                              sh 7/02|
 |             to plane stress/strain conditions                          |
 |-----------------------------------------------------------------------*/
-void w1mat_trans_down (double   **d, /*current material matrix 3D -> 2D */
+void w1mat_trans_down (DOUBLE   **d, /*current material matrix 3D -> 2D */
                        ELEMENT   *ele,
                        WALL_TYPE  wtype,
-                       int        ip,
-                       int        yipc,
-                       double    *stressc, /*condensed*/
-                       double    *sig,
-                       double    *eps,
-                       double    *stress,
-                       double    *strain,  /*actual strain [4]          */
-                       double    *qn)
+                       INT        ip,
+                       INT        yipc,
+                       DOUBLE    *stressc, /*condensed*/
+                       DOUBLE    *sig,
+                       DOUBLE    *eps,
+                       DOUBLE    *stress,
+                       DOUBLE    *strain,  /*actual strain [4]          */
+                       DOUBLE    *qn)
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-double tau[4];
-double tauc[4];
-double qnc[4];
-double di[4];
+INT i,j;
+DOUBLE tau[4];
+DOUBLE tauc[4];
+DOUBLE qnc[4];
+DOUBLE di[4];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1mat_trans_down");
@@ -258,11 +258,11 @@ return;
 |     changes 2 rows of a vector                               sh 8/02   |
 |  vec[x,x,a,x,b,x,...] -> vec[x,x,b,x,a,x,...]                          |
 *-----------------------------------------------------------------------*/
-void w1_vec_switch(double *vec,      /* vector do be modified           */
-                   int a,            /* row to be changed to b          */
-                   int b)            /* row to be changed to a          */
+void w1_vec_switch(DOUBLE *vec,      /* vector do be modified           */
+                   INT a,            /* row to be changed to b          */
+                   INT b)            /* row to be changed to a          */
 {
-double help;
+DOUBLE help;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_vec_switch");
@@ -288,13 +288,13 @@ return;
 |     [b,c,b,b,b]        [a,c,a,a,a]                                     |
 |     [-,a,-,b,-]        [-,b,-,a,-]                                     |
 *-----------------------------------------------------------------------*/
-void w1_matrix_switch(double **mat,   /* matrix do be modified          */
-                      int a,          /* row & colum to be changed to b */
-                      int b,          /* row & colum to be changed to a */
-                      int l)          /* length of row/column of matrix */
+void w1_matrix_switch(DOUBLE **mat,   /* matrix do be modified          */
+                      INT a,          /* row & colum to be changed to b */
+                      INT b,          /* row & colum to be changed to a */
+                      INT l)          /* length of row/column of matrix */
 {
-double help;
-int i,j;
+DOUBLE help;
+INT i,j;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_matrix_switch");

@@ -510,7 +510,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
           alleig->soltyp=eig_none;
    }
-/*--------------read int */
+/*--------------read INT */
    frint("STURM ",&(alleig->sturm ),&ierr);
    frint("SUBTYP",&(alleig->subtyp),&ierr);
    frint("IFSH"  ,&(alleig->ifsh  ),&ierr);
@@ -520,7 +520,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("NROOT" ,&(alleig->nroot ),&ierr);
    frint("ITEMAX",&(alleig->itemax),&ierr);
    frint("IFCTR" ,&(alleig->ifctr ),&ierr);
-/*--------------read double */
+/*--------------read DOUBLE */
    frdouble("TOLEIG",&(alleig->toleig),&ierr);
    frdouble("SHIFT" ,&(alleig->shift ),&ierr);
    frdouble("BOULO" ,&(alleig->boulo ),&ierr);
@@ -1196,7 +1196,7 @@ are read and stored in adyn
 #ifdef D_ALE
 void inpctr_dyn_ale(ALE_DYNAMIC *adyn)
 {
-int    ierr;
+INT    ierr;
 char buffer[50];
 
 #ifdef DEBUG 
@@ -1235,11 +1235,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else if (strncmp(buffer,"NONE",4)==0) adyn->measure_quality = no_quality;
       else dserror("unknown ALE_TYPE");
    }
-/*--------------read int */
+/*--------------read INT */
    frint("NUMSTEP" ,   &(adyn->nstep) ,       &ierr);
    frint("RESEVRYDISP",&(adyn->updevry_disp), &ierr);
    frint("NUM_INITSTEP",&(adyn->num_initstep), &ierr);
-/*--------------read double */
+/*--------------read DOUBLE */
    frdouble("TIMESTEP", &(adyn->dt)     , &ierr);
    frdouble("MAXTIME" , &(adyn->maxtime), &ierr);
    

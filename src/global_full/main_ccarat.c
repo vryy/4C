@@ -21,16 +21,16 @@ struct _PAR     par;
 <pre>                                                        m.gee 8/00 
 main is only printing the ccarat head and the finish
 </pre>
-\param argc     int     (i)   number of arguments on command line including exe                                
+\param argc     INT     (i)   number of arguments on command line including exe                                
 \param argv     *char[] (i)   array of arguments from command line
 \return void                                               
 
 ------------------------------------------------------------------------*/
-int main(int argc, char *argv[])
+INT main(INT argc, char *argv[])
 {
 #ifdef PARALLEL 
 static char *buff,*dbuff;
-int          buffsize=MPIBUFFSIZE;
+INT          buffsize=MPIBUFFSIZE;
 MPI_Init(&argc,&argv);
 MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
 MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);

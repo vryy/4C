@@ -33,7 +33,7 @@ brick:  [11,22,33,12,23,13]
 shell8: [11,12,13,22,23,33]
 shell9: [11,12,22,13,23,33] ...
 </pre>
-\param  double **M      (i/o) matrix do be rearranged ([6][6])
+\param  DOUBLE **M      (i/o) matrix do be rearranged ([6][6])
 \param  char    flag1[]  (i)  switch from "brick", "s8", "s9" ,...
 \param  char    flag2[]  (i)  switch to "brick", "s8", "s9" ,...
 
@@ -42,10 +42,10 @@ shell9: [11,12,22,13,23,33] ...
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9_matrix_sort(double **M, char flag1[], char flag2[])
+void s9_matrix_sort(DOUBLE **M, char flag1[], char flag2[])
 {
-int    i,j;
-double C_HELP[6][6];    
+INT    i,j;
+DOUBLE C_HELP[6][6];    
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_matrix_sort");
@@ -160,8 +160,8 @@ curvilinear coordinate system and vice versa. This is very useful in order
 to use general material laws, which are written in orthonormal coordinate
 systems.
 </pre>
-\param  double  *str    (i/o) stresses or strains to be modified
-\param  double **gkov    (i)  kovariant basis vectors
+\param  DOUBLE  *str    (i/o) stresses or strains to be modified
+\param  DOUBLE **gkov    (i)  kovariant basis vectors
 \param  char     flag1[] (i)  'CACU' or 'CUCA' defines the direction of the transformation
 \param  char     flag2[] (i)  'S' or 'E' stresses or strains to be transformed
 
@@ -170,14 +170,14 @@ systems.
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9tcuca (double *str, double **gkov, char flag1[],char flag2[])
+void s9tcuca (DOUBLE *str, DOUBLE **gkov, char flag1[],char flag2[])
 {
-int      i,j,k,l;
-ARRAY    gkon_a;     double **gkon;     
-ARRAY    gi_a;       double **gi;     
+INT      i,j,k,l;
+ARRAY    gkon_a;     DOUBLE **gkon;     
+ARRAY    gi_a;       DOUBLE **gi;     
 
-double   A[3][3], B[3][3];
-double   det_dummy;
+DOUBLE   A[3][3], B[3][3];
+DOUBLE   det_dummy;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9tcuca");
@@ -271,8 +271,8 @@ coordinate system.
 .                   |_                          3333 _|                 .
 .........................................................................
 </pre>
-\param  double **A    (i/o) matrix to be modified
-\param  double **C     (i)  Transformation matrix
+\param  DOUBLE **A    (i/o) matrix to be modified
+\param  DOUBLE **C     (i)  Transformation matrix
 
 \warning Is equal to the routine 'S9T4NK' of the old carat. When calling
          this routine you need to use the transpose of 'C' compared to
@@ -281,15 +281,15 @@ coordinate system.
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9T4sym (double **A, double **C)
+void s9T4sym (DOUBLE **A, DOUBLE **C)
 {
-double C11,C21,C31,C12,C22,C32,C13,C23,C33;
-double A11,A12,A13,A14,A15,A16;
-double     A22,A23,A24,A25,A26;
-double         A33,A34,A35,A36;
-double             A44,A45,A46;
-double                 A55,A56;
-double                     A66;
+DOUBLE C11,C21,C31,C12,C22,C32,C13,C23,C33;
+DOUBLE A11,A12,A13,A14,A15,A16;
+DOUBLE     A22,A23,A24,A25,A26;
+DOUBLE         A33,A34,A35,A36;
+DOUBLE             A44,A45,A46;
+DOUBLE                 A55,A56;
+DOUBLE                     A66;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -909,15 +909,15 @@ return;
 This routine modifies the constitutive matrix with the shear correction
 factor 'xsi' for [13] and [23]
 </pre>
-\param  double **d    (i/o) consitutive matrix to be modified
-\param  double   xsi   (i)  shear correction factor
+\param  DOUBLE **d    (i/o) consitutive matrix to be modified
+\param  DOUBLE   xsi   (i)  shear correction factor
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9shear_cor(double **d, double xsi) 
+void s9shear_cor(DOUBLE **d, DOUBLE xsi) 
 {
 #ifdef DEBUG 
 dstrc_enter("s9shear_cor");
@@ -950,31 +950,31 @@ the C-Matrix from the material coordinate system to the curvilinear element
 coordinate system. 
 sorting: [11,22,33,12,23,13]
 </pre>
-\param  double **C       (i/o) material matrix to be transformed
-\param  double **akov     (i)  kovariant basis vectors
-\param  double   phi      (i)  rotation angle with respect to global coord sys
-\param  int      rot_axis (i)  axis of rotation (1=x-; 2=y-; 3=z-axis)
+\param  DOUBLE **C       (i/o) material matrix to be transformed
+\param  DOUBLE **akov     (i)  kovariant basis vectors
+\param  DOUBLE   phi      (i)  rotation angle with respect to global coord sys
+\param  INT      rot_axis (i)  axis of rotation (1=x-; 2=y-; 3=z-axis)
 
 \warning Always call this routine with the kovariant basis vectors (gkov). 
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9_Tmaca (double **akov, double phi, int rot_axis, double **C)
+void s9_Tmaca (DOUBLE **akov, DOUBLE phi, INT rot_axis, DOUBLE **C)
 {
-double rad = RAD * phi; 
-double R11,R12,R13,R21,R22,R23,R31,R32,R33;
-double e11,e12,e13,e21,e22,e23,e31,e32,e33;
-double e1norm,e2norm,e3norm;
-double anorm,bnorm,cnorm,eenorm;
-double skal;
-double ee1,ee2,ee3;
-double a1,a2,a3,b1,b2,b3,c1,c2,c3;
-double caeins = 0.9999999;
-double det_dummy;
-ARRAY  R_a;     double **R;  
-ARRAY  T_a;     double **T;  
-ARRAY  Help_a;  double **Help;  
+DOUBLE rad = RAD * phi; 
+DOUBLE R11,R12,R13,R21,R22,R23,R31,R32,R33;
+DOUBLE e11,e12,e13,e21,e22,e23,e31,e32,e33;
+DOUBLE e1norm,e2norm,e3norm;
+DOUBLE anorm,bnorm,cnorm,eenorm;
+DOUBLE skal;
+DOUBLE ee1,ee2,ee3;
+DOUBLE a1,a2,a3,b1,b2,b3,c1,c2,c3;
+DOUBLE caeins = 0.9999999;
+DOUBLE det_dummy;
+ARRAY  R_a;     DOUBLE **R;  
+ARRAY  T_a;     DOUBLE **T;  
+ARRAY  Help_a;  DOUBLE **Help;  
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_Tmaca");
@@ -1212,20 +1212,20 @@ This routine transforms the constitutive matrix from the orthonormal
 system.
 sorting: [11,22,33,12,23,13]
 </pre>
-\param  double **C       (i/o) material matrix to be transformed
-\param  double **akov     (i)  kovariant basis vectors
+\param  DOUBLE **C       (i/o) material matrix to be transformed
+\param  DOUBLE **akov     (i)  kovariant basis vectors
 
 \warning Always call this routine with the kovariant basis vectors (gkov). 
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9_Tcacu (double **akov, double **C)
+void s9_Tcacu (DOUBLE **akov, DOUBLE **C)
 {
-int    i,j;
-double R11,R12,R13,R21,R22,R23,R31,R32,R33;
-ARRAY  T_a;     double **T;  
-ARRAY  Help_a;  double **Help;  
+INT    i,j;
+DOUBLE R11,R12,R13,R21,R22,R23,R31,R32,R33;
+ARRAY  T_a;     DOUBLE **T;  
+ARRAY  Help_a;  DOUBLE **Help;  
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_Tcacu");

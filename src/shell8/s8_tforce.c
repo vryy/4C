@@ -6,23 +6,23 @@
 C!    BERECHNEN DER PHYSIKALISCHEN KRAEFTE UND MOMENTE IN              +
 C!    UNTERSCHIEDLICHEN TANGENTIALEN KOORDINATENSYSTEMEN               +
  *----------------------------------------------------------------------*/
-void s8_tforce(double **force,
-             int      ngauss,
-             double **akov,
-             double **akon,
+void s8_tforce(DOUBLE **force,
+             INT      ngauss,
+             DOUBLE **akov,
+             DOUBLE **akon,
              ELEMENT *ele)
 {
-int    i,j;
-int    option;
-double sn[3][3],sm[3][3];
-double b[3][3];/*-------------------- basis vectors of orthogonal basis */
-double cnorm;
-double anorm;
-double sum;
+INT    i,j;
+INT    option;
+DOUBLE sn[3][3],sm[3][3];
+DOUBLE b[3][3];/*-------------------- basis vectors of orthogonal basis */
+DOUBLE cnorm;
+DOUBLE anorm;
+DOUBLE sum;
 
-const double caeins = 0.99999999999;
-const double one    = 1.0;
-const double zero   = 0.0;
+const DOUBLE caeins = 0.99999999999;
+const DOUBLE one    = 1.0;
+const DOUBLE zero   = 0.0;
 
 #ifdef DEBUG 
 dstrc_enter("s8_tforce");
@@ -188,12 +188,12 @@ C.......................................................................
    static as third argument. This routine will fail with any other 
    combination of static or dynamic 2D arrays
  *----------------------------------------------------------------------*/
-void s8_tettr(double x[3][3], double **a, double b[3][3])
+void s8_tettr(DOUBLE x[3][3], DOUBLE **a, DOUBLE b[3][3])
 {
-int    i,j,k;
-double t[3][3];
-double h[3][3];
-double sum;
+INT    i,j,k;
+DOUBLE t[3][3];
+DOUBLE h[3][3];
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("s8_tettr");
 #endif

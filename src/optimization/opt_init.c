@@ -376,7 +376,7 @@ MATERIAL    *actmat;
 if(opt->numlin != 0)
 {
   numvarlin = numvar;
-  adr = (int*)CCACALLOC(actfield->dis[0].numele,sizeof(int));
+  adr = (INT*)CCACALLOC(actfield->dis[0].numele,sizeof(INT));
   for (i=0; i<opt->numlin; i++)  /* for all linking rules*/
   {
     mymat = opt->olin[i].objIds[0];
@@ -412,9 +412,9 @@ if(opt->numlin != 0)
    CCAFREE(adr);  
 
 /* -------------- allocate memory for resized vectors for linking  --- */
-  opt->strat.fsd->grdobj_lin = (double*)CCACALLOC(numvarlin,sizeof(double));
-  opt->strat.fsd->grdcon_lin = (double*)CCACALLOC(numvarlin,sizeof(double));
-  opt->strat.fsd->var_lin    = (double*)CCACALLOC(numvarlin,sizeof(double));
+  opt->strat.fsd->grdobj_lin = (DOUBLE*)CCACALLOC(numvarlin,sizeof(DOUBLE));
+  opt->strat.fsd->grdcon_lin = (DOUBLE*)CCACALLOC(numvarlin,sizeof(DOUBLE));
+  opt->strat.fsd->var_lin    = (DOUBLE*)CCACALLOC(numvarlin,sizeof(DOUBLE));
 
   for (i=0; i<numvarlin; i++)
   {

@@ -19,39 +19,39 @@ void solver_umfpack(struct _SOLVAR         *actsolv,
                     struct _CCF            *ccf,
                     struct _DIST_VECTOR    *sol,
                     struct _DIST_VECTOR    *rhs,
-                    int                     option)
+                    INT                     option)
 {
 #ifdef UMFPACK 
-int            i;
-int            dof;
-int            imyrank;
-int            inprocs;
+INT            i;
+INT            dof;
+INT            imyrank;
+INT            inprocs;
 
-int            job;
-int            sym;
-int            n;
-int            nz;
-int            nz_loc;
-int           *Ap;
-int           *Ai;
-double        *Ax;
-int           *icntl;
+INT            job;
+INT            sym;
+INT            n;
+INT            nz;
+INT            nz_loc;
+INT           *Ap;
+INT           *Ai;
+DOUBLE        *Ax;
+INT           *icntl;
 
 DOUBLE         t;
 INT            status;
 
 ARRAY          b_a;
-double        *b;
+DOUBLE        *b;
 ARRAY          x_a;
-double        *x;
+DOUBLE        *x;
 ARRAY          tmp_a;
-double        *tmp;
+DOUBLE        *tmp;
 
 /* some umfpack variables see umfpack manual */
-/*double        *control = (double *) NULL;
-double        *info    = (double *) NULL;*/
+/*DOUBLE        *control = (DOUBLE *) NULL;
+DOUBLE        *info    = (DOUBLE *) NULL;*/
 void          *symbolic, *numeric;
-double        info [UMFPACK_INFO], control [UMFPACK_CONTROL];
+DOUBLE        info [UMFPACK_INFO], control [UMFPACK_CONTROL];
 
 #ifdef DEBUG 
 dstrc_enter("solver_umfpack");

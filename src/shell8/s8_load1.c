@@ -9,54 +9,54 @@ extern DOUBLE acttime;
 void s8eleload(ELEMENT  *ele,
                S8_DATA  *data,
                MATERIAL *mat,
-               double	*loadvec,
-               int	 init)
+               DOUBLE	*loadvec,
+               INT	 init)
 {
-int          lr,ls;
-int          i,j,k;
-int          inode,idof;
-int          nir;
-int          nis;
-int          nit;
-int          iel;
-int          nd;
-int          foundsurface;
+INT          lr,ls;
+INT          i,j,k;
+INT          inode,idof;
+INT          nir;
+INT          nis;
+INT          nit;
+INT          iel;
+INT          nd;
+INT          foundsurface;
 
-double      *hte;
-double       hhi;
-double       e1,e2,e3;
-double       facr,facs,wgt;
-double       det;
-double       deta;
-double       xi,yi,zi;
+DOUBLE      *hte;
+DOUBLE       hhi;
+DOUBLE       e1,e2,e3;
+DOUBLE       facr,facs,wgt;
+DOUBLE       det;
+DOUBLE       deta;
+DOUBLE       xi,yi,zi;
 
-static ARRAY eload_a; static double **eload;
-static ARRAY x_a;     static double **x;
-static ARRAY xc_a;    static double **xc;
-static ARRAY funct_a; static double *funct;
-static ARRAY deriv_a; static double **deriv;
-static ARRAY xjm_a;   static double **xjm;
-static ARRAY a3ref_a; static double **a3ref;
-static ARRAY a3cur_a; static double **a3cur;
-static ARRAY a3r_a;   static double **a3r;
-static ARRAY a3c_a;   static double **a3c;
+static ARRAY eload_a; static DOUBLE **eload;
+static ARRAY x_a;     static DOUBLE **x;
+static ARRAY xc_a;    static DOUBLE **xc;
+static ARRAY funct_a; static DOUBLE *funct;
+static ARRAY deriv_a; static DOUBLE **deriv;
+static ARRAY xjm_a;   static DOUBLE **xjm;
+static ARRAY a3ref_a; static DOUBLE **a3ref;
+static ARRAY a3cur_a; static DOUBLE **a3cur;
+static ARRAY a3r_a;   static DOUBLE **a3r;
+static ARRAY a3c_a;   static DOUBLE **a3c;
 
 /*--------------------- variables needed for integration of line loads */
-int             ngline;
-int             ngnode;
-int             gnode[3];
-int             line;
-int             foundline;
+INT             ngline;
+INT             ngnode;
+INT             gnode[3];
+INT             line;
+INT             foundline;
 GLINE          *gline[4];
 NEUM_CONDITION *lineneum[4];
-int             ngp;
-int             gp;
-double          xgp[3];
-double          xgp_n[3];
-double          wgp[3];
-int             dir;
-double          ds;
-double          ar[3];
+INT             ngp;
+INT             gp;
+DOUBLE          xgp[3];
+DOUBLE          xgp_n[3];
+DOUBLE          wgp[3];
+INT             dir;
+DOUBLE          ds;
+DOUBLE          ar[3];
 
 #ifdef DEBUG 
 dstrc_enter("s8eleload");
@@ -275,7 +275,7 @@ for (line=0; line<ngline; line++)
    {
       /*------------------------------------ gaussian point and weight */
       e1 = xgp[gp];          /* gp-coordinate in integration direction */
-      e2 = xgp_n[gp];        /* gp    "       normal to int. direction */
+      e2 = xgp_n[gp];        /* gp    "       normal to INT. direction */
       e3 = 0.0;              /* here mid-surface only */
       facr = wgp[gp];        /* weight at gaussian point */
       /*---------------- shape functions and derivatives at this point */
@@ -314,7 +314,7 @@ for (line=0; line<ngline; line++)
          ar[i] = ar[i] * 
                  facr  *
                  ds    * 
-                 (double)(lineneum[line]->neum_onoff.a.iv[i]) *
+                 (DOUBLE)(lineneum[line]->neum_onoff.a.iv[i]) *
                  (lineneum[line]->neum_val.a.dv[i]);
       }
       /*------------------ add load components to element load vector */
@@ -354,16 +354,16 @@ return;
  | integration of element loads                          m.gee 10/01    |
  *----------------------------------------------------------------------*/
 void s8loadGP(ELEMENT    *ele,
-                double    **eload,
-                double      hhi,
-                double      wgt,
-                double    **xjm,
-                double     *funct,
-                double    **deriv,
-                int         iel,
-                double      xi,
-                double      yi,
-                double      zi)
+                DOUBLE    **eload,
+                DOUBLE      hhi,
+                DOUBLE      wgt,
+                DOUBLE    **xjm,
+                DOUBLE     *funct,
+                DOUBLE    **deriv,
+                INT         iel,
+                DOUBLE      xi,
+                DOUBLE      yi,
+                DOUBLE      zi)
 {
 INT          i,j;
 DOUBLE       ap[3];
@@ -404,7 +404,7 @@ case neum_live:
    {
       ar[i] = wgt   * 
               ar[i] * 
-              (double)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) * 
+              (DOUBLE)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) * 
               (ele->g.gsurf->neum->neum_val.a.dv[i]);
    }
 /*-------------------- add load vector component to element load vector */

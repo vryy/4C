@@ -21,7 +21,7 @@ extern struct _DESIGN *design;
  *----------------------------------------------------------------------*/
 void inpdesign()
 {
-int  ierr;
+INT  ierr;
 #ifdef DEBUG 
 dstrc_enter("inpctrdesign");
 #endif
@@ -53,11 +53,11 @@ return;
  *----------------------------------------------------------------------*/
 void inp_designsize()
 {
-int  i,ierr;
-int  numdnode;
-int  numdline;
-int  numdsurf;
-int  numdvol;
+INT  i,ierr;
+INT  numdnode;
+INT  numdline;
+INT  numdsurf;
+INT  numdvol;
 #ifdef DEBUG 
 dstrc_enter("inp_designsize");
 #endif
@@ -118,10 +118,10 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dnode()
 {
-int    i,ierr;
-int    maxdnode=0;
-int    dnode=0;  
-int    readID;
+INT    i,ierr;
+INT    maxdnode=0;
+INT    dnode=0;  
+INT    readID;
 DNODE *actdnode;
 #ifdef DEBUG 
 dstrc_enter("inp_dnode");
@@ -151,9 +151,9 @@ return;
 /*----------------------------------------------------------------------*
  | input of one design nodes                              m.gee 1/02    |
  *----------------------------------------------------------------------*/
-void read_1_dnode(DNODE *dnode, int readId)
+void read_1_dnode(DNODE *dnode, INT readId)
 {
-int    i,ierr;
+INT    i,ierr;
 #ifdef DEBUG 
 dstrc_enter("read_1_dnode");
 #endif
@@ -199,11 +199,11 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dline()
 {
-int    i,ierr,counter;
-int    maxdline=0;
-int    dline=0;  
+INT    i,ierr,counter;
+INT    maxdline=0;
+INT    dline=0;  
 DLINE *actdline;
-int    readID;
+INT    readID;
 #ifdef DEBUG 
 dstrc_enter("inp_dline");
 #endif
@@ -231,10 +231,10 @@ return;
 /*----------------------------------------------------------------------*
  | input of one design line                               m.gee 1/02    |
  *----------------------------------------------------------------------*/
-void read_1_dline(DLINE *dline, int readId)
+void read_1_dline(DLINE *dline, INT readId)
 {
-int    i,ierr;
-int    isnurb;
+INT    i,ierr;
+INT    isnurb;
 
 #ifdef DEBUG 
 dstrc_enter("read_1_dline");
@@ -283,11 +283,11 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dsurface()
 {
-int    i,ierr,counter;
-int    maxdsurf=0;
-int    dsurf=0;  
+INT    i,ierr,counter;
+INT    maxdsurf=0;
+INT    dsurf=0;  
 DSURF *actdsurf;
-int    readId;
+INT    readId;
 #ifdef DEBUG 
 dstrc_enter("inp_dsurface");
 #endif
@@ -314,9 +314,9 @@ return;
 /*----------------------------------------------------------------------*
  | input of one design surface                            m.gee 1/02    |
  *----------------------------------------------------------------------*/
-void read_1_dsurf(DSURF *dsurf, int readId)
+void read_1_dsurf(DSURF *dsurf, INT readId)
 {
-int    i,ierr;
+INT    i,ierr;
 char   buffer[100];
 #ifdef DEBUG 
 dstrc_enter("read_1_dsurf");
@@ -375,11 +375,11 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dvolume()
 {
-int   i,ierr,counter;
-int   maxdvol=0;
-int   dvol=0;  
+INT   i,ierr,counter;
+INT   maxdvol=0;
+INT   dvol=0;  
 DVOL *actdvol;
-int   readId;
+INT   readId;
 #ifdef DEBUG 
 dstrc_enter("inp_dvolume");
 #endif
@@ -407,9 +407,9 @@ return;
 /*----------------------------------------------------------------------*
  | input of one design volume                             m.gee 1/02    |
  *----------------------------------------------------------------------*/
-void read_1_dvol(DVOL *dvol, int readId)
+void read_1_dvol(DVOL *dvol, INT readId)
 {
-int    i,ierr;
+INT    i,ierr;
 char   buffer[100];
 #ifdef DEBUG 
 dstrc_enter("read_1_dvol");

@@ -51,7 +51,7 @@ during the rest of the simulation.
 			     
 </pre>   
 \param *fdyn		FLUID_DYNAMIC (i)  
-\param *nfrastep 	int           (o)  number of fract. steps
+\param *nfrastep 	INT           (o)  number of fract. steps
 
 \return void 
 \warning this routine is not completely tested yet!
@@ -59,14 +59,14 @@ during the rest of the simulation.
 ------------------------------------------------------------------------*/
 void fluid_startproc(
                           FLUID_DYNAMIC     *fdyn,
-		          int               *nfrastep 
+		          INT               *nfrastep 
 		    )
 {
-static int     iop_s;
-static int     iops_s;
-static int     itemax_s;
-static double  theta_s ;
-static double  thetas_s;
+static INT     iop_s;
+static INT     iops_s;
+static INT     itemax_s;
+static DOUBLE  theta_s ;
+static DOUBLE  thetas_s;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_startproc");
@@ -188,7 +188,7 @@ nis <->  STATIONARY CASE (NO TIMEDEPENDENT TERMS)
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC   (i)  
 \param *dynvar	   FLUID_DYN_CALC  (i/o)  
-\param  itnum      int  	   (i)     actual number of iterations
+\param  itnum      INT  	   (i)     actual number of iterations
 \return void 
 \warning up to now, only fixed-point like iteration checked!!!
 
@@ -196,7 +196,7 @@ nis <->  STATIONARY CASE (NO TIMEDEPENDENT TERMS)
 void fluid_icons(         
                           FLUID_DYNAMIC     *fdyn,
                           FLUID_DYN_CALC    *dynvar,
-		          int                itnum           
+		          INT                itnum           
 		)
 {
 
@@ -345,7 +345,7 @@ these data are copied to sol_increment.
 </pre>   
 \param *actfield   FIELD           (i)
 \param *fdyn	   FLUID_DYNAMIC   (i)  
-\param  numr	   int             (i/o)   number of rows in sol_incr
+\param  numr	   INT             (i/o)   number of rows in sol_incr
 \param  str        FLUID_STRESS    (i)     flag for stress calculation
 \return void 
 
@@ -353,26 +353,26 @@ these data are copied to sol_increment.
 void fluid_init(
 		          FIELD             *actfield,  
                           FLUID_DYNAMIC     *fdyn,
-		          int                numr,
+		          INT                numr,
 		          FLUID_STRESS       str	
 	       )      
 {
-int    i,j;          /* simply counters                                 */
-int    actmat;       /* number of actual material                       */
-int    numdf;        /* number of dofs in this discretisation           */
-int    numnp_total;  /* total number of nodes in this discretisation    */
-int    numele_total; /* total number of elements in this discr.         */  
-int    numnp=0;      /* number of nodes at actual element               */
-int    predof;       /* pressure dof number                             */
-int    numveldof;    /* number of veld dofs                             */
-int    found;
-double dens;         /* density                                         */
+INT    i,j;          /* simply counters                                 */
+INT    actmat;       /* number of actual material                       */
+INT    numdf;        /* number of dofs in this discretisation           */
+INT    numnp_total;  /* total number of nodes in this discretisation    */
+INT    numele_total; /* total number of elements in this discr.         */  
+INT    numnp=0;      /* number of nodes at actual element               */
+INT    predof;       /* pressure dof number                             */
+INT    numveldof;    /* number of veld dofs                             */
+INT    found;
+DOUBLE dens;         /* density                                         */
 NODE  *actnode;      /* the actual node                                 */
 GNODE *actgnode;     /* the actual gnode                                */
 ELEMENT *actele;     /* the actual element                              */
 
 /*----------------------------------------- variables for solitary wave */
-double u1,u2,eta,p,c,g,H,d,x,y,t,fac,fac1,sech;
+DOUBLE u1,u2,eta,p,c,g,H,d,x,y,t,fac,fac1,sech;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_init");
@@ -589,12 +589,12 @@ nonlinear iteration scheme are calculated.
 \param **actfield      FIELD	      (i)    actual field       
 \param  *actintra      INTRA	      (i)    actual intra comm.
 \param	*sol 	       DIST_VECTOR    (i)    solution vector
-\param	 place         int	      (i)    place in sol_incr.
+\param	 place         INT	      (i)    place in sol_incr.
 \param	*sysarray      SPARSE_ARRAY   (i)
 \param	*sysarray_typ  SPARSE_TYP     (i)
-\param	*vrat          double	      (o)    vel.  conv. ratio
-\param	*prat          double	      (o)    pre.  conv. ratio
-\param  *grat          double         (o)    grid  conv. ratio
+\param	*vrat          DOUBLE	      (o)    vel.  conv. ratio
+\param	*prat          DOUBLE	      (o)    pre.  conv. ratio
+\param  *grat          DOUBLE         (o)    grid  conv. ratio
 \param	*fdyn	       FLUID_DYNAMIC	     	
 \return void 
 
@@ -603,30 +603,30 @@ void fluid_result_incre(
                           FIELD             *actfield,    
                           INTRA             *actintra,   
 			  DIST_VECTOR       *sol,        
-                          int                place,      
+                          INT                place,      
 			  SPARSE_ARRAY      *sysarray,      
 			  SPARSE_TYP        *sysarray_typ,
-			  double            *vrat,        
-			  double            *prat,
-                          double            *grat,
+			  DOUBLE            *vrat,        
+			  DOUBLE            *prat,
+                          DOUBLE            *grat,
 			  FLUID_DYNAMIC     *fdyn           
 		       )
 {
-int      i,j;          /* simply some counters                         */
-int      max;       
-int      diff;
-int      dof;          /* actual dof number                            */
-int      predof;       /* number of pressure dof (2=2D; 3=3D)          */
-int      numeq_total;  /* total number of equations                    */
-double   dvnorm=ZERO;
-double   dpnorm=ZERO;
-double   dgnorm=ZERO;
-double    vnorm=ZERO;
-double    pnorm=ZERO;  /* values for norm calculation                  */
-double    gnorm=ZERO;
+INT      i,j;          /* simply some counters                         */
+INT      max;       
+INT      diff;
+INT      dof;          /* actual dof number                            */
+INT      predof;       /* number of pressure dof (2=2D; 3=3D)          */
+INT      numeq_total;  /* total number of equations                    */
+DOUBLE   dvnorm=ZERO;
+DOUBLE   dpnorm=ZERO;
+DOUBLE   dgnorm=ZERO;
+DOUBLE    vnorm=ZERO;
+DOUBLE    pnorm=ZERO;  /* values for norm calculation                  */
+DOUBLE    gnorm=ZERO;
 NODE    *actnode;      /* actual node                                  */
 ARRAY    result_a;
-double  *result;       /* redundandent result vector                   */
+DOUBLE  *result;       /* redundandent result vector                   */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_result_incre");
@@ -859,30 +859,30 @@ check are calculated:
 </pre>   
 \param *fdyn 	      FLUID_DYNAMIC  (i)   
 \param *actfield      FIELD	     (i)   actual field
-\param  numeq_total   int	     (i)   total number of equations
-\param *vrat	      double	     (o)   vel.  conv. ratio
-\param *prat	      double	     (o)   pres. conv. ratio
+\param  numeq_total   INT	     (i)   total number of equations
+\param *vrat	      DOUBLE	     (o)   vel.  conv. ratio
+\param *prat	      DOUBLE	     (o)   pres. conv. ratio
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_norm(          
                           FLUID_DYNAMIC     *fdyn, 	     
                           FIELD             *actfield,    
-		          int                numeq_total, 
-                          double            *vrat,        
-		          double            *prat          
+		          INT                numeq_total, 
+                          DOUBLE            *vrat,        
+		          DOUBLE            *prat          
 	       )
 {
-int         i,j;           /* simply some counters                      */
-int         numdf;         /* number of fluid dofs                      */
-int         numvel;        /* total number of vel-dofs                  */
-int         predof;        /* actual number of pres dof                 */
-int         numnp_total;   /* total number of fluid nodes               */
-int         actdof;        /* actual dof number                         */
-double      dvnorm=ZERO;   /* norms					*/
-double       vnorm=ZERO;   /* norms 					*/
-double      dpnorm=ZERO;   /* norms					*/
-double       pnorm=ZERO;   /* norms                                     */
+INT         i,j;           /* simply some counters                      */
+INT         numdf;         /* number of fluid dofs                      */
+INT         numvel;        /* total number of vel-dofs                  */
+INT         predof;        /* actual number of pres dof                 */
+INT         numnp_total;   /* total number of fluid nodes               */
+INT         actdof;        /* actual dof number                         */
+DOUBLE      dvnorm=ZERO;   /* norms					*/
+DOUBLE       vnorm=ZERO;   /* norms 					*/
+DOUBLE      dpnorm=ZERO;   /* norms					*/
+DOUBLE       pnorm=ZERO;   /* norms                                     */
 NODE       *actnode;       /* actual node                               */
 
 #ifdef DEBUG 
@@ -1002,30 +1002,30 @@ history is copied to the positon 'to'.
 			     
 </pre>     
 \param *actfield      FIELD	     (i)  actual field
-\param  disnum        int	     (i)  number of the discr.
-\param  arrayfrom     int	     (i)  index of the "from-array"
-\param  arrayto       int	     (i)  index of the "to-array"
-\param  from          int            (i)  place in "from-array"
-\param  to            int            (i)  place in "to-array"
-\param  numdf         int            (i)  number of dofs -> 2D or 3D probl.
+\param  disnum        INT	     (i)  number of the discr.
+\param  arrayfrom     INT	     (i)  index of the "from-array"
+\param  arrayto       INT	     (i)  index of the "to-array"
+\param  from          INT            (i)  place in "from-array"
+\param  to            INT            (i)  place in "to-array"
+\param  numdf         INT            (i)  number of dofs -> 2D or 3D probl.
 \return void 
 \sa fluid_init()
 
 ------------------------------------------------------------------------*/
 void fluid_sol_copy(       
                           FIELD             *actfield,
-			  int                disnum,
-			  int                arrayfrom,
-			  int                arrayto,  
-                          int                from,     
-		          int                to,       
-		          int                numdf      
+			  INT                disnum,
+			  INT                arrayfrom,
+			  INT                arrayto,  
+                          INT                from,     
+		          INT                to,       
+		          INT                numdf      
 		  )
 {
-int         i,j;          /* simply some counters                       */
-int         diff,max;     /* integers for amredef                       */
-int         predof;       /* pressure dof                               */
-double      dens;         /* density                                    */
+INT         i,j;          /* simply some counters                       */
+INT         diff,max;     /* integers for amredef                       */
+INT         predof;       /* pressure dof                               */
+DOUBLE      dens;         /* density                                    */
 NODE       *actnode;      /* actual node                                */
 ELEMENT    *actele;       /* actual element                             */
 DISCRET    *actdis;
@@ -1120,18 +1120,18 @@ calculated and the result is printed to the screen.
 </pre>   
 \param *fdyn 	      FLUID_DYNAMIC  (i)   
 \param *actfield      FIELD	     (i)  actual field
-\param  numeq_total   int	     (i)  total number of equations
-\return int steady  
+\param  numeq_total   INT	     (i)  total number of equations
+\return INT steady  
 
 ------------------------------------------------------------------------*/
-int fluid_steadycheck(    
+INT fluid_steadycheck(    
                           FLUID_DYNAMIC     *fdyn, 	  
                           FIELD             *actfield,   
-		          int                numeq_total 
+		          INT                numeq_total 
 		     )
 {
-int         steady=0;   /* flag for steady state                        */
-double      vrat,prat;  /* vel. & pres. ratios                          */
+INT         steady=0;   /* flag for steady state                        */
+DOUBLE      vrat,prat;  /* vel. & pres. ratios                          */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_steadycheck");
@@ -1193,26 +1193,26 @@ the given tolerance. The result is printed out to the screen.
 			     
 </pre>   
 \param *fdyn 	      FLUID_DYNAMIC  (i)   
-\param  vrat          double  	     (i)  vel. conv. ratio
-\param  prat          double         (i)  pres. conv. ratio
-\param  grat          double         (i)  grid. conv. ratio
-\param	itnum 	      int	     (i)  actual numb. of iter steps
-\param	te 	      double	     (i)  time for element calcul.
-\param	ts	      double	     (i)  solver time
-\return int converged  
+\param  vrat          DOUBLE  	     (i)  vel. conv. ratio
+\param  prat          DOUBLE         (i)  pres. conv. ratio
+\param  grat          DOUBLE         (i)  grid. conv. ratio
+\param	itnum 	      INT	     (i)  actual numb. of iter steps
+\param	te 	      DOUBLE	     (i)  time for element calcul.
+\param	ts	      DOUBLE	     (i)  solver time
+\return INT converged  
 
 ------------------------------------------------------------------------*/
-int fluid_convcheck(      
+INT fluid_convcheck(      
                           FLUID_DYNAMIC     *fdyn,   
-                          double             vrat,  
-		          double             prat,
-			  double             grat,  
-                          int                itnum, 
-		          double             te,    
-		          double             ts     
+                          DOUBLE             vrat,  
+		          DOUBLE             prat,
+			  DOUBLE             grat,  
+                          INT                itnum, 
+		          DOUBLE             te,    
+		          DOUBLE             ts     
 		   )
 {
-int         converged=0;  /* flag for convergence check                  */
+INT         converged=0;  /* flag for convergence check                  */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_convcheck");
@@ -1352,8 +1352,8 @@ void fluid_reduceshstr(INTRA             *actintra,
                          FLUID_DYN_CALC    *dynvar)
 {
 #ifdef PARALLEL
-int      numnp_total;
-int      i;
+INT      numnp_total;
+INT      i;
 NODE    *actnode;
 
 
@@ -1402,9 +1402,9 @@ void fluid_nullshstr(INTRA             *actintra,
                         FIELD             *actfield)
 {
 #ifdef PARALLEL
-int      numnp_total;
-int      i;
-int      myrank,imyrank;
+INT      numnp_total;
+INT      i;
+INT      myrank,imyrank;
 NODE    *actnode;
 
 
@@ -1445,23 +1445,23 @@ MPI to all procs!
 \param *actintra         INTRA           (i)   
 \param *actfield	 FIELD           (i)    the actual field
 \param *actsolv          SOLVAR          (i)    the actual solver variables 
-\param  numdf            int             (i)    number of fluid dofs
-\param  flag             int             (i)    a flag
+\param  numdf            INT             (i)    number of fluid dofs
+\param  flag             INT             (i)    a flag
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_reducestress(  
                           INTRA             *actintra,
                           FIELD             *actfield,
-			  int                numdf, 
+			  INT                numdf, 
 			  FLUID_STRESS       str
 		       )
 {
 #ifdef PARALLEL
-int      numele_total,numnp;
-int      i,j, coupled;
-int      dim;
-double  *buffer;
+INT      numele_total,numnp;
+INT      i,j, coupled;
+INT      dim;
+DOUBLE  *buffer;
 ELEMENT *actele;
 GNODE   *actgnode;
 

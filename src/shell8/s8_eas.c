@@ -4,32 +4,32 @@
 /*----------------------------------------------------------------------*
  | EAS-Ansaetze                                           m.gee 7/01    |
  *----------------------------------------------------------------------*/
-void s8_eas(const int    nhyb,
-               const double e1,
-               const double e2,
-               const int    iel, 
-               const int   *eas, 
-               double     **P)
+void s8_eas(const INT    nhyb,
+               const DOUBLE e1,
+               const DOUBLE e2,
+               const INT    iel, 
+               const INT   *eas, 
+               DOUBLE     **P)
 {
-int       place_P=0;
-const int nrr=0;
-const int nss=3;
-const int nrs=1;
-const int mrr=6;
-const int mss=9;
-const int mrs=7;
-const int qr=2;
-const int qs=4;
-const int qt=5;
-const int sr=8;
-const int ss=10;
-const int st=11;
-double    e1e2;
-double    e1e1;
-double    e2e2;
-double    e1e1e2;
-double    e1e2e2;
-double    e1e1e2e2;
+INT       place_P=0;
+const INT nrr=0;
+const INT nss=3;
+const INT nrs=1;
+const INT mrr=6;
+const INT mss=9;
+const INT mrs=7;
+const INT qr=2;
+const INT qs=4;
+const INT qt=5;
+const INT sr=8;
+const INT ss=10;
+const INT st=11;
+DOUBLE    e1e2;
+DOUBLE    e1e1;
+DOUBLE    e2e2;
+DOUBLE    e1e1e2;
+DOUBLE    e1e2e2;
+DOUBLE    e1e1e2e2;
 #ifdef DEBUG 
 dstrc_enter("s8_eas");
 #endif
@@ -461,19 +461,19 @@ return;
 /*----------------------------------------------------------------------*
  | transform the eas-strains from midpoint to gausspoint  m.gee 7/01    |
  *----------------------------------------------------------------------*/
-void s8_transeas(double      **P, 
-                    double      **transP,
-                    double      **T,
-                    double      **akovr,
-                    double      **akonr0,
-                    double        detr,
-                    double        detr0,
-                    int           nhyb)
+void s8_transeas(DOUBLE      **P, 
+                    DOUBLE      **transP,
+                    DOUBLE      **T,
+                    DOUBLE      **akovr,
+                    DOUBLE      **akonr0,
+                    DOUBLE        detr,
+                    DOUBLE        detr0,
+                    INT           nhyb)
 {
-int          i,j;
-const double two=2.0;
-double       t11,t12,t13,t21,t22,t23,t31,t32,t33;
-double       factor;
+INT          i,j;
+const DOUBLE two=2.0;
+DOUBLE       t11,t12,t13,t21,t22,t23,t31,t32,t33;
+DOUBLE       factor;
 #ifdef DEBUG 
 dstrc_enter("s8_transeas");
 #endif

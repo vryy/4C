@@ -17,7 +17,7 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 void inpctrsol(SOLVAR *solv)
 {
-int           ierr;
+INT           ierr;
 char          buffer[50];
 MLVAR        *mlvar;
 AZVAR        *azvar;

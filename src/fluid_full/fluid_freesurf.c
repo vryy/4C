@@ -74,10 +74,10 @@ FLUID  - no boundary condition at all
 ------------------------------------------------------------------------*/
 void fluid_createfreesurf()
 {
-int       i;                              /* simply some counters       */
-int       hasdirich,hascouple;
-int       hasfsi,hasneum;                 /* different flags            */
-int       hasfreesurf;
+INT       i;                              /* simply some counters       */
+INT       hasdirich,hascouple;
+INT       hasfsi,hasneum;                 /* different flags            */
+INT       hasfreesurf;
 DLINE    *actdline;                       /* actual DLINE               */
 DNODE    *actdnode;                       /* actual DNODE               */
 FIELDTYP  fieldtyp;                       
@@ -226,7 +226,7 @@ set the dof numbers at the free surface:
 ------------------------------------------------------------------------*/
 void fluid_freesurf_setdofs()
 {
-int i,j;
+INT i,j;
 FIELD *fluidfield;
 FLUID_DYNAMIC *fdyn;
 ELEMENT *actele;
@@ -315,14 +315,14 @@ modifactions are done in this function.
 ------------------------------------------------------------------------*/
 void fluid_modcoor()
 {
-int     j;                              /* simply some counters       */
-double  a;
-double  y,x;
+INT     j;                              /* simply some counters       */
+DOUBLE  a;
+DOUBLE  y,x;
 FIELD  *fluidfield;
 FIELD  *alefield;
 NODE   *actnode;
 /*----------------------------------------- variables for solitary wave */
-double eta,H,d,fac,fac1,sech;
+DOUBLE eta,H,d,fac,fac1,sech;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_modcoor");

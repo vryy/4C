@@ -41,20 +41,20 @@ NOTE: there's only one elestif
 \param  *ele	     ELEMENT	   (i)	   actual element
 \param  *elev	     ELEMENT	   (i)	   actual element for vel.
 \param  *dynvar        FLUID_DYN_CALC  (i)
-\param **estif          double	   (i/o)   ele stiffness matrix
-\param   kapepsint      double	   (i)     kapeps at integr. point
-\param  *velint         double	   (i)     vel. at integr. point
-\param  *velint_dc      double	   (i)     vel. at integr. point for DISC. CAPT.
-\param   eddyint        double	   (i)     eddy at integr. point
-\param  *kapepsderxy    double	   (i)     kapeps deriv. at integr. point
-\param  *funct          double	   (i)     nat. shape functions
-\param **derxy          double	   (i)     global derivatives
-\param **derxy2         double	   (i)     2nd global derivatives
-\param   fac	      double	   (i)     weighting factor	   
-\param   visc	      double	   (i)     fluid viscosity
-\param   factor	      double	   (i)     factor
-\param   sig	      double	   (i)     factor
-\param   iel	      int		   (i)     num. of nodes in ele
+\param **estif          DOUBLE	   (i/o)   ele stiffness matrix
+\param   kapepsint      DOUBLE	   (i)     kapeps at integr. point
+\param  *velint         DOUBLE	   (i)     vel. at integr. point
+\param  *velint_dc      DOUBLE	   (i)     vel. at integr. point for DISC. CAPT.
+\param   eddyint        DOUBLE	   (i)     eddy at integr. point
+\param  *kapepsderxy    DOUBLE	   (i)     kapeps deriv. at integr. point
+\param  *funct          DOUBLE	   (i)     nat. shape functions
+\param **derxy          DOUBLE	   (i)     global derivatives
+\param **derxy2         DOUBLE	   (i)     2nd global derivatives
+\param   fac	      DOUBLE	   (i)     weighting factor	   
+\param   visc	      DOUBLE	   (i)     fluid viscosity
+\param   factor	      DOUBLE	   (i)     factor
+\param   sig	      DOUBLE	   (i)     factor
+\param   iel	      INT		   (i)     num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -62,20 +62,20 @@ void f2_calstabkkapeps(
                 ELEMENT         *ele,    
 		    ELEMENT         *elev,    
                 FLUID_DYN_CALC  *dynvar,
-		    double         **estif,  
-		    double           kapepsint, 
-		    double          *velint, 
-		    double          *velint_dc, 
-                double           eddyint, 
-                double          *kapepsderxy, 
-                double          *funct,  
-		    double         **derxy,  
-		    double         **derxy2, 
-		    double           fac,    
-		    double           visc,   
-		    double           factor,
-		    double           sig,
-                int              iel    
+		    DOUBLE         **estif,  
+		    DOUBLE           kapepsint, 
+		    DOUBLE          *velint, 
+		    DOUBLE          *velint_dc, 
+                DOUBLE           eddyint, 
+                DOUBLE          *kapepsderxy, 
+                DOUBLE          *funct,  
+		    DOUBLE         **derxy,  
+		    DOUBLE         **derxy2, 
+		    DOUBLE           fac,    
+		    DOUBLE           visc,   
+		    DOUBLE           factor,
+		    DOUBLE           sig,
+                INT              iel    
                    )
 {
 /*----------------------------------------------------------------------*
@@ -85,10 +85,10 @@ void f2_calstabkkapeps(
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |  
 /*----------------------------------------------------------------------*/
-int    irow,icol,irn,icn,ird;
-double taumu,taumu_dc;
-double c,c_dc;
-double auxc,aux;
+INT    irow,icol,irn,icn,ird;
+DOUBLE taumu,taumu_dc;
+DOUBLE c,c_dc;
+DOUBLE auxc,aux;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabkkapeps");
@@ -223,26 +223,26 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	 ELEMENT	     (i)	   actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **emass     double	   (i/o)   ele mass matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param  *velint_dc double	   (i)     vel. at integr. point for D.C.
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   iel	   int  	   (i)	   num. of nodes in ele
+\param **emass     DOUBLE	   (i/o)   ele mass matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param  *velint_dc DOUBLE	   (i)     vel. at integr. point for D.C.
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   iel	   INT  	   (i)	   num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabmkapeps(
                     ELEMENT         *ele,     
 		        FLUID_DYN_CALC  *dynvar,
-		        double         **emass,  
-    		        double          *velint, 
-    		        double          *velint_dc, 
-                    double          *funct,  
-		        double         **derxy,  
-		        double           fac,    
-		        int              iel    
+		        DOUBLE         **emass,  
+    		        DOUBLE          *velint, 
+    		        DOUBLE          *velint_dc, 
+                    DOUBLE          *funct,  
+		        DOUBLE         **derxy,  
+		        DOUBLE           fac,    
+		        INT              iel    
                      )
 {
 /*----------------------------------------------------------------------*
@@ -252,10 +252,10 @@ void f2_calstabmkapeps(
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |   
 /*----------------------------------------------------------------------*/
-int    irow,icol,irn,icn;
-double taumu,taumu_dc;
-double c,c_dc;
-double auxc;
+INT    irow,icol,irn,icn;
+DOUBLE taumu,taumu_dc;
+DOUBLE c,c_dc;
+DOUBLE auxc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabmkapeps");

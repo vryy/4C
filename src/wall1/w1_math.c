@@ -9,22 +9,22 @@
 
 void w1_inverse_matrix
 (
-  int N,          /* I: size of matrix: N x N                  */
-  double **A,     /* I: Original Matrix (will be destroyed!!!) */
-  double **Y      /* O: Inverse Matrix                         */
+  INT N,          /* I: size of matrix: N x N                  */
+  DOUBLE **A,     /* I: Original Matrix (will be destroyed!!!) */
+  DOUBLE **Y      /* O: Inverse Matrix                         */
 )
 {
-  double d;
-  int i,j;
+  DOUBLE d;
+  INT i,j;
   
   static ARRAY    col_a;       
-  static double  *col;
+  static DOUBLE  *col;
   static ARRAY    indx_a;       
-  static int     *indx;
+  static INT     *indx;
   static ARRAY    Acopy_a;       
-  static double **Acopy;
+  static DOUBLE **Acopy;
   static ARRAY    Ycopy_a;       
-  static double **Ycopy;
+  static DOUBLE **Ycopy;
   /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("w1_inverse_matrix");
@@ -82,14 +82,14 @@ void w1_inverse_matrix
 #define NRANSI
 #define TINY 1.0e-20;
 
-void w1_ludcmp(double **a, /* I: Original Matrix (will be rearanged)     */
-               int n,      /* I: size of matrix: N x N                   */
-               int *indx,  /* O:row premutation pf pivoting              */
-               double *d)  /* O:+1/-1,depending on even or odd row permut*/
+void w1_ludcmp(DOUBLE **a, /* I: Original Matrix (will be rearanged)     */
+               INT n,      /* I: size of matrix: N x N                   */
+               INT *indx,  /* O:row premutation pf pivoting              */
+               DOUBLE *d)  /* O:+1/-1,depending on even or odd row permut*/
 {
-  int i,imax,j,k;
-  double big,dum,sum,temp;
-  double *vv;
+  INT i,imax,j,k;
+  DOUBLE big,dum,sum,temp;
+  DOUBLE *vv;
   /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("w1_ludcmp");
@@ -150,13 +150,13 @@ void w1_ludcmp(double **a, /* I: Original Matrix (will be rearanged)     */
  | solving AX=B, A is LU decomposed  ->"numerical recipes in C"  ah 9/02|
  *----------------------------------------------------------------------*/
 
-void w1_lubksb(double **a,      /* I: LU-decomposed matrix                 */
-            int n,           /* I: size of matrix: N x N                */
-            int *indx,       /* I:row premutation pf pivoting           */
-            double *b)       /* In:B will be changed-> Out:Solution X   */
+void w1_lubksb(DOUBLE **a,      /* I: LU-decomposed matrix                 */
+            INT n,           /* I: size of matrix: N x N                */
+            INT *indx,       /* I:row premutation pf pivoting           */
+            DOUBLE *b)       /* In:B will be changed-> Out:Solution X   */
 {
-  int i,ii=0,ip,j;
-  double sum;
+  INT i,ii=0,ip,j;
+  DOUBLE sum;
   /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("w1_lubksb");
@@ -185,18 +185,18 @@ void w1_lubksb(double **a,      /* I: LU-decomposed matrix                 */
 #define NR_END 1
 #define FREE_ARG char*
 
-double *w1_vector(int nl, int nh)
-/* allocate a double vector with subscript range v[nl..nh] */
+DOUBLE *w1_vector(INT nl, INT nh)
+/* allocate a DOUBLE vector with subscript range v[nl..nh] */
 {
-	double *v;
+	DOUBLE *v;
 
-	v=(double *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(double)));
+	v=(DOUBLE *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(DOUBLE)));
 	if (!v) dserror("allocation failure in w1_vector()");
 	return v-nl+NR_END;
 }/* end of w1_vector */
 
-void w1_free_vector(double *v, int nl, int nh)
-/* free a double vector allocated with vector() */
+void w1_free_vector(DOUBLE *v, INT nl, INT nh)
+/* free a DOUBLE vector allocated with vector() */
 {
 	free((FREE_ARG) (v+nl-NR_END));
 }/* end of w1_free_vector */

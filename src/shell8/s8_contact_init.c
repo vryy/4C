@@ -35,16 +35,16 @@ struct _SHELLCONTACT shellcontact;
 ------------------------------------------------------------------------*/
 void s8contact_init(FIELD *actfield, PARTITION* actpart, INTRA *actintra)
 {
-int           i,j,k,l;
-int           myrank,nproc;
-int           numnp;
+INT           i,j,k,l;
+INT           myrank,nproc;
+INT           numnp;
 SHELLNODE    *actcnode;
 NODE         *actnode;
 ELEMENT      *actele;
-double        halfthick;
-int           foundit;
-double        diag;
-double        dx,dy,dz;
+DOUBLE        halfthick;
+INT           foundit;
+DOUBLE        diag;
+DOUBLE        dx,dy,dz;
 #ifdef DEBUG 
 dstrc_enter("s8contact_init");
 #endif

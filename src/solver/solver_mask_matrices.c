@@ -52,23 +52,23 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void mask_global_matrices()
 {
-int i,j;               /* some counters */
-int actndis;               /* actual number of sysarray=discretisation */
-int isaztec_msr  =0;       /* flag for a certain sparsity pattern */
-int ishypre      =0;
-int isucchb      =0;
-int isdense      =0;
-int ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
-int isrc_ptr     =0;
-int iscolsol     =0;
-int isspooles    =0;
-int isumfpack    =0;
-int ismlpcg      =0;
-int nsysarray    =1;
-int actdis       =0;
+INT i,j;               /* some counters */
+INT actndis;               /* actual number of sysarray=discretisation */
+INT isaztec_msr  =0;       /* flag for a certain sparsity pattern */
+INT ishypre      =0;
+INT isucchb      =0;
+INT isdense      =0;
+INT ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
+INT isrc_ptr     =0;
+INT iscolsol     =0;
+INT isspooles    =0;
+INT isumfpack    =0;
+INT ismlpcg      =0;
+INT nsysarray    =1;
+INT actdis       =0;
 
-int numeq;
-int numeq_total;
+INT numeq;
+INT numeq_total;
 
 FIELD      *actfield;      /* the active field */
 PARTITION  *actpart;       /* my partition of the active field */

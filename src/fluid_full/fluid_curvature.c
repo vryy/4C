@@ -37,7 +37,7 @@ void fluid_curvature(FIELD        *actfield,
                      INTRA        *actintra,    
                      CALC_ACTION  *action)    
 {
-int i;
+INT i;
 ELEMENT *actele;
 
 #ifdef DEBUG 

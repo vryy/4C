@@ -5,16 +5,16 @@
  |  create number of distributed vectors - collective call ! m.gee 10/01|
  |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |
  |                             DIST_VECTORs will be allocated to        |
- |  int numvectors       (i)   number of DIST_VECTORs to allocate       |
- |  int numeq_total      (i)   proc-global dimension of the DIST_VECTORs|
- |  int numeq            (i)   proc_local  dimension of the DIST_VECTORs|
- |  char typstr[]        (i)   ="DV" for double-DIST_VECTORs            |
+ |  INT numvectors       (i)   number of DIST_VECTORs to allocate       |
+ |  INT numeq_total      (i)   proc-global dimension of the DIST_VECTORs|
+ |  INT numeq            (i)   proc_local  dimension of the DIST_VECTORs|
+ |  char typstr[]        (i)   ="DV" for DOUBLE-DIST_VECTORs            |
  |  the values in the DIST_VECTORs is NOT initialized                   |
  *----------------------------------------------------------------------*/
-void solserv_create_vec(DIST_VECTOR **vector,int numvectors,int numeq_total,
-                        int numeq,char typstr[])
+void solserv_create_vec(DIST_VECTOR **vector,INT numvectors,INT numeq_total,
+                        INT numeq,char typstr[])
 {
-int                  i;
+INT                  i;
 DIST_VECTOR *actvector;
 #ifdef DEBUG 
 dstrc_enter("solserv_create_vec");
@@ -45,12 +45,12 @@ return;
  |   delete number of distributed vectors - collective call ! m.gee 2/02|
  |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |
  |                             DIST_VECTORs is allocated to             |
- |  int numvectors       (i)   number of DIST_VECTORs to free           |
+ |  INT numvectors       (i)   number of DIST_VECTORs to free           |
  |  the routine frees all DIST_VECTORs in vector and sets vector=NULL   |
  *----------------------------------------------------------------------*/
-void solserv_del_vec(DIST_VECTOR **vector,int numvectors)
+void solserv_del_vec(DIST_VECTOR **vector,INT numvectors)
 {
-int                  i;
+INT                  i;
 DIST_VECTOR *actvector;
 #ifdef DEBUG 
 dstrc_enter("solserv_del_vec");
@@ -78,7 +78,7 @@ return;
  *----------------------------------------------------------------------*/
 void solserv_zero_vec(DIST_VECTOR *disvector)
 {
-int                  i;
+INT                  i;
 #ifdef DEBUG 
 dstrc_enter("solserv_zero_vec");
 #endif
@@ -99,13 +99,13 @@ return;
  |  vec_to->vec.a.dv[i] += vec_from->vec.a.dv[i]*factor                 |
  |  DIST_VECTOR *vec_from (i)   vector to be added to another vector    |
  |  DIST_VECTOR *vec_to   (i/o) vector to be added to                   |
- |  double factor         (i)   scaling factor                          |
+ |  DOUBLE factor         (i)   scaling factor                          |
  *----------------------------------------------------------------------*/
-void solserv_add_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to,double factor)
+void solserv_add_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to,DOUBLE factor)
 {
-int                  i,dim;
-double              *dfrom;
-double              *dto;
+INT                  i,dim;
+DOUBLE              *dfrom;
+DOUBLE              *dto;
 #ifdef DEBUG 
 dstrc_enter("solserv_add_vec");
 #endif
@@ -136,9 +136,9 @@ return;
  *----------------------------------------------------------------------*/
 void solserv_copy_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to)
 {
-int                  i,dim;
-double              *dfrom;
-double              *dto;
+INT                  i,dim;
+DOUBLE              *dfrom;
+DOUBLE              *dto;
 #ifdef DEBUG 
 dstrc_enter("solserv_copy_vec");
 #endif
@@ -165,14 +165,14 @@ return;
  |  *result = sqrt( sumof(vec[i]*vec[i]) )                              |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
- |  double *result        (o) norm of the vector                        |
+ |  DOUBLE *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
-void solserv_vecnorm_euclid(INTRA *actintra,DIST_VECTOR *dist_vec,double *result)
+void solserv_vecnorm_euclid(INTRA *actintra,DIST_VECTOR *dist_vec,DOUBLE *result)
 {
-int                  i;
-double              *vec;
-double               sendbuff;
-int                  numeq;
+INT                  i;
+DOUBLE              *vec;
+DOUBLE               sendbuff;
+INT                  numeq;
 #ifdef DEBUG 
 dstrc_enter("solserv_vecnorm_euclid");
 #endif
@@ -205,14 +205,14 @@ return;
  |  *result = MAX( ABS(vec[i]) )                                        |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
- |  double *result        (o) norm of the vector                        |
+ |  DOUBLE *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
-void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,double *result)
+void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,DOUBLE *result)
 {
-int                  i;
-double              *vec;
-double               sendbuff=0.0;
-int                  numeq;
+INT                  i;
+DOUBLE              *vec;
+DOUBLE               sendbuff=0.0;
+INT                  numeq;
 #ifdef DEBUG 
 dstrc_enter("solserv_vecnorm_Linf");
 #endif
@@ -247,23 +247,23 @@ return;
  |  SPARSE_ARRAY *sysarray   (i) sparse matrix the vector matches in    |
  |                               distribution                           | 
  |  DIST_VECTOR  *dist_vec   (i) vector the value shall be taken from   |
- |  int           indiz      (i) field-local (unsupported) dof number   |
- |  double       *result     (o) value in vector at the given dof       |
+ |  INT           indiz      (i) field-local (unsupported) dof number   |
+ |  DOUBLE       *result     (o) value in vector at the given dof       |
  |                               returned redundant on all procs        |
  *----------------------------------------------------------------------*/
 void solserv_getele_vec(INTRA*actintra,SPARSE_TYP *sysarray_typ,
                         SPARSE_ARRAY *sysarray,DIST_VECTOR *dist_vec,
-                        int indiz,double *result)
+                        INT indiz,DOUBLE *result)
 {
-int                  i;
-int                  imyrank;
-int                  inprocs;
-int                  bcaster;
-int                  recvbuff;
-int                  index;
-int                 *update;
-double              *vec;
-int                  numeq;
+INT                  i;
+INT                  imyrank;
+INT                  inprocs;
+INT                  bcaster;
+INT                  recvbuff;
+INT                  index;
+INT                 *update;
+DOUBLE              *vec;
+INT                  numeq;
 #ifdef DEBUG 
 dstrc_enter("solserv_getele_vec");
 #endif
@@ -347,17 +347,17 @@ return;
  |  INTRA *actintra (i) intra-communicator the DIST_VECTORs live on     |
  |  DIST_VECTOR *dist_vec1 (i) first vector to be multiplied            |
  |  DIST_VECTOR *dist_vec2 (i) scnd  vector to be multiplied            |
- |  double      *dot       (o) result of vector-vector multiplication   |
+ |  DOUBLE      *dot       (o) result of vector-vector multiplication   |
  |                             returned redundant on all procs          |
  *----------------------------------------------------------------------*/
 void solserv_dot_vec(INTRA *actintra,DIST_VECTOR *dist_vec1,
-                     DIST_VECTOR *dist_vec2,double *dot)
+                     DIST_VECTOR *dist_vec2,DOUBLE *dot)
 {
-int                  i;
-double               localsum;
-double               globalsum;
-double              *vec1;
-double              *vec2;
+INT                  i;
+DOUBLE               localsum;
+DOUBLE               globalsum;
+DOUBLE              *vec1;
+DOUBLE              *vec2;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_dot_vec");
@@ -393,13 +393,13 @@ return;
  |  make product between scalar and distr. vector            m.gee 11/01|
  |  vec[i] = vec[i] * scalar                                            |
  |  DIST_VECTOR *dist_vec (i/o) vector to be multiplied by scalar       |
- |  double       scalar   (o)   scalar value                            |
+ |  DOUBLE       scalar   (o)   scalar value                            |
  *----------------------------------------------------------------------*/
-void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,double scalar)
+void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,DOUBLE scalar)
 {
-int                  i;
-int                  dim;
-double              *dptr;
+INT                  i;
+INT                  dim;
+DOUBLE              *dptr;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_dot_vec");
@@ -438,22 +438,22 @@ return;
  |  SPARSE_ARRAY *sysarray (i) sparse matrix matching the distribution  |
  |                             of distvec                               |
  |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
- |  double *fullvec (o) vector of lenght numeq_total will be holding    |
+ |  DOUBLE *fullvec (o) vector of lenght numeq_total will be holding    |
  |                      the values from distvec in correct dof-ordering:|
  |                      fullvec[dof] = value of a certain dof           |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  *----------------------------------------------------------------------*/
 void solserv_reddistvec(DIST_VECTOR *distvec,SPARSE_ARRAY *sysarray,
-                        SPARSE_TYP *sysarray_typ,double *fullvec,
-                        int dim,INTRA *actintra)
+                        SPARSE_TYP *sysarray_typ,DOUBLE *fullvec,
+                        INT dim,INTRA *actintra)
 {
-int             i;
-int             dof,dofperm;
-double         *dfrom;
-int             imyrank;
-int             inprocs;
+INT             i;
+INT             dof,dofperm;
+DOUBLE         *dfrom;
+INT             imyrank;
+INT             inprocs;
 #ifdef PARALLEL 
-static double  *recvbuff;
+static DOUBLE  *recvbuff;
 static ARRAY    recv;    
 #endif
 
@@ -670,20 +670,20 @@ return;
  |  SPARSE_ARRAY *sysarray (i) sparse matrix matching the distribution  |
  |                             of distvec                               |
  |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
- |  double *fullvec (o) vector of lenght numeq_total  holding           |
+ |  DOUBLE *fullvec (o) vector of lenght numeq_total  holding           |
  |                      the values  correct dof-ordering:               |
  |                      fullvec[dof] = value of a certain dof           |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  *----------------------------------------------------------------------*/
 void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
-                            SPARSE_TYP *sysarray_typ,double *fullvec,
-                            int dim,INTRA *actintra)
+                            SPARSE_TYP *sysarray_typ,DOUBLE *fullvec,
+                            INT dim,INTRA *actintra)
 {
-int             i;
-int             dof,dofperm;
-double         *dfrom;
-int             imyrank;
-int             inprocs;
+INT             i;
+INT             dof,dofperm;
+DOUBLE         *dfrom;
+INT             imyrank;
+INT             inprocs;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_distribdistvec");
@@ -798,7 +798,7 @@ return;
  |  FIELD *actfield (i) the active field                                |
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  |  DIST_VECTOR *sol (i) vector of values to be put to the nodes        |
- |  int place        (i) place in the ARRAY node->sol where to put the  |
+ |  INT place        (i) place in the ARRAY node->sol where to put the  |
  |                       values. Every structure NODE has an ARRAY sol  |
  |                       of type sol.a.da[place][0..numdf-1]            |
  |                       if place >= actual dimensions of the ARRAY sol |
@@ -809,18 +809,18 @@ return;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,
+                          INT place,SPARSE_ARRAY *sysarray,
                           SPARSE_TYP *sysarray_typ)
 {
-int      i,j;
-int      max;
-int      diff;
-int      dof;
+INT      i,j;
+INT      max;
+INT      diff;
+INT      dof;
 
-int      numeq_total;
+INT      numeq_total;
 NODE    *actnode;
 ARRAY    result_a;
-double  *result;
+DOUBLE  *result;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_result_total");
@@ -869,17 +869,17 @@ return;
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
+                          INT place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
 {
-int      i,j;
-int      max;
-int      diff;
-int      dof;
+INT      i,j;
+INT      max;
+INT      diff;
+INT      dof;
 
-int      numeq_total;
+INT      numeq_total;
 NODE    *actnode;
 ARRAY    result_a;
-double  *result;
+DOUBLE  *result;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_result_incre");
@@ -929,18 +929,18 @@ return;
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,
+                          INT place,SPARSE_ARRAY *sysarray,
                           SPARSE_TYP *sysarray_typ)
 {
-int      i,j;
-int      max;
-int      diff;
-int      dof;
+INT      i,j;
+INT      max;
+INT      diff;
+INT      dof;
 
-int      numeq_total;
+INT      numeq_total;
 NODE    *actnode;
 ARRAY    result_a;
-double  *result;
+DOUBLE  *result;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_result_resid");
@@ -986,18 +986,18 @@ return;
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_mf(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,
+                          INT place,SPARSE_ARRAY *sysarray,
                           SPARSE_TYP *sysarray_typ)
 {
-int      i,j;
-int      max;
-int      diff;
-int      dof;
+INT      i,j;
+INT      max;
+INT      diff;
+INT      dof;
 
-int      numeq_total;
+INT      numeq_total;
 NODE    *actnode;
 ARRAY    result_a;
-double  *result;
+DOUBLE  *result;
 
 #ifdef DEBUG 
 dstrc_enter("solserv_result_mf");

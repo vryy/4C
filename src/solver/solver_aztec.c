@@ -20,25 +20,25 @@ void solver_az_msr(
                       struct _AZ_ARRAY_MSR   *msr_array,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
-                      int                     option
+                      INT                     option
                      )
 {
 #ifdef AZTEC_PACKAGE
-int         i;
-int         dim;
-int         reuse;
-int         azname;
+INT         i;
+INT         dim;
+INT         reuse;
+INT         azname;
 AZVAR      *azvar;
 
-double     *dfrom,*dto;
+DOUBLE     *dfrom,*dto;
 
-double     *tmpsol;
+DOUBLE     *tmpsol;
 ARRAY       tmpsol_a;
 
-double     *tmprhs;
+DOUBLE     *tmprhs;
 ARRAY       tmprhs_a;
 
-double      l2norm;
+DOUBLE      l2norm;
 #ifdef DEBUG 
 dstrc_enter("solver_az_msr");
 #endif
@@ -322,21 +322,21 @@ free(msr_array->update_index);         msr_array->update_index  =NULL;
 free(msr_array->extern_index);         msr_array->extern_index  =NULL;
 free(msr_array->data_org);             msr_array->data_org      =NULL;
 /*----------------------------------------- check for success of solver */
-if ( (double)(msr_array->status[AZ_why]) != AZ_normal )
+if ( (DOUBLE)(msr_array->status[AZ_why]) != AZ_normal )
 {
    if (actintra->intra_rank==0)
    {
       /*----------------------------------------------------- breakdown */
-      if ( (double)(msr_array->status[AZ_why]) == AZ_breakdown )
+      if ( (DOUBLE)(msr_array->status[AZ_why]) == AZ_breakdown )
       dserror("Numerical breakdown occured in solver Aztec -> Abort");
       /*------------------------------------numerical loss of precision */
-      if ( (double)(msr_array->status[AZ_why]) == AZ_loss )
+      if ( (DOUBLE)(msr_array->status[AZ_why]) == AZ_loss )
       {
           printf("RANK 0: AZTEC: Numerical loss of precision occured! continue...\n");
           fprintf(allfiles.out_err,"RANK 0: AZTEC: Numerical loss of precision occured, continue...\n");
       }
       /*------------------------------------------------------ ill cond */
-      if ( (double)(msr_array->status[AZ_why]) == AZ_ill_cond )
+      if ( (DOUBLE)(msr_array->status[AZ_why]) == AZ_ill_cond )
       {
          printf("RANK 0: AZTEC: Preconditioning ill-conditioned or singular,\n");
          printf("               solution is least square ! continue...\n");
@@ -344,7 +344,7 @@ if ( (double)(msr_array->status[AZ_why]) != AZ_normal )
          fprintf(allfiles.out_err,"               solution is least square ! continue...\n");
       }
       /*-------------------------- maximum number of iterations reached */
-      if ( (double)(msr_array->status[AZ_why]) == AZ_maxits )
+      if ( (DOUBLE)(msr_array->status[AZ_why]) == AZ_maxits )
       {
          printf("RANK 0: AZTEC: Maximum number of iterations %d reached \n",msr_array->options[AZ_max_iter]);
          fprintf(allfiles.out_err,"RANK 0: AZTEC: Maximum number of iterations %d reached \n",msr_array->options[AZ_max_iter]);
@@ -361,7 +361,7 @@ if (actintra->intra_rank==0)
    if (actsolv->fieldtyp==ale)       fprintf(allfiles.out_err,"Ale:\n");
    fprintf(allfiles.out_err,"AZTEC: %d unknowns %d iterations %f solving time\n",
    sol->numeq_total,
-   (int)(msr_array->status[AZ_its]),
+   (INT)(msr_array->status[AZ_its]),
    msr_array->status[AZ_solve_time]);
 }
 /*----------------------------------------------------------- set flags */

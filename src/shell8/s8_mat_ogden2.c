@@ -12,7 +12,7 @@ void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3
 INT                 i,j,k,l,p,a,b,c,d;
 DOUBLE              nue;
 DOUBLE              beta,minusbeta;
-static double       monethird;
+static DOUBLE       monethird;
 DOUBLE             *alfap;
 DOUBLE             *mup;
 DOUBLE              lame1;

@@ -224,12 +224,12 @@ void c1_call_matd(ELEMENT   *ele,
 /*----------------------------------------------------------------------*
  | derivative of internal force vector                   al    9/01     |
  *----------------------------------------------------------------------*/
-void c1dfi(double  *F,  /*  force vector integral (stress-resultants)  */
-           double   fac, /*  multiplier for numerical integration       */
-           double **bop, /*  b-operator matrix                          */
-           double *disd, /* displacement derivatives               */
-           int      nd,  /*  total number degrees of freedom of element */
-           double  *fie);/*  internal force vector                      */
+void c1dfi(DOUBLE  *F,  /*  force vector integral (stress-resultants)  */
+           DOUBLE   fac, /*  multiplier for numerical integration       */
+           DOUBLE **bop, /*  b-operator matrix                          */
+           DOUBLE *disd, /* displacement derivatives               */
+           INT      nd,  /*  total number degrees of freedom of element */
+           DOUBLE  *fie);/*  internal force vector                      */
 /*----------------------------------------------------------------------*
  | program for evaluation of principal stresses at given gauss  al 9/01 |
  | point for isoparametric brick element                                |

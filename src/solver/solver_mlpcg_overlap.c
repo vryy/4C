@@ -26,33 +26,33 @@ extern struct _MLPRECOND mlprecond;
 <pre>                                                        m.gee 11/02 
 
 </pre>
-\param z            double*      (o)   the solution of the smoothing
-\param r            double*      (i)   the right hand side
+\param z            DOUBLE*      (o)   the solution of the smoothing
+\param r            DOUBLE*      (i)   the right hand side
 \param csr          DBCSR*       (i)   the matrix to smooth with
-\param nsweep       int          (i)   n in ilu(n)
+\param nsweep       INT          (i)   n in ilu(n)
 \param actintra     INTRA*       (i)   the intra-communicator of this field                  
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_smo_ILUn_overlap(double *z, double *r, DBCSR *csr, int nsweep, INTRA *actintra)
+void mlpcg_precond_smo_ILUn_overlap(DOUBLE *z, DOUBLE *r, DBCSR *csr, INT nsweep, INTRA *actintra)
 {
-int            i,j,k,n;
-int            dof,index,nrequest;
-int            myrank,nproc;
+INT            i,j,k,n;
+INT            dof,index,nrequest;
+INT            myrank,nproc;
 DBCSR         *ilu;
 DBCSR         *asm;
 ARRAY          levs,w,jw;
-int            size;
-int            ierr;
+INT            size;
+INT            ierr;
 
-double        *rwork;
-double        *zwork;
+DOUBLE        *rwork;
+DOUBLE        *zwork;
 
-int          **irecv;
+INT          **irecv;
 ARRAY          irecv_a;
-double        *drecv;
+DOUBLE        *drecv;
 ARRAY          drecv_a;
-double       **dsend;
+DOUBLE       **dsend;
 ARRAY          dsend_a;
 
 #ifdef PARALLEL
@@ -78,13 +78,13 @@ if (csr->ilu==NULL)
    mlpcg_csr_localnumsf_overlap(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
-   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
-   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.0);
-   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.0);
-   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.0);
-   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.0);
-   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.0);
+   if (nsweep==1) size = (INT)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (INT)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (INT)((asm->a.fdim+1)*3.0);
+   if (nsweep==4) size = (INT)((asm->a.fdim+1)*4.0);
+   if (nsweep==5) size = (INT)((asm->a.fdim+1)*5.0);
+   if (nsweep==6) size = (INT)((asm->a.fdim+1)*6.0);
+   if (nsweep>=7) size = (INT)((asm->a.fdim+1)*7.0);
    tryagain:
    amdef("ilu_val"  ,&(ilu->a) ,size          ,1,"DV");
    amdef("ilu_bindx",&(ilu->ja),size          ,1,"IV");
@@ -131,7 +131,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size = (int)(size*1.3);
+         size = (INT)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdel(&(ilu->ia));
@@ -161,13 +161,13 @@ else if (csr->ilu->is_factored != mlprecond.ncall && mlprecond.mod==0)
    mlpcg_csr_localnumsf_overlap(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
-   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
-   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.0);
-   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.0);
-   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.0);
-   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.0);
-   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.0);
+   if (nsweep==1) size = (INT)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (INT)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (INT)((asm->a.fdim+1)*3.0);
+   if (nsweep==4) size = (INT)((asm->a.fdim+1)*4.0);
+   if (nsweep==5) size = (INT)((asm->a.fdim+1)*5.0);
+   if (nsweep==6) size = (INT)((asm->a.fdim+1)*6.0);
+   if (nsweep>=7) size = (INT)((asm->a.fdim+1)*7.0);
    tryagain2:
    amdef("levs"     ,&levs     ,size          ,1,"IV");
    amdef("w"        ,&w        ,asm->numeq    ,1,"DV");
@@ -211,7 +211,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size = (int)(size*1.3);
+         size = (INT)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdef("ilu_val"  ,&(ilu->a) ,size          ,1,"DV");
@@ -232,8 +232,8 @@ c           ierr  = -5   --> zero row encountered in A or U.
 /*----------------------------------------------------------------------*/
 ilu = csr->ilu;
 /*----------------------------------------- allocate approbiate z and r */
-rwork = (double*)CCACALLOC(ilu->numeq,sizeof(double));
-zwork = (double*)CCACALLOC(ilu->numeq,sizeof(double));
+rwork = (DOUBLE*)CCACALLOC(ilu->numeq,sizeof(DOUBLE));
+zwork = (DOUBLE*)CCACALLOC(ilu->numeq,sizeof(DOUBLE));
 /*------------------------------------------ fill my sendbuffers from r */
 for (n=0; n<nproc; n++)
 {
@@ -371,72 +371,72 @@ return;
 \param csr        DBCSR*          (i)   the csr matrix
 \param ocsr       DBCSR*          (o)   the csr matrix which overlaps
 \param ilu        DBCSR*          (o)   the csr matrix which overlaps and will hold the ilu 
-\param overlap    int*            (i)   degree of overlap
-\param oupdate    int**           (o)   adress of the overalping update vector pointer
+\param overlap    INT*            (i)   degree of overlap
+\param oupdate    INT**           (o)   adress of the overalping update vector pointer
 \param actintra   INTRA*          (i)   the communicator                 
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_csr_overlap(DBCSR *csr, DBCSR *ocsr, DBCSR *ilu, int overlap, INTRA *actintra)
+void mlpcg_csr_overlap(DBCSR *csr, DBCSR *ocsr, DBCSR *ilu, INT overlap, INTRA *actintra)
 {
-int       i,j,k,n,counter;
-int       fcd;
-int       fcdindex;
-int       index;
-int       owner;
-int       nrequest;
-int       size;
+INT       i,j,k,n,counter;
+INT       fcd;
+INT       fcdindex;
+INT       index;
+INT       owner;
+INT       nrequest;
+INT       size;
 
-int       actrow;
-int       actcol;
-int       colstart;
-int       colend;
+INT       actrow;
+INT       actcol;
+INT       colstart;
+INT       colend;
 
-int       sendtos[MAXPROC][MAXPROC],sendtor[MAXPROC][MAXPROC];
+INT       sendtos[MAXPROC][MAXPROC],sendtor[MAXPROC][MAXPROC];
 
-int       nupdatesend;
-int     **updatesend;
+INT       nupdatesend;
+INT     **updatesend;
 ARRAY     updatesend_a;
 
-int       niasend;
-int     **iasend;
+INT       niasend;
+INT     **iasend;
 ARRAY     iasend_a;
 
-int       njasend;
-int     **jasend;
+INT       njasend;
+INT     **jasend;
 ARRAY     jasend_a;
 
-int       nasend;
-double  **asend;
+INT       nasend;
+DOUBLE  **asend;
 ARRAY     asend_a;
 
-int       noupdate;
-int      *oupdate;
+INT       noupdate;
+INT      *oupdate;
 ARRAY     oupdate_a;
 
-int       nupdaterecv;
-int      *updaterecv;
-int       niarecv;
-int      *iarecv;
-int       njarecv;
-int      *jarecv;
-int       narecv;
-double   *arecv;
+INT       nupdaterecv;
+INT      *updaterecv;
+INT       niarecv;
+INT      *iarecv;
+INT       njarecv;
+INT      *jarecv;
+INT       narecv;
+DOUBLE   *arecv;
 
-int       myrank,nproc;
+INT       myrank,nproc;
 
-int      *update;
-int      *ia;
-int      *ja;
-double   *a;
-int       numeq;
+INT      *update;
+INT      *ia;
+INT      *ja;
+DOUBLE   *a;
+INT       numeq;
 
-int     *irecv;
+INT     *irecv;
 ARRAY    irecv_a;
 
-int      rowguess;
-int      nnzguess;
-int      ione=-1;
+INT      rowguess;
+INT      nnzguess;
+INT      ione=-1;
 
 #ifdef PARALLEL
 MPI_Request   *request;
@@ -498,8 +498,8 @@ for (n=0; n<nproc; n++)
          {
             if (updatesend[n][0]>=nupdatesend)
             {
-               updatesend = amredef(&updatesend_a,nproc,(int)(1.5*nupdatesend+1),"IA");
-               nupdatesend = (int)(1.5*nupdatesend);
+               updatesend = amredef(&updatesend_a,nproc,(INT)(1.5*nupdatesend+1),"IA");
+               nupdatesend = (INT)(1.5*nupdatesend);
             }
             updatesend[n][updatesend[n][0]+1] = actrow;
             updatesend[n][0]++;
@@ -532,8 +532,8 @@ for (i=1; i<overlap; i++)
             if (owner != myrank) continue;
             if (updatesend[n][0]>=nupdatesend)
             {
-               updatesend = amredef(&updatesend_a,nproc,(int)(3.0*nupdatesend+1),"IA");
-               nupdatesend = (int)(3.0*nupdatesend);
+               updatesend = amredef(&updatesend_a,nproc,(INT)(3.0*nupdatesend+1),"IA");
+               nupdatesend = (INT)(3.0*nupdatesend);
             }
             updatesend[n][updatesend[n][0]+1] = actcol;
             updatesend[n][0]++;
@@ -573,7 +573,7 @@ for (n=0; n<nproc; n++)
 }
 if (k != nrequest) dserror("Number of sends wrong");
 /*---------------- make a guess how large my overlapping update will be */
-noupdate = (int)(numeq*3.0);
+noupdate = (INT)(numeq*3.0);
 oupdate = amdef("oupdate",&oupdate_a,noupdate,1,"IV");
 /*------------------------------------------ put my own dofs to oupdate */
 counter=0;
@@ -599,7 +599,7 @@ for (n=0; n<nproc; n++)
    {
       if (counter>=noupdate)
       {
-         noupdate = (int)(numeq*3.0);
+         noupdate = (INT)(numeq*3.0);
          oupdate = amredef(&oupdate_a,noupdate,1,"IV");
       }
       oupdate[counter++] = irecv[i+1];
@@ -613,7 +613,7 @@ for (i=0; i<nrequest; i++) MPI_Wait(&(request[i]),&status);
 CCAFREE(request);
 /*---------------------------------------------- create the matrix ocsr */
 rowguess    = csr->ja.fdim / csr->numeq;
-rowguess    = (int)(rowguess*1.2);
+rowguess    = (INT)(rowguess*1.2);
 nnzguess    = rowguess * noupdate;
 ocsr->numeq = noupdate;
 amdef("update",&(ocsr->update),noupdate  ,1,"IV");
@@ -665,7 +665,7 @@ for (n=0; n<nproc; n++)
       {
          if (counter>=njasend)
          {
-            njasend = (int)(njasend*1.5);
+            njasend = (INT)(njasend*1.5);
             nasend   = njasend;
             jasend   = amredef(&jasend_a,nproc,njasend,"IA");
             asend    = amredef(&asend_a ,nproc,nasend ,"DA");
@@ -719,16 +719,16 @@ for (n=0; n<nproc; n++)
    MPI_Probe(n,0,actintra->MPI_INTRA_COMM,&status);
    MPI_Get_count(&status,MPI_INT,&nupdaterecv);
    niarecv = nupdaterecv+1;
-   updaterecv = (int*)CCAMALLOC(nupdaterecv*sizeof(int));
-   iarecv     = (int*)CCAMALLOC(niarecv    *sizeof(int));
+   updaterecv = (INT*)CCAMALLOC(nupdaterecv*sizeof(INT));
+   iarecv     = (INT*)CCAMALLOC(niarecv    *sizeof(INT));
    MPI_Recv(updaterecv,nupdaterecv,MPI_INT,n,0,actintra->MPI_INTRA_COMM,&status);
    MPI_Recv(iarecv    ,niarecv    ,MPI_INT,n,1,actintra->MPI_INTRA_COMM,&status);
    MPI_Probe(n,2,actintra->MPI_INTRA_COMM,&status);
    MPI_Get_count(&status,MPI_INT,&njarecv);
    if (njarecv != iarecv[nupdaterecv]) dserror("Something wrong with message length");
    narecv = njarecv;
-   jarecv = (int*)CCAMALLOC(njarecv*sizeof(int));
-   arecv = (double*)CCAMALLOC(narecv*sizeof(double));
+   jarecv = (INT*)CCAMALLOC(njarecv*sizeof(INT));
+   arecv = (DOUBLE*)CCAMALLOC(narecv*sizeof(DOUBLE));
    MPI_Recv(jarecv,njarecv,MPI_INT   ,n,2,actintra->MPI_INTRA_COMM,&status);
    MPI_Recv(arecv ,narecv ,MPI_DOUBLE,n,3,actintra->MPI_INTRA_COMM,&status);
    /* put the received stuff to my ocsr matrix */
@@ -813,10 +813,10 @@ return;
 ------------------------------------------------------------------------*/
 void mlpcg_csr_localnumsf_overlap(DBCSR *matrix)
 {
-int        i;
-int        numeq,*ia,*ja,*update,index;
-int        nnz;
-int        shift,*bins;
+INT        i;
+INT        numeq,*ia,*ja,*update,index;
+INT        nnz;
+INT        shift,*bins;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_csr_localnumsf_overlap");
@@ -827,7 +827,7 @@ update = matrix->update.a.iv;
 ia     = matrix->ia.a.iv;
 ja     = matrix->ja.a.iv;
 nnz    = ia[numeq];
-bins   = (int*)CCAMALLOC(((int)(numeq/4+5))*sizeof(int));
+bins   = (INT*)CCAMALLOC(((INT)(numeq/4+5))*sizeof(INT));
 init_quick_find(update,numeq,&shift,bins);
 /*----------------------------------------------------------------------*/
 for (i=0; i<nnz; i++)
@@ -855,40 +855,40 @@ return;
 <pre>                                                        m.gee 1/03 
 
 </pre>
-\param y            double*      (o)   the solution of y += A*x*fac
+\param y            DOUBLE*      (o)   the solution of y += A*x*fac
 \param A            DBCSR*       (i)   the matrix 
-\param x            double*      (i)   the right hand side
-\param fac          double       (i)   the factor fac
-\param init         int          (i)   init=1-> y = A*x*fac init=0->y += A*x*fac
+\param x            DOUBLE*      (i)   the right hand side
+\param fac          DOUBLE       (i)   the factor fac
+\param init         INT          (i)   init=1-> y = A*x*fac init=0->y += A*x*fac
 \param actintra     INTRA*       (i)   the intra-communicator of this field                  
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_matvec_asm_overlap(double       *y, 
+void mlpcg_matvec_asm_overlap(DOUBLE       *y, 
                               DBCSR        *A,
-                              double       *x,
-                              double        fac,
-                              int           init,
+                              DOUBLE       *x,
+                              DOUBLE        fac,
+                              INT           init,
                               INTRA        *actintra)
 {
-int            i,j,k,n,dof,index;
-int            myrank,nproc;
-double         sum;
+INT            i,j,k,n,dof,index;
+INT            myrank,nproc;
+DOUBLE         sum;
 DBCSR         *ilu;
 DBCSR         *asm;
-int           *update,*ia,*ja,numeq;
-double        *a;
+INT           *update,*ia,*ja,numeq;
+DOUBLE        *a;
 
-int            nrequest;
+INT            nrequest;
 
-double        *xwork;
-double        *ywork;
+DOUBLE        *xwork;
+DOUBLE        *ywork;
 
-int          **irecv;
+INT          **irecv;
 ARRAY          irecv_a;
-double        *drecv;
+DOUBLE        *drecv;
 ARRAY          drecv_a;
-double       **dsend;
+DOUBLE       **dsend;
 ARRAY          dsend_a;
 
 #ifdef PARALLEL
@@ -910,8 +910,8 @@ ia     = asm->ia.a.iv;
 ja     = asm->ja.a.iv;
 a      = asm->a.a.dv;
 /*----------------------------------------------------------------------*/
-xwork = (double*)CCACALLOC(ilu->numeq,sizeof(double));
-ywork = (double*)CCACALLOC(ilu->numeq,sizeof(double));
+xwork = (DOUBLE*)CCACALLOC(ilu->numeq,sizeof(DOUBLE));
+ywork = (DOUBLE*)CCACALLOC(ilu->numeq,sizeof(DOUBLE));
 /*--------------------------------------------- fill sendbuffers from x */
 for (n=0; n<nproc; n++)
 {

@@ -43,31 +43,31 @@ static void inpdesign_dvol_fevol(DISCRET *actdis);
 /*----------------------------------------------------------------------*
  | global variables in this file in this file                      3/02 |
  *----------------------------------------------------------------------*/
-static int *ndnode_fenode;
-static int **dnode_fenode;
+static INT *ndnode_fenode;
+static INT **dnode_fenode;
 
-static int *ndline_fenode;
-static int **dline_fenode;
+static INT *ndline_fenode;
+static INT **dline_fenode;
 
-static int *ndsurf_fenode;
-static int **dsurf_fenode;
+static INT *ndsurf_fenode;
+static INT **dsurf_fenode;
 
-static int *ndvol_fenode; 
-static int **dvol_fenode; 
+static INT *ndvol_fenode; 
+static INT **dvol_fenode; 
   
 /*----------------------------------------------------------------------*
  | create the connectivity of the design                           1/02 |
  *----------------------------------------------------------------------*/
 void inpdesign_topology_design()
 {
-int       i,j,k,l;
+INT       i,j,k,l;
 DNODE    *actdnode;
 DLINE    *actdline;
 DSURF    *actdsurf;
 DVOL     *actdvol;
-int       nodeid;
-int       lineid;
-int       surfid;
+INT       nodeid;
+INT       lineid;
+INT       surfid;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_topology_design");
@@ -229,7 +229,7 @@ return;
  *----------------------------------------------------------------------*/
 void inpdesign_topology_fe()
 {
-int i,j,k,l;
+INT i,j,k,l;
 DNODE *actdnode;
 DLINE *actdline;
 DSURF *actdsurf;
@@ -241,20 +241,20 @@ dstrc_enter("inpdesign_topology_fe");
 #endif
 
 /*--------------------------------------------------read fe-design info */
-ndnode_fenode = (int*)CCACALLOC(design->ndnode,sizeof(int));
-dnode_fenode  = (int**)CCACALLOC(design->ndnode,sizeof(int*));
+ndnode_fenode = (INT*)CCACALLOC(design->ndnode,sizeof(INT));
+dnode_fenode  = (INT**)CCACALLOC(design->ndnode,sizeof(INT*));
 if (!ndnode_fenode || !dnode_fenode) dserror("Allocation of memory failed");
 
-ndline_fenode = (int*)CCACALLOC(design->ndline,sizeof(int));;
-dline_fenode  = (int**)CCACALLOC(design->ndline,sizeof(int*));;
+ndline_fenode = (INT*)CCACALLOC(design->ndline,sizeof(INT));;
+dline_fenode  = (INT**)CCACALLOC(design->ndline,sizeof(INT*));;
 if (!ndline_fenode || !dline_fenode) dserror("Allocation of memory failed");
 
-ndsurf_fenode = (int*)CCACALLOC(design->ndsurf,sizeof(int));;
-dsurf_fenode  = (int**)CCACALLOC(design->ndsurf,sizeof(int*));;
+ndsurf_fenode = (INT*)CCACALLOC(design->ndsurf,sizeof(INT));;
+dsurf_fenode  = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
 if (!ndsurf_fenode || !dsurf_fenode) dserror("Allocation of memory failed");
 
-ndvol_fenode = (int*)CCACALLOC(design->ndvol,sizeof(int));;
-dvol_fenode  = (int**)CCACALLOC(design->ndvol,sizeof(int*));;
+ndvol_fenode = (INT*)CCACALLOC(design->ndvol,sizeof(INT));;
+dvol_fenode  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
 if (!ndvol_fenode || !dvol_fenode) dserror("Allocation of memory failed");
 /*----------------------------- read the fe-nodes on each design object */
 inpdesign_dpoint_fenode_read();
@@ -297,8 +297,8 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dpoint_fenode_read()
 {
-int    i,ierr;
-int    dnode;
+INT    i,ierr;
+INT    dnode;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dpoint_fenode_read");
 #endif
@@ -318,7 +318,7 @@ for (i=0; i<design->ndnode; i++)
          if (dnode==i+1)
          {
             ndnode_fenode[i]=1;
-            dnode_fenode[i] = (int*)CCAMALLOC(ndnode_fenode[i]*sizeof(int));
+            dnode_fenode[i] = (INT*)CCAMALLOC(ndnode_fenode[i]*sizeof(INT));
             if (!dnode_fenode[i]) dserror("Allocation of memory failed");
             frint("NODE",&(dnode_fenode[i][0]),&ierr);
             dnode_fenode[i][0]--;
@@ -345,9 +345,9 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dline_fenode_read()
 {
-int    i,ierr;
-int    counter;
-int    dline;
+INT    i,ierr;
+INT    counter;
+INT    dline;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dline_fenode_read");
 #endif
@@ -365,7 +365,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 for (i=0; i<design->ndline; i++)
 {
-   dline_fenode[i] = (int*)CCAMALLOC(ndline_fenode[i]*sizeof(int));
+   dline_fenode[i] = (INT*)CCAMALLOC(ndline_fenode[i]*sizeof(INT));
    if (!dline_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dline */
@@ -405,9 +405,9 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dsurf_fenode_read()
 {
-int    i,ierr;
-int    counter;
-int    dsurf;
+INT    i,ierr;
+INT    counter;
+INT    dsurf;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dsurf_fenode_read");
 #endif
@@ -425,7 +425,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 for (i=0; i<design->ndsurf; i++)
 {
-   dsurf_fenode[i] = (int*)CCAMALLOC(ndsurf_fenode[i]*sizeof(int));
+   dsurf_fenode[i] = (INT*)CCAMALLOC(ndsurf_fenode[i]*sizeof(INT));
    if (!dsurf_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dsurf */
@@ -465,9 +465,9 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dvol_fenode_read()
 {
-int    i,ierr;
-int    counter;
-int    dvol;
+INT    i,ierr;
+INT    counter;
+INT    dvol;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dvol_fenode_read");
 #endif
@@ -485,7 +485,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 for (i=0; i<design->ndvol; i++)
 {
-   dvol_fenode[i] = (int*)CCAMALLOC(ndvol_fenode[i]*sizeof(int));
+   dvol_fenode[i] = (INT*)CCAMALLOC(ndvol_fenode[i]*sizeof(INT));
    if (!dvol_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dvol */
@@ -528,8 +528,8 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dpoint_fenode(DISCRET *actdis)
 {
-int           i,j,k;
-int           nodeId;
+INT           i,j,k;
+INT           nodeId;
 DNODE        *actdnode;
 NODE         *actnode;
 #ifdef DEBUG 
@@ -571,15 +571,15 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dline_feline(DISCRET *actdis)
 {
-int           i,j,k;
+INT           i,j,k;
 DLINE        *actdline;
 GLINE        *actgline;
 GNODE        *actgnode;
-int           nnodeonline;
-int           nodeId;
-int           firstnode,scndnode,thirdnode;
-int           firstmatch,scndmatch,thirdmatch;
-int           linematch;
+INT           nnodeonline;
+INT           nodeId;
+INT           firstnode,scndnode,thirdnode;
+INT           firstmatch,scndmatch,thirdmatch;
+INT           linematch;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dline_feline");
 #endif
@@ -680,15 +680,15 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dsurf_fesurf(DISCRET *actdis)
 {
-int           i,j,k;
+INT           i,j,k;
 GSURF        *actgsurf;
 DSURF        *actdsurf;
 GNODE        *actgnode;
-int           nnodeonsurf;
-int           nodeId;
-int           firstnode,scndnode,thirdnode;
-int           firstmatch,scndmatch,thirdmatch;
-int           surfmatch;
+INT           nnodeonsurf;
+INT           nodeId;
+INT           firstnode,scndnode,thirdnode;
+INT           firstmatch,scndmatch,thirdmatch;
+INT           surfmatch;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dsurf_fesurf");
 #endif
@@ -782,15 +782,15 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dvol_fevol(DISCRET *actdis)
 {
-int           i,j,k;
+INT           i,j,k;
 DVOL         *actdvol;
 GVOL         *actgvol;
 GNODE        *actgnode;
-int           nodeId;
-int           ngnode;
+INT           nodeId;
+INT           ngnode;
 ELEMENT      *actele;
-int           firstnode,scndnode,thirdnode,fourthnode;
-int           firstmatch,scndmatch,thirdmatch,fourthmatch;
+INT           firstnode,scndnode,thirdnode,fourthnode;
+INT           firstmatch,scndmatch,thirdmatch,fourthmatch;
 #ifdef DEBUG 
 dstrc_enter("inpdesign_dvol_fevol");
 #endif

@@ -14,7 +14,7 @@ void solver_mlib(
                       struct _ML_ARRAY_MDS   *mds,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
-                      int                     option
+                      INT                     option
                      )
 {
 /*-----------------------------------------------------------------------|
@@ -23,15 +23,15 @@ void solver_mlib(
 | option = 0:  calculation phase                                         |
 |-----------------------------------------------------------------------*/
 #ifdef MLIB_PACKAGE
-  int i,j,k;
-  static int firstsolve;
-  static int usedmatrix;
-  int localnrhs = 1;
-  int symm;
+  INT i,j,k;
+  static INT firstsolve;
+  static INT usedmatrix;
+  INT localnrhs = 1;
+  INT symm;
   char order[4];
   char usymm[3];
-  double      *vz;
-  double      *vzh;
+  DOUBLE      *vz;
+  DOUBLE      *vzh;
   MLVAR        *mlvar;
   #ifdef DEBUG 
   dstrc_enter("solver_mlib");
@@ -116,8 +116,8 @@ case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
     firstsolve=2;
     break;
   }
-  vz = (double*)CCACALLOC(mds->nnz ,sizeof(double));
-  if (!vz)  dserror("Allocation of memory int 'add_mds' failed");
+  vz = (DOUBLE*)CCACALLOC(mds->nnz ,sizeof(DOUBLE));
+  if (!vz)  dserror("Allocation of memory INT 'add_mds' failed");
   vzh = vz;
   for (i=0; i<mds->nnz; i++) *(vzh++) = 0.0;
   

@@ -53,39 +53,39 @@ implemented yet.
 
 *----------------------------------------------------------------------*/
 void w1_mat_plast_mises_3D(
-                 double     ym,      /*!< young's modulus              */
-                 double     pv,      /*!< poisson's ratio              */
-                 double     ALFAT,   /*!< temperature expansion factor */
-                 double     sigy,    /*!< yield stresse                */
-                 double     hard,    /*!< hardening modulus            */
-                 double     gf,      /*!< fracture energy              */
-                 double     betah,   /*!< controls the iso/kin hard.   */
+                 DOUBLE     ym,      /*!< young's modulus              */
+                 DOUBLE     pv,      /*!< poisson's ratio              */
+                 DOUBLE     ALFAT,   /*!< temperature expansion factor */
+                 DOUBLE     sigy,    /*!< yield stresse                */
+                 DOUBLE     hard,    /*!< hardening modulus            */
+                 DOUBLE     gf,      /*!< fracture energy              */
+                 DOUBLE     betah,   /*!< controls the iso/kin hard.   */
                  ELEMENT   *ele,     /*!< actual element               */
                  WALL_TYPE  wtype,   /*!< plane stress/strain...       */
-                 double   **bop,     /*!< derivative operator          */
-                 double    *gop,
-                 double    *alpha,
-                 int        ip,      /*!< integration point Id         */
-                 double    *stress,  /*!< vector of stresses condensed */
-                 double   **d,       /*!< constitutive matrix          */
-                 int        istore,  /*!< controls storing of stresses */
-                 int        newval)  /*!< controls eval. of stresses   */
+                 DOUBLE   **bop,     /*!< derivative operator          */
+                 DOUBLE    *gop,
+                 DOUBLE    *alpha,
+                 INT        ip,      /*!< integration point Id         */
+                 DOUBLE    *stress,  /*!< vector of stresses condensed */
+                 DOUBLE   **d,       /*!< constitutive matrix          */
+                 INT        istore,  /*!< controls storing of stresses */
+                 INT        newval)  /*!< controls eval. of stresses   */
 {
-int i;
-double stress3D[6];  /*actual stresses*/
-double strain3D[6];  /*actual strains from displacements*/
-double sig3D[6];     /*stresses from last update -> WA [4]->[6]*/
-double eps3D[6];     /*strains from last updat -> WA [4]->[6]*/
-double qn3D[6];      /*backstress vector from last update -> WA [4]->[6]*/
-double sig[4];       /*stresses from last update -> WA*/
-double eps[4];       /*strains from last update -> WA*/
-double sigi[4];      /*stress from last iteration step (not condensed*/
-double epsi[4];      /*strains from last iteration step (with e33)*/
-double di[4];        /*components d41,d42,d43,d44 of th const. tensor from*/
-int iupd=0;
-int yip,yipc;
-double epstn;
-double dia;
+INT i;
+DOUBLE stress3D[6];  /*actual stresses*/
+DOUBLE strain3D[6];  /*actual strains from displacements*/
+DOUBLE sig3D[6];     /*stresses from last update -> WA [4]->[6]*/
+DOUBLE eps3D[6];     /*strains from last updat -> WA [4]->[6]*/
+DOUBLE qn3D[6];      /*backstress vector from last update -> WA [4]->[6]*/
+DOUBLE sig[4];       /*stresses from last update -> WA*/
+DOUBLE eps[4];       /*strains from last update -> WA*/
+DOUBLE sigi[4];      /*stress from last iteration step (not condensed*/
+DOUBLE epsi[4];      /*strains from last iteration step (with e33)*/
+DOUBLE di[4];        /*components d41,d42,d43,d44 of th const. tensor from*/
+INT iupd=0;
+INT yip,yipc;
+DOUBLE epstn;
+DOUBLE dia;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_mat_plast_mises_3D");
@@ -172,34 +172,34 @@ return;
  | constitutive matrix - forces - linear elastic- von Mises - 3D sh 7/02|
  |                Test for 3D Materialmodell in Wall-Element            |
  *----------------------------------------------------------------------*/
-void mat_plast_mises_3D(double ym,      /*young's modulus*/
-                        double pv,      /*poisson's ration*/
-                        double ALFAT,   /*temperature expansion factor*/
-                        double sigy,    /*uniaxial yield stress*/
-                        double hard,    /*hardening modulus*/
-                        double gf,      /*fracture energy*/
-                        double betah,   
-                        double *stress, /*ele stress (-resultant) vector*/      
-                        double **d3D,   /*material matrix 3D*/
-                        int    *iupd,   /*controls update of new stresses to wa */
+void mat_plast_mises_3D(DOUBLE ym,      /*young's modulus*/
+                        DOUBLE pv,      /*poisson's ration*/
+                        DOUBLE ALFAT,   /*temperature expansion factor*/
+                        DOUBLE sigy,    /*uniaxial yield stress*/
+                        DOUBLE hard,    /*hardening modulus*/
+                        DOUBLE gf,      /*fracture energy*/
+                        DOUBLE betah,   
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE **d3D,   /*material matrix 3D*/
+                        INT    *iupd,   /*controls update of new stresses to wa */
 /*zusaetzliche Uebergabeparameter*/
-                        int    *yip,     /*from WA*/
-                        double *epstn,    /*from WA*/
-                        double strain3D[6],/*actual strains from displacements*/
-                        double sig3D[6],   /*stresses from WA*/
-                        double eps3D[6],   /*strains from WA*/
-                        double qn3D[6],    /*backstress vector from WA*/
-                        double dia)      /*internal length parameter from WA*/
+                        INT    *yip,     /*from WA*/
+                        DOUBLE *epstn,    /*from WA*/
+                        DOUBLE strain3D[6],/*actual strains from displacements*/
+                        DOUBLE sig3D[6],   /*stresses from WA*/
+                        DOUBLE eps3D[6],   /*strains from WA*/
+                        DOUBLE qn3D[6],    /*backstress vector from WA*/
+                        DOUBLE dia)      /*internal length parameter from WA*/
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-int isoft;
-double sum, ft;
-double delsig[6];
-double deleps[6];
-double tau[6];
-double dlam;
-double taupre[6];
+INT i,j;
+INT isoft;
+DOUBLE sum, ft;
+DOUBLE delsig[6];
+DOUBLE deleps[6];
+DOUBLE tau[6];
+DOUBLE dlam;
+DOUBLE taupre[6];
 
 #ifdef DEBUG 
 dstrc_enter("mat_plast_mises_3D");
@@ -310,12 +310,12 @@ return;
  | program to establish local material law for 3D               sh 7/02 |
  | stress-strain law for isotropic material.                            |
  *----------------------------------------------------------------------*/
-void mat_linel3D(double ym,   /*young's modulus*/ 
-                 double pv,   /*poisson's ration*/
-                 double **d)  /*material matrix 3D*/
+void mat_linel3D(DOUBLE ym,   /*young's modulus*/ 
+                 DOUBLE pv,   /*poisson's ration*/
+                 DOUBLE **d)  /*material matrix 3D*/
 {
-int i,j;
-double d1,d2,d3;
+INT i,j;
+DOUBLE d1,d2,d3;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mat_linel3D");
@@ -361,20 +361,20 @@ return;
  |        combined linear hardening law                                 |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void yilcr_mises_lin(double E, 
-                     double Eh,
-                     double betah,
-                     double sigy,
-                     double epstn,
-                     int    isoft,
-                     double dia,
-                     double *tau,
-                     double *ft)
+void yilcr_mises_lin(DOUBLE E, 
+                     DOUBLE Eh,
+                     DOUBLE betah,
+                     DOUBLE sigy,
+                     DOUBLE epstn,
+                     INT    isoft,
+                     DOUBLE dia,
+                     DOUBLE *tau,
+                     DOUBLE *ft)
 {
 /*----------------------------------------------------------------------*/
-double sx, sy, sz, sxy, sxz, syz;
-double sigym, hards, epstmax;
-/*double betah = 1.;
+DOUBLE sx, sy, sz, sxy, sxz, syz;
+DOUBLE sigym, hards, epstmax;
+/*DOUBLE betah = 1.;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("yilcr_mises_lin");
@@ -426,30 +426,30 @@ return;
  |   3D-Formulation with combined linear iso/kin. hardening             |
  |   --> see Simo & Hughes p.120f (plane_strain -> quasi 3D             |
  *----------------------------------------------------------------------*/
-void radi_mises_lin(double e, 
-                    double eh,
-                    double betah,
-                    double sigy,
-                    double vnu,
-                    double dia,
-                    double *sigma,
-                    double *qn,
-                    int    isoft,
-                    double *epstn,
-                    double *dlam)
+void radi_mises_lin(DOUBLE e, 
+                    DOUBLE eh,
+                    DOUBLE betah,
+                    DOUBLE sigy,
+                    DOUBLE vnu,
+                    DOUBLE dia,
+                    DOUBLE *sigma,
+                    DOUBLE *qn,
+                    INT    isoft,
+                    DOUBLE *epstn,
+                    DOUBLE *dlam)
 {
 /*----------------------------------------------------------------------*/
-int i;
-int isoft1 = 0;
-int nsoft  = 1;
-double half, ro23, q13, xsi1, xsi2, xsi3, xsi4, xsi5, xsi6, hard2, hards;
-double esig, epst, epstmax; 
-double J2, stps, g;
-/*double betah = 1.0;
+INT i;
+INT isoft1 = 0;
+INT nsoft  = 1;
+DOUBLE half, ro23, q13, xsi1, xsi2, xsi3, xsi4, xsi5, xsi6, hard2, hards;
+DOUBLE esig, epst, epstmax; 
+DOUBLE J2, stps, g;
+/*DOUBLE betah = 1.0;
 /**/
-double fac;
-double x[6];
-double ft;
+DOUBLE fac;
+DOUBLE x[6];
+DOUBLE ft;
 /**/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -538,39 +538,39 @@ return;
  |                                                                      |
  |   see Simo & Huges: plane_strain: S.124 -> 3D                        |
  *----------------------------------------------------------------------*/
-void mapl_mises_lin(double e, 
-                    double eh,
-                    double betah,
-                    double sigy,
-                    double vnu,
-                    double dia,
-                    double *tau,   /*Praediktorspannungen*/
-                    int    isoft,
-                    double *epstn,
-                    double dlam,
-                    double **d)
+void mapl_mises_lin(DOUBLE e, 
+                    DOUBLE eh,
+                    DOUBLE betah,
+                    DOUBLE sigy,
+                    DOUBLE vnu,
+                    DOUBLE dia,
+                    DOUBLE *tau,   /*Praediktorspannungen*/
+                    INT    isoft,
+                    DOUBLE *epstn,
+                    DOUBLE dlam,
+                    DOUBLE **d)
 {
 /*----------------------------------------------------------------------*/
-int i, j;
-int nsoft  = 1;
-double x[6];
-double xsi1, xsi2, xsi3, xsi4, xsi5, xsi6, hards, g, epstmax, dum;
-double k,fac,fac1,fac2;
-double stps,J2;
-double A[6][6] = {1.,1.,1.,0.,0.,0.,
+INT i, j;
+INT nsoft  = 1;
+DOUBLE x[6];
+DOUBLE xsi1, xsi2, xsi3, xsi4, xsi5, xsi6, hards, g, epstmax, dum;
+DOUBLE k,fac,fac1,fac2;
+DOUBLE stps,J2;
+DOUBLE A[6][6] = {1.,1.,1.,0.,0.,0.,
                   1.,1.,1.,0.,0.,0.,
                   1.,1.,1.,0.,0.,0.,
                   0.,0.,0.,0.,0.,0.,
                   0.,0.,0.,0.,0.,0.,
                   0.,0.,0.,0.,0.,0.};
 
-double B[6][6] = { 2./3.,-1./3.,-1./3., 0.  , 0.  , 0. ,
+DOUBLE B[6][6] = { 2./3.,-1./3.,-1./3., 0.  , 0.  , 0. ,
                   -1./3., 2./3.,-1./3., 0.  , 0.  , 0. ,
                   -1./3.,-1./3., 2./3., 0.  , 0.  , 0. ,
                    0.   , 0.   , 0.   ,1./2., 0.  , 0. ,
                    0.   , 0.   , 0.   , 0.  ,1./2., 0. ,
                    0.   , 0.   , 0.   , 0.  , 0.  ,1./2.};
-/*double betah = 1.;
+/*DOUBLE betah = 1.;
                   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

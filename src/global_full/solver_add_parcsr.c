@@ -20,47 +20,47 @@ void  add_parcsr(struct _PARTITION     *actpart,
                    struct _ELEMENT       *actele,
                    struct _H_PARCSR      *parcsr)
 {
-int         i,j,counter;
+INT         i,j,counter;
 
-int         ii;
-int         iiperm;
-int         ii_index;
-int         ii_iscouple;              /* flag whether ii is a coupled dof */
-int         ii_owner;                 /* who is owner of dof ii -> procnumber */
-int         jj;
-int         jjperm;
-int         jj_index;
-int         jj_iscouple;              /* flag whether ii is a coupled dof */
-int         jj_owner;                 /* who is owner of dof ii -> procnumber */
+INT         ii;
+INT         iiperm;
+INT         ii_index;
+INT         ii_iscouple;              /* flag whether ii is a coupled dof */
+INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
+INT         jj;
+INT         jjperm;
+INT         jj_index;
+INT         jj_iscouple;              /* flag whether ii is a coupled dof */
+INT         jj_owner;                 /* who is owner of dof ii -> procnumber */
 
-int         err;
+INT         err;
 
-const int   nrows=1;
-int         rows[1];
-int         ncols[1];
-int         colcounter;
-int         cols[MAX_NNZPERROW];
-double      values[MAX_NNZPERROW];
+const INT   nrows=1;
+INT         rows[1];
+INT         ncols[1];
+INT         colcounter;
+INT         cols[MAX_NNZPERROW];
+DOUBLE      values[MAX_NNZPERROW];
 
-int         nd;
-int         numeq_total;
-int         numeq;
-int         lm[MAXDOFPERELE];         /* location vector for this element */
-int         owner[MAXDOFPERELE];      /* the owner of every dof */
+INT         nd;
+INT         numeq_total;
+INT         numeq;
+INT         lm[MAXDOFPERELE];         /* location vector for this element */
+INT         owner[MAXDOFPERELE];      /* the owner of every dof */
 
-int         myrank;
-int         nprocs;
+INT         myrank;
+INT         nprocs;
 
-int       **isend;
-double    **dsend;
-int         nsend;
+INT       **isend;
+DOUBLE    **dsend;
+INT         nsend;
 
-double    **estif;
-int       **cdofs;
-int         ncdofs;
-int       **perm;
-int        *perm_sizes;
-int       **update;
+DOUBLE    **estif;
+INT       **cdofs;
+INT         ncdofs;
+INT       **perm;
+INT        *perm_sizes;
+INT       **update;
 
 #ifdef DEBUG 
 dstrc_enter("add_parcsr");
@@ -229,10 +229,10 @@ return;
 /*----------------------------------------------------------------------*
  |  fill sendbuffer isend and dsend                          m.gee 10/01|
  *----------------------------------------------------------------------*/
-void add_parcsr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                    double **dsend,double **estif, int numsend)
+void add_parcsr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
+                    DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
-int         k,l;
+INT         k,l;
 #ifdef DEBUG 
 dstrc_enter("add_parcsr_sendbuff");
 #endif
@@ -254,9 +254,9 @@ return;
 /*----------------------------------------------------------------------*
  |  checks coupling for the add_msr routine                   m.gee 9/01|
  *----------------------------------------------------------------------*/
-void add_parcsr_checkcouple(int ii,int **cdofs,int ncdofs,int *iscouple,int *isowner, int nprocs)
+void add_parcsr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,INT *isowner, INT nprocs)
 {
-int         i,j,k;
+INT         i,j,k;
 #ifdef DEBUG 
 dstrc_enter("add_parcsr_checkcouple");
 #endif
@@ -295,37 +295,37 @@ void exchange_coup_parcsr(
                              H_PARCSR      *parcsr
                             )
 {
-int            i,j,k;
-int            ii,ii_index;
-int            jj,jj_index;
-int            start;
-int            lenght;
-int            tag;
-int            source;
-int            owner;
-int            numeq,numeq_total;
-int            numsend;
-int            numrecv;
-int           *bindx;
-int          **update;
-int          **perm;
-int           *perm_sizes;
-int          **isend;
-double       **dsend;
-int          **irecv;
-double       **drecv;
-int            imyrank;
-int            inprocs;
+INT            i,j,k;
+INT            ii,ii_index;
+INT            jj,jj_index;
+INT            start;
+INT            lenght;
+INT            tag;
+INT            source;
+INT            owner;
+INT            numeq,numeq_total;
+INT            numsend;
+INT            numrecv;
+INT           *bindx;
+INT          **update;
+INT          **perm;
+INT           *perm_sizes;
+INT          **isend;
+DOUBLE       **dsend;
+INT          **irecv;
+DOUBLE       **drecv;
+INT            imyrank;
+INT            inprocs;
 
-int            err;
-int            iiperm;
-int            jjperm;
-const int      nrows=1;
-int            rows[1];
-int            ncols[1];
-int            colcounter;
-int            cols[MAX_NNZPERROW];
-double         values[MAX_NNZPERROW];
+INT            err;
+INT            iiperm;
+INT            jjperm;
+const INT      nrows=1;
+INT            rows[1];
+INT            ncols[1];
+INT            colcounter;
+INT            cols[MAX_NNZPERROW];
+DOUBLE         values[MAX_NNZPERROW];
 
 #ifdef PARALLEL 
 MPI_Status    *irecv_status;

@@ -75,9 +75,9 @@ and the type is in partition.h
 /*----------------------------------------------------------------------*
  | main routine                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
-void ntam(int argc, char *argv[])
+void ntam(INT argc, char *argv[])
 {
-double   t0,ti,tc;
+DOUBLE   t0,ti,tc;
 /*---------------------------------------- init devices, tracing, etc...*/
 ntaini(argc,argv);
 /*--------------------------------input phase, input of all information */

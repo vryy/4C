@@ -22,28 +22,28 @@ is calculated:
 
 </pre>
 \param  *dynvar      FLUID_DYN_CALC  (i)
-\param  *eforce      double	    (i/o)   element force vector
-\param   kapomeint   double	     (i)    kapome at integr. point
-\param  *funct       double	     (i)    nat. shape funcs
-\param   fac 	   double	     (i)    weighting factor
-\param   factor2 	   double	     (i)    factor
-\param   iel	   int           (i)	num. of nodes of act. ele
+\param  *eforce      DOUBLE	    (i/o)   element force vector
+\param   kapomeint   DOUBLE	     (i)    kapome at integr. point
+\param  *funct       DOUBLE	     (i)    nat. shape funcs
+\param   fac 	   DOUBLE	     (i)    weighting factor
+\param   factor2 	   DOUBLE	     (i)    factor
+\param   iel	   INT           (i)	num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calgalifkapome(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,
-                  double           kapomeint,  
-                  double          *funct,   
-		      double           fac,     
-                  double           factor2,    
-                  int              iel      
+                  DOUBLE          *eforce,
+                  DOUBLE           kapomeint,  
+                  DOUBLE          *funct,   
+		      DOUBLE           fac,     
+                  DOUBLE           factor2,    
+                  INT              iel      
                  )  
 {
-int    inode,isd;
-int    irow;  
-double facsl;
+INT    inode,isd;
+INT    irow;  
+DOUBLE facsl;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calgalifkapome");
@@ -91,37 +91,37 @@ In this routine the stabilisation part of the iteration forces for kapome
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
-\param   *eforce   double	   (i/o)  element force vector
-\param    kapomeint double	   (i)    kapome at integr. point
-\param   *velint   double	   (i)    vel at integr. point
-\param   *velint_dc  double	   (i)    vel at integr. point for D.C.
-\param   *funct    double	   (i)    nat. shape funcs
-\param  **derxy    double	   (i)    global derivative
-\param    fac 	 double	   (i)    weighting factor
-\param    factor2  double	   (i)    factor
-\param    iel	   int	   (i)    num. of nodes of act. ele
+\param   *eforce   DOUBLE	   (i/o)  element force vector
+\param    kapomeint DOUBLE	   (i)    kapome at integr. point
+\param   *velint   DOUBLE	   (i)    vel at integr. point
+\param   *velint_dc  DOUBLE	   (i)    vel at integr. point for D.C.
+\param   *funct    DOUBLE	   (i)    nat. shape funcs
+\param  **derxy    DOUBLE	   (i)    global derivative
+\param    fac 	 DOUBLE	   (i)    weighting factor
+\param    factor2  DOUBLE	   (i)    factor
+\param    iel	   INT	   (i)    num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabifkapome(
                   FLUID_DYN_CALC  *dynvar, 
                   ELEMENT         *ele,      
-	            double          *eforce,  
-		      double           kapomeint,  
-                  double          *velint,  
-                  double          *velint_dc,  
-                  double          *funct,   
-		      double         **derxy,   
-		      double           fac,     
-                  double           factor2,    
-		      int              iel      
+	            DOUBLE          *eforce,  
+		      DOUBLE           kapomeint,  
+                  DOUBLE          *velint,  
+                  DOUBLE          *velint_dc,  
+                  DOUBLE          *funct,   
+		      DOUBLE         **derxy,   
+		      DOUBLE           fac,     
+                  DOUBLE           factor2,    
+		      INT              iel      
                   )  
 {
-int    inode,isd;
-int    irow;  
-double facsl,facsl_dc;
-double aux,aux_dc;
-double taumu,taumu_dc;
+INT    inode,isd;
+INT    irow;  
+DOUBLE facsl,facsl_dc;
+DOUBLE aux,aux_dc;
+DOUBLE taumu,taumu_dc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabifkapome");

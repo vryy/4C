@@ -15,30 +15,30 @@ and the type is in partition.h
  |  put dofs in update in ascending order                 a.lipka 5/01  |
  *----------------------------------------------------------------------*/
 /* compare the integers - qsort routine*/
-int cmp(const void *a, const void *b )
+INT cmp(const void *a, const void *b )
 {
-    return *(int *)a - * (int *)b;
+    return *(INT *)a - * (INT *)b;
 }
 /*----------------------------------------------------------------------*
  |  realloc memory in dof-dof connectivity list           a.lipka 5/01  |
  *----------------------------------------------------------------------*/
-void dofdof_realloc(int dof1,int **dof_dof)
+void dofdof_realloc(INT dof1,INT **dof_dof)
 {
 /*----------------------------------------------------------------------*/
-  int i=0, j=0;
-  int ac=0;
-  int *hivec;
-  int numdofconected    = 100;
+  INT i=0, j=0;
+  INT ac=0;
+  INT *hivec;
+  INT numdofconected    = 100;
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("dofdof_realloc");
   #endif
 /*----------------------------------------------------------------------*/
   ac = dof_dof[dof1][1];                /* number of allocated integers */
-  hivec = (int*)CCACALLOC(ac ,sizeof(int));
+  hivec = (INT*)CCACALLOC(ac ,sizeof(INT));
   for (i=0; i<ac; i++) hivec[i] = dof_dof[dof1][i];/*copy to 2nd vector */
   CCAFREE(dof_dof[dof1]);                                       /* realloc */
-  dof_dof[dof1] = (int*)CCACALLOC(ac+numdofconected ,sizeof(int));
+  dof_dof[dof1] = (INT*)CCACALLOC(ac+numdofconected ,sizeof(INT));
   for (j=0; j<ac; j++) dof_dof[dof1][j] = hivec[j];         /*copy back */
   dof_dof[dof1][1]  += numdofconected;  /* number of allocated integers */
   CCAFREE(hivec);
@@ -52,11 +52,11 @@ return;
 /*----------------------------------------------------------------------*
  |  eleminate redundant dof's in connectivity list        a.lipka 5/01  |
  *----------------------------------------------------------------------*/
-void delete_redundant_dof(int dof1,int **dof_dof)
+void delete_redundant_dof(INT dof1,INT **dof_dof)
 {
 /*----------------------------------------------------------------------*/
-  int m=0, k=0;
-  int dof11, dof22;
+  INT m=0, k=0;
+  INT dof11, dof22;
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("delete_redundant_dof");
@@ -91,11 +91,11 @@ return;
 /*----------------------------------------------------------------------*
  |  eleminate one dof in connectivity list                a.lipka 5/01  |
  *----------------------------------------------------------------------*/
-void delete_single_dof(int dof1,int **dof_dof)
+void delete_single_dof(INT dof1,INT **dof_dof)
 {
 /*----------------------------------------------------------------------*/
-  int m=0, k=0;
-  int dof22;
+  INT m=0, k=0;
+  INT dof22;
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("delete_single_dof");
@@ -124,18 +124,18 @@ return;
  |  calculate dof topology                                   al  10/01  |
  *----------------------------------------------------------------------*/
 void dofconnectivity(FIELD        *actfield, 
-                        int      **dof_dof,
-                        int       *nnz)
+                        INT      **dof_dof,
+                        INT       *nnz)
 {
 /*----------------------------------------------------------------------*/
-  int j=0, k=0, l=0, n=0;
-  int dof1       = 0;
-  int dof2       = 0;
-  int nel        = 0;
-  int nod        = 0;
-  int hnod       = 0;
-  int cc         = 0;
-  int numdofconected    = 100;
+  INT j=0, k=0, l=0, n=0;
+  INT dof1       = 0;
+  INT dof2       = 0;
+  INT nel        = 0;
+  INT nod        = 0;
+  INT hnod       = 0;
+  INT cc         = 0;
+  INT numdofconected    = 100;
 
   NODE    *actnode, *partnernode;
 /*----------------------------------------------------------------------*/
@@ -154,7 +154,7 @@ void dofconnectivity(FIELD        *actfield,
       if(dof1>=actfield->dis[0].numeq) continue;
       if(dof_dof[dof1]==NULL)
       {
-        dof_dof[dof1]    = (int*)CCACALLOC(numdofconected ,sizeof(int));
+        dof_dof[dof1]    = (INT*)CCACALLOC(numdofconected ,sizeof(INT));
         dof_dof[dof1][0] = 0;
         dof_dof[dof1][1] = numdofconected;
       }
@@ -193,7 +193,7 @@ void dofconnectivity(FIELD        *actfield,
         }
       }
       /* sort dof numbers */
-      qsort((int*) &dof_dof[dof1][2], dof_dof[dof1][0], sizeof(int), cmp);     
+      qsort((INT*) &dof_dof[dof1][2], dof_dof[dof1][0], sizeof(INT), cmp);     
       /* eliminate redundant numbers */
       delete_redundant_dof(dof1, dof_dof);
       /* eliminate actual dof number from list */
@@ -242,14 +242,14 @@ return;
  *----------------------------------------------------------------------*/
 void mds_make_colstr_rowind(SOLVAR       *actsolv,
                             ML_ARRAY_MDS  *mds,
-                            int       **dof_dof,
-                            int         numeq)
+                            INT       **dof_dof,
+                            INT         numeq)
 {
-  int        i,j;
-  int        count;
-  int        dof1, dof2;
-  int        ncdof;
-  int        symm;
+  INT        i,j;
+  INT        count;
+  INT        dof1, dof2;
+  INT        ncdof;
+  INT        symm;
   MLVAR        *mlvar;
  
   #ifdef DEBUG

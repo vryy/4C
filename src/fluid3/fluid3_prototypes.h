@@ -32,9 +32,9 @@ This routine controls the element evaluation:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
-\param  *hasdirich       int	        (o)   element flag
-\param  *hasext          int	        (o)   element flag
-\param   init	         int	        (i)   init flag
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag
+\param   init	         INT	        (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
@@ -47,9 +47,9 @@ void f3_calele(
 	        ARRAY          *etforce_global,
 	        ARRAY          *eiforce_global,
 		ARRAY          *edforce_global,	
-		int            *hasdirich,
-		int            *hasext,		
-		int             init
+		INT            *hasdirich,
+		INT            *hasext,		
+		INT             init
 	       );
 
 /************************************************************************
@@ -93,7 +93,7 @@ void f3_calele(
       5 = streamlength (element length in flow direction		
    ele->e.f3->ninths: number of integration points for streamlength	
       1 = at center of element  					
-      2 = at every int pt used for element.-stab.-matrices		
+      2 = at every INT pt used for element.-stab.-matrices		
    ele->e.f3->istapc: flag for stabilisation parameter calculation	
       1 = at center of element  					
       2 = at every integration point					
@@ -103,7 +103,7 @@ void f3_calele(
    ele->e.f3->c3    /							
    ele->e.f3->istrle: has streamlength to be computed			
    ele->e.f3->iarea: calculation of area length 			
-   ele->e.f3->iduring: calculation during int.-pt.loop  		
+   ele->e.f3->iduring: calculation during INT.-pt.loop  		
    ele->e.f3->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
    ele->e.f3->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
    ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
@@ -116,14 +116,14 @@ void f3_calele(
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *data    FLUID_DATA	       (i)
 \param  *dynvar  FLUID_DYN_CALC        (i/o)
-\param  *funct   double 	       (-)   shape functions
-\param **deriv   double 	       (-)   deriv. of shape funcs
-\param **deriv2  double 	       (-)   2nd deriv. of sh. funcs
-\param **derxy   double 	       (-)   global derivatives
-\param **xjm     double 	       (-)   jacobian matrix
-\param **evel    double 	       (i)   element velocities
-\param  *velint  double 	       (-)   vel. at integr. point
-\param **cutp    double 	       (-)   cutting points
+\param  *funct   DOUBLE 	       (-)   shape functions
+\param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
+\param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
+\param **derxy   DOUBLE 	       (-)   global derivatives
+\param **xjm     DOUBLE 	       (-)   jacobian matrix
+\param **evel    DOUBLE 	       (i)   element velocities
+\param  *velint  DOUBLE 	       (-)   vel. at integr. point
+\param **cutp    DOUBLE 	       (-)   cutting points
 \return void             
 
 ------------------------------------------------------------------------*/
@@ -131,14 +131,14 @@ void f3_calelesize(
 	           ELEMENT         *ele,
 		   FLUID_DATA      *data,
 		   FLUID_DYN_CALC  *dynvar,
-	           double          *funct,
-	           double         **deriv,
-	           double         **deriv2,	       
-                   double         **derxy,
-		   double         **xjm,
-		   double         **evel,	       
-		   double          *velint,
-		   double         **wa1		
+	           DOUBLE          *funct,
+	           DOUBLE         **deriv,
+	           DOUBLE         **deriv2,	       
+                   DOUBLE         **derxy,
+		   DOUBLE         **xjm,
+		   DOUBLE         **evel,	       
+		   DOUBLE          *velint,
+		   DOUBLE         **wa1		
                   );
 /*!---------------------------------------------------------------------
 \brief routine to calculate element size and stabilisation parameter
@@ -151,11 +151,11 @@ is calculated for one element during the integration loop
 </pre>
 \param  *ele     ELEMENT	        (i)    actual element
 \param  *dynvar  FLUID_DYN_CALC         (i/o)
-\param  *velint  double 		(-)    vel at intpoint
-\param  *derxy   double 		(-)    global derivatives
-\param   visc    double 		(i)    fluid viscosity
-\param   iel     int		        (i)    act. num. of ele nodes
-\param   ntyp    int		        (i)    element type
+\param  *velint  DOUBLE 		(-)    vel at intpoint
+\param  *derxy   DOUBLE 		(-)    global derivatives
+\param   visc    DOUBLE 		(i)    fluid viscosity
+\param   iel     INT		        (i)    act. num. of ele nodes
+\param   ntyp    INT		        (i)    element type
 \return void                                               
 \sa f3_calelesize()                               
 
@@ -163,11 +163,11 @@ is calculated for one element during the integration loop
 void f3_calelesize2(
 	             ELEMENT         *ele,
 		     FLUID_DYN_CALC  *dynvar,
-                     double          *velint,	       
-                     double         **derxy,	       	
-		     double           visc,
-		     int              iel,
-		     int              ntyp
+                     DOUBLE          *velint,	       
+                     DOUBLE         **derxy,	       	
+		     DOUBLE           visc,
+		     INT              iel,
+		     INT              ntyp
 		  );
 
 /************************************************************************
@@ -194,23 +194,23 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param	 *funct       double	      (i)    nat. shape functions      
-\param   *edeadn      double          (i)    ele dead load at n
-\param   *edeadng     double          (i)    ele dead load at n+1
-\param	  fac	      double	      (i)    weighting factor
-\param	  iel	      int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param	 *funct       DOUBLE	      (i)    nat. shape functions      
+\param   *edeadn      DOUBLE          (i)    ele dead load at n
+\param   *edeadng     DOUBLE          (i)    ele dead load at n+1
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calgalexfv(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,     
-		  double          *funct,       
-                  double          *edeadn,
-		  double          *edeadng,
-		  double           fac,      
-		  int              iel       
+                  DOUBLE          *eforce,     
+		  DOUBLE          *funct,       
+                  DOUBLE          *edeadn,
+		  DOUBLE          *edeadng,
+		  DOUBLE           fac,      
+		  INT              iel       
               );
 /*!--------------------------------------------------------------------- 
 \brief stabilisation part of external forces for vel dofs
@@ -242,32 +242,32 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *ele         ELEMENT	      (i)    actual element
-\param   *eforce      double	      (i/o)  element force vector
-\param  **derxy,      double	      (i)    global derivatives
-\param  **derxy2,     double	      (i)    2nd. global derivatives    
-\param   *edead       double          (i)    ele dead load at n or n+1
-\param   *velint      double	      (i)    vel. at integr. point
-\param	  fac	      double	      (i)    weighting factor
-\param	  visc	      double	      (i)    fluid viscosity
-\param	  iel	      int	      (i)    num. of nodes in ele
-\param	  ihoel       int	      (i)    flag for higer ord. ele
-\param	  flag	      int	      (i)    flag for n or n+1
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param  **derxy,      DOUBLE	      (i)    global derivatives
+\param  **derxy2,     DOUBLE	      (i)    2nd. global derivatives    
+\param   *edead       DOUBLE          (i)    ele dead load at n or n+1
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  visc	      DOUBLE	      (i)    fluid viscosity
+\param	  iel	      INT	      (i)    num. of nodes in ele
+\param	  ihoel       INT	      (i)    flag for higer ord. ele
+\param	  flag	      INT	      (i)    flag for n or n+1
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabexfv(
                     FLUID_DYN_CALC  *dynvar, 
                     ELEMENT         *ele,  
-                    double          *eforce,     
-		    double         **derxy,
-		    double         **derxy2,      
-                    double          *edead,
-	 	    double          *velint,  
-		    double           fac,      
-                    double           visc,
-		    int              iel,
-		    int              ihoel,
-		    int              flag      
+                    DOUBLE          *eforce,     
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,      
+                    DOUBLE          *edead,
+	 	    DOUBLE          *velint,  
+		    DOUBLE           fac,      
+                    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel,
+		    INT              flag      
                    );
 /*!--------------------------------------------------------------------- 
 \brief stabilisation part of external forces for pre dofs
@@ -298,24 +298,24 @@ NOTE:
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param  **derxy,      double	      (i)    global derivatives    
-\param   *edead       double          (i)    ele dead load at n or n+1
-\param   *velint      double	      (i)    vel. at integr. point
-\param	  fac	      double	      (i)    weighting factor
-\param	  iel	      int	      (i)    num. of nodes in ele
-\param	  flag	      int	      (i)    flag for n or n+1
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param  **derxy,      DOUBLE	      (i)    global derivatives    
+\param   *edead       DOUBLE          (i)    ele dead load at n or n+1
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
+\param	  flag	      INT	      (i)    flag for n or n+1
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabexfp(
                     FLUID_DYN_CALC  *dynvar, 
-                    double          *eforce,     
-		    double         **derxy,       
-                    double          *edead,  
-		    double           fac,      
-		    int              iel,
-		    int              flag      
+                    DOUBLE          *eforce,     
+		    DOUBLE         **derxy,       
+                    DOUBLE          *edead,  
+		    DOUBLE           fac,      
+		    INT              iel,
+		    INT              flag      
                    ) ;		   	      
 
 /************************************************************************
@@ -370,27 +370,27 @@ derivatives with respect to r/s/t are evaluated for
 	    brick1 the same way!!!!	   
 
 </pre>
-\param  *funct     double   (o)    shape functions
-\param **deriv     double   (o)    1st natural deriv. of shape funct.
-\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
-\param   r 	   double   (i)    coordinate
-\param   s 	   double   (i)    coordinate
-\param   t 	   double   (i)    coordinate
+\param  *funct     DOUBLE   (o)    shape functions
+\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r 	   DOUBLE   (i)    coordinate
+\param   s 	   DOUBLE   (i)    coordinate
+\param   t 	   DOUBLE   (i)    coordinate
 \param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   int	    (i)    evaluation flag
+\param   icode	   INT	    (i)    evaluation flag
 \return void                                                                       
 \warning shape functions for hex20/hex27/tet10 not implemented yet!!!
 
 ------------------------------------------------------------------------*/
  void f3_hex(
-            double     *funct,     
-            double    **deriv,    
-            double    **deriv2,   
-	    double      r,        
-            double      s,        
-            double      t,        
+            DOUBLE     *funct,     
+            DOUBLE    **deriv,    
+            DOUBLE    **deriv2,   
+	    DOUBLE      r,        
+            DOUBLE      s,        
+            DOUBLE      t,        
             DIS_TYP     typ,      
-            int         icode     
+            INT         icode     
 	   );
 /*!--------------------------------------------------------------------- 
 \brief shape functions and their natural derivatives for tetraeder
@@ -402,27 +402,27 @@ derivatives with respect to r/s/t are evaluated for
 T E T R A E D E R  
 		     
 </pre>
-\param  *funct     double   (o)    shape functions
-\param **deriv     double   (o)    1st natural deriv. of shape funct.
-\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
-\param   r 	   double   (i)    coordinate
-\param   s 	   double   (i)    coordinate
-\param   t 	   double   (i)    coordinate
+\param  *funct     DOUBLE   (o)    shape functions
+\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r 	   DOUBLE   (i)    coordinate
+\param   s 	   DOUBLE   (i)    coordinate
+\param   t 	   DOUBLE   (i)    coordinate
 \param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   int	    (i)    evaluation flag
+\param   icode	   INT	    (i)    evaluation flag
 \return void                                                                       
 \warning shape functions for TET10 not implemented yet!!!
 
 ------------------------------------------------------------------------*/
 void f3_tet(
-            double     *funct,     
-            double    **deriv,    
-            double    **deriv2,   
-	    double      r,        
-            double      s,        
-            double      t,        
+            DOUBLE     *funct,     
+            DOUBLE    **deriv,    
+            DOUBLE    **deriv2,   
+	    DOUBLE      r,        
+            DOUBLE      s,        
+            DOUBLE      t,        
             DIS_TYP     typ,      
-            int         icode     
+            INT         icode     
 	   );	   
 /*!--------------------------------------------------------------------- 
 \brief jacobian matrix
@@ -432,21 +432,21 @@ void f3_tet(
 In this routine the jacobian matrix and its determinant is calculated
 		     
 </pre>
-\param  *funct     double   (i)    natural shape functions
-\param **deriv     double   (i)    natural deriv. of shape funcs
-\param **xjm       double   (o)    jacobian matrix
-\param  *det       double   (o)    determinant of jacobian matrix
+\param  *funct     DOUBLE   (i)    natural shape functions
+\param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
+\param **xjm       DOUBLE   (o)    jacobian matrix
+\param  *det       DOUBLE   (o)    determinant of jacobian matrix
 \param  *ele       ELEMENT  (i)    actual element
-\param   iel       int      (i)    num. of nodes of act. ele
+\param   iel       INT      (i)    num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_jaco(double     *funct,
-             double    **deriv,
-             double    **xjm,
-             double     *det,
+void f3_jaco(DOUBLE     *funct,
+             DOUBLE    **deriv,
+             DOUBLE    **xjm,
+             DOUBLE     *det,
              ELEMENT    *ele,
-             int         iel);
+             INT         iel);
 /*!--------------------------------------------------------------------- 
 \brief global derivates
 
@@ -456,22 +456,22 @@ In this routine the global derivatives w.r.t. x,y,z at point r,s,t are
 calculated.
 		     
 </pre>
-\param **derxy     double   (o)    global derivatives wrt. x/y/z
-\param **deriv     double   (i)    derivatives of shape functions
-\param **xjm       double   (i)    jacobian matrix
-\param **xji       double   (-)    inverse of jacobian
-\param   det       double   (i)    jacobian determinant
-\param   iel       int      (i)    number of nodes in actual element
+\param **derxy     DOUBLE   (o)    global derivatives wrt. x/y/z
+\param **deriv     DOUBLE   (i)    derivatives of shape functions
+\param **xjm       DOUBLE   (i)    jacobian matrix
+\param **xji       DOUBLE   (-)    inverse of jacobian
+\param   det       DOUBLE   (i)    jacobian determinant
+\param   iel       INT      (i)    number of nodes in actual element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_gder(
-              double   **derxy,     
-	      double   **deriv,    
-	      double   **xjm,      
-	      double   **xji,      
-	      double     det,      
-	      int        iel       
+              DOUBLE   **derxy,     
+	      DOUBLE   **deriv,    
+	      DOUBLE   **xjm,      
+	      DOUBLE   **xji,      
+	      DOUBLE     det,      
+	      INT        iel       
 	    );
 /*!--------------------------------------------------------------------- 
 \brief global coordinates
@@ -482,18 +482,18 @@ In this routine the global coordinates for given shape function values
 are set.
 		     
 </pre>
-\param *funct      double   (i)    shape functions
-\param *ele        double   (i)    actual element
-\param  iel        double   (i)    number of nodes in act. element
-\param *gcoor      double   (o)    global coordinates
+\param *funct      DOUBLE   (i)    shape functions
+\param *ele        DOUBLE   (i)    actual element
+\param  iel        DOUBLE   (i)    number of nodes in act. element
+\param *gcoor      DOUBLE   (o)    global coordinates
 \return void                      
 
 ------------------------------------------------------------------------*/
 void f3_gcoor(
-              double     *funct,     
+              DOUBLE     *funct,     
               ELEMENT    *ele,
-	      int         iel,      
-	      double     *gcoor      
+	      INT         iel,      
+	      DOUBLE     *gcoor      
 	     );
 /*!--------------------------------------------------------------------- 
 \brief second global derivatives
@@ -505,25 +505,25 @@ are calculated.
 		     
 </pre>
 \param  *ele 	   ELEMENT  (i)    actual element
-\param **xjm 	   double   (i)    jacobian matrix
-\param **bm 	   double   (-)    working array
-\param **xder2     double   (-)    working array
-\param **derxy     double   (i)    glob. coord.. deriv.
-\param **derxy2    double   (o)    2nd. glob. coord. deriv.
-\param **deriv2    double   (i)    2nd. nat. deriv. of shape funcs
-\param   iel	   int	    (i)    number of nodes of actual ele
+\param **xjm 	   DOUBLE   (i)    jacobian matrix
+\param **bm 	   DOUBLE   (-)    working array
+\param **xder2     DOUBLE   (-)    working array
+\param **derxy     DOUBLE   (i)    glob. coord.. deriv.
+\param **derxy2    DOUBLE   (o)    2nd. glob. coord. deriv.
+\param **deriv2    DOUBLE   (i)    2nd. nat. deriv. of shape funcs
+\param   iel	   INT	    (i)    number of nodes of actual ele
 \return void        
 
 ------------------------------------------------------------------------*/
 void f3_gder2(
                ELEMENT     *ele,
-	       double     **xjm,            
-               double     **bm,
-	       double     **xder2,
-	       double     **derxy,
-	       double     **derxy2,
-               double     **deriv2,
-	       int          iel
+	       DOUBLE     **xjm,            
+               DOUBLE     **bm,
+	       DOUBLE     **xder2,
+	       DOUBLE     **derxy,
+	       DOUBLE     **derxy2,
+               DOUBLE     **deriv2,
+	       INT          iel
 	     );
 	     	     	    	     
 /************************************************************************
@@ -555,27 +555,27 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)  ele stiffness matrix
-\param  *velint    double	   (i)    vel at int point
-\param **vderxy    double	   (i)    global vel derivatives
-\param  *funct     double	   (i)    nat. shape funcs
-\param **derxy     double	   (i)    global coord. deriv.
-\param   fac 	   double	   (i)    weighting factor	      
-\param   visc      double	   (i)    fluid viscosity	     
-\param   iel	   int  	   (i)	  number of nodes of act. ele
+\param **estif     DOUBLE	   (i/o)  ele stiffness matrix
+\param  *velint    DOUBLE	   (i)    vel at INT point
+\param **vderxy    DOUBLE	   (i)    global vel derivatives
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param **derxy     DOUBLE	   (i)    global coord. deriv.
+\param   fac 	   DOUBLE	   (i)    weighting factor	      
+\param   visc      DOUBLE	   (i)    fluid viscosity	     
+\param   iel	   INT  	   (i)	  number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calkvv(
                 FLUID_DYN_CALC  *dynvar,
-		double         **estif,
-		double          *velint,
-		double         **vderxy,
-		double          *funct,
-		double         **derxy,
-		double           fac,
-		double           visc,
-		int              iel		 
+		DOUBLE         **estif,
+		DOUBLE          *velint,
+		DOUBLE         **vderxy,
+		DOUBLE          *funct,
+		DOUBLE         **derxy,
+		DOUBLE           fac,
+		DOUBLE           visc,
+		INT              iel		 
               );
 /*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Kvp
@@ -599,20 +599,20 @@ NOTE: there's only one elestif
       --> Kpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)] 
       
 </pre>
-\param **estif     double	   (i/o)  ele stiffness matrix
-\param  *funct     double	   (i)    nat. shape funcs
-\param **derxy     double	   (i)    global coord. deriv.
-\param   fac       double	   (i)    weighting factor
-\param   iel       int  	   (i)    number of nodes of act. ele
+\param **estif     DOUBLE	   (i/o)  ele stiffness matrix
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param **derxy     DOUBLE	   (i)    global coord. deriv.
+\param   fac       DOUBLE	   (i)    weighting factor
+\param   iel       INT  	   (i)    number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calkvp(
-		double         **estif,
-		double          *funct,
-		double         **derxy,
-		double           fac,
-		int              iel                
+		DOUBLE         **estif,
+		DOUBLE          *funct,
+		DOUBLE         **derxy,
+		DOUBLE           fac,
+		INT              iel                
               );
 /*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Mvv
@@ -631,18 +631,18 @@ NOTE: there's only one elestif
       --> Mvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)] 
       
 </pre>
-\param **emass     double	   (i/o)  ele mass matrix
-\param  *funct     double	   (i)    nat. shape funcs
-\param   fac       double	   (i)    weighting factor
-\param   iel       int   	   (i)    number of nodes of act. ele
+\param **emass     DOUBLE	   (i/o)  ele mass matrix
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param   fac       DOUBLE	   (i)    weighting factor
+\param   iel       INT   	   (i)    number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calmvv(
-		double         **estif,
-		double          *funct,
-		double           fac,
-		int              iel  
+		DOUBLE         **estif,
+		DOUBLE          *funct,
+		DOUBLE           fac,
+		INT              iel  
               );
 	      	      	      
 
@@ -661,30 +661,30 @@ time-RHS for one fluid2 element is calculated
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param  *hasext    int             (i)    element flag
-\param **estif     double	   (o)    element stiffness matrix
-\param **emass     double	   (o)    element mass matrix
-\param  *etforce   double	   (o)    element time force vector
-\param  *eiforce   double	   (o)    element iter force vector
-\param  *funct     double	   (-)    natural shape functions
-\param **deriv     double	   (-)	  deriv. of nat. shape funcs
-\param **deriv2    double	   (-)    2nd deriv. of nat. shape f.
-\param **xjm	   double	   (-)    jacobian matrix
-\param **derxy     double	   (-)	  global derivatives
-\param **derxy2    double	   (-)    2nd global derivatives
-\param **eveln     double	   (i)    ele vel. at time n
-\param **evelng    double	   (i)    ele vel. at time n+g
-\param  *epren     double	   (-)    ele pres. at time n
-\param  *edeadn    double	   (-)    ele dead load (selfweight) at n 
-\param  *edeadng   double	   (-)    ele dead load (selfweight) at n+1
-\param  *velint    double	   (-)    vel at integration point
-\param  *vel2int   double	   (-)    vel at integration point
-\param  *covint    double	   (-)    conv. vel. at integr. point
-\param **vderxy    double	   (-)    global vel. derivatives
-\param  *pderxy    double	   (-)    global pres. derivatives
-\param **vderxy2   double	   (-)    2nd global vel. deriv.
-\param **wa1	   double	   (-)    working array
-\param **wa2	   double	   (-)    working array
+\param  *hasext    INT             (i)    element flag
+\param **estif     DOUBLE	   (o)    element stiffness matrix
+\param **emass     DOUBLE	   (o)    element mass matrix
+\param  *etforce   DOUBLE	   (o)    element time force vector
+\param  *eiforce   DOUBLE	   (o)    element iter force vector
+\param  *funct     DOUBLE	   (-)    natural shape functions
+\param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
+\param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
+\param **xjm	   DOUBLE	   (-)    jacobian matrix
+\param **derxy     DOUBLE	   (-)	  global derivatives
+\param **derxy2    DOUBLE	   (-)    2nd global derivatives
+\param **eveln     DOUBLE	   (i)    ele vel. at time n
+\param **evelng    DOUBLE	   (i)    ele vel. at time n+g
+\param  *epren     DOUBLE	   (-)    ele pres. at time n
+\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n 
+\param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
+\param  *velint    DOUBLE	   (-)    vel at integration point
+\param  *vel2int   DOUBLE	   (-)    vel at integration point
+\param  *covint    DOUBLE	   (-)    conv. vel. at integr. point
+\param **vderxy    DOUBLE	   (-)    global vel. derivatives
+\param  *pderxy    DOUBLE	   (-)    global pres. derivatives
+\param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
+\param **wa1	   DOUBLE	   (-)    working array
+\param **wa2	   DOUBLE	   (-)    working array
 \return void                                                   
 
 ------------------------------------------------------------------------*/
@@ -692,30 +692,30 @@ void f3_calint(
                FLUID_DATA      *data, 
 	       ELEMENT         *ele,
 	       FLUID_DYN_CALC  *dynvar,
-               int             *hasext,
-               double         **estif,
-	       double         **emass,
-	       double          *etforce,
-	       double          *eiforce,
-	       double          *funct,
-	       double         **deriv,
-	       double         **deriv2,
-	       double         **xjm,
-	       double         **derxy,
-	       double         **derxy2,
-	       double         **eveln,
-	       double         **evelng,
-	       double          *epren,
-	       double          *edeadn,
-	       double          *edeadng,
-	       double          *velint,
-	       double          *vel2int,
-	       double          *covint,
-	       double         **vderxy,
-	       double          *pderxy,
-	       double         **vderxy2,
-	       double         **wa1,
-	       double         **wa2
+               INT             *hasext,
+               DOUBLE         **estif,
+	       DOUBLE         **emass,
+	       DOUBLE          *etforce,
+	       DOUBLE          *eiforce,
+	       DOUBLE          *funct,
+	       DOUBLE         **deriv,
+	       DOUBLE         **deriv2,
+	       DOUBLE         **xjm,
+	       DOUBLE         **derxy,
+	       DOUBLE         **derxy2,
+	       DOUBLE         **eveln,
+	       DOUBLE         **evelng,
+	       DOUBLE          *epren,
+	       DOUBLE          *edeadn,
+	       DOUBLE          *edeadng,
+	       DOUBLE          *velint,
+	       DOUBLE          *vel2int,
+	       DOUBLE          *covint,
+	       DOUBLE         **vderxy,
+	       DOUBLE          *pderxy,
+	       DOUBLE         **vderxy2,
+	       DOUBLE         **wa1,
+	       DOUBLE         **wa2
 	      );      	      	      	     	     	    	   	   
 
 /************************************************************************
@@ -738,21 +738,21 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param  *eforce    double	   (i/o)  element force vector
-\param  *covint    double	   (i)	  conv. vels at int. point
-\param  *funct     double	   (i)    nat. shape funcs
-\param   fac 	   double	   (i)    weighting factor
-\param	 iel	   int		   (i)	  num. of nodes of act. ele
+\param  *eforce    DOUBLE	   (i/o)  element force vector
+\param  *covint    DOUBLE	   (i)	  conv. vels at INT. point
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param   fac 	   DOUBLE	   (i)    weighting factor
+\param	 iel	   INT		   (i)	  num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calgalifv(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,    
-		  double          *covint,
-		  double          *funct,
-		  double           fac,
-		  int              iel
+                  DOUBLE          *eforce,    
+		  DOUBLE          *covint,
+		  DOUBLE          *funct,
+		  DOUBLE           fac,
+		  INT              iel
                  );
 /*!---------------------------------------------------------------------  
 \brief stabilisation part of iteration forces for vel dofs
@@ -777,32 +777,32 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
-\param   *eforce   double	   (i/o)  element force vector
-\param   *covint   double	   (i)    conv. vels at int. point
-\param   *velint   double	   (i)    vel at integr. point
-\param	 *funct    double	   (i)	  nat. shape funcs
-\param  **derxy    double	   (i)	  global derivative
-\param  **derxy2   double	   (i)    2nd global derivative
-\param    fac 	   double	   (i)    weighting factor
-\param    visc     double	   (i)    fluid viscosity
-\param    ihoel    int		   (i)    flag for higher order ele
-\param	  iel	   int		   (i)    num. of nodes of act. ele
+\param   *eforce   DOUBLE	   (i/o)  element force vector
+\param   *covint   DOUBLE	   (i)    conv. vels at INT. point
+\param   *velint   DOUBLE	   (i)    vel at integr. point
+\param	 *funct    DOUBLE	   (i)	  nat. shape funcs
+\param  **derxy    DOUBLE	   (i)	  global derivative
+\param  **derxy2   DOUBLE	   (i)    2nd global derivative
+\param    fac 	   DOUBLE	   (i)    weighting factor
+\param    visc     DOUBLE	   (i)    fluid viscosity
+\param    ihoel    INT		   (i)    flag for higher order ele
+\param	  iel	   INT		   (i)    num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabifv(
                   FLUID_DYN_CALC  *dynvar, 
                   ELEMENT         *ele,
-		  double          *eforce,   /* element force vector */
-		  double          *covint,
-		  double          *velint,
-		  double          *funct,
-		  double         **derxy,
-		  double         **derxy2,
-		  double           fac,
-		  double           visc,
-		  int              ihoel,
-		  int              iel
+		  DOUBLE          *eforce,   /* element force vector */
+		  DOUBLE          *covint,
+		  DOUBLE          *velint,
+		  DOUBLE          *funct,
+		  DOUBLE         **derxy,
+		  DOUBLE         **derxy2,
+		  DOUBLE           fac,
+		  DOUBLE           visc,
+		  INT              ihoel,
+		  INT              iel
                  );
 /*!--------------------------------------------------------------------- 
 \brief stabilisation part of iteration forces for pre dofs
@@ -825,21 +825,21 @@ NOTE:
       
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
-\param   *eforce   double	   (i/o)  element force vector
-\param   *covint   double	   (i)    conv. vels at int. point
-\param  **derxy    double	   (i)    global derivative
-\param    fac      double	   (i)    weighting factor
-\param	  iel	   int  	   (i)	  num. of nodes of act. ele
+\param   *eforce   DOUBLE	   (i/o)  element force vector
+\param   *covint   DOUBLE	   (i)    conv. vels at INT. point
+\param  **derxy    DOUBLE	   (i)    global derivative
+\param    fac      DOUBLE	   (i)    weighting factor
+\param	  iel	   INT  	   (i)	  num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabifp(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,    
-		  double          *covint,
-		  double          **derxy,
-		  double           fac,
-		  int              iel
+                  DOUBLE          *eforce,    
+		  DOUBLE          *covint,
+		  DOUBLE          **derxy,
+		  DOUBLE           fac,
+		  INT              iel
                  );
 		 		 		 
 /************************************************************************
@@ -859,24 +859,24 @@ NOTE: in contradiction to the old programm the kinematic pressure
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
-\param  **eveln    double	   (o)    ele vels at time n
-\param  **evelng   double	   (o)    ele vels at time n+g
-\param   *epren    double	   (o)    ele pres at time n
-\param   *edeadn   double          (o)    ele dead load at n (selfweight)
-\param   *edeadng  double          (o)    ele dead load at n+g (selfweight)
-\param   *hasext   int             (o)    flag for external loads
+\param  **eveln    DOUBLE	   (o)    ele vels at time n
+\param  **evelng   DOUBLE	   (o)    ele vels at time n+g
+\param   *epren    DOUBLE	   (o)    ele pres at time n
+\param   *edeadn   DOUBLE          (o)    ele dead load at n (selfweight)
+\param   *edeadng  DOUBLE          (o)    ele dead load at n+g (selfweight)
+\param   *hasext   INT             (o)    flag for external loads
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calset( 
                 FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,
-                double         **eveln,
-	        double         **evelng,
-	        double          *epren,
-		double          *edeadn,
-		double          *edeadng,
-		int             *hasext		
+                DOUBLE         **eveln,
+	        DOUBLE         **evelng,
+	        DOUBLE          *epren,
+		DOUBLE          *edeadn,
+		DOUBLE          *edeadng,
+		INT             *hasext		
 	      );
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate velocities at integration point
@@ -884,18 +884,18 @@ void f3_calset(
 <pre>                                                         genk 05/02		 
 				      
 </pre>
-\param   *velint   double        (o)   velocities at integration point
-\param   *funct    double        (i)   shape functions
-\param  **evel     double        (i)   velocites at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param   *velint   DOUBLE        (o)   velocities at integration point
+\param   *funct    DOUBLE        (i)   shape functions
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_veli(
-             double  *velint,    
-             double  *funct,    
-	     double **evel,     
-	     int      iel       
+             DOUBLE  *velint,    
+             DOUBLE  *funct,    
+	     DOUBLE **evel,     
+	     INT      iel       
 	    );
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate pressure at integration point
@@ -903,18 +903,18 @@ void f3_veli(
 <pre>                                                         genk 05/02
 				      
 </pre>
-\param  *preint    double        (o)   pressure at integration point
-\param  *funct     double        (i)   shape functions
-\param  *epre      double        (i)   pressure at element nodes
-\param   iel	   int           (i)   number of nodes in this element
+\param  *preint    DOUBLE        (o)   pressure at integration point
+\param  *funct     DOUBLE        (i)   shape functions
+\param  *epre      DOUBLE        (i)   pressure at element nodes
+\param   iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_prei(
-             double  *preint,    
-             double  *funct,    
-	     double  *epre,     
-	     int      iel       
+             DOUBLE  *preint,    
+             DOUBLE  *funct,    
+	     DOUBLE  *epre,     
+	     INT      iel       
 	    );
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate velocity derivatives at integration point
@@ -925,18 +925,18 @@ In this routine the derivatives of the velocity w.r.t x/y are calculated
 vderxy[0][2] = Ux,z  
 				      
 </pre>
-\param  **vderxy   double        (o)   velocity derivativs
-\param  **derxy    double        (i)   globael derivatives
-\param  **evel     double        (i)   velocites at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param  **vderxy   DOUBLE        (o)   velocity derivativs
+\param  **derxy    DOUBLE        (i)   globael derivatives
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_vder(
-             double **vderxy,     
-             double **derxy,    
-	     double **evel,     
-	     int      iel       
+             DOUBLE **vderxy,     
+             DOUBLE **derxy,    
+	     DOUBLE **evel,     
+	     INT      iel       
 	    ) ;
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate velocity derivatives at integration point
@@ -947,18 +947,18 @@ In this routine the derivatives of the velocity w.r.t x/y are calculated
 vderxy[0][2] = Ux,z  
 				      
 </pre>
-\param  **vderxy   double        (o)   velocity derivativs
-\param  **derxy    double        (i)   globael derivatives
-\param  **evel     double        (i)   velocites at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param  **vderxy   DOUBLE        (o)   velocity derivativs
+\param  **derxy    DOUBLE        (i)   globael derivatives
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_vder(
-             double **vderxy,     
-             double **derxy,    
-	     double **evel,     
-	     int      iel       
+             DOUBLE **vderxy,     
+             DOUBLE **derxy,    
+	     DOUBLE **evel,     
+	     INT      iel       
 	    );
 /*!---------------------------------------------------------------------  
 \brief routine to calculate 2nd velocity derivatives at integration point
@@ -973,24 +973,24 @@ w.r.t x/y/z are calculated
    vderxy2[2][5] = Ux,yz 
 				      
 </pre>
-\param  **vderxy2  double        (o)   2nd velocity derivativs
-\param  **derxy2   double        (i)   2nd global derivatives
-\param  **evel     double        (i)   velocites at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param  **vderxy2  DOUBLE        (o)   2nd velocity derivativs
+\param  **derxy2   DOUBLE        (i)   2nd global derivatives
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_vder2(
-             double **vderxy2,   
-             double **derxy2,   
-	     double **evel,     
-	     int      iel       
+             DOUBLE **vderxy2,   
+             DOUBLE **derxy2,   
+	     DOUBLE **evel,     
+	     INT      iel       
 	    );
 void f3_pder(
-             double  *pderxy,    
-             double **derxy,    
-	     double  *epre,     
-	     int      iel       
+             DOUBLE  *pderxy,    
+             DOUBLE **derxy,    
+	     DOUBLE  *epre,     
+	     INT      iel       
 	    );
 /*!--------------------------------------------------------------------- 
 \brief convective velocities 
@@ -1003,16 +1003,16 @@ integration point:
  e.g. 3D: COVx = Ux*Ux,x + Uy*Ux,y + Uz*Ux,z
 
 </pre>
-\param  **vderxy   double        (o)   velocity derivativs
-\param   *velint   double        (i)   velocity at integration point
-\param   *covint   double        (i)   convective velocity at int point
+\param  **vderxy   DOUBLE        (o)   velocity derivativs
+\param   *velint   DOUBLE        (i)   velocity at integration point
+\param   *covint   DOUBLE        (i)   convective velocity at INT point
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_covi(
-             double **vderxy,    
-             double  *velint,   
-	     double  *covint    
+             DOUBLE **vderxy,    
+             DOUBLE  *velint,   
+	     DOUBLE  *covint    
 	    );
 /*!--------------------------------------------------------------------- 
 \brief permutation of element force vector 
@@ -1027,16 +1027,16 @@ is not possible any more!!!!
 
 
 </pre>
-\param   *eforce   double        (i/o) element force vector
-\param  **tmp      double        (i)   working array
-\param    iel	   double        (i)   number of nodes in this ele
+\param   *eforce   DOUBLE        (i/o) element force vector
+\param  **tmp      DOUBLE        (i)   working array
+\param    iel	   DOUBLE        (i)   number of nodes in this ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_permeforce(
-		   double    *eforce,
-		   double   **tmp,
-		   int        iel		   		   
+		   DOUBLE    *eforce,
+		   DOUBLE   **tmp,
+		   INT        iel		   		   
 	          );
 /*!--------------------------------------------------------------------- 
 \brief permutation of element stiffness matrix
@@ -1050,19 +1050,19 @@ routines for the stiffness matrix
 hence a splitting of vel- and pre dofs is not possible any more!!!!				  
 
 </pre>
-\param  **estif   double	 (i/o) ele stiffnes matrix
-\param  **emass   double	 (i)   ele mass matrix
-\param  **tmp     double	 (-)   working array		
-\param	  iel	  int		 (i)   number of nodes in ele
+\param  **estif   DOUBLE	 (i/o) ele stiffnes matrix
+\param  **emass   DOUBLE	 (i)   ele mass matrix
+\param  **tmp     DOUBLE	 (-)   working array		
+\param	  iel	  INT		 (i)   number of nodes in ele
 \param	 *dynvar  FLUID_DYN_CALC
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_permestif(                  
-		   double         **estif,
-		   double         **emass,
-		   double         **tmp,
-		   int              iel,
+		   DOUBLE         **estif,
+		   DOUBLE         **emass,
+		   DOUBLE         **tmp,
+		   INT              iel,
 		   FLUID_DYN_CALC  *dynvar		   		   
 	          );
 		  		  	    	    	    	    	    	    	      
@@ -1113,32 +1113,32 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param **vderxy    double	   (i)     global vel. deriv.
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)	   weighting factor	   
-\param   visc	   double	   (i)	   fluid viscosity
-\param   iel	   int		   (i)	   num. of nodes in ele
-\param   ihoel	   int		   (i)	   flag for higer ord. ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param **vderxy    DOUBLE	   (i)     global vel. deriv.
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)	   weighting factor	   
+\param   visc	   DOUBLE	   (i)	   fluid viscosity
+\param   iel	   INT		   (i)	   num. of nodes in ele
+\param   ihoel	   INT		   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkvv(
                     ELEMENT         *ele,
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-		    double         **vderxy,
-		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,	 
-                    int              ihoel
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE         **vderxy,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,	 
+                    INT              ihoel
                    );
 /*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Kvp
@@ -1163,30 +1163,30 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   visc      double	   (i)     fluid viscosity
-\param   iel	   int  	   (i)	   num. of nodes in ele
-\param   ihoel     int  	   (i)	   flag for higer ord. ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   visc      DOUBLE	   (i)     fluid viscosity
+\param   iel	   INT  	   (i)	   num. of nodes in ele
+\param   ihoel     INT  	   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkvp(
                     ELEMENT         *ele,
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,
-		    int              ihoel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel		 
                    );
 /*!--------------------------------------------------------------------- 
 \brief evaluate stabilisaton part of Mvv
@@ -1211,30 +1211,30 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **emass     double	   (i/o)   ele mass matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   visc      double	   (i)     fluid viscosity
-\param   iel	   int  	   (i)	   num. of nodes in ele
-\param   ihoel     int  	   (i)	   flag for higer ord. ele
+\param **emass     DOUBLE	   (i/o)   ele mass matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   visc      DOUBLE	   (i)     fluid viscosity
+\param   iel	   INT  	   (i)	   num. of nodes in ele
+\param   ihoel     INT  	   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabmvv(
                     ELEMENT         *ele,
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-    		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,
-		    int              ihoel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+    		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel		 
                    );
 /*!--------------------------------------------------------------------- 
 \brief evaluate stabilisaton part of Kpv
@@ -1262,31 +1262,31 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)      
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param  *velint    double	   (i)     vel. at integr. point
-\param **vderxy    double	   (i)     global vel. deriv.
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param **derxy2    double	   (i)     2nd global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   visc      double	   (i)     fluid viscosity
-\param   iel	   int  	   (i)	   num. of nodes in ele
-\param   ihoel     int  	   (i)	   flag for higer ord. ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param  *velint    DOUBLE	   (i)     vel. at integr. point
+\param **vderxy    DOUBLE	   (i)     global vel. deriv.
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param **derxy2    DOUBLE	   (i)     2nd global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   visc      DOUBLE	   (i)     fluid viscosity
+\param   iel	   INT  	   (i)	   num. of nodes in ele
+\param   ihoel     INT  	   (i)	   flag for higer ord. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpv(
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *velint,
-		    double         **vderxy,
-		    double          *funct,
-		    double         **derxy,
-		    double         **derxy2,
-		    double           fac,
-		    double           visc,
-		    int              iel,
-		    int              ihoel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE         **vderxy,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
+		    INT              iel,
+		    INT              ihoel		 
                    );
 /*!--------------------------------------------------------------------- 
 \brief evaluate stabilisaton part of Kpp
@@ -1307,19 +1307,19 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (i/o)   ele stiffness matrix
-\param **derxy     double	   (i)     global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   iel	   int  	   (i)     num. of nodes in ele
+\param **estif     DOUBLE	   (i/o)   ele stiffness matrix
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   iel	   INT  	   (i)     num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpp(
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double         **derxy,
-		    double           fac,
-		    int              iel		 
+		    DOUBLE         **estif,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    INT              iel		 
                    );
 /*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Mpv
@@ -1339,22 +1339,22 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **emass     double	   (i/o)   ele mass matrix
-\param  *funct     double	   (i)     nat. shape functions
-\param **derxy     double	   (i)     global derivatives
-\param   fac	   double	   (i)     weighting factor
-\param   iel	   int		   (i)	   num. of nodes in ele
+\param **emass     DOUBLE	   (i/o)   ele mass matrix
+\param  *funct     DOUBLE	   (i)     nat. shape functions
+\param **derxy     DOUBLE	   (i)     global derivatives
+\param   fac	   DOUBLE	   (i)     weighting factor
+\param   iel	   INT		   (i)	   num. of nodes in ele
 
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabmpv(
 		    FLUID_DYN_CALC  *dynvar,
-		    double         **estif,
-		    double          *funct,
-		    double         **derxy,
-		    double           fac,
-		    int              iel		 
+		    DOUBLE         **estif,
+		    DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    INT              iel		 
                    );
 
 /************************************************************************
@@ -1398,7 +1398,7 @@ void f3_calstabmpv(
       5 = streamlength (element length in flow direction		
    ele->e.f3->ninths: number of integration points for streamlength	
       1 = at center of element  					
-      2 = at every int pt used for element.-stab.-matrices		
+      2 = at every INT pt used for element.-stab.-matrices		
    ele->e.f3->istapc: flag for stabilisation parameter calculation	
       1 = at center of element  					
       2 = at every integration point					
@@ -1408,7 +1408,7 @@ void f3_calstabmpv(
    ele->e.f3->c3    /							
    ele->e.f3->istrle: has streamlength to be computed			
    ele->e.f3->iarea: calculation of area length 			
-   ele->e.f3->iduring: calculation during int.-pt.loop  		
+   ele->e.f3->iduring: calculation during INT.-pt.loop  		
    ele->e.f3->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
    ele->e.f3->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
    ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
@@ -1422,22 +1422,22 @@ void f3_calstabmpv(
 
 \param   *ele,        ELEMENT	      (i)    actual element
 \param   *dynvar,     FLUID_DYN_CALC  (i/o)
-\param   *velint,     double	      (i)    vel at center
-\param    visc,       double	      (i)    viscosity
-\param    iel,        int	      (i)    number of nodes	     
-\param	  ntyp,       int	      (i)    element type
-\param	  iflag       int	      (i)    flag for evaluation
+\param   *velint,     DOUBLE	      (i)    vel at center
+\param    visc,       DOUBLE	      (i)    viscosity
+\param    iel,        INT	      (i)    number of nodes	     
+\param	  ntyp,       INT	      (i)    element type
+\param	  iflag       INT	      (i)    flag for evaluation
 \return void                                                                       
 
 ------------------------------------------------------------------------*/ 
 void f3_calstabpar(
 	            ELEMENT         *ele,      
 		    FLUID_DYN_CALC  *dynvar,
-		    double          *velint,  
-		    double           visc,    
-		    int              iel,     
-		    int              ntyp,    
-		    int              iflag    
+		    DOUBLE          *velint,  
+		    DOUBLE           visc,    
+		    INT              iel,     
+		    INT              ntyp,    
+		    INT              iflag    
                   );
 		  
 /************************************************************************
@@ -1476,33 +1476,33 @@ NOTE:
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param   *velint      double	      (i)    vel. at integr. point
-\param   *vel2int     double	      (i)    vel. at integr. point
-\param   *covint      double	      (i)    conv. vel. at integr. p.
-\param	 *funct       double	      (i)    nat. shape functions      
-\param	**derxy       double	      (i)    global derivatives
-\param	**vderxy      double	      (i/    global vel. deriv.
-\param	  preint      double	      (i)    pres. at integr. point
-\param	  visc	      double	      (i)    fluid viscosity
-\param	  fac	      double	      (i)    weighting factor
-\param	  iel	      int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param   *vel2int     DOUBLE	      (i)    vel. at integr. point
+\param   *covint      DOUBLE	      (i)    conv. vel. at integr. p.
+\param	 *funct       DOUBLE	      (i)    nat. shape functions      
+\param	**derxy       DOUBLE	      (i)    global derivatives
+\param	**vderxy      DOUBLE	      (i/    global vel. deriv.
+\param	  preint      DOUBLE	      (i)    pres. at integr. point
+\param	  visc	      DOUBLE	      (i)    fluid viscosity
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfv(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,    
-		  double          *velint,
-		  double          *vel2int,
-		  double          *covint,
-		  double          *funct,
-		  double         **derxy,
-		  double         **vderxy,
-		  double           preint,
-		  double           visc,
-		  double           fac,
-		  int              iel
+                  DOUBLE          *eforce,    
+		  DOUBLE          *velint,
+		  DOUBLE          *vel2int,
+		  DOUBLE          *covint,
+		  DOUBLE          *funct,
+		  DOUBLE         **derxy,
+		  DOUBLE         **vderxy,
+		  DOUBLE           preint,
+		  DOUBLE           visc,
+		  DOUBLE           fac,
+		  INT              iel
               )  ;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for pre dofs
@@ -1525,21 +1525,21 @@ NOTE:
       
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param   *funct       double	      (i)    nat. shape functions
-\param  **vderxy      double	      (i)    global vel. deriv.
-\param    fac         double	      (i)    weighting factor	     
-\param	  iel	      int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param   *funct       DOUBLE	      (i)    nat. shape functions
+\param  **vderxy      DOUBLE	      (i)    global vel. deriv.
+\param    fac         DOUBLE	      (i)    weighting factor	     
+\param	  iel	      INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfp(
                    FLUID_DYN_CALC  *dynvar, 
-                   double          *eforce,    
-		   double          *funct,
-		   double         **vderxy,
-		   double           fac,
-		   int              iel
+                   DOUBLE          *eforce,    
+		   DOUBLE          *funct,
+		   DOUBLE         **vderxy,
+		   DOUBLE           fac,
+		   INT              iel
                   ) ;
 /*!--------------------------------------------------------------------- 
 \brief stabilisation part of time forces for vel dofs
@@ -1594,38 +1594,38 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 </pre>
 \param   *dynvar     FLUID_DYN_CALC   (i)
 \param   *ele        ELEMENT	      (i)    actual element
-\param   *eforce     double	      (i/o)  element force vector
-\param   *velint     double	      (i)    vel. at integr. point
-\param   *vel2int    double	      (i)    vel. at integr. point
-\param	 *covint     double	      (i)    conv. vel. at integr. p.
-\param	**derxy      double	      (i)    global derivatives
-\param	**derxy2     double	      (i)    2nd global derivatives
-\param	**vderxy     double	      (i)    global vel. deriv.
-\param	**vderxy2    double	      (i)    2nd global vel. deriv.
-\param	 *pderxy     double	      (i)    global pressure deriv.
-\param	  fac	     double	      (i)    weighting factor
-\param	  visc	     double	      (i)    fluid viscosity
-\param	  ihoel      int	      (i)    flag for higer ord. ele
-\param	  iel	     int	      (i)    num. of nodes in ele
+\param   *eforce     DOUBLE	      (i/o)  element force vector
+\param   *velint     DOUBLE	      (i)    vel. at integr. point
+\param   *vel2int    DOUBLE	      (i)    vel. at integr. point
+\param	 *covint     DOUBLE	      (i)    conv. vel. at integr. p.
+\param	**derxy      DOUBLE	      (i)    global derivatives
+\param	**derxy2     DOUBLE	      (i)    2nd global derivatives
+\param	**vderxy     DOUBLE	      (i)    global vel. deriv.
+\param	**vderxy2    DOUBLE	      (i)    2nd global vel. deriv.
+\param	 *pderxy     DOUBLE	      (i)    global pressure deriv.
+\param	  fac	     DOUBLE	      (i)    weighting factor
+\param	  visc	     DOUBLE	      (i)    fluid viscosity
+\param	  ihoel      INT	      (i)    flag for higer ord. ele
+\param	  iel	     INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfv(
                    FLUID_DYN_CALC  *dynvar, 
                    ELEMENT         *ele,
-	           double          *eforce,    
-	 	   double          *velint,
-		   double          *vel2int,
-		   double          *covint,
-		   double         **derxy,
-		   double         **derxy2,
-		   double         **vderxy,
-		   double         **vderxy2,
-		   double          *pderxy,
-		   double           fac,
-		   double           visc,
-		   int              ihoel,
-		   int              iel
+	           DOUBLE          *eforce,    
+	 	   DOUBLE          *velint,
+		   DOUBLE          *vel2int,
+		   DOUBLE          *covint,
+		   DOUBLE         **derxy,
+		   DOUBLE         **derxy2,
+		   DOUBLE         **vderxy,
+		   DOUBLE         **vderxy2,
+		   DOUBLE          *pderxy,
+		   DOUBLE           fac,
+		   DOUBLE           visc,
+		   INT              ihoel,
+		   INT              iel
                   );
 /*!--------------------------------------------------------------------- 
 \brief stabilisation part of time forces for pre dofs
@@ -1656,31 +1656,31 @@ NOTE:
       
 </pre>
 \param   *dynvar,     FLUID_DYN_CALC   (i)
-\param   *eforce,     double	       (i/o)  element force vector
-\param  **derxy,      double	       (i)    global derivatives
-\param  **vderxy2,    double	       (i)    2nd global vel. deriv.
-\param   *velint,     double	       (i)    vel. at integr. point
-\param	 *covint,     double	       (i)    conv. vel. at integr. p.
-\param	 *pderxy,     double	       (i)    global pressure deriv.
-\param	  visc,       double	       (i)    fluid viscosity
-\param	  fac,        double	       (i)    weighting factor
-\param	  ihoel,      int	       (i)    flag for higer ord. ele
-\param	  iel	      int	       (i)    num. of nodes in ele
+\param   *eforce,     DOUBLE	       (i/o)  element force vector
+\param  **derxy,      DOUBLE	       (i)    global derivatives
+\param  **vderxy2,    DOUBLE	       (i)    2nd global vel. deriv.
+\param   *velint,     DOUBLE	       (i)    vel. at integr. point
+\param	 *covint,     DOUBLE	       (i)    conv. vel. at integr. p.
+\param	 *pderxy,     DOUBLE	       (i)    global pressure deriv.
+\param	  visc,       DOUBLE	       (i)    fluid viscosity
+\param	  fac,        DOUBLE	       (i)    weighting factor
+\param	  ihoel,      INT	       (i)    flag for higer ord. ele
+\param	  iel	      INT	       (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfp(
                    FLUID_DYN_CALC  *dynvar, 
-                   double          *eforce,    
-     		   double         **derxy,
-		   double         **vderxy2,
-		   double          *velint,
-		   double          *covint,
-		   double          *pderxy,
-		   double           visc,
-		   double           fac,
-		   int              ihoel,
-		   int              iel
+                   DOUBLE          *eforce,    
+     		   DOUBLE         **derxy,
+		   DOUBLE         **vderxy2,
+		   DOUBLE          *velint,
+		   DOUBLE          *covint,
+		   DOUBLE          *pderxy,
+		   DOUBLE           visc,
+		   DOUBLE           fac,
+		   INT              ihoel,
+		   INT              iel
                   ) ;
 		  		  		  	      
 /************************************************************************
@@ -1699,13 +1699,13 @@ void f3_calstabtfp(
          a local left-system, which leads to a negative determinant 
          of the Jacobian matrix.
 ------------------------------------------------------------------------*/
-void f3inp(ELEMENT *ele, int counter);
+void f3inp(ELEMENT *ele, INT counter);
 
 /************************************************************************
  | f3_intg.c                                                            |
  ************************************************************************/
 void f3_intg(FLUID_DATA      *data,
-             int              option);
+             INT              option);
 
 /************************************************************************
  | f3_main.c                                                            |
@@ -1724,8 +1724,8 @@ void f3_intg(FLUID_DATA      *data,
 \param  *eiforce_global  ARRAY        (o)    element iter force vecotr
 \param	*edforce_global  ARRAY        (o)    ele dirichl. force vector
 \param	*action	         CALC_ACTION  (i)
-\param	*hasdirich	 int          (o)    flag
-\param  *hasext          int          (o)    flag
+\param	*hasdirich	 INT          (o)    flag
+\param  *hasext          INT          (o)    flag
 \return void
 
 ------------------------------------------------------------------------*/
@@ -1739,8 +1739,8 @@ void fluid3(
 	    ARRAY       *eiforce_global,
 	    ARRAY       *edforce_global,
             CALC_ACTION *action,
-	    int         *hasdirich,
-	    int         *hasext,     	    
+	    INT         *hasdirich,
+	    INT         *hasext,     	    
 	    CONTAINER   *container
            );
 	   

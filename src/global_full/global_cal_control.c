@@ -32,7 +32,7 @@ extern struct _FIELD      *field;
  *----------------------------------------------------------------------*/
 void ntacal()
 {
-int i;
+INT i;
 FIELD *actfield;
 
 #ifdef DEBUG 

@@ -39,35 +39,35 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif        double	   (i/o)  ele stiffness matrix
-\param   kapepsint    double	   (i)    kapeps at int point
-\param  *velint       double	   (i)    velocity at int point
-\param   eddyint      double	   (i)    eddy-viscosity at int point
-\param  *kapepsderxy  double	   (i)    kapeps deriv. at int point
-\param  *funct        double	   (i)    nat. shape funcs
-\param **derxy        double	   (i)    global coord. deriv.
-\param   fac 	    double	   (i)    weighting factor	      
-\param   visc         double	   (i)    fluid viscosity	     
-\param   factor        double	   (i)    facor 
-\param   sig          double	   (i)    facor 
-\param   iel	    int  	   (i)    number of nodes of act. ele
+\param **estif        DOUBLE	   (i/o)  ele stiffness matrix
+\param   kapepsint    DOUBLE	   (i)    kapeps at INT point
+\param  *velint       DOUBLE	   (i)    velocity at INT point
+\param   eddyint      DOUBLE	   (i)    eddy-viscosity at INT point
+\param  *kapepsderxy  DOUBLE	   (i)    kapeps deriv. at INT point
+\param  *funct        DOUBLE	   (i)    nat. shape funcs
+\param **derxy        DOUBLE	   (i)    global coord. deriv.
+\param   fac 	    DOUBLE	   (i)    weighting factor	      
+\param   visc         DOUBLE	   (i)    fluid viscosity	     
+\param   factor        DOUBLE	   (i)    facor 
+\param   sig          DOUBLE	   (i)    facor 
+\param   iel	    INT  	   (i)    number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calkkapeps(
                 FLUID_DYN_CALC  *dynvar,
-		    double         **estif,   
-		    double           kapepsint, 
-	          double          *velint,
-                double           eddyint, 
-                double          *kapepsderxy, 
-                double          *funct,  
-		    double         **derxy,  
-		    double           fac,    
-		    double           visc,   
-		    double           factor,
-		    double           sig,
-                int              iel     
+		    DOUBLE         **estif,   
+		    DOUBLE           kapepsint, 
+	          DOUBLE          *velint,
+                DOUBLE           eddyint, 
+                DOUBLE          *kapepsderxy, 
+                DOUBLE          *funct,  
+		    DOUBLE         **derxy,  
+		    DOUBLE           fac,    
+		    DOUBLE           visc,   
+		    DOUBLE           factor,
+		    DOUBLE           sig,
+                INT              iel     
               )
 {
 /*----------------------------------------------------------------------*
@@ -77,8 +77,8 @@ void f2_calkkapeps(
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |  
 /*----------------------------------------------------------------------*/
-int     irow, icol,irn,icn;
-double  auxc;
+INT     irow, icol,irn,icn;
+DOUBLE  auxc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calkkapeps");
@@ -197,18 +197,18 @@ NOTE: there's only one elemass
       --> Mkapeps is stored in emass[0..(iel-1)][0..(iel-1)]  
       
 </pre>
-\param **emass     double	   (i/o)  ele mass matrix
-\param  *funct     double	   (i)    nat. shape funcs
-\param   fac       double	   (i)    weighting factor
-\param   iel       int   	   (i)    number of nodes of act. ele
+\param **emass     DOUBLE	   (i/o)  ele mass matrix
+\param  *funct     DOUBLE	   (i)    nat. shape funcs
+\param   fac       DOUBLE	   (i)    weighting factor
+\param   iel       INT   	   (i)    number of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calmkapeps(
-		double         **emass,  
-		double          *funct, 
-		double           fac,   
-		int              iel    
+		DOUBLE         **emass,  
+		DOUBLE          *funct, 
+		DOUBLE           fac,   
+		INT              iel    
               )
 {
 /*----------------------------------------------------------------------*
@@ -218,8 +218,8 @@ void f2_calmkapeps(
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |  
 /*----------------------------------------------------------------------*/
-int     irow, icol,irn,icn;  
-double  auxc;
+INT     irow, icol,irn,icn;  
+DOUBLE  auxc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calmkapeps");

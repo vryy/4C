@@ -6,8 +6,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -90,18 +90,18 @@ void mlpcg_pcg(DBCSR       *bdcsr,
                DIST_VECTOR *rhs,
                INTRA       *actintra)
 {
-int        i;
-int        myrank,nproc;
-int        numeq;
-double    *r,*z,*p,*q,*x,*b;
-double     rho1,rho2=1.0,beta,alfa;
-double     work;
-double     eps=1000000.0;
-double     t1,t2;
-double     done=1.0;
-int        ione=1;
-int        izero=0;
-int        one=1,two;
+INT        i;
+INT        myrank,nproc;
+INT        numeq;
+DOUBLE    *r,*z,*p,*q,*x,*b;
+DOUBLE     rho1,rho2=1.0,beta,alfa;
+DOUBLE     work;
+DOUBLE     eps=1000000.0;
+DOUBLE     t1,t2;
+DOUBLE     done=1.0;
+INT        ione=1;
+INT        izero=0;
+INT        one=1,two;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_pcg");
@@ -222,8 +222,8 @@ void mlpcg_solver_init(DBCSR       *bdcsr,
                        DIST_VECTOR *rhs,
                        INTRA       *actintra)
 {
-int        myrank,nproc;
-int        numeq;
+INT        myrank,nproc;
+INT        numeq;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_solver_init");
@@ -262,48 +262,48 @@ an effort is taken to make very smooth communication using
 incomplete send, testing for multiple messages, overlayering communication
 with computation 
 </pre>
-\param y        double*        (o)   the result vector of the matrix vector product
+\param y        DOUBLE*        (o)   the result vector of the matrix vector product
 \param bdcsr    DBCSR_ROOT*    (i)   the distributed csr matrix                   
-\param x        double*        (i)   the input vector of the product
-\param fac      double         (i)   scaling factor
-\param init     int            (i)   init=1: y = fac*A*x / init=0: y += fac*A*x
+\param x        DOUBLE*        (i)   the input vector of the product
+\param fac      DOUBLE         (i)   scaling factor
+\param init     INT            (i)   init=1: y = fac*A*x / init=0: y += fac*A*x
 \param actintra INTRA*         (i)   the intra-communicator of this field                  
 \return void   
 \warning the incomplete communication used needs mpi-internal buffer space.
          It may be necessary to allocate extra buffer for MPI, see MPI manual.                                            
 \sa mlpcg_matvec_init
 ------------------------------------------------------------------------*/
-void mlpcg_matvec(double       *y, 
+void mlpcg_matvec(DOUBLE       *y, 
                   DBCSR        *A,
-                  double       *x,
-                  double        fac,
-                  int           init,
+                  DOUBLE       *x,
+                  DOUBLE        fac,
+                  INT           init,
                   INTRA        *actintra)
 {
-int        i,j,counter;
-int        myrank,nproc;
-int        index;
+INT        i,j,counter;
+INT        myrank,nproc;
+INT        index;
 
-int        numeq;
-int        numeq_total;
+INT        numeq;
+INT        numeq_total;
 
-int       *ia,*ja,*update;
-double    *a;
+INT       *ia,*ja,*update;
+DOUBLE    *a;
 
-int       *gdofr,ngdofr;
-double   **rbuff,*cbuff;
+INT       *gdofr,ngdofr;
+DOUBLE   **rbuff,*cbuff;
 
-int      **gdofs;
-double   **sbuff;
+INT      **gdofs;
+DOUBLE   **sbuff;
 
-int        recv_size[MAXPROC],nrecv;
-int        own,flag;
+INT        recv_size[MAXPROC],nrecv;
+INT        own,flag;
 
-int        fcd,fcdindex;
-int        column;
+INT        fcd,fcdindex;
+INT        column;
 
-int        shift;
-int        bins[5000];
+INT        shift;
+INT        bins[5000];
 
 #ifdef PARALLEL 
 MPI_Status local_status;
@@ -541,24 +541,24 @@ initialized by this routine before
 void mlpcg_matvec_init(DBCSR       *bdcsr, 
                        INTRA       *actintra)
 {
-int        i,j,k,counter;
-int        myrank,nproc;
-int        numeq,numeq_total;
-int       *update;
-int       *ja;
-int       *ia;
-int       *gdof,**gdofsend;
-int        fcd,index_fcd;
-int        start_index,end_index;
-int        actdof,index_actdof;
-int        ngdof;
+INT        i,j,k,counter;
+INT        myrank,nproc;
+INT        numeq,numeq_total;
+INT       *update;
+INT       *ja;
+INT       *ia;
+INT       *gdof,**gdofsend;
+INT        fcd,index_fcd;
+INT        start_index,end_index;
+INT        actdof,index_actdof;
+INT        ngdof;
 ARRAY      gupdatesend_a,gupdaterecv_a;
-int       *gupdatesend,*gupdaterecv;
-int        column;
-int        column_owner;
-int        index;
-int        rbuffsize[MAXPROC];
-int        own;
+INT       *gupdatesend,*gupdaterecv;
+INT        column;
+INT        column_owner;
+INT        index;
+INT        rbuffsize[MAXPROC];
+INT        own;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_matvec_init");
@@ -641,8 +641,8 @@ for (i=start_index; i<end_index; i++)
    amredef(&(bdcsr->gdofrecv),bdcsr->gdofrecv.fdim+2000,1,"IV");
    nextdof:;
 }
-qsort((int*)gdof,ngdof,sizeof(int),cmp_int);
-gdof = (int*)amredef(&(bdcsr->gdofrecv),ngdof,1,"IV");
+qsort((INT*)gdof,ngdof,sizeof(INT),cmp_int);
+gdof = (INT*)amredef(&(bdcsr->gdofrecv),ngdof,1,"IV");
 amdef("cbuff",&(bdcsr->computebuff),ngdof,1,"DV");
 /*----------------------------------------------------------------------*/
 /* we have to find the owners of the ghost dofs to store them in the 
@@ -684,7 +684,7 @@ dsassert(counter+1==nproc,"number of processors wrong");
    so we need this information more detailed
 */
 /*----------------------------------------------------------------------*/
-gdofsend = (int**)amdef("gdofsnd",&(bdcsr->gdofsend),nproc,500+1,"IA");
+gdofsend = (INT**)amdef("gdofsnd",&(bdcsr->gdofsend),nproc,500+1,"IA");
 amzero(&(bdcsr->gdofsend));
 /*------------------------------------------- loop my coupled equations */
 for (i=index_fcd; i<numeq; i++)
@@ -753,12 +753,12 @@ gdofsend = amredef(&(bdcsr->gdofsend),nproc,j+1,"IA");
 for (i=0; i<nproc; i++)
 {
    if (i==myrank) continue;
-   qsort((int*)&(gdofsend[i][1]),gdofsend[i][0],sizeof(int),cmp_int);
+   qsort((INT*)&(gdofsend[i][1]),gdofsend[i][0],sizeof(INT),cmp_int);
 }
 /*----------------------------------------------------------------------*/
 /* 
    now we have gdofrecv and gdofsend, we can now allocate appropriate 
-   double precision send- and recvbuffers for the communication
+   DOUBLE precision send- and recvbuffers for the communication
 */
 /*---------------------------- make recvbuff size and allocate recvbuff */   
 counter=0;
@@ -847,17 +847,17 @@ return;
 <pre>                                                        m.gee 9/02 
 make the vector product scalar = x * y with distributed vectors 
 </pre>
-\param scalar   double*    (o)        the result
-\param x        double*    (i)        the vector to update y                  
-\param y        double*    (i)        the updated vector length numeq                   
-\param dim      const int  (i)        the dimension of vectors y and x                   
+\param scalar   DOUBLE*    (o)        the result
+\param x        DOUBLE*    (i)        the vector to update y                  
+\param y        DOUBLE*    (i)        the updated vector length numeq                   
+\param dim      const INT  (i)        the dimension of vectors y and x                   
 \param actintra INTRA*     (i)        the corresponding intra-communicator
 \return void                                         
 
 ------------------------------------------------------------------------*/
-void mlpcg_vecvec(double *scalar, double *x, double *y, int dim, INTRA *actintra)
+void mlpcg_vecvec(DOUBLE *scalar, DOUBLE *x, DOUBLE *y, INT dim, INTRA *actintra)
 {
-double  sbuff=0.0;
+DOUBLE  sbuff=0.0;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_vecvec");
@@ -891,16 +891,16 @@ return;
 return index of a given dof from local dof list. The given vector update
 of length length has to be sorted and continous
 </pre>
-\param dof      int    (i)           the dof the index is needed for                   
-\param update   int*   (i)           the sorted and continous vector update                   
-\param length   int    (i)           length of update                   
-\return the index of dof in update (int) or -1 if index not in range                                              
+\param dof      INT    (i)           the dof the index is needed for                   
+\param update   INT*   (i)           the sorted and continous vector update                   
+\param length   INT    (i)           length of update                   
+\return the index of dof in update (INT) or -1 if index not in range                                              
 \sa mlpcg_matvec_init  mlpcg_getowner                                       
 
 ------------------------------------------------------------------------*/
-int mlpcg_getindex(int dof, int *update, int length)
+INT mlpcg_getindex(INT dof, INT *update, INT length)
 {
-int index;
+INT index;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_getindex");
@@ -933,16 +933,16 @@ dstrc_exit();
 return the proc a given dof of a BDCSR matrix is held on. This only works
 after a function call to mlpcg_matvec_init
 </pre>
-\param dof      int      (i)           the dof the index is needed for                   
-\param owner    int[][2] (i)           the owner array of the bdcsr matrix                   
-\param nproc    int      (i)           number of processors                   
+\param dof      INT      (i)           the dof the index is needed for                   
+\param owner    INT[][2] (i)           the owner array of the bdcsr matrix                   
+\param nproc    INT      (i)           number of processors                   
 \return the owner of a given dof    
 \sa mlpcg_matvec_init mlpcg_getindex                                        
 
 ------------------------------------------------------------------------*/
-int mlpcg_getowner(int dof, int owner[][2], int nproc)
+INT mlpcg_getowner(INT dof, INT owner[][2], INT nproc)
 {
-int i,own;
+INT i,own;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_getowner");

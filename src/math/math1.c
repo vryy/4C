@@ -3,11 +3,11 @@
 /*----------------------------------------------------------------------*
  |  copies a matrix of identical size                     m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void math_array_copy(double **from, int n, int m, double **to)
+void math_array_copy(DOUBLE **from, INT n, INT m, DOUBLE **to)
 {
-int i,size;
-double *ptr_from;
-double *ptr_to;
+INT i,size;
+DOUBLE *ptr_from;
+DOUBLE *ptr_to;
 #ifdef DEBUG 
 dstrc_enter("math_array_copy");
 #endif
@@ -30,11 +30,11 @@ return;
 /*----------------------------------------------------------------------*
  |  calcs the inverse of an unsym 3x3 matrix and determinant m.gee 6/01 |
  *----------------------------------------------------------------------*/
-void math_inv3(double **a, double *det)
+void math_inv3(DOUBLE **a, DOUBLE *det)
 {
-int i,j;
-double b00,b01,b02,b10,b11,b12,b20,b21,b22;
-double detinv;
+INT i,j;
+DOUBLE b00,b01,b02,b10,b11,b12,b20,b21,b22;
+DOUBLE detinv;
 #ifdef DEBUG 
 dstrc_enter("math_inv3");
 #endif
@@ -77,10 +77,10 @@ return;
 /*----------------------------------------------------------------------*
  |  transpose of an an unsym nxn matrix                      m.gee 6/01 |
  *----------------------------------------------------------------------*/
-void math_tran(double **a, int n)
+void math_tran(DOUBLE **a, INT n)
 {
-int i,j;
-double change;
+INT i,j;
+DOUBLE change;
 #ifdef DEBUG 
 dstrc_enter("math_tran");
 #endif
@@ -108,10 +108,10 @@ return;
 /*----------------------------------------------------------------------*
  |  make a vector unit lenght and return orig lenght         m.gee 6/01 |
  *----------------------------------------------------------------------*/
-void math_unvc(double *enorm,double *vec, int n)
+void math_unvc(DOUBLE *enorm,DOUBLE *vec, INT n)
 {
-int    i;
-double skalar;
+INT    i;
+DOUBLE skalar;
 #ifdef DEBUG 
 dstrc_enter("math_unvc");
 #endif
@@ -132,16 +132,16 @@ return;
  |  or                                                                  |
  |  r(I) += A(I,K)*b(K)*factor                                          |
  *----------------------------------------------------------------------*/
-void math_matvecdense(double  *r,
-                         double **A,
-                         double  *b,
-                         int      ni,
-                         int      nk,
-                         int      init,
-                         double   factor)
+void math_matvecdense(DOUBLE  *r,
+                         DOUBLE **A,
+                         DOUBLE  *b,
+                         INT      ni,
+                         INT      nk,
+                         INT      init,
+                         DOUBLE   factor)
 {
-int i,k;
-double sum;
+INT i,k;
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("math_matvecdense");
 #endif
@@ -167,17 +167,17 @@ return;
  |  or                                                                  |
  |  r(I) += A(K,I)*b(K)*factor                                          |
  *----------------------------------------------------------------------*/
-void math_mattrnvecdense(double  *r,
-                         double **A,
-                         double  *b,
-                         int      ni,
-                         int      nk,
-                         int      init,
-                         double   factor)
+void math_mattrnvecdense(DOUBLE  *r,
+                         DOUBLE **A,
+                         DOUBLE  *b,
+                         INT      ni,
+                         INT      nk,
+                         INT      init,
+                         DOUBLE   factor)
 {
-int i,k;
-double *dptr;
-double sum;
+INT i,k;
+DOUBLE *dptr;
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("math_mattrnvecdense");
 #endif
@@ -211,17 +211,17 @@ return;
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void math_matmatdense(double **R,
-                         double **A,
-                         double **B,
-                         int      ni,
-                         int      nk,
-                         int      nj,
-                         int      init,
-                         double   factor)
+void math_matmatdense(DOUBLE **R,
+                         DOUBLE **A,
+                         DOUBLE **B,
+                         INT      ni,
+                         INT      nk,
+                         INT      nj,
+                         INT      init,
+                         DOUBLE   factor)
 {
-int i,j,k;
-double sum;
+INT i,j,k;
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("math_matmatdense");
 #endif
@@ -268,17 +268,17 @@ return;
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void math_mattrnmatdense(double **R,
-                            double **A,
-                            double **B,
-                            int      ni,
-                            int      nk,
-                            int      nj,
-                            int      init,
-                            double   factor)
+void math_mattrnmatdense(DOUBLE **R,
+                            DOUBLE **A,
+                            DOUBLE **B,
+                            INT      ni,
+                            INT      nk,
+                            INT      nj,
+                            INT      init,
+                            DOUBLE   factor)
 {
-int i,j,k;
-double sum;
+INT i,j,k;
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("math_mattrnmatdense");
 #endif
@@ -325,17 +325,17 @@ return;
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void math_matmattrndense(double **R,
-                            double **A,
-                            double **B,
-                            int      ni,
-                            int      nk,
-                            int      nj,
-                            int      init,
-                            double   factor)
+void math_matmattrndense(DOUBLE **R,
+                            DOUBLE **A,
+                            DOUBLE **B,
+                            INT      ni,
+                            INT      nk,
+                            INT      nj,
+                            INT      init,
+                            DOUBLE   factor)
 {
-int i,j,k;
-double sum;
+INT i,j,k;
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("math_matmattrndense");
 #endif
@@ -378,15 +378,15 @@ return;
  |            uses LAPACKS dsytrf and dsytri routines                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void math_sym_inv(double **A, int dim)
+void math_sym_inv(DOUBLE **A, INT dim)
 {
-int      i,j,k,n;
+INT      i,j,k,n;
 char     uplo[5];
-int      ipiv[500];
-int      lwork;
-double   work[5000];
-double   Inverse[250000];
-int      info;
+INT      ipiv[500];
+INT      lwork;
+DOUBLE   work[5000];
+DOUBLE   Inverse[250000];
+INT      info;
 
 #ifdef DEBUG 
 dstrc_enter("math_sym_inv");
@@ -438,14 +438,14 @@ return;
  |            uses LAPACKS dgetrf and dgetri routines                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void math_unsym_inv(double **A, int dimr, int dimc)
+void math_unsym_inv(DOUBLE **A, INT dimr, INT dimc)
 {
-int      i,j;
-int      ipiv[2000];
-int      lwork=2000;
-double   work[2000];
-double   Inverse[4000000];
-int      info=0;
+INT      i,j;
+INT      ipiv[2000];
+INT      lwork=2000;
+DOUBLE   work[2000];
+DOUBLE   Inverse[4000000];
+INT      info=0;
 
 #ifdef DEBUG 
 dstrc_enter("math_unsym_inv");
@@ -495,10 +495,10 @@ return;
 /*----------------------------------------------------------------------*
  |  spatproduct  spt = a*(b x c)                            m.gee 10/01 |
  *----------------------------------------------------------------------*/
-void math_sppr(double *spat, double *a, double *b, double *c)
+void math_sppr(DOUBLE *spat, DOUBLE *a, DOUBLE *b, DOUBLE *c)
 {
-int i;
-double d[3];
+INT i;
+DOUBLE d[3];
 #ifdef DEBUG 
 dstrc_enter("math_sppr");
 #endif
@@ -522,23 +522,23 @@ return;
 
 <pre>                                                         genk 04/02		     
 </pre>   
-\param  num	 int   (i)    integer number
-\param *it	 int   (o)    integer on position "thousand"
-\param *ih       int   (o)    integer on position "hundred"
-\param *id       int   (o)    integer on position "ten"
-\param *id       int   (o)    integer on position "one"
+\param  num	 INT   (i)    integer number
+\param *it	 INT   (o)    integer on position "thousand"
+\param *ih       INT   (o)    integer on position "hundred"
+\param *id       INT   (o)    integer on position "ten"
+\param *id       INT   (o)    integer on position "one"
 \return void 
 
 ------------------------------------------------------------------------*/
 void math_intextract(
-                    int num,    
-                    int *it,    
-		    int *ih,    
-		    int *id,    
-		    int *io     
+                    INT num,    
+                    INT *it,    
+		    INT *ih,    
+		    INT *id,    
+		    INT *io     
 	            )
 {
-int nit, nih, nid, nio;
+INT nit, nih, nid, nio;
 
 #ifdef DEBUG 
 dstrc_enter("intextract");

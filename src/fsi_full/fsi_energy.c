@@ -42,7 +42,7 @@ compute increment of energy transported across the fs - interface
 \param *fsidyn 	      FSI_DYNAMIC    (i/o)   
 \param *sdyn          STRUCT_DYNAMIC (i)
 \param *fdyn          FLUID_DYNAMIC  (i)
-\param  init          int            (i)  initialisation flag
+\param  init          INT            (i)  initialisation flag
 \warning this function is not parallised but it's no problem!!!
 \return void                                                                             
 
@@ -52,23 +52,23 @@ void fsi_dyneint(
                        FSI_DYNAMIC    *fsidyn,
                        STRUCT_DYNAMIC *sdyn,
 		       FLUID_DYNAMIC  *fdyn,
-		       int             init
+		       INT             init
 		)
 {
-int             i,j;            /* some counters                        */
-int             numdf;          /* actual number of dofs                */
-int             dof;            /* actual dof                           */
-static int      numnp_total;    /* total number of structure nodes      */
-static int      numdf_total;    /* total number of structure dofs       */
-static int     *sid;            /* structural interface dofs            */
-double          desint,defint;  /* energies                             */
-double          fac;       
-double          dispi;          /* displacement increment               */
-double        **sol_mf;         /* multifield nodal solution array      */
-static double   alpha;          /* structural time integr. factor       */
-static double   oma;            /* 1-alpha                              */
-static double   theta;          /* fluid time integr. factor            */
-static double   omt;            /* 1-theta                              */
+INT             i,j;            /* some counters                        */
+INT             numdf;          /* actual number of dofs                */
+INT             dof;            /* actual dof                           */
+static INT      numnp_total;    /* total number of structure nodes      */
+static INT      numdf_total;    /* total number of structure dofs       */
+static INT     *sid;            /* structural interface dofs            */
+DOUBLE          desint,defint;  /* energies                             */
+DOUBLE          fac;       
+DOUBLE          dispi;          /* displacement increment               */
+DOUBLE        **sol_mf;         /* multifield nodal solution array      */
+static DOUBLE   alpha;          /* structural time integr. factor       */
+static DOUBLE   oma;            /* 1-alpha                              */
+static DOUBLE   theta;          /* fluid time integr. factor            */
+static DOUBLE   omt;            /* 1-theta                              */
 NODE           *actsnode;       /* actual structure node                */
 
 #ifdef DEBUG 

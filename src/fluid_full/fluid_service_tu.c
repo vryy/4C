@@ -65,10 +65,10 @@ void fluid_init_tu(
                     FLUID_DYNAMIC *fdyn	
 	            )      
 {
-int    i;            /* simply counter                                  */
-int    numdf;        /* number of dofs in this discretisation           */
-int    numnp_total;  /* total number of nodes in this discretisation    */
-int    numele_total; /* total number of elements in this discr.         */  
+INT    i;            /* simply counter                                  */
+INT    numdf;        /* number of dofs in this discretisation           */
+INT    numnp_total;  /* total number of nodes in this discretisation    */
+INT    numele_total; /* total number of elements in this discr.         */  
 NODE  *actnode;      /* the actual node                                 */
 
 #ifdef DEBUG  
@@ -124,36 +124,36 @@ nonlinear iteration scheme are calculated.
 \param **actfield        FIELD            (i)    actual field       
 \param  *actintra        INTRA	      (i)    actual intra comm.
 \param	*sol 	       DIST_VECTOR      (i)    solution vector
-\param	 place         int	      (i)    place in sol_incr.
+\param	 place         INT	      (i)    place in sol_incr.
 \param	*sysarray      SPARSE_ARRAY   (i)
 \param	*sysarray_typ  SPARSE_TYP     (i)
-\param	*kapepsrat    double	      (o)    kapeps  conv. ratio
+\param	*kapepsrat    DOUBLE	      (o)    kapeps  conv. ratio
 \param	*fdyn	       FLUID_DYNAMIC	     	
-\param lower_limit_kappa  double	      (i)    lower limit for kappa
-\param lower_limit_eps    double	      (i)    lower limit for epsilon
+\param lower_limit_kappa  DOUBLE	      (i)    lower limit for kappa
+\param lower_limit_eps    DOUBLE	      (i)    lower limit for epsilon
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_result_incre_tu(FIELD         *actfield,    
                            INTRA         *actintra,   
 			         DIST_VECTOR   *sol,        
-                           int            place,      
+                           INT            place,      
 			         SPARSE_ARRAY  *sysarray,      
 			         SPARSE_TYP    *sysarray_typ,
-			         double        *kapepsrat,        
+			         DOUBLE        *kapepsrat,        
 		               FLUID_DYNAMIC *fdyn,
-                           double         lower_limit_kappa,
-                           double         lower_limit_eps          
+                           DOUBLE         lower_limit_kappa,
+                           DOUBLE         lower_limit_eps          
 		              )
 {
-int      i,j;
-int      max;
-int      diff;
-int      dof;
-int      numeq_total;
-double  *result;
-double   dkapepsnorm=ZERO;
-double    kapepsnorm=ZERO;
+INT      i,j;
+INT      max;
+INT      diff;
+INT      dof;
+INT      numeq_total;
+DOUBLE  *result;
+DOUBLE   dkapepsnorm=ZERO;
+DOUBLE    kapepsnorm=ZERO;
 NODE    *actnode;
 ARRAY    result_a;
 FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
@@ -331,7 +331,7 @@ nodes:
 </pre>
 \param *actfield    FIELD         (i)  actual field (fluid)   
 \param *fdyn	  FLUID_DYNAMIC (i)  
-\param *lower_limit_kappa  double (o) lower limit for kappa  
+\param *lower_limit_kappa  DOUBLE (o) lower limit for kappa  
 
 \return void                                                                             
 
@@ -339,13 +339,13 @@ nodes:
 void fluid_set_check_tu(
                        FIELD  *actfield, 
                        FLUID_DYNAMIC *fdyn, 
-                       double lower_limit_kappa)
+                       DOUBLE lower_limit_kappa)
 {
-int        i,j;
-int        numnp_total;              /* total number of fluid nodes     */
-int        numele_total;             /* total number of fluid elements  */
-int        numdf;	                   /* number of fluid dofs       	*/
-double     k_2,int_lenght;
+INT        i,j;
+INT        numnp_total;              /* total number of fluid nodes     */
+INT        numele_total;             /* total number of fluid elements  */
+INT        numdf;	                   /* number of fluid dofs       	*/
+DOUBLE     k_2,int_lenght;
 GNODE     *actgnode;	             /* actual GNODE		            */
 NODE      *actnode;	             /* actual NODE		            */
 
@@ -400,10 +400,10 @@ void fluid_eddy_update(FIELD         *actfield,
                        DIST_VECTOR   *sol   
                        )
 {
-int  i,j;
-int  dof,actmat;
-int  numeq_total;
-double  visc,R_t,C_u;
+INT  i,j;
+INT  dof,actmat;
+INT  numeq_total;
+DOUBLE  visc,R_t,C_u;
 ELEMENT *actele;
 NODE    *actnode;
 
@@ -459,7 +459,7 @@ Write eddy-viscosity from step n+1 to n for production term.
 void fluid_eddy_pro(FIELD         *actfield 
                   )
 {
-int  i;
+INT  i;
 NODE    *actnode;
 
 #ifdef DEBUG 
@@ -491,24 +491,24 @@ and calculate norms for the iteration convergence check
 </pre>   
 \param **actfield      FIELD	            (i)    actual field       
 \param	*sol 	     DIST_VECTOR        (i)    solution vector
-\param  lenghtrat	     double             (o)    conv. ratio
+\param  lenghtrat	     DOUBLE             (o)    conv. ratio
 \param     *fdyn 	     FLUID_DYNAMIC      (i)   
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_lenght_update(FIELD         *actfield, 
                          DIST_VECTOR   *sol,   
-		             double        *lenghtrat, 
+		             DOUBLE        *lenghtrat, 
                          FLUID_DYNAMIC *fdyn      
                         )
 {
 NODE    *actnode;
-int  i,j;
-int  dof,actmat;
-double   dlenghtnorm=ZERO;
-double    lenghtnorm=ZERO;
-int  numeq_total;
-double  visc,R_t,C_u;
+INT  i,j;
+INT  dof,actmat;
+DOUBLE   dlenghtnorm=ZERO;
+DOUBLE    lenghtnorm=ZERO;
+INT  numeq_total;
+DOUBLE  visc,R_t,C_u;
 ELEMENT *actele;
 
 #ifdef DEBUG 
@@ -596,21 +596,21 @@ the given tolerance. The result is printed out to the screen.
 			     
 </pre>   
 \param *fdyn 	        FLUID_DYNAMIC  (i)   
-\param  kapepsrat       double  	     (i)  kapeps or lenght conv. ratio 
-\param	itnum1      int	           (i)  actual numb. of iter steps
-\param	te 	      double	     (i)  time for element calcul.
-\param	ts	      double	     (i)  solver time
-\return int converged  
+\param  kapepsrat       DOUBLE  	     (i)  kapeps or lenght conv. ratio 
+\param	itnum1      INT	           (i)  actual numb. of iter steps
+\param	te 	      DOUBLE	     (i)  time for element calcul.
+\param	ts	      DOUBLE	     (i)  solver time
+\return INT converged  
 
 ------------------------------------------------------------------------*/
-int fluid_convcheck_tu(FLUID_DYNAMIC *fdyn,   
-                       double         kapepsrat,  
-                       int            itnum1, 
-		           double         te,    
-		           double         ts     
+INT fluid_convcheck_tu(FLUID_DYNAMIC *fdyn,   
+                       DOUBLE         kapepsrat,  
+                       INT            itnum1, 
+		           DOUBLE         te,    
+		           DOUBLE         ts     
 		          )
 {
-int         converged=0;  /* flag for convergence check                  */
+INT         converged=0;  /* flag for convergence check                  */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_convcheck_tu");
@@ -656,7 +656,7 @@ dstrc_enter("fluid_convcheck_tu");
 dstrc_exit();
 #endif
 
-return ((int)(converged));
+return ((INT)(converged));
 } /* end of fluid_convcheck_tu*/
 
 /*!---------------------------------------------------------------------                                         
@@ -670,26 +670,26 @@ the given tolerance for rans.
 </pre>   
 \param *fdyn 	        FLUID_DYNAMIC  (i)   
 \param **actfield         FIELD	     (i)    actual field       
-\para   itnum_check       int	           (i)    actual numb. of iter steps
-\return int converged  
+\para   itnum_check       INT	           (i)    actual numb. of iter steps
+\return INT converged  
 
 ------------------------------------------------------------------------*/
-int fluid_convcheck_test(
+INT fluid_convcheck_test(
                      FLUID_DYNAMIC *fdyn, 
                      FIELD         *actfield, 
-                     int            itnum_check 
+                     INT            itnum_check 
 		         )
 {
 NODE      *actnode;
-int       i,j;
-int      predof;
-double   dvnorm=ZERO;
-double   dpnorm=ZERO;
-double    vnorm=ZERO;
-double    pnorm=ZERO;
-double    vrat,prat;
-int       converged=0;  /* flag for convergence check                  */
-int       numdf;
+INT       i,j;
+INT      predof;
+DOUBLE   dvnorm=ZERO;
+DOUBLE   dpnorm=ZERO;
+DOUBLE    vnorm=ZERO;
+DOUBLE    pnorm=ZERO;
+DOUBLE    vrat,prat;
+INT       converged=0;  /* flag for convergence check                  */
+INT       numdf;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_convcheck_test");
@@ -766,7 +766,7 @@ numdf       = fdyn->numdf;
 dstrc_exit();
 #endif
 
-return ((int)(converged));
+return ((INT)(converged));
 } /* end of fluid_convcheck_test*/
 
 /*!---------------------------------------------------------------------                                         
@@ -780,17 +780,17 @@ nikapeps <->  EVALUATION OF "TIME - RHS" (F-hat)
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC   (i)  
 \param *dynvar	   FLUID_DYN_CALC  (i/o)  
-\param  itnum1       int  	       (i)     actual number of iterations
-\param  itnumke      int  	       (i)     actual number of iterations
-\param  itnum_n      int  	       (i)     actual number of iterations
+\param  itnum1       INT  	       (i)     actual number of iterations
+\param  itnumke      INT  	       (i)     actual number of iterations
+\param  itnum_n      INT  	       (i)     actual number of iterations
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_icons_tu(FLUID_DYNAMIC *fdyn,
                     FLUID_DYN_CALC *dynvar,
-		        int itnum1,
-		        int itnumke,
-                    int itnum_n
+		        INT itnum1,
+		        INT itnumke,
+                    INT itnum_n
 		        )
 {
 
@@ -834,24 +834,24 @@ history is copied to the positon 'to'.
 </pre>   
 \param *fdyn 	   FLUID_DYNAMIC  (i)   
 \param *actfield     FIELD	      (i)  actual field
-\param  from         int	      (i)  pos. in sol(_increment)
-\param  to   	   int	      (i)  pos. in sol(_increment)
-\param  flag 	   int	      (i)  simply a flag
+\param  from         INT	      (i)  pos. in sol(_increment)
+\param  to   	   INT	      (i)  pos. in sol(_increment)
+\param  flag 	   INT	      (i)  simply a flag
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_copysol_tu(FLUID_DYNAMIC *fdyn, 
                        FIELD         *actfield,  
-                       int            from,     
-		           int            to,       
-		           int            flag      
+                       INT            from,     
+		           INT            to,       
+		           INT            flag      
 		          )
 {
-int         i,j;          /* simply some counters                       */
-int         numnp_total;  /* total number of nodes                      */
-int         diff,max;     /* integers for amredef                       */
-int         numdf;        /* number of fluid dofs                       */
-double     visc;
+INT         i,j;          /* simply some counters                       */
+INT         numnp_total;  /* total number of nodes                      */
+INT         diff,max;     /* integers for amredef                       */
+INT         numdf;        /* number of fluid dofs                       */
+DOUBLE     visc;
 NODE       *actnode;      /* actual node                                */
 FLUID_DYN_CALC *dynvar;   /* pointer to fluid_dyn_calc                   */
 
@@ -960,22 +960,22 @@ due to convergence check for RANS.
 </pre>   
 \param *fdyn 	    FLUID_DYNAMIC (i)   
 \param *actfield      FIELD	     (i)  actual field
-\param  from          int	     (i)  pos. in sol(_increment)
-\param  to   	    int	     (i)  pos. in sol(_increment)
+\param  from          INT	     (i)  pos. in sol(_increment)
+\param  to   	    INT	     (i)  pos. in sol(_increment)
 \return void 
 
 ------------------------------------------------------------------------*/
 
 void fluid_copysol_test(FLUID_DYNAMIC *fdyn, 
                    FIELD         *actfield,  
-                   int            from,     
-                   int            to     
+                   INT            from,     
+                   INT            to     
 		       )
 {
-int         i,j;          /* simply some counters                       */
-int         numnp_total;  /* total number of nodes                      */
-int         diff,max;     /* integers for amredef                       */
-int         numdf;        /* number of fluid dofs                       */
+INT         i,j;          /* simply some counters                       */
+INT         numnp_total;  /* total number of nodes                      */
+INT         diff,max;     /* integers for amredef                       */
+INT         numdf;        /* number of fluid dofs                       */
 NODE       *actnode;      /* actual node                                */
 
 #ifdef DEBUG 

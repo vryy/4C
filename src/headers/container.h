@@ -25,10 +25,10 @@ INT            kintyp;       /*!< kinematic to be used */
                              /*!< kintyp = 0: linear kinematic */
                              /*!< kintyp = 1: updated lagrange */
                              /*!< kintyp = 2: total lagrange */
-int            kstep;        /*!< time in increment step we are in */
-int            actndis;      /*!< which discretisation we have */
-int            inherit;
-int            point_neum;
+INT            kstep;        /*!< time in increment step we are in */
+INT            actndis;      /*!< which discretisation we have */
+INT            inherit;
+INT            point_neum;
 
 INT            quality;      /*!< element quality measure */
 
@@ -37,14 +37,14 @@ DOUBLE         min, max, min_stiff, max_stiff; /*! scaling parameters for
 INT            pos;          /*! sol_increment[pos] contains dbc in ale */
 
 #ifdef D_FLUID
-double        *ftimerhs;     /*!< ab hier fuer fluid */   
-double        *fiterhs;
-double        *ftimerhs_pro;
-int            nii;
-int            nif;
-int            turbu;
-int            niturbu_pro;
-int            niturbu_n;
+DOUBLE        *ftimerhs;     /*!< ab hier fuer fluid */   
+DOUBLE        *fiterhs;
+DOUBLE        *ftimerhs_pro;
+INT            nii;
+INT            nif;
+INT            turbu;
+INT            niturbu_pro;
+INT            niturbu_n;
 enum _FLUID_STRESS str;         
 #endif
 

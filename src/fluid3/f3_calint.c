@@ -9,8 +9,8 @@
 #include "fluid3.h"
 
 #ifdef DEBUG
-void genkout(double **matrix, double *vector, char *title, int ntitle,
-             int istart, int iend, int jstart, int jend, int flag);
+void genkout(DOUBLE **matrix, DOUBLE *vector, char *title, INT ntitle,
+             INT istart, INT iend, INT jstart, INT jend, INT flag);
 #endif
 
 /*----------------------------------------------------------------------*
@@ -32,30 +32,30 @@ time-RHS for one fluid2 element is calculated
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param  *hasext    int             (i)    element flag
-\param **estif     double	   (o)    element stiffness matrix
-\param **emass     double	   (o)    element mass matrix
-\param  *etforce   double	   (o)    element time force vector
-\param  *eiforce   double	   (o)    element iter force vector
-\param  *funct     double	   (-)    natural shape functions
-\param **deriv     double	   (-)	  deriv. of nat. shape funcs
-\param **deriv2    double	   (-)    2nd deriv. of nat. shape f.
-\param **xjm	   double	   (-)    jacobian matrix
-\param **derxy     double	   (-)	  global derivatives
-\param **derxy2    double	   (-)    2nd global derivatives
-\param **eveln     double	   (i)    ele vel. at time n
-\param **evelng    double	   (i)    ele vel. at time n+g
-\param  *epren     double	   (-)    ele pres. at time n
-\param  *edeadn    double	   (-)    ele dead load (selfweight) at n 
-\param  *edeadng   double	   (-)    ele dead load (selfweight) at n+1
-\param  *velint    double	   (-)    vel at integration point
-\param  *vel2int   double	   (-)    vel at integration point
-\param  *covint    double	   (-)    conv. vel. at integr. point
-\param **vderxy    double	   (-)    global vel. derivatives
-\param  *pderxy    double	   (-)    global pres. derivatives
-\param **vderxy2   double	   (-)    2nd global vel. deriv.
-\param **wa1	   double	   (-)    working array
-\param **wa2	   double	   (-)    working array
+\param  *hasext    INT             (i)    element flag
+\param **estif     DOUBLE	   (o)    element stiffness matrix
+\param **emass     DOUBLE	   (o)    element mass matrix
+\param  *etforce   DOUBLE	   (o)    element time force vector
+\param  *eiforce   DOUBLE	   (o)    element iter force vector
+\param  *funct     DOUBLE	   (-)    natural shape functions
+\param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
+\param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
+\param **xjm	   DOUBLE	   (-)    jacobian matrix
+\param **derxy     DOUBLE	   (-)	  global derivatives
+\param **derxy2    DOUBLE	   (-)    2nd global derivatives
+\param **eveln     DOUBLE	   (i)    ele vel. at time n
+\param **evelng    DOUBLE	   (i)    ele vel. at time n+g
+\param  *epren     DOUBLE	   (-)    ele pres. at time n
+\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n 
+\param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
+\param  *velint    DOUBLE	   (-)    vel at integration point
+\param  *vel2int   DOUBLE	   (-)    vel at integration point
+\param  *covint    DOUBLE	   (-)    conv. vel. at integr. point
+\param **vderxy    DOUBLE	   (-)    global vel. derivatives
+\param  *pderxy    DOUBLE	   (-)    global pres. derivatives
+\param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
+\param **wa1	   DOUBLE	   (-)    working array
+\param **wa2	   DOUBLE	   (-)    working array
 \return void                                                   
 
 ------------------------------------------------------------------------*/
@@ -63,49 +63,49 @@ void f3_calint(
                FLUID_DATA      *data, 
 	       ELEMENT         *ele,
 	       FLUID_DYN_CALC  *dynvar,
-               int             *hasext,
-               double         **estif,
-	       double         **emass,
-	       double          *etforce,
-	       double          *eiforce,
-	       double          *funct,
-	       double         **deriv,
-	       double         **deriv2,
-	       double         **xjm,
-	       double         **derxy,
-	       double         **derxy2,
-	       double         **eveln,
-	       double         **evelng,
-	       double          *epren,
-	       double          *edeadn,
-	       double          *edeadng,
-	       double          *velint,
-	       double          *vel2int,
-	       double          *covint,
-	       double         **vderxy,
-	       double          *pderxy,
-	       double         **vderxy2,
-	       double         **wa1,
-	       double         **wa2
+               INT             *hasext,
+               DOUBLE         **estif,
+	       DOUBLE         **emass,
+	       DOUBLE          *etforce,
+	       DOUBLE          *eiforce,
+	       DOUBLE          *funct,
+	       DOUBLE         **deriv,
+	       DOUBLE         **deriv2,
+	       DOUBLE         **xjm,
+	       DOUBLE         **derxy,
+	       DOUBLE         **derxy2,
+	       DOUBLE         **eveln,
+	       DOUBLE         **evelng,
+	       DOUBLE          *epren,
+	       DOUBLE          *edeadn,
+	       DOUBLE          *edeadng,
+	       DOUBLE          *velint,
+	       DOUBLE          *vel2int,
+	       DOUBLE          *covint,
+	       DOUBLE         **vderxy,
+	       DOUBLE          *pderxy,
+	       DOUBLE         **vderxy2,
+	       DOUBLE         **wa1,
+	       DOUBLE         **wa2
 	      )
 { 
-int      i,j;
-int      iel;	      /* number of nodes 			        */
-int      ntyp;        /* element type: 1 - hex; 2 - tet  	        */
-int      intc;        /* "integration case" for tet for further infos
+INT      i,j;
+INT      iel;	      /* number of nodes 			        */
+INT      ntyp;        /* element type: 1 - hex; 2 - tet  	        */
+INT      intc;        /* "integration case" for tet for further infos
          		 see f3_inpele.c and f3_intg.c                  */
-int      nir,nis,nit; /* number of integration nodes in r,s,t direction */
-int      actmat;      /* material number of the element                 */
-int      ihoel=0;     /* flag for higher order elements                 */
-int      icode=2;     /* flag for eveluation of shape functions         */   
-int      lr, ls, lt;  /* counter for integration                        */
-double   dens;        /* density                                        */
-double   visc;        /* viscosity                                      */
-double   fac;
-double   facr,facs,fact; /* integration weights                         */
-double   det;	      /* determinant of jacobian matrix                 */
-double   e1,e2,e3;    /* natural coordinates of integr. point           */
-double   preint;      /*pressure at integration point */
+INT      nir,nis,nit; /* number of integration nodes in r,s,t direction */
+INT      actmat;      /* material number of the element                 */
+INT      ihoel=0;     /* flag for higher order elements                 */
+INT      icode=2;     /* flag for eveluation of shape functions         */   
+INT      lr, ls, lt;  /* counter for integration                        */
+DOUBLE   dens;        /* density                                        */
+DOUBLE   visc;        /* viscosity                                      */
+DOUBLE   fac;
+DOUBLE   facr,facs,fact; /* integration weights                         */
+DOUBLE   det;	      /* determinant of jacobian matrix                 */
+DOUBLE   e1,e2,e3;    /* natural coordinates of integr. point           */
+DOUBLE   preint;      /*pressure at integration point */
 DIS_TYP  typ;         /* element type                                   */
 
 #ifdef DEBUG 

@@ -33,7 +33,7 @@ extern struct _SHELLCONTACT shellcontact;
 \param actintra    INTRA*        (i)   the intra-communicator of this field                  
 \param matrix      SPARSE_ARRAY* (i/o) the stiffness matrix
 \param matrix_type SPARSE_TYP*   (i)   the storage format of matrix
-\param cforce      double*       (o)   the redundant vector for contact forces
+\param cforce      DOUBLE*       (o)   the redundant vector for contact forces
 \return void                                               
 
 ------------------------------------------------------------------------*/
@@ -41,60 +41,60 @@ void s8_contact_detection(FIELD        *actfield,
                           INTRA        *actintra, 
                           SPARSE_ARRAY *matrix, 
                           SPARSE_TYP   *matrix_type, 
-                          double       *cforce,
-                          int          *iscontact,
-                          double       *maxdt)
+                          DOUBLE       *cforce,
+                          INT          *iscontact,
+                          DOUBLE       *maxdt)
 {
-int              i,ii,j,jj,k;                      /* counters */
-int              myrank,nproc;                     /* parallel stuff */
-int              numeq,numeq_total;                /* number of equations in the global matrix and vector */
-int              numnp;                            /* number of slave nodes (ususally all nodes) */
-int              numele;                           /* number of elements adjacent to a closest node */
+INT              i,ii,j,jj,k;                      /* counters */
+INT              myrank,nproc;                     /* parallel stuff */
+INT              numeq,numeq_total;                /* number of equations in the global matrix and vector */
+INT              numnp;                            /* number of slave nodes (ususally all nodes) */
+INT              numele;                           /* number of elements adjacent to a closest node */
 SPOOLMAT        *K;                                /* the spooles matrix */
 
-int              one=1,mone=-1;                    /* toggles for top or bottom surface of shell element */
+INT              one=1,mone=-1;                    /* toggles for top or bottom surface of shell element */
 
 SHELLNODE       *cnode;                            /* vector of contact nodes */
 SHELLNODE       *actcnode;                         /* the active contact node */
 SHELLNODE       *neartop;                          /* the node nearest to top of actcnode */
 SHELLNODE       *nearbot;                          /* the node nearest to bottom of actcnode */
-int              neartopside;                      /* toggle indicating which side of neartop is nearer */
-int              nearbotside;                      /* toggle indicating which side of nearbot is nearer */
-int              other;                            /* toggle the other side of neartop or nearbot */
-int              ssurf;                            /* another toggle indicating side of slave node */
-int              msurf;                            /* toggle indiacting side of master element */
+INT              neartopside;                      /* toggle indicating which side of neartop is nearer */
+INT              nearbotside;                      /* toggle indicating which side of nearbot is nearer */
+INT              other;                            /* toggle the other side of neartop or nearbot */
+INT              ssurf;                            /* another toggle indicating side of slave node */
+INT              msurf;                            /* toggle indiacting side of master element */
 ELEMENT         *actele;                           /* a working ptr for master element */
 ELEMENT         *acteletop;                        /* ptr to projection element of actcnode(top)*/
 ELEMENT         *actelebot;                        /* ptr to projection element of actcnode(bot)*/
-double           distance;                         /* working variable for distance of projection */
-double           disttop;                          /* distance of projection for actcnode(top)*/
-double           distbot;                          /* distance of projection for actcnode(bot)*/
-double           xi[2];                            /* working local coordinates in master element */
-double           xitop[2];                         /* local coordinates in master element of projection of actcnode(top)*/
-double           xibot[2];                         /* local coordinates in master element of projection of actcnode(bot)*/
-int              success;                          /* working toggle for successfull projection */
-int              successtop;                       /* toggle for successfull projection of actcnode(top) */
-int              successbot;                       /* toggle for successfull projection of actcnode(bot) */
+DOUBLE           distance;                         /* working variable for distance of projection */
+DOUBLE           disttop;                          /* distance of projection for actcnode(top)*/
+DOUBLE           distbot;                          /* distance of projection for actcnode(bot)*/
+DOUBLE           xi[2];                            /* working local coordinates in master element */
+DOUBLE           xitop[2];                         /* local coordinates in master element of projection of actcnode(top)*/
+DOUBLE           xibot[2];                         /* local coordinates in master element of projection of actcnode(bot)*/
+INT              success;                          /* working toggle for successfull projection */
+INT              successtop;                       /* toggle for successfull projection of actcnode(top) */
+INT              successbot;                       /* toggle for successfull projection of actcnode(bot) */
 
-double           gnear;                            /* gap function to master element, same side as closest node */
-double           gother;                           /* gap function to master element, other side of closest node */
-double           gtop;                             /* gap function to top of master element */
-double           gbot;                             /* gap function to bot of element */
-double           tntop;                            /* normal forces to top and bottom surface */
-double           tnbot;
+DOUBLE           gnear;                            /* gap function to master element, same side as closest node */
+DOUBLE           gother;                           /* gap function to master element, other side of closest node */
+DOUBLE           gtop;                             /* gap function to top of master element */
+DOUBLE           gbot;                             /* gap function to bot of element */
+DOUBLE           tntop;                            /* normal forces to top and bottom surface */
+DOUBLE           tnbot;
 
 /* assembly stuff */
-int            **cflags;                           /* send buffer for contact flags */
-int            **cflagr;                           /* recv buffer for contact flags */
+INT            **cflags;                           /* send buffer for contact flags */
+INT            **cflagr;                           /* recv buffer for contact flags */
 ARRAY            cflags_a;                         /* array to hold send buffer for contact flags */
 ARRAY            cflagr_a;                         /* array to hold recv buffer for contact flags */
-int              owners[5];                        /* array to hold owners of a contacting segment */
-int              takepart[MAXPROC];                /* toggle indicating processors involved in contact of a contact set */
-int              index;                            /* index of a dof in the local update vector of K */
-int              iscrecv;
+INT              owners[5];                        /* array to hold owners of a contacting segment */
+INT              takepart[MAXPROC];                /* toggle indicating processors involved in contact of a contact set */
+INT              index;                            /* index of a dof in the local update vector of K */
+INT              iscrecv;
 
-double           nue[3];
-double           dt;
+DOUBLE           nue[3];
+DOUBLE           dt;
 
 #ifdef PARALLEL
 MPI_Status       status;                           /* parallel stuff */

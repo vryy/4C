@@ -16,16 +16,16 @@
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
-void w1_bop(double    **bop,          
-            double    **deriv,        
-            double    **xjm,          
-            double      det,          
-            int         iel)          
+void w1_bop(DOUBLE    **bop,          
+            DOUBLE    **deriv,        
+            DOUBLE    **xjm,          
+            DOUBLE      det,          
+            INT         iel)          
 {
 /*----------------------------------------------------------------------*/
-int inode, node_start;
-double dum;
-double xji[2][2];
+INT inode, node_start;
+DOUBLE dum;
+DOUBLE xji[2][2];
 #ifdef DEBUG 
 dstrc_enter("w1_bop");
 #endif
@@ -58,17 +58,17 @@ return;
 /*----------------------------------------------------------------------*
  | additional operator matrix gop at r,s for incomp modes    ah 9/02    |
  *----------------------------------------------------------------------*/
-void w1_gop(double    *gop,            /* operator matrix G             */
-            double    **xjm0,          /* jacobian mtrix at r,s=0       */
-            double      det0,          /* det J at r,s=0                */
-            double      det,           /* det J at r,s                  */
-            double      e1,            /* actual GP coordinate r        */
-            double      e2)            /* actual GP coordinate s        */
+void w1_gop(DOUBLE    *gop,            /* operator matrix G             */
+            DOUBLE    **xjm0,          /* jacobian mtrix at r,s=0       */
+            DOUBLE      det0,          /* det J at r,s=0                */
+            DOUBLE      det,           /* det J at r,s                  */
+            DOUBLE      e1,            /* actual GP coordinate r        */
+            DOUBLE      e2)            /* actual GP coordinate s        */
 {
 /*----------------------------------------------------------------------*/
-int i;
-double dum;
-double xji[2][2];
+INT i;
+DOUBLE dum;
+DOUBLE xji[2][2];
 #ifdef DEBUG 
 dstrc_enter("w1_gop");
 #endif

@@ -35,48 +35,48 @@ NOTE: this routine is not in use right now, as the interpretation of
 .    DETSR     -      "             DES SCHALENRAUMS                 .
 ......................................................................
 </pre>
-\param  double   **force   (o) forces to be calculated
-\param  int        ngauss  (i) ID of actual GP
-\param  double    *stress  (i) stresses at GP
+\param  DOUBLE   **force   (o) forces to be calculated
+\param  INT        ngauss  (i) ID of actual GP
+\param  DOUBLE    *stress  (i) stresses at GP
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: not in use!!
 
 *----------------------------------------------------------------------*/
-void s9_tfte(double  **force,
-             int       ngauss,
-             double   *stress,
-             double  **gkov,
-             double ***akon,
-             double ***amkov,
-             double    h,
-             double    e3,
-             double   *klayhgt,   /* hight of kin layer in % of total thickness of shell */
-             double   *mlayhgt,   /* hight of mat layer in % of adjacent kin layer */
-             int       klay,      /* actual kin layer */
-             int       mlay,      /* actual mat layer of this kin layer */
-             double    fact,
-             double    detsm,
-             double    detsr)
+void s9_tfte(DOUBLE  **force,
+             INT       ngauss,
+             DOUBLE   *stress,
+             DOUBLE  **gkov,
+             DOUBLE ***akon,
+             DOUBLE ***amkov,
+             DOUBLE    h,
+             DOUBLE    e3,
+             DOUBLE   *klayhgt,   /* hight of kin layer in % of total thickness of shell */
+             DOUBLE   *mlayhgt,   /* hight of mat layer in % of adjacent kin layer */
+             INT       klay,      /* actual kin layer */
+             INT       mlay,      /* actual mat layer of this kin layer */
+             DOUBLE    fact,
+             DOUBLE    detsm,
+             DOUBLE    detsr)
 {
-int    i,j;
-double s11,s12,s21,s13,s31,s22,s23,s32,s33;
-double xu;
-double hh;
-double wgt;
-double wgthe3;
-double xu11=0.0;
-double xu21=0.0;
-double xu31=0.0;
-double xu12=0.0;
-double xu22=0.0;
-double xu32=0.0;
-double xu13=0.0;
-double xu23=0.0;
-double xu33=0.0;
+INT    i,j;
+DOUBLE s11,s12,s21,s13,s31,s22,s23,s32,s33;
+DOUBLE xu;
+DOUBLE hh;
+DOUBLE wgt;
+DOUBLE wgthe3;
+DOUBLE xu11=0.0;
+DOUBLE xu21=0.0;
+DOUBLE xu31=0.0;
+DOUBLE xu12=0.0;
+DOUBLE xu22=0.0;
+DOUBLE xu32=0.0;
+DOUBLE xu13=0.0;
+DOUBLE xu23=0.0;
+DOUBLE xu33=0.0;
 
-double deltah, h_mlay, h_kl,zeta_kl;
+DOUBLE deltah, h_mlay, h_kl,zeta_kl;
 
 #ifdef DEBUG 
 dstrc_enter("s9_tfte");

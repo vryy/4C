@@ -71,15 +71,15 @@ fills nodes and elements to the pdis variable in two different styles
 ------------------------------------------------------------------------*/
 void part_assignfield()
 {
-int        i,j,k,kk;
-int        counter,counter2;
-int        part;
-int        proc;
-int        isbou;
+INT        i,j,k,kk;
+INT        counter,counter2;
+INT        part;
+INT        proc;
+INT        isbou;
 FIELD     *actfield;
 INTRA     *actintra;
-int        imyrank;
-int        inprocs;
+INT        imyrank;
+INT        inprocs;
 NODE      *actnode;
 PARTITION *actpart;
 SOLVAR    *actsolv;

@@ -23,10 +23,10 @@
 This routine transforms forces (stress resultants -> "Schnittgroessen")
 to local/global coordinate systems ("XYZ", "RST", "RST_ortho")
 </pre>
-\param double   **force   (i/o)  forces to be transformed
-\param int        ngauss   (i)   ID of actual GP
-\param double  ***akov     (i)   metrics at reference surface of each kinematic layer 
-\param int        klay     (i)   actual kinematic layer
+\param DOUBLE   **force   (i/o)  forces to be transformed
+\param INT        ngauss   (i)   ID of actual GP
+\param DOUBLE  ***akov     (i)   metrics at reference surface of each kinematic layer 
+\param INT        klay     (i)   actual kinematic layer
 \param ELEMENT   *ele      (i)   my element
 
 \warning There is nothing special to this routine
@@ -34,25 +34,25 @@ to local/global coordinate systems ("XYZ", "RST", "RST_ortho")
 \sa calling: ---; called by: is not called, as no forces are calculated yet
                              
 *----------------------------------------------------------------------*/
-void s9_tforce(double   **force,
-               int        ngauss,
-               double  ***akov,
-               int        klay,    /* actual kin layer */
+void s9_tforce(DOUBLE   **force,
+               INT        ngauss,
+               DOUBLE  ***akov,
+               INT        klay,    /* actual kin layer */
                ELEMENT   *ele)
 {
-int    i,j;
-int    option;
-double sn[3][3],sm[3][3];
-double b[3][3];/*-------------------- basis vectors of orthogonal basis */
-double cnorm;
-double anorm;
-double sum;
+INT    i,j;
+INT    option;
+DOUBLE sn[3][3],sm[3][3];
+DOUBLE b[3][3];/*-------------------- basis vectors of orthogonal basis */
+DOUBLE cnorm;
+DOUBLE anorm;
+DOUBLE sum;
 
-const double caeins = 0.99999999999;
-const double one    = 1.0;
-const double zero   = 0.0;
+const DOUBLE caeins = 0.99999999999;
+const DOUBLE one    = 1.0;
+const DOUBLE zero   = 0.0;
 
-static ARRAY    akovKL_a;     static double **akovKL;     /* kovariant basis vectors at Int point of actual kin. Layer */
+static ARRAY    akovKL_a;     static DOUBLE **akovKL;     /* kovariant basis vectors at Int point of actual kin. Layer */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -217,10 +217,10 @@ This routine calculates the physical stresses in different coordinate
 systems ("XYZ", "RST", "RST_ortho"). It is equal to the routine 'S9SFOR'
 in the old CARAT.
 </pre>
-\param double   **force    (o)   transformed stresses
-\param double    *stress   (i)   stresses to be transformed
-\param int        ngauss   (i)   ID of actual GP
-\param double   **akov     (i)   basic vectors at actual GP
+\param DOUBLE   **force    (o)   transformed stresses
+\param DOUBLE    *stress   (i)   stresses to be transformed
+\param INT        ngauss   (i)   ID of actual GP
+\param DOUBLE   **akov     (i)   basic vectors at actual GP
 \param ELEMENT   *ele      (i)   my element
 
 \warning There is nothing special to this routine
@@ -228,23 +228,23 @@ in the old CARAT.
 \sa calling: ---; called by:   s9_stress()    [s9_stress.c]
                              
 *----------------------------------------------------------------------*/
-void s9_tstress(double   **force,
-                double    *stress,
-                int        ngauss,
-                double   **akov,
+void s9_tstress(DOUBLE   **force,
+                DOUBLE    *stress,
+                INT        ngauss,
+                DOUBLE   **akov,
                 ELEMENT   *ele)
 {
-int    i,j;
-int    option;
-double s[3][3];   /*--------------------------stresses to be transformed to*/
-double b[3][3];   /*-------------------- basis vectors of orthogonal basis */
+INT    i,j;
+INT    option;
+DOUBLE s[3][3];   /*--------------------------stresses to be transformed to*/
+DOUBLE b[3][3];   /*-------------------- basis vectors of orthogonal basis */
 
-const double caeins = 0.99999999999;
-const double one    = 1.0;
-const double zero   = 0.0;
+const DOUBLE caeins = 0.99999999999;
+const DOUBLE one    = 1.0;
+const DOUBLE zero   = 0.0;
 
-double cnorm,anorm;
-double sum;
+DOUBLE cnorm,anorm;
+DOUBLE sum;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -375,21 +375,21 @@ return;
    static as third argument. This routine will fail with any other 
    combination of static or dynamic 2D arrays
 </pre>
-\param  double x[3][3]   (i/o) matrix to be transformed(i)-> transformed matrix(o)
-\param  double **a        (i)  basis vectors old system
-\param  double b[3][3]    (i)  basis vectors new system
+\param  DOUBLE x[3][3]   (i/o) matrix to be transformed(i)-> transformed matrix(o)
+\param  DOUBLE **a        (i)  basis vectors old system
+\param  DOUBLE b[3][3]    (i)  basis vectors new system
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by:  s9_tforce(); s9_tstress()  [s9_tforce.c]
 
 *----------------------------------------------------------------------*/
-void s9_tettr(double x[3][3], double **a, double b[3][3])
+void s9_tettr(DOUBLE x[3][3], DOUBLE **a, DOUBLE b[3][3])
 {
-int    i,j,k;
-double t[3][3];
-double h[3][3];
-double sum;
+INT    i,j,k;
+DOUBLE t[3][3];
+DOUBLE h[3][3];
+DOUBLE sum;
 #ifdef DEBUG 
 dstrc_enter("s9_tettr");
 #endif

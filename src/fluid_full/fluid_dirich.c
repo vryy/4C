@@ -32,10 +32,10 @@ extern struct _MATERIAL  *mat;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 
 /*!--------------------------------------------------------------------- 
@@ -68,23 +68,23 @@ void fluid_initdirich(  FIELD          *actfield,
                         FLUID_DYNAMIC  *fdyn
 		     )
 {
-int        i,j;
-int        numnp_total;               /* total number of fluid nodes    */
-int        numele_total;              /* total number of fluid elements */
-int        predof;	              /* number of pressure dof	        */
-int        numdf;	              /* number of fluid dofs	        */
-int        actcurve;	              /* actual timecurve  	        */
-int        numveldof;
-double     dens;	              /* density			*/
-double     timefac[MAXTIMECURVE];     /* factors from time-curve        */
-double     T=0.0;	              /* starting time		        */
-double     acttimefac;                /* actual factor from timecurve   */
-double     initval;	              /* intial dirichlet value	        */
+INT        i,j;
+INT        numnp_total;               /* total number of fluid nodes    */
+INT        numele_total;              /* total number of fluid elements */
+INT        predof;	              /* number of pressure dof	        */
+INT        numdf;	              /* number of fluid dofs	        */
+INT        actcurve;	              /* actual timecurve  	        */
+INT        numveldof;
+DOUBLE     dens;	              /* density			*/
+DOUBLE     timefac[MAXTIMECURVE];     /* factors from time-curve        */
+DOUBLE     T=0.0;	              /* starting time		        */
+DOUBLE     acttimefac;                /* actual factor from timecurve   */
+DOUBLE     initval;	              /* intial dirichlet value	        */
 GNODE     *actgnode;	              /* actual GNODE		        */
 NODE      *actnode;	              /* actual NODE		        */
 ELEMENT   *actele;	              /* actual ELEMENT		        */
 
-int counter=0;
+INT counter=0;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_initdirich");
@@ -213,16 +213,16 @@ void fluid_setdirich(   FIELD           *actfield,
                         FLUID_DYNAMIC   *fdyn
 	            )
 {
-int        i,j;
-int        numnp_total;              /* total number of fluid nodes     */
-int        numele_total;             /* total number of fluid elements  */
-int        numdf;	             /* number of fluid dofs    	*/
-int        actcurve;	             /* actual timecurve		*/
-int        numveldof;
-double     timefac[MAXTIMECURVE];    /* factors from time-curve         */
-double     T;		             /* actual time		        */
-double     acttimefac;               /* actual factor from timecurve    */
-double     initval;	             /* intial dirichlet value	        */
+INT        i,j;
+INT        numnp_total;              /* total number of fluid nodes     */
+INT        numele_total;             /* total number of fluid elements  */
+INT        numdf;	             /* number of fluid dofs    	*/
+INT        actcurve;	             /* actual timecurve		*/
+INT        numveldof;
+DOUBLE     timefac[MAXTIMECURVE];    /* factors from time-curve         */
+DOUBLE     T;		             /* actual time		        */
+DOUBLE     acttimefac;               /* actual factor from timecurve    */
+DOUBLE     initval;	             /* intial dirichlet value	        */
 GNODE     *actgnode;	             /* actual GNODE		        */
 NODE      *actnode;                  /* actual NODE                     */
 
@@ -299,27 +299,27 @@ the element load vector 'dforce' is calculated by eveluating
 \endcode			     
 
 \param  *actele    ELEMENT   (i)   actual element	  
-\param  *dforces   double    (o)   dirichlet force vector
-\param **estif     double    (i)   element stiffness matrix
-\param  *hasdirich int       (o)   flag if s.th. was written to dforces
+\param  *dforces   DOUBLE    (o)   dirichlet force vector
+\param **estif     DOUBLE    (i)   element stiffness matrix
+\param  *hasdirich INT       (o)   flag if s.th. was written to dforces
 
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
 void fluid_caldirich(
                         ELEMENT         *actele,  
-		        double          *dforces, 
-                        double         **estif,   
-		        int             *hasdirich
+		        DOUBLE          *dforces, 
+                        DOUBLE         **estif,   
+		        INT             *hasdirich
 		    )     
 {
 
-int         i,j;
-int         nrow;
-int         numdf;                      /* number of fluid dofs         */
-int         nd=0;                      
-double      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
-int         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */ 
+INT         i,j;
+INT         nrow;
+INT         numdf;                      /* number of fluid dofs         */
+INT         nd=0;                      
+DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
+INT         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */ 
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
 

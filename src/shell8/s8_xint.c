@@ -4,9 +4,9 @@
 /*----------------------------------------------------------------------*
  | SUPERPOSITION OF WEIGHTED FUNCTION VALUES              m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_xint(double *result, double *values, double *funct, int iel)
+void s8_xint(DOUBLE *result, DOUBLE *values, DOUBLE *funct, INT iel)
 {
-int              i;
+INT              i;
 #ifdef DEBUG 
 dstrc_enter("s8_xint");
 #endif

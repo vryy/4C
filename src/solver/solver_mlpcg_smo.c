@@ -26,24 +26,24 @@ extern struct _MLPRECOND mlprecond;
 <pre>                                                        m.gee 10/02 
 
 </pre>
-\param z            double*      (o)   the solution of the smoothing
-\param r            double*      (i)   the right hand side
+\param z            DOUBLE*      (o)   the solution of the smoothing
+\param r            DOUBLE*      (i)   the right hand side
 \param csr          DBCSR*       (i)   the matrix to smooth with
-\param nsweep       int          (i)   number of smoothing cycles
+\param nsweep       INT          (i)   number of smoothing cycles
 \param actintra     INTRA*       (i)   the intra-communicator of this field                  
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_smoJacobi(double *z, double *r, DBCSR *csr, int nsweep, INTRA *actintra)
+void mlpcg_precond_smoJacobi(DOUBLE *z, DOUBLE *r, DBCSR *csr, INT nsweep, INTRA *actintra)
 {
-int     i,n;
-int     numeq;
+INT     i,n;
+INT     numeq;
 ARRAY   Dinv_a;
-double *Dinv;
+DOUBLE *Dinv;
 ARRAY   work_a;
-double *work;
-double  done=1.0;
-int     ione=1;
+DOUBLE *work;
+DOUBLE  done=1.0;
+INT     ione=1;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_smoJacobi");
@@ -92,21 +92,21 @@ return;
 <pre>                                                        m.gee 11/02 
 
 </pre>
-\param z            double*      (o)   the solution of the smoothing
-\param r            double*      (i)   the right hand side
+\param z            DOUBLE*      (o)   the solution of the smoothing
+\param r            DOUBLE*      (i)   the right hand side
 \param csr          DBCSR*       (i)   the matrix to smooth with
-\param nsweep       int          (i)   n in ilu(n)
+\param nsweep       INT          (i)   n in ilu(n)
 \param actintra     INTRA*       (i)   the intra-communicator of this field                  
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_smo_ILUn(double *z, double *r, DBCSR *csr, int nsweep, INTRA *actintra)
+void mlpcg_precond_smo_ILUn(DOUBLE *z, DOUBLE *r, DBCSR *csr, INT nsweep, INTRA *actintra)
 {
-int     i;
-int     myrank,nproc;
+INT     i;
+INT     myrank,nproc;
 DBCSR  *ilu;
 DBCSR  *asm;
-int     size,ierr=0;
+INT     size,ierr=0;
 ARRAY   levs,w,jw;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -146,13 +146,13 @@ if (csr->ilu==NULL)
    mlpcg_csr_localnumsf(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
-   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
-   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.5);
-   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.5);
-   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.5);
-   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.5);
-   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.5);
+   if (nsweep==1) size = (INT)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (INT)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (INT)((asm->a.fdim+1)*3.5);
+   if (nsweep==4) size = (INT)((asm->a.fdim+1)*4.5);
+   if (nsweep==5) size = (INT)((asm->a.fdim+1)*5.5);
+   if (nsweep==6) size = (INT)((asm->a.fdim+1)*6.5);
+   if (nsweep>=7) size = (INT)((asm->a.fdim+1)*7.5);
    tryagain:
    amdef("ilu_val"  ,&(ilu->a) ,size          ,1,"DV");
    amdef("ilu_bindx",&(ilu->ja),size          ,1,"IV");
@@ -199,7 +199,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size = (int)(size*1.3);
+         size = (INT)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdel(&(ilu->ia));
@@ -243,13 +243,13 @@ else if (csr->ilu->is_factored != mlprecond.ncall && mlprecond.mod==0)
    mlpcg_csr_localnumsf(asm);
    /*---------------------- allocate space for the decomposition in ilu */
    if (nsweep==0) size = (asm->a.fdim+1);
-   if (nsweep==1) size = (int)((asm->a.fdim+1)*2.0);
-   if (nsweep==2) size = (int)((asm->a.fdim+1)*2.5);
-   if (nsweep==3) size = (int)((asm->a.fdim+1)*3.5);
-   if (nsweep==4) size = (int)((asm->a.fdim+1)*4.5);
-   if (nsweep==5) size = (int)((asm->a.fdim+1)*5.5);
-   if (nsweep==6) size = (int)((asm->a.fdim+1)*6.5);
-   if (nsweep>=7) size = (int)((asm->a.fdim+1)*7.5);
+   if (nsweep==1) size = (INT)((asm->a.fdim+1)*2.0);
+   if (nsweep==2) size = (INT)((asm->a.fdim+1)*2.5);
+   if (nsweep==3) size = (INT)((asm->a.fdim+1)*3.5);
+   if (nsweep==4) size = (INT)((asm->a.fdim+1)*4.5);
+   if (nsweep==5) size = (INT)((asm->a.fdim+1)*5.5);
+   if (nsweep==6) size = (INT)((asm->a.fdim+1)*6.5);
+   if (nsweep>=7) size = (INT)((asm->a.fdim+1)*7.5);
    tryagain2:
    amdef("levs"     ,&levs     ,size          ,1,"IV");
    amdef("w"        ,&w        ,asm->numeq    ,1,"DV");
@@ -293,7 +293,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
       if (ierr==-2 || ierr==-3)
       {
          printf("rank %d: Enlargment of storage for ilu happened\n",myrank);
-         size = (int)(size*1.3);
+         size = (INT)(size*1.3);
          amdel(&(ilu->a) );
          amdel(&(ilu->ja));
          amdel(&(ilu->ia));
@@ -334,24 +334,24 @@ return;
 <pre>                                                        m.gee 11/02 
 
 </pre>
-\param z            double*      (o)   the solution of the solve 
-\param r            double*      (i)   the rhs 
+\param z            DOUBLE*      (o)   the solution of the solve 
+\param r            DOUBLE*      (i)   the rhs 
 \param csr          DBCSR*       (i)   the matrix to be solved with 
 \param actintra     INTRA*       (i)   the intra-communicator of this field                  
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_lapacksolve(double *z, double *r, DBCSR *csr, INTRA *actintra)
+void mlpcg_precond_lapacksolve(DOUBLE *z, DOUBLE *r, DBCSR *csr, INTRA *actintra)
 {
-int      i,j,info;
-int      myrank,nproc;
-int      numeq_total,numeq;
-int     *update,*ia,*ja;
-double  *a;
+INT      i,j,info;
+INT      myrank,nproc;
+INT      numeq_total,numeq;
+INT     *update,*ia,*ja;
+DOUBLE  *a;
 ARRAY    sdense_a,srhs_a,rrhs_a;
-double **sdense,*srhs,*rrhs;
+DOUBLE **sdense,*srhs,*rrhs;
 char     trans[1];
-int      ione=1;
+INT      ione=1;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_lapacksolve");
@@ -487,18 +487,18 @@ return;
 <pre>                                                        m.gee 11/02 
 
 </pre>
-\param P            double**      (i/o)   The prolongator to be orthonormalized
-\param R            double**      (o)     the R part of the P = QR factorization
-\param nrow         int           (i)     row dimension of P 
-\param ncol         int           (i)     column dimension of P
+\param P            DOUBLE**      (i/o)   The prolongator to be orthonormalized
+\param R            DOUBLE**      (o)     the R part of the P = QR factorization
+\param nrow         INT           (i)     row dimension of P 
+\param ncol         INT           (i)     column dimension of P
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_gramschmidt(double **P, double **R,const int nrow,const int ncol)
+void mlpcg_precond_gramschmidt(DOUBLE **P, DOUBLE **R,const INT nrow,const INT ncol)
 {
-int     i,j,k;
-double  sum;
-int     start=0;
+INT     i,j,k;
+DOUBLE  sum;
+INT     start=0;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_gramschmidt");

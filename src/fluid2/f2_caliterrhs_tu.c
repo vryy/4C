@@ -29,34 +29,34 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 </pre>
 \param  *dynvar      FLUID_DYN_CALC  (i)
-\param  *eforce      double	    (i/o)   element force vector
-\param   eddyint     double	     (i)    eddy-visc at integr. point
-\param   kapepsint   double	     (i)    kapeps at integr. point
-\param  *funct       double	     (i)    nat. shape funcs
-\param   fac 	   double	     (i)    weighting factor
-\param   factor2 	   double	     (i)    factor
-\param   vderxy_12   double	     (i)    factor
-\param   visc 	   double	     (i)    viscosity
-\param   iel	   int           (i)	num. of nodes of act. ele
+\param  *eforce      DOUBLE	    (i/o)   element force vector
+\param   eddyint     DOUBLE	     (i)    eddy-visc at integr. point
+\param   kapepsint   DOUBLE	     (i)    kapeps at integr. point
+\param  *funct       DOUBLE	     (i)    nat. shape funcs
+\param   fac 	   DOUBLE	     (i)    weighting factor
+\param   factor2 	   DOUBLE	     (i)    factor
+\param   vderxy_12   DOUBLE	     (i)    factor
+\param   visc 	   DOUBLE	     (i)    viscosity
+\param   iel	   INT           (i)	num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calgalifkapeps(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,
-		      double           eddyint,  
-                  double           kapepsint,  
-                  double          *funct,   
-		      double           fac,     
-                  double           factor2,    
-                  double           vderxy_12,    
-                  double           visc,    
-                  int              iel      
+                  DOUBLE          *eforce,
+		      DOUBLE           eddyint,  
+                  DOUBLE           kapepsint,  
+                  DOUBLE          *funct,   
+		      DOUBLE           fac,     
+                  DOUBLE           factor2,    
+                  DOUBLE           vderxy_12,    
+                  DOUBLE           visc,    
+                  INT              iel      
                  )  
 {
-int    inode,isd;
-int    irow;  
-double facsl;
+INT    inode,isd;
+INT    irow;  
+DOUBLE facsl;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calgalifkapeps");
@@ -131,43 +131,43 @@ LOW-REYNOLD's MODEL only for epsilon:
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
-\param   *eforce   double	   (i/o)  element force vector
-\param    kapepsint double	   (i)    kapeps at integr. point
-\param   *velint   double	   (i)    vel at integr. point
-\param   *velint_dc  double	   (i)    vel at integr. point for D.C.
-\param    eddyint  double	   (i)    eddy-visc. at integr. point
-\param   *funct    double	   (i)    nat. shape funcs
-\param  **derxy    double	   (i)    global derivative
-\param    fac 	 double	   (i)    weighting factor
-\param    factor2  double	   (i)    factor
-\param    vderxy_12 double	   (i)    factor
-\param    visc     double	   (i)    fluid viscosity
-\param    iel	   int	   (i)    num. of nodes of act. ele
+\param   *eforce   DOUBLE	   (i/o)  element force vector
+\param    kapepsint DOUBLE	   (i)    kapeps at integr. point
+\param   *velint   DOUBLE	   (i)    vel at integr. point
+\param   *velint_dc  DOUBLE	   (i)    vel at integr. point for D.C.
+\param    eddyint  DOUBLE	   (i)    eddy-visc. at integr. point
+\param   *funct    DOUBLE	   (i)    nat. shape funcs
+\param  **derxy    DOUBLE	   (i)    global derivative
+\param    fac 	 DOUBLE	   (i)    weighting factor
+\param    factor2  DOUBLE	   (i)    factor
+\param    vderxy_12 DOUBLE	   (i)    factor
+\param    visc     DOUBLE	   (i)    fluid viscosity
+\param    iel	   INT	   (i)    num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabifkapeps(
                   FLUID_DYN_CALC  *dynvar, 
                   ELEMENT         *ele,      
-	            double          *eforce,  
-		      double           kapepsint,  
-                  double          *velint,  
-                  double          *velint_dc,  
-		      double           eddyint,  
-                  double          *funct,   
-		      double         **derxy,   
-		      double           fac,     
-                  double           factor2,    
-                  double           vderxy_12,    
-                  double           visc,    
-		      int              iel      
+	            DOUBLE          *eforce,  
+		      DOUBLE           kapepsint,  
+                  DOUBLE          *velint,  
+                  DOUBLE          *velint_dc,  
+		      DOUBLE           eddyint,  
+                  DOUBLE          *funct,   
+		      DOUBLE         **derxy,   
+		      DOUBLE           fac,     
+                  DOUBLE           factor2,    
+                  DOUBLE           vderxy_12,    
+                  DOUBLE           visc,    
+		      INT              iel      
                   )  
 {
-int    inode,isd;
-int    irow;  
-double facsl,facsl_dc;
-double aux,aux_dc;
-double taumu,taumu_dc;
+INT    inode,isd;
+INT    irow;  
+DOUBLE facsl,facsl_dc;
+DOUBLE aux,aux_dc;
+DOUBLE taumu,taumu_dc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabifkapeps");

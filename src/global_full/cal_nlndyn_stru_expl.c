@@ -67,10 +67,10 @@ extern ALLDYNA      *alldyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -81,32 +81,32 @@ extern struct _CURVE *curve;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-double acttime;
+DOUBLE acttime;
 
 /*---------------------------------------------------------------------------*
  |  routine to control nonlinear dyn explicit structural analysis m.gee 05/02|
  *---------------------------------------------------------------------------*/
 void dyn_nln_stru_expl() 
 {
-int             i;                  /* simply a counter */
-int             numeq;              /* number of equations on this proc */
-int             numeq_total;        /* total number of equations */
-int             init;               /* flag for solver_control call */
-int             mod_disp,mod_stress;
-int             mod_res_write;
-int             restart;
-double          t0_res,t1_res;
+INT             i;                  /* simply a counter */
+INT             numeq;              /* number of equations on this proc */
+INT             numeq_total;        /* total number of equations */
+INT             init;               /* flag for solver_control call */
+INT             mod_disp,mod_stress;
+INT             mod_res_write;
+INT             restart;
+DOUBLE          t0_res,t1_res;
 
-double          dt;
-double          dthalf;
-int             nstep;
+DOUBLE          dt;
+DOUBLE          dthalf;
+INT             nstep;
 
-double          t0,t1;
+DOUBLE          t0,t1;
 
-int             stiff_array;        /* indice of the active system sparse matrix */
-int             mass_array;         /* indice of the active system sparse matrix */
-int             damp_array;         /* indice of the active system sparse matrix */
-int             actcurve;           /* indice of active time curve */
+INT             stiff_array;        /* indice of the active system sparse matrix */
+INT             mass_array;         /* indice of the active system sparse matrix */
+INT             damp_array;         /* indice of the active system sparse matrix */
+INT             actcurve;           /* indice of active time curve */
 
 SOLVAR         *actsolv;            /* pointer to active solution structure */
 PARTITION      *actpart;            /* pointer to active partition */
@@ -122,9 +122,9 @@ DIST_VECTOR    *dispi;              /* distributed vector to hold incremental di
 DIST_VECTOR    *work;               /* working vectors */
 
 ARRAY           intforce_a;         /* redundant vector of full length for internal forces */
-double         *intforce;
+DOUBLE         *intforce;
 ARRAY           dirich_a;           /* redundant vector of full length for dirichlet-part of rhs */
-double         *dirich;
+DOUBLE         *dirich;
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 

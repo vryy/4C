@@ -30,10 +30,10 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  routine to write solution of a step to GID           m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, int step,
-                   int place, double totaltime)
+void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, INT step,
+                   INT place, DOUBLE totaltime)
 {
-int           i,j;
+INT           i,j;
 
 FILE         *out = allfiles.gidres;
 
@@ -45,31 +45,31 @@ char         *resulttype;
 char         *resultplace;
 char         *gpset;
 char         *rangetable;
-int           ncomponent;
+INT           ncomponent;
 char         *componentnames[18];
 
 char          sign='"';
 
-int           stringlenght;
+INT           stringlenght;
 
-int           ngauss;
-double      **forces;
-double      **stress;
+INT           ngauss;
+DOUBLE      **forces;
+DOUBLE      **stress;
 
-double        a1,a2,a3,thick,scal,sdc;
-int           tot_numnp;
+DOUBLE        a1,a2,a3,thick,scal,sdc;
+INT           tot_numnp;
 
-int           numele;   /*for shell9*/
+INT           numele;   /*for shell9*/
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
    have to be written
 */   
 
-int           gaussperm4[4] = {3,1,0,2};
-int           gaussperm8[8] = {0,4,2,6,1,5,3,7};
-int           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-int           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};
+INT           gaussperm4[4] = {3,1,0,2};
+INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};
+INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
+INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};
 
 #ifdef DEBUG 
 dstrc_enter("out_gid_soldyn");

@@ -158,7 +158,7 @@ void oll_numeq(
      coupledofs are */
 #ifdef PARALLEL
   sendsize = (actpart->pdis[dis].coupledofs.fdim)*(inprocs);
-  sendbuff = (int*)CCACALLOC(sendsize,sizeof(INT));
+  sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
   recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
   if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
   counter=0;

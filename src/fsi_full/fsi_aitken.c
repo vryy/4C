@@ -11,7 +11,7 @@
 #include "../headers/solution.h"
 #include "fsi_prototypes.h"    
 #ifdef D_FSI
-static double done = 1.0E20;
+static DOUBLE done = 1.0E20;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | ranks and communicators                                              |
@@ -37,29 +37,29 @@ see also Dissertation of D.P.MOK, chapter 6.4
 
 \param *structfield   FIELD	     (i)   structural field
 \param *fsidyn 	      FSI_DYNAMIC    (i)   
-\param  itnum         int            (i)   actual iteration step
+\param  itnum         INT            (i)   actual iteration step
 \return void     
 
 ------------------------------------------------------------------------*/
 void fsi_aitken(  
                  FIELD          *structfield, 
                  FSI_DYNAMIC    *fsidyn, 
-		 int             itnum
+		 INT             itnum
 	       )
 {
-int            i,j;           /* some counters                          */
-int            numdf;         /* number of nodal dofs                   */
-int            dof;           /* actual dof                             */
-static int     numnp_total;   /* total number of nodes                  */
-static int     numdf_total;   /* total number of coupled dofs           */
-static int    *sid;           /* flags for structural interface dofs    */
-static double  nu;            /* actual AITKEN factor                   */
-double         top=ZERO;      
-double         den=ZERO;
-double         del2;				
-double       **sol_mf;        /* multifield nodal solution array        */
+INT            i,j;           /* some counters                          */
+INT            numdf;         /* number of nodal dofs                   */
+INT            dof;           /* actual dof                             */
+static INT     numnp_total;   /* total number of nodes                  */
+static INT     numdf_total;   /* total number of coupled dofs           */
+static INT    *sid;           /* flags for structural interface dofs    */
+static DOUBLE  nu;            /* actual AITKEN factor                   */
+DOUBLE         top=ZERO;      
+DOUBLE         den=ZERO;
+DOUBLE         del2;				
+DOUBLE       **sol_mf;        /* multifield nodal solution array        */
 static ARRAY   del_a;      
-static double *del;           /* DELTAd(i)                              */
+static DOUBLE *del;           /* DELTAd(i)                              */
 NODE          *actsnode;      /* actual structural node                 */
 
 #ifdef DEBUG 

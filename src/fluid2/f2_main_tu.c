@@ -43,8 +43,8 @@ extern struct _FIELD      *field;
 \param      *edforce_global  ARRAY           (o)    element dirich force vector
 \param      *eproforce_global   ARRAY        (o)    element production force vector
 \param	*action	        CALC_ACTION  (i)
-\param	*hasdirich	        int          (o)    flag
-\param      *hasext             int          (o)    flag
+\param	*hasdirich	        INT          (o)    flag
+\param      *hasext             INT          (o)    flag
 \param      *container	        CONTAINER    (i)	    
 \return void
 
@@ -61,8 +61,8 @@ void fluid2_tu(
             ARRAY       *edforce_global, 
             ARRAY       *eproforce_global, 
             CALC_ACTION *action,
-	      int         *hasdirich,
-	      int         *hasext,
+	      INT         *hasdirich,
+	      INT         *hasext,
             CONTAINER   *container
 	   )
 {
@@ -70,13 +70,13 @@ void fluid2_tu(
 #ifdef D_FLUID2 
 /*----------------------------------------------------------------------*/
 
-static int              numff;      /* actual number of fluid field     */
+static INT              numff;      /* actual number of fluid field     */
 MATERIAL               *actmat;     /* actual material                  */
 static FLUID_DATA      *data;      
 FLUID_DYNAMIC          *fdyn;
 static FLUID_DYN_CALC  *dynvar;
 FIELD                  *actfield;   /* actual field                     */
-int                    start;
+INT                    start;
 #ifdef DEBUG 
 dstrc_enter("fluid2_tu");
 #endif

@@ -58,7 +58,7 @@ struct _TRACE         trace;
 
 *----------------------------------------------------------------------*/
 #ifdef PARALLEL
-double par_start;
+DOUBLE par_start;
 #else
 time_t seq_start;
 #endif
@@ -89,7 +89,7 @@ time_t seq_start;
 void dsinit()
 {
 #ifdef DEBUG 
-int i=0;
+INT i=0;
 /*====================================================tracing of memory */
 /* 
    num_byte_allocated is a global variable which can be seen here and in
@@ -212,12 +212,12 @@ this routine is called by the am-system only !
 see dsinit()
 </pre>
 \param string   char[]   (i)  name of routine                                
-\param typ      int      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
+\param typ      INT      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
 \return void                                               
 \sa dsinit()                                    
 
 ------------------------------------------------------------------------*/
-void dsreportarray(void *array, int typ)
+void dsreportarray(void *array, INT typ)
 {
 #ifdef DEBUG
 /*--------------------- count total number of active ARRAYs or ARRAY4Ds */
@@ -264,12 +264,12 @@ this routine is called by the am-system only !
 see dsinit()
 </pre>
 \param string   char[]   (i)  name of routine                                
-\param typ      int      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
+\param typ      INT      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
 \return void                                               
 \sa dsinit() ,  dstracereport()                                  
 
 ------------------------------------------------------------------------*/
-void dsdeletearray(void *array, int typ)
+void dsdeletearray(void *array, INT typ)
 {
 #ifdef DEBUG
 TRACEARRAY *acttracearray;
@@ -338,7 +338,7 @@ see dsinit()
 ------------------------------------------------------------------------*/
 void dstrace_to_err()
 {
-int         i=0;
+INT         i=0;
 TRACEARRAY *acttracer;
 
 #ifdef DEBUG 
@@ -490,9 +490,9 @@ void dsmemreport()
 #ifdef DEBUG 
 char   *colptr;
 char    message[300];
-double  mbyte;
+DOUBLE  mbyte;
 /*----------------------------------------------------------------------*/
-mbyte = (double)num_byte_allocated;
+mbyte = (DOUBLE)num_byte_allocated;
 mbyte /= 1048576.0;
 
 if (trace.trace_on==1)
@@ -538,13 +538,13 @@ The routine is empty in an optimezed (not DEBUG) compilation and
 can therefor be excessively used to develop a secure code, without   
 making it slow when running as fast-exe                              
 </pre>
-\param true     int     (i)   boolean value                       
+\param true     INT     (i)   boolean value                       
 \param string   char[]  (i)   error message, if true==0                    
 \return void                                                
 \sa dserror()                                    
 
 ------------------------------------------------------------------------*/
-void dsassert(int true, char string[])
+void dsassert(INT true, char string[])
 {
 #ifdef DEBUG 
 /*----------------------------------------------------------------------*/
@@ -574,7 +574,7 @@ return;
 ------------------------------------------------------------------------*/
 void dserror(char string[])
 {
-int i=0;
+INT i=0;
 char message[300];
 char *colptr=NULL;
 TRACEROUT *routhis = NULL;
@@ -652,7 +652,7 @@ void ds_cputime_init()
 #ifdef DEBUG
 struct timeval tv;
 struct timezone tz;
-double sec, usec;
+DOUBLE sec, usec;
 #endif
 #endif*/
 
@@ -666,8 +666,8 @@ par_start=MPI_Wtime();
 /*#else
 #ifdef DEBUG  
 gettimeofday(&tv, &tz);   
-sec = (double)(tv.tv_sec); 
-usec = (double)(tv.tv_usec);
+sec = (DOUBLE)(tv.tv_sec); 
+usec = (DOUBLE)(tv.tv_usec);
 seq_start=sec+0.000001*usec;*/
 #else
 seq_start=time(NULL);
@@ -691,21 +691,21 @@ routine to meassure the cpu - time
 \return void                                                
 
 ------------------------------------------------------------------------*/
-double ds_cputime()
+DOUBLE ds_cputime()
 {
 #ifndef SUSE73
 #ifdef PARALLEL
-double par_end;
+DOUBLE par_end;
 /*#else
 #ifdef DEBUG
-double seq_end;
+DOUBLE seq_end;
 struct timeval tv;
 struct timezone tz;
-double sec, usec;*/
+DOUBLE sec, usec;*/
 #else
 time_t seq_end;
 #endif
-double diff;
+DOUBLE diff;
 
 #ifdef DEBUG
 dstrc_enter("ds_cputime");
@@ -717,8 +717,8 @@ diff=par_end-par_start;
 /*#else
 #ifdef DEBUG
 gettimeofday(&tv, &tz);   
-sec = (double)(tv.tv_sec);
-usec = (double)(tv.tv_usec);
+sec = (DOUBLE)(tv.tv_sec);
+usec = (DOUBLE)(tv.tv_usec);
 seq_end=sec+0.000001*usec;
 diff=seq_end-seq_start;*/
 #else
@@ -730,7 +730,7 @@ diff = difftime(seq_end,seq_start);
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-return ((double)(diff)); 
+return ((DOUBLE)(diff)); 
 #endif
 }
 

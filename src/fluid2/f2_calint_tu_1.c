@@ -31,35 +31,35 @@ time-RHS for one fluid2 element is calculated
 \param  *ele	 ELEMENT	   (i)    actual element
 \param  *elev	 ELEMENT	   (i)    actual rans-element
 \param  *dynvar    FLUID_DYN_CALC  (i)
-\param **estif     double	   (o)    element stiffness matrix
-\param **emass     double	   (o)    element mass matrix
-\param  *etforce   double	   (o)    element time force vector
-\param  *eiforce   double	   (o)    element iter force vector
-\param  *eproforce double	   (o)    element production force vector
-\param  *funct     double	   (-)    natural shape functions
-\param **deriv     double	   (-)	  deriv. of nat. shape funcs
-\param **deriv2    double	   (-)    2nd deriv. of nat. shape f.
-\param **xjm	 double	   (-)    jacobian matrix
-\param **xyze      double          (-)    nodal coordinates
-\param **derxy     double	   (-)	  global derivatives
-\param **derxy2    double	   (-)    2nd global derivatives
-\param  *kapomen   double	   (i)    kapome at time n
-\param  *kapomeg   double	   (i)    kapome at time n+g
-\param  *eddyg     double	   (i)    eddy-viscosity at time n+1
-\param  *eddypro   double	   (i)    eddy-viscosity for prod. term
-\param  *kappan    double	   (i)    kappa at time n
-\param  *omega     double	   (-)    omega at nodes
-\param  *kapomepro double	   (-)    kapome at nodes
-\param  *omegaderxy   double	   (-)    omega derivates
-\param  *kapomederxy  double	   (-)    kapome derivates
-\param  *kapomederxy2 double	   (-)    second kapome derivatives
-\param  *velint    double	   (-)    vel at integration point
-\param  *velint_dc    double	   (-)    vel at integration point for DISC. CAPT.
-\param **evel	 double	   (i)    velocity at nodes
-\param **vderxy	 double	   (-)    velocity derivates
-\param **vderxy2	 double	   (-)    velocity 2nd derivates
-\param **wa1	 double	   (-)    working array
-\param **wa2	 double	   (-)    working array
+\param **estif     DOUBLE	   (o)    element stiffness matrix
+\param **emass     DOUBLE	   (o)    element mass matrix
+\param  *etforce   DOUBLE	   (o)    element time force vector
+\param  *eiforce   DOUBLE	   (o)    element iter force vector
+\param  *eproforce DOUBLE	   (o)    element production force vector
+\param  *funct     DOUBLE	   (-)    natural shape functions
+\param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
+\param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
+\param **xjm	 DOUBLE	   (-)    jacobian matrix
+\param **xyze      DOUBLE          (-)    nodal coordinates
+\param **derxy     DOUBLE	   (-)	  global derivatives
+\param **derxy2    DOUBLE	   (-)    2nd global derivatives
+\param  *kapomen   DOUBLE	   (i)    kapome at time n
+\param  *kapomeg   DOUBLE	   (i)    kapome at time n+g
+\param  *eddyg     DOUBLE	   (i)    eddy-viscosity at time n+1
+\param  *eddypro   DOUBLE	   (i)    eddy-viscosity for prod. term
+\param  *kappan    DOUBLE	   (i)    kappa at time n
+\param  *omega     DOUBLE	   (-)    omega at nodes
+\param  *kapomepro DOUBLE	   (-)    kapome at nodes
+\param  *omegaderxy   DOUBLE	   (-)    omega derivates
+\param  *kapomederxy  DOUBLE	   (-)    kapome derivates
+\param  *kapomederxy2 DOUBLE	   (-)    second kapome derivatives
+\param  *velint    DOUBLE	   (-)    vel at integration point
+\param  *velint_dc    DOUBLE	   (-)    vel at integration point for DISC. CAPT.
+\param **evel	 DOUBLE	   (i)    velocity at nodes
+\param **vderxy	 DOUBLE	   (-)    velocity derivates
+\param **vderxy2	 DOUBLE	   (-)    velocity 2nd derivates
+\param **wa1	 DOUBLE	   (-)    working array
+\param **wa2	 DOUBLE	   (-)    working array
 \return void                                                   
 
 ------------------------------------------------------------------------*/
@@ -68,63 +68,63 @@ void f2_calint_tu_1(
 	         ELEMENT         *ele,     
 	         ELEMENT         *elev, 
                FLUID_DYN_CALC  *dynvar, 
-               double         **estif,   
-	         double         **emass,   
-	         double          *etforce, 
-	         double          *eiforce, 
-	         double          *eproforce, 
-	         double          *funct,   
-	         double         **deriv,   
-	         double         **deriv2,  
-	         double         **xjm,     
-	         double         **xyze,
-	         double         **derxy,   
-	         double         **derxy2,  
-	         double          *kapomen,   
-	         double          *kapomeg,   
-               double          *eddyg, 
-               double          *eddypro, 
-               double          *kappan, 
-               double          *omega,    
-               double          *kapomepro,    
-               double          *omegaderxy,  
-               double          *kapomederxy,  
-               double          *kapomederxy2, 
-	         double          *velint,  
-	         double          *velint_dc,  
-               double         **evel,
-               double         **vderxy,
-               double         **vderxy2,
-               double         **wa1,     
-	         double         **wa2      
+               DOUBLE         **estif,   
+	         DOUBLE         **emass,   
+	         DOUBLE          *etforce, 
+	         DOUBLE          *eiforce, 
+	         DOUBLE          *eproforce, 
+	         DOUBLE          *funct,   
+	         DOUBLE         **deriv,   
+	         DOUBLE         **deriv2,  
+	         DOUBLE         **xjm,     
+	         DOUBLE         **xyze,
+	         DOUBLE         **derxy,   
+	         DOUBLE         **derxy2,  
+	         DOUBLE          *kapomen,   
+	         DOUBLE          *kapomeg,   
+               DOUBLE          *eddyg, 
+               DOUBLE          *eddypro, 
+               DOUBLE          *kappan, 
+               DOUBLE          *omega,    
+               DOUBLE          *kapomepro,    
+               DOUBLE          *omegaderxy,  
+               DOUBLE          *kapomederxy,  
+               DOUBLE          *kapomederxy2, 
+	         DOUBLE          *velint,  
+	         DOUBLE          *velint_dc,  
+               DOUBLE         **evel,
+               DOUBLE         **vderxy,
+               DOUBLE         **vderxy2,
+               DOUBLE         **wa1,     
+	         DOUBLE         **wa2      
 	        )
 { 
-int       i,j;        /* simply a counter                               */
-int       iel;        /* number of nodes                                */
-int       ntyp;       /* element type: 1 - quad; 2 - tri                */
-int       intc;       /* "integration case" for tri for further infos
+INT       i,j;        /* simply a counter                               */
+INT       iel;        /* number of nodes                                */
+INT       ntyp;       /* element type: 1 - quad; 2 - tri                */
+INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
-int       nir,nis;    /* number of integration nodesin r,s direction    */
-int       actmat;     /* material number of the element                 */
-int       icode=2;    /* flag for eveluation of shape functions         */     
-int       ihoel=0;    /* flag for higher order elements                 */
-int       lr, ls;     /* counter for integration                        */
-double    dens;       /* density                                        */
-double    visc;       /* viscosity                                      */
-double    xi;
-double    fac;
-double    factor,factor1;
-double    factor2,sig,production;
-double    facr, facs; /* integration weights                            */
-double    det;        /* determinant of jacobian matrix                 */
-double    e1,e2;      /* natural coordinates of integr. point           */
-double    eddyint;
-double    eddynint;
-double    kappanint;
-double    omegaint;
-double    kapomeint;
-double    kapomenint;
-double    ome_proint;
+INT       nir,nis;    /* number of integration nodesin r,s direction    */
+INT       actmat;     /* material number of the element                 */
+INT       icode=2;    /* flag for eveluation of shape functions         */     
+INT       ihoel=0;    /* flag for higher order elements                 */
+INT       lr, ls;     /* counter for integration                        */
+DOUBLE    dens;       /* density                                        */
+DOUBLE    visc;       /* viscosity                                      */
+DOUBLE    xi;
+DOUBLE    fac;
+DOUBLE    factor,factor1;
+DOUBLE    factor2,sig,production;
+DOUBLE    facr, facs; /* integration weights                            */
+DOUBLE    det;        /* determinant of jacobian matrix                 */
+DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
+DOUBLE    eddyint;
+DOUBLE    eddynint;
+DOUBLE    kappanint;
+DOUBLE    omegaint;
+DOUBLE    kapomeint;
+DOUBLE    kapomenint;
+DOUBLE    ome_proint;
 DIS_TYP   typ;	    /* element type                                   */
 
 #ifdef DEBUG 

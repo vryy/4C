@@ -23,7 +23,7 @@
 #include "/bau/stat33/users/statik/lib/METIS/metis.h"
 #endif
 #endif
-static int MAXNODPERGLINE=3;
+static INT MAXNODPERGLINE=3;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -73,17 +73,17 @@ off by malte neumann at the moment (Aug/2002)
 ------------------------------------------------------------------------*/
 void part_fields()
 {
-int      i,j,k,l,kk;
-int      counter;
-int      adjcounter;
+INT      i,j,k,l,kk;
+INT      counter;
+INT      adjcounter;
 long int max,min;
-int      proc, proc2;
-int      sameproc;
-int      ngline;
+INT      proc, proc2;
+INT      sameproc;
+INT      ngline;
 
 INTRA   *actintra;
-int      imyrank;
-int      inprocs;
+INT      imyrank;
+INT      inprocs;
 NODE    *actnode;
 FIELD   *actfield;
 GNODE   *actgnode;
@@ -99,19 +99,19 @@ ARRAY    xadj[MAXFIELD];
 ARRAY    adjncy[MAXFIELD];
 ARRAY    vwgt[MAXFIELD];
 
-int      ione=1;
-int      options[5];
-int      numflag=0;
-int      edgecut;
-int      wgtflag=2;
-int      nparts;
+INT      ione=1;
+INT      options[5];
+INT      numflag=0;
+INT      edgecut;
+INT      wgtflag=2;
+INT      nparts;
 ARRAY    part;
 ARRAY    part_proc;
 ARRAY    ele_per_proc;
 ARRAY    gl_per_proc_a;
-int     *gl_per_proc;
+INT     *gl_per_proc;
 ARRAY    lineproc_a;
-int     *lineproc;
+INT     *lineproc;
 #ifdef DEBUG 
 dstrc_enter("part_fields");
 #endif

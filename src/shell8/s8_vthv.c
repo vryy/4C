@@ -9,15 +9,15 @@ C.......................................................................
 C!    GEAENDERTE METRIK DES VERF. SCHALENRAUMS INFOLGE ENHANCED STRAIN .
 C.......................................................................
 */
-void s8_vthv(double **gmkovc,
-             double **gmkonc,
-             double  *epsh,
-             double  *detc,
-             double   e3,
-             double   condfac)
+void s8_vthv(DOUBLE **gmkovc,
+             DOUBLE **gmkonc,
+             DOUBLE  *epsh,
+             DOUBLE  *detc,
+             DOUBLE   e3,
+             DOUBLE   condfac)
 {
-double det_dummy;
-double zeta;
+DOUBLE det_dummy;
+DOUBLE zeta;
 
 #ifdef DEBUG 
 dstrc_enter("s8_vthv");

@@ -31,17 +31,17 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 void assign_dof_ndis(FIELD *actfield)
 {
-int j,k,l,kk;                    /* some counters */
-int counter;                       
-int cpro;
-int coupleID;                      /* Id of a coupling set from gid */
-int dof;                           /* dof in progress */
-int couple,geocouple,dirich;       /* flags for conditions */
+INT j,k,l,kk;                    /* some counters */
+INT counter;                       
+INT cpro;
+INT coupleID;                      /* Id of a coupling set from gid */
+INT dof;                           /* dof in progress */
+INT couple,geocouple,dirich;       /* flags for conditions */
 ELEMENT *actele;                   /* the element in progress */
 NODE    *actnode, *partnernode;    /* node and coupling partner in progress */
-int max;
+INT max;
 ARRAY   nodeflag_a;
-int *nodeflag;
+INT *nodeflag;
 #ifdef DEBUG 
 dstrc_enter("assign_dof_ndis");
 #endif
@@ -148,7 +148,7 @@ for (kk=0;kk<actfield->ndis;kk++)
    counter=0;
    for (j=0; j<actfield->dis[kk].numnp; j++)
    {
-      actfield->dis[kk].node[j].dof          = (int*)CCACALLOC(actfield->dis[kk].node[j].numdf,sizeof(int));
+      actfield->dis[kk].node[j].dof          = (INT*)CCACALLOC(actfield->dis[kk].node[j].numdf,sizeof(INT));
 #ifdef D_FLUID   
       actfield->dis[kk].node[j].fluid_varia  = (FLUID_VARIA*)CCACALLOC(1,sizeof(FLUID_VARIA));
 #endif

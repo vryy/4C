@@ -18,17 +18,17 @@
  | constitutive matrix - linear elastic - 2D              ah   06/02    |
  | plane stress, plane strain,                                          |
  *----------------------------------------------------------------------*/
-void w1_mat_linelgeonon(double ym, 
-                        double pv, 
+void w1_mat_linelgeonon(DOUBLE ym, 
+                        DOUBLE pv, 
                         WALL_TYPE wtype,
-                        double *strain, 
-                        double **d,
-                        double **stress,
-                        int numeps)
+                        DOUBLE *strain, 
+                        DOUBLE **d,
+                        DOUBLE **stress,
+                        INT numeps)
 {
-double e1, e2, e3, a1, b1, c1;
-double svector[3];
-int i,k;
+DOUBLE e1, e2, e3, a1, b1, c1;
+DOUBLE svector[3];
+INT i,k;
 #ifdef DEBUG 
 dstrc_enter("w1_mat_linelgeonon");
 #endif

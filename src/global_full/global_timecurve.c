@@ -4,22 +4,22 @@
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _DYNAMIC      *curve;                                         |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  |  init the control of time factors                         m.gee 02/02|
  *----------------------------------------------------------------------*/
-void dyn_init_curve(int actcurve,
-                   int    nstep,
-                   double dt,
-                   double maxtime)
+void dyn_init_curve(INT actcurve,
+                   INT    nstep,
+                   DOUBLE dt,
+                   DOUBLE maxtime)
 {
-int      i;
-int      numtstep;
-int      fdim;
+INT      i;
+INT      numtstep;
+INT      fdim;
 ARRAY    time_a;
 ARRAY    rlcurve_a;
 
@@ -86,14 +86,14 @@ return;
 /*----------------------------------------------------------------------*
  |  get factor at a certain time T                           m.gee 02/02|
  *----------------------------------------------------------------------*/
-void dyn_facfromcurve(int actcurve,
-                   double T,
-                   double *fac)
+void dyn_facfromcurve(INT actcurve,
+                   DOUBLE T,
+                   DOUBLE *fac)
 {
-int      i;
-int      numtstep;
-int      success=0;
-double   time1,time2,val1,val2;
+INT      i;
+INT      numtstep;
+INT      success=0;
+DOUBLE   time1,time2,val1,val2;
 
 #ifdef DEBUG 
 dstrc_enter("dyn_facfromcurve");
@@ -161,19 +161,19 @@ tbc
 		     
 </pre>
 
-\param     actcurve     int            (i)    number of actual time curve
-\param     T            double         (i)    actual time       
-\return double
+\param     actcurve     INT            (i)    number of actual time curve
+\param     T            DOUBLE         (i)    actual time       
+\return DOUBLE
 
 ------------------------------------------------------------------------*/
-double dyn_facexplcurve(int actcurve,   /* number of actual time curve  */
-                        double T        /* actual time                  */
+DOUBLE dyn_facexplcurve(INT actcurve,   /* number of actual time curve  */
+                        DOUBLE T        /* actual time                  */
 		       )
 {
-int numex;          /* number of explicit time curve                    */
-double val1, fac;
-double c1,c2;       /* function constants                               */
-static double savefac;
+INT numex;          /* number of explicit time curve                    */
+DOUBLE val1, fac;
+DOUBLE c1,c2;       /* function constants                               */
+static DOUBLE savefac;
 
 #ifdef DEBUG 
 dstrc_enter("dyn_facexplcurve");
@@ -222,5 +222,5 @@ default:
 dstrc_exit();
 #endif
 
-return((double)(fac));;
+return((DOUBLE)(fac));;
 }   /* end of dyn_facexplcurve */

@@ -4,13 +4,13 @@
  *----------------------------------------------------------------------*/
 typedef struct _VISUAL_DATA
 {
-int                          step;     
+INT                          step;     
 
 long int                     time;
 
 long int                     handle_of_node_handles;
-int                          node_fdim;
-int                          node_sdim;
+INT                          node_fdim;
+INT                          node_sdim;
 long int                    *node_handles;
 
 } VISUAL_DATA;

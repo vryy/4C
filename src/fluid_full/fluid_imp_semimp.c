@@ -61,10 +61,10 @@ extern ALLDYNA      *alldyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -116,27 +116,27 @@ fixed-point-like iteration scheme is tested!
 ------------------------------------------------------------------------*/
 void fluid_isi(FLUID_DYNAMIC *fdyn)
 {
-int             itnum;              /* counter for nonlinear iteration  */
-int             i;                  /* simply a counter                 */
-int             numeq;              /* number of equations on this proc */
-int             numeq_total;        /* total number of equations        */
-int             init;               /* flag for solver_control call     */
-int             calstress=0;        /* flag for stress calculation      */
-int             nsysarray=1;        /* one system matrix                */
-int             actsysarray=0;      /* number of actual sysarray        */
-int             outstep=0;          /* counter for time integration     */
-int             pssstep=0;
-int             iststep=0;          /* counter for time integration     */
-int             nfrastep;           /* number of steps for fractional-
+INT             itnum;              /* counter for nonlinear iteration  */
+INT             i;                  /* simply a counter                 */
+INT             numeq;              /* number of equations on this proc */
+INT             numeq_total;        /* total number of equations        */
+INT             init;               /* flag for solver_control call     */
+INT             calstress=0;        /* flag for stress calculation      */
+INT             nsysarray=1;        /* one system matrix                */
+INT             actsysarray=0;      /* number of actual sysarray        */
+INT             outstep=0;          /* counter for time integration     */
+INT             pssstep=0;
+INT             iststep=0;          /* counter for time integration     */
+INT             nfrastep;           /* number of steps for fractional-
                                        step-theta procedure             */
-int             actcurve;           /* actual timecurve                 */
-int             converged=0;        /* convergence flag                 */
-int             steady=0;           /* flag for steady state            */
-int             actpos;             /* actual position in sol. history  */
-double          vrat,prat;          /* convergence ratios               */
-double          t1,ts,te;	    /*					*/
-double          tes=0.0;            /*					*/
-double          tss=0.0;            /*					*/
+INT             actcurve;           /* actual timecurve                 */
+INT             converged=0;        /* convergence flag                 */
+INT             steady=0;           /* flag for steady state            */
+INT             actpos;             /* actual position in sol. history  */
+DOUBLE          vrat,prat;          /* convergence ratios               */
+DOUBLE          t1,ts,te;	    /*					*/
+DOUBLE          tes=0.0;            /*					*/
+DOUBLE          tss=0.0;            /*					*/
 FLUID_STRESS    str;           
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
@@ -147,9 +147,9 @@ CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
 
 ARRAY           ftimerhs_a;
-double         *ftimerhs;	    /* time - RHS			*/
+DOUBLE         *ftimerhs;	    /* time - RHS			*/
 ARRAY           fiterhs_a;
-double         *fiterhs;	    /* iteration - RHS  		*/
+DOUBLE         *fiterhs;	    /* iteration - RHS  		*/
 ARRAY           time_a;             /* stored time                      */
 
 CONTAINER       container;          /* contains variables defined in container.h */

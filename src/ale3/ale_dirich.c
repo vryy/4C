@@ -47,7 +47,7 @@ time t to actnode->sol.a.da[0][j].
 </pre>
 \param *actfield  FIELD          (i)  my field
 \param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
-\param  actpos    int            (i)  actual position in solution history
+\param  actpos    INT            (i)  actual position in solution history
 
 \warning For (dirich_val.a.dv == 90) the boundary conditions for a special
          example (rotating hole) are calculated.
@@ -204,7 +204,7 @@ Routine is used for fsi-ale problems with changing ale stiffness over time.
 </pre>
 \param *actfield  FIELD          (i)  my field
 \param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
-\param  actpos    int            (i)  actual position in solution history
+\param  actpos    INT            (i)  actual position in solution history
 
 \warning For (dirich_val.a.dv == 90) the boundary conditions for a special
          example (rotating hole) are calculated.

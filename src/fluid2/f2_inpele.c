@@ -16,21 +16,21 @@
 <pre>                                                         genk 03/02
 </pre>
 \param  *ele	   ELEMENT	   (o)	   actual element
-\param   counter   int             (i)     counter for first element
+\param   counter   INT             (i)     counter for first element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_inp(ELEMENT *ele, int counter)
+void f2_inp(ELEMENT *ele, INT counter)
 {
-int        i;             /* simply a counter                           */
-int        ndum;          /* dummy value                                */
-int        ihelem;        /* temporary variable for ihelem              */
-int        ierr=0;        /* error flag                                 */
-int        itaumu;        /*                                            */ 
-int        itaump;	  /*						*/
-int        itauc;	  /* element flags                              */
+INT        i;             /* simply a counter                           */
+INT        ndum;          /* dummy value                                */
+INT        ihelem;        /* temporary variable for ihelem              */
+INT        ierr=0;        /* error flag                                 */
+INT        itaumu;        /*                                            */ 
+INT        itaump;	  /*						*/
+INT        itauc;	  /* element flags                              */
 char      buffer[50];
-static int cmat;
+static INT cmat;
 
 #ifdef DEBUG 
 dstrc_enter("f2inp");
@@ -46,7 +46,7 @@ if (ierr==1)
    ele->numnp=4;
    ele->distyp=quad4;
    ele->e.f2->ntyp=1;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -57,7 +57,7 @@ if (ierr==1)
    ele->numnp=9;
    ele->distyp=quad9;
    ele->e.f2->ntyp=1;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -68,7 +68,7 @@ if (ierr==1)
    ele->numnp=8;
    ele->distyp=quad8;
    ele->e.f2->ntyp=1;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("QUAD8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -79,7 +79,7 @@ if (ierr==1)
    ele->numnp=3;
    ele->distyp=tri3;
    ele->e.f2->ntyp=2;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -90,7 +90,7 @@ if (ierr==1)
    ele->numnp=6;
    ele->distyp=tri6;
    ele->e.f2->ntyp=2;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");

@@ -21,41 +21,41 @@
 This routine calculates the modification to the metrics in the shell body
 due to EAS.
 </pre>
-\param  double   **gmkovc   (o)  kovariant metric at specified location in shell body (cur. config.)
-\param  double   **gmkonc   (o)  kontravariant metric at specified location in shell body (cur. config.)
-\param  double    *epsh     (i)  strains from EAS (E_tilde)
-\param  double    *detc     (o)  determinant of gkovc (cur. config.)
-\param  double     e3       (i)  zeta_3_L (within one material layer)
-\param  double     h        (i)  total thickness of this element
-\param  double    *klayhgt  (i)  hight of kin layer in % of total thickness of shell 
-\param  double    *mlayhgt  (i)  hight of mat layer in % of adjacent kin layer 
-\param  int        num_klay (i)  number of kin layers to this element  
-\param  int        num_mlay (i)  number of mat layers to this kin layer 
-\param  int        klay     (i)  actual kin layer 
-\param  int        mlay     (i)  actual mat layer of this kin layer 
+\param  DOUBLE   **gmkovc   (o)  kovariant metric at specified location in shell body (cur. config.)
+\param  DOUBLE   **gmkonc   (o)  kontravariant metric at specified location in shell body (cur. config.)
+\param  DOUBLE    *epsh     (i)  strains from EAS (E_tilde)
+\param  DOUBLE    *detc     (o)  determinant of gkovc (cur. config.)
+\param  DOUBLE     e3       (i)  zeta_3_L (within one material layer)
+\param  DOUBLE     h        (i)  total thickness of this element
+\param  DOUBLE    *klayhgt  (i)  hight of kin layer in % of total thickness of shell 
+\param  DOUBLE    *mlayhgt  (i)  hight of mat layer in % of adjacent kin layer 
+\param  INT        num_klay (i)  number of kin layers to this element  
+\param  INT        num_mlay (i)  number of mat layers to this kin layer 
+\param  INT        klay     (i)  actual kin layer 
+\param  INT        mlay     (i)  actual mat layer of this kin layer 
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_vthv(double **gmkovc,
-             double **gmkonc,
-             double  *epsh,
-             double  *detc,
-             double   e3,
-             double   h,         /* total thickness of this element */
-             double  *klayhgt,   /* hight of kin layer in % of total thickness of shell */
-             double  *mlayhgt,   /* hight of mat layer in % of adjacent kin layer */
-             int      num_klay,  /* number of kin layers to this element */
-             int      num_mlay,  /* number of mat layers to this kin layer */
-             int      klay,      /* actual kin layer */
-             int      mlay,      /* actual mat layer of this kin layer */
-             double   condfac)
+void s9_vthv(DOUBLE **gmkovc,
+             DOUBLE **gmkonc,
+             DOUBLE  *epsh,
+             DOUBLE  *detc,
+             DOUBLE   e3,
+             DOUBLE   h,         /* total thickness of this element */
+             DOUBLE  *klayhgt,   /* hight of kin layer in % of total thickness of shell */
+             DOUBLE  *mlayhgt,   /* hight of mat layer in % of adjacent kin layer */
+             INT      num_klay,  /* number of kin layers to this element */
+             INT      num_mlay,  /* number of mat layers to this kin layer */
+             INT      klay,      /* actual kin layer */
+             INT      mlay,      /* actual mat layer of this kin layer */
+             DOUBLE   condfac)
 {
-int i,jlay;
-double deltah, h_mlay, h_kl;
-double zeta_kl,zeta,det_dummy;
+INT i,jlay;
+DOUBLE deltah, h_mlay, h_kl;
+DOUBLE zeta_kl,zeta,det_dummy;
 
 #ifdef DEBUG 
 dstrc_enter("s9_vthv");

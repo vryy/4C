@@ -16,44 +16,44 @@ void solver_spooles(
                       struct _SPOOLMAT       *spo,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
-                      int                     option
+                      INT                     option
                      )
 {
 #ifdef SPOOLES_PACKAGE
-int        i,j=0;
-int        imyrank;
-int        inprocs;
-int        nnz,numeq,numeq_total;
-int        seed = 10101;
-int        nedges;
-int       *irn,*jcn;
-int       *update;
-int       *rowind1,nrow;
-double    *A_loc;
-double    *b;
-double    *x;
-double    *opcounts,minops,cutoff,cpus[20],tau=100.;
-double     droptol=0.0;
-int        root,firsttag=0,error=-1,stats[20];
+INT        i,j=0;
+INT        imyrank;
+INT        inprocs;
+INT        nnz,numeq,numeq_total;
+INT        seed = 10101;
+INT        nedges;
+INT       *irn,*jcn;
+INT       *update;
+INT       *rowind1,nrow;
+DOUBLE    *A_loc;
+DOUBLE    *b;
+DOUBLE    *x;
+DOUBLE    *opcounts,minops,cutoff,cpus[20],tau=100.;
+DOUBLE     droptol=0.0;
+INT        root,firsttag=0,error=-1,stats[20];
 /*DV        *cumopsDV;
 IV        *ownedColumnsIV;*/
-int        nmycol;
+INT        nmycol;
 /*InpMtx    *newA;    
 DenseMtx  *newY;
 SolveMap  *solvemap ;*/
-int        sym=SPOOLES_NONSYMMETRIC;
-/*int        sym=SPOOLES_SYMMETRIC;*/
-int        pivotingflag;
+INT        sym=SPOOLES_NONSYMMETRIC;
+/*INT        sym=SPOOLES_SYMMETRIC;*/
+INT        pivotingflag;
 static ARRAY recv_a;
-static double *recv;
+static DOUBLE *recv;
 char  buffer[50];
 /* for debugging 
-int   msglvl=2;
+INT   msglvl=2;
 FILE *msgFile;
 FILE *mtxf;
 FILE *rhsf;*/
 /* for debugging */
-int   msglvl=0;
+INT   msglvl=0;
 FILE *msgFile=NULL;
 FILE *mtxf=NULL;
 FILE *rhsf=NULL;
@@ -77,7 +77,7 @@ imyrank      = actintra->intra_rank;
 inprocs      = actintra->intra_nprocs;
 /*----- for some reason the pivoting works only in the case inprocs > 1 */
 /*                                   (in fact it does not work without) */
-/*----------------------- int the inprocs=1 case pivoting does not work */
+/*----------------------- INT the inprocs=1 case pivoting does not work */
 if (inprocs>1) pivotingflag=1;
 else           pivotingflag=0;
 /*----------------------------------------------------------------------*/

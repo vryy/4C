@@ -30,43 +30,43 @@ extern struct _SHELLCONTACT shellcontact;
 <pre>                                                        m.gee 2/03 
 </pre>
 \param actcnode    SHELLNODE*    (i)   the active node
-\param ssurf       int*          (i)   indicates top or bottom of slave node
-\param msurf       int*          (i)   indicates top or bottom of closest master node
+\param ssurf       INT*          (i)   indicates top or bottom of slave node
+\param msurf       INT*          (i)   indicates top or bottom of closest master node
 \param actele      ELEMENT*      (i)   element to be projected on 
-\param xires       double*       (o)   local coordinates of projection point
-\param success     int*          (o)   indicates wether projection is inside element
+\param xires       DOUBLE*       (o)   local coordinates of projection point
+\param success     INT*          (o)   indicates wether projection is inside element
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void s8_contact_orthproject(SHELLNODE  *actcnode,
-                            int        *ssurf,
-                            int        *msurf,
+                            INT        *ssurf,
+                            INT        *msurf,
                             ELEMENT    *actele,
-                            double      xires[],
-                            double     *distance,
-                            int        *success,
-                            double     *nue)
+                            DOUBLE      xires[],
+                            DOUBLE     *distance,
+                            INT        *success,
+                            DOUBLE     *nue)
 {
-int          i,k,iter;
-int          iel;
-double       h2;
-double       l2;
-double       a3r[3][4];
-double       a3c[3][4];
-double       xr[3][4];
-double       xc[3][4];
-double       funct[4];
-double       deriv[2][4];
-double       deriv2[4];
-double       thetam,thetas;
-double       xs[3],xm[3];
-double       xi[2],dxi[2];
-double       xbar[3];
-double       a3bar[3];
-double       xbarxi[3],xbareta[3],xbarxieta[3];
-double       a3barxi[3],a3bareta[3],a3barxieta[3];
-double       F1,F2,F1xi,F1eta,F2xi,F2eta,detF;
-int          second;
+INT          i,k,iter;
+INT          iel;
+DOUBLE       h2;
+DOUBLE       l2;
+DOUBLE       a3r[3][4];
+DOUBLE       a3c[3][4];
+DOUBLE       xr[3][4];
+DOUBLE       xc[3][4];
+DOUBLE       funct[4];
+DOUBLE       deriv[2][4];
+DOUBLE       deriv2[4];
+DOUBLE       thetam,thetas;
+DOUBLE       xs[3],xm[3];
+DOUBLE       xi[2],dxi[2];
+DOUBLE       xbar[3];
+DOUBLE       a3bar[3];
+DOUBLE       xbarxi[3],xbareta[3],xbarxieta[3];
+DOUBLE       a3barxi[3],a3bareta[3],a3barxieta[3];
+DOUBLE       F1,F2,F1xi,F1eta,F2xi,F2eta,detF;
+INT          second;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_orthproject");
 #endif
@@ -289,24 +289,24 @@ return;
 
 <pre>                                                        m.gee 2/03 
 </pre>
-\param funct    double*          (o)   values of shape functions at xi
-\param deriv    double**         (o)   derivatives of shape functions at xi
-\param deriv2   double**         (o)   2nd derivatives of shape functions at xi
-\param r        double           (i)   xi
-\param s        double           (i)   eta 
+\param funct    DOUBLE*          (o)   values of shape functions at xi
+\param deriv    DOUBLE**         (o)   derivatives of shape functions at xi
+\param deriv2   DOUBLE**         (o)   2nd derivatives of shape functions at xi
+\param r        DOUBLE           (i)   xi
+\param s        DOUBLE           (i)   eta 
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void s8_contact_functderiv(double     funct[], 
-                           double    deriv[][4], 
-                           double    deriv2[],
-                           double      r, 
-                           double      s)
+void s8_contact_functderiv(DOUBLE     funct[], 
+                           DOUBLE    deriv[][4], 
+                           DOUBLE    deriv2[],
+                           DOUBLE      r, 
+                           DOUBLE      s)
 {
-const double   q12 = 1.0/2.0;
-const double   q14 = 1.0/4.0;
-const double   q16 = 1.0/6.0;
-double         rp,rm,sp,sm;
+const DOUBLE   q12 = 1.0/2.0;
+const DOUBLE   q14 = 1.0/4.0;
+const DOUBLE   q16 = 1.0/6.0;
+DOUBLE         rp,rm,sp,sm;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_functderiv");
 #endif
@@ -343,27 +343,27 @@ return;
 
 <pre>                                                        m.gee 2/03 
 </pre>
-\param funct    double*          (o)   values of shape functions at xi
-\param deriv    double**         (o)   derivatives of shape functions at xi
-\param deriv2   double**         (o)   2nd derivatives of shape functions at xi
-\param r        double           (i)   xi
-\param s        double           (i)   eta 
+\param funct    DOUBLE*          (o)   values of shape functions at xi
+\param deriv    DOUBLE**         (o)   derivatives of shape functions at xi
+\param deriv2   DOUBLE**         (o)   2nd derivatives of shape functions at xi
+\param r        DOUBLE           (i)   xi
+\param s        DOUBLE           (i)   eta 
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void s8_contact_metrics(double x[][4],
-                        double a3[][4],
-                        double e3,
-                        double gkov[][3],
-                        double gkon[][3],
-                        double gmkov[][3],
-                        double gmkon[][3],
-                        double funct[],
-                        double deriv[][4],
-                        int    iel)
+void s8_contact_metrics(DOUBLE x[][4],
+                        DOUBLE a3[][4],
+                        DOUBLE e3,
+                        DOUBLE gkov[][3],
+                        DOUBLE gkon[][3],
+                        DOUBLE gmkov[][3],
+                        DOUBLE gmkon[][3],
+                        DOUBLE funct[],
+                        DOUBLE deriv[][4],
+                        INT    iel)
 {
-int            i,j,k,idim,ialpha,inode;
-double         det;
+INT            i,j,k,idim,ialpha,inode;
+DOUBLE         det;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_metrics");
 #endif
@@ -437,11 +437,11 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void s8_contact_inv3(double a[][3], double *det)
+void s8_contact_inv3(DOUBLE a[][3], DOUBLE *det)
 {
-int i,j;
-double b00,b01,b02,b10,b11,b12,b20,b21,b22;
-double detinv;
+INT i,j;
+DOUBLE b00,b01,b02,b10,b11,b12,b20,b21,b22;
+DOUBLE detinv;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_inv3");
 #endif
@@ -489,10 +489,10 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void s8_contact_trans(double a[][3], int n)
+void s8_contact_trans(DOUBLE a[][3], INT n)
 {
-int i,j;
-double change;
+INT i,j;
+DOUBLE change;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_trans");
 #endif
@@ -520,7 +520,7 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void s8_contact_deta(double gkov[][3], double *deta)
+void s8_contact_deta(DOUBLE gkov[][3], DOUBLE *deta)
 {
 #ifdef DEBUG 
 dstrc_enter("s8_contact_deta");
@@ -546,16 +546,16 @@ return;
 ------------------------------------------------------------------------*/
 void s8_contact_timeguess(SHELLNODE *actcnode,
                          ELEMENT   *actele,
-                         double    *xi,
-                         double     distance,
-                         double    *nue,
-                         double    *dt)
+                         DOUBLE    *xi,
+                         DOUBLE     distance,
+                         DOUBLE    *nue,
+                         DOUBLE    *dt)
 {
-int          i,k;
-double       funct[4];
-double       deriv[2][4];
-double       deriv2[4];
-double       vs[3],vm[3],vrel[3],v;
+INT          i,k;
+DOUBLE       funct[4];
+DOUBLE       deriv[2][4];
+DOUBLE       deriv2[4];
+DOUBLE       vs[3],vm[3],vrel[3],v;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_timeguess");
 #endif

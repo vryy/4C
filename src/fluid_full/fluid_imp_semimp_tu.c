@@ -8,8 +8,8 @@
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "fluid_prototypes.h"
-static int     rans=0;             /* flag, if vel. discr. is used     */
-static int     kapeps=1;           /* flag, if pres. discr. is used    */
+static INT     rans=0;             /* flag, if vel. discr. is used     */
+static INT     kapeps=1;           /* flag, if pres. discr. is used    */
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -60,10 +60,10 @@ extern ALLDYNA      *alldyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -115,39 +115,39 @@ fixed-point-like iteration scheme is tested!
 ------------------------------------------------------------------------*/
 void fluid_isi_tu(FLUID_DYNAMIC *fdyn)
 {
-int             itnum;              /* counter for nonlinear iteration  */
-int             itnum1;             /* counter for nonlinear iteration  */
-int             itnum2;             /* counter for nonlinear iteration  */
-int             itnumke;            /* counter for nonlinear iteration  */
-int             itnum_n=1;          /* counter for nonlinear iteration  */
-int             itnum_check;        /* counter for nonlinear iteration  */
-int             kapepsstep;         /* counter for timeloop             */
-int             conv_check_rans;
-int             i,kk;               /* simply a counter                 */
-int             numeq[2];           /* number of equations on this proc */
-int             numeq_total[2];     /* total number of equations        */
-int             init;               /* flag for solver_control call     */
-int             nsysarray=2;        /* two system matrix                */
-int             actsysarray;        /* number of actual sysarray        */
-int             k_array=0;          /* index of K-matrix in solver      */
-int             a_array=1;          /* index of A-matrix in solver      */
-int             iststep=0;          /* counter for time integration     */
-int             nfrastep;           /* number of steps for fractional-
+INT             itnum;              /* counter for nonlinear iteration  */
+INT             itnum1;             /* counter for nonlinear iteration  */
+INT             itnum2;             /* counter for nonlinear iteration  */
+INT             itnumke;            /* counter for nonlinear iteration  */
+INT             itnum_n=1;          /* counter for nonlinear iteration  */
+INT             itnum_check;        /* counter for nonlinear iteration  */
+INT             kapepsstep;         /* counter for timeloop             */
+INT             conv_check_rans;
+INT             i,kk;               /* simply a counter                 */
+INT             numeq[2];           /* number of equations on this proc */
+INT             numeq_total[2];     /* total number of equations        */
+INT             init;               /* flag for solver_control call     */
+INT             nsysarray=2;        /* two system matrix                */
+INT             actsysarray;        /* number of actual sysarray        */
+INT             k_array=0;          /* index of K-matrix in solver      */
+INT             a_array=1;          /* index of A-matrix in solver      */
+INT             iststep=0;          /* counter for time integration     */
+INT             nfrastep;           /* number of steps for fractional-
                                        step-theta procedure             */
-int             outstep=0;          /* counter for time integration     */
-int             pssstep=0;
-int             actcurve;           /* actual timecurve                 */
-int             converged=0;        /* convergence flag                 */
-int             steady=0;           /* flag for steady state            */
-int             actpos;             /* actual position in sol. history  */
-double          vrat,prat;          /* convergence ratios               */
-double          kapepsrat,lenghtrat;/* convergence ratios               */
-double          lower_limit_kappa;  /* convergence ratio                */
-double          lower_limit_eps;    /* convergence ratio                */
+INT             outstep=0;          /* counter for time integration     */
+INT             pssstep=0;
+INT             actcurve;           /* actual timecurve                 */
+INT             converged=0;        /* convergence flag                 */
+INT             steady=0;           /* flag for steady state            */
+INT             actpos;             /* actual position in sol. history  */
+DOUBLE          vrat,prat;          /* convergence ratios               */
+DOUBLE          kapepsrat,lenghtrat;/* convergence ratios               */
+DOUBLE          lower_limit_kappa;  /* convergence ratio                */
+DOUBLE          lower_limit_eps;    /* convergence ratio                */
 
-double          t1,ts,te;	      /*					*/
-double          tes=0.0;            /*					*/
-double          tss=0.0;            /*					*/
+DOUBLE          t1,ts,te;	      /*					*/
+DOUBLE          tes=0.0;            /*					*/
+DOUBLE          tss=0.0;            /*					*/
 FLUID_STRESS    str;           
 
 DIST_VECTOR    *rhs_ke;              /* distr. RHS for solving ke        */
@@ -161,31 +161,31 @@ CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
 
 ARRAY           ftimerhs_a;
-double         *ftimerhs;	    /* time - RHS			*/
+DOUBLE         *ftimerhs;	    /* time - RHS			*/
 ARRAY           ftimerhs_ke_a;
-double         *ftimerhs_ke;	    /* time - RHS			*/
+DOUBLE         *ftimerhs_ke;	    /* time - RHS			*/
 ARRAY           ftimerhs_kappa_a;
-double         *ftimerhs_kappa;   /* time - RHS			*/
+DOUBLE         *ftimerhs_kappa;   /* time - RHS			*/
 ARRAY           ftimerhs_epsilon_a;
-double         *ftimerhs_epsilon; /* time - RHS			*/
+DOUBLE         *ftimerhs_epsilon; /* time - RHS			*/
 ARRAY           ftimerhs_pro_a;
-double         *ftimerhs_pro; /* time - RHS			*/
+DOUBLE         *ftimerhs_pro; /* time - RHS			*/
 ARRAY           ftimerhs_pro_kappa_a;
-double         *ftimerhs_pro_kappa; /* time - RHS			*/
+DOUBLE         *ftimerhs_pro_kappa; /* time - RHS			*/
 ARRAY           ftimerhs_pro_epsilon_a;
-double         *ftimerhs_pro_epsilon; /* time - RHS			*/
+DOUBLE         *ftimerhs_pro_epsilon; /* time - RHS			*/
 
 ARRAY           fiterhs_a;
-double         *fiterhs;	    /* iteration - RHS  		*/
+DOUBLE         *fiterhs;	    /* iteration - RHS  		*/
 ARRAY           fiterhs_ke_a;
-double         *fiterhs_ke;	    /* iteration - RHS  		*/
+DOUBLE         *fiterhs_ke;	    /* iteration - RHS  		*/
 
 ARRAY           time_a;          /* stored time                      */
 
 CONTAINER       container;      /* contains variables defined in container.h */
 
-int             initialisation=0;
-int             kapeps_yeah=0;
+INT             initialisation=0;
+INT             kapeps_yeah=0;
 #ifdef DEBUG 
 dstrc_enter("fluid_isi_tu");
 #endif

@@ -20,19 +20,19 @@ extern struct _DYNAMIC *dyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _DYNAMIC      *curve;                                         |
  *----------------------------------------------------------------------*/
-int            numcurve;
+INT            numcurve;
 struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | input of curves                                        m.gee 4/01    |
  *----------------------------------------------------------------------*/
 void inp_cond_curve()
 {
-int  ierr;
-int  i;
-int  counter;
+INT  ierr;
+INT  i;
+INT  counter;
 char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inp_cond_curve");
@@ -103,9 +103,9 @@ return;
  *----------------------------------------------------------------------*/
 void inp_read_curve(char *string)
 {
-int      ierr;
-int      i;
-int      counter=0;
+INT      ierr;
+INT      i;
+INT      counter=0;
 char     buffer[50];
 CURVE   *actcurve;
 char    *colpointer;

@@ -29,45 +29,45 @@ This routine calculates the coordinates of the collocation points, gets
 the shape functions and derivatives at these points and calculates all
 necessary basis vectors and metrics at these points
 </pre>
-\param  int       nsansq       (i) number of collocation points
-\param  int       ans          (i) type of ANS (1: Querschub)
-\param  double    xr1[],...    (o) natural coordinates of collocation points
-\param  double   *funct1q[],...(o) shape functions at collocation points
-\param  double  **deriv1q[],...(o) shape functions derivatives at collocation points
+\param  INT       nsansq       (i) number of collocation points
+\param  INT       ans          (i) type of ANS (1: Querschub)
+\param  DOUBLE    xr1[],...    (o) natural coordinates of collocation points
+\param  DOUBLE   *funct1q[],...(o) shape functions at collocation points
+\param  DOUBLE  **deriv1q[],...(o) shape functions derivatives at collocation points
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_ans_colloqpoints(int       nsansq,     int       iel,
-                         int       ans,        DIS_TYP   distyp,
-                         double    xr1[],      double    xs1[],
-                         double    xr2[],      double    xs2[],
-                         double   *funct1q[],  double  **deriv1q[], 
-                         double   *funct2q[],  double  **deriv2q[],
-                         double  **xrefe,      double ***a3r,
-                         double  **xcure,      double ***a3c,
-                         double ***akovr1q[],  double ***akonr1q[],
-                         double ***amkovr1q[], double ***amkonr1q[],
-                         double ***a3kvpr1q[],
-                         double ***akovc1q[] , double ***akonc1q[],
-                         double ***amkovc1q[], double ***amkonc1q[],
-                         double ***a3kvpc1q[],
-                         double ***akovr2q[] , double ***akonr2q[],
-                         double ***amkovr2q[], double ***amkonr2q[],
-                         double ***a3kvpr2q[],
-                         double ***akovc2q[] , double ***akonc2q[],
-                         double ***amkovc2q[], double ***amkonc2q[],
-                         double ***a3kvpc2q[],
-                         double  **akovh,
-                         double  **akonh,
-                         double  **amkovh,
-                         double  **amkonh,
-                         int       num_klay,   int       numdf)
+void s9_ans_colloqpoints(INT       nsansq,     INT       iel,
+                         INT       ans,        DIS_TYP   distyp,
+                         DOUBLE    xr1[],      DOUBLE    xs1[],
+                         DOUBLE    xr2[],      DOUBLE    xs2[],
+                         DOUBLE   *funct1q[],  DOUBLE  **deriv1q[], 
+                         DOUBLE   *funct2q[],  DOUBLE  **deriv2q[],
+                         DOUBLE  **xrefe,      DOUBLE ***a3r,
+                         DOUBLE  **xcure,      DOUBLE ***a3c,
+                         DOUBLE ***akovr1q[],  DOUBLE ***akonr1q[],
+                         DOUBLE ***amkovr1q[], DOUBLE ***amkonr1q[],
+                         DOUBLE ***a3kvpr1q[],
+                         DOUBLE ***akovc1q[] , DOUBLE ***akonc1q[],
+                         DOUBLE ***amkovc1q[], DOUBLE ***amkonc1q[],
+                         DOUBLE ***a3kvpc1q[],
+                         DOUBLE ***akovr2q[] , DOUBLE ***akonr2q[],
+                         DOUBLE ***amkovr2q[], DOUBLE ***amkonr2q[],
+                         DOUBLE ***a3kvpr2q[],
+                         DOUBLE ***akovc2q[] , DOUBLE ***akonc2q[],
+                         DOUBLE ***amkovc2q[], DOUBLE ***amkonc2q[],
+                         DOUBLE ***a3kvpc2q[],
+                         DOUBLE  **akovh,
+                         DOUBLE  **akonh,
+                         DOUBLE  **amkovh,
+                         DOUBLE  **amkonh,
+                         INT       num_klay,   INT       numdf)
 {
-int    i;   
-double det_dummy;         
+INT    i;   
+DOUBLE det_dummy;         
 #ifdef DEBUG 
 dstrc_enter("s9_ans_colloqpoints");
 #endif
@@ -111,20 +111,20 @@ return;
 <pre>                     m.gee 2/02              modified by    sh 02/03
 This routine calculates the natural coordinates of the collocation points
 </pre>
-\param  double   xqr1[],...(o) natural coordinates of collocation points
-\param  int      iel       (i) number of nodes to this element
-\param  int      ans       (i) type of ANS (1: Querschub)
+\param  DOUBLE   xqr1[],...(o) natural coordinates of collocation points
+\param  INT      iel       (i) number of nodes to this element
+\param  INT      ans       (i) type of ANS (1: Querschub)
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9_ans_colloqpoints()   [s9_ans.c]
 
 *----------------------------------------------------------------------*/
-void s9_ans_colloqcoords(double xqr1[], double xqs1[],
-                         double xqr2[], double xqs2[],
-                         int    iel,    int    ans)
+void s9_ans_colloqcoords(DOUBLE xqr1[], DOUBLE xqs1[],
+                         DOUBLE xqr2[], DOUBLE xqs2[],
+                         INT    iel,    INT    ans)
 {
-double rthreei;
+DOUBLE rthreei;
 #ifdef DEBUG 
 dstrc_enter("s9_ans_colloq");
 #endif
@@ -173,22 +173,22 @@ return;
 This routine calculates the shape functions for ANS (Querschub) at the 
 natural coordinates r,s
 </pre>
-\param  double   frq[],... (o) shape functions for ANS
-\param  int      iel       (i) number of nodes to this element
-\param  int      nsansq    (i) number of collocation points
+\param  DOUBLE   frq[],... (o) shape functions for ANS
+\param  INT      iel       (i) number of nodes to this element
+\param  INT      nsansq    (i) number of collocation points
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_ansq_funct(double frq[], double fsq[], double r, double s,
-                   int    iel,   int    nsansq)
+void s9_ansq_funct(DOUBLE frq[], DOUBLE fsq[], DOUBLE r, DOUBLE s,
+                   INT    iel,   INT    nsansq)
 {
-double rthreei;
-double pr[3],ps[3];
-double qr[2],qs[2];
-double rr[3],rs[3];
+DOUBLE rthreei;
+DOUBLE pr[3],ps[3];
+DOUBLE qr[2],qs[2];
+DOUBLE rr[3],rs[3];
 #ifdef DEBUG 
 dstrc_enter("s9_ansq_funct");
 #endif
@@ -257,52 +257,52 @@ return;
 This routine gets the values for alpha13/alpha23 (Querschub) of the 
 B-Operator matrix
 </pre>
-\param  double  **bop         (i/o) B-Operator to be modified (alpha13,alpha23)
-\param  double    frq[],...    (i)  shape functions for ANS
-\param  double   *funct1q[],...(i)  shape functions at collocation points
-\param  double  **deriv1q[],...(i)  shape functions derivatives at collocation points
-\param  int       num_klay     (i)  number of kinematic layers to this element
-\param  int       klay         (i)  actual kinematic layer of which is looped
-\param  int       nsansq       (i)  number of collocation points
+\param  DOUBLE  **bop         (i/o) B-Operator to be modified (alpha13,alpha23)
+\param  DOUBLE    frq[],...    (i)  shape functions for ANS
+\param  DOUBLE   *funct1q[],...(i)  shape functions at collocation points
+\param  DOUBLE  **deriv1q[],...(i)  shape functions derivatives at collocation points
+\param  INT       num_klay     (i)  number of kinematic layers to this element
+\param  INT       klay         (i)  actual kinematic layer of which is looped
+\param  INT       nsansq       (i)  number of collocation points
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_ans_bbar_q(double  **bop,        double    frq[],      double fsq[],
-                   double   *funct1q[],  double   *funct2q[],
-                   double  **deriv1q[],  double  **deriv2q[],
-                   double ***akovc1q[],  double ***akovc2q[],
-                   double ***a3kvpc1q[], double ***a3kvpc2q[],
-                   int       iel,        int       numdf, 
-                   int       num_klay,   int       klay,
-                   double    condfac,    int       nsansq)
+void s9_ans_bbar_q(DOUBLE  **bop,        DOUBLE    frq[],      DOUBLE fsq[],
+                   DOUBLE   *funct1q[],  DOUBLE   *funct2q[],
+                   DOUBLE  **deriv1q[],  DOUBLE  **deriv2q[],
+                   DOUBLE ***akovc1q[],  DOUBLE ***akovc2q[],
+                   DOUBLE ***a3kvpc1q[], DOUBLE ***a3kvpc2q[],
+                   INT       iel,        INT       numdf, 
+                   INT       num_klay,   INT       klay,
+                   DOUBLE    condfac,    INT       nsansq)
 {
-int    i,j,jlay,inode, node_start;
-int    numdof_shell9 = numdf;
-int    isamp;
-double a1x1, a1y1, a1z1; 
-double a2x2, a2y2, a2z2;
+INT    i,j,jlay,inode, node_start;
+INT    numdof_shell9 = numdf;
+INT    isamp;
+DOUBLE a1x1, a1y1, a1z1; 
+DOUBLE a2x2, a2y2, a2z2;
 
-double a3xi1, a3yi1, a3zi1;
-double a3xj1, a3yj1, a3zj1;
+DOUBLE a3xi1, a3yi1, a3zi1;
+DOUBLE a3xj1, a3yj1, a3zj1;
 
-double a3xi2, a3yi2, a3zi2;
-double a3xj2, a3yj2, a3zj2;
+DOUBLE a3xi2, a3yi2, a3zi2;
+DOUBLE a3xj2, a3yj2, a3zj2;
 
-double a31xj1, a31yj1, a31zj1;
-double a32xj2, a32yj2, a32zj2;
+DOUBLE a31xj1, a31yj1, a31zj1;
+DOUBLE a32xj2, a32yj2, a32zj2;
 
-double p1k;
-double p2k;
-double pk1;
-double pk2;
-double fris;
-double fsis;
+DOUBLE p1k;
+DOUBLE p2k;
+DOUBLE pk1;
+DOUBLE pk2;
+DOUBLE fris;
+DOUBLE fsis;
 
-int    idof, jdof;
-double fac,  fac1;
+INT    idof, jdof;
+DOUBLE fac,  fac1;
 #ifdef DEBUG 
 dstrc_enter("s9_ans_bbar_q");
 #endif
@@ -427,63 +427,63 @@ return;
 This routine modifies the metrics 'gmkovc' and 'gmkonc' of shell body 
 due to ans for querschub.  
 </pre>
-\param  double  **gmkovc       (i/o) kovariant metric in current configuration
-\param  double  **gmkonc       (i/o) kontravariant metric in current configuration
-\param  double    e3            (i)  local coordinate zeta (theta3) of act. mlay in act. klay 
-\param  double   *klayhgt       (i)  hight of all kinematic layers in % of total thickness of shell
-\param  double   *mlayhgt       (i)  hight of all material layers in % of total thickness of actual kin. layer
-\param  int       num_klay      (i)  number of kinematic layers to this element
-\param  int       num_mlay      (i)  number of material layers to this kinematic layer
-\param  int       klay          (i)  actual kinematic layer of which is looped
-\param  int       mlay          (i)  actual material layer of within the actual kinematic layer
+\param  DOUBLE  **gmkovc       (i/o) kovariant metric in current configuration
+\param  DOUBLE  **gmkonc       (i/o) kontravariant metric in current configuration
+\param  DOUBLE    e3            (i)  local coordinate zeta (theta3) of act. mlay in act. klay 
+\param  DOUBLE   *klayhgt       (i)  hight of all kinematic layers in % of total thickness of shell
+\param  DOUBLE   *mlayhgt       (i)  hight of all material layers in % of total thickness of actual kin. layer
+\param  INT       num_klay      (i)  number of kinematic layers to this element
+\param  INT       num_mlay      (i)  number of material layers to this kinematic layer
+\param  INT       klay          (i)  actual kinematic layer of which is looped
+\param  INT       mlay          (i)  actual material layer of within the actual kinematic layer
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_ans_tvhe_q(double  **gmkovr,     double  **gmkovc,    
-                   double  **gmkonr,     double  **gmkonc,
-                   double  **gkovr,      double  **gkovc,     
-                   double ***amkovc,     double ***amkovr,
-                   double ***akovc,      double ***akovr,     
-                   double ***a3kvpc,     double ***a3kvpr,
-                   double   *detr,       double   *detc,
-                   double ***amkovr1q[], double ***amkovc1q[], 
-                   double ***akovr1q[] , double ***akovc1q[] ,
-                   double ***a3kvpr1q[], double ***a3kvpc1q[],
-                   double ***amkovr2q[], double ***amkovc2q[], 
-                   double ***akovr2q[] , double ***akovc2q[] ,
-                   double ***a3kvpr2q[], double ***a3kvpc2q[],
-                   double    frq[],      double    fsq[], 
-                   double    e3,         int       nansq, 
-                   int       iel,       
-                   double    h,           /* total thickness of this element */
-                   double   *klayhgt,     /* hight of kin layer in % of total thickness of shell */
-                   double   *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
-                   int       num_klay,    /* number of kin layers to this element */
-                   int       num_mlay,    /* number of mat layers to this kin layer */
-                   int       klay,        /* actual kin layer */
-                   int       mlay,        /* actual mat layer of this kin layer */
-                   double    condfac)
+void s9_ans_tvhe_q(DOUBLE  **gmkovr,     DOUBLE  **gmkovc,    
+                   DOUBLE  **gmkonr,     DOUBLE  **gmkonc,
+                   DOUBLE  **gkovr,      DOUBLE  **gkovc,     
+                   DOUBLE ***amkovc,     DOUBLE ***amkovr,
+                   DOUBLE ***akovc,      DOUBLE ***akovr,     
+                   DOUBLE ***a3kvpc,     DOUBLE ***a3kvpr,
+                   DOUBLE   *detr,       DOUBLE   *detc,
+                   DOUBLE ***amkovr1q[], DOUBLE ***amkovc1q[], 
+                   DOUBLE ***akovr1q[] , DOUBLE ***akovc1q[] ,
+                   DOUBLE ***a3kvpr1q[], DOUBLE ***a3kvpc1q[],
+                   DOUBLE ***amkovr2q[], DOUBLE ***amkovc2q[], 
+                   DOUBLE ***akovr2q[] , DOUBLE ***akovc2q[] ,
+                   DOUBLE ***a3kvpr2q[], DOUBLE ***a3kvpc2q[],
+                   DOUBLE    frq[],      DOUBLE    fsq[], 
+                   DOUBLE    e3,         INT       nansq, 
+                   INT       iel,       
+                   DOUBLE    h,           /* total thickness of this element */
+                   DOUBLE   *klayhgt,     /* hight of kin layer in % of total thickness of shell */
+                   DOUBLE   *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
+                   INT       num_klay,    /* number of kin layers to this element */
+                   INT       num_mlay,    /* number of mat layers to this kin layer */
+                   INT       klay,        /* actual kin layer */
+                   INT       mlay,        /* actual mat layer of this kin layer */
+                   DOUBLE    condfac)
 {
-int i,jlay;
-double b11c=0.0;
-double b12c=0.0;
-double b21c=0.0;
-double b22c=0.0;
-double b31c=0.0;
-double b32c=0.0;
+INT i,jlay;
+DOUBLE b11c=0.0;
+DOUBLE b12c=0.0;
+DOUBLE b21c=0.0;
+DOUBLE b22c=0.0;
+DOUBLE b31c=0.0;
+DOUBLE b32c=0.0;
 
-double b11r=0.0;
-double b12r=0.0;
-double b21r=0.0;
-double b22r=0.0;
-double b31r=0.0;
-double b32r=0.0;
+DOUBLE b11r=0.0;
+DOUBLE b12r=0.0;
+DOUBLE b21r=0.0;
+DOUBLE b22r=0.0;
+DOUBLE b31r=0.0;
+DOUBLE b32r=0.0;
 
-double deltah, h_mlay, h_kl;
-double zeta_kl,zeta,det_dummy;
+DOUBLE deltah, h_mlay, h_kl;
+DOUBLE zeta_kl,zeta,det_dummy;
 
 #ifdef DEBUG 
 dstrc_enter("s9_ans_tvhe_q");
@@ -572,71 +572,71 @@ return;
 This routine calculates the geometric stiffness matrix kg if the ans
 method for querschub is used 
 </pre>
-\param  double  **estif        (i/o) element stiffness metrix to be modified
-\param  double  *stress_r       (i)  stress resultants
-\param  double  *funct          (i)  shape functions at integration point 
-\param  double **deriv          (i)  shape function derivatives at integration point 
-\param  double   weight         (i)  weight at integration point 
-\param  double   frq[],...      (i)  shape functions for ANS
-\param  double  *funct1q[],...  (i)  shape functions at collocation points
-\param  double **deriv1q[],...  (i)  shape function derivatives at collocation points
-\param  int      ansq           (i)  flag if querschub ans
-\param  int      nsansq         (i)  number of collocation points
-\param  int      num_klay       (i)  number of kinematic layers to this element
-\param  int      klay           (i)  actual kinematic layer of which is looped
+\param  DOUBLE  **estif        (i/o) element stiffness metrix to be modified
+\param  DOUBLE  *stress_r       (i)  stress resultants
+\param  DOUBLE  *funct          (i)  shape functions at integration point 
+\param  DOUBLE **deriv          (i)  shape function derivatives at integration point 
+\param  DOUBLE   weight         (i)  weight at integration point 
+\param  DOUBLE   frq[],...      (i)  shape functions for ANS
+\param  DOUBLE  *funct1q[],...  (i)  shape functions at collocation points
+\param  DOUBLE **deriv1q[],...  (i)  shape function derivatives at collocation points
+\param  INT      ansq           (i)  flag if querschub ans
+\param  INT      nsansq         (i)  number of collocation points
+\param  INT      num_klay       (i)  number of kinematic layers to this element
+\param  INT      klay           (i)  actual kinematic layer of which is looped
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_ans_tvkg(double **estif,     double  *stress_r,
-                 double  *funct,     double **deriv,
-                 int      numdf,     int      iel,         
-                 double   weight,
-                 double   frq[],     double   fsq[],
-                 double  *funct1q[], double  *funct2q[],
-                 double **deriv1q[], double **deriv2q[],
-                 int      ansq,      int       nsansq,
-                 int      klay,                       /* actual kin layer */
-                 int      num_klay)                   /* number of kin layers to this element */ 
+void s9_ans_tvkg(DOUBLE **estif,     DOUBLE  *stress_r,
+                 DOUBLE  *funct,     DOUBLE **deriv,
+                 INT      numdf,     INT      iel,         
+                 DOUBLE   weight,
+                 DOUBLE   frq[],     DOUBLE   fsq[],
+                 DOUBLE  *funct1q[], DOUBLE  *funct2q[],
+                 DOUBLE **deriv1q[], DOUBLE **deriv2q[],
+                 INT      ansq,      INT       nsansq,
+                 INT      klay,                       /* actual kin layer */
+                 INT      num_klay)                   /* number of kin layers to this element */ 
 {
-int     i,inode,jnode;
-int     i_indiz,j_indiz;
-int     idof,jdof;
-int     jlay;
-double  fac1;
+INT     i,inode,jnode;
+INT     i_indiz,j_indiz;
+INT     idof,jdof;
+INT     jlay;
+DOUBLE  fac1;
 
-double  pi;
-double  pj;
-double  d11;
-double  d12;
-double  d21;
-double  d22;
+DOUBLE  pi;
+DOUBLE  pj;
+DOUBLE  d11;
+DOUBLE  d12;
+DOUBLE  d21;
+DOUBLE  d22;
 
-double  pd1ij;
-double  pd1ji;
-double  pd2ij;
-double  pd2ji;
+DOUBLE  pd1ij;
+DOUBLE  pd1ji;
+DOUBLE  pd2ij;
+DOUBLE  pd2ji;
 
-double  xn;
-double  xm;
-double  yu;
-double  yo;
-double  y1,y2,y;
-double  z;
+DOUBLE  xn;
+DOUBLE  xm;
+DOUBLE  yu;
+DOUBLE  yo;
+DOUBLE  y1,y2,y;
+DOUBLE  z;
 
-double  sn11;
-double  sn21;
-double  sn31;
-double  sn22;
-double  sn32;
-double  sn33;
-double  sm11;
-double  sm21;
-double  sm31;
-double  sm22;
-double  sm32;
+DOUBLE  sn11;
+DOUBLE  sn21;
+DOUBLE  sn31;
+DOUBLE  sn22;
+DOUBLE  sn32;
+DOUBLE  sn33;
+DOUBLE  sm11;
+DOUBLE  sm21;
+DOUBLE  sm31;
+DOUBLE  sm22;
+DOUBLE  sm32;
 
 #ifdef DEBUG 
 dstrc_enter("s9_ans_tvkg");

@@ -1,8 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 
 
 /*----------------------------------------------------------------------*
@@ -14,9 +14,9 @@ void  mask_ucchb(FIELD     *actfield,
                    INTRA     *actintra, 
                    UCCHB     *ucchb)
 {
-int       i;
-int       numeq;
-int     **dof_connect;
+INT       i;
+INT       numeq;
+INT     **dof_connect;
 #ifdef DEBUG 
 dstrc_enter("mask_ucchb");
 #endif
@@ -48,7 +48,7 @@ ucchb_update(actfield,actpart,actsolv,actintra,ucchb);
       dof_connect[i][2] = dof
       dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
    */
-dof_connect = (int**)CCACALLOC(ucchb->numeq_total,sizeof(int*));
+dof_connect = (INT**)CCACALLOC(ucchb->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 ucchb_nnz_topology(actfield,actpart,actsolv,actintra,ucchb,dof_connect);
 /*---------------------------------------- make nnz_total, a, asub, xa  */
@@ -76,19 +76,19 @@ void ucchb_numeq(FIELD      *actfield,
                    PARTITION    *actpart, 
                    SOLVAR       *actsolv,
                    INTRA        *actintra,
-                   int          *numeq)
+                   INT          *numeq)
 {
-int       i,j,k,l;
-int       counter;
-int       dof;
-int       iscoupled;
-int      *sendbuff,*recvbuff, sendsize;
-int      *tmp;
-int       inter_proc;
+INT       i,j,k,l;
+INT       counter;
+INT       dof;
+INT       iscoupled;
+INT      *sendbuff,*recvbuff, sendsize;
+INT      *tmp;
+INT       inter_proc;
 long int  min;
-int       proc;
-int       inprocs;
-int       imyrank;
+INT       proc;
+INT       inprocs;
+INT       imyrank;
 NODE     *actnode;
 #ifdef DEBUG 
 dstrc_enter("ucchb_numeq");
@@ -201,8 +201,8 @@ else /*----------------------------------------------- parallel version */
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->pdis[0].coupledofs.fdim)*(inprocs);
-sendbuff = (int*)CCACALLOC(sendsize,sizeof(int));
-recvbuff = (int*)CCACALLOC(sendsize,sizeof(int));
+sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
+recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
 if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
 counter=0;
 for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
@@ -287,7 +287,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 */
 if (inprocs > 1)
 {
-   tmp = (int*)CCACALLOC(inprocs,sizeof(int));
+   tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
    if (!tmp) dserror("Allocation of temporary memory failed");
    for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)/*------ loop coupled eqns */
    {
@@ -362,13 +362,13 @@ void  ucchb_update(FIELD     *actfield,
                      INTRA     *actintra,
                      UCCHB     *ucchb)
 {
-int       i,k,l;
-int       counter;
-int       imyrank;
-int       inprocs;
-int      *update;
-int       dof;
-int       foundit;
+INT       i,k,l;
+INT       counter;
+INT       imyrank;
+INT       inprocs;
+INT      *update;
+INT       dof;
+INT       foundit;
 NODE     *actnode;
 ARRAY     coupledofs;
 #ifdef DEBUG 
@@ -438,7 +438,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 /*---------- check whether the correct number of dofs have been counted */
 if (counter != ucchb->numeq) dserror("Number of dofs in UCCHB-vector update wrong");
 /*---------------------------- sort the vector update just to make sure */
-qsort((int*) update, counter, sizeof(int), cmp_int);
+qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
@@ -459,27 +459,27 @@ void  ucchb_nnz_topology(FIELD      *actfield,
                            SOLVAR     *actsolv,
                            INTRA      *actintra,
                            UCCHB      *ucchb,
-                           int       **dof_connect)
+                           INT       **dof_connect)
 {
-int        i,j,k,l,m;
-int        counter,counter2;
-int        dof;
-int        nnz;
-int        iscoupled;
-int       *update;
-int        numeq;
-int        actdof;
-int        dofflag;
-int        dofmaster;
-int        dofslave;
-int        recvlenght;
+INT        i,j,k,l,m;
+INT        counter,counter2;
+INT        dof;
+INT        nnz;
+INT        iscoupled;
+INT       *update;
+INT        numeq;
+INT        actdof;
+INT        dofflag;
+INT        dofmaster;
+INT        dofslave;
+INT        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
 ARRAY      dofpatch;
 ARRAY     *coupledofs;
-int        imyrank;
-int        inprocs;
+INT        imyrank;
+INT        inprocs;
 
 #ifdef PARALLEL 
 MPI_Status status;
@@ -547,7 +547,7 @@ for (i=0; i<numeq; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0; 
@@ -631,7 +631,7 @@ for (i=0; i<coupledofs->fdim; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = dofflag;
@@ -681,9 +681,9 @@ for (i=0; i<coupledofs->fdim; i++)
             /*----------------------------------- get lenght of message */
             MPI_Get_count(&status,MPI_INT,&recvlenght);
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
+            dof_connect[dof] = (INT*)CCAREALLOC(dof_connect[dof],
                                              (dof_connect[dof][0]+recvlenght)*
-                                             sizeof(int));
+                                             sizeof(INT));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             /*----------------------------------------- receive message */
             MPI_Recv(&(dof_connect[dof][ dof_connect[dof][0] ]),recvlenght,MPI_INT,
@@ -712,8 +712,8 @@ for (i=0; i<coupledofs->fdim; i++)
                }
             }
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
-                                             counter2*sizeof(int));
+            dof_connect[dof] = (INT*)CCAREALLOC(dof_connect[dof],
+                                             counter2*sizeof(INT));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             dof_connect[dof][0] = counter2;
          }
@@ -745,7 +745,7 @@ ucchb->nnz=nnz;
 for (i=0; i<numeq; i++)
 {
    dof = update[i];
-   qsort((int*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(int), cmp_int);
+   qsort((INT*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(INT), cmp_int);
 }
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
@@ -766,27 +766,27 @@ void  ucchb_make_a(FIELD         *actfield,
                      SOLVAR        *actsolv,
                      INTRA         *actintra,
                      UCCHB         *ucchb,
-                     int          **dof_connect)
+                     INT          **dof_connect)
 {
-int        i,j,counter;
-int        actdof;
-int        colheight;
+INT        i,j,counter;
+INT        actdof;
+INT        colheight;
 
-double    *a;
-int       *asub;
-int       *xa;
+DOUBLE    *a;
+INT       *asub;
+INT       *xa;
 
-int        imyrank;
-int        inprocs;
+INT        imyrank;
+INT        inprocs;
 
 ARRAY      tmps_a;
-int      **tmps;
+INT      **tmps;
 #ifdef PARALLEL
 ARRAY      tmpr_a;
-int      **tmpr;
+INT      **tmpr;
 #endif /* end of PARALLEL */
-int        max_dof_connect_send;
-int        max_dof_connect_recv;
+INT        max_dof_connect_send;
+INT        max_dof_connect_recv;
 
 #ifdef DEBUG 
 dstrc_enter("ucchb_make_a");

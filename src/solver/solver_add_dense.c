@@ -21,26 +21,26 @@ void  add_dense(struct _PARTITION     *actpart,
                   struct _DENSE         *dense1,
                   struct _DENSE         *dense2)
 {
-int               i,j,counter;           /* some counter variables */
-int               ii,jj;                 /* counter variables for system matrix */
-int               nd;                    /* size of estif */
-int               nnz;                   /* number of nonzeros in sparse system matrix */
-int               numeq_total;           /* total number of equations */
-int               numeq;                 /* number of equations on this proc */
-int               lm[MAXDOFPERELE];      /* location vector for this element */
+INT               i,j,counter;           /* some counter variables */
+INT               ii,jj;                 /* counter variables for system matrix */
+INT               nd;                    /* size of estif */
+INT               nnz;                   /* number of nonzeros in sparse system matrix */
+INT               numeq_total;           /* total number of equations */
+INT               numeq;                 /* number of equations on this proc */
+INT               lm[MAXDOFPERELE];      /* location vector for this element */
 #ifdef PARALLEL 
-int               owner[MAXDOFPERELE];   /* the owner of every dof */
+INT               owner[MAXDOFPERELE];   /* the owner of every dof */
 #endif
-int               myrank;                /* my intra-proc number */
-int               nprocs;                /* my intra- number of processes */
+INT               myrank;                /* my intra-proc number */
+INT               nprocs;                /* my intra- number of processes */
 enum _SOLVER_TYP *solvertyp;
-double           **estif;                 /* element matrix to be added to system matrix */
-double           **emass;                 /* second element matrix to be assembled */
-double           **A;                     /* the dense matrix */
-double           **B;                     /* the second dense matrix */
+DOUBLE           **estif;                 /* element matrix to be added to system matrix */
+DOUBLE           **emass;                 /* second element matrix to be assembled */
+DOUBLE           **A;                     /* the dense matrix */
+DOUBLE           **B;                     /* the second dense matrix */
 /*
-int       **cdofs;
-int         ncdofs;
+INT       **cdofs;
+INT         ncdofs;
 */
 #ifdef DEBUG 
 dstrc_enter("add_dense");
@@ -172,12 +172,12 @@ void redundant_dense(
                         DENSE         *dense2
                         )
 {
-int      i;
-int      imyrank;
-int      inprocs;
+INT      i;
+INT      imyrank;
+INT      inprocs;
 
 ARRAY    recv_a;
-double **recv;
+DOUBLE **recv;
 
 #ifdef DEBUG 
 dstrc_enter("redundant_dense");

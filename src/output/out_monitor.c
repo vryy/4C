@@ -56,32 +56,32 @@ extern struct _MONITOR *moni;
 </pre>
 
 \param *actfield    FIELD   (i)     actual field   
-\param  numf        int     (i)     number of fluid field
+\param  numf        INT     (i)     number of fluid field
 
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void out_monitor(FIELD *actfield, int numf)
+void out_monitor(FIELD *actfield, INT numf)
 {
-int       i,j;
-int       actpos;
-int       myrank;
-int       numval;
-int       numstep;
-int       numnp;
-int       rest;
-int       full;
-int     **monnodes;
-int     **onoff;
-int       counter;
-double   *time;
-double  **val;
+INT       i,j;
+INT       actpos;
+INT       myrank;
+INT       numval;
+INT       numstep;
+INT       numnp;
+INT       rest;
+INT       full;
+INT     **monnodes;
+INT     **onoff;
+INT       counter;
+DOUBLE   *time;
+DOUBLE  **val;
 MONITOR  *actmoni;
 FILE     *mon = allfiles.out_mon;
 ARRAY     valdofs_a;
-int      *valdofs;
+INT      *valdofs;
 ARRAY     valIds_a;
-int      *valIds;
+INT      *valIds;
 
 #ifdef DEBUG 
 dstrc_enter("out_monitor");
@@ -220,17 +220,17 @@ return;
 </pre>
 
 \param *actfield    FIELD   (i)     actual field   
-\param  numf        int     (i)     number of fluid field
+\param  numf        INT     (i)     number of fluid field
 \warning this function has to be parallelised 
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
 void out_area(ARRAY totarea_a)
 {
-int        i,j;
-int        fdim,sdim;
-int        myrank;
-double   **totarea;
+INT        i,j;
+INT        fdim,sdim;
+INT        myrank;
+DOUBLE   **totarea;
 FILE      *mon = allfiles.out_mon;
 
 #ifdef DEBUG 

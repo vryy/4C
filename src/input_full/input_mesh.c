@@ -46,8 +46,8 @@ static ARRAY tmpnodes2;
  *----------------------------------------------------------------------*/
 void inpfield()
 {
-int  i,j;
-int  ierr;
+INT  i,j;
+INT  ierr;
 #ifdef DEBUG 
 dstrc_enter("inpfield");
 #endif
@@ -187,11 +187,11 @@ return;
  *----------------------------------------------------------------------*/
 void inp_assign_nodes(DISCRET *actdis)
 {
-int  i,j,k;
-int  ierr;
-int  node_Id;
-int counter;
-int minusone=-1;
+INT  i,j,k;
+INT  ierr;
+INT  node_Id;
+INT counter;
+INT minusone=-1;
 ARRAY nodeflag;
 ARRAY coords;
 ELEMENT *actele;
@@ -254,7 +254,7 @@ return;
 ------------------------------------------------------------------------*/
 void inpdis(FIELD *actfield)
 {
-int  ierr=0;
+INT  ierr=0;
 char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpdis");
@@ -304,8 +304,8 @@ return;
  *----------------------------------------------------------------------*/
 void inpnodes()
 {
-int  ierr=0;
-int  counter;
+INT  ierr=0;
+INT  counter;
 #ifdef DEBUG 
 dstrc_enter("inpnodes");
 #endif
@@ -348,10 +348,10 @@ return;
  *----------------------------------------------------------------------*/
 void inp_struct_field(FIELD *structfield)
 {
-int  ierr;
-int  counter=0;
-int  elenumber;
-int  isquad;
+INT  ierr;
+INT  counter=0;
+INT  elenumber;
+INT  isquad;
 char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_struct_field");
@@ -470,11 +470,11 @@ return;
  *----------------------------------------------------------------------*/
 void inp_fluid_field(FIELD *fluidfield)
 {
-int  ierr;
-int  counter=0;
-int  cpro=0;
-int  elenumber;
-int  isquad;
+INT  ierr;
+INT  counter=0;
+INT  cpro=0;
+INT  elenumber;
+INT  isquad;
 char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_fluid_field");
@@ -607,10 +607,10 @@ return;
  *----------------------------------------------------------------------*/
 void inp_ale_field(FIELD *alefield)
 {
-int  ierr;
-int  counter=0;
-int  elenumber;
-int  isquad;
+INT  ierr;
+INT  counter=0;
+INT  elenumber;
+INT  isquad;
 char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_ale_field");

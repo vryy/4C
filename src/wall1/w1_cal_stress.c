@@ -27,64 +27,64 @@ void w1_cal_stress(ELEMENT   *ele,
                    W1_DATA   *data, 
                    MATERIAL  *mat,
                    ARRAY     *estif_global, 
-                   double    *force,  /* global vector for internal forces (initialized!) */
-                   int	      kstep,  /* number of current load step */
-		       int        init)
+                   DOUBLE    *force,  /* global vector for internal forces (initialized!) */
+                   INT	      kstep,  /* number of current load step */
+		       INT        init)
 {
-int                 i,j,k,l;            /* some loopers */
-int                 nir,nis;          /* num GP in r/s/t direction */
-int                 lr, ls;           /* loopers over GP */
-int                 iel;              /* numnp to this element */
-int                 dof;
-int                 nd;
-int                 ip;
-int	              it=0;      /* flag for transformation global/local   */
-int                 istore = 0;/* controls storing of new stresses to wa */
-int                 newval = 1;/* controls evaluation of new stresses    */
-const int           numdf  = 2;
-const int           numeps = 3;
-const int           numstr = 4;
+INT                 i,j,k,l;            /* some loopers */
+INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 lr, ls;           /* loopers over GP */
+INT                 iel;              /* numnp to this element */
+INT                 dof;
+INT                 nd;
+INT                 ip;
+INT	              it=0;      /* flag for transformation global/local   */
+INT                 istore = 0;/* controls storing of new stresses to wa */
+INT                 newval = 1;/* controls evaluation of new stresses    */
+const INT           numdf  = 2;
+const INT           numeps = 3;
+const INT           numstr = 4;
 
-double              fac;
-double              e1,e2;            /*GP-coords*/
-double              facr,facs;        /* weights at GP */
-double              weight;
-double              dum;
-double deltad[8], help[4];
-double knninv[4][4], knc[8][4];
+DOUBLE              fac;
+DOUBLE              e1,e2;            /*GP-coords*/
+DOUBLE              facr,facs;        /* weights at GP */
+DOUBLE              weight;
+DOUBLE              dum;
+DOUBLE deltad[8], help[4];
+DOUBLE knninv[4][4], knc[8][4];
 
 static ARRAY    D_a;      /* material tensor */     
-static double **D;         
+static DOUBLE **D;         
 static ARRAY    funct_a;  /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    xjm0_a;    /* jacobian matrix at r,s=0*/     
-static double **xjm0;         
+static DOUBLE **xjm0;         
 static ARRAY    xji_a;    /* inverse of jacobian matrix */
-static double **xji;
+static DOUBLE **xji;
 static ARRAY    F_a;      /* dummy matrix for saving stresses at gauss point*/
-static double  *F;  
+static DOUBLE  *F;  
 static ARRAY    bop_a;    /* B-operator */   
-static double **bop;
+static DOUBLE **bop;
 static ARRAY    gop_a;    /* incomp_modes: G-operator */   
-static double  *gop;
+static DOUBLE  *gop;
 static ARRAY    alpha_a;  /* incomp-modes: internal dof */   
-static double  *alpha;
+static DOUBLE  *alpha;
 static ARRAY    spar_a;   /* function parameters for extrapolation */   
-static double **spar;       
+static DOUBLE **spar;       
 static ARRAY    transm_a; /* transformation matrix sig(loc)-->sig(glob) */   
-static double **transm;       
+static DOUBLE **transm;       
 static ARRAY    transmi_a;/* inverse transformation matrix sig(glob)-->sig(loc) */   
-static double **transmi;       
+static DOUBLE **transmi;       
 static ARRAY    work_a;
-static double **work;     /* working array */
+static DOUBLE **work;     /* working array */
 
-double det,det0;
-int node, npoint;
-double fv, r, s;
+DOUBLE det,det0;
+INT node, npoint;
+DOUBLE fv, r, s;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -260,24 +260,24 @@ return;
  |                           TAN (2*ALFA) = -------------------         |
  |                                          (SIGMA X - SIGMA Y)         |
  *----------------------------------------------------------------------*/
-void w1_mami(double *stress,
-             double *fps, /* FIRST  PRINCIPAL STRESS       */ 
-             double *sps, /* SECOND PRINCIPAL STRESS       */ 
-             double *aps) /* ANGLE OF PRINCIPAL DIRECTION  */ 
+void w1_mami(DOUBLE *stress,
+             DOUBLE *fps, /* FIRST  PRINCIPAL STRESS       */ 
+             DOUBLE *sps, /* SECOND PRINCIPAL STRESS       */ 
+             DOUBLE *aps) /* ANGLE OF PRINCIPAL DIRECTION  */ 
 {
 /*----------------------------------------------------------------------*/
-double 		ag;
-static double 	rad=0.;
+DOUBLE 		ag;
+static DOUBLE 	rad=0.;
 char		jobz[1];
 char		uplo[1];
-int		n=2;
-int		lda=2;
-double		A[4];
-double		W[2];
-int		lwork=5;
-double		work[5];
-int		info=0;
-double		vlength;
+INT		n=2;
+INT		lda=2;
+DOUBLE		A[4];
+DOUBLE		W[2];
+INT		lwork=5;
+DOUBLE		work[5];
+INT		info=0;
+DOUBLE		vlength;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -336,39 +336,39 @@ return;
  |      xt36  ---> R,S values for triangle   with 3,6   nodes           |
  |      xt10  ---> R,S values for triangle   with 10    nodes           |
  *----------------------------------------------------------------------*/
-double w1rsn (int node, /* number of actual integration point */
-              int  irs, /* r/s identifier */
-              int  iel) /* number of nodes at actual element */
+DOUBLE w1rsn (INT node, /* number of actual integration point */
+              INT  irs, /* r/s identifier */
+              INT  iel) /* number of nodes at actual element */
 {
-  static double xr489[18] = { 1.,1.,-1.,1.,-1.,-1.,1.,
+  static DOUBLE xr489[18] = { 1.,1.,-1.,1.,-1.,-1.,1.,
           -1.,0.,1.,-1.,0.,0.,-1.,1.,0.,0.,0. };
-  static double xr16[32] = { 1.,1.,-1.,1.,-1.,-1.,1.,
+  static DOUBLE xr16[32] = { 1.,1.,-1.,1.,-1.,-1.,1.,
           -1.,.3333333333333333,1.,-.3333333333333333,1.,-1.,
           .3333333333333333,-1.,-.3333333333333333,-.3333333333333333,-1.,
           .3333333333333333,-1.,1.,-.3333333333333333,1.,.3333333333333333,
           .3333333333333333,.3333333333333333,-.3333333333333333,
           .3333333333333333,-.3333333333333333,-.3333333333333333,
           .3333333333333333,-.3333333333333333 };
-  static double xt36[12] = { 0.,0.,1.,0.,0.,1.,.5,0.,.5,.5,0.,.5 };
-  static double xt10[20] = { 0.,0.,1.,0.,0.,1.,
+  static DOUBLE xt36[12] = { 0.,0.,1.,0.,0.,1.,.5,0.,.5,.5,0.,.5 };
+  static DOUBLE xt10[20] = { 0.,0.,1.,0.,0.,1.,
           .3333333333333333,0.,.6666666666666667,0.,.6666666666666667,
           .3333333333333333,.3333333333333333,.6666666666666667,0.,
           .6666666666666667,0.,.3333333333333333,.3333333333333333,
           .3333333333333333 };
-  static int label[16] = { 5,5,3,1,5,3,5,1,1,4,5,2,5,5,5,2 };
+  static INT label[16] = { 5,5,3,1,5,3,5,1,1,4,5,2,5,5,5,2 };
 
   /* System generated locals */
-  double ret_val;
+  DOUBLE ret_val;
 
   /* Local variables */
-  static int jump;
+  static INT jump;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1rsn");
 #endif
 /*---------------------------------- labels for element nodal points ---*/
     jump = label[iel - 1];
-    switch ((int)jump) {
+    switch ((INT)jump) {
 	case 1:  goto L1;
 	case 2:  goto L2;
 	case 3:  goto L3;
@@ -406,17 +406,17 @@ dstrc_exit();
  |                                                           al 9/01    |
  |      extrapolation form gauss points for rectangles                  |
  *----------------------------------------------------------------------*/
-void w1recs(double *funval,/* function value  */
-            double  r,     /* r/s coordinates */
-            double  s,  
-            double *fval,  /* function values at gauss points */
-            double *fpar,  /* function parameters */
-            int     igauss,/* number of gauss points */
-            int     icode) /* ==1 initialize function parameters */
+void w1recs(DOUBLE *funval,/* function value  */
+            DOUBLE  r,     /* r/s coordinates */
+            DOUBLE  s,  
+            DOUBLE *fval,  /* function values at gauss points */
+            DOUBLE *fpar,  /* function parameters */
+            INT     igauss,/* number of gauss points */
+            INT     icode) /* ==1 initialize function parameters */
                            /* > 1            function evaluation */      
 {
-  static int i;
-  static double f1, f2, f3, f4, f5, 
+  static INT i;
+  static DOUBLE f1, f2, f3, f4, f5, 
                 p1, p2, p3, p4, p5, p6, p7, p8, p9, 
                 r3, s3,
                 p10, p11, p12, p13, p14, p15, p16,

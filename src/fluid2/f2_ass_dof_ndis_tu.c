@@ -10,11 +10,11 @@
  |  put dofs to nodes                                   he    12/02     |
  |  for turbulence-models                                               |
  *----------------------------------------------------------------------*/
-void f2tu_ass_dof(NODE *actnode, int *counter)
+void f2tu_ass_dof(NODE *actnode, INT *counter)
 {
-int dirich;
-int couple;
-int geocouple;
+INT dirich;
+INT couple;
+INT geocouple;
 
 #ifdef DEBUG 
 dstrc_enter("f2tu_ass_dof");

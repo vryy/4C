@@ -17,14 +17,14 @@
  | evaluates linear/nonlinear strains from               al    9/01     |
  | displacement derivatives                                             |
  *----------------------------------------------------------------------*/
-void w1_eps( double   *disd,
+void w1_eps( DOUBLE   *disd,
              WALL_TYPE wtype,
-             double   *eps)
+             DOUBLE   *eps)
 {
 /*----------------------------------------------------------------------*/
-int i,inode, node_start;
-double dum;
-double u11, u12, u21, u22, u33;
+INT i,inode, node_start;
+DOUBLE dum;
+DOUBLE u11, u12, u21, u22, u33;
 #ifdef DEBUG 
 dstrc_enter("w1_eps");
 #endif

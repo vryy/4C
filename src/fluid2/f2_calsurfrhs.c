@@ -29,30 +29,30 @@ NOTE:
    facs is either (1-THETA)*dt at (n) or THETA*dt at (n+1)
 		     
 </pre>
-\param  *eforce    double   (o)    element force vector
-\param  *funct     double   (i)    natural shape functions
-\param  *vn 	   double   (i)    normal vector on surface at gp
-\param   sigmaint  double   (i)    surface tension at gauss point
-\param   facs 	   double   (i)    time factor
-\param   fac 	   double   (i)    weighting factor
-\param   ngnode    int      (i)    number of nodes on actual edge
-\param   iedgnod   int	    (i)    actual edge nodes
+\param  *eforce    DOUBLE   (o)    element force vector
+\param  *funct     DOUBLE   (i)    natural shape functions
+\param  *vn 	   DOUBLE   (i)    normal vector on surface at gp
+\param   sigmaint  DOUBLE   (i)    surface tension at gauss point
+\param   facs 	   DOUBLE   (i)    time factor
+\param   fac 	   DOUBLE   (i)    weighting factor
+\param   ngnode    INT      (i)    number of nodes on actual edge
+\param   iedgnod   INT	    (i)    actual edge nodes
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calsurftenfv( 
-                     double   *eforce, 
-		     double   *funct, 
-		     double   *vn, 
-		     double    sigmaint,
-		     double    facs, 
-		     double    fac,
-                     int       ngnode,
-		     int      *iedgnod     
+                     DOUBLE   *eforce, 
+		     DOUBLE   *funct, 
+		     DOUBLE   *vn, 
+		     DOUBLE    sigmaint,
+		     DOUBLE    facs, 
+		     DOUBLE    fac,
+                     INT       ngnode,
+		     INT      *iedgnod     
 		    )
 {
-int irow, inode,isd;
-double c;
+INT irow, inode,isd;
+DOUBLE c;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calsurftenfv");

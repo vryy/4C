@@ -43,8 +43,8 @@ extern struct _FIELD      *field;
 \param  *eiforce_global  ARRAY        (o)    element iter force vecotr
 \param	*edforce_global  ARRAY        (o)    ele dirichl. force vector
 \param	*action	         CALC_ACTION  (i)
-\param	*hasdirich	 int          (o)    flag
-\param  *hasext          int          (o)    flag
+\param	*hasdirich	 INT          (o)    flag
+\param  *hasext          INT          (o)    flag
 \return void
 
 ------------------------------------------------------------------------*/
@@ -58,14 +58,14 @@ void fluid3(
 	    ARRAY       *eiforce_global,
 	    ARRAY       *edforce_global,
             CALC_ACTION *action,
-	    int         *hasdirich,
-	    int         *hasext,
+	    INT         *hasdirich,
+	    INT         *hasext,
             CONTAINER   *container     	    
 	   )
 {
 #ifdef D_FLUID3 
-static int              numff;      /* number of fluid field            */
-double                 *intforce;
+static INT              numff;      /* number of fluid field            */
+DOUBLE                 *intforce;
 MATERIAL               *actmat;     /* actual material                  */
 static FLUID_DATA      *data;
 FLUID_DYNAMIC          *fdyn;

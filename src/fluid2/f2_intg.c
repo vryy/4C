@@ -9,10 +9,10 @@
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
-static double Q12 = ONE/TWO;
-static double Q13 = ONE/THREE;
-static double Q16 = ONE/SIX;
-static double Q23 = TWO/THREE;
+static DOUBLE Q12 = ONE/TWO;
+static DOUBLE Q13 = ONE/THREE;
+static DOUBLE Q16 = ONE/SIX;
+static DOUBLE Q23 = TWO/THREE;
 /*!---------------------------------------------------------------------                                         
 \brief integration parameters for fluid2 element
 
@@ -24,20 +24,20 @@ routine has to be (hopefully) called only once!!!
 
 </pre>
 \param  *data 	  FLUID_DATA       (o)	   
-\param   option	  int              (i)     flag (not used at the moment 
+\param   option	  INT              (i)     flag (not used at the moment 
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_intg(FLUID_DATA         *data,
-             int                option  
+             INT                option  
 	    )
 {
-int     i, k;                          /* simply some counters          */
-double  xgr[MAXTINTP][MAXTINTC];       /* coord. of integr. points QUAD */
-double  xgs[MAXTINTP][MAXTINTC];       /* coord. of integr. points QUAD */
-double  wgtt[MAXTINTP][MAXTINTC];      /* integr. weights QUAD          */
-double  xg[MAXQINTP][MAXQINTC];        /* coord. of integr. points TRI  */
-double  wgt[MAXQINTP][MAXQINTC];       /* integr. weights TRI    	*/
+INT     i, k;                          /* simply some counters          */
+DOUBLE  xgr[MAXTINTP][MAXTINTC];       /* coord. of integr. points QUAD */
+DOUBLE  xgs[MAXTINTP][MAXTINTC];       /* coord. of integr. points QUAD */
+DOUBLE  wgtt[MAXTINTP][MAXTINTC];      /* integr. weights QUAD          */
+DOUBLE  xg[MAXQINTP][MAXQINTC];        /* coord. of integr. points TRI  */
+DOUBLE  wgt[MAXQINTP][MAXQINTC];       /* integr. weights TRI    	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_intg");
@@ -435,28 +435,28 @@ return;
 In this routine the local coordinates of nodes are determined
 		     
 </pre>
-\param   node        int      (i)    number of actual node 
-\param   irs         int      (i)    r/s identifier
-\param   iel         int      (i)    number of nodes in actual element
-\return  double                                                                      
+\param   node        INT      (i)    number of actual node 
+\param   irs         INT      (i)    r/s identifier
+\param   iel         INT      (i)    number of nodes in actual element
+\return  DOUBLE                                                                      
 
 ------------------------------------------------------------------------*/
-double f2_rsn(
-	      int            node,     
-	      int             irs,    
-	      int             iel       
+DOUBLE f2_rsn(
+	      INT            node,     
+	      INT             irs,    
+	      INT             iel       
 	    )
 {
 
-double c;        /*------ return value for the coord. of the gauss point */
+DOUBLE c;        /*------ return value for the coord. of the gauss point */
 
 /*-------array for a quad storing the local coord. of gauss points------*/
-double quad[][2] = {
+DOUBLE quad[][2] = {
                    {ONE,ONE} ,{-ONE,ONE} ,{-ONE,-ONE},{ONE,-ONE},
 		   {ZERO,ONE},{-ONE,ZERO},{ZERO,-ONE},{ONE,ZERO},
 		   {ZERO,ZERO}
 		   };
-double tri[][2]  = {
+DOUBLE tri[][2]  = {
                    {ZERO,ZERO},{ONE,ZERO},{ZERO,ONE},
 		   {ONE/TWO,ZERO},{ONE/TWO,ONE/TWO},{ZERO,ONE/TWO}
 		   };

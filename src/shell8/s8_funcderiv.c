@@ -5,18 +5,18 @@
 /*----------------------------------------------------------------------*
  | shape functions and derivatives                            m.gee 6/01|
  *----------------------------------------------------------------------*/
-void s8_funct_deriv(double     *funct, 
-                    double    **deriv, 
-                    double      r, 
-                    double      s,
+void s8_funct_deriv(DOUBLE     *funct, 
+                    DOUBLE    **deriv, 
+                    DOUBLE      r, 
+                    DOUBLE      s,
                     DIS_TYP     typ,
-                    int         option)
+                    INT         option)
 {
-const double   q12 = 1.0/2.0;
-const double   q14 = 1.0/4.0;
-const double   q16 = 1.0/6.0;
-double         rr,ss,rp,rm,sp,sm,r2,s2;
-double         rh,sh,rs,rhp,rhm,shp,shm;
+const DOUBLE   q12 = 1.0/2.0;
+const DOUBLE   q14 = 1.0/4.0;
+const DOUBLE   q16 = 1.0/6.0;
+DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
+DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG 
 dstrc_enter("s8_funct_deriv");
 #endif

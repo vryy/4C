@@ -6,8 +6,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/prototypes_mlpcg.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 /*! 
 \addtogroup MLPCG 
 *//*! @{ (documentation module open)*/
@@ -47,16 +47,16 @@ from the aggregation done before , this routine only from 0 to 1
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P_fish(MLLEVEL  *actlev, INTRA *actintra)
 {
-int          i,j,k,n,counter=0;
-int          myrank,nproc;
+INT          i,j,k,n,counter=0;
+INT          myrank,nproc;
 DBCSR       *actstiff;
 DBCSR       *P;
 AGG         *actagg;
-int          nrow,ncol;
-double       aggblock[1000][500];
-int          rindex[1000],cindex[500];
-int          firstdof=0;
-int          sendbuff[MAXPROC],recvbuff[MAXPROC];
+INT          nrow,ncol;
+DOUBLE       aggblock[1000][500];
+INT          rindex[1000],cindex[500];
+INT          firstdof=0;
+INT          sendbuff[MAXPROC],recvbuff[MAXPROC];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_P_fish");
@@ -85,7 +85,7 @@ for (i=0; i<actlev->nagg; i++)
    else if (actagg->tentP_nrow != nrow)  
        dserror("Size mismatch in aggregate");
    if (!(actagg->tentP_rindex))
-      actagg->tentP_rindex = (int*)CCAMALLOC(nrow*sizeof(int));
+      actagg->tentP_rindex = (INT*)CCAMALLOC(nrow*sizeof(INT));
    /*------------------------------- put rindex to actagg->tentP_rindex */
    if (mlprecond.ncall==0)
       for (j=0; j<nrow; j++) actagg->tentP_rindex[j] = rindex[j];
@@ -113,7 +113,7 @@ if (mlprecond.ncall==0)
    for (n=0; n<myrank; n++) firstdof += recvbuff[n];
    for (i=0; i<actlev->nagg; i++)
    {
-      actlev->agg[i].dof = (int*)CCAMALLOC(actlev->agg[i].numdf * sizeof(int));
+      actlev->agg[i].dof = (INT*)CCAMALLOC(actlev->agg[i].numdf * sizeof(INT));
       for (j=0; j<actlev->agg[i].numdf; j++) actlev->agg[i].dof[j] = firstdof++;
    }
 /*-------------------------------------------------- now open the matrix */
@@ -123,7 +123,7 @@ if (mlprecond.ncall==0)
    P->firstcoupledof=actstiff->firstcoupledof;
    am_alloc_copy(&(actstiff->blocks),&(P->blocks));
    /* make a guess of the size of the prolongator */
-   counter = (int)(counter*(actstiff->numeq)*4.0);
+   counter = (INT)(counter*(actstiff->numeq)*4.0);
    /* open the prolongator */
    mlpcg_csr_open(P,actstiff->update.a.iv[0],actstiff->update.a.iv[actstiff->update.fdim-1],
                   actstiff->numeq_total,counter, actintra);
@@ -169,44 +169,44 @@ return;
 
 </pre>
 \param actagg         AGG*    (i/o) the active aggregate
-\param aggblock       double[1000][500] (o) the aggregate's block prolongator
-\param rindex         int[1000]         (o) global indizes of aggblock
-\param cindex         int[500]          (o) global indizes of aggblock
-\param nrow           int*              (o) dimension of rindex
-\param ncol           int*              (o) dimension of cindex
+\param aggblock       DOUBLE[1000][500] (o) the aggregate's block prolongator
+\param rindex         INT[1000]         (o) global indizes of aggblock
+\param cindex         INT[500]          (o) global indizes of aggblock
+\param nrow           INT*              (o) dimension of rindex
+\param ncol           INT*              (o) dimension of cindex
 \param actstiff       DBCSR*            (i) fine grid stiffness matrix
 \param actintra       INTRA*            (i) the intra-communicator of this field  
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_oneP_fish(AGG     *actagg,
-                             double   aggblock[][500],
-                             int      rindex[],
-                             int      cindex[],
-                             int     *nrow,
-                             int     *ncol,
+                             DOUBLE   aggblock[][500],
+                             INT      rindex[],
+                             INT      cindex[],
+                             INT     *nrow,
+                             INT     *ncol,
                              DBCSR   *actstiff,
                              INTRA   *actintra)
 {
-int           i,j,counter;
-double      **A;
+INT           i,j,counter;
+DOUBLE      **A;
 ARRAY         A_a;
-double      **Z;
+DOUBLE      **Z;
 ARRAY         Z_a;
 
-int           itype=1;
+INT           itype=1;
 char          jobz[1];
 char          range[1];
 char          uplo[1];
-double        vl,vu;
-int           il,iu;
-double        abstol = EPS14;
-double        W[500];
-int           lwork = 10000;
-double        work[10000];
-int           iwork[10000];
-int           ifail[500];
-int           info;
+DOUBLE        vl,vu;
+INT           il,iu;
+DOUBLE        abstol = EPS14;
+DOUBLE        W[500];
+INT           lwork = 10000;
+DOUBLE        work[10000];
+INT           iwork[10000];
+INT           ifail[500];
+INT           info;
 jobz[0]  = 'V';
 range[0] = 'I'; /* A gives all eigenvalues and vectors */ 
 uplo[0]  = 'U';
@@ -229,7 +229,7 @@ for (i=0; i<actagg->nblock; i++)
       counter++;
    }
 dsassert(counter==*nrow,"Number of dofs in prolongator wrong");
-qsort((int*)rindex,*nrow,sizeof(int),cmp_int);
+qsort((INT*)rindex,*nrow,sizeof(INT),cmp_int);
 /*------------------ extract the block, which belongs to this aggregate */
 A = amdef("A",&A_a,*nrow,*nrow,"DA");
 Z = amdef("Z",&Z_a,*nrow,*nrow,"DA");

@@ -20,21 +20,21 @@
          a local left-system, which leads to a negative determinant 
          of the Jacobian matrix.
 ------------------------------------------------------------------------*/
-void f3inp(ELEMENT *ele,int counter)
+void f3inp(ELEMENT *ele,INT counter)
 {
-int  i;
-int  ierr=0;
-int  quad;
-int  lmtmp;
+INT  i;
+INT  ierr=0;
+INT  quad;
+INT  lmtmp;
 long int  topology[100];
 char *colpointer;
 char buffer[50];
-int  ndum;       /* dummy value */
-int  ihelem;
-int  itaumu;
-int  itaump;
-int  itauc;
-static int cmat;
+INT  ndum;       /* dummy value */
+INT  ihelem;
+INT  itaumu;
+INT  itaump;
+INT  itauc;
+static INT cmat;
 
 #ifdef DEBUG 
 dstrc_enter("f3inp");
@@ -49,7 +49,7 @@ if (ierr==1)
    ele->numnp=8;
    ele->distyp=hex8;
    ele->e.f3->ntyp=1;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("HEX8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -61,7 +61,7 @@ if (ierr==1)
    ele->numnp=20;
    ele->distyp=hex20;
    ele->e.f3->ntyp=1;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -73,7 +73,7 @@ if (ierr==1)
    ele->numnp=27;
    ele->distyp=hex27;
    ele->e.f3->ntyp=1;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -84,7 +84,7 @@ if (ierr==1)
    ele->numnp=4;
    ele->distyp=tet4;
    ele->e.f3->ntyp=2;   
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -100,7 +100,7 @@ if (ierr==1)
    ele->numnp=10;
    ele->distyp=tet10;
    ele->e.f3->ntyp=2; 
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TET10",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");

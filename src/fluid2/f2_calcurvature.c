@@ -11,7 +11,7 @@
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
-static int NUMDF = 3;
+static INT NUMDF = 3;
 /*!---------------------------------------------------------------------
 \brief curvature at free surface for fluid2 element
 
@@ -21,15 +21,15 @@ in this function the curvature at the free surface of a fluid2 element
 with linear shape functions is calculated.
 		     
 </pre>
-\param  *funct     double          (o)    shape functions
+\param  *funct     DOUBLE          (o)    shape functions
 \param  **actgline GLINE           (i)    glines to actual element
 \param  *actlinefs                 (i)    free surface conditions
 \param  *dynvar    FLUID_DYN_CALC  (i)    
-\param   foundline int             (i)    flag
-\param   actngline int             (i)    num. of glines to element
-\param **xyze      double          (-)    nodal coordinates
-\param **deriv     double          (-)    natural deriv. of shape funct.
-\param **kappa     double          (o)    nodal curvature  
+\param   foundline INT             (i)    flag
+\param   actngline INT             (i)    num. of glines to element
+\param **xyze      DOUBLE          (-)    nodal coordinates
+\param **deriv     DOUBLE          (-)    natural deriv. of shape funct.
+\param **kappa     DOUBLE          (o)    nodal curvature  
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -37,35 +37,35 @@ void f2_calq4curv( GLINE                        **actgline,
                      FLUID_FREESURF_CONDITION   **actlinefs,
 		     FLUID_DYN_CALC             *dynvar,
 		     ELEMENT                    *actele,
-		     int                         foundline,
-		     int                         actngline,
-		     double                    **xyze,
-		     double                    **deriv,
-		     double                    **kappa		    
+		     INT                         foundline,
+		     INT                         actngline,
+		     DOUBLE                    **xyze,
+		     DOUBLE                    **deriv,
+		     DOUBLE                    **kappa		    
 		   )
 {
-int    actngnode;              /* number of gnodes                      */
-int    iedgnod[MAXNOD_F2];     /* node numbers on act. edge             */
-int    nbedgnod[MAXNOD_F2];    /* node numbers of neighbour edge        */
-int    node;                   
-int    line;
-int    nbfoundline;
-int    k;                        /* counters                              */
-int    nbngline,nbline,nbngnode; /* counters                            */
-int    ignod,nel;
-int    foundit[2];
-double funct[2];               /* shape functions                       */
-double actvn[2];               /* normal vector actuale element         */
-double cn,s,top,bot;           /* calc values                           */
-double m[2];                   /* coordinates of midpoint               */
-double actd[2];                /* distance to midpoint act. ele         */
-double nbd[2];                 /* distance to midpoint neig. ele        */
-double actrad[2];              /* radius of actual element              */
-double nbrad[2];               /* radius of neighb. element             */
-double nbvn[2];                /* normal vector neighb. element         */
-double nbxy[2];                /* coordinates neighb. element           */
-double actxy[2];               /* coordinates actual element            */
-double vnorm;                  /* lenght of normal vector               */
+INT    actngnode;              /* number of gnodes                      */
+INT    iedgnod[MAXNOD_F2];     /* node numbers on act. edge             */
+INT    nbedgnod[MAXNOD_F2];    /* node numbers of neighbour edge        */
+INT    node;                   
+INT    line;
+INT    nbfoundline;
+INT    k;                        /* counters                              */
+INT    nbngline,nbline,nbngnode; /* counters                            */
+INT    ignod,nel;
+INT    foundit[2];
+DOUBLE funct[2];               /* shape functions                       */
+DOUBLE actvn[2];               /* normal vector actuale element         */
+DOUBLE cn,s,top,bot;           /* calc values                           */
+DOUBLE m[2];                   /* coordinates of midpoint               */
+DOUBLE actd[2];                /* distance to midpoint act. ele         */
+DOUBLE nbd[2];                 /* distance to midpoint neig. ele        */
+DOUBLE actrad[2];              /* radius of actual element              */
+DOUBLE nbrad[2];               /* radius of neighb. element             */
+DOUBLE nbvn[2];                /* normal vector neighb. element         */
+DOUBLE nbxy[2];                /* coordinates neighb. element           */
+DOUBLE actxy[2];               /* coordinates actual element            */
+DOUBLE vnorm;                  /* lenght of normal vector               */
 GLINE  *nbgline[4];
 FLUID_FREESURF_CONDITION   *nblinefs[4];
 ELEMENT *nbele;                /* neighbour element                     */
@@ -285,18 +285,18 @@ void f2_calq8curv( GLINE                        **actgline,
                      FLUID_FREESURF_CONDITION   **actlinefs,
 		     FLUID_DYN_CALC             *dynvar,
 		     ELEMENT                    *actele,
-		     int                         actngline,
-		     double                    **xyze,
-		     double                    **kappa		    
+		     INT                         actngline,
+		     DOUBLE                    **xyze,
+		     DOUBLE                    **kappa		    
 		   )
 {
-int    i;
-int    node,line,iel;
-int    actngnode;
-int    iedgnod[MAXNOD_F2];
-double a,b,q,r,s,top,bot,t0,func;
-double v[2],otil[2],dist[2],k[3];
-double lxy[2][3];
+INT    i;
+INT    node,line,iel;
+INT    actngnode;
+INT    iedgnod[MAXNOD_F2];
+DOUBLE a,b,q,r,s,top,bot,t0,func;
+DOUBLE v[2],otil[2],dist[2],k[3];
+DOUBLE lxy[2][3];
 #ifdef DEBUG 
 dstrc_enter("f2_calq8curv");
 #endif

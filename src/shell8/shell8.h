@@ -7,10 +7,10 @@ typedef struct _SHELL8
 /*----------------------------- general variables needed by the element */
 struct _ARRAY    a3ref;
 struct _ARRAY    thick_node;
-double           thick;
-double           sdc;
-int              nGP[3];
-int              nGP_tri;
+DOUBLE           thick;
+DOUBLE           sdc;
+INT              nGP[3];
+INT              nGP_tri;
 /*---------------------------------------------- array of forces at GPs */
 enum
     {
@@ -23,15 +23,15 @@ struct _ARRAY4D  forces;
 /*-------------------------------------------- array of internal forces */
 struct _ARRAY    intforce;
 /*-------------------------------------------- variables needed for eas */
-int              eas[5];
-int              nhyb; 
+INT              eas[5];
+INT              nhyb; 
 struct _ARRAY    alfa;
 struct _ARRAY    oldalfa;
 struct _ARRAY    Dtildinv;
 struct _ARRAY    Lt;
 struct _ARRAY    Rtilde;
 /*-------------------------------------------- variables needed for ans */
-int              ans;
+INT              ans;
 } SHELL8;
 
 /*----------------------------------------------------------------------*
@@ -39,14 +39,14 @@ int              ans;
  *----------------------------------------------------------------------*/
 typedef struct _S8_DATA
 {
-double        xgpr[3];
-double        wgtr[3];
+DOUBLE        xgpr[3];
+DOUBLE        wgtr[3];
 
-double        xgps[3];
-double        wgts[3];
+DOUBLE        xgps[3];
+DOUBLE        wgts[3];
 
-double        xgpt[3];
-double        wgtt[3];
+DOUBLE        xgpt[3];
+DOUBLE        wgtt[3];
 } S8_DATA;
 
 
@@ -62,48 +62,48 @@ double        wgtt[3];
  *----------------------------------------------------------------------*/
 void s8a3(ELEMENT   *ele,
           S8_DATA   *data,/* is' hier ueberfluessig, rausschmeissen!*/
-          int        option);
-void s8a3ref_extern(double   *funct,
-                       double  **deriv,
-                       double   *thick,
-                       double  **a3ref,
+          INT        option);
+void s8a3ref_extern(DOUBLE   *funct,
+                       DOUBLE  **deriv,
+                       DOUBLE   *thick,
+                       DOUBLE  **a3ref,
                        ELEMENT  *ele);
-void s8averdir(double **dir_list, int numa3, double *a3);
+void s8averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3);
 /*----------------------------------------------------------------------*
  |  s8_btdb.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_BtDB(double **estif, double **bop, double **D, int iel,
-                int numdf, double weight, double **work);
+void s8_BtDB(DOUBLE **estif, DOUBLE **bop, DOUBLE **D, INT iel,
+                INT numdf, DOUBLE weight, DOUBLE **work);
 /*----------------------------------------------------------------------*
  |  s8_eas.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_eas(const int    nhyb,
-               const double e1,
-               const double e2,
-               const int    iel, 
-               const int   *eas, 
-               double     **P);
-void s8_transeas(double      **P, 
-                    double      **transP,
-                    double      **T,
-                    double      **akovr,
-                    double      **akonr0,
-                    double        detr,
-                    double        detr0,
-                    int           nhyb);
+void s8_eas(const INT    nhyb,
+               const DOUBLE e1,
+               const DOUBLE e2,
+               const INT    iel, 
+               const INT   *eas, 
+               DOUBLE     **P);
+void s8_transeas(DOUBLE      **P, 
+                    DOUBLE      **transP,
+                    DOUBLE      **T,
+                    DOUBLE      **akovr,
+                    DOUBLE      **akonr0,
+                    DOUBLE        detr,
+                    DOUBLE        detr0,
+                    INT           nhyb);
 /*----------------------------------------------------------------------*
  |  s8_eps.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_eps(double *strain,double **gmkovc, double **gmkovr);
+void s8_eps(DOUBLE *strain,DOUBLE **gmkovc, DOUBLE **gmkovr);
 /*----------------------------------------------------------------------*
  |  s8_funcderiv.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_funct_deriv(double     *funct, 
-                       double    **deriv, 
-                       double      r, 
-                       double      s,
+void s8_funct_deriv(DOUBLE     *funct, 
+                       DOUBLE    **deriv, 
+                       DOUBLE      r, 
+                       DOUBLE      s,
                        DIS_TYP     typ,
-                       int         option);
+                       INT         option);
 /*----------------------------------------------------------------------*
  |  s8_init.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -117,44 +117,44 @@ void s8inp(ELEMENT *ele);
  *----------------------------------------------------------------------*/
 void s8intg(const ELEMENT   *ele,
                S8_DATA         *data,
-               int              option);
+               INT              option);
 /*----------------------------------------------------------------------*
  |  s8_jaco.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8jaco(double    *funct,
-               double   **deriv,
-               double   **x,
-               double   **xjm,
-               double    *hte,
-               double   **a3ref,
-               double     e3,
-               int        iel,
-               double    *det,
-               double    *deta,
-               int        init);
+void s8jaco(DOUBLE    *funct,
+               DOUBLE   **deriv,
+               DOUBLE   **x,
+               DOUBLE   **xjm,
+               DOUBLE    *hte,
+               DOUBLE   **a3ref,
+               DOUBLE     e3,
+               INT        iel,
+               DOUBLE    *det,
+               DOUBLE    *deta,
+               INT        init);
 /*----------------------------------------------------------------------*
  |  s8_load1.c                                           m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void s8eleload(ELEMENT  *ele,
                   S8_DATA  *data,
                   MATERIAL *mat,
-                  double   *global_vec,
-                  int       init);
+                  DOUBLE   *global_vec,
+                  INT       init);
 void s8loadGP(ELEMENT    *ele,
-                double    **eload,
-                double      hhi,
-                double      wgt,
-                double    **xjm,
-                double     *funct,
-                double    **deriv,
-                int         iel,
-                double      xi,
-                double      yi,
-                double      zi);
+                DOUBLE    **eload,
+                DOUBLE      hhi,
+                DOUBLE      wgt,
+                DOUBLE    **xjm,
+                DOUBLE     *funct,
+                DOUBLE    **deriv,
+                INT         iel,
+                DOUBLE      xi,
+                DOUBLE      yi,
+                DOUBLE      zi);
 /*----------------------------------------------------------------------*
  |  s8_loccoordnode.c                                    m.gee 11/01    |
  *----------------------------------------------------------------------*/
-double s8_local_coord_node(int node, int flag, enum _DIS_TYP typ);
+DOUBLE s8_local_coord_node(INT node, INT flag, enum _DIS_TYP typ);
 /*----------------------------------------------------------------------*
  |  s8_main.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -170,24 +170,24 @@ void shell8(FIELD      *actfield,
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel(STVENANT *mat, double **g, double **CC);
-void s8_mat_stress1(double *stress, double *strain, double **C);
+void s8_mat_linel(STVENANT *mat, DOUBLE **g, DOUBLE **CC);
+void s8_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C);
 /*----------------------------------------------------------------------*
  |  s8_mtr.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8mtr(double   **x,
-              double   **a3,
-              double     e3,
-              double   **gkov,
-              double   **gkon,
-              double   **gmkov,
-              double   **gmkon,
-              double    *det,
-              double    *funct,
-              double   **deriv,
-              double    *hte,
-              int        iel,
-              double     condfac,
+void s8mtr(DOUBLE   **x,
+              DOUBLE   **a3,
+              DOUBLE     e3,
+              DOUBLE   **gkov,
+              DOUBLE   **gkon,
+              DOUBLE   **gmkov,
+              DOUBLE   **gmkon,
+              DOUBLE    *det,
+              DOUBLE    *funct,
+              DOUBLE   **deriv,
+              DOUBLE    *hte,
+              INT        iel,
+              DOUBLE     condfac,
               char       string[]);
 /*----------------------------------------------------------------------*
  |  s8_static_ke.c                                       m.gee 11/01    |
@@ -196,10 +196,10 @@ void s8static_ke(ELEMENT   *ele,
                     S8_DATA   *data,                    
                     MATERIAL  *mat,                     
                     ARRAY     *estif_global,            
-                    double    *force,                   
-                    int        iforce,                  
-                    int        kstep,                   
-                    int        init);                   
+                    DOUBLE    *force,                   
+                    INT        iforce,                  
+                    INT        kstep,                   
+                    INT        init);                   
 /*----------------------------------------------------------------------*
  |  s8_static_keug.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -208,252 +208,252 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
                    MATERIAL  *mat,                        /* the material structure */
                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
-                   double    *force,                      /* global vector for internal forces (initialized!) */
-                   int        kstep,                      /* actual step in nonlinear analysis */
-                   int        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+                   DOUBLE    *force,                      /* global vector for internal forces (initialized!) */
+                   INT        kstep,                      /* actual step in nonlinear analysis */
+                   INT        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
 /*----------------------------------------------------------------------*
  |  s8_tmat.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void s8_tmat(ELEMENT    *ele,
                 MATERIAL   *mat,
-                double     *stress,
-                double     *strain,
-                double    **C,
-                double    **gmkovc,
-                double    **gmkonc,
-                double    **gmkovr,
-                double    **gmkonr,
-                double    **gkovc,
-                double    **gkonc,
-                double    **gkovr,
-                double    **gkonr,
-                double      detc,
-                double      detr,
-                double      e3,
-                int         option);
-void s8_getdensity(MATERIAL   *mat, double *density);
+                DOUBLE     *stress,
+                DOUBLE     *strain,
+                DOUBLE    **C,
+                DOUBLE    **gmkovc,
+                DOUBLE    **gmkonc,
+                DOUBLE    **gmkovr,
+                DOUBLE    **gmkonr,
+                DOUBLE    **gkovc,
+                DOUBLE    **gkonc,
+                DOUBLE    **gkovr,
+                DOUBLE    **gkonr,
+                DOUBLE      detc,
+                DOUBLE      detr,
+                DOUBLE      e3,
+                INT         option);
+void s8_getdensity(MATERIAL   *mat, DOUBLE *density);
 /*----------------------------------------------------------------------*
  |  s8_tmtr.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_tmtr(double   **x,
-                double   **a3,
-                double     e3,
-                double   **gkov,
-                double   **gkon,
-                double   **gmkov,
-                double   **gmkon,
-                double    *det,
-                double    *funct,
-                double   **deriv,
-                int        iel,
-                double     condfac,
-                int        flag);
+void s8_tmtr(DOUBLE   **x,
+                DOUBLE   **a3,
+                DOUBLE     e3,
+                DOUBLE   **gkov,
+                DOUBLE   **gkon,
+                DOUBLE   **gmkov,
+                DOUBLE   **gmkon,
+                DOUBLE    *det,
+                DOUBLE    *funct,
+                DOUBLE   **deriv,
+                INT        iel,
+                DOUBLE     condfac,
+                INT        flag);
 /*----------------------------------------------------------------------*
  |  s8_tvbo.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_tvbo(double      e1,
-                double      e2,
-                double    **bop,
-                double     *funct,
-                double    **deriv,
-                int         iel,
-                int         numdf,
-                double    **akov,
-                double    **a3kvp,
-                int         nansq);
+void s8_tvbo(DOUBLE      e1,
+                DOUBLE      e2,
+                DOUBLE    **bop,
+                DOUBLE     *funct,
+                DOUBLE    **deriv,
+                INT         iel,
+                INT         numdf,
+                DOUBLE    **akov,
+                DOUBLE    **a3kvp,
+                INT         nansq);
 /*----------------------------------------------------------------------*
  |  s8_tvhe_linear.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_tvhe_linear(double **gmkovr,
-                       double **gmkovc,
-                       double **gmkonr,
-                       double **gmkonc,
-                       double **gkovr,
-                       double **gkovc,
-                       double  *detr,
-                       double  *detc);
+void s8_tvhe_linear(DOUBLE **gmkovr,
+                       DOUBLE **gmkovc,
+                       DOUBLE **gmkonr,
+                       DOUBLE **gmkonc,
+                       DOUBLE **gkovr,
+                       DOUBLE **gkovc,
+                       DOUBLE  *detr,
+                       DOUBLE  *detc);
 /*----------------------------------------------------------------------*
  |  s8_tvma.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_tvma(double **D, double **C, double *stress, double *stress_r,
-                double e3, double fact, double condfac);
+void s8_tvma(DOUBLE **D, DOUBLE **C, DOUBLE *stress, DOUBLE *stress_r,
+                DOUBLE e3, DOUBLE fact, DOUBLE condfac);
 /*----------------------------------------------------------------------*
  |  s8_tvmr.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_tvmr(double   **x,
-                double   **a3,
-                double   **akov,
-                double   **akon,
-                double   **amkov,
-                double   **amkon,
-                double    *det,
-                double    *funct,
-                double   **deriv,
-                int        iel,
-                double   **a3kvp,
-                int        flag);
+void s8_tvmr(DOUBLE   **x,
+                DOUBLE   **a3,
+                DOUBLE   **akov,
+                DOUBLE   **akon,
+                DOUBLE   **amkov,
+                DOUBLE   **amkon,
+                DOUBLE    *det,
+                DOUBLE    *funct,
+                DOUBLE   **deriv,
+                INT        iel,
+                DOUBLE   **a3kvp,
+                INT        flag);
 /*----------------------------------------------------------------------*
  |  s8_tforce.c                                          m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void s8_tforce(double **force,
-             int      ngauss,
-             double **akov,
-             double **akon,
+void s8_tforce(DOUBLE **force,
+             INT      ngauss,
+             DOUBLE **akov,
+             DOUBLE **akon,
              ELEMENT *ele);
-void s8_tettr(double x[3][3], double **a, double b[3][3]);
+void s8_tettr(DOUBLE x[3][3], DOUBLE **a, DOUBLE b[3][3]);
 /*----------------------------------------------------------------------*
  |  s8_stress.c                                          m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void s8_stress(ELEMENT      *ele,
                S8_DATA      *data,
                MATERIAL     *mat,
-               int           kstep,
-               int           init);
+               INT           kstep,
+               INT           init);
 void s8_stress_reduce(FIELD     *actfield,
                       PARTITION *actpart,
                       INTRA     *actintra,
-                      int        kstep);
-void s8_strains_res(double **akovr, double **akovc, double **a3kvpr, double **a3kvpc,
-                   double hh, double *strains);
+                      INT        kstep);
+void s8_strains_res(DOUBLE **akovr, DOUBLE **akovc, DOUBLE **a3kvpr, DOUBLE **a3kvpc,
+                   DOUBLE hh, DOUBLE *strains);
 /*----------------------------------------------------------------------*
  |  s8_vthv.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void s8_vthv(double **gmkovc,
-             double **gmkonc,
-             double  *epsh,
-             double  *detc,
-             double   e3,
-             double   condfac);
+void s8_vthv(DOUBLE **gmkovc,
+             DOUBLE **gmkonc,
+             DOUBLE  *epsh,
+             DOUBLE  *detc,
+             DOUBLE   e3,
+             DOUBLE   condfac);
 /*----------------------------------------------------------------------*
  |  s8_tvhe.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void s8_tvhe(double **gmkovr,
-             double **gmkovc,
-             double **gmkonr,
-             double **gmkonc,
-             double **gkovr,
-             double **gkovc,
-             double  *detr,
-             double  *detc,
-             double **amkovc,
-             double **amkovr,
-             double **akovc,
-             double **akovr,
-             double **a3kvpc,
-             double **a3kvpr,
-             double   e3,
-             double   condfac);
-void s8_tvhe_lin(double **gmkovr,
-                 double **gmkovc,
-                 double **gmkonr,
-                 double **gmkonc,
-                 double **gkovr,
-                 double **gkovc,
-                 double  *detr,
-                 double  *detc,
-                 double **amkovc,
-                 double **amkovr,
-                 double **akovc,
-                 double **akovr,
-                 double **a3kvpc,
-                 double **a3kvpr,
-                 double   e3);
+void s8_tvhe(DOUBLE **gmkovr,
+             DOUBLE **gmkovc,
+             DOUBLE **gmkonr,
+             DOUBLE **gmkonc,
+             DOUBLE **gkovr,
+             DOUBLE **gkovc,
+             DOUBLE  *detr,
+             DOUBLE  *detc,
+             DOUBLE **amkovc,
+             DOUBLE **amkovr,
+             DOUBLE **akovc,
+             DOUBLE **akovr,
+             DOUBLE **a3kvpc,
+             DOUBLE **a3kvpr,
+             DOUBLE   e3,
+             DOUBLE   condfac);
+void s8_tvhe_lin(DOUBLE **gmkovr,
+                 DOUBLE **gmkovc,
+                 DOUBLE **gmkonr,
+                 DOUBLE **gmkonc,
+                 DOUBLE **gkovr,
+                 DOUBLE **gkovc,
+                 DOUBLE  *detr,
+                 DOUBLE  *detc,
+                 DOUBLE **amkovc,
+                 DOUBLE **amkovr,
+                 DOUBLE **akovc,
+                 DOUBLE **akovr,
+                 DOUBLE **a3kvpc,
+                 DOUBLE **a3kvpr,
+                 DOUBLE   e3);
 /*----------------------------------------------------------------------*
  |  s8_tvkg.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void s8_tvkg(double **estif,
-             double  *stress_r,
-             double  *funct,
-             double **deriv,
-             int      numdf,
-             int      iel,
-             double   weight,
-             double   e1,
-             double   e2);
+void s8_tvkg(DOUBLE **estif,
+             DOUBLE  *stress_r,
+             DOUBLE  *funct,
+             DOUBLE **deriv,
+             INT      numdf,
+             INT      iel,
+             DOUBLE   weight,
+             DOUBLE   e1,
+             DOUBLE   e2);
 /*----------------------------------------------------------------------*
  |  s8_intforce.c                                        m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void s8_intforce(double *intforce, double *stress_r, double **bop,
-                 int iel, int numdf, int nstress_r, double weight);
+void s8_intforce(DOUBLE *intforce, DOUBLE *stress_r, DOUBLE **bop,
+                 INT iel, INT numdf, INT nstress_r, DOUBLE weight);
 /*----------------------------------------------------------------------*
  |  s8_cal_dyn.c                                         m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void s8_tmas(double *funct, double *thick, double **emass, int iel, int numdf,
-             double facv, double facw, double facvw);
+void s8_tmas(DOUBLE *funct, DOUBLE *thick, DOUBLE **emass, INT iel, INT numdf,
+             DOUBLE facv, DOUBLE facw, DOUBLE facvw);
 /*----------------------------------------------------------------------*
  |  s8_xint.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void s8_xint(double *result, double *values, double *funct, int iel);
+void s8_xint(DOUBLE *result, DOUBLE *values, DOUBLE *funct, INT iel);
 /*----------------------------------------------------------------------*
  |  s8_tfte.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void s8_tfte(double **force,
-             int      ngauss,
-             double  *stress,
-             double **gkov,
-             double **akon,
-             double **gmkov,
-             double **gmkon,
-             double **amkov,
-             double **amkon,
-             double   h,
-             double   e3,
-             double   fact,
-             double   detsm,
-             double   detsr);
+void s8_tfte(DOUBLE **force,
+             INT      ngauss,
+             DOUBLE  *stress,
+             DOUBLE **gkov,
+             DOUBLE **akon,
+             DOUBLE **gmkov,
+             DOUBLE **gmkon,
+             DOUBLE **amkov,
+             DOUBLE **amkon,
+             DOUBLE   h,
+             DOUBLE   e3,
+             DOUBLE   fact,
+             DOUBLE   detsm,
+             DOUBLE   detsr);
 /*----------------------------------------------------------------------*
  |  s8_ans.c                                            m.gee 03/02    |
  *----------------------------------------------------------------------*/
-void s8_ans_colloqpoints(int nsansq,int iel,int ans,DIS_TYP distyp,
-                        double xr1[],double xs1[],double xr2[],double xs2[],
-                        double *funct1q[],double **deriv1q[], 
-                        double *funct2q[],double **deriv2q[],
-                        double **xrefe,double **a3r,double **xcure,double **a3c,
-                        double **akovr1q[] ,double **akonr1q[],
-                        double **amkovr1q[],double **amkonr1q[],
-                        double **a3kvpr1q[],
-                        double **akovc1q[] ,double **akonc1q[],
-                        double **amkovc1q[],double **amkonc1q[],
-                        double **a3kvpc1q[],
-                        double **akovr2q[] ,double **akonr2q[],
-                        double **amkovr2q[],double **amkonr2q[],
-                        double **a3kvpr2q[],
-                        double **akovc2q[] ,double **akonc2q[],
-                        double **amkovc2q[],double **amkonc2q[],
-                        double **a3kvpc2q[],
-                        double *detr, double *detc);
-void s8_ans_colloqcoords(double xqr1[], double xqs1[],
-                        double xqr2[], double xqs2[],
-                        int iel, int ans);
-void s8_ansq_funct(double frq[], double fsq[], double r, double s,
-                  int iel, int nsansq);
-void s8_ans_bbar_q(double **bop, double frq[], double fsq[],
-                  double  *funct1q[],  double  *funct2q[],
-                  double **deriv1q[],  double **deriv2q[],
-                  double **akovc1q[],  double **akovc2q[],
-                  double **a3kvpc1q[], double **a3kvpc2q[],
-                  int iel, int numdf, int nsansq);
-void s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmkonc,
-                  double **gkovr,double **gkovc,double **amkovc,double **amkovr,
-                  double **akovc,double **akovr,double **a3kvpc,double **a3kvpr,
-                  double *detr,   double *detc,
-                  double **amkovr1q[], double **amkovc1q[], 
-                  double **akovr1q[] , double **akovc1q[] ,
-                  double **a3kvpr1q[], double **a3kvpc1q[],
-                  double **amkovr2q[], double **amkovc2q[], 
-                  double **akovr2q[] , double **akovc2q[] ,
-                  double **a3kvpr2q[], double **a3kvpc2q[],
-                  double frq[], double fsq[], double e3, int nansq, int iel,
-                  double condfac);
-void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
-                int numdf,int iel,double weight,double e1,double e2,
-                double frq[], double fsq[],double *funct1q[],double  *funct2q[],
-                double **deriv1q[], double **deriv2q[],int ansq, int nsansq);
+void s8_ans_colloqpoints(INT nsansq,INT iel,INT ans,DIS_TYP distyp,
+                        DOUBLE xr1[],DOUBLE xs1[],DOUBLE xr2[],DOUBLE xs2[],
+                        DOUBLE *funct1q[],DOUBLE **deriv1q[], 
+                        DOUBLE *funct2q[],DOUBLE **deriv2q[],
+                        DOUBLE **xrefe,DOUBLE **a3r,DOUBLE **xcure,DOUBLE **a3c,
+                        DOUBLE **akovr1q[] ,DOUBLE **akonr1q[],
+                        DOUBLE **amkovr1q[],DOUBLE **amkonr1q[],
+                        DOUBLE **a3kvpr1q[],
+                        DOUBLE **akovc1q[] ,DOUBLE **akonc1q[],
+                        DOUBLE **amkovc1q[],DOUBLE **amkonc1q[],
+                        DOUBLE **a3kvpc1q[],
+                        DOUBLE **akovr2q[] ,DOUBLE **akonr2q[],
+                        DOUBLE **amkovr2q[],DOUBLE **amkonr2q[],
+                        DOUBLE **a3kvpr2q[],
+                        DOUBLE **akovc2q[] ,DOUBLE **akonc2q[],
+                        DOUBLE **amkovc2q[],DOUBLE **amkonc2q[],
+                        DOUBLE **a3kvpc2q[],
+                        DOUBLE *detr, DOUBLE *detc);
+void s8_ans_colloqcoords(DOUBLE xqr1[], DOUBLE xqs1[],
+                        DOUBLE xqr2[], DOUBLE xqs2[],
+                        INT iel, INT ans);
+void s8_ansq_funct(DOUBLE frq[], DOUBLE fsq[], DOUBLE r, DOUBLE s,
+                  INT iel, INT nsansq);
+void s8_ans_bbar_q(DOUBLE **bop, DOUBLE frq[], DOUBLE fsq[],
+                  DOUBLE  *funct1q[],  DOUBLE  *funct2q[],
+                  DOUBLE **deriv1q[],  DOUBLE **deriv2q[],
+                  DOUBLE **akovc1q[],  DOUBLE **akovc2q[],
+                  DOUBLE **a3kvpc1q[], DOUBLE **a3kvpc2q[],
+                  INT iel, INT numdf, INT nsansq);
+void s8_ans_tvhe_q(DOUBLE **gmkovr,DOUBLE **gmkovc,DOUBLE **gmkonr,DOUBLE **gmkonc,
+                  DOUBLE **gkovr,DOUBLE **gkovc,DOUBLE **amkovc,DOUBLE **amkovr,
+                  DOUBLE **akovc,DOUBLE **akovr,DOUBLE **a3kvpc,DOUBLE **a3kvpr,
+                  DOUBLE *detr,   DOUBLE *detc,
+                  DOUBLE **amkovr1q[], DOUBLE **amkovc1q[], 
+                  DOUBLE **akovr1q[] , DOUBLE **akovc1q[] ,
+                  DOUBLE **a3kvpr1q[], DOUBLE **a3kvpc1q[],
+                  DOUBLE **amkovr2q[], DOUBLE **amkovc2q[], 
+                  DOUBLE **akovr2q[] , DOUBLE **akovc2q[] ,
+                  DOUBLE **a3kvpr2q[], DOUBLE **a3kvpc2q[],
+                  DOUBLE frq[], DOUBLE fsq[], DOUBLE e3, INT nansq, INT iel,
+                  DOUBLE condfac);
+void s8_ans_tvkg(DOUBLE **estif,DOUBLE *stress_r,DOUBLE *funct,DOUBLE **deriv,
+                INT numdf,INT iel,DOUBLE weight,DOUBLE e1,DOUBLE e2,
+                DOUBLE frq[], DOUBLE fsq[],DOUBLE *funct1q[],DOUBLE  *funct2q[],
+                DOUBLE **deriv1q[], DOUBLE **deriv2q[],INT ansq, INT nsansq);
 /*----------------------------------------------------------------------*
  |  s8_restart.c                                         m.gee 05/02    |
  *----------------------------------------------------------------------*/
-void s8_write_restart(ELEMENT *actele, int nhandle, long int *handles);
-void s8_read_restart(ELEMENT *actele, int nhandle, long int *handles);
+void s8_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
+void s8_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
 /*----------------------------------------------------------------------*
  |  s8_mat_ogden.c                                       m.gee 06/03    |
  *----------------------------------------------------------------------*/
@@ -487,9 +487,9 @@ void s8static_mass(ELEMENT   *ele,                        /* the element structu
                    MATERIAL  *mat,                        /* the material structure */
                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
-                   double    *force,                      /* for internal forces (initialized!) */
-                   int        kstep,                      /* actual step in nonlinear analysis */
-                   int        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+                   DOUBLE    *force,                      /* for internal forces (initialized!) */
+                   INT        kstep,                      /* actual step in nonlinear analysis */
+                   INT        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
 
 
 

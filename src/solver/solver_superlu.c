@@ -20,24 +20,24 @@ void solver_psuperlu_ucchb(
                       struct _UCCHB          *ucchb,
                       struct _DIST_VECTOR    *sol,
                       struct _DIST_VECTOR    *rhs,
-                      int                     option
+                      INT                     option
                      )
 {
 #ifdef PARSUPERLU_PACKAGE
-int            i;
-int            dof;
-int            info;
-int            nprow;
-int            npcol;
-int            imyrank;
-int            inprocs;
-double         berr[1]; 
+INT            i;
+INT            dof;
+INT            info;
+INT            nprow;
+INT            npcol;
+INT            imyrank;
+INT            inprocs;
+DOUBLE         berr[1]; 
 
 PSUPERLUVARS  *psuperluvar;
 ARRAY          b_a;
-double        *b;
+DOUBLE        *b;
 ARRAY          tmp_a;
-double        *tmp;
+DOUBLE        *tmp;
  
 #ifdef DEBUG 
 dstrc_enter("solver_psuperlu_ucchb");

@@ -3,11 +3,11 @@
 \brief contains the routine
  - s9_xint:  superposition of weighted function values
  and the functions
- - double s9con: which calculates the continuity coefficients of thickness
+ - DOUBLE s9con: which calculates the continuity coefficients of thickness
                  coordinate according to Dis. Braun (p.116)
- - double s9notr:decide whether jlay lies on trajectory of reference layer 
+ - DOUBLE s9notr:decide whether jlay lies on trajectory of reference layer 
                  to ilay  -> very similar to s9con             
- - double s9ksi: independent part of ksi  
+ - DOUBLE s9ksi: independent part of ksi  
                  (dependent part of ksi is integrated over the thickness  
                  in the material tensor) 
 
@@ -26,10 +26,10 @@
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine calculates the superposition of weighted function values
 </pre>
-\param  double *result (o)  result of superposition
-\param  double *values (i)  values at nodal points
-\param  double *funct  (i)  shape functions at GP
-\param  int     iel    (1)  number of nodes to this element
+\param  DOUBLE *result (o)  result of superposition
+\param  DOUBLE *values (i)  values at nodal points
+\param  DOUBLE *funct  (i)  shape functions at GP
+\param  INT     iel    (1)  number of nodes to this element
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -37,9 +37,9 @@ This routine calculates the superposition of weighted function values
                              s9_stress()     [s9_stress.c]
 
 *----------------------------------------------------------------------*/
-void s9_xint(double *result, double *values, double *funct, int iel)
+void s9_xint(DOUBLE *result, DOUBLE *values, DOUBLE *funct, INT iel)
 {
-int              i;
+INT              i;
 #ifdef DEBUG 
 dstrc_enter("s9_xint");
 #endif
@@ -70,10 +70,10 @@ of thickness coordinate
 .             zeta = +- (1/condfac)*(1-0.5*kronecker(jlay,ref.lay))     .
 .........................................................................                       
 </pre>
-\param  double    e3     (i)  zeta_kl
-\param  int       numlay (i)  number of kinematic layers
-\param  int       ilay   (i)  kin layer where point is located
-\param  int       jlay   (1)  kin layer over which is looped
+\param  DOUBLE    e3     (i)  zeta_kl
+\param  INT       numlay (i)  number of kinematic layers
+\param  INT       ilay   (i)  kin layer where point is located
+\param  INT       jlay   (1)  kin layer over which is looped
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -85,18 +85,18 @@ of thickness coordinate
                              s9out_nodal_dis(); s9_out_gid_allcoords(); s9_out_gid_sol_dis() [s9_out.c]
                              
 *----------------------------------------------------------------------*/
-double s9con(double    e3,       /* zeta_kl */
-             int       numlay,   /* number of kinematic layers */
-             int       ilay,     /* kin layer where point is located */
-             int       jlay,     /* kin layer over which is looped */   
-             double    condfac)
+DOUBLE s9con(DOUBLE    e3,       /* zeta_kl */
+             INT       numlay,   /* number of kinematic layers */
+             INT       ilay,     /* kin layer where point is located */
+             INT       jlay,     /* kin layer over which is looped */   
+             DOUBLE    condfac)
 {
-double        e33;
-double        s9con;
-double        delta;
-double        fac;
-int           mid;    /* reference layer or the one under the reference area */
-int           mod;
+DOUBLE        e33;
+DOUBLE        s9con;
+DOUBLE        delta;
+DOUBLE        fac;
+INT           mid;    /* reference layer or the one under the reference area */
+INT           mod;
 #ifdef DEBUG 
 dstrc_enter("s9con"); 
 #endif
@@ -184,9 +184,9 @@ return s9con;
 This function decides whether jlay lies on trajectory of reference layer 
 to ilay  -> very similar to s9con     
 </pre>
-\param  int       numlay (i)  number of kinematic layers
-\param  int       ilay   (i)  kin layer where point is located
-\param  int       jlay   (1)  kin layer over which is looped
+\param  INT       numlay (i)  number of kinematic layers
+\param  INT       ilay   (i)  kin layer where point is located
+\param  INT       jlay   (1)  kin layer over which is looped
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -195,14 +195,14 @@ to ilay  -> very similar to s9con
                              s9_ans_bbar_q() [s9_ans.c]
                              
 *----------------------------------------------------------------------*/
-double s9notr(int       numlay,   /* number of kinematic layers */
-              int       ilay,     /* kin layer where point is located */
-              int       jlay)     /* kin layer over which is looped */   
+DOUBLE s9notr(INT       numlay,   /* number of kinematic layers */
+              INT       ilay,     /* kin layer where point is located */
+              INT       jlay)     /* kin layer over which is looped */   
 {
-double        e33;
-double        s9notr;
-int           mid;    /* reference layer or the one under the reference area */
-int           mod;
+DOUBLE        e33;
+DOUBLE        s9notr;
+INT           mid;    /* reference layer or the one under the reference area */
+INT           mod;
 #ifdef DEBUG 
 dstrc_enter("s9notr"); 
 #endif
@@ -276,9 +276,9 @@ decides whether jlay lies on trajectory of reference layer  to ilay
 .                                                                       .
 .........................................................................
 </pre>
-\param  int       numlay (i)  number of kinematic layers
-\param  int       ilay   (i)  kin layer where point is located
-\param  int       jlay   (1)  kin layer over which is looped
+\param  INT       numlay (i)  number of kinematic layers
+\param  INT       ilay   (i)  kin layer where point is located
+\param  INT       jlay   (1)  kin layer over which is looped
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -286,16 +286,16 @@ decides whether jlay lies on trajectory of reference layer  to ilay
                              s9_ans_bbar_q() [s9_ans.c]
                              
 *----------------------------------------------------------------------*/
-double s9ksi(int       numlay,   /* number of kinematic layers */
-             int       ilay,     /* kin layer where point is located */
-             int       jlay,     /* kin layer over which is looped */  
-             double    condfac) 
+DOUBLE s9ksi(INT       numlay,   /* number of kinematic layers */
+             INT       ilay,     /* kin layer where point is located */
+             INT       jlay,     /* kin layer over which is looped */  
+             DOUBLE    condfac) 
 {
-double        s9ksi;
-double        delta;
-double        fac;
-int           mid;    /* reference layer or the one under the reference area */
-int           mod;
+DOUBLE        s9ksi;
+DOUBLE        delta;
+DOUBLE        fac;
+INT           mid;    /* reference layer or the one under the reference area */
+INT           mod;
 #ifdef DEBUG 
 dstrc_enter("s9ksi"); 
 #endif

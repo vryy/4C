@@ -60,17 +60,17 @@ especially fluid problems with free surfaces
 		     
 </pre>
 
-\param  mctrl   int  (i)   control flag
+\param  mctrl   INT  (i)   control flag
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void fluid_mf(int mctrl)
+void fluid_mf(INT mctrl)
 {
-static int      numfld;      /* number of fiels                        */
-static int      numff;
-static int      numaf;        /* actual number of fields                */
-int             mctrlpre=4;   /* control flag                           */
-int             actcurve;     /* actual curve                           */
+static INT      numfld;      /* number of fiels                        */
+static INT      numff;
+static INT      numaf;        /* actual number of fields                */
+INT             mctrlpre=4;   /* control flag                           */
+INT             actcurve;     /* actual curve                           */
 static FIELD          *fluidfield;   
 static FIELD          *alefield;
 static FLUID_DYNAMIC  *fdyn;

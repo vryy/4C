@@ -7,7 +7,7 @@
  *----------------------------------------------------------------------*/
 typedef struct _NEUM_CONDITION
 {
-     int                       curve;        /* number of load curve associated with this conditions */        
+     INT                       curve;        /* number of load curve associated with this conditions */        
 
      struct _ARRAY             neum_onoff;   /* array of on-off flags */
      struct _ARRAY             neum_val;     /* values of this condition */    
@@ -71,7 +71,7 @@ typedef struct _COUPLE_CONDITION
 typedef struct _FSI_COUPLE_CONDITION
 {
      enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
-     int                       fsi_coupleId;
+     INT                       fsi_coupleId;
      enum _FSI_MESH            fsi_mesh;
      
 } FSI_COUPLE_CONDITION;

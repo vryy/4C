@@ -42,7 +42,7 @@ extern struct _PARTITION  *partition;
 This routine writes the data needed to restart the shell9 element. 
 </pre>
 \param  ELEMENT  *actele   (i) actual element
-\param  int       nhandle  (i) size of handles
+\param  INT       nhandle  (i) size of handles
 \param  long int *handles  ( ) unique handle returned by the pss-system 
 
 \warning There is nothing special to this routine
@@ -50,10 +50,10 @@ This routine writes the data needed to restart the shell9 element.
 \sa calling: ---; called by: shell9()   [s9_main.c]
 
 *----------------------------------------------------------------------*/
-void s9_write_restart(ELEMENT *actele, int nhandle, long int *handles)
+void s9_write_restart(ELEMENT *actele, INT nhandle, long int *handles)
 {
-int i,ierr;
-int num_klay = actele->e.s9->num_klay;
+INT i,ierr;
+INT num_klay = actele->e.s9->num_klay;
 FILE *out;
 #ifdef DEBUG 
 dstrc_enter("s9_write_restart");
@@ -102,7 +102,7 @@ return;
 This routine reads the data needed to restart the shell9 element. 
 </pre>
 \param  ELEMENT  *actele   (i) actual element
-\param  int       nhandle  (i) size of handles
+\param  INT       nhandle  (i) size of handles
 \param  long int *handles  ( ) unique handle returned by the pss-system 
 
 \warning There is nothing special to this routine
@@ -115,11 +115,11 @@ This routine reads the data needed to restart the shell9 element.
  | read the data needed to restart this element                         |
  | modified from shell8                                    sh 02/03     |
  *----------------------------------------------------------------------*/
-void s9_read_restart(ELEMENT *actele, int nhandle, long int *handles)
+void s9_read_restart(ELEMENT *actele, INT nhandle, long int *handles)
 {
-int i,ierr;
-int num_klay = actele->e.s9->num_klay;
-int dims[3];
+INT i,ierr;
+INT num_klay = actele->e.s9->num_klay;
+INT dims[3];
 FILE *in;
 #ifdef DEBUG 
 dstrc_enter("s9_read_restart");

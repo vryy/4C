@@ -38,9 +38,9 @@ are then extrapolated to the nodal points using the shape functions.
 \param  ELEMENT   *ele   (i/o) the element structure -> 'ele->e.s9->stresses.a.d3'
 \param  S9_DATA   *data   (i)  element integration data
 \param  MATERIAL  *mat    (i)  the material structure
-\param  int        kintyp (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr 
-\param  int        kstep  (i)  actual step in nonlinear analysis
-\param  int        init   (i)  init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase
+\param  INT        kintyp (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr 
+\param  INT        kstep  (i)  actual step in nonlinear analysis
+\param  INT        init   (i)  init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -50,109 +50,109 @@ are then extrapolated to the nodal points using the shape functions.
 void s9_stress(ELEMENT      *ele,
                S9_DATA      *data,
                MATERIAL     *mat,
-               int           kintyp,   /* typ of kinematic formulation */
-               int           kstep,
-               int           init)
+               INT           kintyp,   /* typ of kinematic formulation */
+               INT           kstep,
+               INT           init)
 {
-int                 i,j,k,l,kl,ml;
+INT                 i,j,k,l,kl,ml;
 
-int                 nir,nis,nit;
-int                 lr,ls,lt;
-int                 iel;
-int                 nd;
-int                 ngauss;
+INT                 nir,nis,nit;
+INT                 lr,ls,lt;
+INT                 iel;
+INT                 nd;
+INT                 ngauss;
 
-int                 nir_x,nis_x,nit_x;                      /*order of extrapolation -> depends on quad4/8/9*/
-int                 gaussperm4[4] = {3,1,0,2};
-int                 gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-double              P_u,P_o,m,N_u,N_o;                      /*for interpolation in thickness direction*/
-double              gp_u[6][9], gp_o[6][9];                 /*interpolated values in plane before interpolation in thickness */
-double              strK;                                   /*stress at a Node -> extrapolated*/
-double              strGP[9];                               /*stress at GPs in one plane*/
+INT                 nir_x,nis_x,nit_x;                      /*order of extrapolation -> depends on quad4/8/9*/
+INT                 gaussperm4[4] = {3,1,0,2};
+INT                 gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
+DOUBLE              P_u,P_o,m,N_u,N_o;                      /*for interpolation in thickness direction*/
+DOUBLE              gp_u[6][9], gp_o[6][9];                 /*interpolated values in plane before interpolation in thickness */
+DOUBLE              strK;                                   /*stress at a Node -> extrapolated*/
+DOUBLE              strGP[9];                               /*stress at GPs in one plane*/
 DIS_TYP             distyp;
-int                 lay;                                    /*absolut actual layer -> a mat layer in kin layer*/
-int                 ID_stress,ID_stress_perm;               /*ID, on which the calculated stress has to be written -> gp_stress*/
-int                 sum_lay;                                /*sum of all layers: kinematic and material*/
-int                 num_mlay;                               /* number of material layers to actual kinematic layer */  
-int                 num_klay;                               /* number of kinematic layers to this element*/
-int                 numdf;                                  /* ndofs per node to this element */
-double             *klayhgt;                                /* hight of kinematic layer in percent of total thicknes of element*/
-double             *mlayhgt;                                /* hight of material layer in percent of adjacent kinematic layer*/
+INT                 lay;                                    /*absolut actual layer -> a mat layer in kin layer*/
+INT                 ID_stress,ID_stress_perm;               /*ID, on which the calculated stress has to be written -> gp_stress*/
+INT                 sum_lay;                                /*sum of all layers: kinematic and material*/
+INT                 num_mlay;                               /* number of material layers to actual kinematic layer */  
+INT                 num_klay;                               /* number of kinematic layers to this element*/
+INT                 numdf;                                  /* ndofs per node to this element */
+DOUBLE             *klayhgt;                                /* hight of kinematic layer in percent of total thicknes of element*/
+DOUBLE             *mlayhgt;                                /* hight of material layer in percent of adjacent kinematic layer*/
 MULTIMAT           *actmultimat;                            /* material of actual material layer */
-int                 rot_axis;                               /* rotation axis of laminat (1=x-; 2=y-; 3=z-axis) */
-double              phi;                                    /* angle of rotation about rot_axis */
+INT                 rot_axis;                               /* rotation axis of laminat (1=x-; 2=y-; 3=z-axis) */
+DOUBLE              phi;                                    /* angle of rotation about rot_axis */
 
-double              e1,e2,e3;
-double              facr,facs,fact;
+DOUBLE              e1,e2,e3;
+DOUBLE              facr,facs,fact;
 
-double              condfac;                                /* sdc conditioning factor */
-double              h2;                                     /* half nodal height */
-double              hgt;                                    /* element thickness */
-double              hte[MAXNOD_SHELL9];                     /* element thickness at nodal points */
+DOUBLE              condfac;                                /* sdc conditioning factor */
+DOUBLE              h2;                                     /* half nodal height */
+DOUBLE              hgt;                                    /* element thickness */
+DOUBLE              hte[MAXNOD_SHELL9];                     /* element thickness at nodal points */
 
-double              det_dummy;
-double              detsmr;
-double              detsmc;
-double              detsrr;
-double              detsrc;
+DOUBLE              det_dummy;
+DOUBLE              detsmr;
+DOUBLE              detsmc;
+DOUBLE              detsrr;
+DOUBLE              detsrc;
  
-double              h[3];                                   /* working array */
-double              da;                                     /* area on mid surface */
+DOUBLE              h[3];                                   /* working array */
+DOUBLE              da;                                     /* area on mid surface */
 
-double              stress[6], stress_r[12];                /* stress and stress resultants */
-double              strain[6];                              /* strains */
+DOUBLE              stress[6], stress_r[12];                /* stress and stress resultants */
+DOUBLE              strain[6];                              /* strains */
 
-static ARRAY        strK_a;      static double **gp_strK;   /* element array for stresses on nodal points */
+static ARRAY        strK_a;      static DOUBLE **gp_strK;   /* element array for stresses on nodal points */
 
-static ARRAY        stress_a;    static double **gp_stress; /* element array for stresses on gaussian points */
-                                      double ***ele_stress; /* pointer to array of stress history in element */
+static ARRAY        stress_a;    static DOUBLE **gp_stress; /* element array for stresses on gaussian points */
+                                      DOUBLE ***ele_stress; /* pointer to array of stress history in element */
 
-/*static ARRAY        forces_a;    static double **gp_forces; /* element array for forces (stress resultants) on gaussian points */
-/*                                      double ***ele_forces; /* pointer to array of stress history in element */
+/*static ARRAY        forces_a;    static DOUBLE **gp_forces; /* element array for forces (stress resultants) on gaussian points */
+/*                                      DOUBLE ***ele_forces; /* pointer to array of stress history in element */
 
-static ARRAY        C_a;         static double **C;         /* material tensor */
-static ARRAY        D_a;         static double **D;         /* material tensor integrated in thickness direction */
+static ARRAY        C_a;         static DOUBLE **C;         /* material tensor */
+static ARRAY        D_a;         static DOUBLE **D;         /* material tensor integrated in thickness direction */
 
-static ARRAY4D      a3r_a;       static double ***a3r;      /* a3 in reference config -> for each kinematic layer */
-static ARRAY4D      a3c_a;       static double ***a3c;      /* a3 in current   config (a3r + disp) */
+static ARRAY4D      a3r_a;       static DOUBLE ***a3r;      /* a3 in reference config -> for each kinematic layer */
+static ARRAY4D      a3c_a;       static DOUBLE ***a3c;      /* a3 in current   config (a3r + disp) */
 
-static ARRAY4D      a3kvpr_a;    static double ***a3kvpr;   /* partiel derivatives of normal vector ref.config. */
-static ARRAY4D      a3kvpc_a;    static double ***a3kvpc;   /* partiel derivatives of normal vector cur.config. */
+static ARRAY4D      a3kvpr_a;    static DOUBLE ***a3kvpr;   /* partiel derivatives of normal vector ref.config. */
+static ARRAY4D      a3kvpc_a;    static DOUBLE ***a3kvpc;   /* partiel derivatives of normal vector cur.config. */
 
-static ARRAY        xrefe_a;     static double **xrefe;     /* coords of midsurface in ref config */
-static ARRAY        xcure_a;     static double **xcure;     /* coords of midsurface in cur condig */
-                                        double **a3ref;     /* elements directors (lenght 1) */
+static ARRAY        xrefe_a;     static DOUBLE **xrefe;     /* coords of midsurface in ref config */
+static ARRAY        xcure_a;     static DOUBLE **xcure;     /* coords of midsurface in cur condig */
+                                        DOUBLE **a3ref;     /* elements directors (lenght 1) */
 
-static ARRAY        funct_a;     static double  *funct;     /* shape functions */
-static ARRAY        deriv_a;     static double **deriv;     /* derivatives of shape functions */
+static ARRAY        funct_a;     static DOUBLE  *funct;     /* shape functions */
+static ARRAY        deriv_a;     static DOUBLE **deriv;     /* derivatives of shape functions */
 
 /* mid surface basis vectors and metric tensors */
-static ARRAY4D      akovr_a;     static double ***akovr;    /* kovariant basis vectors at Int point ref.config. */
-static ARRAY4D      akonr_a;     static double ***akonr;    /* kontravar.--------------"----------- ref.config. */
-static ARRAY4D      amkovr_a;    static double ***amkovr;   /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY4D      amkonr_a;    static double ***amkonr;   /* kontravar.--------------"------------ ref.config. */
+static ARRAY4D      akovr_a;     static DOUBLE ***akovr;    /* kovariant basis vectors at Int point ref.config. */
+static ARRAY4D      akonr_a;     static DOUBLE ***akonr;    /* kontravar.--------------"----------- ref.config. */
+static ARRAY4D      amkovr_a;    static DOUBLE ***amkovr;   /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY4D      amkonr_a;    static DOUBLE ***amkonr;   /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY4D      akovc_a;     static double ***akovc;    /* kovariant basis vectors at Int point current.config. */
-static ARRAY4D      akonc_a;     static double ***akonc;    /* kontravar.--------------"----------- current.config. */
-static ARRAY4D      amkovc_a;    static double ***amkovc;   /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY4D      amkonc_a;    static double ***amkonc;   /* kontravar.--------------"------------ current.config. */
+static ARRAY4D      akovc_a;     static DOUBLE ***akovc;    /* kovariant basis vectors at Int point current.config. */
+static ARRAY4D      akonc_a;     static DOUBLE ***akonc;    /* kontravar.--------------"----------- current.config. */
+static ARRAY4D      amkovc_a;    static DOUBLE ***amkovc;   /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY4D      amkonc_a;    static DOUBLE ***amkonc;   /* kontravar.--------------"------------ current.config. */
 
 /* mid surface basis vectors and metric tensors -> help for s9_tvmr.c */
-static ARRAY        akovh_a;     static double **akovh;     
-static ARRAY        akonh_a;     static double **akonh;     
-static ARRAY        amkovh_a;    static double **amkovh;    
-static ARRAY        amkonh_a;    static double **amkonh;    
+static ARRAY        akovh_a;     static DOUBLE **akovh;     
+static ARRAY        akonh_a;     static DOUBLE **akonh;     
+static ARRAY        amkovh_a;    static DOUBLE **amkovh;    
+static ARRAY        amkonh_a;    static DOUBLE **amkonh;    
 
 /* shell body basis vectors and metric tensors */
-static ARRAY        gkovr_a;     static double **gkovr;     /* kovariant basis vectors at Int point ref.config. */
-static ARRAY        gkonr_a;     static double **gkonr;     /* kontravar.--------------"----------- ref.config. */
-static ARRAY        gmkovr_a;    static double **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
-static ARRAY        gmkonr_a;    static double **gmkonr;    /* kontravar.--------------"------------ ref.config. */
+static ARRAY        gkovr_a;     static DOUBLE **gkovr;     /* kovariant basis vectors at Int point ref.config. */
+static ARRAY        gkonr_a;     static DOUBLE **gkonr;     /* kontravar.--------------"----------- ref.config. */
+static ARRAY        gmkovr_a;    static DOUBLE **gmkovr;    /* kovaraiant metric tensor at Int point ref.config. */
+static ARRAY        gmkonr_a;    static DOUBLE **gmkonr;    /* kontravar.--------------"------------ ref.config. */
 
-static ARRAY        gkovc_a;     static double **gkovc;     /* kovariant basis vectors at Int point current.config. */
-static ARRAY        gkonc_a;     static double **gkonc;     /* kontravar.--------------"----------- current.config. */
-static ARRAY        gmkovc_a;    static double **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
-static ARRAY        gmkonc_a;    static double **gmkonc;    /* kontravar.--------------"------------ current.config. */
+static ARRAY        gkovc_a;     static DOUBLE **gkovc;     /* kovariant basis vectors at Int point current.config. */
+static ARRAY        gkonc_a;     static DOUBLE **gkonc;     /* kontravar.--------------"----------- current.config. */
+static ARRAY        gmkovc_a;    static DOUBLE **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
+static ARRAY        gmkonc_a;    static DOUBLE **gmkonc;    /* kontravar.--------------"------------ current.config. */
 
 #ifdef DEBUG 
 dstrc_enter("s9_stress");
@@ -533,7 +533,7 @@ necessary in parallel.
 \param *actfield    FIELD       (i)   my field
 \param *actpart     PARTITION   (i)   my partition
 \param *actintra    INTRA       (i)   my intra-communicator 
-\param  kstep       int         (i)   actual step in nonlinear analysis
+\param  kstep       INT         (i)   actual step in nonlinear analysis
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -543,16 +543,16 @@ necessary in parallel.
 void s9_stress_reduce(FIELD     *actfield,
                       PARTITION *actpart,
                       INTRA     *actintra,
-                      int        kstep)
+                      INT        kstep)
 {
-int          i,j,k;
-int          imyrank;
-int          inprocs;
+INT          i,j,k;
+INT          imyrank;
+INT          inprocs;
 ELEMENT     *actele;
 ARRAY        mpi_buffer;
-double     **buffer;
+DOUBLE     **buffer;
 ARRAY        mpi_buffer1;
-double     **buffer1;
+DOUBLE     **buffer1;
 
 #ifdef DEBUG 
 dstrc_enter("s9_stress_reduce");

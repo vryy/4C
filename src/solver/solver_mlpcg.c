@@ -40,7 +40,7 @@ struct _MLSOLVER mlsolver;
 \param bdcsr      DBCSR_ROOT*  (i)   the dbcsr matrix                 
 \param sol        DIST_VECTOR* (o)   the distributed solution vector
 \param rhs        DIST_VECTOR* (i)   the distributed right hand side vector
-\param option     int          (i)   option=1 init phase option=0 solve
+\param option     INT          (i)   option=1 init phase option=0 solve
 \return void                                               
 
 ------------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ void solver_mlpcg(struct _SOLVAR         *actsolv,
                   struct _DBCSR          *bdcsr,
                   struct _DIST_VECTOR    *sol,
                   struct _DIST_VECTOR    *rhs,
-                  int                     option)
+                  INT                     option)
 {
 MLPCGVARS           *mlpcgvars;
 /*----------------------------------------------------------------------*/

@@ -61,10 +61,10 @@ extern struct _DYNAMIC *dyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _DYNAMIC      *curve;                                         |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -93,11 +93,11 @@ void kefnln_struct(STRUCT_DYN_CALC *dynvar,
                   SOLVAR          *actsolv,
                   INTRA           *actintra,
                   DIST_VECTOR     *work,
-                  int              stiff_array,
-                  int              mass_array,
-                  int              damp_array)
+                  INT              stiff_array,
+                  INT              mass_array,
+                  INT              damp_array)
 {
-double a0,a1,a4;
+DOUBLE a0,a1,a4;
 #ifdef DEBUG 
 dstrc_enter("kefnln_struct");
 #endif
@@ -160,11 +160,11 @@ void pefnln_struct(STRUCT_DYN_CALC *dynvar,
                   DIST_VECTOR     *vel,
                   DIST_VECTOR     *acc,
                   DIST_VECTOR     *work,
-                  int              mass_array,
-                  int              damp_array)
+                  INT              mass_array,
+                  INT              damp_array)
 {
 
-double a1,a2,a3,a4,a5,a6,a7;
+DOUBLE a1,a2,a3,a4,a5,a6,a7;
 #ifdef DEBUG 
 dstrc_enter("pefnln_struct");
 #endif
@@ -289,8 +289,8 @@ void dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLV
            DIST_VECTOR *work0)
            
 {
-double deltae;
-double deltaa;
+DOUBLE deltae;
+DOUBLE deltaa;
 #ifdef DEBUG 
 dstrc_enter("dyne");
 #endif
@@ -333,7 +333,7 @@ return;
 void dyne(STRUCT_DYN_CALC *dynvar,
          INTRA           *actintra,
          SOLVAR          *actsolv,
-         int              mass_array,
+         INT              mass_array,
          DIST_VECTOR     *vel,
          DIST_VECTOR     *work)
 {
@@ -361,15 +361,15 @@ return;
  |                                                           m.gee 04/03|
  |  make incremental potential energy                                   |
  *----------------------------------------------------------------------*/
-void dyn_epot(FIELD *actfield, int disnum, INTRA *actintra, STRUCT_DYN_CALC *dynvar, double *deltaepot)
+void dyn_epot(FIELD *actfield, INT disnum, INTRA *actintra, STRUCT_DYN_CALC *dynvar, DOUBLE *deltaepot)
 {
-int               i,j;
-int               myrank;
+INT               i,j;
+INT               myrank;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
-double            fint[MAXDOFPERNODE];
-double            send;
+DOUBLE            fint[MAXDOFPERNODE];
+DOUBLE            send;
 #ifdef DEBUG 
 dstrc_enter("dyn_epot");
 #endif
@@ -406,9 +406,9 @@ return;
  |  make kinetic energy                                                 |
  *----------------------------------------------------------------------*/
 void dyn_ekin(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, INTRA *actintra, CALC_ACTION *action,
-             CONTAINER *container, int stiff_array, int mass_array)
+             CONTAINER *container, INT stiff_array, INT mass_array)
 {
-double send;
+DOUBLE send;
 #ifdef DEBUG 
 dstrc_enter("dyn_ekin");
 #endif
@@ -441,13 +441,13 @@ return;
  *----------------------------------------------------------------------*/
 void dyn_ekin_local(ELEMENT *actele,ARRAY *emass, CONTAINER  *container)
 {
-int               i,j,nd;
-double            deltaekin = 0.0;
-double          **mass;
-double            sum;
-double            vel[MAXDOFPERELE];
-double            work[MAXDOFPERELE];
-int               counter=0;
+INT               i,j,nd;
+DOUBLE            deltaekin = 0.0;
+DOUBLE          **mass;
+DOUBLE            sum;
+DOUBLE            vel[MAXDOFPERELE];
+DOUBLE            work[MAXDOFPERELE];
+INT               counter=0;
 #ifdef DEBUG 
 dstrc_enter("dyn_ekin_local");
 #endif
@@ -489,7 +489,7 @@ void dyn_eout(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SO
               DIST_VECTOR *work0)
            
 {
-double deltaa;
+DOUBLE deltaa;
 #ifdef DEBUG 
 dstrc_enter("dyn_eout");
 #endif
@@ -515,13 +515,13 @@ return;
 /*----------------------------------------------------------------------*
  |  set time integration constants for Gen alfa method       m.gee 02/02|
  *----------------------------------------------------------------------*/
-void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt)
+void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, DOUBLE dt)
 {
-double *constants;
-double  beta;
-double  gamma;
-double  alpham;
-double  alphaf;
+DOUBLE *constants;
+DOUBLE  beta;
+DOUBLE  gamma;
+DOUBLE  alpham;
+DOUBLE  alphaf;
 #ifdef DEBUG 
 dstrc_enter("dyn_setconstants");
 #endif
@@ -558,9 +558,9 @@ return;
 /*----------------------------------------------------------------------*
  |  set time integration constants for centr. diff method    m.gee 05/02|
  *----------------------------------------------------------------------*/
-void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt)
+void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, DOUBLE dt)
 {
-double *constants;
+DOUBLE *constants;
 #ifdef DEBUG 
 dstrc_enter("dyn_setconstants_expl");
 #endif
@@ -600,7 +600,7 @@ void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
                       DIST_VECTOR *work2)
 {
 
-double a1,a2,a3,a4,a5,a6;
+DOUBLE a1,a2,a3,a4,a5,a6;
 
 #ifdef DEBUG 
 dstrc_enter("dyn_nlnstructupd");
@@ -681,10 +681,10 @@ return;
  *----------------------------------------------------------------------*/
 void dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn)
 {
-double  beta;
-double  gamma;
-double  alpham;
-double  alphaf;
+DOUBLE  beta;
+DOUBLE  gamma;
+DOUBLE  alpham;
+DOUBLE  alphaf;
 #ifdef DEBUG 
 dstrc_enter("dyn_nlnstruct_outhead");
 #endif
@@ -750,7 +750,7 @@ return;
 /*----------------------------------------------------------------------*
  |  print head of nln structural dynamics                    m.gee 02/02|
  *----------------------------------------------------------------------*/
-void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter, double dt)
+void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INT numiter, DOUBLE dt)
 {
 #ifdef DEBUG 
 dstrc_enter("dyn_nlnstruct_outstep");
@@ -808,18 +808,18 @@ return;
 void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global, 
                          ARRAY *emass_global, CONTAINER *container)
 {
-int                   i,j;
-int                   counter,hasdirich;
-int                   numdf;
-int                   nd=0;
-int                   idamp=0;
-double                mdamp,kdamp;
-double              **estif;
-double              **emass;
-double                dirich[MAXDOFPERELE];
-double                dforces[MAXDOFPERELE];
-int                   dirich_onoff[MAXDOFPERELE];
-int                   lm[MAXDOFPERELE];
+INT                   i,j;
+INT                   counter,hasdirich;
+INT                   numdf;
+INT                   nd=0;
+INT                   idamp=0;
+DOUBLE                mdamp,kdamp;
+DOUBLE              **estif;
+DOUBLE              **emass;
+DOUBLE                dirich[MAXDOFPERELE];
+DOUBLE                dforces[MAXDOFPERELE];
+INT                   dirich_onoff[MAXDOFPERELE];
+INT                   lm[MAXDOFPERELE];
 GNODE                *actgnode;
 #ifdef DEBUG 
 dstrc_enter("assemble_dirich_dyn");
@@ -1141,10 +1141,10 @@ return;
  *----------------------------------------------------------------------*/
 void dyn_keff_expl(INTRA *actintra,
                    SPARSE_TYP *sysarray_typ, SPARSE_ARRAY *sysarray,
-                   int stiff_array, int mass_array, int damp_array,
+                   INT stiff_array, INT mass_array, INT damp_array,
                    STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn)
 {
-double a1;
+DOUBLE a1;
 
 #ifdef DEBUG 
 dstrc_enter("dyn_keff_expl");
@@ -1173,23 +1173,23 @@ return;
  |  make eigenanalysis of dynamic system                     m.gee 06/02|
  *----------------------------------------------------------------------*/
 void dyn_eigen(FIELD *actfield, PARTITION *actpart, SOLVAR *actsolv,
-               INTRA *actintra, int stiff, int mass)
+               INTRA *actintra, INT stiff, INT mass)
 {
-int       i,j,k;
+INT       i,j,k;
 SPOOLMAT *spostiff;
 SPOOLMAT *spomass;
-int       numeq;
-int       itype=1;
+INT       numeq;
+INT       itype=1;
 char      jobz[1];
 char      uplo[1];
 ARRAY     A_a,B_a;
 ARRAY     EW_a;
-double  **A,**B, *EW;
-int       lwork;
+DOUBLE  **A,**B, *EW;
+INT       lwork;
 ARRAY     WORK_a;
-double   *WORK;
-int       info=1;
-int      *irn,*jcn, nnz;
+DOUBLE   *WORK;
+INT       info=1;
+INT      *irn,*jcn, nnz;
 #ifdef DEBUG 
 dstrc_enter("dyn_eigen");
 #endif
@@ -1200,7 +1200,7 @@ if (actsolv->sysarray_typ[stiff] != spoolmatrix)
 spostiff = actsolv->sysarray[stiff].spo;
 spomass  = actsolv->sysarray[mass].spo;
 numeq    = spostiff->numeq_total;
-lwork    = (int)(3.2*numeq);
+lwork    = (INT)(3.2*numeq);
 jobz[0]  = 'N';
 uplo[0]  = 'L';
 A    = amdef("A",&A_a,numeq,numeq,"DA");
@@ -1248,22 +1248,22 @@ return;
  |  make eigenanalysis of system matrice                     m.gee 06/02|
  *----------------------------------------------------------------------*/
 void solserv_eigen(FIELD *actfield, PARTITION *actpart, SOLVAR *actsolv,
-               INTRA *actintra, int stiff)
+               INTRA *actintra, INT stiff)
 {
-int       i,j,k;
+INT       i,j,k;
 SPOOLMAT *spostiff;
-int       numeq;
+INT       numeq;
 char      jobz[1];
 char      uplo[1];
 ARRAY     A_a;
 ARRAY     EW_a;
-double  **A, *EW;
-int       lwork;
+DOUBLE  **A, *EW;
+INT       lwork;
 ARRAY     WORK_a, IWORK_a;
-double   *WORK;
-int      *IWORK,liwork;
-int       info=1;
-int      *irn,*jcn, nnz;
+DOUBLE   *WORK;
+INT      *IWORK,liwork;
+INT       info=1;
+INT      *irn,*jcn, nnz;
 DIST_VECTOR    *distvecs;
 #ifdef DEBUG 
 dstrc_enter("solserv_eigen");

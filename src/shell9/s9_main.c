@@ -55,16 +55,16 @@ void shell9(FIELD       *actfield,
 /*----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 /*----------------------------------------------------------------------*/
-int          i;
-int          imyrank;
-int          inprocs;
+INT          i;
+INT          imyrank;
+INT          inprocs;
 
-double      *intforce;
+DOUBLE      *intforce;
 
 S9_DATA      actdata;
 MATERIAL    *actmat;
 
-int          kintyp = container->kintyp;  /* kintyp 0: geo_lin */
+INT          kintyp = container->kintyp;  /* kintyp 0: geo_lin */
                                           /* kintyp 1: upd_lagr */
                                           /* kintyp 2: tot_lagr */
 

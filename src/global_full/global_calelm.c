@@ -36,15 +36,15 @@ void calelm(FIELD        *actfield,     /* active field */
             SOLVAR       *actsolv,      /* active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* my intra-communicator */
-            int           sysarray1,    /* number of first sparse system matrix */
-            int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+            INT           sysarray1,    /* number of first sparse system matrix */
+            INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
             CONTAINER    *container,    /* contains variables defined in container.h */
             CALC_ACTION  *action)       /* calculation option passed to element routines */     
 /*----------------------------------------------------------------------*/
 {
-int               i,kk;
-int               hasdirich=0;      /* flag                             */
-int               hasext=0;         /* flag                             */
+INT               i,kk;
+INT               hasdirich=0;      /* flag                             */
+INT               hasext=0;         /* flag                             */
 ELEMENT          *actele;
 ELEMENT          *actele2;
 SPARSE_TYP        sysarray1_typ;
@@ -530,17 +530,17 @@ void calinit(FIELD       *actfield,   /* the active physical field */
              CALC_ACTION *action,
              CONTAINER   *container)  /*!< contains variables defined in container.h */
 {
-int i;                        /* a counter */
-int kk;                       
-int is_shell8=0;              /* flags to check for presents of certain element types */
-int is_shell9=0;   
-int is_brick1=0;
-int is_wall1 =0;
-int is_fluid2=0;
-int is_fluid2_tu=0;
-int is_fluid3=0;
-int is_ale3=0;
-int is_ale2=0;
+INT i;                        /* a counter */
+INT kk;                       
+INT is_shell8=0;              /* flags to check for presents of certain element types */
+INT is_shell9=0;   
+INT is_brick1=0;
+INT is_wall1 =0;
+INT is_fluid2=0;
+INT is_fluid2_tu=0;
+INT is_fluid3=0;
+INT is_ale3=0;
+INT is_ale2=0;
 
 ELEMENT *actele;              /* active element */
 /*----------------------------------------------------------------------*/
@@ -684,14 +684,14 @@ void calreduce(FIELD       *actfield, /* the active field */
                CALC_ACTION *action,   /* action for element routines */
                CONTAINER   *container)/* contains variables defined in container.h */
 {
-int i;
-int is_shell8=0;
-int is_shell9=0;
-int is_brick1=0;
-int is_wall1 =0;
-int is_fluid1=0;
-int is_fluid3=0;
-int is_ale3=0;
+INT i;
+INT is_shell8=0;
+INT is_shell9=0;
+INT is_brick1=0;
+INT is_wall1 =0;
+INT is_fluid1=0;
+INT is_fluid3=0;
+INT is_ale3=0;
 ELEMENT *actele;
 #ifdef DEBUG 
 dstrc_enter("calreduce");

@@ -80,15 +80,15 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void out_general()
 {
-int        i,j,k;
-int        is_shell9;
+INT        i,j,k;
+INT        is_shell9;
 FILE      *out = allfiles.out_out;
 FIELD     *actfield;
 INTRA     *actintra;
 ELEMENT   *actele;
 NODE      *actnode;
-int        myrank;
-int        nprocs;
+INT        myrank;
+INT        nprocs;
 
 #ifdef DEBUG 
 dstrc_enter("out_general");
@@ -326,19 +326,19 @@ return;
  |  print out solution of a certain step                     m.gee 12/01|
  *----------------------------------------------------------------------*/
 void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
-             int step, int place)
+             INT step, INT place)
 {
-int        i,j,k;
-int        is_shell9;    /*->shell9*/
-int        num_klay,kl;  /*->shell9*/
+INT        i,j,k;
+INT        is_shell9;    /*->shell9*/
+INT        num_klay,kl;  /*->shell9*/
 FILE      *out = allfiles.out_out;
 NODE      *actnode;
 ELEMENT   *actele;
-int        myrank;
-int        nprocs;
-int        imyrank;
-int        inprocs;
-int        ngauss;
+INT        myrank;
+INT        nprocs;
+INT        imyrank;
+INT        inprocs;
+INT        ngauss;
 static FLUID_DYN_CALC  *dynvar;
 #ifdef DEBUG 
 dstrc_enter("out_sol");
@@ -653,7 +653,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        switch(actele->e.c1->stresstyp)
        {
        case c1_gpxyz:
-       fprintf(out,"int.point   x-coord.     y-coord.     z-coord.     stress-xx    stress-yy    stress-zz    stress-xy    stress-xz    stress-yz\n");
+       fprintf(out,"INT.point   x-coord.     y-coord.     z-coord.     stress-xx    stress-yy    stress-zz    stress-xy    stress-xz    stress-yz\n");
        for (i=0; i<ngauss; i++)
        {
           fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
@@ -674,7 +674,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        fprintf(out,"r,s,t    ---> local system on element level \n");                                                 
        fprintf(out,"rr,ss,tt ---> normal-stresses               \n");                                                  
        fprintf(out,"rs,st,tr ---> shear -stresses               \n\n");                                               
-       fprintf(out,"int.point   x-coord.     y-coord.     z-coord.     stress-rr    stress-ss    stress-tt    stress-rs    stress-st    stress-tr\n");
+       fprintf(out,"INT.point   x-coord.     y-coord.     z-coord.     stress-rr    stress-ss    stress-tt    stress-rs    stress-st    stress-tr\n");
        for (i=0; i<ngauss; i++)
        {
           fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
@@ -696,7 +696,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        fprintf(out,"r1,s1,t1 ---> angles to the first  principal direction \n");                                                  
        fprintf(out,"r2,s2,t2 ---> angles to the second principal direction \n");                                               
        fprintf(out,"r3,s3,t3 ---> angles to the third  principal direction \n\n"); 
-       fprintf(out,"int.point   stress-11    stress-22    stress-33  ang-r1  ang-s1   ang-t1    ang-r2   ang-s2   ang-t2   ang-r3   ang-s3   ang-t3\n");
+       fprintf(out,"INT.point   stress-11    stress-22    stress-33  ang-r1  ang-s1   ang-t1    ang-r2   ang-s2   ang-t2   ang-r3   ang-s3   ang-t3\n");
        for (i=0; i<ngauss; i++)
        {
           fprintf(out,"  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
@@ -864,13 +864,13 @@ return;
 ------------------------------------------------------------------------*/
 void out_fsi(FIELD *fluidfield)
 {
-int        i;
+INT        i;
 FILE      *out = allfiles.out_out;
 NODE      *actfnode, *actanode, *actsnode;
 GNODE     *actfgnode;
-int        myrank;
-int        nprocs;
-int        numaf,numsf;
+INT        myrank;
+INT        nprocs;
+INT        numaf,numsf;
 
 #ifdef DEBUG 
 dstrc_enter("out_fsi");
@@ -957,14 +957,14 @@ return;
 ------------------------------------------------------------------------*/
 void out_fluidmf(FIELD *fluidfield)
 {
-int        i;
+INT        i;
 FILE      *out = allfiles.out_out;
 NODE      *actfnode, *actanode;
 GNODE     *actfgnode;
-int        myrank;
-int        nprocs;
-int        numff;
-int        numaf;
+INT        myrank;
+INT        nprocs;
+INT        numff;
+INT        numaf;
 
 #ifdef DEBUG 
 dstrc_enter("out_fluidmf");
@@ -1030,19 +1030,19 @@ return;
 /*----------------------------------------------------------------------*
  |  print out solution of turbulence of a certain step      he    05/03 |
  *----------------------------------------------------------------------*/
-void out_fluidtu(FIELD *actfield, INTRA *actintra, int step, int place)
+void out_fluidtu(FIELD *actfield, INTRA *actintra, INT step, INT place)
 {
-int        i,j,k;
+INT        i,j,k;
 FILE      *out = allfiles.out_tur;
 NODE      *actnode;
 NODE      *actnode2;
 GNODE     *actgnode2;	            
-int        myrank;
-int        nprocs;
-int        imyrank;
-int        inprocs;
-int	     numff;
-double     visc;
+INT        myrank;
+INT        nprocs;
+INT        imyrank;
+INT        inprocs;
+INT	     numff;
+DOUBLE     visc;
 static FLUID_DYN_CALC  *dynvar;
 
 /*----------------------------------------------------------------------*/

@@ -6,10 +6,10 @@
 #ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
-static double Q12 = ONE/TWO;
-static double Q14 = ONE/FOUR;
-static double Q16 = ONE/SIX;
-static double Q18 = ONE/EIGHT;
+static DOUBLE Q12 = ONE/TWO;
+static DOUBLE Q14 = ONE/FOUR;
+static DOUBLE Q16 = ONE/SIX;
+static DOUBLE Q18 = ONE/EIGHT;
 /*!--------------------------------------------------------------------- 
 \brief shape functions and their natural derivatives for hexaeder
 
@@ -59,34 +59,34 @@ derivatives with respect to r/s/t are evaluated for
 	    brick1 the same way!!!!	   
 
 </pre>
-\param  *funct     double   (o)    shape functions
-\param **deriv     double   (o)    1st natural deriv. of shape funct.
-\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
-\param   r 	   double   (i)    coordinate
-\param   s 	   double   (i)    coordinate
-\param   t 	   double   (i)    coordinate
+\param  *funct     DOUBLE   (o)    shape functions
+\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r 	   DOUBLE   (i)    coordinate
+\param   s 	   DOUBLE   (i)    coordinate
+\param   t 	   DOUBLE   (i)    coordinate
 \param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   int	    (i)    evaluation flag
+\param   icode	   INT	    (i)    evaluation flag
 \return void                                                                       
 \warning shape functions for hex20/hex27/tet10 not implemented yet!!!
 
 ------------------------------------------------------------------------*/
  void f3_hex(
-            double     *funct,     
-            double    **deriv,    
-            double    **deriv2,   
-	    double      r,        
-            double      s,        
-            double      t,        
+            DOUBLE     *funct,     
+            DOUBLE    **deriv,    
+            DOUBLE    **deriv2,   
+	    DOUBLE      r,        
+            DOUBLE      s,        
+            DOUBLE      t,        
             DIS_TYP     typ,      
-            int         icode     
+            INT         icode     
 	   )
 {
-int    i,ii;
-double rp,rm,sp,sm,tp,tm;
-double rrm,ssm,ttm;
-double drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
-double rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
+INT    i,ii;
+DOUBLE rp,rm,sp,sm,tp,tm;
+DOUBLE rrm,ssm,ttm;
+DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
+DOUBLE rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
 
 #ifdef DEBUG 
 dstrc_enter("f3_rec");
@@ -632,31 +632,31 @@ derivatives with respect to r/s/t are evaluated for
 T E T R A E D E R  
 		     
 </pre>
-\param  *funct     double   (o)    shape functions
-\param **deriv     double   (o)    1st natural deriv. of shape funct.
-\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
-\param   r 	   double   (i)    coordinate
-\param   s 	   double   (i)    coordinate
-\param   t 	   double   (i)    coordinate
+\param  *funct     DOUBLE   (o)    shape functions
+\param **deriv     DOUBLE   (o)    1st natural deriv. of shape funct.
+\param **deriv2    DOUBLE   (o)    2nd natural deriv. of shape funct.
+\param   r 	   DOUBLE   (i)    coordinate
+\param   s 	   DOUBLE   (i)    coordinate
+\param   t 	   DOUBLE   (i)    coordinate
 \param   typ 	   DIS_TYP  (i)    element type
-\param   icode	   int	    (i)    evaluation flag
+\param   icode	   INT	    (i)    evaluation flag
 \return void                                                                       
 \warning shape functions for TET10 not implemented yet!!!
 
 ------------------------------------------------------------------------*/
 void f3_tet(
-            double     *funct,     
-            double    **deriv,    
-            double    **deriv2,   
-	    double      r,        
-            double      s,        
-            double      t,        
+            DOUBLE     *funct,     
+            DOUBLE    **deriv,    
+            DOUBLE    **deriv2,   
+	    DOUBLE      r,        
+            DOUBLE      s,        
+            DOUBLE      t,        
             DIS_TYP     typ,      
-            int         icode     
+            INT         icode     
 	   )
 {
-int    i;
-double t1,t2,t3,t4;
+INT    i;
+DOUBLE t1,t2,t3,t4;
 
 
 #ifdef DEBUG 
@@ -856,25 +856,25 @@ return;
 In this routine the jacobian matrix and its determinant is calculated
 		     
 </pre>
-\param  *funct     double   (i)    natural shape functions
-\param **deriv     double   (i)    natural deriv. of shape funcs
-\param **xjm       double   (o)    jacobian matrix
-\param  *det       double   (o)    determinant of jacobian matrix
+\param  *funct     DOUBLE   (i)    natural shape functions
+\param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
+\param **xjm       DOUBLE   (o)    jacobian matrix
+\param  *det       DOUBLE   (o)    determinant of jacobian matrix
 \param  *ele       ELEMENT  (i)    actual element
-\param   iel       int      (i)    num. of nodes of act. ele
+\param   iel       INT      (i)    num. of nodes of act. ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_jaco(double     *funct,
-             double    **deriv,
-             double    **xjm,
-             double     *det,
+void f3_jaco(DOUBLE     *funct,
+             DOUBLE    **deriv,
+             DOUBLE    **xjm,
+             DOUBLE     *det,
              ELEMENT    *ele,
-             int         iel)
+             INT         iel)
 
 {
-int i,j,l;
-double dum;
+INT i,j,l;
+DOUBLE dum;
 
 #ifdef DEBUG 
 dstrc_enter("f3_jaco");
@@ -925,25 +925,25 @@ In this routine the global derivatives w.r.t. x,y,z at point r,s,t are
 calculated.
 		     
 </pre>
-\param **derxy     double   (o)    global derivatives wrt. x/y/z
-\param **deriv     double   (i)    derivatives of shape functions
-\param **xjm       double   (i)    jacobian matrix
-\param **xji       double   (-)    inverse of jacobian
-\param   det       double   (i)    jacobian determinant
-\param   iel       int      (i)    number of nodes in actual element
+\param **derxy     DOUBLE   (o)    global derivatives wrt. x/y/z
+\param **deriv     DOUBLE   (i)    derivatives of shape functions
+\param **xjm       DOUBLE   (i)    jacobian matrix
+\param **xji       DOUBLE   (-)    inverse of jacobian
+\param   det       DOUBLE   (i)    jacobian determinant
+\param   iel       INT      (i)    number of nodes in actual element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_gder(
-              double   **derxy,     
-	      double   **deriv,    
-	      double   **xjm,      
-	      double   **xji,      
-	      double     det,      
-	      int        iel       
+              DOUBLE   **derxy,     
+	      DOUBLE   **deriv,    
+	      DOUBLE   **xjm,      
+	      DOUBLE   **xji,      
+	      DOUBLE     det,      
+	      INT        iel       
 	    )
 {
-int    k;
+INT    k;
 
 #ifdef DEBUG 
 dstrc_enter("f3_gder");
@@ -999,21 +999,21 @@ In this routine the global coordinates for given shape function values
 are set.
 		     
 </pre>
-\param *funct      double   (i)    shape functions
-\param *ele        double   (i)    actual element
-\param  iel        double   (i)    number of nodes in act. element
-\param *gcoor      double   (o)    global coordinates
+\param *funct      DOUBLE   (i)    shape functions
+\param *ele        DOUBLE   (i)    actual element
+\param  iel        DOUBLE   (i)    number of nodes in act. element
+\param *gcoor      DOUBLE   (o)    global coordinates
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_gcoor(
-              double     *funct,     
+              DOUBLE     *funct,     
               ELEMENT    *ele,
-	      int         iel,      
-	      double     *gcoor      
+	      INT         iel,      
+	      DOUBLE     *gcoor      
 	     )
 {
-int i;
+INT i;
 
 #ifdef DEBUG 
 dstrc_enter("f3_gcoor");
@@ -1048,29 +1048,29 @@ are calculated.
 		     
 </pre>
 \param  *ele 	   ELEMENT  (i)    actual element
-\param **xjm 	   double   (i)    jacobian matrix
-\param **bm 	   double   (-)    working array
-\param **xder2     double   (-)    working array
-\param **derxy     double   (i)    glob. coord.. deriv.
-\param **derxy2    double   (o)    2nd. glob. coord. deriv.
-\param **deriv2    double   (i)    2nd. nat. deriv. of shape funcs
-\param   iel	   int	    (i)    number of nodes of actual ele
+\param **xjm 	   DOUBLE   (i)    jacobian matrix
+\param **bm 	   DOUBLE   (-)    working array
+\param **xder2     DOUBLE   (-)    working array
+\param **derxy     DOUBLE   (i)    glob. coord.. deriv.
+\param **derxy2    DOUBLE   (o)    2nd. glob. coord. deriv.
+\param **deriv2    DOUBLE   (i)    2nd. nat. deriv. of shape funcs
+\param   iel	   INT	    (i)    number of nodes of actual ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_gder2(
                ELEMENT     *ele,
-	       double     **xjm,            
-               double     **bm,
-	       double     **xder2,
-	       double     **derxy,
-	       double     **derxy2,
-               double     **deriv2,
-	       int          iel
+	       DOUBLE     **xjm,            
+               DOUBLE     **bm,
+	       DOUBLE     **xder2,
+	       DOUBLE     **derxy,
+	       DOUBLE     **derxy2,
+               DOUBLE     **deriv2,
+	       INT          iel
 	     )
 {
-int i,j;
-double r0,r1,r2,r3,r4,r5;
+INT i,j;
+DOUBLE r0,r1,r2,r3,r4,r5;
 
 #ifdef DEBUG 
 dstrc_enter("f3_gder2");

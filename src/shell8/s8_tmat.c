@@ -6,26 +6,26 @@
  *----------------------------------------------------------------------*/
 void s8_tmat(ELEMENT    *ele,
              MATERIAL   *mat,
-             double     *stress,
-             double     *strain,
-             double    **C,
-             double    **gmkovc,
-             double    **gmkonc,
-             double    **gmkovr,
-             double    **gmkonr,
-             double    **gkovc,
-             double    **gkonc,
-             double    **gkovr,
-             double    **gkonr,
-             double      detc,
-             double      detr,
-             double      e3,
-             int         option)
+             DOUBLE     *stress,
+             DOUBLE     *strain,
+             DOUBLE    **C,
+             DOUBLE    **gmkovc,
+             DOUBLE    **gmkonc,
+             DOUBLE    **gmkovr,
+             DOUBLE    **gmkonr,
+             DOUBLE    **gkovc,
+             DOUBLE    **gkonc,
+             DOUBLE    **gkovr,
+             DOUBLE    **gkonr,
+             DOUBLE      detc,
+             DOUBLE      detr,
+             DOUBLE      e3,
+             INT         option)
 {
-int    i;
-double C4[3][3][3][3];
-double stress2[6],strain2[6];
-double E;
+INT    i;
+DOUBLE C4[3][3][3][3];
+DOUBLE stress2[6],strain2[6];
+DOUBLE E;
 #ifdef DEBUG 
 dstrc_enter("s8_tmat");
 #endif
@@ -137,7 +137,7 @@ return;
 /*----------------------------------------------------------------------*
  | get density out of material law                        m.gee 2/02    |
  *----------------------------------------------------------------------*/
-void s8_getdensity(MATERIAL   *mat, double *density)
+void s8_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
 #ifdef DEBUG 
 dstrc_enter("s8_getdensity");

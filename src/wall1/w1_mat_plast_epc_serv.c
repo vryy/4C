@@ -25,12 +25,12 @@
 |      initialize d-components d[0][3], d[1][3], d[2][3], d[3][3]        |
 |      on elastic                                                        |
 |-----------------------------------------------------------------------*/
-void w1iwadi (double ym,
-              double pv, 
-              double *di)
+void w1iwadi (DOUBLE ym,
+              DOUBLE pv, 
+              DOUBLE *di)
 {
 /*----------------------------------------------------------------------*/
-    static double a1, b1, c1;
+    static DOUBLE a1, b1, c1;
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1iwadi");
@@ -55,14 +55,14 @@ void w1iwadi (double ym,
 |      topic : wall1 - yield criterion for plane strain                  |
 |              yield - criterion:  drucker - prager                      |
 |-----------------------------------------------------------------------*/
-void w1yicsr (double dev,      /* norm der deviatorischen spannungen    */
-              double hyd,      /* 1. invariante                         */
-              double sigym,    /* modifizierte fliesspannung            */
-              double alpha,    /* neigungswinkel im invariantenraum     */
-              double *ft)      /* fliessbedingung                       */
+void w1yicsr (DOUBLE dev,      /* norm der deviatorischen spannungen    */
+              DOUBLE hyd,      /* 1. invariante                         */
+              DOUBLE sigym,    /* modifizierte fliesspannung            */
+              DOUBLE alpha,    /* neigungswinkel im invariantenraum     */
+              DOUBLE *ft)      /* fliessbedingung                       */
 {
 /*----------------------------------------------------------------------*/
-    static double ro23;
+    static DOUBLE ro23;
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1yicsr");
@@ -83,14 +83,14 @@ void w1yicsr (double dev,      /* norm der deviatorischen spannungen    */
 |      topic : wall1 - yield criterion (cap - region)                    |
 |              yield - criterion:  cap - model                           |
 |-----------------------------------------------------------------------*/
-void w1yiccap (double dev,   /* norm of deviatoric predictor stresses   */
-               double hyd,   /* 1. invariant  of the predictor stresses */
-               double *sigym,/* yield stresses                          */
-               double alpha, /* factor for the first invariants         */
-               double *ft)   /* yield function                          */
+void w1yiccap (DOUBLE dev,   /* norm of deviatoric predictor stresses   */
+               DOUBLE hyd,   /* 1. invariant  of the predictor stresses */
+               DOUBLE *sigym,/* yield stresses                          */
+               DOUBLE alpha, /* factor for the first invariants         */
+               DOUBLE *ft)   /* yield function                          */
 {
 /*----------------------------------------------------------------------*/
-    static double dum;
+    static DOUBLE dum;
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1yiccap");
@@ -112,18 +112,18 @@ void w1yiccap (double dev,   /* norm of deviatoric predictor stresses   */
 |    topic: calculate the gradients of the elastic predictor             |              
 |           deviatoric/hydrostatic stresses                              |
 |-----------------------------------------------------------------------*/
-void w1preds(double *sigma, /* elastic predictor projected              */
-             double *alpha, /* neigungswinkel im invariantenraum        */
-             double *devsig,/* deviatoric stresses                      */
-             double *dev,   /* norm der deviatorischen spannungen       */
-             double *dn,    /* gradient in deviatoric direction         */
-             double *dcom,  /* gradient in hdrostatic direction         */
-             double *grad)  /* total gradient                           */
+void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
+             DOUBLE *alpha, /* neigungswinkel im invariantenraum        */
+             DOUBLE *devsig,/* deviatoric stresses                      */
+             DOUBLE *dev,   /* norm der deviatorischen spannungen       */
+             DOUBLE *dn,    /* gradient in deviatoric direction         */
+             DOUBLE *dcom,  /* gradient in hdrostatic direction         */
+             DOUBLE *grad)  /* total gradient                           */
 {
 /*----------------------------------------------------------------------*/
-    static int i;
-    static double half, ro23, q13, xsi1, xsi2, xsi3, xsi4;
-    static double dsig[4], fac[4];
+    static INT i;
+    static DOUBLE half, ro23, q13, xsi1, xsi2, xsi3, xsi4;
+    static DOUBLE dsig[4], fac[4];
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1preds");
@@ -183,16 +183,16 @@ void w1preds(double *sigma, /* elastic predictor projected              */
 |    topic: calculate the deviatoric/hydrostatic stress components       |
 |           of the elastic predictor                                     |
 |-----------------------------------------------------------------------*/
-void w1pres (double *sigma ,    /*  elastic predictor projected         */
-             double *devsig,    /*  deviatoric stresses                 */
-             double *sm    ,    /*  hydrrostatic stresses               */
-             double *dev   ,    /*  norm der deviatorischen spannungen  */
-             double *hyd)       /*  1. invariante                       */
+void w1pres (DOUBLE *sigma ,    /*  elastic predictor projected         */
+             DOUBLE *devsig,    /*  deviatoric stresses                 */
+             DOUBLE *sm    ,    /*  hydrrostatic stresses               */
+             DOUBLE *dev   ,    /*  norm der deviatorischen spannungen  */
+             DOUBLE *hyd)       /*  1. invariante                       */
 {
 /*----------------------------------------------------------------------*/
-    static double half, dsig[4], dum;
-    static int i;
-    static double q13, ro23, xsi1, xsi2, xsi3, xsi4;
+    static DOUBLE half, dsig[4], dum;
+    static INT i;
+    static DOUBLE q13, ro23, xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1pres");

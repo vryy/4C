@@ -20,7 +20,7 @@
 ------------------------------------------------------------------------*/
 void f2tu_dis(ELEMENT *ele0, ELEMENT *ele1)
 {
-int        i;             /* simply a counter                           */
+INT        i;             /* simply a counter                           */
 
 #ifdef DEBUG 
 dstrc_enter("f2tu_dis");
@@ -37,7 +37,7 @@ ele1->numnp=ele0->numnp;
 ele1->distyp=ele0->distyp;
 ele1->e.f2_tu->ntyp=ele0->e.f2->ntyp;
 
-ele1->lm = (int*)CCACALLOC(ele1->numnp,sizeof(int));
+ele1->lm = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
 if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
 
 for (i=0; i<ele1->numnp; i++)

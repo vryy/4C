@@ -10,16 +10,16 @@ void solver_lapack_dense(
                               struct _DENSE          *dense,
                               struct _DIST_VECTOR    *sol,
                               struct _DIST_VECTOR    *rhs,
-                              int                     option
+                              INT                     option
                              )
 {
-int            i;
-int            dof;
-int            info;
-int            imyrank;
-int            inprocs;
-int            ione=1;
-int            nb=2;
+INT            i;
+INT            dof;
+INT            info;
+INT            imyrank;
+INT            inprocs;
+INT            ione=1;
+INT            nb=2;
 
 char           trans[1];
 char           uplo[1];
@@ -27,9 +27,9 @@ char           uplo[1];
 LAPACKVARS    *lapackvar;
 
 ARRAY          b_a;
-double        *b;
+DOUBLE        *b;
 ARRAY          tmp_a;
-double        *tmp;
+DOUBLE        *tmp;
 
 #ifdef DEBUG 
 dstrc_enter("solver_lapack_dense");

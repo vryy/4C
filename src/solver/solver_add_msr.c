@@ -22,35 +22,35 @@ void  add_msr(struct _PARTITION     *actpart,
                 struct _AZ_ARRAY_MSR  *msr2)
 {
 #ifdef AZTEC_PACKAGE
-int         i,j,k,l,counter;          /* some counter variables */
-int         start,index,lenght;       /* some more special-purpose counters */
-int         ii,jj;                    /* counter variables for system matrix */
-int         ii_iscouple;              /* flag whether ii is a coupled dof */
-int         ii_owner;                 /* who is owner of dof ii -> procnumber */
-int         ii_index;                 /* place of ii in dmsr format */
-int         jj_index;                 /* place of jj in dmsr format */
-int         nd,ndnd;                  /* size of estif */
-int         nnz;                      /* number of nonzeros in sparse system matrix */
-int         numeq_total;              /* total number of equations */
-int         numeq;                    /* number of equations on this proc */
-int         lm[MAXDOFPERELE];         /* location vector for this element */
-int         owner[MAXDOFPERELE];      /* the owner of every dof */
-int         myrank;                   /* my intra-proc number */
-int         nprocs;                   /* my intra- number of processes */
-double    **estif;                    /* element matrix to be added to system matrix */
-double    **emass;                    /* element matrix to be added to system matrix */
-int        *update;                   /* msr-vector update see AZTEC manual */
-int         shift;                    /* variables for aztec quick finding algorithms */
-int        *bins;
-int        *bindx;                    /*    "       bindx         "         */
-double     *val1,*val2;               /*    "       val           "         */
-int       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
-int         ncdofs;                   /* total number of coupled dofs */
-int       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-int       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-int         nsend;
+INT         i,j,k,l,counter;          /* some counter variables */
+INT         start,index,lenght;       /* some more special-purpose counters */
+INT         ii,jj;                    /* counter variables for system matrix */
+INT         ii_iscouple;              /* flag whether ii is a coupled dof */
+INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
+INT         ii_index;                 /* place of ii in dmsr format */
+INT         jj_index;                 /* place of jj in dmsr format */
+INT         nd,ndnd;                  /* size of estif */
+INT         nnz;                      /* number of nonzeros in sparse system matrix */
+INT         numeq_total;              /* total number of equations */
+INT         numeq;                    /* number of equations on this proc */
+INT         lm[MAXDOFPERELE];         /* location vector for this element */
+INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+INT         myrank;                   /* my intra-proc number */
+INT         nprocs;                   /* my intra- number of processes */
+DOUBLE    **estif;                    /* element matrix to be added to system matrix */
+DOUBLE    **emass;                    /* element matrix to be added to system matrix */
+INT        *update;                   /* msr-vector update see AZTEC manual */
+INT         shift;                    /* variables for aztec quick finding algorithms */
+INT        *bins;
+INT        *bindx;                    /*    "       bindx         "         */
+DOUBLE     *val1,*val2;               /*    "       val           "         */
+INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+INT         ncdofs;                   /* total number of coupled dofs */
+INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+INT         nsend;
 #ifdef DEBUG 
 dstrc_enter("add_msr");
 #endif
@@ -76,7 +76,7 @@ ncdofs     = actpart->pdis[0].coupledofs.fdim;
 /*------ allocate and calculate shifts and bins for quick_find routines */
 if (!(msr1->bins))
 {
-   msr1->bins = (int*)CCACALLOC( ABS(4+numeq/4),sizeof(int));
+   msr1->bins = (INT*)CCACALLOC( ABS(4+numeq/4),sizeof(INT));
    if (!(msr1->bins)) dserror("Allocation of msr->bins failed");
    AZ_init_quick_find(update,numeq,&(msr1->shift),msr1->bins);
 }
@@ -202,11 +202,11 @@ return;
 /*----------------------------------------------------------------------*
  |  checks coupling for the add_msr routine                   m.gee 9/01|
  *----------------------------------------------------------------------*/
-void add_msr_checkcouple(int ii,int **cdofs,int ncdofs,int *iscouple,
-                           int *isowner, int nprocs)
+void add_msr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,
+                           INT *isowner, INT nprocs)
 {
 #ifdef AZTEC_PACKAGE
-int         i,j,k;
+INT         i,j,k;
 #ifdef DEBUG 
 dstrc_enter("add_msr_checkcouple");
 #endif
@@ -239,11 +239,11 @@ return;
 /*----------------------------------------------------------------------*
  |  fill sendbuffer isend and dsend                           m.gee 9/01|
  *----------------------------------------------------------------------*/
-void add_msr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                    double **dsend,double **estif, int numsend)
+void add_msr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
+                    DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
 #ifdef AZTEC_PACKAGE
-int         k,l;
+INT         k,l;
 #ifdef DEBUG 
 dstrc_enter("add_msr_sendbuff");
 #endif
@@ -275,27 +275,27 @@ void exchange_coup_msr(
                         )
 {
 #ifdef AZTEC_PACKAGE
-int            i,j;
-int            ii,ii_index;
-int            start;
-int            lenght;
-int            index;
-int            tag;
-int            source;
-int            numeq,numeq_total;
-int            numsend;
-int            numrecv;
-int            shift;
-int           *bins;
-int           *bindx;
-double        *val;
-int           *update;
-int          **isend;
-double       **dsend;
-int          **irecv;
-double       **drecv;
-int            imyrank;
-int            inprocs;
+INT            i,j;
+INT            ii,ii_index;
+INT            start;
+INT            lenght;
+INT            index;
+INT            tag;
+INT            source;
+INT            numeq,numeq_total;
+INT            numsend;
+INT            numrecv;
+INT            shift;
+INT           *bins;
+INT           *bindx;
+DOUBLE        *val;
+INT           *update;
+INT          **isend;
+DOUBLE       **dsend;
+INT          **irecv;
+DOUBLE       **drecv;
+INT            imyrank;
+INT            inprocs;
 
 #ifdef PARALLEL 
 MPI_Status    *irecv_status;

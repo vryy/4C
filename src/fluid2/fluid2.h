@@ -20,45 +20,45 @@ fluid element fluid2 are stored.
 #ifdef D_FLUID2
 typedef struct _FLUID2
 {
-int                ntyp;     /*!< flag for element type: 1=quad; 2=tri    */
-int                nGP[2];   /*!< number of gaussian points in rs direct. */
-int                is_ale;   /*!< flag whether there is ale to me or not  */
+INT                ntyp;     /*!< flag for element type: 1=quad; 2=tri    */
+INT                nGP[2];   /*!< number of gaussian points in rs direct. */
+INT                is_ale;   /*!< flag whether there is ale to me or not  */
 struct _ELEMENT   *my_ale;   /*!< pointer to my ale ele, otherwise NULL   */
 
 /*--------------------------------------------------- stabilisation flags */
-int                istabi;   /*!< stabilasation: 0=no; 1=yes              */
-int                iadvec;   /*!< adevction stab.: 0=no; 1=yes            */
-int                ipres;    /*!< pressure stab.: 0=no; 1=yes             */
-int                ivisc;    /*!< diffusion stab.: 0=no; 1=GLS-; 2=GLS+   */
-int                icont;    /*!< continuity stab.: 0=no; 1=yes           */
-int                istapa;   /*!< version of stab. parameter              */
-int                istapc;   /*!< flag for stab parameter calculation     */
-int                mk;       /*!< 0=mk fixed 1=min(1/3,2*C); -1 mk=1/3    */ 
-int                ihele[3]; /*!< x/y/z length-def. for vel/pres/cont stab*/
-int                ninths;   /*!< number of integ. points for streamlength*/
+INT                istabi;   /*!< stabilasation: 0=no; 1=yes              */
+INT                iadvec;   /*!< adevction stab.: 0=no; 1=yes            */
+INT                ipres;    /*!< pressure stab.: 0=no; 1=yes             */
+INT                ivisc;    /*!< diffusion stab.: 0=no; 1=GLS-; 2=GLS+   */
+INT                icont;    /*!< continuity stab.: 0=no; 1=yes           */
+INT                istapa;   /*!< version of stab. parameter              */
+INT                istapc;   /*!< flag for stab parameter calculation     */
+INT                mk;       /*!< 0=mk fixed 1=min(1/3,2*C); -1 mk=1/3    */ 
+INT                ihele[3]; /*!< x/y/z length-def. for vel/pres/cont stab*/
+INT                ninths;   /*!< number of integ. points for streamlength*/
 
 /*---------------------------------------------------- stabilisation norm */
-int                norm_p;   /*!< p-norm: p+1<=infinity; 0=Max.norm       */
+INT                norm_p;   /*!< p-norm: p+1<=infinity; 0=Max.norm       */
 
 /*----------------------------------------------- stabilisation constants */
-double             clamb;
+DOUBLE             clamb;
 
 /*------------------------------------ statiblisation control information */
-int                istrle;   /*!< has streamlength to be computed         */
-int                iarea;    /*!< calculation of area length              */
-int                iduring;  /*!< calculation during int.-pt.loop         */
-int                idiaxy;   /*!< has diagonals etc. to be computed       */
-int                itau[3];  /*!< flags for tau_? calculation 
+INT                istrle;   /*!< has streamlength to be computed         */
+INT                iarea;    /*!< calculation of area length              */
+INT                iduring;  /*!< calculation during INT.-pt.loop         */
+INT                idiaxy;   /*!< has diagonals etc. to be computed       */
+INT                itau[3];  /*!< flags for tau_? calculation 
                                   (-1: before; 1: during                  */
 
 /*--------------------------------- element sizes for stability parameter */
-double             hk[3];    /*!< vel/pres/cont                           */
+DOUBLE             hk[3];    /*!< vel/pres/cont                           */
 
 /*-------------------------- flag for turbulence  1=algebraic, 2=ke-model, 3=ko-model */
-int                turbu;
+INT                turbu;
 
 /*------------------------------------------------ free surface parameter */
-int                fs_on;   /*! element belongs to free surface           */
+INT                fs_on;   /*! element belongs to free surface           */
 
 /*-------------------------------------------------------- stress results */
 struct _ARRAY      stress_ND; /*!< nodal stresses                         */

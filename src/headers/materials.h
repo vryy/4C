@@ -4,7 +4,7 @@
  *----------------------------------------------------------------------*/
 typedef struct _MATERIAL
 {
-     int                       Id;           /* Id of the material */
+     INT                       Id;           /* Id of the material */
 
      enum _MATERIAL_TYP        mattyp;       /* type of material */
 
@@ -41,9 +41,9 @@ typedef struct _MATERIAL
  *----------------------------------------------------------------------*/
 typedef struct _STVENANT
 {
-     double                    youngs;         /* Young's modulus */
-     double                    possionratio;   /* Possion ratio */
-     double                    density;        /* material specific weight */
+     DOUBLE                    youngs;         /* Young's modulus */
+     DOUBLE                    possionratio;   /* Possion ratio */
+     DOUBLE                    density;        /* material specific weight */
 } STVENANT;
 
 
@@ -52,11 +52,11 @@ typedef struct _STVENANT
  *----------------------------------------------------------------------*/
 typedef struct _STVENPOR
 {
-     double                    youngs;         /* Young's modulus */
-     double                    possionratio;   /* Possion ratio */
-     double                    density;        /* material specific weight */
-     double                    refdens;        /* reference density */
-     double                    exponent;       /* material parameter */
+     DOUBLE                    youngs;         /* Young's modulus */
+     DOUBLE                    possionratio;   /* Possion ratio */
+     DOUBLE                    density;        /* material specific weight */
+     DOUBLE                    refdens;        /* reference density */
+     DOUBLE                    exponent;       /* material parameter */
 } STVENPOR;
 
 
@@ -65,9 +65,9 @@ typedef struct _STVENPOR
  *----------------------------------------------------------------------*/
 typedef struct _NEO_HOOKE
 {
-     double                    youngs;         /* Young's modulus */
-     double                    possionratio;   /* Possion ratio */
-     double                    density;        /* material specific weight */
+     DOUBLE                    youngs;         /* Young's modulus */
+     DOUBLE                    possionratio;   /* Possion ratio */
+     DOUBLE                    density;        /* material specific weight */
 } NEO_HOOKE;
 
 /*----------------------------------------------------------------------*
@@ -91,22 +91,22 @@ typedef struct _COMPOGDEN
  *----------------------------------------------------------------------*/
 typedef struct _FLUID
 {
-     double                    viscosity;
-     double                    density;
-     double                    gamma;     /* surface tension coeficient */
+     DOUBLE                    viscosity;
+     DOUBLE                    density;
+     DOUBLE                    gamma;     /* surface tension coeficient */
 } FLUID;
 /*----------------------------------------------------------------------*
  | plastic mises material                              a.lipka 17/05    |
  *----------------------------------------------------------------------*/
 typedef struct _PL_MISES
 {
-     double                    youngs;        /* Young's modulus */
-     double                    possionratio;  /* Possion ratio */
-     double                    ALFAT;
-     double                    Sigy;
-     double                    Hard;
-     double                    GF;
-     double                    betah;
+     DOUBLE                    youngs;        /* Young's modulus */
+     DOUBLE                    possionratio;  /* Possion ratio */
+     DOUBLE                    ALFAT;
+     DOUBLE                    Sigy;
+     DOUBLE                    Hard;
+     DOUBLE                    GF;
+     DOUBLE                    betah;
 } PL_MISES;
 
 /*----------------------------------------------------------------------*
@@ -114,12 +114,12 @@ typedef struct _PL_MISES
  *----------------------------------------------------------------------*/
 typedef struct _PL_MISES_LS
 {
-     double                    youngs;        /* Young's modulus */
-     double                    possionratio;  /* Possion ratio */
-     double                    ALFAT;
-     double                    Sigy;
-     double                    Hard;
-     double                    GF;
+     DOUBLE                    youngs;        /* Young's modulus */
+     DOUBLE                    possionratio;  /* Possion ratio */
+     DOUBLE                    ALFAT;
+     DOUBLE                    Sigy;
+     DOUBLE                    Hard;
+     DOUBLE                    GF;
 } PL_MISES_LS;
 
 /*----------------------------------------------------------------------*
@@ -127,101 +127,101 @@ typedef struct _PL_MISES_LS
  *----------------------------------------------------------------------*/
 typedef struct _PL_FOAM
 {
-     double                    youngs;        /* Young's modulus */
-     double                    possionratio;  /* Possion ratio */
-     double                    ALFAT;
-     double                    Sigy;
-     double                    Hard;
-     double                    GF;
+     DOUBLE                    youngs;        /* Young's modulus */
+     DOUBLE                    possionratio;  /* Possion ratio */
+     DOUBLE                    ALFAT;
+     DOUBLE                    Sigy;
+     DOUBLE                    Hard;
+     DOUBLE                    GF;
 } PL_FOAM;
 /*----------------------------------------------------------------------*
  | plastic drucker prager material                     a.lipka 17/05    |
  *----------------------------------------------------------------------*/
 typedef struct _PL_DP
 {
-     double                    youngs;        /* Young's modulus */
-     double                    possionratio;  /* Possion ratio */
-     double                    ALFAT;
-     double                    Sigy;
-     double                    Hard;
-     double                    PHI;
+     DOUBLE                    youngs;        /* Young's modulus */
+     DOUBLE                    possionratio;  /* Possion ratio */
+     DOUBLE                    ALFAT;
+     DOUBLE                    Sigy;
+     DOUBLE                    Hard;
+     DOUBLE                    PHI;
 } PL_DP;
 /*----------------------------------------------------------------------*
  | elastoplastic concrete material                     a.lipka 17/05    |
  *----------------------------------------------------------------------*/
 typedef struct _PL_EPC
 {
-     double                    dens;
+     DOUBLE                    dens;
      /* concrete */
-     double                    youngs;       /* Young's modulus */
-     double                    possionratio; /* Possion ratio */
-     double                    alfat;
-     double                    sigy;
-     double                    phi;
-     double                    xsi;
-     double                    ftm;        /* tensile strength */
-     double                    gt;         /* tensile fracture energy */
-     double                    fcm;        /* compressive strength */
-     double                    gc;         /* compressive fracture energy */
-     double                    gamma1;     /* fitting factor yield function 1 */
-     double                    gamma2;     /* symm. biaxial compression stressfactor */
-     double                    dfac;       /* dammage factor: 0.0 plastic - 1.0 full damaged */
+     DOUBLE                    youngs;       /* Young's modulus */
+     DOUBLE                    possionratio; /* Possion ratio */
+     DOUBLE                    alfat;
+     DOUBLE                    sigy;
+     DOUBLE                    phi;
+     DOUBLE                    xsi;
+     DOUBLE                    ftm;        /* tensile strength */
+     DOUBLE                    gt;         /* tensile fracture energy */
+     DOUBLE                    fcm;        /* compressive strength */
+     DOUBLE                    gc;         /* compressive fracture energy */
+     DOUBLE                    gamma1;     /* fitting factor yield function 1 */
+     DOUBLE                    gamma2;     /* symm. biaxial compression stressfactor */
+     DOUBLE                    dfac;       /* dammage factor: 0.0 plastic - 1.0 full damaged */
      /* tension stiffening */
-     int                       nstiff;     /* ==1 in consideration of tension stiffening */
+     INT                       nstiff;     /* ==1 in consideration of tension stiffening */
      /* rebars */
-     int                       maxreb;     /* number of*/
-     int                      *rebar;      /* Id */
-     double                   *reb_area;   /* area   */
-     double                   *reb_ang;    /* angel  */
-     double                   *reb_so;     /* minimum bond length  */
-     double                   *reb_ds;     /* diameter  */
-     double                   *reb_rgamma; /* =4: deformed bars =2: plane par */
-     double                   *reb_dens; 
-     double                   *reb_alfat; 
-     double                   *reb_emod; 
-     double                   *reb_rebnue; 
-     double                   *reb_sigy; 
-     double                   *reb_hard;
+     INT                       maxreb;     /* number of*/
+     INT                      *rebar;      /* Id */
+     DOUBLE                   *reb_area;   /* area   */
+     DOUBLE                   *reb_ang;    /* angel  */
+     DOUBLE                   *reb_so;     /* minimum bond length  */
+     DOUBLE                   *reb_ds;     /* diameter  */
+     DOUBLE                   *reb_rgamma; /* =4: deformed bars =2: plane par */
+     DOUBLE                   *reb_dens; 
+     DOUBLE                   *reb_alfat; 
+     DOUBLE                   *reb_emod; 
+     DOUBLE                   *reb_rebnue; 
+     DOUBLE                   *reb_sigy; 
+     DOUBLE                   *reb_hard;
 } PL_EPC;
 /*----------------------------------------------------------------------*
  | plastic mises porous material                       a.lipka 17/05    |
  *----------------------------------------------------------------------*/
 typedef struct _PL_POR_MISES
 {
-     double                    youngs;
-     double                    DP_YM;
-     double                    possionratio;
-     double                    ALFAT;
-     double                    Sigy;
-     double                    DP_Sigy;
-     double                    Hard;
-     double                    DP_Hard;
+     DOUBLE                    youngs;
+     DOUBLE                    DP_YM;
+     DOUBLE                    possionratio;
+     DOUBLE                    ALFAT;
+     DOUBLE                    Sigy;
+     DOUBLE                    DP_Sigy;
+     DOUBLE                    Hard;
+     DOUBLE                    DP_Hard;
 } PL_POR_MISES;
 /*----------------------------------------------------------------------*
  | delamination material                               a.lipka 17/05    |
  *----------------------------------------------------------------------*/
 typedef struct _PL_HASH
 {
-     double                    emod1;
-     double                    emod2;
-     double                    emod3;
-     double                    xnue23;
-     double                    xnue13;
-     double                    xnue12;
-     double                    gmod12;
-     double                    gmod23;
-     double                    gmod13;
-     double                    s33;
-     double                    sinf33;
-     double                    s23;
-     double                    s13;
-     double                    gamma;
-     double                    gc;
-     double                    deltat;
-     double                    eta_i;
-     double                    c1hgt;
-     double                    c1layhgt;
-     int                       ivisco;
+     DOUBLE                    emod1;
+     DOUBLE                    emod2;
+     DOUBLE                    emod3;
+     DOUBLE                    xnue23;
+     DOUBLE                    xnue13;
+     DOUBLE                    xnue12;
+     DOUBLE                    gmod12;
+     DOUBLE                    gmod23;
+     DOUBLE                    gmod13;
+     DOUBLE                    s33;
+     DOUBLE                    sinf33;
+     DOUBLE                    s23;
+     DOUBLE                    s13;
+     DOUBLE                    gamma;
+     DOUBLE                    gc;
+     DOUBLE                    deltat;
+     DOUBLE                    eta_i;
+     DOUBLE                    c1hgt;
+     DOUBLE                    c1layhgt;
+     INT                       ivisco;
 } PL_HASH;
 
 /*----------------------------------------------------------------------*
@@ -229,15 +229,15 @@ typedef struct _PL_HASH
  *----------------------------------------------------------------------*/
 typedef struct _EL_ORTH
 {
-     double                    emod1;
-     double                    emod2;
-     double                    emod3;
-     double                    xnue23;
-     double                    xnue13;
-     double                    xnue12;
-     double                    gmod12;
-     double                    gmod23;
-     double                    gmod13;
+     DOUBLE                    emod1;
+     DOUBLE                    emod2;
+     DOUBLE                    emod3;
+     DOUBLE                    xnue23;
+     DOUBLE                    xnue13;
+     DOUBLE                    xnue12;
+     DOUBLE                    gmod12;
+     DOUBLE                    gmod23;
+     DOUBLE                    gmod13;
 } EL_ORTH;
 
 /*----------------------------------------------------------------------*
@@ -245,15 +245,15 @@ typedef struct _EL_ORTH
  *----------------------------------------------------------------------*/
 typedef struct _MFOC
 {
-     double                    es;             /* Young's modulus (cell) */
-     double                    pr;             /* Possion ratio */
-     double                    dens;           /* density foam  */
-     double                    denss;          /* density (bulk) */
-     double                    denmin;         /* min. dens. foam (opti.)*/
-     double                    denmax;         /* max. dens. foam (opti.)*/
-     double                    refdens;        /* reference density */
-     double                    oce;            /* exponent  */
-     double                    ocf;            /* factor    */
+     DOUBLE                    es;             /* Young's modulus (cell) */
+     DOUBLE                    pr;             /* Possion ratio */
+     DOUBLE                    dens;           /* density foam  */
+     DOUBLE                    denss;          /* density (bulk) */
+     DOUBLE                    denmin;         /* min. dens. foam (opti.)*/
+     DOUBLE                    denmax;         /* max. dens. foam (opti.)*/
+     DOUBLE                    refdens;        /* reference density */
+     DOUBLE                    oce;            /* exponent  */
+     DOUBLE                    ocf;            /* factor    */
 } MFOC;
 
 /*----------------------------------------------------------------------*
@@ -261,30 +261,30 @@ typedef struct _MFOC
  *----------------------------------------------------------------------*/
 typedef struct _MFCC
 {
-     double                    es;             /* Young's modulus (cell) */
-     double                    pr;             /* Possion ratio */
-     double                    dens;           /* density foam  */
-     double                    denss;          /* density (bulk) */
-     double                    denmin;         /* min. dens. foam (opti.)*/
-     double                    denmax;         /* max. dens. foam (opti.)*/
-     double                    refdens;        /* reference density */
-     double                    cce;            /* exponent  */
-     double                    ccf;            /* factor    */
+     DOUBLE                    es;             /* Young's modulus (cell) */
+     DOUBLE                    pr;             /* Possion ratio */
+     DOUBLE                    dens;           /* density foam  */
+     DOUBLE                    denss;          /* density (bulk) */
+     DOUBLE                    denmin;         /* min. dens. foam (opti.)*/
+     DOUBLE                    denmax;         /* max. dens. foam (opti.)*/
+     DOUBLE                    refdens;        /* reference density */
+     DOUBLE                    cce;            /* exponent  */
+     DOUBLE                    ccf;            /* factor    */
 } MFCC;
 /*----------------------------------------------------------------------*
  | foam, closed cell, based on modified Neo Hook             al 4/01    |
  *----------------------------------------------------------------------*/
 typedef struct _NHMFCC
 {
-     double                    es;             /* Young's modulus (cell) */
-     double                    pr;             /* Possion ratio */
-     double                    dens;           /* density foam  */
-     double                    denss;          /* density (bulk) */
-     double                    denmin;         /* min. dens. foam (opti.)*/
-     double                    denmax;         /* max. dens. foam (opti.)*/
-     double                    refdens;        /* reference density */
-     double                    cce;            /* exponent  */
-     double                    ccf;            /* factor    */
+     DOUBLE                    es;             /* Young's modulus (cell) */
+     DOUBLE                    pr;             /* Possion ratio */
+     DOUBLE                    dens;           /* density foam  */
+     DOUBLE                    denss;          /* density (bulk) */
+     DOUBLE                    denmin;         /* min. dens. foam (opti.)*/
+     DOUBLE                    denmax;         /* max. dens. foam (opti.)*/
+     DOUBLE                    refdens;        /* reference density */
+     DOUBLE                    cce;            /* exponent  */
+     DOUBLE                    ccf;            /* factor    */
 } NHMFCC;
 /*----------------------------------------------------------------------*
  | multi layer material  -> shell9                          sh 10/02    |
@@ -293,8 +293,8 @@ typedef struct _NHMFCC
  *----------------------------------------------------------------------*/
 typedef struct _MULTI_LAYER
 {
-     int                       num_klay;      /* number of kinematic layers */
-     double                   *klayhgt;       /* hgt of a kinematic layer in % of total thickness of the shell */
+     INT                       num_klay;      /* number of kinematic layers */
+     DOUBLE                   *klayhgt;       /* hgt of a kinematic layer in % of total thickness of the shell */
      struct _KINLAY           *kinlay;        /* one kinematic layer */
 
 } MULTI_LAYER;
@@ -304,11 +304,11 @@ typedef struct _MULTI_LAYER
  *----------------------------------------------------------------------*/
 typedef struct _KINLAY
 {
-     int                       num_mlay;     /* number of material layer to this kinematic layer*/
-     double                   *mlayhgt;      /* hgt of a material layer in % of thickness of the adjacent kinematic layer*/ 
-     int                      *mmatID;       /* ID of multilayer material in every material layer */
-     double                   *phi;          /* rotation of the material in one material layer */
-     int                      *rot;          /* axis of rotation of the material: x=1, y=2, z=3*/
+     INT                       num_mlay;     /* number of material layer to this kinematic layer*/
+     DOUBLE                   *mlayhgt;      /* hgt of a material layer in % of thickness of the adjacent kinematic layer*/ 
+     INT                      *mmatID;       /* ID of multilayer material in every material layer */
+     DOUBLE                   *phi;          /* rotation of the material in one material layer */
+     INT                      *rot;          /* axis of rotation of the material: x=1, y=2, z=3*/
 } KINLAY;
 /*----------------------------------------------------------------------*
  | multilayer materials                                     sh 10/02    |
@@ -317,7 +317,7 @@ typedef struct _KINLAY
  *----------------------------------------------------------------------*/
 typedef struct _MULTIMAT
 {
-     int                       Id;           /* Id of the material */
+     INT                       Id;           /* Id of the material */
 
      enum _MATERIAL_TYP        mattyp;       /* type of material */
 
@@ -334,13 +334,13 @@ typedef struct _MULTIMAT
  *----------------------------------------------------------------------*/
 typedef struct _ORTHOTROPIC
 {
-     double                    emod1;         
-     double                    emod2;         
-     double                    emod3;         
-     double                    gmod12;         
-     double                    gmod13;         
-     double                    gmod23;         
-     double                    xnue12;         
-     double                    xnue13;         
-     double                    xnue23;         
+     DOUBLE                    emod1;         
+     DOUBLE                    emod2;         
+     DOUBLE                    emod3;         
+     DOUBLE                    gmod12;         
+     DOUBLE                    gmod13;         
+     DOUBLE                    gmod23;         
+     DOUBLE                    xnue12;         
+     DOUBLE                    xnue13;         
+     DOUBLE                    xnue23;         
 } ORTHOTROPIC;

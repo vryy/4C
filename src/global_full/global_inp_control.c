@@ -28,7 +28,7 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 void ntainp()
 {
-int i,j;
+INT i,j;
 /* 
    the input of the tracing option has not been done yet, so
    we have to make the dstrc_enter 'by hand' 

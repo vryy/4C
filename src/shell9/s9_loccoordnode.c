@@ -20,8 +20,8 @@
 This function returns the local coordinates of nodal points within an
 element
 </pre>
-\param  int node          (i) local node number within element
-\param  int flag          (i) direction (0:r-direction; 1:s-direction)
+\param  INT node          (i) local node number within element
+\param  INT flag          (i) direction (0:r-direction; 1:s-direction)
 \param  enum _DIS_TYP typ (i) type (quad4/8/9)
 
 \warning There is nothing special to this routine
@@ -29,10 +29,10 @@ element
 \sa calling: ---; called by: s9a3(); s9a3ref_extern()  [s9_a3.c]
 
 *----------------------------------------------------------------------*/
-double s9_local_coord_node(int node, int flag, enum _DIS_TYP typ)
+DOUBLE s9_local_coord_node(INT node, INT flag, enum _DIS_TYP typ)
 {
-double     coord;
-const double node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
+DOUBLE     coord;
+const DOUBLE node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
                               {0.0,1.0},{-1.0,0.0},{0.0,-1.0},{1.0,0.0},{0.0,0.0}}; 
 #ifdef DEBUG 
 dstrc_enter("s9_local_coord_node");

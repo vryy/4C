@@ -30,9 +30,9 @@ This routine controls the element evaluation:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
-\param  *hasdirich       int	        (o)   element flag
-\param  *hasext          int	        (o)   element flag
-\param   init	         int	        (i)   init flag
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag
+\param   init	         INT	        (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
@@ -45,54 +45,54 @@ void f3_calele(
 	        ARRAY          *etforce_global,
 	        ARRAY          *eiforce_global,
 		ARRAY          *edforce_global,	
-		int            *hasdirich,
-		int            *hasext,		
-		int             init
+		INT            *hasdirich,
+		INT            *hasext,		
+		INT             init
 	       )
 {
 static ARRAY     eveln_a;  /* element velocities at (n) 		*/
-static double  **eveln;
+static DOUBLE  **eveln;
 static ARRAY     evelng_a; /* element velocities at (n+gamma)		*/
-static double  **evelng;
+static DOUBLE  **evelng;
 static ARRAY     epren_a;  /* element pressures at (n)  		*/
-static double   *epren;
+static DOUBLE   *epren;
 static ARRAY     edeadn_a; /* element dead load (selfweight)            */
-static double   *edeadng;
+static DOUBLE   *edeadng;
 static ARRAY     edeadng_a;/* element dead load (selfweight)            */
-static double   *edeadn;
+static DOUBLE   *edeadn;
 static ARRAY     funct_a;  /* shape functions				*/
-static double   *funct;
+static DOUBLE   *funct;
 static ARRAY     deriv_a;  /* first natural derivatives 		*/
-static double  **deriv;
+static DOUBLE  **deriv;
 static ARRAY     deriv2_a; /* second natural derivatives		*/
-static double  **deriv2;
+static DOUBLE  **deriv2;
 static ARRAY     xjm_a;    /* jocobian matrix				*/
-static double  **xjm;
+static DOUBLE  **xjm;
 static ARRAY     velint_a; /* velocities at integration point		*/
-static double   *velint;
+static DOUBLE   *velint;
 static ARRAY     vel2int_a;/* velocities at integration point		*/
-static double   *vel2int;
+static DOUBLE   *vel2int;
 static ARRAY	 covint_a; /* convective velocities at integr. point	*/
-static double   *covint;
+static DOUBLE   *covint;
 static ARRAY     vderxy_a; /* vel - derivatives 			*/
-static double  **vderxy;
+static DOUBLE  **vderxy;
 static ARRAY     pderxy_a; /* pre -derivatives  			*/
-static double   *pderxy;
+static DOUBLE   *pderxy;
 static ARRAY     vderxy2_a;/* vel - 2nd derivatives			*/
-static double  **vderxy2;
+static DOUBLE  **vderxy2;
 static ARRAY     derxy_a;  /* coordinate - derivatives  		*/
-static double  **derxy;
+static DOUBLE  **derxy;
 static ARRAY     derxy2_a; /* 2nd coordinate - derivatives		*/
-static double  **derxy2;
+static DOUBLE  **derxy2;
 static ARRAY     w1_a;     /* working array of arbitrary chosen size	*/
-static double  **wa1;      /* used in different element routines	*/
+static DOUBLE  **wa1;      /* used in different element routines	*/
 static ARRAY     w2_a;     /* working array of arbitrary chosen size	*/
-static double  **wa2;      /* used in different element routines	*/
-static double  **estif;    /* pointer to global ele-stif		*/
-static double  **emass;    /* pointer to galerkin ele-stif		*/
-static double   *etforce;  /* pointer to Time RHS			*/
-static double   *eiforce;  /* pointer to Iteration RHS  		*/
-static double   *edforce;  /* pointer to RHS due to dirichl. conditions */
+static DOUBLE  **wa2;      /* used in different element routines	*/
+static DOUBLE  **estif;    /* pointer to global ele-stif		*/
+static DOUBLE  **emass;    /* pointer to galerkin ele-stif		*/
+static DOUBLE   *etforce;  /* pointer to Time RHS			*/
+static DOUBLE   *eiforce;  /* pointer to Iteration RHS  		*/
+static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
 
 #ifdef DEBUG 
 dstrc_enter("f2_calele");

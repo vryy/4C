@@ -1,8 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 
 
 /*----------------------------------------------------------------------*
@@ -14,11 +14,11 @@ void mask_ccf(FIELD         *actfield,
               INTRA         *actintra, 
               CCF           *ccf)
 {
-int       i;
-int       numeq;
-int     **dof_connect;
+INT       i;
+INT       numeq;
+INT     **dof_connect;
 ARRAY     bindx_a;
-int      *bindx;
+INT      *bindx;
 ARRAY     red_dof_connect;
 #ifdef DEBUG 
 dstrc_enter("mask_ccf");
@@ -51,7 +51,7 @@ ccf_update(actfield,actpart,actsolv,actintra,ccf);
       dof_connect[i][2] = dof
       dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
    */
-dof_connect = (int**)CCACALLOC(ccf->numeq_total,sizeof(int*));
+dof_connect = (INT**)CCACALLOC(ccf->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 /*---------------------- make the dof_connect list locally on each proc */
 ccf_nnz_topology(actfield,actpart,actsolv,actintra,ccf,dof_connect);
@@ -100,13 +100,13 @@ void  ccf_update(FIELD         *actfield,
                  INTRA       *actintra,
                  CCF         *ccf)
 {
-int       i,k,l;
-int       counter;
-int      *update;
-int       dof;
-int       foundit;
-int       imyrank;
-int       inprocs;
+INT       i,k,l;
+INT       counter;
+INT      *update;
+INT       dof;
+INT       foundit;
+INT       imyrank;
+INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
 #ifdef DEBUG 
@@ -176,7 +176,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 /*---------- check whether the correct number of dofs have been counted */
 if (counter != ccf->numeq) dserror("Number of dofs in update wrong");
 /*---------------------------- sort the vector update just to make sure */
-qsort((int*) update, counter, sizeof(int), cmp_int);
+qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
@@ -196,27 +196,27 @@ void  ccf_nnz_topology(FIELD         *actfield,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          CCF          *ccf,
-                         int         **dof_connect)
+                         INT         **dof_connect)
 {
-int        i,j,k,l,m;
-int        counter,counter2;
-int        dof;
-int        nnz;
-int        iscoupled;
-int       *update;
-int        numeq;
-int        actdof;
-int        dofflag;
-int        dofmaster;
-int        dofslave;
-int        recvlenght;
+INT        i,j,k,l,m;
+INT        counter,counter2;
+INT        dof;
+INT        nnz;
+INT        iscoupled;
+INT       *update;
+INT        numeq;
+INT        actdof;
+INT        dofflag;
+INT        dofmaster;
+INT        dofslave;
+INT        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
 ARRAY      dofpatch;
 ARRAY     *coupledofs;
-int        imyrank;
-int        inprocs;
+INT        imyrank;
+INT        inprocs;
 
 #ifdef PARALLEL 
 MPI_Status status;
@@ -284,7 +284,7 @@ for (i=0; i<numeq; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0; 
@@ -368,7 +368,7 @@ for (i=0; i<coupledofs->fdim; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = dofflag;
@@ -418,9 +418,9 @@ for (i=0; i<coupledofs->fdim; i++)
             /*----------------------------------- get lenght of message */
             MPI_Get_count(&status,MPI_INT,&recvlenght);
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
+            dof_connect[dof] = (INT*)CCAREALLOC(dof_connect[dof],
                                              (dof_connect[dof][0]+recvlenght)*
-                                             sizeof(int));
+                                             sizeof(INT));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             /*----------------------------------------- receive message */
             MPI_Recv(&(dof_connect[dof][ dof_connect[dof][0] ]),recvlenght,MPI_INT,
@@ -449,8 +449,8 @@ for (i=0; i<coupledofs->fdim; i++)
                }
             }
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
-                                             counter2*sizeof(int));
+            dof_connect[dof] = (INT*)CCAREALLOC(dof_connect[dof],
+                                             counter2*sizeof(INT));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             dof_connect[dof][0] = counter2;
          }
@@ -482,7 +482,7 @@ ccf->nnz=nnz;
 for (i=0; i<numeq; i++)
 {
    dof = update[i];
-   qsort((int*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(int), cmp_int);
+   qsort((INT*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(INT), cmp_int);
 }
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
@@ -503,16 +503,16 @@ void ccf_red_dof_connect(FIELD        *actfield,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          CCF          *ccf,
-                         int         **dof_connect,
+                         INT         **dof_connect,
                          ARRAY        *red_dof_connect)
 {
-int        i,j;
-int        max_dof_connect_send;
-int        max_dof_connect_recv;
+INT        i,j;
+INT        max_dof_connect_send;
+INT        max_dof_connect_recv;
 
 ARRAY      tmps_a;
-int      **tmps;
-int      **reddof;
+INT      **tmps;
+INT      **reddof;
 
 #ifdef DEBUG 
 dstrc_enter("ccf_red_dof_connect");
@@ -581,12 +581,12 @@ void  ccf_make_bindx(FIELD         *actfield,
                      PARTITION     *actpart, 
                      SOLVAR        *actsolv,
                      CCF           *ccf,
-                     int           *bindx,
+                     INT           *bindx,
                      ARRAY         *red_dof_connect)
 {
-int        i,j;
-int        count1,count2;
-int      **reddof;
+INT        i,j;
+INT        count1,count2;
+INT      **reddof;
 
 #ifdef DEBUG 
 dstrc_enter("ccf_make_bindx");
@@ -623,17 +623,17 @@ return;
  | irn_loc, jcn_loc, rowptr from update and bindx                       |
  *----------------------------------------------------------------------*/
 void  ccf_make_sparsity(CCF *ccf,
-                        int *bindx)
+                        INT *bindx)
 {
-int        i,j;
-int        start,end;
-int        counter;
-int        numeq;
-int        numeq_total;
-int        nnz;
-int       *update;
-int       *Ap;
-int       *Ai;
+INT        i,j;
+INT        start,end;
+INT        counter;
+INT        numeq;
+INT        numeq_total;
+INT        nnz;
+INT       *update;
+INT       *Ap;
+INT       *Ai;
 
 #ifdef DEBUG 
 dstrc_enter("ccf_make_sparsity");

@@ -41,13 +41,13 @@ void fluid_initmfcoupling(
 			   FIELD         *alefield		
 		         )
 {
-int     numfnp,  numanp;                     /* number of nodes         */  
-int     numfld;
-int     i,j;                                 /* simply some counters    */
-int     ierr;                                /* flag                    */
-int     afound;                              /* flag                    */          
-int     numff,numaf;
-double  tol=EPS8;                            /* tolerance for node dist */
+INT     numfnp,  numanp;                     /* number of nodes         */  
+INT     numfld;
+INT     i,j;                                 /* simply some counters    */
+INT     ierr;                                /* flag                    */
+INT     afound;                              /* flag                    */          
+INT     numff,numaf;
+DOUBLE  tol=EPS8;                            /* tolerance for node dist */
 NODE   *actfnode, *actanode;                 /* actual nodes            */
 GNODE  *actfgnode,*actagnode;                /* actual gnodes           */
 

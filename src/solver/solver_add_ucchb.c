@@ -21,26 +21,26 @@ void  add_ucchb(struct _PARTITION     *actpart,
                   struct _UCCHB         *ucchb)
 {
 #ifdef PARSUPERLU_PACKAGE
-int         i,j,counter;              /* some counter variables */
-int         ii,jj;                    /* counter variables for system matrix */
-int         ii_index;
-int         jj_height;
-int         jj_start;
-int         nd;                       /* size of estif */
-int         nnz;                      /* number of nonzeros in sparse system matrix */
-int         numeq_total;              /* total number of equations */
-int         numeq;                    /* number of equations on this proc */
-int         lm[MAXDOFPERELE];         /* location vector for this element */
-int         owner[MAXDOFPERELE];      /* the owner of every dof */
-int         myrank;                   /* my intra-proc number */
-int         nprocs;                   /* my intra- number of processes */
-double    **estif;                    /* element matrix to be added to system matrix */
-double     *a;                        /* the ucchb matrix */
-int        *asub;                     /* the ucchb matrix */
-int        *xa;                       /* the ucchb matrix */
+INT         i,j,counter;              /* some counter variables */
+INT         ii,jj;                    /* counter variables for system matrix */
+INT         ii_index;
+INT         jj_height;
+INT         jj_start;
+INT         nd;                       /* size of estif */
+INT         nnz;                      /* number of nonzeros in sparse system matrix */
+INT         numeq_total;              /* total number of equations */
+INT         numeq;                    /* number of equations on this proc */
+INT         lm[MAXDOFPERELE];         /* location vector for this element */
+INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+INT         myrank;                   /* my intra-proc number */
+INT         nprocs;                   /* my intra- number of processes */
+DOUBLE    **estif;                    /* element matrix to be added to system matrix */
+DOUBLE     *a;                        /* the ucchb matrix */
+INT        *asub;                     /* the ucchb matrix */
+INT        *xa;                       /* the ucchb matrix */
 /*
-int       **cdofs;
-int         ncdofs;
+INT       **cdofs;
+INT         ncdofs;
 */
 #ifdef DEBUG 
 dstrc_enter("add_ucchb");
@@ -131,12 +131,12 @@ void redundant_ucchb(
                         UCCHB         *ucchb
                         )
 {
-int     i;
-int     imyrank;
-int     inprocs;
+INT     i;
+INT     imyrank;
+INT     inprocs;
 
 ARRAY   recv_a;
-double *recv;
+DOUBLE *recv;
 
 #ifdef DEBUG 
 dstrc_enter("redundant_ucchb");

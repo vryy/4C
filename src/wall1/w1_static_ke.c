@@ -22,66 +22,66 @@ void w1static_ke(ELEMENT   *ele,
                  MATERIAL  *mat,
                  ARRAY     *estif_global,
                  ARRAY     *emass_global, /* global vector for mass */
-                 double    *force,  /* global vector for internal forces (initialized!) */
-                 int        init)
+                 DOUBLE    *force,  /* global vector for internal forces (initialized!) */
+                 INT        init)
 {
-int                 i,j,k,a,b;        /* some loopers */
-int                 nir,nis;          /* num GP in r/s/t direction */
-int                 lr, ls;           /* loopers over GP */
-int                 iel;              /* numnp to this element */
-int                 dof;
-int                 nd;
-int                 ip;
-int                 lanz, maxreb;
-int                 istore = 0;/* controls storing of new stresses to wa */
-int                 newval = 0;/* controls evaluation of new stresses    */
-const int           numdf  = 2;
-const int           numeps = 3;
+INT                 i,j,k,a,b;        /* some loopers */
+INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 lr, ls;           /* loopers over GP */
+INT                 iel;              /* numnp to this element */
+INT                 dof;
+INT                 nd;
+INT                 ip;
+INT                 lanz, maxreb;
+INT                 istore = 0;/* controls storing of new stresses to wa */
+INT                 newval = 0;/* controls evaluation of new stresses    */
+const INT           numdf  = 2;
+const INT           numeps = 3;
 
-double              fac,facm;         /* integration factors            */
-double              stifac;           /* thickness                      */
-double              e1,e2;            /* GP-coords                      */
-double              facr,facs;        /* weights at GP                  */
-double              weight;
-double              density;          /* for calculation of mass matrix */       
-int                 imass;            /* flag for calc of mass matrix   */
+DOUBLE              fac,facm;         /* integration factors            */
+DOUBLE              stifac;           /* thickness                      */
+DOUBLE              e1,e2;            /* GP-coords                      */
+DOUBLE              facr,facs;        /* weights at GP                  */
+DOUBLE              weight;
+DOUBLE              density;          /* for calculation of mass matrix */       
+INT                 imass;            /* flag for calc of mass matrix   */
 
 static ARRAY    D_a;         /* material tensor */     
-static double **D;         
+static DOUBLE **D;         
 static ARRAY    funct_a;     /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;     /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;       /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    xjm0_a;      /* jacobian matrix at r = s = 0 */     
-static double **xjm0;         
+static DOUBLE **xjm0;         
 static ARRAY    bop_a;       /* B-operator */   
-static double **bop;       
+static DOUBLE **bop;       
 static ARRAY    gop_a;       /* incomp modes: strain = Bop*d + Gop*alpha */   
-static double  *gop;       
+static DOUBLE  *gop;       
 static ARRAY    alpha_a;     /* incomp modes: alpha = vector of element internal dof*/   
-static double  *alpha;       
+static DOUBLE  *alpha;       
 static ARRAY    knc_a;       /* incomp modes: knc = BT C G (8*4)     */   
-static double **knc;
+static DOUBLE **knc;
 static ARRAY    knn_a;       /* incomp modes: knn = GT C G (4*4)     */   
-static double **knn;
+static DOUBLE **knn;
 static ARRAY    knninv_a;    /* incomp modes:knninv = inverse(knn)   */   
-static double **knninv;
+static DOUBLE **knninv;
 static ARRAY    deltak_a;    /* incomp modes:deltak=knc*knninv*kcn   */   
-static double **deltak;
+static DOUBLE **deltak;
 static ARRAY    fintn_a;     /* incomp modes: fintn = GT sig (4*1)   */   
-static double  *fintn;
+static DOUBLE  *fintn;
 static ARRAY    deltaf_a;    /* incomp modes:deltaf=knc*knninv*fintn */   
-static double  *deltaf;
+static DOUBLE  *deltaf;
        
-static double **estif;       /* element stiffness matrix ke */
-static double **emass;       /* mass matrix */
+static DOUBLE **estif;       /* element stiffness matrix ke */
+static DOUBLE **emass;       /* mass matrix */
 
-double F[4];                 /* stress */
-double fie[18];              /* internal force */
+DOUBLE F[4];                 /* stress */
+DOUBLE fie[18];              /* internal force */
 
-double det,det0;             /* Jacobi-det, Jacobi-det at r=s=0 */
+DOUBLE det,det0;             /* Jacobi-det, Jacobi-det at r=s=0 */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -299,15 +299,15 @@ return;
 /*----------------------------------------------------------------------*
  | evaluates element forces                              al    9/01     |
  *----------------------------------------------------------------------*/
-void w1fi( double  *F,
-           double   fac,
-           double **bop,
-           int      nd,
-           double  *fie)
+void w1fi( DOUBLE  *F,
+           DOUBLE   fac,
+           DOUBLE **bop,
+           INT      nd,
+           DOUBLE  *fie)
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-double tau11, tau12, tau21, tau22, tau33;
+INT i,j;
+DOUBLE tau11, tau12, tau21, tau22, tau33;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1fi");

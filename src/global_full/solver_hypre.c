@@ -18,7 +18,7 @@ extern struct _FILES  allfiles;
  |  struct _H_PARCSR       *parcsr     ptr to parcsr system matrix to solve | 
  |  struct _DIST_VECTOR    *sol        ptr to distrib. solution vector      |
  |  struct _DIST_VECTOR    *rhs        ptr to distrib. rhs vector           |
- |  int                     option     =1 init phase                        |
+ |  INT                     option     =1 init phase                        |
  |                                     =0 calculation phase                 |
  | this routine uses HYPRE V1.6.0 - high performance preconditioner library |
  | the HYPRE header files are included in solution.h                        |
@@ -35,14 +35,14 @@ void  solver_hypre_parcsr(struct _SOLVAR         *actsolv,
                           struct _H_PARCSR       *parcsr,
                           struct _DIST_VECTOR    *sol,
                           struct _DIST_VECTOR    *rhs,
-                          int                     option)
+                          INT                     option)
 {
 #ifdef HYPRE_PACKAGE
-int                 i;                     /* counter variable */
-int                 err;                   /* error flag */
+INT                 i;                     /* counter variable */
+INT                 err;                   /* error flag */
 
-int                 myrank;                /* this processors intra-rank */
-int                 nprocs;                /* number of procs in the intra-communicator */
+INT                 myrank;                /* this processors intra-rank */
+INT                 nprocs;                /* number of procs in the intra-communicator */
 
 HYPREVARS          *hyprevars;             /* variables for hypre solver read from input file */
 SOLVER_TYP         *solvertyp;             /* enum, type of hypre solver */
@@ -615,14 +615,14 @@ return;
 /*----------------------------------------------------------------------*
  |  create a vector for HYPRE Package                        m.gee 10/01|
  *----------------------------------------------------------------------*/
-void hypre_vector_create(int              myrank,
+void hypre_vector_create(INT              myrank,
                            H_PARCSR        *parcsr,
                            INTRA           *actintra,
                            HYPRE_IJVector  *ijvector)
 {
-int err=0;
-int ilower,iupper;
-int jlower,jupper;
+INT err=0;
+INT ilower,iupper;
+INT jlower,jupper;
 #ifdef DEBUG 
 dstrc_enter("hypre_vector_create");
 #endif
@@ -650,7 +650,7 @@ return;
 void hypre_vector_assemble(HYPRE_IJVector  *ijvector,
                              HYPRE_ParVector *parcsr_vector)
 {
-int err=0;
+INT err=0;
 #ifdef DEBUG 
 dstrc_enter("hypre_vector_assemble");
 #endif
@@ -670,14 +670,14 @@ return;
 /*----------------------------------------------------------------------*
  |  create a vector for HYPRE Package                        m.gee 10/01|
  *----------------------------------------------------------------------*/
-void hypre_matrix_create(int              myrank,
+void hypre_matrix_create(INT              myrank,
                            H_PARCSR        *parcsr,
                            INTRA           *actintra,
                            HYPRE_IJMatrix  *ijmatrix)
 {
-int err=0;
-int ilower,iupper;
-int jlower,jupper;
+INT err=0;
+INT ilower,iupper;
+INT jlower,jupper;
 #ifdef DEBUG 
 dstrc_enter("hypre_matrix_create");
 #endif
@@ -706,7 +706,7 @@ return;
 void hypre_matrix_assemble(HYPRE_IJMatrix     *ij_matrix,
                              HYPRE_ParCSRMatrix *parcsr_matrix)
 {
-int err=0;
+INT err=0;
 #ifdef DEBUG 
 dstrc_enter("hypre_matrix_assemble");
 #endif
@@ -729,10 +729,10 @@ return;
  *----------------------------------------------------------------------*/
 void hypre_set_params_boomeramg_solver(HYPRE_Solver *solver,HYPREVARS *hyprevars)
 {
-int i;
-int err=0;
-int gridrelaxtype[4];
-int gridnsweep[4];
+INT i;
+INT err=0;
+INT gridrelaxtype[4];
+INT gridnsweep[4];
 #ifdef DEBUG 
 dstrc_enter("hypre_solver_set_params_boomeramg");
 #endif
@@ -783,8 +783,8 @@ return;
  *----------------------------------------------------------------------*/
 void hypre_set_params_gmres_solver(HYPRE_Solver *solver,HYPREVARS *hyprevars)
 {
-int i;
-int err=0;
+INT i;
+INT err=0;
 #ifdef DEBUG 
 dstrc_enter("hypre_set_params_gmres_solver");
 #endif
@@ -816,8 +816,8 @@ return;
  *----------------------------------------------------------------------*/
 void hypre_set_params_bicgstab_solver(HYPRE_Solver *solver,HYPREVARS *hyprevars)
 {
-int i;
-int err=0;
+INT i;
+INT err=0;
 #ifdef DEBUG 
 dstrc_enter("hypre_set_params_bicgstab_solver");
 #endif
@@ -847,8 +847,8 @@ return;
  *----------------------------------------------------------------------*/
 void hypre_set_params_pcg_solver(HYPRE_Solver *solver,HYPREVARS *hyprevars)
 {
-int i;
-int err=0;
+INT i;
+INT err=0;
 #ifdef DEBUG 
 dstrc_enter("hypre_set_params_pcg_solver");
 #endif
@@ -880,9 +880,9 @@ return;
  *----------------------------------------------------------------------*/
 void hypre_create_precond_euclid(HYPRE_Solver *precond, INTRA *actintra, HYPREVARS *hyprevars)
 {
-int    i;
-int    err=0;
-int    numarg;
+INT    i;
+INT    err=0;
+INT    numarg;
 char **args;
 #ifdef DEBUG 
 dstrc_enter("hypre_create_precond_euclid");
@@ -935,8 +935,8 @@ return;
 void hypre_create_precond_parasails(HYPRE_Solver *precond, INTRA *actintra, 
                                       HYPREVARS *hyprevars)
 {
-int    i;
-int    err=0;
+INT    i;
+INT    err=0;
 #ifdef DEBUG 
 dstrc_enter("hypre_create_precond_parasails");
 #endif
@@ -967,10 +967,10 @@ return;
 void hypre_create_precond_boomeramg(HYPRE_Solver *precond, INTRA *actintra, 
                                       HYPREVARS *hyprevars)
 {
-int    i;
-int    err=0;
-int    gridrelaxtype[4];
-int    gridnsweep[4];
+INT    i;
+INT    err=0;
+INT    gridrelaxtype[4];
+INT    gridnsweep[4];
 #ifdef DEBUG  
 dstrc_enter("hypre_create_precond_boomeramg");
 #endif 

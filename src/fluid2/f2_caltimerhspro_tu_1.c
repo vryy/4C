@@ -23,31 +23,31 @@ PRODUKTIONSTERM:
 
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param    eddynint     double	      (i)    eddy-visc. at integr. point
-\param   *funct       double	      (i)    nat. shape functions      
-\param    fac	    double	      (i)    weighting factor
-\param    factor1	    double	      (i)    factor
-\param    production  double	      (i)    factor
-\param    iel	    int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param    eddynint     DOUBLE	      (i)    eddy-visc. at integr. point
+\param   *funct       DOUBLE	      (i)    nat. shape functions      
+\param    fac	    DOUBLE	      (i)    weighting factor
+\param    factor1	    DOUBLE	      (i)    factor
+\param    production  DOUBLE	      (i)    factor
+\param    iel	    INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calgalprofkapome(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,    
-		      double           eddynint,
-                  double          *funct,    
-		      double           fac,      
-                  double           factor1,  
-                  double           production,  
-                  int              iel       
+                  DOUBLE          *eforce,    
+		      DOUBLE           eddynint,
+                  DOUBLE          *funct,    
+		      DOUBLE           fac,      
+                  DOUBLE           factor1,  
+                  DOUBLE           production,  
+                  INT              iel       
                   )  
 {
-int    j,irow,isd,inode;  
-double c;
-double aux;
-double facsl;
+INT    j,irow,isd,inode;  
+DOUBLE c;
+DOUBLE aux;
+DOUBLE facsl;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calgaltfkapeps");
@@ -100,38 +100,38 @@ PRODUKTIONSTERM:
 </pre>
 \param   *dynvar      FLUID_DYN_CALC(i)
 \param   *ele         ELEMENT	      (i)    actual element
-\param   *eforce      double	      (i/o)  element force vector
-\param    eddynint    double	      (i)    eddy-visc. at integr. point
-\param   *funct       double	      (i)    nat. shape functions      
-\param    fac	    double	      (i)    weighting factor
-\param    factor1	    double	      (i)    factor
-\param    production  double	      (i)    factor
-\param   *velint      double	      (i)    vel. at integr. point
-\param   *velint_dc   double	      (i)    vel. at integr. point for D.C.
-\param   **derxy      double	      (i)    global deriv.
-\param    iel	    int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param    eddynint    DOUBLE	      (i)    eddy-visc. at integr. point
+\param   *funct       DOUBLE	      (i)    nat. shape functions      
+\param    fac	    DOUBLE	      (i)    weighting factor
+\param    factor1	    DOUBLE	      (i)    factor
+\param    production  DOUBLE	      (i)    factor
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param   *velint_dc   DOUBLE	      (i)    vel. at integr. point for D.C.
+\param   **derxy      DOUBLE	      (i)    global deriv.
+\param    iel	    INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabprofkapome(
                    FLUID_DYN_CALC  *dynvar,
                    ELEMENT         *ele,      
-	            double          *eforce,  
-		      double           eddynint, 
-                  double          *funct,    
-                  double           fac,     
-                  double           factor1,
-                  double           production,  
-                  double           *velint,  
-                  double           *velint_dc,  
-                  double          **derxy,  
-                  int              iel      
+	            DOUBLE          *eforce,  
+		      DOUBLE           eddynint, 
+                  DOUBLE          *funct,    
+                  DOUBLE           fac,     
+                  DOUBLE           factor1,
+                  DOUBLE           production,  
+                  DOUBLE           *velint,  
+                  DOUBLE           *velint_dc,  
+                  DOUBLE          **derxy,  
+                  INT              iel      
                   )
 {
-int    j,irow,isd,inode;
-double aux;
-double taumu,taumu_dc;
-double facsl,facsl_dc;
+INT    j,irow,isd,inode;
+DOUBLE aux;
+DOUBLE taumu,taumu_dc;
+DOUBLE facsl,facsl_dc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabtfkapome");

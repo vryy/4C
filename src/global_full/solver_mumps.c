@@ -10,34 +10,34 @@ void solver_mumps(struct _SOLVAR         *actsolv,
                   struct _RC_PTR         *rc_ptr,
                   struct _DIST_VECTOR    *sol,
                   struct _DIST_VECTOR    *rhs,
-                  int                     option)
+                  INT                     option)
 {
 #ifdef MUMPS_PACKAGE
-int            i;
-int            dof;
-int            info;
-int            imyrank;
-int            inprocs;
+INT            i;
+INT            dof;
+INT            info;
+INT            imyrank;
+INT            inprocs;
 
-int            job;
-int            sym;
-int            parproc;
-int            n;
-int            nz;
-int            nz_loc;
-int           *irn_loc;
-int           *jcn_loc;
-int           *irn;
-int           *jcn;
-double        *A_loc;
-int           *icntl;
+INT            job;
+INT            sym;
+INT            parproc;
+INT            n;
+INT            nz;
+INT            nz_loc;
+INT           *irn_loc;
+INT           *jcn_loc;
+INT           *irn;
+INT           *jcn;
+DOUBLE        *A_loc;
+INT           *icntl;
 
 MUMPSVARS     *mumpsvars;
 
 ARRAY          b_a;
-double        *b;
+DOUBLE        *b;
 ARRAY          tmp_a;
-double        *tmp;
+DOUBLE        *tmp;
 
 #ifdef DEBUG 
 dstrc_enter("solver_mumps");

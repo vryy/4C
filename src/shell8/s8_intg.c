@@ -7,9 +7,9 @@
  *----------------------------------------------------------------------*/
 void s8intg(const ELEMENT   *ele,
                S8_DATA         *data,
-               int              option)
+               INT              option)
 {
-double b,wgt,wgt0;
+DOUBLE b,wgt,wgt0;
 #ifdef DEBUG 
 dstrc_enter("s8intg");
 #endif

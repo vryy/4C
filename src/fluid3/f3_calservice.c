@@ -15,7 +15,7 @@
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-static int PREDOF = 3;
+static INT PREDOF = 3;
 
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
@@ -31,29 +31,29 @@ NOTE: in contradiction to the old programm the kinematic pressure
 </pre>
 \param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
-\param  **eveln    double	   (o)    ele vels at time n
-\param  **evelng   double	   (o)    ele vels at time n+g
-\param   *epren    double	   (o)    ele pres at time n
-\param   *edeadn   double          (o)    ele dead load at n (selfweight)
-\param   *edeadng  double          (o)    ele dead load at n+g (selfweight)
-\param   *hasext   int             (o)    flag for external loads
+\param  **eveln    DOUBLE	   (o)    ele vels at time n
+\param  **evelng   DOUBLE	   (o)    ele vels at time n+g
+\param   *epren    DOUBLE	   (o)    ele pres at time n
+\param   *edeadn   DOUBLE          (o)    ele dead load at n (selfweight)
+\param   *edeadng  DOUBLE          (o)    ele dead load at n+g (selfweight)
+\param   *hasext   INT             (o)    flag for external loads
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_calset( 
                 FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,
-                double         **eveln,
-	        double         **evelng,
-	        double          *epren,
-		double          *edeadn,
-		double          *edeadng,
-		int             *hasext		
+                DOUBLE         **eveln,
+	        DOUBLE         **evelng,
+	        DOUBLE          *epren,
+		DOUBLE          *edeadn,
+		DOUBLE          *edeadng,
+		INT             *hasext		
 	      )
 {
-int i,j,irow;
-int    actmat  ;    /* material number of the element                   */
-double dens;        /* density                                          */
+INT i,j,irow;
+INT    actmat  ;    /* material number of the element                   */
+DOUBLE dens;        /* density                                          */
 NODE  *actnode;     /* actual node                                      */
 GVOL  *actgvol;
 
@@ -180,21 +180,21 @@ return;
 <pre>                                                         genk 05/02
 				      
 </pre>
-\param   *velint   double        (o)   velocities at integration point
-\param   *funct    double        (i)   shape functions
-\param  **evel     double        (i)   velocites at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param   *velint   DOUBLE        (o)   velocities at integration point
+\param   *funct    DOUBLE        (i)   shape functions
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_veli(
-             double  *velint,    
-             double  *funct,    
-	     double **evel,     
-	     int      iel       
+             DOUBLE  *velint,    
+             DOUBLE  *funct,    
+	     DOUBLE **evel,     
+	     INT      iel       
 	    ) 
 {
-int     i,j;
+INT     i,j;
 
 #ifdef DEBUG 
 dstrc_enter("f3_veli");
@@ -223,21 +223,21 @@ return;
 <pre>                                                         genk 05/02
 				      
 </pre>
-\param  *preint    double        (o)   pressure at integration point
-\param  *funct     double        (i)   shape functions
-\param  *epre      double        (i)   pressure at element nodes
-\param   iel	   int           (i)   number of nodes in this element
+\param  *preint    DOUBLE        (o)   pressure at integration point
+\param  *funct     DOUBLE        (i)   shape functions
+\param  *epre      DOUBLE        (i)   pressure at element nodes
+\param   iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_prei(
-             double  *preint,    
-             double  *funct,    
-	     double  *epre,     
-	     int      iel       
+             DOUBLE  *preint,    
+             DOUBLE  *funct,    
+	     DOUBLE  *epre,     
+	     INT      iel       
 	    ) 
 {
-int     j;
+INT     j;
 
 #ifdef DEBUG 
 dstrc_enter("f3_prei");
@@ -266,21 +266,21 @@ In this routine the derivatives of the velocity w.r.t x/y are calculated
 vderxy[0][2] = Ux,z  
 				      
 </pre>
-\param  **vderxy   double        (o)   velocity derivativs
-\param  **derxy    double        (i)   globael derivatives
-\param  **evel     double        (i)   velocites at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param  **vderxy   DOUBLE        (o)   velocity derivativs
+\param  **derxy    DOUBLE        (i)   globael derivatives
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_vder(
-             double **vderxy,     
-             double **derxy,    
-	     double **evel,     
-	     int      iel       
+             DOUBLE **vderxy,     
+             DOUBLE **derxy,    
+	     DOUBLE **evel,     
+	     INT      iel       
 	    ) 
 {
-int     i,j;
+INT     i,j;
 
 #ifdef DEBUG 
 dstrc_enter("f3_vder");
@@ -320,21 +320,21 @@ w.r.t x/y/z are calculated
    vderxy2[2][5] = Ux,yz 
 				      
 </pre>
-\param  **vderxy2  double        (o)   2nd velocity derivativs
-\param  **derxy2   double        (i)   2nd global derivatives
-\param  **evel     double        (i)   velocites at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param  **vderxy2  DOUBLE        (o)   2nd velocity derivativs
+\param  **derxy2   DOUBLE        (i)   2nd global derivatives
+\param  **evel     DOUBLE        (i)   velocites at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_vder2(
-             double **vderxy2,   
-             double **derxy2,   
-	     double **evel,     
-	     int      iel       
+             DOUBLE **vderxy2,   
+             DOUBLE **derxy2,   
+	     DOUBLE **evel,     
+	     INT      iel       
 	    ) 
 {
-int     i,j;
+INT     i,j;
 
 #ifdef DEBUG 
 dstrc_enter("f3_vder2");
@@ -369,21 +369,21 @@ return;
 In this routine derivatives of the pressure w.r.t x/y/z are calculated
 				      
 </pre>
-\param   *pderxy   double        (o)   pressure derivativs
-\param  **derxy    double        (i)   globael derivatives
-\param   *epre     double        (i)   pressure at element nodes
-\param    iel	   int           (i)   number of nodes in this element
+\param   *pderxy   DOUBLE        (o)   pressure derivativs
+\param  **derxy    DOUBLE        (i)   globael derivatives
+\param   *epre     DOUBLE        (i)   pressure at element nodes
+\param    iel	   INT           (i)   number of nodes in this element
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_pder(
-             double  *pderxy,    
-             double **derxy,    
-	     double  *epre,     
-	     int      iel       
+             DOUBLE  *pderxy,    
+             DOUBLE **derxy,    
+	     DOUBLE  *epre,     
+	     INT      iel       
 	    ) 
 {
-int     i,j;
+INT     i,j;
 
 #ifdef DEBUG 
 dstrc_enter("f3_pder");
@@ -417,19 +417,19 @@ integration point:
  e.g. 3D: COVx = Ux*Ux,x + Uy*Ux,y + Uz*Ux,z
 
 </pre>
-\param  **vderxy   double        (o)   velocity derivativs
-\param   *velint   double        (i)   velocity at integration point
-\param   *covint   double        (i)   convective velocity at int point
+\param  **vderxy   DOUBLE        (o)   velocity derivativs
+\param   *velint   DOUBLE        (i)   velocity at integration point
+\param   *covint   DOUBLE        (i)   convective velocity at INT point
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_covi(
-             double **vderxy,    
-             double  *velint,   
-	     double  *covint    
+             DOUBLE **vderxy,    
+             DOUBLE  *velint,   
+	     DOUBLE  *covint    
 	    ) 
 {
-int     i,j;      
+INT     i,j;      
 #ifdef DEBUG 
 dstrc_enter("f3_covi");
 #endif
@@ -465,21 +465,21 @@ is not possible any more!!!!
 
 
 </pre>
-\param   *eforce   double        (i/o) element force vector
-\param  **tmp      double        (i)   working array
-\param    iel	   double        (i)   number of nodes in this ele
+\param   *eforce   DOUBLE        (i/o) element force vector
+\param  **tmp      DOUBLE        (i)   working array
+\param    iel	   DOUBLE        (i)   number of nodes in this ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_permeforce(
-		   double    *eforce,
-		   double   **tmp,
-		   int        iel		   		   
+		   DOUBLE    *eforce,
+		   DOUBLE   **tmp,
+		   INT        iel		   		   
 	          ) 
 {
-int i,irow;
-int nvdof;      /* number of vel dofs                                   */
-int totdof;     /* total number of dofs                                 */
+INT i,irow;
+INT nvdof;      /* number of vel dofs                                   */
+INT totdof;     /* total number of dofs                                 */
 
 #ifdef DEBUG 
 dstrc_enter("f3_permeforce");
@@ -532,27 +532,27 @@ routines for the stiffness matrix
 hence a splitting of vel- and pre dofs is not possible any more!!!!				  
 
 </pre>
-\param  **estif   double	 (i/o) ele stiffnes matrix
-\param  **emass   double	 (i)   ele mass matrix
-\param  **tmp     double	 (-)   working array		
-\param	  iel	  int		 (i)   number of nodes in ele
+\param  **estif   DOUBLE	 (i/o) ele stiffnes matrix
+\param  **emass   DOUBLE	 (i)   ele mass matrix
+\param  **tmp     DOUBLE	 (-)   working array		
+\param	  iel	  INT		 (i)   number of nodes in ele
 \param	 *dynvar  FLUID_DYN_CALC
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f3_permestif(                  
-		   double         **estif,
-		   double         **emass,
-		   double         **tmp,
-		   int              iel,
+		   DOUBLE         **estif,
+		   DOUBLE         **emass,
+		   DOUBLE         **tmp,
+		   INT              iel,
 		   FLUID_DYN_CALC  *dynvar		   		   
 	          ) 
 {
-int i,j,icol,irow;          /* simply some counters  	        	*/
-int nvdof;                  /* number of vel dofs 			*/
-int npdof;                  /* number of pre dofs 			*/
-int totdof;                 /* total number of dofs			*/
-double thsl;	            /* factor for LHS (THETA*DT)		*/
+INT i,j,icol,irow;          /* simply some counters  	        	*/
+INT nvdof;                  /* number of vel dofs 			*/
+INT npdof;                  /* number of pre dofs 			*/
+INT totdof;                 /* total number of dofs			*/
+DOUBLE thsl;	            /* factor for LHS (THETA*DT)		*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_permestif");

@@ -70,8 +70,8 @@ To create the intra-communicators the followin gsteps are done:
 ------------------------------------------------------------------------*/
 void create_communicators()
 {
-int         i,j;
-int        *ranklist;
+INT         i,j;
+INT        *ranklist;
 #ifdef PARALLEL 
 MPI_Group   MPI_WORLD_GROUP;
 #endif
@@ -82,7 +82,7 @@ dstrc_enter("create_communicators");
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 /*----------------------------------------------------------------------*/
-ranklist = (int*)CCAMALLOC(par.nprocs*sizeof(int));
+ranklist = (INT*)CCAMALLOC(par.nprocs*sizeof(INT));
 if (!ranklist) dserror("Allocation of memory failed");
 /*----------------------------------------------- save number of fields */
 par.numfld      = genprob.numfld;

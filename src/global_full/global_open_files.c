@@ -30,14 +30,14 @@ extern struct _GENPROB  genprob;
  |                                                                      |
  |                                                        m.gee 8/00    |
  *----------------------------------------------------------------------*/
-void ntadev(int argc, char *argv[])
+void ntadev(INT argc, char *argv[])
 {
 char  *charpointer; 
 char  *resptr;  
 char  *vismode;
-int    isrestart;
-int    length;
-int    lasthandle,nrecords;
+INT    isrestart;
+INT    length;
+INT    lasthandle,nrecords;
 /*------------ cannot use dserror here, because .err files not yet open */
 /*--------------------------------------------------cheque command line */
    if (argc <= 1)

@@ -15,36 +15,36 @@ C!    DETSM     -  'FLAECHENELEMENT' DER SMF
 C!    DETSR     -      "             DES SCHALENRAUMS
 C---------------------------------------------------------------------
  *----------------------------------------------------------------------*/
-void s8_tfte(double **force,
-             int      ngauss,
-             double  *stress,
-             double **gkov,
-             double **akon,
-             double **gmkov,
-             double **gmkon,
-             double **amkov,
-             double **amkon,
-             double   h,
-             double   e3,
-             double   fact,
-             double   detsm,
-             double   detsr)
+void s8_tfte(DOUBLE **force,
+             INT      ngauss,
+             DOUBLE  *stress,
+             DOUBLE **gkov,
+             DOUBLE **akon,
+             DOUBLE **gmkov,
+             DOUBLE **gmkon,
+             DOUBLE **amkov,
+             DOUBLE **amkon,
+             DOUBLE   h,
+             DOUBLE   e3,
+             DOUBLE   fact,
+             DOUBLE   detsm,
+             DOUBLE   detsr)
 {
-int    i;
-double s11,s12,s21,s13,s31,s22,s23,s32,s33;
-double xu;
-double hh;
-double wgt;
-double wgthe3;
-double xu11=0.0;
-double xu21=0.0;
-double xu31=0.0;
-double xu12=0.0;
-double xu22=0.0;
-double xu32=0.0;
-double xu13=0.0;
-double xu23=0.0;
-double xu33=0.0;
+INT    i;
+DOUBLE s11,s12,s21,s13,s31,s22,s23,s32,s33;
+DOUBLE xu;
+DOUBLE hh;
+DOUBLE wgt;
+DOUBLE wgthe3;
+DOUBLE xu11=0.0;
+DOUBLE xu21=0.0;
+DOUBLE xu31=0.0;
+DOUBLE xu12=0.0;
+DOUBLE xu22=0.0;
+DOUBLE xu32=0.0;
+DOUBLE xu13=0.0;
+DOUBLE xu23=0.0;
+DOUBLE xu33=0.0;
 #ifdef DEBUG 
 dstrc_enter("s8_tfte");
 #endif

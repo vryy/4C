@@ -15,17 +15,17 @@ void calrhs(FIELD        *actfield,     /* the active field */
             SOLVAR       *actsolv,      /* the active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* the field's intra-communicator */
-            int           actsysarray,  /* the active sparse array */
+            INT           actsysarray,  /* the active sparse array */
             DIST_VECTOR  *rhs1,         /* 1 dist. vectors for rhs */
             CALC_ACTION  *action,       /* action to be passed to element routines */
             CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
-int i;
+INT i;
 static ARRAY rhs_a; 
-static double *rhs;
+static DOUBLE *rhs;
 #ifdef PARALLEL 
 static ARRAY rhsrecv_a;
-static double *rhsrecv;
+static DOUBLE *rhsrecv;
 #endif
 SPARSE_TYP   *sysarraytyp;
 SPARSE_ARRAY *sysarray;
@@ -105,14 +105,14 @@ return;
  | Attention! This assembly of nodal forces works only correct with     |
  | partitioning in the "Cut_Elements" style !!!!
  *----------------------------------------------------------------------*/
-void rhs_point_neum(double *rhs, int dimrhs, PARTITION *actpart)     
+void rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart)     
 {
-int             i,j;
-int             dof;
+INT             i,j;
+INT             dof;
 NODE           *actnode;
 NEUM_CONDITION *actneum;
-int             nsurf;     /* 1=MID; 2=TOP; 3=BOT */
-int             numklay;   /* number of kinematic layers if shell9 */
+INT             nsurf;     /* 1=MID; 2=TOP; 3=BOT */
+INT             numklay;   /* number of kinematic layers if shell9 */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("rhs_point_neum");

@@ -6,17 +6,17 @@
  | init sol[place] to zero                                              |
  |                                                                      |
  | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    arraynum (i) indize of the array, 0 = sol                     |
+ | INT    disnum   (i) indize of the discretization in actfield to be used|
+ | INT    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
  |                                          3 = sol_mf                  |
- | int    place    (i) row in ARRAY sol to be set to zero               | 
+ | INT    place    (i) row in ARRAY sol to be set to zero               | 
  *----------------------------------------------------------------------*/
-void solserv_sol_zero(FIELD *actfield, int disnum, int arraynum, int place)
+void solserv_sol_zero(FIELD *actfield, INT disnum, INT arraynum, INT place)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -71,20 +71,20 @@ return;
  |                  array arrayto   in place to                         |
  |                                                                      |
  | FIELD *actfield  (i) active field                                    |
- | int    disnum    (i) indize of the discretization in actfield to be used|
- | int    arrayfrom (i) indize of the array, 0 = sol                    |
+ | INT    disnum    (i) indize of the discretization in actfield to be used|
+ | INT    arrayfrom (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
- | int    arrayto   (i) indize of the array, 0 = sol                    |
+ | INT    arrayto   (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
- | int    from    (i) row in ARRAY sol to be set to zero                | 
+ | INT    from    (i) row in ARRAY sol to be set to zero                | 
  *----------------------------------------------------------------------*/
-void solserv_sol_copy(FIELD *actfield, int disnum, int arrayfrom, int arrayto, 
-                      int from, int to)
+void solserv_sol_copy(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto, 
+                      INT from, INT to)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *arrayf,*arrayt;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -160,22 +160,22 @@ return;
  | scale fromvalues by fac
  |                                                                      |
  | FIELD *actfield  (i) active field                                    |
- | int    disnum    (i) indize of the discretization in actfield to be used|
- | int    arrayfrom (i) indize of the array, 0 = sol                    |
+ | INT    disnum    (i) indize of the discretization in actfield to be used|
+ | INT    arrayfrom (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
  |                                           3 = sol_mf                 |
- | int    arrayto   (i) indize of the array, 0 = sol                    |
+ | INT    arrayto   (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
  |                                           3 = sol_mf                 |
- | int    from    (i) row in ARRAY sol to be set to zero                | 
+ | INT    from    (i) row in ARRAY sol to be set to zero                | 
  *----------------------------------------------------------------------*/
-void solserv_sol_add(FIELD *actfield, int disnum, int arrayfrom, int arrayto, 
-                      int from, int to, double fac)
+void solserv_sol_add(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto, 
+                      INT from, INT to, DOUBLE fac)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *arrayf,*arrayt;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -254,17 +254,17 @@ return;
  |                                                                      |
  |                                                                      |
  | ELEMENT *actele   (i)   the element to assemble the vector for       |
- | double  *localvec (i)   a vector of element size                     |
- | int      arraynum (i)   indize of the array, 0 = sol                 |
+ | DOUBLE  *localvec (i)   a vector of element size                     |
+ | INT      arraynum (i)   indize of the array, 0 = sol                 |
  |                                              1 = sol_increment       |
  |                                              2 = sol_residual        |
- | int      place      (i) row in array that is used                    |
+ | INT      place      (i) row in array that is used                    |
  *----------------------------------------------------------------------*/
-void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, double *localvec, int arraynum,
-                              int place)
+void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, DOUBLE *localvec, INT arraynum,
+                              INT place)
 {
-int               i,j;
-int               diff,max,numdf;
+INT               i,j;
+INT               diff,max,numdf;
 ARRAY            *array;
 NODE             *actnode;
 #ifdef DEBUG 
@@ -326,18 +326,18 @@ return;
  | Nothing is done for dofs or nodes which do not have a dirichlet      |
  | condition                                                            |
  | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    arraynum (i) indize of the array, 0 = sol                     |
+ | INT    disnum   (i) indize of the discretization in actfield to be used|
+ | INT    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
- | double scale    (i) scaling factor for dirichlet condition           |
- | int place       (i) row to put values in the ARRAY sol               |
+ | DOUBLE scale    (i) scaling factor for dirichlet condition           |
+ | INT place       (i) row to put values in the ARRAY sol               |
  *----------------------------------------------------------------------*/
-void solserv_putdirich_to_dof(FIELD *actfield, int disnum, int arraynum, double scale, 
-                              int place)
+void solserv_putdirich_to_dof(FIELD *actfield, INT disnum, INT arraynum, DOUBLE scale, 
+                              INT place)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -408,22 +408,22 @@ return;
  | This is ONLY performed for dofs which have a dirichlet condition     |
  |                                                                      |
  | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    arraynum (i) indize of the array, 0 = sol                     |
+ | INT    disnum   (i) indize of the discretization in actfield to be used|
+ | INT    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
- | int    from1    (i) place in ARRAY sol to take the values from       |
- | int    from2    (i) place in ARRAY sol to take the values from       |
- | int    to       (i) place in ARRAY sol to write values to            |
- | double facfrom1 (i) scaling factor vor values from from1             |
- | double facfrom2 (i) scaling factor vor values from from2             |
+ | INT    from1    (i) place in ARRAY sol to take the values from       |
+ | INT    from2    (i) place in ARRAY sol to take the values from       |
+ | INT    to       (i) place in ARRAY sol to write values to            |
+ | DOUBLE facfrom1 (i) scaling factor vor values from from1             |
+ | DOUBLE facfrom2 (i) scaling factor vor values from from2             |
  *----------------------------------------------------------------------*/
-void solserv_adddirich(FIELD *actfield, int disnum, int arraynum,
-                              int from1,int from2,int to,
-                              double facfrom1, double facfrom2)
+void solserv_adddirich(FIELD *actfield, INT disnum, INT arraynum,
+                              INT from1,INT from2,INT to,
+                              DOUBLE facfrom1, DOUBLE facfrom2)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -497,12 +497,12 @@ return;
  | same functionality as solserv_adddirich but adds to array in the place to|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void solserv_assdirich_fac(FIELD *actfield, int disnum, int arraynum,
-                           int from1,int from2,int to, 
-                           double facfrom1, double facfrom2)
+void solserv_assdirich_fac(FIELD *actfield, INT disnum, INT arraynum,
+                           INT from1,INT from2,INT to, 
+                           DOUBLE facfrom1, DOUBLE facfrom2)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -573,18 +573,18 @@ return;
  | This is only performed for dofs which have a dirichlet condition on them |
  |                                                                      |
  | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    arraynum (i) indize of the array, 0 = sol                     |
+ | INT    disnum   (i) indize of the discretization in actfield to be used|
+ | INT    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
- | int    to       (i) place in ARRAY sol to write values to            |
- | int    from     (i) place in ARRAY sol to take the values from       |
+ | INT    to       (i) place in ARRAY sol to write values to            |
+ | INT    from     (i) place in ARRAY sol to take the values from       |
  *----------------------------------------------------------------------*/
-void solserv_cpdirich(FIELD *actfield, int disnum, int arraynum,
-                      int from,int to)
+void solserv_cpdirich(FIELD *actfield, INT disnum, INT arraynum,
+                      INT from,INT to)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -649,16 +649,16 @@ return;
  | This is only performed for dofs which have a dirichlet condition on them |
  |                                                                      |
  | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    arraynum (i) indize of the array, 0 = sol                     |
+ | INT    disnum   (i) indize of the discretization in actfield to be used|
+ | INT    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
- | int    place    (i) row in ARRAY sol to be set to zero               | 
+ | INT    place    (i) row in ARRAY sol to be set to zero               | 
  *----------------------------------------------------------------------*/
-void solserv_zerodirich(FIELD *actfield, int disnum, int arraynum, int place)
+void solserv_zerodirich(FIELD *actfield, INT disnum, INT arraynum, INT place)
 {
-int               i,j;
-int               diff,max;
+INT               i,j;
+INT               diff,max;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;

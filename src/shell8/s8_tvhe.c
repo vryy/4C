@@ -12,41 +12,41 @@ c!    in e3 quadratischen Anteile zu beruecksichtigen, d.h.
 c!    gmkovc_ij ungleich gkovc_i*gkovc_j                                         .
 C.......................................................................
 */
-void s8_tvhe(double **gmkovr,
-             double **gmkovc,
-             double **gmkonr,
-             double **gmkonc,
-             double **gkovr,
-             double **gkovc,
-             double  *detr,
-             double  *detc,
-             double **amkovc,
-             double **amkovr,
-             double **akovc,
-             double **akovr,
-             double **a3kvpc,
-             double **a3kvpr,
-             double   e3,
-             double   condfac)
+void s8_tvhe(DOUBLE **gmkovr,
+             DOUBLE **gmkovc,
+             DOUBLE **gmkonr,
+             DOUBLE **gmkonc,
+             DOUBLE **gkovr,
+             DOUBLE **gkovc,
+             DOUBLE  *detr,
+             DOUBLE  *detc,
+             DOUBLE **amkovc,
+             DOUBLE **amkovr,
+             DOUBLE **akovc,
+             DOUBLE **akovr,
+             DOUBLE **a3kvpc,
+             DOUBLE **a3kvpr,
+             DOUBLE   e3,
+             DOUBLE   condfac)
 {
-int i;
-double b11c=0.0;
-double b12c=0.0;
-double b21c=0.0;
-double b22c=0.0;
-double b31c=0.0;
-double b32c=0.0;
+INT i;
+DOUBLE b11c=0.0;
+DOUBLE b12c=0.0;
+DOUBLE b21c=0.0;
+DOUBLE b22c=0.0;
+DOUBLE b31c=0.0;
+DOUBLE b32c=0.0;
 
-double b11r=0.0;
-double b12r=0.0;
-double b21r=0.0;
-double b22r=0.0;
-double b31r=0.0;
-double b32r=0.0;
+DOUBLE b11r=0.0;
+DOUBLE b12r=0.0;
+DOUBLE b21r=0.0;
+DOUBLE b22r=0.0;
+DOUBLE b31r=0.0;
+DOUBLE b32r=0.0;
 
-double det_dummy;
+DOUBLE det_dummy;
 
-double zeta;
+DOUBLE zeta;
 
 #ifdef DEBUG 
 dstrc_enter("s8_tvhe");
@@ -107,39 +107,39 @@ c!    in e3 quadratischen Anteile zu beruecksichtigen, d.h.
 c!    gmkovc_ij ungleich gkovc_i*gkovc_j                                         .
 C.......................................................................
 */
-void s8_tvhe_lin(double **gmkovr,
-                 double **gmkovc,
-                 double **gmkonr,
-                 double **gmkonc,
-                 double **gkovr,
-                 double **gkovc,
-                 double  *detr,
-                 double  *detc,
-                 double **amkovc,
-                 double **amkovr,
-                 double **akovc,
-                 double **akovr,
-                 double **a3kvpc,
-                 double **a3kvpr,
-                 double   e3)
+void s8_tvhe_lin(DOUBLE **gmkovr,
+                 DOUBLE **gmkovc,
+                 DOUBLE **gmkonr,
+                 DOUBLE **gmkonc,
+                 DOUBLE **gkovr,
+                 DOUBLE **gkovc,
+                 DOUBLE  *detr,
+                 DOUBLE  *detc,
+                 DOUBLE **amkovc,
+                 DOUBLE **amkovr,
+                 DOUBLE **akovc,
+                 DOUBLE **akovr,
+                 DOUBLE **a3kvpc,
+                 DOUBLE **a3kvpr,
+                 DOUBLE   e3)
 {
-int i,j,k;
-double b11c=0.0;
-double b12c=0.0;
-double b21c=0.0;
-double b22c=0.0;
-double b31c=0.0;
-double b32c=0.0;
+INT i,j,k;
+DOUBLE b11c=0.0;
+DOUBLE b12c=0.0;
+DOUBLE b21c=0.0;
+DOUBLE b22c=0.0;
+DOUBLE b31c=0.0;
+DOUBLE b32c=0.0;
 
-double b11r=0.0;
-double b12r=0.0;
-double b21r=0.0;
-double b22r=0.0;
-double b31r=0.0;
-double b32r=0.0;
+DOUBLE b11r=0.0;
+DOUBLE b12r=0.0;
+DOUBLE b21r=0.0;
+DOUBLE b22r=0.0;
+DOUBLE b31r=0.0;
+DOUBLE b32r=0.0;
 
-double heps[3][3];
-double det_dummy;
+DOUBLE heps[3][3];
+DOUBLE det_dummy;
 
 
 #ifdef DEBUG 

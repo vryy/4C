@@ -30,37 +30,37 @@ extern struct _SHELLCONTACT shellcontact;
 <pre>                                                        m.gee 2/03 
 </pre>
 \param actcnode    SHELLNODE*    (i)   the active node
-\param ssurf       int*          (i)   indicates top or bottom of slave node
-\param msurf       int*          (i)   indicates top or bottom of closest master node
+\param ssurf       INT*          (i)   indicates top or bottom of slave node
+\param msurf       INT*          (i)   indicates top or bottom of closest master node
 \param actele      ELEMENT*      (i)   element to be projected on 
-\param xires       double*       (o)   local coodinates of projection point
-\param g           double*       (o)   gap function
+\param xires       DOUBLE*       (o)   local coodinates of projection point
+\param g           DOUBLE*       (o)   gap function
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void s8_contact_gapfunction(SHELLNODE  *actcnode,
-                            int        *ssurf,
-                            int        *msurf,
+                            INT        *ssurf,
+                            INT        *msurf,
                             ELEMENT    *actele,
-                            double      xi[],
-                            double     *g)
+                            DOUBLE      xi[],
+                            DOUBLE     *g)
 {
-int          i,j,k;
-int          iel;
-double       h2;
-double       a3r[3][4];
-double       a3c[3][4];
-double       xr[3][4];
-double       xc[3][4];
-double       funct[4];
-double       deriv[2][4];
-double       deriv2[4];
-double       thetam,thetas;
-double       xs[3],xbar[3];
-double       diff[3];
-double       tau[3][2];
-double       nue[3];
-double       dummy;
+INT          i,j,k;
+INT          iel;
+DOUBLE       h2;
+DOUBLE       a3r[3][4];
+DOUBLE       a3c[3][4];
+DOUBLE       xr[3][4];
+DOUBLE       xc[3][4];
+DOUBLE       funct[4];
+DOUBLE       deriv[2][4];
+DOUBLE       deriv2[4];
+DOUBLE       thetam,thetas;
+DOUBLE       xs[3],xbar[3];
+DOUBLE       diff[3];
+DOUBLE       tau[3][2];
+DOUBLE       nue[3];
+DOUBLE       dummy;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_gapfunction");
 #endif

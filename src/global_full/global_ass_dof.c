@@ -24,16 +24,16 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 void assign_dof(FIELD *actfield)
 {
-int i,j,k,l;                       /* some counters */
-int counter;                       
-int coupleID;                      /* Id of a coupling set from gid */
-int dof;                           /* dof in progress */
-int couple,geocouple,dirich;       /* flags for conditions */
+INT i,j,k,l;                       /* some counters */
+INT counter;                       
+INT coupleID;                      /* Id of a coupling set from gid */
+INT dof;                           /* dof in progress */
+INT couple,geocouple,dirich;       /* flags for conditions */
 ELEMENT *actele;                   /* the element in progress */
 NODE    *actnode, *partnernode;    /* node and coupling partner in progress */
-int max;
+INT max;
 
-int numklay;                       /* number of kinematic layers if shell9 element */
+INT numklay;                       /* number of kinematic layers if shell9 element */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("assign_dof");
@@ -112,7 +112,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
 counter=0;
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
-   actfield->dis[0].node[j].dof  = (int*)CCACALLOC(actfield->dis[0].node[j].numdf,sizeof(int));
+   actfield->dis[0].node[j].dof  = (INT*)CCACALLOC(actfield->dis[0].node[j].numdf,sizeof(INT));
    if (!(actfield->dis[0].node[j].dof)) 
       dserror("Allocation of dof in NODE failed");
    /*------------------------- allocate the arrays to hold solutions */

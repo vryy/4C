@@ -19,10 +19,10 @@
 \param   *ele,        ELEMENT	      (i)    actual element
 \param   *elev,       ELEMENT	      (i)    element with velocity-infos
 \param   *dynvar,     FLUID_DYN_CALC(i/o)  
-\param   *eddyint,    double	      (i)    eddyint at center
-\param   *velint,     double	      (i)    vel at center
-\param   *velint_dc,  double	      (i)    vel at center for D.C.
-\param    visc,       double	      (i)    viscosity
+\param   *eddyint,    DOUBLE	      (i)    eddyint at center
+\param   *velint,     DOUBLE	      (i)    vel at center
+\param   *velint_dc,  DOUBLE	      (i)    vel at center for D.C.
+\param    visc,       DOUBLE	      (i)    viscosity
 \return void                                                                       
 
 ------------------------------------------------------------------------*/ 
@@ -30,15 +30,15 @@ void f2_calstabpar_tu_1(
 	            ELEMENT         *ele,      
 		      ELEMENT         *elev,
                   FLUID_DYN_CALC  *dynvar,
-		      double           eddyint, 
-                  double          *velint, 
-                  double          *velint_dc, 
-                  double           visc    
+		      DOUBLE           eddyint, 
+                  DOUBLE          *velint, 
+                  DOUBLE          *velint_dc, 
+                  DOUBLE           visc    
                   )
 { 
-double peclet,xi_Pe; 
-double vel_abs;
-double kappa; 
+DOUBLE peclet,xi_Pe; 
+DOUBLE vel_abs;
+DOUBLE kappa; 
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabpar_tu_1");

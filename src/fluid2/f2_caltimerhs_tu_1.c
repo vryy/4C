@@ -43,49 +43,49 @@ is calculated:
 
 </pre>
 \param   *dynvar      FLUID_DYN_CALC  (i)
-\param   *eforce      double	      (i/o)  element force vector
-\param    kapomeint   double	      (i)    kapome at integr. point
-\param   *velint      double	      (i)    vel. at integr. point
-\param    eddyint     double	      (i)    eddy-visc. at integr. point
-\param   *funct       double	      (i)    nat. shape functions      
-\param  **derxy       double	      (i)    global derivatives
-\param  **vderxy      double	      (i)    global vel. deriv.
-\param   *kapomederxy double	      (i)    global kapome deriv.
-\param    visc	    double	      (i)    fluid viscosity
-\param    fac	    double	      (i)    weighting factor
-\param    factor	    double	      (i)    factor
-\param    factor1	    double	      (i)    factor
-\param    factor2	    double	      (i)    factor
-\param    sig	    double	      (i)    factor
-\param    production  double	      (i)    factor
-\param    iel	    int	      (i)    num. of nodes in ele
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param    kapomeint   DOUBLE	      (i)    kapome at integr. point
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param    eddyint     DOUBLE	      (i)    eddy-visc. at integr. point
+\param   *funct       DOUBLE	      (i)    nat. shape functions      
+\param  **derxy       DOUBLE	      (i)    global derivatives
+\param  **vderxy      DOUBLE	      (i)    global vel. deriv.
+\param   *kapomederxy DOUBLE	      (i)    global kapome deriv.
+\param    visc	    DOUBLE	      (i)    fluid viscosity
+\param    fac	    DOUBLE	      (i)    weighting factor
+\param    factor	    DOUBLE	      (i)    factor
+\param    factor1	    DOUBLE	      (i)    factor
+\param    factor2	    DOUBLE	      (i)    factor
+\param    sig	    DOUBLE	      (i)    factor
+\param    production  DOUBLE	      (i)    factor
+\param    iel	    INT	      (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calgaltfkapome(
                   FLUID_DYN_CALC  *dynvar, 
-                  double          *eforce,    
-		      double           kapomeint,  
-                  double          *velint,   
-		      double           eddyint,
-                  double          *funct,    
-		      double         **derxy,    
-		      double         **vderxy,   
-		      double          *kapomederxy,   
-                  double           visc,     
-		      double           fac,      
-                  double           factor,  
-                  double           factor1,  
-                  double           factor2,  
-                  double           sig,  
-                  double           production,  
-                  int              iel       
+                  DOUBLE          *eforce,    
+		      DOUBLE           kapomeint,  
+                  DOUBLE          *velint,   
+		      DOUBLE           eddyint,
+                  DOUBLE          *funct,    
+		      DOUBLE         **derxy,    
+		      DOUBLE         **vderxy,   
+		      DOUBLE          *kapomederxy,   
+                  DOUBLE           visc,     
+		      DOUBLE           fac,      
+                  DOUBLE           factor,  
+                  DOUBLE           factor1,  
+                  DOUBLE           factor2,  
+                  DOUBLE           sig,  
+                  DOUBLE           production,  
+                  INT              iel       
                   )  
 {
-int    j,irow,isd,inode;  
-double c;
-double aux;
-double facsr;
+INT    j,irow,isd,inode;  
+DOUBLE c;
+DOUBLE aux;
+DOUBLE facsr;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calgaltfkapome");
@@ -233,52 +233,52 @@ is calculated:
 </pre>
 \param   *dynvar        FLUID_DYN_CALC    (i)
 \param   *ele           ELEMENT	      (i)    actual element
-\param   *eforce        double	      (i/o)  element force vector
-\param    kapomeint     double	      (i)    kapome at integr. point
-\param   *velint        double	      (i)    vel. at integr. point
-\param   *velint_dc     double	      (i)    vel. at integr. point for D.C.
-\param    eddyint       double	      (i)    eddy-visc. at integr. point
-\param  **derxy         double	      (i)    global derivatives
-\param   *kapomederxy2  double	      (i)    kapome 2nd derivatives
-\param  **vderxy        double	      (i)    global vel. deriv.
-\param   *kapomederxy   double	      (i)    global kapome deriv.
-\param    visc	    double	      (i)    fluid viscosity
-\param    fac	      double	      (i)    weighting factor
-\param    factor	      double	      (i)    factor
-\param    factor1	      double	      (i)    factor
-\param    factor2	      double	      (i)    factor
-\param    sig	      double	      (i)    factor
-\param    production    double	      (i)    factor
-\param    iel	      int	            (i)    num. of nodes in ele
+\param   *eforce        DOUBLE	      (i/o)  element force vector
+\param    kapomeint     DOUBLE	      (i)    kapome at integr. point
+\param   *velint        DOUBLE	      (i)    vel. at integr. point
+\param   *velint_dc     DOUBLE	      (i)    vel. at integr. point for D.C.
+\param    eddyint       DOUBLE	      (i)    eddy-visc. at integr. point
+\param  **derxy         DOUBLE	      (i)    global derivatives
+\param   *kapomederxy2  DOUBLE	      (i)    kapome 2nd derivatives
+\param  **vderxy        DOUBLE	      (i)    global vel. deriv.
+\param   *kapomederxy   DOUBLE	      (i)    global kapome deriv.
+\param    visc	    DOUBLE	      (i)    fluid viscosity
+\param    fac	      DOUBLE	      (i)    weighting factor
+\param    factor	      DOUBLE	      (i)    factor
+\param    factor1	      DOUBLE	      (i)    factor
+\param    factor2	      DOUBLE	      (i)    factor
+\param    sig	      DOUBLE	      (i)    factor
+\param    production    DOUBLE	      (i)    factor
+\param    iel	      INT	            (i)    num. of nodes in ele
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_calstabtfkapome(
                    FLUID_DYN_CALC  *dynvar,
                    ELEMENT         *ele,      
-	            double          *eforce,  
-	 	      double           kapomeint,  
-       	      double          *velint,  
-       	      double          *velint_dc,  
-		      double           eddyint, 
-                  double         **derxy,   
-		      double          *kapomederxy2,   
-                  double         **vderxy,  
-		      double          *kapomederxy,
-                  double           visc,     
-                  double           fac,     
-                  double           factor,
-                  double           factor1,
-                  double           factor2,
-                  double           sig,
-                  double           production,  
-                  int              iel      
+	            DOUBLE          *eforce,  
+	 	      DOUBLE           kapomeint,  
+       	      DOUBLE          *velint,  
+       	      DOUBLE          *velint_dc,  
+		      DOUBLE           eddyint, 
+                  DOUBLE         **derxy,   
+		      DOUBLE          *kapomederxy2,   
+                  DOUBLE         **vderxy,  
+		      DOUBLE          *kapomederxy,
+                  DOUBLE           visc,     
+                  DOUBLE           fac,     
+                  DOUBLE           factor,
+                  DOUBLE           factor1,
+                  DOUBLE           factor2,
+                  DOUBLE           sig,
+                  DOUBLE           production,  
+                  INT              iel      
                   )
 {
-int    j,irow,isd,inode;
-double aux,aux_dc;
-double taumu,taumu_dc;
-double facsr,facsr_dc;
+INT    j,irow,isd,inode;
+DOUBLE aux,aux_dc;
+DOUBLE taumu,taumu_dc;
+DOUBLE facsr,facsr_dc;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabtfkapome");

@@ -6,8 +6,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/prototypes_mlpcg.h"
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
 /*! 
 \addtogroup MLPCG 
 *//*! @{ (documentation module open)*/
@@ -37,15 +37,15 @@ from the aggregation done before , this routine only from 0 to 1
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P(MLLEVEL  *actlev, INTRA *actintra)
 {
-int          i,j,k,counter=0;
-int          myrank,nproc;
+INT          i,j,k,counter=0;
+INT          myrank,nproc;
 DBCSR       *actstiff;
 DBCSR       *P;
 AGG         *actagg;
 MLLEVEL     *prevlev;
-int          nrow,ncol;
-double       aggblock[1000][500];
-int          rindex[1000],cindex[500];
+INT          nrow,ncol;
+DOUBLE       aggblock[1000][500];
+INT          rindex[1000],cindex[500];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_P");
@@ -74,7 +74,7 @@ make a good guess of the size of the prolongator and init the csr matrix
 /* 
 make the guess 80% too large 
 */
-   counter = (int)(counter*4.0);
+   counter = (INT)(counter*4.0);
 /*----------------------------------------------------------------------*/
 /* 
 open the csr matrix to add to 
@@ -115,7 +115,7 @@ for (i=0; i<actlev->nagg; i++)
    else if (actagg->tentP_nrow != nrow)  
        dserror("Size mismatch in aggregate");
    if (!(actagg->tentP_rindex))
-      actagg->tentP_rindex = (int*)CCAMALLOC(nrow*sizeof(int));
+      actagg->tentP_rindex = (INT*)CCAMALLOC(nrow*sizeof(INT));
    /*------------------------------- put rindex to actagg->tentP_rindex */
    if (mlprecond.ncall==0)
       for (j=0; j<nrow; j++) actagg->tentP_rindex[j] = rindex[j];
@@ -183,14 +183,14 @@ from the aggregation done before , this routine only from 0 to 1
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P0(MLLEVEL  *actlev, INTRA *actintra)
 {
-int          i,j,k,counter=0;
-int          myrank,nproc;
+INT          i,j,k,counter=0;
+INT          myrank,nproc;
 DBCSR       *actstiff;
 DBCSR       *P;
 AGG         *actagg;
-int          nrow,ncol;
-double       aggblock[1000][500];
-int          rindex[1000],cindex[500];
+INT          nrow,ncol;
+DOUBLE       aggblock[1000][500];
+INT          rindex[1000],cindex[500];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_P0");
@@ -220,7 +220,7 @@ make a good guess of the size of the prolongator and init the csr matrix
 /* 
 make the guess 80% too large 
 */
-   counter = (int)(counter*4.0);
+   counter = (INT)(counter*4.0);
 /*----------------------------------------------------------------------*/
 /* 
 open the csr matrix to add to 
@@ -265,7 +265,7 @@ for (i=0; i<actlev->nagg; i++)
    else if (actagg->tentP_nrow != nrow)  
        dserror("Size mismatch in aggregate");
    if (!(actagg->tentP_rindex))
-      actagg->tentP_rindex = (int*)CCAMALLOC(nrow*sizeof(int));
+      actagg->tentP_rindex = (INT*)CCAMALLOC(nrow*sizeof(INT));
    /*------------------------------- put rindex to actagg->tentP_rindex */
    if (mlprecond.ncall==0)
       for (j=0; j<nrow; j++) actagg->tentP_rindex[j] = rindex[j];
@@ -326,33 +326,33 @@ return;
 
 </pre>
 \param actagg         AGG*    (i/o) the active aggregate
-\param aggblock       double[1000][500] (o) the aggregate's block prolongator
-\param rindex         int[1000]         (o) global indizes of aggblock
-\param cindex         int[500]          (o) global indizes of aggblock
-\param nrow           int*              (o) dimension of rindex
-\param ncol           int*              (o) dimension of cindex
+\param aggblock       DOUBLE[1000][500] (o) the aggregate's block prolongator
+\param rindex         INT[1000]         (o) global indizes of aggblock
+\param cindex         INT[500]          (o) global indizes of aggblock
+\param nrow           INT*              (o) dimension of rindex
+\param ncol           INT*              (o) dimension of cindex
 \param actstiff       DBCSR*            (i) fine grid stiffness matrix
 \param prevlevel      MLLEVEL*          (i) last level
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_oneP_vanek(AGG     *actagg,
-                             double   aggblock[][500],
-                             int      rindex[],
-                             int      cindex[],
-                             int     *nrow,
-                             int     *ncol,
+                             DOUBLE   aggblock[][500],
+                             INT      rindex[],
+                             INT      cindex[],
+                             INT     *nrow,
+                             INT     *ncol,
                              DBCSR   *actstiff,
                              MLLEVEL *prevlevel)
 {
-int           i,j,k,counter;
+INT           i,j,k,counter;
 AGG          *prevagg[200];
 AGG          *actprevagg;
-int          *actblock;
-int           dof;
-double        x0,y0,z0,x,y,z;
-int           index;
-int           shift,bins[5000];
+INT          *actblock;
+INT           dof;
+DOUBLE        x0,y0,z0,x,y,z;
+INT           index;
+INT           shift,bins[5000];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_oneP_vanek");
@@ -378,7 +378,7 @@ for (i=0; i<actagg->nblock; i++)
       counter++;
    }
 dsassert(counter==*nrow,"Number of dofs in prolongator wrong");
-qsort((int*)rindex,*nrow,sizeof(int),cmp_int);
+qsort((INT*)rindex,*nrow,sizeof(INT),cmp_int);
 /*------------------------------ get the nodal patch from the partition */
 /*======================================================================*/
 dsassert(actagg->nblock<=200,"Local variable prevagg[200] too small");
@@ -521,32 +521,32 @@ return;
 
 </pre>
 \param actagg         AGG*    (i/o) the active aggregate
-\param aggblock       double[1000][500] (o) the aggregate's block prolongator
-\param rindex         int[1000]         (o) global indizes of aggblock
-\param cindex         int[500]          (o) global indizes of aggblock
-\param nrow           int*              (o) dimension of rindex
-\param ncol           int*              (o) dimension of cindex
+\param aggblock       DOUBLE[1000][500] (o) the aggregate's block prolongator
+\param rindex         INT[1000]         (o) global indizes of aggblock
+\param cindex         INT[500]          (o) global indizes of aggblock
+\param nrow           INT*              (o) dimension of rindex
+\param ncol           INT*              (o) dimension of cindex
 \param actstiff       DBCSR*            (i) fine grid stiffness matrix
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_oneP0_vanek(AGG     *actagg,
-                               double   aggblock[][500],
-                               int      rindex[],
-                               int      cindex[],
-                               int     *nrow,
-                               int     *ncol,
+                               DOUBLE   aggblock[][500],
+                               INT      rindex[],
+                               INT      cindex[],
+                               INT     *nrow,
+                               INT     *ncol,
                                DBCSR   *actstiff)
 {
-int           i,j,k,counter;
+INT           i,j,k,counter;
 NODE         *node[200];
 NODE         *actnode;
 PARTDISCRET  *actpdis;
-int          *actblock;
-int           dof;
-double        x0,y0,z0,x,y,z,a1,a2,a3;
-int           index;
-int           shift,bins[5000];
+INT          *actblock;
+INT           dof;
+DOUBLE        x0,y0,z0,x,y,z,a1,a2,a3;
+INT           index;
+INT           shift,bins[5000];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mlpcg_precond_oneP0_vanek");
@@ -572,7 +572,7 @@ for (i=0; i<actagg->nblock; i++)
       counter++;
    }
 dsassert(counter==*nrow,"Number of dofs in prolongator wrong");
-qsort((int*)rindex,*nrow,sizeof(int),cmp_int);
+qsort((INT*)rindex,*nrow,sizeof(INT),cmp_int);
 /*------------------------------ get the nodal patch from the partition */
 /*======================================================================*/
 /*======================================================================*/
@@ -740,55 +740,55 @@ return;
 
 </pre>
 \param P          DBCSR*       (i/o) the Prolongator
-\param block      double[][500](i)   working matrix
-\param rindex     int*         (i)   row indize of block
-\param cindex     int*         (i)   column indize of block
-\param nrow       int*         (i)   row dimension of block
-\param ncol       int*         (i)   column dimension of block
+\param block      DOUBLE[][500](i)   working matrix
+\param rindex     INT*         (i)   row indize of block
+\param cindex     INT*         (i)   column indize of block
+\param nrow       INT*         (i)   row dimension of block
+\param ncol       INT*         (i)   column dimension of block
 \param actstiff   DBCSR*       (i)   the stiffness matrix to be smoothe 
 \param agg        AGG*         (i)   the aggregates the proongator belongs to
-\param nagg       int          (i)   the number of aggregates on this proc 
+\param nagg       INT          (i)   the number of aggregates on this proc 
 \param actintra   INTRA*       (i)   the intra-communicator of this field                  
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void mlpcg_smoothP(DBCSR *P, DBCSR *actstiff, INTRA *actintra)
 {
-int           i,j,k,n,m,counter;
-int           myrank,nproc,tag;
-double        omega,fac;
-int           numeq,numeq_total;
-int           firstcol,lastcol,maxcol,mincol,intercol;
-int          *ia,*ja,*update;
-double       *a;
-int           colstart,colend,actrow,actcol,actcolP,diag;
-int           owner,index;
+INT           i,j,k,n,m,counter;
+INT           myrank,nproc,tag;
+DOUBLE        omega,fac;
+INT           numeq,numeq_total;
+INT           firstcol,lastcol,maxcol,mincol,intercol;
+INT          *ia,*ja,*update;
+DOUBLE       *a;
+INT           colstart,colend,actrow,actcol,actcolP,diag;
+INT           owner,index;
 ARRAY         a_a;
 
-int           rcol[1000];
-double        col[1000];
-int           nr;
+INT           rcol[1000];
+DOUBLE        col[1000];
+INT           nr;
 
-double        sum;
-int           foundit;
+DOUBLE        sum;
+INT           foundit;
 
-int           myinters[MAXPROC][2],myinterr[MAXPROC][2];
-int           needits[MAXPROC][MAXPROC],needitr[MAXPROC][MAXPROC];
-int           nsend,nrecv;
-int           nc;
+INT           myinters[MAXPROC][2],myinterr[MAXPROC][2];
+INT           needits[MAXPROC][MAXPROC],needitr[MAXPROC][MAXPROC];
+INT           nsend,nrecv;
+INT           nc;
 ARRAY         isend_a,dsend_a;
-int         **isend;
-double      **dsend;
-int           sendsize[2];
-int           recvsize[2];
+INT         **isend;
+DOUBLE      **dsend;
+INT           sendsize[2];
+INT           recvsize[2];
 ARRAY         irecv_a,drecv_a;
-int         **irecv;
-double      **drecv;
-int          *rc;
-double       *c;
-int           shift;
-int           bins[5000];
-int           max,min;
+INT         **irecv;
+DOUBLE      **drecv;
+INT          *rc;
+DOUBLE       *c;
+INT           shift;
+INT           bins[5000];
+INT           max,min;
 #ifdef PARALLEL 
 MPI_Status    status;  
 MPI_Request  *request;   
@@ -959,7 +959,7 @@ for (i=intercol; i<=lastcol; i++)
    }
    dsassert(counter<isend_a.fdim,"buffer overflow");
    isend[counter][0] = nr;
-   dsend[counter][0] = (double)actcolP;
+   dsend[counter][0] = (DOUBLE)actcolP;
    for (j=0; j<nr; j++)
    {
       dsassert(j+1<isend_a.sdim,"buffer overflow");
@@ -1078,7 +1078,7 @@ while (nrecv != 0)
    MPI_Recv(irecv[0],recvsize[0]*recvsize[1],MPI_INT,n,tag+1,actintra->MPI_INTRA_COMM,&status);
    MPI_Get_count(&status,MPI_INT,&i);
    dsassert(i==recvsize[0]*recvsize[1],"buffer overflow");
-   /* receive the double message */
+   /* receive the DOUBLE message */
    MPI_Recv(drecv[0],recvsize[0]*recvsize[1],MPI_DOUBLE,n,tag+2,actintra->MPI_INTRA_COMM,&status);
    MPI_Get_count(&status,MPI_DOUBLE,&i);
    dsassert(i==recvsize[0]*recvsize[1],"buffer overflow");
@@ -1091,7 +1091,7 @@ while (nrecv != 0)
    {
       nr      =   irecv[i][0];
       rc      = &(irecv[i][1]);
-      actcolP = (int)drecv[i][0];
+      actcolP = (INT)drecv[i][0];
       c       = &(drecv[i][1]);
       if (nr==0)
          continue;

@@ -11,7 +11,7 @@
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
 
-static double Q12=(ONE/TWO);
+static DOUBLE Q12=(ONE/TWO);
 
 /*!---------------------------------------------------------------------
 \brief routine to calculate the vorticity
@@ -29,7 +29,7 @@ static double Q12=(ONE/TWO);
 \param  *data	            FLUID_DATA       (i)
 \param  *dynvar	            FLUID_DYN_CALC   (i)
 \param  *ele	            ELEMENT	     (i)   actual element
-\param   init	            int              (i)   init flag
+\param   init	            INT              (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
@@ -37,44 +37,44 @@ void f2_calvort(
                 FLUID_DATA     *data, 
                 FLUID_DYN_CALC *dynvar, 
 	        ELEMENT        *ele,                
-       	        int             init            
+       	        INT             init            
                )
 {
 static ARRAY     evel_a;     /* element velocities at (n)                 */
-static double  **evel;
+static DOUBLE  **evel;
 static ARRAY     funct_a;    /* shape functions                           */
-static double   *funct;
+static DOUBLE   *funct;
 static ARRAY     deriv_a;    /* first natural derivatives                 */
-static double  **deriv;
+static DOUBLE  **deriv;
 static ARRAY     xjm_a;      /* jocobian matrix                           */
-static double  **xjm;
+static DOUBLE  **xjm;
 static ARRAY     vderxy_a;   /* vel - derivatives                         */
-static double  **vderxy;
+static DOUBLE  **vderxy;
 static ARRAY     derxy_a;    /* coordinate - derivatives                  */
-static double  **derxy;
+static DOUBLE  **derxy;
 static ARRAY     vort_a;     /* vorticity                                 */
-static double   *vort;      
+static DOUBLE   *vort;      
 static ARRAY     xyze_a;     /* element coordinates                       */
-static double  **xyze;   
+static DOUBLE  **xyze;   
 
-int j,icol,kk;
-int iv=0;		     /* index for gauss points                    */ 	
-int ivmax;		     /* index for maximum number of gauss points  */
-int icode=2;                 /* flag for eveluation of shape functions    */ 
-int iel=0;		     /* number of nodes                           */
-int lr,ls;		     /* index to loop over integration points     */
-int ntyp;		     /* element type: 1 - quad; 2 - tri           */
-int node;		     /* index to loop over nodal points           */
-int nir,nis;                 /* number of gauss points in r&s directions  */
-int intc;
-int ncols;                   /* number of columns                         */
-int numele;                  /* number of elements to the actual element  */
-double det;                  /* determinant                               */
-double e1,e2;                /* coordinates of the current gauss points   */
-double r;                    /* local coord. of gauss points in r-dir.    */
-double s;                    /* local coord. of gauss points in s-dir     */ 
-double f;                    /* vorticity value at the nodes              */
-double fpar[MAXGAUSS];
+INT j,icol,kk;
+INT iv=0;		     /* index for gauss points                    */ 	
+INT ivmax;		     /* index for maximum number of gauss points  */
+INT icode=2;                 /* flag for eveluation of shape functions    */ 
+INT iel=0;		     /* number of nodes                           */
+INT lr,ls;		     /* index to loop over integration points     */
+INT ntyp;		     /* element type: 1 - quad; 2 - tri           */
+INT node;		     /* index to loop over nodal points           */
+INT nir,nis;                 /* number of gauss points in r&s directions  */
+INT intc;
+INT ncols;                   /* number of columns                         */
+INT numele;                  /* number of elements to the actual element  */
+DOUBLE det;                  /* determinant                               */
+DOUBLE e1,e2;                /* coordinates of the current gauss points   */
+DOUBLE r;                    /* local coord. of gauss points in r-dir.    */
+DOUBLE s;                    /* local coord. of gauss points in s-dir     */ 
+DOUBLE f;                    /* vorticity value at the nodes              */
+DOUBLE fpar[MAXGAUSS];
 NODE *actnode;               /* actual node                               */
 DIS_TYP typ;                 /* element type                              */
 

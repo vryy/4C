@@ -17,8 +17,8 @@
  *----------------------------------------------------------------------*/
 void w1inp(ELEMENT *ele)
 {
-int  i;
-int  ierr=0;
+INT  i;
+INT  ierr=0;
 char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("winp");
@@ -32,7 +32,7 @@ if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -42,7 +42,7 @@ if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -52,7 +52,7 @@ if (ierr==1)
 {
    ele->distyp = quad9;
    ele->numnp=9;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");

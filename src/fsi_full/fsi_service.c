@@ -51,10 +51,10 @@ and the type is in partition.h
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*!---------------------------------------------------------------------                                         
 \brief calculate the grid velocity 
@@ -66,25 +66,25 @@ extern struct _CURVE *curve;
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC       (i)                              
 \param *dynvar	   FLUID_DYN_CALC      (i/o)                             
-\param  numdf      int                 (i)       number of dofs         
-\param  phse       int                 (i)       flag for ale-phase
+\param  numdf      INT                 (i)       number of dofs         
+\param  phse       INT                 (i)       flag for ale-phase
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_alecp(
 		             FIELD           *fluidfield,  
                              FLUID_DYN_CALC  *dynvar,
-		             int               numdf,
-		             int               phase
+		             INT               numdf,
+		             INT               phase
 	       )      
 {
-int     i,j;           /* some counters                                 */
-int     numnp_total;   /* total number of nodes                         */
-int     numveldof;     /* number of velocity dofs                       */
-int     numaf;         /* number of ALE field                           */
-double  dt;            /* time increment                                */
-double  dxyzn;         /* ale-displement at (n)                         */
-double  dxyz;          /* ale-displement at (n+1)                       */
+INT     i,j;           /* some counters                                 */
+INT     numnp_total;   /* total number of nodes                         */
+INT     numveldof;     /* number of velocity dofs                       */
+INT     numaf;         /* number of ALE field                           */
+DOUBLE  dt;            /* time increment                                */
+DOUBLE  dxyzn;         /* ale-displement at (n)                         */
+DOUBLE  dxyz;          /* ale-displement at (n+1)                       */
 NODE   *actfnode;      /* actual fluid node                             */
 NODE   *actanode;      /* actual ale node                               */
 GNODE  *actfgnode;     /* actual fluid gnode                            */
@@ -167,22 +167,22 @@ return;
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC     (i)  			  
 \param *dynvar	   FLUID_DYN_CALC    (i/o)			  
-\param  numdf      int               (i)     number of dofs	  
-\param  pos1       int               (i)     position in sol_incr    
-\param  pos2       int               (i)     position in sol_incr    
+\param  numdf      INT               (i)     number of dofs	  
+\param  pos1       INT               (i)     position in sol_incr    
+\param  pos2       INT               (i)     position in sol_incr    
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_aleconv(
 		 FIELD  *fluidfield,
-		 int     numdf,  
-                 int     pos1, 
-		 int     pos2
+		 INT     numdf,  
+                 INT     pos1, 
+		 INT     pos2
 	        )      
 {
-int    i,j;           /* some counters                                  */
-int    numnp_total;   /* total number of nodes                          */
-int    numc;          /* number of veldofs                              */
+INT    i,j;           /* some counters                                  */
+INT    numnp_total;   /* total number of nodes                          */
+INT    numc;          /* number of veldofs                              */
 NODE  *actfnode;      /* actual fluid node                              */
 
 #ifdef DEBUG 
@@ -236,19 +236,19 @@ number of elements belonging to this node.
 			     
 </pre>   
 \param *actfield      FIELD	     (i)  actual field        
-\param  numdf         int	     (i)  number of dofs      
+\param  numdf         INT	     (i)  number of dofs      
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_fluidstress_result(  
                               FIELD           *actfield, 
-                              int              numdf
+                              INT              numdf
 			   )
 {
-int         i,j,k,l;      /* simply some counters                       */
-int         numnp_total;  /* total number of nodes                      */
-int         numele;       /* number of elements at actual node          */
-int         numnp;        /* number of nodes at actual element          */
+INT         i,j,k,l;      /* simply some counters                       */
+INT         numnp_total;  /* total number of nodes                      */
+INT         numele;       /* number of elements at actual node          */
+INT         numnp;        /* number of nodes at actual element          */
 NODE       *actnode;      /* actual node                                */
 GNODE      *actgnode;     /* actual gnode                               */
 ELEMENT    *actele;       /* actual element                             */
@@ -313,13 +313,13 @@ return;
 </pre>   
 
 \param *fsidyn      FSI_DYNAMIC	     (i)          
-\param  itnum       int	             (i)  actual number of iteration      
+\param  itnum       INT	             (i)  actual number of iteration      
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_algoout(             
                               FSI_DYNAMIC      *fsidyn, 
-			      int               itnum
+			      INT               itnum
 	        )
 {
 #ifdef DEBUG 
@@ -373,25 +373,25 @@ return;
 
 \param *fsidyn        FSI_DYNAMIC    (i) 
 \param *actfield      FIELD	     (i)  actual field        
-\param  int           int	     (i)  flag      
+\param  INT           INT	     (i)  flag      
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_structpredictor(
                               FSI_DYNAMIC      *fsidyn, 
                               FIELD            *actfield, 
-                              int                init
+                              INT                init
 		         )
 {
-int    i,j;                    /* some counters                         */
-int    actcurve;               /* actual time curve                     */
-int    numnp_total;            /* total number of nodes                 */
-static int    FDIM=11;         /* dimension of structural sol field     */
-double T,dt;                   /* actual time, time increment           */
-double **sol;                  /* nodal solution history                */
-double **sol_mf;               /* nodal multifield solution history     */
-double timefac[MAXTIMECURVE];  /* timefactors from time curve           */
-double acttimefac, initval;   
+INT    i,j;                    /* some counters                         */
+INT    actcurve;               /* actual time curve                     */
+INT    numnp_total;            /* total number of nodes                 */
+static INT    FDIM=11;         /* dimension of structural sol field     */
+DOUBLE T,dt;                   /* actual time, time increment           */
+DOUBLE **sol;                  /* nodal solution history                */
+DOUBLE **sol_mf;               /* nodal multifield solution history     */
+DOUBLE timefac[MAXTIMECURVE];  /* timefactors from time curve           */
+DOUBLE acttimefac, initval;   
 GNODE  *actgnode;	       /* actual GNODE		                */
 NODE   *actnode;	       /* actual NODE		                */
 
@@ -609,23 +609,23 @@ where g(i) = d~(i+1) - d(i);
 </pre>
 \param *structfield   FIELD	     (i)   structural field
 \param *fsidyn 	      FSI_DYNAMIC    (i)   
-\return int                                                                             
+\return INT                                                                             
 
 ------------------------------------------------------------------------*/
-int fsi_convcheck(FIELD *structfield, FSI_DYNAMIC *fsidyn, int itnum)
+INT fsi_convcheck(FIELD *structfield, FSI_DYNAMIC *fsidyn, INT itnum)
 {
-int     i,j;           /* some counters                                 */
-int     converged=0;   /* flag for convergence                          */
-int     numnp_total;   /* total number of nodes                         */
-int     numdf_total;   /* total number of dofs                          */
-int     numdf,dof;     /* actual number of dofs, actual dof             */
-int    *sid;           /* structural interface dofs                     */
-double  fac; 
-double  gnorm=ZERO;    
-double  g;
-double  grat;
+INT     i,j;           /* some counters                                 */
+INT     converged=0;   /* flag for convergence                          */
+INT     numnp_total;   /* total number of nodes                         */
+INT     numdf_total;   /* total number of dofs                          */
+INT     numdf,dof;     /* actual number of dofs, actual dof             */
+INT    *sid;           /* structural interface dofs                     */
+DOUBLE  fac; 
+DOUBLE  gnorm=ZERO;    
+DOUBLE  g;
+DOUBLE  grat;
 NODE   *actsnode;      /* actual struct node                            */
-static double g0norm;  /* norm of first iteration                       */
+static DOUBLE g0norm;  /* norm of first iteration                       */
 
 #ifdef DEBUG 
 dstrc_enter("fsi_convcheck");

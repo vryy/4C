@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*
  |  main_ccarat.c                                        m.gee 11/01    |
  *----------------------------------------------------------------------*/
-int main(int argc, char *argv[]);
+INT main(INT argc, char *argv[]);
 /*----------------------------------------------------------------------*
  |  global_ass_dof.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -27,14 +27,14 @@ void stalin(void);
  | cal_static_service.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void calstatserv_findcontroldof(FIELD     *actfield,
-                                int        control_node_global,
-                                int        control_dof,
+                                INT        control_node_global,
+                                INT        control_dof,
                                 NODE     **node,
-                                int       *cdof); 
+                                INT       *cdof); 
 /*----------------------------------------------------------------------*
  | global_control.c                                      m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void ntam(int argc, char *argv[]);
+void ntam(INT argc, char *argv[]);
 /*----------------------------------------------------------------------*
  | global_visual.c                                       genk  07/02    |
  *----------------------------------------------------------------------*/
@@ -56,7 +56,7 @@ void ntavisual(void);
 /*----------------------------------------------------------------------*
  | global_init_control.c                                 m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void ntaini(int argc, char *argv[]);
+void ntaini(INT argc, char *argv[]);
 /*----------------------------------------------------------------------*
  | global_inp_control.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -68,11 +68,11 @@ void mask_global_matrices(void);
 /*----------------------------------------------------------------------*
  | global_monitoring.c                                    genk 01/03    |
  *----------------------------------------------------------------------*/
-void monitoring(FIELD *actfield,int numf, int actpos, int actstep, double time); 
+void monitoring(FIELD *actfield,INT numf, INT actpos, INT actstep, DOUBLE time); 
 /*----------------------------------------------------------------------*
  |  machine_hpux.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void ntadev(int argc, char *argv[]);
+void ntadev(INT argc, char *argv[]);
 /*----------------------------------------------------------------------*
  |  restart_control.c                                    m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -82,47 +82,47 @@ void ntadev(int argc, char *argv[]);
 void iscouple_find_node_comp(NODE  *actnode, 
                                 FIELD *searchfield, 
                                 NODE **partnernode,
-                                int    coupleID,
-                                int    dof);
-void cheque_distance(double *x1, double *x2, double tol, int *ierr);
+                                INT    coupleID,
+                                INT    dof);
+void cheque_distance(DOUBLE *x1, DOUBLE *x2, DOUBLE tol, INT *ierr);
 void find_assign_coupset(FIELD *actfield, 
-                            int    coupleID, 
-                            int   *counter);
+                            INT    coupleID, 
+                            INT   *counter);
 /*----------------------------------------------------------------------*
  |  dyn_timecurve.c                                      m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void dyn_init_curve(int actcurve,
-                   int    nstep,
-                   double dt,
-                   double maxtime);
-void dyn_facfromcurve(int actcurve,
-                   double T,
-                   double *fac);
-double dyn_facexplcurve(int actcurve,
-                      double T);		   
+void dyn_init_curve(INT actcurve,
+                   INT    nstep,
+                   DOUBLE dt,
+                   DOUBLE maxtime);
+void dyn_facfromcurve(INT actcurve,
+                   DOUBLE T,
+                   DOUBLE *fac);
+DOUBLE dyn_facexplcurve(INT actcurve,
+                      DOUBLE T);		   
 /*----------------------------------------------------------------------*
  |  out_global.c                                         m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_general(void);
 void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
-             int step, int place);
+             INT step, INT place);
 
 void out_fluidmf(FIELD *fluidfield);
 void out_fsi(FIELD *fluidfield);
-void out_fluidtu(FIELD *actfield, INTRA *actintra, int step, int place);
+void out_fluidtu(FIELD *actfield, INTRA *actintra, INT step, INT place);
 /*----------------------------------------------------------------------*
  |  out_gid_sol.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_gid_sol_init(void);
 void out_gid_domains(FIELD *actfield);
-void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step,
-                 int place);
+void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, INT step,
+                 INT place);
 void out_fsi(FIELD *fluidfield);
 /*----------------------------------------------------------------------*
  |  out_gid_soldyn.c                                     m.gee 5/03     |
  *----------------------------------------------------------------------*/
-void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, int step,
-                   int place, double totaltime);
+void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, INT step,
+                   INT place, DOUBLE totaltime);
 /*----------------------------------------------------------------------*
  |  out_gid_msh.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ void out_gid_allcoords(FILE *out);
 /*----------------------------------------------------------------------*
  |  out_monitor.c                                         genk 01/03    |
  *----------------------------------------------------------------------*/
-void out_monitor(FIELD *actfield, int numf);
+void out_monitor(FIELD *actfield, INT numf);
 void out_area(ARRAY totarea_a); 
 /*----------------------------------------------------------------------*
  |  inherit_insidedesign.c                                  m.gee 3/02  |
@@ -202,13 +202,13 @@ void inp_read_curve(char *string);
  *----------------------------------------------------------------------*/
 void inpdesign(void);
 void inp_dnode(void);
-void read_1_dnode(DNODE *dnode, int readId);
+void read_1_dnode(DNODE *dnode, INT readId);
 void inp_dline(void);
-void read_1_dline(DLINE *dline, int readId);
+void read_1_dline(DLINE *dline, INT readId);
 void inp_dsurface(void);
-void read_1_dsurf(DSURF *dsurf, int readId);
+void read_1_dsurf(DSURF *dsurf, INT readId);
 void inp_dvolume(void);
-void read_1_dvol(DVOL *dvol, int readId);
+void read_1_dvol(DVOL *dvol, INT readId);
 void inp_designsize(void);
 /*----------------------------------------------------------------------*
  |  input_design_top.c                                  m.gee 11/01     |
@@ -242,82 +242,82 @@ void inp_detailed_topology(DISCRET   *actdis);
 /*----------------------------------------------------------------------*
  |  math1.c                                               m.gee 11/01   |
  *----------------------------------------------------------------------*/
-void math_array_copy(double **from, int n, int m, double **to);
-void math_inv3(double **a, double *det);
-void math_tran(double **a, int n);
-void math_unvc(double *enorm,double *vec, int n);
-void math_matvecdense(double  *r,
-                         double **A,
-                         double  *b,
-                         int      ni,
-                         int      nk,
-                         int      init,
-                         double   factor);
-void math_mattrnvecdense(double  *r,
-                         double **A,
-                         double  *b,
-                         int      ni,
-                         int      nk,
-                         int      init,
-                         double   factor);
-void math_matmatdense(double **R,
-                         double **A,
-                         double **B,
-                         int      ni,
-                         int      nk,
-                         int      nj,
-                         int      init,
-                         double   factor);
-void math_mattrnmatdense(double **R,
-                            double **A,
-                            double **B,
-                            int      ni,
-                            int      nk,
-                            int      nj,
-                            int      init,
-                            double   factor);
-void math_matmattrndense(double **R,
-                            double **A,
-                            double **B,
-                            int      ni,
-                            int      nk,
-                            int      nj,
-                            int      init,
-                            double   factor);
-void math_sym_inv(double **A, int dim);
-void math_unsym_inv(double **A, int dimr, int dimc);
-void math_sppr(double *spat, double *a, double *b, double *c);
-void math_addab(double **a, double **b, int dim1, int dim2);
+void math_array_copy(DOUBLE **from, INT n, INT m, DOUBLE **to);
+void math_inv3(DOUBLE **a, DOUBLE *det);
+void math_tran(DOUBLE **a, INT n);
+void math_unvc(DOUBLE *enorm,DOUBLE *vec, INT n);
+void math_matvecdense(DOUBLE  *r,
+                         DOUBLE **A,
+                         DOUBLE  *b,
+                         INT      ni,
+                         INT      nk,
+                         INT      init,
+                         DOUBLE   factor);
+void math_mattrnvecdense(DOUBLE  *r,
+                         DOUBLE **A,
+                         DOUBLE  *b,
+                         INT      ni,
+                         INT      nk,
+                         INT      init,
+                         DOUBLE   factor);
+void math_matmatdense(DOUBLE **R,
+                         DOUBLE **A,
+                         DOUBLE **B,
+                         INT      ni,
+                         INT      nk,
+                         INT      nj,
+                         INT      init,
+                         DOUBLE   factor);
+void math_mattrnmatdense(DOUBLE **R,
+                            DOUBLE **A,
+                            DOUBLE **B,
+                            INT      ni,
+                            INT      nk,
+                            INT      nj,
+                            INT      init,
+                            DOUBLE   factor);
+void math_matmattrndense(DOUBLE **R,
+                            DOUBLE **A,
+                            DOUBLE **B,
+                            INT      ni,
+                            INT      nk,
+                            INT      nj,
+                            INT      init,
+                            DOUBLE   factor);
+void math_sym_inv(DOUBLE **A, INT dim);
+void math_unsym_inv(DOUBLE **A, INT dimr, INT dimc);
+void math_sppr(DOUBLE *spat, DOUBLE *a, DOUBLE *b, DOUBLE *c);
+void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2);
 /*!---------------------------------------------------------------------                                         
 \brief extract digits from integer number
 
 <pre>                                                         genk 04/02		     
 </pre>   
-\param  num	 int   (i)    integer number
-\param *it	 int   (o)    integer on position "thousand"
-\param *ih       int   (o)    integer on position "hundred"
-\param *id       int   (o)    integer on position "ten"
-\param *id       int   (o)    integer on position "one"
+\param  num	 INT   (i)    integer number
+\param *it	 INT   (o)    integer on position "thousand"
+\param *ih       INT   (o)    integer on position "hundred"
+\param *id       INT   (o)    integer on position "ten"
+\param *id       INT   (o)    integer on position "one"
 \return void 
 
 ------------------------------------------------------------------------*/
 void math_intextract(
-                    int num,    
-                    int *it,    
-		    int *ih,    
-		    int *id,    
-		    int *io     
+                    INT num,    
+                    INT *it,    
+		    INT *ih,    
+		    INT *id,    
+		    INT *io     
 	            );
 
 /*----------------------------------------------------------------------*
  |  sort_find.c                                          m.gee 11/01    |
  *----------------------------------------------------------------------*/
-int cmp_int(const void *a, const void *b );
-double cmp_double(const void *a, const void *b );
-void mg_sort(int list[], int N, int list2[], double list3[]);
-int quick_find(int key, int list[], int length, int shift, int bins[]);
-void init_quick_find(int list[], int length, int *shift, int *bins);
-int find_index(int key, int list[], int length);
+INT cmp_int(const void *a, const void *b );
+DOUBLE cmp_double(const void *a, const void *b );
+void mg_sort(INT list[], INT N, INT list2[], DOUBLE list3[]);
+INT quick_find(INT key, INT list[], INT length, INT shift, INT bins[]);
+void init_quick_find(INT list[], INT length, INT *shift, INT *bins);
+INT find_index(INT key, INT list[], INT length);
 /*----------------------------------------------------------------------*
  |  par_assignmesh.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -345,8 +345,8 @@ void create_communicators(void);
  | definition of the data type PTRSIZE amde in definitions.h:           |
  |#ifdef SIXTYFOUR                a 64 bit pointer is of size long int  |
  |typedef long int PTRSIZE;                                             |
- |#else                                a 32 bit pointer is of size int  |
- |typedef int PTRSIZE;                                                  |
+ |#else                                a 32 bit pointer is of size INT  |
+ |typedef INT PTRSIZE;                                                  |
  |#endif                                                                |
  | This function takes as argument                                      |
  | - the adress of the pointer to be moved                              |
@@ -379,7 +379,7 @@ void ShiftPointer(void **ptr, PTRSIZE diff);
  | redefinition of malloc FAST version                        m.gee 2/02|
  | bhaves exactly like malloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
-void *CCAMALLOC(int size);
+void *CCAMALLOC(INT size);
 /*----------------------------------------------------------------------*
  | redefinition of calloc DEBUG version                   m.gee 2/02    |
  | bhaves exactly like calloc conform to ansi c standard                |
@@ -388,7 +388,7 @@ void *CCAMALLOC(int size);
  | redefinition of calloc FAST version                    m.gee 2/02    |
  | bhaves exactly like calloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
-void *CCACALLOC(int num, int size);
+void *CCACALLOC(INT num, INT size);
 /*----------------------------------------------------------------------*
  | redefinition of realloc DEBUG version                  m.gee 2/02    |
  | bhaves exactly like realloc conform to ansi c standard               |
@@ -397,7 +397,7 @@ void *CCACALLOC(int num, int size);
  | redefinition of realloc FAST version                  m.gee 2/02     |
  | bhaves exactly like realloc conform to ansi c standard               |
  *----------------------------------------------------------------------*/
-void *CCAREALLOC(void *oldptr, int size);
+void *CCAREALLOC(void *oldptr, INT size);
 /*----------------------------------------------------------------------*
  | redefinition of free DEBUG version                     m.gee 2/02    |
  | bhaves exactly like free conform to ansi c standard                  |
@@ -413,23 +413,23 @@ void *CCAFREE(void *oldptr);
  | ARRAY *a. See also am.h for the structure ARRAY                      |
  | char *namstr  (input)   name of array                                |
  | ARRAY *a      (input)   adress of structure ARRAY the vector lives in|
- | int fdim      (input)   first dimension of 2D vector                 |
+ | INT fdim      (input)   first dimension of 2D vector                 |
  |                         dimension of 1D vector                       |
- | int sdim      (input)   scnd dimension of 2D vector                  |
+ | INT sdim      (input)   scnd dimension of 2D vector                  |
  | char typstr[] (input)   type of array to allocate                    |
  |               ="IV"     allocate integer vector in a->a.iv           |
- |               ="IA"     allocate double array  in a->a.ia            |
+ |               ="IA"     allocate DOUBLE array  in a->a.ia            |
  |               ="DV"     allocate integer vector in a->a.dv           |
- |               ="DA"     allocate double array  in a->a.da            |
+ |               ="DA"     allocate DOUBLE array  in a->a.da            |
  | return value:                                                        |
  | void pointer to allocated memory                                     |
  *----------------------------------------------------------------------*/
-void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[]);
+void* amdef(char *namstr,ARRAY *a,INT fdim, INT sdim, char typstr[]);
 /*----------------------------------------------------------------------*
  | redefine array                                         m.gee 8/00    |
  | changes an already allocated array a in dimensions                   |
  | a typecast of the values in the array is not possible                |
- | (no int to double or vice versa transformation)                      |
+ | (no INT to DOUBLE or vice versa transformation)                      |
  |                                                                      |
  | if the new dimension of an the array is larger then the old one,     |
  | the values inside the array are kept, the new entries are initialized|
@@ -444,18 +444,18 @@ void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[]);
  | a cast from iv to ia and from dv to da and vice versa is allowed     |
  |                                                                      |
  | ARRAY *a      (input)   adress of structure ARRAY the vector lives in|
- | int newfdim   (input)   new first dimension of 2D vector             |
+ | INT newfdim   (input)   new first dimension of 2D vector             |
  |                         new dimension of 1D vector                   |
- | int newsdim   (input)   new scnd dimension of 2D vector              |
+ | INT newsdim   (input)   new scnd dimension of 2D vector              |
  | char newtypstr[] (input)   type of array to allocate                 |
  |               ="IV"     allocate integer vector in a->a.iv           |
- |               ="IA"     allocate double array  in a->a.ia            |
+ |               ="IA"     allocate DOUBLE array  in a->a.ia            |
  |               ="DV"     allocate integer vector in a->a.dv           |
- |               ="DA"     allocate double array  in a->a.da            |
+ |               ="DA"     allocate DOUBLE array  in a->a.da            |
  | return value:                                                        |
  | void pointer to allocated memory                                     |
  *----------------------------------------------------------------------*/
-void* amredef(ARRAY *a,int newfdim, int newsdim, char newtypstr[]);
+void* amredef(ARRAY *a,INT newfdim, INT newsdim, char newtypstr[]);
 /*----------------------------------------------------------------------*
  | delete         array                                   m.gee 8/00    |
  | frees the vector or array located in the ARRAY                       |
@@ -465,7 +465,7 @@ void  amdel(ARRAY *array);
 /*----------------------------------------------------------------------*
  | initialize an array by zero                            m.gee 8/00    |
  | initializes the content of the ARRAY array to zero                   |
- | put 0 to integer fields, 0.0 to double fields                        |
+ | put 0 to integer fields, 0.0 to DOUBLE fields                        |
  | ARRAY *array (input) adress of the ARRAY array                       |
  *----------------------------------------------------------------------*/
 void  amzero(ARRAY *array);
@@ -474,7 +474,7 @@ void  amzero(ARRAY *array);
  | scales the contents of a field by a given value                      |
  | ARRAY *array (input) adress of the ARRAY array                       |
  | *value (input) adress of the scaling parameter, this may be of type  |
- |                int* or double* and must be casted to void* in the    |
+ |                INT* or DOUBLE* and must be casted to void* in the    |
  |                parameter list                                        |
  |                example: amscal(&val,(void*)(&ione));                 |        
  *----------------------------------------------------------------------*/
@@ -484,7 +484,7 @@ void  amscal(ARRAY *array, void *value);
  | inits the contents of a field by a given value                       |
  | ARRAY *array (input) adress of the ARRAY array                       |
  | *value (input) adress of the initvalues, this may be of type         |
- |                int* or double* and must be casted to void* in the    |
+ |                INT* or DOUBLE* and must be casted to void* in the    |
  |                parameter list                                        |
  |                example: aminit(&val,(void*)(&ione));                 |        
  *----------------------------------------------------------------------*/
@@ -525,7 +525,7 @@ void* amcopy(ARRAY *array_from, ARRAY *array_to);
  | ==1 array_to is initialized to zero                                  |
  | else values are assembled to array_to                                |
  *----------------------------------------------------------------------*/
-void  amadd(ARRAY *array_to, ARRAY *array_from, double factor, int init);
+void  amadd(ARRAY *array_to, ARRAY *array_from, DOUBLE factor, INT init);
 /*----------------------------------------------------------------------*
  | define 4D array                                       m.gee 12/01    |
  | similar to amdef, but for 3D and 4D fields                           |
@@ -533,21 +533,21 @@ void  amadd(ARRAY *array_to, ARRAY *array_from, double factor, int init);
  |                                                                      |
  | char *namstr  (input)   name of array                                |
  | ARRAY4D *a    (input)   adress of structure ARRAY4D                  |
- | int fdim      (input)   first dimension of 3D or 4D array            |
- | int sdim      (input)   scnd dimension of 3D or 4D array             |
- | int tdim      (input)   third dimension of 3D or 4D array            |
- | int fodim     (input)   fourth dimension of 4D array,                |
+ | INT fdim      (input)   first dimension of 3D or 4D array            |
+ | INT sdim      (input)   scnd dimension of 3D or 4D array             |
+ | INT tdim      (input)   third dimension of 3D or 4D array            |
+ | INT fodim     (input)   fourth dimension of 4D array,                |
  |                         ==0 of array is 3D                           |
  | char typstr[] (input)   type of field to allocate                    |
  |                         ="I3" 3D integer field                       |
  |                         ="I4" 4D integer field                       |
- |                         ="D3" 3D double  field                       |
- |                         ="D4" 4D double  field                       |
+ |                         ="D3" 3D DOUBLE  field                       |
+ |                         ="D4" 4D DOUBLE  field                       |
  | return value:                                                        |
  | void pointer to allocated memory                                     |
  *----------------------------------------------------------------------*/
-void* am4def(char *namstr, ARRAY4D *a, int fdim, int sdim, int tdim, 
-             int fodim, char typstr[]);
+void* am4def(char *namstr, ARRAY4D *a, INT fdim, INT sdim, INT tdim, 
+             INT fodim, char typstr[]);
 /*----------------------------------------------------------------------*
  | delete 4dimensional array                             m.gee 12/01    |
  | frees all field memory in array                                      |
@@ -585,8 +585,8 @@ void* am4copy(ARRAY4D *array_from, ARRAY4D *array_to);
  |          (unlike in am4def which does NOT initialize)                |
  |        usage similar to amredef                                      |
  *----------------------------------------------------------------------*/
-void* am4redef(ARRAY4D *array, int newfdim, int newsdim, int newtdim, 
-               int newfodim);
+void* am4redef(ARRAY4D *array, INT newfdim, INT newsdim, INT newtdim, 
+               INT newfodim);
 /*----------------------------------------------------------------------*
  |  pss_ds.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -606,7 +606,7 @@ void dsmemreport(void);
  | true - (input) boolean criterium                                     |
  | string - (input) error message                                       |
  *----------------------------------------------------------------------*/
-void dsassert(int true, char string[]);
+void dsassert(INT true, char string[]);
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
  | prints error message string to console and *.err                     |
@@ -629,15 +629,15 @@ void dstrc_enter(char string[]);
  *----------------------------------------------------------------------*/
 void dstrc_exit(void);
 /*----------------------------------------------------------------------*
- | report a new double array to the bugtracing system     m.gee 8/00    |    
+ | report a new DOUBLE array to the bugtracing system     m.gee 8/00    |    
  | this routine is called by the am-system only !                       | 
  *----------------------------------------------------------------------*/
-void dsreportarray(void *array, int typ);
+void dsreportarray(void *array, INT typ);
 /*----------------------------------------------------------------------*
- | report a new double array to the bugtracing system     m.gee 8/00    |    
+ | report a new DOUBLE array to the bugtracing system     m.gee 8/00    |    
  | this routine is called by the am-system only !                       |
  *----------------------------------------------------------------------*/
-void dsdeletearray(void *array, int typ);
+void dsdeletearray(void *array, INT typ);
 /*----------------------------------------------------------------------*
  | write a report about all arrays to the .err file       m.gee 8/00    |    
  | does nothing if DEBUG is not defined                                 |
@@ -652,7 +652,7 @@ void ds_cputime_init(void);
 /*----------------------------------------------------------------------*
  | routine to meassure the cpu - time                    genk 05/02     |
  *----------------------------------------------------------------------*/
-double ds_cputime(void);
+DOUBLE ds_cputime(void);
 /*----------------------------------------------------------------------*
  |  pss_fr.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -678,35 +678,35 @@ void frread(void);
 /*----------------------------------------------------------------------*
  | reads n integers from input_file                       m.gee 4/01    |
  | char string[] (input) keyword to search for in actual line           |
- | int *var      (output) adress of field to hold values read           |
- | int num       (input)  number of values to read                      |
- | int *ierr     (output) =0 keyword not found / =1 values read         |
+ | INT *var      (output) adress of field to hold values read           |
+ | INT num       (input)  number of values to read                      |
+ | INT *ierr     (output) =0 keyword not found / =1 values read         |
  *----------------------------------------------------------------------*/
-void frint_n(char string[],int *var,int num, int *ierr);
+void frint_n(char string[],INT *var,INT num, INT *ierr);
 /*----------------------------------------------------------------------*
  | reads an integer from input_file                       m.gee 8/00    |
  | starting in allfiles.actrow                                          |
  | char string[] (input) keyword to search for in actual line           |
- | int *var      (output)adress of variable to read to                  |
- | int *ierr     (output) flag to indicate success                      |
+ | INT *var      (output)adress of variable to read to                  |
+ | INT *ierr     (output) flag to indicate success                      |
  | ierr=0 keyword not found                                             |
  | ierr=1 integer read                                                  |
  *----------------------------------------------------------------------*/
-void frint(char string[],int *var, int *ierr);
+void frint(char string[],INT *var, INT *ierr);
 /*----------------------------------------------------------------------*
- | reads a double from input file line allfiles.line      m.gee 8/00    |
+ | reads a DOUBLE from input file line allfiles.line      m.gee 8/00    |
  | see frint_n                                                          |
  | ierr=0 kenner not found                                              |
- | ierr=1 double  read                                                  |
+ | ierr=1 DOUBLE  read                                                  |
  *----------------------------------------------------------------------*/
-void frdouble_n(char string[],double *var,int num, int *ierr);
+void frdouble_n(char string[],DOUBLE *var,INT num, INT *ierr);
 /*----------------------------------------------------------------------*
- | reads a double from input file line allfiles.line      m.gee 8/00    |
+ | reads a DOUBLE from input file line allfiles.line      m.gee 8/00    |
  | see frint                                                            |
  | ierr=0 kenner not found                                              |
- | ierr=1 double  read                                                  |
+ | ierr=1 DOUBLE  read                                                  |
  *----------------------------------------------------------------------*/
-void frdouble(char string[],double *var, int *ierr);
+void frdouble(char string[],DOUBLE *var, INT *ierr);
 /*----------------------------------------------------------------------*
  | reads a charstring from input file                                   |
  | user must assure, that the given charpointer space is long enough    |   
@@ -714,14 +714,14 @@ void frdouble(char string[],double *var, int *ierr);
  | ierr=0 keyword not found on line                                     |
  | ierr=1 char string read                                 m.gee 8/00   |
  *----------------------------------------------------------------------*/
-void frchar(char string[],char *var, int *ierr);
+void frchar(char string[],char *var, INT *ierr);
 /*----------------------------------------------------------------------*
  | checks for a keyword in actual line                                  |
  | ierr=0 not found                                                     |
  | ierr=1 found                                            m.gee 8/00   |
  | char string[] (input) character string to check actual line for      |
  *----------------------------------------------------------------------*/
-void frchk(char string[], int *ierr);
+void frchk(char string[], INT *ierr);
 /*----------------------------------------------------------------------*
  | close and delete input file copy                        m.gee 4/01   |
  *----------------------------------------------------------------------*/
@@ -730,94 +730,94 @@ void frend(void);
  |  pss_pss.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void pss_write(char          *name, 
-               int            fdim, 
-               int            sdim,
-               int            byte,
+               INT            fdim, 
+               INT            sdim,
+               INT            byte,
                const void    *startaddress,
                long int      *handle,
                FILE          *out, 
-               int           *ierr);
+               INT           *ierr);
 void pss_write_array(const ARRAY *array, 
                      long int    *handle,
                      FILE        *out, 
-                     int         *ierr);
+                     INT         *ierr);
 void pss_read_name(char      *name, 
-                   int       *fdim, 
-                   int       *sdim,
-                   int       *byte,
+                   INT       *fdim, 
+                   INT       *sdim,
+                   INT       *byte,
                    void      *ziel,
                    long int  *handle, 
                    FILE      *in,
-                   int       *ierr);
+                   INT       *ierr);
 void pss_read_name_handle(char       *name, 
-                          int	     *fdim, 
-                          int	     *sdim,
-                          int	     *byte,
+                          INT	     *fdim, 
+                          INT	     *sdim,
+                          INT	     *byte,
                           void       *ziel, 
                           long int   *handle,
                           FILE       *in, 
-                          int	     *ierr);
+                          INT	     *ierr);
 void pss_read_array_name(char       *name, 
                          ARRAY      *array,
                          long int   *handle,
                          FILE       *in,
-                         int        *ierr);
+                         INT        *ierr);
 void pss_read_array_name_handle(char       *name, 
                                 ARRAY	   *array,
                                 long int   *handle,
                                 FILE       *in,
-                                int	   *ierr);
+                                INT	   *ierr);
 void pss_read_array_handle(ARRAY      *array,
                            long int   *handle,
                            FILE       *in,
-                           int        *ierr);
+                           INT        *ierr);
 void pss_chck(char       *name,
               long int   *handle, 
               FILE       *in,
-              int        *ierr);
+              INT        *ierr);
 void pss_chck_handle(char       *name,
                      long int   *handle, 
                      FILE       *in,
-                     int        *ierr);
+                     INT        *ierr);
 void pss_getdims_name(char       *name, 
-                      int	 *fdim,
-                      int	 *sdim,
-                      int	 *byte,
+                      INT	 *fdim,
+                      INT	 *sdim,
+                      INT	 *byte,
                       long int	 *handle,
                       FILE       *in,
-                      int	 *ierr);
+                      INT	 *ierr);
 void pss_getdims_name_handle(char       *name, 
-                             int	*fdim,
-                             int	*sdim,
-                             int	*byte,
+                             INT	*fdim,
+                             INT	*sdim,
+                             INT	*byte,
                              long int	*handle,
                              FILE       *in,
-                             int	*ierr);
+                             INT	*ierr);
 void pss_status_to_err(FILE *inout);
 /*----------------------------------------------------------------------*
  | pss_visual.c                                            genk 12/02   |
  *----------------------------------------------------------------------*/
 void visual_writepss(FIELD  *actfield,  
-                       int     ntsteps,  
+                       INT     ntsteps,  
 		       ARRAY  *time_a	 
 		    );
 void visual_readpss(FIELD   *actfield, 
-                      int     *ntsteps,  
+                      INT     *ntsteps,  
 		      ARRAY   *time_a	 
 		     );
 		     
 /*----------------------------------------------------------------------*
  | ccarat_visual2.c                                        genk 07/02   |
  *----------------------------------------------------------------------*/
-void vis2caf(int numf, int numa, int nums);
+void vis2caf(INT numf, INT numa, INT nums);
 void v2movie(void);
 void v2cell(FIELD *actfield);
 void v2_init(
-             char *titl, int *iopt, int *cmncol, char *cmfile, int *cmunit,
-	     int *xypix, float *xymin, float *xymax,
-	     int *nkeys, int *ikeys, int *tkeys, int *fkeys, float **flims,
-	     int *mnode, int *mptri, int *mpptri,
-	     int *mface, int *mpface, int *medge, int *mpedge
+             char *titl, INT *iopt, INT *cmncol, char *cmfile, INT *cmunit,
+	     INT *xypix, float *xymin, float *xymax,
+	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,
+	     INT *mnode, INT *mptri, INT *mpptri,
+	     INT *mface, INT *mpface, INT *medge, INT *mpedge
 	    );
 /*!---------------------------------------------------------------------                                         
 \brief input of optimization data 

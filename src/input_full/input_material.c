@@ -27,11 +27,11 @@ extern struct _MULTIMAT  *multimat;
  *----------------------------------------------------------------------*/
 void inp_material()
 {
-int  ierr, ierralloc, int_dummy;
-int  i, j, k, ncm, num_klay, num_mlay;
+INT  ierr, ierralloc, int_dummy;
+INT  i, j, k, ncm, num_klay, num_mlay;
 struct    _KINLAY *actlay;           /*actual kinematic layer -> shell9 */ 
-double    klay_sum;                  /*total hight or shell9*/
-double    mlay_sum;                  /*hight of a kinematic layer*/
+DOUBLE    klay_sum;                  /*total hight or shell9*/
+DOUBLE    mlay_sum;                  /*hight of a kinematic layer*/
 
 char *colpointer;
 char buffer[50];
@@ -240,18 +240,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       /* allocate memory */
       ncm       = mat[i].m.pl_epc->maxreb;
       ierralloc = 0;
-      mat[i].m.pl_epc->rebar=(int*)CCACALLOC(ncm,sizeof(int));
-      mat[i].m.pl_epc->reb_area  =(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_ang   =(double*)CCACALLOC(ncm,sizeof(double));
-      mat[i].m.pl_epc->reb_so    =(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_ds    =(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_rgamma=(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_dens  =(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_alfat =(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_emod  =(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_rebnue=(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_sigy  =(double*)CCACALLOC(ncm,sizeof(double)); 
-      mat[i].m.pl_epc->reb_hard  =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->rebar=(INT*)CCACALLOC(ncm,sizeof(INT));
+      mat[i].m.pl_epc->reb_area  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_ang   =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_so    =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_ds    =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_rgamma=(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_dens  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_alfat =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_emod  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_rebnue=(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_sigy  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_hard  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
       
       /* rebar data - next line in input file! */
       if(ncm==0)
@@ -304,7 +304,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
       /*allocate memory for the different kinematic layers*/
       num_klay = mat[i].m.multi_layer->num_klay;
-      mat[i].m.multi_layer->klayhgt=(double*)CCACALLOC(num_klay,sizeof(double));
+      mat[i].m.multi_layer->klayhgt=(DOUBLE*)CCACALLOC(num_klay,sizeof(DOUBLE));
       mat[i].m.multi_layer->kinlay=(KINLAY*)CCACALLOC(num_klay,sizeof(KINLAY));
 
       /*----- read section data  -> hgt of different kinematic layers ---*/
@@ -327,10 +327,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         num_mlay = actlay->num_mlay;
         /*allocate memory for different material layers*/
         ierralloc = 0;
-        actlay->mlayhgt=(double*)CCACALLOC(num_mlay,sizeof(double));
-        actlay->mmatID=(int*)CCACALLOC(num_mlay,sizeof(int));
-        actlay->phi=(double*)CCACALLOC(num_mlay,sizeof(double));
-        actlay->rot=(int*)CCACALLOC(num_mlay,sizeof(int));
+        actlay->mlayhgt=(DOUBLE*)CCACALLOC(num_mlay,sizeof(DOUBLE));
+        actlay->mmatID=(INT*)CCACALLOC(num_mlay,sizeof(INT));
+        actlay->phi=(DOUBLE*)CCACALLOC(num_mlay,sizeof(DOUBLE));
+        actlay->rot=(INT*)CCACALLOC(num_mlay,sizeof(INT));
 
         /*----- read section data of this kin layer -> hgt of different mat layers ---*/
         frdouble_n("SEC_MLAY",actlay->mlayhgt,num_mlay,&ierr);
@@ -367,10 +367,10 @@ return;
  *----------------------------------------------------------------------*/
 void inp_multimat()
 {
-int  counter=0;
-int  check = 0;
-int  ierr, ierralloc;
-int  i, j, ncm;
+INT  counter=0;
+INT  check = 0;
+INT  ierr, ierralloc;
+INT  i, j, ncm;
 char *colpointer;
 char buffer[50];
 #ifdef DEBUG 

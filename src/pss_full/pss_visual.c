@@ -26,19 +26,19 @@ file
 			     
 </pre>   
 \param *actfield	FIELD         (i)  actual field
-\param  ntsteps         int           (i)  total num. of time steps
+\param  ntsteps         INT           (i)  total num. of time steps
 \param *time_a          ARRAY         (i)  time array 
 \return void  
 
 ------------------------------------------------------------------------*/
 void visual_writepss(FIELD  *actfield,  
-                       int     ntsteps,  
+                       INT     ntsteps,  
 		       ARRAY  *time_a	 
 		    )
 {
-int                  i,kk;          /* simply a counter                 */
-int                  ierr;          /* error flag                       */
-int                  numnp;         /* number of fluid nodes            */
+INT                  i,kk;          /* simply a counter                 */
+INT                  ierr;          /* error flag                       */
+INT                  numnp;         /* number of fluid nodes            */
 long int            *node_handles;  /* handles for writing pss-file     */
 long int             longdummy;     /* dummy                            */
 FILE                *out;           /* pointer to pss-file              */
@@ -158,21 +158,21 @@ file
 			     
 </pre>   
 \param *actfield	FIELD         (i)  actual field
-\param  ntsteps         int           (i)  total num. of time steps
+\param  ntsteps         INT           (i)  total num. of time steps
 \param *time_a          ARRAY         (i)  time array 
 \return void  
 
 ------------------------------------------------------------------------*/
 void visual_readpss(FIELD   *actfield, 
-                      int     *ntsteps,  
+                      INT     *ntsteps,  
 		      ARRAY   *time_a	 
 		     )
 {
-int                  i,j;              /* simply some counters          */
-int                  ierr;             /* error flag                    */
-int                  byte;             /* byte size                     */
-int                  dims[3];          /* dims for reading an array     */
-int                  numnp;            /* number of fluid nodes         */
+INT                  i,j;              /* simply some counters          */
+INT                  ierr;             /* error flag                    */
+INT                  byte;             /* byte size                     */
+INT                  dims[3];          /* dims for reading an array     */
+INT                  numnp;            /* number of fluid nodes         */
 long int             vishandle;        /* handle of "fluidvis"          */
 long int            *node_handles;     /* handles for reading pss-file  */
 FILE                *in;               /* pointer to pss-input file     */
@@ -249,7 +249,7 @@ for (i=0; i<numnp; i++)
    /*------------------------- check for the dimensions of actnode->sol */
    pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i]),in,&ierr);
    if (ierr != 1) dserror("Cannot read visual data\n");
-   if (dims[2] != sizeof(double)) dserror("Cannot read visual data\n");
+   if (dims[2] != sizeof(DOUBLE)) dserror("Cannot read visual data\n");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol.fdim ||
        dims[1] != actnode->sol.sdim)
@@ -303,7 +303,7 @@ for (i=0; i<numnp; i++)
    /*------------------------- check for the dimensions of actnode->sol */
    pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i]),in,&ierr);
    if (ierr != 1) dserror("Cannot read visual data\n");
-   if (dims[2] != sizeof(double)) dserror("Cannot read visual data\n");
+   if (dims[2] != sizeof(DOUBLE)) dserror("Cannot read visual data\n");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol.fdim ||
        dims[1] != actnode->sol.sdim)

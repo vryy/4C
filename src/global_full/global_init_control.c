@@ -18,7 +18,7 @@ extern struct _GENPROB  genprob;
 /*----------------------------------------------------------------------*
  | Initialize program service systems                     m.gee 8/00    |
  *----------------------------------------------------------------------*/
-void ntaini(int argc, char *argv[])
+void ntaini(INT argc, char *argv[])
 {
 /*---------------------------------------------------initialize tracing */
 #ifdef DEBUG 

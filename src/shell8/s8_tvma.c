@@ -5,12 +5,12 @@
  | integrate material law and stresses in thickness direction of shell  |
  |                                                      m.gee 06/01     |
  *----------------------------------------------------------------------*/
-void s8_tvma(double **D, double **C, double *stress, double *stress_r,
-                double e3, double fact, double condfac)
+void s8_tvma(DOUBLE **D, DOUBLE **C, DOUBLE *stress, DOUBLE *stress_r,
+                DOUBLE e3, DOUBLE fact, DOUBLE condfac)
 {
-int i,i6,j,j6;
-double zeta;
-double stress_fact, C_fact;
+INT i,i6,j,j6;
+DOUBLE zeta;
+DOUBLE stress_fact, C_fact;
 #ifdef DEBUG 
 dstrc_enter("s8_tvma");
 #endif

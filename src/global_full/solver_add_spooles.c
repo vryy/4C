@@ -22,37 +22,37 @@ void  add_spo(struct _PARTITION     *actpart,
               struct _SPOOLMAT      *spo2)
 {
 #ifdef SPOOLES_PACKAGE
-int         i,j,k,l,counter;          /* some counter variables */
-int         istwo=0;
-int         start,index,lenght;       /* some more special-purpose counters */
-int         ii,jj;                    /* counter variables for system matrix */
-int         ii_iscouple;              /* flag whether ii is a coupled dof */
-int         ii_owner;                 /* who is owner of dof ii -> procnumber */
-int         ii_index;                 /* place of ii in dmsr format */
-int         jj_index;                 /* place of jj in dmsr format */
-int         nd,ndnd;                  /* size of estif */
-int         nnz;                      /* number of nonzeros in sparse system matrix */
-int         numeq_total;              /* total number of equations */
-int         numeq;                    /* number of equations on this proc */
-int         lm[MAXDOFPERELE];         /* location vector for this element */
-int         owner[MAXDOFPERELE];      /* the owner of every dof */
-int         myrank;                   /* my intra-proc number */
-int         nprocs;                   /* my intra- number of processes */
-double    **estif;                    /* element matrix to be added to system matrix */
-double    **emass;                    /* element matrix to be added to system matrix */
-int        *update;                   /* vector update see AZTEC manual */
-double     *A_loc;                    /*    "       A_loc see MUMPS manual */
-double     *B_loc;                    /*    "       A_loc see MUMPS manual */
-int        *irn;                      /*    "       irn see MUMPS manual */
-int        *jcn;                      /*    "       jcn see MUMPS manual */
-int        *rowptr;                   /*    "       rowptr see rc_ptr structure */
-int       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
-int         ncdofs;                   /* total number of coupled dofs */
-int       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-int       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-int         nsend;
+INT         i,j,k,l,counter;          /* some counter variables */
+INT         istwo=0;
+INT         start,index,lenght;       /* some more special-purpose counters */
+INT         ii,jj;                    /* counter variables for system matrix */
+INT         ii_iscouple;              /* flag whether ii is a coupled dof */
+INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
+INT         ii_index;                 /* place of ii in dmsr format */
+INT         jj_index;                 /* place of jj in dmsr format */
+INT         nd,ndnd;                  /* size of estif */
+INT         nnz;                      /* number of nonzeros in sparse system matrix */
+INT         numeq_total;              /* total number of equations */
+INT         numeq;                    /* number of equations on this proc */
+INT         lm[MAXDOFPERELE];         /* location vector for this element */
+INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+INT         myrank;                   /* my intra-proc number */
+INT         nprocs;                   /* my intra- number of processes */
+DOUBLE    **estif;                    /* element matrix to be added to system matrix */
+DOUBLE    **emass;                    /* element matrix to be added to system matrix */
+INT        *update;                   /* vector update see AZTEC manual */
+DOUBLE     *A_loc;                    /*    "       A_loc see MUMPS manual */
+DOUBLE     *B_loc;                    /*    "       A_loc see MUMPS manual */
+INT        *irn;                      /*    "       irn see MUMPS manual */
+INT        *jcn;                      /*    "       jcn see MUMPS manual */
+INT        *rowptr;                   /*    "       rowptr see rc_ptr structure */
+INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+INT         ncdofs;                   /* total number of coupled dofs */
+INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+INT         nsend;
 #ifdef DEBUG 
 dstrc_enter("add_spo");
 #endif
@@ -198,17 +198,17 @@ return;
 /*----------------------------------------------------------------------*
  |  add value to spooles matrix (with enlargment)            m.gee 11/02|
  *----------------------------------------------------------------------*/
-void add_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
+void add_val_spo(INT ii,INT index, INT jj, struct _SPOOLMAT *spo, DOUBLE val, INTRA *actintra)
 {
 #ifdef SPOOLES_PACKAGE
-int     i,j,k,l,colstart,colend,foundit;
-int     counter,hasmoved;
-int    *irn,*jcn,*update,*rptr,numeq;
-double *A;
-int     nnz,nnz_new;
-int     rsize;
-int     move_index;
-int     sf_col,ef_col,st_col,et_col;
+INT     i,j,k,l,colstart,colend,foundit;
+INT     counter,hasmoved;
+INT    *irn,*jcn,*update,*rptr,numeq;
+DOUBLE *A;
+INT     nnz,nnz_new;
+INT     rsize;
+INT     move_index;
+INT     sf_col,ef_col,st_col,et_col;
 #ifdef DEBUG 
 dstrc_enter("add_val_spo");
 #endif
@@ -245,8 +245,8 @@ else
    {
       startenlarge:
       nnz = spo->A_loc.fdim;
-      nnz_new = (int)(1.5*nnz);
-      rsize   = (int)(nnz_new/numeq);
+      nnz_new = (INT)(1.5*nnz);
+      rsize   = (INT)(nnz_new/numeq);
       nnz_new = rsize*numeq;
       irn = amredef(&(spo->irn_loc),nnz_new,1,"IV");
       jcn = amredef(&(spo->jcn_loc),nnz_new,1,"IV");
@@ -323,17 +323,17 @@ return;
 /*----------------------------------------------------------------------*
  |  set value to spooles matrix (with enlargment)            m.gee 11/02|
  *----------------------------------------------------------------------*/
-void set_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
+void set_val_spo(INT ii,INT index, INT jj, struct _SPOOLMAT *spo, DOUBLE val, INTRA *actintra)
 {
 #ifdef SPOOLES_PACKAGE
-int     i,j,k,l,colstart,colend,foundit;
-int     counter,hasmoved;
-int    *irn,*jcn,*update,*rptr,numeq;
-double *A;
-int     nnz,nnz_new;
-int     rsize;
-int     move_index;
-int     sf_col,ef_col,st_col,et_col;
+INT     i,j,k,l,colstart,colend,foundit;
+INT     counter,hasmoved;
+INT    *irn,*jcn,*update,*rptr,numeq;
+DOUBLE *A;
+INT     nnz,nnz_new;
+INT     rsize;
+INT     move_index;
+INT     sf_col,ef_col,st_col,et_col;
 #ifdef DEBUG 
 dstrc_enter("set_val_spo");
 #endif
@@ -371,8 +371,8 @@ else
       startenlarge:
       printf("MESSAGE: Enlargment of system matrix\n");
       nnz = spo->A_loc.fdim;
-      nnz_new = (int)(1.5*nnz);
-      rsize   = (int)(nnz_new/numeq);
+      nnz_new = (INT)(1.5*nnz);
+      rsize   = (INT)(nnz_new/numeq);
       nnz_new = rsize*numeq;
       irn = amredef(&(spo->irn_loc),nnz_new,1,"IV");
       jcn = amredef(&(spo->jcn_loc),nnz_new,1,"IV");
@@ -453,9 +453,9 @@ return;
 void close_spooles_matrix(struct _SPOOLMAT *spo, INTRA *actintra)
 {
 #ifdef SPOOLES_PACKAGE
-int     i,j,k,index,colstart,colend,foundit,actrow,offset;
-int    *irn,*jcn,*update,*rptr,numeq;
-double *A;
+INT     i,j,k,index,colstart,colend,foundit,actrow,offset;
+INT    *irn,*jcn,*update,*rptr,numeq;
+DOUBLE *A;
 
 #ifdef DEBUG 
 dstrc_enter("close_spooles_matrix");
@@ -497,7 +497,7 @@ for (i=0; i<numeq; i++)
    rptr[actrow+1] = colend-offset;
 }
 /* redefine the array */
-if (spo->jcn_loc.fdim > (int)(1.2 * rptr[numeq]))
+if (spo->jcn_loc.fdim > (INT)(1.2 * rptr[numeq]))
 {
    amredef(&(spo->jcn_loc),rptr[numeq],1,"IV");
    amredef(&(spo->irn_loc),rptr[numeq],1,"IV");
@@ -521,16 +521,16 @@ return;
  |  init=1:  to =      from * factor                                    |
  *----------------------------------------------------------------------*/
 void add_spooles_matrix(struct _SPOOLMAT *to, struct _SPOOLMAT *from,
-                       double factor, int init, INTRA *actintra)
+                       DOUBLE factor, INT init, INTRA *actintra)
 {
 #ifdef SPOOLES_PACKAGE
-int     i,j,k,index,foundit,actrow,offset;
-int     colstart_to,colend_to;
-int     colstart_from,colend_from;
-int    *irn_to,*jcn_to,*update_to,*rptr_to,numeq_to;
-double *A_to;
-int    *irn_from,*jcn_from,*update_from,*rptr_from,numeq_from;
-double *A_from;
+INT     i,j,k,index,foundit,actrow,offset;
+INT     colstart_to,colend_to;
+INT     colstart_from,colend_from;
+INT    *irn_to,*jcn_to,*update_to,*rptr_to,numeq_to;
+DOUBLE *A_to;
+INT    *irn_from,*jcn_from,*update_from,*rptr_from,numeq_from;
+DOUBLE *A_from;
 
 #ifdef DEBUG 
 dstrc_enter("add_spooles_matrix");
@@ -600,11 +600,11 @@ return;
 /*----------------------------------------------------------------------*
  |  fill sendbuffer isend and dsend                           m.gee 1/02|
  *----------------------------------------------------------------------*/
-void add_spo_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
-                      double **dsend,double **estif, int numsend)
+void add_spo_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
+                      DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
 #ifdef SPOOLES_PACKAGE
-int         k,l;
+INT         k,l;
 #ifdef DEBUG 
 dstrc_enter("add_spo_sendbuff");
 #endif
@@ -636,27 +636,27 @@ void exchange_coup_spo(
                         )
 {
 #ifdef SPOOLES_PACKAGE
-int            i,j;
-int            ii,jj,ii_index;
-int            start;
-int            lenght;
-int            index;
-int            tag;
-int            source;
-int            numeq,numeq_total;
-int            numsend;
-int            numrecv;
-int           *update;
-int          **isend;
-double       **dsend;
-int          **irecv;
-double       **drecv;
-int            imyrank;
-int            inprocs;
-double        *A_loc;                    /*    "       A_loc see MUMPS manual */
-int           *irn;                      /*    "       irn see MUMPS manual */
-int           *jcn;                      /*    "       jcn see MUMPS manual */
-int           *rowptr;                   /*    "       rowptr see rc_ptr structure */
+INT            i,j;
+INT            ii,jj,ii_index;
+INT            start;
+INT            lenght;
+INT            index;
+INT            tag;
+INT            source;
+INT            numeq,numeq_total;
+INT            numsend;
+INT            numrecv;
+INT           *update;
+INT          **isend;
+DOUBLE       **dsend;
+INT          **irecv;
+DOUBLE       **drecv;
+INT            imyrank;
+INT            inprocs;
+DOUBLE        *A_loc;                    /*    "       A_loc see MUMPS manual */
+INT           *irn;                      /*    "       irn see MUMPS manual */
+INT           *jcn;                      /*    "       jcn see MUMPS manual */
+INT           *rowptr;                   /*    "       rowptr see rc_ptr structure */
 
 #ifdef PARALLEL 
 MPI_Status    *irecv_status;

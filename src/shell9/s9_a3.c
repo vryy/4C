@@ -37,19 +37,19 @@ array 'ele->e.s9->a3ref'.
 *----------------------------------------------------------------------*/
 void s9a3(ELEMENT   *ele)
 {
-int        i,j;
-int        ialpha;
-int        idim;
-int        inode;
-int        iel;
-double     r,s;
-double     gkov[3][3];
-double     a3[3];
-double     a3norm;
-ARRAY      funct_a; double  *funct;
-ARRAY      deriv_a; double **deriv;
-double   **a3ref;
-double    *thick;
+INT        i,j;
+INT        ialpha;
+INT        idim;
+INT        inode;
+INT        iel;
+DOUBLE     r,s;
+DOUBLE     gkov[3][3];
+DOUBLE     a3[3];
+DOUBLE     a3norm;
+ARRAY      funct_a; DOUBLE  *funct;
+ARRAY      deriv_a; DOUBLE **deriv;
+DOUBLE   **a3ref;
+DOUBLE    *thick;
 
 #ifdef DEBUG 
 dstrc_enter("s9a3");
@@ -113,7 +113,7 @@ on the element array but only used for the calculation of the element
 loads. Therefor no shared director is used.
 NOTE: The routine is identical to 's9a3' except for the storage of a3ref!!
 </pre>
-\param  double   **a3ref (0) director at nodal points
+\param  DOUBLE   **a3ref (0) director at nodal points
 \param  ELEMENT   *ele   (i) actual shell9 element
 
 \warning There is nothing special to this routine
@@ -121,20 +121,20 @@ NOTE: The routine is identical to 's9a3' except for the storage of a3ref!!
 \sa calling: ---; called by: s9eleload() [s9_load1.c]
 
 *----------------------------------------------------------------------*/
-void s9a3ref_extern(double   *funct,
-                    double  **deriv,
-                    double  **a3ref, 
+void s9a3ref_extern(DOUBLE   *funct,
+                    DOUBLE  **deriv,
+                    DOUBLE  **a3ref, 
                     ELEMENT  *ele)
 {
-int        i,j;
-int        ialpha;
-int        idim;
-int        inode;
-int        iel;
-double     r,s;
-double     gkov[3][3];
-double     a3[3];
-double     a3norm;
+INT        i,j;
+INT        ialpha;
+INT        idim;
+INT        inode;
+INT        iel;
+DOUBLE     r,s;
+DOUBLE     gkov[3][3];
+DOUBLE     a3[3];
+DOUBLE     a3norm;
 
 #ifdef DEBUG 
 dstrc_enter("s9a3ref_extern");
@@ -192,25 +192,25 @@ elements. The modification is done according to Dis. Bischoff (p.129,
 picture 8.2c). The shared director is later put back on the element array
 'ele->e.s9->a3ref'
 </pre>
-\param  double **dir_list (i) list of different directors at this point
-\param  int      numa3    (i) number of directors at this point
-\param  double  *a3       (o) shared director
-\param  double   h2       (i) thickness of actele -> evaluation of shared director of thickness of adjacent elements differ from each other
+\param  DOUBLE **dir_list (i) list of different directors at this point
+\param  INT      numa3    (i) number of directors at this point
+\param  DOUBLE  *a3       (o) shared director
+\param  DOUBLE   h2       (i) thickness of actele -> evaluation of shared director of thickness of adjacent elements differ from each other
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9init() [s9_init.c]
 
 *----------------------------------------------------------------------*/
-void s9averdir(double **dir_list, int numa3, double *a3, double h2)
+void s9averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3, DOUBLE h2)
 {
-int        i,j,k,node;
-double     averdir[3];
-double     davn[3];
-double     normal[3];
-double     lenght;
-double     denom;
-double     alpha;
+INT        i,j,k,node;
+DOUBLE     averdir[3];
+DOUBLE     davn[3];
+DOUBLE     normal[3];
+DOUBLE     lenght;
+DOUBLE     denom;
+DOUBLE     alpha;
 #ifdef DEBUG 
 dstrc_enter("s9averdir");
 #endif

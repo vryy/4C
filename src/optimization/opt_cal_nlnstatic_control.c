@@ -46,7 +46,7 @@ extern struct _SOLVAR  *solv;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _DYNAMIC      *curve;                                         |
  *----------------------------------------------------------------------*/
 extern INT            numcurve;

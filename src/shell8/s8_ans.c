@@ -5,26 +5,26 @@
  | collocation points, shape functions and derivatives    m.gee 2/02    |
  | and all necessary basis vectors and metrics at these points          |
  *----------------------------------------------------------------------*/
-void s8_ans_colloqpoints(int nsansq,int iel,int ans,DIS_TYP distyp,
-                        double xr1[],double xs1[],double xr2[],double xs2[],
-                        double *funct1q[],double **deriv1q[], 
-                        double *funct2q[],double **deriv2q[],
-                        double **xrefe,double **a3r,double **xcure,double **a3c,
-                        double **akovr1q[] ,double **akonr1q[],
-                        double **amkovr1q[],double **amkonr1q[],
-                        double **a3kvpr1q[],
-                        double **akovc1q[] ,double **akonc1q[],
-                        double **amkovc1q[],double **amkonc1q[],
-                        double **a3kvpc1q[],
-                        double **akovr2q[] ,double **akonr2q[],
-                        double **amkovr2q[],double **amkonr2q[],
-                        double **a3kvpr2q[],
-                        double **akovc2q[] ,double **akonc2q[],
-                        double **amkovc2q[],double **amkonc2q[],
-                        double **a3kvpc2q[],
-                        double *detr, double *detc)
+void s8_ans_colloqpoints(INT nsansq,INT iel,INT ans,DIS_TYP distyp,
+                        DOUBLE xr1[],DOUBLE xs1[],DOUBLE xr2[],DOUBLE xs2[],
+                        DOUBLE *funct1q[],DOUBLE **deriv1q[], 
+                        DOUBLE *funct2q[],DOUBLE **deriv2q[],
+                        DOUBLE **xrefe,DOUBLE **a3r,DOUBLE **xcure,DOUBLE **a3c,
+                        DOUBLE **akovr1q[] ,DOUBLE **akonr1q[],
+                        DOUBLE **amkovr1q[],DOUBLE **amkonr1q[],
+                        DOUBLE **a3kvpr1q[],
+                        DOUBLE **akovc1q[] ,DOUBLE **akonc1q[],
+                        DOUBLE **amkovc1q[],DOUBLE **amkonc1q[],
+                        DOUBLE **a3kvpc1q[],
+                        DOUBLE **akovr2q[] ,DOUBLE **akonr2q[],
+                        DOUBLE **amkovr2q[],DOUBLE **amkonr2q[],
+                        DOUBLE **a3kvpr2q[],
+                        DOUBLE **akovc2q[] ,DOUBLE **akonc2q[],
+                        DOUBLE **amkovc2q[],DOUBLE **amkonc2q[],
+                        DOUBLE **a3kvpc2q[],
+                        DOUBLE *detr, DOUBLE *detc)
 {
-int i;
+INT i;
 #ifdef DEBUG 
 dstrc_enter("s8_ans_colloqpoints");
 #endif
@@ -61,11 +61,11 @@ return;
 /*----------------------------------------------------------------------*
  | collocation points, shape functions and derivatives    m.gee 2/02    |
  *----------------------------------------------------------------------*/
-void s8_ans_colloqcoords(double xqr1[], double xqs1[],
-                        double xqr2[], double xqs2[],
-                        int iel, int ans)
+void s8_ans_colloqcoords(DOUBLE xqr1[], DOUBLE xqs1[],
+                        DOUBLE xqr2[], DOUBLE xqs2[],
+                        INT iel, INT ans)
 {
-double rthreei;
+DOUBLE rthreei;
 #ifdef DEBUG 
 dstrc_enter("s8_ans_colloq");
 #endif
@@ -111,13 +111,13 @@ return;
  |                                                        m.gee 2/02    |
  | shape functions for assumed strains (querschub)                      |
  *----------------------------------------------------------------------*/
-void s8_ansq_funct(double frq[], double fsq[], double r, double s,
-                  int iel, int nsansq)
+void s8_ansq_funct(DOUBLE frq[], DOUBLE fsq[], DOUBLE r, DOUBLE s,
+                  INT iel, INT nsansq)
 {
-double rthreei;
-double pr[3],ps[3];
-double qr[2],qs[2];
-double rr[3],rs[3];
+DOUBLE rthreei;
+DOUBLE pr[3],ps[3];
+DOUBLE qr[2],qs[2];
+DOUBLE rr[3],rs[3];
 #ifdef DEBUG 
 dstrc_enter("s8_ansq_funct");
 #endif
@@ -182,39 +182,39 @@ return;
  |                                                        m.gee 2/02    |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void s8_ans_bbar_q(double **bop, double frq[], double fsq[],
-                  double  *funct1q[],  double  *funct2q[],
-                  double **deriv1q[],  double **deriv2q[],
-                  double **akovc1q[],  double **akovc2q[],
-                  double **a3kvpc1q[], double **a3kvpc2q[],
-                  int iel, int numdf, int nsansq)
+void s8_ans_bbar_q(DOUBLE **bop, DOUBLE frq[], DOUBLE fsq[],
+                  DOUBLE  *funct1q[],  DOUBLE  *funct2q[],
+                  DOUBLE **deriv1q[],  DOUBLE **deriv2q[],
+                  DOUBLE **akovc1q[],  DOUBLE **akovc2q[],
+                  DOUBLE **a3kvpc1q[], DOUBLE **a3kvpc2q[],
+                  INT iel, INT numdf, INT nsansq)
 {
-int inode, node_start;
-int isamp;
-double a1x1; 
-double a1y1;
-double a1z1;
-double a3x1;
-double a3y1;
-double a3z1;
-double a2x2;
-double a2y2;
-double a2z2;
-double a3x2;
-double a3y2;
-double a3z2;
-double a31x1;
-double a31y1;
-double a31z1;
-double a32x2;
-double a32y2;
-double a32z2;
-double p1k;
-double p2k;
-double pk1;
-double pk2;
-double fris;
-double fsis;
+INT inode, node_start;
+INT isamp;
+DOUBLE a1x1; 
+DOUBLE a1y1;
+DOUBLE a1z1;
+DOUBLE a3x1;
+DOUBLE a3y1;
+DOUBLE a3z1;
+DOUBLE a2x2;
+DOUBLE a2y2;
+DOUBLE a2z2;
+DOUBLE a3x2;
+DOUBLE a3y2;
+DOUBLE a3z2;
+DOUBLE a31x1;
+DOUBLE a31y1;
+DOUBLE a31z1;
+DOUBLE a32x2;
+DOUBLE a32y2;
+DOUBLE a32z2;
+DOUBLE p1k;
+DOUBLE p2k;
+DOUBLE pk1;
+DOUBLE pk2;
+DOUBLE fris;
+DOUBLE fsis;
 #ifdef DEBUG 
 dstrc_enter("s8_ans_bbar_q");
 #endif
@@ -299,36 +299,36 @@ return;
  |                                                        m.gee 2/02    |
  | modifications to metrics of shell ody due to ans for querschub       |
  *----------------------------------------------------------------------*/
-void s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmkonc,
-                  double **gkovr,double **gkovc,double **amkovc,double **amkovr,
-                  double **akovc,double **akovr,double **a3kvpc,double **a3kvpr,
-                  double *detr,   double *detc,
-                  double **amkovr1q[], double **amkovc1q[], 
-                  double **akovr1q[] , double **akovc1q[] ,
-                  double **a3kvpr1q[], double **a3kvpc1q[],
-                  double **amkovr2q[], double **amkovc2q[], 
-                  double **akovr2q[] , double **akovc2q[] ,
-                  double **a3kvpr2q[], double **a3kvpc2q[],
-                  double frq[], double fsq[], double e3, int nansq, int iel,
-                  double condfac)
+void s8_ans_tvhe_q(DOUBLE **gmkovr,DOUBLE **gmkovc,DOUBLE **gmkonr,DOUBLE **gmkonc,
+                  DOUBLE **gkovr,DOUBLE **gkovc,DOUBLE **amkovc,DOUBLE **amkovr,
+                  DOUBLE **akovc,DOUBLE **akovr,DOUBLE **a3kvpc,DOUBLE **a3kvpr,
+                  DOUBLE *detr,   DOUBLE *detc,
+                  DOUBLE **amkovr1q[], DOUBLE **amkovc1q[], 
+                  DOUBLE **akovr1q[] , DOUBLE **akovc1q[] ,
+                  DOUBLE **a3kvpr1q[], DOUBLE **a3kvpc1q[],
+                  DOUBLE **amkovr2q[], DOUBLE **amkovc2q[], 
+                  DOUBLE **akovr2q[] , DOUBLE **akovc2q[] ,
+                  DOUBLE **a3kvpr2q[], DOUBLE **a3kvpc2q[],
+                  DOUBLE frq[], DOUBLE fsq[], DOUBLE e3, INT nansq, INT iel,
+                  DOUBLE condfac)
 {
-int i;
-double b11c=0.0;
-double b12c=0.0;
-double b21c=0.0;
-double b22c=0.0;
-double b31c=0.0;
-double b32c=0.0;
+INT i;
+DOUBLE b11c=0.0;
+DOUBLE b12c=0.0;
+DOUBLE b21c=0.0;
+DOUBLE b22c=0.0;
+DOUBLE b31c=0.0;
+DOUBLE b32c=0.0;
 
-double b11r=0.0;
-double b12r=0.0;
-double b21r=0.0;
-double b22r=0.0;
-double b31r=0.0;
-double b32r=0.0;
+DOUBLE b11r=0.0;
+DOUBLE b12r=0.0;
+DOUBLE b21r=0.0;
+DOUBLE b22r=0.0;
+DOUBLE b31r=0.0;
+DOUBLE b32r=0.0;
 
-double det_dummy;
-double zeta;
+DOUBLE det_dummy;
+DOUBLE zeta;
 
 #ifdef DEBUG 
 dstrc_enter("s8_ans_tvhe_q");
@@ -390,43 +390,43 @@ return;
  |                                                        m.gee 2/02    |
  | geometric stiffness matrix kg with ans for querschub                 |
  *----------------------------------------------------------------------*/
-void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
-                int numdf,int iel,double weight,double e1,double e2,
-                double frq[], double fsq[],double *funct1q[],double  *funct2q[],
-                double **deriv1q[], double **deriv2q[],int ansq, int nsansq)
+void s8_ans_tvkg(DOUBLE **estif,DOUBLE *stress_r,DOUBLE *funct,DOUBLE **deriv,
+                INT numdf,INT iel,DOUBLE weight,DOUBLE e1,DOUBLE e2,
+                DOUBLE frq[], DOUBLE fsq[],DOUBLE *funct1q[],DOUBLE  *funct2q[],
+                DOUBLE **deriv1q[], DOUBLE **deriv2q[],INT ansq, INT nsansq)
 {
-int     i,inode,jnode;
-int     i_indiz,j_indiz;
-double  pi;
-double  pj;
-double  d11;
-double  d12;
-double  d21;
-double  d22;
+INT     i,inode,jnode;
+INT     i_indiz,j_indiz;
+DOUBLE  pi;
+DOUBLE  pj;
+DOUBLE  d11;
+DOUBLE  d12;
+DOUBLE  d21;
+DOUBLE  d22;
 
-double  pd1ij;
-double  pd1ji;
-double  pd2ij;
-double  pd2ji;
+DOUBLE  pd1ij;
+DOUBLE  pd1ji;
+DOUBLE  pd2ij;
+DOUBLE  pd2ji;
 
-double  xn;
-double  xm;
-double  yu;
-double  yo;
-double  yy;
-double  z;
+DOUBLE  xn;
+DOUBLE  xm;
+DOUBLE  yu;
+DOUBLE  yo;
+DOUBLE  yy;
+DOUBLE  z;
 
-double  sn11;
-double  sn21;
-double  sn31;
-double  sn22;
-double  sn32;
-double  sn33;
-double  sm11;
-double  sm21;
-double  sm31;
-double  sm22;
-double  sm32;
+DOUBLE  sn11;
+DOUBLE  sn21;
+DOUBLE  sn31;
+DOUBLE  sn22;
+DOUBLE  sn32;
+DOUBLE  sn33;
+DOUBLE  sm11;
+DOUBLE  sm21;
+DOUBLE  sm31;
+DOUBLE  sm22;
+DOUBLE  sm32;
 
 #ifdef DEBUG 
 dstrc_enter("s8_ans_tvkg");

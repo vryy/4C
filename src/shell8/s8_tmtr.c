@@ -4,23 +4,23 @@
 /*----------------------------------------------------------------------*
  |  calculates all metrics                                m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_tmtr(double   **x,
-                double   **a3,
-                double     e3,
-                double   **gkov,
-                double   **gkon,
-                double   **gmkov,
-                double   **gmkon,
-                double    *det,
-                double    *funct,
-                double   **deriv,
-                int        iel,
-                double     condfac,
-                int        flag)
+void s8_tmtr(DOUBLE   **x,
+                DOUBLE   **a3,
+                DOUBLE     e3,
+                DOUBLE   **gkov,
+                DOUBLE   **gkon,
+                DOUBLE   **gmkov,
+                DOUBLE   **gmkon,
+                DOUBLE    *det,
+                DOUBLE    *funct,
+                DOUBLE   **deriv,
+                INT        iel,
+                DOUBLE     condfac,
+                INT        flag)
 {
-int    i,j,k,idim,ialpha,inode;
-int    i1=0,i2=0,i3=0,i4=0,i5=0;
-double zeta,det_dummy;
+INT    i,j,k,idim,ialpha,inode;
+INT    i1=0,i2=0,i3=0,i4=0,i5=0;
+DOUBLE zeta,det_dummy;
 #ifdef DEBUG 
 dstrc_enter("s8_tmtr");
 #endif

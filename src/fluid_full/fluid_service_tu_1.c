@@ -45,36 +45,36 @@ nonlinear iteration scheme are calculated.
 \param **actfield        FIELD            (i)    actual field       
 \param  *actintra        INTRA	      (i)    actual intra comm.
 \param	*sol 	       DIST_VECTOR      (i)    solution vector
-\param	 place         int	      (i)    place in sol_incr.
+\param	 place         INT	      (i)    place in sol_incr.
 \param	*sysarray      SPARSE_ARRAY   (i)
 \param	*sysarray_typ  SPARSE_TYP     (i)
-\param	*kapomegarat   double	      (o)    kapomega  conv. ratio
+\param	*kapomegarat   DOUBLE	      (o)    kapomega  conv. ratio
 \param	*fdyn	       FLUID_DYNAMIC	     	
-\param lower_limit_kappa  double	      (i)    lower limit for kappa
-\param lower_limit_omega  double	      (i)    lower limit for omega
+\param lower_limit_kappa  DOUBLE	      (i)    lower limit for kappa
+\param lower_limit_omega  DOUBLE	      (i)    lower limit for omega
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_result_incre_tu_1(FIELD       *actfield,    
                            INTRA         *actintra,   
 			         DIST_VECTOR   *sol,        
-                           int            place,      
+                           INT            place,      
 			         SPARSE_ARRAY  *sysarray,      
 			         SPARSE_TYP    *sysarray_typ,
-			         double        *kapomegarat,        
+			         DOUBLE        *kapomegarat,        
 		               FLUID_DYNAMIC *fdyn,
-                           double         lower_limit_kappa,
-                           double         lower_limit_omega         
+                           DOUBLE         lower_limit_kappa,
+                           DOUBLE         lower_limit_omega         
 		              )
 {
-int      i,j;
-int      max;
-int      diff;
-int      dof;
-int      numeq_total;
-double  *result;
-double   dkapomenorm=ZERO;
-double    kapomenorm=ZERO;
+INT      i,j;
+INT      max;
+INT      diff;
+INT      dof;
+INT      numeq_total;
+DOUBLE  *result;
+DOUBLE   dkapomenorm=ZERO;
+DOUBLE    kapomenorm=ZERO;
 NODE    *actnode;
 ARRAY    result_a;
 FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
@@ -252,8 +252,8 @@ nodes:
 </pre>
 \param *actfield    FIELD         (i)  actual field (fluid)   
 \param *fdyn	  FLUID_DYNAMIC (i)  
-\param *lower_limit_kappa  double (o) lower limit for kappa  
-\param *lower_limit_omega  double (o) lower limit for omega  
+\param *lower_limit_kappa  DOUBLE (o) lower limit for kappa  
+\param *lower_limit_omega  DOUBLE (o) lower limit for omega  
 
 \return void                                                                             
 
@@ -261,15 +261,15 @@ nodes:
 void fluid_set_check_tu_1(
                        FIELD  *actfield, 
                        FLUID_DYNAMIC *fdyn, 
-                       double lower_limit_kappa,
-                       double lower_limit_omega
+                       DOUBLE lower_limit_kappa,
+                       DOUBLE lower_limit_omega
                        )
 {
-int        i,j;
-int        numnp_total;              /* total number of fluid nodes     */
-int        numele_total;             /* total number of fluid elements  */
-int        numdf;	                   /* number of fluid dofs       	*/
-double     k_2;
+INT        i,j;
+INT        numnp_total;              /* total number of fluid nodes     */
+INT        numele_total;             /* total number of fluid elements  */
+INT        numdf;	                   /* number of fluid dofs       	*/
+DOUBLE     k_2;
 GNODE     *actgnode;	             /* actual GNODE		            */
 NODE      *actnode;	             /* actual NODE		            */
 
@@ -323,10 +323,10 @@ void fluid_eddy_update_1(FIELD         *actfield,
                          DIST_VECTOR   *sol   
                         )
 {
-int  i,j;
-int  dof,actmat;
-int  numeq_total;
-double  visc,Re_t;
+INT  i,j;
+INT  dof,actmat;
+INT  numeq_total;
+DOUBLE  visc,Re_t;
 NODE    *actnode;
 ELEMENT *actele;
 
@@ -374,23 +374,23 @@ and calculate norms for the iteration convergence check
 </pre>   
 \param **actfield      FIELD	            (i)    actual field       
 \param	*sol 	     DIST_VECTOR        (i)    solution vector
-\param  lenghtrat	     double             (o)    conv. ratio
+\param  lenghtrat	     DOUBLE             (o)    conv. ratio
 \param     *fdyn 	     FLUID_DYNAMIC      (i)   
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_lenght_update_1(FIELD         *actfield, 
                           DIST_VECTOR   *sol,   
-		              double        *lenghtrat, 
+		              DOUBLE        *lenghtrat, 
                           FLUID_DYNAMIC *fdyn      
                          )
 {
 NODE    *actnode;
-int  i,j;
-int  dof;
-double   dlenghtnorm=ZERO;
-double    lenghtnorm=ZERO;
-int  numeq_total;
+INT  i,j;
+INT  dof;
+DOUBLE   dlenghtnorm=ZERO;
+DOUBLE    lenghtnorm=ZERO;
+INT  numeq_total;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_lenght_update_1");

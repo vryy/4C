@@ -74,25 +74,25 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  *----------------------------------------------------------------------*/
 void stanln() 
 {
-int           i;                  /* simply a counter */
-int           numeq;              /* number of equations on this proc */
-int           numeq_total;        /* total number of equations */
-int           init;               /* flag for solver_control call */
-int           actsysarray;        /* number of the active system sparse matrix */
-int           cdof;               /* the Id of the controlled dof */
+INT           i;                  /* simply a counter */
+INT           numeq;              /* number of equations on this proc */
+INT           numeq_total;        /* total number of equations */
+INT           init;               /* flag for solver_control call */
+INT           actsysarray;        /* number of the active system sparse matrix */
+INT           cdof;               /* the Id of the controlled dof */
 
-int           kstep;              /* active step in nonlinear analysis */
-int           nstep;              /* total number of steps */
-int           itnum;              /* number of iterations taken by corrector */
-int           maxiter;            /* max. number of iterations allowed */
-double        stepsi;             /* load step size for temp. storage*/
+INT           kstep;              /* active step in nonlinear analysis */
+INT           nstep;              /* total number of steps */
+INT           itnum;              /* number of iterations taken by corrector */
+INT           maxiter;            /* max. number of iterations allowed */
+DOUBLE        stepsi;             /* load step size for temp. storage*/
 
-int           mod_displ;          /* write or not dicplacements of this step in output */
-int           mod_stress;         /* write or not stresses of this step in output */
+INT           mod_displ;          /* write or not dicplacements of this step in output */
+INT           mod_stress;         /* write or not stresses of this step in output */
 
-int           mod_restart;        /* write or not valuesof this step needed for restart in output */
-int           restart;            /* if this is a restart calc -> restart =!0 elseif ==0*/
-int           restartevery;       /* how often to write restart (temp. storage) */
+INT           mod_restart;        /* write or not valuesof this step needed for restart in output */
+INT           restart;            /* if this is a restart calc -> restart =!0 elseif ==0*/
+INT           restartevery;       /* how often to write restart (temp. storage) */
 
 NR_CONTROLTYP controltyp;         /* type of path following technic */
 
@@ -481,27 +481,27 @@ return;
 /*----------------------------------------------------------------------*
  |  PERFORM LINEAR PREDICTOR STEP                            m.gee 11/01|
  *----------------------------------------------------------------------*/
-void conpre(  /*!< rueckgabe int da kein prototyp definiert wurde! */
+void conpre(  /*!< rueckgabe INT da kein prototyp definiert wurde! */
             FIELD         *actfield,     /* the actual physical field */
             SOLVAR        *actsolv,      /* the field-corresponding solver */
             PARTITION     *actpart,      /* the partition of the proc */
             INTRA         *actintra,     /* the intra-communicator of this field */
             CALC_ACTION   *action,       /* calculation flag */
-            int            kstep,        /* the load or time step we are in */
-            int            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            INT            kstep,        /* the load or time step we are in */
+            INT            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
             DIST_VECTOR   *rsd,          /* dist. vector of incremental residual displ. used for iteration in conequ */
             DIST_VECTOR   *dispi,        /* dist. vector of incremental displacements */
-            int            cdof,         /* number of the dof to be controlled */
+            INT            cdof,         /* number of the dof to be controlled */
             STANLN        *nln_data,     /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,   /* type of control algorithm */
             CONTAINER     *container 	 /* contains variables defined in container.h */
            )
 {
-int                  init;             /* solver flag */
-double               prenorm;          /* norm of predictor step */
-double               controldisp;      /* displacment value at controled dof */ 
-double               rldiff;           /* forgot.... */
-double               spi;              /* forgot.... */
+INT                  init;             /* solver flag */
+DOUBLE               prenorm;          /* norm of predictor step */
+DOUBLE               controldisp;      /* displacment value at controled dof */ 
+DOUBLE               rldiff;           /* forgot.... */
+DOUBLE               spi;              /* forgot.... */
 
 
 #ifdef DEBUG 
@@ -562,7 +562,7 @@ case control_arc:
    if (statvar->iarc==0) statvar->arcscl=0.0;
    else if (kstep==0 && statvar->iarc==1)
    {
-      statvar->arcscl = prenorm / sqrt((double)(actsolv->sol[0].numeq_total));
+      statvar->arcscl = prenorm / sqrt((DOUBLE)(actsolv->sol[0].numeq_total));
    }
    rldiff = (statvar->stepsize) / (sqrt(prenorm*prenorm + statvar->arcscl*statvar->arcscl));
 break;
@@ -621,45 +621,45 @@ return;
  |  PERFORM EQUILLIBRIUM ITERATION                           m.gee 11/01|
  |  within Newton Raphson                                               |
  *----------------------------------------------------------------------*/
-void conequ( /*!< rueckgabe int da kein prototyp definiert wurde! */
+void conequ( /*!< rueckgabe INT da kein prototyp definiert wurde! */
             FIELD         *actfield,      /* the actual physical field */
             SOLVAR        *actsolv,       /* the field-corresponding solver */
             PARTITION     *actpart,       /* the partition of the proc */
             INTRA         *actintra,      /* the intra-communicator of this field */
             CALC_ACTION   *action,        /* calculation flag */
-            int            kstep,         /* the load or time step we are in */
-            int           *itnum,         /* number of corrector steps taken by this routine */
-            int            actsysarray,   /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            INT            kstep,         /* the load or time step we are in */
+            INT           *itnum,         /* number of corrector steps taken by this routine */
+            INT            actsysarray,   /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
             DIST_VECTOR   *rsd,           /* dist. vector of incremental residual forces used for iteration in conequ */
             DIST_VECTOR   *dispi,         /* dist. vector of incremental displacements */
             DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
-            int            cdof,          /* number of dof to be controlled */
+            INT            cdof,          /* number of dof to be controlled */
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,    /* type of control algorithm */
             CONTAINER     *container	  /* contains variables defined in container.h */
            )
 {
-int                  init;                   /* init flag for solver */
-int                  itemax;                 /* max. number of corrector steps allowed */
-double               stepsize;               /* stepsize */
-int                  convergence=0;          /* test flag for convergence */
-double               rl0;                    /* some norms and working variables */                   
-double               rlold;
-double               rlnew;
-double               rlpre;
-double               renorm=0.0;
-double               energy=0.0;
-double               dnorm;
-double               dinorm;
-double               told;
-double               disval;
-double               rli;
+INT                  init;                   /* init flag for solver */
+INT                  itemax;                 /* max. number of corrector steps allowed */
+DOUBLE               stepsize;               /* stepsize */
+INT                  convergence=0;          /* test flag for convergence */
+DOUBLE               rl0;                    /* some norms and working variables */                   
+DOUBLE               rlold;
+DOUBLE               rlnew;
+DOUBLE               rlpre;
+DOUBLE               renorm=0.0;
+DOUBLE               energy=0.0;
+DOUBLE               dnorm;
+DOUBLE               dinorm;
+DOUBLE               told;
+DOUBLE               disval;
+DOUBLE               rli;
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
-double              *intforce;               /* pointer to intforce_a.a.dv */
+DOUBLE              *intforce;               /* pointer to intforce_a.a.dv */
 #ifdef PARALLEL 
 static ARRAY intforcerecv_a;
-static double *intforcerecv;
+static DOUBLE *intforcerecv;
 #endif
 
 
@@ -933,26 +933,26 @@ C-----------------------------------------------------------------------
 */
 void increment_controlarc(INTRA         *actintra,
                           SOLVAR        *actsolv,
-                          int            actsysarray,
+                          INT            actsysarray,
                           DIST_VECTOR   *rsd,
                           DIST_VECTOR   *dispi,
                           DIST_VECTOR   *disp,
-                          double         rlnew,
-                          double         rlold, 
-                          double         stepsize,  
-                          double        *rli)
+                          DOUBLE         rlnew,
+                          DOUBLE         rlold, 
+                          DOUBLE         stepsize,  
+                          DOUBLE        *rli)
 {
-int                  i;
-double               rsd1,rsd2;
-double               val1,val2,val3,val4,val5,val6;
-double               a1,a2,a3,a4,a5;
-double               ddisp;
-double               actdisp;
-double               convdisp;
-double               drl;
-double               valsqr;
-double               rli1,rli2;
-double               valcos1,valcos2;
+INT                  i;
+DOUBLE               rsd1,rsd2;
+DOUBLE               val1,val2,val3,val4,val5,val6;
+DOUBLE               a1,a2,a3,a4,a5;
+DOUBLE               ddisp;
+DOUBLE               actdisp;
+DOUBLE               convdisp;
+DOUBLE               drl;
+DOUBLE               valsqr;
+DOUBLE               rli1,rli2;
+DOUBLE               valcos1,valcos2;
 
 #ifdef DEBUG 
 dstrc_enter("increment_controlarc");
@@ -1045,13 +1045,13 @@ return;
  *----------------------------------------------------------------------*/
 void increment_controldisp(INTRA *actintra,
                           SOLVAR        *actsolv,
-                          int            actsysarray,
-                          int            cdof,
+                          INT            actsysarray,
+                          INT            cdof,
                           DIST_VECTOR   *rsd,
                           DIST_VECTOR   *dispi,   
-                          double        *rli)
+                          DOUBLE        *rli)
 {
-double rsd1,rsd2;
+DOUBLE rsd1,rsd2;
 
 #ifdef DEBUG 
 dstrc_enter("increment_controldisp");
@@ -1094,7 +1094,7 @@ return;
  |  controltyp                      type of control algorithm           |
  |  cdof                            number of dof that is controlled    |      
  *----------------------------------------------------------------------*/
-void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof, double csp)
+void conequ_printhead(INT kstep, NR_CONTROLTYP  controltyp, INT cdof, DOUBLE csp)
 {
 #ifdef DEBUG 
 dstrc_enter("conequ_printhead");
@@ -1186,8 +1186,8 @@ return;
  | dnorm                              norm of incremental displacements | 
  | rrnorm                                            norm of total load |
  *----------------------------------------------------------------------*/
-void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
-                     double renorm, double energy, double dnorm, double rrnorm)
+void conequ_printiter(INT itnum, DOUBLE disval, DOUBLE rlnew, DOUBLE dinorm,
+                     DOUBLE renorm, DOUBLE energy, DOUBLE dnorm, DOUBLE rrnorm)
 {
 #ifdef DEBUG 
 dstrc_enter("conequ_printiter");

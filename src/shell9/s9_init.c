@@ -30,17 +30,17 @@ memory for different arrays is allocated ("forces", "stresses").
 *----------------------------------------------------------------------*/
 void s9init(FIELD *actfield)
 {
-int          i,j,k;
+INT          i,j,k;
 ELEMENT     *actele;
 NODE        *actnode;
 S9_DATA      data;
-/*double     **a3ref;*/
-int          numele;
-int          numa3;
-double       a3[3];
+/*DOUBLE     **a3ref;*/
+INT          numele;
+INT          numa3;
+DOUBLE       a3[3];
 ARRAY        collaverdir_a;
-double     **collaverdir;
-double       h2;            /*thickness of actele -> evaluation of shared director of thickness of adjacent elements differ from each other*/
+DOUBLE     **collaverdir;
+DOUBLE       h2;            /*thickness of actele -> evaluation of shared director of thickness of adjacent elements differ from each other*/
 
 #ifdef DEBUG 
 dstrc_enter("s9init");

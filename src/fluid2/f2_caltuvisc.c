@@ -22,20 +22,20 @@ In this routine the algebraic turbulent eddy viscosity is calculated:
 
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
-\param **vderxy      double	   (i)    global vel. derivatives
+\param **vderxy      DOUBLE	   (i)    global vel. derivatives
 ----------------------------------------------------------------------*/
 
-double f2_calvisc(
+DOUBLE f2_calvisc(
 	           ELEMENT    *ele,
-                 double     **vderxy
+                 DOUBLE     **vderxy
                 )
 {
-double           factor;     /* Faktorisierung der Wurzel */   
-double           radiant;   
-double           root; 
-double           visc;       /* eddy-viscosity */ 
-double           density;    /* density */     
-int              actmat;     /* material number of the element */
+DOUBLE           factor;     /* Faktorisierung der Wurzel */   
+DOUBLE           radiant;   
+DOUBLE           root; 
+DOUBLE           visc;       /* eddy-viscosity */ 
+DOUBLE           density;    /* density */     
+INT              actmat;     /* material number of the element */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -63,7 +63,7 @@ dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 
-return ((double)(visc));
+return ((DOUBLE)(visc));
 } /*end of f2_calvisc */
  
 #endif

@@ -22,32 +22,32 @@ void  add_ccf(struct _PARTITION     *actpart,
               struct _CCF           *ccf2)
 {
 #ifdef UMFPACK
-int         i,j,k,l,counter;          /* some counter variables */
-int         istwo=0;
-int         start,index,lenght;       /* some more special-purpose counters */
-int         ii,jj;                    /* counter variables for system matrix */
-int         nd,ndnd;                  /* size of estif */
-int         nnz;                      /* number of nonzeros in sparse system matrix */
-int         numeq_total;              /* total number of equations */
-int         numeq;                    /* number of equations on this proc */
-int         lm[MAXDOFPERELE];         /* location vector for this element */
-int         owner[MAXDOFPERELE];      /* the owner of every dof */
-int         myrank;                   /* my intra-proc number */
-int         nprocs;                   /* my intra- number of processes */
-int        *Ai;                       /*    "       Ap (column pointer) see UMFPACK manual */
-int        *Ap;                       /*    "       Ai see UMFPACK manual */
-double     *Ax;                       /*    "       Ax see UMFPACK manual */
-double     *Bx;                       /*    "       Ax see UMFPACK manual */
-double    **estif;                    /* element matrix to be added to system matrix */
-double    **emass;                    /* element matrix to be added to system matrix */
-int        *update;                   /* vector update see AZTEC manual */
-int       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
-int         ncdofs;                   /* total number of coupled dofs */
-int       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-int       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-int         nsend;
+INT         i,j,k,l,counter;          /* some counter variables */
+INT         istwo=0;
+INT         start,index,lenght;       /* some more special-purpose counters */
+INT         ii,jj;                    /* counter variables for system matrix */
+INT         nd,ndnd;                  /* size of estif */
+INT         nnz;                      /* number of nonzeros in sparse system matrix */
+INT         numeq_total;              /* total number of equations */
+INT         numeq;                    /* number of equations on this proc */
+INT         lm[MAXDOFPERELE];         /* location vector for this element */
+INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+INT         myrank;                   /* my intra-proc number */
+INT         nprocs;                   /* my intra- number of processes */
+INT        *Ai;                       /*    "       Ap (column pointer) see UMFPACK manual */
+INT        *Ap;                       /*    "       Ai see UMFPACK manual */
+DOUBLE     *Ax;                       /*    "       Ax see UMFPACK manual */
+DOUBLE     *Bx;                       /*    "       Ax see UMFPACK manual */
+DOUBLE    **estif;                    /* element matrix to be added to system matrix */
+DOUBLE    **emass;                    /* element matrix to be added to system matrix */
+INT        *update;                   /* vector update see AZTEC manual */
+INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+INT         ncdofs;                   /* total number of coupled dofs */
+INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+INT         nsend;
 
 #ifdef DEBUG 
 dstrc_enter("add_ccf");
@@ -147,12 +147,12 @@ void redundant_ccf(PARTITION *actpart,
                    CCF       *ccf1,
                    CCF       *ccf2)
 {
-int      i;
-int      imyrank;
-int      inprocs;
+INT      i;
+INT      imyrank;
+INT      inprocs;
 
 ARRAY    recv_a;
-double  *recv;
+DOUBLE  *recv;
 
 #ifdef DEBUG 
 dstrc_enter("redundant_ccf");

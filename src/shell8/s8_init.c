@@ -6,15 +6,15 @@
  *----------------------------------------------------------------------*/
 void s8init(FIELD *actfield)
 {
-int          i,j,k;
+INT          i,j,k;
 ELEMENT     *actele;
 NODE        *actnode;
 S8_DATA      data;
-/*double     **a3ref;*/
-int          numa3;
-double       a3[3];
+/*DOUBLE     **a3ref;*/
+INT          numa3;
+DOUBLE       a3[3];
 ARRAY        collaverdir_a;
-double     **collaverdir;
+DOUBLE     **collaverdir;
 
 #ifdef DEBUG 
 dstrc_enter("s8init");

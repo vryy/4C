@@ -4,22 +4,22 @@
 /*----------------------------------------------------------------------*
  |  calculates all metrics                                m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_tvmr(double   **x,
-                double   **a3,
-                double   **akov,
-                double   **akon,
-                double   **amkov,
-                double   **amkon,
-                double    *det,
-                double    *funct,
-                double   **deriv,
-                int        iel,
-                double   **a3kvp,
-                int        flag)
+void s8_tvmr(DOUBLE   **x,
+                DOUBLE   **a3,
+                DOUBLE   **akov,
+                DOUBLE   **akon,
+                DOUBLE   **amkov,
+                DOUBLE   **amkon,
+                DOUBLE    *det,
+                DOUBLE    *funct,
+                DOUBLE   **deriv,
+                INT        iel,
+                DOUBLE   **a3kvp,
+                INT        flag)
 {
-int    i,j,k,idim,ialpha,inode;
-int    i1=0,i2=0,i3=0,i4=0,i5=0,i6=0;
-double det_dummy;
+INT    i,j,k,idim,ialpha,inode;
+INT    i1=0,i2=0,i3=0,i4=0,i5=0,i6=0;
+DOUBLE det_dummy;
 #ifdef DEBUG 
 dstrc_enter("s8_tvmr");
 #endif

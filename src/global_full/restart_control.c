@@ -49,22 +49,22 @@ void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
                                 PARTITION       *actpart,
                                 INTRA           *actintra,
                                 CALC_ACTION     *action,
-                                int nrhs,  DIST_VECTOR *rhs,
-                                int nsol,  DIST_VECTOR *sol,
-                                int ndis,  DIST_VECTOR *dispi,
-                                int nvel,  DIST_VECTOR *vel,
-                                int nacc,  DIST_VECTOR *acc,
-                                int nfie,  DIST_VECTOR *fie,
-                                int nwork, DIST_VECTOR *work,
+                                INT nrhs,  DIST_VECTOR *rhs,
+                                INT nsol,  DIST_VECTOR *sol,
+                                INT ndis,  DIST_VECTOR *dispi,
+                                INT nvel,  DIST_VECTOR *vel,
+                                INT nacc,  DIST_VECTOR *acc,
+                                INT nfie,  DIST_VECTOR *fie,
+                                INT nwork, DIST_VECTOR *work,
                                 ARRAY *intforce_a,
                                 ARRAY *dirich_a,
                                 CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
-int                  i;
-int                  ierr;
-int                  numnp;
+INT                  i;
+INT                  ierr;
+INT                  numnp;
 long int           **node_handles;
-int                  numele;
+INT                  numele;
 long int           **ele_handles;
 char                 resname[100];
 long int             longdummy;
@@ -315,34 +315,34 @@ return;
  | read restart                                          m.gee 05/02    |
  | of nln-structural dynamics                                           |
  *----------------------------------------------------------------------*/
-void restart_read_nlnstructdyn(int restart,
+void restart_read_nlnstructdyn(INT restart,
                                STRUCT_DYNAMIC  *sdyn,
                                STRUCT_DYN_CALC *dynvar,
                                FIELD           *actfield,
                                PARTITION       *actpart,
                                INTRA           *actintra,
                                CALC_ACTION     *action,
-                               int nrhs,  DIST_VECTOR *rhs,
-                               int nsol,  DIST_VECTOR *sol,
-                               int ndis,  DIST_VECTOR *dispi,
-                               int nvel,  DIST_VECTOR *vel,
-                               int nacc,  DIST_VECTOR *acc,
-                               int nfie,  DIST_VECTOR *fie,
-                               int nwork, DIST_VECTOR *work,
+                               INT nrhs,  DIST_VECTOR *rhs,
+                               INT nsol,  DIST_VECTOR *sol,
+                               INT ndis,  DIST_VECTOR *dispi,
+                               INT nvel,  DIST_VECTOR *vel,
+                               INT nacc,  DIST_VECTOR *acc,
+                               INT nfie,  DIST_VECTOR *fie,
+                               INT nwork, DIST_VECTOR *work,
                                ARRAY *intforce_a,
                                ARRAY *dirich_a,
                                CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
-int                  i,j;
-int                  ierr;
+INT                  i,j;
+INT                  ierr;
 long int             reshandle;
-int                  byte;
-int                  dims[3];
-int                  numnp;
-int                  fdim;
-int                  sender;
+INT                  byte;
+INT                  dims[3];
+INT                  numnp;
+INT                  fdim;
+INT                  sender;
 long int           **node_handles;
-int                  numele;
+INT                  numele;
 long int           **ele_handles;
 char                 resname[100];
 FILE                *in;
@@ -467,7 +467,7 @@ for (i=0; i<numnp; i++)
    /*------------------------- check for the dimensions of actnode->sol */
    pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][0]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(DOUBLE)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol.fdim ||
        dims[1] != actnode->sol.sdim)
@@ -479,7 +479,7 @@ for (i=0; i<numnp; i++)
    /*--------------- check for the dimensions of actnode->sol_increment */
    pss_getdims_name_handle(actnode->sol_increment.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(DOUBLE)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_increment.fdim ||
        dims[1] != actnode->sol_increment.sdim)
@@ -491,7 +491,7 @@ for (i=0; i<numnp; i++)
    /*---------------- check for the dimensions of actnode->sol_residual */
    pss_getdims_name_handle(actnode->sol_residual.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][2]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(DOUBLE)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_residual.fdim ||
        dims[1] != actnode->sol_residual.sdim)
@@ -644,17 +644,17 @@ void restart_write_nlnstructstat(STATIC_VAR     *statvar, /*-------------- stati
                 PARTITION       *actpart,   /*------------------------ actual partition --*/
                 INTRA           *actintra,  /*---------------- actual intra comunicator --*/
                 CALC_ACTION     *action,    /*---------- element action = write-restart --*/
-                int kstep,                  /*------------------------ actual load step --*/
-                int nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
-                int nsol,  DIST_VECTOR *sol,/* solution processorpart     --"--         --*/
-                int ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
+                INT kstep,                  /*------------------------ actual load step --*/
+                INT nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
+                INT nsol,  DIST_VECTOR *sol,/* solution processorpart     --"--         --*/
+                INT ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
                 CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
-int                  i;                      /*-------------------------------- counter --*/
-int                  ierr;                   /*----------------------------- error-flag --*/
-int                  numnp;                  /*----------------- number of nodal points --*/
+INT                  i;                      /*-------------------------------- counter --*/
+INT                  ierr;                   /*----------------------------- error-flag --*/
+INT                  numnp;                  /*----------------- number of nodal points --*/
 long int           **node_handles;           /*---------- handles for node- information --*/
-int                  numele;                 /*--------------------- number of elements --*/
+INT                  numele;                 /*--------------------- number of elements --*/
 long int           **ele_handles;            /*---------- handles for node- information --*/
 char                 resname[100];           /*------- restartname = restart+stepnumber --*/
 long int             longdummy;
@@ -871,28 +871,28 @@ return;
  | read restart                                                                     ah 08/02 |
  | of nln-structural statics                                                                 |
  *-------------------------------------------------------------------------------------------*/
-void restart_read_nlnstructstat(int restart,   /*--------------------------- restart step  --*/
+void restart_read_nlnstructstat(INT restart,   /*--------------------------- restart step  --*/
                 STATIC_VAR     *statvar,       /*---------------------------- static input --*/                  
                 STANLN          *nln_data,     /*-- control variables for global NR-Iterat --*/
                 FIELD           *actfield,     /*---------------------------- actual field --*/
                 PARTITION       *actpart,      /*------------------------ actual partition --*/
                 INTRA           *actintra,     /*---------------- actual intra comunicator --*/
                 CALC_ACTION     *action,       /*---------- element action = write-restart --*/
-                int nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
-                int nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
-                int ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--      --*/
+                INT nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
+                INT nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
+                INT ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--      --*/
                 CONTAINER    *container)       /*!< contains variables defined in container.h */
 {                                                
-int                  i,j;                      /*-------------------------------- counters --*/
-int                  ierr;                     /*------------------------------ error-flag --*/
+INT                  i,j;                      /*-------------------------------- counters --*/
+INT                  ierr;                     /*------------------------------ error-flag --*/
 long int             reshandle;                /*-------------------------- restart handle --*/
-int                  byte;                     /*------------------- length of binary file --*/
-int                  dims[3];                  /*-------------- dimensions of actnode->sol --*/
-int                  numnp;                    /*------------------ number of nodal points --*/
-int                  fdim;                     /*------ fdim = actfield->actnode->sol.fdim --*/
-int                  sender;                   /*--------- sender in parallel comunication --*/
+INT                  byte;                     /*------------------- length of binary file --*/
+INT                  dims[3];                  /*-------------- dimensions of actnode->sol --*/
+INT                  numnp;                    /*------------------ number of nodal points --*/
+INT                  fdim;                     /*------ fdim = actfield->actnode->sol.fdim --*/
+INT                  sender;                   /*--------- sender in parallel comunication --*/
 long int           **node_handles;             /*----------- handles for node- information --*/
-int                  numele;                   /*---------------------- number of elements --*/
+INT                  numele;                   /*---------------------- number of elements --*/
 long int           **ele_handles;              /*-------- handles for element - information--*/
 char                 resname[100];             /*-------- restartname = restart+stepnumber --*/
 FILE                *in;                       /*--------------------- file to be read in  --*/
@@ -978,7 +978,7 @@ for (i=0; i<numnp; i++)
    /*------------------------- check for the dimensions of actnode->sol */
    pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][0]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(DOUBLE)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol.fdim ||
        dims[1] != actnode->sol.sdim)
@@ -990,7 +990,7 @@ for (i=0; i<numnp; i++)
    /*--------------- check for the dimensions of actnode->sol_increment */
    pss_getdims_name_handle(actnode->sol_increment.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(DOUBLE)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_increment.fdim ||
        dims[1] != actnode->sol_increment.sdim)
@@ -1002,7 +1002,7 @@ for (i=0; i<numnp; i++)
    /*---------------- check for the dimensions of actnode->sol_residual */
    pss_getdims_name_handle(actnode->sol_residual.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][2]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(DOUBLE)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_residual.fdim ||
        dims[1] != actnode->sol_residual.sdim)

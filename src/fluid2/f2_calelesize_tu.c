@@ -25,19 +25,19 @@ extern struct _MATERIAL  *mat;
 \param  *elev    ELEMENT	       (i)   actual element for vel.
 \param  *dynvar  FLUID_DYN_CALC      (i/o)
 \param  *data    FLUID_DATA	       (i)
-\param  *funct   double 	       (-)   shape functions
-\param **deriv   double 	       (-)   deriv. of shape funcs
-\param **deriv2  double 	       (-)   2nd deriv. of shape funcs
-\param **evel    double 	       (i)   element velocities
-\param  *eddyg    double 	       (i)   eddy-viscosity
-\param  *velint   double 	       (-)   vel. at integr. point
-\param  *velint_dc double 	       (-)   vel. for D.C. at integr. point
-\param  *kapepsn   double 	       (i)   kapepsn at nodes 
-\param **xjm        double 	       (-)   jacobian  matrix
-\param **xzye       double           (-)   nodal coordinates
-\param **derxy      double 	       (-)   global deriv. 
-\param  *kapepsderxy  double 	       (-)   kapeps global deriv. 
-\param **cutp         double 	       (-)   array 
+\param  *funct   DOUBLE 	       (-)   shape functions
+\param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
+\param **deriv2  DOUBLE 	       (-)   2nd deriv. of shape funcs
+\param **evel    DOUBLE 	       (i)   element velocities
+\param  *eddyg    DOUBLE 	       (i)   eddy-viscosity
+\param  *velint   DOUBLE 	       (-)   vel. at integr. point
+\param  *velint_dc DOUBLE 	       (-)   vel. for D.C. at integr. point
+\param  *kapepsn   DOUBLE 	       (i)   kapepsn at nodes 
+\param **xjm        DOUBLE 	       (-)   jacobian  matrix
+\param **xzye       DOUBLE           (-)   nodal coordinates
+\param **derxy      DOUBLE 	       (-)   global deriv. 
+\param  *kapepsderxy  DOUBLE 	       (-)   kapeps global deriv. 
+\param **cutp         DOUBLE 	       (-)   array 
 \return void             
 
 ------------------------------------------------------------------------*/
@@ -46,31 +46,31 @@ void f2_calelesize_tu(
 		     ELEMENT         *elev,    
                  FLUID_DYN_CALC  *dynvar,
 		     FLUID_DATA      *data, 
-	           double          *funct,  
-	           double         **deriv,  
-	           double         **deriv2,  
-                 double         **evel, 
-                 double          *eddyg, 
-                 double          *velint, 
-                 double          *velint_dc, 
-                 double          *kapepsn, 
-	           double         **xjm,     
-	           double         **xyze,     
-	           double         **derxy,   
-                 double          *kapepsderxy,  
-                 double         **cutp
+	           DOUBLE          *funct,  
+	           DOUBLE         **deriv,  
+	           DOUBLE         **deriv2,  
+                 DOUBLE         **evel, 
+                 DOUBLE          *eddyg, 
+                 DOUBLE          *velint, 
+                 DOUBLE          *velint_dc, 
+                 DOUBLE          *kapepsn, 
+	           DOUBLE         **xjm,     
+	           DOUBLE         **xyze,     
+	           DOUBLE         **derxy,   
+                 DOUBLE          *kapepsderxy,  
+                 DOUBLE         **cutp
                  )
 {
-int     ntyp;           /* element type (TRI or QUAD)  		      */
-int     actmat;         /* number of actual material		            */
-int     iel;            /* number of nodes of actual element            */
-int     icode=2;        /* flag for eveluation of shape functions       */     
-int     ihoel=0;        /* flag for higher order elements               */
-double  e1,e2;          /* natural coordinates of inegration point      */
-double  visc;           /* fluid viscosity                              */
-double  eddyint;
-double  facr,facs,det;
-double  gcoor[2];       /* global coordinates                           */
+INT     ntyp;           /* element type (TRI or QUAD)  		      */
+INT     actmat;         /* number of actual material		            */
+INT     iel;            /* number of nodes of actual element            */
+INT     icode=2;        /* flag for eveluation of shape functions       */     
+INT     ihoel=0;        /* flag for higher order elements               */
+DOUBLE  e1,e2;          /* natural coordinates of inegration point      */
+DOUBLE  visc;           /* fluid viscosity                              */
+DOUBLE  eddyint;
+DOUBLE  facr,facs,det;
+DOUBLE  gcoor[2];       /* global coordinates                           */
 DIS_TYP typ;
 
 #ifdef DEBUG 
@@ -155,28 +155,28 @@ is only an approximation, since the boundaries are assumed to be
 straight.
 		     
 </pre>
-\param  *velint_dc    double   (i)    velocities at integr. point for D.C.
+\param  *velint_dc    DOUBLE   (i)    velocities at integr. point for D.C.
 \param  *ele 	    ELEMENT  (i)    actual element
-\param  *gcoor        double   (i)    global coord. of int. point
-\param **cutp         double   (-)    cutting points
-\param   ntyp	    int      (i)    flag for element type
+\param  *gcoor        DOUBLE   (i)    global coord. of INT. point
+\param **cutp         DOUBLE   (-)    cutting points
+\param   ntyp	    INT      (i)    flag for element type
 \return void                                               
 
 ------------------------------------------------------------------------*/
 void f2_calstrlen_tu(
-		         double   *velint_dc,   
+		         DOUBLE   *velint_dc,   
 		         ELEMENT  *ele,      
-                     double   *gcoor,    
-		         double  **cutp,             
-		         int       ntyp      
+                     DOUBLE   *gcoor,    
+		         DOUBLE  **cutp,             
+		         INT       ntyp      
                      )
 {
-int     nodcut=-1;
-int     nodmax;
-int     inod;
-double dl,dx,dy,dxh,dyh;
-double x1,y1,x2,y2;
-double dsub,dval;
+INT     nodcut=-1;
+INT     nodmax;
+INT     inod;
+DOUBLE dl,dx,dy,dxh,dyh;
+DOUBLE x1,y1,x2,y2;
+DOUBLE dsub,dval;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstrlen_tu");

@@ -493,7 +493,7 @@ return;
  |                                                      a.lipka 5/01    |
  | create objective function with eigen frequencies or buckling         |
  *----------------------------------------------------------------------*/
-void objeig(double *objctval)
+void objeig(DOUBLE *objctval)
 {
 /*----------------------------------------------------------------------*/
 INT ieig;

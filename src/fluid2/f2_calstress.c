@@ -28,47 +28,47 @@ calculation of the stress tensor sigma, which es stored at the nodes
 			     
 </pre>
 
-\param   viscstr    int         (i)    include viscose stresses yes/no
+\param   viscstr    INT         (i)    include viscose stresses yes/no
 \param  *data       FLUID_DATA  (i)
 \param  *ele        ELMENT      (i/o)  actual element
-\param **evel       double      (-)    element velocities
-\param  *epre       double      (-)    element pressure
-\param **funct      double      (-)    shape functions
-\param **deriv      double      (-)    natural deriv. of shape funct.
-\param **derxy      double      (-)    global deriv. of sape funct.       
-\param **vderxy     double      (-)    global vel. deriv
-\param **xjm        double      (-)    jacobian matrix
-\param **xyze       double      (-)    element coordinates
-\param **sigmaint   double      (-)    stresses at GAUSS point 
+\param **evel       DOUBLE      (-)    element velocities
+\param  *epre       DOUBLE      (-)    element pressure
+\param **funct      DOUBLE      (-)    shape functions
+\param **deriv      DOUBLE      (-)    natural deriv. of shape funct.
+\param **derxy      DOUBLE      (-)    global deriv. of sape funct.       
+\param **vderxy     DOUBLE      (-)    global vel. deriv
+\param **xjm        DOUBLE      (-)    jacobian matrix
+\param **xyze       DOUBLE      (-)    element coordinates
+\param **sigmaint   DOUBLE      (-)    stresses at GAUSS point 
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
 void f2_calfsistress(
-                      int             viscstr,
+                      INT             viscstr,
 		      FLUID_DATA     *data, 
        	              ELEMENT        *ele,
-		      double        **evel, 
-		      double         *epre,
-		      double         *funct,
-		      double        **deriv,
-		      double        **derxy,
-		      double        **vderxy,
-		      double        **xjm,
-		      double        **xyze,
-		      double        **sigmaint
+		      DOUBLE        **evel, 
+		      DOUBLE         *epre,
+		      DOUBLE         *funct,
+		      DOUBLE        **deriv,
+		      DOUBLE        **derxy,
+		      DOUBLE        **vderxy,
+		      DOUBLE        **xjm,
+		      DOUBLE        **xyze,
+		      DOUBLE        **sigmaint
 		    )
 {
-int     i,j,node,lr,ls;      /* some counters                          */
-int     iel,nir,nis;         /* number of nodes/integr. points         */
-int     intc,icode;          /* flags                                  */
-int     actmat;              /* actual material number                 */
-int     ntyp;                /* flag for element type                  */
-int     iv;                  /* counter for GAUSS points               */
-double  preint,det,val;      /* element values                         */
-double  e1,e2,r,s;         
+INT     i,j,node,lr,ls;      /* some counters                          */
+INT     iel,nir,nis;         /* number of nodes/integr. points         */
+INT     intc,icode;          /* flags                                  */
+INT     actmat;              /* actual material number                 */
+INT     ntyp;                /* flag for element type                  */
+INT     iv;                  /* counter for GAUSS points               */
+DOUBLE  preint,det,val;      /* element values                         */
+DOUBLE  e1,e2,r,s;         
 DIS_TYP typ;	             /* element displacement type              */
-double  dens,visc,twovisc;   /* material parameters                    */
-double  fpar[MAXGAUSS];      /* working array                          */
+DOUBLE  dens,visc,twovisc;   /* material parameters                    */
+DOUBLE  fpar[MAXGAUSS];      /* working array                          */
 NODE   *actnode;             /* actual node                            */
 
 #ifdef DEBUG 

@@ -22,9 +22,9 @@
  | constitutive matrix - linear elastic - 2D              al    9/01    |
  | plane stress, plane strain, rotational symmetry                      |
  *----------------------------------------------------------------------*/
-void w1_mat_linel(double ym, double pv, WALL_TYPE wtype, double **d)
+void w1_mat_linel(DOUBLE ym, DOUBLE pv, WALL_TYPE wtype, DOUBLE **d)
 {
-double e1, e2, e3, a1, b1, c1;
+DOUBLE e1, e2, e3, a1, b1, c1;
 #ifdef DEBUG 
 dstrc_enter("w1_mat_linel");
 #endif
@@ -84,12 +84,12 @@ return;
  | plane stress, plane strain, rotational symmetry                      |
  *----------------------------------------------------------------------*/
 void w1_mat_stvpor(MATERIAL  *mat,
-                   double *matdata,
+                   DOUBLE *matdata,
                    WALL_TYPE wtype, 
-                   double **d)
+                   DOUBLE **d)
 {
-double e1, e2, e3, a1, b1, c1;
-double ym, pv, dn, rd, ex;
+DOUBLE e1, e2, e3, a1, b1, c1;
+DOUBLE ym, pv, dn, rd, ex;
 #ifdef DEBUG 
 dstrc_enter("w1_mat_stvpor");
 #endif

@@ -6,20 +6,20 @@
  *----------------------------------------------------------------------*/
 typedef struct _NODE
 {
-     int                        Id;            /* global Id (numbering starts with 0)*/              
-     int                        Id_loc;        /* field-local Id  (numbering starts with 0)*/
-     int                        proc;          /* my owner intra-proc */
+     INT                        Id;            /* global Id (numbering starts with 0)*/              
+     INT                        Id_loc;        /* field-local Id  (numbering starts with 0)*/
+     INT                        proc;          /* my owner intra-proc */
 
-     double                     x[3];          /* my coordinates */
+     DOUBLE                     x[3];          /* my coordinates */
 
      struct _ARRAY              sol;           /* my solution history */
      struct _ARRAY              sol_increment; /* my incremental solution */
      struct _ARRAY              sol_residual ; /* my residual solution */
      struct _ARRAY              sol_mf;        /* my multifield coupling values */
-     int                        numdf;         /* my number of degrees of freedom */
-     int                       *dof;           /* my dof-numbers  */
+     INT                        numdf;         /* my number of degrees of freedom */
+     INT                       *dof;           /* my dof-numbers  */
 
-     int                        numele;        /* number of elements to me */
+     INT                        numele;        /* number of elements to me */
      struct _ELEMENT          **element;       /* ptrs to elements to me */
 
      struct _GNODE             *gnode;         /* ptr to my gnode */
@@ -34,15 +34,15 @@ typedef struct _NODE
  *----------------------------------------------------------------------*/
 typedef struct _ELEMENT
 {  
-     int                        Id;             /* global Id (numbering starts with 0)*/                          
-     int                        Id_loc;         /* field-local Id (numbering starts with 0)*/
-     int                        proc;           /* my owner intra-proc */
+     INT                        Id;             /* global Id (numbering starts with 0)*/                          
+     INT                        Id_loc;         /* field-local Id (numbering starts with 0)*/
+     INT                        proc;           /* my owner intra-proc */
 
-     int                        numnp;          /* number of nodes to me */
-     int                       *lm;             /* only used for reading from input (this will be eliminated)*/
+     INT                        numnp;          /* number of nodes to me */
+     INT                       *lm;             /* only used for reading from input (this will be eliminated)*/
      struct _NODE             **node;           /* ptrs to my nodes */
 
-     int                        mat;            /* number of material law associated with me */
+     INT                        mat;            /* number of material law associated with me */
 
      enum _ELEMENT_TYP          eltyp;          /* my element type */
      enum _DIS_TYP              distyp;         /* my actual discretization type */
@@ -87,11 +87,11 @@ typedef struct _ELEMENT
 typedef struct _GNODE
 {
 #ifdef DEBUG 
-     int                           Id;          /* for debugging only, do not use in code !*/
+     INT                           Id;          /* for debugging only, do not use in code !*/
 #endif
    /*------------fe topology section */
      struct _NODE                 *node;        /* pointer to my node */
-     int                           ngline;      /* number of GLINEs to me */
+     INT                           ngline;      /* number of GLINEs to me */
      struct _GLINE               **gline;       /* pointers to the GLINEs to me */
    /*------- design topology section */
      enum
@@ -127,14 +127,14 @@ typedef struct _GNODE
 typedef struct _GLINE
 {
 #ifdef DEBUG 
-     int                        Id;             /* for debugging only, do not use in code !*/
+     INT                        Id;             /* for debugging only, do not use in code !*/
 #endif
-     int                        proc;           /* my owner intra-proc */
+     INT                        proc;           /* my owner intra-proc */
    /*------------fe topology section */
-     int                        ngnode;         /* number of gnodes on me */
+     INT                        ngnode;         /* number of gnodes on me */
      struct _GNODE            **gnode;          /* vector of ptrs to these gnodes */
 
-     int                        ngsurf;         /* number of gsurfs to me */
+     INT                        ngsurf;         /* number of gsurfs to me */
      struct _GSURF            **gsurf;          /* vector of ptrs to these gsurfs */
 
    /*------- design topology section */
@@ -153,18 +153,18 @@ typedef struct _GLINE
 typedef struct _GSURF
 {
 #ifdef DEBUG 
-     int                        Id;             /* for debugging only, do not use in code !*/
+     INT                        Id;             /* for debugging only, do not use in code !*/
 #endif
    /*------------fe topology section */
      struct _ELEMENT           *element;        /* ptr to my ELEMENT, if I am a 2D element, else NULL */
 
-     int                        ngnode;         /* number of GNODEs to me */
+     INT                        ngnode;         /* number of GNODEs to me */
      struct _GNODE            **gnode;          /* ptrs to these GNODEs */
 
-     int                        ngline;         /* number of GLINEs to me */
+     INT                        ngline;         /* number of GLINEs to me */
      struct _GLINE            **gline;          /* ptrs to these GLINEs */
 
-     int                        ngvol;          /* number of GVOLs to me */
+     INT                        ngvol;          /* number of GVOLs to me */
      struct _GVOL             **gvol;           /* ptrs to these GVOLs, else NULL */
 
    /*------- design topology section */
@@ -179,15 +179,15 @@ typedef struct _GSURF
 typedef struct _GVOL
 {
 #ifdef DEBUG 
-     int                        Id;             /* for debugging only, do not use in code !*/
+     INT                        Id;             /* for debugging only, do not use in code !*/
 #endif
    /*------------fe topology section */
      struct _ELEMENT           *element;        /* ptr to my ELEMENT */
 
-     int                        ngline;         /* number of GLINEs to me */
+     INT                        ngline;         /* number of GLINEs to me */
      struct _GLINE            **gline;          /* ptrs to these GLINEs */
 
-     int                        ngsurf;         /* number of GSURFs to me */
+     INT                        ngsurf;         /* number of GSURFs to me */
      struct _GSURF            **gsurf;          /* ptrs to these GSURFs */
 
    /*------- design topology section */

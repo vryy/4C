@@ -12,9 +12,9 @@ extern struct _ARRAY emass_global;
  |  routine to assemble element arrays to global sparse arrays m.gee 9/01|
  *----------------------------------------------------------------------*/
 void assemble(
-                 int                    sysarray1, /* number of first sparse system matrix */
+                 INT                    sysarray1, /* number of first sparse system matrix */
                  struct _ARRAY         *elearray1, /* pointer to first dense element matrix */
-                 int                    sysarray2, /* number of first sparse system matrix or -1 if not given */
+                 INT                    sysarray2, /* number of first sparse system matrix or -1 if not given */
                  struct _ARRAY         *elearray2, /* pointer to second dense element matrix or NULL is not present*/
                  struct _PARTITION     *actpart,   /* my partition of theactive field */
                  struct _SOLVAR        *actsolv,   /* the active SOLVAR */
@@ -25,7 +25,7 @@ void assemble(
                 )
 /*----------------------------------------------------------------------*/
 {
-int         i,j,k;
+INT         i,j,k;
 enum  _SPARSE_TYP    sysa1_typ;
 union _SPARSE_ARRAY *sysa1;
 enum  _SPARSE_TYP    sysa2_typ;
@@ -332,7 +332,7 @@ return;
  |  and to perform other inits which may become necessary for assembly  |
  | #################################################################### |
  |  to the paremeter list of this function I added                      |
- |  int actndis!!!  - number of the actual discretisation               |
+ |  INT actndis!!!  - number of the actual discretisation               |
  |  this has to be done for all other calls of init_assembly            |
  |                                                           genk 08/02 |
  | #################################################################### |
@@ -342,23 +342,23 @@ void init_assembly(
                        struct _SOLVAR         *actsolv,
                        struct _INTRA          *actintra,
                        struct _FIELD          *actfield,
-                       int                     actsysarray,
-		       int                     actndis
+                       INT                     actsysarray,
+		       INT                     actndis
                      )
 {
-int         i,j,k,counter;
-int         numeq;
-int         numsend;
-int         numrecv;
-int         minusone=-1;
-int         imyrank;
-int         inprocs;
+INT         i,j,k,counter;
+INT         numeq;
+INT         numsend;
+INT         numrecv;
+INT         minusone=-1;
+INT         imyrank;
+INT         inprocs;
 SPARSE_TYP  sysarraytyp;
 ARRAY      *coupledofs;
 ELEMENT    *actele;
 
-int        *numcoupsend;
-int        *numcouprecv;
+INT        *numcoupsend;
+INT        *numcouprecv;
 ARRAY     **couple_d_send_ptr;
 ARRAY     **couple_i_send_ptr;
 ARRAY     **couple_d_recv_ptr;
@@ -580,12 +580,12 @@ void assemble_vec(INTRA        *actintra,
                   SPARSE_TYP   *sysarraytyp,
                   SPARSE_ARRAY *sysarray,
                   DIST_VECTOR  *rhs,
-                  double       *drhs,
-                  double        factor)
+                  DOUBLE       *drhs,
+                  DOUBLE        factor)
 {
-int                   i;
-int                   dof;
-int                   imyrank;
+INT                   i;
+INT                   dof;
+INT                   imyrank;
 ML_ARRAY_MDS         *mds_array;
 AZ_ARRAY_MSR         *msr_array;
 H_PARCSR             *parcsr_array;
@@ -710,14 +710,14 @@ return;
 void sum_vec(INTRA        *actintra,
              SPARSE_TYP   *sysarraytyp,
              SPARSE_ARRAY *sysarray,
-             double       *drhs,
-             int           numeq,
-             double       *sum)
+             DOUBLE       *drhs,
+             INT           numeq,
+             DOUBLE       *sum)
 {
-int                   i;
-int                   dof;
-int                   imyrank;
-double                recv;
+INT                   i;
+INT                   dof;
+INT                   imyrank;
+DOUBLE                recv;
 ML_ARRAY_MDS         *mds_array;
 AZ_ARRAY_MSR         *msr_array;
 H_PARCSR             *parcsr_array;
@@ -842,12 +842,12 @@ return;
 void assemble_intforce(ELEMENT *actele,ARRAY *elevec_a,CONTAINER *container,
                        INTRA *actintra)
 {
-int                   i,j;
-int                   dof;
-int                   numdf;
-int                   imyrank;
-int                   irow;
-double               *elevec;
+INT                   i,j;
+INT                   dof;
+INT                   numdf;
+INT                   imyrank;
+INT                   irow;
+DOUBLE               *elevec;
 #ifdef DEBUG 
 dstrc_enter("assemble_intforce");
 #endif
@@ -893,16 +893,16 @@ return;
  *---------------------------------------------------------------------------*/
 void assemble_dirich(ELEMENT *actele, ARRAY *estif_global, CONTAINER *container)
 {
-int                   i,j;
-int                   dof;
-int                   numdf;
-int                   iel;
-int                   nd=0;
-double              **estif;
-double                dirich[MAXDOFPERELE];
-double                dforces[MAXDOFPERELE];
-int                   dirich_onoff[MAXDOFPERELE];
-int                   lm[MAXDOFPERELE];
+INT                   i,j;
+INT                   dof;
+INT                   numdf;
+INT                   iel;
+INT                   nd=0;
+DOUBLE              **estif;
+DOUBLE                dirich[MAXDOFPERELE];
+DOUBLE                dforces[MAXDOFPERELE];
+INT                   dirich_onoff[MAXDOFPERELE];
+INT                   lm[MAXDOFPERELE];
 GNODE                *actgnode;
 #ifdef DEBUG 
 dstrc_enter("assemble_dirich");

@@ -58,10 +58,10 @@ extern ALLDYNA      *alldyn;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -86,8 +86,8 @@ of the mesh (fsi_ale()).
 \param *fsidyn   FSI_DYNAMIC                                 (i)
 \param *fdyn	 FLUID_DYNAMIC                               (i)
 \param *actfield FIELD            actual field               (i)
-\param  mctrl    int              evaluation flag            (i)
-\param  numff    int              number of fluid field      (i)
+\param  mctrl    INT              evaluation flag            (i)
+\param  numff    INT              number of fluid field      (i)
 \return void 
 \warning up to now only the One-Step-Theta scheme combined with a
 fixed-point-like iteration scheme is tested! 
@@ -97,30 +97,30 @@ void fsi_fluid(
                        FSI_DYNAMIC    *fsidyn,
 		       FLUID_DYNAMIC  *fdyn, 
 		       FIELD          *actfield, 
-		       int             mctrl,
-		       int             numff
+		       INT             mctrl,
+		       INT             numff
 	      )
 {
-static int             itnum;              /* counter for nonlinear iteration  */
-int                    i;                  /* simply a counter                 */
-static int             numeq;              /* number of equations on this proc */
-static int             numeq_total;        /* total number of equations        */
-int                    init;               /* flag for solver_control call     */
-static int             nsysarray=1;        /* one system matrix                */
-static int             actsysarray=0;      /* number of actual sysarray        */
-static int             outstep;            /* counter for time integration     */
-static int             pssstep;
-static int             nfrastep;           /* number of steps for fractional-
+static INT             itnum;              /* counter for nonlinear iteration  */
+INT                    i;                  /* simply a counter                 */
+static INT             numeq;              /* number of equations on this proc */
+static INT             numeq_total;        /* total number of equations        */
+INT                    init;               /* flag for solver_control call     */
+static INT             nsysarray=1;        /* one system matrix                */
+static INT             actsysarray=0;      /* number of actual sysarray        */
+static INT             outstep;            /* counter for time integration     */
+static INT             pssstep;
+static INT             nfrastep;           /* number of steps for fractional-
                                               step-theta procedure             */
-int                    calstress=1;        /* flag for stress calculation      */
-int                    converged=0;        /* convergence flag                 */
-int                    steady=0;           /* flag for steady state            */
-static int             actpos;             /* actual position in sol. history  */
-double                 vrat,prat;
-static double          grat;               /* convergence ratios               */
-double                 t1,ts,te;           /*				       */
-static double          tes=ZERO;           /*				       */
-static double          tss=ZERO;           /*				       */
+INT                    calstress=1;        /* flag for stress calculation      */
+INT                    converged=0;        /* convergence flag                 */
+INT                    steady=0;           /* flag for steady state            */
+static INT             actpos;             /* actual position in sol. history  */
+DOUBLE                 vrat,prat;
+static DOUBLE          grat;               /* convergence ratios               */
+DOUBLE                 t1,ts,te;           /*				       */
+static DOUBLE          tes=ZERO;           /*				       */
+static DOUBLE          tss=ZERO;           /*				       */
 static SOLVAR         *actsolv;            /* pointer to active sol. structure */
 static PARTITION      *actpart;            /* pointer to active partition      */
 static INTRA          *actintra;           /* pointer to active intra-communic.*/
@@ -128,12 +128,12 @@ static CALC_ACTION    *action;             /* pointer to the cal_action enum   *
 static FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
 
 static ARRAY           ftimerhs_a;
-static double         *ftimerhs;	   /* time - RHS		       */
+static DOUBLE         *ftimerhs;	   /* time - RHS		       */
 static ARRAY           fiterhs_a;
-static double         *fiterhs;	           /* iteration - RHS  		       */
+static DOUBLE         *fiterhs;	           /* iteration - RHS  		       */
 static ARRAY           time_a;             /* stored time                      */
 static ARRAY           totarea_a;
-static double        **totarea;
+static DOUBLE        **totarea;
 static CONTAINER       container;          /* variables for calelm             */
 static FLUID_STRESS    str;  
 

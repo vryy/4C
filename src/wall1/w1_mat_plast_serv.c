@@ -55,19 +55,19 @@
  |                               PHI = 0 MISES                          |
  |           FOR MATERIAL MODEL 3 - PLASTICITY                          |
  *----------------------------------------------------------------------*/
-void w1yilcr(double E, 
-             double Eh,
-             double betah,
-             double sigy,
-             double epstn,
-             int    isoft,
-             double dia,
-             double *tau,
-             double *ft)
+void w1yilcr(DOUBLE E, 
+             DOUBLE Eh,
+             DOUBLE betah,
+             DOUBLE sigy,
+             DOUBLE epstn,
+             INT    isoft,
+             DOUBLE dia,
+             DOUBLE *tau,
+             DOUBLE *ft)
 {
 /*----------------------------------------------------------------------*/
-double J2, sx, sy, sz, sxy, sigym, hards, epstmax;
-/*double betah = 1.;
+DOUBLE J2, sx, sy, sz, sxy, sigym, hards, epstmax;
+/*DOUBLE betah = 1.;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1yilcr");
@@ -113,34 +113,34 @@ return;
  |   radial return for elements with mises material model               |
  |                                              modified by sh  8/02    |
  *----------------------------------------------------------------------*/
-void w1radi(double e, 
-            double eh,
-            double betah,
-            double sigy,
-            double vnu,
-            double dia,
-            double *sigma,
-            double *qn,
-            int    isoft,
-            double *epstn,
-            double *dlam,
+void w1radi(DOUBLE e, 
+            DOUBLE eh,
+            DOUBLE betah,
+            DOUBLE sigy,
+            DOUBLE vnu,
+            DOUBLE dia,
+            DOUBLE *sigma,
+            DOUBLE *qn,
+            INT    isoft,
+            DOUBLE *epstn,
+            DOUBLE *dlam,
             WALL_TYPE wtype)
 {
 /*----------------------------------------------------------------------*/
-int i;
-int isoft1 = 0;
-int nsoft  = 1;
-double half, ro23, q13, g, c1, c2, xsi1, xsi2, xsi3, hard2, hards;
-double f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, epstmax, df, dfi; 
-double J2, xsi4, stps, dlf, dlfi, dum;
-double hd11, hd21, hd12, hd22, hd33, hd44;
-double hm11, hm21, hm12, hm22, hm33;
-double dm11, dm21, dm12, dm22, dm33;
-/*double betah = 1.0;
+INT i;
+INT isoft1 = 0;
+INT nsoft  = 1;
+DOUBLE half, ro23, q13, g, c1, c2, xsi1, xsi2, xsi3, hard2, hards;
+DOUBLE f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, epstmax, df, dfi; 
+DOUBLE J2, xsi4, stps, dlf, dlfi, dum;
+DOUBLE hd11, hd21, hd12, hd22, hd33, hd44;
+DOUBLE hm11, hm21, hm12, hm22, hm33;
+DOUBLE dm11, dm21, dm12, dm22, dm33;
+/*DOUBLE betah = 1.0;
 /**/
-double fac;
-double x1,x2,x3,x4;
-double ft;
+DOUBLE fac;
+DOUBLE x1,x2,x3,x4;
+DOUBLE ft;
 /**/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -342,33 +342,33 @@ return;
  |   see Simo & Huges: plane_strain: S.124                              |
  |                     plane_stress: S.130                              |
  *----------------------------------------------------------------------*/
-void w1mapl(double e, 
-            double eh,
-            double betah,
-            double sigy,
-            double vnu,
-            double dia,
-            double *tau,       /* !! predictor stresses if plane_strain */
-            int    isoft,
-            double *epstn,
-            double *dlam,
-            double **d,
+void w1mapl(DOUBLE e, 
+            DOUBLE eh,
+            DOUBLE betah,
+            DOUBLE sigy,
+            DOUBLE vnu,
+            DOUBLE dia,
+            DOUBLE *tau,       /* !! predictor stresses if plane_strain */
+            INT    isoft,
+            DOUBLE *epstn,
+            DOUBLE *dlam,
+            DOUBLE **d,
             WALL_TYPE wtype)
 {
 /*----------------------------------------------------------------------*/
-int i, j;
-int nsoft  = 1;
-double gamma1, gamma2, beta,x1,x2,x3,x4,abeta,fact,fact1;
-double vect[4];
-double dm[4][4];
-double xsi1, xsi2, xsi3, xsi4, hards, g, epstmax, df, det, dum;
-double d11, d21, d12, d22, d33;
-double hm11, hm21, hm12, hm22, hm33, hm44;
-double dm11, dm21, dm12, dm22, dm33;
-/*double betah = 1.;*/
+INT i, j;
+INT nsoft  = 1;
+DOUBLE gamma1, gamma2, beta,x1,x2,x3,x4,abeta,fact,fact1;
+DOUBLE vect[4];
+DOUBLE dm[4][4];
+DOUBLE xsi1, xsi2, xsi3, xsi4, hards, g, epstmax, df, det, dum;
+DOUBLE d11, d21, d12, d22, d33;
+DOUBLE hm11, hm21, hm12, hm22, hm33, hm44;
+DOUBLE dm11, dm21, dm12, dm22, dm33;
+/*DOUBLE betah = 1.;*/
 
-double k,fac,fac1,fac2;
-double stps,J2;
+DOUBLE k,fac,fac1,fac2;
+DOUBLE stps,J2;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1mapl");
@@ -553,18 +553,18 @@ return;
  |           YIELD - CRITERION:  PHI > 0 DRUCKER - PRAGER               |
  |                               PHI = 0 MISES                          |
  *----------------------------------------------------------------------*/
-void w1yilcr_dp(double E, 
-                double Eh,
-                double phi,
-                double sigy,
-                double *sigym,
-                double epstn,
-                double *tau,
-                double *ft)
+void w1yilcr_dp(DOUBLE E, 
+                DOUBLE Eh,
+                DOUBLE phi,
+                DOUBLE sigy,
+                DOUBLE *sigym,
+                DOUBLE epstn,
+                DOUBLE *tau,
+                DOUBLE *ft)
 {
 /*----------------------------------------------------------------------*/
-double coh, sx, sy, sxy, hards, alpha, yld;
-double betah = 1.;
+DOUBLE coh, sx, sy, sxy, hards, alpha, yld;
+DOUBLE betah = 1.;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1yilcr_dp");
@@ -600,29 +600,29 @@ return;
  |   radial return for elements with mises material model               |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1radi_dp(double e, 
-               double eh,
-               double phi,
-               double sigy,
-               double vnu,
-               double *sigma,
-               double *qn,
-               double *epstn,
-               double *sigym,
-               double *dlam,
+void w1radi_dp(DOUBLE e, 
+               DOUBLE eh,
+               DOUBLE phi,
+               DOUBLE sigy,
+               DOUBLE vnu,
+               DOUBLE *sigma,
+               DOUBLE *qn,
+               DOUBLE *epstn,
+               DOUBLE *sigym,
+               DOUBLE *dlam,
                WALL_TYPE wtype)
 {
 /*----------------------------------------------------------------------*/
-int i;
-int isoft1 = 0;
-int nsoft  = 1;
-double half, ro23, q13, g, c1, c2, g1, xsi1, xsi2, xsi3, hard2, hards;
-double f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, epstmax, df, dfi; 
-double dum, xsi4, stps, dlf, dlfi, coh, y, alpha, devinv, alph, fac;
-double hd11, hd21, hd12, hd22, hd33, hd44;
-double hm11, hm21, hm12, hm22, hm33;
-double dm11, dm21, dm12, dm22, dm33;
-double betah = 1.0;
+INT i;
+INT isoft1 = 0;
+INT nsoft  = 1;
+DOUBLE half, ro23, q13, g, c1, c2, g1, xsi1, xsi2, xsi3, hard2, hards;
+DOUBLE f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, epstmax, df, dfi; 
+DOUBLE dum, xsi4, stps, dlf, dlfi, coh, y, alpha, devinv, alph, fac;
+DOUBLE hd11, hd21, hd12, hd22, hd33, hd44;
+DOUBLE hm11, hm21, hm12, hm22, hm33;
+DOUBLE dm11, dm21, dm12, dm22, dm33;
+DOUBLE betah = 1.0;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1radi_dp");
@@ -839,22 +839,22 @@ return;
  *----------------------------------------------------------------------*/
 void w1cdia(ELEMENT   *ele, 
             W1_DATA   *data,
-            double    *funct_h,
-            double   **deriv_h,
-            double   **xjm_h)
+            DOUBLE    *funct_h,
+            DOUBLE   **deriv_h,
+            DOUBLE   **xjm_h)
 {
-int                 i,j,k;            /* some loopers */
-int                 nir,nis;          /* num GP in r/s/t direction */
-int                 lr, ls;           /* loopers over GP */
-int                 iel;              /* numnp to this element */
-int                 nd;
-const int           numdf  = 2;
-const int           numeps = 3;
+INT                 i,j,k;            /* some loopers */
+INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 lr, ls;           /* loopers over GP */
+INT                 iel;              /* numnp to this element */
+INT                 nd;
+const INT           numdf  = 2;
+const INT           numeps = 3;
 
-double              fac;
-double              e1,e2,e3;         /*GP-coords*/
-double              facr,facs,fact;   /* weights at GP */
-double              det, exp, dia;
+DOUBLE              fac;
+DOUBLE              e1,e2,e3;         /*GP-coords*/
+DOUBLE              facr,facs,fact;   /* weights at GP */
+DOUBLE              det, exp, dia;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1cdia");
@@ -909,40 +909,40 @@ return;
 |             -   -   -                 -----                            |
 |             yield - criterion:  drucker-prager / spherical cap         |
 |-----------------------------------------------------------------------*/
-void w1cpreva (double *epst,     /* equivalent uniaxial plastic strain  */
-               double *sigym,    /* [0] uniaxial tension yield stress   */
+void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
+               DOUBLE *sigym,    /* [0] uniaxial tension yield stress   */
                                  /* [1] yield stress "inverted cone"    */
                                  /* [2] uniaxial compr. yield stress    */
-               double *alpha,    /* factor for the first invariants     */
-	       double *hards,    /* hardening modulus                   */
-               double *e,        /* young modulus                       */
-               double *g,        /* shear modulus                       */
-               double *vnu,      /* poisson's ratio                     */
-               double *com,      /* bilk modulus                        */
-               double *fcm,      /* compressive strenght                */
-               double *gc,       /* compression fracture energy         */
-               double *ftm,      /* tensile strenght                    */
-               double *gt,       /* tensile fracture energy             */
-               double *gamma1,   /* fitting factor yield function 1     */
-               double *gamma2,   /* fitting factor yield function 2     */
-               double *dfac,     /* damage factor                       */
-               double *dia,      /* equivalent element length           */
-	       double *acrs,     /* average crack spacing               */
-               double *cappaet,  /* max. elastic tension strain         */
-               double *cappaut,  /* tensile fracture strain             */
-               double *cappae,   /* max. elastic compression strain     */
-               double *cappauc,  /* compressive fracture strain         */
-               double *sig3,     /* equivalent compressive stress       */
-               double *fbd,      /* tension stiffening stress           */
-               double **d,       /* elastic material matrix             */
-               double *sig,      /* stresses from last update           */
-               double *eps)      /* strains from last update            */
+               DOUBLE *alpha,    /* factor for the first invariants     */
+	       DOUBLE *hards,    /* hardening modulus                   */
+               DOUBLE *e,        /* young modulus                       */
+               DOUBLE *g,        /* shear modulus                       */
+               DOUBLE *vnu,      /* poisson's ratio                     */
+               DOUBLE *com,      /* bilk modulus                        */
+               DOUBLE *fcm,      /* compressive strenght                */
+               DOUBLE *gc,       /* compression fracture energy         */
+               DOUBLE *ftm,      /* tensile strenght                    */
+               DOUBLE *gt,       /* tensile fracture energy             */
+               DOUBLE *gamma1,   /* fitting factor yield function 1     */
+               DOUBLE *gamma2,   /* fitting factor yield function 2     */
+               DOUBLE *dfac,     /* damage factor                       */
+               DOUBLE *dia,      /* equivalent element length           */
+	       DOUBLE *acrs,     /* average crack spacing               */
+               DOUBLE *cappaet,  /* max. elastic tension strain         */
+               DOUBLE *cappaut,  /* tensile fracture strain             */
+               DOUBLE *cappae,   /* max. elastic compression strain     */
+               DOUBLE *cappauc,  /* compressive fracture strain         */
+               DOUBLE *sig3,     /* equivalent compressive stress       */
+               DOUBLE *fbd,      /* tension stiffening stress           */
+               DOUBLE **d,       /* elastic material matrix             */
+               DOUBLE *sig,      /* stresses from last update           */
+               DOUBLE *eps)      /* strains from last update            */
 {                                
 /*-------------------------------------------------- local variables ---*/
-    static int i, j;
-    static double dum;
-    static double vect[4], dfac1, dfac2, epsn1, epsn2;
-    static double sigym1, sigym2, q23, fac, dam, ro23, ro54, dia2, sig1;
+    static INT i, j;
+    static DOUBLE dum;
+    static DOUBLE vect[4], dfac1, dfac2, epsn1, epsn2;
+    static DOUBLE sigym1, sigym2, q23, fac, dam, ro23, ro54, dia2, sig1;
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("w1cpreva");
@@ -1117,40 +1117,40 @@ return ;
 |       topic : radial return for elements with elastoplastic material   |
 |               (concrete)                                               |
 |-----------------------------------------------------------------------*/
-void w1cradi (double *sigma,  /* elastic predictor projected onto yield surface */ 
-              double *epstn,  /* equivalent uniaxial plastic strain             */ 
-              double *dlam,   /* incremental plastic multiplier                 */ 
+void w1cradi (DOUBLE *sigma,  /* elastic predictor projected onto yield surface */ 
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */ 
+              DOUBLE *dlam,   /* incremental plastic multiplier                 */ 
               WALL_TYPE wtype,/* type of problem                                */ 
-              int    yip,     /* stress state   1 =elastic   >=2 =plastic       */ 
-              double *alpha,  /* factor for the first invariants                */ 
-              double *ft,     /* yield condition                                */ 
-              double *e,      /* young modulus                                  */ 
-              double *g,      /* shear modulus                                  */ 
-	      double *com,    /* bulk modulus                                   */ 
-              double *sigym,  /* uniaxial predictor yield stress                */ 
-              double *hards,  /* plastic modulus                                */ 
-              double *sigy,   /* actual uniaxial yield stress                   */ 
-              double *dn,     /* gradient components in deviatoric direction    */ 
-              double *dcom,   /* gradient components in hdrostatic direction    */ 
-              double *grad,   /* total gradient                                 */ 
-              double *devsig, /* deviatoric predictor stresses                  */ 
-              double *sm,     /* hydrostatic predictor stresses                 */ 
-              double *fcm,    /* compressive strenght                           */ 
-              double *gc,     /* compression fracture energy                    */ 
-              double *ftm,    /* tensile strenght                               */ 
-	      double *gt,     /* tensile fracture energy                        */ 
-              double *gamma1, /* fitting factor yield function 1                */ 
-              double *gamma2, /* fitting factor yield function 2                */ 
-              double *dia,    /* equivalent element length                      */ 
-              double *acrs)   /* average crack spacing                          */ 
+              INT    yip,     /* stress state   1 =elastic   >=2 =plastic       */ 
+              DOUBLE *alpha,  /* factor for the first invariants                */ 
+              DOUBLE *ft,     /* yield condition                                */ 
+              DOUBLE *e,      /* young modulus                                  */ 
+              DOUBLE *g,      /* shear modulus                                  */ 
+	      DOUBLE *com,    /* bulk modulus                                   */ 
+              DOUBLE *sigym,  /* uniaxial predictor yield stress                */ 
+              DOUBLE *hards,  /* plastic modulus                                */ 
+              DOUBLE *sigy,   /* actual uniaxial yield stress                   */ 
+              DOUBLE *dn,     /* gradient components in deviatoric direction    */ 
+              DOUBLE *dcom,   /* gradient components in hdrostatic direction    */ 
+              DOUBLE *grad,   /* total gradient                                 */ 
+              DOUBLE *devsig, /* deviatoric predictor stresses                  */ 
+              DOUBLE *sm,     /* hydrostatic predictor stresses                 */ 
+              DOUBLE *fcm,    /* compressive strenght                           */ 
+              DOUBLE *gc,     /* compression fracture energy                    */ 
+              DOUBLE *ftm,    /* tensile strenght                               */ 
+	      DOUBLE *gt,     /* tensile fracture energy                        */ 
+              DOUBLE *gamma1, /* fitting factor yield function 1                */ 
+              DOUBLE *gamma2, /* fitting factor yield function 2                */ 
+              DOUBLE *dia,    /* equivalent element length                      */ 
+              DOUBLE *acrs)   /* average crack spacing                          */ 
 {                             
 /*----------------------------------------------------------------------*/
-    double dum;               
+    DOUBLE dum;               
 /*----------------------------------------------------------------------*/
-    static double dfdl, half, epst;
-    static double f;
-    static int i;
-    static double q13, dalpha, cappae, fac, ro23, smi[4], cappauc, 
+    static DOUBLE dfdl, half, epst;
+    static DOUBLE f;
+    static INT i;
+    static DOUBLE q13, dalpha, cappae, fac, ro23, smi[4], cappauc, 
 	    devsigi[4], cappaut, sig1, sig3;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1271,27 +1271,27 @@ dstrc_exit();
  |                                                        al    9/01    |
  |   forms the elasto-plastic consistent tangent material tensor        |
  *----------------------------------------------------------------------*/
-void w1mapl2(double *tau,      /* current stresses (local)              */
-             double **d,       /* material matrix to be calculated      */
-             double *dlam,     /* increment of plastic multiplier       */
+void w1mapl2(DOUBLE *tau,      /* current stresses (local)              */
+             DOUBLE **d,       /* material matrix to be calculated      */
+             DOUBLE *dlam,     /* increment of plastic multiplier       */
              WALL_TYPE wtype,  /* type of problem                       */
-             double *alpha,    /* neigungswinkel der fliessflaechen     */
-             double *emod,     /* elastizitaetsmodul                    */
-             double *g,        /* schubmodul                            */
-             double *com,      /* kompressionsmodul                     */
-             double *betah,    /* factor for isotrop/kinemat. hardening */
-             double *hards,    /* plastic hardeningmodulus              */
-             double *dn,       /* gradient components in dev. direction */
-             double *grad,     /* total gradient                        */
-             double *dev)      /* norm of the dev. predictor stresses   */
+             DOUBLE *alpha,    /* neigungswinkel der fliessflaechen     */
+             DOUBLE *emod,     /* elastizitaetsmodul                    */
+             DOUBLE *g,        /* schubmodul                            */
+             DOUBLE *com,      /* kompressionsmodul                     */
+             DOUBLE *betah,    /* factor for isotrop/kinemat. hardening */
+             DOUBLE *hards,    /* plastic hardeningmodulus              */
+             DOUBLE *dn,       /* gradient components in dev. direction */
+             DOUBLE *grad,     /* total gradient                        */
+             DOUBLE *dev)      /* norm of the dev. predictor stresses   */
 {
 /*----------------------------------------------------------------------*/
-static double half, fact, vect[4], stps, fact1,dum;
-static int i, j;
-static double x[4];
-static double stpsi, dm[4][4], hm[4][4], q13, q23; 
-static double dalpha, add, fac, fkg, fki, ro23; 
-static double xsi1, xsi2, xsi3, xsi4;
+static DOUBLE half, fact, vect[4], stps, fact1,dum;
+static INT i, j;
+static DOUBLE x[4];
+static DOUBLE stpsi, dm[4][4], hm[4][4], q13, q23; 
+static DOUBLE dalpha, add, fac, fkg, fki, ro23; 
+static DOUBLE xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1mapl2");
@@ -1415,45 +1415,45 @@ return;
 |       topic : radial return for multisurface problems                  |
 |               (material model: concrete)                               |
 |-----------------------------------------------------------------------*/
-void w1cradms(double *sigma,  /* elastic predictor projected onto yield surface */ 
-              double *epstn,  /* equivalent uniaxial plastic strain             */ 
-              double *dlam,   /* incremental plastic multiplier                 */ 
+void w1cradms(DOUBLE *sigma,  /* elastic predictor projected onto yield surface */ 
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */ 
+              DOUBLE *dlam,   /* incremental plastic multiplier                 */ 
               WALL_TYPE wtype,/* type of problem                                */ 
-              int     yip,    /* stress state   1 =elastic   >=2 =plastic       */ 
-              double *alpha,  /* factor for the first invariants                */ 
-              double *ft,     /* yield condition                                */ 
-              double  e,      /* young modulus                                  */ 
-              double  g,      /* shear modulus                                  */ 
-	      double  com,    /* bulk modulus                                   */ 
-              double *sigym,  /* uniaxial predictor yield stress                */ 
-              double *hards,  /* plastic modulus                                */ 
-              double  dn[3][4],  /* gradient components in deviatoric direction */ 
-              double  dcom[3][4],/* gradient components in hdrostatic direction */ 
-              double *devsig, /* deviatoric predictor stresses                  */ 
-              double *sm,     /* hydrostatic predictor stresses                 */ 
-              double  fcm,    /* compressive strenght                           */ 
-              double  gc,     /* compression fracture energy                    */ 
-              double  ftm,    /* tensile strenght                               */ 
-	      double  gt,     /* tensile fracture energy                        */ 
-              double  gamma1, /* fitting factor yield function 1                */ 
-              double  gamma2, /* fitting factor yield function 2                */ 
-              double  dia,    /* equivalent element length                      */ 
-              double  acrs)   /* average crack spacing                          */ 
+              INT     yip,    /* stress state   1 =elastic   >=2 =plastic       */ 
+              DOUBLE *alpha,  /* factor for the first invariants                */ 
+              DOUBLE *ft,     /* yield condition                                */ 
+              DOUBLE  e,      /* young modulus                                  */ 
+              DOUBLE  g,      /* shear modulus                                  */ 
+	      DOUBLE  com,    /* bulk modulus                                   */ 
+              DOUBLE *sigym,  /* uniaxial predictor yield stress                */ 
+              DOUBLE *hards,  /* plastic modulus                                */ 
+              DOUBLE  dn[3][4],  /* gradient components in deviatoric direction */ 
+              DOUBLE  dcom[3][4],/* gradient components in hdrostatic direction */ 
+              DOUBLE *devsig, /* deviatoric predictor stresses                  */ 
+              DOUBLE *sm,     /* hydrostatic predictor stresses                 */ 
+              DOUBLE  fcm,    /* compressive strenght                           */ 
+              DOUBLE  gc,     /* compression fracture energy                    */ 
+              DOUBLE  ftm,    /* tensile strenght                               */ 
+	      DOUBLE  gt,     /* tensile fracture energy                        */ 
+              DOUBLE  gamma1, /* fitting factor yield function 1                */ 
+              DOUBLE  gamma2, /* fitting factor yield function 2                */ 
+              DOUBLE  dia,    /* equivalent element length                      */ 
+              DOUBLE  acrs)   /* average crack spacing                          */ 
 {                             
 /*----------------------------------------------------------------------*/
-    double dum;               
+    DOUBLE dum;               
 /*----------------------------------------------------------------------*/
-    double dum1, dum2;
+    DOUBLE dum1, dum2;
 
-    static double half, soli[4]	, epst[2], sigy[3];
-    static double f;
-    static int i;
-    static double dhard[2];
-    static int kflag;
-    static double c1, c2, alpha1, alpha2, df[4];
-    static double q13, cappae, fac, dlambda[2], det, dev;
-    static double cappaut, sig1, sig2, sig3;
-    static double fti[2], hyd, ro23, cappauc, sol[4];
+    static DOUBLE half, soli[4]	, epst[2], sigy[3];
+    static DOUBLE f;
+    static INT i;
+    static DOUBLE dhard[2];
+    static INT kflag;
+    static DOUBLE c1, c2, alpha1, alpha2, df[4];
+    static DOUBLE q13, cappae, fac, dlambda[2], det, dev;
+    static DOUBLE cappaut, sig1, sig2, sig3;
+    static DOUBLE fti[2], hyd, ro23, cappauc, sol[4];
 /*----------------------------------------------------------------------*/
     half = .5;
     ro23 = sqrt(.66666666666666663);
@@ -1704,19 +1704,19 @@ return;
 /*-----------------------------------------------------------------------|
 |     topic: convert some arrays                                         |
 |-----------------------------------------------------------------------*/
-      void w1conver(double *dlam,       /*  incr. of plastic multiplier */             
-                    double *alpha,      /*  factor for the first inv.   */             
-                    double *hards,      /*  plastischer hardeningmodul  */             
-                    double dn[3][4],    /*  gradient comp. in dev. dir. */  
-                    double grad[3][4],  /*  total gradient              */             
-                    double *dlamc,      /*  -|                          */             
-                    double *alphac,     /*   |                          */             
-                    double *hardsc,     /*   |-  converted arrays       */             
-                    double dnc[2][4],   /*   |                          */             
-                    double gradc[2][4]) /*  -|                          */             
+      void w1conver(DOUBLE *dlam,       /*  incr. of plastic multiplier */             
+                    DOUBLE *alpha,      /*  factor for the first inv.   */             
+                    DOUBLE *hards,      /*  plastischer hardeningmodul  */             
+                    DOUBLE dn[3][4],    /*  gradient comp. in dev. dir. */  
+                    DOUBLE grad[3][4],  /*  total gradient              */             
+                    DOUBLE *dlamc,      /*  -|                          */             
+                    DOUBLE *alphac,     /*   |                          */             
+                    DOUBLE *hardsc,     /*   |-  converted arrays       */             
+                    DOUBLE dnc[2][4],   /*   |                          */             
+                    DOUBLE gradc[2][4]) /*  -|                          */             
 {
 /*----------------------------------------------------------------------*/
-    static int i;
+    static INT i;
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1conver");
@@ -1749,28 +1749,28 @@ return;
  |   for wall element   (drucker - prager)                              |
  |   (generalized for the multisurface problem: including the apex)     |
  *----------------------------------------------------------------------*/
-void w1maplg(double *tau,      /* current stresses (local)              */
-             double **d,       /* material matrix to be calculated      */
-             double  dlam,     /* increment of plastic multiplier       */
+void w1maplg(DOUBLE *tau,      /* current stresses (local)              */
+             DOUBLE **d,       /* material matrix to be calculated      */
+             DOUBLE  dlam,     /* increment of plastic multiplier       */
              WALL_TYPE wtype,  /* type of problem                       */
-             int     yip,      /* stress state  1=elastic 2=plastic     */
-             double  emod,     /* elastizitaetsmodul                    */
-             double  g,        /* schubmodul                            */
-             double  com,      /* kompressionsmodul                     */
-             double *hards,    /* plastic hardeningmodulus              */
-             double  dn[2][4], /* gradient components in dev. direction */
-             double  grad[2][4])/*norm of the dev. predictor stresses   */
+             INT     yip,      /* stress state  1=elastic 2=plastic     */
+             DOUBLE  emod,     /* elastizitaetsmodul                    */
+             DOUBLE  g,        /* schubmodul                            */
+             DOUBLE  com,      /* kompressionsmodul                     */
+             DOUBLE *hards,    /* plastic hardeningmodulus              */
+             DOUBLE  dn[2][4], /* gradient components in dev. direction */
+             DOUBLE  grad[2][4])/*norm of the dev. predictor stresses   */
 {
 /*----------------------------------------------------------------------*/
-    double dum;
+    DOUBLE dum;
 
-    static int i, j, k;
-    static double fact[2][2], ghme[4][2], stps;
-    static double e[2][2];
-    static double e2[2][2], stpsi, dm[4][4];
-    static double  hm[4][4], q13, q23, dalpha, facmin;
-    static double fak, fkg, fki, ghm[4][2], det, ro23; 
-    static double tra[4][4], xsi1, xsi2, xsi3, xsi4;
+    static INT i, j, k;
+    static DOUBLE fact[2][2], ghme[4][2], stps;
+    static DOUBLE e[2][2];
+    static DOUBLE e2[2][2], stpsi, dm[4][4];
+    static DOUBLE  hm[4][4], q13, q23, dalpha, facmin;
+    static DOUBLE fak, fkg, fki, ghm[4][2], det, ro23; 
+    static DOUBLE tra[4][4], xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1maplg");
@@ -1950,41 +1950,41 @@ return;
 |       topic : radial return for elements with elastoplastic material   |
 |               (concrete)      CAP-REGION                               |
 |-----------------------------------------------------------------------*/
-void w1radcap(double *sigma,  /* elastic predictor projected onto yield surface */ 
-              double *epstn,  /* equivalent uniaxial plastic strain             */ 
-              double *dlam,   /* incremental plastic multiplier                 */ 
+void w1radcap(DOUBLE *sigma,  /* elastic predictor projected onto yield surface */ 
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */ 
+              DOUBLE *dlam,   /* incremental plastic multiplier                 */ 
               WALL_TYPE wtype,/* type of problem                                */ 
-              double *alpha,  /* factor for the first invariants                */ 
-              double *e,      /* young modulus                                  */ 
-              double *g,      /* shear modulus                                  */ 
-	      double *com,    /* bulk modulus                                   */ 
-              double *sigym,  /* uniaxial predictor yield stress                */ 
-              double *hards,  /* plastic modulus                                */ 
-              double *grad,   /* total gradient                                 */ 
-              double *devsig, /* deviatoric predictor stresses                  */ 
-              double *sm,     /* hydrostatic predictor stresses                 */ 
-              double *dev,     /* norm of the deviatoric predictor stresses     */ 
-              double *hyd,     /* 1st invariant  of the predictor stresses      */ 
-              double *hydn,    /* 1st invariant  of the new stresses            */ 
-              double *fcm,    /* compressive strenght                           */ 
-              double *gc,     /* compression fracture energy                    */ 
-              double *ftm,    /* tensile strenght                               */ 
-	      double *gt,     /* tensile fracture energy                        */ 
-              double *gamma2, /* fitting factor yield function 2                */ 
-              double *dia)    /* equivalent element length                      */ 
+              DOUBLE *alpha,  /* factor for the first invariants                */ 
+              DOUBLE *e,      /* young modulus                                  */ 
+              DOUBLE *g,      /* shear modulus                                  */ 
+	      DOUBLE *com,    /* bulk modulus                                   */ 
+              DOUBLE *sigym,  /* uniaxial predictor yield stress                */ 
+              DOUBLE *hards,  /* plastic modulus                                */ 
+              DOUBLE *grad,   /* total gradient                                 */ 
+              DOUBLE *devsig, /* deviatoric predictor stresses                  */ 
+              DOUBLE *sm,     /* hydrostatic predictor stresses                 */ 
+              DOUBLE *dev,     /* norm of the deviatoric predictor stresses     */ 
+              DOUBLE *hyd,     /* 1st invariant  of the predictor stresses      */ 
+              DOUBLE *hydn,    /* 1st invariant  of the new stresses            */ 
+              DOUBLE *fcm,    /* compressive strenght                           */ 
+              DOUBLE *gc,     /* compression fracture energy                    */ 
+              DOUBLE *ftm,    /* tensile strenght                               */ 
+	      DOUBLE *gt,     /* tensile fracture energy                        */ 
+              DOUBLE *gamma2, /* fitting factor yield function 2                */ 
+              DOUBLE *dia)    /* equivalent element length                      */ 
 {
 /*----------------------------------------------------------------------*/
-    double dum1, dum2;               
+    DOUBLE dum1, dum2;               
 /*----------------------------------------------------------------------*/
-    static int i;
+    static INT i;
     
-    static double dadk, dadl, dbdl, dbdk, half, fact[4], dcom[4]; 
-    static double soli[2][2], epst, root;
-    static double a, b, f;
-    static double hardi, hardr, rdevc, rcomc, rdevn;
-    static double depst, rcomn, dn[4], q13, q23, cappae, q29, fac;
-    static double det, fti[2], ro23, smi[4], ro54, cappauc, sol[2][2];
-    static double devsigi[4], fac1, fac2, sig3;
+    static DOUBLE dadk, dadl, dbdl, dbdk, half, fact[4], dcom[4]; 
+    static DOUBLE soli[2][2], epst, root;
+    static DOUBLE a, b, f;
+    static DOUBLE hardi, hardr, rdevc, rcomc, rdevn;
+    static DOUBLE depst, rcomn, dn[4], q13, q23, cappae, q29, fac;
+    static DOUBLE det, fti[2], ro23, smi[4], ro54, cappauc, sol[2][2];
+    static DOUBLE devsigi[4], fac1, fac2, sig3;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1radcap");
@@ -2148,36 +2148,36 @@ dstrc_exit();
 |              c o n s i s t e n t  tangent material tensor              |
 |              for wall element   (drucker - prager)                     |
 |-----------------------------------------------------------------------*/
-void w1mplcap(double *tau,      /* current stresses (local)              */
-              double **d,       /* material matrix to be calculated      */
-              double *dlam,     /* increment of plastic multiplier       */
+void w1mplcap(DOUBLE *tau,      /* current stresses (local)              */
+              DOUBLE **d,       /* material matrix to be calculated      */
+              DOUBLE *dlam,     /* increment of plastic multiplier       */
               WALL_TYPE wtype,  /* type of problem                       */
-              double *alpha,    /* factor for the first invariants       */
-              double *emod,     /* young modulus                         */
-              double *vnu,      /* poisson's ratio                       */
-              double *hards,    /* plastic hardeningmodulus              */
-              double *sigym,    /* [0] uniaxial tension yield stress     */
-              double *grad,     /* total gradient                        */
-              double *cappae,   /* max. elastic compression strain       */
-              double *cappauc,  /* compressive fracture strain           */
-              double *epst,     /* equivalent uniaxial plastic strain    */
-              double *sig3)     /* equivalent compressive stress         */
+              DOUBLE *alpha,    /* factor for the first invariants       */
+              DOUBLE *emod,     /* young modulus                         */
+              DOUBLE *vnu,      /* poisson's ratio                       */
+              DOUBLE *hards,    /* plastic hardeningmodulus              */
+              DOUBLE *sigym,    /* [0] uniaxial tension yield stress     */
+              DOUBLE *grad,     /* total gradient                        */
+              DOUBLE *cappae,   /* max. elastic compression strain       */
+              DOUBLE *cappauc,  /* compressive fracture strain           */
+              DOUBLE *epst,     /* equivalent uniaxial plastic strain    */
+              DOUBLE *sig3)     /* equivalent compressive stress         */
 {
 /*----------------------------------------------------------------------*/
-    double dum;               
+    DOUBLE dum;               
 /*----------------------------------------------------------------------*/
-    static int i, j ,k;
+    static INT i, j ,k;
     
-    static double diag[4][4], half, hard, dkkf, hinv[4][4];
-    static double hydr[4], fack1, quot, a[2][2];
-    static double q[4][4], facth, hardi, gradk[4];
-    static double dkapp, hardr, fkapp;
-    static double theta[4][4];
-    static double dconst, const1, const2, const3, ai[2][2];
-    static double dm[4][4], q13, q23, qn[4][4], dhards;
-    static double dn1[4], dn2[4], dkf, grd[4], det, sig, ro12;
-    static double ro13, hyd, ro16, fac1, fac2, fac3, val3, xsi1;
-    static double xsi2, xsi3, xsi4;
+    static DOUBLE diag[4][4], half, hard, dkkf, hinv[4][4];
+    static DOUBLE hydr[4], fack1, quot, a[2][2];
+    static DOUBLE q[4][4], facth, hardi, gradk[4];
+    static DOUBLE dkapp, hardr, fkapp;
+    static DOUBLE theta[4][4];
+    static DOUBLE dconst, const1, const2, const3, ai[2][2];
+    static DOUBLE dm[4][4], q13, q23, qn[4][4], dhards;
+    static DOUBLE dn1[4], dn2[4], dkf, grd[4], det, sig, ro12;
+    static DOUBLE ro13, hyd, ro16, fac1, fac2, fac3, val3, xsi1;
+    static DOUBLE xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1mplcap");
@@ -2409,25 +2409,25 @@ dstrc_exit();
 /*-----------------------------------------------------------------------|
 | compute average crack spacing for element wall1     (model: concrete)  |
 |-----------------------------------------------------------------------*/
-void w1acrs(double  hte,    /* section properties                       */
-               int  maxreb, /* max. number of rebars                    */
-            double *stress, /* element stresses                         */
-            double *angle,  /* angle of the principal concrete stress   */
-            double *reb_area,
-            double *reb_ang,
-            double *reb_so,
-            double *reb_ds,
-            double *reb_rgamma,
-            double *thick,  /* thickness ot the structure               */
-            double dia,     /* equivalent element length                */
-            double **xjm,
-            double *acrs)   /* average crack spacing                    */
+void w1acrs(DOUBLE  hte,    /* section properties                       */
+               INT  maxreb, /* max. number of rebars                    */
+            DOUBLE *stress, /* element stresses                         */
+            DOUBLE *angle,  /* angle of the principal concrete stress   */
+            DOUBLE *reb_area,
+            DOUBLE *reb_ang,
+            DOUBLE *reb_so,
+            DOUBLE *reb_ds,
+            DOUBLE *reb_rgamma,
+            DOUBLE *thick,  /* thickness ot the structure               */
+            DOUBLE dia,     /* equivalent element length                */
+            DOUBLE **xjm,
+            DOUBLE *acrs)   /* average crack spacing                    */
 {
 /*----------------------------------------------------------------------*/
-    static int i, k, id;
-    static double dum, rad, fps, sps, aps; 
-    static double sig[8], dl, alphas, fac, area, alphar, so, ds, rho, rls;
-    static double dalpha, dls[2], dgamma;              
+    static INT i, k, id;
+    static DOUBLE dum, rad, fps, sps, aps; 
+    static DOUBLE sig[8], dl, alphas, fac, area, alphar, so, ds, rho, rls;
+    static DOUBLE dalpha, dls[2], dgamma;              
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1acrs");
@@ -2458,7 +2458,7 @@ void w1acrs(double  hte,    /* section properties                       */
 /*------------------------------------ compute average crack spacing ---*/      
     for (i=0; i<2; i++)
     {/*800*/
-      alphas = sig[6] + 90. * (double)(i);
+      alphas = sig[6] + 90. * (DOUBLE)(i);
       if(alphas<0.) alphas = alphas + 180.;
       fac = 0.;
 
@@ -2511,15 +2511,15 @@ dstrc_exit();
 |    topic: calculate the gradients of the elastic predictor             |              
 |           deviatoric/hydrostatic stresses                              |
 |-----------------------------------------------------------------------*/
-void w1cpreds(double *sigym, /* uniaxial predictor yield stress         */
-              double *alpha, /* factor for the first invariants         */
-              double *devsig,/* deviatoric predictor stresses           */
-              double  hyd,   /* 1. invariant of the predictor stresses  */
-              double *grad)  /* total gradient                          */
+void w1cpreds(DOUBLE *sigym, /* uniaxial predictor yield stress         */
+              DOUBLE *alpha, /* factor for the first invariants         */
+              DOUBLE *devsig,/* deviatoric predictor stresses           */
+              DOUBLE  hyd,   /* 1. invariant of the predictor stresses  */
+              DOUBLE *grad)  /* total gradient                          */
 {
 /*----------------------------------------------------------------------*/
-    static int i;
-    static double dn[4], fact[4], dcom[4];
+    static INT i;
+    static DOUBLE dn[4], fact[4], dcom[4];
 /*----------------------------------------------------------------------*/
     #ifdef DEBUG 
     dstrc_enter("w1cpreds");
@@ -2551,10 +2551,10 @@ dstrc_exit();
 /*----------------------------------------------------------------------*
  |   WALL1 : array = value                                              |
  *----------------------------------------------------------------------*/
-void w1_init44(double a[4][4],double val)
+void w1_init44(DOUBLE a[4][4],DOUBLE val)
 {
 /*----------------------------------------------------------------------*/
-int i,j;
+INT i,j;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_init44");
@@ -2570,10 +2570,10 @@ return;
 /*----------------------------------------------------------------------*
  |   WALL1 : R(I,J) = A(I,K)*B(K,J) ---  R = A*B                        |
  *----------------------------------------------------------------------*/
-void w1_AxB_444(double a[4][4],double b[4][4],double r[4][4])
+void w1_AxB_444(DOUBLE a[4][4],DOUBLE b[4][4],DOUBLE r[4][4])
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
+INT i,j,k;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_AxB_444");
@@ -2594,10 +2594,10 @@ return;
 /*----------------------------------------------------------------------*
  |   WALL1 : R(I,J) = A(I,K)*B(K,J) ---  R = A*B                        |
  *----------------------------------------------------------------------*/
-void w1_AxBT_444(double a[4][4],double b[4][4],double r[4][4])
+void w1_AxBT_444(DOUBLE a[4][4],DOUBLE b[4][4],DOUBLE r[4][4])
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
+INT i,j,k;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_AxBT_444");
@@ -2618,10 +2618,10 @@ return;
 /*----------------------------------------------------------------------*
  |   WALL1 : R(I,J) = A(I,K)*B(K,J) ---  R = A*B                        |
  *----------------------------------------------------------------------*/
-void w1_AxB_441(double a[4][4],double b[4],double r[4])
+void w1_AxB_441(DOUBLE a[4][4],DOUBLE b[4],DOUBLE r[4])
 {
 /*----------------------------------------------------------------------*/
-int i,k;
+INT i,k;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_AxB_441");
@@ -2641,10 +2641,10 @@ return;
 /*----------------------------------------------------------------------*
  |   WALL1 : R(I,J) = A(I,K)*B(K,J) ---  R = A*B                        |
  *----------------------------------------------------------------------*/
-void w1_AxBT_414(double a[4],double b[4],double r[4][4])
+void w1_AxBT_414(DOUBLE a[4],DOUBLE b[4],DOUBLE r[4][4])
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
+INT i,j,k;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_AxBT_414");
@@ -2664,10 +2664,10 @@ return;
 /*----------------------------------------------------------------------*
  |   WALL1 : R(I,J) = A(I,K)*B(K,J) ---  R = A*B                        |
  *----------------------------------------------------------------------*/
-void w1_AxFAC_44(double a[4][4], double r[4][4], double fac)
+void w1_AxFAC_44(DOUBLE a[4][4], DOUBLE r[4][4], DOUBLE fac)
 {
 /*----------------------------------------------------------------------*/
-int i,j;
+INT i,j;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_AxBT_414");
@@ -2685,10 +2685,10 @@ return;
 /*----------------------------------------------------------------------*
  |   WALL1 : ADDITION   R = A+B   (FULL MATRICES)                       |
  *----------------------------------------------------------------------*/
-void w1_AaddB_44(double a[4][4], double b[4][4], double r[4][4])
+void w1_AaddB_44(DOUBLE a[4][4], DOUBLE b[4][4], DOUBLE r[4][4])
 {
 /*----------------------------------------------------------------------*/
-int i,j;
+INT i,j;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_AaddB_44");
@@ -2708,28 +2708,28 @@ return;
  *----------------------------------------------------------------------*/
 void w1_mat_rebar(ELEMENT   *ele,
                   MATERIAL  *mat, 
-                  double   **bop, /*derivative operator */
-                  double    *gop, /*derivative operator */
-                  double    *alpha, /*derivative operator */
-                  double   **xjm, /* jacobian matrix    */
-                  double *stress,       
-                  double     **d,   
-                  int         ip,
-                  int       lanz,
-                  int     istore)
+                  DOUBLE   **bop, /*derivative operator */
+                  DOUBLE    *gop, /*derivative operator */
+                  DOUBLE    *alpha, /*derivative operator */
+                  DOUBLE   **xjm, /* jacobian matrix    */
+                  DOUBLE *stress,       
+                  DOUBLE     **d,   
+                  INT         ip,
+                  INT       lanz,
+                  INT     istore)
 {
 /*----------------------------------------------------------------------*/
-int    yip, ryip, iupd, nstiff;
-double sig, eps, epstn, rad, alfr, areb, den, prod, c, ac, arad;
-double x1r, x2r, x1s, x2s;
-double straino, strainrb, stresso, stressrb, dstrain;
-double ca, sa, epste, eh, sigy, stiff1; 
-double rsig, reps, repstn, rarea, alfrr, alfpri, ca2, sa2, emod, emod1, sigyv,
+INT    yip, ryip, iupd, nstiff;
+DOUBLE sig, eps, epstn, rad, alfr, areb, den, prod, c, ac, arad;
+DOUBLE x1r, x2r, x1s, x2s;
+DOUBLE straino, strainrb, stresso, stressrb, dstrain;
+DOUBLE ca, sa, epste, eh, sigy, stiff1; 
+DOUBLE rsig, reps, repstn, rarea, alfrr, alfpri, ca2, sa2, emod, emod1, sigyv,
 factor;  
-double disd[5];
-double strain[4];
-double cappaet, cappaut, angle, thick, fbd, epsy, dalpha, ecappaet;
-double eccappaet, dcappaet, roh, ecappaut, dcappaut;
+DOUBLE disd[5];
+DOUBLE strain[4];
+DOUBLE cappaet, cappaut, angle, thick, fbd, epsy, dalpha, ecappaet;
+DOUBLE eccappaet, dcappaet, roh, ecappaut, dcappaut;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_mat_rebar");

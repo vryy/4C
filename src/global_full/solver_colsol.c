@@ -13,24 +13,24 @@ void solver_colsol(struct _SOLVAR         *actsolv,
                    struct _SKYMATRIX      *sky,
                    struct _DIST_VECTOR    *sol,
                    struct _DIST_VECTOR    *rhs,
-                   int                     option)
+                   INT                     option)
 {
-int            i;
-int            dof;
-int            imyrank;
-int            inprocs;
+INT            i;
+INT            dof;
+INT            imyrank;
+INT            inprocs;
 
 ARRAY          b_a;
-double        *b;
+DOUBLE        *b;
 ARRAY          tmp_a;
-double        *tmp;
+DOUBLE        *tmp;
 
-int            ione=1;
-int            izero=0;
-int            info=6;
-int            kkk;
-int            isc;
-int            nsch;
+INT            ione=1;
+INT            izero=0;
+INT            info=6;
+INT            kkk;
+INT            isc;
+INT            nsch;
 
 #ifdef DEBUG 
 dstrc_enter("solver_colsol");

@@ -50,8 +50,8 @@ reads it twice:
 ------------------------------------------------------------------------*/
 void frinit()
 {
-int     i=0;
-int     linecount=0;
+INT     i=0;
+INT     linecount=0;
 char   *remarkpointer;
 allfiles.numcol=MAXNUMCOL;
 if (par.myrank==0)
@@ -256,16 +256,16 @@ return;
 reads n integers from input_file
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      int*     (o)   adress of field to hold values read    
-\param num      int      (i)   number of values to read 
-\param ierr     int*     (o)   =0  keyword not found / =1 values read
+\param var      INT*     (o)   adress of field to hold values read    
+\param num      INT      (i)   number of values to read 
+\param ierr     INT*     (o)   =0  keyword not found / =1 values read
 \return void                                               
 \sa frdouble_n() , frint()
 
 ------------------------------------------------------------------------*/
-void frint_n(char string[],int *var,int num, int *ierr)
+void frint_n(char string[],INT *var,INT num, INT *ierr)
 {
-int  i=0;
+INT  i=0;
 char *foundit = NULL;
 #ifdef DEBUG 
 dstrc_enter("frint");
@@ -303,16 +303,16 @@ reads an integer from input_file starting in allfiles.actrow
 Searches for the keyword and reads the first thing consisting of -1234567890 behind it
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      int*     (o)   adress of variable to hold value read    
-\param ierr     int*     (o)   =0  keyword not found / =1 values read
+\param var      INT*     (o)   adress of variable to hold value read    
+\param ierr     INT*     (o)   =0  keyword not found / =1 values read
 \return void                                               
 \sa frdouble_n() , frint_n() , frdouble() , frchar()
 
 ------------------------------------------------------------------------*/
-void frint(char string[],int *var, int *ierr)
+void frint(char string[],INT *var, INT *ierr)
 {
 char message[100];
-int  i=0;
+INT  i=0;
 char *foundit = NULL;
 #ifdef DEBUG 
 dstrc_enter("frint");
@@ -355,15 +355,15 @@ Searches for the keyword and reads the first thing consisting of -.1234567890 be
 All values to be read must then be continous
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      double*  (o)   adress of field to hold values read    
-\param ierr     int*     (o)   =0  keyword not found / =1 values read
+\param var      DOUBLE*  (o)   adress of field to hold values read    
+\param ierr     INT*     (o)   =0  keyword not found / =1 values read
 \return void                                               
 \sa frdouble() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frdouble_n(char string[],double *var,int num, int *ierr)
+void frdouble_n(char string[],DOUBLE *var,INT num, INT *ierr)
 {
-int  i;
+INT  i;
 char *foundit = NULL;
 #ifdef DEBUG 
 dstrc_enter("frdouble");
@@ -394,20 +394,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief reads a double from input_file                                            
+\brief reads a DOUBLE from input_file                                            
 
 <pre>                                                        m.gee 8/00 
-reads a double from input_file starting in allfiles.actrow
+reads a DOUBLE from input_file starting in allfiles.actrow
 Searches for the keyword and reads the first thing consisting of -.1234567890 behind it.
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      double*  (o)   adress of variable to hold value read    
-\param ierr     int*     (o)   =0  keyword not found / =1 value read
+\param var      DOUBLE*  (o)   adress of variable to hold value read    
+\param ierr     INT*     (o)   =0  keyword not found / =1 value read
 \return void                                               
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frdouble(char string[],double *var, int *ierr)
+void frdouble(char string[],DOUBLE *var, INT *ierr)
 {
 char *foundit = NULL;
 char *end;
@@ -448,14 +448,14 @@ to hold the string
 </pre>
 \param string   char[]   (i)   string to search for in actual line
 \param var      char*    (o)   adress of variable to hold string read    
-\param ierr     int*     (o)   =0  keyword not found / =1 value read
+\param ierr     INT*     (o)   =0  keyword not found / =1 value read
 \return void                                               
 \sa frdouble_n() , frint_n() , frint() 
 
 ------------------------------------------------------------------------*/
-void frchar(char string[],char *var, int *ierr)
+void frchar(char string[],char *var, INT *ierr)
 {
-int  i=0;
+INT  i=0;
 char *foundit = NULL;
 
 #ifdef DEBUG 
@@ -490,14 +490,14 @@ return;
 checks for a keyword in actual line of input_file
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param ierr     int*     (o)   =0  keyword not found / =1 value read
+\param ierr     INT*     (o)   =0  keyword not found / =1 value read
 \return void                                               
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frchk(char string[], int *ierr)
+void frchk(char string[], INT *ierr)
 {
-int  i=0;
+INT  i=0;
 char *foundit = NULL;
 
 foundit = strstr(allfiles.input_file[allfiles.actrow],string);
