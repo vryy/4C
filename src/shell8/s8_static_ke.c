@@ -394,12 +394,12 @@ for (lr=0; lr<nir; lr++)
                     funct,deriv,iel,condfac,0);
          /*--------------------------------- metric at gp in shell body */     
          s8_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
-                 amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3);     
+                 amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,condfac);     
          /*----------- calc shell shifter and put it in the weight fact */
          xnu   = (1.0/condfac)*(detr/da);
          fact *= xnu; 
          /*----------------------- change to current metrics due to eas */
-         if (nhyb>0) s8_vthv(gmkovc,gmkonc,epsh,&detc,e3);
+         if (nhyb>0) s8_vthv(gmkovc,gmkonc,epsh,&detc,e3,condfac);
          /*------------------------------------------ call material law */
          s8_tmat(ele,mat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
                     gkovc,gkonc,gkovr,gkonr,detc,detr,e3,0);

@@ -528,19 +528,19 @@ for (lr=0; lr<nir; lr++)
          /*--------------------------------- metric at gp in shell body */     
          if (ansq==0)
          s8_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
-                 amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3);     
+                 amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,condfac);     
          /*- modifications to metric of shell body due to querschub-ans */
          else
          s8_ans_tvhe_q(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,amkovc,amkovr,
                        akovc,akovr,a3kvpc,a3kvpr,&detr,&detc,
                        amkovr1q,amkovc1q,akovr1q,akovc1q,a3kvpr1q,a3kvpc1q,
                        amkovr2q,amkovc2q,akovr2q,akovc2q,a3kvpr2q,a3kvpc2q,
-                       frq,fsq,e3,nsansq,iel);
+                       frq,fsq,e3,nsansq,iel,condfac);
          /*----------- calc shell shifter and put it in the weight fact */
          xnu   = (1.0/condfac)*(detr/da);
          fact *= xnu; 
          /*----------------------- change to current metrics due to eas */
-         if (nhyb>0) s8_vthv(gmkovc,gmkonc,epsh,&detc,e3);
+         if (nhyb>0) s8_vthv(gmkovc,gmkonc,epsh,&detc,e3,condfac);
          /*------------------------------------------ call material law */
          s8_tmat(ele,mat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
                     gkovc,gkonc,gkovr,gkonr,detc,detr,e3,0);

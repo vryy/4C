@@ -309,7 +309,8 @@ void s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmko
                   double **amkovr2q[], double **amkovc2q[], 
                   double **akovr2q[] , double **akovc2q[] ,
                   double **a3kvpr2q[], double **a3kvpc2q[],
-                  double frq[], double fsq[], double e3, int nansq, int iel)
+                  double frq[], double fsq[], double e3, int nansq, int iel,
+                  double condfac)
 {
 int i;
 double b11c=0.0;
@@ -327,9 +328,13 @@ double b31r=0.0;
 double b32r=0.0;
 
 double det_dummy;
+double zeta;
+
 #ifdef DEBUG 
 dstrc_enter("s8_ans_tvhe_q");
 #endif
+/*----------------------------------------------------------------------*/
+zeta = e3 / condfac;
 /*----------------------------------------------------------------------*/
 for (i=0; i<3; i++) b11c += akovc[i][0]*a3kvpc[i][0];
 for (i=0; i<3; i++) b12c += akovc[i][0]*a3kvpc[i][1];
@@ -345,12 +350,12 @@ for (i=0; i<3; i++) b22r += akovr[i][1]*a3kvpr[i][1];
 for (i=0; i<3; i++) b31r += akovr[i][2]*a3kvpr[i][0];
 for (i=0; i<3; i++) b32r += akovr[i][2]*a3kvpr[i][1];
 /*----------------------------------------------------------------------*/
-gmkovc[0][0] = gmkovr[0][0] + (amkovc[0][0]-amkovr[0][0]) + e3 * 2.0 * (b11c-b11r);
-gmkovc[1][1] = gmkovr[1][1] + (amkovc[1][1]-amkovr[1][1]) + e3 * 2.0 * (b22c-b22r);
+gmkovc[0][0] = gmkovr[0][0] + (amkovc[0][0]-amkovr[0][0]) + zeta * 2.0 * (b11c-b11r);
+gmkovc[1][1] = gmkovr[1][1] + (amkovc[1][1]-amkovr[1][1]) + zeta * 2.0 * (b22c-b22r);
 gmkovc[2][2] = gmkovr[2][2] + (amkovc[2][2]-amkovr[2][2]);
-gmkovc[0][1] = gmkovr[0][1] + (amkovc[0][1]-amkovr[0][1]) + e3 * (b21c+b12c-b21r-b12r);
-gmkovc[0][2] = gmkovr[0][2]                               + e3 * (b31c-b31r);
-gmkovc[1][2] = gmkovr[1][2]                               + e3 * (b32c-b32r);
+gmkovc[0][1] = gmkovr[0][1] + (amkovc[0][1]-amkovr[0][1]) + zeta * (b21c+b12c-b21r-b12r);
+gmkovc[0][2] = gmkovr[0][2]                               + zeta * (b31c-b31r);
+gmkovc[1][2] = gmkovr[1][2]                               + zeta * (b32c-b32r);
 gmkovc[2][0] = gmkovc[0][2];
 gmkovc[2][1] = gmkovc[1][2];
 gmkovc[1][0] = gmkovc[0][1];

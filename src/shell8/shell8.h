@@ -316,7 +316,8 @@ void s8_vthv(double **gmkovc,
              double **gmkonc,
              double  *epsh,
              double  *detc,
-             double   e3);
+             double   e3,
+             double   condfac);
 /*----------------------------------------------------------------------*
  |  s8_tvhe.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -334,7 +335,8 @@ void s8_tvhe(double **gmkovr,
              double **akovr,
              double **a3kvpc,
              double **a3kvpr,
-             double   e3);
+             double   e3,
+             double   condfac);
 void s8_tvhe_lin(double **gmkovr,
                  double **gmkovc,
                  double **gmkonr,
@@ -435,7 +437,8 @@ void s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmko
                   double **amkovr2q[], double **amkovc2q[], 
                   double **akovr2q[] , double **akovc2q[] ,
                   double **a3kvpr2q[], double **a3kvpc2q[],
-                  double frq[], double fsq[], double e3, int nansq, int iel);
+                  double frq[], double fsq[], double e3, int nansq, int iel,
+                  double condfac);
 void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
                 int numdf,int iel,double weight,double e1,double e2,
                 double frq[], double fsq[],double *funct1q[],double  *funct2q[],

@@ -12,21 +12,24 @@ void s8_vthv(double **gmkovc,
              double **gmkonc,
              double  *epsh,
              double  *detc,
-             double   e3)
+             double   e3,
+             double   condfac)
 {
 double det_dummy;
-
+double zeta;
 
 #ifdef DEBUG 
 dstrc_enter("s8_vthv");
 #endif
 /*----------------------------------------------------------------------*/
-gmkovc[0][0] = gmkovc[0][0] + 2.0 * (epsh[0]+e3*epsh[6]);
-gmkovc[1][0] = gmkovc[1][0] +       (epsh[1]+e3*epsh[7]);
-gmkovc[2][0] = gmkovc[2][0] +       (epsh[2]+e3*epsh[8]);
-gmkovc[1][1] = gmkovc[1][1] + 2.0 * (epsh[3]+e3*epsh[9]);
-gmkovc[2][1] = gmkovc[2][1] +       (epsh[4]+e3*epsh[10]);
-gmkovc[2][2] = gmkovc[2][2] + 2.0 * (epsh[5]+e3*epsh[11]);
+zeta = e3 / condfac;
+/*----------------------------------------------------------------------*/
+gmkovc[0][0] = gmkovc[0][0] + 2.0 * (epsh[0]+zeta*epsh[6]);
+gmkovc[1][0] = gmkovc[1][0] +       (epsh[1]+zeta*epsh[7]);
+gmkovc[2][0] = gmkovc[2][0] +       (epsh[2]+zeta*epsh[8]);
+gmkovc[1][1] = gmkovc[1][1] + 2.0 * (epsh[3]+zeta*epsh[9]);
+gmkovc[2][1] = gmkovc[2][1] +       (epsh[4]+zeta*epsh[10]);
+gmkovc[2][2] = gmkovc[2][2] + 2.0 * (epsh[5]+zeta*epsh[11]);
 gmkovc[0][2] = gmkovc[2][0];
 gmkovc[1][2] = gmkovc[2][1];
 gmkovc[0][1] = gmkovc[1][0];
