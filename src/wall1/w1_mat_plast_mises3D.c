@@ -34,7 +34,7 @@
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  calculates the linear elastic constitutive matrix
+\brief  calculates the constitutive matrix for a von Mises-Plasticity
 
 <pre>                                                             sh 08/02 
 This routine calculates the constitutive matrix and forces using a 3D
