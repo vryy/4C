@@ -48,6 +48,7 @@ typedef char      CHAR;
 #define dgetrf dgetrf_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
+#define dsyevd dsyevd_
 #define colsol colsol_
 #endif
 /* append underslash for CUSS Sunfire */
@@ -58,8 +59,8 @@ typedef char      CHAR;
 #define dgetrf dgetrf_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
+#define dsyevd dsyevd_
 #define colsol colsol_
-#define mumps_interface   mumps_interface_
 #endif
 #ifdef SIXTYFOUR 
 #define dsytrf dsytrf_
@@ -68,6 +69,7 @@ typedef char      CHAR;
 #define dgetrf dgetrf_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
+#define dsyevd dsyevd_
 #define colsol colsol_
 #endif
 

@@ -1093,3 +1093,96 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_eigen */
+
+
+
+/*----------------------------------------------------------------------*
+ |  make eigenanalysis of system matrice                     m.gee 06/02|
+ *----------------------------------------------------------------------*/
+void solserv_eigen(FIELD *actfield, PARTITION *actpart, SOLVAR *actsolv,
+               INTRA *actintra, int stiff)
+{
+int       i,j,k;
+SPOOLMAT *spostiff;
+int       numeq;
+char      jobz[1];
+char      uplo[1];
+ARRAY     A_a;
+ARRAY     EW_a;
+double  **A, *EW;
+int       lwork;
+ARRAY     WORK_a, IWORK_a;
+double   *WORK;
+int      *IWORK,liwork;
+int       info=1;
+int      *irn,*jcn, nnz;
+DIST_VECTOR    *distvecs;
+#ifdef DEBUG 
+dstrc_enter("solserv_eigen");
+#endif
+/*----------------------------------------------------------------------*/
+if (actsolv->sysarray_typ[stiff] != spoolmatrix)
+   dserror("Eigenanalysis only with spooles");
+/*-------------------------------------------------------some variables */
+spostiff = actsolv->sysarray[stiff].spo;
+numeq    = spostiff->numeq_total;
+solserv_create_vec(&distvecs,numeq,numeq,numeq,"DV");
+for (k=0; k<numeq; k++) solserv_zero_vec(&(distvecs[i]));
+lwork    = 1 + 6*numeq + 2*numeq*numeq;
+liwork   = 3 + 5*numeq;
+jobz[0]  = 'V';
+uplo[0]  = 'L';
+A     = amdef("A",&A_a,numeq,numeq,"DA");
+EW    = amdef("EW",&EW_a,numeq,1,"DV");
+WORK  = amdef("WORK",&WORK_a,lwork,1,"DV");
+IWORK = amdef("IWORK",&IWORK_a,liwork,1,"IV");
+amzero(&A_a);
+irn  = spostiff->irn_loc.a.iv;
+jcn  = spostiff->jcn_loc.a.iv;
+nnz  = spostiff->irn_loc.fdim;
+/*--- fill the dense arrays A and B with the sparse stiffness and mass */
+for (k=0; k<nnz; k++)
+{
+   i = irn[k];
+   j = jcn[k];
+   A[i][j] = spostiff->A_loc.a.dv[k];
+} 
+/*--------------------------- call lapack to calculate the eigenvalues */
+printf("Reached eigensolver\n");
+fflush(stdout);
+dsyevd(jobz,uplo,&numeq,A[0],&numeq,EW,WORK,&lwork,IWORK,&liwork,&info);
+printf("info=%d\n",info);
+printf("Largest Eigenvalue is %30.15E\n",EW[numeq-1]);
+printf("Condition number is %30.15E\n",EW[numeq-1]/EW[0]);
+printf("Time step should then be smaller then %30.15E\n",2.0/(sqrt(EW[numeq-1])));
+fflush(stdout);
+/*----------------------------------------------------------------------*/
+for (i=0; i<numeq; i++)
+{
+   for (k=0; k<numeq; k++)
+   distvecs[i].vec.a.dv[k] = A[i][k];
+}
+for (i=0; i<numeq; i++)
+solserv_result_total(actfield,actintra, &(distvecs[i]),i,
+                     &(actsolv->sysarray[0]),
+                     &(actsolv->sysarray_typ[0]));
+out_gid_sol("eigenmodes",actfield,actintra,0,numeq);
+/*----------------------------------------------------------------------*/
+fprintf(allfiles.out_err,"------------------Eigenanalysis of SYMMETRIC (K-lambda*I)*phi=0-----\n");
+fprintf(allfiles.out_err,"Eigenvalues in ascending order:\n");
+for (k=0; k<numeq; k++)
+fprintf(allfiles.out_err," %d %40.20f \n",k+1,EW[k]);
+fprintf(allfiles.out_err,"------------------End Eigenanalysis---------------------------------\n");
+fflush(allfiles.out_err);
+/*----------------------------------------------------------------------*/
+amdel(&A_a);
+amdel(&EW_a);
+amdel(&WORK_a);
+amdel(&IWORK_a);
+dserror("Eigensolution finished "); 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_eigen */

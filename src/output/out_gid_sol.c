@@ -497,7 +497,7 @@ double      **forces;
 */   
 
 int           gaussperm4[4] = {3,1,0,2};
-int           gaussperm9[9] = {8,2,0,6,5,1,3,4};
+int           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
 
 #ifdef DEBUG 
 dstrc_enter("out_gid_sol");
@@ -558,6 +558,52 @@ if (strncmp(string,"displacement",stringlenght)==0)
    }
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"displacement",stringlenght)==0) */
+/*========================================= result type is eigenmodes */
+if (strncmp(string,"eigenmodes",stringlenght)==0)
+{
+   resulttype        = "VECTOR";
+   resultplace       = "ONNODES";
+   gpset             = ""; 
+   rangetable        = actgid->standardrangetable;
+   ncomponent        = 3;
+   componentnames[0] = "x-mode";
+   componentnames[1] = "y-mode";
+   componentnames[2] = "z-mode";
+   /*-------------------------------------------------------------------*/
+for (j=0; j<place; j++)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+                                                             sign,string,sign,
+                                                             sign,sign,
+                                                             j,
+                                                             resulttype,
+                                                             resultplace
+                                                             );
+   fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+                                            sign,actgid->standardrangetable,sign
+                                            );
+   fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+                                                       sign,componentnames[0],sign,
+                                                       sign,componentnames[1],sign,
+                                                       sign,componentnames[2],sign
+                                                       );
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numnp; i++)
+   {
+      actnode = &(actfield->dis[0].node[i]);
+      fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[j][0],
+                                                   actnode->sol.a.da[j][1],
+                                                   actnode->sol.a.da[j][2]
+                                                   );
+   }
+   fprintf(out,"END VALUES\n");
+}
+} /* end of (strncmp(string,"eigenmodes",stringlenght)==0) */
 /*======================================================================*/
 /*=============================================== result type is stress */
 if (strncmp(string,"stress",stringlenght)==0)
