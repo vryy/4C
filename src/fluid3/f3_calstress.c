@@ -100,9 +100,11 @@ void f3_calelestress(
   typ  = ele->distyp;
 
 
+#if 0
   switch(viscstr)
   {
     case 0: /* only real pressure */
+#endif
       for (i=0;i<iel;i++)
       {
         actnode=ele->node[i];
@@ -113,10 +115,12 @@ void f3_calelestress(
         ele->e.f3->stress_ND.a.da[i][4]= ZERO;
         ele->e.f3->stress_ND.a.da[i][5]= ZERO;
       }
+#if 0
       break;
 
 
     case 1: /* real pressure + viscose stresses */
+#endif
       /* sigma = -p_real*I + 2*nue * eps(u) */ 
       /* calculate deformation velocity tensor */
       /*------------------------------------------------ get integraton data  */
@@ -246,6 +250,7 @@ void f3_calelestress(
           nis,
           nit,
           iel);
+#if 0
       break;
 
 
@@ -254,6 +259,7 @@ void f3_calelestress(
       break;
 
   } /* end of switch(viscstr) */
+#endif
 
 #ifdef DEBUG 
   dstrc_exit();
@@ -435,7 +441,7 @@ void f3_hxsm (
 
   kkk=6;
   /*----------------------------------------------------------------------*/
-  for (i=0; i<6; i++) fp[i] = 0.0;
+  for (i=6; i<12; i++) fp[i] = 0.0;
   /*----------------------------------------------------------------------*/
   ngp=0;
   /*----------------------------------------------------------------------*/
@@ -445,7 +451,7 @@ void f3_hxsm (
       f3_lgpl (j,nis,xgs,sk,&xls);
       for (k=0; k<nit; k++) {
         f3_lgpl (k,nit,xgt,tk,&xlt);
-        for (ns=0; ns<kkk; ns++)  fp[ns] += xlr*xls*xlt*f[ns][ngp];
+        for (ns=0; ns<kkk; ns++)  fp[6+ns] += xlr*xls*xlt*f[ns][ngp];
         ngp = ngp + 1;
       }
     }
