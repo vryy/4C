@@ -1,8 +1,20 @@
+//
+// Maintainer: Malte Neumann
+//             neumann@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/neumann/index.html
+// 
+// necessary defines: -DD_ALE -DRESULTTEST
+//
+// #define MAXNOD           (8)
+// #define MAXELE           (8)
+// #define MAXDOFPERNODE    (6)
+// #define MAXGAUSS         (8)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Stab
+PURE_ALE_TEST_EXAMPLE
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS         374 
 NODES            840
@@ -32,8 +44,8 @@ RESEVRYDISP  10
 RESEVRYSTRS  20
 RESTARTEVRY  20
 TIMESTEP     0.1 
-NUMSTEP      41 
-MAXTIME      4
+NUMSTEP      30 
+MAXTIME      3
 BETA         0.25 
 GAMMA        0.5 
 ALPHA_M      0.5 
@@ -73,8 +85,8 @@ INITIALFIELD zero_field
 STARTFUNCNO  2
 -------------------------------------------------------ALE DYNAMIC
 TIMESTEP     0.1
-NUMSTEP      41 
-MAXTIME      4.0
+NUMSTEP      31 
+MAXTIME      3.0
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
 RESEVRYDISP  1
@@ -5994,7 +6006,6 @@ MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.0 DENS 20
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1 FACTOR 0.0 6 
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1 2 FACTOR 6 0 
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 2 3 FACTOR 0.0 -6 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 3 4 FACTOR -6 0 
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
