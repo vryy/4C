@@ -15,6 +15,10 @@ void assign_dof_ndis(FIELD *actfield);
  *----------------------------------------------------------------------*/
 void ntacal(void);
 /*----------------------------------------------------------------------*
+ |  global_cal_control.c                                 genk 10/03     |
+ *----------------------------------------------------------------------*/
+void global_result_test(void); 
+/*----------------------------------------------------------------------*
  |  cal_dyn_control.c                                    m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void caldyn(void);
@@ -290,7 +294,7 @@ void math_matmattrndense(DOUBLE **R,
 void math_sym_inv(DOUBLE **A, INT dim);
 void math_unsym_inv(DOUBLE **A, INT dimr, INT dimc);
 void math_sppr(DOUBLE *spat, DOUBLE *a, DOUBLE *b, DOUBLE *c);
-void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2);
+void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2, DOUBLE fact);
 /*!---------------------------------------------------------------------                                         
 \brief extract digits from integer number
 
