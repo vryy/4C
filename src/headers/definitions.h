@@ -72,6 +72,7 @@ typedef char      CHAR;
 #define mydsyevx            mydsyevx_
 #define colsol              colsol_
 #define c1inv6              c1inv6_
+#define c1inv3              c1inv3_
 #define c1ab                c1ab_
 #define mxmatb              mxmatb_
 #define mxmabt              mxmabt_
@@ -91,6 +92,7 @@ typedef char      CHAR;
 #define dveczero            dveczero_
 #define iveczero            iveczero_
 #define fsdoc               fsdoc_
+#define sspace              sspace_
 #define v2_init             v2_init_
 #endif
 #ifndef AZTEC_PACKAGE
