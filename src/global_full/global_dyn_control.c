@@ -20,6 +20,14 @@ switch (genprob.probtyp)
 case prb_structure:
     dyn_nln_structural();
 break;
+case prb_fluid:
+    dyn_fluid();
+break;
+/*
+case prb_fsi:
+    dyn_fsi();
+break;
+*/    
 default:
     dserror("Dynamic solution of unknown Problemtyp requested");
 break;
