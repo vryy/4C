@@ -157,9 +157,9 @@ case calc_struct_stressreduce:
 break;/*----------------------------------------------------------------*/
 /*-----------------------------------------------------update variables */
 case calc_struct_update_istep:
+   actmat = &(mat[ele->mat-1]);
    if (container->isdyn && ele->proc == actintra->intra_rank)
    {
-   actmat = &(mat[ele->mat-1]);
    s8static_mass(ele,&actdata,actmat,estif_global,emass_global,NULL,container->kstep,0);
    dyn_ekin_local(ele,emass_global,container);
    }
