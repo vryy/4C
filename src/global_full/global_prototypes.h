@@ -843,6 +843,26 @@ void v2_init(
 	     INT *mnode, INT *mptri, INT *mpptri,
 	     INT *mface, INT *mpface, INT *medge, INT *mpedge
 	    );
+/*----------------------------------------------------------------------*
+ | ccarat_visual3.c                                        genk 01/04   |
+ *----------------------------------------------------------------------*/
+void vis3caf(INT numff, INT numaf, INT numsf);
+
+/*----------------------------------------------------------------------*
+ | ccarat_visual3.c                                        genk 01/04   |
+ *----------------------------------------------------------------------*/
+void vis3caf(INT numff, INT numaf, INT numsf);
+
+/*----------------------------------------------------------------------*
+ | visual_readflavares.c                                   genk 01/04   |
+ *----------------------------------------------------------------------*/
+void visual_readflaviares(FIELD   *actfield, 
+                          INT     *ntsteps,  
+		          ARRAY   *time_a,
+			  INT     *FIRSTSTEP,
+			  INT     *LASTSTEP,
+			  INT     *DSTEP	 
+		         ) ;
 /*!---------------------------------------------------------------------                                         
 \brief input of optimization data 
 

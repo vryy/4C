@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief postprocessing 
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -9,7 +9,7 @@ Maintainer: Steffen Genkinger
             0711 - 685-6127
 </pre>
 
-*----------------------------------------------------------------------*/
+------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -132,8 +132,6 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
          vis2caf(genprob.numff,genprob.numaf,genprob.numsf);
       else
          dserror("Visualisation of ale/struct problem not implemented yet!\n");
-/*      if(actnum==nums) vis2cas(nums);
-      if(actnum==numa) vis2caa(numa);               */
    } /* end switch(numfld) */   
 break;
 /*----------------------------------------------------------------------*/
@@ -142,9 +140,55 @@ break;
 #endif
 /*----------------------------------------------------------------------*/   
 case 3: /* 3D - Problem : Visualisation with VISUAL3 */
-   dserror("VISUAL3 not implemented yet!\n");
+/*----------------------------------------------------------------------*/
+#ifdef VISUAL3_PACKAGE
+/*----------------------------------------------------------------------*/
+   printf("\n");
+   printf("   Starting Visual3 filter ... \n");
+   printf("   ----------------------------\n");      
+/*---------------------------------------------- check number of fields */
+   switch (genprob.numfld)
+   {
+   case 1: /* single field problem */
+      actfield=&(field[0]);
+      if (actfield->fieldtyp==fluid)
+      {
+         printf("   Visualisation of a single field problem: FLUID\n");
+	 vis3caf(0,-1,-1); 
+      }
+      else if (actfield->fieldtyp==structure)
+      {
+         dserror("visualisation of structural problem not implemented yet!\n");
+      }
+      else if (actfield->fieldtyp==ale)
+      {
+         dserror("visualisation of ale problem not implemented yet!\n");
+      }
+   break;
+   default: /* multi field problem */
+      printf("\n");
+      printf("   Visualisation of a multi field problem:\n");
+      printf("   Number of fields: %d\n",genprob.numfld);
+      printf("\n");
+            
+      if (genprob.numsf>=0)
+      printf("   Actual number of STRUCTURE field:  %d\n",genprob.numsf); 
+      if (genprob.numff>=0)
+      printf("   Actual number of FLUID field:      %d\n",genprob.numff);
+      if (genprob.numaf>=0)
+      printf("   Actual number of ALE field:        %d\n",genprob.numaf);            
+      printf("\n");
+      printf("   Which field do you want to visualise?\n");
+      scanf("%d",&actnum);
+      if(actnum==genprob.numff) 
+         vis3caf(genprob.numff,genprob.numaf,genprob.numsf);
+      else
+         dserror("Visualisation of ale/struct problem not implemented yet!\n");
+   } /* end switch(numfld) */   
 break;
-
+#else
+dserror("VISUAL3 package is not compiled in!!!\n");
+#endif
 default:
    dserror("visualisation mode unknown!\n");
 } /* switch(genprob.visual) */

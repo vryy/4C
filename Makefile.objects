@@ -17,6 +17,7 @@ OBJS2	      = src/global_full/global_control.o \
 		src/global_full/cal_nlngemm_struct.o \
                 src/global_full/cal_static_service.o \
                 src/global_full/ccarat_visual2.o \
+                src/global_full/ccarat_visual3.o \
                 src/global_full/dyn_timecurve.o \
                 src/global_full/dyn_service.o \
                 src/global_full/map_node_find.o \

@@ -66,7 +66,7 @@ include ./Makefile.personal_path
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
 # -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
-#                      (add -lVisual2 -lX11 to INCLUDES!!!)
+# -DVISUAL3_PACKAGE    defines visualisation tool VISUAL3 (only in seriell)
 #--------------------------------------------------------------------
 # switch between sequentiell and parallel compilation by uncommenting 
 # the approbiate compilers:
@@ -115,6 +115,14 @@ FFLAGS        = -g -I/opt/mpi/include/
 #PROGRAMM      =  $(PROGRAM_NAME)fast
 #CFLAGS        = -D__HP__  +w1 +e -Aa -Ae -O +Onolimit  ${PFL}
 #FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
+#---------------------------------------------------- VISUAL2/VISUAL3
+# VISUAL2/VISUAL3 cannot linked together into one executable!!!
+OPENGL          = -L/opt/graphics/OpenGL/lib -lGLU -lGL 
+PEX5            = -L/opt/graphics/PEX5/lib -lPEX5 
+VISUAL3         = $(OPENGL) $(PEX5) -lVisual3 -lX11 -lXext -lXi
+VISUAL2         = -lVisual2 -lX11
+#VISUAL          = $(VISUAL3)
+VISUAL          =
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
 INCLUDES = -I/opt/mpi/include/ \
@@ -160,7 +168,7 @@ INCLUDES = -I/opt/mpi/include/ \
            -lblas \
            -lumfpack40_hpux10_32 \
            $(SPOOLES) \
-           -lPEX5 -lVisual2 -lX11
+           $(VISUAL) 
 # sparsekit is not used at the moment
 #           -lskit 
 # libHYPRE_superlu.a convlicts with libsuperlu_hppa.a

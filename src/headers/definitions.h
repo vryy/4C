@@ -72,7 +72,6 @@ typedef char      CHAR;
 #endif
 
 #ifdef CCA_APPEND_U
-#define dgesv               dgesv_
 #define dsytrf              dsytrf_
 #define dsytri              dsytri_
 #define dsytrs              dsytrs_
@@ -106,8 +105,25 @@ typedef char      CHAR;
 #define iveczero            iveczero_
 #define fsdoc               fsdoc_
 #define sspace              sspace_
-#define v2_init             v2_init_
+#define v2_init             v2_init__
+#define v2call              v2call_
+#define v2data              v2data_
+#define v2grid              v2grid_
+#define v2scal              v2scal_
+#define v2vect              v2vect_
+#define v2_cursor           v2_cursor_
+#define v2update            v2update_
+#define qat2v2              qat2v2_
+#define v3_init             v3_init__
+#define v3call              v3call_
+#define v3grid              v3grid_
+#define v3surface           v3surface_
+#define v3scal              v3scal_
+#define v3vect              v3vect_
+#define v3update            v3update_
+
 #endif
+
 #ifndef AZTEC_PACKAGE
 void dsytrf(char *uplo, INT *n, DOUBLE *a, INT *lda, INT *ipiv, DOUBLE *work, INT *lwork, INT *info);
 void dsytri(char *uplo, INT *n, DOUBLE *a, INT *lda, INT *ipiv, DOUBLE *work, INT *info);

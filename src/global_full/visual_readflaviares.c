@@ -9,9 +9,9 @@ Maintainer: Steffen Genkinger
             0711 - 685-6127
 </pre>
 
-*----------------------------------------------------------------------*/
+------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#ifdef VISUAL2_PACKAGE
+#if defined VISUAL2_PACKAGE || defined VISUAL3_PACKAGE
 /*----------------------------------------------------------- prototype */
 void vis_frfind(char string[]);
 

@@ -253,12 +253,6 @@ if (iscan!=0)
 } /* endif (iscan!=0) */
 
 /*----------------------------------------------- calculate vorticity */
-/* READ in decision from screen !
-
-/* idea for storing of vorticity:
-   amredef of node->sol and then store it there! *gg*                 */
-
-
 printf("\n");
 printf("   Do you want to calculate the vorticity? (0: no; 1: yes)\n");
 scanf("%d",&IVORT);
@@ -366,11 +360,16 @@ if (DATAFILE==0)
    }
 }
 /*------------------------------------------------- background colour */
+bgcolour=0;
 printf("\n");
-printf("   Background colour? (0: black   1: white)\n",bgcolour);
+printf("   Colours? \n");
+printf("   0: colours black background\n");
+printf("   1: colours white background\n");
+printf("   2: grey    white background\n");
 scanf("%d",&bgcolour);
-
-
+#ifdef SUSE73
+bgcolour+=10;
+#endif
 /*--------------------------------------------------- set some values */
 numele = actfield->dis[0].numele;
 numnp  = actfield->dis[0].numnp;
@@ -679,7 +678,7 @@ if (minvx==maxvx) maxvx=minvx+1.0;
 FLIMS[4][0]=minvx;
 FLIMS[4][1]=maxvx;
 
-if (minvx==maxvy) maxvy=minvy+1.0;
+if (minvy==maxvy) maxvy=minvy+1.0;
 FLIMS[5][0]=minvy;
 FLIMS[5][1]=maxvy;
 
@@ -1266,7 +1265,7 @@ char *charpointer;
 float t;
 
 #ifdef DEBUG 
-dstrc_enter("VSTRING");
+dstrc_enter("V2STRING");
 #endif
 
 switch(actfieldtyp)

@@ -49,7 +49,7 @@
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
 # -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
-#                      (add -lVisual2 -lX11 to INCLUDES!!!)
+# -DVISUAL3_PACKAGE    defines visualisation tool VISUAL3 (only in seriell)
 #--------------------------------------------------------------------
 #
 FXX=/opt/mpi/bin/mpif90

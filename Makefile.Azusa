@@ -44,7 +44,7 @@
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
 # -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
-#                      (add -lVisual2 -lX11 to INCLUDES!!!)
+# -DVISUAL3_PACKAGE    defines visualisation tool VISUAL3 (only in seriell)
 #
 #--------------------------------------------------------------------
 PFL	   =  -DAZUSA -DSIXTYFOUR -DPARALLEL -DD_SHELL8 -DD_BRICK1 -DD_FLUID -DS8CONTACT -DD_CONTACT \

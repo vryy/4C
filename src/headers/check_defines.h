@@ -78,4 +78,9 @@ Maintainer: Malte Neumann
 #if defined(FLUID3_ML) && !defined(D_FLUID3)
 #error "FLUID3_ML not possible without FLUID3."
 #endif
+
+/* no Visual2 with Visual3 */
+#if defined(VISUAL2_PACKAGE) && defined(VISUAL3_PACKAGE)
+#error "VISUAL2 not possible with VISUAL3."
+#endif
 /*----------------------------------------------------------------------*/

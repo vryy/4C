@@ -51,7 +51,7 @@ NUMCONT      1
 UPPSS        1
 SAVESTEP     1
 MAXTIME      1000.0
-NUMSTEP      10  
+NUMSTEP      30  
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        0.50
@@ -815,7 +815,7 @@ MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 1.0 1.0 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 0.0 100.0 
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
