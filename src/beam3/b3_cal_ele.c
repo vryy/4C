@@ -68,7 +68,7 @@ INT                 newval = 0;/* controls evaluation of new stresses    */
 const INT           numgpc = 3;/* number of gausss point coordinates */
 INT                 numeps = 6;/* number of nodal strains */
 INT                 ike       ;/* controls calculation of linear elastic element stiffness matrix (12x12) */
-const INT           max = MAXDOFPERNODE*MAXNOD_BEAM3;
+const INT           max = (MAXDOFPERNODE+2)*MAXNOD_BEAM3;
 
 DOUBLE              a,b;              /* a = element height, b = element width */ 
 DOUBLE              e1,e2,e3;         /* GP-coords */
@@ -228,6 +228,7 @@ case calc_struct_linstiff:
      b3_cal_sec(ele);
      ele->e.b3->alpha=0.;
      b3_cal_trn(ele,A);
+     amzero(&K_a);
      for (lr=0; lr<nir; lr++)
      {
         /*=============================== gaussian point and weight at it ===*/
@@ -256,34 +257,33 @@ case calc_struct_linstiff:
 	      /*------factor for integration wxr*wxs*wxt*det-----------------*/
 	      fac=facr*facs*fact*det;
 	      numeps=3;
-	      b3_keku(estif,bop,D,fac,numeledof+2*iel,numeps);
+	      b3_keku(K,bop,D,fac,numeledof+2*iel,numeps);
 	   }
 	}
      }     
      
      /*   local element stiffness matrix corresponds to global dofs,      */
      /*   so in case of hinges transformation to local dofs is needed.    */
-     amzero(&K_a);
-     math_matmattrndense(K,estif,A,numeledof,numeledof,numeledof,0,1.);
-     math_matmatdense(estif,A,K,numeledof,numeledof,numeledof,0,1.);
-     b3_con_dof(estif,HC,numeledof);
+     math_matmattrndense(KLA,K,A,numeledof,numeledof,numeledof,0,1.);
+     math_matmatdense(K,A,KLA,numeledof,numeledof,numeledof,0,1.);
+     b3_con_dof(K,HC,numeledof);
      /*----Reomve shear correction factor from torsional terms of estif------*/
      for (i=3; i<numeledof; i=i+6)
      {
-        for (j=3; j<numeledof; j=j+6) estif[i][j]=estif[i][j]*gs;
+        for (j=3; j<numeledof; j=j+6) K[i][j]=K[i][j]*gs;
      }          
      for (i=numeledof; i<numeledof+2*iel; i++)
      {
         for (j=0; j<numeledof+2*iel; j++)
 	{
-	   estif[i][j]=estif[i][j]*gs;
-	   if (i!=j) estif[j][i]=estif[i][j];
+	   K[i][j]=K[i][j]*gs;
+	   if (i!=j) K[j][i]=K[i][j];
 	}
      }
      /*----statical condensation of warping dofs-----------------------------*/
-     b3_con_warp(estif,iel,numeledof+2*iel);
-     math_mattrnmatdense(K,A,estif,numeledof,numeledof,numeledof,0,1.);
-     math_matmatdense(estif,K,A,numeledof,numeledof,numeledof,0,1.);
+     b3_con_warp(K,iel,numeledof+2*iel);
+     math_mattrnmatdense(KLA,A,K,numeledof,numeledof,numeledof,0,1.);
+     math_matmatdense(estif,KLA,A,numeledof,numeledof,numeledof,0,1.);
 
   }	
 break;
@@ -425,6 +425,7 @@ case calc_struct_nlnstiff:
    ele->e.b3->alpha=0.;
    b3_cal_trn(ele,A);
    b3_edisp(ele,edisp);
+   amzero(&K_a);
    for (lr=0; lr<nir; lr++)
    {
       /*=============================== gaussian point and weight at it ===*/
@@ -458,20 +459,29 @@ case calc_struct_nlnstiff:
 	    math_mattrnvecdense(force,bop,intforce,numeledof,3,1,fac);
 	    /*------factor for integration wxr*wxs*wxt*det-----------------*/
   	    fac=facr*facs*fact*det;
-  	    b3_keku(estif,bop,D,fac,numeledof+2*iel,numeps);
+  	    b3_keku(K,bop,D,fac,numeledof+2*iel,numeps);
   	 }
       }
    }
    /*----statical condensation of warping dofs-----------------------------*/
-   b3_con_warp(estif,iel,numeledof+2*iel);
- 
+   b3_con_warp(K,iel,numeledof+2*iel);
    if (HC[0] != 0) 
    {        
       /*   local element stiffness matrix corresponds to global dofs,      */
       /*   so in case of hinges transformation to local dofs is needed.    */
-      math_matmatdense(K,A,estif,numeledof,numeledof,numeledof,0,1.);
-      b3_con_dof(K,HC,numeledof);
-      math_mattrnmatdense(estif,A,K,numeledof,numeledof,numeledof,0,1.);
+      math_matmatdense(KLA,A,K,numeledof,numeledof,numeledof,0,1.);
+      b3_con_dof(KLA,HC,numeledof);
+      math_mattrnmatdense(estif,A,KLA,numeledof,numeledof,numeledof,0,1.);
+   }
+   else
+   {
+     for (i=0; i<numeledof; i++)
+     {
+       for (j=0; j<numeledof; j++)
+       {
+         estif[i][j] = K[i][j];
+       }
+     }
    }   
 break;
 
