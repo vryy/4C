@@ -203,14 +203,13 @@ picture 8.2c). The shared director is later put back on the element array
 \param  DOUBLE **dir_list (i) list of different directors at this point
 \param  INT      numa3    (i) number of directors at this point
 \param  DOUBLE  *a3       (o) shared director
-\param  DOUBLE   h2       (i) thickness of actele -> evaluation of shared director of thickness of adjacent elements differ from each other
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9init() [s9_init.c]
 
 *----------------------------------------------------------------------*/
-void s9averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3, DOUBLE h2)
+void s9averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3)
 {
 INT        i;
 DOUBLE     averdir[3];

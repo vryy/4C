@@ -60,17 +60,16 @@ extern struct _MULTIMAT  *multimat;
 This routine writes the data needed to restart the shell9 element. 
 </pre>
 \param  ELEMENT  *actele   (i) actual element
-\param  MATERIAL *mat      (i)  the material structure
 \param  INT       nhandle  (i) size of handles
 \param  long int *handles  ( ) unique handle returned by the pss-system 
-\param  INT       init    (i) flag for initializing arrays
+\param  INT       init     (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: shell9()   [s9_main.c]
 
 *----------------------------------------------------------------------*/
-void s9_write_restart(ELEMENT *actele, MATERIAL  *mat, INT nhandle, long int *handles, INT init)
+void s9_write_restart(ELEMENT *actele, INT nhandle, long int *handles, INT init)
 {
 INT j,n,k,kl,ml,ierr;
 INT size_j;
@@ -257,10 +256,9 @@ return;
 This routine reads the data needed to restart the shell9 element. 
 </pre>
 \param  ELEMENT  *actele   (i) actual element
-\param  MATERIAL *mat      (i)  the material structure
 \param  INT       nhandle  (i) size of handles
 \param  long int *handles  ( ) unique handle returned by the pss-system 
-\param  INT       init    (i) flag for initializing arrays
+\param  INT       init     (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -272,7 +270,7 @@ This routine reads the data needed to restart the shell9 element.
  | read the data needed to restart this element                         |
  | modified from shell8                                    sh 02/03     |
  *----------------------------------------------------------------------*/
-void s9_read_restart(ELEMENT *actele, MATERIAL  *mat, long int *handles, INT init)
+void s9_read_restart(ELEMENT *actele, long int *handles, INT init)
 {
 INT j,n,k,kl,ml,ierr;
 INT size_j;

@@ -157,7 +157,7 @@ void s9a3ref_extern(DOUBLE   *funct,
                     DOUBLE  **deriv,
                     DOUBLE  **a3ref, 
                     ELEMENT  *ele);
-void s9averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3, DOUBLE h2);
+void s9averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3);
 /*----------------------------------------------------------------------*
  |  s9_ans.c                                            m.gee 03/02    |
  *----------------------------------------------------------------------*/
@@ -454,8 +454,8 @@ void s9_out_gid_sol_str_unsmo(FILE *out,FIELD *actfield,INT place);
 /*----------------------------------------------------------------------*
  |  s9_restart.c                                         m.gee 05/02    |
  *----------------------------------------------------------------------*/
-void s9_write_restart(ELEMENT *actele, MATERIAL  *mat, INT nhandle, long int *handles, INT init);
-void s9_read_restart(ELEMENT *actele, MATERIAL  *mat, long int *handles, INT init);
+void s9_write_restart(ELEMENT *actele, INT nhandle, long int *handles, INT init);
+void s9_read_restart(ELEMENT *actele, long int *handles, INT init);
 /*----------------------------------------------------------------------*
  |  s9_static_keug.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/

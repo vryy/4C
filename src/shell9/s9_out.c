@@ -217,7 +217,6 @@ INT           node_ID;            /*nodal ID*/
 INT           is_edge;            /*is_edge=1: actnode is a edge node to the element, else middle node*/
 FIELD        *actfield;
 NODE         *actnode;
-ELEMENT      *actele;
 /*-----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_out_gid_allcoords");

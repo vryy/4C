@@ -220,7 +220,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
  /*----------- do nothing if there is only one shell9 element to actnode */                  
     if (numa3 <= 1) continue;                                                                
  /*------------------------------------------------ make shared director */                  
-    s9averdir(collaverdir,numa3,a3,h2);                                                      
+    s9averdir(collaverdir,numa3,a3);                                                      
  /*---------------------------------put shared director back to elements */                  
     for (j=0; j<actnode->numele; j++)                                                        
     {                                                                                        

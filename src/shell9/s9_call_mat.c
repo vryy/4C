@@ -79,18 +79,18 @@ case m_stvenant:/*-------------------------- ST.VENANT-KIRCHHOFF-MATERIAL */
    s9_eps(strain,gmkovc,gmkovr); 
    
    /*get material matrix directly in curvilinear coordsys*/
-/*   s9_mat_linel(multimat->m.stvenant,gmkonr,C);*/
+   s9_mat_linel(multimat->m.stvenant,gmkonr,C);
 
 /********** for TESTING issues ************************/
    /*calculate C-Matrix in orthonormal basis*/
-   mat_el_iso(multimat->m.stvenant->youngs,
+/*   mat_el_iso(multimat->m.stvenant->youngs,
               multimat->m.stvenant->possionratio,
-              C);
+              C);*/
    /*sort C-Matrix from "brick" to "shell9" */ 
-   s9_Msort_bs9(C); 
+/*   s9_Msort_bs9(C);*/ 
 
    /*transform the C-Matrix from cartesian to curvilinear*/
-   s9_Ccacu_sym(C,gkonr);
+/*   s9_Ccacu_sym(C,gkonr);*/
    
    /*do modification of matrix due to shear correction*/
 /*   s9shear_cor(C,1.2); */

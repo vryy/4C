@@ -39,7 +39,6 @@ void w1_call_mat(ELEMENT   *ele,
 {
 INT i;
 INT j;
-DOUBLE disd2;
 DOUBLE disd[4];
 /*----------------------------------------------------------------------*/
 DOUBLE strain[6];
