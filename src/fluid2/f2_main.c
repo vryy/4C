@@ -124,6 +124,15 @@ case calc_fluid_stress:
     f2_stress(container->str,viscstr,data,ele,container->is_relax);
 break;
 
+/*------------------- calculate fluid stresses for lift&drag calculation */
+case calc_fluid_liftdrag:
+   if (ele->proc == actintra->intra_rank)
+   {
+      f2_stress(container->str,viscstr,data,ele,container->is_relax);
+      f2_calliftdrag(ele,data,container);
+   }
+break;
+
 /*--------------------------------- calculate curvature at free surface */
 case calc_fluid_curvature:
    f2_curvature(data,dynvar,ele,actintra->intra_rank);
