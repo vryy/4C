@@ -22,8 +22,8 @@ int    i,j;
 int    nodeid;
 char  *colpointer;
 char   buffer[50];
-int    itmp[50];
-double dtmp[50];
+int    itmp[MAXDOFPERNODE];
+double dtmp[MAXDOFPERNODE];
 double eps=1.0E-08;
 NODE  *actnode;
 #ifdef DEBUG 
@@ -71,59 +71,70 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (ierr!=1) dserror("cannot read COND_STRUCT_NODE from file");
    }
 /*------------- read whether its a neum condition or a dirich condition */    
-   for (i=0; i<50; i++) { itmp[i]=0; dtmp[i]=0.0; }
-   frchk("Neum",&ierr);
-   if (ierr==1) 
+   for (i=0; i<MAXDOFPERNODE; i++) { itmp[i]=0; dtmp[i]=0.0; }
+   frchk("DN",&ierr);
+   if (!ierr) dserror("Cannot read structural nodal conditions");
+   colpointer = strstr(allfiles.actplace,"DN");
+   colpointer++;
+   colpointer++;
+   colpointer++;
+/*------------------------------------------------ read the ONOFF flags */   
+   frint_n("ONOFF" ,&(itmp[0]),genprob.numdf,&ierr);
+   if (!ierr) dserror("Cannot read structural nodal conditions");
+/*----------------------------------------------------- read the values */   
+   frdouble_n("VAL",&(dtmp[0]),genprob.numdf,&ierr);
+   if (!ierr) dserror("Cannot read structural nodal conditions");
+/*------------------------- now loop through the types of the condition */   
+   for (i=0; i<genprob.numdf; i++)
    {
-      actnode->c->isneum=1;
-      if (actnode->c->neum_onoff.a.iv==NULL)
+      if (itmp[i]) /*--------------------- the i'th flag is switched on */
       {
-         amdef("neum1",&(actnode->c->neum_onoff),genprob.numdf,1,"IV");
-         amzero(&(actnode->c->neum_onoff));
-         amdef("neum2",&(actnode->c->neum_val)  ,genprob.numdf,1,"DV");
-         amzero(&(actnode->c->neum_val));
+         if (strncmp(colpointer,"Neum",4)==0) /* Neumann type */
+         {
+            actnode->c->isneum=1;
+            if (actnode->c->neum_onoff.a.iv==NULL)
+            {
+               amdef("neum1",&(actnode->c->neum_onoff),genprob.numdf,1,"IV");
+               amzero(&(actnode->c->neum_onoff));
+               amdef("neum2",&(actnode->c->neum_val)  ,genprob.numdf,1,"DV");
+               amzero(&(actnode->c->neum_val));
+            }
+            actnode->c->neum_onoff.a.iv[i]=itmp[i];
+            actnode->c->neum_val.a.dv[i] += dtmp[i];
+            colpointer=colpointer+5;
+            continue;
+         }
+         if (strncmp(colpointer,"Dirich",6)==0) /* Dirichlet type */
+         {
+            actnode->c->isdirich=1;
+            if (actnode->c->dirich_onoff.a.iv==NULL)
+            {
+               amdef("dirich1",&(actnode->c->dirich_onoff),genprob.numdf,1,"IV");
+               amzero(&(actnode->c->dirich_onoff));
+               amdef("dirich2",&(actnode->c->dirich_val)  ,genprob.numdf,1,"DV");
+               amzero(&(actnode->c->dirich_val));
+            }
+            actnode->c->dirich_onoff.a.iv[i]=itmp[i];
+            actnode->c->dirich_val.a.dv[i] += dtmp[i];
+            colpointer=colpointer+7;
+            continue;
+         }
       }
-      frint_n("ONOFF" ,&(itmp[0]),genprob.numdf,&ierr);
-      frdouble_n("VAL",&(dtmp[0]),genprob.numdf,&ierr);
-      
-      for (j=0; j<genprob.numdf; j++)
+      else /*---------------------------- the i'th flag is switched off */
       {
-         if (actnode->c->neum_onoff.a.iv[j]==0) 
-             actnode->c->neum_onoff.a.iv[j] = itmp[j];
-      }
-      for (j=0; j<genprob.numdf; j++)
-      {
-         if (FABS(actnode->c->neum_val.a.dv[j])<eps)
-             actnode->c->neum_val.a.dv[j]   = dtmp[j];
+         if (strncmp(colpointer,"Neum",4)==0) 
+         {
+            colpointer=colpointer+5;
+            continue;
+         }
+         if (strncmp(colpointer,"Dirich",6)==0) 
+         {
+            colpointer=colpointer+7;
+            continue;
+         }
       }
    }
-   frchk("Dirich",&ierr);
-   if (ierr==1) 
-   {
-      actnode->c->isdirich=1;
-      if (actnode->c->dirich_onoff.a.iv==NULL)
-      {
-         amdef("dirich1",&(actnode->c->dirich_onoff),genprob.numdf,1,"IV");
-         amzero(&(actnode->c->dirich_onoff));
-         amdef("dirich2",&(actnode->c->dirich_val)  ,genprob.numdf,1,"DV");
-         amzero(&(actnode->c->dirich_val));
-      }
-      frint_n("ONOFF" ,&(itmp[0]),genprob.numdf,&ierr);
-      frdouble_n("VAL",&(dtmp[0]),genprob.numdf,&ierr);
-      
-      for (j=0; j<genprob.numdf; j++)
-      {
-         if (actnode->c->dirich_onoff.a.iv[j]==0) 
-             actnode->c->dirich_onoff.a.iv[j] = itmp[j];
-      }
-      for (j=0; j<genprob.numdf; j++)
-      {
-         if (FABS(actnode->c->dirich_val.a.dv[j])<eps)
-             actnode->c->dirich_val.a.dv[j]   = dtmp[j];
-      }
-   }
-   
-   frread();
+   frread();/* read next line of file */
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
