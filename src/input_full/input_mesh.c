@@ -9,6 +9,8 @@
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
+#include "../ale3/ale3.h"
+#include "../ale2/ale2.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

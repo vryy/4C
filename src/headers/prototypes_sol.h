@@ -1075,10 +1075,9 @@ void solserv_dmax_distvec(
 			  int ab        /* flag */
 			  );
 /*----------------------------------------------------------------------*
- | ale_calelm.c                                               mn 06/02  |
+ | ale_dyn_control.c                                          mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_calelm(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, 
-                INTRA *actintra, int sysarray1, int sysarray2, CALC_ACTION  *action);
+void dyn_ale(void);
 /*----------------------------------------------------------------------*
  | ale_rhs.c                                                  mn 06/02  |
  *----------------------------------------------------------------------*/

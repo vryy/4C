@@ -104,10 +104,6 @@ void ale_setdirich(FIELD  *actfield, STRUCT_DYNAMIC *sdyn);
 void ale_caldirich(ELEMENT *actele, DOUBLE *fullvec, INT dim,
 		   ARRAY *estif_global);
 /*----------------------------------------------------------------------*
- | ale_dyn_control.c                                         mn 06/02  |
- *----------------------------------------------------------------------*/
-void dyn_ale();
-/*----------------------------------------------------------------------*
  | ale3_funct_deriv.c                                         mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_funct_deriv(DOUBLE *funct, DOUBLE **deriv, DOUBLE r, DOUBLE s,

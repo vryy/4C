@@ -6,6 +6,7 @@ linear stiffness for the 2d ale element
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
+#include "../ale3/ale3.h"
 #include "ale2.h"
 
 /*! 

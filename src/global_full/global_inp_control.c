@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

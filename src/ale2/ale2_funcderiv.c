@@ -60,6 +60,13 @@ sp = 1.0+s;
 sm = 1.0-s;
 r2 = 1.0-rr;
 s2 = 1.0-ss;
+rh  = q12*r;
+sh  = q12*s;
+rs  = rh*sh;
+rhp = r+q12;
+rhm = r-q12;
+shp = s+q12;
+shm = s-q12;
 switch(typ)
 {
 /*------------------------------------------------ rectangular elements */
@@ -124,13 +131,6 @@ case quad8:/*------------- quadratic interpolation without central node */
    }
 break;
 case quad9:/*---------------- quadratic interpolation with central node */
-   rh  = q12*r;
-   sh  = q12*s;
-   rs  = rh*sh;
-   rhp = r+q12;
-   rhm = r-q12;
-   shp = s+q12;
-   shm = s-q12;
    funct[0] = rs*rp*sp;
    funct[1] =-rs*rm*sp;
    funct[2] = rs*rm*sm;
