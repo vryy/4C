@@ -368,7 +368,7 @@ ctranspufull  = amdef("ctranspufull",&ctranspufull_a,actfield->dis[1].numdf,1,"D
 amzero(&ctranspufull_a);
 
 /*---------------------------- allocate one vector for storing the time */
-if (ioflags.fluid_vis_file==1 )
+if (ioflags.fluid_vis==1 )
 amdef("time",&time_a,1000,1,"DV");
 
 /*---------------------------------------------- initialise fluid field */
@@ -418,10 +418,11 @@ alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
 calinit(actfield,actpart,action,&container);
 
 /*-------------------------------------- print out initial data to .out */
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+if (ioflags.output_out==1 && ioflags.fluid_sol==1)
+  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*------------------------------- print out initial data to .flavia.res */
-if (ioflags.fluid_sol_gid==1 && par.myrank==0)
+if (ioflags.output_gid==1 && ioflags.fluid_sol==1 && par.myrank==0)
 {
    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
@@ -742,14 +743,14 @@ pssstep++;
 resstep++;
 
 /*---------------------------------------------- write solution to .out */
-if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
+if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 {
    outstep=0;
    out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 }
 
 /*--------------------------------------- write solution to .flavia.res */
-if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0)
+if (resstep==fdyn->upres && ioflags.output_gid==1  &&ioflags.fluid_sol==1 && par.myrank==0)
 {
    resstep=0;
    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
@@ -757,7 +758,7 @@ if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0)
 }
 
 /*---------------------------------------------- write solution to .pss */
-if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1)
+if (pssstep==fdyn->uppss && ioflags.fluid_vis==1)
 {
    pssstep=0;
    /*--------------------------------------------- store time in time_a */
@@ -780,11 +781,11 @@ end:
  *======================================================================*/
 if (pssstep==0) actpos--;
 /*------------------------------------- print out solution to .out file */
-if (outstep!=0 && ioflags.fluid_sol_file==1)
+if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1)
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*------------------------------------ print out solution to 0.pss file */
-if (ioflags.fluid_vis_file==1 && par.myrank==0)
+if (ioflags.fluid_vis==1 && par.myrank==0)
 {
    if (pssstep!=0)
    {
@@ -803,7 +804,7 @@ solserv_del_vec(&sol_v,1);
 solserv_del_vec(&sol_p,1);
 solserv_del_vec(&work1,1);
 solserv_del_vec(&work2,1);
-if (par.myrank==0 && ioflags.fluid_vis_file==1 )
+if (par.myrank==0 && ioflags.fluid_vis==1 )
 amdel(&time_a);
 amdel(&fvelrhs1_a);
 amdel(&fvelrhs2_a);

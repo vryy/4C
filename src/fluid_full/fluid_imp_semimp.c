@@ -228,7 +228,7 @@ str         = str_none;
 if (fdyn->liftdrag!=0)
   str         = str_liftdrag;
 
-if (ioflags.fluid_stress_gid==1)
+if (ioflags.fluid_stress==1)
   str         = str_all;
 
 
@@ -387,26 +387,35 @@ fluid_cal_normal(actfield,1,action);
 fluid_locsys(actfield,fdyn);
 
 /*-------------------------------------- print out initial data to .out */
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+if (ioflags.output_out==1 && ioflags.fluid_sol==1 && par.myrank==0)
+  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*------------------------------- print out initial data to .flavia.res */
-if (ioflags.fluid_sol_gid==1 && par.myrank==0)
+if (ioflags.output_gid==1 && par.myrank==0)
 {
-  out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-  out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-}
-if (ioflags.fluid_stress_gid==1 && par.myrank==0)
-{
-  out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+  if (ioflags.fluid_sol==1)
+  {
+    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+  }
+  if (ioflags.fluid_stress==1)
+  {
+    out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+  }
 }
 
 /*-------------------------------------------- write solution to binary */
 #ifdef BINIO
-if (ioflags.fluid_sol_gid==1) {
-  out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_PRESSURE);
-}
-if (ioflags.fluid_stress_gid==1) {
-  out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_STRESS);
+if (ioflags.output_bin==1)
+{
+  if (ioflags.fluid_sol==1)
+  {
+    out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_PRESSURE);
+  }
+  if (ioflags.fluid_stress==1)
+  {
+    out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_STRESS);
+  }
 }
 #endif
 
@@ -647,7 +656,7 @@ if (fdyn->liftdrag>0)
 
 
 /* stress computation */
-if (ioflags.fluid_stress_gid==1)
+if (ioflags.fluid_stress==1)
 {
   container.str = str;
   *action = calc_fluid_stress;
@@ -687,9 +696,10 @@ restartstep++;
 if (restartstep==fdyn->uprestart)
 {
    restartstep=0;
-   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 #ifdef BINIO
    restart_write_bin_fluiddyn(&out_context,fdyn);
+#else
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 #endif
 }
 
@@ -704,16 +714,15 @@ if (fdyn->mlfem==1) fluid_smcopy(actpart);
 #endif
 
 /*--------------------------------------- write solution to .flavia.res */
-if (resstep==fdyn->upres && par.myrank==0)
+if (resstep==fdyn->upres && par.myrank==0 && ioflags.output_gid==1)
 {
-  /*out_checkfilesize(1);*/
 
-  if(ioflags.fluid_sol_gid==1)
+  if(ioflags.fluid_sol==1)
   {
     out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
     out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
   }
-  if(ioflags.fluid_stress_gid==1)
+  if(ioflags.fluid_stress==1)
   {
     out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
   }
@@ -721,12 +730,15 @@ if (resstep==fdyn->upres && par.myrank==0)
 
 /*--------------------------------------- write solution to binary */
 #ifdef BINIO
-if (resstep==fdyn->upres) {
+if (resstep==fdyn->upres && ioflags.output_bin==1)
+{
 
-  if (ioflags.fluid_sol_gid==1) {
+  if (ioflags.fluid_sol==1)
+  {
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_PRESSURE);
   }
-  if (ioflags.fluid_stress_gid==1) {
+  if (ioflags.fluid_stress==1)
+  {
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_STRESS);
   }
 }
@@ -737,7 +749,7 @@ if (resstep==fdyn->upres) {
 }
 
 /*---------------------------------------------- write solution to .out */
-if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
+if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 {
    outstep=0;
    out_sol(actfield,actpart,actintra,fdyn->step,actpos);
@@ -767,8 +779,8 @@ if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
  *======================================================================*/
 if (pssstep==0) actpos--;
 /*------------------------------------- print out solution to .out file */
-if (outstep!=0 && ioflags.fluid_sol_file==1)
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1)
+  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*---------------------------------- print total CPU-time to the screen */
 #ifdef PARALLEL
@@ -808,8 +820,8 @@ destroy_bin_out_field(&out_context);
 /*--------------------------------------------------- cleaning up phase */
 amdel(&ftimerhs_a);
 amdel(&fiterhs_a);
-if (ioflags.fluid_vis_file==1 )
-solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
+if (ioflags.fluid_vis==1 )
+  solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
 /*----------------------------------------------------------------------*/

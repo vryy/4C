@@ -284,7 +284,7 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL
-if (ioflags.ale_disp_gid==1)
+if (ioflags.ale_disp==1)
 {
   if (par.myrank==0)  out_gid_domains(actfield);
 }
@@ -330,7 +330,7 @@ solver_control(
    co-sys, so transform DBC nodes to xyz*                               */
 locsys_trans_sol_dirich(actfield,0,1,0,0);
 
-/*-------------------------allreduce the result and put it to the nodes */
+/* allreduce the result and put it to the nodes */
 solserv_result_incre(
                      actfield,
                      actintra,
@@ -341,19 +341,28 @@ solserv_result_incre(
                      0
                     );
 
-/*--------------------------------- solution has to be in XYZ co-system */
+/* solution has to be in XYZ co-system */
 locsys_trans_sol(actfield,0,1,0,1);
 
-/*------------------- copy from nodal sol_increment[0][j] to sol[0][j] */
+/* copy from nodal sol_increment[0][j] to sol[0][j] */
 solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,0,0);
 
-/*------------------------------------------- print out results to .out */
-if (ioflags.ale_disp_file==1)
-   out_sol(actfield,actpart,actintra,adyn->step,0);
-if (par.myrank==0 && ioflags.ale_disp_gid==1)
-   out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
-/*--------------------------------------------------------------------- */
-/*------------------------------------------ measure time for this step */
+
+/* print out results */
+if (ioflags.ale_disp==1)
+{
+  if (ioflags.output_out==1)
+  {
+    out_sol(actfield,actpart,actintra,adyn->step,0);
+  }
+  if (par.myrank==0 && ioflags.output_gid==1)
+  {
+    out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
+  }
+}
+
+
+/* measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
 {
@@ -501,7 +510,7 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL
-if (ioflags.struct_disp_file==1)
+if (ioflags.ale_disp==1)
 {
   if (par.myrank==0)  out_gid_domains(actfield);
 }
@@ -590,13 +599,22 @@ solserv_result_incre(
 solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
 solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
-/*------------------------------------------- print out results to .out */
-if (ioflags.ale_disp_file==1)
+
+
+/* print out results */
+if (ioflags.ale_disp==1)
 {
+  if (ioflags.output_out==1)
+  {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0)
+  }
+  if (par.myrank==0 && ioflags.output_gid==1)
+  {
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
+  }
 }
+
+
 /*--------------------------------------- do mesh quality statistics ---*/
 plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
@@ -756,7 +774,7 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL
-if (ioflags.struct_disp_file==1)
+if (ioflags.ale_disp==1)
 {
   if (par.myrank==0)  out_gid_domains(actfield);
 }
@@ -886,13 +904,22 @@ solserv_result_incre(actfield,
 solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
 solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
-/*------------------------------------------- print out results to .out */
-if (ioflags.ale_disp_file==1)
+
+
+/* print out results */
+if (ioflags.ale_disp==1)
 {
+  if (ioflags.output_out==1)
+  {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0)
+  }
+  if (par.myrank==0 && ioflags.output_gid==1)
+  {
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
+  }
 }
+
+
 /*--------------------------------------- do mesh quality statistics ---*/
 plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
@@ -1042,7 +1069,7 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL
-if (ioflags.struct_disp_file==1)
+if (ioflags.ale_disp==1)
 {
   if (par.myrank==0)  out_gid_domains(actfield);
 }
@@ -1129,13 +1156,22 @@ solserv_result_incre(
 solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
 solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
-/*------------------------------------------- print out results to .out */
-if (ioflags.ale_disp_file==1)
+
+
+/* print out results */
+if (ioflags.ale_disp==1)
 {
+  if (ioflags.output_out==1)
+  {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0)
+  }
+  if (par.myrank==0 && ioflags.output_gid==1)
+  {
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
+  }
 }
+
+
 /*--------------------------------------- do mesh quality statistics ---*/
 plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
@@ -1288,7 +1324,7 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL
-if (ioflags.struct_disp_file==1)
+if (ioflags.ale_disp==1)
 {
   if (par.myrank==0)  out_gid_domains(actfield);
 }
@@ -1374,13 +1410,22 @@ solserv_result_incre(
 solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
 solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
-/*------------------------------------------- print out results to .out */
-if (ioflags.ale_disp_file==1)
+
+
+/* print out results */
+if (ioflags.ale_disp==1)
 {
+  if (ioflags.output_out==1)
+  {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0)
+  }
+  if (par.myrank==0 && ioflags.output_gid==1)
+  {
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
+  }
 }
+
+
 /*--------------------------------------- do mesh quality statistics ---*/
 plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */

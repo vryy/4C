@@ -818,35 +818,35 @@ fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
 fluid_copysol_tu(actfield,3,actpos,1);
 
-if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
+if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 {
-   outstep=0;
+  outstep=0;
 
-/*-------- calculate wall shear velocity and c_f (for TURBULENCE MODEL) */
-   fdyn->washvel  = ZERO;
-   container.actndis=0;
-   *action = calc_fluid_shearvelo;
-   container.nii= 0;
-   container.nim= 0;
-   container.nif= 0;
-   calelm(actfield,actsolv,actpart,actintra,k_array,-1,
-          &container,action);
+  /*-------- calculate wall shear velocity and c_f (for TURBULENCE MODEL) */
+  fdyn->washvel  = ZERO;
+  container.actndis=0;
+  *action = calc_fluid_shearvelo;
+  container.nii= 0;
+  container.nim= 0;
+  container.nif= 0;
+  calelm(actfield,actsolv,actpart,actintra,k_array,-1,
+      &container,action);
 #ifdef PARALLEL
-fluid_reduceshstr(actintra,actfield);
+  fluid_reduceshstr(actintra,actfield);
 #endif
-if (par.myrank==0) printf("wall shear velocity: %10.3E \n",fdyn->washvel);
+  if (par.myrank==0) printf("wall shear velocity: %10.3E \n",fdyn->washvel);
 
-/*------------------------------------------------ print out to .out */
- out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-/*------------------------------------------------ print out to .tur */
- out_fluidtu(actfield,actintra,fdyn->step,actpos);
+  /*------------------------------------------------ print out to .out */
+  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+  /*------------------------------------------------ print out to .tur */
+  out_fluidtu(actfield,actintra,fdyn->step,actpos);
 
 #ifdef PARALLEL
-fluid_nullshstr(actintra,actpart,actfield);
+  fluid_nullshstr(actintra,actpart,actfield);
 #endif
 }
 
-if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
+if (pssstep==fdyn->uppss && ioflags.fluid_vis==1 && par.myrank==0)
 {
    pssstep=0;
 /*----------------------------------------------- store time in time_a */
@@ -883,12 +883,13 @@ if (kapomega_yeah==0 && steady==1)
  *======================================================================*/
 if (pssstep==0) actpos--;
 /*------------------------ print out solution to .out and to .tur file */
-if (outstep!=0 && ioflags.fluid_sol_file==1){
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
- out_fluidtu(actfield,actintra,fdyn->step,actpos);}
+if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1){
+  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+  out_fluidtu(actfield,actintra,fdyn->step,actpos);
+}
 
 /*----------------------------- print out solution to 0.flavia.res file */
-if (ioflags.fluid_sol_gid==1 && par.myrank==0)
+if (ioflags.output_gid==1 && ioflags.fluid_sol==1 && par.myrank==0)
 {
     for(i=0;i<actpos+1;i++)
     {
@@ -898,7 +899,7 @@ if (ioflags.fluid_sol_gid==1 && par.myrank==0)
 }
 
 /*------------------------------------ print out solution to 0.pss file */
-if (ioflags.fluid_vis_file==1 && par.myrank==0)
+if (ioflags.fluid_vis==1 && par.myrank==0)
 {
    if (pssstep!=0)
    {
@@ -940,7 +941,7 @@ amdel(&ftimerhs_pro_kappa_a);
 amdel(&ftimerhs_pro_omega_a);
 amdel(&fiterhs_a);
 
-if (par.myrank==0 && ioflags.fluid_vis_file==1)
+if (par.myrank==0 && ioflags.fluid_vis==1)
 amdel(&time_a);
 
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
