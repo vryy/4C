@@ -34,12 +34,12 @@ if the load is applied on the surface of the shell.
 \param  DOUBLE   *funct   (i) shape functions at GP
 \param  DOUBLE  **deriv   (i) shape function derivatives at GP 
 \param  DOUBLE  **x       (i) coordinates of nodal points (global coordinate system)
-\param  DOUBLE  **xjm     (i) jacobian matrix
+\param  DOUBLE  **xjm     (o) jacobian matrix
 \param  DOUBLE   *hte     (i) thickness of shell at nodal points
-\param  DOUBLE  **a3r     (i) normed (not shared) director in ref/cur config. (->s9a3ref_extern)
+\param  DOUBLE ***a3r     (i) normed (not shared) director in ref/cur config. (->s9a3ref_extern)
 \param  DOUBLE    e3      (i) thickness direction of shell (1.0=top; 0.0=mit; -1.0=bot)
 \param  INT       iel     (i) number of nodes to this element
-\param  DOUBLE   *deta    (i) Determinant of jacobian
+\param  DOUBLE   *deta    (o) Determinant of jacobian
 \param  INT       init    (i) flag for initializing arrays
 \param  INT       num_klay(i) number of kinematic layers to this element
 \param  DOUBLE   *klayhgt (i) hight of kin layer in % of total thickness of shell 
