@@ -38,7 +38,7 @@ void solver_az_msr(
 #ifdef AZTEC_PACKAGE
 INT         i;
 INT         dim;
-INT         reuse;
+/* INT         reuse; */
 INT         azname;
 AZVAR      *azvar;
 
@@ -50,7 +50,7 @@ ARRAY       tmpsol_a;
 DOUBLE     *tmprhs;
 ARRAY       tmprhs_a;
 
-DOUBLE      l2norm;
+/* DOUBLE      l2norm; */
 #ifdef DEBUG 
 dstrc_enter("solver_az_msr");
 #endif
