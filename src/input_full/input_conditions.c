@@ -158,17 +158,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }  */
-   /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the dirichlet conditions */ 
+   /*---------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdnode->dirich->dirich_onoff));
+      amzero(&(actdnode->dirich->dirich_val));
+      amzero(&(actdnode->dirich->curve));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdnode->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdnode->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
    /*---------------------------------- read the curvenumbers or "none" */
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       ierr=sscanf(colptr," %s ",buffer);   
       dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
@@ -264,17 +274,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }         */
-   /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the dirichlet conditions */ 
+   /*---------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdline->dirich->dirich_onoff));
+      amzero(&(actdline->dirich->dirich_val));
+      amzero(&(actdline->dirich->curve));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdline->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdline->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
    /*---------------------------------- read the curvenumbers or "none" */
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       ierr=sscanf(colptr," %s ",buffer);
       dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
@@ -370,17 +390,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }   */
-   /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the dirichlet conditions */ 
+   /*---------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdsurf->dirich->dirich_onoff));
+      amzero(&(actdsurf->dirich->dirich_val));
+      amzero(&(actdsurf->dirich->curve));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdsurf->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdsurf->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
    /*----------------------------------- read the curvenumber or "none" */
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       ierr=sscanf(colptr," %s ",buffer);
       dsassert(ierr==1,"Cannot read design-surf dirichlet conditions");
@@ -476,17 +506,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }  */
-   /*---- now read the MAXDOFPERNODE flags for the dirichlet conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the dirichlet conditions */ 
+   /*---------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdvol->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV"); 
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdvol->dirich->dirich_onoff));
+      amzero(&(actdvol->dirich->dirich_val));
+      amzero(&(actdvol->dirich->curve));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdvol->dirich->dirich_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdvol->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
    /*----------------------------------- read the curvenumber or "none" */
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
         ierr=sscanf(colptr," %s ",buffer);
         dsassert(ierr==1,"Cannot read design-vol dirichlet conditions");
@@ -584,14 +624,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*---- now read the MAXDOFPERNODE flags for the neumann conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the neumann conditions */ 
+   /*-------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdnode->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->neum->neum_val),MAXDOFPERNODE,1,"DV");
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdnode->neum->neum_onoff));
+      amzero(&(actdnode->neum->neum_val));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdnode->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdnode->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+   /*----------- read if load is applied on surface -> shell elements */
+   frchk("Mid",&ierr);
+   if (ierr) actdnode->neum->neum_surf = mid;
+   frchk("Top",&ierr);
+   if (ierr) actdnode->neum->neum_surf = top;
+   frchk("Bot",&ierr);   
+   if (ierr) actdnode->neum->neum_surf = bot;
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -669,14 +725,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*---- now read the MAXDOFPERNODE flags for the neumann conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the neumann conditions */ 
+   /*-------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdline->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->neum->neum_val),MAXDOFPERNODE,1,"DV");
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdline->neum->neum_onoff));
+      amzero(&(actdline->neum->neum_val));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdline->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdline->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+   /*----------- read if load is applied on surface -> shell elements */
+   frchk("Mid",&ierr);
+   if (ierr) actdline->neum->neum_surf = mid;
+   frchk("Top",&ierr);
+   if (ierr) actdline->neum->neum_surf = top;
+   frchk("Bot",&ierr);   
+   if (ierr) actdline->neum->neum_surf = bot;
    /*--------------------------------------------------- read next line */
    frread();
 }
@@ -754,14 +826,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*---- now read the MAXDOFPERNODE flags for the neumann conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the neumann conditions */ 
+   /*-------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdsurf->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->neum->neum_val),MAXDOFPERNODE,1,"DV");
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdsurf->neum->neum_onoff));
+      amzero(&(actdsurf->neum->neum_val));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdsurf->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdsurf->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+   /*----------- read if load is applied on surface -> shell elements */
+   frchk("Mid",&ierr);
+   if (ierr) actdsurf->neum->neum_surf = mid;
+   frchk("Top",&ierr);
+   if (ierr) actdsurf->neum->neum_surf = top;
+   frchk("Bot",&ierr);   
+   if (ierr) actdsurf->neum->neum_surf = bot;
    /*----------------------------------- read type of neumann condition */
    frchk("Live",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_live;
@@ -850,13 +938,22 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*---- now read the MAXDOFPERNODE flags for the neumann conditions */ 
-   /*----------------------------- and the MAXDOFPERNODE values of them */
+   /*--- now read the MAXCONDPERNODE flags for the neumann conditions */ 
+   /*-------------------------- and the MAXCONDPERNODE values of them */
    amdef("onoff",&(actdvol->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->neum->neum_val),MAXDOFPERNODE,1,"DV");
-   for (i=0; i<MAXDOFPERNODE; i++)
+
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != MAXCONDPERNODE -> shell9 */
+   #ifdef D_SHELL9
+      amzero(&(actdvol->neum->neum_onoff));
+      amzero(&(actdvol->neum->neum_val));
+   #endif /*D_SHELL9*/
+
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdvol->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    actdvol->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
    /*----------------------------------- read type of neumann condition */
    frchk("Dead",&ierr);
@@ -970,19 +1067,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amzero(&(actdnode->couple->couple));
    /*------------------------------------------ read the dofcouple flag */
    /* dofcouple Id */
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
    dofcouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    dofflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (dofflags[i]!=0) 
       actdnode->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
    geocouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    geoflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (geoflags[i]!=0) 
       actdnode->couple->couple.a.ia[i][0]=geocouple;
@@ -1087,19 +1186,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amzero(&(actdline->couple->couple));
    /*------------------------------------------ read the dofcouple flag */
    /* dofcouple Id */
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
    dofcouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    dofflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (dofflags[i]!=0) 
       actdline->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
    geocouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    geoflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (geoflags[i]!=0) 
       actdline->couple->couple.a.ia[i][0]=geocouple;
@@ -1205,19 +1306,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amzero(&(actdsurf->couple->couple));
    /*------------------------------------------ read the dofcouple flag */
    /* dofcouple Id */
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
    dofcouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    dofflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (dofflags[i]!=0) 
       actdsurf->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
    geocouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    geoflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (geoflags[i]!=0) 
       actdsurf->couple->couple.a.ia[i][0]=geocouple;
@@ -1323,19 +1426,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amzero(&(actdvol->couple->couple));
    /*------------------------------------------ read the dofcouple flag */
    /* dofcouple Id */
+   /* NOTE: number of read values = MAXCONDPERNODE  does not need to be */
+   /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
    dofcouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    dofflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (dofflags[i]!=0) 
       actdvol->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
    geocouple = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    geoflags[i] = strtol(colptr,&colptr,10);
-   for (i=0; i<MAXDOFPERNODE; i++)
+   for (i=0; i<MAXCONDPERNODE; i++)
    {
       if (geoflags[i]!=0) 
       actdvol->couple->couple.a.ia[i][0]=geocouple;
