@@ -53,12 +53,7 @@ dof_connect = (int**)CCACALLOC(sky->numeq_total,sizeof(int*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 skyline_nnz_topology(actfield,actpart,actsolv,actintra,sky,dof_connect);
 /*------------------------------------------------------ make nnz_total */
-#ifdef PARALLEL
-sky->nnz_total=0;
-MPI_Allreduce(&(sky->nnz),&(sky->nnz_total),1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
-#else
 sky->nnz_total=sky->nnz;
-#endif
 /*------------------------------make dof_connect redundant on all procs */
 skyline_make_red_dof_connect(actfield,
                              actpart,
@@ -192,7 +187,7 @@ void  skyline_nnz_topology(FIELD      *actfield,
                          SKYMATRIX    *sky,
                          int         **dof_connect)
 {
-int        i,j,k,l,m;
+int        i,j,k,l,m,n;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -200,10 +195,10 @@ int        iscoupled;
 int       *update;
 int        numeq;
 int        actdof;
-int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        recvlenght;
+int        sendlenght,recvlenght;
+int        recvflag;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -211,6 +206,7 @@ ARRAY      dofpatch;
 ARRAY     *coupledofs;
 int        imyrank;
 int        inprocs;
+int        actndis;
 
 #ifdef PARALLEL 
 MPI_Status status;
@@ -222,9 +218,12 @@ dstrc_enter("skyline_nnz_topology");
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
+/*------------------------------------------- set actual discretisation */
+actndis=0;
 /*----------------------------------------------------------- shortcuts */
 sky->nnz=0;
-numeq  = sky->numeq;
+/*numeq  = sky->numeq;*/
+numeq  = sky->numeq_total;
 update = sky->update.a.iv;
 for (i=0; i<sky->numeq_total; i++) dof_connect[i]=NULL;
 amdef("tmp",&dofpatch,1000,1,"IV");
@@ -232,14 +231,26 @@ amzero(&dofpatch);
 /*----------------------------------------------------------------------*/
 for (i=0; i<numeq; i++)
 {
-   dof = update[i];
+   dof = i;
+   /*dof = update[i];*/
    /*------------------------------ check whether this is a coupled dof */
    iscoupled=0;
    dof_in_coupledofs(dof,actpart,&iscoupled);
    if (iscoupled==1) continue;
    /*--------------------------------- find the centernode for this dof */
    centernode=NULL;
-   dof_find_centernode(dof,actpart,&centernode);
+   for (j=0; j<actfield->dis[actndis].numnp; j++)
+   {
+      for (k=0; k<actfield->dis[actndis].node[j].numdf; k++)
+      {
+         if (actfield->dis[actndis].node[j].dof[k] == dof)
+         {
+            centernode = &actfield->dis[actndis].node[j];
+          goto nodefound1;
+         }
+      }
+   }
+   nodefound1:
    dsassert(centernode!=NULL,"Cannot find centernode of a patch");
    /*--------------------------------- make dof patch around centernode */
    counter=0;
@@ -306,20 +317,17 @@ coupledofs = &(actpart->pdis[0].coupledofs);
 for (i=0; i<coupledofs->fdim; i++)
 {
    dof = coupledofs->a.ia[i][0];
-   /*--------------------------- check for my own ownership of this dof */
-   dofflag = coupledofs->a.ia[i][imyrank+1];
-   /*----------- if dofflag is zero this dof has nothing to do with me */
-   if (dofflag==0) continue;
    /*------------------------------------- find all patches to this dof */
    counter=0;
-   for (j=0; j<actpart->pdis[0].numnp; j++)
+   for (j=0; j<actfield->dis[actndis].numnp; j++)
    {
       centernode=NULL;
-      for (l=0; l<actpart->pdis[0].node[j]->numdf; l++)
+      /* */
+      for (l=0; l<actfield->dis[actndis].node[j].numdf; l++)
       {
-         if (dof == actpart->pdis[0].node[j]->dof[l])
+         if (dof == actfield->dis[actndis].node[j].dof[l])
          {
-            centernode = actpart->pdis[0].node[j];
+            centernode = &actfield->dis[actndis].node[j];
             break;
          }
       }
@@ -367,7 +375,7 @@ for (i=0; i<coupledofs->fdim; i++)
    dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
-   dof_connect[dof][1] = dofflag;
+   dof_connect[dof][1] = 0;
    dof_connect[dof][2] = dof;
    /*-------------------------- put the patch to the dof_connect array */
    counter2=0;
@@ -380,105 +388,17 @@ for (i=0; i<coupledofs->fdim; i++)
       }
    }
 } /* end of loop over coupled dofs */
-/* make the who-has-to-send-whom-how-much-and-what-arrays and communicate */
-#ifdef PARALLEL 
-counter=0;
-for (i=0; i<coupledofs->fdim; i++)
-{
-   dof = coupledofs->a.ia[i][0];
-   /*-------------------------------------- find the master of this dof */
-   for (j=1; j<coupledofs->sdim; j++)
-   {
-      if (coupledofs->a.ia[i][j]==2) 
-      {
-         dofmaster = j-1;
-         break;
-      }
-   }
-   /*-------------------------------------- find the slaves of this dof */
-   for (j=1; j<coupledofs->sdim; j++)
-   {
-      if (coupledofs->a.ia[i][j]==1)
-      {
-         dofslave = j-1;
-         /*----------------------------------- if I am master I receive */
-         if (imyrank==dofmaster)
-         {
-            /* note:
-               This is a nice example to do individual communication
-               between two procs without communicating the size
-               of the message in advance
-            */
-            /*--------------------------------- get envelope of message */
-            MPI_Probe(dofslave,counter,actintra->MPI_INTRA_COMM,&status);
-            /*----------------------------------- get lenght of message */
-            MPI_Get_count(&status,MPI_INT,&recvlenght);
-            /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
-                                             (dof_connect[dof][0]+recvlenght)*
-                                             sizeof(int));
-            if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
-            /*----------------------------------------- receive message */
-            MPI_Recv(&(dof_connect[dof][ dof_connect[dof][0] ]),recvlenght,MPI_INT,
-                     dofslave,counter,actintra->MPI_INTRA_COMM,&status);
-            /*--------------------------------- put new lenght to array */
-            dof_connect[dof][0] += recvlenght;
-            /*-------------------------------- delete the doubles again */
-            for (m=2; m<dof_connect[dof][0]; m++)
-            {
-               actdof = dof_connect[dof][m];
-               if (actdof==-1) continue;
-               for (k=m+1; k<dof_connect[dof][0]; k++)
-               {
-                  if (dof_connect[dof][k] == actdof) 
-                  dof_connect[dof][k] = -1;
-               }
-            }
-            /*-------------------- move all remaining dofs to the front */
-            counter2=2;
-            for (m=2; m<dof_connect[dof][0]; m++)
-            {
-               if (dof_connect[dof][m]!=-1)
-               {
-                  dof_connect[dof][counter2] = dof_connect[dof][m];
-                  counter2++;
-               }
-            }
-            /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
-                                             counter2*sizeof(int));
-            if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
-            dof_connect[dof][0] = counter2;
-         }
-         if (imyrank==dofslave)
-         {
-            MPI_Send(
-                     &(dof_connect[dof][3]),
-                     (dof_connect[dof][0]-3),
-                     MPI_INT,
-                     dofmaster,
-                     counter,
-                     actintra->MPI_INTRA_COMM
-                    );
-         }
-         counter++;
-      }
-   }
-}
-#endif
-/*--------------------------------- now go through update and count nnz */
+/*---------------------------- now go through dof_connect and count nnz */
 nnz=0;
-for (i=0; i<sky->update.fdim; i++)
+for (i=0; i<numeq; i++)
 {
-   dof = sky->update.a.iv[i];
-   nnz += (dof_connect[dof][0]-2);
+   nnz += (dof_connect[i][0]-2);
 }
 sky->nnz=nnz;
 /*--------- last thing to do is to order dof_connect in ascending order */
 for (i=0; i<numeq; i++)
 {
-   dof = update[i];
-   qsort((int*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(int), cmp_int);
+   qsort((int*)(&(dof_connect[i][3])), dof_connect[i][0]-3, sizeof(int), cmp_int);
 }
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
@@ -506,49 +426,26 @@ int        i,j;
 int        imyrank;
 int        inprocs;
 
-ARRAY      tmps_a;
-int      **tmps;
 int      **reddof;
 
-int        max_dof_connect_send;
-int        max_dof_connect_recv;
+int        max_dof_connect;
+/*----------------------------------------------------------------------*/
+/* communicate coupled dofs */
+/*----------------------------------------------------------------------*/
 
 #ifdef DEBUG 
 dstrc_enter("skyline_make_red_dof_connect");
 #endif
-/*----------------------------------------------------------------------*/
-imyrank = actintra->intra_rank;
-inprocs = actintra->intra_nprocs;
-/*----------------------------------------------------------------------*/
 /*----------------------------- check for largest row in my dof_connect */
-max_dof_connect_send=0;
-max_dof_connect_recv=0;
+max_dof_connect=0;
 for (i=0; i<sky->numeq_total; i++)
 {
    if (dof_connect[i])
-   if (dof_connect[i][0]>max_dof_connect_send)
-   max_dof_connect_send=dof_connect[i][0];
+   if (dof_connect[i][0]>max_dof_connect)
+   max_dof_connect=dof_connect[i][0];
 }
-#ifdef PARALLEL 
-MPI_Allreduce(&max_dof_connect_send,&max_dof_connect_recv,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
-#else
-max_dof_connect_recv=max_dof_connect_send;
-#endif
 /*---------------- allocate temporary array to hold global connectivity */
-reddof = amdef("tmp",red_dof_connect,sky->numeq_total,max_dof_connect_recv,"IA");
-#ifdef PARALLEL 
-tmps = amdef("tmp",&tmps_a,sky->numeq_total,max_dof_connect_recv,"IA");
-       amzero(&tmps_a);
-/*-------------------------------- put my own dof_connect values to tmp */
-for (i=0; i<sky->numeq_total; i++)
-{
-   if (dof_connect[i])
-   {
-      for (j=0; j<dof_connect[i][0]; j++) 
-         tmps[i][j] = dof_connect[i][j];
-   }
-}
-#else
+reddof = amdef("tmp",red_dof_connect,sky->numeq_total,max_dof_connect,"IA");
 /*----------------------------- put my own dof_connect values to reddof */
 for (i=0; i<sky->numeq_total; i++)
 {
@@ -558,15 +455,6 @@ for (i=0; i<sky->numeq_total; i++)
          reddof[i][j] = dof_connect[i][j];
    }
 }
-#endif
-/*--------------------------------------------- allreduce the array tmp */
-#ifdef PARALLEL 
-MPI_Allreduce(tmps[0],reddof[0],(tmps_a.fdim*tmps_a.sdim),MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
-#endif
-/*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
-amdel(&tmps_a);
-#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -585,7 +473,7 @@ return;
  *----------------------------------------------------------------------*/
 void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect)
 {
-int        i,j;
+int        i,j,k,l;
 int      **reddof;
 int       *maxa;
 int        actdof;
