@@ -12,13 +12,6 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-
-#ifdef PAPI
-typedef void * caddr_t;
-#include <papiStdEventDefs.h>
-#include <papi.h>
-#endif
-
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -81,12 +74,6 @@ ARRAY       tmpsol_a;
 
 DOUBLE     *tmprhs;
 ARRAY       tmprhs_a;
-
-#ifdef PAPI
-/* These non-ccarat types are mandatory. Don't change them. */
-float real_time, proc_time, mflops;
-long_long flpins;
-#endif
 
 /* DOUBLE      l2norm; */
 #ifdef DEBUG 
@@ -212,79 +199,8 @@ case 1:
    msr_array->Amat  = NULL;
    msr_array->Aprec = NULL;
    msr_array->ncall=0;
-
    /* set flag, that this matrix has been initialized and is ready for solve */   
    msr_array->is_init=1;
-
-   if (msr_array->Amat != NULL) {
-     AZ_matrix_destroy(&(msr_array->Amat)); msr_array->Amat        =NULL;
-   }
-   if (msr_array->external != NULL) {
-     free(msr_array->external);             msr_array->external      =NULL;
-   }
-   if (msr_array->update_index != NULL) {
-     free(msr_array->update_index);         msr_array->update_index  =NULL;
-   }
-   if (msr_array->extern_index != NULL) {
-     free(msr_array->extern_index);         msr_array->extern_index  =NULL;
-   }
-   if (msr_array->data_org != NULL) {
-     free(msr_array->data_org);             msr_array->data_org      =NULL;
-   }
-   
-   /* Make backup copy of bindx, as it is permuted in
-    * solution. This has to be done on demand as we need the same
-    * thing in the matrix-vector product as well.
-    *
-    * In a sense we abuse bindx_backup because it no longer
-    * contains backup data. Instead all communication with aztec
-    * relys on bindx_backup (transformed) and the outside world ---
-    * that is the assembling --- used the original bindx. */
-   if (msr_array->bindx_backup.Typ == cca_XX) {
-     am_alloc_copy(&(msr_array->bindx),&(msr_array->bindx_backup));
-   }
-   else {
-     dsassert((msr_array->bindx.fdim == msr_array->bindx_backup.fdim) &&
-              (msr_array->bindx.sdim == msr_array->bindx_backup.sdim),
-              "bindx backup with wrong size");
-     amcopy(&(msr_array->bindx),&(msr_array->bindx_backup));
-   }
-      
-   AZ_transform(msr_array->proc_config,
-                &(msr_array->external),
-                msr_array->bindx_backup.a.iv,
-                msr_array->val.a.dv,
-                msr_array->update.a.iv,
-                &(msr_array->update_index),
-                &(msr_array->extern_index),
-                &(msr_array->data_org),
-                msr_array->numeq,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                AZ_MSR_MATRIX);
-
-#if 0
-#ifdef DEBUG 
-     out_ivector(actintra, msr_array->update_index, msr_array->update.fdim, "update_index");
-     out_ivector(actintra, msr_array->external, msr_array->data_org[AZ_N_external], "external");
-     out_ivector(actintra, msr_array->extern_index, msr_array->data_org[AZ_N_external], "extern_index");
-#endif
-#endif
-      
-     /* create Aztec structure AZ_MATRIX */
-     msr_array->Amat = AZ_matrix_create(msr_array->data_org[AZ_N_internal]+
-                                        msr_array->data_org[AZ_N_border]);
-
-     /* attach dmsr-matrix to this structure */
-     AZ_set_MSR(msr_array->Amat, 
-                msr_array->bindx_backup.a.iv, 
-                msr_array->val.a.dv, 
-                msr_array->data_org, 
-                0, 
-                NULL, 
-                AZ_LOCAL);
 break;
 /*----------------------------------------------------------------------*/
 /*                                                    end of init phase */
@@ -297,7 +213,8 @@ case 0:
   perf_begin(31);
 #endif
 /*--------------------------------------------- check the reuse feature */
-/* Lets assume we need different reuse information for every
+/* 
+ * Lets assume we need different reuse information for every
  * matrix. Then we'd have to calculate a different number for every
  * matrix in every field. We know the number of matrices in the
  * current field is actsolv->nsysarray, but we have no idea about the
@@ -316,6 +233,89 @@ case 0:
     default:
       dserror("Unknown type of field");
       break;
+    }
+/*----------------------- transform matrix to processor local numbering */
+    /* 
+     * After the transformation the value array changed to an internal
+     * aztec representation and must not be used by ccarat any longer.
+     */
+    /*
+     * Transformation and factorization are different. The
+     * transformation might be done by the matrix vector product. The
+     * factorization is only ever done by the solver.
+     */
+    if (msr_array->is_transformed==0) {
+      msr_array->is_transformed = 1;
+      
+      if (msr_array->Amat != NULL) {
+        AZ_matrix_destroy(&(msr_array->Amat)); msr_array->Amat        =NULL;
+      }
+      if (msr_array->external != NULL) {
+        free(msr_array->external);             msr_array->external      =NULL;
+      }
+      if (msr_array->update_index != NULL) {
+        free(msr_array->update_index);         msr_array->update_index  =NULL;
+      }
+      if (msr_array->extern_index != NULL) {
+        free(msr_array->extern_index);         msr_array->extern_index  =NULL;
+      }
+      if (msr_array->data_org != NULL) {
+        free(msr_array->data_org);             msr_array->data_org      =NULL;
+      }
+      
+      /* Make backup copy of bindx, as it is permuted in
+       * solution. This has to be done on demand as we need the same
+       * thing in the matrix-vector product as well.
+       *
+       * In a sense we abuse bindx_backup because it no longer
+       * contains backup data. Instead all communication with aztec
+       * relys on bindx_backup (transformed) and the outside world ---
+       * that is the assembling --- used the original bindx. */
+      if (msr_array->bindx_backup.Typ == cca_XX) {
+        am_alloc_copy(&(msr_array->bindx),&(msr_array->bindx_backup));
+      }
+      else {
+        dsassert((msr_array->bindx.fdim == msr_array->bindx_backup.fdim) &&
+                 (msr_array->bindx.sdim == msr_array->bindx_backup.sdim),
+                 "bindx backup with wrong size");
+        amcopy(&(msr_array->bindx),&(msr_array->bindx_backup));
+      }
+      
+      AZ_transform(msr_array->proc_config,
+                   &(msr_array->external),
+                   msr_array->bindx_backup.a.iv,
+                   msr_array->val.a.dv,
+                   msr_array->update.a.iv,
+                   &(msr_array->update_index),
+                   &(msr_array->extern_index),
+                   &(msr_array->data_org),
+                   msr_array->numeq,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   AZ_MSR_MATRIX);
+
+#if 0
+#ifdef DEBUG 
+      out_ivector(actintra, msr_array->update_index, msr_array->update.fdim, "update_index");
+      out_ivector(actintra, msr_array->external, msr_array->data_org[AZ_N_external], "external");
+      out_ivector(actintra, msr_array->extern_index, msr_array->data_org[AZ_N_external], "extern_index");
+#endif
+#endif
+      
+      /* create Aztec structure AZ_MATRIX */
+      msr_array->Amat = AZ_matrix_create(msr_array->data_org[AZ_N_internal]+
+                                         msr_array->data_org[AZ_N_border]);
+
+      /* attach dmsr-matrix to this structure */
+      AZ_set_MSR(msr_array->Amat, 
+                 msr_array->bindx_backup.a.iv, 
+                 msr_array->val.a.dv, 
+                 msr_array->data_org, 
+                 0, 
+                 NULL, 
+                 AZ_LOCAL);
     }
 /*--------------------- save number of external components on this proc */            
 msr_array->N_external = msr_array->data_org[AZ_N_external];
@@ -370,12 +370,6 @@ msr_array->data_org[AZ_name]=azname;
 #ifdef PERF
   perf_begin(32);
 #endif
-
-#ifdef PAPI
-  if ((PAPI_flops(&real_time, &proc_time, &flpins, &mflops)) < PAPI_OK)
-    dserror("PAPI_flips failed in %s:%d", __FILE__, __LINE__);
-#endif
-  
 /* Let's try several times. Normally the first try should succeed. But
  * there are issues with BiCGSTAB and fluid fields. In case of a
  * breakdown we simply start again and use the current solution as
@@ -406,19 +400,6 @@ else {
   break;
 }
 }
-
-#ifdef PAPI
-  if ((PAPI_flops(&real_time, &proc_time, &flpins, &mflops)) < PAPI_OK)
-    dserror("PAPI_flips failed in %s:%d", __FILE__, __LINE__);
-
-  printf("Real_time: %f Proc_time: %f Total flpins: %lld MFLOPS: %f\n",
-         real_time, proc_time, flpins, mflops);
-
-  if (PAPI_stop_counters(NULL, 0) != PAPI_OK) {
-    dserror("PAPI_stop_counters failed in %s:%d", __FILE__, __LINE__);
-  }
-#endif
-
 #ifdef PERF
   perf_end(32);
 #endif
