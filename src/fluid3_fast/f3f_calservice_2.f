@@ -559,14 +559,14 @@ C         BERECHNUNG DER MATRIXELEMENTE
             IF(J.NE.NX(L)) THEN
               FAKTOR=B(L,J,NY(L))*HILF(L)
 
-              B(L,J,NY(L))=-FAKTOR
-
               B(L,J,1)=B(L,J,1)-B(L,NX(L),1)*FAKTOR
               B(L,J,2)=B(L,J,2)-B(L,NX(L),2)*FAKTOR
               B(L,J,3)=B(L,J,3)-B(L,NX(L),3)*FAKTOR
               B(L,J,4)=B(L,J,4)-B(L,NX(L),4)*FAKTOR
               B(L,J,5)=B(L,J,5)-B(L,NX(L),5)*FAKTOR
               B(L,J,6)=B(L,J,6)-B(L,NX(L),6)*FAKTOR
+
+              B(L,J,NY(L))=-FAKTOR
             END IF
 
  1600     continue
