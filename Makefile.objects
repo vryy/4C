@@ -8,6 +8,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/global_cal_control.o \
                 src/global_full/global_init_control.o \
                 src/global_full/global_ass_dof.o \
+                src/global_full/global_ass_dof_ndis.o \
                 src/global_full/cal_dyn_control.o \
                 src/global_full/cal_static_control.o \
                 src/global_full/cal_nlnstatic_control.o \
