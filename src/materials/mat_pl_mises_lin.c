@@ -245,23 +245,18 @@ dstrc_enter("mat_pl_mises_lin_yilcr");
   syz = tau[4];
   sxz = tau[5];
 /*----------------------------------------------------------------------*/
-  if(isoft==0)
-  {
-    hards = E * Eh / (E-Eh);
-  }
-  else
-  {
-    epstmax = (2. * Eh)/(sigy * dia);
-    hards   = -(sigy*sigy * dia)/(2. * Eh); 
-  }
-/*----------------------------------------------------------------------*/
 /*    Beruecksichtigung des Verfestigungsverhaltens */
   if(isoft==0)
   {
+    hards = E * Eh / (E-Eh);
     sigym = sigy + betah * hards * epstn;
   }
   else
   {
+    epstmax = (2. * Eh)/(sigy * dia);
+    epstmax = fabs(epstmax);
+    hards   = -(sigy*sigy * dia)/(2. * Eh); 
+
     if(epstn<epstmax)  sigym = sigy + betah * hards * epstn;
     else sigym = 0.01*sigy;    
   }
@@ -447,7 +442,8 @@ void mat_pl_mises_lin_mapl(DOUBLE   e,
 INT    i, j;
 INT    nsoft  = 1;
 DOUBLE x[6];
-DOUBLE xsi1, xsi2, xsi3, xsi4, xsi5, xsi6, hards, g, epstmax, dum;
+DOUBLE xsi1, xsi2, xsi3, xsi4, xsi5, xsi6, g, epstmax, dum;
+DOUBLE hards=0.0;
 DOUBLE k,fac,fac1,fac2;
 DOUBLE stps,J2;
 
@@ -470,29 +466,42 @@ DOUBLE B[6][6] = {{ 2./3.,-1./3.,-1./3., 0.  , 0.  , 0.  },
 dstrc_enter("mat_pl_mises_lin_mapl");
 #endif
 /*----------------------------------------------------------------------*/
-    if (isoft == 0) {
-	hards = e * eh / (e - eh);
-    } else {
-	if (nsoft == 1) {
-	    epstmax = eh * 2. / (sigy * dia);
-	    epstmax = fabs(epstmax);
-	    if (*epstn < epstmax) {
-                /* Computing 2nd power */
-		dum = sigy;
-		hards = -(dum * dum * dia) / (eh * 2.);
-	    } else {
-		hards = 1e-4;
-	    }
-	} else if (nsoft == 2) {
-	    epstmax = eh * 1. / (sigy * dia);
-	    epstmax = abs(epstmax);
-	    hards = -sigy * exp(-(*epstn) / epstmax) / epstmax;
-	} else {
-            dserror("WRONG NUMBER OF NSOFT");
-	}
-    }
-    g = e / (vnu * 2. + 2.);           /*Schubmodul*/
-    k = e / ((1. - vnu * 2.) * 3.);    /*Kompressionsmodul*/
+if (isoft == 0) 
+{
+  hards = e * eh / (e - eh);
+} 
+else 
+{
+  if (nsoft == 1) 
+  {
+     epstmax = eh * 2. / (sigy * dia);
+     epstmax = fabs(epstmax);
+     if (*epstn < epstmax) 
+     {
+       /* Computing 2nd power */
+       dum = sigy;
+       hards = -(dum * dum * dia) / (eh * 2.);
+     } 
+     else 
+     {
+       hards = 1e-4;
+     }
+  } 
+  else if (nsoft == 2) 
+  {
+    epstmax = eh * 1. / (sigy * dia);
+    epstmax = abs(epstmax);
+    hards = -sigy * exp(-(*epstn) / epstmax) / epstmax;
+  } 
+  else 
+  {
+    dserror("WRONG NUMBER OF NSOFT");
+  }
+}
+
+g = e / (vnu * 2. + 2.);           /*Schubmodul*/
+k = e / ((1. - vnu * 2.) * 3.);    /*Kompressionsmodul*/
+
 /*===================================================== plane strain ===*/
    xsi1 = tau[0];
    xsi2 = tau[1];
