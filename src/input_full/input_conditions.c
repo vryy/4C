@@ -80,6 +80,7 @@ static void inpdesign_line_fsicouple(void);
 static void inpdesign_nodal_freesurf(void);
 static void inpdesign_line_freesurf(void);
 static void inpdesign_line_liftdrag(void);
+static void inpdesign_surf_liftdrag(void);
 static void inpdesign_surf_stability(void);
 static void inpdesign_vol_stability(void);
 
@@ -149,6 +150,8 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
    inpdesign_line_freesurf();
 /*---------------------------------- input of line lift&drag definition */   
    inpdesign_line_liftdrag();
+/*---------------------------------- input of surf lift&drag definition */   
+   inpdesign_surf_liftdrag();
 /*------------------------------- input of surface stability definition */   
    inpdesign_surf_stability();
 /*-------------------------------- input of volume stability definition */   
@@ -1911,79 +1914,186 @@ return;
 } /* end of inpdesign_line_freesurf */
 
 
-/*----------------------------------------------------------------------*
- | input of line lift&drag definition on design              genk 05/03 |
- *----------------------------------------------------------------------*/
+
+/*!----------------------------------------------------------------------
+\brief input of line lift&drag definition on design
+
+<pre>                                                            mn 03/04
+This routine reads an line lift&drag definition on design.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
 static void inpdesign_line_liftdrag()
 {
-INT    i,j;
-INT    ierr;
-INT    ndline;
-INT    dlineId;
-char  *colptr;
-char   buffer[200];
-DLINE *actdline;
-INT    coupleId;
+  INT    i,j;
+  INT    ierr;
+  INT    ndline;
+  INT    dlineId;
+  char  *colptr;
+  char   buffer[200];
+  DLINE *actdline;
+  INT    coupleId;
 
 #ifdef DEBUG 
-dstrc_enter("inpdesign_line_liftdrag");
+  dstrc_enter("inpdesign_line_liftdrag");
 #endif
-/*---------------------------------------------------------- initialise */
-for (i=0; i<design->ndline; i++)
-{
-   actdline = &(design->dline[i]);
-   actdline->liftdrag=0;
-}
 
-/*----------------------------------------------------------------------*/
-/*---- find the beginning of line fluid freesurface coupling conditions */
-if (frfind("--DESIGN FLUID LINE LIFT&DRAG") == 0) goto end;
-frread();
-/*------------------------ read number of design lines with conditions */
-frint("DLINE",&ndline,&ierr);
-dsassert(ierr==1,"Cannot read design-line lift&drag definition");
-frread();
-/*-------------------------------------- start reading the design lines */
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-   /*------------------------------------------ read the design line Id */
-   frint("E",&dlineId,&ierr);
-   dsassert(ierr==1,"Cannot read design-line left&drag definition");
-   dlineId--;
-   /*--------------------------------------------------- find the dline */
-   actdline=NULL;
-   for (i=0; i<design->ndline; i++)
-   {
+  /* find the beginning of line fluid liftdrag conditions */
+  if (frfind("--DESIGN FLUID LINE LIFT&DRAG") == 0) goto end;
+  frread();
+
+  /* read number of design lines with conditions */
+  frint("DLINE",&ndline,&ierr);
+  dsassert(ierr==1,"Cannot read design-line lift&drag definition");
+  frread();
+
+
+  /* start reading the design lines */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /* read the design line Id */
+    frint("E",&dlineId,&ierr);
+    dsassert(ierr==1,"Cannot read design-line left&drag definition");
+    dlineId--;
+
+    /* find the dline */
+    actdline=NULL;
+    for (i=0; i<design->ndline; i++)
+    {
       if (design->dline[i].Id ==  dlineId) 
       {
-         actdline = &(design->dline[i]);
-         break;
+        actdline = &(design->dline[i]);
+        break;
       }
-   }
-   dsassert(actdline!=NULL,"Cannot read design-lineleft&drag definition");
+    }
+    dsassert(actdline!=NULL,"Cannot read designline-lift&drag definition");
 
-   /*--------------------------------- move pointer behind the "-" sign */
-   colptr = strstr(allfiles.actplace,"-");
-   dsassert(colptr!=NULL,"Cannot read design-line left&drag definition");
-   colptr++;
-   /*-------------------------------------------------- read the number */
-   actdline->liftdrag = strtol(colptr,&colptr,10);
-   /*--------------------------------------- read center coordinates ---*/
-   actdline->ld_center[0] = strtod(colptr,&colptr);
-   actdline->ld_center[1] = strtod(colptr,&colptr);
-   /*------------------------------------- read corresponding ALE-DLINE */
-   actdline->aledline = strtol(colptr,&colptr,10);
-   actdline->aledline--;
+    /* allocate space for a liftdrag condition in this dline */
+    actdline->liftdrag = (FLUID_LIFTDRAG_CONDITION*)CCACALLOC(1,sizeof(FLUID_LIFTDRAG_CONDITION));
+    if (!actdline->liftdrag) dserror("Allocation of memory failed");
 
-   frread();
-}
+    /* move pointer behind the "-" sign */
+    colptr = strstr(allfiles.actplace,"-");
+    dsassert(colptr!=NULL,"Cannot read design-line left&drag definition");
+    colptr++;
+
+    /* read the number */
+    actdline->liftdrag->liftdrag = strtol(colptr,&colptr,10);
+    if (actdline->liftdrag->liftdrag >= FLUID_NUM_LD)
+      dserror("Lift&Drag id larger than FLUID_NUM_LD");
+
+    /* read center coordinates */
+    actdline->liftdrag->ld_center[0] = strtod(colptr,&colptr);
+    actdline->liftdrag->ld_center[1] = strtod(colptr,&colptr);
+    actdline->liftdrag->ld_center[2] = 0.0;
+    /* read corresponding ALE-DLINE */
+    actdline->liftdrag->aledline = strtol(colptr,&colptr,10);
+    actdline->liftdrag->aledline--;
+
+    frread();
+  }
 end:
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
-} /* end of inpdesign_line_freesurf */
+  return;
+} /* end of inpdesign_line_liftdrag */
+
+
+
+/*!----------------------------------------------------------------------
+\brief input of surface lift&drag definition on design
+
+<pre>                                                            mn 03/04
+This routine reads an surface lift&drag definition on design.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*----------------------------------------------------------------------*/
+static void inpdesign_surf_liftdrag()
+{
+  INT    i,j;
+  INT    ierr;
+  INT    ndsurf;
+  INT    dsurfId;
+  char  *colptr;
+  char   buffer[200];
+  DSURF *actdsurf;
+  INT    coupleId;
+
+#ifdef DEBUG 
+  dstrc_enter("inpdesign_surf_liftdrag");
+#endif
+
+  /* find the beginning of surf fluid liftdrag conditions */
+  if (frfind("--DESIGN FLUID SURF LIFT&DRAG") == 0) goto end;
+  frread();
+
+  /* read number of design surfs with conditions */
+  frint("DSURF",&ndsurf,&ierr);
+  dsassert(ierr==1,"Cannot read designsurf lift&drag definition");
+  frread();
+
+
+  /* start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /* read the design surf Id */
+    frint("E",&dsurfId,&ierr);
+    dsassert(ierr==1,"Cannot read design-surf lift&drag definition");
+    dsurfId--;
+
+    /* find the dsurf */
+    actdsurf=NULL;
+    for (i=0; i<design->ndsurf; i++)
+    {
+      if (design->dsurf[i].Id ==  dsurfId) 
+      {
+        actdsurf = &(design->dsurf[i]);
+        break;
+      }
+    }
+    dsassert(actdsurf!=NULL,"Cannot read designsurf-lift&drag definition");
+
+    /* allocate space for a liftdrag condition in this dsurf */
+    actdsurf->liftdrag = (FLUID_LIFTDRAG_CONDITION*)CCACALLOC(1,sizeof(FLUID_LIFTDRAG_CONDITION));
+    if (!actdsurf->liftdrag) dserror("Allocation of memory failed");
+
+    /* move pointer behind the "-" sign */
+    colptr = strstr(allfiles.actplace,"-");
+    dsassert(colptr!=NULL,"Cannot read design-surf left&drag definition");
+    colptr++;
+
+    /* read the number */
+    actdsurf->liftdrag->liftdrag = strtol(colptr,&colptr,10);
+    if (actdsurf->liftdrag->liftdrag >= FLUID_NUM_LD)
+      dserror("Lift&Drag id larger than FLUID_NUM_LD");
+
+    /* read center coordinates */
+    actdsurf->liftdrag->ld_center[0] = strtod(colptr,&colptr);
+    actdsurf->liftdrag->ld_center[1] = strtod(colptr,&colptr);
+    actdsurf->liftdrag->ld_center[2] = strtod(colptr,&colptr);
+    /* read corresponding ALE-DLINE */
+    actdsurf->liftdrag->aledline = strtol(colptr,&colptr,10);
+    actdsurf->liftdrag->aledline--;
+
+    frread();
+  }
+end:
+  /*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return;
+} /* end of inpdesign_surf_liftdrag */
 
 
 /*!----------------------------------------------------------------------
