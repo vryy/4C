@@ -37,13 +37,16 @@ void wall1(PARTITION   *actpart,
            CONTAINER   *container)   /* contains variables defined in container.h */
 {
 #ifdef D_WALL1
-INT  i, iloc;
 W1_DATA      actdata;
 MATERIAL    *actmat;
 
 INT          imyrank;
 DOUBLE      *intforce;
+
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
 DOUBLE       getval;
+INT          iloc;
+#endif /* D_OPTIM*/
 
 #ifdef DEBUG 
 dstrc_enter("wall1");
@@ -60,9 +63,11 @@ case calc_struct_init:
    w1init(actpart, mat);
    w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
    w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1);
-   w1_cal_stress(NULL,NULL,NULL,NULL,NULL,0,1);
+   w1_cal_stress(NULL,NULL,NULL,0,1);
    w1_eleload(ele,&actdata,intforce,1,NULL);
    w1_iedg(NULL,NULL,0,1);
+   w1_write_restart(NULL,NULL,0,NULL,1);
+   w1_read_restart(NULL,NULL,NULL,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
@@ -104,7 +109,7 @@ case calc_struct_stress:
    if (imyrank==ele->proc)
    { 
     actmat = &(mat[ele->mat-1]);
-    w1_cal_stress(ele,&actdata,actmat,estif_global,intforce,0,0);
+    w1_cal_stress(ele,&actdata,actmat,0,0);
    }
 break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
@@ -144,17 +149,13 @@ case calc_struct_update_istep:
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- write restart */
 case write_restart:
-#if 0
-  momentan nicht notwendig, da keine notwendige Info im Element vgl. shell8
-      w1_write_restart(ele,container->handsize,container->handles);
-#endif
+   actmat = &(mat[ele->mat-1]);
+   w1_write_restart(ele,actmat,container->handsize,container->handles,0);
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- write restart */
 case  read_restart:
-#if 0
-  momentan nicht notwendig, da keine notwendige Info im Element vgl. shell8
-      w1_read_restart(ele,container->handsize,container->handles);
-#endif
+   actmat = &(mat[ele->mat-1]);
+   w1_read_restart(ele,actmat,container->handles,0);
 break;/*----------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
 /*-------------- init the element integration routines for optimization */
