@@ -10,6 +10,11 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+
+#ifdef SPOOLES_PACKAGE
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
@@ -29,7 +34,10 @@ INT       i;
 INT       numeq;
 INT     **dof_connect;
 ARRAY     bindx_a;
-INT   *bindx;
+INT      *bindx;
+
+ELEMENT  *actele;
+
 #ifdef DEBUG 
 dstrc_enter("mask_spooles");
 #endif
@@ -46,7 +54,7 @@ dstrc_enter("mask_spooles");
 spo->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
                                                                  matrix */
-msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
+mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 spo->numeq = numeq;
 /*---------------------------------------------- allocate vector update */
 amdef("update",&(spo->update),numeq,1,"IV");
@@ -83,6 +91,15 @@ for (i=0; i<spo->numeq_total; i++)
 }
 CCAFREE(dof_connect);
 amdel(&bindx_a);
+
+
+/* make the index vector for faster assembling */
+  for (i=0; i<actpart->pdis[0].numele; i++)
+  {
+    actele = actpart->pdis[0].element[i];
+    spo_make_index(actfield,actpart,actintra,actele,spo);
+  }
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -643,4 +660,228 @@ return;
 
 
 
+/*----------------------------------------------------------------------*/
+/*!
+ \brief 
+
+ This routine determines the location vactor for the actele and stores it
+ in the element structure.  Furthermore for each component [i][j] in the 
+ element stiffness matrix the position in the 1d sparse matrix is 
+ calculated and stored in actele->index[i][j]. These can be used later on 
+ for the assembling procedure.
+  
+ \param actfield  *FIELD        (i)  the field we are working on
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param spo1      *SPOOLMAT     (i)  the sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
+void spo_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _SPOOLMAT      *spo1
+    )
+{
+
+  INT         i,j,k,l,counter;          /* some counter variables */
+  INT         istwo=0;
+  INT         start,index,lenght;       /* some more special-purpose counters */
+  INT         ii,jj;                    /* counter variables for system matrix */
+  INT         ii_iscouple;              /* flag whether ii is a coupled dof */
+  INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
+  INT         ii_index;                 /* place of ii in dmsr format */
+  INT         jj_index;                 /* place of jj in dmsr format */
+  INT         nd,ndnd;                  /* size of estif */
+  INT         nnz;                      /* number of nonzeros in sparse system matrix */
+  INT         numeq_total;              /* total number of equations */
+  INT         numeq;                    /* number of equations on this proc */
+  INT         lm[MAXDOFPERELE];         /* location vector for this element */
+  INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+  INT         myrank;                   /* my intra-proc number */
+  INT         nprocs;                   /* my intra- number of processes */
+  DOUBLE    **emass;                    /* element matrix to be added to system matrix */
+  INT        *update;                   /* vector update see AZTEC manual */
+  DOUBLE     *A_loc;                    /*    "       A_loc see MUMPS manual */
+  DOUBLE     *B_loc;                    /*    "       A_loc see MUMPS manual */
+  INT        *irn;                      /*    "       irn see MUMPS manual */
+  INT        *jcn;                      /*    "       jcn see MUMPS manual */
+  INT        *rowptr;                   /*    "       rowptr see rc_ptr structure */
+  INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+  INT         ncdofs;                   /* total number of coupled dofs */
+  INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+  INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+  INT         nsend;
+
+  struct _ARRAY ele_index;
+  struct _ARRAY ele_locm;
+#ifdef PARALLEL
+  struct _ARRAY ele_owner;
+#endif
+
+
+#ifdef DEBUG 
+  dstrc_enter("spo_make_index");
+#endif
+
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  nnz        = spo1->nnz;
+  numeq_total= spo1->numeq_total;
+  numeq      = spo1->numeq;
+  update     = spo1->update.a.iv;
+  A_loc      = spo1->A_loc.a.dv;
+  irn        = spo1->irn_loc.a.iv;
+  jcn        = spo1->jcn_loc.a.iv;
+  rowptr     = spo1->rowptr.a.iv;
+  cdofs      = actpart->pdis[0].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+
+  /* put pointers to sendbuffers if any */
+#ifdef PARALLEL 
+  if (spo1->couple_i_send) 
+  {
+    isend1 = spo1->couple_i_send->a.ia;
+    dsend1 = spo1->couple_d_send->a.da;
+    nsend  = spo1->couple_i_send->fdim;
+  }
+#endif
+
+
+  /* determine the size of estiff */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
+  nd = counter;
+  actele->nd = counter;
+
+
+  /* allocate locm, index and owner */
+  actele->locm  = amdef("locm" ,&ele_locm ,nd, 1,"IV");
+  actele->index = amdef("index",&ele_index,nd,nd,"IA");
+#ifdef PARALLEL
+  actele->owner = amdef("owner",&ele_owner,nd, 1,"IV");
+#endif
+
+
+  /* make location vector locm */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      actele->locm[counter]    = actele->node[i]->dof[j];
+#ifdef PARALLEL 
+      actele->owner[counter]   = actele->node[i]->proc;
+#endif
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
+
+
+
+  /* now start looping the dofs */
+  /* loop over i (the element row) */
+  ii_iscouple = 0;
+  ii_owner    = myrank;
+
+  for (i=0; i<nd; i++)
+  {
+    ii = actele->locm[i];
+
+    /* loop only my own rows */
+#ifdef PARALLEL 
+    if (actele->owner[i]!=myrank)
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+#endif
+
+    /* check for boundary condition */
+    if (ii>=numeq_total)
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+
+    /* check for coupling condition */
+#ifdef PARALLEL 
+    if (ncdofs)
+    {
+      ii_iscouple = 0;
+      ii_owner    = -1;
+      add_msr_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
+    }
+#endif
+
+    /* ii is not a coupled dofs or I am master owner */
+    ii_index      = find_index(ii,update,numeq);
+
+    if (!ii_iscouple || ii_owner==myrank)
+    {
+
+      if (ii_index==-1) dserror("dof %4i not found on this proc",ii);
+      start         = rowptr[ii_index];
+      lenght        = rowptr[ii_index+1]-rowptr[ii_index];
+
+    }
+    /* loop over j (the element column) */
+    for (j=0; j<nd; j++)
+    {
+      jj = actele->locm[j];
+
+      /* check for boundary condition */
+      if (jj>=numeq_total)
+      {
+        actele->index[i][j] = -1;
+        continue;
+      }
+
+      /* do main-diagonal entry */
+      /* (either not a coupled dof or I am master owner) */
+      if (!ii_iscouple || ii_owner==myrank)
+      {
+        index         = find_index(jj,&(jcn[start]),lenght);
+        if (index==-1) dserror("dof jj not found in this row ii");
+        index        += start;
+        actele->index[i][j] = index;
+      }
+
+      /* do main-diagonal entry */
+      /* (a coupled dof and I am slave owner) */
+      else
+      {
+        actele->index[i][j] = -2;
+      }
+
+    } /* end loop over j */
+  }/* end loop over i */
+
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of spo_make_index */
+
+
+#endif /* ifdef SPOOLES_PACKAGE */
 

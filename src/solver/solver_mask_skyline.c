@@ -29,6 +29,9 @@ INT       i;
 INT       numeq;
 INT     **dof_connect;
 ARRAY     red_dof_connect;
+
+ELEMENT  *actele;
+
 #ifdef DEBUG 
 dstrc_enter("mask_skyline");
 #endif
@@ -45,7 +48,7 @@ dstrc_enter("mask_skyline");
 sky->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
                                                                  matrix */
-msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
+mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 sky->numeq = numeq;
 /*---------------------------------------------- allocate vector update */
 amdef("update",&(sky->update),numeq,1,"IV");
@@ -82,6 +85,14 @@ for (i=0; i<sky->numeq_total; i++)
 }
 CCAFREE(dof_connect);
 amdel(&red_dof_connect);
+
+/* make the index vector for faster assembling */
+  for (i=0; i<actpart->pdis[0].numele; i++)
+  {
+    actele = actpart->pdis[0].element[i];
+    sky_make_index(actfield,actpart,actintra,actele,sky);
+  }
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -525,3 +536,173 @@ dstrc_exit();
 #endif
 return;
 } /* end of skyline_make_sparsity */
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+ \brief 
+
+ This routine determines the location vactor for the actele and stores it
+ in the element structure.  Furthermore for each component [i][j] in the 
+ element stiffness matrix the position in the 1d sparse matrix is 
+ calculated and stored in actele->index[i][j]. These can be used later on 
+ for the assembling procedure.
+  
+ \param actfield  *FIELD        (i)  the field we are working on
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param sky1      *SKYMATRIX    (i)  the sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
+void sky_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _SKYMATRIX     *sky1
+    )
+{
+
+  INT               i,j,counter;           /* some counter variables */
+  INT               ii,jj;                 /* counter variables for system matrix */
+  INT               nd;                    /* size of estif */
+  INT               numeq_total;           /* total number of equations */
+  INT               numeq;                 /* number of equations on this proc */
+  INT               myrank;                /* my intra-proc number */
+  INT               nprocs;                /* my intra- number of processes */
+  DOUBLE           *A;                      /* the skyline matrix 1 */
+  INT              *maxa;
+
+  INT               startindex;
+  INT               height;
+  INT               distance;
+  INT               index;
+
+  struct _ARRAY ele_index;
+  struct _ARRAY ele_locm;
+#ifdef PARALLEL
+  struct _ARRAY ele_owner;
+#endif
+
+
+#ifdef DEBUG 
+  dstrc_enter("sky_make_index");
+#endif
+
+
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  numeq_total= sky1->numeq_total;
+  numeq      = sky1->numeq;
+  A          = sky1->A.a.dv;
+  maxa       = sky1->maxa.a.iv;
+
+
+  /* determine the size of estiff */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
+  nd = counter;
+  actele->nd = counter;
+
+
+  /* allocate locm, index and owner */
+  actele->locm  = amdef("locm" ,&ele_locm ,nd, 1,"IV");
+  actele->index = amdef("index",&ele_index,nd,nd,"IA");
+#ifdef PARALLEL
+  actele->owner = amdef("owner",&ele_owner,nd, 1,"IV");
+#endif
+
+
+  /* make location vector locm */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      actele->locm[counter]    = actele->node[i]->dof[j];
+#ifdef PARALLEL 
+      actele->owner[counter]   = actele->node[i]->proc;
+#endif
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
+
+
+
+
+  /* loop over i (the element row) */
+  for (i=0; i<nd; i++)
+  {
+    ii = actele->locm[i];
+
+    /* check for boundary condition */
+    if (ii>=numeq_total)
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+
+    /* check for ownership of row ii */
+#ifdef PARALLEL 
+    if (actele->owner[i]!=myrank)
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+#endif
+
+    /* start of the skyline of ii is maxa[ii] */
+    startindex = maxa[ii];
+
+    /* height of the skyline of ii */
+    height     = maxa[ii+1]-maxa[ii];
+
+    /* loop over j (the element column) */
+    for (j=0; j<nd; j++)
+    {
+      jj = actele->locm[j];
+
+      /* check for boundary condition */
+      if (jj>=numeq_total)
+      {
+        actele->index[i][j] = -1;
+        continue;
+      }
+
+      /* find position [ii][jj] in A */
+      distance  = ii-jj;
+      if (distance < 0) 
+      {
+        actele->index[i][j] = -1;
+        continue;
+      }
+      index     = startindex+distance;
+      actele->index[i][j] = index;
+    } /* end loop over j */
+  }/* end loop over i */
+
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of sky_make_index */
+
+

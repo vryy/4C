@@ -10,6 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifdef AZTEC_PACKAGE
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
@@ -52,6 +55,9 @@ void mask_msr(FIELD         *actfield,
 INT       i;
 INT       numeq;
 INT     **dof_connect;
+
+ELEMENT  *actele;
+
 #ifdef DEBUG 
 dstrc_enter("mask_msr");
 #endif
@@ -71,7 +77,7 @@ kk=actndis;
 msr->numeq_total = actfield->dis[kk].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
                                                                  matrix */
-msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
+mask_numeq(actfield,actpart,actsolv,actintra,&numeq,kk);
 msr->numeq = numeq;
 /*---------------------------------------------- allocate vector update */
 amdef("update",&(msr->update),numeq,1,"IV");
@@ -101,7 +107,13 @@ for (i=0; i<msr->numeq_total; i++)
    if (dof_connect[i]) CCAFREE(dof_connect[i]);
 }
 CCAFREE(dof_connect);
-/*----------------------------------------------------------------------*/
+
+/* make the index vector for faster assembling */
+  for (i=0; i<actpart->pdis[0].numele; i++)
+  {
+    actele = actpart->pdis[0].element[i];
+    msr_make_index(actfield,actpart,actintra,actele,msr);
+  }
 
 #if 0
 #ifdef DEBUG 
@@ -115,325 +127,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of mask_msr */
-
-
-
-
-
-
-/*----------------------------------------------------------------------*
- |  count processor local and global number of equations    m.gee 5/01  |
- *----------------------------------------------------------------------*/
-void msr_numeq(FIELD         *actfield, 
-               PARTITION    *actpart, 
-               SOLVAR       *actsolv,
-               INTRA        *actintra,
-               INT          *numeq)
-{
-INT       i,j,k,l;
-INT       counter;
-INT       dof;
-INT       iscoupled;
-#ifdef PARALLEL
-INT      *sendbuff,*recvbuff, sendsize;
-#endif
-INT      *tmp;
-INT       inter_proc;
-long int  min;
-INT       proc;
-INT       inprocs;
-INT       imyrank;
-NODE     *actnode;
-
-INT       no_coupling = 0;
-
-#ifdef DEBUG 
-dstrc_enter("msr_numeq");
-#endif
-/*----------------------------------------------------------------------*/
-imyrank = actintra->intra_rank;
-inprocs = actintra->intra_nprocs;
-/*------------------------- first make a list of dofs which are coupled */
-/*----------------------------------- estimate size of coupdofs to 5000 */
-amdef("coupledofs",&(actpart->pdis[kk].coupledofs),5000,1,"IV");
-amzero(&(actpart->pdis[kk].coupledofs));
-counter=0;
-/*-------------------------------- loop all nodes and find coupled dofs */
-for (i=0; i<actfield->dis[kk].numnp; i++)
-{
-   actnode = &(actfield->dis[kk].node[i]);
-   if (actnode->gnode->couple==NULL && actnode->gnode->dirich==NULL) continue;
-   if (actnode->gnode->couple==NULL) continue;
-   for (l=0; l<actnode->numdf; l++)
-   {
-      if (actnode->dof[l]>=actfield->dis[kk].numeq) continue;
-      /* there is coupling on this dof */
-      if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
-          actnode->gnode->couple->couple.a.ia[l][1] != 0 )
-      {
-         if (counter>=actpart->pdis[kk].coupledofs.fdim) 
-         amredef(&(actpart->pdis[kk].coupledofs),(actpart->pdis[kk].coupledofs.fdim+5000),1,"IV");
-         /* the coupled dof could be dirichlet conditioned */
-         if (actnode->dof[l]<actfield->dis[kk].numeq)
-         {
-            actpart->pdis[kk].coupledofs.a.iv[counter] = actnode->dof[l];
-            counter++;
-         }
-      }
-   }
-}
-
-if (counter ==0)
-  no_coupling = 1;
-else
-  no_coupling = 0;
-
-amredef(&(actpart->pdis[kk].coupledofs),counter,1,"IV");
-/*---------------------------------- delete the doubles in coupledofs */
-
-if (!no_coupling)
-{ 
-
-  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-  {
-    if (actpart->pdis[kk].coupledofs.a.iv[i]==-1) continue;
-    dof = actpart->pdis[kk].coupledofs.a.iv[i];
-    for (j=i+1; j<actpart->pdis[kk].coupledofs.fdim; j++)
-    {
-      if (actpart->pdis[kk].coupledofs.a.iv[j]==dof) 
-        actpart->pdis[kk].coupledofs.a.iv[j]=-1;
-    }
-  }
-  /*--------- move all remaining coupdofs to the front and redefine again */
-  counter=0;
-  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-  {
-    if (actpart->pdis[kk].coupledofs.a.iv[i]!=-1)
-    {
-      actpart->pdis[kk].coupledofs.a.iv[counter] = actpart->pdis[kk].coupledofs.a.iv[i];
-      counter++;
-    }
-  }
-  amredef(&(actpart->pdis[kk].coupledofs),counter,inprocs+1,"IA");
-  /*------------------- the newly allocated columns have to be initialized */
-  for (i=1; i<actpart->pdis[kk].coupledofs.sdim; i++)
-    for (j=0; j<actpart->pdis[kk].coupledofs.fdim; j++) 
-      actpart->pdis[kk].coupledofs.a.ia[j][i]=0;
-
-} /* end of if(!no_coupling) */
-
-/* processor looks on his own domain whether he has some of these coupdofs, 
-   puts this information in the array coupledofs in the column myrank+1, so it 
-   can be allreduced 
-
-   The matrix has the following style (after allreduce on all procs the same):
-   
-               ----------------------
-               | 12 | 1 | 0 | 1 | 0 |
-               | 40 | 1 | 0 | 0 | 0 |
-               | 41 | 1 | 1 | 1 | 1 |
-               | 76 | 0 | 1 | 1 | 0 |
-               ----------------------
-               
-               column 0             : number of the coupled equation
-               column 1 - inprocs+1 : proc has coupled equation or not
-               
-*/
-
-if (!no_coupling)
-{
-
-  if (inprocs==1) /*--------------------------------- sequentiell version */
-  {
-    for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
-    {
-      actpart->pdis[kk].coupledofs.a.ia[k][imyrank+1]=2;
-    }
-  }
-  else /*----------------------------------------------- parallel version */
-  {
-    /*
-       actpart->node[i] really loops only nodes with dofs updated on this proc
-       */
-    for (i=0; i<actpart->pdis[kk].numnp; i++) /* now loop only my nodes */
-    {
-      for (l=0; l<actpart->pdis[kk].node[i]->numdf; l++)
-      {
-        dof = actpart->pdis[kk].node[i]->dof[l];
-        for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
-        {
-          if (actpart->pdis[kk].coupledofs.a.ia[k][0]==dof)
-          {
-            actpart->pdis[kk].coupledofs.a.ia[k][imyrank+1]=1;
-            break;
-          }
-        }
-      }
-    }
-  }
-  /* ----- Allreduce the whole array, so every proc knows about where all 
-     coupledofs are */
-#ifdef PARALLEL
-  sendsize = (actpart->pdis[kk].coupledofs.fdim)*(inprocs);
-  sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
-  recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
-  if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
-  counter=0;
-  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-  {
-    for (j=0; j<inprocs; j++)
-    {
-      sendbuff[counter] = actpart->pdis[kk].coupledofs.a.ia[i][j+1];
-      counter++;
-    }
-  }
-  MPI_Allreduce(sendbuff,
-      recvbuff,
-      sendsize,
-      MPI_INT,
-      MPI_SUM,
-      actintra->MPI_INTRA_COMM);
-  counter=0;
-  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-  {
-    for (j=0; j<inprocs; j++)
-    {
-      actpart->pdis[kk].coupledofs.a.ia[i][j+1] = recvbuff[counter];
-      counter++;
-    }
-  }
-  CCAFREE(sendbuff);CCAFREE(recvbuff);
-#endif
-
-} /* end of if(!no_coupling) */
-
-/*------- count number of equations on partition including coupled dofs */
-/*---------------------------------------- count the coupled ones first */
-counter=0;
-for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-{
-   if (actpart->pdis[kk].coupledofs.a.ia[i][imyrank+1]!=0) counter++;
-}
-/*-------------------------------- count all dofs which are not coupled */
-for (i=0; i<actpart->pdis[kk].numnp; i++)
-{
-   actnode = actpart->pdis[kk].node[i];
-   for (l=0; l<actnode->numdf; l++)
-   {
-      dof = actnode->dof[l];
-      iscoupled=0;
-      for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
-      {
-         if (dof == actpart->pdis[kk].coupledofs.a.ia[k][0]) 
-         {
-            iscoupled=1;
-            break;
-         }
-      }
-      if (iscoupled==0) 
-      {
-         if (dof < actfield->dis[kk].numeq)
-         counter++;
-      }
-   }
-}
-/*--- number of equations on this partition including the coupled ones */
-*numeq = counter;
-/* 
-   An inter-proc coupled equation produces communications calculating the 
-   sparsity mask of the matrix
-   An inter-proc coupled equation produces communications adding element
-   matrices to the system matrix
-   An inter-proc coupled equation ruins the bandwith locally
-   ->
-   Now one processor has to be owner of the coupled equation. 
-   Try to distribute the coupled equations equally over the processors
-
-   The matrix has the following style (after allreduce on all procs the same):
-   
-               ----------------------
-               | 12 | 2 | 0 | 1 | 0 |
-               | 40 | 2 | 0 | 0 | 0 |
-               | 41 | 1 | 2 | 1 | 1 |
-               | 76 | 0 | 1 | 2 | 0 |
-               ----------------------
-               
-               column 0                : number of the coupled equation
-               column 1 - inprocs+1 : proc has coupled equation or not
-                                         2 indicates owner of equation
-*/
-
-if (!no_coupling)
-{
-
-  if (inprocs > 1)
-  {
-    tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
-    if (!tmp) dserror("Allocation of temporary memory failed");
-    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/*  loop coupled eqns */
-    {
-      /*--------------------------------- check whether its inter-proc eqn */
-      inter_proc=0;
-      for (j=0; j<inprocs; j++) inter_proc += actpart->pdis[kk].coupledofs.a.ia[i][j+1];
-      if (inter_proc==1)/*----------------- no inter-processor coupling */
-      {
-        for (j=0; j<inprocs; j++)
-        {
-          if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
-          {
-            actpart->pdis[kk].coupledofs.a.ia[i][j+1]=2;
-            break;
-          }
-        }
-      }
-      else/*----------------------------- eqn is an inter-proc equation */
-      {
-        /* there won't be more than a million procs in the near future....*/
-        min=1000000;
-        proc=-1;
-        for (j=0; j<inprocs; j++)
-        {
-          if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
-          {
-            if (tmp[j]<=min)
-            {
-              min = tmp[j];
-              proc = j;
-            }
-          }
-        }
-        actpart->pdis[kk].coupledofs.a.ia[i][proc+1]=2;
-        tmp[proc] += 1;
-      }
-    }/* end loop over coupling eqns */
-    CCAFREE(tmp);
-  }
-  /* procs who have not become owner of a coupling equation have to reduce there
-     number of equations */
-  if (inprocs > 1)
-  {
-    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/* loop coupled eqns */
-    {
-      /* ------Yes, I am slave owner of an inter_proc coupling equation */
-      if (actpart->pdis[kk].coupledofs.a.ia[i][imyrank+1]==1)
-      {
-        (*numeq) = (*numeq)-1;
-      }
-      /* master owner of equation do nothing, 'cause the equation has been
-         counted already */
-    }
-  }
-
-} /* end of if(!no_coupling) */
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of msr_numeq */
-
-
 
 
 
@@ -878,70 +571,6 @@ return;
 
 
 
-
-
-
-/*----------------------------------------------------------------------*
- |  check whether this dof is in coupledofs              m.gee 6/01     |
- *----------------------------------------------------------------------*/
-void dof_in_coupledofs(INT dof, PARTITION *actpart, INT *iscoupled)
-{
-INT       i;
-#ifdef DEBUG 
-dstrc_enter("dof_in_coupledofs");
-#endif
-/*----------------------------------------------------------------------*/
-   for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-   {
-      if (dof==actpart->pdis[kk].coupledofs.a.ia[i][0])
-      {
-         *iscoupled = 1;
-         break;
-      }
-   }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of dof_in_coupledofs */
-
-
-
-
-/*----------------------------------------------------------------------*
- |  find the node to this dof in partition               m.gee 6/01     |
- *----------------------------------------------------------------------*/
-void dof_find_centernode(INT dof, PARTITION *actpart, NODE **centernode)
-{
-INT       j,k;
-#ifdef DEBUG 
-dstrc_enter("dof_find_centernode");
-#endif
-/*----------------------------------------------------------------------*/
-for (j=0; j<actpart->pdis[kk].numnp; j++)
-{
-   for (k=0; k<actpart->pdis[kk].node[j]->numdf; k++)
-   {
-      if (actpart->pdis[kk].node[j]->dof[k] == dof)
-      {
-         *centernode = actpart->pdis[kk].node[j];
-         goto nodefound1;
-      }
-   }
-}
-nodefound1:
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of dof_find_centernode */
-
-
-
-
-
 /*----------------------------------------------------------------------*
  |  make the DMSR vector bindx                              m.gee 6/01  |
  | for format see Aztec manual                                          |
@@ -984,7 +613,214 @@ return;
 
 
 
+/*----------------------------------------------------------------------*/
+/*!
+ \brief 
+
+ This routine determines the location vactor for the actele and stores it
+ in the element structure.  Furthermore for each component [i][j] in the 
+ element stiffness matrix the position in the 1d sparse matrix is 
+ calculated and stored in actele->index[i][j]. These can be used later on 
+ for the assembling procedure.
+  
+ \param actfield  *FIELD        (i)  the field we are working on
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param msr1      *AZ_ARRAY_MSR (i)  the sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
+void msr_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _AZ_ARRAY_MSR  *msr1
+    )
+{
+
+  INT         i,j,counter;          /* some counter variables */
+  INT         start,index,lenght;       /* some more special-purpose counters */
+  INT         ii,jj;                    /* counter variables for system matrix */
+  INT         ii_iscouple;              /* flag whether ii is a coupled dof */
+  INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
+  INT         ii_index;                 /* place of ii in dmsr format */
+  INT         nd;                       /* size of estif */
+  INT         numeq_total;              /* total number of equations */
+  INT         numeq;                    /* number of equations on this proc */
+  INT         myrank;                   /* my intra-proc number */
+  INT         nprocs;                   /* my intra- number of processes */
+  INT        *update;                   /* msr-vector update see AZTEC manual */
+  INT         shift;                    /* variables for aztec quick finding algorithms */
+  INT        *bins;
+  INT        *bindx;                    /*    "       bindx         "         */
+  INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+  INT         ncdofs;                   /* total number of coupled dofs */
+
+  struct _ARRAY ele_index;
+  struct _ARRAY ele_locm;
+#ifdef PARALLEL
+  struct _ARRAY ele_owner;
+#endif
+
+#ifdef DEBUG 
+  dstrc_enter("msr_make_index");
+#endif
+
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  numeq_total= msr1->numeq_total;
+  numeq      = msr1->numeq;
+  update     = msr1->update.a.iv;
+  bindx      = msr1->bindx.a.iv;
+  cdofs      = actpart->pdis[0].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+
+
+  /* allocate and calculate shifts and bins for quick_find routines */
+  if (!(msr1->bins))
+  {
+    msr1->bins = (INT*)CCACALLOC( ABS(4+numeq/4),sizeof(INT));
+    if (!(msr1->bins)) dserror("Allocation of msr->bins failed");
+    AZ_init_quick_find(update,numeq,&(msr1->shift),msr1->bins);
+  }
+  shift      = msr1->shift;
+  bins       = msr1->bins;
+
+  /* determine the size of estiff */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
+  nd = counter;
+  actele->nd = counter;
+
+
+  /* allocate locm, index and owner */
+  actele->locm  = amdef("locm" ,&ele_locm ,nd, 1,"IV");
+  actele->index = amdef("index",&ele_index,nd,nd,"IA");
+#ifdef PARALLEL
+  actele->owner = amdef("owner",&ele_owner,nd, 1,"IV");
+#endif
+
+
+  /* make location vector locm */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      actele->locm[counter]    = actele->node[i]->dof[j];
+#ifdef PARALLEL 
+      actele->owner[counter]   = actele->node[i]->proc;
+#endif
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
 
 
 
+  /* now start looping the dofs */
+  /* loop over i (the element row) */
+  ii_iscouple = 0;
+  ii_owner    = myrank;
+
+  for (i=0; i<nd; i++)
+  {
+    ii = actele->locm[i];
+
+    /* loop only my own rows */
+#ifdef PARALLEL 
+    if (actele->owner[i]!=myrank) 
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+#endif
+
+    /* check for boundary condition */
+    if (ii>=numeq_total)
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+
+    /* check for coupling condition */
+#ifdef PARALLEL 
+    if (ncdofs)
+    {
+      ii_iscouple = 0;
+      ii_owner    = -1;
+      add_msr_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
+    }
+#endif
+
+
+    /* loop over j (the element column) */
+    for (j=0; j<nd; j++)
+    {
+      jj = actele->locm[j];
+
+      /* check for boundary condition */
+      if (jj>=numeq_total) 
+      {
+        actele->index[i][j] = -1;
+        continue;
+      }
+
+      /* do main-diagonal entry */
+      /* (either not a coupled dof or I am master owner) */
+      if (!ii_iscouple || ii_owner==myrank)
+      {
+        if (ii==jj)
+        {
+          ii_index = AZ_quick_find(ii,update,numeq,shift,bins);
+          if (ii_index==-1) dserror("dof ii not found on this proc");
+          actele->index[i][j] = ii_index;
+        } 
+        /* do off-diagonal entry in row ii */
+        else
+        {
+          ii_index    = AZ_quick_find(ii,update,numeq,shift,bins);
+          if (ii_index==-1) dserror("dof ii not found on this proc");
+          start       = bindx[ii_index];
+          lenght      = bindx[ii_index+1]-bindx[ii_index];
+          index       = AZ_find_index(jj,&(bindx[start]),lenght);
+          if (index==-1) dserror("dof jj not found in this row ii");
+          index      += start;
+          actele->index[i][j] = index;
+        }
+      }
+
+      /* do main-diagonal entry */
+      /* (a coupled dof and I am slave owner) */
+      else
+      {
+        actele->index[i][j] = -2;
+      }
+
+    } /* end loop over j */
+  }/* end loop over i */
+
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of msr_make_index */
+
+
+#endif /* ifdef AZTEC_PACKAGE */
 

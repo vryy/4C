@@ -10,6 +10,11 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+
+#ifdef UMFPACK
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
@@ -31,6 +36,9 @@ INT     **dof_connect;
 ARRAY     bindx_a;
 INT      *bindx;
 ARRAY     red_dof_connect;
+
+ELEMENT  *actele;
+
 #ifdef DEBUG 
 dstrc_enter("mask_ccf");
 #endif
@@ -47,7 +55,7 @@ dstrc_enter("mask_ccf");
 ccf->numeq_total = actfield->dis[0].numeq;
 /* count number of eq_totalns on proc and build processor-global couplingdof 
                                                                  matrix */
-msr_numeq(actfield,actpart,actsolv,actintra,&numeq);
+mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 ccf->numeq = numeq;
 /*---------------------------------------------- allocate vector update */
 amdef("update",&(ccf->update),numeq,1,"IV");
@@ -93,6 +101,14 @@ for (i=0; i<ccf->numeq_total; i++)
 }
 CCAFREE(dof_connect);
 amdel(&bindx_a);
+
+/* make the index vector for faster assembling */
+  for (i=0; i<actpart->pdis[0].numele; i++)
+  {
+    actele = actpart->pdis[0].element[i];
+    ccf_make_index(actfield,actpart,actintra,actele,ccf);
+  }
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -693,3 +709,175 @@ dstrc_exit();
 #endif
 return;
 } /* end of ccf_make_sparsity */
+;
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+ \brief 
+
+ This routine determines the location vactor for the actele and stores it
+ in the element structure.  Furthermore for each component [i][j] in the 
+ element stiffness matrix the position in the 1d sparse matrix is 
+ calculated and stored in actele->index[i][j]. These can be used later on 
+ for the assembling procedure.
+  
+ \param actfield  *FIELD        (i)  the field we are working on
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param ccf1      *CCF          (i)  the sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
+void ccf_make_index(
+    FIELD                 *actfield, 
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    ELEMENT               *actele,
+    struct _CCF           *ccf1
+    )
+{
+
+  INT         i,j,counter;              /* some counter variables */
+  INT         start,index,lenght;       /* some more special-purpose counters */
+  INT         ii,jj;                    /* counter variables for system matrix */
+  INT         nd;                       /* size of estif */
+  INT         nnz;                      /* number of nonzeros in sparse system matrix */
+  INT         numeq_total;              /* total number of equations */
+  INT         numeq;                    /* number of equations on this proc */
+  INT         myrank;                   /* my intra-proc number */
+  INT         nprocs;                   /* my intra- number of processes */
+  INT        *Ai;                       /*    "       Ap (column pointer) see UMFPACK manual */
+  INT        *Ap;                       /*    "       Ai see UMFPACK manual */
+  DOUBLE     *Ax;                       /*    "       Ax see UMFPACK manual */
+  INT        *update;                   /* vector update see AZTEC manual */
+  INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+  INT         ncdofs;                   /* total number of coupled dofs */
+
+  struct _ARRAY ele_index;
+  struct _ARRAY ele_locm;
+#ifdef PARALLEL
+  struct _ARRAY ele_owner;
+#endif
+
+
+#ifdef DEBUG 
+  dstrc_enter("ccf_make_index");
+#endif
+
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  nnz        = ccf1->nnz;
+  numeq_total= ccf1->numeq_total;
+  numeq      = ccf1->numeq;
+  update     = ccf1->update.a.iv;
+  Ax         = ccf1->Ax.a.dv;
+  Ai         = ccf1->Ai.a.iv;
+  Ap         = ccf1->Ap.a.iv;
+  cdofs      = actpart->pdis[0].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+
+
+  /* determine the size of estiff */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
+  nd = counter;
+  actele->nd = counter;
+
+
+  /* allocate locm, index and owner */
+  actele->locm  = amdef("locm" ,&ele_locm ,nd, 1,"IV");
+  actele->index = amdef("index",&ele_index,nd,nd,"IA");
+#ifdef PARALLEL
+  actele->owner = amdef("owner",&ele_owner,nd, 1,"IV");
+#endif
+
+
+  /* make location vector locm */
+  counter=0;
+  for (i=0; i<actele->numnp; i++)
+  {
+    for (j=0; j<actele->node[i]->numdf; j++)
+    {
+      actele->locm[counter]    = actele->node[i]->dof[j];
+#ifdef PARALLEL 
+      actele->owner[counter]   = actele->node[i]->proc;
+#endif
+      counter++;
+    }
+  }
+  /* end of loop over element nodes */
+
+
+
+
+  /* now start looping the dofs */
+  /* loop over i (the element column) */
+  for (i=0; i<nd; i++)
+  {
+    ii = actele->locm[i];
+
+    /* loop only my own rows */
+#ifdef PARALLEL 
+    if (actele->owner[i]!=myrank) 
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+#endif
+
+    /* check for boundary condition */
+    if (ii>=numeq_total)
+    {
+      for (j=0; j<nd; j++) actele->index[i][j] = -1;
+      continue;
+    }
+
+    /* loop over j (the element row) */
+    start         = Ap[ii];
+    lenght        = Ap[ii+1]-Ap[ii];
+    for (j=0; j<nd; j++)
+    {
+      jj = actele->locm[j];
+
+      /* check for boundary condition */
+      if (jj>=numeq_total) 
+      {
+        actele->index[i][j] = -1;
+        continue;
+      }
+
+      index         = find_index(jj,&(Ai[start]),lenght);
+      if (index==-1) dserror("dof jj not found in this row ii");
+      index        += start;
+      actele->index[i][j] = index;
+
+    } /* end loop over j */
+  }/* end loop over i */
+
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ccf_make_index */
+
+
+
+#endif /* ifdef UMFPACK */
+
