@@ -88,6 +88,51 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(mat[i].m.neohooke->possionratio)  ,&ierr);
       frdouble("DENS",&(mat[i].m.neohooke->density)        ,&ierr);
    }
+   frchk("MAT_MFOC",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_mfoc;
+      mat[i].m.mfoc = (MFOC*)CCACALLOC(1,sizeof(MFOC));
+      if (mat[i].m.mfoc==NULL) dserror("Alloocation of Open Cell foam material failed");
+      frdouble("Es"     ,&(mat[i].m.mfoc->es)          ,&ierr);
+      frdouble("pr"     ,&(mat[i].m.mfoc->pr)          ,&ierr);
+      frdouble("dens"   ,&(mat[i].m.mfoc->dens)        ,&ierr);  /* por. density */
+      frdouble("denss"  ,&(mat[i].m.mfoc->denss)       ,&ierr);  /* ref. density */
+      frdouble("oce"    ,&(mat[i].m.mfoc->oce)         ,&ierr);
+      frdouble("ocf"    ,&(mat[i].m.mfoc->ocf)         ,&ierr);
+      frdouble("densmin",&(mat[i].m.mfoc->denmin)      ,&ierr);
+      frdouble("densmax",&(mat[i].m.mfoc->denmax)      ,&ierr);
+   }
+   frchk("MAT_MFCC",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_mfcc;
+      mat[i].m.mfcc = (MFCC*)CCACALLOC(1,sizeof(MFCC));
+      if (mat[i].m.mfoc==NULL) dserror("Alloocation of Closed Cell foam material failed");
+      frdouble("Es"     ,&(mat[i].m.mfcc->es)          ,&ierr);
+      frdouble("pr"     ,&(mat[i].m.mfcc->pr)          ,&ierr);
+      frdouble("dens"   ,&(mat[i].m.mfcc->dens)        ,&ierr);  /* por. density */
+      frdouble("denss"  ,&(mat[i].m.mfcc->denss)       ,&ierr);  /* ref. density */
+      frdouble("cce"    ,&(mat[i].m.mfcc->cce)         ,&ierr);
+      frdouble("ccf"    ,&(mat[i].m.mfcc->ccf)         ,&ierr);
+      frdouble("densmin",&(mat[i].m.mfcc->denmin)      ,&ierr);
+      frdouble("densmax",&(mat[i].m.mfcc->denmax)      ,&ierr);
+   }
+   frchk("MAT_NeoHMFCC",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_nhmfcc;
+      mat[i].m.nhmfcc = (NHMFCC*)CCACALLOC(1,sizeof(NHMFCC));
+      if (mat[i].m.nhmfcc==NULL) dserror("Alloocation of foam material failed");
+      frdouble("Es"     ,&(mat[i].m.nhmfcc->es)          ,&ierr);
+      frdouble("pr"     ,&(mat[i].m.nhmfcc->pr)          ,&ierr);
+      frdouble("dens"   ,&(mat[i].m.nhmfcc->dens)        ,&ierr);  /* por. density */
+      frdouble("denss"  ,&(mat[i].m.nhmfcc->denss)       ,&ierr);  /* ref. density */
+      frdouble("cce"    ,&(mat[i].m.nhmfcc->cce)         ,&ierr);
+      frdouble("ccf"    ,&(mat[i].m.nhmfcc->ccf)         ,&ierr);
+      frdouble("densmin",&(mat[i].m.nhmfcc->denmin)      ,&ierr);
+      frdouble("densmax",&(mat[i].m.nhmfcc->denmax)      ,&ierr);
+   }
    frchk("MAT_Struct_Ogden",&ierr);
    if (ierr==1)
    {
