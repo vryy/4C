@@ -71,14 +71,23 @@ extern struct _ARRAY eforce_global;   /* element RHS                    */
 
 
 /*!---------------------------------------------------------------------
-\brief 
+\brief controls the evaluation of consistent boundary forces for l&d
 
 <pre>                                                        chfoe 09/04
-
+This routine controls the evaluation of consistent boundary forces along
+dirichlet boundary lines for lift & drag values.
+Within an init phase (init=0) all elements which participate at a liftdrag
+line are searched and labled by setting the flag
+actele->e.f2->force_on on the respective liftdrag evaluation flag.
+In the main part these elements are visited again, its interesting nodes 
+(the ones which are situated on the lift&drag line) are found and the 
+elemental residual vector is calculated. 
+Lift&drag forces are the respective sum of the elemental residual entities.
 
 </pre>
-\param   is_relax        INT            (i)   flag
-\param   init	         INT	        (i)   init flag
+\param   *actpdis        PARTDISCRET    (i)   
+\param   *container      CONTAINER      (i)   
+\param    init           INT            (i)   init flag
 
 \warning At the moment only elements with the same number of dofs at all
          nodes can be treated.
@@ -176,7 +185,7 @@ if (init==0)
    break;
    case 3:
 #ifdef D_FLUID3
-      dserror("not yet implemented! (go for liftdrag stress instead)");
+      dserror("liftdrag nodeforce for 3D not yet implemented! (go for liftdrag stress instead)");
 #endif
    break;
    }
@@ -198,18 +207,8 @@ case 2: /* problem is two-dimensional */
    { 
       
       actele = actpdis->element[i];
-      
-/* Das folgende ist nur zur internen Gleichgewichtskontrolle */ /*
-      f2_caleleres(actele,&eforce_global,&hasdirich,&hasext);              
-      for(j=0; j<actele->numnp; j++)
-         {
-            actnode = actele->node[j];
-            actnode->sol_increment.a.da[8][0] += eforce[3*j]   * timefac;
-            actnode->sol_increment.a.da[8][1] += eforce[3*j+1] * timefac;
-            
-         }
-/*-----------------------------------------------------------------------*/
 
+     /*------------------------------------------------------------------*/
       if (actele->e.f2->force_on==0) continue; /* element not of interest*/
       nfnode = 0;
       for(j=0; j<MAXNOD; j++)
