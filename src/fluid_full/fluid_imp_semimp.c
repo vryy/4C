@@ -173,7 +173,6 @@ INT             converged=0;        /* convergence flag                 */
 INT             steady=0;           /* flag for steady state            */
 INT             actpos;             /* actual position in sol. history  */
 INT             restart;
-INT             step_s;
 INT		repeat=0;	    /* flag, repeat time step?		*/
 INT		repeated=0;	    /* has time step been repeated?	*/
 DOUBLE          vrat,prat;          /* convergence ratios               */
@@ -408,15 +407,7 @@ fdyn->step++;
 iststep++;
 
 /*------------------------------------------ check (starting) algorithm */
-if (restart!=0)
-{
-  step_s=fdyn->step;
-  fdyn->step=1;
-  fluid_startproc(fdyn,&nfrastep);
-  restart=0; 
-  fdyn->step = step_s;
-}
-if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
+if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep,0);
 
 /*------------------------------ calculate constants for time algorithm */
 fluid_tcons(fdyn,dynvar);

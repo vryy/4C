@@ -129,7 +129,6 @@ static INT             restart;
 INT                    calstress=1;        /* flag for stress calculation      */
 INT                    converged=0;        /* convergence flag                 */
 INT                    steady=0;           /* flag for steady state            */
-INT                    step_s;
 
 DOUBLE			liftdrag[3];	/* array with lift & drag coeff.*/
 DOUBLE			recv[3];	
@@ -325,6 +324,8 @@ if (ioflags.monitor==1)
 monitoring(actfield,numff,actpos,0,fdyn->time);
 /*-------------------------------------- print out initial data to .out */
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+/*---------- calculate time independent constants for time algorithm ---*/
+fluid_cons(fdyn,dynvar);
 break;
 
 /*======================================================================*
@@ -350,17 +351,10 @@ if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,1,1,1,3);
 /*- there are only procs allowed in here, that belong to the fluid -----*/
 /* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
 if (actintra->intra_fieldtyp != fluid) break;
+
 /*------------------------------------------ check (starting) algorithm */
-if (restart!=0)
-{
-   step_s=fdyn->step;
-   fdyn->step=1;
-   fluid_startproc(fdyn,&nfrastep);
-   restart=0; 
-   fdyn->step = step_s;
-}
 if (fdyn->step<=(fdyn->nums+1))
-   fluid_startproc(fdyn,&nfrastep);
+   fluid_startproc(fdyn,&nfrastep,0);
 
 /*------------------------------ calculate constants for time algorithm */
 fluid_tcons(fdyn,dynvar);

@@ -412,7 +412,7 @@ timeloop:
 fdyn->step++;
 iststep++;
 /*------------------------------------------ check (starting) algorithm */
-if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
+if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep,0);
 
 /*------------------------------ calculate constants for time algorithm */
 fluid_tcons(fdyn,dynvar);

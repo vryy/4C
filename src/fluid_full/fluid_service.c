@@ -83,7 +83,8 @@ during the rest of the simulation.
 ------------------------------------------------------------------------*/
 void fluid_startproc(
                           FLUID_DYNAMIC     *fdyn,
-		          INT               *nfrastep 
+		          INT               *nfrastep,
+                          INT                init
 		    )
 {
 static INT     iop_s;
@@ -96,14 +97,16 @@ static DOUBLE  thetas_s;
 dstrc_enter("fluid_startproc");
 #endif 
 
-if (fdyn->step==1)  /* save parameter from input */
+if (init==1)  /* save parameter from input */
 {
    iop_s    = fdyn->iop;
    iops_s   = fdyn->iops;
    itemax_s = fdyn->itemax;
    theta_s  = fdyn->theta;
    thetas_s = fdyn->thetas;
+   goto end;
 }
+
 if (fdyn->step<=fdyn->nums) /* set parameter for starting phase */
 {
    fdyn->iop    = iops_s;
@@ -131,6 +134,7 @@ else if (fdyn->step==(fdyn->nums+1)) /* set original parameter */
 }
 
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -166,9 +170,11 @@ dstrc_enter("fluid_cons");
 #endif
 /*----------------------------------------------------------------------*/
 dynvar->dtp = fdyn->dt;
+fluid_startproc(fdyn, NULL,1);
 /*----------------------------------------------------- check algorithm */
 switch(fdyn->iop)
 {
+
 case 1:		/* gen alpha implementation 1 */
    if (fabs(fdyn->theta*TWO*fdyn->alpha_f/fdyn->alpha_m - ONE) > EPS10)
    {
@@ -181,19 +187,33 @@ case 1:		/* gen alpha implementation 1 */
    dynvar->gen_alpha = 1;
    dynvar->omt = ONE-fdyn->theta;
 break;
+
 case 4:		/* one step theta */
    dynvar->dta = 0.0;
    dynvar->omt = ONE-fdyn->theta;
    dynvar->gen_alpha = 0;
 break;
+
 case 7:		/* 2nd order backward differencing BDF2 */
    dynvar->dta = 0.0;
    dynvar->omt = ONE-fdyn->theta;	
    dynvar->gen_alpha = 0;
-   if(fdyn->adaptive)
-      if(FABS(fdyn->thetas - 0.5) > EPS11)
-         dswarning(1,5);   
+
+   /* set number of starting steps for restarts */
+   if (genprob.restart != 0) /* restart using the pss-file */
+   {
+     /* nicht unbedignt notwendig !! */
+     fdyn->nums = genprob.restart + 1;
+   }
+   else  /* restart aus flavia.res */
+   {
+     printf("step: %3d",fdyn->step);
+     fdyn->nums += fdyn->step;
+   }
+   
 break;
+
+
 default:
    dserror ("constants for time algorithm not implemented yet!\n");
 } /* end switch */
