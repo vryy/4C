@@ -9,18 +9,32 @@
 #ifdef AZTEC_PACKAGE
 #ifdef PARALLEL 
 /*-------------------------------- with mpi parallel version of aztec2.1*/
-#ifndef SUN
+#ifdef HPUX11
 #include </bau/stat33/users/statik/lib/AZTEC21_MPI/az_aztec.h>
-#else
+#endif
+
+#ifdef HPUX10
+#include </bau/stat33/users/statik/lib/AZTEC21_MPI/az_aztec.h>
+#endif
+
+#ifdef SUN
 #include "../../../lib_sun/aztec21/lib/az_aztec.h"
 #endif
+
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
-#ifndef SUSE73
+#ifdef HPUX11
 #include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
-#else
+#endif
+
+#ifdef HPUX10
+#include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
+#endif
+
+#ifdef SUSE73
 #include "../../../lib_linux/aztec21/lib/az_aztec.h"
 #endif
+
 #endif
 #endif /* end of ifdef AZTEC_PACKAGE */
 
@@ -47,12 +61,15 @@
 #ifdef SUN
 #include "../../../lib_sun/spooles/MPI/spoolesMPI.h"
 #endif
+
 #ifdef HPUX10
 #include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
 #endif
+
 #ifdef HPUX11
 #include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
 #endif
+
 #ifdef AZUSA
 #include "../../../../lib_ita1/spooles/MPI/spoolesMPI.h"
 #endif
