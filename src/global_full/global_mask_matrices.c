@@ -94,14 +94,14 @@ for (i=0; i<genprob.numfld; i++)
    if (actsolv->solvertyp==aztec_msr)
    {
       if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
       else isaztec_msr=1;
    }
    /*---------- matrix is distributed variable block row DVBR for Aztec */
    if (actsolv->solvertyp==aztec_vbr)
    {
       if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
       else isaztec_vbr=1;
    }
    /*------------------------------------------- matrix is hypre_parcsr */
@@ -113,14 +113,14 @@ for (i=0; i<genprob.numfld; i++)
       )
    {
       if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Hypre"); 
       else ishypre=1;
    }
    /*---- matrix is unsym. column compressed Harwell Boeing for superLU */
    if (actsolv->solvertyp==parsuperlu)
    {
       if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Superlu"); 
       else isucchb=1;
    }
    /*------------------------ matrix is (non)symmetric dense for Lapack */
@@ -142,7 +142,7 @@ for (i=0; i<genprob.numfld; i++)
    if (actsolv->solvertyp==umfpack)
    {
       if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Umfpack"); 
       else isumfpack=1;
    }
    /*------------------------------ matrix is skyline format for colsol */
