@@ -300,6 +300,65 @@ ARRAY            monnodes;     /*!< postion in field for monitor nodes */
 ARRAY            val;          /*!< monitoring values for output */
 } MONITOR;
 
+#ifdef D_MORTAR
+/*----------------------------------------------------------------------*
+ | INTERFACE                               (mfirl 02/04)  chfoe 07/04   |
+ *----------------------------------------------------------------------*/
+typedef struct _INTERFACE
+{
+     INT Id;                                 /* the Id of the interface*/
+     INT numnps;                             /* nmb of slave nodes */
+     INT numnpm;                             /* nmb of master nodes */
+     INT numeles;                            /* nmb of slave elements */
+     INT numelem;                            /* nmb of master elements */
+     GNODE *gnode_bound1s;                   /* the gnode at the beginning*/
+                                             /* of the slave interface */
+     GNODE *gnode_bound2s;                   /* the gnode at the end */
+                                             /* of the slave interface */
+     GNODE *gnode_bound1sc;                  /* a gnode that connects */
+                                             /* two slave interfaces */
+     GNODE *gnode_bound2sc;                  /* a gnode that connects */
+                                             /* two slave interfaces */
+     GNODE *gnode_bound1m;                   /* the gnode at the beginning*/
+                                             /* of the master interface */
+     GNODE *gnode_bound2m;                   /* the gnode at the end */
+                                             /* of the master interface */
+     GNODE *gnode_bound1mc;                  /* a gnode that connects */
+                                             /* two master interfaces */
+     GNODE *gnode_bound2mc;                  /* a gnode that connects */
+                                             /* two master interfaces */
+     DOUBLE *int_vec;                        /* the vector which denotes */
+                                             /* the positve direction of */
+                                             /* the interface */                                        
+     
+     struct _ELEMENT **elements;             /* pointer vector of the */
+                                             /* slave elements */
+     struct _ELEMENT **elementm;             /* pointer vector of the */
+                                             /* master elements */
+     
+     struct _NODE    **nodes;                /* pointer vector of the */
+                                             /* slave nodes */
+     struct _NODE    **nodem;                /* pointer vector of the */
+                                             /* master nodes */
+
+     struct _DENSE    *continuity_eq;        /* pointer to a dense */
+                                             /* structure*/
+     struct _DENSE    *conti_eq_save;        /* pointer to a dense */
+                                             /* structure*/
+} INTERFACE;
+/*----------------------------------------------------------------------*
+ | INTERFACES                               (mfirl 02/04)  chfoe 07/04  |
+ *----------------------------------------------------------------------*/
+typedef struct _INTERFACES
+{
+     INT    numint;                          /* number of interfaces */
+     INT    *int_ids;                        /* pointer to a vector */
+                                             /* of interface ids */
+     struct _INTERFACE   *interface;         /* array of pointers to */
+                                             /* the several interfaces*/
+} INTERFACES;
+
+#endif
 
 #ifdef RESULTTEST
 
