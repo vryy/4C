@@ -1,4 +1,18 @@
+/*!
+\file
+\brief Read the predefined (expected) results from the input file.
 
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
+</pre>
+
+\author uk
+\date 06/04
+
+*/
 #ifdef RESULTTEST
 
 #include "../headers/standardtypes.h"
@@ -8,18 +22,26 @@ extern struct _GENPROB genprob;
 extern struct _RESULTDESCR* resultdescr;
 
 
-/*
+/*!
+ * \brief Read all the result description lines.
+ *
  * Read all the result description lines. Such a line looks like:
  *
+ * <pre>
  * fieldname DIS x NODE y POSITION sol(row,col) NAME name VALUE value TOLERANCE tolerance
- *
- * or
+ * </pre>
  * 
- * fieldname DIS x ELEMENT y POSITION somename(i,...,k) NAME name VALUE value TOLERANCE tolerance
- *
  * or
  *
+ * <pre>
+ * fieldname DIS x ELEMENT y POSITION somename(i,...,k) NAME name VALUE value TOLERANCE tolerance
+ * </pre>
+ * 
+ * or
+ *
+ * <pre>
  * fieldname SPECIAL x
+ * </pre>
  */
 void inp_resultdescr()
 {

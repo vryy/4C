@@ -1,6 +1,6 @@
-/*!----------------------------------------------------------------------
+/*!
 \file
-\brief 
+\brief Compare result values (after the calculation finished) with predefined ones.
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -32,7 +32,11 @@ processor and will be checked there. But of course this way it might
 happen that it is not checked anywhere and this failure goes
 undetected.
 
-*----------------------------------------------------------------------*/
+\author uk
+\date 06/04
+
+*/
+
 #ifdef RESULTTEST
 #include "../headers/standardtypes.h"
 #include "../axishell/axishell.h"
@@ -71,23 +75,43 @@ and the type is in partition.h
 extern struct _FIELD      *field;
 
 
+/*!----------------------------------------------------------------------
+\brief one proc's info about his partition
+
+<pre>                                                         m.gee 8/00
+-the partition of one proc (all discretizations)
+-the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
 
 
-/*
- * An array of expected results. This is read from the input file.
+/*!
+ * \brief An array that contains the expected results.
+ *
+ * Along with the real values the position in the mesh ist stored. The
+ * data is read from the input file.
+ *
+ * \author uk
+ * \date 06/04
  */
 struct _RESULTDESCR      *resultdescr;
 
 
-/*
- * Read a positions description. See if its name equals |name|. If so
+/*!
+ * \brief Read a positions description.
+ *
+ * See if its name equals |name|. If so
  * read |nargs| integer arguments and store them in |args|.
  * 
  * \param position   a string of the form "name(x1,...,xn)" read from the input file
  * \param name       the expected name
  * \param nargs      the expected number of arguments
  * \param args       an array of size |nargs| that is going to be filled
+ *
+ * \author uk
+ * \date 06/04
  */
 static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
 {
@@ -135,13 +159,16 @@ static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args
 }
 
 
-/*
- * return the specified value
+/*!
+ * \brief return the specified value
  * 
  * \param actnode    a node
  * \param position   a string of the form "name(x1,...,xn)" read from the input file
  *                   It describes a value in one of the solution array
  *                   of the given node.
+ * 
+ * \author uk
+ * \date 06/04
  */
 static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 {
@@ -189,12 +216,15 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 }
 
 
-/*
- * Compare |actresult| with |givenresult| and return |0| if they are
+/*!
+ * \brief Compare |actresult| with |givenresult| and return |0| if they are
  * considered to be equal.
  * 
  * \param err        the file where to document both values
  * \param res        the describtion of the expected result including name and tolerance
+ * 
+ * \author uk
+ * \date 06/04
  */
 static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESULTDESCR *res)
 {
@@ -222,9 +252,14 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
 
 
 
-/*
- * Find node with id |nodenum|. Only the given partition and
+/*!
+ * \brief Find node with id |nodenum|.
+ *
+ * Only the given partition and
  * discretization is searched.
+ * 
+ * \author uk
+ * \date 06/04
  */
 static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
 {
@@ -251,9 +286,14 @@ static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
 }
 
 
-/*
- * Find element with id |elenum|. Only the given partition and
+/*!
+ * \brief Find element with id |elenum|.
+ *
+ * Only the given partition and
  * discretization is searched.
+ * 
+ * \author uk
+ * \date 06/04
  */
 static ELEMENT* find_element(PARTITION* part, INT disnum, INT elenum)
 {

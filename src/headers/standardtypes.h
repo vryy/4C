@@ -464,5 +464,11 @@ defined in pss_ds.c, declared in tracing.h
  | defined in out_global.c                                              |
  | struct _IO_FLAGS        ioflags;                                     |
  *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                          uk 06/04    |
+ | An array of expected results. This is read from the input file.      |
+ | defined in global_result_test.c                                      |
+ | struct _RESULTDESCR      *resultdescr;                               |
+ *----------------------------------------------------------------------*/
 
 #endif
