@@ -70,19 +70,23 @@ for (i=0; i<actdis->numele; i++)
       fluid2->stab_type = actdsurf->stab_type;
 
       /*--- assign pointer to corresponding stabilisation parameters ---*/
-      if (fluid2->stab_type == stab_gls)
+      switch (fluid2->stab_type)
       {
-        dsassert(actdsurf->stabi.gls!=NULL,"no stabilisation at DSURF!\n");
-        fluid2->stabi.gls = actdsurf->stabi.gls;
+        case stab_gls:
+          dsassert(actdsurf->stabi.gls!=NULL,"no stabilisation at DSURF!\n");
+          fluid2->stabi.gls = actdsurf->stabi.gls;
+        break;
+        case stab_usfem:
+        case stab_prespro:
+         /* nothing needs to be done at the moment (no parameters!) */
+        break;
+        default:
+          dserror("Unknown stabilisation");
       }
-      else if (fluid2->stab_type == stab_prespro)
-        ;   /* nothing needs to be done at the moment (no parameters!) */
-      else
-        dserror("Unknown stabilisation");
     break;
     /*---------------------------- do nothin in the following cases: ---*/
-    case el_fluid2_pro:         /* projection method                    */
-    case el_fluid2_tu:          /* turbulence elements                  */
+    case el_fluid2_pro:       /* projection method                      */
+    case el_fluid2_tu:        /* turbulence elements                    */
 #endif
     break;
     case el_fluid3:
