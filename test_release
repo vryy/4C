@@ -67,6 +67,8 @@ if [ "x$PARALLEL" = "xno" ]; then
   ale2_nln.dat
   ale_3d_hourg.dat
   ale_3d_umfpack.dat
+  ale_3d_umfpack.dat
+  ale_3d_umfpack_fastass.dat
   axishell.dat
   b3_elast.dat
   b3_matnln.dat
@@ -85,6 +87,8 @@ if [ "x$PARALLEL" = "xno" ]; then
   f2_kim-moin.dat
   f2pro_channelflow10x10.dat
   f3_beltrami.dat
+  f3_beltrami_fastass.dat
+  f3_beltrami_fastass2.dat
   f3_ew_Q1_27x.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
@@ -119,6 +123,8 @@ else
   f2_freeosz20x20.dat
   f2_kim-moin.dat
   f3_beltrami.dat
+  f3_beltrami_fastass.dat
+  f3_beltrami_fastass2.dat
   f3_ew_Q1_27x.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
