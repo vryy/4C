@@ -111,6 +111,8 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_brick1_333= 0;
    actgid->is_fluid2_22 = 0;
    actgid->is_fluid2_33 = 0;
+   actgid->is_fluid2_pro_22 = 0;
+   actgid->is_fluid2_pro_33 = 0;
    actgid->is_fluid3_222= 0;
    actgid->is_fluid3_333= 0;
    actgid->is_ale_11    = 0;
@@ -206,6 +208,7 @@ for (i=0; i<genprob.numfld; i++)
             actgid->brick1_333_name = "brick1_333"; 
          }
       break;
+#ifdef D_FLUID2
       case el_fluid2: 
          if (actele->numnp==4)  
          {
@@ -218,6 +221,22 @@ for (i=0; i<genprob.numfld; i++)
             actgid->fluid2_33_name  = "fluid2_33";
          }
       break;
+#endif
+#ifdef D_FLUID2_PRO
+      case el_fluid2_pro:
+         if (actele->numnp==4)  
+         {
+            actgid->is_fluid2_pro_22    = 1;
+            actgid->fluid2_pro_22_name  = "fluid2_pro_22";
+         }
+         if (actele->numnp==8  || actele->numnp==9) 
+         {
+            actgid->is_fluid2_pro_33    = 1;
+            actgid->fluid2_pro_33_name  = "fluid2_pro_33";
+         }
+      break;      
+#endif
+#ifdef D_FLUID3      
       case el_fluid3: 
          if (actele->numnp==8)  
          {
@@ -230,6 +249,7 @@ for (i=0; i<genprob.numfld; i++)
             actgid->fluid3_333_name = "fluid3_333";
          }
       break;
+#endif      
 #ifdef D_ALE
       case el_ale2:    
          if (actele->numnp==4)  
@@ -510,6 +530,30 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
                                                                 sign,actgid->fluid2_33_name,sign,
                                                                 sign,actgid->fluid2_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_fluid2_pro_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2_PRO 2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+                                                                sign,actgid->fluid2_pro_22_name,sign,
+                                                                sign,actgid->fluid2_pro_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_fluid2_pro_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2_PRO 3x3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+                                                                sign,actgid->fluid2_pro_33_name,sign,
+                                                                sign,actgid->fluid2_pro_33_name,sign);
    fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
@@ -2641,7 +2685,7 @@ if (strncmp(string,"pressure",stringlenght)==0)
       }
    }
    fprintf(out,"END VALUES\n");
-} /* end of (strncmp(string,"velocity",stringlenght)==0) */
+} /* end of (strncmp(string,"pressure",stringlenght)==0) */
 /*========================================= result type is thickness */
 #ifdef D_AXISHELL
 if (strncmp(string,"thickness",stringlenght)==0)
