@@ -159,6 +159,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_mask_rcptr.o \
                 ${SRC}/global_full/global_mask_skyline.o \
                 ${SRC}/global_full/global_calelm.o \
+                ${SRC}/global_full/global_calelm_dyn.o \
                 ${SRC}/global_full/global_calrhs.o \
                 ${SRC}/global_full/global_calrhs_nodal.o \
                 ${SRC}/global_full/solver_control.o \
@@ -195,10 +196,9 @@ OBJS4	      = ${SRC}/input_full/input_control_global.o \
                 ${SRC}/input_full/input_mesh.o \
                 ${SRC}/input_full/input_topology.o \
                 ${SRC}/input_full/input_curves.o \
-                ${SRC}/input_full/input_cond_struct.o \
-                ${SRC}/input_full/input_cond_fluid.o \
-                ${SRC}/input_full/input_cond_couple.o \
                 ${SRC}/input_full/input_material.o \
+                ${SRC}/input_full/inherit_insidedesign.o \
+                ${SRC}/input_full/inherit_design_dis.o \
                 ${SRC}/input_full/input_conditions.o
 #                fluid3
 OBJS5	      = ${SRC}/fluid3/f3_inpele.o 

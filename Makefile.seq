@@ -43,13 +43,13 @@ RM	 = /bin/rm -f
 PROGRAM_NAME  = cca_seq_32_debg.exe
 CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
 FFLAGS        = -g
-LDFLAGS       = -v
+LDFLAGS       = 
 AZTEC         = -laztec_seq21_32
 #------------------------------------------------- this is fast-32bit
 #PROGRAM_NAME  = cca_seq_32_fast.exe
 #CFLAGS        = -D__HP__  +e -Ae +w1 -v -O +Onolimit ${PFL}
 #FFLAGS        = -O
-#LDFLAGS       = -v
+#LDFLAGS       = 
 #AZTEC         = -laztec_seq21_32
 #------------------------------------------------ this is debug-64bit
 #PROGRAM_NAME   = cca_seq_64_debg.exe
