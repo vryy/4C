@@ -162,7 +162,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"# RESULT DISPLACEMENTS on FIELD FSI\n");
     fprintf(out,"#-------------------------------------------------------------------------------\n");
-    fprintf(out,"RESULT %cdisplacement%c %cpcarat%c %d %s %s\n",
+    fprintf(out,"RESULT %cdisplacement%c %cccarat%c %d %s %s\n",
         sign,sign,
         sign,sign,
         sdyn->step,
@@ -238,16 +238,16 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
         case 3:
           fprintf(out," %6d %18.5E %18.5E %18.5E\n",
               actnode->Id+1,
-              actanode->sol.a.da[fsidyn->actpos-1][0],
-              actanode->sol.a.da[fsidyn->actpos-1][1],
-              actanode->sol.a.da[fsidyn->actpos-1][2]
+              actanode->sol.a.da[fsidyn->actpos][0],
+              actanode->sol.a.da[fsidyn->actpos][1],
+              actanode->sol.a.da[fsidyn->actpos][2]
               );
           break;
         case 2:
           fprintf(out," %6d %18.5E %18.5E \n",
               actnode->Id+1,
-              actanode->sol.a.da[fsidyn->actpos-1][0],
-              actanode->sol.a.da[fsidyn->actpos-1][1]
+              actanode->sol.a.da[fsidyn->actpos][0],
+              actanode->sol.a.da[fsidyn->actpos][1]
               );
           break;
         default:
@@ -267,8 +267,8 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   /* write velocities and pressure of fluid field */
   if (ioflags.fluid_sol_gid==1) 
   {
-    out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos-1);
-    out_gid_sol("pressure",fluidfield,actintraf,fdyn->step,fsidyn->actpos-1);
+    out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos);
+    out_gid_sol("pressure",fluidfield,actintraf,fdyn->step,fsidyn->actpos);
   }
 
 

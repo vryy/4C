@@ -138,6 +138,7 @@ fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
 fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
  
 /*----------------------------------------------------------------------*/
+out_gid_msh();
 /*======================================================================*
                               T I M E L O O P
  *======================================================================*/
@@ -232,7 +233,7 @@ if (fsidyn->ifsi>=4)
 }
 /*--------------------------------------- write current solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
-if (par.myrank==0) 
+if (par.myrank==0)
   out_gid_sol_fsi(fluidfield,structfield);
 /*-------------------------------------------------------- energy check */
 if (fsidyn->ichecke>0) fsi_energycheck(fsidyn);
@@ -250,7 +251,6 @@ fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
 fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
 fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);   
 
-out_gid_msh();
 
 /*----------------------------------------------------------------------*/
 #else

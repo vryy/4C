@@ -518,6 +518,8 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 if (ioflags.monitor==1)
 monitoring(actfield,numff,actpos,fdyn->step,fdyn->time);
 
+fsidyn->actpos = actpos;
+
 if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 {
    pssstep=0;
@@ -526,7 +528,6 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
       amredef(&(time_a),time_a.fdim+100,1,"DV");
    time_a.a.dv[actpos] = fdyn->time;   
    actpos++;
-   fsidyn->actpos = actpos;
 } 
 /*--------------------------------------------------------------------- */
 break;   
