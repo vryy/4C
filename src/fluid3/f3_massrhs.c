@@ -56,7 +56,6 @@ INT	dofpern=dim+1;	/* degrees of freedom per node			*/
 dstrc_enter("f3_massrhs");
 #endif
 
-dserror("Mass right hand side for fluid 3D has not been checked yet!!");
 /*------------------------------------------------- set initial data ---*/
 iel=ele->numnp;
 
