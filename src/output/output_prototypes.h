@@ -24,6 +24,7 @@ void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
 
 void out_fluidmf(FIELD *fluidfield);
 void out_fsi(FIELD *fluidfield);
+void out_ssi(FIELD *masterfield);
 void out_fluidtu(FIELD *actfield, INTRA *actintra, INT step, INT place);
 /*----------------------------------------------------------------------*
  |  out_gid_sol.c                                        m.gee 12/01    |
@@ -32,13 +33,17 @@ void out_gid_sol_init(void);
 void out_gid_domains(FIELD *actfield);
 void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, INT step,
                  INT place, DOUBLE time);
-void out_fsi(FIELD *fluidfield);
 void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield);
+void out_gid_domains_ssi(FIELD *actfield, INT numaf);
 /*----------------------------------------------------------------------*
  |  out_gid_soldyn.c                                     m.gee 5/03     |
  *----------------------------------------------------------------------*/
 void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, INT step,
                    INT place, DOUBLE totaltime);
+/*----------------------------------------------------------------------*
+ |  out_gid_solssi.c                                    chfoe 07/04     |
+ *----------------------------------------------------------------------*/
+void out_gid_sol_ssi(FIELD *slavefield, FIELD *masterfield);
 /*----------------------------------------------------------------------*
  |  out_gid_msh.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/

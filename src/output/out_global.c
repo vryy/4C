@@ -143,6 +143,9 @@ switch(genprob.probtyp)
 case prb_fsi:
 fprintf(out,"Type of Problem           : Fluid-Structure-Interaction\n");
 break;
+case prb_ssi:
+fprintf(out,"Type of Problem           : Structure-Structure-Interaction\n");
+break;
 case prb_structure:
 fprintf(out,"Type of Problem           : Structural\n");
 break;
@@ -1121,6 +1124,89 @@ dstrc_exit();
 #endif
 return;
 } /* end of out_fsi */
+
+/*!---------------------------------------------------------------------
+\brief print ssi coupling informations
+
+<pre>                                                         genk 01/03
+		     
+</pre>
+
+\param *masterfield    FIELD   (i)    
+
+\return void                                                                             
+
+------------------------------------------------------------------------*/
+void out_ssi(FIELD *masterfield)
+{
+INT        i;
+FILE      *out = allfiles.out_out;
+NODE      *actmnode, *actsnode;
+GNODE     *actmgnode;
+INT        myrank;
+INT        nprocs;
+INT        numsf;
+
+#ifdef DEBUG 
+dstrc_enter("out_ssi");
+#endif
+
+#ifdef D_SSI
+/*----------------------------------------------------------------------*/
+myrank = par.myrank;
+nprocs = par.nprocs;
+numsf  = 1;
+/*----------------------------------------------------------------------*/
+if (myrank==0)
+{
+fprintf(out,"================================================================================\n");
+fprintf(out,"SSI node connectivity global Ids:\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"\n");
+fprintf(out,"MASTER          SLAVE\n");
+for (i=0;i<masterfield->dis[0].numnp;i++)
+{
+   actmnode  = &(masterfield->dis[0].node[i]);
+   actmgnode = actmnode->gnode;
+   actsnode  = actmgnode->mfcpnode[numsf];
+   if (actsnode!=NULL)
+   fprintf(out,"%-6d         %-6d\n",actmnode->Id,actsnode->Id);
+   else
+   fprintf(out,"%-6d         ------\n",actmnode->Id);    
+
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"SSI node connectivity local Ids:\n");
+fprintf(out,"================================================================================\n");
+fprintf(out,"\n");
+fprintf(out,"MASTER          SLAVE\n");
+for (i=0;i<masterfield->dis[0].numnp;i++)
+{
+   actmnode  = &(masterfield->dis[0].node[i]);
+   actmgnode = actmnode->gnode;
+   actsnode  = actmgnode->mfcpnode[numsf];
+   if (actsnode!=NULL)
+   fprintf(out,"%-6d         %-6d\n",actmnode->Id_loc,actsnode->Id_loc);
+   else
+   fprintf(out,"%-6d         ------\n",actmnode->Id_loc);    
+
+}
+
+fprintf(out,"________________________________________________________________________________\n\n");
+/*----------------------------------------------------------------------*/
+} /* end of if (myrank==0 && imyrank==0) */
+/*----------------------------------------------------------------------*/
+if (myrank==0) fflush(out);
+/*----------------------------------------------------------------------*/
+#else
+dserror("SSI functions not compiled in\n");
+#endif
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_ssi */
 
 /*!---------------------------------------------------------------------
 \brief  print fluid multifield coupling informations

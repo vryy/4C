@@ -1563,6 +1563,71 @@ dstrc_exit();
 return;
 } /* end of out_gid_domains */
 
+/*----------------------------------------------------------------------*
+ |  write the domain numbers to GiD as gausspointvalues     m.gee 12/01 |
+ *----------------------------------------------------------------------*/
+void out_gid_domains_ssi(FIELD *actfield, INT numaf)
+{
+INT           i,j;
+
+FILE         *out = allfiles.gidres;
+ELEMENT      *actele;
+GIDSET       *actgid = NULL;
+char          sign='"';
+
+#ifdef DEBUG 
+dstrc_enter("out_gid_domains");
+#endif
+/*----------------------------------------------------------------------*/
+/*-------------------------------------- find the correct gid structure */
+/*-------------------------------------- find the correct gid structure */
+for (i=0; i<genprob.numfld; i++)
+{
+   if (gid[i].fieldtyp == actfield->fieldtyp)
+   {
+      actgid = &(gid[i]);
+      break;
+   }
+}
+if (!actgid) dserror("Cannot find correct field");
+/*----------------------------------------------------------------------*/
+if (actgid->is_wall1_22)
+{
+  /*---------------------------------------------------------fh 06/02----*/
+  if (numaf == 0) /*print header only for the master field */
+  {
+    fprintf(out,"#-------------------------------------------------------------------------------\n");
+    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->wall1_22_name);
+    fprintf(out,"#-------------------------------------------------------------------------------\n");
+    fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,sign,actgid->wall1_22_name,sign);
+    fprintf(out,"VALUES\n");
+  }                                                                              
+   
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_wall1) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<4; j++)
+    fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+  }
+  if (numaf == 1) /* print end values only for the slave field */
+  {
+    fprintf(out,"END VALUES\n");
+  }
+}
+else
+{
+  dserror("SSI output only for wall1_22 elements");
+}
+/*----------------------------------------------------------------------*/
+fflush(out);
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_gid_domains */
+
 
 
 
@@ -2221,25 +2286,33 @@ if (strncmp(string,"stress",stringlenght)==0)
       resultplace       = "ONGAUSSPOINTS";
       gpset             = actgid->wall1_22_name;
       rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
-                                                             sign,sign,
-                                                             sign,sign,
-                                                             step,
-                                                             resulttype,
-                                                             resultplace,
-                                                             sign,gpset,sign
-                                                             );
-      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdamage%c,%caequiv_strain%c\n",
-             sign,sign,
-	     sign,sign,
-	     sign,sign,
-	     sign,sign,
-	     sign,sign,
-	     sign,sign);
-      fprintf(out,"VALUES\n");
+#ifdef D_SSI
+      /* if we have an ssi coupling condition on this gsurf */
+      if(actfield->dis->element[0].g.gsurf->ssicouple) 
+      if(actfield->dis->element[0].g.gsurf->ssicouple->ssi_couptyp == ssi_master)
+#endif /* D_SSI*/
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                               sign,sign,
+                                                               sign,sign,
+                                                               step,
+                                                               resulttype,
+                                                               resultplace,
+                                                               sign,gpset,sign
+                                                               );
+        fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdummy%c,%cdummy%c\n",
+               sign,sign,
+               sign,sign,
+               sign,sign,
+               sign,sign,
+               sign,sign,
+               sign,sign);
+        fprintf(out,"VALUES\n");
+      }
+
       for (i=0; i<actfield->dis[0].numele; i++)
       {
          actele = &(actfield->dis[0].element[i]);
@@ -2337,7 +2410,10 @@ if (strncmp(string,"stress",stringlenght)==0)
                        0.0
                        );
       }
-      fprintf(out,"END VALUES\n");
+#ifdef D_SSI      
+      if(actfield->dis->element[0].g.gsurf->ssicouple->ssi_couptyp == ssi_slave)
+#endif
+        fprintf(out,"END VALUES\n");
 
    }
    /*-------------------now go through the meshes and print the results */
