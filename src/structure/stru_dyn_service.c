@@ -1,6 +1,9 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+#ifdef GEMM
+#include "../wall1/wall1.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -72,10 +75,12 @@ extern struct _CURVE *curve;
  | to tell element routines what to do                                  |
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
+
+#ifdef WALLCONTACT
+extern struct _WALL_CONTACT contact;
+#endif
+
 extern enum _CALC_ACTION calc_action[MAXFIELD];
-
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -169,7 +174,7 @@ DOUBLE a1,a2,a3,a4,a5,a6,a7;
 dstrc_enter("pefnln_struct");
 #endif
 /*------------------------------------------------------Chung Hulbert --*/
-if (sdyn->Typ == gen_alfa)
+if (sdyn->Typ == gen_alfa || sdyn->Typ == Gen_EMM)
 {
 /*----------------------------------------------------------------------*/
 a1 = -dynvar->constants[0];
@@ -716,6 +721,48 @@ return;
 } /* end of dyn_nlnstruct_outhead */
 
 
+/*----------------------------------------------------------------------*
+ |  print head of nln structural dynamics (GEMM)              m.gee 02/02|
+ *----------------------------------------------------------------------*/
+#ifdef GEMM
+void dyn_nlngemm_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn)
+{
+double  beta;
+double  gamma;
+double  alpham;
+double  alphaf;
+double  xsi;
+#ifdef DEBUG 
+dstrc_enter("dyn_nlngemm_outhead");
+#endif
+/*----------------------------------------------------------------------*/
+beta      = sdyn->beta;
+gamma     = sdyn->gamma;
+alpham    = sdyn->alpha_m;
+alphaf    = sdyn->alpha_f;
+xsi       = sdyn->xsi;
+/*----------------------------------------------------------------------*/
+fprintf(allfiles.out_err,"----------------------------------------------------------------------\n");
+fprintf(allfiles.out_err,"       Nonlinear Structural Dynamics\n");
+fprintf(allfiles.out_err,"\n");
+fprintf(allfiles.out_err,"       Generalized Energy-Momentum Method\n");
+fprintf(allfiles.out_err,"  beta=%f gamma=%f alpha_m=%f alpha_f=%f xsi=%f\n",beta,gamma,alpham,alphaf,xsi);
+fprintf(allfiles.out_err,"----------------------------------------------------------------------\n");
+printf("--------------------------------------------------------------------------\n");
+printf("       Nonlinear Structural Dynamics\n");
+printf("\n");
+printf("       Generalized Energy-Momentum Method\n");
+printf("  beta=%f gamma=%f alpha_m=%f alpha_f=%f xsi=%f\n",beta,gamma,alpham,alphaf,xsi);    
+printf("--------------------------------------------------------------------------\n");
+/*----------------------------------------------------------------------*/
+fflush(allfiles.out_err);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_nlngemm_outhead */
+#endif
 
 /*----------------------------------------------------------------------*
  |  print head of nln structural explicit dynamics           m.gee 05/02|
@@ -1334,3 +1381,56 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_eigen */
+
+
+/*----------------------------------------------------------------------*
+ |  Calculate total energy(for GEMM)                         m.gee 06/02|
+ *----------------------------------------------------------------------*/
+#ifdef GEMM
+void total_energy(PARTITION *actpart,INTRA *actintra, STRUCT_DYN_CALC *dynvar)
+{
+int          i;
+ELEMENT     *actele;
+#ifdef DEBUG 
+dstrc_enter("total_energy");
+#endif
+
+/*----------------------------------------------------------------------*/
+dynvar->total_strain_energy    = 0.0;
+dynvar->total_kinetic_energy   = 0.0;
+dynvar->total_angular_momentum = 0.0;
+dynvar->total_linmom[0] = 0.0;
+dynvar->total_linmom[1] = 0.0;
+dynvar->local_strain_energy    = 0.0;
+dynvar->local_kinetic_energy   = 0.0;
+dynvar->local_angular_momentum = 0.0;
+dynvar->local_linmom[0] = 0.0;
+dynvar->local_linmom[1] = 0.0;
+
+/*----------------------------------------------------------------------*/
+
+for (i=0; i<actpart->pdis[0].numele; i++)
+{
+  actele = actpart->pdis[0].element[i];
+  
+  if (actele->eltyp != el_wall1) continue;
+  if (actele->proc != actintra->intra_rank) continue;
+  dynvar->local_strain_energy    = dynvar->local_strain_energy  + actele->e.w1->strain_energy;
+  dynvar->local_kinetic_energy   = dynvar->local_kinetic_energy + actele->e.w1->kinetic_energy;
+  dynvar->local_linmom[0]        = dynvar->local_linmom[0] +  actele->e.w1->linmom[0];
+  dynvar->local_linmom[1]        = dynvar->local_linmom[1] +  actele->e.w1->linmom[1];
+  dynvar->local_angular_momentum = dynvar->local_angular_momentum + actele->e.w1->angular_momentum;  
+}
+
+ MPI_Allreduce (&(dynvar->local_strain_energy),&(dynvar->total_strain_energy),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+ MPI_Allreduce (&(dynvar->local_kinetic_energy),&(dynvar->total_kinetic_energy),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+ MPI_Allreduce (&(dynvar->local_linmom[0]),&(dynvar->total_linmom[0]),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+ MPI_Allreduce (&(dynvar->local_linmom[1]),&(dynvar->total_linmom[1]),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+ MPI_Allreduce (&(dynvar->local_angular_momentum),&(dynvar->total_angular_momentum),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+  
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+}/* end of total_energy */
+#endif/*GEMM*/

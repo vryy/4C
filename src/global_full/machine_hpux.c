@@ -124,6 +124,24 @@ if (par.myrank==0)
      }
     printf("output is written to       %s\n",allfiles.outputfile_name);
 }     
+
+#ifdef GEMM
+/*---------------------------------------------------- open .gemm file*/
+if (par.myrank==0)
+{     
+     strncpy(charpointer,".gemm",5);
+     if ( (allfiles.out_gemm=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of output file .gemm failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    printf("Gemm output is written to  %s\n",allfiles.outputfile_name);
+}     
+
+#endif
 /*------------------------------------------------------open .err file */
      
      strncpy(charpointer,".err",4);
