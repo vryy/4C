@@ -78,7 +78,7 @@ if (par.myrank != 0) goto end;
 
 fprintf(allfiles.gnu,"%10.5f  ", time);
 for (i=0; i<(FLUID_NUM_LD+1); i++)
-  fprintf(allfiles.gnu,"%8.7f  %8.7f  %8.7f  %8.7f  %8.7f  %8.7f  ",
+  fprintf(allfiles.gnu,"%12.5E  %12.5E  %12.5E  %12.5E  %12.5E  %12.5E  ",
       liftdrag[i*6+0], liftdrag[i*6+1], liftdrag[i*6+2],
       liftdrag[i*6+3], liftdrag[i*6+4], liftdrag[i*6+5]);
 fprintf(allfiles.gnu,"\n");
