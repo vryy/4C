@@ -4,6 +4,7 @@ Input/ale2_nln.dat                      x        x        x        x
 Input/ale_3d_hourg.dat                  x        x        x        x
 Input/ale_3d_oll.dat                    x        x        x        x
 Input/ale_3d_sd.dat                     x        x        x        x
+Input/ale_3d_sd2.dat                    x        x        x        x
 Input/ale_3d_umfpack.dat                x        -        x        -
 Input/ale_3d_umfpack_fastass.dat        x        -        x        -
 Input/axishell.dat                      x        -        x        -
@@ -31,11 +32,13 @@ Input/f3_beltrami.dat                   x        x        x        x
 Input/f3_beltrami_fastass.dat           x        x        x        x
 Input/f3_beltrami_fastass2.dat          x        x        x        x
 Input/f3_beltrami_fastass2_sd.dat       x        x        x        x
+Input/f3_beltrami_fastass2_sd2.dat      x        x        x        x
 Input/f3_beltrami_umfpack_fastass.dat   -        -        -        -
 Input/f3_ew_Q1_27x.dat                  x        x        x        x
 Input/f3f_beltrami.dat                  x        x        x        x
 Input/f3f_ew_Q1_27x.dat                 x        x        x        x
 Input/f3f_ew_Q1_27x_sd.dat              x        x        x        x
+Input/f3f_ew_Q1_27x_sd2.dat             x        x        x        x
 Input/ffsi_ow3D.dat                     x        -        x        -
 Input/fsi_mtr_dc4x4.dat                 x        x        x        x
 Input/fsi_ow32x32.dat                   x        x        x        x
