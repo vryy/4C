@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -41,6 +42,13 @@ dstrc_enter("ntacal");
 /*------------------------do initial partitioning of nodes and elements */
 part_fields();
 
+#ifdef D_FLUID
+/*---------------------------------- set dofs for implicit free surface */
+if (genprob.numff>=0) fluid_freesurf_setdofs();
+/*----------------------------- modify coordinates for special problems */
+if (genprob.numff>=0) fluid_modcoor();
+#endif
+
 /*------------------------------------------------ assign dofs to nodes */
 for(i=0; i<genprob.numfld; i++)
 {
@@ -58,10 +66,11 @@ out_general();
 /*--------------------------------------------------- write mesh to gid */
 if (par.myrank==0) 
 {
-   if (ioflags.struct_disp_gid||ioflags.struct_stress_gid||ioflags.fluid_sol_gid) 
+   if (ioflags.struct_disp_gid||ioflags.struct_stress_gid||ioflags.fluid_sol_gid
+       ||ioflags.ale_disp_gid) 
    {
       out_gid_sol_init();
-      if (field[0].fieldtyp != structure)
+      if (field[genprob.numsf].fieldtyp != structure)
          out_gid_msh();
    }
 }
