@@ -17,6 +17,7 @@ enum _CALC_ACTION calc_action[MAXFIELD];
  *----------------------------------------------------------------------*/
 struct _ARRAY estif_global;
 struct _ARRAY emass_global;
+struct _ARRAY intforce_global;
 /*----------------------------------------------------------------------*
  |  routine to call elements                             m.gee 6/01     |
  *----------------------------------------------------------------------*/
@@ -27,6 +28,7 @@ void calelm(FIELD        *actfield,     /* active field */
             int           sysarray1,    /* number of first sparse system matrix */
             int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
             double       *dvec,         /* global redundant vector passed to elements */
+            double       *dirich,       /* global redundant vector of dirichlet forces */
             int           global_numeq, /* size of dvec */
             int           kstep,        /* time in increment step we are in */
             CALC_ACTION  *action)       /* calculation option passed to element routines */
@@ -141,21 +143,30 @@ if (sysarray2 != -1)
 /*---------------------------------------------- loop over all elements */
 for (i=0; i<actpart->pdis[0].numele; i++)
 {
+   /*------------------------------------ set pointer to active element */
    actele = actpart->pdis[0].element[i];
+   /* if present, init the element vectors intforce_global and dirich_global */
+   if (dvec) amzero(&intforce_global);
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
-      shell8(actfield,actpart,actintra,actele,&estif_global,&emass_global,dvec,global_numeq,kstep,action);
+      shell8(actfield,actpart,actintra,actele,
+             &estif_global,&emass_global,&intforce_global,
+             kstep,action);
    break;
    case el_brick1:
-      brick1(actpart,actintra,actele,&estif_global,&emass_global,action);
+      brick1(actpart,actintra,actele,
+             &estif_global,&emass_global,
+             action);
    break;
    case el_wall1:
-      wall1( actpart,actintra,actele,&estif_global,&emass_global,dvec,global_numeq,action);
+      wall1(actpart,actintra,actele,
+            &estif_global,&emass_global,&intforce_global,
+            action);
    break;
    case el_fluid1: 
    break;
-   case el_fluid3:
+   case el_fluid3: 
    break;
    case el_ale:
    break;
@@ -177,6 +188,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_struct_update_istep : assemble_action = assemble_do_nothing; break;
    default: dserror("Unknown type of assembly"); break;
    }
+   /*--------------------------- assemble one or two system matrices */
    assemble(sysarray1,
             &estif_global,
             sysarray2,
@@ -186,6 +198,12 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             actintra,
             actele,
             assemble_action);
+   /*---------------------------- assemble the vector intforce_global */
+   if (dvec)
+   assemble_intforce(actele,dvec,global_numeq,&intforce_global);
+   /*------ assemble the rhs vector of condensed dirichlet conditions */
+   if (dirich)
+   assemble_dirich(actele,dirich,global_numeq,&estif_global);
 }/* end of loop over elements */
 /*----------------------------------------------------------------------*/
 /*                    in parallel coupled dofs have to be exchanged now */
@@ -202,6 +220,7 @@ case calc_struct_stress        : assemble_action = assemble_do_nothing; break;
 case calc_struct_update_istep  : assemble_action = assemble_do_nothing; break;
 default: dserror("Unknown type of assembly"); break;
 }
+/*------------------------------ exchange coupled dofs, if there are any */
 assemble(sysarray1,
          NULL,
          sysarray2,
@@ -249,6 +268,7 @@ dstrc_enter("calinit");
 /*-------------------------- define dense element matrices for assembly */
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
+amdef("inforce",&intforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 /*--------------------what kind of elements are there in this example ? */
 for (i=0; i<actfield->dis[0].numele; i++)
 {
@@ -282,7 +302,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
 /*------------------------------- init all kind of routines for shell8  */
 if (is_shell8==1)
 {
-   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,NULL,0,0,action);
+   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,action);
 }
 /*-------------------------------- init all kind of routines for brick1 */
 if (is_brick1==1)
@@ -292,7 +312,7 @@ if (is_brick1==1)
 /*-------------------------------- init all kind of routines for wall1  */
 if (is_wall1==1)
 {
-   wall1(actpart,NULL,NULL,&estif_global,&emass_global,NULL,0,action);
+   wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,action);
 }
 /*-------------------------------- init all kind of routines for fluid1 */
 if (is_fluid1==1)
@@ -372,7 +392,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
 /*-------------------------------------------reduce results for shell8  */
 if (is_shell8==1)
 {
-   shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,0,kstep,action);
+   shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,kstep,action);
 }
 /*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)
