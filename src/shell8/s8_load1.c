@@ -2,12 +2,12 @@
 #include "shell8.h"
 /*----------------------------------------------------------------------*
  | integration of element loads                          m.gee 10/01    |
+ | in here, line and surface loads are integrated                       |
  *----------------------------------------------------------------------*/
 void s8eleload(ELEMENT  *ele,
                   S8_DATA  *data,
                   MATERIAL *mat,
-                  double   *global_vec,
-                  int       global_numeq,
+                  double   *loadvec,
                   int       init)
 {
 int          lr,ls;
@@ -18,6 +18,7 @@ int          nis;
 int          nit;
 int          iel;
 int          nd;
+int          foundsurface;
 
 double      *hte;
 double       hhi;
@@ -37,6 +38,23 @@ static ARRAY a3ref_a; static double **a3ref;
 S8_DATA      actdata;
 MATERIAL    *actmat;
 NODE        *actnode;
+
+/*--------------------- variables needed for integration of line loads */
+int             ngline;
+int             ngnode;
+int             gnode[3];
+int             line;
+int             foundline;
+GLINE          *gline[4];
+NEUM_CONDITION *lineneum[4];
+int             ngp;
+int             gp;
+double          xgp[3];
+double          xgp_n[3];
+double          wgp[3];
+int             dir;
+double          ds;
+double          ap[3],ar[3];
 
 #ifdef DEBUG 
 dstrc_enter("s8eleload");
@@ -63,11 +81,12 @@ amdel(&xjm_a);
 amdel(&a3ref_a);
 goto end;  
 }
-/*--------------------------------- check for presence of element loads */
-if (!(ele->c)) goto end;
-if (!(ele->c->isneum)) goto end;
-/*---------------------------------------------------- initialize eload */
 amzero(&eload_a);
+/*--------------------------------- check for presence of element loads */
+foundsurface=0;
+if (!(ele->g.gsurf->neum)) goto endsurface;
+foundsurface=1;
+/*---------------------------------------------------- initialize eload */
 /*------------------------------------- calculate element's coordinates */
 for (i=0; i<ele->numnp; i++)
 {
@@ -102,6 +121,7 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       hhi=0.0;
       for (i=0; i<iel; i++) hhi += funct[i] * hte[i];
       /*-------------------------------------- evaluate Jacobian matrix */
+      /*---------------------------------------- xjm is jacobian matrix */
       s8jaco(funct,deriv,x,xjm,hte,a3ref,e3,iel,&det,&deta,0);
       /*--------------------------- make total weight at gaussian point */
       wgt = facr*facs;
@@ -116,16 +136,177 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       s8loadGP(ele,eload,hhi,wgt,xjm,funct,deriv,iel,xi,yi,zi);
    } /* end of loop over ls */
 } /* end of loop over lr */
+/* the surface load of this element has been done, so which the neumann */
+/* condition off */
+ele->g.gsurf->neum=NULL;
+/*----------------------------------------------------------------------*/
+endsurface:
+/*----------------------------------------------------------------------*/
+/*--------- integration of line loads on lines adjacent to this element */
+/*----------------------------------------------------------------------*/
+/*--------- check for presence of line loads and which lines have loads */
+foundline=0;
+/*------------------------------------- number of lines to this element */
+ngline=ele->g.gsurf->ngline;
+/*-------------- loop over lines, check for neumann conditions on lines */
+for (i=0; i<ngline; i++)
+{
+   gline[i] = ele->g.gsurf->gline[i];
+   lineneum[i] = gline[i]->neum;
+   if (lineneum[i]) foundline=1;
+}
+if (foundline==0) goto endline;
+/*------------------------------------- calculate element's coordinates */
+for (i=0; i<ele->numnp; i++)
+{
+   for (j=0; j<3; j++)
+   {
+      x[j][i] = ele->node[i]->x[j];
+   }
+}
+/*------------------------------------------ number of nodes on element */
+iel = ele->numnp;
+/*----------------------------------------- init the integration points */
+s8intg(ele,data,0);
+nir     = ele->e.s8->nGP[0];
+nis     = ele->e.s8->nGP[1];
+/*------------------------------------------------------ make directors */
+hte     = ele->e.s8->thick_node.a.dv;
+s8a3ref_extern(funct,deriv,hte,a3ref,ele);
+/*---------------------------------- loop lines with neumann conditions */
+for (line=0; line<ngline; line++)
+{
+   if (lineneum[line]==NULL) continue;
+   /*------------- check number of integration points in line direction */
+   if (line==0 || line==2) ngp = nir;
+   else                    ngp = nis;
+   /*------------------------------------ check number of nodes on line */
+   ngnode = gline[line]->ngnode;
+   /*--------------------------- make coordinates of integration points */
+   /*                                       and weights at these points */
+   switch (line)
+   {
+   case 0:                       
+      for (i=0; i<ngp; i++)       
+      {
+         xgp[i] = data->xgpr[i];
+         wgp[i] = data->wgtr[i];
+      }
+      for (i=0; i<ngp; i++)
+         xgp_n[i] = 1.0;
+      dir=0;          /* direction of integration is r */
+      gnode[0] = 0;   /* line is connected to node 0 and 1 (and in quad9 4) */
+      gnode[1] = 1;
+      gnode[2] = 4;
+   break;
+   case 2:
+      for (i=0; i<ngp; i++) 
+      {
+         xgp[i] = data->xgpr[i];
+         wgp[i] = data->wgtr[i];
+      }
+      for (i=0; i<ngp; i++)
+         xgp_n[i] = -1.0;
+      dir=0;          /* direction of integration is r */
+      gnode[0] = 2;
+      gnode[1] = 3;
+      gnode[2] = 6;
+   break;
+   case 1:
+      for (i=0; i<ngp; i++) 
+      {
+         xgp[i] = data->xgps[i];
+         wgp[i] = data->wgts[i];
+      }
+      for (i=0; i<ngp; i++)
+         xgp_n[i] = -1.0;
+      dir=1;          /* direction of integration is s */
+      gnode[0] = 1;
+      gnode[1] = 2;
+      gnode[2] = 5;
+   break;
+   case 3:
+      for (i=0; i<ngp; i++) 
+      {
+         xgp[i] = data->xgps[i];
+         wgp[i] = data->wgts[i];
+      }
+      for (i=0; i<ngp; i++)
+         xgp_n[i] = 1.0;
+      dir=1;          /* direction of integration is s */
+      gnode[0] = 3;
+      gnode[1] = 0;
+      gnode[2] = 7;
+   break;
+   }
+   /*------------------------------ start loop over integration points */
+   for (gp=0; gp<ngp; gp++)
+   {
+      /*------------------------------------ gaussian point and weight */
+      e1 = xgp[gp];          /* gp-coordinate in integration direction */
+      e2 = xgp_n[gp];        /* gp    "       normal to int. direction */
+      e3 = 0.0;              /* here mid-surface only */
+      facr = wgp[gp];        /* weight at gaussian point */
+      /*---------------- shape functions and derivatives at this point */
+      if (dir==0)/* case integration in r */
+      s8_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
+      if (dir==1)/* case integration in s */
+      s8_funct_deriv(funct,deriv,e2,e1,ele->distyp,1);
+      /*-------------------------------------------- covariant metrics */
+      /*--------------------------------------- g1 g2 g3 stored in xjm */
+      /*------------------------------- Jacobian matrix J = (g1,g2,g3) */
+      for (i=0; i<2; i++)
+      {
+         for (j=0; j<3; j++)
+         {
+            xjm[i][j] = 0.0;
+            for (k=0; k<iel; k++) 
+            xjm[i][j] += deriv[i][k] * x[j][k];
+         }
+      }
+         for (j=0; j<3; j++) 
+         {
+            xjm[2][j] = 0.0;
+            for (k=0; k<iel; k++) 
+            xjm[2][j] += funct[k] * (hte[k]/2.0) * a3ref[j][k];
+         }
+      /*------------------- ds = |g1| in dir=0 and ds = |g2| in dir=1 */
+      /*------------------------- g1 = xjm[0..2][0] g2 = xjm[0..2][1] */
+      ds = DSQR(xjm[dir][0])+DSQR(xjm[dir][1])+DSQR(xjm[dir][2]);
+      ds = sqrt(ds);
+      /*----------------------switch all components of load vector on */
+      ar[0]=ar[1]=ar[2]= 1.0;
+      /*----------------------- loop the degrees of freedom of a node */
+      /*----- ar[i] = ar[i] * facr * ds * onoffflag[i] * loadvalue[i] */
+      for (i=0; i<3; i++)
+      {
+         ar[i] = ar[i] * 
+                 facr  *
+                 ds    * 
+                 (double)(lineneum[line]->neum_onoff.a.iv[i]) *
+                 (lineneum[line]->neum_val.a.dv[i]);
+      }
+      /*------------------ add load components to element load vector */
+      for (i=0; i<ngnode; i++)
+      {
+         for (j=0; j<3; j++)
+         {
+            eload[j][gnode[i]] += funct[gnode[i]] * ar[j];
+         }
+      }
+   }/* end loop gp over integration points */
+   /* the line number lie has been done, so switch of the neumann pointer of it */
+   ele->g.gsurf->gline[line]->neum=NULL;
+}/* end loop line over lines */
+/*----------------------------------------------------------------------*/
+endline:
 /*--------------------------------------------- add eload to global vec */
+if (foundsurface+foundline != 0)
 for (inode=0; inode<iel; inode++)
 {
    for (idof=0; idof<NUMDOF_SHELL8; idof++)
    {
-      dof = ele->node[inode]->dof[idof];
-      if (dof >= 0 && dof < global_numeq)
-      {
-         global_vec[dof] += eload[idof][inode];
-      }
+         loadvec[inode*NUMDOF_SHELL8+idof] += eload[idof][inode];
    }
 }
 /*----------------------------------------------------------------------*/
@@ -159,37 +340,31 @@ dstrc_enter("s8loadGP");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------ evaluate components of angle of normal */
+/*        xjm = J = (g1 g2 g3) siehe Dissertation Braun Kap. Grundlagen */
+/*--------- the lenght of the vector ap (which is g3) is det(J) is |g3| */
       ap[0] = xjm[0][1]*xjm[1][2] - xjm[1][1]*xjm[0][2];
       ap[1] = xjm[0][2]*xjm[1][0] - xjm[1][2]*xjm[0][0];
       ap[2] = xjm[0][0]*xjm[1][1] - xjm[1][0]*xjm[0][1];
-
-switch(ele->c->condtyp)
-{
 /*----------------------------------------------------------------------*/
 /*                                                    uniform live load */
 /*----------------------------------------------------------------------*/
-case ne_live:
+/*
+    ap = g3, det(J) = |g3|
+    ar[0] = det(J)
+    ar[1] = det(J)
+    ar[2] = det(J)
+*/
    ar[0]=ar[1]=ar[2]= sqrt( ap[0]*ap[0] + ap[1]*ap[1] + ap[2]*ap[2] );
-break;
-/*----------------------------------------------------------------------*/
-/*                                                            dead load */
-/*----------------------------------------------------------------------*/
-case ne_dead:
-break;
-/*----------------------------------------------------------------------*/
-/*                                                              default */
-/*----------------------------------------------------------------------*/
-default:
-   dserror("Typ of element load unknown");
-} /* end of switch over condtyp */
-
 /*------------------------- loop over all degrees of freedom at element */
+/*
+   ar[i] = det(J) * facr*facs * onoffflag * valueofload
+*/
 for (i=0; i<3; i++)
 {
    ar[i] = wgt   * 
            ar[i] * 
-           (double)(ele->c->neum_onoff.a.iv[i]) * 
-           (ele->c->neum_val.a.dv[i]);
+           (double)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) * 
+           (ele->g.gsurf->neum->neum_val.a.dv[i]);
 }
 /*-------------------- add load vector component to element load vector */
 for (i=0; i<iel; i++)
