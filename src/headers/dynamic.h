@@ -20,7 +20,7 @@ enum
    {
     gen_alfa,
     centr_diff,
-    Gen_EMM,
+    Gen_EMM
    }               Typ;         /* type of time integration algorithm */
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */
