@@ -141,6 +141,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/cal_dyn_control.o \
                 ${SRC}/global_full/cal_static_control.o \
                 ${SRC}/global_full/cal_nlnstatic_control.o \
+                ${SRC}/global_full/cal_nlndyn_struct.o \
                 ${SRC}/global_full/cal_static_service.o \
                 ${SRC}/global_full/map_node_find.o \
                 ${SRC}/global_full/global_mask_matrices.o \
@@ -157,6 +158,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_calrhs_nodal.o \
                 ${SRC}/global_full/solver_control.o \
                 ${SRC}/global_full/solver_service.o \
+                ${SRC}/global_full/solver_service2.o \
                 ${SRC}/global_full/solver_add_data.o \
                 ${SRC}/global_full/solver_add_msr.o \
                 ${SRC}/global_full/solver_add_mlib.o \
@@ -172,6 +174,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_lapack.o \
                 ${SRC}/global_full/solver_mumps.o \
                 ${SRC}/global_full/solver_colsol.o \
+                ${SRC}/global_full/restart_control.o \
                 ${SRC}/global_full/machine_hpux.o 
 #                pss_full
 OBJS3	      = ${SRC}/pss_full/pss_am.o \
