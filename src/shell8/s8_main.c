@@ -1,5 +1,14 @@
 #include "../headers/standardtypes.h"
 #include "shell8.h"
+
+/* 
+prototypes from prototypes_sol.h which are necessary here, but prototypes_sol.h
+shall not be included here
+*/
+void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, double *localvec, int arraynum,
+                              int place);
+void dyn_ekin_local(ELEMENT *actele,ARRAY *emass, CONTAINER  *container);
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -23,7 +32,6 @@ void shell8(FIELD      *actfield,
 #ifdef D_SHELL8
 int          i;
 int          imyrank;
-int          inprocs;
 
 double      *intforce;
 

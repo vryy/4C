@@ -139,7 +139,6 @@ double b31r=0.0;
 double b32r=0.0;
 
 double heps[3][3];
-double skalar;
 double det_dummy;
 
 

@@ -6,12 +6,11 @@
  *----------------------------------------------------------------------*/
 void s8init(FIELD *actfield)
 {
-int          i,j,k,l;
+int          i,j,k;
 ELEMENT     *actele;
 NODE        *actnode;
 S8_DATA      data;
 /*double     **a3ref;*/
-int          numele;
 int          numa3;
 double       a3[3];
 ARRAY        collaverdir_a;

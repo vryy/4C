@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief contains init phase of the shell contact routines
+\brief contains projection routines for 3d shell contact
 
 ---------------------------------------------------------------------*/
 #ifdef S8CONTACT
@@ -9,9 +9,12 @@
 #include "../headers/solution.h"
 #include "s8contact.h"
 #include "shell8.h"
+
 /*! 
-\addtogroup CONTACT 
+\addtogroup CONTACTS8 
 *//*! @{ (documentation module open)*/
+
+
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -44,7 +47,7 @@ void s8_contact_orthproject(SHELLNODE  *actcnode,
                             int        *success,
                             double     *nue)
 {
-int          i,j,k,l,m,n,iter;
+int          i,k,iter;
 int          iel;
 double       h2;
 double       l2;
@@ -63,7 +66,6 @@ double       a3bar[3];
 double       xbarxi[3],xbareta[3],xbarxieta[3];
 double       a3barxi[3],a3bareta[3],a3barxieta[3];
 double       F1,F2,F1xi,F1eta,F2xi,F2eta,detF;
-double       sum[3];
 int          second;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_orthproject");
@@ -273,7 +275,6 @@ if (*success)
 else
    *distance = VERYLARGEREAL;
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -302,7 +303,6 @@ void s8_contact_functderiv(double     funct[],
                            double      r, 
                            double      s)
 {
-int            i;
 const double   q12 = 1.0/2.0;
 const double   q14 = 1.0/4.0;
 const double   q16 = 1.0/6.0;
@@ -522,8 +522,6 @@ return;
 ------------------------------------------------------------------------*/
 void s8_contact_deta(double gkov[][3], double *deta)
 {
-int i,j;
-double change;
 #ifdef DEBUG 
 dstrc_enter("s8_contact_deta");
 #endif
@@ -546,14 +544,14 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-int s8_contact_timeguess(SHELLNODE *actcnode,
+void s8_contact_timeguess(SHELLNODE *actcnode,
                          ELEMENT   *actele,
                          double    *xi,
                          double     distance,
                          double    *nue,
                          double    *dt)
 {
-int          i,j,k;
+int          i,k;
 double       funct[4];
 double       deriv[2][4];
 double       deriv2[4];
@@ -603,6 +601,6 @@ return;
 
  
 
+/*! @} (documentation module close)*/
 
 #endif
-/*! @} (documentation module close)*/

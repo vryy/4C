@@ -454,4 +454,45 @@ void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
  *----------------------------------------------------------------------*/
 void s8_write_restart(ELEMENT *actele, int nhandle, long int *handles);
 void s8_read_restart(ELEMENT *actele, int nhandle, long int *handles);
+/*----------------------------------------------------------------------*
+ |  s8_mat_ogden.c                                       m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain, DOUBLE C_cart[][3][3][3],
+                          DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
+                          DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc);
+void s8_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3]);
+void s8_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3]);
+void s8_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3]);
+void s8_kov_CGcuca(DOUBLE T[3][3], const DOUBLE **gkon);
+/*----------------------------------------------------------------------*
+ |  s8_mat_ogden2.c                                      m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
+                            DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
+                            DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc);
+/*----------------------------------------------------------------------*
+ |  s8_mattransform.c                                    m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_kov_cuca(DOUBLE *t, const DOUBLE **gkon);
+void s8_kon_cacu(DOUBLE *t, const DOUBLE **gkon);
+void s8_kov_cacu(DOUBLE *t, const DOUBLE **gkov);
+void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], const DOUBLE **gkon);
+void s8_c4_to_C2(const DOUBLE C[][3][3][3],DOUBLE **CC);
+void s8_mat_linel_cart(STVENANT *mat,DOUBLE C[][3][3][3],DOUBLE **CC,DOUBLE *strain);
+/*----------------------------------------------------------------------*
+ |  s8_static_mass.c                                     m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8static_mass(ELEMENT   *ele,                        /* the element structure */
+                   S8_DATA   *data,                       /* element integration data */
+                   MATERIAL  *mat,                        /* the material structure */
+                   ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
+                   ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
+                   double    *force,                      /* for internal forces (initialized!) */
+                   int        kstep,                      /* actual step in nonlinear analysis */
+                   int        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+
+
+
+
+
 #endif

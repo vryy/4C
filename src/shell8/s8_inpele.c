@@ -19,9 +19,6 @@ void s8inp(ELEMENT *ele)
 {
 int  i;
 int  ierr=0;
-int  quad;
-int  counter;
-long int  topology[100];
 char *colpointer;
 char buffer[50];
 int  nhyb=0;

@@ -146,7 +146,7 @@ return;
  *----------------------------------------------------------------------*/
 void s8averdir(double **dir_list, int numa3, double *a3)
 {
-int        i,j,k,node;
+int        i;
 double     averdir[3];
 double     davn[3];
 double     normal[3];

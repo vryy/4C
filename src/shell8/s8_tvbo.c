@@ -5,15 +5,15 @@
  | B-Operator for compatible strains                      m.gee 6/01    |
  *----------------------------------------------------------------------*/
 void s8_tvbo(double      e1,
-                double      e2,
-                double    **bop,
-                double     *funct,
-                double    **deriv,
-                int         iel,
-                int         numdf,
-                double    **akov,
-                double    **a3kvp,
-                int         nsansq)
+             double      e2,
+             double    **bop,
+             double     *funct,
+             double    **deriv,
+             int         iel,
+             int         numdf,
+             double    **akov,
+             double    **a3kvp,
+             int         nsansq)
 {
 int inode,node_start;
 double a1x,a1y,a1z,a2x,a2y,a2z,a3x,a3y,a3z;

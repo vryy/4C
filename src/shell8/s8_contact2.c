@@ -9,9 +9,12 @@
 #include "../headers/solution.h"
 #include "s8contact.h"
 #include "shell8.h"
+
 /*! 
-\addtogroup CONTACT 
+\addtogroup CONTACTS8 
 *//*! @{ (documentation module open)*/
+
+
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -41,7 +44,7 @@ void s8_contact_make(SHELLNODE *actcnode,
                      int        ssurf,
                      int        msurf)
 {
-int              i,j,k,l,m,n;
+int              i,j,k,l;
 int              numdf;
 double           sum;
 
@@ -80,7 +83,7 @@ double           gkovcab[3];
 double           nue[3];
 double           nuedum[3];
 
-double           deta,detas,wgt;
+double           detas,wgt;
 
 double           xs[3];
 double           xbar[3];
@@ -107,7 +110,6 @@ double           tTtrial_kov[2];           /* trial frictional tractions (kovari
 double           tTtrial_kon[2];           /* trial frictional tractions (kontravar. components) */
 double           tTabs;                    /* norm of the trial frictional tractions (same in kov and kontra) */
 double           lT[2];
-double           t[3];
 double           PHI;
 double           dxi[2];
 double           kappa1;
@@ -365,7 +367,7 @@ Akon[1][1] =  detA * A[0][0];
 for (i=0; i<numdf; i++)
 {
    D1[i] = detA*(  A[1][1]*(T1[i]+g*N1[i]) - A[0][1]*(T2[i]+g*N2[i]) );
-   D2[i] = detA*( -A[1][0]*(T1[i]+g*N1[i]) + A[1][1]*(T2[i]+g*N2[i]) );
+   D2[i] = detA*( -A[1][0]*(T1[i]+g*N1[i]) + A[0][0]*(T2[i]+g*N2[i]) );
 }
 /*--------------------------------------- build vectors Nbar1 and Nbar2 */
 for (i=0; i<numdf; i++)
@@ -492,6 +494,8 @@ else
    tT_kov[0] = tTtrial_kov[0];
    tT_kov[1] = tTtrial_kov[1];
 }
+/*printf("lt[0] %15.10f lt[1] %15.10f tT_kov[0] %15.10f tT_kov[1] %15.10f tTabs %15.10f dxi[0] %15.10f dxi[1] %15.10f  ",
+        lT[0],lT[1],tT_kov[0],tT_kov[1],tTabs,dxi[0],dxi[1]);
 /*------------------------------- put frictional tractions back to node */
 /* from there they will be copied to the history in the converged status */  
 if (ssurf==1)
@@ -507,7 +511,7 @@ else
 /*---------------------------------------------------- make slip forces */
 for (i=0; i<numdf; i++)
 {
-   force[i] += wgt * tT_kov[0]*D1[i] + tT_kov[1]*D2[i];
+   force[i] += wgt * (tT_kov[0]*D1[i] + tT_kov[1]*D2[i]);
 }
 /*---------- make derivatives of basis vectors g_alphabeta = g_betalpha */
 /*--------------------------------------- g_alphaalpha = g_betabeta = 0 */
@@ -736,19 +740,19 @@ if (ssurf==1)
 {
    if (friction)
    printf("node %5d element %5d topbot %2d %2d gap %15.10f lambdan %15.8f tn %15.8f slip %d\n",
-           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->top_ln,actcnode->top_tn,slip);
+           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->top_ln,actcnode->top_tn*wgt,slip);
    else
    printf("node %5d element %5d topbot %2d %2d gap %15.10f lambdan %15.8f tn %15.8f\n",
-           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->top_ln,actcnode->top_tn);
+           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->top_ln,actcnode->top_tn*wgt);
 }
 else
 {
    if (friction)
    printf("node %5d element %5d topbot %2d %2d gap %15.10f lambdan %15.8f tn %15.8f slip %d\n",
-           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->bot_ln,actcnode->bot_tn,slip);
+           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->bot_ln,actcnode->bot_tn*wgt,slip);
    else
    printf("node %5d element %5d topbot %2d %2d gap %15.10f lambdan %15.8f tn %15.8f\n",
-           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->bot_ln,actcnode->bot_tn);
+           actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->bot_ln,actcnode->bot_tn*wgt);
 }
 fflush(stdout);        
 /*========= build the toggle diagonal matrix theta (stored as a vector) */
@@ -775,7 +779,6 @@ for (j=0; j<numdf; j++)
    stiff[i][j] *= theta[j];
 }
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

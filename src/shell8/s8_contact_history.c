@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief contains init phase of the shell contact routines
+\brief contains history relevant routines of the shell contact
 
 ---------------------------------------------------------------------*/
 #ifdef S8CONTACT
@@ -9,6 +9,9 @@
 #include "../headers/solution.h"
 #include "s8contact.h"
 #include "shell8.h"
+
+
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -19,9 +22,12 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+
 /*! 
-\addtogroup CONTACT 
+\addtogroup CONTACTS8 
 *//*! @{ (documentation module open)*/
+
+
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -31,6 +37,7 @@ defined in s8_contact_init.c
 
 *----------------------------------------------------------------------*/
 extern struct _SHELLCONTACT shellcontact;
+
 
 
 /*!---------------------------------------------------------------------
@@ -44,7 +51,7 @@ extern struct _SHELLCONTACT shellcontact;
 ------------------------------------------------------------------------*/
 void s8_contact_restartwrite(INTRA *actintra,int step)
 {
-int              i,j,k,l,m,n;
+int              i,l;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 int              myrank,nproc;                     /* parallel stuff */
 int              numnp;                            /* number of slave nodes (ususally all nodes) */
@@ -103,6 +110,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_restartwrite */
+
+
+
 /*!---------------------------------------------------------------------
 \brief read restart for contact variables                                              
 
@@ -114,7 +124,7 @@ return;
 ------------------------------------------------------------------------*/
 void s8_contact_restartread(INTRA *actintra,int step)
 {
-int              i,j,k,l,m,n;
+int              i,j,k,l;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 SHELLNODERES     tmpnode;
 int              myrank,nproc;                     /* parallel stuff */
@@ -196,7 +206,7 @@ return;
 ------------------------------------------------------------------------*/
 void s8_contact_setlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra)
 {
-int              i,j,k,l,m,n;
+int              i;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 int              myrank,nproc;                     /* parallel stuff */
 int              numnp;                            /* number of slave nodes (ususally all nodes) */
@@ -249,7 +259,7 @@ return;
 ------------------------------------------------------------------------*/
 void s8_contact_updlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra)
 {
-int              i,j,k,l,m,n;
+int              i;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 int              myrank,nproc;                     /* parallel stuff */
 int              numnp;                            /* number of slave nodes (ususally all nodes) */
@@ -301,7 +311,7 @@ return;
 ------------------------------------------------------------------------*/
 void s8_contact_history(INTRA *actintra)
 {
-int              i,j,k,l,m,n;
+int              i,j;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 int              myrank,nproc;                     /* parallel stuff */
 int              numnp;                            /* number of slave nodes (ususally all nodes) */
@@ -367,9 +377,9 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-int s8_contact_historyback(INTRA *actintra)
+void s8_contact_historyback(INTRA *actintra)
 {
-int              i,j,k,l,m,n;
+int              i;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 int              myrank,nproc;                     /* parallel stuff */
 int              numnp;                            /* number of slave nodes (ususally all nodes) */
@@ -420,6 +430,8 @@ return;
 
 
 
-
 /*! @} (documentation module close)*/
 #endif
+
+
+

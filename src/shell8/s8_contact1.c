@@ -9,9 +9,12 @@
 #include "../headers/solution.h"
 #include "s8contact.h"
 #include "shell8.h"
+
 /*! 
-\addtogroup CONTACT 
+\addtogroup CONTACTS8 
 *//*! @{ (documentation module open)*/
+
+
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -42,7 +45,7 @@ void s8_contact_detection(FIELD        *actfield,
                           int          *iscontact,
                           double       *maxdt)
 {
-int              i,ii,j,jj,k,l,m,n;                /* counters */
+int              i,ii,j,jj,k;                      /* counters */
 int              myrank,nproc;                     /* parallel stuff */
 int              numeq,numeq_total;                /* number of equations in the global matrix and vector */
 int              numnp;                            /* number of slave nodes (ususally all nodes) */
@@ -90,7 +93,6 @@ int              takepart[MAXPROC];                /* toggle indicating processo
 int              index;                            /* index of a dof in the local update vector of K */
 int              iscrecv;
 
-double           v1[3],v2[3];
 double           nue[3];
 double           dt;
 
@@ -1111,7 +1113,6 @@ for (k=0; k<numnp; k++)
    }/* end of if (actcnode->botflag==s8_c_on)*/
 }/* end of for (k=0; k<numnp; k++) */
 /*----------------------------------------------------------------------*/
-end:
 #ifdef PARALLEL 
 MPI_Allreduce(iscontact,&iscrecv,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
 *iscontact = iscrecv;
@@ -1123,6 +1124,6 @@ dstrc_exit();
 return; 
 } /* end of s8_contact_detection */
 
-
 /*! @} (documentation module close)*/
+
 #endif

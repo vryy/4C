@@ -14,7 +14,7 @@ void s8eleload(ELEMENT  *ele,
 {
 int          lr,ls;
 int          i,j,k;
-int          inode,idof,dof;
+int          inode,idof;
 int          nir;
 int          nis;
 int          nit;
@@ -41,10 +41,6 @@ static ARRAY a3cur_a; static double **a3cur;
 static ARRAY a3r_a;   static double **a3r;
 static ARRAY a3c_a;   static double **a3c;
 
-S8_DATA      actdata;
-MATERIAL    *actmat;
-NODE        *actnode;
-
 /*--------------------- variables needed for integration of line loads */
 int             ngline;
 int             ngnode;
@@ -60,7 +56,7 @@ double          xgp_n[3];
 double          wgp[3];
 int             dir;
 double          ds;
-double          ap[3],ar[3];
+double          ar[3];
 
 #ifdef DEBUG 
 dstrc_enter("s8eleload");
@@ -151,8 +147,10 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       for (i=0; i<iel; i++) hhi += funct[i] * hte[i];
       /*-------------------------------------- evaluate Jacobian matrix */
       /*---------------------------------------- xjm is jacobian matrix */
+      /* in reference configuration */
       if (ele->g.gsurf->neum->neum_type==neum_live)
       s8jaco(funct,deriv,x,xjm,hte,a3ref,e3,iel,&det,&deta,0);
+      /* in current configuration with hydro and pressure type of loads */
       else
       s8jaco(funct,deriv,xc,xjm,hte,a3cur,e3,iel,&det,&deta,0);
       /*--------------------------- make total weight at gaussian point */
@@ -447,7 +445,7 @@ case neum_increhydro_z:
 /*----------------------------------------------------------------------*/
    if (ele->g.gsurf->neum->neum_onoff.a.iv[2] != 1) dserror("hydropressure must be on third dof");
    val = ele->g.gsurf->neum->neum_val.a.dv[2];
-   height = acttime * 0.1;
+   height = acttime * 10.0;
    if (zi <= height)
    pressure = -val * (height-zi);
    else 
@@ -467,6 +465,30 @@ case neum_increhydro_z:
    
 break;
 /*----------------------------------------------------------------------*/
+
+
+case neum_orthopressure:
+/*----------------------------------------------------------------------*/
+/* orthogonal pressure dep. on load curve only                         */
+/*----------------------------------------------------------------------*/
+   if (ele->g.gsurf->neum->neum_onoff.a.iv[2] != 1) dserror("pressure must be on third dof");
+   pressure = -ele->g.gsurf->neum->neum_val.a.dv[2];
+   ar[0] = ap[0] * pressure * wgt;
+   ar[1] = ap[1] * pressure * wgt;
+   ar[2] = ap[2] * pressure * wgt;
+/*-------------------- add load vector component to element load vector */
+   for (i=0; i<iel; i++)
+   {
+      for (j=0; j<3; j++)
+      {
+         eload[j][i] += funct[i] * ar[j];
+      }
+   }
+   
+break;
+/*----------------------------------------------------------------------*/
+
+
 
 default:
    dserror("Unknown type of load");

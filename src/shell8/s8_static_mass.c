@@ -17,16 +17,13 @@ void s8static_mass(ELEMENT   *ele,                         /* the element struct
 /* if force==NULL no internal forces are calculated                     */
 /*----------------------------------------------------------------------*/
 {
-int                 i,j,k,l;                                /* some loopers */
-double              sum;
+int                 k;                                      /* some loopers */
 int                 ngauss;
-double diff;
 int                 imass;                                  /* flag for calculating mass matrix */
 double              density;                                /* density of the material */
 double              facv,facw,facvw;                        /* variables for mass integration */
 double             *thick;
 
-int                 dof;
 int                 nir,nis,nit;                            /* num GP in r/s/t direction */
 int                 lr, ls, lt;                             /* loopers over GP */
 int                 iel;                                    /* numnp to this element */
@@ -36,7 +33,6 @@ const int           numdf=NUMDOF_SHELL8;                    /* ndofs per node to
 double              e1,e2,e3;                               /*GP-coords*/
 double              fac,facr,facs,fact;                     /* weights at GP */
 double              xnu;                                    /* value of shell shifter */
-double              weight;
 
 double              condfac;                                /* sdc conditioning factor */
 double              h2;                                     /* half nodal height */

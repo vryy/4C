@@ -3,10 +3,13 @@
 \brief structures for shell contact
 
 ---------------------------------------------------------------------*/
-/*! 
-\addtogroup CONTACT 
-*//*! @{ (documentation module open)*/
 #ifdef S8CONTACT
+
+/*! 
+\addtogroup CONTACTS8 
+*//*! @{ (documentation module open)*/
+
+
 /*!------------------------------------------------------------------------
 \brief main structure all kinds of contact stuff is kept in for shell8
 
@@ -55,8 +58,8 @@ typedef enum _SHELLPROJECTON
 } SHELLPROJECTON;
 /*----------------------------------------------------------------------*/
 #define EPSN (1.0E+03)
-#define EPST (1.0E+03)
-#define NU   (0.4)
+#define EPST (1.0E+02)
+#define NU   (0.5)
 /*----------------------------------------------------------------------*/
 /*!------------------------------------------------------------------------
 \brief one special contact node for shell contact
@@ -258,6 +261,12 @@ void s8_contact_metrics(double x[][4],
 void s8_contact_inv3(double a[][3], double *det);
 void s8_contact_trans(double a[][3], int n);
 void s8_contact_deta(double gkov[][3], double *deta);
+void s8_contact_timeguess(SHELLNODE *actcnode,
+                         ELEMENT   *actele,
+                         double    *xi,
+                         double     distance,
+                         double    *nue,
+                         double    *dt);
 /*----------------------------------------------------------------------*
  |  s8_contact_init.c                                     m.gee 3/03    |
  *----------------------------------------------------------------------*/
@@ -288,5 +297,7 @@ void s8_contact_restartwrite(INTRA *actintra,int step);
 void s8_contact_restartread(INTRA *actintra,int step);
 void s8_contact_setlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra);
 void s8_contact_updlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra);
+void s8_contact_historyback(INTRA *actintra);
+
 /*! @} (documentation module close)*/
 #endif

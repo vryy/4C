@@ -12,7 +12,6 @@ void s8_funct_deriv(double     *funct,
                     DIS_TYP     typ,
                     int         option)
 {
-int            i;
 const double   q12 = 1.0/2.0;
 const double   q14 = 1.0/4.0;
 const double   q16 = 1.0/6.0;

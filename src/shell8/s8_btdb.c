@@ -7,9 +7,7 @@
 void s8_BtDB(double **estif, double **bop, double **D, int iel,
                 int numdf, double weight, double **work)
 {
-int i,j,k;
 int dim;
-double sum;
 #ifdef DEBUG 
 dstrc_enter("s8_BtDB");
 #endif

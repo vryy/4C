@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief contains init phase of the shell contact routines
+\brief contains search algorithms for contact detection
 
 ---------------------------------------------------------------------*/
 #ifdef S8CONTACT
@@ -9,9 +9,12 @@
 #include "../headers/solution.h"
 #include "s8contact.h"
 #include "shell8.h"
+
 /*! 
-\addtogroup CONTACT 
+\addtogroup CONTACTS8 
 *//*! @{ (documentation module open)*/
+
+
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -33,7 +36,7 @@ extern struct _SHELLCONTACT shellcontact;
 ------------------------------------------------------------------------*/
 void s8_contact_searchupdate(INTRA *actintra, double dt)
 {
-int              i,j,k,l,m,n;
+int              i,j,k;
 int              a,b,c;
 int              myrank,nproc;                     /* parallel stuff */
 int              numnp;                            /* number of slave nodes (ususally all nodes) */
@@ -182,7 +185,6 @@ for (i=0; i<numnp; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -210,7 +212,7 @@ void s8_contact_nearestnode(SHELLNODE  *actcnode,
                             double     *distop,
                             double     *disbot)
 {
-int            i,j,k,l,m,n;
+int            i,j,k;
 int            ii,jj,kk,idim,jdim,kdim;
 int            foundit;
 int            numnp;
@@ -222,7 +224,6 @@ double         mindistancetop=1.0E+10;
 double         mindistancebot=1.0E+10;
 double         distance;
 SHELLNODE     *searchcnode;
-NODE          *stack[1000];
 NODE          *node;
 CONTACTBUCKET *cbuck;
 int            nbuck;
@@ -516,7 +517,6 @@ for (i=0; i<nbuck; i++)
 *distop = mindistancetop;
 *disbot  = mindistancebot;
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -542,7 +542,7 @@ void s8_contact_nearestnode_bruteforce(SHELLNODE  *actcnode,
                             double     *distop,
                             double     *disbot)
 {
-int          i,j,k,l,m,n;
+int          i,j,k,l;
 int          foundit;
 int          numnp;
 double       xs_top[3];
@@ -667,7 +667,6 @@ for (i=0; i<numnp; i++)
 *distop  = mindistancetop;
 *disbot  = mindistancebot;
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -681,6 +680,6 @@ return;
 
 
 
-
 /*! @} (documentation module close)*/
+
 #endif

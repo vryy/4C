@@ -19,7 +19,7 @@ void s8_tvkg(double **estif,
              double   e1,
              double   e2)
 {
-int     i,inode,jnode;
+int     inode,jnode;
 int     i_indiz,j_indiz;
 double  pi;
 double  pj;

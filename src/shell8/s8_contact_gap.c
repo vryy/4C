@@ -9,9 +9,12 @@
 #include "../headers/solution.h"
 #include "s8contact.h"
 #include "shell8.h"
+
 /*! 
-\addtogroup CONTACT 
+\addtogroup CONTACTS8 
 *//*! @{ (documentation module open)*/
+
+
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -42,7 +45,7 @@ void s8_contact_gapfunction(SHELLNODE  *actcnode,
                             double      xi[],
                             double     *g)
 {
-int          i,j,k,l,m,n,iter;
+int          i,j,k;
 int          iel;
 double       h2;
 double       a3r[3][4];
@@ -127,7 +130,6 @@ for (i=0; i<3; i++)
 /*------------------------------------ gap is positive when penetrating */
 *g = -(*g);
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -149,6 +151,6 @@ return;
 
 
 
-
 /*! @} (documentation module close)*/
+
 #endif

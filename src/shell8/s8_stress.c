@@ -10,7 +10,7 @@ void s8_stress(ELEMENT      *ele,
                int           kstep,
                int           init)
 {
-int                 i,j,k,l;
+int                 i,j,k;
 int                 nir,nis,nit;
 int                 ngauss;
 
@@ -36,7 +36,7 @@ double              hhi;
 double              h[3];                                   /* working array */
 double              da;                                     /* area on mid surface */
 
-double              stress[6], stress_r[12];                /* stress and stress resultants */
+double              stress[6];                              /* stress and stress resultants */
 double              strain[6];                              /* strains */
 
 static ARRAY        stress_a;    static double **gp_stress; /* element array for stresses on gaussian points */
@@ -359,7 +359,7 @@ return;
 void s8_strains_res(double **akovr, double **akovc, double **a3kvpr, double **a3kvpc,
                    double hh, double *strains)
 {
-int          i,j,k;
+int          i;
 double       a1r[3],a1c[3],a2r[3],a2c[3],a3r[3],a3c[3],a31r[3],a31c[3],a32r[3],a32c[3];
 #ifdef DEBUG 
 dstrc_enter("s8_strains_res");

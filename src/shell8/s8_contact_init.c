@@ -7,9 +7,12 @@
 #include "../headers/standardtypes.h"
 #include "s8contact.h"
 #include "shell8.h"
+
 /*! 
-\addtogroup CONTACT 
+\addtogroup CONTACTS8 
 *//*! @{ (documentation module open)*/
+
+
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -32,9 +35,9 @@ struct _SHELLCONTACT shellcontact;
 ------------------------------------------------------------------------*/
 void s8contact_init(FIELD *actfield, PARTITION* actpart, INTRA *actintra)
 {
-int           i,j,k,l,m,n;
+int           i,j,k,l;
 int           myrank,nproc;
-int           numnp,numele;
+int           numnp;
 SHELLNODE    *actcnode;
 NODE         *actnode;
 ELEMENT      *actele;
@@ -113,7 +116,6 @@ for (i=0; i<actfield->dis[0].numele; i++)
    shellcontact.maxdiag = diag;
 }
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -130,6 +132,6 @@ return;
 
 
 
+/*! @} (documentation module close)*/
 
 #endif
-/*! @} (documentation module close)*/

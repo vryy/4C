@@ -8,7 +8,7 @@
 void s8_tmas(double *funct, double *thick, double **emass, int iel, int numdf,
              double facv, double facw, double facvw)
 {
-int           i,j,k,l;
+int           i,j,k;
 double        he,hehe;
 double        helpf;
 double        help;

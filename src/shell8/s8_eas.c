@@ -470,11 +470,10 @@ void s8_transeas(double      **P,
                     double        detr0,
                     int           nhyb)
 {
-int          i,j,k;
+int          i,j;
 const double two=2.0;
 double       t11,t12,t13,t21,t22,t23,t31,t32,t33;
 double       factor;
-double       sum;
 #ifdef DEBUG 
 dstrc_enter("s8_transeas");
 #endif

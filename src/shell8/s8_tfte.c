@@ -30,7 +30,7 @@ void s8_tfte(double **force,
              double   detsm,
              double   detsr)
 {
-int    i,j;
+int    i;
 double s11,s12,s21,s13,s31,s22,s23,s32,s33;
 double xu;
 double hh;

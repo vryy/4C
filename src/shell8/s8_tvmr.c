@@ -19,7 +19,7 @@ void s8_tvmr(double   **x,
 {
 int    i,j,k,idim,ialpha,inode;
 int    i1=0,i2=0,i3=0,i4=0,i5=0,i6=0;
-double zeta,det_dummy;
+double det_dummy;
 #ifdef DEBUG 
 dstrc_enter("s8_tvmr");
 #endif

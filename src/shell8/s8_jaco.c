@@ -16,7 +16,6 @@ void s8jaco(double    *funct,
                double    *deta,
                int        init)
 {
-int          i,j,k;
 double       x1r;
 double       x2r;
 double       x3r;

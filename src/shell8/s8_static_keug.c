@@ -26,7 +26,6 @@ double              density;                                /* density of the ma
 double              facv,facw,facvw;                        /* variables for mass integration */
 double             *thick;
 
-int                 dof;
 int                 nir,nis,nit;                            /* num GP in r/s/t direction */
 int                 lr, ls, lt;                             /* loopers over GP */
 int                 iel;                                    /* numnp to this element */
