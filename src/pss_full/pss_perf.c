@@ -71,13 +71,18 @@ DOUBLE perf_time ()
 #endif
 
 
-#ifdef HPUXITA
+#if defined(HPUXITA) && !defined(HPUX_GNU)
   DOUBLE time;
   DOUBLE cputime_thread() , zero=0.0;
 
   time = cputime_thread( zero );
   ret = time;
 #endif
+
+#if defined(HPUXITA) && defined(HPUX_GNU)
+  ret = 0.0;
+#endif
+
 
 #ifdef SUSE73
   struct timeval _tstart;
