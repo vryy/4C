@@ -62,14 +62,16 @@ alpha_f = sdyn->alpha_f;
 xsi     = sdyn->xsi;
 #endif
 /*------------------------------------------------------------new format*/
-  for(i=0; i<nd; i++)
-    for(j=0; j<nd; j++)
+/*---------------- perform B_bar^T * D * B_bar, whereas B_bar = F^T * B */
+for(i=0; i<nd; i++)
+   for(j=0; j<nd; j++)
       for(k=0; k<neps; k++)
-        for(m=0; m<neps; m++)
+         for(m=0; m<neps; m++)
 #ifdef GEMM        
-	keu[i][j] +=  ((1.0-alpha_f+xsi)/(1.0-alpha_f)) * (int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac);
+            keu[i][j] +=  ((1.0-alpha_f+xsi)/(1.0-alpha_f)) 
+                          * (int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac);
 #else
-        keu[i][j] +=  int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac;
+            keu[i][j] +=  int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac;
 #endif	
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

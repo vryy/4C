@@ -45,6 +45,14 @@ xji[0][1] =-xjm[0][1]* dum;
 xji[1][0] =-xjm[1][0]* dum;
 xji[1][1] = xjm[0][0]* dum;
 /*----------------------------- get operator boplin of global derivatives -*/
+/*-------------- some comments, so that even fluid people are able to
+   understand this quickly :-)
+   the Boplin looks like
+       | Nk,x    0   |
+       |   0    Nk,y |
+       | Nk,y    0   |
+       |  0     Nk,x |
+*/
 for (inode=0; inode<iel; inode++)
 {
   dnode = inode*2;
