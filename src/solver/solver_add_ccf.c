@@ -310,9 +310,9 @@ void  add_ccf_fast(
 
       if(index >= 0)  /* normal dof */
       {
-        Ax[index] += estif[i][j];
+        Ax[index] += estif[j][i];
         if (istwo)
-          Bx[index] += emass[i][j];
+          Bx[index] += emass[j][i];
       }
 
       if(index == -1)  /* boundary condition dof */
