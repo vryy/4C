@@ -589,6 +589,11 @@ void dserror(char string[], ...)
   va_list ap;
   char line[] = "=========================================================================\n";
   
+
+  /* write warnings */
+  dswarning(2,0);
+
+  
 #ifdef DEBUG 
   INT i=0;
   TRACEROUT *routhis = NULL;
