@@ -21,14 +21,14 @@ Maintainer: Malte Neumann
  | maximum number of nodes to an element                                |
  *----------------------------------------------------------------------*/
 #ifndef MAXNOD
-#define MAXNOD           (8)
+#define MAXNOD           (4)
 #endif
 
 /*----------------------------------------------------------------------*
  | maximum number of elements to a node                                 |
  *----------------------------------------------------------------------*/
 #ifndef MAXELE
-#define MAXELE           (8)
+#define MAXELE           (4)
 #endif
 
 /*----------------------------------------------------------------------*
@@ -42,7 +42,7 @@ Maintainer: Malte Neumann
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
 #ifndef MAXGAUSS
-#define MAXGAUSS         (8)
+#define MAXGAUSS         (4)
 #endif
 
 /*----------------------------------------------------------------------*

@@ -1014,3 +1014,24 @@ void perf_print (INT index, char string[], INT bezug, INT ops);
 void perf_out ();
 
 
+#ifdef CHECK_MAX
+/* ====================================================================
+ * file: check_max_sizes.c
+ * ==================================================================== */
+/*!----------------------------------------------------------------------
+\brief check the values of the max sizes
+
+<pre>                                                              mn 04/04
+This routine determines the optimal values for maxele, maxnod, maxdofpernode
+and maxgauss and compares those to the given values of the respective defines.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: --- 
+
+*----------------------------------------------------------------------*/
+void check_max_sizes(
+    );
+#endif
+
