@@ -159,46 +159,46 @@ if (option==0)
  |    ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 1    |
  |                             CASE 2                                   |        
  *----------------------------------------------------------------------*/       
-      xgr[0][1]    =     ZERO;
-      xgr[1][1]    =     ONE ;
-      xgr[2][1]    =     ZERO;
-      xgr[3][1]    =     ZERO;
-      xgs[0][1]    =     ZERO;
-      xgs[1][1]    =     ZERO;
-      xgs[2][1]    =     ONE ;
-      xgs[3][1]    =     ZERO;
-      xgt[0][1]    =     ZERO;
-      xgt[1][1]    =     ZERO;
-      xgt[2][1]    =     ZERO;
-      xgt[3][1]    =     ONE ;
-      wgtt[0][1]   =     Q124;
-      wgtt[1][1]   =     Q124;
-      wgtt[2][1]   =     Q124;
-      wgtt[3][1]   =     Q124;
+      xgr[0][2]    =     ZERO;
+      xgr[1][2]    =     ONE ;
+      xgr[2][2]    =     ZERO;
+      xgr[3][2]    =     ZERO;
+      xgs[0][2]    =     ZERO;
+      xgs[1][2]    =     ZERO;
+      xgs[2][2]    =     ONE ;
+      xgs[3][2]    =     ZERO;
+      xgt[0][2]    =     ZERO;
+      xgt[1][2]    =     ZERO;
+      xgt[2][2]    =     ZERO;
+      xgt[3][2]    =     ONE ;
+      wgtt[0][2]   =     Q124;
+      wgtt[1][2]   =     Q124;
+      wgtt[2][2]   =     Q124;
+      wgtt[3][2]   =     Q124;
 /*----------------------------------------------------------------------*  
  |    GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 3    |
  |                             CASE 3                                   |        
  *----------------------------------------------------------------------*/       
-      xgr[0][1]    =     Q14  ;
-      xgr[1][1]    =     Q12  ;
-      xgr[2][1]    =     Q16  ;
-      xgr[3][1]    =     Q16  ;
-      xgr[4][1]    =     Q16  ;
-      xgs[0][1]    =     Q14  ;
-      xgs[1][1]    =     Q16  ;
-      xgs[2][1]    =     Q16  ;
-      xgs[3][1]    =     Q16  ;
-      xgs[4][1]    =     Q12  ;
-      xgt[0][1]    =     Q14  ;
-      xgt[1][1]    =     Q16  ;
-      xgt[2][1]    =     Q16  ;
-      xgt[3][1]    =     Q12  ;
-      xgt[4][1]    =     Q16  ;
-      wgtt[0][1]   =    -Q430 ;
-      wgtt[1][1]   =     Q9120;
-      wgtt[2][1]   =     Q9120;
-      wgtt[3][1]   =     Q9120;
-      wgtt[4][1]   =     Q9120;
+      xgr[0][3]    =     Q14  ;
+      xgr[1][3]    =     Q12  ;
+      xgr[2][3]    =     Q16  ;
+      xgr[3][3]    =     Q16  ;
+      xgr[4][3]    =     Q16  ;
+      xgs[0][3]    =     Q14  ;
+      xgs[1][3]    =     Q16  ;
+      xgs[2][3]    =     Q16  ;
+      xgs[3][3]    =     Q16  ;
+      xgs[4][3]    =     Q12  ;
+      xgt[0][3]    =     Q14  ;
+      xgt[1][3]    =     Q16  ;
+      xgt[2][3]    =     Q16  ;
+      xgt[3][3]    =     Q12  ;
+      xgt[4][3]    =     Q16  ;
+      wgtt[0][3]   =    -Q430 ;
+      wgtt[1][3]   =     Q9120;
+      wgtt[2][3]   =     Q9120;
+      wgtt[3][3]   =     Q9120;
+      wgtt[4][3]   =     Q9120;
 /*----------------------------------------------------------------------*/
 /*-------------------------- save integration parameters in FLUID_DATA  */
 /*----------------- HEXAEDER -------------------------------------------*/
