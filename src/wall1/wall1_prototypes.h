@@ -837,6 +837,27 @@ void w1_defgrad(double    *F,        /* Deformation gradient            */
                 int         iel);    /* nodenumber of element           */
 #endif
 /*----------------------------------------------------------------------*
+ | Transform stress and strain local-global                  fh 7/02    |
+ | Local 3-direction is zero                                            |
+ *----------------------------------------------------------------------*/ 
+void w1_lss(double    *a,    /* vector to be transformed                */
+            double    **G,   /* elements of transformation matrix       */
+            double    **GI,  /* inverse of G                            */
+	    int         it); /* flag for local/global strains/stresses  */                                                                                                                                              
+/*----------------------------------------------------------------------*
+ | Set Transformation Matrices G and GI                      fh 7/02    |
+ *----------------------------------------------------------------------*/
+void w1_sett(double   **A,   /* matrix of direction cosines             */
+            double    **B,   /* G-Matrix     (L=1)                      */
+            double    **C);  /* inverse of G (L=2)                      */                                                         
+/*----------------------------------------------------------------------*
+ | Calculate Transformation Matrices G and G(Inv)            fh 7/02    |
+ *----------------------------------------------------------------------*/
+void w1_tram(double   **xjm, /* Elements of Jacobian Matrix             */
+            double    **G,   /* G-Matrix                                */
+            double    **GI,  /* inverse of G                            */
+	    double    **dum);/* matrix of direction cosines             */                                                                     
+/*----------------------------------------------------------------------*
 |  w1_call_matgeononl.c                                     ah 06/02     |
 |  select proper material law for large deformations                     |
 *-----------------------------------------------------------------------*/
@@ -897,12 +918,18 @@ void w1_fint( double **stress,           /* 2.PK stresses               */
  | integration of element loads                              ah 07/02   |
  | in here, line and surface loads are integrated                       |
  *----------------------------------------------------------------------*/
-void w1_eleload(ELEMENT  *ele,
-                W1_DATA  *data,
-                MATERIAL *mat,
-                double	*loadvec,
-                int	 init);
-
+void w1_eleload(ELEMENT  *ele,           /* actuell element             */
+                W1_DATA  *data,          /* wall1-data                  */
+                double	*loadvec,        /* loadvector                  */
+                int	 init);          /* flag -> init or calculation */
+/*----------------------------------------------------------------------*
+ | integration of element loads                             ah 07/02    |
+ *----------------------------------------------------------------------*/
+void w1_fextsurf(ELEMENT    *ele,        /* actuell element             */
+                 double    **eload,      /* element load vector         */
+                 double     *funct,      /* ansatz-functions            */
+                 double      fac,        /* integration factor          */
+                 int         iel);       /* element DOF                 */
                                                                         
                                                                         
                                                                         
