@@ -185,14 +185,19 @@ static INT iminarg1,iminarg2;
 #define MAXELE           (25)
 
 /*----------------------------------------------------------------------*
- | maximum number of dofs to a node                                     |
+ | maximum number of conditions (dirich/neumann) to a node              |
  *----------------------------------------------------------------------*/
-#define MAXDOFPERNODE    (6)
+#define MAXCONDPERNODE    (6)
+
+/*----------------------------------------------------------------------*
+ | maximum number of dofs to a node -> can be more than 6 for shell9    |
+ *----------------------------------------------------------------------*/
+#define MAXDOFPERNODE    (33)
 
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
-#define MAXGAUSS         (27)
+#define MAXGAUSS         (360)  /*20 Layers 3x3x2 integrated*/
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
@@ -259,6 +264,19 @@ static INT iminarg1,iminarg2;
 #define NUMDOF_SHELL8    (6)
 #define MAXHYB_SHELL8    (45)
 
+/*----------------------------------------------------------------------*
+ | shell9                                                               |
+ |                                                                      |
+ |    !!! set MAXDOFPERNODE according to number of kinematic Layers !!! |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+#define MAXNOD_SHELL9    (9)
+#define MAXKLAY_SHELL9   (10)                   /* max. nr of kin lay */
+#define NUMDOF_SHELL9    (3+3*MAXKLAY_SHELL9)   /* numdf = 3 + 3*klay */
+#define MAXHYB_SHELL9    (45)
+#define A3FAC_SHELL9     (1.0) /* makes it possible to change the norm of a3L */
+                               /* A3FAC_SHELL9 = 0.5 : |a3L| = 0.5 * hL -> as in shell8 */
+                               /* A3FAC_SHELL9 = 1.0 : |a3L| = 1.0 * hL -> like in Dis. Braun */
 /*----------------------------------------------------------------------*
  | wall1                                                                |
  *----------------------------------------------------------------------*/
