@@ -5,6 +5,7 @@ typedef union _ALLDYNA
 {
    struct _STRUCT_DYNAMIC    *sdyn; /* ptr for allocation of structural dynamic data */
    struct _FLUID_DYNAMIC     *fdyn; /* ptr for allocation of fluid dynamic data */
+   struct _FSI_DYNAMIC       *fsidyn; /*ptr fo allocation of fsi dynamic data */
 } ALLDYNA;
 
 
@@ -66,3 +67,33 @@ double             dinorm;  /* square of the L2-norm of the residual displacemen
 double             dnorm;   /* square of the L2-norm of the displacements increment */
 
 } STRUCT_DYN_CALC;
+/*----------------------------------------------------------------------*
+ | general fsi variables                                  genk 09/02    |
+ *----------------------------------------------------------------------*/
+typedef struct _FSI_DYNAMIC                 
+{
+int                ifsi;            /* coupling algorithm */
+int                ipre;            /* type of predictor */
+int                inrmfsi;         /* convergence criterion */
+int                ichecke;         /* energy check */
+int                inest;           /* nested iteration */
+int                ichopt;          /* optimal ordering for CHEBYCHEV parameter */
+int                iait;            /* Aitken iteration */
+int                itechapp;        /* No. of Iter. for approx. EW-Calculation */
+int                ichmax;          /* Max. No. of CHEBYCHEV iterations */
+int                isdmax;          /* Max. No. of steepest descent iterations */
+int                nstep;           /* number of steps */
+int                itemax;          /* max. number of iterations over fields */
+int                uppss;           
+int                step;
+int                iale;            
+double             time;
+double             dt;              /* time increment */
+double             maxtime;         /* total time */
+double             entol;           /* tolerance for energy check over fields */
+double             relax;           /* actual relaxation parameter */
+double             convtol;         /* tolerance for iteration over fields */ 
+double             deltaeint;       /* energy production at the interface */
+ARRAY              sid;             /* structural interface dofs */
+int                numsid;          /* number of structural interface dofs */
+} FSI_DYNAMIC;
