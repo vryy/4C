@@ -151,7 +151,7 @@ ARRAY           fiterhs_a;
 double         *fiterhs;	    /* iteration - RHS  		*/
 ARRAY           time_a;             /* stored time                      */
 
-CONTAINER       container;          /*!< contains variables defined in container.h */
+CONTAINER       container;          /* contains variables defined in container.h */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_isi");
@@ -254,7 +254,7 @@ solver_control(actsolv, actintra,
                init);
 	       
 /*------------------------------------- init the assembly for stiffness */
-init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
+init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 	       	       
 /*------------------------------- init the element calculating routines */
 *action = calc_fluid_init;
