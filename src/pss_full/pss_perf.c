@@ -77,7 +77,7 @@ static INT    bezug[100];
   \brief routine to meassure the performance
 
   <pre>                                                        mn 01/04
-  Initializes all counters with 0.
+  Initializes all counters with 0 and set the names and 'bezuege'.
   </pre>
 
   \return void
@@ -179,7 +179,7 @@ void perf_init_all ()
   \brief routine to get the exact time
 
   <pre>                                                        mn 01/04
-  Gets the current system time.
+  Gets the current system (cpu) time.
   </pre>
   \return void
 
@@ -299,7 +299,7 @@ DOUBLE perf_time ()
   \brief routine to meassure the performance
 
   <pre>                                                        mn 01/04
-  Initializes one counters with 0.
+  Initializes one counter with 0.
   </pre>
 
   \param  index   INT   (i)   index of the counter to initialize
@@ -445,6 +445,10 @@ void perfendf_ (INT *index)
 
   <pre>                                                        mn 01/04
   Print the results for all timers.
+  - for the sequential case just print the timers to the screen and the
+    error file
+  - in the parallel case collect the timers on the first processor and
+    print them there
   </pre>
 
   \param  out           (i)   file stream to write to

@@ -20,7 +20,22 @@ C
 C \brief assembling of one element matrix
 C
 C
-C \param b      DOUBLE  (o) explanation
+C \param estif      real*8()   (i) element stiffness matrices
+C \param lm         integer()  (i) location vector
+C \param owner      integer()  (i) owner vector
+C \param invupdate  integer()  (i) inversion of update
+C \param bindx      integer()  (i) bindx of the msr matrix
+C \param invbindx   integer()  (i) inversion of bindx
+C \param val        real*8()   (o) values of the msr matrix
+C \param myrank     integer    (i) my processor number
+C \param nprocs     integer    (i) number of total processors
+C \param numeqtotal integer    (i) number of total equations
+C \param numeq      integer    (i) number of my equations
+C \param numnp      integer    (i) number of nodes per ele
+C \param nd         integer    (i) number of dofs per ele
+C \param aloopl     integer    (i) current loop length
+C \param loopl      integer    (i) max. loop length
+C \param ele        integer    (i) element number
 C
 C \return void
 C
@@ -140,7 +155,23 @@ C
 C      include dirichlet dofs
 C
 C
-C \param b      DOUBLE  (o) explanation
+C \param estif      real*8()   (i) element stiffness matrices
+C \param lm         integer()  (i) location vector
+C \param owner      integer()  (i) owner vector
+C \param invupdate  integer()  (i) inversion of update
+C \param bindx      integer()  (i) bindx of the msr matrix
+C \param invbindx   integer()  (i) inversion of bindx
+C \param val        real*8()   (o) values of the msr matrix
+C \param myrank     integer    (i) my processor number
+C \param nprocs     integer    (i) number of total processors
+C \param numeqtotal integer    (i) number of total equations
+C \param numeq      integer    (i) number of my equations
+C \param numnp      integer    (i) number of nodes per ele
+C \param nd         integer    (i) number of dofs per ele
+C \param aloopl     integer    (i) current loop length
+C \param loopl      integer    (i) max. loop length
+C \param ele        integer    (i) element number
+C
 C
 C \return void
 C
@@ -253,7 +284,23 @@ C
 C      include dirichlet dofs TYPE2
 C
 C
-C \param b      DOUBLE  (o) explanation
+C \param estif      real*8()   (i) element stiffness matrices
+C \param lm         integer()  (i) location vector
+C \param owner      integer()  (i) owner vector
+C \param invupdate  integer()  (i) inversion of update
+C \param bindx      integer()  (i) bindx of the msr matrix
+C \param invbindx   integer()  (i) inversion of bindx
+C \param val        real*8()   (o) values of the msr matrix
+C \param myrank     integer    (i) my processor number
+C \param nprocs     integer    (i) number of total processors
+C \param numeqtotal integer    (i) number of total equations
+C \param numeq      integer    (i) number of my equations
+C \param numnp      integer    (i) number of nodes per ele
+C \param nd         integer    (i) number of dofs per ele
+C \param aloopl     integer    (i) current loop length
+C \param loopl      integer    (i) max. loop length
+C \param ele        integer    (i) element number
+C
 C
 C \return void
 C
@@ -374,7 +421,23 @@ C
 C \brief assembling of one element matrix for parallel case
 C
 C
-C \param b      DOUBLE  (o) explanation
+C \param estif      real*8()   (i) element stiffness matrices
+C \param lm         integer()  (i) location vector
+C \param owner      integer()  (i) owner vector
+C \param invupdate  integer()  (i) inversion of update
+C \param bindx      integer()  (i) bindx of the msr matrix
+C \param invbindx   integer()  (i) inversion of bindx
+C \param val        real*8()   (o) values of the msr matrix
+C \param myrank     integer    (i) my processor number
+C \param nprocs     integer    (i) number of total processors
+C \param numeqtotal integer    (i) number of total equations
+C \param numeq      integer    (i) number of my equations
+C \param numnp      integer    (i) number of nodes per ele
+C \param nd         integer    (i) number of dofs per ele
+C \param aloopl     integer    (i) current loop length
+C \param loopl      integer    (i) max. loop length
+C \param ele        integer    (i) element number
+C
 C
 C \return void
 C
@@ -534,7 +597,23 @@ C
 C      include dirichlet dofs
 C
 C
-C \param b      DOUBLE  (o) explanation
+C \param estif      real*8()   (i) element stiffness matrices
+C \param lm         integer()  (i) location vector
+C \param owner      integer()  (i) owner vector
+C \param invupdate  integer()  (i) inversion of update
+C \param bindx      integer()  (i) bindx of the msr matrix
+C \param invbindx   integer()  (i) inversion of bindx
+C \param val        real*8()   (o) values of the msr matrix
+C \param myrank     integer    (i) my processor number
+C \param nprocs     integer    (i) number of total processors
+C \param numeqtotal integer    (i) number of total equations
+C \param numeq      integer    (i) number of my equations
+C \param numnp      integer    (i) number of nodes per ele
+C \param nd         integer    (i) number of dofs per ele
+C \param aloopl     integer    (i) current loop length
+C \param loopl      integer    (i) max. loop length
+C \param ele        integer    (i) element number
+C
 C
 C \return void
 C
@@ -660,7 +739,23 @@ C
 C      include dirichlet dofs TYPE2
 C
 C
-C \param b      DOUBLE  (o) explanation
+C \param estif      real*8()   (i) element stiffness matrices
+C \param lm         integer()  (i) location vector
+C \param owner      integer()  (i) owner vector
+C \param invupdate  integer()  (i) inversion of update
+C \param bindx      integer()  (i) bindx of the msr matrix
+C \param invbindx   integer()  (i) inversion of bindx
+C \param val        real*8()   (o) values of the msr matrix
+C \param myrank     integer    (i) my processor number
+C \param nprocs     integer    (i) number of total processors
+C \param numeqtotal integer    (i) number of total equations
+C \param numeq      integer    (i) number of my equations
+C \param numnp      integer    (i) number of nodes per ele
+C \param nd         integer    (i) number of dofs per ele
+C \param aloopl     integer    (i) current loop length
+C \param loopl      integer    (i) max. loop length
+C \param ele        integer    (i) element number
+C
 C
 C \return void
 C
