@@ -50,6 +50,19 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC *fdyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief storing results in solution history
 
@@ -262,7 +275,7 @@ in this routine the dirichlet boundary conditions for fluid2 and fluid3
 elements are set at time <T=fdyn->time>.
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[3][j]
+    'actnode->sol_increment.a.da[ipos.velnp][j]
                                  |
                             time (n+1)
 
@@ -307,12 +320,12 @@ for (i=0;i<numnp_total;i++)
    {
       for (j=0;j<numdf;j++) /* loop dofs */
       {
-      actnode->sol_increment.a.da[3][j]   = lower_limit_kappa*10000;
-      actnode->sol_increment.a.da[1][j]   = actnode->sol_increment.a.da[3][j];
-      actnode->sol_increment.a.da[3][j+2] = lower_limit_omega*10000;
-      actnode->sol_increment.a.da[1][j+2] = actnode->sol_increment.a.da[3][j+2];
-      actnode->sol_increment.a.da[3][j+1] = actnode->sol_increment.a.da[3][j]/actnode->sol_increment.a.da[3][j+2];
-      actnode->sol_increment.a.da[2][j+1] = actnode->sol_increment.a.da[3][j+1];
+      actnode->sol_increment.a.da[ipos.velnp][j]   = lower_limit_kappa*10000;
+      actnode->sol_increment.a.da[ipos.veln][j]   = actnode->sol_increment.a.da[ipos.velnp][j];
+      actnode->sol_increment.a.da[ipos.velnp][j+2] = lower_limit_omega*10000;
+      actnode->sol_increment.a.da[ipos.veln][j+2] = actnode->sol_increment.a.da[ipos.velnp][j+2];
+      actnode->sol_increment.a.da[ipos.velnp][j+1] = actnode->sol_increment.a.da[ipos.velnp][j]/actnode->sol_increment.a.da[ipos.velnp][j+2];
+      actnode->sol_increment.a.da[ipos.eddy][j+1] = actnode->sol_increment.a.da[ipos.velnp][j+1];
       } /*end loop over nodes */
    }
    else
@@ -321,12 +334,12 @@ for (i=0;i<numnp_total;i++)
       {
          if (actgnode->dirich->dirich_onoff.a.iv[j]==0 || actgnode->dirich->dirich_onoff.a.iv[j+1]==0)
          {
-         actnode->sol_increment.a.da[3][j]   = lower_limit_kappa*10000;
-         actnode->sol_increment.a.da[1][j]   = actnode->sol_increment.a.da[3][j];
-         actnode->sol_increment.a.da[3][j+2] = lower_limit_omega*10000;
-         actnode->sol_increment.a.da[1][j+2] = actnode->sol_increment.a.da[3][j+2];
-         actnode->sol_increment.a.da[3][j+1] = actnode->sol_increment.a.da[3][j]/actnode->sol_increment.a.da[3][j+2];
-         actnode->sol_increment.a.da[2][j+1] = actnode->sol_increment.a.da[3][j+1];
+         actnode->sol_increment.a.da[ipos.velnp][j]   = lower_limit_kappa*10000;
+         actnode->sol_increment.a.da[ipos.veln][j]   = actnode->sol_increment.a.da[ipos.velnp][j];
+         actnode->sol_increment.a.da[ipos.velnp][j+2] = lower_limit_omega*10000;
+         actnode->sol_increment.a.da[ipos.veln][j+2] = actnode->sol_increment.a.da[ipos.velnp][j+2];
+         actnode->sol_increment.a.da[ipos.velnp][j+1] = actnode->sol_increment.a.da[ipos.velnp][j]/actnode->sol_increment.a.da[ipos.velnp][j+2];
+         actnode->sol_increment.a.da[ipos.eddy][j+1] = actnode->sol_increment.a.da[ipos.velnp][j+1];
          }
       } /*end loop over nodes */
    }
@@ -379,11 +392,11 @@ numeq_total = sol->numeq_total;
 	   dof = actnode->dof[j];
          if (dof>=numeq_total) continue;
 
-         if(actnode->sol_increment.a.da[3][2]!=0)
+         if(actnode->sol_increment.a.da[ipos.velnp][2]!=0)
          {
 
-          actnode->sol_increment.a.da[3][1] = actnode->sol_increment.a.da[3][0]/
-                                              actnode->sol_increment.a.da[3][2];
+          actnode->sol_increment.a.da[ipos.velnp][1] = actnode->sol_increment.a.da[ipos.velnp][0]/
+                                              actnode->sol_increment.a.da[ipos.velnp][2];
          }
         }
       }
@@ -439,28 +452,28 @@ numeq_total = sol->numeq_total;
          {
 	    dof = actnode->dof[j];
             if (dof>=numeq_total) continue;
-             if(actnode->sol_increment.a.da[3][2]!=0)
+             if(actnode->sol_increment.a.da[ipos.velnp][2]!=0)
              {
-              actnode->sol_increment.a.da[3][3] = 0.5*sqrt(actnode->sol_increment.a.da[3][0])/ actnode->sol_increment.a.da[3][2]
-                                                 +0.5*actnode->sol_increment.a.da[1][3];
+              actnode->sol_increment.a.da[ipos.velnp][3] = 0.5*sqrt(actnode->sol_increment.a.da[ipos.velnp][0])/ actnode->sol_increment.a.da[ipos.velnp][2]
+                                                 +0.5*actnode->sol_increment.a.da[ipos.veln][3];
               switch (fdyn->itnorm) /* switch to norm */
               {
                case 0: /* L_infinity norm */
-               dlenghtnorm  = DMAX(dlenghtnorm,FABS(actnode->sol_increment.a.da[3][3]-actnode->sol_increment.a.da[1][3]));
-	         lenghtnorm   = DMAX(lenghtnorm, FABS(actnode->sol_increment.a.da[3][3]));
-               actnode->sol_increment.a.da[1][3] = actnode->sol_increment.a.da[3][3];
+               dlenghtnorm  = DMAX(dlenghtnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][3]-actnode->sol_increment.a.da[ipos.veln][3]));
+	         lenghtnorm   = DMAX(lenghtnorm, FABS(actnode->sol_increment.a.da[ipos.velnp][3]));
+               actnode->sol_increment.a.da[ipos.veln][3] = actnode->sol_increment.a.da[ipos.velnp][3];
                break;
 /*-------------------------------------------------------------------------*/
                case 1: /* L_1 norm */
-               dlenghtnorm  += FABS(actnode->sol_increment.a.da[3][3]-actnode->sol_increment.a.da[1][3]);
-	         lenghtnorm   += FABS(actnode->sol_increment.a.da[3][3]);
-               actnode->sol_increment.a.da[1][3] = actnode->sol_increment.a.da[3][3];
+               dlenghtnorm  += FABS(actnode->sol_increment.a.da[ipos.velnp][3]-actnode->sol_increment.a.da[ipos.veln][3]);
+	         lenghtnorm   += FABS(actnode->sol_increment.a.da[ipos.velnp][3]);
+               actnode->sol_increment.a.da[ipos.veln][3] = actnode->sol_increment.a.da[ipos.velnp][3];
                break;
 /*-------------------------------------------------------------------------*/
                case 2: /* L_2 norm */
-               dlenghtnorm  += pow(actnode->sol_increment.a.da[3][3]-actnode->sol_increment.a.da[1][3],2);
-	         lenghtnorm   += pow(actnode->sol_increment.a.da[3][3],2);
-               actnode->sol_increment.a.da[1][3] = actnode->sol_increment.a.da[3][3];
+               dlenghtnorm  += pow(actnode->sol_increment.a.da[ipos.velnp][3]-actnode->sol_increment.a.da[ipos.veln][3],2);
+	         lenghtnorm   += pow(actnode->sol_increment.a.da[ipos.velnp][3],2);
+               actnode->sol_increment.a.da[ipos.veln][3] = actnode->sol_increment.a.da[ipos.velnp][3];
                break;
 /*-------------------------------------------------------------------*/
               default:
