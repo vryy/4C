@@ -647,8 +647,27 @@ return;
 <pre>                                                             ck 07/03
 depending on task it initialises all warnings to Zero (= no warning),
 collects warnings during running process and reports them to the screen at 
-the end. A reoccuring warning is written once!
+the end. A reoccuring warning is written once (per proc). 
+In parallel processes the warnings are ordered to the fields where they
+occure. Warnings are written to the screen and the error files.
+
+task 	= 0 	initialisation to no warnings
+	= 1	create warning depending on 'warning'
+	= 2	plot warnings to the screen
+warning	= 1	when trinangular ale elements are monitored with wrong 
+		quality meassure
+	= 2	aspect ration quality meassure for ale elements is called 
+		for a distyp it has not been implemented for
+	= 3	corner angle quality criterion for ale elements is called 
+		for a distyp it	has not been implemented for
+	= 4	min J quality criterion for ale elements is called for a
+		distyp it has not been implemented for 
+        = 5     ?? 
+        = 6     ??
+        = 7     your new warning issue
+
 </pre>
+
 \param task     INT (i)  flag, what to do
 \param warning  INT (i)  flag, which warning shall be printed at the end
 \return void                                                
@@ -657,65 +676,134 @@ the end. A reoccuring warning is written once!
 ------------------------------------------------------------------------*/
 void dswarning(INT task, INT warning)
 {
+INT   i;                                /* a counter                    */
+static INT called;                      /* flag, if warnings occured    */
 static INT ale_quality_min_J_triangles;
 static INT ale_quality_ar;
 static INT ale_quality_ca;
 static INT ale_quality_Je;
-
 static INT funct_range;     /* warning 5 */
 static INT funct_line;      /* warning 6 */
+/* DEFINE your new warning flag here!!! */
+
+FILE   *err = allfiles.out_err;
+INTRA          *actintra;
+
+#ifdef DEBUG
+dstrc_enter("dswarning");
+#endif
+
 /*----------------------------------------------------------------------*/
 switch (task)
 {
-   /*------------------------------------------------ initialisation ---*/
-   case 0:
-      ale_quality_min_J_triangles = 0;
-      ale_quality_ar = 0;
-      ale_quality_ca = 0;
-      ale_quality_Je = 0;
-
-      funct_range = 0;
-      funct_line  = 0;
-   break;
-   /*------------------------------------------------ create warning ---*/
-   case 1:
-      if (warning == 1)
-         ale_quality_min_J_triangles++;
-      else if (warning == 2)
-         ale_quality_ar++;	 
-      else if (warning == 3)
-         ale_quality_ca++;	 
-      else if (warning == 4)
-         ale_quality_Je++;
-      else if (warning == 5)
-         funct_range++;
-      else if (warning == 6)
-         funct_line++;
-   break;
-   /*------------------------------------------------ write warnings ---*/
-   case 2:
+  /*------------------------------------------------- initialisation ---*/
+  case 0:
+    called = NULL;
+    ale_quality_min_J_triangles = NULL;
+    ale_quality_ar = NULL;
+    ale_quality_ca = NULL;
+    ale_quality_Je = NULL;
+    funct_range = 0;
+    funct_line  = 0;
+    /* INITIALISE your new warning here!!! */
+  break;
+  /*------------------------------------------------- create warning ---*/
+  case 1:
+    called++;
+    if (warning == 1)
+      ale_quality_min_J_triangles++;
+    else if (warning == 2)
+      ale_quality_ar++;       
+    else if (warning == 3)
+      ale_quality_ca++;       
+    else if (warning == 4)
+      ale_quality_Je++;
+    else if (warning == 5)
+      funct_range++;
+    else if (warning == 6)
+      funct_line++;
+    /* COUNT your new warning here!!! */
+  break;
+  /*------------------------------------------------- write warnings ---*/
+  case 2:
+  if (!called) goto end;  /* supress output if there were no warnings   */
+  #ifdef PARALLEL
+    for (i=0; i<par.numfld; i++) /* loop all intra communicators        */
+    {
+      actintra = &(par.intra[i]);
+      MPI_Barrier(actintra->MPI_INTRA_COMM);
+      /* output result depends on fieldtyp (in parallel case only) */
+      switch (actintra->intra_fieldtyp)
+      {
+      case fluid:
+        if (par.myrank==0) printf("\nWARNINGS Fluid Field: \n");
+        fprintf(err,"*************************************\n");
+        fprintf(err,"WARNINGS Fluid Field: \n");
+      break;
+      case ale:
+        if (par.myrank==0) printf("\nWARNINGS ALE Field: \n");
+        fprintf(err,"*************************************\n");
+        fprintf(err,"WARNINGS ALE Field: \n");
+      break;
+      case structure:
+        if (par.myrank==0) printf("\nWARNINGS Structure Field: \n");
+        fprintf(err,"*************************************\n");
+        fprintf(err,"WARNINGS Structure Field: \n");
+      break;
+      default: dserror("Unknown fieldtyp!");
+      }
+  #endif
+   /*-------------------------------------------------------------------*/
       if (ale_quality_min_J_triangles)
       {
-         printf("\n Warning: There is no sense in monitoring lineare triangles with min_J!!!\n");
-         printf("          The .plt-file is not useful!\n");
+        printf("Warning PROC %i: There is no sense in monitoring lineare triangles with min_J!!!\n                The .plt-file is not useful!\n", par.myrank);
+        fprintf(err,"Warning PROC %i: There is no sense in monitoring lineare triangles with min_J!!!\n", par.myrank);
+        fprintf(err,"                The .plt-file is not useful!\n");
       }
       if (ale_quality_ar)
-         printf("\n Warning: aspect_ratio quality monitoring for one of the distyps not implemented!!\n");
+      {
+        printf("Warning PROC %i: aspect_ratio quality monitoring for one of the distyps not implemented!!\n", par.myrank);
+        fprintf(err,"Warning PROC %i: aspect_ratio quality monitoring for one of the distyps not implemented!!\n", par.myrank);
+      }
       if (ale_quality_ca)
-         printf("\n Warning: corner_angle quality monitoring for one of the distyps not implemented!!\n");
+      {
+        printf("Warning PROC %i: corner_angle quality monitoring for one of the distyps not implemented!!\n", par.myrank);
+        fprintf(err,"Warning PROC %i: corner_angle quality monitoring for one of the distyps not implemented!!\n", par.myrank);
+      }
       if (ale_quality_Je)
-         printf("\n Warning: min_J quality monitoring for one of the distyps not implemented!!\n");
-
+      {
+        printf("\nWarning PROC %i: min_J quality monitoring for one of the distyps not implemented!!\n", par.myrank);
+        fprintf(err,"\n Warning PROC %i: min_J quality monitoring for one of the distyps not implemented!!\n", par.myrank);
+      }      
       if (funct_range)
-         printf("\n WARNING: Function used for points outside the range 0<xi<1 !!\n");
+      {
+        printf("\n WARNING PROC %i: Function used for points outside the range 0<xi<1 !!\n", par.myrank);
+        fprintf(err,"\n WARNING PROC %i: Function used for points outside the range 0<xi<1 !!\n", par.myrank);
+      }
       if (funct_line)
-         printf("\n WARNING: Function used for points not on the defined line!!\n");
-   break;
-   /*------------------------------------------------------- default ---*/
-   default:
-      dserror("warning task unvalid");
-   break;
+      {
+        printf("\n WARNING PROC %i: Function used for points not on the defined line!!\n", par.myrank);
+        fprintf(err,"\n WARNING PROC %i: Function used for points not on the defined line!!\n", par.myrank);
+      }
+      /* ADD more warning messages here!!! */
+  #ifdef PARALLEL
+    MPI_Barrier(actintra->MPI_INTRA_COMM);
+    } /* end loop over intra groups */
+  #endif
+   if (par.myrank == 0) printf("\n");
+  break;
+  /*-------------------------------------------------------- default ---*/
+  default:
+     dserror("warning task unvalid");
+  break;
 } /* end of switch init */
+/*----------------------------------------------------------------------*/
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
 } /* end of dswarning */
 
 
