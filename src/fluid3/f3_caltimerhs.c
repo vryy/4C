@@ -501,8 +501,8 @@ if (ele->e.f3->iadvec!=0 && ihoel!=0)
       eforce[irow]   += aux*fact[0];
       eforce[irow+1] += aux*fact[1];
       eforce[irow+2] += aux*fact[2];
+      irow += 3;
    } /* end of loop over inode */
-   irow += 3;
 } /* endif (ele->e.f3->iadvec!=0 && ihoel!=0) */
 
 /*----------------------------------------------------------------------*
@@ -543,7 +543,7 @@ if (ele->e.f3->ivisc!=0 && ihoel!=0)
   - |  tau_c * div(v) * div(u)  d_omega
    /
  *----------------------------------------------------------------------*/  
-if (ele->e.f3->ivisc!=1)
+if (ele->e.f3->icont!=0)
 {
    aux = tauc*facsr*(vderxy[0][0] + vderxy[1][1] + vderxy[2][2]);
    irow = -1;
