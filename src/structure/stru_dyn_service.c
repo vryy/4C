@@ -1148,7 +1148,7 @@ if (actsolv->sysarray_typ[stiff] != spoolmatrix)
 spostiff = actsolv->sysarray[stiff].spo;
 numeq    = spostiff->numeq_total;
 solserv_create_vec(&distvecs,numeq,numeq,numeq,"DV");
-for (k=0; k<numeq; k++) solserv_zero_vec(&(distvecs[i]));
+for (k=0; k<numeq; k++) solserv_zero_vec(&(distvecs[k]));
 lwork    = 1 + 6*numeq + 2*numeq*numeq;
 liwork   = 3 + 5*numeq;
 jobz[0]  = 'V';
