@@ -71,7 +71,10 @@ for (i=0; i<actdis->numele; i++)
        
       /*--- assign pointer to corresponding stabilisation parameters ---*/
       if (fluid2->stab_type == stab_gls)
+      {
+        dsassert(actdsurf->stabi.gls!=NULL,"no stabilisation at DSURF!\n");
         fluid2->stabi.gls = actdsurf->stabi.gls;
+      }
       else if (fluid2->stab_type == stab_prespro)
         ;   /* nothing needs to be done at the moment (no parameters!) */
       else 
@@ -112,7 +115,10 @@ for (i=0; i<actdis->numele; i++)
        
       /*--- assign pointer to corresponding stabilisation parameters ---*/
       if (fluid3->stab_type == stab_gls)
+      {
+        dsassert(actdvol->stabi.gls!=NULL,"no stabilisation at DVOL!\n");
         fluid3->stabi.gls = actdvol->stabi.gls;
+      }
       else 
         dserror("Other than gls stabilisation not yet implemented!");
 #endif
