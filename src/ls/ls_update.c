@@ -2221,7 +2221,7 @@ void ls_init_material()
             dserror("\n**ERROR** in ls_init_material()");
           }
         }
-        actele->e.ls2->my_fluid->mat = 1;
+        actele->e.ls2->my_fluid->mat = 2;
       }
       else
       {
@@ -2233,7 +2233,7 @@ void ls_init_material()
             dserror("\n**ERROR** in ls_init_material()");
           }
         }
-        actele->e.ls2->my_fluid->mat = 2;        
+        actele->e.ls2->my_fluid->mat = 1;        
       }
     }
   }
@@ -2290,7 +2290,7 @@ void ls_updt_material()
             dserror("\n**ERROR** in ls_updt_material()");
           }
         }
-        actele->e.ls2->my_fluid->mat = 1;
+        actele->e.ls2->my_fluid->mat = 2;
       }
       else
       {
@@ -2302,7 +2302,7 @@ void ls_updt_material()
             dserror("\n**ERROR** in ls_updt_material()");
           }
         }
-        actele->e.ls2->my_fluid->mat = 2;
+        actele->e.ls2->my_fluid->mat = 1;
       }
     }
   }

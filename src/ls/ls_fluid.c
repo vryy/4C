@@ -157,8 +157,14 @@ void ls_fluid_init()
 
   if (fdyn->liftdrag!=0)
     str = str_liftdrag;
+
+/**************************BE CAREFUL************************************/
   if (ioflags.fluid_stress_gid==1)
-    str = str_all;
+  {
+    dserror("ioflags.fluid_stress_gid=1 but not implemented!");
+    /* str = str_all;*/
+  }
+/**************************BE CAREFUL************************************/
   
   fdyn->acttime = ZERO;
 

@@ -63,11 +63,18 @@ void ls_dyn()
   lsdyn= alldyn[numls].lsdyn;
   lsdata = lsdyn->lsdata;
   fdyn = alldyn[numff].fdyn;
+  /* check */
+  if (lsdata->setvel==1 && lsdyn->nfstep!=0)
+    dserror("nfstep!=0 for pure level set problem!");
+  
   /* init all applied time curves */
   for (actcurve = 0;actcurve<numcurve;actcurve++)
     dyn_init_curve(actcurve,lsdyn->nstep,lsdyn->dt,lsdyn->maxtime);
   /* initialize fluid */
-  ls_fluid(eflag);
+  if (lsdata->setvel==2)
+  {
+    ls_fluid(eflag);
+  }
   /* initialise levelset */
   ls_levelset(eflag);
   /* initialize level set module */
@@ -83,7 +90,10 @@ void ls_dyn()
   fdyn->acttime = lsdyn->time;
   
   /* solve fluid field */
-  ls_fluid(eflag);
+  if (lsdata->setvel==2)
+  {
+    ls_fluid(eflag);
+  }
   /* solve levelset field */
   if (lsdyn->step>lsdyn->nfstep)
   {
@@ -93,7 +103,10 @@ void ls_dyn()
   /* F I N A L I Z E */
   eflag=3;
   /* finalize fluid field */
-  ls_fluid(eflag);
+  if (lsdata->setvel==2)
+  {  
+    ls_fluid(eflag);
+  }
   /* finalize levelset field */
   if (lsdyn->step>lsdyn->nfstep)
   {
@@ -138,7 +151,10 @@ void ls_dyn()
   
 /* C L E A N I N G   U P   P H A S E */
   eflag=99;
-  ls_fluid(eflag);
+  if (lsdata->setvel==2)
+  {
+    ls_fluid(eflag);
+  }
   ls_levelset(eflag);
   /* finalize level set module */
   lsflag = ls_finaphase;

@@ -104,7 +104,7 @@ void fluid_to_ls(
     for (i=0; i<fluidfield->dis[ii].numele; i++)
     {
       fluid_ele = &(fluidfield->dis[0].element[i]);
-      if (fluid_ele->eltyp==el_fluid2)
+      if (fluid_ele->eltyp==el_fluid2_xfem)
       {
         fluid_ele->e.f2->my_ls  = NULL;  
       }	
@@ -124,7 +124,7 @@ void fluid_to_ls(
     for (i=0; i<fluidfield->dis[ii].numele; i++)
     {
       fluid_ele = &(fluidfield->dis[0].element[i]);
-      if (fluid_ele->eltyp==el_fluid2)
+      if (fluid_ele->eltyp==el_fluid2_xfem)
       {
         if (fluid_ele->e.f2->is_ls!=1) continue;
         for (j=0; j<lsfield->dis[0].numele; j++)
