@@ -129,6 +129,8 @@ static INT 	numeq;  	  /* number of equations on this proc                   */
 static INT 	numeq_total;	  /* total number of equations over all procs           */
 INT        	init;		  /* init flag for solver                               */
 static INT 	actsysarray;	  /* active sparse system matrix in actsolv->sysarray[] */
+static INT      constsysarray;    /* second system matrix for steepest descent 		*/
+static INT      numsys;           /* number of system matrices				*/
 static INT      actpos;           /* actual position in nodal solution history          */
 static INT      outstep;          /* counter for output to .out                         */
 static INT      pssstep;          /* counter for output to .pss                         */
@@ -165,6 +167,7 @@ outstep=0;
 pssstep=0;
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=0;
+numsys = 1;  /* the number of system matrices */
 /*--------------------------------------------------- set some pointers */
 actsolv     = &(solv[numfa]);
 actpart     = &(partition[numfa]);
@@ -188,6 +191,30 @@ actintra->intra_nprocs   = 1;
 if (actintra->intra_fieldtyp != ale) goto end;
 /*------------------------------------------------ typ of global matrix */
 array_typ   = actsolv->sysarray_typ[actsysarray];
+
+/*--- in the case of relaxation parameter calculations we would like to 
+      have a second system matrix which remains constant over time.     */
+if (fsidyn->ifsi == 6)
+{
+   /*----------- one sysarray already exists, so copy the mask of it to */
+   /*---------------------------- mass_array (and damp_array if needed) */
+   /* reallocate the vector of sparse matrices and the vector of there types
+   /* formerly lenght 1, now lenght 2 */
+   numsys++;
+   actsolv->nsysarray=2;
+   constsysarray = 1;
+   actsolv->sysarray_typ = 
+   (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
+   actsolv->sysarray = 
+   (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
+   /*-copy the matrices sparsity mask from stiff_array to mass_array (and to damp_array) */
+   solserv_alloc_cp_sparsemask(  actintra,
+                               &(actsolv->sysarray_typ[actsysarray]),
+                               &(actsolv->sysarray[actsysarray]),
+                               &(actsolv->sysarray_typ[constsysarray]),
+                               &(actsolv->sysarray[constsysarray]));
+}
+
 /*---------------------------- get global and local number of equations */
 /*   numeq equations are on this proc, the total number of equations is */
 /*                                                          numeq_total */
@@ -225,24 +252,27 @@ dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 if (par.myrank==0) amdef("time",&time_a,1000,1,"DV");
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(  
-                    actsolv,
-                    actintra,
-                  &(actsolv->sysarray_typ[actsysarray]),
-                  &(actsolv->sysarray[actsysarray]),
-                  &(actsolv->sol[actsysarray]),
-                  &(actsolv->rhs[actsysarray]),
-                    init
-                 );
-/*--------------------------------- init the dist sparse matrix to zero */
-/*               NOTE: Has to be called after solver_control(init=1) */
-solserv_zero_mat(
-                    actintra,
-                    &(actsolv->sysarray[actsysarray]),
-                    &(actsolv->sysarray_typ[actsysarray])
-                   );
-/*----------------------------- init the assembly for ONE sparse matrix */
-init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+for (i = 0; i<numsys; i++)
+{
+   solver_control(  
+                       actsolv,
+                       actintra,
+                     &(actsolv->sysarray_typ[i]),
+                     &(actsolv->sysarray[i]),
+                     &(actsolv->sol[actsysarray]),
+                     &(actsolv->rhs[actsysarray]),
+                       init
+                    );
+   /*------------------------------ init the dist sparse matrix to zero */
+   /*            NOTE: Has to be called after solver_control(init=1) */
+   solserv_zero_mat(
+                       actintra,
+                       &(actsolv->sysarray[i]),
+                       &(actsolv->sysarray_typ[i])
+                      );
+   /*---------------------------- init the assembly for sparse matrices */
+   init_assembly(actpart,actsolv,actintra,actfield,i,0);
+}
 
 /*------------------------------- init the element calculating routines */
 *action = calc_ale_init_step2;
@@ -265,6 +295,19 @@ if (ioflags.ale_disp_gid==1 && par.myrank==0)
 out_gid_domains(actfield);
 #endif
 
+if (fsidyn->ifsi == 6) /* if we do steepest descent method! */
+{
+   /* init linear element routines also */
+   *action = calc_ale_init;
+   calinit(actfield,actpart,action,&container);
+   /* evaluate linear element stiffnesses (remain constant) */
+   *action = calc_ale_stiff;
+   container.dvec         = NULL;
+   container.dirich       = NULL;
+   container.global_numeq = 0;
+   container.kstep        = 0;
+   calelm(actfield,actsolv,actpart,actintra,constsysarray,-1,&container,action);
+}
 break;
 
 /*======================================================================*
@@ -405,13 +448,19 @@ solserv_result_incre(actfield,
      		    &(actsolv->sysarray[actsysarray]),
      		    &(actsolv->sysarray_typ[actsysarray])
      		    );
-/*----------- add actual solution increment to sol (to serve output) ---*/
-       /*--- copy prev. solution form sol_mf[0][j] to sol[actpos][j] ---*/
-solserv_sol_copy(actfield,0,3,0,0,actpos);
+
+/*---------- add actual solution increment to sol (to serve output): ---*/
+/* step 1: */
+   /* copy prev. solution form sol_increment[1][j] to sol[actpos][j] ---*/
+solserv_sol_copy(actfield,0,1,0,1,actpos);
+/* step 2: */
        /*----------- add actual solution increment to sol[actpos][j] ---*/
 solserv_sol_add(actfield,0,1,0,0,actpos,1.0);
-/*-- copy actual solution from sol[actpos][i] to sol_increment[1][i] ---*/
-solserv_sol_copy(actfield,0,0,1,actpos,1);
+
+/* save actual solution to be the previous one in the next time step ---*/
+/*--------- copy actual solution from sol[actpos][i] to sol_mf[1][i] ---*/
+solserv_sol_copy(actfield,0,0,3,actpos,1);
+
 /*----------------------------------------------------------------------*/
 if (fsidyn->ifsi>=4)
 break;
@@ -454,6 +503,80 @@ if (container.quality) ale_quality(actfield,fsidyn->step);
 /*--------------------------------------------------------------------- */   
 
 break;
+
+/*======================================================================*
+ |                A D D I T I O N A L   S O L U T I O N                 |
+ |    for determination of relaxation parameter via steepest descent    |
+ |                            l i n e a r !                             |
+ *======================================================================*
+ * nodal solution history ale field:                                    *
+ * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
+ * sol_mf[0][i]        ... displacements at (n)			        *
+ * sol_mf[1][i]        ... displacements at (n+1) 		        * 
+ * sol_mf[2][i]        ... grid position in relaxation parameter calc.  *
+ * sol_increment[0][i] ... displacement used to determine omega_RELAX   *
+ *======================================================================*/
+case 6:
+/*- there are only procs allowed in here, that belong to the fluid -----*/
+/* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
+if (actintra->intra_fieldtyp != ale) break;
+
+if (par.myrank==0)
+{
+   printf("          - Solving ALE ... \n");
+}
+
+dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
+   
+/*------------------------------ init the created dist. vectors to zero */
+solserv_zero_vec(&(actsolv->rhs[actsysarray]));
+solserv_zero_vec(&(actsolv->sol[actsysarray]));
+/*--------------------------------------------------------------------- */
+amzero(&dirich_a);
+
+/*-------------------------set dirichlet boundary conditions on at time */
+/* note: ale Dirichlet boundary conditions different from ZERO are not 
+         helpful for fsi coupling problems and would cause trouble here.
+	 But there's no test to set all ordinary dbc = 0.0 !!!
+	 The required Dirichlet boundary conditions from fsi coupling 
+	 are calculated here.						*/
+ale_setdirich(actfield,adyn,actpos,6);
+
+/*------------------------------- call element-routines to assemble rhs */
+*action = calc_ale_rhs;
+ale_rhs(actfield,actsolv,actpart,actintra,constsysarray,-1,dirich,
+        numeq_total,0,&container,action);
+
+/*------ add rhs from fsi coupling (-> prescribed displacements) to rhs */
+assemble_vec(actintra,&(actsolv->sysarray_typ[constsysarray]),
+  &(actsolv->sysarray[constsysarray]),&(actsolv->rhs[actsysarray]),
+  dirich,1.0);
+
+/*--------------------------------------------------------- call solver */
+/*---- system matrix has been calculated within initialisation phase ---*/
+init=0;
+solver_control(
+                    actsolv,
+                    actintra,
+                  &(actsolv->sysarray_typ[constsysarray]),
+                  &(actsolv->sysarray[constsysarray]),
+                  &(actsolv->sol[actsysarray]),
+                  &(actsolv->rhs[actsysarray]),
+                    init
+                 );
+
+/*-------------- allreduce the result and put it to sol_increment[0][i] */
+solserv_result_incre(
+                     actfield,
+                     actintra,
+                     &(actsolv->sol[actsysarray]),
+                     0,
+                     &(actsolv->sysarray[constsysarray]),
+                     &(actsolv->sysarray_typ[constsysarray])
+                    );
+
+break;
+
 
 /*======================================================================* 
  |                C L E A N I N G   U P   P H A S E                     |

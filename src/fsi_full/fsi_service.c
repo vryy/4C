@@ -169,7 +169,8 @@ return;
 \param *dynvar	   FLUID_DYN_CALC    (i/o)			  
 \param  numdf      INT               (i)     number of dofs	  
 \param  pos1       INT               (i)     position in sol_incr    
-\param  pos2       INT               (i)     position in sol_incr    
+\param  pos2       INT               (i)     position in sol_incr     
+\param  pos3       INT               (i)     position in sol_incr   
 \return void 
 
 ------------------------------------------------------------------------*/
@@ -201,6 +202,8 @@ numc         = numdf-1;
  * sol_increment[4][i] ... grid velocity time (n) -> (n+1)		*
  * sol_increment[5][i] ... convective velocity at time (n)		*
  * sol_increment[6][i] ... convective velocity at time (n+1)	        *
+ *		needed for steepest descent method only:		*
+ * sol_increment[7][i] ... fluid solution for Relaxation parameter	*
  *======================================================================*
 
 /*------------------------------------------------------ loop all nodes */
@@ -291,7 +294,7 @@ for (i=0;i<numnp_total;i++) /* loop nodes */
       if (numdf==4)
       {
 	 for(l=0;l<6;l++) 
-	 actnode->sol_mf.a.da[1][l]=actele->e.f3->stress_ND.a.da[k][l]/numele;
+	 actnode->sol_mf.a.da[1][l]+=actele->e.f3->stress_ND.a.da[k][l]/numele;
       }
 #endif	 
    }
@@ -350,6 +353,12 @@ case 4:
 break;
 case 5:
    printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION\n");
+   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
+      fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
+   printf("\n");  
+break;  
+case 6:
+   printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD\n");
    printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
    printf("\n");  

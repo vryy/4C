@@ -97,6 +97,9 @@ in this function the mesh of a multifield problem is solved as a
 pseude structure. Displacements are prescribed at the fluid structure
 interface and at the free surface as Dirichlet boundary conditions
 
+Routine also includes calculation part for fluid mesh dynamics used to 
+determine Relaxation parameter via steepest descent relaxation.
+
 </pre>
 
 \param  *fsidyn     FSI_DYNAMIC    (i)  			  
@@ -296,7 +299,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 amzero(&dirich_a);
 
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich(actfield,adyn,actpos);
+ale_setdirich(actfield,adyn,actpos,0);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
@@ -377,6 +380,80 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 /*--------------------------------------------------------------------- */   
 
 break;
+
+
+/*======================================================================*
+ |                A D D I T I O N A L   S O L U T I O N                 |
+ |    for determination of relaxation parameter via steepest descent    |
+ *======================================================================*
+ * nodal solution history ale field:                                    *
+ * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
+ * sol_mf[0][i]        ... displacements at (n)			        *
+ * sol_mf[1][i]        ... displacements at (n+1) 		        * 
+ * sol_mf[2][i]        ... grid position in relaxation parameter calc.  *
+ * sol_increment[0][i] ... displacement used to determine omega_RELAX   *
+ *======================================================================*/
+case 6:
+/*- there are only procs allowed in here, that belong to the fluid -----*/
+/* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
+if (actintra->intra_fieldtyp != ale) break;
+
+if (par.myrank==0)
+{
+   printf("          - Solving ALE ... \n");
+}
+
+dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
+   
+/*------------------------------ init the created dist. vectors to zero */
+solserv_zero_vec(&(actsolv->rhs[actsysarray]));
+solserv_zero_vec(&(actsolv->sol[actsysarray]));
+/*--------------------------------------------------------------------- */
+amzero(&dirich_a);
+
+/*-------------------------set dirichlet boundary conditions on at time */
+/* note: ale Dirichlet boundary conditions different from ZERO are not 
+         helpful for fsi coupling problems and would cause trouble here.
+	 But there's no test to set all ordinary dbc = 0.0 !!!
+	 The required Dirichlet boundary conditions from fsi coupling 
+	 are calculated here.						*/
+ale_setdirich(actfield,adyn,actpos,6);
+
+/*------------------------------- call element-routines to assemble rhs */
+*action = calc_ale_rhs;
+ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,
+        numeq_total,0,&container,action);
+
+/*------ add rhs from fsi coupling (-> prescribed displacements) to rhs */
+assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
+     &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
+     dirich,1.0);
+
+/*--------------------------------------------------------- call solver */
+/*--------- the system matrix has been calculated within the init phase */
+init=0;
+solver_control(
+                    actsolv,
+                    actintra,
+                  &(actsolv->sysarray_typ[actsysarray]),
+                  &(actsolv->sysarray[actsysarray]),
+                  &(actsolv->sol[actsysarray]),
+                  &(actsolv->rhs[actsysarray]),
+                    init
+                 );
+
+/*-------------- allreduce the result and put it to sol_increment[0][i] */
+solserv_result_incre(
+                     actfield,
+                     actintra,
+                     &(actsolv->sol[actsysarray]),
+                     0,
+                     &(actsolv->sysarray[actsysarray]),
+                     &(actsolv->sysarray_typ[actsysarray])
+                    );
+
+break;
+
 
 /*======================================================================* 
  |                C L E A N I N G   U P   P H A S E                     |

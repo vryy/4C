@@ -129,7 +129,23 @@ void fsi_fluid(
 		       INT             mctrl,
 		       INT             numff
 	      );
-
+/************************************************************************
+ | fsi_gradient.c                                                       |
+ ************************************************************************/
+void fsi_gradient(  
+                  FIELD          *alefield, 
+                  FIELD          *structfield, 
+                  FIELD          *fluidfield, 
+                  FSI_DYNAMIC    *fsidyn, 
+		  ALE_DYNAMIC    *adyn,
+		  FLUID_DYNAMIC  *fdyn,
+		  STRUCT_DYNAMIC *sdyn,
+		  INT             numfa,
+		  INT             numff,
+ 		  INT             numfs
+	         );
+void fsi_omega_sg(FIELD          *actfield,
+                  FSI_DYNAMIC    *fsidyn  );
 /************************************************************************
  | fsi_relax_intdisp.c                                                  |
  ************************************************************************/

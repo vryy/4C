@@ -1005,6 +1005,112 @@ case 4:
    fsi_structpredictor(fsidyn,actfield,0);
 break;
 
+
+
+/*======================================================================*
+ |   S O L U T I O N   F O R   R E L A X A T I O N   P A R A M E T E R  |
+ |                      using steepest descent method                   |
+ *======================================================================*
+ * nodal solution history structural field:                             * 
+ * sol[0][j]           ... total displacements at time (t)              * 
+ * sol[1][j]           ... velocities at time (t)		        *
+ * sol[2][j]           ... accels at time (t)         		        * 
+ * sol[3][j]           ... prescribed displacements at time (t-dt)      * 
+ * sol[4][j]           ... prescribed displacements at time (t)	        *
+ * sol[5][j]           ... place 4 - place 3                	        *
+ * sol[6][j]           ... the  velocities of prescribed dofs  	        *
+ * sol[7][j]           ... the  accels of prescribed dofs  	        *
+ * sol[8][j]           ... working space   	                        * 
+ * sol[9][j]           ... total displacements at time (t-dt)  	        *
+ * sol[10][j]          ... velocities at time (t-dt)        	        * 
+ * sol_mf[0][j]        ... latest struct-displacements                  *
+ * sol_mf[1][j]        ... (relaxed) displ. of the last iteration step  *
+ * sol_mf[2][j]        ... converged relaxed displ. at time (t-dt)      *
+ * sol_mf[3][j]        ... actual dispi                                 *
+ * sol_mf[4][j]        ... FSI coupl.-forces at the end of the timestep *
+ * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.* 
+ *======================================================================*/
+
+/*
+   rhs[4]    load vector due to fsi loads at time t
+   rhs[3]    original load vector
+   rhs[2]             load vector at time t-dt
+   rhs[1]             load vector at time t
+   rhs[0]    interpolated load vector and working array
+
+   fie[2]    internal forces at step t
+   fie[1]    internal forces at step t-dt
+   fie[0]    interpolated internal forces and working array
+
+   dispi[0]  displacement increment from t-dt to t
+
+   sol[0]    total displacements at time t-dt
+   sol[1]    total displacements at time t
+   
+   vel[0]    velocities    at t-dt
+   acc[0]    accelerations at t-dt
+
+   work[2]   working vector for sums and matrix-vector products 
+   work[1]   working vector for sums and matrix-vector products 
+   work[0]   working vector for sums and matrix-vector products 
+   work[0]   is used to hold residual displacements in corrector 
+             iteration
+             
+   in the nodes, displacements are kept in node[].sol[0][0..numdf-1]
+                 velocities    are kept in node[].sol[1][0..numdf-1]
+                 accelerations are kept in node[].sol[2][0..numdf-1]
+
+This calculation in performed in one single step. There are no external
+forces and no time dependencies.
+
+*/
+case 6: 
+if (fsidyn->ifsi != 6) 
+dserror("No auxiliary structure solution within this coupling scheme");
+/*------------------------------------------------ output to the screen */
+/*- there are only procs allowed in here, that belong to the structural */
+/* intracommunicator (in case of nonlinear struct. dyn., this should be all) */
+if (actintra->intra_fieldtyp != structure) break;
+if (par.myrank==0) 
+{   
+   printf("          - Solving STRUCTURE ...\n"); 
+}
+
+/*---------------------- set incremental displacements dispi[0] to zero */
+solserv_zero_vec(&dispi[0]);
+
+/*-------------- calculate rhs from external forces due to fsi coupling */
+solserv_zero_vec(&(actsolv->rhs[0]));
+container.inherit = 1;
+container.point_neum = 1;
+*action = calc_struct_fsiload;
+calrhs(actfield,actsolv,actpart,actintra,stiff_array,
+       &(actsolv->rhs[0]),action,&container);
+
+/*--- note: this calculation is performed on the initial configuration
+            changed by the increment step vector g_i only. There are no
+	    Dirichlet boundary conditions different from zero ----------*/
+/*------------------------------------ multiply rhs by (1.0-alpha_f) ---*/
+solserv_scalarprod_vec(&(actsolv->rhs[0]),(1.0-sdyn->alpha_f));
+
+/*-------------------- solve with Keff from previous system soluiton ---*/
+/*------------- call for solution of system dispi[0] = Keff^-1 * rhs[0] */
+init=0;
+solver_control(actsolv, actintra,
+               &(actsolv->sysarray_typ[stiff_array]),
+               &(actsolv->sysarray[stiff_array]),
+               &(dispi[0]),
+               &(actsolv->rhs[0]),
+               init);
+	       
+/*----------------------------- write solution to the nodes (sol[8][i]) */
+solserv_result_total(actfield,actintra, &(dispi[0]),8,
+                     &(actsolv->sysarray[stiff_array]),
+                     &(actsolv->sysarray_typ[stiff_array]));
+
+break;
+
+
 default:
    dserror("Parameter out of range: mctrl \n");
 } /* end switch (mctrl) */

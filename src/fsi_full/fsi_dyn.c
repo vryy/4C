@@ -209,7 +209,8 @@ if (fsidyn->ifsi>=4)
       }
       else if (fsidyn->ifsi==6)
       {
-         dserror("RELAX via steepest descent not implemented yet!\n");
+         fsi_gradient(alefield,structfield,fluidfield,fsidyn,adyn,
+	              fdyn,sdyn,numaf,numff,numsf);
       }
       else if (fsidyn->ifsi==7)
       {
