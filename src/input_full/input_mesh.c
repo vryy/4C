@@ -26,10 +26,6 @@ Maintainer: Malte Neumann
 #include "../beam3/beam3.h"
 #include "../interf/interf.h"
 
-#ifdef D_LS
-#include "../ls/ls_prototypes.h"
-#endif
-
 #ifdef D_WALLGE
 #include "../wallge/wallge.h"
 #endif
@@ -67,10 +63,6 @@ extern struct _TWOPHASE_DATA     *twophase_data;
  *----------------------------------------------------------------------*/
 static ARRAY tmpnodes1;
 static ARRAY tmpnodes2;
-
-#ifdef D_LS
-void inp_ls_field(FIELD *lsfield);
-#endif
 
 #ifdef D_SSI
 void inp_struct_field_ssi(FIELD *masterfield, FIELD *slavefield);
@@ -190,55 +182,6 @@ if (genprob.probtyp==prb_ale)
    inpdis(&(field[genprob.numaf]));
    inp_ale_field(&(field[genprob.numaf]));
 }
-#ifdef D_LS
-/*------------------------------------------------ two phase fluid flow */
-if (genprob.probtyp==prb_twophase)
-{
-   if (genprob.numfld!=2) dserror("numfld != 2 for two phase fluid flow problem");
-   field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-
-   field[genprob.numff].fieldtyp = fluid;
-   inpdis(&(field[genprob.numff]));
-   inp_fluid_field(&(field[genprob.numff]));
-
-   field[genprob.numls].fieldtyp = levelset;
-   inpdis(&(field[genprob.numls]));
-   inp_ls_field(&(field[genprob.numls]));
-}
-/*----------------------------------------------- pure levelset problem */
-if (genprob.probtyp==prb_levelset)
-{
-   if (genprob.numfld!=1) dserror("numfld != 1 for pure level set problem");
-   field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-
-   field[genprob.numls].fieldtyp = levelset;
-   inpdis(&(field[genprob.numls]));
-   inp_ls_field(&(field[genprob.numls]));
-}
-#endif
-#ifdef D_CHIMERA
-/*----------------------------------------------------- chimera problem */
-if (genprob.probtyp==prb_chimera)
-{
-  if (genprob.numfld!=1) dserror("numfld != 1 for chimera problem");
-  field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-
-  field[genprob.numff].fieldtyp = fluid;
-  inpdis(&(field[genprob.numff]));
-  if (field[genprob.numff].ndis!=2) dserror("ndis != 2 for chimera problem");
-
-  /* initialize discretization object of field */
-  field[genprob.numff].dis = (DISCRET*)CCACALLOC(field[genprob.numff].ndis,sizeof(DISCRET));
-
-  /* read discretizations */
-  for (i=0; i<field[genprob.numff].ndis; i++)
-  {
-    DISCRET *actdis;
-    actdis = &(field[genprob.numff].dis[i]);
-    inp_fluid_discretization(&(field[genprob.numff]), actdis);
-  }
-}
-#endif
 /*---------------------------------------- Optimisation type of problem */
 if (genprob.probtyp == prb_opt)
 {
@@ -290,19 +233,6 @@ amdel(&tmpnodes2);
       inp_topology(&(field[i].dis[j]));
     }
   }
-/*---------------------------------------- TWO PHASE FLUID FLOW PROBLEM */
-/*
- * levelset and fluid discretizations are compatible
- * => construct the topology in between
- */
-#ifdef D_LS
-if (genprob.probtyp==prb_twophase)
-{
-  if (field[genprob.numff].ndis!=1 || field[genprob.numls].ndis!=1)
-    dserror("ndis != 1 for twophase problem");
-  fluid_to_ls(&(field[genprob.numff]),&(field[genprob.numls]));
-}
-#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -918,25 +848,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_FLUID2
    if (ierr==1)
    {
-#ifdef D_XFEM
-     if (genprob.probtyp==prb_twophase)
-     {
-       if (twophase_data->soln_method==tp_lsxfem)
-       {
-         fluidfield->dis[0].element[counter].eltyp=el_fluid2_xfem;
-       }
-       else
-       {
-         dserror("**ERROR** only lsxfem formulation is possible at the moment!\n");
-       }
-     }
-     else
-     {
-#endif
      fluidfield->dis[0].element[counter].eltyp=el_fluid2;
-#ifdef D_XFEM
-     }
-#endif
      f2_inp(&(fluidfield->dis[0].element[counter]),counter);
 
 #ifdef D_FLUID2TU
@@ -974,80 +886,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_fluid_field */
-
-
-
-
-
-
-
-
-void inp_fluid_discretization(
-  FIELD   *fluid_field,
-  DISCRET *fluidiscr
-  )
-{
-  INT        ierr;
-  INT        counter=0;
-  INT        elenumber;
-  CHAR      *colpointer;
-  CHAR      *discrs[2] = { "--FLUID DISCRETIZATION_01","--FLUID DISCRETIZATION_02" };
-  CHAR      *discr;
-  INT        disno;
-
-#ifdef DEBUG
-  dstrc_enter("inp_fluid_discretization");
-#endif
-/*----------------------------------------------------------------------*/
-
-  /* access to disno */
-  disno = fluidiscr - fluid_field->dis;
-  if (disno>1) dserror("**ERROR** disno>1 not allowed at the moment");
-  /* set discretization string */
-  discr = discrs[disno];
-  /* count number of elements */
-  if (frfind(discr)==1)
-  {
-    frread();
-    while(strncmp(allfiles.actplace,"------",6)!=0)
-    {
-      counter++;
-      frread();
-    }
-  }
-  fluidiscr->numele = counter;
-  /* allocate elements */
-  fluidiscr->element=(ELEMENT*)CCACALLOC(fluidiscr->numele,sizeof(ELEMENT));
-  /* read elements */
-  if (frfind(discr)==0) goto end;
-  frread();
-  counter=0;
-  while(strncmp(allfiles.actplace,"------",6)!=0)
-  {
-    colpointer = allfiles.actplace;
-    elenumber  = strtol(colpointer,&colpointer,10);
-    fluidiscr->element[counter].Id = --elenumber;
-    /* read the typ of element and call element reading function */
-    /* elementtyp is FLUID2 */
-    frchk("FLUID2",&ierr);
-#ifdef D_FLUID2
-    if (ierr==1)
-    {
-      fluidiscr->element[counter].eltyp=el_fluid2;
-      f2_inp(&(fluidiscr->element[counter]),counter);
-    }
-#endif
-    counter++;
-    frread();
-  }
-  frrewind();
-/*----------------------------------------------------------------------*/
- end:
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return;
-} /* end of inp_fluid_discretization */
 
 
 
@@ -1142,74 +980,3 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_ale_field */
-
-
-
-
-
-
-
-
-void inp_ls_field(FIELD *lsfield)
-{
-  INT        ierr;
-  INT        counter=0;
-  INT        elenumber;
-  char      *colpointer;
-
-#ifdef DEBUG
-  dstrc_enter("inp_ls_field");
-#endif
-/*----------------------------------------------------------------------*/
-
-  /*--------------------------------------- allocate one discretization */
-  /*lsfield->ndis=1;*/
-  if (lsfield->ndis>1)
-    dserror("different discretisations not implemented yet for levelset elements\n");
-  lsfield->dis = (DISCRET*)CCACALLOC(lsfield->ndis,sizeof(DISCRET));
-  /*------------------------------------------ count number of elements */
-  if (frfind("--LEVELSET ELEMENTS")==1)
-  {
-    frread();
-    while(strncmp(allfiles.actplace,"------",6)!=0)
-    {
-      counter++;
-      frread();
-    }
-  }
-  frrewind();
-  lsfield->dis[0].numele = counter;
-  /*------------------------------------------------- allocate elements */
-  lsfield->dis[0].element=(ELEMENT*)CCACALLOC(lsfield->dis[0].numele,sizeof(ELEMENT));
-  /*----------------------------------------------------- read elements */
-  if (frfind("--LEVELSET ELEMENTS")==0) goto end;
-  frread();
-  counter=0;
-  while(strncmp(allfiles.actplace,"------",6)!=0)
-  {
-    colpointer = allfiles.actplace;
-    elenumber  = strtol(colpointer,&colpointer,10);
-    lsfield->dis[0].element[counter].Id = --elenumber;
-    /* read the typ of element and call element reading function */
-    /* --------------------------------------- elementtyp is LS2 */
-    frchk("LS2",&ierr);
-#ifdef D_LS
-    if (ierr==1)
-    {
-      lsfield->dis[0].element[counter].eltyp=el_ls2;
-      ls2inp(&(lsfield->dis[0].element[counter]));
-    }
-#endif
-    counter++;
-    frread();
-  }
-  frrewind();
-
-/*----------------------------------------------------------------------*/
-
- end:
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return;
-} /* end of inp_ls_field */

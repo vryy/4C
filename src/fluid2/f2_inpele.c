@@ -51,9 +51,6 @@ if (ierr==1)
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-#ifdef D_LS
-   ele->e.f2->is_ls = 1;
-#endif
 }
 frchk("QUAD9",&ierr);
 if (ierr==1)
@@ -84,9 +81,6 @@ if (ierr==1)
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-#ifdef D_LS
-   ele->e.f2->is_ls = 1;
-#endif
 }
 frchk("TRI6",&ierr);
 if (ierr==1)

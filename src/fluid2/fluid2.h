@@ -33,11 +33,6 @@ typedef struct _FLUID2
 INT                nGP[2];   /*!< number of gaussian points in rs direct. */
 INT                is_ale;   /*!< flag whether there is ale to me or not  */
 
-#ifdef D_LS
-INT                is_ls;    /*!< flag whether there is ls to me or not   */
-struct _ELEMENT   *my_ls;    /*!< pointer to my ls ele, otherwise NULL    */
-#endif
-
 /*---------------------------------------------------- stabilisation ---*/
 enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
 union

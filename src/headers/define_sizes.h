@@ -211,10 +211,3 @@ Maintainer: Malte Neumann
 #ifndef MAXNOD_WALL1
 #define MAXNOD_WALL1     (9)
 #endif
-
-/*----------------------------------------------------------------------*
- | ls2                                                                  |
- *----------------------------------------------------------------------*/
-#ifndef MAXNOD_LS2
-#define MAXNOD_LS2 (4)
-#endif

@@ -65,9 +65,6 @@ touch "$definefile"
 if [ "x$PARALLEL" = "xno" ]; then
   # sequentiell test
   liste='
-  xfem_ls_risingbubble.dat
-  xfem_ls_joggedchannel.dat
-  chimera_test.dat
   ale2_nln.dat
   ale_3d_hourg.dat
   ale_3d_umfpack.dat

@@ -27,14 +27,6 @@ Maintainer: Malte Neumann
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
 /*----------------------------------------------------------------------*
- | structures for level set                               irhan 04/04   |
- *----------------------------------------------------------------------*/
-#include "../ls/ls.h"
-/*----------------------------------------------------------------------*
- | structures for xfem                                    irhan 04/04   |
- *----------------------------------------------------------------------*/
-#include "../xfem/xfem.h"
-/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
  | defined in out_global.c                                              |
@@ -141,8 +133,6 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_brick1_333= 0;
    actgid->is_fluid2_22 = 0;
    actgid->is_fluid2_33 = 0;
-   actgid->is_fluid2_xfem_22 = 0;
-   actgid->is_fluid2_xfem_33 = 0;
    actgid->is_fluid2_pro_22 = 0;
    actgid->is_fluid2_pro_33 = 0;
    actgid->is_fluid3_222= 0;
@@ -167,8 +157,6 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_interf_33  = 0;
    actgid->is_wallge_22  = 0;
    actgid->is_wallge_33  = 0;
-   actgid->is_ls2_33 = 0;
-   actgid->is_ls2_22 = 0;
    /*---------------------------- check for different types of elements */
    for (j=0; j<actfield->dis[0].numele; j++)
    {
@@ -258,20 +246,6 @@ for (i=0; i<genprob.numfld; i++)
          {
             actgid->is_fluid2_33    = 1;
             actgid->fluid2_33_name  = "fluid2_33";
-         }
-      break;
-#endif
-#ifdef D_XFEM
-      case el_fluid2_xfem:
-         if (actele->numnp==4)
-         {
-            actgid->is_fluid2_xfem_22    = 1;
-            actgid->fluid2_xfem_22_name  = "fluid2_xfem_22";
-         }
-         if (actele->numnp==3)
-         {
-            actgid->is_fluid2_xfem_33    = 1;
-            actgid->fluid2_xfem_33_name  = "fluid2_xfem_33";
          }
       break;
 #endif
@@ -449,20 +423,6 @@ for (i=0; i<genprob.numfld; i++)
          }
      break;
 #endif /*D_WALLGE*/
-#ifdef D_LS
-      case el_ls2:
-         if (actele->e.ls2->nGP[0]==2)
-         {
-            actgid->is_ls2_22    = 1;
-            actgid->ls2_22_name  = "ls2_22";
-         }
-         if (actele->e.ls2->nGP[1]==3)
-         {
-            actgid->is_ls2_33   = 1;
-            actgid->ls2_33_name  = "ls2_33";
-         }
-     break;
-#endif /*D_LS*/
 
       default:
          dserror("Unknown type of element");
@@ -632,30 +592,6 @@ for (i=0; i<genprob.numfld; i++)
                                                                 sign,actgid->fluid2_33_name,sign,
                                                                 sign,actgid->fluid2_33_name,sign);
    fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-   if (actgid->is_fluid2_xfem_22)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2_XFEM 2x2 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
-                                                                sign,actgid->fluid2_xfem_22_name,sign,
-                                                                sign,actgid->fluid2_xfem_22_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-   if (actgid->is_fluid2_xfem_33)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2_XFEM 3 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle %c%s%c\n",
-                                                                sign,actgid->fluid2_xfem_33_name,sign,
-                                                                sign,actgid->fluid2_xfem_33_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
@@ -955,29 +891,6 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"END GAUSSPOINTS\n");
    }
    /* ---------------------------------------------------------------- */
-   if (actgid->is_ls2_33)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s LS2 3 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle\n", sign,actgid->ls2_33_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
-   fprintf(out,"Nodes not included\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-   /* ---------------------------------------------------------------- */
-   if (actgid->is_ls2_22)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s LS2 2x2 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actgid->ls2_22_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
-   fprintf(out,"Nodes not included\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
 /*----------------------------------------------------------------------*/
 } /* end of (i=0; i<genprob.numfld; i++) */
 /*----------------------------------------------------------------------*/
@@ -3634,216 +3547,3 @@ dstrc_exit();
 #endif
 return;
 } /* end of out_gid_sol */
-
-
-
-
-
-void out_gid_sol_trial(
-  char string[], FIELD *actfield, INTRA  *actintra, INT step,
-  INT place, DOUBLE time
-  )
-{
-INT           i,j;
-
-FILE         *out = allfiles.gidres;
-
-NODE         *actnode;
-GIDSET       *actgid = NULL;
-
-char         *resulttype;
-char         *resultplace;
-char         *gpset;
-char         *rangetable;
-INT           ncomponent;
-char         *componentnames[18];
-
-char          sign='"';
-
-INT           stringlenght;
-
-/*
-   gausspoint permutation :
-   On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
-   have to be written
-*/
-
-#if 0
-INT           gaussperm4[4] = {3,1,0,2};
-INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};
-INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};
-#endif
-
-#ifdef DEBUG
-dstrc_enter("out_gid_sol_trial");
-#endif
-/*----------------------------------------------------------------------*/
-/*-------------------------------------- find the correct gid structure */
-for (i=0; i<genprob.numfld; i++)
-{
-   if (gid[i].fieldtyp == actfield->fieldtyp)
-   {
-      actgid = &(gid[i]);
-      break;
-   }
-}
-if (!actgid) dserror("Cannot find correct field");
-/*----------------------------------------------------------------------*/
-stringlenght = strlen(string);
-/*========================================= result type is velocity */
-if (strncmp(string,"velocity",stringlenght)==0)
-{
-   resulttype        = "VECTOR";
-   resultplace       = "ONNODES";
-   gpset             = "";
-   rangetable        = actgid->standardrangetable;
-   ncomponent        = 3;
-   componentnames[0] = "x-vel";
-   componentnames[1] = "y-vel";
-   componentnames[2] = "z-vel";
-   /*-------------------------------------------------------------------*/
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-   fprintf(out,"# TIME %18.5E \n",time);
-   fprintf(out,"# STEP %6d    \n",step);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
-                                                             sign,string,sign,
-                                                             sign,sign,
-                                                             step,
-                                                             resulttype,
-                                                             resultplace
-                                                             );
-   fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
-                                            sign,actgid->standardrangetable,sign
-                                            );
-   switch (genprob.ndim)
-   {
-     case 3:
-       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
-                                                       sign,componentnames[0],sign,
-                                                       sign,componentnames[1],sign,
-                                                       sign,componentnames[2],sign
-                                                       );
-     break;
-     case 2:
-       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c\n",
-                                                       sign,componentnames[0],sign,
-                                                       sign,componentnames[1],sign
-                                                       );
-     break;
-     default:
-       dserror("Unknown numer of dimensions");
-     break;
-   }
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->ndis; i++)
-   {
-     for (j=0; j<actfield->dis[i].numnp; j++)
-     {
-       actnode = &(actfield->dis[i].node[j]);
-       switch (genprob.ndim)
-       {
-           case 3:
-             fprintf(out," %6d %22.9E %22.9E %22.9E\n",
-                     actnode->Id+1,
-                     actnode->sol.a.da[place][0],
-                     actnode->sol.a.da[place][1],
-                     actnode->sol.a.da[place][2]
-               );
-             break;
-           case 2:
-             fprintf(out," %6d %22.9E %22.9E \n",
-                     actnode->Id+1,
-                     actnode->sol.a.da[place][0],
-                     actnode->sol.a.da[place][1]
-               );
-             break;
-           default:
-             dserror("Unknown number of dimensions");
-        break;
-       }
-     }
-   }
-   fprintf(out,"END VALUES\n");
-} /* end of (strncmp(string,"velocity",stringlenght)==0) */
-/*========================================= result type is pressure */
-if (strncmp(string,"pressure",stringlenght)==0)
-{
-   resulttype        = "SCALAR";
-   resultplace       = "ONNODES";
-   gpset             = "";
-   rangetable        = actgid->standardrangetable;
-   ncomponent        = 3;
-   componentnames[0] = "pressure";
-   /*-------------------------------------------------------------------*/
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-   fprintf(out,"# TIME %18.5E \n",time);
-   fprintf(out,"# STEP %6d    \n",step);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
-                                                             sign,string,sign,
-                                                             sign,sign,
-                                                             step,
-                                                             resulttype,
-                                                             resultplace
-                                                             );
-   fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
-                                            sign,actgid->standardrangetable,sign
-                                            );
-   switch (genprob.ndim)
-   {
-     case 3:
-       fprintf(out,"COMPONENTNAMES %c%s%c\n",
-                                                       sign,componentnames[0],sign
-                                                       );
-     break;
-     case 2:
-       fprintf(out,"COMPONENTNAMES %c%s%c\n",
-                                                       sign,componentnames[0],sign
-                                                       );
-     break;
-     default:
-       dserror("Unknown numer of dimensions");
-     break;
-   }
-   fprintf(out,"VALUES\n");
-
-
-   for (i=0; i<actfield->ndis; i++)
-   {
-     for (j=0; j<actfield->dis[i].numnp; j++)
-     {
-       actnode = &(actfield->dis[i].node[j]);
-       switch (genprob.ndim)
-       {
-           case 3:
-             fprintf(out," %6d %22.9E \n",
-                     actnode->Id+1,
-                     actnode->sol.a.da[place][3]
-               );
-             break;
-           case 2:
-             fprintf(out," %6d %22.9E \n",
-                     actnode->Id+1,
-                     actnode->sol.a.da[place][2]
-               );
-             break;
-           default:
-             dserror("Unknown number of dimensions");
-             break;
-       }
-     }
-   }
-   fprintf(out,"END VALUES\n");
-} /* end of (strncmp(string,"pressure",stringlenght)==0) */
-
-/*----------------------------------------------------------------------*/
-fflush(out);
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of out_gid_sol_trial */

@@ -455,67 +455,6 @@ for (i=0; i<genprob.numfld; i++)
    }
 
 
-
-   if (actgid->is_fluid2_xfem_22)
-   {
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# MESH %s FOR FIELD %s FLUID2 2x2 GP\n",actgid->fluid2_xfem_22_name,actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE 4\n",actgid->fluid2_xfem_22_name);
-      /*-------------- if this is first mesh, print coodinates of nodes */
-      if (is_firstmesh)
-      {
-         is_firstmesh=0;
-         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
-         fprintf(out,"COORDINATES\n");
-         out_gid_allcoords(out);
-         fprintf(out,"END COORDINATES\n");
-      }
-      /*------------------------------------------------ print elements */
-      fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->dis[0].numele; j++)
-      {
-         actele = &(actfield->dis[0].element[j]);
-         if (actele->eltyp != el_fluid2_xfem || actele->numnp !=4) continue;
-         fprintf(out," %6d ",actele->Id+1);
-         for (k=0; k<actele->numnp; k++)
-         fprintf(out,"%6d ",actele->node[k]->Id+1);
-         fprintf(out,"\n");
-      }
-      fprintf(out,"END ELEMENTS\n");
-   }
-
-
-   if (actgid->is_fluid2_xfem_33)
-   {
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# MESH %s FOR FIELD %s FLUID2 3 GP\n",actgid->fluid2_xfem_33_name,actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Triangle NNODE 3\n",actgid->fluid2_xfem_33_name);
-      /*-------------- if this is first mesh, print coodinates of nodes */
-      if (is_firstmesh)
-      {
-         is_firstmesh=0;
-         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
-         fprintf(out,"COORDINATES\n");
-         out_gid_allcoords(out);
-         fprintf(out,"END COORDINATES\n");
-      }
-      /*------------------------------------------------ print elements */
-      fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->dis[0].numele; j++)
-      {
-         actele = &(actfield->dis[0].element[j]);
-         if (actele->eltyp != el_fluid2_xfem || actele->numnp !=3) continue;
-         fprintf(out," %6d ",actele->Id+1);
-         for (k=0; k<actele->numnp; k++)
-         fprintf(out,"%6d ",actele->node[k]->Id+1);
-         fprintf(out,"\n");
-      }
-      fprintf(out,"END ELEMENTS\n");
-   }
-
-
    if (actgid->is_fluid3_222)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1196,68 +1135,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of out_gid_msh */
-
-
-
-
-void out_gid_msh_trial()
-{
-INT           i,j,k,n;
-FILE         *out = allfiles.gidmsh;
-FIELD        *actfield;
-GIDSET       *actgid;
-ELEMENT      *actele;
-
-#ifdef DEBUG
-dstrc_enter("out_gid_msh_trial");
-#endif
-/*----------------------------------------------------------------------*/
-/*-------------------------------------------------------- print a head */
-fprintf(out,"#--------------------------------------------------------------------------------\n");
-fprintf(out,"# P_CARAT postprocessing output to GiD - MESH file\n");
-fprintf(out,"#--------------------------------------------------------------------------------\n");
-/*---------------------------------------------------- loop over fields */
-for (i=0; i<genprob.numfld; i++)
-{
-   actfield = &(field[i]);
-   actgid   = &(gid[i]);
-   /*----------------------------------- print the meshes of this field */
-   if (actgid->is_fluid2_22)
-   {
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# MESH %s FOR FIELD %s FLUID2 2x2 GP\n",actgid->fluid2_22_name,actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE 4\n",actgid->fluid2_22_name);
-      /*-------------- if this is first mesh, print coodinates of nodes */
-      fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
-      fprintf(out,"COORDINATES\n");
-      out_gid_allcoords_trial(out);
-      fprintf(out,"END COORDINATES\n");
-      /*------------------------------------------------ print elements */
-      fprintf(out,"ELEMENTS\n");
-      for (j=0; j<actfield->ndis; j++)
-      {
-        for (k=0; k<actfield->dis[j].numele; k++)
-        {
-          actele = &(actfield->dis[j].element[k]);
-          if (actele->eltyp != el_fluid2 || actele->numnp !=4) continue;
-          fprintf(out," %6d ",actele->Id+1);
-          for (n=0; n<actele->numnp; n++)
-            fprintf(out,"%6d ",actele->node[n]->Id+1);
-          fprintf(out,"\n");
-        }
-      }
-      fprintf(out,"END ELEMENTS\n");
-   }
-} /* end of (i=0; i<genprob.numfld; i++) */
-/*----------------------------------------------------------------------*/
-fflush(out);
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of out_gid_msh_trial */
-
 
 
 

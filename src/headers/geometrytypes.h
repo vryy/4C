@@ -98,7 +98,6 @@ typedef struct _ELEMENT
      struct _AXISHELL   *saxi;                  /* axisymmetric shell */
      struct _INTERF     *interf;                /* 1D interface */
      struct _WALLGE     *wallge;                /* gradient enhance wall element */
-     struct _LS2        *ls2;                   /* 2D element used for level set calculation */
      }                          e;              /* name of union */
 
      union
@@ -115,10 +114,6 @@ typedef struct _ELEMENT
 /*----------------------------------------------------------------------*/
 #endif                   /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/
-
-#ifdef D_CHIMERA
-  enum _CHIMERA_AUTOHOLE_PARENTTYP chimera_parenttyp;
-#endif
 
   enum _ELECOSYS    locsys;
 } ELEMENT;
@@ -179,18 +174,6 @@ typedef struct _GNODE
      struct _ARRAY          *ass_index;
      struct _GNODE          *mymasters[2];
      struct _HISTORY        *history;
-#endif
-
-#ifdef D_LS
-  INT     is_node_active;   /* flag to control node activation */
-  INT     is_node_inside;   /* flag to control node position relative to the interface */
-#endif
-
-#ifdef D_CHIMERA
-  enum  _CHIMERA_PRES_COUPLE        chi_pres_coupling_point;
-  enum  _CHIMERA_BOUNDARYTYPE       chi_bndtype;
-  enum  _CHIMERA_AUTOHOLE_KNOTENTYP Knotentyp;
-  INT                               Randmarker; /* 1 Randelement  0 sonstiges */
 #endif
 } GNODE;
 

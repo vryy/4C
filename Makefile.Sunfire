@@ -22,7 +22,6 @@
 # -DD_WALL1      defines element wall1
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
-# -DD_XFEM       defines for enriched fluid element
 #
 #  PROBLEMTYPES:
 #  =============
@@ -30,7 +29,6 @@
 # -DD_FSI        defines general FSI problem
 # -DD_OPTIM      defines optimization
 # -DD_CONTACT    defines contact algorithms
-# -DD_LS         defines for level set problem
 #
 #  ADDITIONAL FEATURES:
 #  ====================
@@ -84,7 +82,7 @@ PFL1  = -DSUN -DPARALLEL \
 	-DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_FSI -DD_ALE \
 	-DD_AXISHELL -DD_BRICK1 -DD_OPTIM -DD_BEAM3 -DD_SHELL9 -DD_MAT \
 	-DD_SHELL8 -DD_CONTACT -DS8CONTACT \
-        -DD_WALL1 -DD_INTERF  -DD_WALLGE -DD_LS -DD_XFEM \
+        -DD_WALL1 -DD_INTERF  -DD_WALLGE \
         -DRESULTTEST -DPERF \
         -DUMFPACK -DAZTEC_PACKAGE
 #
@@ -171,7 +169,7 @@ $(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT)
 		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
-		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) $(OBJS_LS) $(OBJS_XFEM)
+		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) \
 		$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT) \
@@ -180,7 +178,7 @@ $(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT)
 		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
-		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) $(OBJS_LS) $(OBJS_XFEM) \
+		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) \
 		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
@@ -264,12 +262,6 @@ $(OBJS_IF):
 $(OBJS_WALLGE):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS_LS):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
-
-$(OBJS_XFEM):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
-
 # fortran
 $(OBJS_FORTRAN):     
 		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
@@ -287,5 +279,5 @@ clean:
 		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
-		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) $(OBJS_LS) $(OBJS_XFEM)
+		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF)
 #

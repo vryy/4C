@@ -538,48 +538,6 @@ OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
                 src/fluid2_pro/f2pro_caltimerhs.o \
                 src/fluid2_pro/f2pro_calservice.o \
                 src/fluid2_pro/f2pro_main.o
-#                ls
-OBJS_LS       = src/ls/ls_init.o \
-	      	src/ls/ls_dirich.o \
-		src/ls/ls_algout.o \
-		src/ls/ls2_inpele.o \
-		src/ls/ls2_main.o \
-		src/ls/ls2_calfuncderiv.o \
-		src/ls/ls2_calset.o \
-		src/ls/ls_result_incre.o \
-		src/ls/ls_convcheck.o \
-                src/ls/ls_update.o \
-                src/ls/ls_dyn.o \
-                src/ls/ls_levelset.o \
-                src/ls/ls_fluid.o \
-                src/ls/ls2_intg.o \
-                src/ls/twophase_inpctr_data.o \
-                src/ls/ls2_restart.o \
-                src/ls/ls_solserv_sol_copy_reinit.o
-#                xfem
-OBJS_XFEM     = src/xfem/xfem_polygon.o \
-                src/xfem/xfem_calfuncderiv.o \
-                src/xfem/xfem_calgalmat.o \
-                src/xfem/xfem_calstabmat.o \
-                src/xfem/xfem_f2_calint.o \
-		src/xfem/xfem_f2_calele.o \
-                src/xfem/xfem_f2_main.o \
-                src/xfem/xfem_f2_calset.o \
-                src/xfem/xfem_f2_calelesize.o \
-                src/xfem/xfem_f2_caltimerhs.o \
-                src/xfem/xfem_f2_calextrhs.o \
-                src/xfem/xfem_f2_intg.o \
-                src/xfem/xfem_inpctr_data.o
-#                chimera
-OBJS_CHIMERA  = src/chimera/chimera_dyn.o \
-                src/chimera/chimera_fluid.o \
-                src/chimera/chimera_boundary_update.o \
-                src/chimera/chimera_continuity.o \
-                src/chimera/chimera_search.o \
-                src/chimera/chimera_autohole.o \
-                src/chimera/chimera_output.o \
-                src/chimera/chimera_inpctr_data.o
-#
 #                interf
 OBJS_IF       = src/interf/if_inpele.o \
                 src/interf/if_main.o \

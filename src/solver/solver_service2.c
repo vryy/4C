@@ -52,38 +52,6 @@ return;
 
 
 
-void solserv_create_vec2(
-  DIST_VECTOR **vector,INT numvectors,
-  INT *numeq_total,INT *numeq,char typstr[]
-  )
-{
-INT                  i;
-DIST_VECTOR *actvector;
-#ifdef DEBUG
-dstrc_enter("solserv_create_vec2");
-#endif
-/*----------------------------------------------------------------------*/
-/*------------------------------------------------ allocate the vectors */
-*vector = (DIST_VECTOR*)CCACALLOC(numvectors,sizeof(DIST_VECTOR));
-if (*vector==NULL) dserror("Allocation of DIST_VECTOR failed");
-/*--------------------------- loop the created vectors and perfrom init */
-for (i=0; i<numvectors; i++)
-{
-   actvector = &((*vector)[i]);
-   actvector->numeq_total = numeq_total[i];
-   actvector->numeq       = numeq[i];
-   amdef("dist_vec",&(actvector->vec),numeq[i],1,typstr);
-}
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of solserv_create_vec2 */
-
-
-
-
 /*----------------------------------------------------------------------*
  |   delete number of distributed vectors - collective call ! m.gee 2/02|
  |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |

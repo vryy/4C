@@ -137,7 +137,6 @@ if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
     print_define_dbl(A3FAC_SHELL9);
     print_define(MAXNODESTRESS_SHELL9);
     print_define(MAXNOD_WALL1);
-    print_define(MAXNOD_LS2);
     printf("\n\n");
   }
 }

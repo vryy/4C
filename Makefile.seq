@@ -23,7 +23,6 @@
 # -DD_WALL1      defines element wall1
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
-# -DD_XFEM       defines for enriched fluid element
 #
 #  PROBLEMTYPES:
 #  =============
@@ -31,7 +30,6 @@
 # -DD_FSI        defines general FSI problem
 # -DD_OPTIM      defines optimization
 # -DD_CONTACT    defines contact algorithms
-# -DD_LS         defines for level set problem
 #
 #  ADDITIONAL FEATURES:
 #  ====================
@@ -85,7 +83,7 @@ PFL   = -DHPUX11 \
 	-DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_FSI -DD_ALE \
 	-DD_AXISHELL -DD_BRICK1 -DD_OPTIM -DD_BEAM3 -DD_SHELL9 -DD_MAT \
 	-DD_SHELL8 -DD_CONTACT -DS8CONTACT \
-        -DD_WALL1 -DD_INTERF  -DD_WALLGE -DD_LS -DD_XFEM \
+        -DD_WALL1 -DD_INTERF  -DD_WALLGE \
         -DRESULTTEST -DPERF \
         -DUMFPACK -DAZTEC_PACKAGE
 #

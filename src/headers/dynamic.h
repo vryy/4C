@@ -20,9 +20,6 @@ typedef union _ALLDYNA
    struct _FSI_DYNAMIC       *fsidyn; /*ptr for allocation of fsi dynamic data */
    struct _SSI_DYNAMIC       *ssidyn; /*ptr for allocation of ssi dynamic data */
    struct _ALE_DYNAMIC       *adyn;   /* ptr for allocation of ale dynamic data */
-#ifdef D_LS
-  struct _LS_DYNAMIC        *lsdyn;  /* ptr for allocation of ls dynamic data */
-#endif
 } ALLDYNA;
 
 
@@ -130,7 +127,7 @@ INT                coupmethod;      /*!< flag, 0=mortar , 1=conforming */
 /*----------------------------------------------------------------------*
  | general ssi variables                                  genk 10/03    |
  *----------------------------------------------------------------------*/
-typedef struct _SSI_DYNAMIC                 
+typedef struct _SSI_DYNAMIC
 {
 INT                ifsi;            /*!< coupling algorithm */
 INT                ipre;            /*!< type of predictor */
@@ -154,7 +151,7 @@ DOUBLE             dt;              /*!< time increment */
 DOUBLE             maxtime;         /*!< total time */
 DOUBLE             entol;           /*!< tolerance for energy check over fields */
 DOUBLE             relax;           /*!< actual relaxation parameter */
-DOUBLE             convtol;         /*!< tolerance for iteration over fields */ 
+DOUBLE             convtol;         /*!< tolerance for iteration over fields */
 DOUBLE             deltaeint;       /*!< energy production at the interface */
 ARRAY              sid;             /*!< structural interface dofs */
 INT                numsid;          /*!< number of structural interface dofs */

@@ -98,8 +98,4 @@ Maintainer: Malte Neumann
 #endif
 
 
-#if defined(D_LS) && defined(PARALLEL)
-#error "LevelSet not (yet) available in parallel."
-#endif
-
 /*----------------------------------------------------------------------*/

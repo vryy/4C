@@ -160,15 +160,6 @@ void out_general()
       case prb_ale:
         fprintf(out,"Type of Problem           : Ale\n");
         break;
-      case prb_twophase:
-        fprintf(out,"Type of Problem           : Two-Phase-Fluid-Flow\n");
-        break;
-      case prb_levelset:
-        fprintf(out,"Type of Problem           : Levelset\n");
-        break;
-      case prb_chimera:
-        fprintf(out,"Type of Problem           : Chimera\n");
-        break;
       default:
         dserror("Cannot print problem type");
         break;
@@ -278,9 +269,6 @@ void out_general()
           case el_fluid2:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",actele->Id,actele->Id_loc);
             break;
-          case el_fluid2_xfem:
-            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_XFEM\n",actele->Id,actele->Id_loc);
-            break;
           case el_fluid2_pro:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_PRO\n",actele->Id,actele->Id_loc);
             break;
@@ -301,9 +289,6 @@ void out_general()
             break;
           case el_wallge:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",actele->Id,actele->Id_loc);
-            break;
-          case el_ls2:
-            fprintf(out,"ELE glob_Id %6d loc_Id %6d LS2\n",actele->Id,actele->Id_loc);
             break;
           default:
             dserror("Cannot print elementtype");

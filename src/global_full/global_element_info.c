@@ -166,21 +166,5 @@ ELEMENT_INFO element_info[el_count] = {
       { 0, GiD_NoElement, 0, 0, 0 },
       { 0, GiD_NoElement, 0, 0, 0 },
       { 0, GiD_NoElement, 0, 0, 0 }
-    } },
-  { "ls2", {
-      { 3, GiD_NoElement, 3, 0, 0 },
-      { 4, GiD_NoElement, 4, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 }
-    } },
-  { "fluid2_xfem", {
-      { 4, GiD_Quadrilateral, 4, 0, 0 },
-      { 3, GiD_Triangle, 3, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 },
-      { 0, GiD_NoElement, 0, 0, 0 }
     } }
 };

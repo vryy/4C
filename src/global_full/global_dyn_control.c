@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 #include "../solver/solver.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"
-#include "../ls/ls_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |

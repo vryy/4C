@@ -218,9 +218,6 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
         case el_fluid2:
           fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",ele[0],j);
           break;
-        case el_fluid2_xfem:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_XFEM\n",ele[0],j);
-          break;
         case el_fluid2_pro:
           fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_PRO\n",ele[0],j);
           break;
@@ -241,9 +238,6 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
           break;
         case el_wallge:
           fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",ele[0],j);
-          break;
-        case el_ls2:
-          fprintf(out,"ELE glob_Id %6d loc_Id %6d LS2\n",ele[0],j);
           break;
         default:
           dserror("Cannot print elementtype");

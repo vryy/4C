@@ -30,22 +30,6 @@ INT main(
 void assign_dof(
     FIELD         *actfield);
 
-void init_dof_discretization(
-  DISCRET       *actdis
-  );
-
-void assign_dof_discretization(
-  DISCRET       *actdis
-  );
-
-void init_dof_discretization_xfem(
-  DISCRET       *actdis
-  );
-
-void assign_dof_discretization_xfem(
-  DISCRET       *actdis
-  );
-
 /*----------------------------------------------------------------------*
   |  global_ass_dof_ndis.c                               genk 08/02    |
  *----------------------------------------------------------------------*/
@@ -135,13 +119,6 @@ void iscouple_find_node_comp(
     INT            coupleID,
     INT            dof);
 
-void iscouple_find_node_comp_discretization(
-    NODE          *actnode,
-    DISCRET       *searchdis,
-    NODE         **partnernode,
-    INT            coupleID,
-    INT            dof);
-
 void cheque_distance(
     DOUBLE        *x1,
     DOUBLE        *x2,
@@ -150,11 +127,6 @@ void cheque_distance(
 
 void find_assign_coupset(
     FIELD         *actfield,
-    INT            coupleID,
-    INT           *counter);
-
-void find_assign_coupset_discretization(
-    DISCRET       *actdis,
     INT            coupleID,
     INT           *counter);
 

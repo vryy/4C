@@ -58,14 +58,6 @@ Maintainer: Malte Neumann
 #include "../fluid2/fluid2_tu.h"
 #endif
 
-#ifdef D_LS
-#include "../ls/ls.h"
-#endif
-
-#ifdef D_XFEM
-#include "../xfem/xfem.h"
-#endif
-
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -228,20 +220,6 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
           gauss = actele->e.f2_tu->nGP[0]*actele->e.f2_tu->nGP[1];
           break;
 #endif
-
-#ifdef D_LS
-        case el_ls2:
-          gauss = actele->e.ls2->nGP[0]*actele->e.ls2->nGP[1];
-          break;
-#endif
-
-#ifdef D_XFEM
-        case el_fluid2_xfem:
-          gauss = actele->e.f2->nGP[0]*actele->e.f2->nGP[1];
-          break;
-#endif
-
-
 
         case el_none:
           dserror("Typ of element unknown");

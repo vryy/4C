@@ -20,16 +20,13 @@ typedef enum _PROBLEM_TYP
                        prb_structure, /*  structural  problem */
                        prb_fluid,     /*  fluid  problem */
                        prb_opt,       /*  strctural optimization  problem */
-		       prb_ale,       /*  pure ale problem */
-                       prb_twophase,  /*  two phase fluid flow (used for levelset) */
-                       prb_levelset,  /*  pure level set problem (user defined advection velocity) */
-                       prb_chimera    /*  chimera problem */
+		       prb_ale        /*  pure ale problem */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential or the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","twophase","levelset", NULL }
+#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale", NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -115,8 +112,6 @@ typedef enum _ELEMENT_TYP
                        el_axishell,    /* 1D axisymmetrical shell element */
                        el_interf,      /* 1D interface element (combination only with wall) */
                        el_wallge,      /* gradient enhanced wall element */
-                       el_ls2,         /* 2D element for level set calculations */
-                       el_fluid2_xfem, /* 2D element for x-fem calculations */
                        el_count        /* The number of known
                                         * elements. This must be the
                                         * last entry! */
@@ -262,17 +257,7 @@ typedef enum _CALC_ACTION
                        calc_deriv_self_adj,/*         selfadjoint problem */
                        update_struct_odens,/* updata density in ele wa    */
                        upd_optvar,
-                       put_optvar,
-                       /* levelset */
-                       calc_ls_init,
-                       calc_ls,
-                       /* chimera */
-                       chimera_ini,
-                       chimera_inisol,
-                       chimera_sol,
-                       chimera_fin,
-                       chimera_prn,
-                       chimera_cln
+                       put_optvar
 } CALC_ACTION;
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
@@ -486,48 +471,3 @@ typedef enum _STABILISATION_TYP
    stab_gls,	/*! Galerkin least square stabilisation			*/
    stab_prespro	/*! Stabilisation based on pressure projection		*/
 } STABILISATION_TYP;
-
-#ifdef D_CHIMERA
-typedef enum _CHIMERA_BOUNDARYTYPE
-{
-      empty,
-      no_interpolation,
-      Chimera_Dirichlet,
-      Chimera_Neumann,
-      Chimera_Robin
-} CHIMERA_BOUNDARYTYPE;
-
-
-
-typedef enum _CHIMERA_PRES_COUPLE
-{
-      chimera_no,
-      chimera_yes
-} CHIMERA_PRES_COUPLE;
-
-
-
-typedef enum _CHIMERA_AUTOHOLE_KNOTENTYP
-{
-      frei,
-      frei_unter_patch,
-      Loch_Standard,
-      Lochrand
-} CHIMERA_AUTOHOLE_KNOTENTYP;
-
-
-
-typedef enum _CHIMERA_AUTOHOLE_PARENTTYP
-{
-      parenttyp_frei,
-      Kandidat_Innerer_Rand
-} CHIMERA_AUTOHOLE_PARENTTYP;
-
-
-
-typedef enum _CHIMERA_DEFINE_BACKGROUND_BOUNDARY
-{
-    define_background_boundary_automatic,
-    define_background_boundary_manual
-} CHIMERA_DEFINE_BACKGROUND_BOUNDARY;
-#endif

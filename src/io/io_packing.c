@@ -48,7 +48,6 @@ function calls.
 #include "../axishell/axishell.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
-#include "../ls/ls.h"
 
 
 /*----------------------------------------------------------------------*
@@ -189,11 +188,6 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
       element_flag[el_fluid2][MINOR_FLUID2(actele)] = 1;
       break;
 #endif
-#ifdef D_XFEM
-    case el_fluid2_xfem:
-      element_flag[el_fluid2_xfem][MINOR_FLUID2_XFEM(actele)] = 1;
-      break;
-#endif
 #ifdef D_FLUID2_PRO
     case el_fluid2_pro:
       element_flag[el_fluid2_pro][MINOR_FLUID2_PRO(actele)] = 1;
@@ -237,12 +231,6 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
       element_flag[el_wallge][MINOR_WALLGE(actele)] = 1;
       break;
 #endif
-#ifdef D_LS
-    case el_ls2:
-      element_flag[el_ls2][MINOR_LS2(actele)] = 1;
-      break;
-#endif
-
     default:
       dserror("Unknown type %d of element", actele->eltyp);
       break;
@@ -1681,8 +1669,6 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       case el_fluid2_tu:        /* 2D fluid element for turbulence */
       case el_ale2:             /* 2D pseudo structural ale element */
       case el_ale3:             /* 3D pseudo structural ale element */
-      case el_ls2:              /* 2D element for level set calculations */
-      case el_fluid2_xfem:      /* 2D element for x-fem calculations */
       default:
         dserror("element based stress output not supported for element type %d", actele->eltyp);
       }

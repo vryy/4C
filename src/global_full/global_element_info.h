@@ -339,36 +339,6 @@ numbers are written to result files and might life there for a while.
 #define MINOR_LS2_33  0         /* 3-noded ls 3 GP */
 #define MINOR_LS2_22  1         /* 4-noded ls 2x2 GP */
 
-#ifdef D_LS
-
-#define MINOR_LS2(actele)                               \
-  ((actele->e.ls2->nGP[0]==2) ?                         \
-   MINOR_LS2_22 :                                       \
-   ((actele->e.ls2->nGP[1]==3) ?                        \
-    MINOR_LS2_33 :                                      \
-    (dserror("unknown minor version for ls2"), -1)))
-
-#else
-#define MINOR_LS2(actele) (dserror("unknown minor version for ls2"), -1)
-#endif
-
-
-#define MINOR_FLUID2_XFEM_22  0 /* 4-noded fluid2_xfem 2x2 GP */
-#define MINOR_FLUID2_XFEM_33  1 /* 3-noded fluid2_xfem 3 GP */
-
-#ifdef D_XFEM
-
-#define MINOR_FLUID2_XFEM(actele)                               \
-  ((actele->numnp==4) ?                                         \
-   MINOR_FLUID2_XFEM_22 :                                       \
-   ((actele->numnp==3) ?                                        \
-    MINOR_FLUID2_XFEM_33 :                                      \
-    (dserror("unknown minor version for fluid2_xfem"), -1)))
-
-#else
-#define MINOR_FLUID2_XFEM(actele) (dserror("unknown minor version for fluid2_xfem"), -1)
-#endif
-
 
 /* The quick way to find the minor element version. */
 #define FIND_MINOR(actele)                                              \
@@ -387,9 +357,7 @@ numbers are written to result files and might life there for a while.
               ((actele->eltyp == el_axishell) ? MINOR_AXISHELL :        \
                ((actele->eltyp == el_interf) ? MINOR_INTERF(actele) :   \
                 ((actele->eltyp == el_wallge) ? MINOR_WALLGE(actele) :  \
-                 ((actele->eltyp == el_ls2) ? MINOR_LS2(actele) :       \
-                  ((actele->eltyp == el_fluid2_xfem) ? MINOR_FLUID2_XFEM(actele) : \
-                   (dserror("unknown element type %d", actele->eltyp), -1))))))))))))))))))
+                 (dserror("unknown element type %d", actele->eltyp), -1))))))))))))))))
 
 
 /* The maximum number of minor versions to an element. Keep this in

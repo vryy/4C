@@ -58,11 +58,6 @@ typedef struct _DNODE
                                                  0: global (default)
                                                  1: local */
 #endif
-#ifdef D_CHIMERA
-   enum  _CHIMERA_BOUNDARYTYPE       chi_bndtype;
-   enum  _CHIMERA_PRES_COUPLE        chi_pres_coupling_point;
-#endif
-
 #ifdef D_SSI
    /*enum _SSI_COUPTYP         ssi_couptyp;*/
    struct _SSI_COUPLE_CONDITION *ssicouple;
@@ -123,10 +118,6 @@ typedef struct _DLINE
 
 #ifdef D_SSI
    struct _SSI_COUPLE_CONDITION *ssicouple;
-#endif
-
-#ifdef D_CHIMERA
-   enum  _CHIMERA_BOUNDARYTYPE       chi_bndtype;
 #endif
 
    INT                     locsysId;

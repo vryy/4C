@@ -35,7 +35,6 @@ understand. Feel free to add your own.
 #include "../axishell/axishell.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
-#include "../ls/ls.h"
 
 
 /*!----------------------------------------------------------------------

@@ -194,8 +194,6 @@ INT               fluid_stress_gid;       /* write stresses to .flavia.res */
 INT               fluid_vis_file;         /* write solution to pss-file for VISUAL2 */
 INT               ale_disp_file;          /* write ale displacements to .out */
 INT               ale_disp_gid;           /* write ale displacement to .flavia.res */
-INT               chimera_to_pager;       /* write chimera solution to pager */
-INT               chimera_to_matlab;      /* write chimera solution to matlab */
 INT               monitor;
 INT               relative_displ;         /* write relative displacements to .err */
 } IO_FLAGS;
@@ -266,8 +264,6 @@ INT               numff;         /* actual number of fluid field */
 INT               numaf;         /* actual number of ale field */
 INT               numls;         /* actual number of ls field */
 INT               graderw;       /* flag is gradient enhanced material model */
-
-INT               mdis_on_off;    /* flag to switch multi discretization on */
 
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */

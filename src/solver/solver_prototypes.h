@@ -10,8 +10,6 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
-#include "../ls/ls.h"
-
 
 #ifndef SOLVER_PROTOTYPES_H
 #define SOLVER_PROTOTYPES_H
@@ -1182,25 +1180,6 @@ void restart_read_aledyn(INT restart,
 void restart_write_fsidyn(FSI_DYNAMIC       *fsidyn);
 void restart_read_fsidyn(INT restart,
                          FSI_DYNAMIC   *fsidyn);
-#ifdef D_LS
-void restart_write_levelset(
-  LS_DYNAMIC        *lsdyn,
-  FIELD	            *actfield,
-  PARTITION	    *actpart,
-  INTRA	            *actintra,
-  CALC_ACTION       *action,
-  CONTAINER         *container
-  );
-void restart_read_levelset(
-  INT                restart,
-  LS_DYNAMIC        *lsdyn,
-  FIELD	            *actfield,
-  PARTITION	    *actpart,
-  INTRA	            *actintra,
-  CALC_ACTION       *action,
-  CONTAINER         *container
-  );
-#endif
 
 /*---------------------------------------------------------------------*
  | routine to find the maximum value of a distributed vector           |
@@ -1493,10 +1472,6 @@ void oll_copy(
   | global_mask_matrices.c                              m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void mask_global_matrices(void);
-
-
-void remask_global_matrices_xfem(void);
-
 
 
 /*----------------------------------------------------------------------*

@@ -121,18 +121,3 @@ fi
 if grep '^D_MAT' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_MAT)"
 fi
-
-# LS
-if grep '^D_LS' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_LS)"
-fi
-
-# XFEM
-if grep '^D_XFEM' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_XFEM)"
-fi
-
-# CHIMERA
-if grep '^D_CHIMERA' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_CHIMERA)"
-fi

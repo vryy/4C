@@ -74,7 +74,7 @@ All io is done using chunks.
 #include "../axishell/axishell.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
-#include "../ls/ls.h"
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

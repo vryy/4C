@@ -17,7 +17,6 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid_prototypes.h"
 #include "../solver/solver.h"
-#include "../chimera/chimera.h"
 /*-------------------------------------------- prototypes for this file */
 #ifdef D_FSI
 static DOUBLE fluid_usd(DOUBLE r, DOUBLE alpha);
@@ -69,9 +68,7 @@ extern INT            numcurve;
 extern struct _CURVE *curve;
 
 static FLUID_DYNAMIC *fdyn;
-#ifdef D_CHIMERA
-extern struct _CHIMERA_DATA *chm_data;
-#endif
+
 /*!---------------------------------------------------------------------
 \brief routine to initialise the dirichlet boundary conditions
 
@@ -311,130 +308,6 @@ dstrc_exit();
 return;
 } /* end of fluid_initdirich*/
 
-void fluid_initdirich_discretization(
-  DISCRET        *actdis
-  )
-{
-  INT        i,j;
-  INT        numnp_total;             /* total number of fluid nodes      */
-  INT        numele_total;            /* total number of fluid elements   */
-  INT        predof;	              /* number of pressure dof	          */
-  INT        numdf;	              /* number of fluid dofs	          */
-  INT        actcurve;	              /* actual timecurve  	          */
-  INT        numveldof;
-  DOUBLE     dens;	              /* density			  */
-  DOUBLE     timefac[MAXTIMECURVE];   /* factors from time-curve          */
-  DOUBLE     T=0.0;	              /* starting time		          */
-  DOUBLE     acttimefac;              /* actual factor from timecurve     */
-  DOUBLE     initval;	              /* intial dirichlet value	          */
-  GNODE     *actgnode;	              /* actual GNODE		          */
-  NODE      *actnode;	              /* actual NODE		          */
-  ELEMENT   *actele;	              /* actual ELEMENT		          */
-
-  INT counter=0;
-
-#ifdef DEBUG
-  dstrc_enter("fluid_initdirich_discretization");
-#endif
-
-/*----------------------------------------------------------------------*/
-
-  fdyn = alldyn[genprob.numff].fdyn;
-
-  numnp_total  = actdis->numnp;
-  numele_total = actdis->numele;
-  numdf        = fdyn->numdf;
-  predof       = numdf-1;
-  numveldof    = numdf-1;
-
-/*-------------------------- since different materials are not allowed
-  one can work with the material parameters of any element */
-  actele = &(actdis->element[0]);
-  dens  = mat[actele->mat-1].m.fluid->density;
-
-/*------------------------------------------ check dirichlet conditions */
-  for (i=0;i<numnp_total;i++) /* loop all nodes */
-  {
-    actnode  = &(actdis->node[i]);
-    actgnode = actnode->gnode;
-    if (actgnode->dirich==NULL)
-      continue;
-    if (actgnode->dirich->dirich_type==dirich_FSI)
-      counter++;
-    if (actgnode->dirich->dirich_type==dirich_none)
-    {
-      for (j=0;j<actnode->numdf;j++) /* loop all dofs */
-      {
-        if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-          continue;
-        actcurve = actgnode->dirich->curve.a.iv[j];
-        if(actcurve>numcurve)
-          dserror("Load curve: actual curve > number defined curves\n");
-      } /* end of loop over all dofs */
-      /* transform real pressure from input to kinematic pressure ---*/
-      if (actgnode->dirich->dirich_onoff.a.iv[predof]!=0)
-        actgnode->dirich->dirich_val.a.dv[predof] /= dens;
-    }
-  } /* end of loop over all nodes */
-
-  if (counter>0 && par.myrank==0)
-  {
-    printf("\n");
-    printf("          | FIELD FLUID     | number of nodes coupled with structure: %d \n",counter);
-    printf("\n");
-  }
-
-/*---------- set dirichlet conditions at time (0) for zero intial field */
-  if (fdyn->init==0)
-  {
-/*------------------------------------------ get values from time curve */
-    for (actcurve=0;actcurve<numcurve;actcurve++)
-    {
-      dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-    }/* end loop over active timecurves */
-/*------------------------------------------------- loop over all nodes */
-    for (i=0;i<numnp_total;i++)
-    {
-      actnode  = &(actdis->node[i]);
-      actgnode = actnode->gnode;
-      if (actgnode->dirich==NULL)
-        continue;
-      switch(actgnode->dirich->dirich_type)
-      {
-          case dirich_none:
-            for (j=0;j<actnode->numdf;j++) /* loop all dofs */
-            {
-              if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-                continue;
-              actcurve = actgnode->dirich->curve.a.iv[j]-1;
-              if (actcurve<0)
-                acttimefac = ONE;
-              else
-                acttimefac = timefac[actcurve];
-              initval  = actgnode->dirich->dirich_val.a.dv[j];
-              actnode->sol_increment.a.da[1][j] = initval*acttimefac;
-              actnode->sol.a.da[0][j] = initval*acttimefac;
-            } /* end loop over dofs */
-            break;
-          case dirich_FSI: /* FSI --> dirichvalues = grid velocity!!! */
-            for (j=0;j<numveldof;j++) /* loop vel-dofs */
-            {
-              initval = actnode->sol_increment.a.da[4][j];
-              actnode->sol_increment.a.da[1][j] = initval;
-              actnode->sol.a.da[0][j] = initval;
-            }
-            break;
-          default:
-            dserror("dirch_type unknown!\n");
-      } /* end switch */
-    } /*end loop over nodes */
-  } /* endif fdyn->init */
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return;
-} /* end of fluid_initdirich_discretization*/
 
 /*!---------------------------------------------------------------------
 \brief routine to set dirichlet boundary conditions at time <time>
@@ -614,105 +487,6 @@ dstrc_exit();
 return;
 } /* end of fluid_settdirich*/
 
-
-void fluid_setdirich_discretization(
-  FIELD           *actfield,
-  DISCRET         *actdis,
-  INT              pos
-  )
-{
-  INT        i,j;
-  INT        numnp_total;            /* total number of fluid nodes     */
-  INT        numele_total;           /* total number of fluid elements  */
-  INT        numdf;	             /* number of fluid dofs    	*/
-  INT        actcurve;	             /* actual timecurve		*/
-  INT        numveldof;
-  DOUBLE     timefac[MAXTIMECURVE];  /* factors from time-curve         */
-  DOUBLE     T;		             /* actual time		        */
-  DOUBLE     acttimefac;             /* actual factor from timecurve    */
-  DOUBLE     initval;	             /* intial dirichlet value	        */
-  GNODE     *actgnode;	             /* actual GNODE		        */
-  NODE      *actnode;                /* actual NODE                     */
-  INT        numdis;
-
-#ifdef DEBUG
-  dstrc_enter("fluid_setdirich_discretization");
-#endif
-
-/*----------------------------------------------------- set some values */
-  numnp_total  = actdis->numnp;
-  numele_total = actdis->numele;
-  T            = fdyn->acttime;
-  numdf        = fdyn->numdf;
-  numveldof    = numdf-1;
-  numdis       = actdis-actfield->dis;
-
-/*------------------------------------------ get values from time curve */
-  for (actcurve=0;actcurve<numcurve;actcurve++)
-  {
-    dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-  } /* end loop over active timecurves */
-
-/*-------------------- loop all nodes and set actual dirichlet condition */
-  for (i=0;i<numnp_total;i++)
-  {
-    actnode  = &(actdis->node[i]);
-    actgnode = actnode->gnode;
-    if (actgnode->dirich==NULL)
-      continue;
-    switch(actgnode->dirich->dirich_type)
-    {
-        case dirich_none:
-	  for (j=0;j<actnode->numdf;j++) /* loop dofs */
-          {
-            if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-              continue;
-            actcurve = actgnode->dirich->curve.a.iv[j]-1;
-            if (actcurve<0)
-              acttimefac = ONE;
-            else
-	    {
-              acttimefac = timefac[actcurve];
-	    }
-            initval  = actgnode->dirich->dirich_val.a.dv[j];
-            actnode->sol_increment.a.da[pos][j] = initval*acttimefac;
-#ifdef D_CHIMERA
-            if (chm_data->interact_dis_on_off==1)
-            {
-/****************************CHIMERA REGION START************************/
-/****************************CHIMERA REGION START************************/
-/****************************CHIMERA REGION START************************/
-
-              if (actgnode->chi_bndtype==Chimera_Dirichlet)
-              {
-                /* modify it! */
-                chimera_boundary_update(actnode,actgnode,pos,1-numdis);
-              }
-
-/****************************CHIMERA REGION END**************************/
-/****************************CHIMERA REGION END**************************/
-/****************************CHIMERA REGION END**************************/
-            }
-#endif
-
-          } /* end loop over dofs */
-          break;
-        case dirich_FSI: /* dirichvalues = grid velocity!!! */
-          for (j=0;j<numveldof;j++)  /* loop vel-dofs */
-            actnode->sol_increment.a.da[pos][j]=actnode->sol_increment.a.da[4][j];
-          break;
-        default:
-          dserror("dirch_type unknown!\n");
-    } /* end switch */
-  } /*end loop over nodes */
-/*----------------------------------------------------------------------*/
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-
-  return;
-} /* end of fluid_setdirich_discretization */
 
 /*!---------------------------------------------------------------------
 \brief routine to set dirichlet boundary conditions for a parabolic velocity

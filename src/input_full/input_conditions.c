@@ -102,12 +102,6 @@ static void inpdesign_point_axishellcos(void);
 static void inpdesign_line_contact(void);
 #endif
 
-#ifdef D_CHIMERA
-static void inpdesign_chimera_bound_line(void);
-static void inpdesign_chimera_bound_point(void);
-static void inpdesign_chimera_bound_pres_couple(void);
-#endif
-
 static void inpdesign_line_ssi(void);
 
 /*----------------------------------------------------------------------*
@@ -154,16 +148,6 @@ inpdesign_vol_couple();
 inpdesign_line_contact();
 #endif
 
-/*--------------------------------- input of chimera-related conditions */
-#ifdef D_CHIMERA
-if (genprob.probtyp==prb_chimera)
-{
-  inpdesign_chimera_bound_line();
-  inpdesign_chimera_bound_point();
-  inpdesign_chimera_bound_pres_couple();
-}
-#endif
-
 /*------------------------------- input of line SSi coupling conditions */
 #ifdef D_SSI
 inpdesign_line_ssi();
@@ -182,8 +166,7 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 #endif
 
 #ifdef D_FLUID
-if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi ||
-    genprob.probtyp==prb_twophase || genprob.probtyp==prb_chimera)
+if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 {
 #ifdef D_FSI
 /*------------------------------ input of nodal free surface conditions */
@@ -3866,202 +3849,4 @@ return;
 } /* end of inpdesign_line_ssi */
 #endif
 
-
-
-
-
-#ifdef D_CHIMERA
-static void inpdesign_chimera_bound_point(void)
-{
-INT    i,j,counter=0;
-INT    ierr;
-INT    ndnode;
-INT    dnodeId;
-INT    foundit;
-char  *colptr;
-char   buffer[200];
-DNODE *actdnode;
-#ifdef DEBUG
-dstrc_enter("inpdesign_chimera_bound_point");
-#endif
-/*----------------------------------------------------------------------*/
-/*----------------------- find the beginning of line chimera conditions */
-frfind("---DESIGN POINT CHIMERA CONDITIONS");
-frread();
-/*------------------------- read number of design points with conditions */
-frint("DPOINT",&ndnode,&ierr);
-dsassert(ierr==1,"Cannot read design-line chimera conditions");
-frread();
-/*-------------------------------------- start reading the design points */
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-   /*------------------------------------------ read the design point Id */
-   frint("E",&dnodeId,&ierr);
-   dsassert(ierr==1,"Cannot read design-point chimera conditions");
-   dnodeId--;
-   /*--------------------------------------------------- find the dnode */
-   actdnode=NULL;
-   for (i=0; i<design->ndnode; i++)
-   {
-      if (design->dnode[i].Id ==  dnodeId)
-      {
-         actdnode = &(design->dnode[i]);
-         break;
-      }
-   }
-   dsassert(actdnode!=NULL,"Cannot read design-point chimera conditions");
-
-   frchk("no_interpolation",&ierr);
-   if (ierr)
-   {
-       actdnode->chi_bndtype = no_interpolation;
-   }
-   frchk("Chimera_Dirichlet",&ierr);
-   if (ierr)
-   {
-       actdnode->chi_bndtype = Chimera_Dirichlet;
-   }
-   frchk("Chimera_Neumann",&ierr);
-   if (ierr)
-   {
-       actdnode->chi_bndtype = Chimera_Neumann;
-   }
-   frchk("Chimera_Robin",&ierr);
-   if (ierr)
-   {
-       actdnode->chi_bndtype = Chimera_Robin;
-   }
-   frread();
-}
-
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of inpdesign_chimera_bound_point */
-
-
-
-
-
-static void inpdesign_chimera_bound_line(void)
-{
-INT    i,j,counter=0;
-INT    ierr;
-INT    ndline;
-INT    dlineId;
-INT    foundit;
-char  *colptr;
-char   buffer[200];
-DLINE *actdline;
-#ifdef DEBUG
-dstrc_enter("inpdesign_chimera_bound_line");
-#endif
-/*----------------------------------------------------------------------*/
-/*----------------------- find the beginning of line chimera conditions */
-frfind("-----DESIGN LINE CHIMERA CONDITIONS");
-frread();
-/*------------------------- read number of design lines with conditions */
-frint("DLINE",&ndline,&ierr);
-dsassert(ierr==1,"Cannot read design-line chimera conditions");
-frread();
-/*-------------------------------------- start reading the design lines */
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-   /*------------------------------------------ read the design line Id */
-   frint("E",&dlineId,&ierr);
-   dsassert(ierr==1,"Cannot read design-line chimera conditions");
-   dlineId--;
-   /*--------------------------------------------------- find the dline */
-   actdline=NULL;
-   for (i=0; i<design->ndline; i++)
-   {
-      if (design->dline[i].Id ==  dlineId)
-      {
-         actdline = &(design->dline[i]);
-         break;
-      }
-   }
-   dsassert(actdline!=NULL,"Cannot read design-line chimera conditions");
-
-   frchk("Chimera_Dirichlet",&ierr);
-   if (ierr) {
-       actdline->chi_bndtype = Chimera_Dirichlet;
-   }
-   frchk("Chimera_Neumann",&ierr);
-   if (ierr) actdline->chi_bndtype = Chimera_Neumann;
-   frchk("Chimera_Robin",&ierr);
-   if (ierr) actdline->chi_bndtype = Chimera_Robin;
-   frread();
-}
-
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of inpdesign_chimera_bound_line */
-
-
-
-
-
-static void inpdesign_chimera_bound_pres_couple(void)
-{
-INT    i,j,counter=0;
-INT    ierr;
-INT    ndnode;
-INT    dnodeId;
-INT    foundit;
-char  *colptr;
-char   buffer[200];
-DNODE *actdnode;
-#ifdef DEBUG
-dstrc_enter("inpdesign_chimera_bound_pres_couple");
-#endif
-/*----------------------------------------------------------------------*/
-/*----------------------- find the beginning of node chimera conditions */
-frfind("---DESIGN CHIMERA PRESSURE COUPLING POINTS");
-frread();
-/*------------------------- read number of design points with conditions */
-frint("DPOINT",&ndnode,&ierr);
-dsassert(ierr==1,"Cannot read design-point chimera pressure coupling conditions");
-frread();
-/*-------------------------------------- start reading the design points */
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-   /*------------------------------------------ read the design point Id */
-   frint("E",&dnodeId,&ierr);
-   dsassert(ierr==1,"Cannot read design-point chimera pressure coupling conditions");
-   dnodeId--;
-   /*--------------------------------------------------- find the dnode */
-   actdnode=NULL;
-   for (i=0; i<design->ndnode; i++)
-   {
-      if (design->dnode[i].Id ==  dnodeId)
-      {
-         actdnode = &(design->dnode[i]);
-         break;
-      }
-   }
-   dsassert(actdnode!=NULL,"Cannot read design-point chimera pressure coupling conditions");
-
-   frchk("Yes",&ierr);
-   if (ierr)
-   {
-       actdnode->chi_pres_coupling_point = chimera_yes;
-   }
-   frchk("No",&ierr);
-   if (ierr)
-   {
-       actdnode->chi_bndtype = chimera_no;
-   }
-   frread();
-}
-
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of inpdesign_chimera_bound_pres_couple */
-#endif
 /*! @} (documentation module close)*/

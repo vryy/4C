@@ -93,12 +93,6 @@ $(OBJS_IF):
 $(OBJS_WALLGE):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS_LS):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
-
-$(OBJS_XFEM):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
-
 $(OBJS_CHIMERA):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
