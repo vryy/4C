@@ -618,7 +618,7 @@ return;
  *----------------------------------------------------------------------*/
 void out_gid_domains(FIELD *actfield)
 {
-int           i,j,k;
+int           i,j;
 
 FILE         *out = allfiles.gidres;
 ELEMENT      *actele;
@@ -1121,13 +1121,13 @@ char          sign='"';
 int           stringlenght;
 
 int           ngauss;
-double      **forces;
+double      **forces;/* for shell8 */
 double      **stress;
 
-double        a1,a2,a3,thick,scal,sdc;
+double        a1,a2,a3,thick,scal,sdc; /* for shell8 */
 int           tot_numnp;
 
-int           num_klay,klay,ele_ID,numele;   /*for shell9*/
+int           numele;   /*for shell9/shell8*/
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]

@@ -47,7 +47,6 @@ void pss_write(char          *name,
                FILE          *out, 
                int           *ierr)
 {
-int          i;
 int          err=0;
 int          name_size=0;
 int          write_error=0;
@@ -117,7 +116,6 @@ void pss_write_array(const ARRAY *array,
                      FILE        *out, 
                      int         *ierr)
 {
-int           i;
 int           err=0;
 int           name_size=0;
 int           write_error=0;
@@ -369,7 +367,6 @@ void pss_read_name_handle(char       *name,
 {
 long int      cur_pos=0;
 long int      offset=0;
-int           i;
 int           err=0;
 int           foundit=0;
 int           name_size=0;
@@ -469,7 +466,6 @@ void pss_read_array_name(char       *name,
 {
 long int     cur_pos=0;
 long int     offset=0;
-int          i;
 int          err=0;
 int          foundit=0;
 int          name_size=0; 
@@ -607,7 +603,6 @@ void pss_read_array_name_handle(char       *name,
 {
 long int    cur_pos = 0;
 long int    offset = 0;
-int         i; 
 int         err=0; 
 int         foundit=0;
 unsigned int name_size=0; 
@@ -726,7 +721,6 @@ void pss_read_array_handle(ARRAY      *array,
 {
 long int    cur_pos = 0;
 long int    offset = 0;
-int         i; 
 int         err=0; 
 int         foundit=0;
 unsigned int name_size=0; 
@@ -929,7 +923,6 @@ int         foundit=0;
 int         sizename=0;
 int         err=0;
 char        test_name[200];
-int         dimensions[3];
 long int    handle_dummy;
 #ifdef DEBUG 
 dstrc_enter("pss_chck_handle");

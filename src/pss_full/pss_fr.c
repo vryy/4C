@@ -262,7 +262,6 @@ reads n integers from input_file
 ------------------------------------------------------------------------*/
 void frint_n(char string[],int *var,int num, int *ierr)
 {
-char message[100];
 int  i=0;
 char *foundit = NULL;
 #ifdef DEBUG 
@@ -363,7 +362,6 @@ void frdouble_n(char string[],double *var,int num, int *ierr)
 {
 int  i;
 char *foundit = NULL;
-char *end;
 #ifdef DEBUG 
 dstrc_enter("frdouble");
 #endif
@@ -456,7 +454,6 @@ void frchar(char string[],char *var, int *ierr)
 {
 int  i=0;
 char *foundit = NULL;
-char *end;
 
 #ifdef DEBUG 
 dstrc_enter("frchar");
@@ -499,7 +496,6 @@ void frchk(char string[], int *ierr)
 {
 int  i=0;
 char *foundit = NULL;
-char *end;
 
 foundit = strstr(allfiles.input_file[allfiles.actrow],string);
 if (foundit != NULL) *ierr=1;

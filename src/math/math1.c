@@ -110,7 +110,7 @@ return;
  *----------------------------------------------------------------------*/
 void math_unvc(double *enorm,double *vec, int n)
 {
-int i,j;
+int    i;
 double skalar;
 #ifdef DEBUG 
 dstrc_enter("math_unvc");

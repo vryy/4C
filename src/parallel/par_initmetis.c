@@ -73,7 +73,7 @@ off by malte neumann at the moment (Aug/2002)
 ------------------------------------------------------------------------*/
 void part_fields()
 {
-int      i,j,k,l,m,n,kk;
+int      i,j,k,l,kk;
 int      counter;
 int      adjcounter;
 long int max,min;

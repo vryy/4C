@@ -77,7 +77,7 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void out_general()
 {
-int        i,j,k,l;
+int        i,j,k;
 int        is_shell9;
 FILE      *out = allfiles.out_out;
 FIELD     *actfield;
@@ -86,8 +86,6 @@ ELEMENT   *actele;
 NODE      *actnode;
 int        myrank;
 int        nprocs;
-int        imyrank;
-int        inprocs;
 
 #ifdef DEBUG 
 dstrc_enter("out_general");
@@ -327,7 +325,7 @@ return;
 void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
              int step, int place)
 {
-int        i,j,k,l;
+int        i,j,k;
 int        is_shell9;    /*->shell9*/
 int        num_klay,kl;  /*->shell9*/
 FILE      *out = allfiles.out_out;
@@ -338,9 +336,6 @@ int        nprocs;
 int        imyrank;
 int        inprocs;
 int        ngauss;
-int	     numnp;
-int	     numff;
-double     visc;
 static FLUID_DYN_CALC  *dynvar;
 #ifdef DEBUG 
 dstrc_enter("out_sol");
@@ -736,15 +731,12 @@ return;
 ------------------------------------------------------------------------*/
 void out_fsi(FIELD *fluidfield)
 {
-int        i,j,k,l;
+int        i;
 FILE      *out = allfiles.out_out;
 NODE      *actfnode, *actanode, *actsnode;
 GNODE     *actfgnode;
 int        myrank;
 int        nprocs;
-int        imyrank;
-int        inprocs;
-int	   numnp;
 int        numaf,numsf;
 
 #ifdef DEBUG 
@@ -832,15 +824,12 @@ return;
 ------------------------------------------------------------------------*/
 void out_fluidmf(FIELD *fluidfield)
 {
-int        i,j,k,l;
+int        i;
 FILE      *out = allfiles.out_out;
 NODE      *actfnode, *actanode;
 GNODE     *actfgnode;
 int        myrank;
 int        nprocs;
-int        imyrank;
-int        inprocs;
-int	   numnp;
 int        numff;
 int        numaf;
 
@@ -910,17 +899,15 @@ return;
  *----------------------------------------------------------------------*/
 void out_fluidtu(FIELD *actfield, INTRA *actintra, int step, int place)
 {
-int        i,j,k,l;
+int        i,j,k;
 FILE      *out = allfiles.out_tur;
 NODE      *actnode;
 NODE      *actnode2;
 GNODE     *actgnode2;	            
-ELEMENT   *actele;
 int        myrank;
 int        nprocs;
 int        imyrank;
 int        inprocs;
-int	     numnp;
 int	     numff;
 double     visc;
 static FLUID_DYN_CALC  *dynvar;

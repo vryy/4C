@@ -71,7 +71,7 @@ fills nodes and elements to the pdis variable in two different styles
 ------------------------------------------------------------------------*/
 void part_assignfield()
 {
-int        i,j,k,kk,l;
+int        i,j,k,kk;
 int        counter,counter2;
 int        part;
 int        proc;
@@ -81,7 +81,6 @@ INTRA     *actintra;
 int        imyrank;
 int        inprocs;
 NODE      *actnode;
-ELEMENT   *actele;
 PARTITION *actpart;
 SOLVAR    *actsolv;
 
