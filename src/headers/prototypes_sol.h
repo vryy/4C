@@ -1101,57 +1101,6 @@ void solserv_dmax_distvec(
 			  double *res,   /* result */
 			  int ab        /* flag */
 			  );
-/*---------------------------------------------------------------------*
- |  global_calelm_fluid.c                              genk 04/02      |
- *---------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------                                         
-\brief call fluid elements
-
-<pre>                                                         genk 04/02       
-</pre>
-\param *actfield      FIELD	  (i)	 active field		 
-\param *actsolv       SOLVAR	  (i)    active SOLVAR  	 
-\param *actpart       PARTITION   (i)	 my part. of this field  
-\param *actintra      INTRA	  (i)	 my intra-communicator   
-\param  sysarray1     int	  (i)	 num. of 1st sparse system matrix  
-\param  sysarray2     int	  (i)	 number of secnd system matrix, if present, else -1  
-\param *ftimerhs      double	  (o)	 time RHS		 
-\param *fiterhs       double	  (o)	 iteration RHS  	 
-\param  global_numeq  int	  (i)	 total number of equations on all procs 
-\param  nii	      int	  (i)	 flag for iteration RHS  
-\param  nif	      int	  (i)	 flag for time RHS	 
-\param  kstep	      int	  (-)
-\param *action	      CALC_ACTION (i)	 calculation option passed to element routines  
-\return void                                                                       
-
-------------------------------------------------------------------------*/
-void calelm_fluid(FIELD        *actfield,      
-                  SOLVAR       *actsolv,      
-                  PARTITION    *actpart,      
-                  INTRA        *actintra,     
-                  int           sysarray1,    
-                  int           sysarray2,    
-                  double       *ftimerhs,     
-		  double       *fiterhs,      
-                  int           global_numeq, 
-                  int           nii,          
-		  int           nif,          
-                  int           kstep,
-                  CALC_ACTION  *action);     
-/*!---------------------------------------------------------------------                                         
-\brief call fluid elements and initialise them
-
-<pre>                                                         genk 04/02       
-</pre>
-\param *actfield      FIELD	  (i)	 active field		 
-\param *actpart       PARTITION   (i)	 my part. of this field  
-\param *action	      CALC_ACTION (i)	 calculation option passed to element routines  
-\return void                                                                       
-
-------------------------------------------------------------------------*/
-void calinit_fluid(FIELD       *actfield,    
-                   PARTITION   *actpart,    
-                   CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  | ale_calelm.c                                               mn 06/02  |
  *----------------------------------------------------------------------*/

@@ -15,8 +15,11 @@ enum _CALC_ACTION calc_action[MAXFIELD];
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
-struct _ARRAY estif_global;
-struct _ARRAY emass_global;
+struct _ARRAY estif_global;    /* element stiffness matrix              */
+struct _ARRAY emass_global;    /* element mass matrix                   */  
+struct _ARRAY etforce_global;  /* element Time RHS                      */
+struct _ARRAY eiforce_global;  /* element Iteration RHS                 */
+struct _ARRAY edforce_global;  /* element dirichlet RHS                 */
 struct _ARRAY intforce_global;
 /*----------------------------------------------------------------------*
  |  routine to call elements                             m.gee 6/01     |
@@ -29,10 +32,11 @@ void calelm(FIELD        *actfield,     /* active field */
             int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
             CONTAINER    *container,    /*!< contains variables defined in container.h */
             CALC_ACTION  *action)       /* calculation option passed to element routines */     
-     
 /*----------------------------------------------------------------------*/
 {
 int               i;
+int               hasdirich=0;      /* flag                             */
+int               hasext=0;         /* flag                             */
 ELEMENT          *actele;
 SPARSE_TYP        sysarray1_typ;
 SPARSE_TYP        sysarray2_typ;
@@ -191,8 +195,16 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             action, container);
    break;
    case el_fluid2: 
+      fluid2(actpart,actintra,actele,
+             &estif_global,&emass_global,
+             &etforce_global,&eiforce_global,&edforce_global,
+	     action,&hasdirich,&hasext,container);
    break;
    case el_fluid3: 
+      fluid3(actpart,actintra,actele,
+             &estif_global,&emass_global,
+             &etforce_global,&eiforce_global,&edforce_global,
+	     action,&hasdirich,&hasext,container); 
    break;
    case el_ale3:
 	ale3(actpart,actintra,actele,
@@ -218,6 +230,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_struct_update_istep : assemble_action = assemble_do_nothing; break;
    case calc_ale_stiff           : assemble_action = assemble_one_matrix; break;
    case calc_ale_rhs             : assemble_action = assemble_do_nothing; break;
+   case calc_fluid               : assemble_action = assemble_one_matrix; break;
    default: dserror("Unknown type of assembly"); break;
    }
    /*--------------------------- assemble one or two system matrices */
@@ -232,14 +245,42 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             assemble_action,
             container);
    /*---------------------------- assemble the vector intforce_global */
-   if (container->dvec)
-   assemble_intforce(actele,&intforce_global,container);
+   switch(container->fieldtyp)
+   {
+   case structure:
+      if (container->dvec)
+      assemble_intforce(actele,&intforce_global,container);
    
-   /*------ assemble the rhs vector of condensed dirichlet conditions */
-   if (container->dirich && container->isdyn==0)
-   assemble_dirich(actele,&estif_global,container);
-   if (container->dirich && container->isdyn==1)
-   assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
+      /*------ assemble the rhs vector of condensed dirichlet conditions */
+      if (container->dirich && container->isdyn==0)
+      assemble_dirich(actele,&estif_global,container);
+      if (container->dirich && container->isdyn==1)
+      assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
+   break;
+   case fluid:
+      if (container->nif!=0)
+      {
+         container->dvec = container->ftimerhs;
+         assemble_intforce(actele,&etforce_global,container);
+      }
+   /*-------------- assemble the vector eiforce_global to iteration rhs */
+   if (container->nii+hasext!=0)
+      {   
+         container->dvec = container->fiterhs;
+         assemble_intforce(actele,&eiforce_global,container); 
+      }
+   /*-------------- assemble the vector edforce_global to iteration rhs */
+   if (hasdirich!=0)
+      {
+         container->dvec = container->fiterhs;
+         assemble_intforce(actele,&edforce_global,container);
+      }   
+   break;
+   case ale:
+      dserror("not implemented yet!");
+   default:
+      dserror("fieldtyp unknown!");
+   }
 }/* end of loop over elements */
 /*----------------------------------------------------------------------*/
 /*                    in parallel coupled dofs have to be exchanged now */
@@ -256,6 +297,7 @@ case calc_struct_stress        : assemble_action = assemble_do_nothing; break;
 case calc_struct_update_istep  : assemble_action = assemble_do_nothing; break;
 case calc_ale_stiff            : assemble_action = assemble_one_exchange; break;
 case calc_ale_rhs              : assemble_action = assemble_do_nothing; break;
+case calc_fluid                : assemble_action = assemble_one_exchange; break;
 default: dserror("Unknown type of assembly"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
@@ -293,19 +335,22 @@ int i;                        /* a counter */
 int is_shell8=0;              /* flags to check for presents of certain element types */
 int is_brick1=0;
 int is_wall1 =0;
-int is_fluid1=0;
+int is_fluid2=0;
 int is_fluid3=0;
 int is_ale3=0;
 int is_ale2=0;
 
 ELEMENT *actele;              /* active element */
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("calinit");
 #endif
-/*----------------------------------------------------------------------*/
 /*-------------------------- define dense element matrices for assembly */
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
+amdef("etforce",&etforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
+amdef("eiforce",&eiforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
+amdef("edforce",&edforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("inforce",&intforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 /*--------------------what kind of elements are there in this example ? */
 for (i=0; i<actfield->dis[0].numele; i++)
@@ -323,7 +368,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
       is_wall1=1;
    break;
    case el_fluid2:
-      is_fluid1=1;
+      is_fluid2=1;
    break;
    case el_fluid3:
       is_fluid3=1;
@@ -362,13 +407,21 @@ if (is_wall1==1)
    wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
          action,container);
 }
-/*-------------------------------- init all kind of routines for fluid1 */
-if (is_fluid1==1)
+/*-------------------------------- init all kind of routines for fluid2 */
+if (is_fluid2==1)
 {
+   fluid2(actpart,NULL,NULL,
+          &estif_global,&emass_global,
+          &etforce_global,&eiforce_global,&edforce_global,
+          action,NULL,NULL,container);
 }
 /*-------------------------------- init all kind of routines for fluid3 */
 if (is_fluid3==1)
 {
+   fluid3(actpart,NULL,NULL,
+          &estif_global,&emass_global,
+          &etforce_global,&eiforce_global,&edforce_global,
+          action,NULL,NULL,container);
 }
 /*----------------------------------- init all kind of routines for ale */
 if (is_ale3==1)
@@ -400,7 +453,7 @@ void calreduce(FIELD       *actfield, /* the active field */
                PARTITION   *actpart,  /* my partition of this field */
                INTRA       *actintra, /* the field's intra-communicator */
                CALC_ACTION *action,   /* action for element routines */
-               CONTAINER   *container)/*!< contains variables defined in container.h */
+               CONTAINER   *container)/* contains variables defined in container.h */
 {
 int i;
 int is_shell8=0;
