@@ -1820,7 +1820,7 @@ dstrc_enter("inpdesign_line_thickness");
 
 /*----------------------------------------------------------------------*/
 /*---- find the beginning of line fluid freesurface coupling conditions */
-frfind("--DESIGN AXISHELL THICKNESS LINE CONDITIONS");
+if (frfind("--DESIGN AXISHELL THICKNESS LINE CONDITIONS") == 0) goto end;
 frread();
 /*------------------------ read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
@@ -1861,6 +1861,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1888,7 +1890,7 @@ dstrc_enter("inpdesign_line_axishellload");
 
 /*----------------------------------------------------------------------*/
 /*---- find the beginning of line fluid freesurface coupling conditions */
-frfind("--DESIGN AXISHELL LOAD LINE CONDITIONS");
+if (frfind("--DESIGN AXISHELL LOAD LINE CONDITIONS") == 0) goto end;
 frread();
 /*------------------------ read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
@@ -2005,6 +2007,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -2031,7 +2035,7 @@ dstrc_enter("inpdesign_point_axishellcos");
 
 /*----------------------------------------------------------------------*/
 /*---- find the beginning of line fluid freesurface coupling conditions */
-frfind("--DESIGN AXISHELL COS POINT CONDITIONS");
+if (frfind("--DESIGN AXISHELL COS POINT CONDITIONS") == 0) goto end;
 frread();
 /*------------------------ read number of design points with conditions */
 frint("DPOINT",&ndnode,&ierr);
@@ -2082,6 +2086,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

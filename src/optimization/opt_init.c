@@ -406,7 +406,7 @@ if(opt->numlin != 0)
        if(c > c_max) dserror("Linking problem in opt_init.c, sorry!");
     }
    if(c != c_max) dserror("problem in opt_init.c: different no. of elements for linking materials!");
-   numvarlin = numvarlin-c;      //angepasste laenge von numvar 
+   numvarlin = numvarlin-c;      /*angepasste laenge von numvar */
    }
    opt->strat.fsd->numvar_lin = numvarlin;
    CCAFREE(adr);  

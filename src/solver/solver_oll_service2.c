@@ -1036,7 +1036,7 @@ void oll_to_sky(
     /* -------------------- now copy all entries in this column into A, *
      * ---------------------------------until diagonal entry is reached */
     lastrow = actentry->r-1;
-    while ( actentry->r<=i && actentry!=NULL)
+    while (actentry!=NULL && actentry->r<=i)
     {
       gap = actentry->r - lastrow;
       if(gap>1)

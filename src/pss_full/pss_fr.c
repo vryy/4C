@@ -197,7 +197,7 @@ dstrc_enter("frfind");
 frrewind();
 while ( strstr(allfiles.input_file[i],string) == NULL )
 {
-   if ( i==allfiles.numrows )
+   if ( i==allfiles.numrows-1)
    {
       
       sprintf(message,"frfind:  String %s is not in input file",string);

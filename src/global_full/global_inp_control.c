@@ -147,8 +147,11 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 
 /*------------------------ interpolate axishell conditions to the nodes */
 #ifdef D_AXISHELL
-for (j=0; j<field[genprob.numsf].ndis; j++)
-  interpolate_axishell_conds(&(field[genprob.numsf].dis[j]));
+if (genprob.probtyp==prb_structure)
+{
+  for (j=0; j<field[genprob.numsf].ndis; j++)
+    interpolate_axishell_conds(&(field[genprob.numsf].dis[j]));
+}
 #endif
 
 /*-------------------------------------------- input of monitoring data */
