@@ -667,7 +667,7 @@ DOUBLE t1,t2,t3,t4;
 
 
 #ifdef DEBUG 
-dstrc_enter("f3_rec");
+dstrc_enter("f3_tet");
 #endif
 /*------------------------------- selection of polynomial interpolation */
 switch (typ)
