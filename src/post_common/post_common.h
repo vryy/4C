@@ -47,6 +47,10 @@ functions.
 #undef PERF
 #endif
 
+#ifdef NO_TEXT_OUTPUT
+#undef NO_TEXT_OUTPUT
+#endif
+
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 #include "../io/io_packing.h"

@@ -178,11 +178,11 @@ for (i=0;i<numnp_total;i++)
         {
 	   if (readstructpos != 6) /* 'ordinary' calculation */
              actanode->sol_increment.a.da[0][j] =
-  	               actanode->sol_mf.a.da[3][j]; 
+  	               actanode->sol_mf.a.da[3][j];
            else if(readstructpos == 6) /* steepest descent method */
              actanode->sol_increment.a.da[0][j] =
-  	               actanode->sol_mf.a.da[3][j] - 
-                       actanode->sol_mf.a.da[0][j];  
+  	               actanode->sol_mf.a.da[3][j] -
+                       actanode->sol_mf.a.da[0][j];
            else dserror("parameter readstructpos not known in ale_setdirich()!!!\n");
         } /* readstructpos = 0 for 'ordinary' calculation *
                            = 6 for calculation for Relaxation parameter via
@@ -752,17 +752,18 @@ INT check_ale_dirich(
         if (actgnode->dirich != NULL)
         {
           hasdirich=1;
-          return hasdirich;
+          goto end;
         }
       }
     }
   }
-  return hasdirich;
 
+end:
 #ifdef DEBUG
   dstrc_exit();
 #endif
 
+  return hasdirich;
 }
 
 #endif

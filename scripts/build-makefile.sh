@@ -41,7 +41,7 @@ ccarat: \$(PROGRAM)
 # Build (nearly) everything.
 # Some filters (like the visual ones) are very specific and system dependent
 # and thus not included here. This rule is supposed to work everywhere.
-all: \$(PROGRAM) post_gid post_gid_txt post_out post_monitor
+all: \$(PROGRAM) post_gid_txt post_out post_monitor
 
 \$(PROGRAM): \\
 		$OBJECTS

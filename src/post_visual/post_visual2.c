@@ -1892,12 +1892,12 @@ int main(int argc, char** argv)
   if (problem.end > -1)
   {
     LASTSTEP  = problem.end;
-    nsteps    = (problem.end - problem.start) / problem.step;
+    nsteps    = (problem.end - problem.start) / problem.step + 1;
   }
   else
   {
     LASTSTEP  = nsteps;
-    nsteps    = (nsteps - problem.start) / problem.step;
+    nsteps    = (nsteps - problem.start) / problem.step + 1;
   }
 
   printf("Visualize step %d to step %d with %d steps\n",

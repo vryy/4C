@@ -290,16 +290,13 @@ void init_bin_out_main(CHAR* outputname)
 
       for (;;)
       {
-	/*INT id;*/
 	FILE* f;
         number += 1;
         sprintf(bin_out_main.name, "%s-%d.control", tmpbuf, number);
-        /*if ((id = open(bin_out_main.name, O_CREAT|O_EXCL, 0660)) != -1)
-          {*/
 	if ((f = fopen(bin_out_main.name, "rb")) == NULL)
         {
-          /*close(id);*/
           bin_out_main.name[strlen(bin_out_main.name)-8] = '\0';
+          printf("restart with new output file: %s\n", bin_out_main.name);
           break;
         }
         fclose(f);
@@ -1280,7 +1277,20 @@ void out_open_data_files(BIN_OUT_FIELD *context,
 #endif
   if (rank == 0)
   {
-    fprintf(bin_out_main.control_file, "    %s_value_file = \"%s\"\n", variant, filename);
+    CHAR* basename;
+
+    /* The control file must not contain any paths. Data files are
+     * supposed to live in the same directory as the control file. */
+    basename = rindex(filename, '/');
+    if (basename != NULL)
+    {
+      basename += 1;
+    }
+    else
+    {
+      basename = filename;
+    }
+    fprintf(bin_out_main.control_file, "    %s_value_file = \"%s\"\n", variant, basename);
   }
 
   sprintf(filename, "%s.%s.%s.f%d.d%d.s%d.sizes", bin_out_main.name, variant,
@@ -1298,7 +1308,20 @@ void out_open_data_files(BIN_OUT_FIELD *context,
 #endif
   if (rank == 0)
   {
-    fprintf(bin_out_main.control_file, "    %s_size_file = \"%s\"\n\n", variant, filename);
+    CHAR* basename;
+
+    /* The control file must not contain any paths. Data files are
+     * supposed to live in the same directory as the control file. */
+    basename = rindex(filename, '/');
+    if (basename != NULL)
+    {
+      basename += 1;
+    }
+    else
+    {
+      basename = filename;
+    }
+    fprintf(bin_out_main.control_file, "    %s_size_file = \"%s\"\n\n", variant, basename);
   }
 #ifdef DEBUG
   dstrc_exit();
@@ -2240,6 +2263,15 @@ void out_distvec_chunk(BIN_OUT_FIELD* context,
   \brief Find the node ids of those nodes that need to be send and
   received.
 
+  The purpose of this is to prepare for future communication. In
+  essence we set up the lists of nodes that need to be send from this
+  processor (because they were read here) to any other (because they
+  live there) as well as the reverse list, the list of nodes we have
+  to receive here.
+
+  Right now the external nodes are not accounted for here. Thus
+  there's some extra communication required in the parallel case.
+
   \author u.kue
   \date 09/04
 */
@@ -3027,11 +3059,6 @@ void init_bin_in_field(BIN_IN_FIELD* context,
   }
 
   /*--------------------------------------------------------------------*/
-  /* open file to read */
-
-  /*in_open_data_files(context, actintra, context->field_info);*/
-
-  /*--------------------------------------------------------------------*/
   /* simple consistency check */
 
   {
@@ -3418,6 +3445,63 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
   /* Copy the new values to the external nodes, too. */
   solserv_dist_node_arrays_any(context->actfield, context->actpart,
                                context->actintra, context->disnum, array);
+
+#else
+
+  /* Gigantic synchronization hack. Stolen from the pss restart functions. */
+  if (type == cc_node_array)
+  {
+    INT numnp;
+    INT i, j;
+    INT fdim;
+
+    numnp = context->actfield->dis[context->disnum].numnp;
+    for (i=0; i<numnp; i++)
+    {
+      INT sender;
+      NODE* actnode = &(context->actfield->dis[context->disnum].node[i]);
+      sender = actnode->proc;
+
+      switch (array)
+      {
+      case node_array_sol:
+        fdim = actnode->sol.fdim;
+        MPI_Bcast(&fdim,1,MPI_INT,sender,context->actintra->MPI_INTRA_COMM);
+        if (fdim != actnode->sol.fdim)
+          amredef(&(actnode->sol),fdim,actnode->sol.sdim,"DA");
+        j = actnode->sol.fdim * actnode->sol.sdim;
+        MPI_Bcast(actnode->sol.a.da[0],j,MPI_DOUBLE,sender,context->actintra->MPI_INTRA_COMM);
+        break;
+      case node_array_sol_increment:
+        fdim = actnode->sol_increment.fdim;
+        MPI_Bcast(&fdim,1,MPI_INT,sender,context->actintra->MPI_INTRA_COMM);
+        if (fdim != actnode->sol_increment.fdim)
+          amredef(&(actnode->sol_increment),fdim,actnode->sol_increment.sdim,"DA");
+        j = actnode->sol_increment.fdim * actnode->sol_increment.sdim;
+        MPI_Bcast(actnode->sol_increment.a.da[0],j,MPI_DOUBLE,sender,context->actintra->MPI_INTRA_COMM);
+        break;
+      case node_array_sol_residual:
+        fdim = actnode->sol_residual.fdim;
+        MPI_Bcast(&fdim,1,MPI_INT,sender,context->actintra->MPI_INTRA_COMM);
+        if (fdim != actnode->sol_residual.fdim)
+          amredef(&(actnode->sol_residual),fdim,actnode->sol_residual.sdim,"DA");
+        j = actnode->sol_residual.fdim * actnode->sol_residual.sdim;
+        MPI_Bcast(actnode->sol_residual.a.da[0],j,MPI_DOUBLE,sender,context->actintra->MPI_INTRA_COMM);
+        break;
+      case node_array_sol_mf:
+        fdim = actnode->sol_mf.fdim;
+        MPI_Bcast(&fdim,1,MPI_INT,sender,context->actintra->MPI_INTRA_COMM);
+        if (fdim != actnode->sol_mf.fdim)
+          amredef(&(actnode->sol_mf),fdim,actnode->sol_mf.sdim,"DA");
+        j = actnode->sol_mf.fdim * actnode->sol_mf.sdim;
+        MPI_Bcast(actnode->sol_mf.a.da[0],j,MPI_DOUBLE,sender,context->actintra->MPI_INTRA_COMM);
+        break;
+      default:
+        dserror("unknown node array %d", array);
+      }
+    }
+  }
+
 #endif
 
 #endif

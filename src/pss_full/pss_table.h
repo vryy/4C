@@ -215,6 +215,14 @@ void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key);
 INT map_symbol_count(MAP* map, CHAR* key);
 
 
+/* Take a symbol chain out of the map. Leave the symbol alive. */
+void map_disconnect_symbols(MAP* map, CHAR* key);
+
+
+/* Prepend the symbol chain to one under the given key. */
+void map_prepend_symbols(MAP* map, CHAR* key, SYMBOL* symbol, INT count);
+
+
 /* Tell whether this symbol has the given type. */
 INT symbol_is_string(SYMBOL* symbol);
 INT symbol_is_int(SYMBOL* symbol);

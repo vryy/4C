@@ -108,10 +108,14 @@ static void destroy_node(MAP_NODE* node)
   dstrc_enter("destroy_node");
 #endif
 
-  if (node != NULL) {
+  if (node != NULL)
+  {
     destroy_node(node->lhs);
     destroy_node(node->rhs);
-    destroy_symbol(node->symbol);
+    if (node->symbol != NULL)
+    {
+      destroy_symbol(node->symbol);
+    }
     CCAFREE(node->key);
   }
 
@@ -934,6 +938,14 @@ void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Tell how many symbols of the given name there are.
+
+  \author u.kue
+  \date 09/04
+*/
+/*----------------------------------------------------------------------*/
 INT map_symbol_count(MAP* map, CHAR* key)
 {
   INT count = 0;
@@ -952,6 +964,94 @@ INT map_symbol_count(MAP* map, CHAR* key)
   dstrc_exit();
 #endif
   return count;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Take a symbol chain out of the map. Leave the symbol alive.
+
+  This is for the experienced user only. A symbol chain is removed
+  from the map, but the key (the node behind it) stays alive. Also the
+  symbols are not deallocated. The caller must already have a pointer
+  to the symbol chain and takes responsibility for it.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+void map_disconnect_symbols(MAP* map, CHAR* key)
+{
+  MAP_NODE* node;
+
+#ifdef DEBUG
+  dstrc_enter("map_disconnect_symbols");
+#endif
+
+  node = map_find_node(map, key);
+  if (node != NULL) {
+    node->symbol = NULL;
+    node->count = 0;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Prepend the symbol chain to one under the given key.
+
+  \param map    (i/o) map we work with
+  \param key      (i) key to those chain we want to prepend
+  \param symbol   (i) start of the new symbol chain
+  \param count    (i) number of symbol in the chain
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+void map_prepend_symbols(MAP* map, CHAR* key, SYMBOL* symbol, INT count)
+{
+  MAP_NODE* node;
+
+#ifdef DEBUG
+  dstrc_enter("map_prepend_symbols");
+#endif
+
+  node = map_find_node(map, key);
+  if (node != NULL)
+  {
+    if (node->symbol != NULL)
+    {
+      SYMBOL* s;
+      s = node->symbol;
+
+      while (s->next != NULL)
+      {
+        s = s->next;
+      }
+      s->next = symbol;
+      node->count += count;
+    }
+    else
+    {
+      node->symbol = symbol;
+      node->count = count;
+    }
+
+    map->count += count;
+  }
+  else
+  {
+    dserror("no node for key '%s'", key);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 

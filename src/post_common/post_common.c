@@ -90,6 +90,8 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
 {
   INT length;
   CHAR control_file_name[100];
+  MAP* table;
+  MAP temp_table;
 
   par.myrank = 0;
   par.nprocs = 1;
@@ -131,6 +133,131 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
   allfiles.out_err = fopen(allfiles.outputfile_name, "w");
 
   parse_control_file(control_table, control_file_name);
+
+  /*
+   * Now that we've read the control file given by the user we have to
+   * take care of any previous (restarted) control files. These files
+   * build a chain. So as long as a previous file exists we have to
+   * open it and read any groups of results with smaller step numbers
+   * than the results we've already read. */
+
+  /* The general idea is to merge the different control files in
+   * memory. If one step is written several times the last version is
+   * used. */
+
+  table = control_table;
+
+  while (map_symbol_count(table, "restarted_run") > 0)
+  {
+    INT pos;
+    CHAR* separator;
+    FILE* f;
+    SYMBOL* first_result;
+    SYMBOL* previous_results;
+    INT first_step;
+    SYMBOL dummy_symbol;
+    INT counter;
+
+    /* copy directory information */
+    separator = rindex(output_name, '/');
+    if (separator != NULL)
+    {
+      pos = separator-output_name+1;
+      strncpy(control_file_name, output_name, pos);
+    }
+    else
+    {
+      pos = 0;
+    }
+
+    /* copy file name */
+    strcpy(&control_file_name[pos], map_read_string(table, "restarted_run"));
+    strcat(control_file_name, ".control");
+
+    /* test open to see if it exists */
+    f = fopen(control_file_name, "rb");
+    if (f == NULL)
+    {
+      printf("Restarted control file '%s' does not exist. Skip previous results.\n",
+             control_file_name);
+      break;
+    }
+    fclose(f);
+
+    /* copy all the result steps that are previous to this file */
+    /* We assume that the results are ordered! */
+
+    /*------------------------------------------------------------------*/
+    /* find the first result in the current table */
+    first_result = map_find_symbol(control_table, "result");
+    if (first_result == NULL)
+    {
+      dserror("no result sections in control file '%s'\n", control_file_name);
+    }
+    while (first_result->next != NULL)
+    {
+      first_result = first_result->next;
+    }
+    first_step = map_read_int(symbol_map(first_result), "step");
+
+
+    /*------------------------------------------------------------------*/
+    /* done with this control file */
+    if (table != control_table)
+    {
+      destroy_map(table);
+    }
+
+    /* The first time we reach this place we had just used the main
+     * control table. But from now on we are interessted in the
+     * previous control files we read. */
+    table = &temp_table;
+
+    /* read the previous control file */
+    parse_control_file(table, control_file_name);
+    printf("read restarted control file: %s\n", control_file_name);
+
+    /* find the previous results */
+
+    counter = 0;
+
+    /*
+     * the dummy_symbol is a hack that allows us to treat all results
+     * in the list the same way (use the same code). Without it we'd
+     * need special conditions for the first entry. */
+    previous_results = &dummy_symbol;
+    previous_results->next = map_find_symbol(table, "result");
+    while (previous_results->next != NULL)
+    {
+      SYMBOL* result;
+      INT step;
+      result = previous_results->next;
+      step = map_read_int(symbol_map(result), "step");
+
+      if (step < first_step)
+      {
+        /* found it */
+        /* Now we simply switch all previous results to our main
+         * map. The assumption is a perfect ordering */
+        map_prepend_symbols(control_table, "result", result,
+                            map_symbol_count(table, "result") - counter);
+        previous_results->next = NULL;
+
+        /*
+         * In case all results go to the main map we have to disconnect
+         * them explicitly. */
+        if (previous_results == &dummy_symbol)
+        {
+          map_disconnect_symbols(table, "result");
+        }
+        break;
+      }
+
+      /* Not found yet. Go up one result. */
+      previous_results = previous_results->next;
+      counter += 1;
+    }
+  }
 
 #ifdef DEBUG
   dstrc_exit();
@@ -405,6 +532,26 @@ void init_field_data(PROBLEM_DATA* problem, FIELD_DATA* field, MAP* field_info)
 }
 
 
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Print a short message how to use the filter and exit.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
+static void usage(CHAR* progname)
+{
+  printf("usage: %s [options] control-file\n", progname);
+  printf("\n"
+         "  options:\n"
+         "    -s beg:end[:step]        read from beg to end-1 every step\n"
+         "\n");
+  exit(1);
+}
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Extract the problem's data.
@@ -443,8 +590,12 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
 
   if (argc < 2)
   {
-    printf("usage: %s [options] control-file\n", argv[0]);
-    exit(1);
+    usage(argv[0]);
+  }
+
+  if ((argc == 2) && (strcmp(argv[1], "-h")==0))
+  {
+    usage(argv[0]);
   }
 
   for (i=1; i<argc-1; ++i)
@@ -490,11 +641,19 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
         if (arg != NULL)
         {
           problem->step = atoi(arg+1);
+          if (problem->step < 1)
+          {
+            dserror("step must be greater than zero");
+          }
         }
         break;
       }
+      case 'h':
+        usage(argv[0]);
+        break;
       default:
-        dserror("unsupported option '%s'", arg);
+        printf("unsupported option '%s'", arg);
+        usage(argv[0]);
       }
     }
   }
@@ -757,7 +916,11 @@ INT next_result(RESULT_DATA* result)
         open_data_files(result, map, "result");
       }
 
-      step = map_read_int(map, "step");
+      /*
+       * We cannot use the real step numbers here if ccarat didn't
+       * write results for each step. */
+      /*step = map_read_int(map, "step");*/
+      step = i;
 
       /* we are only interessted if the result matches the slice */
       if ((step >= problem->start) &&
