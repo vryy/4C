@@ -212,13 +212,13 @@ static STANLN        nln_data;    /* structure to store and pass data for opt_st
 CALC_ACTION  *action;             /* pointer to the structures cal_action enum */
 
 CONTAINER     container;          /* contains variables defined in container.h */
-container.isdyn = 0;              /* static computation */
 
 INT           reldof[6];          /* the Id's of the dofs for output */
 
 #ifdef DEBUG 
 dstrc_enter("opt_stanln");
 #endif
+container.isdyn = 0;              /* static computation */
 /*--------------- check wether this calculation is a restart or not ---*/
 restart = genprob.restart;
 /*----------------------------------------------------------------------*/
