@@ -80,8 +80,8 @@ void plot_lte(	DOUBLE  time,
                 DOUBLE  norm,
                 DOUBLE  dt,
                 INT     itnum);
-void plot_ale_quality(FIELD *field,INT step, INTRA *actintra,
-                      PARTITION *actpart);
+void plot_ale_quality(FIELD *field,INT step, DOUBLE time,
+                      INTRA *actintra, PARTITION *actpart);
 
 /*----------------------------------------------------------------------*
  |  out_gid_solfsi.c                                       mn 05/03     |
