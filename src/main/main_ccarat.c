@@ -12,9 +12,18 @@ Maintainer: Malte Neumann
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../headers/compile_settings.h"
-#ifndef DEFINE_STRING
+
+/* In case the settings header is brocken */
+#ifndef COMPILE_SETTINGS_H
 #define DEFINE_STRING "\n\tunknown"
+#define CREATOR "unknown"
+#define CREATION_DATE "unknown"
+#define CONFIGURATION "unknown"
 #endif
+
+#define print_define(arg)  if (strstr(DEFINE_STRING, #arg )==NULL) printf("\n\t" #arg "=%d", arg);
+#define print_define_dbl(arg)  if (strstr(DEFINE_STRING, #arg )==NULL) printf("\n\t" #arg "=%f", arg);
+
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -91,7 +100,45 @@ if (par.myrank==0)
 
 if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
   if (par.myrank==0) {
-    printf("\nDefine flags used to build ccarat:\n%s\n\n", DEFINE_STRING);
+    printf("\nBuild by %s on %s\n", CREATOR, CREATION_DATE);
+    printf("using configuration: %s\n", CONFIGURATION);
+    printf("\nDefine flags used to build ccarat:\n%s\n", DEFINE_STRING);
+    printf("\nDefault values:\n");
+    print_define(MAXNOD);
+    print_define(MAXELE);
+    print_define(MAXDOFPERNODE);
+    print_define(MAXGAUSS);
+    print_define(MAXFIELD);
+    print_define(MAXTIMECURVE);
+    print_define(MAXRECORDPERELE);
+    print_define(MAXNUMMATRICES);
+    print_define(MAXNOD_AXISHELL);
+    print_define(MAXNOD_BEAM3);
+    print_define(MAXNOD_BRICK1);
+    print_define(NUMDOF_BRICK1);
+    print_define(MAXQINTC);
+    print_define(MAXQINTP);
+    print_define(MAXTINTC);
+    print_define(MAXTINTP);
+    print_define(FLUID_NUM_LD);
+    print_define(NUM_F2_VELDOF);
+    print_define(NUMDOF_FLUID2);
+    print_define(MAXNOD_F2);
+    print_define(NUM_F3_VELDOF);
+    print_define(MAXNOD_F3);
+    print_define(MAXNOD_SHELL8);
+    print_define(NUMDOF_SHELL8);
+    print_define(MAXHYB_SHELL8);
+    print_define(MAXNOD_SHELL9);
+    print_define(MAXLAY_SHELL9);
+    print_define(MAXKLAY_SHELL9);
+    print_define(NUMDOF_SHELL9);
+    print_define(MAXHYB_SHELL9);
+    print_define_dbl(A3FAC_SHELL9);
+    print_define(MAXNODESTRESS_SHELL9);
+    print_define(MAXNOD_WALL1);
+    print_define(MAXNOD_LS2);
+    printf("\n\n");
   }
 }
 else {
