@@ -4,34 +4,8 @@
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
-
 /*! 
-\addtogroup Ale
-\brief This module 'Ale' contains all routines and structures necessary
-for the 2D and 3D Ale-elements. 
-
-This module 'Ale' contains all routines and structures necessary
-for the 2D and 3D Ale-elements. It provides routines to control the 
-'academic' pure ale problemtype and to calculate the element stiffness
-matrix and the load vectors for both the 2D and 3D elements.
-For 2D a 4 noded quadrilateral element is used, for 3D a 8 noded brick
-element.
-
-It is possible to use the standard 4 (8) point gaussian quadrature or a 
-one point quadrature with hourglass stabilization. It is also possible
-to disregard the Jacobian determinant integrating the element stiffness.
-
-There are no loads possible for these elements. Only Dirichlet Boundary
-Conditions are considered. They are accounted for as an additional load
-vector.
-
-For the 'academic' pure ale problemtype the control routine assembles the
-global stiffness matrix only once, and solves it for different load steps
-using different right hand side (rhs) vectors.
-
-
-
-
+\addtogroup Ale 
 *//*! @{ (documentation module open)*/
 
 
@@ -163,5 +137,5 @@ void ale3_static_ke(ELEMENT *ele, ALE3_DATA *data, MATERIAL *mat,
  | ale3_hourglass.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
  void ale3_hourglass(ELEMENT *ele, DOUBLE **s, DOUBLE vol); 
-#endif
 /*! @} (documentation module close)*/
+#endif
