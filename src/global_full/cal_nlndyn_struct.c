@@ -531,7 +531,7 @@ dmax        = 0.0;
 solserv_vecnorm_euclid(actintra,&(work[0]),&(dynvar.dinorm));
 solserv_vecnorm_euclid(actintra,&(dispi[0]),&(dynvar.dnorm));
 solserv_vecnorm_Linf(actintra,&(work[0]),&dmax);
-if (dynvar.dinorm < (dynvar.dnorm*sdyn->toldisp) ||
+if (dynvar.dinorm < sdyn->toldisp ||
     dynvar.dnorm  < EPS14 ||
     dynvar.dinorm < EPS14 && dmax < EPS12)
 {
