@@ -138,7 +138,8 @@ if (par.myrank==0)
     if (par.myrank==0)
     printf("errors are reported to     %s\n",allfiles.outputfile_name);
 /*------------------------------------------------------open .tur file */
-
+if (par.myrank==0)
+{     
      strncpy(charpointer,".tur",4);
      if ( (allfiles.out_tur=fopen(allfiles.outputfile_name,"w"))==NULL)
      {
@@ -149,6 +150,7 @@ if (par.myrank==0)
         exit(1);
      }
     printf("turbulence is written to   %s\n",allfiles.outputfile_name);
+}     
 /*-----------------------------------------------------open .mon file */
 if (par.myrank==0)
 {     
