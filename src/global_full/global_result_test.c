@@ -9,6 +9,29 @@ Maintainer: Ulrich Kuettler
             089 - 289-15238
 </pre>
 
+Here are the functions that compare the calculated results with the
+values given in the input file's result description section. It's
+possible to test values that are stored at specific nodes and those
+that are contained in the element structures.
+
+Most of the functions here are internal and are concerned with
+understanding the result description or comparing two given
+values. You might, however, want to enhance global_result_test() if
+you need to test elements that are not supported yet.
+
+It's also possible to implement special test cases, for example if an
+analytical solution is known. In this case no values are compared but
+a field specific function is called that might test whatever it
+likes.
+
+One particular thing is that the testing has to honor the distribution
+of elements and nodes to different processors. Every element or node
+lifes on just one processor, that's why it's alright when a specified
+element could not be found. It's assumed that it belongs to another
+processor and will be checked there. But of course this way it might
+happen that it is not checked anywhere and this failure goes
+undetected.
+
 *----------------------------------------------------------------------*/
 #ifdef RESULTTEST
 #include "../headers/standardtypes.h"
@@ -52,7 +75,7 @@ extern struct _PARTITION  *partition;
 
 
 /*
- * an array of expected results
+ * An array of expected results. This is read from the input file.
  */
 struct _RESULTDESCR      *resultdescr;
 
@@ -300,7 +323,7 @@ void global_result_test()
   if (genprob.numaf>-1) alepart    = &(partition[genprob.numaf]);
 
   if (genprob.numresults>0) {
-    /* let's do it in a fency style :) */
+    /* let's do it in a fancy style :) */
     printf("\n[37;1mChecking results ...[m\n");
   }
 
@@ -323,6 +346,8 @@ void global_result_test()
     }
 
     if (res->node != -1) {
+      /* We have a value at a node. Find the node and compare with the
+       * value there. */
       actnode = find_node(actpart, res->dis, res->node);
       if (actnode != 0) {
         actresult = get_node_result_value(actnode, res->position);
@@ -330,6 +355,8 @@ void global_result_test()
       }
     }
     else if (res->element != -1) {
+      /* We have a value at an element. Find the element. If we have
+       * it its depending on the element type what needs to be done. */
       ELEMENT* actelement = find_element(actpart, res->dis, res->element);
       if (actelement == 0) {
         continue;
