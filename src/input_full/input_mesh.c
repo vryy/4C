@@ -19,6 +19,7 @@ Maintainer: Malte Neumann
 #include "../fluid3/fluid3_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
 #include "../axishell/axishell.h"
@@ -109,11 +110,6 @@ if (genprob.probtyp == prb_fsi)
    inp_ale_field  (&(field[genprob.numaf]));
 
 /*--- ale and fluid field are supposed to be compatible, so inherit info */
-#ifdef D_ALE
-/*
-   fluid_to_ale(&(field[1]),&(field[2]));
-*/
-#endif
 }
 /*------------------------------------------- structure type of problem */
 if (genprob.probtyp==prb_structure)
@@ -244,18 +240,9 @@ amdel(&tmpnodes2);
         dsassert(node_id <= genprob.maxnode,"Zu wenig KNOTEN");
         genprob.nodes[node_id] = &(field[i].dis[j].node[k]);
       }
-
       inp_topology(&(field[i].dis[j]));
     }
   }
-/*----------------------------------------------- FSI 3D typ of problem */
-if (genprob.probtyp==prb_fsi)
-{
-/*--- ale and fluid field are supposed to be compatible, so inherit info */
-#ifdef D_ALE
-   fluid_to_ale(&(field[1]),&(field[2]));
-#endif
-}
 /*---------------------------------------- TWO PHASE FLUID FLOW PROBLEM */
 /* 
  * levelset and fluid discretizations are compatible
@@ -642,7 +629,7 @@ void inp_fluid_field(FIELD *fluidfield)
 {
 INT  ierr;
 INT  counter=0;
-#if defined(D_FLUID2) || defined(D_FLUID2_PRO)
+#if defined(D_FLUID2TU) || defined(D_FLUID2_PRO)
 INT  cpro=0;
 #endif
 INT  elenumber;
@@ -752,6 +739,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif          
      f2_inp(&(fluidfield->dis[0].element[counter]),counter);
 
+#ifdef D_FLUID2TU 
      if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 || 
          fluidfield->dis[0].element[counter].e.f2->turbu == 3 )
      {
@@ -767,6 +755,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
            genprob.nele,genprob.nnode);       
        genprob.nodeshift = genprob.nnode;
      } /* endif (e.f2->turbu == 2 || 3) */      
+#endif
    }
 #endif
 /*----------------------------------------------------------------------*/
