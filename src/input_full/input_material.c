@@ -32,15 +32,12 @@ INT  i, j, k, ncm, num_klay, num_mlay;
 struct    _KINLAY *actlay;           /*actual kinematic layer -> shell9 */ 
 DOUBLE    klay_sum;                  /*total hight or shell9*/
 DOUBLE    mlay_sum;                  /*hight of a kinematic layer*/
-
-char *colpointer;
-char buffer[50];
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("inp_material");
 #endif
 /*----------------------------------------------------------------------*/
 mat = (MATERIAL*)CCACALLOC(genprob.nmat,sizeof(MATERIAL));
-if (mat==NULL) dserror("Allocation of MATERIAL failed");
 /*----------------------------------------------------------------------*/
 if (frfind("--MATERIALS")==0) dserror("frfind: MATERIALS is not in input file");
 frread();
@@ -353,8 +350,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
-
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -369,10 +364,9 @@ void inp_multimat()
 {
 INT  counter=0;
 INT  check = 0;
-INT  ierr, ierralloc;
-INT  i, j, ncm;
-char *colpointer;
-char buffer[50];
+INT  ierr;
+INT  i;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("inp_multimat");
 #endif
@@ -396,7 +390,6 @@ if (counter == 0) goto end;       /* no multilayer material set */
 
 /*--------------------------------------------------- allocate MULTIMAT */
 multimat = (MULTIMAT*)CCACALLOC(counter,sizeof(MULTIMAT));
-if (multimat==NULL) dserror("Allocation of MULTIMAT failed");
 /*----------------------------------------------------------------------*/
 if (frfind("--MULTILAYER MATERIALS")==0) goto end;
 frread();
@@ -410,7 +403,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       multimat[i].mattyp = m_stvenant;
       multimat[i].m.stvenant = (STVENANT*)CCACALLOC(1,sizeof(STVENANT));
-      if (multimat[i].m.stvenant==NULL) dserror("Allocation of STVENANT material failed");
       frdouble("YOUNG"  ,&(multimat[i].m.stvenant->youngs)      ,&ierr);
       frdouble("NUE"    ,&(multimat[i].m.stvenant->possionratio),&ierr);
       frdouble("DENS"   ,&(multimat[i].m.stvenant->density)     ,&ierr);
@@ -420,7 +412,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       multimat[i].mattyp = m_neohooke;
       multimat[i].m.neohooke = (NEO_HOOKE*)CCACALLOC(1,sizeof(NEO_HOOKE));
-      if (multimat[i].m.neohooke==NULL) dserror("Allocation of NEO_HOOKE material failed");
       frdouble("YOUNG"   ,&(multimat[i].m.neohooke->youngs)        ,&ierr);
       frdouble("NUE"     ,&(multimat[i].m.neohooke->possionratio)  ,&ierr);
       frdouble("DENS"    ,&(multimat[i].m.neohooke->density)       ,&ierr);
@@ -428,18 +419,92 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("MAT_Struct_Orthotropic",&ierr);
    if (ierr==1)
    {
-      multimat[i].mattyp = m_orthotropic;
-      multimat[i].m.orthotropic = (ORTHOTROPIC*)CCACALLOC(1,sizeof(ORTHOTROPIC));
-      if (multimat[i].m.orthotropic==NULL) dserror("Allocation of ORTHOTROPIC material failed");
-      frdouble("EMOD1"   ,&(multimat[i].m.orthotropic->emod1)        ,&ierr);
-      frdouble("EMOD2"   ,&(multimat[i].m.orthotropic->emod2)        ,&ierr);
-      frdouble("EMOD3"   ,&(multimat[i].m.orthotropic->emod3)        ,&ierr);
-      frdouble("GMOD12"  ,&(multimat[i].m.orthotropic->gmod12)       ,&ierr);
-      frdouble("GMOD13"  ,&(multimat[i].m.orthotropic->gmod13)       ,&ierr);
-      frdouble("GMOD23"  ,&(multimat[i].m.orthotropic->gmod23)       ,&ierr);
-      frdouble("XNUE12"  ,&(multimat[i].m.orthotropic->xnue12)       ,&ierr);
-      frdouble("XNUE13"  ,&(multimat[i].m.orthotropic->xnue13)       ,&ierr);
-      frdouble("XNUE23"  ,&(multimat[i].m.orthotropic->xnue23)       ,&ierr);
+      multimat[i].mattyp = m_el_orth;
+      multimat[i].m.el_orth = (EL_ORTH*)CCACALLOC(1,sizeof(EL_ORTH));
+      frdouble("EMOD1"   ,&(multimat[i].m.el_orth->emod1)        ,&ierr);
+      frdouble("EMOD2"   ,&(multimat[i].m.el_orth->emod2)        ,&ierr);
+      frdouble("EMOD3"   ,&(multimat[i].m.el_orth->emod3)        ,&ierr);
+      frdouble("GMOD12"  ,&(multimat[i].m.el_orth->gmod12)       ,&ierr);
+      frdouble("GMOD13"  ,&(multimat[i].m.el_orth->gmod13)       ,&ierr);
+      frdouble("GMOD23"  ,&(multimat[i].m.el_orth->gmod23)       ,&ierr);
+      frdouble("XNUE12"  ,&(multimat[i].m.el_orth->xnue12)       ,&ierr);
+      frdouble("XNUE13"  ,&(multimat[i].m.el_orth->xnue13)       ,&ierr);
+      frdouble("XNUE23"  ,&(multimat[i].m.el_orth->xnue23)       ,&ierr);
+   }
+   frchk("MAT_MisesPlastic",&ierr);
+   if (ierr==1)
+   {
+      multimat[i].mattyp = m_pl_mises;
+      multimat[i].m.pl_mises = (PL_MISES*)CCACALLOC(1,sizeof(PL_MISES));
+      frdouble("YOUNG",&(multimat[i].m.pl_mises->youngs)        ,&ierr);
+      frdouble("NUE"  ,&(multimat[i].m.pl_mises->possionratio)  ,&ierr);
+      frdouble("ALFAT",&(multimat[i].m.pl_mises->ALFAT)         ,&ierr);
+      frdouble("Sigy" ,&(multimat[i].m.pl_mises->Sigy)          ,&ierr);
+      multimat[i].m.pl_mises->Hard = 0.; 
+      multimat[i].m.pl_mises->GF   = 0.; 
+      multimat[i].m.pl_mises->betah= 1.; 
+      frdouble("Hard" ,&(multimat[i].m.pl_mises->Hard)          ,&ierr);
+      frdouble("GF"   ,&(multimat[i].m.pl_mises->GF)            ,&ierr);
+      frdouble("BETAH",&(multimat[i].m.pl_mises->betah)         ,&ierr);
+   }
+   frchk("MAT_HoffPlastic",&ierr);
+   if (ierr==1)
+   {
+      /*write a warning to use an unsymmetric solver*/
+      printf("|---------------------------------------------------------------------------------------| \n");
+      printf("|    WARNING in input_material.c:    ============================================       | \n");
+      printf("|    WARNING in input_material.c:    MAT_HoffPlastic -> use an unsymmetric solver       | \n");
+      printf("|    WARNING in input_material.c:    ============================================       | \n");
+      printf("|---------------------------------------------------------------------------------------| \n");
+
+      multimat[i].mattyp = m_pl_hoff;
+      multimat[i].m.pl_hoff = (PL_HOFF*)CCACALLOC(1,sizeof(PL_HOFF));
+      frdouble("EMOD1"   ,&(multimat[i].m.pl_hoff->emod1)        ,&ierr);
+      frdouble("EMOD2"   ,&(multimat[i].m.pl_hoff->emod2)        ,&ierr);
+      frdouble("EMOD3"   ,&(multimat[i].m.pl_hoff->emod3)        ,&ierr);
+      frdouble("GMOD12"  ,&(multimat[i].m.pl_hoff->gmod12)       ,&ierr);
+      frdouble("GMOD13"  ,&(multimat[i].m.pl_hoff->gmod13)       ,&ierr);
+      frdouble("GMOD23"  ,&(multimat[i].m.pl_hoff->gmod23)       ,&ierr);
+      frdouble("XNUE12"  ,&(multimat[i].m.pl_hoff->xnue12)       ,&ierr);
+      frdouble("XNUE13"  ,&(multimat[i].m.pl_hoff->xnue13)       ,&ierr);
+      frdouble("XNUE23"  ,&(multimat[i].m.pl_hoff->xnue23)       ,&ierr);
+      frdouble("UNIAX"   ,&(multimat[i].m.pl_hoff->uniax)        ,&ierr);
+
+      frread(); /*new line*/
+
+      frdouble("S11T"    ,&(multimat[i].m.pl_hoff->s11T)         ,&ierr);
+      frdouble("S11C"    ,&(multimat[i].m.pl_hoff->s11C)         ,&ierr);
+      frdouble("S22T"    ,&(multimat[i].m.pl_hoff->s22T)         ,&ierr);
+      frdouble("S22C"    ,&(multimat[i].m.pl_hoff->s22C)         ,&ierr);
+      frdouble("S33T"    ,&(multimat[i].m.pl_hoff->s33T)         ,&ierr);
+      frdouble("S33C"    ,&(multimat[i].m.pl_hoff->s33C)         ,&ierr);
+      frdouble("S12"     ,&(multimat[i].m.pl_hoff->s12)          ,&ierr);
+      frdouble("S23"     ,&(multimat[i].m.pl_hoff->s23)          ,&ierr);
+      frdouble("S13"     ,&(multimat[i].m.pl_hoff->s13)          ,&ierr);
+
+      frread(); /*new line*/
+
+      frdouble("SH11T"   ,&(multimat[i].m.pl_hoff->sh11T)        ,&ierr);
+      frdouble("SH11C"   ,&(multimat[i].m.pl_hoff->sh11C)        ,&ierr);
+      frdouble("SH22T"   ,&(multimat[i].m.pl_hoff->sh22T)        ,&ierr);
+      frdouble("SH22C"   ,&(multimat[i].m.pl_hoff->sh22C)        ,&ierr);
+      frdouble("SH33T"   ,&(multimat[i].m.pl_hoff->sh33T)        ,&ierr);
+      frdouble("SH33C"   ,&(multimat[i].m.pl_hoff->sh33C)        ,&ierr);
+      frdouble("SH12"    ,&(multimat[i].m.pl_hoff->sh12)         ,&ierr);
+      frdouble("SH23"    ,&(multimat[i].m.pl_hoff->sh23)         ,&ierr);
+      frdouble("SH13"    ,&(multimat[i].m.pl_hoff->sh13)         ,&ierr);
+
+      frread(); /*new line*/
+
+      frdouble("HA11T"   ,&(multimat[i].m.pl_hoff->ha11T)        ,&ierr);
+      frdouble("HA11C"   ,&(multimat[i].m.pl_hoff->ha11C)        ,&ierr);
+      frdouble("HA22T"   ,&(multimat[i].m.pl_hoff->ha22T)        ,&ierr);
+      frdouble("HA22C"   ,&(multimat[i].m.pl_hoff->ha22C)        ,&ierr);
+      frdouble("HA33T"   ,&(multimat[i].m.pl_hoff->ha33T)        ,&ierr);
+      frdouble("HA33C"   ,&(multimat[i].m.pl_hoff->ha33C)        ,&ierr);
+      frdouble("HA12"    ,&(multimat[i].m.pl_hoff->ha12)         ,&ierr);
+      frdouble("HA23"    ,&(multimat[i].m.pl_hoff->ha23)         ,&ierr);
+      frdouble("HA13"    ,&(multimat[i].m.pl_hoff->ha13)         ,&ierr);
    }
    i++;
 /*----------------------------------------------------------------------*/
