@@ -907,7 +907,7 @@ dstrc_enter("mlpcg_getindex");
 #endif
 /*----------------------------------------------------------------------*/
 index = dof-(*update);
-if (index<0 || index>=length) 
+if (index<0 ) 
 {
 #ifdef DEBUG 
 dstrc_exit();
