@@ -3,8 +3,8 @@
 \brief Call and control VISUAL2 
 
 ------------------------------------------------------------------------*/
-#ifdef VISUAL2_PACKAGE
 #include "../headers/standardtypes.h"
+#ifdef VISUAL2_PACKAGE
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

@@ -68,6 +68,8 @@ void dyn_nln_stru_expl(void);
 /*----------------------------------------------------------------------*
  | dyn_service.c                                         m.gee 02/02    |
  *----------------------------------------------------------------------*/
+void dyn_eigen(FIELD *actfield, PARTITION *actpart, SOLVAR *actsolv,
+               INTRA *actintra, int stiff, int mass);
 void kefnln_struct(STRUCT_DYN_CALC *dynvar, 
                   STRUCT_DYNAMIC  *sdyn,
                   FIELD           *actfield,
@@ -1162,6 +1164,12 @@ void bdcsr_numeq(FIELD         *actfield,
                  SOLVAR        *actsolv,
                  INTRA         *actintra,
                  int           *numeq);
+void  add_bdcsr(struct _PARTITION     *actpart,
+                struct _SOLVAR        *actsolv,
+                struct _INTRA         *actintra,
+                struct _ELEMENT       *actele,
+                struct _DBCSR         *bdcsr1,
+                struct _DBCSR         *bdcsr2);
 /*----------------------------------------------------------------------*
  | solver_copy_matrices                                      genk 11/02 |
  *----------------------------------------------------------------------*/
