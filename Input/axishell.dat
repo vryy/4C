@@ -7,7 +7,7 @@
 //
 // #define MAXNOD           (2)
 // #define MAXELE           (2)
-// #define MAXDOFPERNODE    (6)
+// #define MAXDOFPERNODE    (3)
 // #define MAXGAUSS         (3)
 //
 ==================================================================
