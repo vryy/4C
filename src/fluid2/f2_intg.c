@@ -3,6 +3,9 @@
 \brief integration parameters for fluid2 element
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -424,5 +427,67 @@ return;
 } /* end of f2_intg */
 
 
+/*!---------------------------------------------------------------------                                         
+\brief local coordinates
+
+<pre>                                                         genk 10/02
+
+In this routine the local coordinates of nodes are determined
+		     
+</pre>
+\param   node        int      (i)    number of actual node 
+\param   irs         int      (i)    r/s identifier
+\param   iel         int      (i)    number of nodes in actual element
+\return  double                                                                      
+
+------------------------------------------------------------------------*/
+double f2_rsn(
+	      int            node,     
+	      int             irs,    
+	      int             iel       
+	    )
+{
+
+double c;        /*------ return value for the coord. of the gauss point */
+
+/*-------array for a quad storing the local coord. of gauss points------*/
+double quad[][2] = {
+                   {ONE,ONE} ,{-ONE,ONE} ,{-ONE,-ONE},{ONE,-ONE},
+		   {ZERO,ONE},{-ONE,ZERO},{ZERO,-ONE},{ONE,ZERO},
+		   {ZERO,ZERO}
+		   };
+double tri[][2]  = {
+                   {ZERO,ZERO},{ONE,ZERO},{ZERO,ONE},
+		   {ONE/TWO,ZERO},{ONE/TWO,ONE/TWO},{ZERO,ONE/TWO}
+		   };
+/*----------------------------------------------------------------------*/
+
+#ifdef DEBUG 
+dstrc_enter("f2_rsn");
 #endif
 
+
+switch(iel)	/*-- switch to number of element nodes ---*/
+{
+case 6: case 3:
+   c = tri[node][irs];
+break;
+case 4: case 8: case 9: 
+   c = quad[node][irs]; 
+break;
+default:
+   dserror("number of nodes 'iel' unknown");
+}/* end of switch(iel) */
+
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return c;
+} /* end of f2rsn */
+
+
+
+#endif
+
+/*! @} (documentation module close)*/
