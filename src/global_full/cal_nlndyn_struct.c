@@ -2,6 +2,12 @@
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
@@ -56,7 +62,7 @@ extern struct _CURVE *curve;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-DOUBLE acttime;
+double acttime;
 
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear dynamic structural analysis m.gee 02/02|
@@ -70,6 +76,11 @@ int             init;               /* flag for solver_control call */
 int             itnum;              /* counter for NR-Iterations */
 int             convergence;        /* convergence flag */
 int             mod_disp,mod_stress;
+int             mod_res_write;
+int             restart;
+double          dt;
+int             nstep;
+
 double          dmax;               /* infinity norm of residual displacements */
 
 int             stiff_array;        /* indice of the active system sparse matrix */
@@ -104,6 +115,7 @@ STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural s
 dstrc_enter("dyn_nln_structural");
 #endif
 /*----------------------------------------------------------------------*/
+restart = genprob.restart;
 /*--------------------------------------------------- set some pointers */
 actfield    = &(field[0]);
 actsolv     = &(solv[0]);
@@ -221,7 +233,7 @@ for (i=0; i<1; i++) solserv_zero_vec(&(acc[i]));
 /* this is used by the element routines to assemble the internal forces*/
 intforce = amdef("intforce",&intforce_a,numeq_total,1,"DV");
 /*----------- create a vector of full length for dirichlet part of rhs */
-dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
+dirich = amdef("dirich",&dirich_a,numeq_total,1,"DV");
 /*----------------------------------------- allocate 3 DIST_VECTOR fie */
 /*                    to hold internal forces at t, t-dt and inbetween */ 
 solserv_create_vec(&fie,3,numeq_total,numeq,"DV");
@@ -408,6 +420,37 @@ Values of the different vectors from above in one loop:
 timeloop:
 /*------------------------------------------------- write memory report */
 if (par.myrank==0) dsmemreport();
+/*--------------------------------------------------- check for restart */
+if (restart)
+{
+   /*-------------- save the stepsize as it will be overwritten in sdyn */
+   dt    = sdyn->dt;
+   /*------ save the number of steps, as it will be overwritten in sdyn */
+   nstep = sdyn->nstep;
+   /*----------------------------------- the step to read in is restart */
+   restart_read_nlnstructdyn(restart,
+                             sdyn,
+                             &dynvar,
+                             actfield,
+                             actpart,
+                             actintra,
+                             action,
+                             actsolv->nrhs, actsolv->rhs,
+                             actsolv->nsol, actsolv->sol,
+                             1            , dispi       ,
+                             1            , vel         ,
+                             1            , acc         ,
+                             3            , fie         ,
+                             3            , work        ,
+                             &intforce_a,
+                             &dirich_a);
+   /*-------------------------------------- put the dt to the structure */
+   sdyn->dt = dt;
+   /*--------------------------------------- put nstep to the structure */
+   sdyn->nstep = nstep;
+   /*------------------------------------------- switch the restart off */
+   restart=0;
+}
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
 /*------------------- modifications to time steps siye can be done here */
@@ -736,8 +779,10 @@ dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
 dynvar.etot = dynvar.epot + dynvar.ekin;
 
 /*------------------------------- check whether to write results or not */
-mod_disp   = sdyn->step % sdyn->updevry_disp;
-mod_stress = sdyn->step % sdyn->updevry_stress;
+mod_disp      = sdyn->step % sdyn->updevry_disp;
+mod_stress    = sdyn->step % sdyn->updevry_stress;
+/*------------------------------- check whether to write restart or not */
+mod_res_write = sdyn->step % sdyn->res_write_evry;
 /*------------------------------------------ perform stress calculation */
 if (mod_stress==0 || mod_disp==0)
 if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
@@ -768,7 +813,23 @@ if (par.myrank==0)
    if (ioflags.struct_stress_gid==1)
    out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0);
 }
-
+/*-------------------------------------- write restart data to pss file */
+if (mod_res_write==0)
+restart_write_nlnstructdyn(sdyn,
+                           &dynvar,
+                           actfield,
+                           actpart,
+                           actintra,
+                           action,
+                           actsolv->nrhs, actsolv->rhs,
+                           actsolv->nsol, actsolv->sol,
+                           1            , dispi       ,
+                           1            , vel         ,
+                           1            , acc         ,
+                           3            , fie         ,
+                           3            , work        ,
+                           &intforce_a,
+                           &dirich_a);
 /*----------------------------------------------------- print time step */
 if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
 
