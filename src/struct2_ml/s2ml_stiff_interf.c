@@ -255,9 +255,9 @@ for (lr=0; lr<nir; lr++)
    /*-------------------------- element stiffness matrix micro micro ---*/
    if_ke(ielmi,flag,stiff_mi_mi,bopmi,D,fac);
    /*---------------------------------- element internal force macro ---*/
-   if_fint(8,T,fac,bopma,fint_ma);
+   if_fint(4,T,fac,bopma,fint_ma);
    /*---------------------------------- element internal force micro ---*/
-   if_fint(numdfmi,T,fac,bopmi,fint_mi);
+   if_fint(ielmi,T,fac,bopmi,fint_mi);
 }/*============================================= end of loop over lr ===*/
 
 /*----------------------------------------------------------------------*/
