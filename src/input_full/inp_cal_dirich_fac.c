@@ -198,7 +198,7 @@ switch (funct[funct_num].functtyp)
     break;
 
 
-  case funct_cyl:  /* spatial function for kim-moin flow */
+  case funct_cyl:  /* spatial function for kim-moin flow (wirklich?)*/
     f_cyl = funct[funct_num].typ.funct_cyl;
 
     /* set some constants */
