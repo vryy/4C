@@ -19,6 +19,9 @@
 #ifdef HPUX11
 #include "/bau/stat33/users/statik/lib/METIS/metis.h"
 #endif
+#ifdef HPUXITA
+#include "/bau/stat33/users/statik/lib/METIS/metis.h"
+#endif
 #endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

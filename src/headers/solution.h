@@ -74,6 +74,10 @@
 #include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
 #endif
 
+#ifdef HPUXITA
+#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#endif
+
 #ifdef AZUSA
 #include "../../../../lib_ita1/spooles/MPI/spoolesMPI.h"
 #endif

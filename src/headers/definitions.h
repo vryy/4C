@@ -54,7 +54,10 @@ typedef char      CHAR;
 #ifdef SIXTYFOUR 
 #define CCA_APPEND_U (1)
 #endif
-
+/* append underslash for HPUX11i flag */
+#ifdef HPUXITA 
+#define CCA_APPEND_U (1)
+#endif
 
 #ifdef CCA_APPEND_U
 #define dsytrf              dsytrf_
