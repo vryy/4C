@@ -111,6 +111,24 @@ void solver_oll(
                 option
                 );*/
           break;
+        case umfpack: /*-------------------------------------- solver is umfpack */
+#ifdef PARALLEL
+          dserror("No UMFPACK for parallel OLL!\n");
+#endif	  
+          oll->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(1,sizeof(SPARSE_TYP));
+          oll->sysarray     = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
+          oll->sysarray_typ[0] = ccf;
+	  oll->sysarray[0].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
+	  oll->sysarray[0].ccf->numeq_total = oll->numeq_total;
+	  oll->sysarray[0].ccf->numeq = oll->numeq;
+	  oll->sysarray[0].ccf->nnz = oll->nnz;          
+	  oll->sysarray[0].ccf->nnz_total = oll->nnz;          
+          amdef("Ap",&(oll->sysarray[0].ccf->Ap),oll->numeq_total+1,1,"IV");
+          amdef("Ai",&(oll->sysarray[0].ccf->Ai),oll->nnz     ,1,"IV");
+          amdef("Ax",&(oll->sysarray[0].ccf->Ax),oll->nnz     ,1,"DV");
+	  amdef("update",&(oll->sysarray[0].ccf->update),oll->numeq,1,"IV");
+	  solver_umfpack(NULL,actintra,oll->sysarray[0].ccf,sol,rhs,option);
+	break;
         default:
           dserror("Unknown solver typ for oll");
           break;   
@@ -150,6 +168,9 @@ void solver_oll(
           case aztec_msr:/*-------------------------------------- solver is aztec */
             oll_to_msr(oll, &(oll->sysarray[0]));
             break;
+          case umfpack: /*------------------------------------- solver is umfpack */
+	    oll_to_ccf(oll,&(oll->sysarray[0]));
+	  break; 
           default:
             dserror("Unknown solver typ for oll");
             break;   
@@ -169,6 +190,9 @@ void solver_oll(
         case spoolmatrix:/*-------------------- system matrix is spooles matrix */
           solver_spo_oll(actsolv,actintra,oll,oll->sysarray[0].spo,sol,rhs,option);
           break;
+        case ccf:
+	  solver_umfpack(actsolv,actintra,oll->sysarray[0].ccf,sol,rhs,option);
+	break;
         default:
           dserror("Unknown solver typ for oll");
           break;   
