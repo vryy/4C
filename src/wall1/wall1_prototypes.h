@@ -758,6 +758,12 @@ void w1_b_barop(ELEMENT *ele,                          /* actual element*/
 		INT numeps,               /* number of strain components*/
 		INT nd,       /* total number degrees of freedom of ele.*/
 		INT ip);                     /*Integration point counter*/
+/*----------------------------------------------------------------------*
+/*  w1_b_barop.c                                                        *
+ * calc b_bar operator at Gaussian point r,s            genk /04/04     *
+ *----------------------------------------------------------------------*/
+void w1_g_barop(DOUBLE **g_bar, DOUBLE **gop,
+                DOUBLE *F, INT numeps);
 /*----------------------------------------------------------------------*/
 /*  w1_defgrad.c                                          ah 06/02      */
 /*  evaluation of deformation gradient F                                */
@@ -899,7 +905,7 @@ void w1_knn(DOUBLE  **knn,             /* stiffness knn= GT C G         */
             DOUBLE   *gop,             /* additional opperator matrix   */
             DOUBLE  **d,               /* constitutive matrix           */
             DOUBLE    fac);            /* integration factor            */
-/*----------------------------------------------------------------------*
+ /*----------------------------------------------------------------------*
  | w1_incompmode.c                                              ah 9/02 |
  | evaluate internal element forces due to incomp. modes                |
  *----------------------------------------------------------------------*/
@@ -962,6 +968,7 @@ void  w1_updalpha(DOUBLE  *alpha,  /*O: internal dof for incomp modes   */
                   DOUBLE **knninv, /*I: inverse of incomp. stiffness    */
                   DOUBLE  *fintn,  /*I: INT. forces of inc. modes       */
                   INT      istore);/*I: update after loadstep->istore=1 */
+
 /*----------------------------------------------------------------------*
  |  integration routine for WALL1 element                      al 6/01  |
  *----------------------------------------------------------------------*/
