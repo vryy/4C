@@ -32,23 +32,23 @@ return;
 
 
 /*----------------------------------------------------------------------*
- |  routine to control linear static execution           m.gee 6/01     |
+ |  routine to control linear static structural analysis    m.gee 6/01  |
  *----------------------------------------------------------------------*/
 void stalin() 
 {
-int        i;
-int        numeq; 
-int        numeq_total;
-int        numdf;
-int        init;
-int        actsysarray;
+int        i;                /* a counter */
+int        numeq;            /* number of equations on this proc */
+int        numeq_total;      /* total number of equations over all procs */
+int        numdf;            /* number of dofs over all procs */
+int        init;             /* init flag for solver */
+int        actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
-SOLVAR    *actsolv;
-PARTITION *actpart;
-FIELD     *actfield;
-INTRA     *actintra;
+SOLVAR    *actsolv;          /* pointer to the fields SOLVAR structure */
+PARTITION *actpart;          /* pointer to the fields PARTITION structure */
+FIELD     *actfield;         /* pointer to the structural FIELD */
+INTRA     *actintra;         /* pointer to the fields intra-communicator structure */
 
-SPARSE_TYP    array_typ;
+SPARSE_TYP    array_typ;     /* type of psarse system matrix */
 #ifdef DEBUG 
 dstrc_enter("stalin");
 #endif

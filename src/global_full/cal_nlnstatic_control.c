@@ -39,6 +39,17 @@ dstrc_enter("stanln");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------ the distributed system matrix, which is used for solving */
+/* 
+   NOTE: This routine only uses 1 global sparse matrix, which was created
+         in global_mask_matrices. If You need more, it is necessary to allocate
+         more matrices in actsolv->sysarray.
+         Then one has to either copy the sparisty mask from 
+         actsolv->actsysarray[0] to the others if using the same matrix format,
+         or one has to call global mask matrices again for another type of 
+         sparsity mask.
+         Normally a control routine should not mix up different storage formats
+         for system matrices
+*/         
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
 actfield    = &(field[0]);
@@ -46,11 +57,12 @@ actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
+/* if we are not parallel, we have to allocate an alibi intra-communicator structure */
 #else
 actintra    = (INTRA*)calloc(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
 actintra->intra_fieldtyp = structure;
-actintra->intra_rank   = 0;
+actintra->intra_rank     = 0;
 actintra->intra_nprocs   = 1;
 #endif
 /*- there are only procs allowed in here, that belong to the structural */
@@ -59,6 +71,7 @@ if (actintra->intra_fieldtyp != structure) goto end;
 /*================================ start with preparing the calculation */
 /*------------------------------------------------ typ of global matrix */
 array_typ   = actsolv->sysarray_typ[actsysarray];
+/*---------------------------- get global and local number of equations */
 switch(array_typ)
 {
 case msr:/*--------------------------------- system array is msr matrix */
@@ -91,7 +104,7 @@ calstatserv_findcontroldof(actfield,
                            statvar->control_dof,
                            &(statvar->controlnode),
                            &cdof); 
-/*------------------------------------------- check for type of control */
+/*------------------------------------------------- get type of control */
 controltyp = statvar->nr_controltyp;
 /*------------------------------------------------- get number of steps */
 nstep      = statvar->nstep; 
@@ -99,7 +112,7 @@ nstep      = statvar->nstep;
 maxiter    = statvar->maxiter;
 /*----------------------------------------------- number of rhs vectors */
 /*------- the iteration uses rhs[0] for calculations and rhs[1] to hold */
-/*------------------------------------------------ original load vector */
+/*----------------------------------------allocate 2 dist. load vectors */
 actsolv->nrhs = 2;
 solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
 for (i=0; i<actsolv->nrhs; i++) solserv_zero_vec(&(actsolv->rhs[i]));
@@ -248,25 +261,25 @@ return;
  |  PERFORM LINEAR PREDICTOR STEP                            m.gee 11/01|
  *----------------------------------------------------------------------*/
 void conpre(
-            FIELD         *actfield,
-            SOLVAR        *actsolv,
-            PARTITION     *actpart,
-            INTRA         *actintra,
-            int            kstep,
-            int            actsysarray,
-            DIST_VECTOR   *rsd,
-            DIST_VECTOR   *dispi,
-            int            cdof,
-            STANLN        *nln_data,
-            NR_CONTROLTYP  controltyp
+            FIELD         *actfield,     /* the actual physical field */
+            SOLVAR        *actsolv,      /* the field-corresponding solver */
+            PARTITION     *actpart,      /* the partition of the proc */
+            INTRA         *actintra,     /* the intra-communicator of this field */
+            int            kstep,        /* the load or time step we are in */
+            int            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            DIST_VECTOR   *rsd,          /* dist. vector of incremental residual forces used for iteration in conequ */
+            DIST_VECTOR   *dispi,        /* dist. vector of incremental displacements */
+            int            cdof,         /* number of the dof to be controlled */
+            STANLN        *nln_data,     /* data of the Newton-Raphson method */
+            NR_CONTROLTYP  controltyp    /* type of control algorithm */
           )
 {
-int                  i;
-int                  init;
-double               prenorm;
-double               controldisp;
-double               rldiff;
-double               spi;
+int                  i;                /* a counter */
+int                  init;             /* solver flag */
+double               prenorm;          /* norm of predictor step */
+double               controldisp;      /* displacment value at controled dof */ 
+double               rldiff;           /* forgot.... */
+double               spi;              /* forgot.... */
 
 #ifdef DEBUG 
 dstrc_enter("conpre");
@@ -340,29 +353,30 @@ return;
 
 /*----------------------------------------------------------------------*
  |  PERFORM EQUILLIBRIUM ITERATION                           m.gee 11/01|
+ |  within Newton Raphson                                               |
  *----------------------------------------------------------------------*/
 void conequ(
-            FIELD         *actfield,
-            SOLVAR        *actsolv,
-            PARTITION     *actpart,
-            INTRA         *actintra,
-            int            kstep,
-            int           *itnum,
-            int            actsysarray,
-            DIST_VECTOR   *rsd,
-            DIST_VECTOR   *dispi,
-            DIST_VECTOR   *re,
-            int            cdof,
-            STANLN        *nln_data,
-            NR_CONTROLTYP  controltyp
+            FIELD         *actfield,      /* the actual physical field */
+            SOLVAR        *actsolv,       /* the field-corresponding solver */
+            PARTITION     *actpart,       /* the partition of the proc */
+            INTRA         *actintra,      /* the intra-communicator of this field */
+            int            kstep,         /* the load or time step we are in */
+            int           *itnum,         /* number of corrector steps taken by this routine */
+            int            actsysarray,   /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            DIST_VECTOR   *rsd,           /* dist. vector of incremental residual forces used for iteration in conequ */
+            DIST_VECTOR   *dispi,         /* dist. vector of incremental displacements */
+            DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
+            int            cdof,          /* number of dof to be controlled */
+            STANLN        *nln_data,      /* data of the Newton-Raphson method */
+            NR_CONTROLTYP  controltyp     /* type of control algorithm */
           )
 {
-int                  i;
-int                  init;
-int                  itemax;
-double               stepsize;
-int                  convergence=0;
-double               rl0;
+int                  i;                      /* counter variable */
+int                  init;                   /* init flag for solver */
+int                  itemax;                 /* max. number of corrector steps allowed */
+double               stepsize;               /* stepsize */
+int                  convergence=0;          /* test flag for convergence */
+double               rl0;                    /* some norms and working variables */                   
 double               rlold;
 double               rlnew;
 double               rlpre;
@@ -376,8 +390,8 @@ double               rli;
 double               rsd1;
 double               rsd2;
 
-ARRAY                intforce_a;
-double              *intforce;
+ARRAY                intforce_a;             /* global redundant vector of internal forces */
+double              *intforce;               /* pointer to intforce_a.a.dv */
 
 #ifdef DEBUG 
 dstrc_enter("conequ");
@@ -637,6 +651,9 @@ return;
 
 /*----------------------------------------------------------------------*
  |  print out iteration head                                 m.gee 11/01|
+ |  kstep                           load or time step we are in         |
+ |  controltyp                      type of control algorithm           |
+ |  cdof                            number of dof that is controlled    |      
  *----------------------------------------------------------------------*/
 void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof)
 {
@@ -718,6 +735,15 @@ return;
 } /* end of conequ_printhead */
 /*----------------------------------------------------------------------*
  |  print out iteration info                                 m.gee 11/01|
+ |                                                                      |
+ | itnum                                   number of actual iteration   |
+ | disval               displcament value of controled dof in this step |
+ | rlnew                                       actual total load factor |
+ | dinorm                    norm of residual incremental displacements |
+ | renorm                                  Norm of out-of-balance-loads |
+ | energy   norm of product of out-of-balance-loads and residual displ. |
+ | dnorm                              norm of incremental displacements | 
+ | rrnorm                                            norm of total load |
  *----------------------------------------------------------------------*/
 void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
                      double renorm, double energy, double dnorm, double rrnorm)

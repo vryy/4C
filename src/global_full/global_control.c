@@ -8,7 +8,7 @@ int ierr;
 int handle;
 /*---------------------------------------- init devices, tracing, etc...*/
 ntaini(argc,argv);
-/*-------------------------input phase, input of all information,  mesh */
+/*--------------------------------input phase, input of all information */
 ntainp();
 /*------------------------ write output of all preprocessor information */
 if (par.myrank==0 && genprob.restart==0)

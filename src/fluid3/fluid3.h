@@ -3,11 +3,11 @@
  *----------------------------------------------------------------------*/
 typedef struct _FLUID3
 {
-int                nGP[2];
-int                nGP_tri;
+int                nGP[3];   /* number of gaussian points in rst directions */
+int                nGP_tri;  /* number of gaussian points for triangle elements */
 
-int                is_ale;
-struct _ELEMENT   *my_ale;   
+int                is_ale;   /* flag whether there is ale to me or not */
+struct _ELEMENT   *my_ale;   /* pointer to my ale element, otherwise NULL */
 } FLUID3;
 
 

@@ -4,9 +4,9 @@
  |  routine to assemble nodal neumann conditions         m.gee 10/01    |
  *----------------------------------------------------------------------*/
 void assemble_nn(
-                    PARTITION    *actpart,
-                    DIST_VECTOR  *rhs,
-                    double       *drhs
+                    PARTITION    *actpart,   /* my partition of the active field */
+                    DIST_VECTOR  *rhs,       /* dist.vector */
+                    double       *drhs       /* global redundant vector of size numeq_total */
                    )
 {
 int                   i,j;
@@ -25,6 +25,10 @@ switch (actpart->fieldtyp)
 /*                      assembly of structural nodal neumann conditions */
 /*----------------------------------------------------------------------*/
 case structure:
+   /***************************************************************************/
+   /* Attention!!! this only works correct with partitions cut "Cut_Elements" */
+   /*                                                             m.gee 01/02 */
+   /***************************************************************************/
    /*--------------------------------------------------- start assembly */
    for (i=0; i<actpart->numnp; i++)
    {

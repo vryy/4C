@@ -1,22 +1,21 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |  put dofs to nodes                                    m.gee 5/01     |
- |  the numbering of the dofs is NOT done in the                        |
- |  intra-communicator groups, because it seems practical that all      |
+ |  the numbering of the dofs is done the same on all procs             |
+ |  because it seems practical that all                                 |
  |  procs know the dof numbering of all fields.                         |
  |  (there is also no communication at all in this routine)             |
  *----------------------------------------------------------------------*/
 void assign_dof()
 {
-int i,j,k,l;
-int counter;
-int minnumdf;
-int coupleID;
-int dof;
-int couple,geocouple,dirich;
-FIELD   *actfield;
-ELEMENT *actele;
-NODE    *actnode, *partnernode;
+int i,j,k,l;                       /* some counters */
+int counter;                       
+int coupleID;                      /* Id of a coupling set from gid */
+int dof;                           /* dof in progress */
+int couple,geocouple,dirich;       /* flags for conditions */
+FIELD   *actfield;                 /* the actual field */
+ELEMENT *actele;                   /* the element in progress */
+NODE    *actnode, *partnernode;    /* node and coupling partner in progress */
 
 #ifdef DEBUG 
 dstrc_enter("assign_dof");
@@ -27,7 +26,7 @@ for (i=0; i<genprob.numfld; i++)
 {
    actfield = &(field[i]);
 /*--------------------------------------------- find new node numbering */
-/* notice: bandwith opimisation has been done by gid, so just do a
+/* notice: bandwith opimization has been done by gid, so just do a
    field-local renumbering of this */
    for (j=0; j<actfield->numnp; j++) actfield->node[j].Id_loc = j;
 
@@ -81,7 +80,7 @@ for (i=0; i<genprob.numfld; i++)
       actfield->node[j].dof  = (int*)calloc(actfield->node[j].numdf,sizeof(int));
       if (!(actfield->node[j].dof)) 
          dserror("Allocation of dof in NODE failed");
-
+      /*------------------------- allocate the arrays to hold solutions */
       amdef("sol",&(actfield->node[j].sol),1,actfield->node[j].numdf,"DA");
       amzero(&(actfield->node[j].sol));
 
@@ -90,11 +89,11 @@ for (i=0; i<genprob.numfld; i++)
 
       amdef("sol_res",&(actfield->node[j].sol_residual),1,actfield->node[j].numdf,"DA");
       amzero(&(actfield->node[j].sol_residual));
-
+      /*------------------------------------------- init all dofs to -2 */
       for (l=0; l<actfield->node[j].numdf; l++) actfield->node[j].dof[l]=-2;
    }   
 /*------- eliminate geostationary coupling conditions that conflict with 
-   dofcoupling sets */
+   dofcoupling sets by putting the geostat coupling to the coupling set */
    coupleID=0;
    for (j=0; j<actfield->numnp; j++)
    {
@@ -211,10 +210,6 @@ for (i=0; i<genprob.numfld; i++)
                }
             }/* end of loops over dofs */
          }/* end of has dirich and/or coupling condition */
-         
-         
-         
-         
       }
    } /* end of loop over nodes */
    /* Now all free dofs are numbered, so now number the dirichlet conditioned
@@ -234,8 +229,7 @@ for (i=0; i<genprob.numfld; i++)
       }
    }
    actfield->numdf = counter;   
-      
-} /* end of loop over meshes */
+} /* end of loop over fields */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

@@ -25,7 +25,7 @@ if (par.myrank==0)
    out_gid_sol_init();
    out_gid_msh();
 }
-/*----------------- call controll programs of static or dynamic control */
+/*------------------ call control programs of static or dynamic control */
 if (genprob.timetyp==time_static)
 {
      calsta();

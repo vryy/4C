@@ -8,16 +8,40 @@ struct _ARRAY emass_global;
 /*----------------------------------------------------------------------*
  |  routine to call elements                             m.gee 6/01     |
  *----------------------------------------------------------------------*/
-void calelm(FIELD      *actfield, 
-               SOLVAR     *actsolv, 
-               PARTITION  *actpart, 
-               INTRA      *actintra,
-               int         sysarray1,
-               int         sysarray2,
-               double     *dvec,
-               int         global_numeq,
-               int         kstep,
-               int         calc_option)
+void calelm(FIELD      *actfield,     /* active field */        
+            SOLVAR     *actsolv,      /* active SOLVAR */
+            PARTITION  *actpart,      /* my partition of this field */
+            INTRA      *actintra,     /* my intra-communicator */
+            int         sysarray1,    /* number of first sparse system matrix */
+            int         sysarray2,    /* number of secnd system matrix, if present, else -1 */
+            double     *dvec,         /* global redundant vector passed to elements */
+            int         global_numeq, /* size of dvec */
+            int         kstep,        /* time in increment step we are in */
+            int         calc_option)  /* calculation option passed to element routines */
+/*----------------------------------------------------------------------*/
+/*
+  calc_options which are already in use:
+    
+    calc_option=0 init the element routines, do no calculation
+    calc_option=1 calc linear structural stiffness matrix 
+    calc_option=2 calc nonlinear structural stiffness matrix and internal forces
+    calc_option=5 calc structural forces and stresses
+    calc_option=6 calc load vector of element loads
+    calc_option=7 Allreduce stress results to make results redundant on all procs
+    
+    Structural Finite elements should use these calc_options.
+    Fluid      Finite elements can use these calc_options with similar meaning,
+               there won't be a conflict
+    Fluid      Finite elements can use these calc_options with other meaning,
+               there won't be a conflict
+    Fluid      Finite elements can use other calc_options and add them to,
+               this list
+               
+    Some of these calc_options call an assembly to a sparse matrix or a dist. vector.!!!!               
+               
+                                                                  m.gee 01/02
+*/
+/*----------------------------------------------------------------------*/
 {
 int               i;
 ELEMENT          *actele;
@@ -101,6 +125,7 @@ if (sysarray2 != -1)
 }
 #endif
 /* =======================================================call elements */
+/*---------------------------------------------- loop over all elements */
 for (i=0; i<actpart->numele; i++)
 {
    actele = actpart->element[i];
@@ -122,15 +147,15 @@ for (i=0; i<actpart->numele; i++)
    break;
    default:
       dserror("Typ of element unknown");
-   }/* end of element routines */
+   }/* end of calling elements */
 
 
    switch(calc_option)/*=== call assembly dependent on calculation-flag */
    {
-   case 1:/*-----------calculate linear stiffness only, static analysis */
+   case 1:/* in structural field, calculate linear stiffness only, static analysis */
       assemble(sysarray1,&estif_global,sysarray2,NULL,actpart,actsolv,actintra,actele,0);
    break;/* end of assembly */
-   case 2:/*--------calculate nonlinear stiffness only, static analysis */
+   case 2:/* in structural field, calculate nonlinear stiffness only, static analysis */
       assemble(sysarray1,&estif_global,sysarray2,NULL,actpart,actsolv,actintra,actele,0);
    break;/* end of assembly */
    }
@@ -142,10 +167,10 @@ for (i=0; i<actpart->numele; i++)
 #ifdef PARALLEL 
 switch(calc_option)
 {
-case 1: /*--------------------do linear stiffness only, static analysis */
+case 1: /* in structural field, do linear stiffness only, static analysis */
    assemble(sysarray1,NULL,sysarray2,NULL,actpart,actsolv,actintra,actele,1);
 break;
-case 2: /*-----------------do nonlinear stiffness only, static analysis */
+case 2: /* in structural field, do nonlinear stiffness only, static analysis */
    assemble(sysarray1,NULL,sysarray2,NULL,actpart,actsolv,actintra,actele,1);
 break;
 }
@@ -168,21 +193,21 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to call elements to init                     m.gee 7/01     |
  *----------------------------------------------------------------------*/
-void calinit(FIELD      *actfield, 
-             PARTITION  *actpart)
+void calinit(FIELD      *actfield,   /* the actove physical field */ 
+             PARTITION  *actpart)    /* my partition of this field */
 {
-int i;
-int is_shell8=0;
+int i;                        /* a counter */
+int is_shell8=0;              /* flags to check for presents of certain element types */
 int is_brick1=0;
 int is_fluid1=0;
 int is_fluid3=0;
 int is_ale=0;
-ELEMENT *actele;
+ELEMENT *actele;              /* active element */
 #ifdef DEBUG 
 dstrc_enter("calinit");
 #endif
 /*----------------------------------------------------------------------*/
-/*--------------------------------------------- init the local matrices */
+/*-------------------------- define dense element matrices for assembly */
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 /*--------------------what kind of elements are there in this example ? */
@@ -249,10 +274,10 @@ return;
 /*----------------------------------------------------------------------*
  |  in here the element's results are made redundant     m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void calreduce(FIELD      *actfield, 
-               PARTITION  *actpart,
-               INTRA      *actintra,
-               int         kstep)
+void calreduce(FIELD      *actfield, /* the active field */
+               PARTITION  *actpart,  /* my partition of this field */
+               INTRA      *actintra, /* the field's intra-communicator */
+               int         kstep)    /* the actual time or incremental step */
 {
 int i;
 int is_shell8=0;

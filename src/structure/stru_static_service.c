@@ -1,6 +1,13 @@
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |  routine to find the node and dof to control in field  m.gee 11/01   |
+ |                                                                      |
+ | actfield                             the physical field to search in |
+ | control_node_global                               global node number |
+ | control_dof                                number of dof to look for |
+ | **node           address of pointer to hold controlled node (output) |
+ | *cdof                      adress of int to hold dof number (output) |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void calstatserv_findcontroldof(FIELD     *actfield,
                                 int        control_node_global,
