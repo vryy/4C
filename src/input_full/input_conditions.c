@@ -64,6 +64,7 @@ static void inpdesign_vol_couple(void);
 static void inpdesign_line_fsicouple(void);
 static void inpdesign_nodal_freesurf(void);
 static void inpdesign_line_freesurf(void);
+static void inpdesign_line_liftdrag(void);
 
 static void inpdesign_line_thickness(void);
 static void inpdesign_line_axishellload(void);
@@ -132,6 +133,8 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
    inpdesign_nodal_freesurf();
 /*------------------------------- input of line free surface conditions */   
    inpdesign_line_freesurf();
+/*---------------------------------- input of line lift&drag definition */   
+   inpdesign_line_liftdrag();
 }
 #endif
 #ifdef D_AXISHELL
@@ -1865,8 +1868,76 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_freesurf */
-#endif
 
+
+/*----------------------------------------------------------------------*
+ | input of line lift&drag definition on design              genk 05/03 |
+ *----------------------------------------------------------------------*/
+static void inpdesign_line_liftdrag()
+{
+int    i,j;
+int    ierr;
+int    ndline;
+int    dlineId;
+char  *colptr;
+char   buffer[200];
+DLINE *actdline;
+int    coupleId;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_line_liftdrag");
+#endif
+/*---------------------------------------------------------- initialise */
+for (i=0; i<design->ndline; i++)
+{
+   actdline = &(design->dline[i]);
+   actdline->liftdrag=0;
+}
+
+/*----------------------------------------------------------------------*/
+/*---- find the beginning of line fluid freesurface coupling conditions */
+if (frfind("--DESIGN FLUID LINE LIFT&DRAG") == 0) goto end;
+frread();
+/*------------------------ read number of design lines with conditions */
+frint("DLINE",&ndline,&ierr);
+dsassert(ierr==1,"Cannot read design-line left&drag definition");
+frread();
+/*-------------------------------------- start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design line Id */
+   frint("E",&dlineId,&ierr);
+   dsassert(ierr==1,"Cannot read design-line left&drag definition");
+   dlineId--;
+   /*--------------------------------------------------- find the dline */
+   actdline=NULL;
+   for (i=0; i<design->ndline; i++)
+   {
+      if (design->dline[i].Id ==  dlineId) 
+      {
+         actdline = &(design->dline[i]);
+         break;
+      }
+   }
+   dsassert(actdline!=NULL,"Cannot read design-lineleft&drag definition");
+
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-line left&drag definition");
+   colptr++;
+   /*-------------------------------------------------- read the number */
+   actdline->liftdrag = strtol(colptr,&colptr,10);   
+   frread();
+}
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_line_freesurf */
+
+#endif
 
 
 
