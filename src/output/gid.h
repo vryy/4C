@@ -24,6 +24,15 @@ typedef struct _GIDSET
      char                      *ale_22_name;
      int                        is_ale_222;             /* 8-noded ale 2x2x2 GP */
      char                      *ale_222_name;
+/*----------------------------------------------------------------------*
+ /    wall element for gid				f.huber 06/02   /
+ *----------------------------------------------------------------------*/
+     int                        is_wall1_22;             /* 4-noded wall 2x2 GP */
+     char                      *wall1_22_name;
+     int                        is_wall1_33;             /* 8-noded wall 3x3 GP */
+     char                      *wall1_33_name;
+     
+
 } GIDSET;
 /*------------------------ global variable needed by gid postprocessing */
 GIDSET *gid;
