@@ -58,6 +58,7 @@ const INT           numeps=3;
 DOUBLE              fac;
 DOUBLE              e1,e2=0;      /*GP-coords*/
 DOUBLE              facr,facs=0;  /* weights at GP */
+DOUBLE              xyz[2][MAXNOD];    /* element coordinates                */
 
 static ARRAY    D_a;      /* material tensor */
 static DOUBLE **D;
@@ -69,8 +70,6 @@ static ARRAY    xjm_a;    /* jacobian matrix */
 static DOUBLE **xjm;
 static ARRAY    bop_a;    /* B-operator */
 static DOUBLE **bop;
-static ARRAY    xyz_a;    /* actual element coordiantes */
-static DOUBLE **xyz;
 static DOUBLE **estif;    /* element stiffness matrix ke */
 
 DOUBLE det;
@@ -82,11 +81,10 @@ dstrc_enter("ale2_static_ke");
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
-deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+funct     = amdef("funct"  ,&funct_a,MAXNOD,1 ,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD ,"DA");
 D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
 xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
-xyz       = amdef("xyz"    ,&xyz_a ,MAXNOD,numdf     ,"DA");
 
 bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
@@ -117,14 +115,11 @@ switch (ele->distyp)
 
 iel     = ele->numnp;
 nd      = numdf * iel;
+
 /*--------------------------------------- actual element coordinates ---*/
-for (i=0; i<iel; i++)
-{
-   for (j=0; j<numdf; j++)
-   {
-         xyz[i][j] = ele->node[i]->x[j];
-   }
-}
+for (j=0; j<numdf; j++)
+   for (i=0; i<iel; i++)
+         xyz[j][i] = ele->node[i]->x[j];
 /*================================================ integration loops ===*/
 for (lr=0; lr<nir; lr++)
 {
@@ -166,7 +161,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------------- call material law ---*/
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
-     ale2_keku(estif,bop,D,fac,nd,numeps);
+     ale2_keku(estif,bop,D,fac,nd,numeps); 
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
      if(ele->distyp==quad4 && nir == 1 && nis == 1)
        ale2_hourglass(ele,estif);
@@ -236,7 +231,8 @@ DOUBLE              fac;
 DOUBLE              e1,e2=0;         /* GP-coords */
 DOUBLE              facr,facs=0;     /* weights at GP */
 
-DOUBLE              min_detF;         /* minimal Jacobian determinant */
+DOUBLE              min_detF;         /* minimal Jacobian determinant   */
+DOUBLE              xyz[2][MAXNOD];        /* element coordinates            */
 
 static ARRAY    D_a;      /* material tensor */
 static DOUBLE **D;
@@ -248,8 +244,6 @@ static ARRAY    xjm_a;    /* jacobian matrix */
 static DOUBLE **xjm;
 static ARRAY    bop_a;    /* B-operator */
 static DOUBLE **bop;
-static ARRAY    xyz_a;    /* actual element coordiantes */
-static DOUBLE **xyz;
 static ARRAY    fint_a;   /* internal force vector from prestress */
 static DOUBLE  *fint;
 static DOUBLE **estif;    /* element stiffness matrix ke */
@@ -267,7 +261,6 @@ funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
 deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
 D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
 xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
 fint      = amdef("fint"   ,&fint_a,4*numdf,1        ,"DV");
 bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
@@ -299,13 +292,9 @@ switch (ele->distyp)
 iel     = ele->numnp;
 nd      = numdf * iel;
 /*--------------------------------------- actual element coordinates ---*/
-for (i=0; i<iel; i++)
-{
-   for (j=0; j<numdf; j++)
-   {
-      xyz[i][j] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
-   }
-}
+for (j=0; j<numdf; j++)
+   for (i=0; i<iel; i++)
+      xyz[j][i] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
 /*================================================== element quality ===*/
 /*------------------------------------------------look for min(det F)---*/
 ale2_min_jaco(ele->distyp,xyz,&min_detF);
@@ -340,7 +329,7 @@ for (lr=0; lr<nir; lr++)
      /*-------------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
-     ale2_jaco (deriv,xjm,&det,xyz,iel);
+     ale2_jaco(deriv,xjm,&det,xyz,iel);
      /*------------------------ evaluate factor including stiffening ---*/
      fac = facr * facs * det/min_detF/min_detF;
      /*---------------------------------------- calculate operator B ---*/
@@ -418,16 +407,17 @@ const INT           numdf  = 2;
 const INT           numeps = 3;
 
 DOUBLE              fac;
-DOUBLE              e1,e2=0;          /* GP-coords */
-DOUBLE              facr,facs=0;      /* weights at GP */
+DOUBLE              e1,e2=0;          /* GP-coords                      */
+DOUBLE              facr,facs=0;      /* weights at GP                  */
 INT                 lm[8];
 
-DOUBLE              a,b,c;            /* geometric parameters */
-DOUBLE              el_area;          /* element area */
-DOUBLE              P[2],Q[2];        /* two side mid points */
-DOUBLE              mid[2];           /* element middle point */
-DOUBLE              square[4][2];     /* nodes of square with same area*/
-DOUBLE              min_detF;         /* minimal Jacobian determinant */
+DOUBLE              a,b,c;            /* geometric parameters           */
+DOUBLE              el_area;          /* element area                   */
+DOUBLE              P[2],Q[2];        /* two side mid points            */
+DOUBLE              mid[2];           /* element middle point           */
+DOUBLE              square[4][2];     /* nodes of square with same area */
+DOUBLE              min_detF;         /* minimal Jacobian determinant   */
+DOUBLE              xyz[2][MAXNOD];        /* actual element coordiantes     */
 
 static ARRAY    D_a;      /* material tensor */
 static DOUBLE **D;
@@ -439,8 +429,6 @@ static ARRAY    xjm_a;    /* jacobian matrix */
 static DOUBLE **xjm;
 static ARRAY    bop_a;    /* B-operator */
 static DOUBLE **bop;
-static ARRAY    xyz_a;    /* actual element coordiantes */
-static DOUBLE **xyz;
 static ARRAY    fint_a;   /* internal force vector from prestress */
 static DOUBLE  *fint;
 static DOUBLE **estif;    /* element stiffness matrix ke */
@@ -458,7 +446,6 @@ funct     = amdef("funct" ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
 deriv     = amdef("deriv" ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
 D         = amdef("D"     ,&D_a   ,6,6  	    ,"DA");
 xjm       = amdef("xjm"   ,&xjm_a ,numdf,numdf      ,"DA");
-xyz       = amdef("xyz"   ,&xyz_a ,4	,numdf      ,"DA");
 fint      = amdef("fint"  ,&fint_a,4*numdf,1	    ,"DV");
 bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
@@ -490,25 +477,21 @@ switch (ele->distyp)
 iel     = ele->numnp;
 nd      = numdf * iel;
 /*--------------------------------------- actual element coordinates ---*/
-for (i=0; i<iel; i++)
-{
-   for (j=0; j<numdf; j++)
-   {
-      xyz[i][j] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
-   }
-}
+for (j=0; j<numdf; j++)
+   for (i=0; i<iel; i++)
+      xyz[j][i] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
 /*------------------------------------------------look for min(det F)---*/
 ale2_min_jaco(ele->distyp,xyz,&min_detF);
 /*==================================================== some geometry ===*/
 /*----------------------------------------------------------------------*/
-el_area = ale2_el_area(xyz);
+el_area = area_lin_2d(ele,xyz);
 /*------------------------------------ evaluate side of equal square ---*/
 a = sqrt(el_area);
 /*------------------------------------------------------- mid points ---*/
-P[0] = 0.5 * (xyz[1][0] + xyz[2][0]);
-P[1] = 0.5 * (xyz[1][1] + xyz[2][1]); /* mid of point 1 and 2 */
-Q[0] = 0.5 * (xyz[0][0] + xyz[3][0]);
-Q[1] = 0.5 * (xyz[0][1] + xyz[3][1]); /* mid of point 0 and 3 */
+P[0] = 0.5 * (xyz[0][1] + xyz[0][2]);
+P[1] = 0.5 * (xyz[1][1] + xyz[1][2]); /* mid of point 1 and 2 */
+Q[0] = 0.5 * (xyz[0][0] + xyz[0][3]);
+Q[1] = 0.5 * (xyz[1][0] + xyz[1][3]); /* mid of point 0 and 3 */
 mid[0] = 0.5 * (P[0] + Q[0]);
 mid[1] = 0.5 * (P[1] + Q[1]);         /* element mid point */
 /*---------------------------------------------------- shift Q and P ---*/
@@ -560,7 +543,7 @@ for (lr=0; lr<nir; lr++)
      /*-------------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
-     ale2_jaco (deriv,xjm,&det,xyz,iel);
+     ale2_jaco(deriv,xjm,&det,xyz,iel);
      /*----------------------------- use jacobian determinant or not ---*/
      if(ele->e.ale2->jacobi==1)   fac = facr * facs * det;
      else         fac = facr * facs;
@@ -584,10 +567,10 @@ for (i=0; i<iel; i++)
 {
    for (j=0; j<iel; j++)
    {
-      fint[2*i]   += estif[2*i][2*j]     * (square[j][0]-xyz[j][0]);
-      fint[2*i]   += estif[2*i][2*j+1]   * (square[j][1]-xyz[j][1]);
-      fint[2*i+1] += estif[2*i+1][2*j]   * (square[j][0]-xyz[j][0]);
-      fint[2*i+1] += estif[2*i+1][2*j+1] * (square[j][1]-xyz[j][1]);
+      fint[2*i]   += estif[2*i][2*j]     * (square[j][0]-xyz[0][j]);
+      fint[2*i]   += estif[2*i][2*j+1]   * (square[j][1]-xyz[1][j]);
+      fint[2*i+1] += estif[2*i+1][2*j]   * (square[j][0]-xyz[0][j]);
+      fint[2*i+1] += estif[2*i+1][2*j+1] * (square[j][1]-xyz[1][j]);
    }
    for (j=0; j<numdf; j++)
    {
@@ -641,7 +624,7 @@ the results of a test step [see Chiandussi et al. 2000]
 
 \warning There is nothing special to this routine
 \return void
-\sa calling: ale2_min_jaco(), ale2_el_area(), ale2_intg(),
+\sa calling: ale2_min_jaco(), area_lin_2d(), ale2_intg(),
              ale2_funct_deriv(), ale2_jaco(), ale2_bop(),
 	     ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
 	     ale2_min_jaco(), write_element_quality();
@@ -669,13 +652,15 @@ const INT           numdf =2;
 const INT           numeps=3;
 
 DOUBLE              fac;
-DOUBLE              e1,e2=0;          /* GP-coords */
-DOUBLE              facr,facs=0;      /* weights at GP */
-DOUBLE              min_detF;         /* minimal Jacobian determinant */
-DOUBLE              el_area;          /* elemental area */
-DOUBLE              stiff;            /* stiffness factor */
-DOUBLE              pv;               /* Possions ratio */
+DOUBLE              e1,e2=0;          /* GP-coords                      */
+DOUBLE              facr,facs=0;      /* weights at GP                  */
+DOUBLE              min_detF;         /* minimal Jacobian determinant   */
+DOUBLE              el_area;          /* elemental area                 */
+DOUBLE              stiff;            /* stiffness factor               */
+DOUBLE              pv;               /* Possions ratio                 */
 DOUBLE              m,r;
+DOUBLE              xyz[2][MAXNOD];        /* actual element coordiantes     */
+DOUBLE              uxyz[2][MAXNOD];       /* actual displacements           */
 
 static ARRAY    D_a;      /* material tensor */
 static DOUBLE **D;
@@ -687,10 +672,6 @@ static ARRAY    xjm_a;    /* jacobian matrix */
 static DOUBLE **xjm;
 static ARRAY    bop_a;    /* B-operator */
 static DOUBLE **bop;
-static ARRAY    xyz_a;    /* actual element coordiantes */
-static DOUBLE **xyz;
-static ARRAY    uxyz_a;   /* actual displacements */
-static DOUBLE **uxyz;
 static ARRAY    strain_a; /* strains */
 static DOUBLE  *strain;
 static DOUBLE **estif;    /* element stiffness matrix ke */
@@ -708,8 +689,6 @@ funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
 deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
 D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
 xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
-uxyz      = amdef("uxyz"   ,&uxyz_a ,4   ,numdf      ,"DA");
 
 bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 strain    = amdef("strain",&strain_a ,numeps,1,"DV");
@@ -743,19 +722,17 @@ switch (ele->distyp)
 iel     = ele->numnp;
 nd      = numdf * iel;
 /*--------------------------------------- actual element coordinates ---*/
-for (i=0; i<iel; i++)
-{
-   for (j=0; j<numdf; j++)
+for (j=0; j<numdf; j++)
+  for (i=0; i<iel; i++)
    {
       /* real solution so far */
-      xyz[i][j]  = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
+      xyz[j][i]  = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
       /* displacement of 'trial' step */
-      uxyz[i][j] = ele->node[i]->sol_increment.a.da[0][j];
+      uxyz[j][i] = ele->node[i]->sol_increment.a.da[0][j];
    }
-}
 /*----------------------------------------------------------------------*/
    ale2_min_jaco(ele->distyp,xyz,&min_detF);
-   el_area = ale2_el_area(xyz);
+   el_area = area_lin_2d(ele,xyz);
 /*----------------------------------- write element quality meassure ---*/
 write_element_quality(ele,quality,xyz,min_detF);
 /*================================================ integration loops ===*/
@@ -803,9 +780,9 @@ for (lr=0; lr<nir; lr++)
      /*-------------------------------------------- evaluate strains ---*/
      for (i=0; i<iel; i++)
      {
-        strain[0] += bop[0][2*i]*uxyz[i][0] + bop[0][2*i+1]*uxyz[i][1];
-        strain[1] += bop[1][2*i]*uxyz[i][0] + bop[1][2*i+1]*uxyz[i][1];
-        strain[2] += bop[2][2*i]*uxyz[i][0] + bop[2][2*i+1]*uxyz[i][1];
+        strain[0] += bop[0][2*i]*uxyz[0][i] + bop[0][2*i+1]*uxyz[1][i];
+        strain[1] += bop[1][2*i]*uxyz[0][i] + bop[1][2*i+1]*uxyz[1][i];
+        strain[2] += bop[2][2*i]*uxyz[0][i] + bop[2][2*i+1]*uxyz[1][i];
      }
      /* projection on mean strains via Mohr's circle */
      m = (strain[0]+strain[1])/2.0;
@@ -884,6 +861,7 @@ void ale2_static_ke_spring(ELEMENT   *ele,
 INT                 i, j;
 INT                 iel;             /* numnp to this element */
 INT                 nd;
+INT                 numcnd;          /* number of corner nodes of ele   */
 INT                 numdf=2;         /* degree of freedom per node */
 INT                 node_i, node_j;  /* end nodes of actual spring */
 
@@ -894,8 +872,7 @@ DOUBLE              factor;
 
 static DOUBLE **estif;    /* element stiffness matrix ke */
 
-static ARRAY    xyz_a;    /* actual element coordiantes */
-static DOUBLE **xyz;
+DOUBLE xyz[2][MAXNOD];         /* actual element coordiantes            */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("ale2_static_ke_spring");
@@ -903,7 +880,6 @@ dstrc_enter("ale2_static_ke_spring");
 /*--------------------------------------------------- initialisation ---*/
 if (init==1)
 {
-   xyz = amdef("xyz", &xyz_a, 4, numdf, "DA");
    ale2_tors_spring_quad4(NULL,NULL,1);
    ale2_tors_spring_tri3(NULL,NULL,1);
    goto end;
@@ -914,23 +890,33 @@ estif     = estif_global->a.da;
 /*----------------------------------------------------------------------*/
 iel     = ele->numnp;
 nd      = numdf * iel;
-/*--------------------------------------- actual element coordinates ---*/
-for (i=0; i<iel; i++)
+switch (ele->distyp)
 {
-   for (j=0; j<numdf; j++)
-   {
-         xyz[i][j] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
-   }
+case quad4:
+case quad8:
+case quad9:
+numcnd = 4;
+break;
+case tri3:
+case tri6:
+numcnd = 3;
+break;
+default: dserror("distyp unkown");
 }
+/*--------------------------------------- actual element coordinates ---*/
+for (j=0; j<numdf; j++)
+   for (i=0; i<iel; i++)
+      xyz[j][i] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
+
 /* check 'jacobian determinant' just to determine degenerated elements -*/
 ale2_min_jaco(ele->distyp,xyz,&min_detF);
 /*----------------------------------- write element quality meassure ---*/
 write_element_quality(ele,quality,xyz,min_detF);
-/*----------------------- lineal springs from all nodes to all nodes ---*/
+/*--------- lineal springs from all corner nodes to all corner nodes ---*/
 /*----------------- loop over all edges and diagonals of the element ---*/
-for (node_i=0; node_i<iel; node_i++)
+for (node_i=0; node_i<numcnd; node_i++)
 {
-   for (node_j=node_i+1; node_j<iel; node_j++)
+   for (node_j=node_i+1; node_j<numcnd; node_j++)
    {
       edge_geometry(node_i,node_j,xyz,&length,&sin,&cos);
       factor = 1.0 / length;
@@ -957,24 +943,81 @@ for (node_i=0; node_i<iel; node_i++)
    }
 }
 /*--------------------------------------- build in torsional springs ---*/
+/*---------- and put edge nodes on the middle of the respective edge ---*/
 switch (ele->distyp)
 {
-    case quad4:
-       ale2_tors_spring_quad4(estif,xyz,0);
-       break;
-    case quad8:
-    case quad9:
-       dserror("ale spring dynamic for this distyp not yet implemented");
-       break;
-    case tri3:
-       ale2_tors_spring_tri3(estif,xyz,0);
-       break;
-    case tri6:
-       dserror("ale spring dynamic for this distyp not yet implemented");
-       break;
-    default:
-       dserror("unknown distyp in ale spring dynamic");
-       break;
+   case quad8:
+      estif[8][8] =  1.0;
+      estif[8][0] = -0.5;
+      estif[8][2] = -0.5;
+      estif[9][9] =  1.0;
+      estif[9][1] = -0.5;
+      estif[9][3] = -0.5;
+      estif[10][10] =  1.0;
+      estif[10][2]  = -0.5;
+      estif[10][4]  = -0.5;
+      estif[11][11] =  1.0;
+      estif[11][3]  = -0.5;
+      estif[11][5]  = -0.5;
+      estif[12][12] =  1.0;
+      estif[12][4]  = -0.5;
+      estif[12][6]  = -0.5;
+      estif[13][13] =  1.0;
+      estif[13][5]  = -0.5;
+      estif[13][7]  = -0.5;
+      estif[14][14] =  1.0;
+      estif[14][6]  = -0.5;
+      estif[14][0]  = -0.5;
+      estif[15][15] =  1.0;
+      estif[15][7]  = -0.5;
+      estif[15][1]  = -0.5;
+      ale2_tors_spring_quad4(estif,xyz,0);
+   break;
+   case quad9:
+      estif[8][8] =  1.0;
+      estif[8][0] = -0.5;
+      estif[8][2] = -0.5;
+      estif[9][9] =  1.0;
+      estif[9][1] = -0.5;
+      estif[9][3] = -0.5;
+      estif[10][10] =  1.0;
+      estif[10][2]  = -0.5;
+      estif[10][4]  = -0.5;
+      estif[11][11] =  1.0;
+      estif[11][3]  = -0.5;
+      estif[11][5]  = -0.5;
+      estif[12][12] =  1.0;
+      estif[12][4]  = -0.5;
+      estif[12][6]  = -0.5;
+      estif[13][13] =  1.0;
+      estif[13][5]  = -0.5;
+      estif[13][7]  = -0.5;
+      estif[14][14] =  1.0;
+      estif[14][6]  = -0.5;
+      estif[14][0]  = -0.5;
+      estif[15][15] =  1.0;
+      estif[15][7]  = -0.5;
+      estif[15][1]  = -0.5;
+      estif[16][16] =  1.0;
+      estif[16][8]  = -0.5;
+      estif[16][12] = -0.5;
+      estif[17][17] =  1.0;
+      estif[17][9]  = -0.5;
+      estif[17][13] = -0.5;
+      ale2_tors_spring_quad4(estif,xyz,0);
+   break;
+   case quad4:
+      ale2_tors_spring_quad4(estif,xyz,0);
+   break;
+   case tri3:
+      ale2_tors_spring_tri3(estif,xyz,0);
+      break;
+   case tri6:
+      dserror("ale spring dynamic for this distyp not yet implemented");
+      break;
+   default:
+      dserror("unknown distyp in ale spring dynamic");
+      break;
 }
 /*----------------------------------------------------- local co-system */
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
@@ -1038,9 +1081,10 @@ DOUBLE              fac;
 DOUBLE              e1,e2=0;          /* GP-coords */
 DOUBLE              facr,facs=0;      /* weights at GP */
 
-DOUBLE              min_detF;         /* minimal Jacobian determinant */
+DOUBLE              min_detF;         /* minimal Jacobian determinant   */
 
 DOUBLE              k_diff;
+DOUBLE              xyz[2][MAXNOD];        /* actual element coordiantes     */
 
 static ARRAY    D_a;        /* material tensor */
 static DOUBLE **D;
@@ -1052,8 +1096,6 @@ static ARRAY    xjm_a;      /* jacobian matrix */
 static DOUBLE **xjm;
 static ARRAY    deriv_xy_a; /* global derivatives */
 static DOUBLE **deriv_xy;
-static ARRAY    xyz_a;      /* actual element coordiantes */
-static DOUBLE **xyz;
 static ARRAY    fint_a;     /* internal force vector from prestress */
 static DOUBLE  *fint;
 static DOUBLE **estif;      /* element stiffness matrix ke */
@@ -1071,7 +1113,6 @@ funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
 deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
 D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
 xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
 fint      = amdef("fint"   ,&fint_a,4*numdf,1        ,"DV");
 deriv_xy  = amdef("deriv_xy",&deriv_xy_a ,numdf,(MAXNOD_BRICK1),"DA");
 goto end;
@@ -1103,13 +1144,10 @@ switch (ele->distyp)
 iel     = ele->numnp;
 nd      = numdf * iel;
 /*--------------------------------------- actual element coordinates ---*/
-for (i=0; i<iel; i++)
-{
-   for (j=0; j<numdf; j++)
-   {
-      xyz[i][j] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
-   }
-}
+for (j=0; j<numdf; j++)
+   for (i=0; i<iel; i++)
+      xyz[j][i] = ele->node[i]->x[j] + ele->node[i]->sol_increment.a.da[1][j];
+
 /*================================================== element quality ===*/
 /*------------------------------------------------look for min(det F)---*/
 ale2_min_jaco(ele->distyp,xyz,&min_detF);
@@ -1144,7 +1182,7 @@ for (lr=0; lr<nir; lr++)
      /*-------------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
-     ale2_jaco (deriv,xjm,&det,xyz,iel);
+     ale2_jaco(deriv,xjm,&det,xyz,iel);
      /*--------------------------------------------- evaluate factor ---*/
      fac = facr * facs * det;
      /*-------------------------------- calculate global derivatives ---*/
