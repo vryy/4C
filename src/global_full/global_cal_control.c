@@ -107,7 +107,7 @@ out_general();
 if (par.myrank==0) 
 {
    if (ioflags.struct_disp_gid||ioflags.struct_stress_gid||ioflags.fluid_sol_gid
-       ||ioflags.ale_disp_gid) 
+       ||ioflags.ale_disp_gid||ioflags.fluid_stress_gid) 
    {
       out_gid_sol_init();
       if (genprob.probtyp != prb_structure)
