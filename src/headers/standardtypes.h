@@ -145,6 +145,7 @@ INT               num_flaviaresfiles;     /*                               */
 FILE             *in_input;               /* file-pointer input file     */
 FILE             *out_out;                /* file-pointer .out  file     */
 FILE             *out_err;                /* file-pointer .err  file     */
+FILE             *out_cur;                /* file-pointer .cur  file     */
 FILE             *out_pss;                /* file ptr to restart-pss file */
 FILE             *in_pss;                 /* file-pointer .pss  file     */
 FILE             *out_mon;                /* file-pointer .mon file     */

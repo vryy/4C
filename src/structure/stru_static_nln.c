@@ -27,6 +27,15 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -965,6 +974,12 @@ solserv_result_total(
 nln_data->rlold = nln_data->rlnew;
 /*--------------- update of parameters for material law and eas etc.... */
 /* nothing needed yet..... */
+/*------------------------------- output for load - displacement curve */
+if (par.myrank==0)
+{
+   fprintf(allfiles.out_cur,"%f %f\n",disval, rlnew);
+   fflush(allfiles.out_cur);
+}
 /*----------------------------------------------------------------------*/
 amdel(&intforce_a);
 #ifdef DEBUG 

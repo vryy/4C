@@ -165,6 +165,20 @@ if (par.myrank==0)
      }
     if (par.myrank==0)
     printf("errors are reported to     %s\n",allfiles.outputfile_name);
+/*------------------------------------------------------open .cur file */
+if (par.myrank==0)
+{     
+     strncpy(charpointer,".cur",4);
+     if ( (allfiles.out_cur=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of output file .cur failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    printf("load/displacements are reported to     %s\n",allfiles.outputfile_name);
+}     
 /*------------------------------------------------------open .tur file */
 if (par.myrank==0)
 {     
