@@ -15,7 +15,9 @@ cd doc
 doxygen documentation.conf
 
 doxygen erstellt dann Verzeichnisse html und latex. Die html-Version 
-bekommt man mit html/index.html im Browser
+bekommt man mit html/index.html im Browser.
+Fuer den alltaeglichen Bedarf ist sicherlich die html-Version praktischer.
+Warnung: die latex-Version hat ueber 600 Seiten und ist daher etwas unhandlich.
 Fuer die latex version wechselt man ins Verzeichnis latex und editiert dort
 das generierte Makefile:
 
