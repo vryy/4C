@@ -71,21 +71,7 @@ switch(option)
 /*                                                           init phase */
 /*----------------------------------------------------------------------*/
 case 1:
-   /*--------------------------------------- create the spooles objects */
-   spo->mtxA = InpMtx_new();
-   /*-------------------------------- make the solution and rhs objects */
-   spo->mtxY = DenseMtx_new();
-   spo->mtxX = DenseMtx_new();
-   /*-------------------------------------------------- set some values */
-   irn         = spo->irn_loc.a.iv;
-   jcn         = spo->jcn_loc.a.iv;
-   update      = spo->update.a.iv;
-   nnz         = spo->nnz; 
-   numeq       = spo->numeq; 
-   numeq_total = spo->numeq_total;
-   
-   
-   
+   /* do nothing */
    spo->is_init    =1;
    spo->ncall      =0;
    spo->is_factored=0;
