@@ -16,8 +16,6 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/cal_nlndyn_stru_expl.o \
 		src/global_full/cal_nlngemm_struct.o \
                 src/global_full/cal_static_service.o \
-                src/global_full/ccarat_visual2.o \
-                src/global_full/ccarat_visual3.o \
                 src/global_full/dyn_timecurve.o \
                 src/global_full/dyn_service.o \
                 src/global_full/map_node_find.o \
@@ -26,8 +24,6 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_result_test.o \
                 src/global_full/global_calelm.o \
                 src/global_full/global_calrhs.o \
-                src/global_full/global_visual.o \
-                src/global_full/visual_readflaviares.o \
                 src/global_full/restart_control.o \
                 src/global_full/machine_hpux.o \
 		src/global_full/check_max_sizes.o
@@ -74,7 +70,7 @@ OBJS_SOLVER   = src/solver/solver_control.o \
                 src/solver/solver_oll_spooles.o \
 		src/solver/solver_oll_add.o \
 		src/solver/solver_oll_service.o \
-		src/solver/solver_oll_service2.o
+		src/solver/solver_oll_service2.o \
                 src/solver/solver_mask_matrices.o \
                 src/solver/solver_mask_msr.o \
                 src/solver/solver_mask_mds.o \
@@ -85,14 +81,14 @@ OBJS_SOLVER   = src/solver/solver_control.o \
                 src/solver/solver_mask_ccf.o \
                 src/solver/solver_mask_skyline.o \
                 src/solver/solver_mask_spooles.o \
-                src/solver/solver_mask_bdcsr.o \
+                src/solver/solver_mask_bdcsr.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
                 src/pss_full/pss_fr.o \
                 src/pss_full/pss_pss.o \
                 src/pss_full/pss_perf.o \
-                src/pss_full/pss_visual.o 
+                src/pss_full/pss_visual.o
 #                input_full
 OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_ctr_head.o \
@@ -564,7 +560,12 @@ OBJS_WALLGE   = src/wallge/wge_setdof.o \
                 src/wallge/wge_stiff.o \
                 src/wallge/wge_stress.o \
                 src/wallge/wge_fext.o
-#            
+#                visual
+OBJS_VISUAL   = src/visual/visual_global.o \
+                src/visual/visual_readflaviares.o \
+                src/visual/visual_vis2.o \
+                src/visual/visual_vis3.o
+#
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS_FORTRAN  = src/fortran/colsol.o \
                 src/fortran/mpcg_futils.o \

@@ -83,6 +83,9 @@ $(OBJS_LS):
 $(OBJS_XFEM):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
+$(OBJS_VISUAL):
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 # fortran
 $(OBJS_FORTRAN):     
 		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
@@ -101,5 +104,5 @@ clean:
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
 		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_LS) $(OBJS_XFEM) \
-	        $(OBJS_IF) $(OBJS_SOLVER)
+	        $(OBJS_IF) $(OBJS_SOLVER) $(OBJS_VISUAL)
 
