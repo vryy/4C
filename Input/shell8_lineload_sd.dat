@@ -1,0 +1,369 @@
+//
+// Maintainer: Michael Gee
+//             gee@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/gee/
+//             0711 - 685-6572
+// 
+// necessary defines: D_SHELL8 CHECK_MAX RESULTTEST SOLVE_DIRICH
+//
+// #define MAXNOD           (9)
+// #define MAXELE           (2)
+// #define MAXDOFPERNODE    (6)
+// #define MAXGAUSS         (18)
+//
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Linienlast auf Schalenelementen shell8
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS           2 
+NODES             15
+DIM                3
+MATERIALS          1
+NUMDF        6
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+NUMFIELD     1
+TIMETYP      Static
+TRACE        secure
+RESTART      0
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE   Yes
+STRUCT_STRESS_FILE Yes
+STRUCT_DISP_GID    Yes
+STRUCT_STRESS_GID  Yes
+------------------------------------------------------------STATIC
+GEONONLINEAR
+NEWTONRAPHSO Displacement_Control
+NUMSTEP      50
+MAXITER      20
+TOLRESID     1.0E-06
+TOLDISP      1.0E-07
+STEPSIZE     0.1
+IARC         No
+ARCSCL       1.0
+-----------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Nlin_Time_Int
+TIMESTEP     0.05 
+NUMSTEP      100 
+MAXTIME      5.0
+BETA         0.25 
+GAMMA        0.5 
+ALPHA_M      0.5 
+ALPHA_F      0.5
+DAMPING      Yes 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
+TOLDISP      1.0E-08
+MAXITER      50
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         Colsol
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 6
+NDLINE  7
+NDSURF  2
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 2 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Coord: 2.828427 0.000000 2.828427
+END POINT
+POINT
+Num: 3 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.861048 3.758770 3.795806
+END POINT
+POINT
+Num: 4 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: -0.967379 3.758770 0.967379
+END POINT
+POINT
+Num: 5 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: -2.828427 0.000000 -2.828427
+END POINT
+POINT
+Num: 6 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Coord: -3.795806 3.758770 -1.861048
+END POINT
+------------------------------------------------------DESIGN LINES
+ARCLINE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=1,NOE=1) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 2
+2D center=0.000000,0.666667 radius=2.000000 initang=3.141593 endang=6.283185
+Transformation Matrix:
+m[1,1]=0.707107  m[1,2]=0.000000  m[1,3]=0.707107  m[1,4]=0.000000  
+m[2,1]=-0.241845  m[2,2]=0.939693  m[2,3]=0.241845  m[2,4]=0.000000  
+m[3,1]=-0.664463  m[3,2]=-0.342020  m[3,3]=0.664463  m[3,4]=0.000000  
+m[4,1]=1.575443  m[4,2]=-0.626462  m[4,3]=1.252984  m[4,4]=1.000000  
+TotalLength= 6.276900
+END ARCLINE
+STLINE
+Num: 2 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=7,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 3 2
+END STLINE
+STLINE
+Num: 3 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 4 3
+END STLINE
+STLINE
+Num: 4 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=7,NOE=2) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 4 1
+END STLINE
+STLINE
+Num: 5 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=5,NOE=5) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 6 5
+END STLINE
+STLINE
+Num: 6 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=5,NOE=5) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 5
+END STLINE
+STLINE
+Num: 7 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=5,NOE=5) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 4 6
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 0 conditions: 2 material: 2
+LAYER: Layer0
+Meshing Info: (num=2,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: SAME1ST
+Line: 1 Orientation: SAME1ST
+Line: 2 Orientation: DIFF1ST
+Line: 3 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-1.627539,5.485854,1.196204
+Point 1,2 coords:0.358287,-2.230111,-0.789622
+Point 2,1 coords:1.561513,5.485854,4.385255
+Point 2,2 coords:3.547338,-2.230111,2.399430
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 0.997612 1.618715 1.830816
+Normal: -0.664463 -0.342020 0.664463
+END NURBSURFACE
+NURBSURFACE
+Num: 2 HigherEntity: 0 conditions: 2 material: 2
+LAYER: Layer0
+Meshing Info: (num=3,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: DIFF1ST
+Line: 7 Orientation: SAME1ST
+Line: 5 Orientation: SAME1ST
+Line: 6 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-4.014526,4.045377,-1.932242
+Point 1,2 coords:-2.923806,-0.192637,-3.022962
+Point 2,1 coords:-0.825474,4.045377,1.256809
+Point 2,2 coords:0.265246,-0.192637,0.166089
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: -1.897903 1.879385 -0.930524
+Normal: -0.664463 -0.342020 0.664463
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE 
+DPOINT 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE 
+DLINE 1
+ E 5 -   1 1 1 1 1 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE 
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DLINE 2
+ E 1 -   none 0 0 1 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 
+ E 3 -   none 0 0 1 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DSURF 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE       9 DNODE 1
+NODE      15 DNODE 2
+NODE      12 DNODE 3
+NODE       5 DNODE 4
+NODE       6 DNODE 5
+NODE       1 DNODE 6
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE       9 DLINE 1
+NODE      14 DLINE 1
+NODE      15 DLINE 1
+NODE      12 DLINE 2
+NODE      13 DLINE 2
+NODE      15 DLINE 2
+NODE       5 DLINE 3
+NODE      10 DLINE 3
+NODE      12 DLINE 3
+NODE       5 DLINE 4
+NODE       7 DLINE 4
+NODE       9 DLINE 4
+NODE       1 DLINE 5
+NODE       3 DLINE 5
+NODE       6 DLINE 5
+NODE       9 DLINE 6
+NODE       8 DLINE 6
+NODE       6 DLINE 6
+NODE       5 DLINE 7
+NODE       2 DLINE 7
+NODE       1 DLINE 7
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE       9 DSURFACE 1
+NODE      15 DSURFACE 1
+NODE      12 DSURFACE 1
+NODE       5 DSURFACE 1
+NODE      14 DSURFACE 1
+NODE      13 DSURFACE 1
+NODE      10 DSURFACE 1
+NODE       7 DSURFACE 1
+NODE      11 DSURFACE 1
+NODE       9 DSURFACE 2
+NODE       5 DSURFACE 2
+NODE       6 DSURFACE 2
+NODE       1 DSURFACE 2
+NODE       7 DSURFACE 2
+NODE       3 DSURFACE 2
+NODE       8 DSURFACE 2
+NODE       2 DSURFACE 2
+NODE       4 DSURFACE 2
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  COORD -3.795806  3.758770  -1.861048
+NODE 2  COORD -2.381593  3.758770  -0.446835
+NODE 3  COORD -3.312117  1.879385  -2.344738
+NODE 4  COORD -1.897903  1.879385  -0.930524
+NODE 5  COORD -0.967379  3.758770  0.967379
+NODE 6  COORD -2.828427  0.000000  -2.828427
+NODE 7  COORD -0.483690  1.879385  0.483690
+NODE 8  COORD -1.414214  0.000000  -1.414214
+NODE 9  COORD 0.000000  0.000000  0.000000
+NODE 10  COORD 0.446835  3.758770  2.381593
+NODE 11  COORD 1.172369  0.939693  1.656058
+NODE 12  COORD 1.861048  3.758770  3.795806
+NODE 13  COORD 2.344738  1.879385  3.312117
+NODE 14  COORD 1.897903  -1.879385  0.930524
+NODE 15  COORD 2.828427  0.000000  2.828427
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 SHELL8 QUAD9       9     15     12      5     14     13     10      7     11 MAT       1 THICK 1.0 GP 3 3 2 GP_TRI 1 FORCES XYZ EAS  none none none none none ANS  none SDC  1.0 
+      2 SHELL8 QUAD9       5      1      6      9      2      3      8      7      4 MAT       1 THICK 1.0 GP 3 3 2 GP_TRI 1 FORCES XYZ EAS  none none none none none ANS  none SDC  1.0 
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.0 DENS 0.0
+------------------------------------------------------CONTROL NODE
+NODE      15 DOF 3 
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 11 POSITION sol(1,1) NAME x VALUE -4.6433318306381546 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 11 POSITION sol(1,2) NAME y VALUE 0.1472397557923989 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 11 POSITION sol(1,3) NAME z VALUE 3.8717008003414386 TOLERANCE 1e-9
+---------------------------------------------------------------END
+// END
