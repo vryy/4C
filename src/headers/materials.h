@@ -13,6 +13,7 @@ typedef struct _MATERIAL
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
      struct _PL_DP            *pl_dp;        /* Drucker Prager material */
+     struct _PL_EPC           *pl_epc;       /* elastoplastic concrete material */
      struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
      struct _FLUID            *fluid;        /* fluid material */
@@ -61,8 +62,8 @@ typedef struct _FLUID
  *----------------------------------------------------------------------*/
 typedef struct _PL_MISES
 {
-     double                    youngs;
-     double                    possionratio;
+     double                    youngs;        /* Young's modulus */
+     double                    possionratio;  /* Possion ratio */
      double                    ALFAT;
      double                    Sigy;
      double                    Hard;
@@ -74,14 +75,50 @@ typedef struct _PL_MISES
  *----------------------------------------------------------------------*/
 typedef struct _PL_DP
 {
-     double                    youngs;
-     double                    possionratio;
+     double                    youngs;        /* Young's modulus */
+     double                    possionratio;  /* Possion ratio */
      double                    ALFAT;
      double                    Sigy;
      double                    Hard;
      double                    PHI;
 } PL_DP;
-
+/*----------------------------------------------------------------------*
+ | elastoplastic concrete material                     a.lipka 17/05    |
+ *----------------------------------------------------------------------*/
+typedef struct _PL_EPC
+{
+     double                    dens;
+     /* concrete */
+     double                    youngs;       /* Young's modulus */
+     double                    possionratio; /* Possion ratio */
+     double                    alfat;
+     double                    sigy;
+     double                    phi;
+     double                    xsi;
+     double                    ftm;        /* tensile strength */
+     double                    gt;         /* tensile fracture energy */
+     double                    fcm;        /* compressive strength */
+     double                    gc;         /* compressive fracture energy */
+     double                    gamma1;     /* fitting factor yield function 1 */
+     double                    gamma2;     /* symm. biaxial compression stressfactor */
+     double                    dfac;       /* dammage factor: 0.0 plastic - 1.0 full damaged */
+     /* tension stiffening */
+     int                       nstiff;     /* ==1 in consideration of tension stiffening */
+     /* rebars */
+     int                       maxreb;     /* number of*/
+     int                      *rebar;      /* Id */
+     double                   *reb_area;   /* area   */
+     double                   *reb_ang;    /* angel  */
+     double                   *reb_so;     /* minimum bond length  */
+     double                   *reb_ds;     /* diameter  */
+     double                   *reb_rgamma; /* =4: deformed bars =2: plane par */
+     double                   *reb_dens; 
+     double                   *reb_alfat; 
+     double                   *reb_emod; 
+     double                   *reb_rebnue; 
+     double                   *reb_sigy; 
+     double                   *reb_hard;
+} PL_EPC;
 /*----------------------------------------------------------------------*
  | plastic mises porous material                       a.lipka 17/05    |
  *----------------------------------------------------------------------*/

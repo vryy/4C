@@ -53,7 +53,7 @@ typedef enum _ELEMENT_TYP
                        el_none,        /* unknown type of element */
                        el_shell8,      /* 7 parameter shell element */
                        el_brick1,      /* structural brick element */
-                       el_wall1,       /* 2D plain stress - plain strain element */
+                       el_wall1,       /* 2D plane stress - plane strain element */
                        el_fluid1,      /* 2D fluid element */
                        el_fluid3,      /* 3D fluid element */
                        el_ale          /* pseudo structural ale element, can be 2D or 3D */
@@ -67,6 +67,7 @@ typedef enum _MATERIAL_TYP
                        m_stvenant,      /* St.Venant Kirchhoff material */
                        m_pl_mises,    /* von Mises material */
                        m_pl_dp,       /* Drucker Prager material */
+                       m_pl_epc,      /* elastoplastic concrete material */
                        m_pl_por_mises,/* porous von Mises material */
                        m_neohooke,    /* Neo-Hooke material */
                        m_fluid        /* fluid */
