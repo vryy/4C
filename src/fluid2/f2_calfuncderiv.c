@@ -271,16 +271,16 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
    {
       deriv[0][0]= rhp*sh*sp;
       deriv[1][0]= shp*rh*rp;
-
+      
       deriv[0][1]= rhm*sh*sp;
       deriv[1][1]=-shp*rh*rm;
-
+      
       deriv[0][2]=-rhm*sh*sm;
       deriv[1][2]=-shm*rh*rm;
-
+      
       deriv[0][3]=-rhp*sh*sm;
       deriv[1][3]= shm*rh*rp;
-
+      
       deriv[0][4]=-TWO*r*sh*sp;
       deriv[1][4]= shp*r2;
 
@@ -291,7 +291,7 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
       deriv[1][6]= shm*r2;
 
       deriv[0][7]= rhp*s2;
-      deriv[1][7]=-TWO*s*rh*rp;
+      deriv[1][7]=-TWO*s*rh*rp;      
 
       deriv[0][8]=-TWO*r*s2;
       deriv[1][8]=-TWO*s*r2;
@@ -876,7 +876,6 @@ In this routine the jacobian matrix and its determinant is calculated
 
 </pre>
 \param **xyze      DOUBLE   (i)    nodal coordinates
-\param  *funct     DOUBLE   (i)    natural shape functions
 \param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
 \param **xjm       DOUBLE   (o)    jacobian matrix
 \param  *det       DOUBLE   (o)    determinant of jacobian matrix
@@ -886,7 +885,6 @@ In this routine the jacobian matrix and its determinant is calculated
 
 ------------------------------------------------------------------------*/
 void f2_jaco(DOUBLE    **xyze,
-             DOUBLE     *funct,
              DOUBLE    **deriv,
              DOUBLE    **xjm,
              DOUBLE     *det,
@@ -968,22 +966,18 @@ no check if det<ZERO!!!
 
 </pre>
 \param **xyze      DOUBLE   (i)    nodal coordinates
-\param  *funct     DOUBLE   (i)    natural shape functions
 \param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
 \param **xjm       DOUBLE   (o)    jacobian matrix
 \param  *det       DOUBLE   (o)    determinant of jacobian matrix
 \param   iel       INT      (i)    num. of nodes of act. ele
-\param  *ele       ELEMENT  (i)    actual element
 \return void
 
 ------------------------------------------------------------------------*/
 void f2_jaco2(DOUBLE    **xyze,
-             DOUBLE     *funct,
              DOUBLE    **deriv,
              DOUBLE    **xjm,
              DOUBLE     *det,
-             INT         iel,
-             ELEMENT    *ele
+             INT         iel
             )
 
 {
@@ -1027,7 +1021,6 @@ In this routine the jacobian matrix and its determinant is calculated
 
 </pre>
 \param **xyze      DOUBLE   (i)    nodal coordinates
-\param  *funct     DOUBLE   (i)    natural shape functions
 \param **deriv     DOUBLE   (i)    natural deriv. of shape funcs
 \param **xjm       DOUBLE   (o)    jacobian matrix
 \param  *det       DOUBLE   (o)    determinant of jacobian matrix
@@ -1038,7 +1031,6 @@ In this routine the jacobian matrix and its determinant is calculated
 ------------------------------------------------------------------------*/
 void f2_edgejaco(
                  DOUBLE    **xyze,
-                 DOUBLE     *funct,
                  DOUBLE    **deriv,
                  DOUBLE    **xjm,
                  DOUBLE     *det,
