@@ -22,6 +22,10 @@ NODES            701
 DIM                2
 MATERIALS          1
 NUMDF        3
+MAXNOD 2
+MAXELE 2
+MAXDOFPERNODE 3
+MAXGAUSS 3
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1

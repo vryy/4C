@@ -24,6 +24,10 @@ NODES            441
 DIM                2
 MATERIALS          1
 NUMDF        3
+MAXNOD 9
+MAXELE 4
+MAXDOFPERNODE 3
+MAXGAUSS 9
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid
 NUMFIELD     1

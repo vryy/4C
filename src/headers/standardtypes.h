@@ -269,6 +269,14 @@ INT               numaf;         /* actual number of ale field */
 INT               numls;         /* actual number of ls field */
 INT               graderw;       /* flag is gradient enhanced material model */
 
+/* The following values give the maximum numbers required by the
+ * problem and are needed for integrity checks. But they could be
+ * used to speed things up as well. */
+INT               maxnod;       /* maximum number of nodes */
+INT               maxele;       /* maximum number of elements */
+INT               maxdofpernode;/* maximum number of dof per node */
+INT               maxgauss;     /* maximum number of gauss points */
+  
 #ifdef D_XFEM
 INT               xfem_on_off;    /* flag to switch enriched formulation */
 #endif

@@ -20,6 +20,10 @@ NODES              4
 DIM                3
 MATERIALS          1
 NUMDF        6
+MAXNOD 3
+MAXELE 2
+MAXDOFPERNODE 6
+MAXGAUSS 1
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1

@@ -25,6 +25,10 @@ NODES             74
 DIM                2
 MATERIALS          2
 NUMDF        6
+MAXNOD 4
+MAXELE 4
+MAXDOFPERNODE 3
+MAXGAUSS 4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1

@@ -17,11 +17,15 @@
 -------------------------------------------------------------TITLE
 brickelastisch
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           8 
+ELEMENTS           8
 NODES            104
 DIM                3
 MATERIALS          1
-NUMDF        6
+NUMDF              6
+MAXNOD 27
+MAXELE 25
+MAXDOFPERNODE 3
+MAXGAUSS 27
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1

@@ -22,6 +22,10 @@ NODES            840
 DIM                3
 MATERIALS          1
 NUMDF        6
+MAXNOD 8
+MAXELE 8
+MAXDOFPERNODE 3
+MAXGAUSS 8
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Ale
 NUMFIELD     1

@@ -22,6 +22,10 @@ NODES           4662
 DIM                2
 MATERIALS          1
 NUMDF        6
+MAXNOD 4
+MAXELE 4
+MAXDOFPERNODE 5
+MAXGAUSS 4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Two_Phase_Fluid_Flow
 NUMFIELD     2

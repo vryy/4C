@@ -22,6 +22,10 @@ NODES            729
 DIM                3
 MATERIALS          1
 NUMDF        4
+MAXNOD 8
+MAXELE 8
+MAXDOFPERNODE 4
+MAXGAUSS 8
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid
 NUMFIELD     1

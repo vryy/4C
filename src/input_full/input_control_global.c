@@ -194,7 +194,13 @@ genprob.numsf=-1;
 genprob.numff=-1;
 genprob.numaf=-1;
 genprob.numls=-1;
- 
+
+/* default values */
+genprob.maxnod = MAXNOD;
+genprob.maxele = MAXELE;
+genprob.maxdofpernode = MAXDOFPERNODE;
+genprob.maxgauss = MAXGAUSS;
+
 if (frfind("-PROBLEM SIZE")==0) dserror("frfind: PROBLEM SIZE not in input file");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -205,11 +211,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("MATERIALS",&(genprob.nmat),&ierr);
   frint("NUMDF",    &(genprob.numdf),&ierr);
 
+  frint("MAXNOD", &(genprob.maxnod), &ierr);
+  frint("MAXELE", &(genprob.maxele), &ierr);
+  frint("MAXDOFPERNODE", &(genprob.maxdofpernode), &ierr);
+  frint("MAXGAUSS", &(genprob.maxgauss), &ierr);
+
   frread();
 }
 /*------------------------------------------------------ check values */
 if (genprob.nmat<=0)
    dserror ("No Material defined!");
+dsassert(genprob.maxnod <= MAXNOD, "maximum number of nodes exceeded");
+dsassert(genprob.maxele <= MAXELE, "maximum number of elements exceeded");
+dsassert(genprob.maxdofpernode <= MAXDOFPERNODE, "maximum number of dof per node exceeded");
+dsassert(genprob.maxgauss <= MAXGAUSS, "maximum number of gauss points per element exceeded");
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
 /*----------------------------------------- defualt values for output */
