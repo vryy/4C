@@ -32,6 +32,19 @@ extern struct _GENPROB     genprob;
 
 static INT PREDOF = 3;
 static FLUID_DYNAMIC   *fdyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -46,7 +59,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
 </pre>
 \param   *ele      ELEMENT          (i)    actual element
 \param  **xyze     DOUBLE           (o)    nodal coordinates
-\param  **eveln    DOUBLE           (o)    ele vels at time n
+\param  **ehist    DOUBLE           (o)    ele history data
 \param  **evelng   DOUBLE           (o)    ele vels at time n+g
 \param   *epren    DOUBLE           (o)    ele pres at time n
 \param   *edeadn   DOUBLE           (o)    ele dead load at n (selfweight)
@@ -58,7 +71,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
 void f3_calset(
                ELEMENT         *ele,
                DOUBLE         **xyze,
-               DOUBLE         **eveln,
+               DOUBLE         **ehist,
                DOUBLE         **evelng,
                DOUBLE          *epren,
                DOUBLE          *edeadn,
@@ -92,10 +105,14 @@ for(i=0;i<ele->numnp;i++)
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
- |       sol_increment[0][i]: solution at (n-1)                        |
- |	 sol_increment[1][i]: solution at (n)                          |
- |	 sol_increment[2][i]: solution at (n+g)                        |
- |	 sol_increment[3][i]: solution at (n+1)                        |
+ |       sol_increment[ipos][i]: solution at some time level           |
+ |       ipos-flags:  ipos.velnp ... solution at time (n+1)            |
+ |                    ipos.veln  ... solution at time (n)              |
+ |                    ipos.velnm ... solution at time (n-1)            |
+ |                    ipos.gridv ... mesh velocity in actual time step |
+ |                    ipos.convn ... convective velocity at time (n)   |
+ |                    ipos.convnp... convective velocity at time (n+1) |
+ |                    ipos.hist  ... sol. data for rhs                 |
  *---------------------------------------------------------------------*/
 
 
@@ -103,42 +120,14 @@ for(i=0;i<ele->numnp;i++) /* loop nodes */
 {
    actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */
-   evelng[0][i]=actnode->sol_increment.a.da[3][0];
-   evelng[1][i]=actnode->sol_increment.a.da[3][1];
-   evelng[2][i]=actnode->sol_increment.a.da[3][2];
+   evelng[0][i]=actnode->sol_increment.a.da[ipos.velnp][0];
+   evelng[1][i]=actnode->sol_increment.a.da[ipos.velnp][1];
+   evelng[2][i]=actnode->sol_increment.a.da[ipos.velnp][2];
+   ehist[0][i] = actnode->sol_increment.a.da[ipos.hist][0];
+   ehist[1][i] = actnode->sol_increment.a.da[ipos.hist][1];
+   ehist[2][i] = actnode->sol_increment.a.da[ipos.hist][2];
 } /* end of loop over nodes */
 
-
-if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
-                      -> velocities and pressure at (n) are needed ----*/
-{
-      for(i=0;i<ele->numnp;i++) /* loop nodes */
-      {
-         actnode=ele->node[i];
-/*------------------------------------- set element velocities at (n) */
-         eveln[0][i]=actnode->sol_increment.a.da[1][0];
-         eveln[1][i]=actnode->sol_increment.a.da[1][1];
-         eveln[2][i]=actnode->sol_increment.a.da[1][2];
-/*------------------------------------------------- set pressures (n) */
-         epren[i]   =actnode->sol_increment.a.da[1][PREDOF];
-      } /* end of loop over nodes */
-} /* endif (fdyn->nif!=0) */
-
-if(fdyn->nim!=0) /* -> computation of mass rhs "on" ------------------
-                      -> vel(n)+a*acc(n) are needed --------------------*/
-/* NOTE: if there is no classic time rhs (as described in WAW) the array
-         eveln is misused and does NOT contain the velocity at time (n)
-	 but rather a linear combination of old velocities and
-	 accelerations depending upon the time integration scheme!!!!!*/
-{
-      for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-      {
-         actnode=ele->node[i];
-         eveln[0][i] = actnode->sol_increment.a.da[2][0];
-	 eveln[1][i] = actnode->sol_increment.a.da[2][1];
-	 eveln[2][i] = actnode->sol_increment.a.da[2][2];
-      } /* end of loop over nodes of element */
-} /* endif (fdyn->nim!=0) */
 /*------------------------------------------------ check for dead load */
 actgvol = ele->g.gvol;
 if (actgvol->neum!=NULL)
@@ -195,7 +184,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
 </pre>
 \param   *ele       ELEMENT         (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
-\param  **eveln     DOUBLE          (o)    ele vels at time n
+\param  **ehist     DOUBLE          (o)    ele history data
 \param  **evelng    DOUBLE          (o)    ele vels at time n+g
 \param  **ealecovn  DOUBLE          (o)    ALE-convective vels at time n
 \param  **ealecovng DOUBLE          (o)    ALE-convective vels at time n+g
@@ -210,7 +199,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
 void f3_calseta(
                   ELEMENT         *ele,
                   DOUBLE         **xyze,
-                  DOUBLE         **eveln,
+                  DOUBLE         **ehist,
                   DOUBLE         **evelng,
                   DOUBLE         **ealecovn,
                   DOUBLE         **ealecovng,
@@ -253,35 +242,19 @@ for(i=0;i<ele->numnp;i++) /* loop nodes */
 {
    actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */
-   evelng[0][i]   =actnode->sol_increment.a.da[3][0];
-   evelng[1][i]   =actnode->sol_increment.a.da[3][1];
-   evelng[2][i]   =actnode->sol_increment.a.da[3][2];
-   ealecovng[0][i]=actnode->sol_increment.a.da[6][0];
-   ealecovng[1][i]=actnode->sol_increment.a.da[6][1];
-   ealecovng[2][i]=actnode->sol_increment.a.da[6][2];
-   egridv[0][i]   =actnode->sol_increment.a.da[4][0];
-   egridv[1][i]   =actnode->sol_increment.a.da[4][1];
-   egridv[2][i]   =actnode->sol_increment.a.da[4][2];
+   evelng[0][i]   =actnode->sol_increment.a.da[ipos.velnp][0];
+   evelng[1][i]   =actnode->sol_increment.a.da[ipos.velnp][1];
+   evelng[2][i]   =actnode->sol_increment.a.da[ipos.velnp][2];
+   ealecovng[0][i]=actnode->sol_increment.a.da[ipos.convnp][0];
+   ealecovng[1][i]=actnode->sol_increment.a.da[ipos.convnp][1];
+   ealecovng[2][i]=actnode->sol_increment.a.da[ipos.convnp][2];
+   egridv[0][i]   =actnode->sol_increment.a.da[ipos.gridv][0];
+   egridv[1][i]   =actnode->sol_increment.a.da[ipos.gridv][1];
+   egridv[2][i]   =actnode->sol_increment.a.da[ipos.gridv][2];
+   ehist[0][i] = actnode->sol_increment.a.da[ipos.hist][0];
+   ehist[1][i] = actnode->sol_increment.a.da[ipos.hist][1];
+   ehist[2][i] = actnode->sol_increment.a.da[ipos.hist][2];
 } /* end of loop over nodes */
-
-
-if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
-                      -> velocities and pressure at (n) are needed ----*/
-{
-      for(i=0;i<ele->numnp;i++) /* loop nodes */
-      {
-         actnode=ele->node[i];
-/*------------------------------------- set element velocities at (n) */
-         eveln[0][i]   =actnode->sol_increment.a.da[1][0];
-         eveln[1][i]   =actnode->sol_increment.a.da[1][1];
-         eveln[2][i]   =actnode->sol_increment.a.da[1][2];
-         ealecovn[0][i]=actnode->sol_increment.a.da[5][0];
-         ealecovn[1][i]=actnode->sol_increment.a.da[5][1];
-         ealecovn[2][i]=actnode->sol_increment.a.da[5][2];
-/*------------------------------------------------- set pressures (n) */
-         epren[i]   =actnode->sol_increment.a.da[1][PREDOF];
-      } /* end of loop over nodes */
-} /* endif (fdyn->nif!=0) */
 
 /*------------------------------------------------ check for dead load */
 actgvol = ele->g.gvol;
