@@ -157,19 +157,21 @@ typedef enum _CALC_ACTION
                        calc_fluid_vort,
 		       calc_fluid_stress,
 		       calc_fluid_curvature,
+		       calc_fluid_liftdrag,
                        calc_fluid_shearvelo,
+		       calc_fluid_time_rhs,
 		       /* ale */		
-		       calc_ale_init,   /* classic linear ale calculation */
+		       calc_ale_init,   	/* classic linear ale calculation */
 		       calc_ale_stiff,
 		       calc_ale_rhs,
-		       calc_ale_init_nln, /* nonlinear ale calculation */
+		       calc_ale_init_nln, 	/* nonlinear ale calculation */
 		       calc_ale_stiff_nln,
-		       calc_ale_stiff_stress, /* calc elements with prestress */
-		       calc_ale_init_step2,   /* 2nd step of 2 step calculation */
+		       calc_ale_stiff_stress, 	/* calc elements with prestress */
+		       calc_ale_init_step2,   	/* 2nd step of 2 step calculation */
 		       calc_ale_stiff_step2,
-		       calc_ale_init_spring, /* spring stiffnesses for ale mesh */
+		       calc_ale_init_spring, 	/* spring stiffnesses */
 		       calc_ale_stiff_spring,
-		       calc_ale_init_laplace, /* ale with Laplace smoothing */
+		       calc_ale_init_laplace,	/* ale with Laplace smoothing */
 		       calc_ale_stiff_laplace,
                        /* optimization: */
                        calc_struct_opt_init, /* initialize integr. rout. for opt. */
