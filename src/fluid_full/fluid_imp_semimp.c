@@ -710,7 +710,6 @@ if (resstep==fdyn->upres && par.myrank==0)
 /*--------------------------------------- write solution to binary */
 #ifdef BINIO
 if (resstep==fdyn->upres) {
-  resstep=0;
 
   if (ioflags.fluid_sol_gid==1) {
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_PRESSURE);
@@ -720,6 +719,10 @@ if (resstep==fdyn->upres) {
   }
 }
 #endif
+
+if (resstep==fdyn->upres) {
+  resstep=0;
+}
 
 /*---------------------------------------------- write solution to .out */
 if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
