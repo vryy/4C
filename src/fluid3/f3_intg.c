@@ -228,7 +228,7 @@ if (option==0)
 	data->twgt[i][k]=wgtt[i][k];
      } /* end loop over k */
    } /* end loop over i */
-}                                                 
+}
 else
 {
 /* do nothing at the moment --------------------------------------------*/       

@@ -15,6 +15,60 @@ Maintainer: Steffen Genkinger
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
+
+/*----------------------------------------------------------------------*/
+static ARRAY     eveln_a;  /* element velocities at (n) 		*/
+static DOUBLE  **eveln;
+/*NOTE: if there is no classic time rhs (as described in WAW) the array
+         eveln is misused and does NOT contain the velocity at time (n)
+	 but rather a linear combination of old velocities and 
+	 accelerations depending upon the time integration scheme!!!!! */
+static ARRAY     evelng_a; /* element velocities at (n+gamma)		*/
+static DOUBLE  **evelng;
+static ARRAY     epren_a;  /* element pressures at (n)  		*/
+static DOUBLE   *epren;
+static ARRAY     edeadn_a; /* element dead load (selfweight)            */
+static DOUBLE   *edeadng;
+static ARRAY     edeadng_a;/* element dead load (selfweight)            */
+static DOUBLE   *edeadn;
+static ARRAY     funct_a;  /* shape functions				*/
+static DOUBLE   *funct;
+static ARRAY     deriv_a;  /* first natural derivatives 		*/
+static DOUBLE  **deriv;
+static ARRAY     deriv2_a; /* second natural derivatives		*/
+static DOUBLE  **deriv2;
+static ARRAY     xyze_a;
+static DOUBLE  **xyze;   
+static ARRAY     xjm_a;    /* jocobian matrix				*/
+static DOUBLE  **xjm;
+static ARRAY     velint_a; /* velocities at integration point		*/
+static DOUBLE   *velint;
+static ARRAY     vel2int_a;/* velocities at integration point		*/
+static DOUBLE   *vel2int;
+static ARRAY	 covint_a; /* convective velocities at integr. point	*/
+static DOUBLE   *covint;
+static ARRAY     vderxy_a; /* vel - derivatives 			*/
+static DOUBLE  **vderxy;
+static ARRAY     pderxy_a; /* pre -derivatives  			*/
+static DOUBLE   *pderxy;
+static ARRAY     vderxy2_a;/* vel - 2nd derivatives			*/
+static DOUBLE  **vderxy2;
+static ARRAY     derxy_a;  /* coordinate - derivatives  		*/
+static DOUBLE  **derxy;
+static ARRAY     derxy2_a; /* 2nd coordinate - derivatives		*/
+static DOUBLE  **derxy2;
+static ARRAY     sigmaint_a; /* fluid stresses at integration point     */
+static DOUBLE  **sigmaint;
+static ARRAY     w1_a;     /* working array of arbitrary chosen size	*/
+static DOUBLE  **wa1;      /* used in different element routines	*/
+static ARRAY     w2_a;     /* working array of arbitrary chosen size	*/
+static DOUBLE  **wa2;      /* used in different element routines	*/
+static DOUBLE  **estif;    /* pointer to global ele-stif		*/
+static DOUBLE  **emass;    /* pointer to galerkin ele-stif		*/
+static DOUBLE   *etforce;  /* pointer to Time RHS			*/
+static DOUBLE   *eiforce;  /* pointer to Iteration RHS  		*/
+static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
+
 /*!---------------------------------------------------------------------                                         
 \brief control routine for element integration of fluid3
 
@@ -57,53 +111,6 @@ void f3_calele(
 		INT             init
 	       )
 {
-static ARRAY     eveln_a;  /* element velocities at (n) 		*/
-static DOUBLE  **eveln;
-/*NOTE: if there is no classic time rhs (as described in WAW) the array
-         eveln is misused and does NOT contain the velocity at time (n)
-	 but rather a linear combination of old velocities and 
-	 accelerations depending upon the time integration scheme!!!!! */
-static ARRAY     evelng_a; /* element velocities at (n+gamma)		*/
-static DOUBLE  **evelng;
-static ARRAY     epren_a;  /* element pressures at (n)  		*/
-static DOUBLE   *epren;
-static ARRAY     edeadn_a; /* element dead load (selfweight)            */
-static DOUBLE   *edeadng;
-static ARRAY     edeadng_a;/* element dead load (selfweight)            */
-static DOUBLE   *edeadn;
-static ARRAY     funct_a;  /* shape functions				*/
-static DOUBLE   *funct;
-static ARRAY     deriv_a;  /* first natural derivatives 		*/
-static DOUBLE  **deriv;
-static ARRAY     deriv2_a; /* second natural derivatives		*/
-static DOUBLE  **deriv2;
-static ARRAY     xjm_a;    /* jocobian matrix				*/
-static DOUBLE  **xjm;
-static ARRAY     velint_a; /* velocities at integration point		*/
-static DOUBLE   *velint;
-static ARRAY     vel2int_a;/* velocities at integration point		*/
-static DOUBLE   *vel2int;
-static ARRAY	 covint_a; /* convective velocities at integr. point	*/
-static DOUBLE   *covint;
-static ARRAY     vderxy_a; /* vel - derivatives 			*/
-static DOUBLE  **vderxy;
-static ARRAY     pderxy_a; /* pre -derivatives  			*/
-static DOUBLE   *pderxy;
-static ARRAY     vderxy2_a;/* vel - 2nd derivatives			*/
-static DOUBLE  **vderxy2;
-static ARRAY     derxy_a;  /* coordinate - derivatives  		*/
-static DOUBLE  **derxy;
-static ARRAY     derxy2_a; /* 2nd coordinate - derivatives		*/
-static DOUBLE  **derxy2;
-static ARRAY     w1_a;     /* working array of arbitrary chosen size	*/
-static DOUBLE  **wa1;      /* used in different element routines	*/
-static ARRAY     w2_a;     /* working array of arbitrary chosen size	*/
-static DOUBLE  **wa2;      /* used in different element routines	*/
-static DOUBLE  **estif;    /* pointer to global ele-stif		*/
-static DOUBLE  **emass;    /* pointer to galerkin ele-stif		*/
-static DOUBLE   *etforce;  /* pointer to Time RHS			*/
-static DOUBLE   *eiforce;  /* pointer to Iteration RHS  		*/
-static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
 
 #ifdef DEBUG 
 dstrc_enter("f3_calele");
@@ -111,25 +118,27 @@ dstrc_enter("f3_calele");
 
 if (init==1) /* allocate working arrays and set pointers */
 {
-   eveln   = amdef("evln"   ,&eveln_a  ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
-   evelng  = amdef("evelng" ,&evelng_a ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
-   epren   = amdef("epren"  ,&epren_a  ,MAXNOD_F3,1,"DV");
-   edeadn  = amdef("edeadn" ,&edeadn_a ,3,1,"DV");
-   edeadng = amdef("edeadng",&edeadng_a,3,1,"DV"); 
-   funct   = amdef("funct"  ,&funct_a  ,MAXNOD_F3,1,"DV");
-   deriv   = amdef("deriv"  ,&deriv_a  ,3,MAXNOD_F3,"DA");
-   deriv2  = amdef("deriv2" ,&deriv2_a ,6,MAXNOD_F3,"DA");
-   xjm     = amdef("xjm"    ,&xjm_a    ,3,3        ,"DA");
-   velint  = amdef("velint" ,&velint_a ,NUM_F3_VELDOF,1,"DV");
-   vel2int = amdef("vel2int",&vel2int_a,NUM_F3_VELDOF,1,"DV");
-   covint  = amdef("covint" ,&covint_a ,NUM_F3_VELDOF,1,"DV");
-   vderxy  = amdef("vderxy" ,&vderxy_a ,3,3,"DA");
-   pderxy  = amdef("pderxy" ,&pderxy_a ,3,1,"DV");
-   vderxy2 = amdef("vderxy2",&vderxy2_a,3,6,"DA");
-   derxy   = amdef("derxy"  ,&derxy_a  ,3,MAXNOD_F3,"DA");
-   derxy2  = amdef("derxy2" ,&derxy2_a ,6,MAXNOD_F3,"DA");
-   wa1     = amdef("wa1"    ,&w1_a      ,300,300        ,"DA");
-   wa2     = amdef("wa2"    ,&w2_a      ,300,300        ,"DA");  
+   eveln   = amdef("evln"    ,&eveln_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   evelng  = amdef("evelng"  ,&evelng_a  ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   epren   = amdef("epren"   ,&epren_a   ,MAXNOD_F3,1,"DV");
+   edeadn  = amdef("edeadn"  ,&edeadn_a  ,3,1,"DV");
+   edeadng = amdef("edeadng" ,&edeadng_a ,3,1,"DV"); 
+   funct   = amdef("funct"   ,&funct_a   ,MAXNOD_F3,1,"DV");
+   deriv   = amdef("deriv"   ,&deriv_a   ,3,MAXNOD_F3,"DA");
+   deriv2  = amdef("deriv2"  ,&deriv2_a  ,6,MAXNOD_F3,"DA");
+   xyze    = amdef("xyze"    ,&xyze_a    ,3,MAXNOD_F3,"DA");
+   xjm     = amdef("xjm"     ,&xjm_a     ,3,3        ,"DA");
+   velint  = amdef("velint"  ,&velint_a  ,NUM_F3_VELDOF,1,"DV");
+   vel2int = amdef("vel2int" ,&vel2int_a ,NUM_F3_VELDOF,1,"DV");
+   covint  = amdef("covint"  ,&covint_a  ,NUM_F3_VELDOF,1,"DV");
+   vderxy  = amdef("vderxy"  ,&vderxy_a  ,3,3,"DA");
+   pderxy  = amdef("pderxy"  ,&pderxy_a  ,3,1,"DV");
+   vderxy2 = amdef("vderxy2" ,&vderxy2_a ,3,6,"DA");
+   derxy   = amdef("derxy"   ,&derxy_a   ,3,MAXNOD_F3,"DA");
+   derxy2  = amdef("derxy2"  ,&derxy2_a  ,6,MAXNOD_F3,"DA");
+   sigmaint= amdef("sigmaint",&sigmaint_a,MAXGAUSS ,6,"DA");
+   wa1     = amdef("wa1"     ,&w1_a      ,300,300        ,"DA");
+   wa2     = amdef("wa2"     ,&w2_a      ,300,300        ,"DA");  
 /*                                        \- size is chosen arbitrarily! */
    estif   = estif_global->a.da;
    emass   = emass_global->a.da;
@@ -189,6 +198,90 @@ dstrc_exit();
 
 return; 
 } /* end of f3_calele */
+
+
+
+
+
+/*!--------------------------------------------------------------------- 
+  \brief control routine for stress calculation in f3
+
+  <pre>                                                         mn 03/04
+
+  </pre>
+
+  \param     str       FLUID_STRESS   (i)    flag for stress calculation
+  \param     viscstr   INT            (i)    viscose stresses yes/no?
+  \param    *data      FLUID_DATA     (i)
+  \param    *ele       ELEMENt        (i)    actual element 
+  \param     is_relax  INT            (i)    flag
+
+  \return void                                               
+
+  ------------------------------------------------------------------------*/
+void f3_stress(
+    FLUID_STRESS  str, 
+    INT           viscstr,
+    FLUID_DATA   *data, 
+    ELEMENT      *ele,
+    INT           is_relax
+    )
+{
+  INT       i;
+  INT       coupled;      /* flag for fsi interface element */
+  INT       iel;          /* number of nodes per element */
+  GNODE    *actgnode;     /* actual gnode */
+
+
+#ifdef DEBUG 
+  dstrc_enter("f3_stress");
+#endif
+
+  switch(str)
+  {
+    case str_none: /* do nothing */
+      break;
+
+
+#if 0
+#ifdef D_FSI
+    case str_fsicoupling:
+      /* check if fluid element is coupled to struct element */
+      iel=ele->numnp;
+      coupled=0;
+      for (i=0;i<iel;i++)
+      {
+        actgnode = ele->node[i]->gnode;
+        /* check if there is a coupled struct node */
+        if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
+        coupled=1;
+        break;    
+      }
+      if (coupled==1) 
+        f3_calfsistress(viscstr,data,ele,eveln,epren,funct,
+            deriv,derxy,vderxy,xjm,xyze,sigmaint,is_relax);      
+      break;
+#endif
+#endif
+
+
+    case str_liftdrag:
+    case str_all:
+      f3_calelestress(viscstr,data,ele,eveln,epren,funct,
+          deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);      
+      break;
+
+
+    default:
+      dserror("stress calculation not possible!\n");
+  }
+
+  /*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return; 
+} /* end of f3_stress */
 
 
 #endif
