@@ -138,7 +138,11 @@ void f2pro_calgaltfv(
  | f2pro_inpele.c                                                       |
  ************************************************************************/
 void f2pro_inp(ELEMENT *ele);
-void f2pro_dis(ELEMENT *ele0,ELEMENT *ele1);
+void f2pro_dis(
+    ELEMENT *ele0,
+    ELEMENT *ele1,
+    INT      numele,
+    INT      numnode);
 void f2pro_ass_dof_q2q1(NODE *actnode, INT *counter);
 
 /************************************************************************

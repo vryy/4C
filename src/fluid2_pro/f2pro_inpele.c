@@ -231,7 +231,11 @@ return;
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2pro_dis(ELEMENT *ele0,ELEMENT *ele1)
+void f2pro_dis(
+    ELEMENT *ele0,
+    ELEMENT *ele1,
+    INT      numele,
+    INT      numnode)
 {
 INT       j;             /* simply a counter                            */
 
@@ -244,7 +248,7 @@ ele1->e.f2pro = (FLUID2_PRO*)CCACALLOC(1,sizeof(FLUID2_PRO));
 if (ele1->e.f2pro==NULL) dserror("Allocation of element FLUID2_PRO failed\n");  
 
 /*----------------------------------------------- set some general data */
-ele1->Id=ele0->Id;
+ele1->Id=ele0->Id + numele;
 ele1->mat=ele0->mat;
 ele1->e.f2pro->is_ale=ele0->e.f2pro->is_ale;
 ele1->e.f2pro->dm=ele0->e.f2pro->dm;
@@ -260,7 +264,7 @@ case dm_q2q1:
    if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    for (j=0;j<ele1->numnp;j++)
    {
-      ele1->lm[j] = ele0->lm[j];
+      ele1->lm[j] = ele0->lm[j] + numnode;
    } /* end of loop over all nodes */	
    ele1->e.f2pro->nGP[0]=2;
    ele1->e.f2pro->nGP[1]=2; 

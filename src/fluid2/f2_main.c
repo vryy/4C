@@ -70,7 +70,7 @@ void fluid2(PARTITION   *actpart,
 static INT              numff;      /* actual number of fluid field     */
 static INT              viscstr;
 static FLUID_DATA      *data;      
-FLUID_DYNAMIC          *fdyn;
+static FLUID_DYNAMIC   *fdyn;
 static FLUID_DYN_CALC  *dynvar;
 static FLUID_DYN_ML    *mlvar;
 static FLUID_ML_SMESH  *submesh;
@@ -84,13 +84,13 @@ int smisal;
 dstrc_enter("fluid2");
 #endif
 
-fdyn = alldyn[0].fdyn;
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
 /*------------------------------------------------------ initialization */
 case calc_fluid_init:
 /* ----------------------------------------- find number of fluid field */
+   fdyn   = alldyn[genprob.numff].fdyn;
    dynvar = &(alldyn[genprob.numff].fdyn->dynvar);
    data   = &(alldyn[genprob.numff].fdyn->dynvar.data);
    viscstr= alldyn[genprob.numff].fdyn->viscstr;

@@ -1468,7 +1468,11 @@ void f2_inp(ELEMENT *ele, INT counter);
 /************************************************************************
  | f2_inpele_tu.c                                                       |
  ************************************************************************/
-void f2tu_dis(ELEMENT *ele0, ELEMENT *ele1);
+void f2tu_dis(
+    ELEMENT *ele0, 
+    ELEMENT *ele1, 
+    INT      numele,
+    INT      numnode);
 
 /************************************************************************
  | f2_intg.c                                                            |
