@@ -19,6 +19,16 @@
 
 
 /*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
+/*!----------------------------------------------------------------------
 \brief the optimization main structure
 <pre>                                                            al 06/01   
 defined in opt_cal_main.c
@@ -94,11 +104,14 @@ for (fsdstep=0; fsdstep<max_fsdstep; fsdstep++)
   opt_g_out(gr_dens); 
   opt_g_out(gr_disp); 
 /*---------------------------------------------------- print iterate ---*/
-  printf("----------------------------------------------------------------------------------------------\n");
-  printf("Optimization step No. %d\n",fsdstep+1);
-  printf("----------------------------------------------------------------------------------------------\n");
-  printf("objective  function value: %12.3#E \n", objective );
-  printf("constraint function value: %12.3#E \n", constraint);
+  if (par.myrank==0)
+  {
+    printf("----------------------------------------------------------------------------------------------\n");
+    printf("Optimization step No. %d\n",fsdstep+1);
+    printf("----------------------------------------------------------------------------------------------\n");
+    printf("objective  function value: %12.3#E \n", objective );
+    printf("constraint function value: %12.3#E \n", constraint);
+  }
 /*------------------------------------------- and check for convergence */
   if(fsdstep>0)
   {
@@ -118,8 +131,6 @@ for (fsdstep=0; fsdstep<max_fsdstep; fsdstep++)
         &numvar,&beta,&accitfsd,&delta,&iprint);
 /*----------------------------------------------------- update structure*/
   /* will be done in func->optupd */
-/*------------------------------------ write output of updated structure*/
-/*  opt_g_out(gr_dens); */
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------- end of optimization loop ---*/

@@ -126,6 +126,9 @@ case calc_struct_opt_init:
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------------- evaluate strain energy */
 case calc_struct_ste:
+#ifdef PARALLEL 
+   if(ele->proc!=actintra->intra_rank) break;
+#endif
    actmat = &(mat[ele->mat-1]);
    w1_oint(ele,
            &actdata,
@@ -137,6 +140,9 @@ case calc_struct_ste:
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- evaluate mass */
 case calc_struct_stm:
+#ifdef PARALLEL 
+   if(ele->proc!=actintra->intra_rank) break;
+#endif
    actmat = &(mat[ele->mat-1]);
    w1_oint(ele,
            &actdata,
@@ -148,6 +154,9 @@ case calc_struct_stm:
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- evaluate derivative of strain energy */
 case calc_struct_dee:
+#ifdef PARALLEL 
+   if(ele->proc!=actintra->intra_rank) break;
+#endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];
@@ -163,6 +172,9 @@ case calc_struct_dee:
 break;/*----------------------------------------------------------------*/
 /*------------------------------ evaluate derivative of mass constraint */
 case calc_struct_dmc:
+#ifdef PARALLEL 
+   if(ele->proc!=actintra->intra_rank) break;
+#endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];

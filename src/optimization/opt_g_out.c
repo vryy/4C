@@ -24,6 +24,22 @@
 
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | global variable *partition, vector of lenght numfld of structures    |
+ | PARTITION is defined in global_control.c                             |
+ *----------------------------------------------------------------------*/
+extern struct _PARTITION  *partition;
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -117,14 +133,35 @@ static FILE         *fp_tmp;
 char         *line1="_";
 char         *line2="=";
 /*----------------------------------------------------------------------*/
-FIELD        *actfield;             /* pointer to the structural FIELD  */
-ELEMENT      *actele;               /* active element                   */
-NODE         *actnode;              /* active node                      */
+ static ARRAY   rhspv_a;
+ static double *rhspv;
+/*----------------------------------------------------------------------*/
+  SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
+  PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
+  INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
+  FIELD        *actfield;         /* pointer to the structural FIELD  */
+  ELEMENT      *actele;           /* active element                   */
+  NODE         *actnode;          /* active node                      */
+/*----------------------------------------------------------------------*/
+actfield    = &(field[0]);
+actsolv     = &(solv[0]);
+actpart     = &(partition[0]);
+#ifdef PARALLEL 
+actintra    = &(par.intra[0]);
+#else
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+if (!actintra) dserror("Allocation of INTRA failed");
+actintra->intra_fieldtyp = structure;
+actintra->intra_rank   = 0;
+actintra->intra_nprocs   = 1;
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("og_write_mesh");
 #endif
 /*----------------------------------------------------------------------*/
+ if (par.myrank==0)
+ {/* proc 0 */
 /*------------------------------------------------- write template file */
   fp_tmp = fopen("zgout/cgs.tmesh","w");
 /*----------------------------------------------------------------------*/
@@ -132,8 +169,11 @@ dstrc_enter("og_write_mesh");
 /*----------------------------------------------------------------------*/
   fclose(fp_tmp);
 /*----------------------------------------------------------------------*/
+ }/* proc 0 */
     
     
+ if (par.myrank==0)
+ {/* proc 0 */
 /*----------------------------------------------------------------------*/
   out = fopen("zgout/cgs.mesh", "w");
   if(!out) return;  /* does file exist? */
@@ -144,10 +184,8 @@ dstrc_enter("og_write_mesh");
 /*---------------------------------------------------- loop over fields */
   for (l=0; l<200; l++)fprintf(out,"%s",line2);fprintf(out,"\n");
 
-  for (i=0; i<genprob.numfld; i++)
-  {
    /*----------------------------------- print the meshes of this field */
-    actfield = &(field[i]);
+    actfield = &(field[0]);
    /*-------------------------------------------------- number of nodes */
     fprintf(out,"number_of_nodes: %-6d\n",actfield->dis[0].numnp );
    /*----------------------------------------------- number of elements */
@@ -208,20 +246,22 @@ dstrc_enter("og_write_mesh");
       }
 
     }
+ }/* proc 0 */ 
    /*------------------------------------------------------------ loads */
    /*------------------------- allreduce rhs */
-    /*
-    #ifdef PARALLEL 
-    numeq_total = solv->rhs->numeq_total;
-    field_loads = (double*)CALLOC(numeq_total,sizeof(double));
-    field_lsend = (double*)CALLOC(numeq_total,sizeof(double));
 
-    for (i=0; i<numeq_total; i++) sendvar[i] = var[i];   
-    MPI_Allreduce(sendvar,var,numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
-    for (i=0; i<numeq_total; i++) sendgro[i] = grdobj[i];   
-    MPI_Allreduce(sendgro,grdobj,numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+    #ifdef PARALLEL 
+    rhspv = amdef("rhspv",&rhspv_a,solv->rhs[0].numeq_total,1,"DV");
+    /*       amdel(&rhspv_a);*/
+   
+    
+    solserv_reddistvec(&solv->rhs[0],
+                      &(solv->sysarray[0]),&(solv->sysarray_typ[0]),
+                      rhspv, solv->rhs[0].numeq_total,actintra);
     #endif
     /* */
+ if (par.myrank==0)
+ {/* proc 0 */
     for (l=0; l<200; l++)fprintf(out,"%s",line1);fprintf(out,"\n\n");
      
     
@@ -233,9 +273,14 @@ dstrc_enter("og_write_mesh");
       {
         dof = actnode->dof[k];
         /* neumann condition on dof */
+    #ifdef PARALLEL 
         if (dof >= actfield->dis[0].numeq) continue;
+        if(fabs(rhspv[dof])>0.00000001) lnodeflag=1;
+    #else
+        if (dof >= solv->rhs[0].numeq) continue;
         if(fabs(solv->rhs[0].vec.a.dv[dof])>0.00000001) lnodeflag=1;
-      }
+    #endif
+     }
       
       if(!lnodeflag) continue;
      
@@ -244,8 +289,13 @@ dstrc_enter("og_write_mesh");
       for (k=0; k<actnode->numdf; k++)
       {
           dof = actnode->dof[k];
-          if (dof >= actfield->dis[0].numeq) lval = 0.;
+    #ifdef PARALLEL 
+          if (dof >= actfield->dis[0].numeq) continue;
+          else lval = rhspv[dof];
+    #else
+          if (dof >= solv->rhs[0].numeq) continue;
           else lval = solv->rhs[0].vec.a.dv[dof];
+    #endif
           fprintf(out," %-18.5#f",lval);
       } 
       fprintf(out,"\n");
@@ -281,12 +331,16 @@ dstrc_enter("og_write_mesh");
        fprintf(out,"\n");
     }
 /*----------------------------------------------------------------------*/
-} /* end of (i=0; i<genprob.numfld; i++) */
 for (l=0; l<200; l++)fprintf(out,"%s",line2);fprintf(out,"\n");
 /*----------------------------------------------------------------------*/
     fprintf(out,"END_OF_CGSFILE\n");
     fclose(out);
-
+/*----------------------------------------------------------------------*/
+ }/* proc 0 */ 
+/*----------------------------------------------------------------------*/
+    #ifdef PARALLEL 
+    amdel(&rhspv_a);
+    #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -299,10 +353,18 @@ return;
 void og_write_eledens(int ndataofmesh)
 {
 /*----------------------------------------------------------------------*/
-int i;
+  int i;
+#ifdef PARALLEL 
+  static  double *svec;   /* vector with sensitivities on element level */
+  static  double *sveh;   /* necsessary for allreducing element values  */
+#endif
 /*----------------------------------------------------------------------*/
-ELEMENT    *actele;                  /* active element                  */
-FIELD    *actfield;                  /* pointer to the structural FIELD */
+  SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
+  PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
+  INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
+  FIELD        *actfield;         /* pointer to the structural FIELD  */
+  ELEMENT      *actele;           /* active element                   */
+  NODE         *actnode;          /* active node                      */
 /*----------------------------------------------------------------------*/
 FILE    *fp_out;
 FILE    *fp_tmp;
@@ -313,8 +375,45 @@ char    *newf="w";
 dstrc_enter("og_write_eledens");
 #endif
 /*----------------------------------------------------------------------*/
-/*--------------------------------------------------- set some pointers */
-  actfield    = &(field[0]);
+actfield    = &(field[0]);
+actpart     = &(partition[0]);
+#ifdef PARALLEL 
+actintra    = &(par.intra[0]);
+#else
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+if (!actintra) dserror("Allocation of INTRA failed");
+actintra->intra_fieldtyp = structure;
+actintra->intra_rank   = 0;
+actintra->intra_nprocs   = 1;
+#endif
+/*----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+  svec  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+  sveh  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+  for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
+  for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
+  
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+     actele = &(actfield->dis[0].element[i]);
+    if(actele->proc!=actintra->intra_rank) continue;
+    /*--*/
+    if (actele->eltyp == el_wall1)
+    {
+      sveh[i]=actele->e.w1[0].elewa[0].matdata[0];
+    }
+    if (actele->eltyp == el_brick1)
+    {
+      sveh[i]=actele->e.c1[0].elewa[0].matdata[0];
+    }
+    /*--*/
+  }
+   /*--------------------------------- allreduce element density values */
+    MPI_Allreduce(sveh,svec,actfield->dis[0].numele,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+/*----------------------------------------------------------------------*/
+ if (par.myrank==0)
+ {/* proc 0 */
 /*------------------------------------------------- write template file */
   fp_tmp = fopen("zgout/cgs.tval","w");
   /*--------------------------------------------------------------------*/
@@ -342,6 +441,9 @@ if(ndataofmesh >1) fp_out=fopen("zgout/cgs.vval","a");/* open and add   */
   for (i=0; i<actfield->dis[0].numele; i++)
   {
      actele = &(actfield->dis[0].element[i]);
+#ifdef PARALLEL 
+      fprintf(fp_out,"%d %d %d %d %18.5#E \n",ndataofmesh, 1,i+1,1,svec[i]);
+#else
     /*--*/
     if (actele->eltyp == el_wall1)
     {
@@ -354,12 +456,19 @@ if(ndataofmesh >1) fp_out=fopen("zgout/cgs.vval","a");/* open and add   */
               ndataofmesh, 1,i+1,1,actele->e.c1[0].elewa[0].matdata[0]);
     }
     /*--*/
+#endif
   }
 
 /*----------------------------------------------------------------------*/
 fclose(fp_out);
 /*----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*/
+ }/* proc 0 */ 
+#ifdef PARALLEL 
+  CCAFREE(svec);
+  CCAFREE(sveh);
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -383,6 +492,9 @@ char    *modf;
 #ifdef DEBUG 
 dstrc_enter("og_write_displacements");
 #endif
+/*----------------------------------------------------------------------*/
+ if (par.myrank==0)
+ {/* proc 0 */
 /*--------------------------------------- loop all fields and init data */
 for (i=0; i<genprob.numfld; i++)
 {
@@ -430,6 +542,8 @@ fp_out = fopen("zgout/cgs.vdis",modf);
 fclose(fp_out);
 /*----------------------------------------------------------------------*/
 }
+/*----------------------------------------------------------------------*/
+ }/* proc 0 */ 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

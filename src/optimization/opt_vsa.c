@@ -19,6 +19,16 @@
 
 
 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -66,6 +76,7 @@ void optvsa(double *grdobj, double *grdcon,int init)
 /*----------------------------------------------------------------------*/
   int    i, j, iloc, cc;               /* a counter */
   static  double *svec;   /* vector with sensitivities on element level */
+  static  double *sveh;   /* necsessary for allreducing element values  */
 /*----------------------------------------------------------------------*/
   int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
   SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
@@ -101,6 +112,9 @@ void optvsa(double *grdobj, double *grdcon,int init)
   if(init==1)
   {
     svec  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+    #ifdef PARALLEL 
+    sveh  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+    #endif
     goto end;
   }
 /*----------------------------------------------------------------------*/
@@ -118,8 +132,16 @@ void optvsa(double *grdobj, double *grdcon,int init)
   container.getvalue      = 0.;
   container.getvector     = svec;
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
+#ifdef PARALLEL 
+  for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
+#endif
   
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
+    
+#ifdef PARALLEL 
+   /*---------------------------------------- allreduce objective value */
+    MPI_Allreduce(svec,sveh,actfield->dis[0].numele,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
   
   cc=0;
   for (i=0; i<actfield->dis[0].numele; i++)
@@ -128,7 +150,11 @@ void optvsa(double *grdobj, double *grdcon,int init)
     if(actele->optdata==NULL) continue; /* element does not take part in opt. */
     if(actele->optdata[0]==0) continue; /* position in variable vector        */
     iloc       = actele->optdata[0];
-    grdobj[cc] =  container.getvector[iloc-1]; 
+#ifdef PARALLEL 
+    grdobj[cc] =  sveh[iloc-1]; 
+#else
+    grdobj[cc] =  svec[iloc-1]; 
+#endif
     cc++;
   }
   /*constraint*/
@@ -137,7 +163,14 @@ void optvsa(double *grdobj, double *grdcon,int init)
     *action = calc_struct_dmc;       /* derivative of mass constraint */
   }
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
+#ifdef PARALLEL 
+  for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
+#endif
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
+#ifdef PARALLEL 
+   /*---------------------------------------- allreduce objective value */
+    MPI_Allreduce(svec,sveh,actfield->dis[0].numele,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
   
   cc=0;
   for (i=0; i<actfield->dis[0].numele; i++)
@@ -146,7 +179,11 @@ void optvsa(double *grdobj, double *grdcon,int init)
     if(actele->optdata==NULL) continue; /* element does not take part in opt. */
     if(actele->optdata[0]==0) continue; /* position in variable vector        */
     iloc       = actele->optdata[0];
-    grdcon[cc] =  -container.getvector[iloc-1]/opt->totmas; 
+#ifdef PARALLEL 
+    grdcon[cc] =  -sveh[iloc-1]/opt->totmas; 
+#else
+    grdcon[cc] =  -svec[iloc-1]/opt->totmas; 
+#endif
     cc++;
   }
 

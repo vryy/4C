@@ -19,6 +19,16 @@
 
 
 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

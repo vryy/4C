@@ -18,6 +18,16 @@
 \addtogroup OPTIMIZATION 
 *//*! @{ (documentation module open)*/
 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  |                                                         al 06/02     |
  | vector of material laws                                              |
@@ -120,8 +130,10 @@ void opteqc(double *constraint,int init)
 {
 /*----------------------------------------------------------------------*/
 int i, j, k;
+int ione=1;
 static double refvolu; /* reference or initial volume */
 static double refmass; /* reference or initial mass   */
+double tmpobj;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
@@ -196,11 +208,19 @@ dstrc_enter("opteqc");
     
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
     
+#ifdef PARALLEL 
+   /*---------------------------------------- allreduce objective value */
+    tmpobj = container.getvalue;
+    MPI_Allreduce(&tmpobj,&constraint[0],ione,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#else
+   /*------------------------------------------------------------------ */
     constraint[0] = container.getvalue;
+   /*------------------------------------------------------------------ */
+#endif
 
     if( refmass<=0.0)
     {
-      refmass = container.getvalue;
+      refmass = constraint[0];
       opt->totmas = refmass; 
     }
 
@@ -371,6 +391,8 @@ void optobj(double *objective)
 {
 /*----------------------------------------------------------------------*/
 int i, j, k;
+int ione=1;
+double tmpobj;
 /*----------------------------------------------------------------------*/
 int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
@@ -417,7 +439,15 @@ dstrc_enter("optobj");
     
     container.getvalue     = 0.;
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
+#ifdef PARALLEL 
+   /*---------------------------------------- allreduce objective value */
+    tmpobj = container.getvalue;
+    MPI_Allreduce(&tmpobj,&objective[0],ione,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#else
+   /*------------------------------------------------------------------ */
     objective[0] = container.getvalue;
+   /*------------------------------------------------------------------ */
+#endif
   }
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL 

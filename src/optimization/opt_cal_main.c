@@ -19,6 +19,16 @@
 
 
 /*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
+/*!----------------------------------------------------------------------
 \brief the optimization main structure
 <pre>                                                            al 06/01   
 defined in opt_cal_main.c
