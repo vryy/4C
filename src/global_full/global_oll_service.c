@@ -360,57 +360,6 @@ void oll_dof_in_coupledofs(
 
 
 
-/*----------------------------------------------------------------------*
- |  find the node to this dof in partition               m.gee 6/01     |
- *----------------------------------------------------------------------*/
-/*!----------------------------------------------------------------------
-\brief find node to dof 
-
-<pre>                                                              mn 02/03
-This function finds the node in the active partition the dof belongs to 
-</pre>
-\param   dof            INT        (i)   the dof in question
-\param  *actpart        PARTITION  (i)   the active partition
-\param **centernode     NODE       (i)   the node
-\param   dis            INT        (i)   actual disnumber
-
-\warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
-
-*----------------------------------------------------------------------*/
-void oll_dof_find_centernode(
-    INT dof,
-    PARTITION *actpart,
-    NODE **centernode,
-    INT dis)
-{
-  INT       j,k;
-#ifdef DEBUG 
-  dstrc_enter("oll_dof_find_centernode");
-#endif
-  /*----------------------------------------------------------------------*/
-  for (j=0; j<actpart->pdis[dis].numnp; j++)
-  {
-    for (k=0; k<actpart->pdis[dis].node[j]->numdf; k++)
-    {
-      if (actpart->pdis[dis].node[j]->dof[k] == dof)
-      {
-        *centernode = actpart->pdis[dis].node[j];
-        goto nodefound1;
-      }
-    }
-  }
-nodefound1:
-  /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-  dstrc_exit();
-#endif
-  return;
-} /* end of oll_dof_find_centernode */
-
-
-
 /*!----------------------------------------------------------------------
 \brief nnz and topology for oll 
 
@@ -457,6 +406,10 @@ void oll_nnz_topology(
 
   ARRAY      dof_nnz;
 
+  NODE     **node_dof;
+  INT        max_dof,dof_id;
+
+
 #ifdef PARALLEL 
   MPI_Status status;
 #endif
@@ -475,6 +428,32 @@ void oll_nnz_topology(
   amzero(&dof_nnz);
   amdef("tmp",&dofpatch,MAX_NNZPERROW,1,"IV");
   amzero(&dofpatch);
+
+  /* create node pointers for all dofs in this partition */
+  max_dof = 0;
+  for (j=0; j<actpart->pdis[dis].numnp; j++)
+  {
+    for (k=0; k<actpart->pdis[dis].node[j]->numdf; k++)
+    {
+      if (actpart->pdis[dis].node[j]->dof[k] >= max_dof)
+      {
+        max_dof = actpart->pdis[dis].node[j]->dof[k];
+      }
+    }
+  }
+  /* allocate pointer vector to the nodes */
+  node_dof = (NODE**)CCACALLOC(max_dof+1,sizeof(NODE*));
+  /* store pointers to nodes in node_dof at position accord. to dof */
+  for (j=0; j<actpart->pdis[dis].numnp; j++)
+  {
+    for (k=0; k<actpart->pdis[dis].node[j]->numdf; k++)
+    {
+      dof_id = actpart->pdis[dis].node[j]->dof[k];
+      dsassert(dof_id <= max_dof,"zu kleiner node_dof Vector");
+      node_dof[dof_id] = actpart->pdis[dis].node[j];
+    }
+  }
+
   /*----------------------------------------------------------------------*/
   for (i=0; i<numeq; i++)
   {
@@ -485,7 +464,7 @@ void oll_nnz_topology(
     if (iscoupled==1) continue;
     /*--------------------------------- find the centernode for this dof */
     centernode=NULL;
-    oll_dof_find_centernode(dof,actpart,&centernode,dis);
+    centernode = node_dof[dof];
     dsassert(centernode!=NULL,"Cannot make sparsity pattern for Aztec");
     /*--------------------------------- make dof patch around centernode */
     counter=0;

@@ -233,6 +233,9 @@ ARRAY     *coupledofs;
 INT        imyrank;
 INT        inprocs;
 
+NODE     **node_dof;
+INT        max_dof,dof_id;
+
 #ifdef PARALLEL 
 MPI_Status status;
 #endif
@@ -250,6 +253,32 @@ update = spo->update.a.iv;
 for (i=0; i<spo->numeq_total; i++) dof_connect[i]=NULL;
 amdef("tmp",&dofpatch,1000,1,"IV");
 amzero(&dofpatch);
+
+/* create node pointers for all dofs in this partition */
+  max_dof = 0;
+  for (j=0; j<actpart->pdis[0].numnp; j++)
+  {
+    for (k=0; k<actpart->pdis[0].node[j]->numdf; k++)
+    {
+      if (actpart->pdis[0].node[j]->dof[k] >= max_dof)
+      {
+        max_dof = actpart->pdis[0].node[j]->dof[k];
+      }
+    }
+  }
+  /* allocate pointer vector to the nodes */
+  node_dof = (NODE**)CCACALLOC(max_dof+1,sizeof(NODE*));
+  /* store pointers to nodes in node_dof at position accord. to dof */
+  for (j=0; j<actpart->pdis[0].numnp; j++)
+  {
+    for (k=0; k<actpart->pdis[0].node[j]->numdf; k++)
+    {
+      dof_id = actpart->pdis[0].node[j]->dof[k];
+      dsassert(dof_id <= max_dof,"zu kleiner node_dof Vector");
+      node_dof[dof_id] = actpart->pdis[0].node[j];
+    }
+  }
+
 /*----------------------------------------------------------------------*/
 for (i=0; i<numeq; i++)
 {
@@ -259,7 +288,7 @@ for (i=0; i<numeq; i++)
    dof_in_coupledofs(dof,actpart,&iscoupled);
    if (iscoupled==1) continue;
    /*--------------------------------- find the centernode for this dof */
-   dof_find_centernode(dof,actpart,&centernode);
+   centernode = node_dof[dof];
    /*--------------------------------- make dof patch around centernode */
    counter=0;
    for (j=0; j<centernode->numele; j++)
