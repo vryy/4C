@@ -10,6 +10,8 @@ Maintainer: Malte Neumann
 </pre>
 
   ---------------------------------------------------------------------*/
+/*---------------------------------------------------- local prototype */
+double cputime_thread();
 
 #include "../headers/standardtypes.h"
 #include <sys/time.h>
@@ -153,7 +155,7 @@ void perf_init (INT index)
   \return void
 
   ------------------------------------------------------------------------*/
-void perf_begin (INT index)
+void perf_begin (INT index) 
 {
   DOUBLE perf_cpu();
   DOUBLE perf_time();
@@ -358,7 +360,7 @@ double cputime_thread (void)
   static double last_wall_time[HP_MAX_THREADS];
 
   int64_t cputime;
-  int64_t walltime; 
+  int64_t walltime;
   int index;
   time_t boottime;
   int i;
@@ -389,9 +391,13 @@ double cputime_thread (void)
     walltime = 0;
     __lw_get_thread_times( HP_USER_CPU_TIME , &cputime , &walltime );
 
+#ifndef HPUX11
     index = pthread_self();
     if ( index < 0 ) index = 0;
-
+#else
+    index=0;
+#endif
+    
     base_time[index] = ((double) cputime) * sec_per_itick;
     first_call = 0;
     return( (double) 0 );
@@ -403,8 +409,12 @@ double cputime_thread (void)
   walltime = 0;
   __lw_get_thread_times( HP_USER_CPU_TIME , &cputime , &walltime );
 
-  index = pthread_self();
-  if ( index < 0 )  index = 0;
+#ifndef HPUX11
+    index = pthread_self();
+    if ( index < 0 ) index = 0;
+#else
+    index=0;
+#endif
 
   return( ((double) cputime) * sec_per_itick - base_time[index] );
 
