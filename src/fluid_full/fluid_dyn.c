@@ -78,20 +78,52 @@ fdyn->step=0;
 if (dyntyp==1) fluid_pm(fdyn);
 else if (dyntyp==0)
 {
-   if      (iop ==0) fluid_stat();     /* stationary solution algorithm         */
-   else if (iop >=2 && freesurf==0)
+   switch (iop)
    {
-       if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi(fdyn);      /* implicit and semi-implicit algorithms */
-       if(fdyn->turbu == 2)                    fluid_isi_tu(fdyn);   /* implicit and semi-implicit algorithms with turbulence-model*/
-       if(fdyn->turbu == 3)                    fluid_isi_tu_1(fdyn); /* implicit and semi-implicit algorithms with turbulence-model*/
-   } 
-   else if (iop == 4 && freesurf>0)
-      fluid_mf(0);      /* fluid multiefield algorithm      */
-   else 
-      dserror("unknown time algorithm"); 
+   case 0:		/* stationary solution algorithm		*/
+      fluid_stat();
+   break;
+   
+   case 1:		/* Generalised alpha time integration		*/
+      fdyn->time_rhs = 0;
+      fluid_isi(fdyn);
+   break;
+
+   case 4:		/* One step Theta 				*/
+      if(freesurf==0 && fdyn->adaptive==0)
+      {
+	/* implicit and semi-implicit algorithms 			*/
+         if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi(fdyn);
+	/* implicit and semi-implicit algorithms with turbulence-model	*/
+         if(fdyn->turbu == 2)                    fluid_isi_tu(fdyn);	
+	/* implicit and semi-implicit algorithms with turbulence-model	*/
+         if(fdyn->turbu == 3)                    fluid_isi_tu_1(fdyn);
+      }
+      else
+      {
+	/* fluid multiefield algorithm      				*/
+         if(freesurf && fdyn->adaptive==0)		fluid_mf(0);	
+   	/* for adaptive time stepping 					*/
+         else if(freesurf==0 && fdyn->adaptive)	fluid_isi(fdyn);   
+	/* adaptive time stepping fuer multifield 			*/
+         else if(freesurf && fdyn->adaptive)
+            dserror("free surface and adaptive time stepping not yet combined");
+      }
+   break;
+
+/*   case 6:		/* Generalised alpha time integration		*/
+/*      fluid_gen_alpha(fdyn);
+   break; */
+
+   case 7:		/* 2nd order backward differencing (BDF2)	*/
+      fluid_isi(fdyn);
+   break;
+
+   default:
+      dserror("Unknown time integration scheme");
+   }		/* end switch						*/
 }
-else     dserror("unknown time algorithm"); 
-/*----------------------------------------------------------------------*/
+else     dserror("Unknown dynamic type"); 
 
 /*----------------------------------------------------------------------*/
 #else
