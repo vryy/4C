@@ -832,6 +832,8 @@ for (i=0; i<ucchb->numeq_total; i++)
 }
 #ifdef PARALLEL 
 MPI_Allreduce(&max_dof_connect_send,&max_dof_connect_recv,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
+#else
+max_dof_connect_recv=max_dof_connect_send;
 #endif
 /*---------------- allocate temporary array to hold global connectivity */
 tmps = amdef("tmp",&tmps_a,ucchb->numeq_total,max_dof_connect_recv,"IA");
