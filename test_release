@@ -23,7 +23,6 @@ fi
 fail2=0
 pass2=0
 total=0
-total=0
 number=0
 s_time=0
 e_time=0
@@ -90,9 +89,11 @@ if [ "x$PARALLEL" = "xno" ]; then
   fsi_ow32x32.dat
   fsi_tank20x10.dat
   shell8_lineload.dat
+  shell9_dpmisGF.dat
   shell9_el_lay_eans.dat
   shell9_kreuz_easnl.dat
   shell9_matnl.dat
+  w1_3DmisGF.dat
   w1_Eulerstab.dat
   w1_incompmode.dat
   w1_mises.dat
@@ -122,9 +123,11 @@ else
   fsi_ow32x32.dat
   fsi_tank20x10.dat
   shell8_lineload.dat
+  shell9_dpmisGF.dat
   shell9_el_lay_eans.dat
   shell9_kreuz_easnl.dat
   shell9_matnl.dat
+  w1_3DmisGF.dat
   w1_Eulerstab.dat
   w1_incompmode.dat
   w1_mises.dat
@@ -134,7 +137,7 @@ else
   '
 fi
  
-liste=' xfem_ls_joggedchannel.dat  ale2_nln.dat'
+#liste=' xfem_ls_joggedchannel.dat  ale2_nln.dat'
 
 
 # get the start-time in seconds:
