@@ -72,6 +72,7 @@ void fluid3(PARTITION   *actpart,
 {
 #ifdef D_FLUID3 
 static INT              numff;      /* number of fluid field            */
+static INT              viscstr;
 DOUBLE                 *intforce;
 MATERIAL               *actmat;     /* actual material                  */
 FLUID_DYNAMIC          *fdyn;
@@ -83,6 +84,13 @@ static INT              ndum;       /* dummy variable                   */
 static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 FIELD                  *actfield;   /* actual field                     */
 INT smisal;
+
+  INT       i;        /* simply a counter */
+  INT       ldflag;
+  GVOL     *actgvol;
+  GSURF    *actgsurf;
+  GLINE    *actgline;
+  DSURF    *actdsurf;
 
 #ifdef DEBUG 
 dstrc_enter("fluid3");
@@ -103,6 +111,7 @@ case calc_fluid_init:
   }
   dynvar = &(alldyn[numff].fdyn->dynvar);
   data   = &(alldyn[numff].fdyn->dynvar.data);
+  viscstr= alldyn[genprob.numff].fdyn->viscstr;
 /*------------------------------------------- init the element routines */   
   f3_intg(data,0);
   f3_calele(data,dynvar,NULL,estif_global,emass_global,etforce_global,
@@ -133,18 +142,20 @@ case calc_fluid_init:
 #endif
 break;
 
-/*------------------------------------------- call the element routines */
+
+/* call the element routines */
 case calc_fluid:
-/*---------------------------------------------------- multi-level FEM? */   
+
+/* multi-level FEM? */   
 #ifdef FLUID3_ML
 if (fdyn->mlfem==1) 
 {
   smisal = ele->e.f3->smisal;
   if (smisal!=1) 
   {
-/*------------------------------ create element submesh if not yet done */   
+/* create element submesh if not yet done */   
     f3_elesubmesh(ele,submesh,0);
-/*-------------------------- create element sub-submesh if not yet done */   
+/* create element sub-submesh if not yet done */   
     if (mlvar->smsgvi>2) f3_elesubmesh(ele,ssmesh,1);
   }  
   f3_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
@@ -155,6 +166,38 @@ else
   f3_calele(data,dynvar,ele,estif_global,emass_global,etforce_global,
                  eiforce_global,edforce_global,hasdirich,hasext,0);
 break;
+
+
+/* calculate fluid stresses */
+case calc_fluid_stress:
+  f3_stress(container->str,viscstr,data,ele,container->is_relax);
+  break;
+
+
+/* calculate fluid stresses for lift&drag calculation */
+  case calc_fluid_liftdrag:
+    if (ele->proc == actintra->intra_rank)
+    {
+      /* check if element is on liftdrag-dline */
+      actgvol=ele->g.gvol;
+      ldflag=0;
+      for (i=0;i<actgvol->ngsurf;i++)
+      {
+        actgsurf=actgvol->gsurf[i];
+        actdsurf=actgsurf->dsurf;
+        if (actdsurf==NULL) continue;
+        if (actdsurf->liftdrag==NULL) continue;
+        ldflag++;
+        break;
+      }
+      if (ldflag>0)
+      {
+        f3_stress(container->str,viscstr,data,ele,container->is_relax);
+        f3_liftdrag(ele,data,container);
+      }
+    }
+    break;
+
 
 /*----------------------------------------------------------------------*/
 default:

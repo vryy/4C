@@ -8,6 +8,8 @@ Maintainer: Steffen Genkinger
             http://www.uni-stuttgart.de/ibs/members/genkinger/
             0711 - 685-6127
 </pre>
+#include "../fluid3/fluid3.h"
+#include "../fluid2/fluid2.h"
 
 ------------------------------------------------------------------------*/
 /* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
@@ -1779,3 +1781,86 @@ for fluids.
                      
 ------------------------------------------------------------------------*/
 void f3_massrhs(ELEMENT *ele, DOUBLE **emass, DOUBLE **eaccn, DOUBLE *eiforce);
+
+
+void f3_stress(
+    FLUID_STRESS  str, 
+    INT           viscstr,
+    FLUID_DATA   *data, 
+    ELEMENT      *ele,
+    INT           is_relax);
+
+
+void f3_calelestress(
+    INT             viscstr,
+    FLUID_DATA     *data, 
+    ELEMENT        *ele,
+    DOUBLE        **evel, 
+    DOUBLE         *epre,
+    DOUBLE         *funct,
+    DOUBLE        **deriv,
+    DOUBLE        **derxy,
+    DOUBLE        **vderxy,
+    DOUBLE        **xjm,
+    DOUBLE        **wa1,
+    DOUBLE        **xyze,
+    DOUBLE        **sigmaint
+    );
+
+DOUBLE f3_rsn (
+    INT   node,
+    INT   irs
+    );
+
+void f3_lgpl (
+    INT         i,
+    INT         n,
+    DOUBLE    *zr,  
+    DOUBLE      z,
+    DOUBLE *value
+    );
+
+void f3_hxsm (
+    INT nir,
+    INT nis,
+    INT nit,  
+    DOUBLE rk,
+    DOUBLE sk,
+    DOUBLE tk,
+    DOUBLE f[6][27],
+    DOUBLE *fp,
+    DOUBLE *xgr,
+    DOUBLE *xgs,
+    DOUBLE *xgt
+    );
+
+void f3_sext(
+    DOUBLE  **nostrs,
+    DOUBLE  **gpstress,
+    DOUBLE   *xgr,
+    DOUBLE   *xgs,
+    DOUBLE   *xgt,
+    INT       nir,
+    INT       nis, 
+    INT       nit,
+    INT       iel
+    );
+
+void f3_hex2(
+    DOUBLE      funct[MAXNOD_F3],
+    DOUBLE      deriv[3][MAXNOD_F3],
+    DOUBLE      r,
+    DOUBLE      s,
+    DOUBLE      t,
+    DIS_TYP     typ
+    );
+
+void f3_jaco2(
+    DOUBLE      funct[MAXNOD_F3],
+    DOUBLE      deriv[3][MAXNOD_F3],
+    DOUBLE      xjm[3][3],
+    DOUBLE     *det,
+    ELEMENT    *ele,
+    INT         iel
+    );
+
