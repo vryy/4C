@@ -19,7 +19,7 @@ LIBDIRS=""
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-L$BASEDIR/aztec21/orig -laztec_seq"
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seq"
 
 # spooles
 SPOOLES_INC=""
@@ -44,8 +44,3 @@ CFLAGS="-Xc -DSIXTYFOUR -pvctl loopcnt=500000 noassume"
 FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl loopcnt=500000 noassume\""
 LDFLAGS=""
 
-#CFLAGS="-Xc -DSIXTYFOUR -ftrace -loopprof -pvctl,loopcnt=500000"
-#FFLAGS="-DSIXTYFOUR -ftrace -loopprof -Wf,\"-pvctl,loopcnt=500000\""
-#LDFLAGS="-ftrace -loopprof"
-
-#FFLAGS="-DSIXTYFOUR -ftrace -Wf,\"-pvctl,loopcnt=500000\" -Wf,\"-L fmtlist map summary transform\" "
