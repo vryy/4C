@@ -1,18 +1,23 @@
 /*!----------------------------------------------------------------------
 \file
 \brief contains the routines
- - s9_matrix_sort: which rearranges the constitutive matrix due to the
-                   sorting of stresses and strains in different elements,...
- - s9tcuca: which transforms stresses and strains from cartesian to
-            curvilinear coordinate system and vice versa
- - s9T4sym: which transforms a symmetric consitutive matrix from cartesian
-            to curvilinear coordinate system 
- - s9shear_cor: which makes some modifications to the constitutive matrix
-                due to some shear correction aspects
- - s9_Tmaca: which transforms the material matrix from a orthonormal material
-             coordinate system to the global (orthonormal) catesian coordinate
-             system -> sorting [11,22,33,12,23,13]
+ - s9_Msort_bs9:   which rearranges the constitutive matrix from "brick" to "shell9"
+ - s9_Msort_s9b:   which rearranges the constitutive matrix from "shell9" to "brick"
 
+ - s9_Vsort_bs9:   sorting of 'stress'/'strain'-vector from "brick" to "shell9"
+ - s9_Vsort_s9b:   sorting of 'stress'/'strain'-vector from "shell9" to "brick"
+
+ - s9shear_cor:    which makes some modifications to the constitutive matrix
+                   due to some shear correction aspects
+
+ - s9_rot:         which calculates the basis vectors of the material/laminat
+                   coordinate system according to the cartesian coord. sys.
+ - s9_Teps:        which calculates the transformation matrix T_sup_epsilon
+ - s9_Ecama:       which transforms strains from cartesian to material/laminat coord. sys
+ - s9_Smaca:       which transforms stresses from material/laminat to cartesian coord. sys
+ - s9_Cmaca:       which transforms the constitutive matrix from material/laminat to
+                   cartesian coord. sys
+    
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"
@@ -24,9 +29,10 @@
 
 
 /*!----------------------------------------------------------------------
-\brief sorts the constitutive matrix according to shell9,... conventions                                      
+\brief sorts the constitutive matrix according to shell9,... conventions 
+       sorts from "brick" to "shell9"                                     
 
-<pre>                                                            sh 02/03
+<pre>                                                            sh 05/03
 This routine rearranges the constitutive matrix due to the order 
 convention of different elements and material laws, e.g.
 brick:  [11,22,33,12,23,13]
@@ -34,27 +40,23 @@ shell8: [11,12,13,22,23,33]
 shell9: [11,12,22,13,23,33] ...
 </pre>
 \param  DOUBLE **M      (i/o) matrix do be rearranged ([6][6])
-\param  char    flag1[]  (i)  switch from "brick", "s8", "s9" ,...
-\param  char    flag2[]  (i)  switch to "brick", "s8", "s9" ,...
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9_matrix_sort(DOUBLE **M, char flag1[], char flag2[])
+void s9_Msort_bs9(DOUBLE **M)
 {
 INT    i,j;
 DOUBLE C_HELP[6][6];    
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("s9_matrix_sort");
+dstrc_enter("s9_Msort_bs9");
 #endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<6; i++) for (j=0; j<6; j++) C_HELP[i][j] = M[i][j];
 
-if (strstr(flag1,"brick")!=NULL && strstr(flag2,"s9")!=NULL)
-{
    M[0][0] =  C_HELP[0][0];
    M[0][1] =  C_HELP[0][3];     
    M[0][2] =  C_HELP[0][1];     
@@ -96,9 +98,43 @@ if (strstr(flag1,"brick")!=NULL && strstr(flag2,"s9")!=NULL)
    M[5][3] =  C_HELP[2][5];    
    M[5][4] =  C_HELP[2][4];    
    M[5][5] =  C_HELP[2][2];
-}    
-else if (strstr(flag1,"s9")!=NULL && strstr(flag2,"brick")!=NULL)
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s9_Msort_bs9 */
+
+
+/*!----------------------------------------------------------------------
+\brief sorts the constitutive matrix according to shell9,... conventions                                      
+       sorts from "shell9" to "brick"                                     
+
+<pre>                                                            sh 05/03
+This routine rearranges the constitutive matrix due to the order 
+convention of different elements and material laws, e.g.
+brick:  [11,22,33,12,23,13]
+shell8: [11,12,13,22,23,33]
+shell9: [11,12,22,13,23,33] ...
+</pre>
+\param  DOUBLE **M      (i/o) matrix do be rearranged ([6][6])
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: 
+                             
+*-----------------------------------------------------------------------*/
+void s9_Msort_s9b(DOUBLE **M)
 {
+INT    i,j;
+DOUBLE C_HELP[6][6];    
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("s9_Msort_s9b");
+#endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<6; i++) for (j=0; j<6; j++) C_HELP[i][j] = M[i][j];
+
    M[0][0] =  C_HELP[0][0];    
    M[0][3] =  C_HELP[0][1];    
    M[0][1] =  C_HELP[0][2];    
@@ -140,766 +176,98 @@ else if (strstr(flag1,"s9")!=NULL && strstr(flag2,"brick")!=NULL)
    M[2][5] =  C_HELP[5][3];    
    M[2][4] =  C_HELP[5][4];    
    M[2][2] =  C_HELP[5][5];    
-}        
-else dserror("Wrong flags used in 's9_matrix_sort' !");
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of s9_matrix_sort */
+} /* end of s9_Msort_s9b */
 
 
 /*!----------------------------------------------------------------------
-\brief transforms stresses and strains from cartesian to curvilinear 
-       coordinate system and vice versa                                    
+\brief sorts the vectors 'strain'/'stress' according to shell9,... conventions 
+       sorts form "brick" to "shell9"                                     
 
-<pre>                                                            sh 02/03
-This routine transforms the stresses and strains from cartesian to 
-curvilinear coordinate system and vice versa. This is very useful in order
-to use general material laws, which are written in orthonormal coordinate
-systems.
+<pre>                                                            sh 05/03
+This routine rearranges the vectors 'strain'/'stress' due to the order 
+convention of different elements and material laws, e.g.
+brick:  [11,22,33,12,23,13]
+shell8: [11,12,13,22,23,33]
+shell9: [11,12,22,13,23,33] ...
 </pre>
-\param  DOUBLE  *str    (i/o) stresses or strains to be modified
-\param  DOUBLE **gkov    (i)  kovariant basis vectors
-\param  char     flag1[] (i)  'CACU' or 'CUCA' defines the direction of the transformation
-\param  char     flag2[] (i)  'S' or 'E' stresses or strains to be transformed
+\param  DOUBLE *vec     (i/o) matrix do be rearranged ([6])
 
-\warning Always call this routine with the kovariant basis vectors (gkov). 
+\warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9tcuca (DOUBLE *str, DOUBLE **gkov, char flag1[],char flag2[])
+void s9_Vsort_bs9(DOUBLE vec[6])
 {
-INT      i,j,k,l;
-ARRAY    gkon_a;     DOUBLE **gkon;     
-ARRAY    gi_a;       DOUBLE **gi;     
-
-DOUBLE   A[3][3], B[3][3];
-DOUBLE   det_dummy;
+INT    i;
+DOUBLE vec_help[6];    
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("s9tcuca");
+dstrc_enter("s9_Vsort_bs9");
 #endif
 /*----------------------------------------------------------------------*/
-gkon = amdef("gkon",&gkon_a,3,3,"DA");         
-gi   = amdef("gi"  ,&gi_a,  3,3,"DA");         
-/*----------------------------------------------------------------------*/
-A[0][0] = str[0];
-A[1][1] = str[2];
-A[2][2] = str[5];
-A[0][1] = str[1];
-A[1][0] = str[1];
-A[0][2] = str[3];
-A[2][0] = str[3];
-A[1][2] = str[4];
-A[2][1] = str[4];
-/*----------------------------------------------------------------------*/
-for (i=0; i<3; i++) for (j=0; j<3; j++) B[i][j] = 0.0;
+for (i=0; i<6; i++) vec_help[i] = vec[i];
 
-
-if (strstr(flag2,"E")!=NULL) /*for transformation of strains use gkon*/
-{
-  math_array_copy(gkov,3,3,gkon);
-  math_inv3(gkon,&det_dummy);
-  math_tran(gkon,3);
-}
-
-if (strstr(flag1,"CACU")!=NULL && strstr(flag2,"S")!=NULL)
-{
-   math_array_copy(gkov,3,3,gi);
-   math_inv3(gi,&det_dummy);
-}
-if (strstr(flag1,"CACU")!=NULL && strstr(flag2,"E")!=NULL)
-{
-   math_array_copy(gkon,3,3,gi);
-   math_inv3(gi,&det_dummy);
-}
-
-if (strstr(flag1,"CUCA")!=NULL && strstr(flag2,"S")!=NULL)
-{
-   math_array_copy(gkov,3,3,gi);
-}
-if (strstr(flag1,"CUCA")!=NULL && strstr(flag2,"E")!=NULL)
-{
-   math_array_copy(gkon,3,3,gi);
-}
-
-for (k=0; k<3; k++) 
-for (l=0; l<3; l++)
-{
-   B[0][0] += gi[0][k] * gi[0][l] * A[k][l];
-   B[1][1] += gi[1][k] * gi[1][l] * A[k][l];
-   B[2][2] += gi[2][k] * gi[2][l] * A[k][l];
-   B[0][1] += gi[0][k] * gi[1][l] * A[k][l];
-   B[0][2] += gi[0][k] * gi[2][l] * A[k][l];
-   B[1][2] += gi[1][k] * gi[2][l] * A[k][l];
-}
-
-str[0] = B[0][0];
-str[2] = B[1][1];
-str[5] = B[2][2];
-str[1] = B[0][1];
-str[3] = B[0][2];
-str[4] = B[1][2];
-/*----------------------------------------------------------------------*/
-amdel(&gkon_a);
-amdel(&gi_a);
+   vec[0] =  vec_help[0];
+   vec[1] =  vec_help[3];     
+   vec[2] =  vec_help[1];     
+   vec[3] =  vec_help[5];     
+   vec[4] =  vec_help[4];     
+   vec[5] =  vec_help[2];     
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of s9tcuca */
+} /* end of s9_Vsort_bs9 */
+
 
 /*!----------------------------------------------------------------------
-\brief transformation of a 4th order material tensor (not condensed)                                   
+\brief sorts the vectors 'strain'/'stress' according to shell9,... conventions   
+       sorts from "shell9" to "brick"                                   
 
-<pre>                                                            sh 02/03
-This routine transforms a consititutive material matrix into a different
-coordinate system.
-.........................................................................
-.                                                                       .
-.    A(m,n,o,p) = C(i,m) * C(j,n) * A(i,j,k,l) * C(k,o) * C(l,p)        .
-.                    _                               _                  .
-.                   |  1111 1112 1122 1113 1123 1133  |                 .
-.                   |       1212 1222 1213 1223 1233  |                 .
-.    Anordnung:  A =|            2222 2213 2223 2233  |                 .
-.                   |   sym.          1313 1323 1333  |                 .
-.                   |                      2323 2333  |                 .
-.                   |_                          3333 _|                 .
-.........................................................................
+<pre>                                                            sh 05/03
+This routine rearranges the vectors 'strain'/'stress' due to the order 
+convention of different elements and material laws, e.g.
+brick:  [11,22,33,12,23,13]
+shell8: [11,12,13,22,23,33]
+shell9: [11,12,22,13,23,33] ...
 </pre>
-\param  DOUBLE **A    (i/o) matrix to be modified
-\param  DOUBLE **C     (i)  Transformation matrix
+\param  DOUBLE *vec     (i/o) matrix do be rearranged ([6])
 
-\warning Is equal to the routine 'S9T4NK' of the old carat. When calling
-         this routine you need to use the transpose of 'C' compared to
-         CARAT, as the arrays are stored differently in "c" and in "Fortran" 
+\warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9T4sym (DOUBLE **A, DOUBLE **C)
+void s9_Vsort_s9b(DOUBLE vec[6])
 {
-DOUBLE C11,C21,C31,C12,C22,C32,C13,C23,C33;
-DOUBLE A11,A12,A13,A14,A15,A16;
-DOUBLE     A22,A23,A24,A25,A26;
-DOUBLE         A33,A34,A35,A36;
-DOUBLE             A44,A45,A46;
-DOUBLE                 A55,A56;
-DOUBLE                     A66;
-
+INT    i;
+DOUBLE vec_help[6];    
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("s9T4sym");
+dstrc_enter("s9_Vsort_s9b");
 #endif
 /*----------------------------------------------------------------------*/
-C11=C[0][0];
-C21=C[1][0];
-C31=C[2][0];
-C12=C[0][1];
-C22=C[1][1];
-C32=C[2][1];
-C13=C[0][2];
-C23=C[1][2];
-C33=C[2][2];
+for (i=0; i<6; i++) vec_help[i] = vec[i];
 
-A11=A[0][0];
-A12=A[0][1];
-A13=A[0][2];
-A14=A[0][3];
-A15=A[0][4];
-A16=A[0][5];
-
-A22=A[1][1];
-A23=A[1][2];
-A24=A[1][3];
-A25=A[1][4];
-A26=A[1][5];
-
-A33=A[2][2];
-A34=A[2][3];
-A35=A[2][4];
-A36=A[2][5];
-
-A44=A[3][3];
-A45=A[3][4];
-A46=A[3][5];
-
-A55=A[4][4];
-A56=A[4][5];
-
-A66=A[5][5];
-
-A[0][0]=  C11*C11*C11*C11*A11 +   C21*C21*C21*C21*A33 + 
-        4*C11*C11*C11*C21*A12 + 4*C11*C11*C11*C31*A14 + 
-        2*C11*C11*C21*C21*A13 + 4*C11*C11*C21*C21*A22 + 
-        4*C11*C11*C31*C31*A44 + 4*C21*C21*C31*C31*A55 + 
-        4*C11*C21*C21*C21*A23 + 4*C31*C21*C21*C21*A35 + 
-        4*C11*C11*C21*C31*A15 + 8*C11*C11*C21*C31*A24 + 
-        4*C11*C21*C21*C31*A34 + 8*C21*C21*C11*C31*A25 + 
-        8*C11*C21*C31*C31*A45 + 4*C11*C21*C31*C31*A26 +
-        4*C21*C31*C31*C31*A56 + 4*C11*C31*C31*C31*A46 + 
-        2*C11*C11*C31*C31*A16 + 2*C21*C21*C31*C31*A36 + 
-          C31*C31*C31*C31*A66;
-
-A[0][1]=  C11*C11*C11*C12*A11 +   C21*C21*C21*C22*A33 + 
-        3*C11*C11*C21*C12*A12 +   C11*C11*C11*C22*A12 +
-        3*C11*C11*C31*C12*A14 +   C11*C11*C11*C32*A14 +
-          C11*C11*C21*C22*A13 +   C21*C21*C11*C12*A13 + 
-        2*C11*C11*C21*C22*A22 + 2*C11*C21*C21*C12*A22 + 
-        2*C11*C11*C31*C32*A44 + 2*C11*C31*C31*C12*A44 +
-        2*C21*C21*C31*C32*A55 + 2*C21*C31*C31*C22*A55 + 
-        3*C11*C21*C21*C22*A23 +   C21*C21*C21*C12*A23 +
-        3*C31*C21*C21*C22*A35 +   C21*C21*C21*C32*A35 +
-        2*C21*C31*C11*C12*A15 +   C11*C11*C21*C32*A15 +
-          C11*C11*C31*C22*A15 + 4*C11*C21*C31*C12*A24 +
-        2*C11*C21*C11*C32*A24 + 2*C11*C11*C31*C22*A24 +
-        2*C11*C31*C21*C22*A34 +   C21*C21*C11*C32*A34; 
-A[0][1]=A[0][1]+
-          C21*C21*C31*C12*A34 + 4*C21*C11*C31*C22*A25 +
-        2*C31*C21*C21*C12*A25 + 2*C11*C21*C21*C32*A25 +
-        4*C31*C11*C21*C32*A45 + 2*C31*C11*C31*C22*A45 +
-        2*C31*C21*C31*C12*A45 + 2*C11*C21*C31*C32*A26 +
-          C11*C22*C31*C31*A26 +   C12*C21*C31*C31*A26 +
-          C21*C31*C31*C32*A56 +   C22*C31*C31*C31*A56 +
-        2*C21*C31*C31*C32*A56 +   C11*C31*C31*C32*A46 +
-          C12*C31*C31*C31*A46 + 2*C11*C31*C31*C32*A46 + 
-          C11*C11*C31*C32*A16 +   C11*C12*C31*C31*A16 +
-          C21*C21*C31*C32*A36 +   C21*C22*C31*C31*A36 + 
-          C31*C31*C31*C32*A66;
-
-A[0][2]=  C11*C11*C12*C12*A11 +   C21*C21*C22*C22*A33 + 
-        2*C11*C11*C22*C12*A12 + 2*C21*C11*C12*C12*A12 +
-        2*C11*C11*C32*C12*A14 + 2*C31*C11*C12*C12*A14 +
-          C11*C11*C22*C22*A13 +   C21*C21*C12*C12*A13 + 
-        2*C11*C21*C22*C12*A22 + 2*C11*C21*C22*C12*A22 + 
-        2*C11*C31*C32*C12*A44 + 2*C11*C31*C32*C12*A44 +
-        2*C21*C31*C32*C22*A55 + 2*C21*C31*C32*C22*A55 + 
-        2*C11*C21*C22*C22*A23 + 2*C21*C21*C22*C12*A23 +
-        2*C31*C21*C22*C22*A35 + 2*C21*C21*C22*C32*A35 +
-        2*C21*C31*C12*C12*A15 + 2*C11*C11*C22*C32*A15 +
-        4*C11*C21*C32*C12*A24 + 4*C11*C31*C12*C22*A24 +
-        2*C11*C31*C22*C22*A34 + 2*C21*C21*C12*C32*A34 +
-        4*C21*C11*C32*C22*A25 + 4*C21*C31*C22*C12*A25 +
-        4*C31*C11*C22*C32*A45 + 4*C31*C21*C32*C12*A45 +
-          C31*C31*C32*C32*A66 +   C11*C11*C32*C32*A16 +
-          C31*C31*C12*C12*A16 +   C21*C21*C32*C32*A36 +
-          C31*C31*C22*C22*A36 + 2*C21*C31*C32*C32*A56 +
-        2*C31*C31*C22*C32*A56 + 2*C11*C31*C32*C32*A46 +
-        2*C31*C31*C12*C32*A46 + 2*C11*C21*C32*C32*A26 +
-        2*C31*C31*C12*C22*A26;
-
-A[0][3]=  C11*C11*C11*C13*A11 +   C21*C21*C21*C23*A33 + 
-        3*C11*C11*C21*C13*A12 +   C11*C11*C11*C23*A12 +
-        3*C11*C11*C31*C13*A14 +   C11*C11*C11*C33*A14 +
-          C11*C11*C21*C23*A13 +   C21*C21*C11*C13*A13 + 
-        2*C11*C11*C21*C23*A22 + 2*C11*C21*C21*C13*A22 + 
-        2*C11*C11*C31*C33*A44 + 2*C11*C31*C31*C13*A44 +
-        2*C21*C21*C31*C33*A55 + 2*C21*C31*C31*C23*A55 + 
-        3*C11*C21*C21*C23*A23 +   C21*C21*C21*C13*A23 +
-        3*C31*C21*C21*C23*A35 +   C21*C21*C21*C33*A35 +
-        2*C21*C31*C11*C13*A15 +   C11*C11*C21*C33*A15 +
-          C11*C11*C31*C23*A15 + 4*C11*C21*C31*C13*A24 +
-        2*C11*C21*C11*C33*A24 + 2*C11*C11*C31*C23*A24 +
-        2*C11*C31*C21*C23*A34 +   C21*C21*C11*C33*A34 +
-          C21*C21*C31*C13*A34 + 4*C21*C11*C31*C23*A25 +
-        2*C31*C21*C21*C13*A25 + 2*C11*C21*C21*C33*A25 +
-        4*C31*C11*C21*C33*A45 + 2*C31*C11*C31*C23*A45 +
-        2*C31*C21*C31*C13*A45; 
-A[0][3]=A[0][3] +
-          C31*C31*C31*C33*A66 +
-          C11*C11*C31*C33*A16 +   C31*C31*C11*C13*A16 +
-          C21*C21*C31*C33*A36 +   C31*C31*C21*C23*A36 +
-        3*C21*C31*C31*C33*A56 +   C31*C31*C31*C23*A56 +
-        3*C11*C31*C31*C33*A46 +   C31*C31*C31*C13*A46 +
-        2*C11*C21*C31*C33*A26 +   C31*C31*C11*C23*A26 +
-          C31*C31*C21*C13*A26;
-
-A[0][4]=  C11*C11*C12*C13*A11 +   C21*C21*C22*C23*A33 + 
-        2*C11*C21*C12*C13*A12 +   C11*C11*C12*C23*A12 + 
-          C11*C11*C22*C13*A12 +   C11*C11*C32*C13*A14 +
-        2*C11*C31*C12*C13*A14 +   C11*C11*C12*C33*A14 +
-          C11*C11*C22*C23*A13 +   C21*C21*C12*C13*A13 + 
-        2*C11*C21*C22*C13*A22 + 2*C11*C21*C12*C23*A22 + 
-        2*C11*C31*C32*C13*A44 + 2*C11*C31*C12*C33*A44 +
-        2*C21*C31*C32*C23*A55 + 2*C21*C31*C22*C33*A55 + 
-        2*C11*C21*C22*C23*A23 +   C21*C21*C22*C13*A23 +
-          C21*C21*C12*C23*A23 +   C21*C21*C23*C32*A35 +
-        2*C31*C21*C22*C23*A35 +   C21*C21*C22*C33*A35 + 
-        2*C21*C31*C12*C13*A15 +   C11*C11*C22*C33*A15 +
-          C11*C11*C32*C23*A15 + 2*C11*C21*C12*C33*A24 +
-        2*C11*C31*C12*C23*A24 + 2*C11*C21*C32*C13*A24 +
-        2*C11*C31*C22*C13*A24 +   C21*C21*C32*C13*A34 + 
-        2*C11*C31*C22*C23*A34 +   C21*C21*C12*C33*A34; 
-A[0][4]=A[0][4] + 
-        2*C21*C11*C22*C33*A25 + 2*C21*C31*C22*C13*A25 +
-        2*C21*C11*C32*C23*A25 + 2*C21*C31*C12*C23*A25 + 
-        2*C31*C11*C32*C23*A45 + 2*C31*C21*C32*C13*A45 +
-        2*C31*C11*C22*C33*A45 + 2*C31*C21*C12*C33*A45 +
-          C31*C31*C32*C33*A66 +
-          C11*C11*C32*C33*A16 +   C31*C31*C12*C13*A16 +
-          C21*C21*C32*C33*A36 +   C31*C31*C22*C23*A36 +
-        2*C21*C31*C32*C33*A56 +   C31*C31*C22*C33*A56 +
-          C31*C31*C32*C23*A56 +   C31*C31*C32*C13*A46 +
-        2*C11*C31*C32*C33*A46 +   C31*C31*C12*C33*A46 +
-        2*C11*C21*C32*C33*A26 +   C31*C31*C12*C23*A26 +
-          C31*C31*C22*C13*A26;
-          
-A[0][5]=  C11*C11*C13*C13*A11 +   C21*C21*C23*C23*A33 + 
-        2*C11*C11*C23*C13*A12 + 2*C21*C11*C13*C13*A12 +
-        2*C11*C11*C33*C13*A14 + 2*C31*C11*C13*C13*A14 +
-          C11*C11*C23*C23*A13 +   C21*C21*C13*C13*A13 + 
-        2*C11*C21*C23*C13*A22 + 2*C11*C21*C23*C13*A22 + 
-        2*C11*C31*C33*C13*A44 + 2*C11*C31*C33*C13*A44 +
-        2*C21*C31*C33*C23*A55 + 2*C21*C31*C33*C23*A55 + 
-        2*C11*C21*C23*C23*A23 + 2*C21*C21*C23*C13*A23 +
-        2*C31*C21*C23*C23*A35 + 2*C21*C21*C23*C33*A35 +
-        2*C21*C31*C13*C13*A15 + 2*C11*C11*C23*C33*A15 +
-        4*C11*C21*C33*C13*A24 + 4*C11*C31*C13*C23*A24 +
-        2*C11*C31*C23*C23*A34 + 2*C21*C21*C13*C33*A34 +
-        4*C21*C11*C33*C23*A25 + 4*C21*C31*C23*C13*A25 +
-        4*C31*C11*C23*C33*A45 + 4*C31*C21*C33*C13*A45 +
-          C31*C31*C33*C33*A66 +   C11*C11*C33*C33*A16 +
-          C31*C31*C13*C13*A16 +   C21*C21*C33*C33*A36 +
-          C31*C31*C23*C23*A36 + 2*C21*C31*C33*C33*A56 +
-        2*C31*C31*C23*C33*A56 + 2*C11*C31*C33*C33*A46 +
-        2*C31*C31*C13*C33*A46 + 2*C11*C21*C33*C33*A26 +
-        2*C31*C31*C13*C23*A26; 
-
-A[1][1]=  C11*C11*C12*C12*A11 +   C21*C21*C22*C22*A33 + 
-        2*C11*C11*C22*C12*A12 + 2*C21*C11*C12*C12*A12 +
-        2*C11*C11*C32*C12*A14 + 2*C31*C11*C12*C12*A14 +
-          C11*C21*C12*C22*A13 +   C21*C11*C12*C22*A13 + 
-        2*C11*C22*C21*C12*A22 +   C21*C12*C21*C12*A22 +
-          C11*C22*C11*C22*A22 +   C11*C32*C11*C32*A44 +
-        2*C11*C32*C31*C12*A44 +   C31*C12*C31*C12*A44 +
-          C21*C32*C21*C32*A55 +
-        2*C21*C32*C31*C22*A55 +   C22*C31*C31*C22*A55 + 
-        2*C11*C22*C21*C22*A23 + 2*C21*C12*C21*C22*A23 +
-        2*C31*C22*C21*C22*A35 + 2*C21*C21*C32*C22*A35 + 
-        2*C11*C12*C21*C32*A15 + 2*C11*C12*C22*C31*A15 +
-        2*C11*C22*C32*C11*A24 + 2*C11*C22*C12*C31*A24 +
-        2*C11*C21*C32*C12*A24 + 2*C21*C31*C12*C12*A24 + 
-        2*C21*C22*C11*C32*A34 + 2*C21*C22*C12*C31*A34 +
-        2*C21*C12*C32*C21*A25 + 2*C21*C12*C22*C31*A25 +
-        2*C21*C11*C32*C22*A25 + 2*C31*C11*C22*C22*A25 + 
-        2*C31*C12*C22*C31*A45 + 2*C31*C22*C32*C11*A45 +
-        2*C31*C12*C21*C32*A45 + 2*C11*C21*C32*C32*A45;
-A[1][1]=A[1][1] +
-          C31*C32*C31*C32*A66 + 2*C11*C12*C31*C32*A16 +
-        2*C21*C22*C31*C32*A36 + 2*C21*C32*C31*C32*A56 +
-        2*C31*C22*C31*C32*A56 + 2*C11*C32*C31*C32*A46 +
-        2*C31*C12*C31*C32*A46 + 2*C11*C22*C31*C32*A26 +
-        2*C21*C12*C31*C32*A26;
-
-A[1][2]=  C11*C12*C12*C12*A11 +   C21*C22*C22*C22*A33 + 
-        3*C11*C12*C22*C12*A12 +   C21*C12*C12*C12*A12 +
-        3*C11*C12*C32*C12*A14 +   C12*C12*C12*C31*A14 +
-          C11*C12*C22*C22*A13 +   C21*C22*C12*C12*A13 + 
-        2*C11*C12*C22*C22*A22 + 2*C12*C21*C22*C12*A22 + 
-        2*C11*C12*C32*C32*A44 + 2*C12*C31*C32*C12*A44 +
-        2*C21*C22*C32*C32*A55 + 2*C22*C31*C32*C22*A55 + 
-        3*C12*C21*C22*C22*A23 +   C11*C22*C22*C22*A23 + 
-        3*C32*C21*C22*C22*A35 +   C31*C22*C22*C22*A35 + 
-        2*C11*C12*C22*C32*A15 +   C12*C12*C21*C32*A15 +
-          C12*C12*C31*C22*A15 + 4*C11*C12*C22*C32*A24 +
-        2*C21*C12*C12*C32*A24 + 2*C31*C12*C12*C22*A24 +
-        2*C21*C32*C12*C22*A34 +   C11*C22*C22*C32*A34 +
-          C22*C22*C31*C12*A34 + 4*C21*C12*C32*C22*A25 +
-        2*C31*C22*C22*C12*A25 + 2*C11*C22*C22*C32*A25 + 
-        4*C12*C22*C31*C32*A45 + 2*C32*C11*C32*C22*A45 + 
-        2*C32*C21*C32*C12*A45;
-A[1][2]=A[1][2] +
-          C31*C32*C32*C32*A66 +   C11*C12*C32*C32*A16 +
-          C31*C32*C12*C12*A16 +   C31*C32*C22*C22*A36 +
-          C21*C22*C32*C32*A36 +   C21*C32*C32*C32*A56 +
-        3*C32*C22*C31*C32*A56 +   C11*C32*C32*C32*A46 +
-        3*C31*C12*C32*C32*A46 +   C11*C22*C32*C32*A26 +
-        2*C22*C12*C31*C32*A26 +   C21*C12*C32*C32*A26;
-
-A[1][3]= C11*C11*C12*C13*A11 +   C21*C21*C22*C23*A33 + 
-        2*C11*C21*C12*C13*A12 +   C11*C11*C12*C23*A12 + 
-          C11*C11*C22*C13*A12 +   C11*C11*C32*C13*A14 +
-        2*C11*C31*C12*C13*A14 +   C11*C11*C12*C33*A14 +
-          C11*C12*C21*C23*A13 +   C21*C22*C11*C13*A13 +
-          C11*C21*C22*C13*A22 +   C21*C21*C12*C13*A22 + 
-          C11*C11*C22*C23*A22 +   C11*C21*C12*C23*A22 +
-          C11*C31*C32*C13*A44 +   C11*C32*C11*C33*A44 +
-          C12*C31*C31*C13*A44 +   C11*C31*C12*C33*A44 + 
-          C21*C31*C32*C23*A55 +   C21*C32*C21*C33*A55 + 
-          C22*C31*C31*C23*A55 +   C21*C31*C22*C33*A55 +
-        2*C11*C21*C22*C23*A23 +   C21*C21*C22*C13*A23 +
-          C21*C21*C12*C23*A23 +   C21*C21*C23*C32*A35 + 
-        2*C31*C21*C22*C23*A35 +   C21*C21*C22*C33*A35 +
-          C11*C12*C21*C33*A15;  
-A[1][3]=A[1][3] +
-          C11*C31*C12*C23*A15 +   C11*C21*C13*C32*A15 +
-          C11*C22*C31*C13*A15 + 2*C13*C21*C12*C31*A24 +
-          C11*C31*C12*C23*A24 +   C11*C12*C33*C21*A24 +
-          C11*C33*C11*C22*A24 +   C11*C11*C32*C23*A24 +
-          C11*C31*C22*C13*A24 +   C11*C32*C21*C13*A24 +
-          C11*C21*C22*C33*A34 +   C21*C22*C31*C13*A34 + 
-          C11*C21*C32*C23*A34 +   C12*C21*C23*C31*A34 +
-        2*C22*C11*C23*C31*A25 +   C11*C21*C22*C33*A25 +
-          C21*C22*C31*C13*A25 +   C21*C33*C12*C21*A25 + 
-          C21*C21*C32*C13*A25 +   C21*C31*C12*C23*A25 + 
-          C21*C11*C32*C23*A25 +   
-          C31*C12*C31*C23*A45 +   C31*C22*C31*C13*A45 +
-          C31*C12*C33*C21*A45 +   C31*C11*C33*C22*A45 +
-          C31*C11*C32*C23*A45 +   C31*C21*C32*C13*A45 +
-        2*C32*C21*C11*C33*A45;
-A[1][3]=A[1][3]+
-          C31*C32*C31*C33*A66 +   C11*C12*C31*C33*A16 +
-          C31*C32*C11*C13*A16 +   C21*C22*C31*C33*A36 +
-          C31*C32*C21*C23*A36 +   C11*C22*C31*C33*A26 +
-          C21*C12*C31*C33*A26 +   C31*C32*C11*C23*A26 +
-          C31*C32*C21*C13*A26 + 2*C11*C32*C31*C33*A46 +
-          C31*C12*C31*C33*A46 +   C31*C32*C31*C13*A46 +
-          C31*C32*C31*C23*A56 +   C31*C22*C31*C33*A56 +
-        2*C21*C32*C31*C33*A56;
-
-A[1][4]=  C11*C12*C12*C13*A11 +   C21*C22*C22*C23*A33 + 
-        2*C11*C22*C12*C13*A12 +   C11*C12*C12*C23*A12 + 
-          C12*C12*C21*C13*A12 +   C11*C12*C33*C12*A14 +
-        2*C11*C32*C12*C13*A14 +   C12*C13*C12*C31*A14 +
-          C11*C12*C22*C23*A13 +   C21*C22*C12*C13*A13 + 
-          C11*C22*C22*C13*A22 +   C22*C21*C12*C13*A22 + 
-          C11*C23*C22*C12*A22 +   C12*C21*C12*C23*A22 + 
-          C11*C32*C32*C13*A44 +   C13*C31*C12*C32*A44 +
-          C11*C33*C32*C12*A44 +   C12*C31*C12*C33*A44 +
-          C21*C32*C32*C23*A55 +   C23*C31*C22*C32*A55 + 
-          C21*C33*C32*C22*A55 +   C22*C31*C22*C33*A55 + 
-        2*C12*C21*C22*C23*A23 +   C21*C22*C22*C13*A23 +
-          C22*C22*C11*C23*A23 +   C22*C22*C23*C31*A35 +
-        2*C32*C21*C22*C23*A35 +   C22*C21*C22*C33*A35 + 
-          C11*C12*C22*C33*A15; 
-A[1][4]=A[1][4] + 
-          C11*C32*C12*C23*A15 +   C12*C13*C21*C32*A15 +
-          C12*C13*C31*C22*A15 + 2*C11*C22*C13*C32*A24 +
-          C11*C33*C12*C22*A24 +   C12*C22*C31*C13*A24 +
-          C11*C32*C12*C23*A24 +   C12*C21*C33*C12*A24 +
-          C12*C32*C21*C13*A24 +   C12*C31*C12*C23*A24 + 
-          C21*C22*C33*C12*A34 +   C22*C23*C32*C11*A34 +
-          C21*C32*C22*C13*A34 +   C23*C22*C12*C31*A34 + 
-        2*C21*C12*C23*C32*A25 +   C23*C31*C22*C12*A25 +
-          C21*C13*C32*C22*A25 +   C11*C33*C22*C22*A25 +
-          C21*C12*C22*C33*A25 +   C22*C31*C22*C13*A25 +
-          C22*C11*C32*C23*A25 +   C11*C32*C22*C33*A45 +
-          C33*C12*C32*C21*A45 +   C31*C23*C32*C12*A45 +
-          C32*C11*C32*C23*A45 +   C31*C22*C32*C13*A45 +
-          C32*C13*C21*C32*A45 + 2*C31*C22*C12*C33*A45;
-A[1][4]=A[1][4]+
-          C31*C32*C32*C33*A66 +   C11*C12*C32*C33*A16 +
-          C31*C32*C12*C13*A16 +   C21*C22*C32*C33*A36 +
-          C31*C32*C22*C23*A36 +   C11*C22*C32*C33*A26 +
-          C21*C12*C32*C33*A26 +   C31*C32*C12*C23*A26 +
-          C31*C32*C22*C13*A26 +   C11*C32*C32*C33*A46 +
-        2*C31*C12*C32*C33*A46 +   C31*C32*C32*C13*A46 +
-          C31*C32*C32*C23*A56 + 2*C31*C22*C32*C33*A56 +
-          C21*C32*C32*C33*A56;
-
-A[1][5]=  C11*C12*C13*C13*A11 +   C21*C22*C23*C23*A33 + 
-          C11*C22*C13*C13*A12 +   C21*C12*C13*C13*A12 +
-        2*C11*C12*C13*C23*A12 +   
-          C11*C32*C13*C13*A14 +   C31*C12*C13*C13*A14 +
-        2*C11*C12*C13*C33*A14 +   C11*C12*C23*C23*A13 +
-          C21*C22*C13*C13*A13 + 2*C11*C22*C23*C13*A22 +
-        2*C21*C12*C23*C13*A22 + 2*C31*C22*C23*C33*A55 +
-        2*C21*C32*C23*C33*A55 + 2*C31*C12*C13*C33*A44 +
-        2*C11*C32*C13*C33*A44 +   C11*C22*C23*C23*A23 +
-          C21*C12*C23*C23*A23 + 2*C21*C22*C13*C23*A23 +
-          C31*C22*C23*C23*A35 +   C21*C32*C23*C23*A35 +
-        2*C21*C22*C33*C23*A35 +   C21*C32*C13*C13*A15 +
-          C31*C22*C13*C13*A15 + 2*C11*C12*C23*C33*A15; 
-A[1][5]=A[1][5] +
-          C31*C12*C23*C23*A34 +   C11*C32*C23*C23*A34 +
-        2*C21*C22*C13*C33*A34 + 2*C11*C22*C13*C33*A24 +
-        2*C11*C32*C13*C23*A24 + 2*C21*C12*C33*C13*A24 +
-        2*C31*C12*C23*C13*A24 + 2*C21*C12*C23*C33*A25 +
-        2*C21*C32*C23*C13*A25 + 2*C11*C22*C33*C23*A25 +
-        2*C31*C22*C13*C23*A25 + 2*C31*C12*C33*C23*A45 +
-        2*C31*C22*C33*C13*A45 + 2*C11*C32*C23*C33*A45 +
-        2*C21*C32*C13*C33*A45;
-A[1][5]=A[1][5] +
-          C31*C32*C33*C33*A66 +   C11*C12*C33*C33*A16 +
-          C31*C32*C13*C13*A16 +   C21*C22*C33*C33*A36 +
-          C31*C32*C23*C23*A36 +   C31*C22*C33*C33*A56 +
-        2*C31*C32*C33*C23*A56 +   C11*C32*C33*C33*A46 +
-          C21*C32*C33*C33*A56 +   C31*C12*C33*C33*A46 +
-        2*C31*C32*C33*C13*A46 +   C11*C22*C33*C33*A26 +
-        2*C23*C13*C31*C32*A26 +   C21*C12*C33*C33*A26; 
-
-A[2][2]=  C12*C12*C12*C12*A11 +   C22*C22*C22*C22*A33 + 
-        4*C12*C12*C12*C22*A12 + 4*C12*C12*C12*C32*A14 + 
-        2*C12*C12*C22*C22*A13 + 4*C12*C12*C22*C22*A22 + 
-        4*C12*C12*C32*C32*A44 + 4*C22*C22*C32*C32*A55 + 
-        4*C12*C22*C22*C22*A23 + 4*C32*C22*C22*C22*A35 + 
-        4*C12*C12*C22*C32*A15 + 8*C12*C12*C22*C32*A24 + 
-        4*C12*C22*C22*C32*A34 + 8*C22*C22*C12*C32*A25 + 
-        8*C12*C22*C32*C32*A45 + 4*C12*C22*C32*C32*A26 +
-        4*C22*C32*C32*C32*A56 + 4*C12*C32*C32*C32*A46 + 
-        2*C12*C12*C32*C32*A16 + 2*C22*C22*C32*C32*A36 + 
-          C32*C32*C32*C32*A66;
-
-A[2][3]=  C12*C12*C11*C13*A11 +   C22*C22*C21*C23*A33 +  
-        2*C11*C12*C22*C13*A12 +   C11*C12*C12*C23*A12 +
-          C12*C12*C21*C13*A12 +   C12*C12*C13*C31*A14 + 
-        2*C11*C12*C32*C13*A14 +   C11*C12*C12*C33*A14 + 
-          C12*C12*C21*C23*A13 +   C22*C22*C11*C13*A13 +
-        2*C11*C12*C22*C23*A22 + 2*C12*C21*C22*C13*A22 +
-        2*C11*C12*C32*C33*A44 + 2*C12*C31*C32*C13*A44 +  
-        2*C21*C22*C32*C33*A55 + 2*C22*C31*C32*C23*A55 + 
-        2*C12*C21*C22*C23*A23 +   C11*C22*C22*C23*A23 + 
-          C13*C22*C22*C21*A23 +   C21*C22*C22*C33*A35 + 
-        2*C32*C21*C22*C23*A35 +   C22*C22*C23*C31*A35 + 
-        2*C22*C32*C11*C13*A15 +   C12*C12*C23*C31*A15 +
-          C12*C12*C33*C21*A15 + 2*C11*C22*C33*C12*A24 +
-        2*C12*C22*C31*C13*A24 + 2*C11*C12*C32*C23*A24 + 
-        2*C12*C21*C32*C13*A24; 
-A[2][3]=A[2][3] +
-        2*C12*C32*C21*C23*A34 +   C11*C22*C22*C33*A34 +
-          C22*C22*C31*C13*A34 +
-        2*C21*C12*C33*C22*A25 + 2*C22*C12*C31*C23*A25 +
-        2*C32*C22*C21*C13*A25 + 2*C11*C22*C23*C32*A25 +
-        2*C31*C12*C23*C32*A45 + 2*C32*C12*C33*C21*A45 +
-        2*C32*C22*C31*C13*A45 + 2*C22*C11*C32*C33*A45 +  
-          C32*C32*C31*C33*A66 +
-          C12*C12*C31*C33*A16 +   C32*C32*C11*C13*A16 +
-          C22*C22*C31*C33*A36 +   C32*C32*C21*C23*A36 +
-        2*C22*C32*C31*C33*A56 +   C32*C32*C21*C33*A56 +
-          C32*C32*C31*C23*A56 +   C32*C32*C11*C33*A46 +
-        2*C12*C32*C31*C33*A46 +   C32*C32*C31*C13*A46 +
-        2*C12*C22*C31*C33*A26 +   C32*C32*C11*C23*A26 +
-          C32*C32*C21*C13*A26;
-
-A[2][4]=  C12*C12*C12*C13*A11 +   C22*C22*C22*C23*A33 + 
-        3*C12*C12*C22*C13*A12 +   C12*C12*C12*C23*A12 +
-        3*C12*C12*C32*C13*A14 +   C12*C12*C12*C33*A14 +
-          C12*C12*C22*C23*A13 +   C22*C22*C12*C13*A13 +
-        2*C12*C12*C22*C23*A22 + 2*C12*C22*C22*C13*A22 +
-        2*C12*C12*C32*C33*A44 + 2*C12*C32*C32*C13*A44 +
-        2*C22*C23*C32*C32*A55 + 2*C22*C32*C33*C22*A55 +
-        3*C12*C22*C22*C23*A23 +   C22*C22*C22*C13*A23 + 
-        3*C32*C23*C22*C22*A35 +   C22*C22*C22*C33*A35 +  
-        2*C22*C32*C12*C13*A15 +   C12*C12*C22*C33*A15 +
-          C12*C12*C32*C23*A15 + 4*C12*C13*C22*C32*A24 +
-        2*C12*C22*C12*C33*A24 + 2*C12*C12*C32*C23*A24 +
-        2*C12*C32*C23*C22*A34 +   C22*C22*C12*C33*A34 +
-          C22*C22*C32*C13*A34 + 4*C22*C12*C32*C23*A25 +
-        2*C33*C22*C22*C12*A25 + 2*C13*C22*C22*C32*A25 + 
-        4*C33*C12*C22*C32*A45 + 2*C32*C12*C32*C23*A45 +
-        2*C32*C22*C32*C13*A45; 
-A[2][4]=A[2][4] +
-          C32*C32*C32*C33*A66 +
-          C12*C12*C32*C33*A16 +   C32*C32*C12*C13*A16 +
-          C22*C22*C32*C33*A36 +   C32*C32*C22*C23*A36 +
-        3*C22*C32*C32*C33*A56 +   C32*C32*C32*C23*A56 +
-        3*C12*C32*C32*C33*A46 +   C32*C32*C32*C13*A46 +
-        2*C12*C22*C32*C33*A26 +   C32*C32*C12*C23*A26 +
-          C32*C32*C22*C13*A26;
-
-A[2][5]=  C12*C12*C13*C13*A11 +   C22*C22*C23*C23*A33 + 
-        2*C12*C12*C23*C13*A12 + 2*C22*C12*C13*C13*A12 +
-        2*C12*C12*C33*C13*A14 + 2*C32*C12*C13*C13*A14 +
-          C12*C12*C23*C23*A13 +   C22*C22*C13*C13*A13 + 
-        2*C12*C22*C23*C13*A22 + 2*C12*C22*C23*C13*A22 + 
-        2*C12*C32*C33*C13*A44 + 2*C12*C32*C33*C13*A44 +
-        2*C22*C32*C33*C23*A55 + 2*C22*C32*C33*C23*A55 + 
-        2*C12*C22*C23*C23*A23 + 2*C22*C22*C23*C13*A23 +
-        2*C32*C22*C23*C23*A35 + 2*C22*C22*C23*C33*A35 +
-        2*C22*C32*C13*C13*A15 + 2*C12*C12*C23*C33*A15 +
-        4*C12*C22*C33*C13*A24 + 4*C12*C32*C13*C23*A24 +
-        2*C12*C32*C23*C23*A34 + 2*C22*C22*C13*C33*A34 +
-        4*C22*C12*C33*C23*A25 + 4*C22*C32*C23*C13*A25 +
-        4*C32*C12*C23*C33*A45 + 4*C32*C22*C33*C13*A45 +
-          C32*C32*C33*C33*A66 +   C12*C12*C33*C33*A16 +
-          C32*C32*C13*C13*A16 +   C22*C22*C33*C33*A36 +
-          C32*C32*C23*C23*A36 + 2*C22*C32*C33*C33*A56 +
-        2*C32*C32*C23*C33*A56 + 2*C12*C32*C33*C33*A46 +
-        2*C32*C32*C13*C33*A46 + 2*C12*C22*C33*C33*A26 +
-        2*C32*C32*C13*C23*A26; 
-
-A[3][3]=  C11*C11*C13*C13*A11 +   C21*C21*C23*C23*A33 + 
-        2*C11*C11*C23*C13*A12 + 2*C21*C11*C13*C13*A12 + 
-        2*C11*C11*C33*C13*A14 + 2*C31*C11*C13*C13*A14 +
-          C11*C21*C13*C23*A13 +   C21*C11*C13*C23*A13 +
-        2*C11*C23*C21*C13*A22 +   C21*C13*C21*C13*A22 +
-          C11*C23*C11*C23*A22 +   C11*C33*C11*C33*A44 +
-        2*C11*C33*C31*C13*A44 +   C31*C13*C31*C13*A44 +
-          C21*C33*C21*C33*A55 +
-        2*C21*C33*C31*C23*A55 +   C23*C31*C31*C23*A55 + 
-        2*C11*C23*C21*C23*A23 + 2*C21*C13*C21*C23*A23 +
-        2*C31*C23*C21*C23*A35 + 2*C21*C21*C33*C23*A35 +
-        2*C11*C13*C21*C33*A15 + 2*C11*C13*C23*C31*A15 + 
-        2*C11*C23*C33*C11*A24 + 2*C11*C23*C13*C31*A24 +
-        2*C11*C21*C33*C13*A24 + 2*C21*C31*C13*C13*A24 +
-        2*C21*C23*C11*C33*A34 + 2*C21*C23*C13*C31*A34 +
-        2*C21*C13*C33*C21*A25 + 2*C21*C13*C23*C31*A25 +
-        2*C21*C11*C33*C23*A25 + 2*C31*C11*C23*C23*A25 + 
-        2*C31*C13*C23*C31*A45 + 2*C31*C23*C33*C11*A45 +
-        2*C31*C13*C21*C33*A45 + 2*C11*C21*C33*C33*A45; 
-A[3][3]=A[3][3] +
-          C31*C33*C31*C33*A66 + 2*C11*C13*C31*C33*A16 +
-        2*C21*C23*C31*C33*A36 + 2*C21*C33*C31*C33*A56 +
-        2*C31*C23*C31*C33*A56 + 2*C11*C33*C31*C33*A46 +
-        2*C31*C13*C31*C33*A46 + 2*C11*C23*C31*C33*A26 +
-        2*C21*C13*C31*C33*A26;
-
-A[3][4]=  C11*C13*C12*C13*A11 +   C21*C23*C22*C23*A33 + 
-        2*C11*C23*C12*C13*A12 +   C11*C13*C13*C22*A12 + 
-          C12*C13*C21*C13*A12 +   C11*C13*C32*C13*A14 +
-        2*C11*C33*C12*C13*A14 +   C13*C13*C12*C31*A14 +
-          C11*C13*C22*C23*A13 +   C21*C23*C12*C13*A13 + 
-          C11*C23*C22*C13*A22 +   C22*C21*C13*C13*A22 + 
-          C11*C23*C23*C12*A22 +   C13*C21*C12*C23*A22 + 
-          C11*C32*C33*C13*A44 +   C13*C31*C13*C32*A44 +
-          C11*C33*C33*C12*A44 +   C12*C31*C13*C33*A44 + 
-          C21*C32*C33*C23*A55 +   C23*C31*C23*C32*A55 + 
-          C21*C33*C33*C22*A55 +   C22*C31*C23*C33*A55 + 
-        2*C13*C21*C22*C23*A23 +   C21*C23*C23*C12*A23 +
-          C22*C23*C11*C23*A23 +   C22*C23*C23*C31*A35 +
-        2*C33*C21*C22*C23*A35 +   C23*C21*C23*C32*A35 + 
-          C11*C13*C22*C33*A15; 
-A[3][4]=A[3][4] +
-          C11*C32*C13*C23*A15 +   C12*C13*C21*C33*A15 +
-          C12*C13*C31*C23*A15 + 2*C11*C12*C23*C33*A24 +
-          C11*C32*C13*C23*A24 +   C13*C22*C31*C13*A24 +
-          C11*C33*C13*C22*A24 +   C12*C21*C33*C13*A24 +
-          C13*C32*C21*C13*A24 +   C12*C31*C13*C23*A24 + 
-          C21*C23*C33*C12*A34 +   C22*C23*C33*C11*A34 +
-          C21*C32*C23*C13*A34 +   C23*C22*C13*C31*A34 +
-        2*C21*C13*C22*C33*A25 +   C23*C31*C23*C12*A25 +
-          C21*C13*C32*C23*A25 +   C11*C33*C22*C23*A25 +
-          C21*C12*C23*C33*A25 +   C23*C31*C22*C13*A25 +
-          C23*C11*C32*C23*A25 +   C11*C33*C22*C33*A45 +
-          C33*C12*C33*C21*A45 +   C31*C23*C33*C12*A45 +
-          C32*C11*C33*C23*A45 +   C31*C22*C33*C13*A45 +
-          C33*C13*C21*C32*A45 + 2*C31*C23*C13*C32*A45; 
-A[3][4]=A[3][4] +
-          C31*C33*C32*C33*A66 +   C11*C13*C32*C33*A16 +
-          C31*C33*C12*C13*A16 +   C21*C23*C32*C33*A36 +
-          C31*C33*C22*C23*A36 +   
-          C21*C33*C32*C33*A56 +   C31*C33*C22*C33*A56 +
-        2*C31*C23*C32*C33*A56 +   
-          C11*C33*C32*C33*A46 +   C31*C33*C12*C33*A46 +
-        2*C31*C13*C32*C33*A46 +   C11*C23*C32*C33*A26 +
-          C21*C13*C32*C33*A26 +   C31*C33*C12*C23*A26 +
-          C31*C33*C22*C13*A26; 
-
-A[3][5]=  C11*C13*C13*C13*A11 +   C21*C23*C23*C23*A33 + 
-        3*C11*C13*C13*C23*A12 +   C21*C13*C13*C13*A12 +
-        3*C11*C13*C13*C33*A14 +   C31*C13*C13*C13*A14 + 
-          C11*C13*C23*C23*A13 +   C21*C23*C13*C13*A13 +
-        2*C11*C23*C13*C23*A22 + 2*C21*C13*C13*C23*A22 +
-        2*C11*C33*C13*C33*A44 + 2*C31*C13*C13*C33*A44 +
-        2*C21*C33*C23*C33*A55 + 2*C31*C23*C23*C33*A55 +
-        3*C21*C13*C23*C23*A23 +   C11*C23*C23*C23*A23 +
-        3*C21*C33*C23*C23*A35 +   C31*C23*C23*C23*A35 +
-        2*C11*C13*C23*C33*A15 +   C21*C33*C13*C13*A15 +
-          C31*C23*C13*C13*A15 + 4*C11*C23*C13*C33*A24 +
-        2*C21*C13*C33*C13*A24 + 2*C31*C13*C23*C13*A24 +
-        2*C21*C23*C13*C33*A34 +   C11*C33*C23*C23*A34 +
-          C31*C13*C23*C23*A34 + 4*C21*C13*C23*C33*A25 +
-        2*C11*C23*C33*C23*A25 + 2*C31*C23*C13*C23*A25 +
-        4*C31*C13*C33*C23*A45 + 2*C11*C33*C23*C33*A45 +
-        2*C21*C33*C13*C33*A45;    
-A[3][5]=A[3][5]+
-          C31*C33*C33*C33*A66 +   C11*C13*C33*C33*A16 +
-          C31*C33*C13*C13*A16 +   C21*C23*C33*C33*A36 +
-          C31*C33*C23*C23*A36 +   C21*C33*C33*C33*A56 +
-        3*C31*C23*C33*C33*A56 +   C11*C33*C33*C33*A46 +
-        3*C31*C13*C33*C33*A46 +   C11*C23*C33*C33*A26 +
-          C21*C13*C33*C33*A26 + 2*C31*C33*C23*C13*A26;
-
-A[4][4]=  C12*C12*C13*C13*A11 +   C22*C22*C23*C23*A33 + 
-        2*C12*C12*C23*C13*A12 + 2*C22*C12*C13*C13*A12 +
-        2*C12*C12*C33*C13*A14 + 2*C32*C12*C13*C13*A14 +
-          C12*C22*C13*C23*A13 +   C22*C12*C13*C23*A13 + 
-        2*C12*C23*C22*C13*A22 +   C22*C13*C22*C13*A22 + 
-          C12*C23*C12*C23*A22 +   C12*C33*C12*C33*A44 +
-        2*C12*C33*C32*C13*A44 +   C32*C13*C32*C13*A44 + 
-          C22*C33*C22*C33*A55 +
-        2*C22*C33*C32*C23*A55 +   C23*C32*C32*C23*A55 +
-        2*C12*C23*C22*C23*A23 + 2*C22*C13*C22*C23*A23 + 
-        2*C32*C23*C22*C23*A35 + 2*C22*C22*C33*C23*A35 + 
-        2*C12*C13*C22*C33*A15 + 2*C12*C13*C23*C32*A15 + 
-        2*C12*C23*C33*C12*A24 + 2*C12*C23*C13*C32*A24 +
-        2*C12*C22*C33*C13*A24 + 2*C13*C32*C13*C22*A24 +  
-        2*C22*C23*C12*C33*A34 + 2*C22*C23*C13*C32*A34 + 
-        2*C22*C13*C33*C22*A25 + 2*C22*C13*C23*C32*A25 +
-        2*C22*C12*C33*C23*A25 + 2*C32*C12*C23*C23*A25 +  
-        2*C32*C13*C23*C32*A45 + 2*C32*C23*C33*C12*A45 +
-        2*C32*C13*C22*C33*A45 + 2*C12*C22*C33*C33*A45; 
-A[4][4]=A[4][4] +
-          C32*C33*C32*C33*A66 + 2*C12*C13*C32*C33*A16 +
-        2*C22*C23*C32*C33*A36 + 2*C22*C33*C32*C33*A56 +
-        2*C32*C23*C32*C33*A56 + 2*C12*C33*C32*C33*A46 +
-        2*C32*C13*C32*C33*A46 + 2*C12*C23*C32*C33*A26 +
-        2*C22*C13*C32*C33*A26;
-               
-A[4][5]=  C12*C13*C13*C13*A11 +   C22*C23*C23*C23*A33 + 
-        3*C12*C13*C13*C23*A12 +   C22*C13*C13*C13*A12 +
-        3*C12*C13*C13*C33*A14 +   C32*C13*C13*C13*A14 + 
-          C12*C13*C23*C23*A13 +   C22*C23*C13*C13*A13 +
-        2*C12*C23*C13*C23*A22 + 2*C22*C13*C13*C23*A22 +
-        2*C12*C33*C13*C33*A44 + 2*C32*C13*C13*C33*A44 +
-        2*C22*C33*C23*C33*A55 + 2*C32*C23*C23*C33*A55 +
-        3*C22*C13*C23*C23*A23 +   C12*C23*C23*C23*A23 +
-        3*C22*C33*C23*C23*A35 +   C32*C23*C23*C23*A35 +
-        2*C12*C13*C23*C33*A15 +   C22*C33*C13*C13*A15 +
-          C32*C23*C13*C13*A15 + 4*C12*C23*C13*C33*A24 +
-        2*C22*C13*C33*C13*A24 + 2*C32*C13*C23*C13*A24 +
-        2*C22*C23*C13*C33*A34 +   C12*C33*C23*C23*A34 +
-          C32*C13*C23*C23*A34 + 4*C22*C13*C23*C33*A25 +
-        2*C12*C23*C33*C23*A25 + 2*C32*C23*C13*C23*A25 +
-        4*C32*C13*C33*C23*A45 + 2*C12*C33*C23*C33*A45 +
-        2*C22*C33*C13*C33*A45;    
-A[4][5]=A[4][5]+
-          C32*C33*C33*C33*A66 +   C12*C13*C33*C33*A16 +
-          C32*C33*C13*C13*A16 +   C22*C23*C33*C33*A36 +
-          C32*C33*C23*C23*A36 +   C22*C33*C33*C33*A56 +
-        3*C32*C23*C33*C33*A56 +   C12*C33*C33*C33*A46 +
-        3*C32*C13*C33*C33*A46 +   C12*C23*C33*C33*A26 +
-          C22*C13*C33*C33*A26 + 2*C32*C33*C23*C13*A26;
-
-A[5][5]=  C13*C13*C13*C13*A11 +   C23*C23*C23*C23*A33 + 
-        4*C13*C13*C13*C23*A12 + 4*C13*C13*C13*C33*A14 + 
-        2*C13*C13*C23*C23*A13 + 4*C13*C13*C23*C23*A22 + 
-        4*C13*C13*C33*C33*A44 + 4*C23*C23*C33*C33*A55 + 
-        4*C13*C23*C23*C23*A23 + 4*C33*C23*C23*C23*A35 + 
-        4*C13*C13*C23*C33*A15 + 8*C13*C13*C23*C33*A24 + 
-        4*C13*C23*C23*C33*A34 + 8*C23*C23*C13*C33*A25 + 
-        8*C13*C23*C33*C33*A45 + 4*C13*C23*C33*C33*A26 +
-        4*C23*C33*C33*C33*A56 + 4*C13*C33*C33*C33*A46 + 
-        2*C13*C13*C33*C33*A16 + 2*C23*C23*C33*C33*A36 + 
-          C33*C33*C33*C33*A66; 
-
-      A[1][0]=A[0][1]; 
-      A[2][0]=A[0][2];
-      A[2][1]=A[1][2];
-      A[3][0]=A[0][3];
-      A[3][1]=A[1][3];
-      A[3][2]=A[2][3];
-      A[4][0]=A[0][4];
-      A[4][1]=A[1][4];
-      A[4][2]=A[2][4];
-      A[4][3]=A[3][4];
-      A[5][0]=A[0][5];
-      A[5][1]=A[1][5];
-      A[5][2]=A[2][5];
-      A[5][3]=A[3][5];
-      A[5][4]=A[4][5];
-
+   vec[0] =  vec_help[0];    
+   vec[3] =  vec_help[1];    
+   vec[1] =  vec_help[2];    
+   vec[5] =  vec_help[3];    
+   vec[4] =  vec_help[4];    
+   vec[2] =  vec_help[5];    
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of s9T4sym */
-
+} /* end of s9_Vsort_s9b */
 
 /*!----------------------------------------------------------------------
 \brief make some modification to material matrix due to shear correction
@@ -909,25 +277,25 @@ return;
 This routine modifies the constitutive matrix with the shear correction
 factor 'xsi' for [13] and [23]
 </pre>
-\param  DOUBLE **d    (i/o) consitutive matrix to be modified
-\param  DOUBLE   xsi   (i)  shear correction factor
+\param  DOUBLE  **C     (i/o) consitutive matrix to be modified
+\param  DOUBLE    xsi    (i)  shear correction factor
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9shear_cor(DOUBLE **d, DOUBLE xsi) 
+void s9shear_cor(DOUBLE **C, DOUBLE xsi) 
 {
 #ifdef DEBUG 
 dstrc_enter("s9shear_cor");
 #endif
 /*----------------------------------------------------------------------*/
-d[3][3] = d[3][3]/xsi;
-d[3][4] = d[3][4]/xsi;
+C[3][3] = C[3][3]/xsi;
+C[3][4] = C[3][4]/xsi;
 
-d[4][3] = d[4][3]/xsi;
-d[4][4] = d[4][4]/xsi;
+C[4][3] = C[4][3]/xsi;
+C[4][4] = C[4][4]/xsi;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -936,208 +304,210 @@ return;
 } /* end of s9shear_cor */
 
 
-
 /*!----------------------------------------------------------------------
-\brief transforms the constitutive matrix from the material coordinate 
-       system to the global cartesian coordinate system                                    
+\brief calculates the basis vectors of a orthonormal material coordinate
+system laying tangential to the shell surface                                   
 
-<pre>                                                            sh 02/03
-This routine transforms the constitutive matrix from the orthonormal material
-coordinate system to the orthonormal (global) cartesian coordinate system.
-The Definition of Projection of the rotation angle to the shell surface is
-according to Dis. Braun p.66ff. This Routine is only a step from transforming
-the C-Matrix from the material coordinate system to the curvilinear element
-coordinate system. 
-sorting: [11,22,33,12,23,13]
+<pre>                                                            sh 09/03
+theorie: Dis. Braun Kap. 5.4 and Anhang B
 </pre>
-\param  DOUBLE **C       (i/o) material matrix to be transformed
-\param  DOUBLE **akov     (i)  kovariant basis vectors
-\param  DOUBLE   phi      (i)  rotation angle with respect to global coord sys
-\param  INT      rot_axis (i)  axis of rotation (1=x-; 2=y-; 3=z-axis)
+\param  DOUBLE    phi       (i)  rotation angle
+\param  INT       rot_axis  (i)  1=global x, 2=global y, 3=global z
+\param  DOUBLE    gkov      (i)  kovariant basis vectors
+\param  DOUBLE    g1,2,3[3] (o)  basis vectors of orthonormal material 
+                                 coordinate system tangential to shell surface
 
-\warning Always call this routine with the kovariant basis vectors (gkov). 
+\warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9_Tmaca (DOUBLE **akov, DOUBLE phi, INT rot_axis, DOUBLE **C)
+void s9_rot(DOUBLE phi,   INT    rot_axis, DOUBLE **gkov, 
+            DOUBLE g1[3], DOUBLE g2[3],    DOUBLE g3[3])
 {
-DOUBLE rad = RAD * phi; 
-DOUBLE R11,R12,R13,R21,R22,R23,R31,R32,R33;
-DOUBLE e11,e12,e13,e21,e22,e23,e31,e32,e33;
-DOUBLE e1norm,e2norm,e3norm;
-DOUBLE anorm,bnorm,cnorm,eenorm;
-DOUBLE skal;
-DOUBLE ee1,ee2,ee3;
-DOUBLE a1,a2,a3,b1,b2,b3,c1,c2,c3;
-DOUBLE caeins = 0.9999999;
-DOUBLE det_dummy;
-ARRAY  R_a;     DOUBLE **R;  
-ARRAY  T_a;     DOUBLE **T;  
-ARRAY  Help_a;  DOUBLE **Help;  
+DOUBLE  rad;
+DOUBLE  i1[3], j1[3];          /*i1 = i1', j1 = i1''*/
+DOUBLE  i2[3], j2[3];          /*i2 = i2', j2 = i2''*/
+DOUBLE  i3[3], j3[3];          /*i3 = i3', j3 = i3''*/
+DOUBLE  norm;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("s9_Tmaca");
+dstrc_enter("s9_rot");
 #endif
 /*----------------------------------------------------------------------*/
-R    = amdef("R",&R_a,3,3,"DA");         
-T    = amdef("T",&T_a,6,6,"DA");         
-Help = amdef("Help",&Help_a,6,6,"DA");         
+rad = RAD * phi; 
+
+g3[0] = gkov[0][2];
+g3[1] = gkov[1][2];
+g3[2] = gkov[2][2];
+
+if (rot_axis==1)
+{
+   /*calculate i2' */
+   i2[0] = 0.0;
+   i2[1] = cos(rad);
+   i2[2] = sin(rad);
+   
+   /*calculate j2=i2''=i2' x g3*/
+   j2[0] = i2[1]*g3[2] - i2[2]*g3[1];
+   j2[1] = i2[2]*g3[0] - i2[0]*g3[2];
+   j2[2] = i2[0]*g3[1] - i2[1]*g3[0];
+   
+   if(FABS(j2[0]+j2[1]+j2[2])<EPS12)  /*Singularity -> B.7*/
+   {
+      g2[0] =  0.0;
+      g2[1] = -g3[2];
+      g2[2] =  g3[1];
+
+      g1[0] = g2[1]*g3[2] - g2[2]*g3[1];
+      g1[1] = g2[2]*g3[0] - g2[0]*g3[2];
+      g1[2] = g2[0]*g3[1] - g2[1]*g3[0];
+   }
+   else  /*Normal -> B.6*/
+   {
+      g1[0] = g3[1]*j2[2] - g3[2]*j2[1];
+      g1[1] = g3[2]*j2[0] - g3[0]*j2[2];
+      g1[2] = g3[0]*j2[1] - g3[1]*j2[0];
+
+      g2[0] = g3[1]*g1[2] - g3[2]*g1[1];
+      g2[1] = g3[2]*g1[0] - g3[0]*g1[2];
+      g2[2] = g3[0]*g1[1] - g3[1]*g1[0];
+   }
+}
+else if (rot_axis==2)
+{
+   /*calculate i3' */
+   i3[0] = sin(rad);
+   i3[1] = 0.0;
+   i3[2] = cos(rad); 
+   
+   /*calculate j3=i3''=i3' x g3*/
+   j3[0] = i3[1]*g3[2] - i3[2]*g3[1];
+   j3[1] = i3[2]*g3[0] - i3[0]*g3[2];
+   j3[2] = i3[0]*g3[1] - i3[1]*g3[0];
+   
+   if(FABS(j3[0]+j3[1]+j3[2])<EPS12)  /*Singularity -> B.5*/
+   {
+      g2[0] =  g3[2];
+      g2[1] =  0.0;
+      g2[2] = -g3[0];
+ 
+      g1[0] = g2[1]*g3[2] - g2[2]*g3[1];
+      g1[1] = g2[2]*g3[0] - g2[0]*g3[2];
+      g1[2] = g2[0]*g3[1] - g2[1]*g3[0];
+   }
+   else  /*Normal -> B.4*/
+   {
+      g1[0] = g3[1]*j3[2] - g3[2]*j3[1];
+      g1[1] = g3[2]*j3[0] - g3[0]*j3[2];
+      g1[2] = g3[0]*j3[1] - g3[1]*j3[0];
+
+      g2[0] = g3[1]*g1[2] - g3[2]*g1[1];
+      g2[1] = g3[2]*g1[0] - g3[0]*g1[2];
+      g2[2] = g3[0]*g1[1] - g3[1]*g1[0];
+   }
+}
+else if (rot_axis==3)
+{
+   /*calculate i1' */
+   i1[0] = cos(rad);
+   i1[1] = sin(rad);
+   i1[2] = 0.0; 
+   
+   /*calculate j1=i1''=i1' x g3*/
+   j1[0] = i1[1]*g3[2] - i1[2]*g3[1];
+   j1[1] = i1[2]*g3[0] - i1[0]*g3[2];
+   j1[2] = i1[0]*g3[1] - i1[1]*g3[0];
+   
+   if(FABS(j1[0]+j1[1]+j1[2])<EPS12)  /*Singularity -> B.2*/
+   {
+      g2[0] = -g3[1];
+      g2[1] =  g3[0];
+      g2[2] =  0.0;
+
+      g1[0] = g2[1]*g3[2] - g2[2]*g3[1];
+      g1[1] = g2[2]*g3[0] - g2[0]*g3[2];
+      g1[2] = g2[0]*g3[1] - g2[1]*g3[0];
+   }
+   else  /*Normal -> B.1*/
+   {
+      g1[0] = g3[1]*j1[2] - g3[2]*j1[1];
+      g1[1] = g3[2]*j1[0] - g3[0]*j1[2];
+      g1[2] = g3[0]*j1[1] - g3[1]*j1[0];
+
+      g2[0] = g3[1]*g1[2] - g3[2]*g1[1];
+      g2[1] = g3[2]*g1[0] - g3[0]*g1[2];
+      g2[2] = g3[0]*g1[1] - g3[1]*g1[0];
+   }
+}
+/*norm the basis vectors*/
+norm = sqrt(g1[0]*g1[0]+g1[1]*g1[1]+g1[2]*g1[2]);
+norm = 1./norm;
+g1[0] *= norm;
+g1[1] *= norm;
+g1[2] *= norm;
+
+norm = sqrt(g2[0]*g2[0]+g2[1]*g2[1]+g2[2]*g2[2]);
+norm = 1./norm;
+g2[0] *= norm;
+g2[1] *= norm;
+g2[2] *= norm;
+
+norm = sqrt(g3[0]*g3[0]+g3[1]*g3[1]+g3[2]*g3[2]);
+norm = 1./norm;
+g3[0] *= norm;
+g3[1] *= norm;
+g3[2] *= norm;
+
 /*----------------------------------------------------------------------*/
-if (rot_axis == 1) /*rot x*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s9_rot */
+
+
+/*!----------------------------------------------------------------------
+\brief calculates transformation Matrix T_sup_epsilon
+see Altenbach, Altenbach & Rikards p.29
+"Einfuehrung in die Mechanik der Laminat- und Sandwichtragwerke"                                 
+
+<pre>                                                            sh 09/03
+T_sup_epsilon is needed to transform strains, stresses and C from
+cartesian coordinate system to material/laminat coordinate system
+
+eps' =  T_eps * eps
+C    = (T_eps)T * C' * T_eps
+sig  = (T_eps)T * sig'
+</pre>
+\param  DOUBLE    g1,2,3[3] (i)  basis vectors of orthonormal material 
+                                 coordinate system tangential to shell surface
+\param  DOUBLE    T[6][6]   (o)  transformation Matrix T_sup_epsilon 
+
+\warning      be careful about sorting [11,22,33,12,23,13]
+\return void                                               
+\sa calling: ---; called by: 
+                             
+*-----------------------------------------------------------------------*/
+void s9_Teps(DOUBLE g1[3], DOUBLE g2[3], DOUBLE g3[3], DOUBLE T[6][6])
 {
-  e11 =  1.0;      
-  e12 =  0.0;                                               
-  e13 =  0.0;                                             
-  e21 =  0.0;                                              
-  e22 =  cos(rad);                                         
-  e23 = -sin(rad);                                               
-  e31 =  0.0;                                                   
-  e32 =  sin(rad);                                          
-  e33 =  cos(rad); 
-}                                              
-else if (rot_axis == 2) /*rot y*/
-{
-  e11 =  cos(rad); 
-  e12 =  0.0;                                               
-  e13 =  sin(rad);                                        
-  e21 =  0.0;                                              
-  e22 =  1.0;                                              
-  e23 =  0.0;                                                    
-  e31 = -sin(rad);                                              
-  e32 =  0.0;                                               
-  e33 =  cos(rad); 
-}                                              
-else if (rot_axis == 3) /*rot z*/
-{
-  e11 =  cos(rad); 
-  e12 = -sin(rad);                                          
-  e13 =  0.0;                                             
-  e21 =  sin(rad);                                         
-  e22 =  cos(rad);                                         
-  e23 =  0.0;                                                    
-  e31 =  0.0;                                                   
-  e32 =  0.0;                                               
-  e33 =  1.0;      
-}                                              
-else dserror("wrong axis of rotation in SEC_ROT (1=x-; 2=y-; 3=z-axis) in MAT_Multilayer");
-
-/*------------------------- CALCULATION OF TANGENTIAL COORDINATE SYSTEM */
-/*---- get the director -----*/
-c1=akov[2][0];
-c2=akov[2][1];
-c3=akov[2][2];
-cnorm=sqrt(c1*c1+c2*c2+c3*c3);
-c1=c1/cnorm;
-c2=c2/cnorm;
-c3=c3/cnorm;
-
-/*--- check if i1' is parallel to g3  -> Dis. Braun p.69 */
-if      (rot_axis == 1) skal=e12*c1+e22*c2+e32*c3;
-else if (rot_axis == 2) skal=e13*c1+e23*c2+e33*c3;
-else if (rot_axis == 3) skal=e11*c1+e21*c2+e31*c3;
-
-/*-- normal way of getting the new coordinate system */
-if (FABS(skal) < caeins)
-{
-  if      (rot_axis == 1) 
-  {
-     ee1=e22*c3-e32*c2;
-     ee2=e32*c1-e12*c3;
-     ee3=e12*c2-e22*c1;
-  }
-  else if (rot_axis == 2) 
-  {
-     ee1=e23*c3-e33*c2;
-     ee2=e33*c1-e13*c3;
-     ee3=e13*c2-e23*c1;
-  }
-  else if (rot_axis == 3) 
-  {
-     ee1=e21*c3-e31*c2;
-     ee2=e31*c1-e11*c3;
-     ee3=e11*c2-e21*c1;
-  }
-
-  eenorm=sqrt(ee1*ee1+ee2*ee2+ee3*ee3);
-  ee1=ee1/eenorm;
-  ee2=ee2/eenorm;
-  ee3=ee3/eenorm;
-
-  a1=c2*ee3-c3*ee2;
-  a2=c3*ee1-c1*ee3;
-  a3=c1*ee2-c2*ee1;
-  anorm=sqrt(a1*a1+a2*a2+a3*a3);
-  a1=a1/anorm;
-  a2=a2/anorm;
-  a3=a3/anorm;
-
-  b1=c2*a3-c3*a2;
-  b2=c3*a1-c1*a3;
-  b3=c1*a2-c2*a1;
-  bnorm=sqrt(b1*b1+b2*b2+b3*b3);
-  b1=b1/bnorm;
-  b2=b2/bnorm;
-  b3=b3/bnorm;
-}
-else /*if i1' is parallel to g3*/
-{
-  if      (rot_axis == 1) 
-  {
-     b1= 0.0;
-     b2=-c3;
-     b3= c2;
-  }
-  else if (rot_axis == 2) 
-  {
-     b1=  c3;
-     b2= 0.0;
-     b3= -c1;
-  }
-  else if (rot_axis == 3) 
-  {
-     b1=-c2;
-     b2= c1;
-     b3= 0.0;
-  }
-  bnorm=sqrt(b1*b1+b2*b2+b3*b3);
-  b1=b1/bnorm;
-  b2=b2/bnorm;
-  b3=b3/bnorm;
-
-  a1=b2*c3-b3*c2;
-  a2=b3*c1-b1*c3;
-  a3=b1*c2-b2*c1;
-  anorm=sqrt(a1*a1+a2*a2+a3*a3);
-  a1=a1/anorm;
-  a2=a2/anorm;
-  a3=a3/anorm;
-}
-
+DOUBLE  R11,R12,R13,R21,R22,R23,R31,R32,R33;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("s9_Teps");
+#endif
+/*----------------------------------------------------------------------*/
 /*-- basis vectors of material coord. sys. according to cartesian coord. sys. --*/ 
- R[0][0] = a1;
- R[0][1] = a2;
- R[0][2] = a3;
- R[1][0] = b1;
- R[1][1] = b2;
- R[1][2] = b3;
- R[2][0] = c1;
- R[2][1] = c2;
- R[2][2] = c3;
- 
-/*-- basis vectors of cartesian coord. sys. according to material coord. sys. --*/ 
- math_inv3(R,&det_dummy);
+ R11 = g1[0];
+ R12 = g1[1];
+ R13 = g1[2];
+ R21 = g2[0];
+ R22 = g2[1];
+ R23 = g2[2];
+ R31 = g3[0];
+ R32 = g3[1];
+ R33 = g3[2];
 
- R11 = R[0][0];
- R12 = R[0][1];
- R13 = R[0][2];
- R21 = R[1][0];
- R22 = R[1][1];
- R23 = R[1][2];
- R31 = R[2][0];
- R32 = R[2][1];
- R33 = R[2][2];
- 
 /*get transformation matrix according to: Altenbach,Altenbach,Rikards:
   Einfuehrung in die Mechanik der Laminat- und Sandwichtragwerke" p.29*/
 /*Sorting: [11,22,33,12,23,13]*/             
@@ -1145,168 +515,214 @@ else /*if i1' is parallel to g3*/
  T[0][0] = R11*R11;                              
  T[0][1] = R12*R12;                              
  T[0][2] = R13*R13;                              
- T[0][3] = 2*R11*R12;                            
- T[0][4] = 2*R12*R13;                             
- T[0][5] = 2*R11*R13;                           
+ T[0][3] = R11*R12;                            
+ T[0][4] = R12*R13;                             
+ T[0][5] = R11*R13;                           
  /*2.Zeile*/                                   
  T[1][0] = R21*R21;                              
  T[1][1] = R22*R22;                              
  T[1][2] = R23*R23;                               
- T[1][3] = 2*R21*R22;                           
- T[1][4] = 2*R22*R23;                            
- T[1][5] = 2*R21*R23;                            
+ T[1][3] = R21*R22;                           
+ T[1][4] = R22*R23;                            
+ T[1][5] = R21*R23;                            
  /*3.Zeile*/                                   
  T[2][0] = R31*R31;                               
  T[2][1] = R32*R32;                               
  T[2][2] = R33*R33;                               
- T[2][3] = 2*R31*R32;                             
- T[2][4] = 2*R32*R33;                             
- T[2][5] = 2*R31*R33;                             
+ T[2][3] = R31*R32;                             
+ T[2][4] = R32*R33;                             
+ T[2][5] = R31*R33;                             
  /*4.Zeile*/                                   
- T[3][0] = R11*R21;                            
- T[3][1] = R12*R22;                            
- T[3][2] = R13*R23;                            
+ T[3][0] = 2.*R11*R21;                            
+ T[3][1] = 2.*R12*R22;                            
+ T[3][2] = 2.*R13*R23;                            
  T[3][3] = R11*R22 + R12*R21;                   
  T[3][4] = R12*R23 + R13*R22;                  
  T[3][5] = R11*R23 + R13*R21;                 
  /*5.Zeile*/                    
- T[4][0] = R21*R31;                                 
- T[4][1] = R22*R32;                                 
- T[4][2] = R23*R33;                                 
+ T[4][0] = 2.*R21*R31;                                 
+ T[4][1] = 2.*R22*R32;                                 
+ T[4][2] = 2.*R23*R33;                                 
  T[4][3] = R21*R32 + R22*R31;                       
  T[4][4] = R22*R33 + R23*R32;                      
  T[4][5] = R21*R33 + R23*R31;                      
  /*6.Zeile*/                                   
- T[5][0] = R11*R31;                                
- T[5][1] = R12*R32;                                
- T[5][2] = R13*R33;                                
+ T[5][0] = 2.*R11*R31;                                
+ T[5][1] = 2.*R12*R32;                                
+ T[5][2] = 2.*R13*R33;                                
  T[5][3] = R11*R32 + R12*R31;                       
  T[5][4] = R12*R33 + R13*R32;                      
  T[5][5] = R11*R33 + R13*R31;                     
 
-/*now do the transformation: [C' = T * C* TsupT ]*/
-/*Help[i][j] = T[i][k] * C[k][j] */
-math_matmatdense(Help,T,C,6,6,6,0,1.0);
-/*T[i][j] -> T_Transposed[i][j]*/
-math_tran(T,6);
-/*C[i][j] = Help[i][k] * T_transposed[k][j] */
-math_matmatdense(C,Help,T,6,6,6,0,1.0);
-/*----------------------------------------------------------------------*/
-amdel(&R_a);
-amdel(&T_a);
-amdel(&Help_a);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of s9_Tmaca */
+} /* end of s9_Teps */
+
 
 /*!----------------------------------------------------------------------
-\brief transforms the constitutive matrix from the global cartesian 
- coordinate system to the curvilinear element coordinate system                                   
+\brief transforms strains from cartesian coordinate system to material/
+laminat coordinate system
+see Altenbach, Altenbach & Rikards p.29
+"Einfuehrung in die Mechanik der Laminat- und Sandwichtragwerke"                                 
 
-<pre>                                                            sh 02/03
-This routine transforms the constitutive matrix from the orthonormal 
-(global) cartesian coordinate system to the curvilinear element coordinate
-system.
-sorting: [11,22,33,12,23,13]
+<pre>                                                            sh 09/03
+eps' =  T_eps * eps
 </pre>
-\param  DOUBLE **C       (i/o) material matrix to be transformed
-\param  DOUBLE **akov     (i)  kovariant basis vectors
+\param  DOUBLE    E[6]     (i/0)  strains to be transformed
+\param  DOUBLE    T[6][6]   (i)  transformation Matrix T_sup_epsilon 
 
-\warning Always call this routine with the kovariant basis vectors (gkov). 
+\warning      be careful about sorting [11,22,33,12,23,13]
+              E={ e11, e22, e33, 2*e12, 2*e23, 2*e13 }
 \return void                                               
 \sa calling: ---; called by: 
                              
 *-----------------------------------------------------------------------*/
-void s9_Tcacu (DOUBLE **akov, DOUBLE **C)
+void s9_Ecama(DOUBLE E[6], DOUBLE T[6][6])
 {
-INT    i,j;
-DOUBLE R11,R12,R13,R21,R22,R23,R31,R32,R33;
-ARRAY  T_a;     DOUBLE **T;  
-ARRAY  Help_a;  DOUBLE **Help;  
+INT     i,j;
+DOUBLE  E_help[6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("s9_Tcacu");
+dstrc_enter("s9_Ecama");
 #endif
 /*----------------------------------------------------------------------*/
-T    = amdef("T",&T_a,6,6,"DA");         
-Help = amdef("Help",&Help_a,6,6,"DA");         
-/*----------------------------------------------------------------------*/
-/*curvilinear basis vectors*/
- R11 = akov[0][0];
- R12 = akov[0][1];
- R13 = akov[0][2];
- R21 = akov[1][0];
- R22 = akov[1][1];
- R23 = akov[1][2];
- R31 = akov[2][0];
- R32 = akov[2][1];
- R33 = akov[2][2];
- 
-/*get transformation matrix according to: Altenbach,Altenbach,Rikards:
-  Einfuehrung in die Mechanik der Laminat- und Sandwichtragwerke" p.29*/
-/*Sorting: [11,22,33,12,23,13]*/             
- /*1.Zeile*/                                   
- T[0][0] = R11*R11;                              
- T[0][1] = R12*R12;                              
- T[0][2] = R13*R13;                              
- T[0][3] = 2*R11*R12;                            
- T[0][4] = 2*R12*R13;                             
- T[0][5] = 2*R11*R13;                           
- /*2.Zeile*/                                   
- T[1][0] = R21*R21;                              
- T[1][1] = R22*R22;                              
- T[1][2] = R23*R23;                               
- T[1][3] = 2*R21*R22;                           
- T[1][4] = 2*R22*R23;                            
- T[1][5] = 2*R21*R23;                            
- /*3.Zeile*/                                   
- T[2][0] = R31*R31;                               
- T[2][1] = R32*R32;                               
- T[2][2] = R33*R33;                               
- T[2][3] = 2*R31*R32;                             
- T[2][4] = 2*R32*R33;                             
- T[2][5] = 2*R31*R33;                             
- /*4.Zeile*/                                   
- T[3][0] = R11*R21;                            
- T[3][1] = R12*R22;                            
- T[3][2] = R13*R23;                            
- T[3][3] = R11*R22 + R12*R21;                   
- T[3][4] = R12*R23 + R13*R22;                  
- T[3][5] = R11*R23 + R13*R21;                 
- /*5.Zeile*/                    
- T[4][0] = R21*R31;                                 
- T[4][1] = R22*R32;                                 
- T[4][2] = R23*R33;                                 
- T[4][3] = R21*R32 + R22*R31;                       
- T[4][4] = R22*R33 + R23*R32;                      
- T[4][5] = R21*R33 + R23*R31;                      
- /*6.Zeile*/                                   
- T[5][0] = R11*R31;                                
- T[5][1] = R12*R32;                                
- T[5][2] = R13*R33;                                
- T[5][3] = R11*R32 + R12*R31;                       
- T[5][4] = R12*R33 + R13*R32;                      
- T[5][5] = R11*R33 + R13*R31;                     
+E_help[0] = E[0];
+E_help[1] = E[1];
+E_help[2] = E[2];
+E_help[3] = E[3];
+E_help[4] = E[4];
+E_help[5] = E[5];
 
-/*now do the transformation: [C' = T * C* TsupT ]*/
-/*Help[i][j] = T[i][k] * C[k][j] */
-math_matmatdense(Help,T,C,6,6,6,0,1.0);
-/*T[i][j] -> T_Transposed[i][j]*/
-math_tran(T,6);
-/*C[i][j] = Help[i][k] * T_transposed[k][j] */
-math_matmatdense(C,Help,T,6,6,6,0,1.0);
-/*----------------------------------------------------------------------*/
-amdel(&T_a);
-amdel(&Help_a);
+E[0] = 0.0;
+E[1] = 0.0;
+E[2] = 0.0;
+E[3] = 0.0;
+E[4] = 0.0;
+E[5] = 0.0;
+
+/*  eps' = T_eps * eps   */
+for (i=0; i<6; i++) for (j=0; j<6; j++) E[i] += T[i][j] * E_help[j];
+     
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of s9_Tcacu */
+} /* end of s9_Ecama */
+
+
+
+/*!----------------------------------------------------------------------
+\brief transforms stresses from material/laminat coordinate system to 
+cartesian coordinate system
+see Altenbach, Altenbach & Rikards p.29
+"Einfuehrung in die Mechanik der Laminat- und Sandwichtragwerke"                                 
+
+<pre>                                                            sh 09/03
+sig = (T_eps)T * sig'
+</pre>
+\param  DOUBLE    S[6]     (i/0)  stresses to be transformed
+\param  DOUBLE    T[6][6]   (i)  transformation Matrix T_sup_epsilon 
+
+\warning      be careful about sorting [11,22,33,12,23,13]
+              E={ e11, e22, e33, 2*e12, 2*e23, 2*e13 }
+              S={ s11, s22, s33,   s12,   s23,   s13 }
+\return void                                               
+\sa calling: ---; called by: 
+                             
+*-----------------------------------------------------------------------*/
+void s9_Smaca(DOUBLE S[6], DOUBLE T[6][6])
+{
+INT     i,j;
+DOUBLE  S_help[6];
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("s9_Smaca");
+#endif
+/*----------------------------------------------------------------------*/
+S_help[0] = S[0];
+S_help[1] = S[1];
+S_help[2] = S[2];
+S_help[3] = S[3];
+S_help[4] = S[4];
+S_help[5] = S[5];
+
+S[0] = 0.0;
+S[1] = 0.0;
+S[2] = 0.0;
+S[3] = 0.0;
+S[4] = 0.0;
+S[5] = 0.0;
+
+/*  sig = (T_eps)T * sig'   */
+for (i=0; i<6; i++) for (j=0; j<6; j++) S[i] += T[j][i] * S_help[j];
+     
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s9_Smaca */
+
+
+
+/*!----------------------------------------------------------------------
+\brief transforms the constitutive matrix from orthonormal material coord.
+system to global cartesian coord. system
+see Altenbach, Altenbach & Rikards p.29
+"Einfuehrung in die Mechanik der Laminat- und Sandwichtragwerke"                                 
+
+<pre>                                                            sh 09/03
+C = (T_eps)T * C' * T_eps
+</pre>
+\param  DOUBLE  **C        (i/0) constitutive Matrix to be transformed
+\param  DOUBLE    T[6][6]   (i)  transformation Matrix T_sup_epsilon 
+
+\warning      be careful about sorting [11,22,33,12,23,13]
+              E={ e11, e22, e33, 2*e12, 2*e23, 2*e13 }
+\return void                                               
+\sa calling: ---; called by: 
+                             
+*-----------------------------------------------------------------------*/
+void s9_Cmaca(DOUBLE **C, DOUBLE T[6][6])
+{
+INT     i,j,k;
+DOUBLE  C_help[6][6];
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("s9_Cmaca");
+#endif
+/*----------------------------------------------------------------------*/
+/* initialize C_help*/
+for (i=0; i<6; i++) for (j=0; j<6; j++) C_help[i][j] = 0.0;
+
+/*  C_help = (T_eps)T * C'   */
+for (i=0; i<6; i++) 
+    for (j=0; j<6; j++) 
+        for (k=0; k<6; k++) C_help[i][j] += T[k][i] * C[k][j];
+
+
+/* initialize C*/
+for (i=0; i<6; i++) for (j=0; j<6; j++) C[i][j] = 0.0;
+
+/* C = (T_eps)T * C' * T_eps -> C = C_help * T_eps   */
+for (i=0; i<6; i++) 
+    for (j=0; j<6; j++) 
+        for (k=0; k<6; k++) C[i][j] += C_help[i][k] * T[k][j];
+     
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s9_Cmaca */
+
+
+
+
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
