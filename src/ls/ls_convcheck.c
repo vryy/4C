@@ -1,19 +1,47 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls_convcheck.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
-extern struct _PAR   par; 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+extern struct _PAR   par;
 
 
 
+/*!----------------------------------------------------------------------
+\brief subroutine for convergence check of level set problem
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+<pre>                                                            irhan 05/04
+subroutine for convergence check of level set problem
+</pre>
+
+*----------------------------------------------------------------------*/
 INT ls_convcheck(      
   LS_DYNAMIC	*lsdyn,   
   DOUBLE       lrat,
@@ -88,4 +116,5 @@ INT ls_convcheck(
   
   return (converged);
 } /* end of ls_convcheck*/
+/*! @} (documentation module close)*/
 #endif

@@ -1,15 +1,33 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls2_inpele.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*!----------------------------------------------------------------------
+\brief input of one ls2 element
 
+<pre>                                                            irhan 05/04
+input of one ls2 element
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls2inp(
   ELEMENT *ele
   )
@@ -71,6 +89,7 @@ void ls2inp(
   ele->e.ls2->is_sedge_set = 0;
   ele->e.ls2->intdata = (LS_INT_DATA*)CCACALLOC(2,sizeof(LS_INT_DATA));
   ele->e.ls2->polydata = (LS_POLY_DATA*)CCACALLOC(2,sizeof(LS_POLY_DATA));
+
 /*----------------------------------------------------------------------*/        
 #ifdef DEBUG 
   dstrc_exit();
@@ -80,9 +99,14 @@ void ls2inp(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct connectivity betweeen level set and fluid problems
+
+<pre>                                                            irhan 05/04
+construct connectivity betweeen level set and fluid problems
+</pre>
+
+*----------------------------------------------------------------------*/
 void fluid_to_ls(
   const FIELD *fluidfield,
   const FIELD *lsfield
@@ -152,9 +176,14 @@ void fluid_to_ls(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief find compatible element 
+
+<pre>                                                            irhan 05/04
+find compatible element 
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_find_compatible_ele(
   const ELEMENT *ele1,
   const ELEMENT *ele2,
@@ -202,4 +231,5 @@ void ls_find_compatible_ele(
 #endif
   return;
 } /* end of ls_find_compatible_ele */
+/*! @} (documentation module close)*/
 #endif

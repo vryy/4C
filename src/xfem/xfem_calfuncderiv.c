@@ -1,18 +1,33 @@
+/*!----------------------------------------------------------------------
+\file
+\brief xfem_calfuncderiv.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "xfem_prototypes.h"
-
-
-
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
 static DOUBLE Q14 = ONE/FOUR;
 
 
 
+/*!----------------------------------------------------------------------
+\brief shape function and derivative evaluation for enriched fluid element
 
+<pre>                                                            irhan 05/04
+shape function and derivative evaluation for enriched fluid element
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void xfem_f2_funct(
   DOUBLE     *funct,     
   DOUBLE    **deriv,    
@@ -134,9 +149,15 @@ void xfem_f2_funct(
 } /* end of xfem_f2_funct */
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+
+/*!----------------------------------------------------------------------
+\brief shape function evaluation for enriched fluid element
+
+<pre>                                                            irhan 05/04
+shape function evaluation for enriched fluid element (used by level set element)
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_funct1(
   DOUBLE     *funct,     
   DOUBLE      r,        
@@ -204,9 +225,15 @@ void xfem_f2_funct1(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+
+/*!----------------------------------------------------------------------
+\brief first global derivative evaluation for enriched fluid2 element
+
+<pre>                                                            irhan 05/04
+global derivative evaluation for enriched fluid2 element
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_derxy(
   DOUBLE    **derxy,     
   DOUBLE    **deriv,    
@@ -306,9 +333,14 @@ void xfem_f2_derxy(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief second global derivative evaluation for enriched fluid2 element
+
+<pre>                                                            irhan 05/04
+second global derivative evaluation for enriched fluid2 element
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_derxy2(
   DOUBLE     **xyze,     
   DOUBLE     **xjm,      
@@ -477,9 +509,14 @@ void xfem_f2_derxy2(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.03.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief evaluation of velocity components (at a Gauss point) for enriched fluid2 element
+
+<pre>                                                            irhan 05/04
+ evaluation of velocity components (at a Gauss point) for enriched fluid2 element
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_veli(
   DOUBLE  *velint,
   DOUBLE  *funct,    
@@ -513,9 +550,16 @@ void xfem_f2_veli(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief evaluation of the global first derivatives of the velocity
+components (at a Gauss point) for enriched fluid2 element
+
+<pre>                                                            irhan 05/04
+evaluation of the global first derivatives of the velocity
+components (at a Gauss point) for enriched fluid2 element
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_vder(
   DOUBLE **vderxy,     
   DOUBLE **derxy,    
@@ -552,9 +596,16 @@ void xfem_f2_vder(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief evaluation of the global second derivatives of the velocity
+components (at a Gauss point) for enriched fluid2 element
+
+<pre>                                                            irhan 05/04
+evaluation of the global second derivatives of the velocity
+components (at a Gauss point) for enriched fluid2 element
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_vder2(
   DOUBLE **vderxy2,    
   DOUBLE **derxy2,    
@@ -587,4 +638,5 @@ dstrc_exit();
 
 return; 
 } /* end of xfem_f2_vderxy2 */
+/*! @} (documentation module close)*/
 #endif

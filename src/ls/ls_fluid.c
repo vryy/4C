@@ -1,22 +1,104 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls_fluid.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
 extern struct  _FIELD          *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
 extern struct  _GENPROB         genprob;
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
 extern struct  _SOLVAR         *solv;
+/*!----------------------------------------------------------------------
+\brief one proc's info about his partition
+
+<pre>                                                         m.gee 8/00
+-the partition of one proc (all discretizations)
+-the type is in partition.h                                                  
+</pre> 
+
+*----------------------------------------------------------------------*/
 extern struct  _PARTITION      *partition;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
 extern struct  _IO_FLAGS        ioflags;
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 extern struct  _PAR             par;                      
-extern ALLDYNA                 *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | INT                   numcurve;                                      |
+ | struct _CURVE      *curve;                                           |
+ *----------------------------------------------------------------------*/
 extern INT                      numcurve;
 extern struct _CURVE           *curve;
+/*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ *----------------------------------------------------------------------*/
 extern enum   _CALC_ACTION      calc_action[MAXFIELD];
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
 extern struct _FILES            allfiles;
 
 
@@ -62,11 +144,16 @@ static LS_DYNAMIC     *lsdyn;              /* ls dynamic variables             *
 
 
 
+/*!----------------------------------------------------------------------
+\brief control subroutine for fluid sub-problem in coupled level set /
+extended finite element problem
 
+<pre>                                                            irhan 05/04
+control subroutine for fluid sub-problem in coupled level set /
+extended finite element problem
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls_fluid(
   INT     eflag
   )      
@@ -109,13 +196,19 @@ void ls_fluid(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief initialization of sub-problem fluid
+
+<pre>                                                            irhan 05/04
+initialization of sub-problem fluid
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_fluid_init()
 {
   INT     i;
   INT     actcurve;
+  
 #ifdef DEBUG 
   dstrc_enter("ls_fluid_init");
 #endif
@@ -343,9 +436,14 @@ void ls_fluid_init()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief solution of sub-problem fluid
+
+<pre>                                                            irhan 05/04
+solution of sub-problem fluid
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_fluid_solv()
 {
   INT        converged = 0;        /* convergence flag */
@@ -497,9 +595,14 @@ void ls_fluid_solv()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief finalization of sub-problem fluid
+
+<pre>                                                            irhan 05/04
+finalization of sub-problem fluid
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_fluid_fina()
 {
   DOUBLE     t2,tt;       
@@ -633,9 +736,14 @@ void ls_fluid_fina()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief end of sub-problem fluid
+
+<pre>                                                            irhan 05/04
+end of sub-problem fluid
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_fluid_clea()
 {
   INT     i;
@@ -713,4 +821,5 @@ void ls_fluid_clea()
   
   return;
 } /* end of ls_fluid_clea */
+/*! @} (documentation module close)*/
 #endif

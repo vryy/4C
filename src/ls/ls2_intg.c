@@ -1,19 +1,34 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls2_intg.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "ls_prototypes.h"
-
-
-
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 static DOUBLE     q12 = 1.0/2.0;
 static DOUBLE     q13 = 1.0/3.0;
 
 
 
+/*!----------------------------------------------------------------------
+\brief construct integration data for 2D level set element
 
+<pre>                                                            irhan 05/04
+construct integration data for 2D level set element
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls2_intg(
   LS2_INTG_DATA   *data
   )
@@ -84,4 +99,5 @@ void ls2_intg(
 #endif
   return;
 } /* end of ls2_intg */
+/*! @} (documentation module close)*/
 #endif

@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file
+\brief element control subroutine
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_XFEM 
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
@@ -5,19 +17,43 @@
 #include "../fluid_full/fluid_prototypes.h"
 #include "../ls/ls_prototypes.h"
 #include "xfem_prototypes.h"
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
 
 
 
-extern ALLDYNA            *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA            *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
 extern struct _MATERIAL   *mat;
-
-
 
 
 
 static ARRAY     eveln_a;     /* element velocities at (n) */
 static DOUBLE  **eveln;
+/*
+ * => NOTE
+ * if there is no classic time rhs (as described in WAW) the array
+ * eveln is misused and does NOT contain the velocity at time (n)
+ * but rather a linear combination of old velocities and
+ * accelerations depending upon the time integration scheme!!!!!
+ */
 static ARRAY     evelng_a;    /* element velocities at (n+gamma) */
 static DOUBLE  **evelng;
 static ARRAY     epren_a;     /* element pressures at (n) */
@@ -70,20 +106,27 @@ static DOUBLE   *edforce;     /* pointer to RHS due to dirichl. conditions */
 
 
 
+static FLUID_DYNAMIC   *fdyn;
+
+
+
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
 static ARRAY     iarr_a;
-static INT      *iarr;        /* local connectivity array */
+static INT      *iarr;         /* local connectivity array */
 static ARRAY     iand_a;
-static INT      *iand;        /* index vector of active nodes */
-static INT       nact;        /* nact => (iel     )  in case of standard formulation */
-                              /*      => (iel+icnt)  in case of extended formulation */
-static INT       ntotal;
-static DOUBLE    thdt;        /* theta*dt  */
-static INT       iel;         /* number of nodes per element  */
-static ELEMENT  *myls2;       /* corresponding LS2 element */
+static INT      *iand;         /* index vector of active nodes */
+static INT       nact;         /* nact => (iel     ) in case of standard formulation */
+                               /*      => (iel+icnt) in case of extended formulation */
+static INT       ntotal;       /* total number of equations */
+static DOUBLE    thdt;         /* theta*dt */
+static INT       iel;          /* number of nodes per element */
+static ELEMENT  *myls2;        /* corresponding LS2 element */
 
 
 
-static ARRAY     estif_temp_a;/* temporary arrays */
+static ARRAY     estif_temp_a; /* temporary arrays (used for local assembly) */
 static DOUBLE  **estif_temp;
 static ARRAY     emass_temp_a;
 static DOUBLE  **emass_temp;
@@ -91,16 +134,43 @@ static ARRAY     eiforce_temp_a;
 static DOUBLE   *eiforce_temp;
 static ARRAY     etforce_temp_a;
 static DOUBLE   *etforce_temp;
-
-static FLUID_DYNAMIC   *fdyn;
-
-
-
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+
+/*!--------------------------------------------------------------------- 
+\brief control routine for element integration of fluid2
+
+<pre>                                                            irhan 05/04
+
+This routine controls the element evaluation:
+-actual vel. and pres. variables are set
+-stabilisation parameters are calculated
+-element integration is performed --> element stiffness matrix and 
+                                  --> element load vectors
+-stiffness matrix and load vectors are permuted for assembling
+-element load vector due to dirichlet conditions is calculated				      
+			     
+</pre>
+\param  *data	         FLUID_DATA     (i)
+\param  *ele	         ELEMENT	(i)   actual element
+\param  *eleke	         ELEMENT	(i)   element for turbulence-model
+\param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
+\param  *emass_global    ARRAY	        (o)   ele mass matrix
+\param  *etforce_global  ARRAY	        (o)   element time force
+\param  *eiforce_global  ARRAY	        (o)   ele iteration force
+\param  *edforce_global  ARRAY	        (o)   ele dirichlet force
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag         
+\param   imyrank         INT            (i)   proc number
+\param   velgrad         INT	        (i)   flag
+\param   is_relax        INT            (i)   flag
+\param   init	         INT	        (i)   init flag
+\return void                                               
+                                 
+------------------------------------------------------------------------*/
 void xfem_f2_calele(
   FLUID_DATA     *data, 
   ELEMENT        *ele,             
@@ -219,9 +289,14 @@ void xfem_f2_calele(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct local connectivity array (iarr)
+
+<pre>                                                            irhan 05/04
+construct connectivity array (iarr) to be used in local assembly.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_loc_con()
 {
   INT     i;
@@ -270,9 +345,14 @@ void xfem_f2_loc_con()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief perform local assembly for the tangent
+
+<pre>                                                            irhan 05/04
+perform local assembly for the tangent.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_loc_ass_tangent()
 {
   INT        i,j;
@@ -335,9 +415,14 @@ void xfem_f2_loc_ass_tangent()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief perform assembly for internal forces
+
+<pre>                                                            irhan 05/04
+perform assembly for internal forces.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_loc_ass_intforce(
   DOUBLE *intforce,
   DOUBLE *intforce_temp
@@ -371,9 +456,14 @@ void xfem_f2_loc_ass_intforce(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief initialize iarr, iand and 'temp' arrays
+
+<pre>                                                            irhan 05/04
+initialize iarr, iand and 'temp' arrays.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_array_init()
 {
   INT     i,j;
@@ -413,9 +503,14 @@ void xfem_f2_array_init()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief set some parameters
+
+<pre>                                                            irhan 05/04
+set some parameters.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_init(
   ELEMENT *ele
   )
@@ -431,7 +526,7 @@ void xfem_f2_init(
   ntotal = FIVE*iel;
   /* compute theta*dt */
   thdt = fdyn->thsl;
-  /* set ls2 element to me */
+  /* set ls2 element aassociated */
   myls2 = ele->e.f2->my_ls;
 
 /*----------------------------------------------------------------------*/
@@ -444,9 +539,14 @@ void xfem_f2_init(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct iand array
+
+<pre>                                                            irhan 05/04
+construct iand array.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_f2_iand()
 {
   INT       i;
@@ -480,4 +580,5 @@ void xfem_f2_iand()
   
   return;
 } /* end of xfem_f2_iand */
+/*! @} (documentation module close)*/
 #endif

@@ -1,6 +1,21 @@
+/*!----------------------------------------------------------------------
+\file
+\brief set all arrays for element calculation
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "xfem_prototypes.h"
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
 
 
 
@@ -24,18 +39,41 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+
+
 static FLUID_DYNAMIC *fdyn;
-
-
-static INT     PREDOF=2;
-
+static INT            PREDOF=2;
 
 
 
+/*!--------------------------------------------------------------------- 
+\brief set all arrays for element calculation
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+<pre>                                                            irhan 05/04
+
+get the element velocities and the pressure at different times 
+
+NOTE: in contradiction to the old programm the kinematic pressure
+      is stored in the solution history; so one can avoid the	 
+      transformation in every time step 			 
+				 
+NOTE: if there is no classic time rhs (as described in WAW) the array
+         eveln is misused and does NOT contain the velocity at time (n)
+	 but rather a linear combination of old velocities and 
+	 accelerations depending upon the time integration scheme!!!!!
+</pre>
+
+\param   *ele      ELEMENT	   (i)  actual element
+\param  **xyze     DOUBLE          (o)  nodal coordinates
+\param  **eveln    DOUBLE	   (o)  ele vels at time n
+\param  **evelng   DOUBLE	   (o)  ele vels at time n+g
+\param   *epren    DOUBLE	   (o)  ele pres at time n
+\param   *edeadn   DOUBLE          (o)  ele dead load at n (selfweight)
+\param   *edeadng  DOUBLE          (o)  ele dead load at n+g (selfweight)
+\param   *hasext   INT             (o)  flag for external loads
+\return void                                                                       
+
+------------------------------------------------------------------------*/
 void xfem_f2_calset( 
   ELEMENT            *ele,     
   DOUBLE            **xyze,
@@ -88,6 +126,10 @@ void xfem_f2_calset(
     /* => enriched */
     evelng[0][i+iel]=actnode->sol_increment.a.da[3][3];
     evelng[1][i+iel]=actnode->sol_increment.a.da[3][4];
+    /* check */
+    if (genprob.xfem_on_off==0 &&
+        (actnode->sol_increment.a.da[3][3]!=ZERO||actnode->sol_increment.a.da[3][4]!=ZERO))
+      dserror("severe error in enriched formulation");
     /* set supported pressures (n+1) */   
   }
 
@@ -108,6 +150,10 @@ void xfem_f2_calset(
       /* => enriched */
       eveln[0][i+iel]=actnode->sol_increment.a.da[1][3];
       eveln[1][i+iel]=actnode->sol_increment.a.da[1][4];
+      /* check */
+      if (genprob.xfem_on_off==0 &&
+          (actnode->sol_increment.a.da[1][3]!=ZERO||actnode->sol_increment.a.da[1][4]!=ZERO))
+        dserror("severe error in enriched formulation");
       /* set pressures (n) */   
       epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
     }
@@ -148,5 +194,6 @@ void xfem_f2_calset(
   
   return; 
 } /* end of xfem_f2_calset */
+/*! @} (documentation module close)*/
 #endif
 

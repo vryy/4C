@@ -1,18 +1,32 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls2_calfuncderiv.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "ls_prototypes.h"
-
-
-
+/*! 
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 static DOUBLE Q14 = ONE/FOUR;
 
 
 
+/*!----------------------------------------------------------------------
+\brief shape function and derivative evaluation for 2D level set element
 
+<pre>                                                            irhan 05/04
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls2_funct(
   DOUBLE     *funct,     
   DOUBLE    **deriv,    
@@ -81,9 +95,14 @@ void ls2_funct(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief computation of Jacobian and its determinant
+
+<pre>                                                            irhan 05/04
+computation of Jacobian and its determinant
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_jaco(
   DOUBLE    **xyze,
   DOUBLE     *funct,    
@@ -137,10 +156,14 @@ void ls2_jaco(
 } /* end of ls2_jaco */
 
 
+/*!----------------------------------------------------------------------
+\brief global derivative evaluation for 2D level set element
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+<pre>                                                            irhan 05/04
+global derivative evaluation for 2D level set element
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_gder(
   DOUBLE   **derxy,     
   DOUBLE   **deriv,    
@@ -176,4 +199,5 @@ void ls2_gder(
 
   return;
 } /* end of ls2_gder */
+/*! @} (documentation module close)*/
 #endif

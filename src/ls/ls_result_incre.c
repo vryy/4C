@@ -1,16 +1,34 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls_result_incre.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*!----------------------------------------------------------------------
+\brief map solution obtained back to nodes and compute convergence ratio
 
+<pre>                                                            irhan 05/04
+map solution obtained back to nodes and compute convergence ratio
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls_result_incre(
   FIELD             *actfield,    
   INTRA             *actintra,   
@@ -118,4 +136,5 @@ void ls_result_incre(
   
   return;
 } /* end of  ls_result_incre */
+/*! @} (documentation module close)*/
 #endif

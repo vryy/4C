@@ -1,14 +1,32 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls2_calset.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*!----------------------------------------------------------------------
+\brief extract nodal coordinate and solution data from element
 
+<pre>                                                            irhan 05/04
+extract nodal coordinate and solution data from element
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls2_calset( 
   ELEMENT         *ele,     
   DOUBLE         **xyze,
@@ -58,9 +76,14 @@ void ls2_calset(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief extract nodal solution data from element
+
+<pre>                                                            irhan 05/04
+extract nodal solution data from element
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_calset1( 
   ELEMENT         *ele,
   INT              pos,
@@ -85,7 +108,10 @@ void ls2_calset1(
   for(i=0; i<ele->numnp; i++)
   {
     actnode=ele->node[i];
-    /* nodal values of levelset function at time step (n+1) */      	
+    /*
+     * nodal values of levelset function at time step
+     * (n+1) if pos==1, (n) if pos==0
+     */      	
     lset[i]=actnode->sol_increment.a.da[pos][0];
   }
   
@@ -96,4 +122,5 @@ void ls2_calset1(
   
   return; 
 } /* end of ls2_calset1 */
+/*! @} (documentation module close)*/
 #endif

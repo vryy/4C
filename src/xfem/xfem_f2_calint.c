@@ -1,23 +1,88 @@
+/*!----------------------------------------------------------------------
+\file
+\brief compute element contributions to tangent and internal force vector
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../ls/ls_prototypes.h"
 #include "xfem_prototypes.h"
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
 
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
 extern struct _GENPROB        genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
 extern struct _MATERIAL      *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
 extern ALLDYNA               *alldyn;   
 
 
 
+/*!---------------------------------------------------------------------
+\brief compute element contributions to tangent and internal force vector
 
+<pre>                                                            irhan 05/04
 
-/************************************************************************
------------------------------------------- last checked by Irhan 26.04.04
-*************************************************************************/
+In this routine the element stiffness matrix, iteration-RHS and
+time-RHS for one fluid2_xfem element is calculated
+      
+</pre>
+\param  *data      FLUID_DATA	   (i)	  integration data
+\param  *ele	   ELEMENT	   (i)    actual element
+\param  *hasext    INT             (i)    element flag
+\param **estif     DOUBLE	   (o)    element stiffness matrix
+\param **emass     DOUBLE	   (o)    element mass matrix
+\param  *etforce   DOUBLE	   (o)    element time force vector
+\param  *eiforce   DOUBLE	   (o)    element iter force vector
+\param **xyze      DOUBLE          (-)    nodal coordinates
+\param  *funct     DOUBLE	   (-)    natural shape functions
+\param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
+\param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
+\param **xjm	   DOUBLE	   (-)    Jacobian matrix
+\param **derxy     DOUBLE	   (-)	  global derivatives
+\param **derxy2    DOUBLE	   (-)    2nd global derivatives
+\param **eveln     DOUBLE	   (i)    ele vel. at time n
+\param **evelng    DOUBLE	   (i)    ele vel. at time n+g
+\param  *epren     DOUBLE	   (-)    ele pres. at time n
+\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n 
+\param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
+\param  *velint    DOUBLE	   (-)    vel at integration point
+\param  *vel2int   DOUBLE	   (-)    vel at integration point
+\param  *covint    DOUBLE	   (-)    conv. vel. at integr. point
+\param **vderxy    DOUBLE	   (-)    global vel. derivatives
+\param  *pderxy    DOUBLE	   (-)    global pres. derivatives
+\param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
+\param **wa1	   DOUBLE	   (-)    working array
+\param **wa2	   DOUBLE	   (-)    working array
+\return void                                                   
+
+------------------------------------------------------------------------*/
 void xfem_f2_calint(
   FLUID_DATA      *data,     
   ELEMENT         *ele,     
@@ -61,7 +126,20 @@ void xfem_f2_calint(
   DOUBLE    e1, e2;
   DOUBLE    preint;     /* pressure at integration point */
   DIS_TYP   typ;	/* element type */
+
   
+
+  DOUBLE         visc;
+  DOUBLE         DENS;
+
+  STAB_PAR_GLS  *gls;	    /* pointer to GLS stabilisation parameters */
+  FLUID_DYNAMIC *fdyn; 
+
+
+  
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
   ELEMENT       *myls2;
   INT            is_elcut;
   DOUBLE         lset00[4],lset01[4],lset02[4];
@@ -73,12 +151,9 @@ void xfem_f2_calint(
   INT            ntri;
   INT            nsub,nsubtotal;
   INT            index[8];
-
-  DOUBLE         visc;
-  DOUBLE         DENS;
-
-  STAB_PAR_GLS  *gls;	    /* pointer to GLS stabilisation parameters	*/
-  FLUID_DYNAMIC *fdyn; 
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
+/******************************XFEM**************************************/
   
 #ifdef DEBUG 
   dstrc_enter("xfem_f2_calint");
@@ -112,7 +187,7 @@ void xfem_f2_calint(
   }
   else
   {
-    is_elcut = 0;                       /* standard formulation */
+    is_elcut = 0;                       /* standard formulation (with smeared material properties) */
   }
   /* access to the nodal values of level set profile */
   ls2_calset1(myls2,1,lset01);
@@ -136,7 +211,9 @@ void xfem_f2_calint(
     if (ntyp==1) ihoel = 1;
     else if (ntyp==2) ihoel=0;
     else dserror("ntyp not set properly!");
+    /**************************************/
     /* START LOOP OVER INTEGRATION POINTS */
+    /**************************************/
     /* loop over triangles */
     for (ntri=0; ntri<2; ntri++)
     {
@@ -146,7 +223,7 @@ void xfem_f2_calint(
       /* loop over subtriangles */
       for (nsub=0; nsub<nsubtotal; nsub++)
       {
-        /* set viscosity */
+        /* set viscosity and density */
         actmat = polygonmat[ntri][nsub]-1;
         visc   = mat[actmat].m.fluid->viscosity;
         DENS   = mat[actmat].m.fluid->density;
@@ -155,15 +232,16 @@ void xfem_f2_calint(
         facr = ONE;
         e2   = polygonGP[ntri][1][nsub];
         facs = polygonwgt[ntri][nsub];
+        /* evaluate shape functions and their derivatives at Gauss point */
         xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,is_elcut);
         /* Jacobian matrix */
         f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
         fac = facr*facs*det;
-        /* compute global derivatives */
+        /* compute global first derivatives */
         xfem_f2_derxy(derxy,deriv,xjm,det,iel,funct,lset01,is_elcut);
-        /* velocities (n+1,i) at integraton point */
+        /* compute velocities (n+1,i) at integration point */
         xfem_f2_veli(velint,funct,evelng,iel);
-        /* velocity (n+1,i) derivatives at integration point */
+        /* compute velocity (n+1,i) derivatives at integration point */
         xfem_f2_vder(vderxy,derxy,evelng,iel);
         /*
            compute "Standard Galerkin" matrices
@@ -174,13 +252,19 @@ void xfem_f2_calint(
         if(fdyn->nik>0)
         {
           /* compute matrix Kvv */      
-          xfem_f2_calkvv(ele,estif,velint,NULL,vderxy,funct,derxy,
-                         fac,visc,iel,index,DENS);
+          xfem_f2_calkvv(
+            ele,estif,velint,NULL,vderxy,funct,derxy,
+            fac,visc,iel,index,DENS
+            );
           /* compute matrix Kvp and Kpv */
-          xfem_f2_calkvp(estif,funct,derxy,fac,iel,index);
+          xfem_f2_calkvp(
+            estif,funct,derxy,fac,iel,index
+            );
           /* compute matrix Mvv */
           if (fdyn->nis==0)
-            xfem_f2_calmvv(emass,funct,fac,iel,index,DENS);
+            xfem_f2_calmvv(
+              emass,funct,fac,iel,index,DENS
+              );
         }
         /*
            compute Stabilization matrices
@@ -195,44 +279,62 @@ void xfem_f2_calint(
             f2_calelesize2(ele,xyze,funct,velint,wa1,visc,iel,ntyp);
           /* compute second global derivative */
           if (ihoel!=0)
-            xfem_f2_derxy2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel,funct,
-                           lset01,is_elcut);
+            xfem_f2_derxy2(
+              xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel,funct,
+              lset01,is_elcut
+              );
           if (fdyn->nie==0)
           {
             /* stabilization for matrix Kvv */
-            xfem_f2_calstabkvv(ele,estif,velint,velint,NULL,vderxy,funct,
-                               derxy,derxy2,fac,visc,iel,ihoel,index,DENS);
+            xfem_f2_calstabkvv(
+              ele,estif,velint,velint,NULL,vderxy,funct,
+              derxy,derxy2,fac,visc,iel,ihoel,index,DENS
+              );
             /* stabilization for matrix Kvp */
-            xfem_f2_calstabkvp(ele,estif,velint,funct,derxy,derxy2,fac,
-                               visc,iel,ihoel,index,DENS);
+            xfem_f2_calstabkvp(
+              ele,estif,velint,funct,derxy,derxy2,fac,
+              visc,iel,ihoel,index,DENS
+              );
             /* stabilization for matrix Mvv */
             if (fdyn->nis==0)
-              xfem_f2_calstabmvv(ele,emass,velint,funct,derxy,derxy2,
-                                 fac,visc,iel,ihoel,index,DENS);              
+              xfem_f2_calstabmvv(
+                ele,emass,velint,funct,derxy,derxy2,
+                fac,visc,iel,ihoel,index,DENS
+                );              
             if (gls->ipres!=0)	        
             {
               /* stabilization for matrix Kpv */
-              xfem_f2_calstabkpv(ele,estif,velint,NULL,vderxy,funct,derxy,
-                                 derxy2,fac,visc,iel,ihoel,index,DENS);              
+              xfem_f2_calstabkpv(
+                ele,estif,velint,NULL,vderxy,funct,derxy,
+                derxy2,fac,visc,iel,ihoel,index,DENS
+                );              
               /* stabilization for matrix Mpv */
               if (fdyn->nis==0)
-                xfem_f2_calstabmpv(emass,funct,derxy,fac,iel,index,DENS);                
+                xfem_f2_calstabmpv(
+                  emass,funct,derxy,fac,iel,index,DENS
+                  );                
             }
           }
           /* stabilization for matrix Kpp */
           if (gls->ipres!=0)
-            f2_calstabkpp(estif,derxy,fac,iel);              
+            f2_calstabkpp(
+              estif,derxy,fac,iel
+              );              
         }
 
         /* compute "external" Force Vector (b) => */
         if (*hasext != 0 && gls->istabi > 0)
         {
           /*  compute stabilisation part of external RHS (vel dofs) at (n+1) */
-          xfem_f2_calstabexfv(ele,eiforce,derxy,derxy2,edeadng,velint,fac,visc,
-                              iel,ihoel,1,index,DENS);
+          xfem_f2_calstabexfv(
+            ele,eiforce,derxy,derxy2,edeadng,velint,fac,visc,
+            iel,ihoel,1,index,DENS
+            );
           /*  compute stabilisation part of external RHS (pre dofs) at (n+1) */
           if (gls->ipres != 0)
-            xfem_f2_calstabexfp(&(eiforce[2*iel]),derxy,edeadng,fac,iel,1,DENS);
+            xfem_f2_calstabexfp(
+              &(eiforce[2*iel]),derxy,edeadng,fac,iel,1,DENS
+              );
         }
 
         /* compute "Time" Force Vector => */
@@ -241,61 +343,89 @@ void xfem_f2_calint(
           if (fdyn->iprerhs>0)
           {
             /* get pressure (n) at integration point */
-            f2_prei(&preint,funct,epren,iel);
+            f2_prei(
+              &preint,funct,epren,iel
+              );
             /* get pressure derivatives (n) at integration point */
-            f2_pder(pderxy,derxy,epren,iel);
+            f2_pder(
+              pderxy,derxy,epren,iel
+              );
           }
 
           /* velocities (n) at integration point */
-          xfem_f2_veli(velint,funct,eveln,iel);
+          xfem_f2_veli(
+            velint,funct,eveln,iel
+            );
           /* velocity (n) derivatives at integration point */
-          xfem_f2_vder(vderxy,derxy,eveln,iel);
+          xfem_f2_vder(
+            vderxy,derxy,eveln,iel
+            );
           /* get 2nd velocities derivatives (n) at integration point */
           if (ihoel!=0)
-            xfem_f2_vder2(vderxy2,derxy2,eveln,iel); 
+            xfem_f2_vder2(
+              vderxy2,derxy2,eveln,iel
+              ); 
           /* due to historical reasons there exist two velocities */            
           vel2int=velint;
           /* get convective velocities (n) at integration point */
-          f2_covi(vderxy,velint,covint);        	    
+          f2_covi(
+            vderxy,velint,covint
+            );        	    
           /* calculate galerkin part of "Time-RHS" (vel-dofs)*/
-          xfem_f2_calgaltfv(etforce,vel2int,covint,funct,derxy,vderxy,
-                            preint,visc,fac,iel,index,DENS);
+          xfem_f2_calgaltfv(
+            etforce,vel2int,covint,funct,derxy,vderxy,
+            preint,visc,fac,iel,index,DENS
+            );
           /* calculate galerkin part of "Time-RHS" (pre-dofs) */
-          f2_calgaltfp(&(etforce[2*iel]),funct,vderxy,fac,iel);
+          f2_calgaltfp(
+            &(etforce[2*iel]),funct,vderxy,fac,iel
+            );
           if (gls->istabi>0)
           {
             /* calculate stabilization for "Time-RHS" (vel-dofs) */
-            xfem_f2_calstabtfv(ele,etforce,velint,vel2int,covint,derxy,
-                               derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,
-                               iel,index,DENS);
+            xfem_f2_calstabtfv(
+              ele,etforce,velint,vel2int,covint,derxy,
+              derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,
+              iel,index,DENS
+              );
             /* calculate stabilization for "Time-RHS" (pre-dofs) */
             if (gls->ipres!=0)
-              xfem_f2_calstabtfp(&(etforce[2*iel]),derxy,vderxy2,
-                            vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS);
+              xfem_f2_calstabtfp(
+                &(etforce[2*iel]),derxy,vderxy2,
+                vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS
+                );
           }
 
           if (*hasext!=0)
           {
             /*  compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-            xfem_f2_calgalexfv(etforce,funct,edeadn,edeadng,fac,iel,index,DENS);
+            xfem_f2_calgalexfv(
+              etforce,funct,edeadn,edeadng,fac,iel,index,DENS
+              );
             if (gls->istabi>0)
             {
               /*  compute stabilization part of external RHS (vel dofs) at (n) */
-              xfem_f2_calstabexfv(ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
-                                  iel,ihoel,0,index,DENS);
+              xfem_f2_calstabexfv(
+                ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
+                iel,ihoel,0,index,DENS
+                );
               /*  compute stabilization part of external RHS (pre dofs) */
               if (gls->ipres != 0)
-                xfem_f2_calstabexfp(&(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS);
+                xfem_f2_calstabexfp(
+                  &(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS
+                  );
             }
           }
         } 
       }
     }
+    /************************************/
     /* END LOOP OVER INTEGRATION POINTS */
+    /************************************/
   }
   else
   {
-    /* set viscosity */
+    /* set viscosity and density */
     actmat = ele->mat-1;
     visc   = mat[actmat].m.fluid->viscosity;
     DENS   = mat[actmat].m.fluid->density;
@@ -318,7 +448,9 @@ void xfem_f2_calint(
         default:
           dserror("ntyp unknown!");
     }
+    /**************************************/
     /* START LOOP OVER INTEGRATION POINTS */
+    /**************************************/
     for (lr=0; lr<nir; lr++)
     {    
       for (ls=0; ls<nis; ls++)
@@ -331,29 +463,41 @@ void xfem_f2_calint(
               facr = data->qwgt[lr][nir-1];
               e2   = data->qxg[ls][nis-1];
               facs = data->qwgt[ls][nis-1];
-              xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,
-                            is_elcut);
+              xfem_f2_funct(
+                funct,deriv,deriv2,e1,e2,typ,lset01,iel,
+                is_elcut
+                );
               break;
             case 2:
               e1   = data->txgr[ls][nis-1];
               facr = ONE;
               e2   = data->txgs[ls][nis-1];
               facs = data->twgt[ls][nis-1];
-              xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,
-                            is_elcut);
+              xfem_f2_funct(
+                funct,deriv,deriv2,e1,e2,typ,lset01,iel,
+                is_elcut
+                );
               break;
             default:
               dserror("ntyp unknown!");
         }
         /* Jacobian matrix */
-        f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+        f2_jaco(
+          xyze,funct,deriv,xjm,&det,iel,ele
+          );
         fac = facr*facs*det;
         /* compute global derivatives */
-        xfem_f2_derxy(derxy,deriv,xjm,det,iel,funct,lset01,is_elcut);
+        xfem_f2_derxy(
+          derxy,deriv,xjm,det,iel,funct,lset01,is_elcut
+          );
         /* get velocities (n+g,i) at integraton point */
-        xfem_f2_veli(velint,funct,evelng,iel);
+        xfem_f2_veli(
+          velint,funct,evelng,iel
+          );
         /* get velocity (n+g,i) derivatives at integration point */
-        xfem_f2_vder(vderxy,derxy,evelng,iel);
+        xfem_f2_vder(
+          vderxy,derxy,evelng,iel
+          );
         /*
            compute "Standard Galerkin" matrices =>
            NOTE =>
@@ -363,67 +507,93 @@ void xfem_f2_calint(
         if(fdyn->nik>0)
         {
           /* compute matrix Kvv */      
-          xfem_f2_calkvv(ele,estif,velint,NULL,vderxy,funct,derxy,
-                    fac,visc,iel,index,DENS);
+          xfem_f2_calkvv(
+            ele,estif,velint,NULL,vderxy,funct,derxy,
+            fac,visc,iel,index,DENS
+            );
           /* compute matrix Kvp and Kpv */
-          xfem_f2_calkvp(estif,funct,derxy,fac,iel,index);
+          xfem_f2_calkvp(
+            estif,funct,derxy,fac,iel,index
+            );
           /* compute matrix Mvv */
           if (fdyn->nis==0)	  	 	    
-            xfem_f2_calmvv(emass,funct,fac,iel,index,DENS);
+            xfem_f2_calmvv(
+              emass,funct,fac,iel,index,DENS
+              );
         }
         /*
-           compute Stabilization matrices =>
-           NOTE =>
-           Stabilization matrices are all stored in one matrix "estif"
-           Stabilization mass matrices are stored in one matrix "emass"
+          compute Stabilization matrices =>
+          NOTE =>
+          Stabilization matrices are all stored in one matrix "estif"
+          Stabilization mass matrices are stored in one matrix "emass"
         */
         if (gls->istabi>0)
         { 
           /* compute stabilization parameter during integration loop */
           if (gls->iduring!=0)
-            f2_calelesize2(ele,xyze,funct,velint,wa1,visc,iel,ntyp);
+            f2_calelesize2(
+              ele,xyze,funct,velint,wa1,visc,iel,ntyp
+              );
           /* compute second global derivative */
           if (ihoel!=0)
-            xfem_f2_derxy2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel,funct,
-                           lset01,is_elcut);
+            xfem_f2_derxy2(
+              xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel,funct,
+              lset01,is_elcut
+              );
           
           if (fdyn->nie==0)
           {
             /* stabilization for matrix Kvv */
-            xfem_f2_calstabkvv(ele,estif,velint,velint,NULL,vderxy,
-                               funct,derxy,derxy2,fac,visc,iel,
-                               ihoel,index,DENS);
+            xfem_f2_calstabkvv(
+              ele,estif,velint,velint,NULL,vderxy,
+              funct,derxy,derxy2,fac,visc,iel,
+              ihoel,index,DENS
+              );
             /* stabilization for matrix Kvp */
-            xfem_f2_calstabkvp(ele,estif,velint,funct,derxy,derxy2,
-                               fac,visc,iel,ihoel,index,DENS);
+            xfem_f2_calstabkvp(
+              ele,estif,velint,funct,derxy,derxy2,
+              fac,visc,iel,ihoel,index,DENS
+              );
             /* stabilization for matrix Mvv */
             if (fdyn->nis==0) 
-              xfem_f2_calstabmvv(ele,emass,velint,funct,derxy,derxy2,
-                                 fac,visc,iel,ihoel,index,DENS); 
+              xfem_f2_calstabmvv(
+                ele,emass,velint,funct,derxy,derxy2,
+                fac,visc,iel,ihoel,index,DENS
+                ); 
             if (gls->ipres!=0)	        
             {
               /* stabilization for matrix Kpv */
-              xfem_f2_calstabkpv(ele,estif,velint,NULL,vderxy,funct,derxy,
-                                 derxy2,fac,visc,iel,ihoel,index,DENS);
+              xfem_f2_calstabkpv(
+                ele,estif,velint,NULL,vderxy,funct,derxy,
+                derxy2,fac,visc,iel,ihoel,index,DENS
+                );
               /* stabilization for matrix Mpv */
               if (fdyn->nis==0)
-                xfem_f2_calstabmpv(emass,funct,derxy,fac,iel,index,DENS);
+                xfem_f2_calstabmpv(
+                  emass,funct,derxy,fac,iel,index,DENS
+                  );
             }
           }
           /* stabilization for matrix Kpp */
           if (gls->ipres!=0)
-            f2_calstabkpp(estif,derxy,fac,iel);
+            f2_calstabkpp(
+              estif,derxy,fac,iel
+              );
         }
 
         /* compute "external" Force Vector (b) => */
         if (*hasext != 0 && gls->istabi > 0)
         {
           /*  compute stabilisation part of external RHS (vel dofs) at (n+1) */
-          xfem_f2_calstabexfv(ele,eiforce,derxy,derxy2,edeadng,velint,fac,visc,
-                              iel,ihoel,1,index,DENS);
+          xfem_f2_calstabexfv(
+            ele,eiforce,derxy,derxy2,edeadng,velint,fac,visc,
+            iel,ihoel,1,index,DENS
+            );
           /*  compute stabilisation part of external RHS (pre dofs) at (n+1) */
           if (gls->ipres != 0)
-            xfem_f2_calstabexfp(&(eiforce[2*iel]),derxy,edeadng,fac,iel,1,DENS);
+            xfem_f2_calstabexfp(
+              &(eiforce[2*iel]),derxy,edeadng,fac,iel,1,DENS
+              );
         }
 
         /* compute "Time" Force Vector => */
@@ -432,56 +602,84 @@ void xfem_f2_calint(
           if (fdyn->iprerhs>0)
           {
             /* get pressure (n) at integration point */
-            f2_prei(&preint,funct,epren,iel);
+            f2_prei(
+              &preint,funct,epren,iel
+              );
             /* get pressure derivatives (n) at integration point */
-            f2_pder(pderxy,derxy,epren,iel);
+            f2_pder(
+              pderxy,derxy,epren,iel
+              );
           }
           
           /* get velocities (n) at integration point */
-          xfem_f2_veli(velint,funct,eveln,iel);
+          xfem_f2_veli(
+            velint,funct,eveln,iel
+            );
           /* get velocitiederivatives (n) at integration point */
-          xfem_f2_vder(vderxy,derxy,eveln,iel);
+          xfem_f2_vder(
+            vderxy,derxy,eveln,iel
+            );
           /* get 2nd velocities derivatives (n) at integration point */
           if (ihoel!=0)
-            xfem_f2_vder2(vderxy2,derxy2,eveln,iel); 
+            xfem_f2_vder2(
+              vderxy2,derxy2,eveln,iel
+              ); 
           /* due to historical reasons there exist two velocities */
           vel2int=velint;
           /* get convective velocities (n) at integration point */
-          f2_covi(vderxy,velint,covint);
+          f2_covi(
+            vderxy,velint,covint
+            );
           /* calculate galerkin part of "Time-RHS" (vel-dofs) */
-          xfem_f2_calgaltfv(etforce,vel2int,covint,funct,derxy,vderxy,
-                            preint,visc,fac,iel,index,DENS);
+          xfem_f2_calgaltfv(
+            etforce,vel2int,covint,funct,derxy,vderxy,
+            preint,visc,fac,iel,index,DENS
+            );
           /* calculate galerkin part of "Time-RHS" (pre-dofs) */
-          f2_calgaltfp(&(etforce[2*iel]),funct,vderxy,fac,iel);
+          f2_calgaltfp(
+            &(etforce[2*iel]),funct,vderxy,fac,iel
+            );
           if (gls->istabi>0)
           {
             /* calculate stabilization for "Time-RHS" (vel-dofs) */
-            xfem_f2_calstabtfv(ele,etforce,velint,vel2int,covint,derxy,
-                               derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,iel,index,DENS);
+            xfem_f2_calstabtfv(
+              ele,etforce,velint,vel2int,covint,derxy,
+              derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,iel,index,DENS
+              );
             /* calculate stabilization for "Time-RHS" (pre-dofs) */
             if (gls->ipres!=0)
-              xfem_f2_calstabtfp(&(etforce[2*iel]),derxy,vderxy2,
-                                 vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS);
+              xfem_f2_calstabtfp(
+                &(etforce[2*iel]),derxy,vderxy2,
+                vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS
+                );
           }
 
           if (*hasext!=0)
           {
             /*  compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-            xfem_f2_calgalexfv(etforce,funct,edeadn,edeadng,fac,iel,index,DENS);
+            xfem_f2_calgalexfv(
+              etforce,funct,edeadn,edeadng,fac,iel,index,DENS
+              );
             if (gls->istabi>0)
             {
               /*  compute stabilization part of external RHS (vel dofs) at (n) */
-              xfem_f2_calstabexfv(ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
-                                  iel,ihoel,0,index,DENS);
+              xfem_f2_calstabexfv(
+                ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
+                iel,ihoel,0,index,DENS
+                );
               /*  compute stabilization part of external RHS (pre dofs) */
               if (gls->ipres != 0)
-                xfem_f2_calstabexfp(&(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS);
+                xfem_f2_calstabexfp(
+                  &(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS
+                  );
             }
           }
         }
       }
     }
+    /************************************/
     /* END LOOP OVER INTEGRATION POINTS */
+    /************************************/
   }
   
 /*----------------------------------------------------------------------*/
@@ -490,4 +688,5 @@ void xfem_f2_calint(
 #endif
   return; 
 } /* end of xfem_f2_calint */
+/*! @} (documentation module close)*/
 #endif

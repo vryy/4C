@@ -1,14 +1,32 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls_init.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*!----------------------------------------------------------------------
+\brief initialize level set problem
 
+<pre>                                                            irhan 05/04
+initialize level set problem
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls_init(
   FIELD          *actfield,  
   LS_DYNAMIC     *lsdyn,
@@ -107,9 +125,14 @@ void ls_init(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (smooth) level set profile for one circular interface 
+
+<pre>                                                            irhan 05/04
+construct (smooth) level set profile for one circular interface 
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_single_circle(
   FIELD* field,
   LS_DYNAMIC* lsdyn
@@ -155,9 +178,14 @@ void ls_init_single_circle(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (smooth) level set profile for two circular interfaces
+
+<pre>                                                            irhan 05/04
+construct (smooth) level set profile for two circular interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_double_circle(
   FIELD* field,
   LS_DYNAMIC* lsdyn
@@ -214,9 +242,14 @@ void ls_init_double_circle(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (smooth) level set profile for three circular interfaces
+
+<pre>                                                            irhan 05/04
+construct (smooth) level set profile for three circular interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_triple_circle(
   FIELD* field,
   LS_DYNAMIC* lsdyn
@@ -282,9 +315,14 @@ void ls_init_triple_circle(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (sharp) level set profile for one circular interface
+
+<pre>                                                            irhan 05/04
+construct (sharp) level set profile for one circular interface
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_single_circle_sharp(
   FIELD *field,
   LS_DYNAMIC *lsdyn
@@ -334,9 +372,14 @@ void ls_init_single_circle_sharp(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (sharp) level set profile for two circular interfaces
+
+<pre>                                                            irhan 05/04
+construct (sharp) level set profile for two circular interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_double_circle_sharp(
   FIELD *field,
   LS_DYNAMIC *lsdyn
@@ -395,9 +438,14 @@ void ls_init_double_circle_sharp(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (sharp) level set profile for three circular interfaces
+
+<pre>                                                            irhan 05/04
+construct (sharp) level set profile for three circular interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_triple_circle_sharp(
   FIELD *field,
   LS_DYNAMIC *lsdyn
@@ -467,9 +515,14 @@ return;
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (smooth) level set profile for one line interface
+
+<pre>                                                            irhan 05/04
+construct (smooth) level set profile for one line interface
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_single_line(
   FIELD* field,
   LS_DYNAMIC* lsdyn
@@ -549,9 +602,14 @@ void ls_init_single_line(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (smooth) level set profile for two line interfaces
+
+<pre>                                                            irhan 05/04
+construct (smooth) level set profile for two line interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_double_line(
   FIELD* field,
   LS_DYNAMIC* lsdyn
@@ -575,9 +633,15 @@ void ls_init_double_line(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+
+/*!----------------------------------------------------------------------
+\brief construct (smooth) level set profile for three line interfaces
+
+<pre>                                                            irhan 05/04
+construct (smooth) level set profile for three line interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_triple_line(
   FIELD* field,
   LS_DYNAMIC* lsdyn
@@ -601,9 +665,14 @@ void ls_init_triple_line(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (sharp) level set profile for one line interface
+
+<pre>                                                            irhan 05/04
+construct (sharp) level set profile for one line interface
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_single_line_sharp(
   FIELD *field,
   LS_DYNAMIC *lsdyn
@@ -627,9 +696,14 @@ void ls_init_single_line_sharp(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (sharp) level set profile for two line interfaces
+
+<pre>                                                            irhan 05/04
+construct (sharp) level set profile for two line interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_double_line_sharp(
   FIELD *field,
   LS_DYNAMIC *lsdyn
@@ -653,9 +727,14 @@ void ls_init_double_line_sharp(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct (sharp) level set profile for three line interfaces
+
+<pre>                                                            irhan 05/04
+construct (sharp) level set profile for three line interfaces
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_triple_line_sharp(
   FIELD *field,
   LS_DYNAMIC *lsdyn
@@ -676,4 +755,5 @@ void ls_init_triple_line_sharp(
   
 return;
 } /* end of ls_init_triple_line_sharp */
+/*! @} (documentation module close)*/
 #endif

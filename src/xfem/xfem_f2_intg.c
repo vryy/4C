@@ -1,14 +1,39 @@
+/*!----------------------------------------------------------------------
+\file
+\brief time RHS for fluid2_xfem element
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "xfem_prototypes.h"
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
 
 
 
+/*!---------------------------------------------------------------------                                         
+\brief integration parameters for fluid2_xfem element
 
+<pre>                                                            irhan 05/04
 
-/************************************************************************
------------------------------------------- last checked by Irhan 15.04.04
-************************************************************************/
+this routine is a try to organise the integration parameters   
+different. ALL paramters are stored in FLUID_DATA, so that this
+routine has to be (hopefully) called only once!!!	       
+
+</pre>
+\param  *data 	  FLUID_DATA       (o)	   
+\param   option	  INT              (i)     flag (not used at the moment 
+\return void                                                                       
+
+------------------------------------------------------------------------*/
 void xfem_f2_intg(
   FLUID_DATA    *data
   )
@@ -67,4 +92,5 @@ dstrc_exit();
 
 return;
 } /* end of xfem_f2_intg */
+/*! @} (documentation module close)*/
 #endif

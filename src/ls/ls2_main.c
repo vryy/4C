@@ -1,13 +1,48 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls2_main.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../xfem/xfem_prototypes.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
 extern struct _GENPROB       genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
 extern struct _FIELD        *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
 extern struct _MATERIAL     *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
 extern         ALLDYNA      *alldyn;
 
 
@@ -30,8 +65,6 @@ static ARRAY               xjm_a;
 static DOUBLE            **xjm;          /* Jacobian matrix                     */
 static ARRAY               derxy_a;  
 static DOUBLE            **derxy;        /* global 1st derivatives              */
-static ARRAY               id_a;
-static INT               **id;   
 static DOUBLE            **estif;        /* pointer to element tangent matrix   */
 static DOUBLE            **emass;        /* pointer to element mass matrix      */
 static DOUBLE             *etforce;      /* pointer to Time RHS                 */
@@ -45,14 +78,19 @@ static LS2_INTG_DATA      *data;         /* integration data                    
 
 
 
-static INT         nlayer;
-static INT         is_elcut;
+static INT                 nlayer;
+static INT                 is_elcut;
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief control rouitne for 2D level set element
+
+<pre>                                                            irhan 05/04
+control rouitne for 2D level set element
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2(
   PARTITION   *actpart,
   INTRA       *actintra,
@@ -71,7 +109,7 @@ void ls2(
   
   switch (*action)
   {
-      case calc_ls_init: /* initialize */
+      case calc_ls_init:                /* initialize */
         estif   = estif_global->a.da;
         emass   = emass_global->a.da;
         eiforce = eiforce_global->a.dv;
@@ -80,7 +118,7 @@ void ls2(
         ls2_init();
         
         break;
-      case calc_ls: /* element contributions */  	   	               
+      case calc_ls:                     /* calculate element contributions */  	   	               
         amzero(estif_global);
         amzero(emass_global);
         amzero(eiforce_global);
@@ -103,9 +141,14 @@ void ls2(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief initialization phase for 2D level set element
+
+<pre>                                                            irhan 05/04
+initialization phase for 2D level set element
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_init()
 {
 #ifdef DEBUG 
@@ -121,7 +164,6 @@ void ls2_init()
   xjm       = amdef("xjm"   , &xjm_a      , TWO           , TWO           , "DA");
   xyze      = amdef("xyze"  , &xyze_a     , TWO           , MAXNOD_LS2    , "DA");
   derxy     = amdef("derxy" , &derxy_a    , TWO           , MAXNOD_LS2    , "DA");
-  id        = amdef("id"    , &id_a       , TWO           , TWO           , "IA");  
   velocity  = amdef("vel"   , &velocity_a , TWO           , TWO*MAXNOD_LS2, "DA");
   
   if (genprob.numls==-1)
@@ -134,13 +176,9 @@ void ls2_init()
   /* smoothing parameter for the computation of sign function */
   epsilon = lsdyn->lsdata->epsilon;
 
-  /* set identity array */
-  id[0][0] = 1;
-  id[0][1] = 0;
-  id[1][0] = 0;
-  id[1][1] = 1;
-
+  /* initialize data object */
   data = (LS2_INTG_DATA*)CCACALLOC(1,sizeof(LS2_INTG_DATA));
+
   /* set integration data */
   ls2_intg(data);
   
@@ -154,9 +192,14 @@ void ls2_init()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief calculation phase for 2D level set element
+
+<pre>                                                            irhan 05/04
+calculation phase for 2D level set element
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_calc(
   ELEMENT* ele
   )
@@ -168,6 +211,7 @@ void ls2_calc(
   
   /* set nlayer */
   nlayer = ele->e.ls2->nlayer;
+
   /* set is_elcut */
   is_elcut = ele->e.ls2->is_elcut;
   
@@ -192,9 +236,14 @@ void ls2_calc(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute element contributions to tangent and internal force vector
+
+<pre>                                                            irhan 05/04
+compute element contributions to tangent and internal force vector
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_calc_nonlocalized(
   ELEMENT* ele
   )
@@ -336,7 +385,7 @@ void ls2_calc_nonlocalized(
         /* norm of the velocity */
         velnorm = velGP[0]*velGP[0] + velGP[1]*velGP[1];
         velnorm = sqrt(velnorm);
-        /* stabilization parameter */
+        /* compute stabilization parameter */
         tau = 0.0;
         if (velnorm!=0.0) tau = 0.5*sqrt(area)/velnorm;
       }
@@ -394,9 +443,16 @@ void ls2_calc_nonlocalized(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute element contributions to tangent and internal force vector
+for re-initialization problem
+
+<pre>                                                            irhan 05/04
+compute element contributions to tangent and internal force vector
+for re-initialization problem
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_calc_reinitialized(
   ELEMENT* ele
   )
@@ -428,8 +484,8 @@ void ls2_calc_reinitialized(
 /*----------------------------------------------------------------------*/
 
   /* set integration parameters */
-  thdt  = (      lsdyn->theta)*lsdyn->lsdata->rdt;      /* (  theta)*dt */
-  thdt1 = (1.0 - lsdyn->theta)*lsdyn->lsdata->rdt;	/* (1-theta)*dt */
+  thdt  = (      lsdyn->theta)*lsdyn->lsdata->rdt;      /* (  theta)*rdt */
+  thdt1 = (1.0 - lsdyn->theta)*lsdyn->lsdata->rdt;	/* (1-theta)*rdt */
 
   /* set element parameters */
   iel = ele->numnp;
@@ -623,9 +679,17 @@ void ls2_calc_reinitialized(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute element contributions to tangent and internal force vector
+for elements which are outside the localization region
+
+<pre>                                                            irhan 05/04
+this subroutine is a dummy. with this mechanism localization problem could
+be solved without updating the degree of freedom structure constructed for
+the whole domain
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_calc_localized(
   ELEMENT* ele
   )
@@ -677,9 +741,14 @@ void ls2_calc_localized(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief set the velocity field to be used by 2D level set element
+
+<pre>                                                            irhan 05/04
+set the velocity field to be used by 2D level set element
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_setfluidvel(
   ELEMENT* ele
   )
@@ -713,9 +782,14 @@ void ls2_setfluidvel(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief set the velocity field by a user defined function
+
+<pre>                                                            irhan 05/04
+set the velocity field by a user defined function
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_setfluidvel_byuser(
   INT iel,
   INT flag
@@ -747,14 +821,14 @@ void ls2_setfluidvel_byuser(
           velocity[1][i] = 1.0;
         }
         break;
-      case 3: /* uniform velocity in the direction of diagonal */
+      case 3: /* uniform velocity in the direction of diagonal (+pi/4) */
         for (i=0; i<iel;i++ )
         {
           velocity[0][i] = 1.0;
           velocity[1][i] = 0.5;
         }
         break;
-      case 4: /* uniform velocity in the direction of diagonal */
+      case 4: /* uniform velocity in the direction of diagonal (-pi/4) */
         for (i=0; i<iel;i++ )
         {
           velocity[0][i] = 1.0;
@@ -811,9 +885,14 @@ void ls2_setfluidvel_byuser(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief set the velocity field by fluid
+
+<pre>                                                            irhan 05/04
+set the velocity field by fluid
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls2_setfluidvel_byfluid(
   ELEMENT* ele
   )
@@ -854,4 +933,5 @@ void ls2_setfluidvel_byfluid(
   
   return;
 } /* end of ls2_setfluidvel_byfluid */
+/*! @} (documentation module close)*/
 #endif

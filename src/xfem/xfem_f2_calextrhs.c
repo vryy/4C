@@ -1,8 +1,23 @@
+/*!----------------------------------------------------------------------
+\file
+\brief external RHS for fluid2_xfem element
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "xfem_prototypes.h"
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
 
 
 
@@ -20,15 +35,43 @@ extern ALLDYNA            *alldyn;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+
+
 static FLUID_DYNAMIC      *fdyn;
 
 
 
+/*!--------------------------------------------------------------------- 
+\brief galerkin part of external forces for vel dofs
 
+<pre>                                                            irhan 05/04
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+In this routine the galerkin part of the time forces for vel dofs
+is calculated:
+
+                   /
+   + (1-THETA)*dt |  v * b_old   d_omega
+                 /  
+
+               /
+   + THETA*dt |  v * b   d_omega
+             /      	  		      
+
+see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
+     
+      
+</pre>
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param	 *funct       DOUBLE	      (i)    nat. shape functions      
+\param   *edeadn      DOUBLE          (i)    ele dead load at n
+\param   *edeadng     DOUBLE          (i)    ele dead load at n+1
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
+\param    index	      INT  	      (i)    index for local assembly
+\param    DENS	      DOUBLE  	      (i)    fluid density
+\return void                                                                       
+
+------------------------------------------------------------------------*/
 void xfem_f2_calgalexfv(
   DOUBLE             *eforce,     
   DOUBLE             *funct,       
@@ -55,7 +98,18 @@ void xfem_f2_calgalexfv(
   facsl = fac*fdyn->thsl;
   facsr = fac*fdyn->thsr;
 
-  /* calculate galerkin part of external forces => */
+/*----------------------------------------------------------------------*
+   Calculate galerkin part of external forces:
+   
+                   /
+   + (1-THETA)*dt |  v * b_old   d_omega
+                 /  
+
+               /
+   + THETA*dt |  v * b   d_omega
+             /
+   
+ *----------------------------------------------------------------------*/
   for (inode=0; inode<TWO*iel; inode++)
   {
     irow = index[inode];
@@ -76,9 +130,57 @@ return;
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!--------------------------------------------------------------------- 
+\brief stabilisation part of external forces for vel dofs
+
+<pre>                                                            irhan 05/04
+
+In this routine the stabilisation part of the time forces for vel dofs
+is calculated:
+
+EULER:
+                     /
+   + thetas(l,r)*dt |  taum_mu * u * grad(v) * b^   d_omega
+                   /  
+
+EULER/ALE:
+                       /
+   -/+ thetas(l,r)*dt |  tau_mp * 2*nue * div( eps(v) ) * b^  d_omega
+                     /      	  		      
+
+This routine is called twice with different values:
+1. values are added to Iteration RHS (evaluation at n+1):
+    thetas(l,r) = THETA*dt
+    b^ = b = deadng
+2. values are added to Time RHS (evaluation at n):
+   thetas(l,r) = (1-THETA)*dt
+   b^ = b_old = deadn    
+
+see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
+
+NOTE: for EULER
+      velint = U
+
+NOTE: for ALE
+      velint = C (ale-convective velocity)           
+      
+</pre>
+\param   *ele         ELEMENT	      (i)    actual element
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param  **derxy,      DOUBLE	      (i)    global derivatives
+\param  **derxy2,     DOUBLE	      (i)    2nd. global derivatives    
+\param   *edead       DOUBLE          (i)    ele dead load at n or n+1
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  visc	      DOUBLE	      (i)    fluid viscosity
+\param	  iel	      INT	      (i)    num. of nodes in ele
+\param	  ihoel       INT	      (i)    flag for higer ord. ele
+\param	  flag	      INT	      (i)    flag for n or n+1
+\param    index	      INT  	      (i)    index for local assembly
+\param    DENS	      DOUBLE  	      (i)    fluid density
+\return void                                                                       
+
+------------------------------------------------------------------------*/
 void xfem_f2_calstabexfv(
   ELEMENT            *ele,  
   DOUBLE             *eforce,     
@@ -127,7 +229,13 @@ void xfem_f2_calstabexfv(
         dserror("value of flag not valid!!!\n");
   }
 
-  /* calculate external/convective stab-forces of time force vector => */
+/*----------------------------------------------------------------------*
+   Calculate external/convective stab-forces of time force vector:
+EULER:
+                     /
+   + thetas(l,r)*dt |  taum_mu * u * grad(v) * b^   d_omega
+                   /  
+ *----------------------------------------------------------------------*/
   if (gls->iadvec!=0)
   {
     fact[0] = edead[0]*fac*taumu*c*DENS*DENS;
@@ -144,7 +252,12 @@ void xfem_f2_calstabexfv(
     } 
   }
 
-  /* calculate external/viscous stab-forces of time force vector => */
+/*----------------------------------------------------------------------*
+   Calculate external/viscous stab-forces of time force vector:
+                       /
+   -/+ thetas(l,r)*dt |  tau_mp * 2*nue * div( eps(v) ) * b  d_omega
+                     /
+ *----------------------------------------------------------------------*/
   if (gls->ivisc!=0 && ihoel!=0)
   {
     switch (gls->ivisc) /* choose stabilisation type --> sign */
@@ -180,9 +293,45 @@ void xfem_f2_calstabexfv(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!--------------------------------------------------------------------- 
+\brief stabilisation part of external forces for pre dofs
+
+<pre>                                                            irhan 05/04
+
+In this routine the stabilisation part of the time forces for pre dofs
+is calculated:
+
+                      /
+   - thetas(l,r)*dt  |  tau_mp * grad(q) * b^  d_omega
+                    /	  		      
+
+This routine is called twice with different values:
+1. values are added to Iteration RHS (evaluation at n+1):
+    thetas(l,r) = THETA*dt
+    b^ = b = deadng
+2. values are added to Time RHS (evaluation at n):
+   thetas(l,r) = (1-THETA)*dt
+   b^ = b_old = deadn    
+
+see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
+
+NOTE:							
+    there's only one full element force vector  	
+    for pre-dofs the pointer eforce points to the entry 
+    eforce[2*iel]     
+      
+</pre>
+\param   *eforce      DOUBLE	      (i/o)  element force vector
+\param  **derxy,      DOUBLE	      (i)    global derivatives    
+\param   *edead       DOUBLE          (i)    ele dead load at n or n+1
+\param   *velint      DOUBLE	      (i)    vel. at integr. point
+\param	  fac	      DOUBLE	      (i)    weighting factor
+\param	  iel	      INT	      (i)    num. of nodes in ele
+\param	  flag	      INT	      (i)    flag for n or n+1
+\param    DENS	      DOUBLE  	      (i)    fluid density
+\return void                                                                       
+
+------------------------------------------------------------------------*/
 void xfem_f2_calstabexfp(
   DOUBLE          *eforce,     
   DOUBLE         **derxy,       
@@ -220,7 +369,12 @@ void xfem_f2_calstabexfp(
         dserror("value of flag not valid!!!\n");
   }
 
-  /* calculate external/pressure stab forces of time force vector */
+/*----------------------------------------------------------------------*
+   Calculate inertia/pressure stab forces of time force vector:
+                      /
+   - thetas(l,r)*dt  |  tau_mp * grad(q) * b  d_omega
+                    /	  		      
+ *----------------------------------------------------------------------*/
   fact[0] = edead[0]*taump*fac*c*DENS;
   fact[1] = edead[1]*taump*fac*c*DENS;
   for (inode=0;inode<iel;inode++)
@@ -235,4 +389,5 @@ void xfem_f2_calstabexfp(
   
   return;
 } /* end of xfem_f2_stabexfp */ 
+/*! @} (documentation module close)*/
 #endif

@@ -1,23 +1,125 @@
+/*!----------------------------------------------------------------------
+\file
+\brief calculate stabilization parameter
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../ls/ls_prototypes.h"
 #include "xfem_prototypes.h"
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
 
 
 
-extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
 extern struct _GENPROB    genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
 
 
+/*!---------------------------------------------------------------------
+\brief routine to calculate element size and stabilisation parameter
 
+<pre>                                                            irhan 05/04
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+   ele->e.f2->stabi.gls->iadvec: adevction stab.					 
+      0 = no								
+      1 = yes								
+   ele->e.f2->stabi.gls->ipres: pressure stab.					
+      0 = no								
+      1 = yes								
+   ele->e.f2->stabi.gls->ivisc: diffusion stab.					
+      0 = no								
+      1 = GLS-  							
+      2 = GLS+  							
+   ele->e.f2->stabi.gls->icont: continuity stab.					
+      0 = no								
+      1 = yes								
+   ele->e.f2->stabi.gls->istapa: version of stab. parameter			
+      35 = diss wall instationary					
+      36 = diss wall stationanary					
+   ele->e.f2->stabi.gls->norm_P: p-norm						
+      p = 1<=p<=oo							
+      0 = max.-norm (p=oo)						
+   ele->e.f2->stabi.gls->mk: higher order elements control flag			
+      0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)		
+      1 = min(1/3,2*C)  						
+     -1 = mk=1/3  (--> element order via approx. nodal-distance)	
+   ele->e.f2->stabi.gls->ihele[]:  						
+      x/y/z = length-def. for velocity/pressure/continuity stab 	
+      0 = don't compute 						
+      1 = sqrt(area)							
+      2 = area equivalent diameter					
+      3 = diameter/sqrt(2)						
+      4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle) 	
+      5 = streamlength (element length in flow direction		
+   ele->e.f2->stabi.gls->ninths: number of integration points for streamlength	
+      1 = at center of element  					
+      2 = at every INT pt used for element.-stab.-matrices		
+   ele->e.f2->stabi.gls->istapc: flag for stabilisation parameter calculation	
+      1 = at center of element  					
+      2 = at every integration point					
+   ele->e.f2->stabi.gls->clamb \							
+   ele->e.f2->c1               |_>> stabilisation constants (input)		
+   ele->e.f2->c2               |  						
+   ele->e.f2->c3              /							
+   ele->e.f2->stabi.gls->istrle: has streamlength to be computed			
+   ele->e.f2->stabi.gls->iareavol: calculation of area length 			
+   ele->e.f2->stabi.gls->iduring: calculation during INT.-pt.loop  		
+   ele->e.f2->stabi.gls->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
+   ele->e.f2->stabi.gls->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
+   ele->e.f2->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
+   ele->e.f2->hk[i]: "element sizes" (vel / pre / cont) 		  
+   ele->e.f2->stabi.gls->idiaxy: has diagonals to be computed			
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)	
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
+   fdyn->tau[2]: stability parameter continuity (tau_c)
+</pre>
+\param  *ele     ELEMENT	       (i)   actual element
+\param  *eleke   ELEMENT	       (i)   actual element (only for turbulence)
+\param  *data    FLUID_DATA	       (i)
+\param **xzye    DOUBLE                (-)   nodal coordinates
+\param  *funct   DOUBLE 	       (-)   shape functions
+\param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
+\param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
+\param **xjm     DOUBLE 	       (-)   jacobian matrix
+\param **derxy   DOUBLE 	       (-)   global derivatives
+\param **vderxy  DOUBLE 	       (-)   global derivatives of velocity
+\param **evel    DOUBLE 	       (i)   element velocities
+\param  *velint  DOUBLE 	       (-)   vel. at integr. point
+\param  *eddyint DOUBLE 	       (-)   eddy-visc. at integr. point (only for turbulence)
+\param  *visc    DOUBLE 	       (-)   viscosity
+\param **cutp    DOUBLE 	       (-)   cutting points
+\return void             
+
+------------------------------------------------------------------------*/
 void xfem_f2_calelesize(
   ELEMENT         *ele,    
   FLUID_DATA      *data, 
@@ -280,4 +382,5 @@ if (ele->e.f2->stab_type != stab_gls)
   
   return;
 } /* end of xfem_f2_calelesize */
+/*! @} (documentation module close)*/
 #endif

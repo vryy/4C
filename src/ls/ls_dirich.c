@@ -1,23 +1,65 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls_dirich.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 extern struct _PAR        par; 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | INT                   numcurve;                                      |
+ | struct _CURVE      *curve;                                           |
+ *----------------------------------------------------------------------*/
 extern INT                numcurve;
 extern struct _CURVE     *curve;
 
 
 
+/*!----------------------------------------------------------------------
+\brief subroutine to set dirichlet conditions at the beginning of the
+process
 
+<pre>                                                            irhan 05/04
+subroutine to set dirichlet conditions at the beginning of the
+process
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls_initdirich(
   FIELD          *actfield, 
   LS_DYNAMIC     *lsdyn
@@ -104,9 +146,16 @@ void ls_initdirich(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief subroutine to set dirichlet conditions at an intermediate time step
+in the process
+
+<pre>                                                            irhan 05/04
+subroutine to set dirichlet conditions at an intermediate time step
+in the process
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_setdirich(
   FIELD           *actfield, 
   LS_DYNAMIC      *lsdyn,
@@ -169,4 +218,5 @@ void ls_setdirich(
   
   return;
 } /* end of ls_settdirich */
+/*! @} (documentation module close)*/
 #endif

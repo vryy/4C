@@ -1,54 +1,132 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls_fluid.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
 extern struct  _FIELD         *field;
-extern         ALLDYNA        *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern         ALLDYNA        *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
 extern struct _GENPROB         genprob;
-extern struct _SOLVAR         *solv;
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct  _SOLVAR         *solv;
+/*!----------------------------------------------------------------------
+\brief one proc's info about his partition
+
+<pre>                                                         m.gee 8/00
+-the partition of one proc (all discretizations)
+-the type is in partition.h                                                  
+</pre> 
+
+*----------------------------------------------------------------------*/
 extern struct _PARTITION      *partition;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS        ioflags;
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
 extern struct _PAR             par;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | INT                   numcurve;                                      |
+ | struct _CURVE      *curve;                                           |
+ *----------------------------------------------------------------------*/
 extern struct _CURVE          *curve;
 extern INT                     numcurve;
+/*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ *----------------------------------------------------------------------*/
 extern enum   _CALC_ACTION     calc_action[MAXFIELD];
 
 
 
-static INT             numls;
-static INT             init; 
-static INT             numeq; 
-static INT             numeq_total;
-static INT             actsysarray = 0;
+static INT             numls;            /* field number for level set field */
+static INT             init;             /* flag for solver_control call     */
+static INT             numeq;            /* number of equations on this proc */
+static INT             numeq_total;      /* total number of equations        */
+static INT             actsysarray = 0;  /* number of actual sysarray        */
 
 static DOUBLE          lrat;
 static DOUBLE          t1,ts,te;
 static DOUBLE          tes = ZERO;     
 static DOUBLE          tss = ZERO;     
-static FIELD          *actfield;
-static SOLVAR         *actsolv;      
-static PARTITION      *actpart;      
-static INTRA          *actintra;     
-static CALC_ACTION    *action;       
-static LS_DYNAMIC     *lsdyn;
+static FIELD          *actfield;         /* pointer to active field          */
+static SOLVAR         *actsolv;          /* pointer to active sol. structure */
+static PARTITION      *actpart;          /* pointer to active partition      */
+static INTRA          *actintra;         /* pointer to active intra-communic.*/
+static CALC_ACTION    *action;           /* pointer to the cal_action enum   */
+static LS_DYNAMIC     *lsdyn;            /* ls dynamic variables             */
 
 static ARRAY           ftimerhs_a;
-static DOUBLE         *ftimerhs;	
+static DOUBLE         *ftimerhs;	 /* time - RHS		             */
 static ARRAY           fiterhs_a;
-static DOUBLE         *fiterhs;	
-static CONTAINER       container;
+static DOUBLE         *fiterhs;	         /* iteration - RHS  		     */
+static CONTAINER       container;        /* variables for calelm             */
 
 
 
+/*!----------------------------------------------------------------------
+\brief control subroutine for level set sub-problem in coupled level set /
+extended finite element problem
 
+<pre>                                                            irhan 05/04
+control subroutine for level set sub-problem in coupled level set /
+extended finite element problem
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls_levelset(
   INT     eflag
   )      
@@ -91,9 +169,14 @@ void ls_levelset(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief initialization of sub-problem level set
+
+<pre>                                                            irhan 05/04
+initialization of sub-problem level set
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_levelset_init()
 {
   INT     i;
@@ -205,9 +288,14 @@ void ls_levelset_init()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief solution of sub-problem level set
+
+<pre>                                                            irhan 05/04
+solution of sub-problem level set
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_levelset_solv()
 {
   INT        itnum;
@@ -335,9 +423,14 @@ void ls_levelset_solv()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief finalization of sub-problem level set
+
+<pre>                                                            irhan 05/04
+finalization of sub-problem level set
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_levelset_fina()
 {
 #ifdef DEBUG 
@@ -359,9 +452,14 @@ void ls_levelset_fina()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 28.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief end of sub-problem level set
+
+<pre>                                                            irhan 05/04
+end of sub-problem level set
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_levelset_clea()
 {
   INT     i;
@@ -410,4 +508,5 @@ void ls_levelset_clea()
   
   return;
 } /* end of ls_levelset_clea */
+/*! @} (documentation module close)*/
 #endif

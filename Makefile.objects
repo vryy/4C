@@ -511,7 +511,6 @@ OBJS_LS       = src/ls/ls_init.o \
 		src/ls/ls2_calset.o \
 		src/ls/ls_result_incre.o \
 		src/ls/ls_convcheck.o \
-		src/ls/ls_steadycheck.o \
                 src/ls/ls_update.o \
                 src/ls/ls_dyn.o \
                 src/ls/ls_levelset.o \

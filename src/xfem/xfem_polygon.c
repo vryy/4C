@@ -1,7 +1,23 @@
+/*!----------------------------------------------------------------------
+\file
+\brief subroutines for polygonization
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "../ls/ls_prototypes.h"
 #include "xfem_prototypes.h"
+/*! 
+\addtogroup XFEM 
+*//*! @{ (documentation module open)*/
+
 
 
 
@@ -73,10 +89,14 @@ static const DOUBLE   HALF = ONE/TWO;
 
 
 
+/*!----------------------------------------------------------------------
+\brief control subroutine for polygonization
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+<pre>                                                            irhan 05/04
+control subroutine for polygonization.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon(
   XFEMPOLYFLAG xfempolyflag,
   ELEMENT* myls2   
@@ -137,9 +157,14 @@ void xfem_polygon(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief initialize
+
+<pre>                                                            irhan 05/04
+perform initialization.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_init(
   ELEMENT *myls2
   )
@@ -210,9 +235,15 @@ void xfem_polygon_init(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct the polygon coordinate array.
+
+<pre>                                                            irhan 05/04
+construct the polygon coordinate array. note that each triangular domain cut
+by the interface is divided into seven subtriangles.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_cons(
   ELEMENT *myls2
   )      
@@ -378,9 +409,16 @@ void xfem_polygon_cons(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute Gauss points and weights for refined integration
+
+<pre>                                                            irhan 05/04
+in this subroutine Gauss points and weights are computed for refined integration.
+each triangular domain cut by the interface is divided into seven subtriangles.
+one Gauss point is assigned to center of each subtriangle.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_GP(
   ELEMENT *myls2)
 {
@@ -491,9 +529,14 @@ void xfem_polygon_GP(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct the coordinate array for the corresponding subtriangle
+
+<pre>                                                            irhan 05/04
+construct the coordinate array for the corresponding subtriangle.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_getsubp(
   INT ntri,
   INT nsubp
@@ -530,9 +573,15 @@ void xfem_polygon_getsubp(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute the coordinates of the Gauss point corresponding to the
+subtriangle
+
+<pre>                                                            irhan 05/04
+compute the coordinates of the Gauss point corresponding to the subtriangle.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_compGP(
   DIS_TYP typ
   )
@@ -609,9 +658,14 @@ void xfem_polygon_compGP(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief evaluate shape functions at the trial Gauss point
+
+<pre>                                                            irhan 05/04
+evaluate shape functions at the trial Gauss point.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_funct()
 {
   INT     i;
@@ -639,15 +693,21 @@ void xfem_polygon_funct()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief evaluate derivative of the shape functions at the trial Gauss point
+
+<pre>                                                            irhan 05/04
+evaluate derivative of the shape functions at the trial Gauss point.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_deriv()
 {
   INT     i,j;
   INT     ind1,ind2;
   INT     ctrl[2][2] = {
-                        {0,1}, {1,0}
+                        {0,1},
+                        {1,0}
                        };
 #ifdef DEBUG 
   dstrc_enter("xfem_polygon_deriv");
@@ -680,9 +740,14 @@ void xfem_polygon_deriv()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief evaluate the residuum
+
+<pre>                                                            irhan 05/04
+evaluate the residuum.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_resNewton()
 {
   INT     i,j;
@@ -716,9 +781,14 @@ void xfem_polygon_resNewton()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief evaluate the tangent
+
+<pre>                                                            irhan 05/04
+evaluate the tangent.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_tanNewton()
 {
   INT     i,j,k;
@@ -749,9 +819,14 @@ void xfem_polygon_tanNewton()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief write polygon data into files
+
+<pre>                                                            irhan 05/04
+write polygon data into files.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_write(
   ELEMENT *myls2
   )
@@ -832,9 +907,14 @@ void xfem_polygon_write(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief open files to write polygon information
+
+<pre>                                                            irhan 05/04
+open files to write polygon information.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_open()
 {
 #ifdef DEBUG 
@@ -859,9 +939,14 @@ void xfem_polygon_open()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief close files
+
+<pre>                                                            irhan 05/04
+close files.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_close()
 {
 #ifdef DEBUG 
@@ -886,9 +971,14 @@ void xfem_polygon_close()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute area of the quadrilateral element
+
+<pre>                                                            irhan 05/04
+compute area of the quadrilateral element.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_area_rect()
 {
   INT     i;
@@ -914,9 +1004,14 @@ void xfem_polygon_area_rect()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute area of the triangular domain
+
+<pre>                                                            irhan 05/04
+compute area of the triangular domain.
+</pre>
+
+*----------------------------------------------------------------------*/
 DOUBLE xfem_polygon_area_subtri(
   INT i
   )
@@ -957,9 +1052,14 @@ DOUBLE xfem_polygon_area_subtri(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute area of the subtriangle
+
+<pre>                                                            irhan 05/04
+compute area of the subtriangle.
+</pre>
+
+*----------------------------------------------------------------------*/
 DOUBLE xfem_polygon_area_tri()
 {
   DOUBLE     x21,y21,x31,y31;
@@ -985,9 +1085,16 @@ DOUBLE xfem_polygon_area_tri()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute the global coordinates of the target point (mid-point of the
+triangular domain)
+
+<pre>                                                            irhan 05/04
+compute the global coordinates of the target point (mid-point of the
+triangular domain).
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_target_tri()
 {
   INT     i;
@@ -1016,9 +1123,16 @@ void xfem_polygon_target_tri()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute the global coordinates of the target point (mid-point of the
+subtriangle)
+
+<pre>                                                            irhan 05/04
+compute the global coordinates of the target point (mid-point of the
+subtriangle).
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_target_subtri(
   INT i
   )
@@ -1051,9 +1165,15 @@ void xfem_polygon_target_subtri(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct the material connectivity array
+
+<pre>                                                            irhan 05/04
+construct the material connectivity array. this array stores the information
+about the material type to be used at each Gauss point.
+</pre>
+
+*----------------------------------------------------------------------*/
 void xfem_polygon_mat(
   ELEMENT* myls2
   )
@@ -1127,4 +1247,5 @@ void xfem_polygon_mat(
   
   return;
 } /* end of xfem_polygon_mat */
+/*! @} (documentation module close)*/
 #endif

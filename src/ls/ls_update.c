@@ -1,48 +1,77 @@
+/*!----------------------------------------------------------------------
+\file
+\brief ls_fluid.c
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
 #include "../xfem/xfem_prototypes.h"
 #include "ls_prototypes.h"
+/*!
+\addtogroup LEVELSET
+*//*! @{ (documentation module open)*/
 
 
 
 struct _LS_UPDATE             lsupdt;
-
-
-
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
 extern 	       ALLDYNA       *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
 extern struct _FIELD         *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
 extern struct _GENPROB        genprob;
 
 
 
-static  FIELD                *actfield;
-static  LS_DYNAMIC           *lsdyn;
-static  INT                   completionflag;
-const static DOUBLE           NODETHRESHOLD = 0.001;
+static  FIELD                *actfield;               /* pointer to levelset field */
+static  LS_DYNAMIC           *lsdyn;                  
+static  INT                   completionflag;         /* flag for completion of level set update */
+const static DOUBLE           NODETHRESHOLD = 0.001;  /* node threshold (used in case anyone of
+                                                       * the nodes lie on the interface) */
+
 
 
 static  ARRAY                 lset00_a;
-static 	DOUBLE               *lset00;
+static 	DOUBLE               *lset00;                 /* nodal level set values at time step (n) */
 static 	ARRAY                 lset01_a;
-static 	DOUBLE               *lset01;
+static 	DOUBLE               *lset01;                 /* nodal level set values at time step (n+1) */
 static 	ARRAY                 xyze_a;
-static 	DOUBLE              **xyze;
+static 	DOUBLE              **xyze;                   /* coordinate array for 2D ls2 element */
 static 	ARRAY                 node_to_node_a;
-static 	INT                 **node_to_node;
+static 	INT                 **node_to_node;           /* node to node connectivity */
 static 	ARRAY                 edge_to_edge_a;
-static 	INT                 **edge_to_edge;
+static 	INT                 **edge_to_edge;           /* edge to edge connectivity */
 static 	ARRAY                 edge_to_node_tri_a;
-static 	INT                 **edge_to_node_tri;
+static 	INT                 **edge_to_node_tri;       /* edge to node connectivity (for triangle) */
 static 	ARRAY                 node_to_edge_tri_a;
-static 	INT                 **node_to_edge_tri;
+static 	INT                 **node_to_edge_tri;       /* node to edge connectivity (for triangle) */
 static 	ARRAY                 node_to_node_tri_a;
-static 	INT                 **node_to_node_tri;
+static 	INT                 **node_to_node_tri;       /* node to node connectivity (for triangle) */
 static 	ARRAY                 edge_to_triangle_a;
-static 	INT                  *edge_to_triangle;
+static 	INT                  *edge_to_triangle;       /* edge to triangle connectivity */
 
 
 
-static  FILE                 *file01;
+static  FILE                 *file01;                 /* file pointers for output */
 static  FILE	             *file02;
 static  FILE                 *file03;
 static  FILE	             *file04;
@@ -57,11 +86,14 @@ static  FILE                 *file11;
 
 
 
+/*!----------------------------------------------------------------------
+\brief control subroutine for main level set operations
 
+<pre>                                                            irhan 05/04
+control subroutine for main level set operations
+</pre>
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 06.04.04
- ************************************************************************/
+*----------------------------------------------------------------------*/
 void ls_main(
   LSFLAG lsflag
   )      
@@ -146,9 +178,14 @@ void ls_main(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief perform operations dictated by execution flag (frontlsflag)
+
+<pre>                                                            irhan 05/04
+perform operations dictated by execution flag (frontlsflag)
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_update(
   FRONTLSFLAG frontlsflag
   )      
@@ -219,10 +256,23 @@ void ls_update(
 } /* end of ls_updt */
 
 
+/*!----------------------------------------------------------------------
+\brief initialize front (called only at the beginning of time
+history analysis)
 
-/************************************************************************/
-/*---------------------------------------- last checked by Irhan 20.04.04
- ************************************************************************/
+<pre>                                                            irhan 05/04
+In this subroutine initial front is constructed. A brute force search is
+performed to find the first element (first_in_list) in the interface.
+After the first element is found, the interface is constructed by using
+the information provided by edge connectivity. Execution is terminated
+when the first_in_list is reached once again. Interfaces which are not
+closed (those reaching to the boundary of computational doamin) can also
+be constructed depending on the flag 'lsdyn->lsdata->boundary_on_off'. The
+number of interfaces may be more than one. In this case other interfaces are
+able to be constructed by recursive call.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_initialize()
 {
   INT              i,j;
@@ -341,9 +391,18 @@ void ls_initialize()
 
 
 
-/************************************************************************/
-/*---------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief update front (at an intermediate time step)
+
+<pre>                                                            irhan 05/04
+The idea is similar to the one used in ls_initialize(). The difference here
+is that a confined search is performed instead of brute force search to
+find first element (first_in_list) in the interface. To confine the search
+region the elements which were previously active (cut by the interface) are
+marked. It is done by turning 'ele->e.ls2->is_elsearch' flag on.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_updt()
 {
   INT              i,j;
@@ -365,7 +424,8 @@ void ls_updt()
     actele = &(actfield->dis[0].element[i]);
     /*
       check whether element is already included
-      in one of the previously generated interfaces
+      in one of the previously generated interfaces or
+      outisde the active search region
     */	
     if (actele->e.ls2->is_elcut==1 ||
         actele->e.ls2->is_elsearch==0) continue;
@@ -436,9 +496,16 @@ void ls_updt()
 
 
 
-/************************************************************************/
-/*---------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct front (called by ls_initialize(), or ls_update())
+
+<pre>                                                            irhan 05/04
+In this subroutine interface is constructed starting from the element ele.
+Note that ele is not always to be the first_in_list. It is actually the case
+when the subroutine is called for reconstruction phase.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_construct(
   ELEMENT *actele
   )
@@ -502,7 +569,7 @@ void ls_construct(
         if (lsdyn->lsdata->boundary_on_off==0)
         {
           /*
-           * boundary off the computatonal domain is not allowed
+           * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
           printf("\n\n**ERROR** in level set initialization!");
@@ -598,9 +665,15 @@ void ls_construct(
 
 
 
-/************************************************************************/
-/*---------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief update the element
+
+<pre>                                                            irhan 05/04
+In this subroutine element interface data is set if it is involved in anyone
+of the interfaces.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_updatelement(
   ELEMENT* ele,
   DOUBLE* lset
@@ -775,9 +848,9 @@ void ls_updatelement(
         ls_polygon_con(ele->e.ls2->intdata[intcnt].polycon[ind[i]-1],snode,ind[i]);
         if (ele->e.ls2->is_elcut!=1)
         {
-          /*  activate the element */          
+          /* activate the element */          
           ele->e.ls2->is_elcut = 1;
-          /*  add element to the first layer */
+          /* add element to the first layer */
           ele->e.ls2->nlayer = 1;
         }        
         break;
@@ -796,9 +869,20 @@ void ls_updatelement(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief is triangle (or subtriangle in case of quadrilateral element) cut
+by the interface
+
+<pre>                                                            irhan 05/04
+In this subroutine it is checked whether triangular domain is cut by the
+interface or not. Nodal level set values are used for this purpose. If the
+element is cut by the interface, the local edge numbers having the start and
+end points of the interface as well as the local node number corresponding to
+solitary node are returned. Solitary node is the node which is located opposite
+to the edge which is not cut by the interface.
+</pre>
+
+*----------------------------------------------------------------------*/
 void is_tricut(
   DOUBLE* u,
   INT* is_cut,
@@ -855,9 +939,16 @@ void is_tricut(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
-************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute coordinates of the intersection point between the interface
+and local edge 'edge' of the triangular domain.
+
+<pre>                                                            irhan 05/04
+compute coordinates of the intersection point between the interface
+and local edge 'edge' of the triangular domain.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_compintersection(
   DOUBLE* p,
   DOUBLE* u,
@@ -888,9 +979,16 @@ void ls_compintersection(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
-************************************************************************/
+/*!----------------------------------------------------------------------
+\brief compute coordinates of the intersection point between the interface
+and local edge defined by nodes 'nd1' and 'nd2'
+
+<pre>                                                            irhan 05/04
+compute coordinates of the intersection point between the interface
+and local edge defined by nodes 'nd1' and 'nd2'
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_comppoint(
   DOUBLE* p,
   DOUBLE* u,
@@ -933,9 +1031,18 @@ void ls_comppoint(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief update the neighbor
+
+<pre>                                                            irhan 05/04
+In this subroutine element neighbor to the end edge of element ele is
+found. Then it is appended to element ele and its start edge is set.
+Element ele is also appended to neighbor. If the neighbor element is the
+first element (first_in_list) in the list, completion flag is set to 1
+indicating successfull completion of the interface construction.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_updateneighbor(
   ELEMENT* ele,
   INT eedge,
@@ -1040,12 +1147,18 @@ void ls_updateneighbor(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
-************************************************************************/
+/*!----------------------------------------------------------------------
+\brief make a patch of elements around centerele.
+
+<pre>                                                            irhan 05/04
+In this subroutine an element patch is constructed including the elements
+surrounding centerele. Centerele is also included in the patch.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_makepatch(
   ELEMENT* centerele, 
-  ELEMENT *elepatch[5], 
+  ELEMENT *elepatch[50], 
   INT *nelepatch
   )
 {
@@ -1100,9 +1213,15 @@ void ls_makepatch(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
-************************************************************************/
+/*!----------------------------------------------------------------------
+\brief activate
+
+<pre>                                                            irhan 05/04
+In this subroutine the nodes and elements belonging to first and second
+layers surrounding the interface are activated. 
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_activate()
 {
   INT          ii,i,j;
@@ -1250,9 +1369,15 @@ void ls_activate()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
-*************************************************************************/
+/*!----------------------------------------------------------------------
+\brief write interface related data to files
+
+<pre>                                                            irhan 05/04
+In this subroutine interface related data is written into files. These data
+files are sent to MATLAB and processed to produce some graphical outputs.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_write()
 {
   INT          i,j;
@@ -1387,9 +1512,7 @@ void ls_write()
   fprintf(file10,"\n");
   /* print out numlayer */
   fprintf(file11,"%5d\n",counter);
-
-  /* print to screen */
-  printf("\n**WARNING** LEVELSET LAYER ACTIVATION FOR LOCALIZATION COMPLETED!");  
+  
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();
@@ -1400,9 +1523,15 @@ void ls_write()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
-************************************************************************/
+/*!----------------------------------------------------------------------
+\brief reset interface
+
+<pre>                                                            irhan 05/04
+In this subroutine interface data is reset, i.e., corresponding flags and
+data structures are initialized for the next time step.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_reset()
 {
   INT              i,j;
@@ -1476,9 +1605,14 @@ void ls_reset()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief reset interface data
+
+<pre>                                                            irhan 05/04
+reset interface data
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_resetintdata(
   LS_INT_DATA *data
   )
@@ -1517,9 +1651,14 @@ void ls_resetintdata(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief reset polygon data
+
+<pre>                                                            irhan 05/04
+reset polygon data
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_resetpolydata(
   LS_POLY_DATA *data
   )
@@ -1556,9 +1695,14 @@ void ls_resetpolydata(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief finalize
+
+<pre>                                                            irhan 05/04
+finalize
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_finalize()
 {
 #ifdef DEBUG 
@@ -1600,9 +1744,14 @@ void ls_finalize()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief print element data
+
+<pre>                                                            irhan 05/04
+print element data
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_printelinfo(
   ELEMENT *ele
   )
@@ -1657,9 +1806,14 @@ void ls_printelinfo(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
-************************************************************************/
+/*!----------------------------------------------------------------------
+\brief print node data
+
+<pre>                                                            irhan 05/04
+print node data
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_printnodeinfo(
   NODE *node
   )
@@ -1687,9 +1841,14 @@ void ls_printnodeinfo(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief initialize the parameters used in level set update
+
+<pre>                                                            irhan 05/04
+initialize the parameters used in level set update
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_setdata()
 {
   INT     i;
@@ -1861,9 +2020,14 @@ void ls_setdata()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief print all the elements into a file
+
+<pre>                                                            irhan 05/04
+print all the elements into a file
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_printelements()
 {
   INT          i;
@@ -1893,9 +2057,14 @@ void ls_printelements()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief print an element into a file
+
+<pre>                                                            irhan 05/04
+print an element into a file
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_printelement(
   ELEMENT* ele
   )
@@ -1927,9 +2096,16 @@ void ls_printelement(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.03.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief localize
+
+<pre>                                                            irhan 05/04
+set the elements and nodes located in one of the layers surrounding the
+interface. The total number of layers for localization is set by
+'lsdyn->lsdata->numlayer'. 
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_localize()
 {
   INT          ii,i,j;
@@ -1996,6 +2172,9 @@ void ls_localize()
       }
     }
   }
+
+  /* print to screen */
+  printf("\n**WARNING** LEVELSET LAYER ACTIVATION FOR LOCALIZATION COMPLETED!");
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2007,9 +2186,14 @@ void ls_localize()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief write mesh dependent data into files
+
+<pre>                                                            irhan 05/04
+write mesh dependent data into files
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_to_matlab()
 {
   INT          i,j,k;
@@ -2093,9 +2277,14 @@ void ls_to_matlab()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief construct polygon connectivity
+
+<pre>                                                            irhan 05/04
+The polygon connectivity data is used in X-FEM module.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_polygon_con(
   INT *polycon,
   INT snode,
@@ -2136,9 +2325,18 @@ void ls_polygon_con(
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief polygonize
+
+<pre>                                                            irhan 05/04
+In this subroutine polygonization of the element domain is performed. This
+polygon structure is used in refined integration which is necessary for elements
+cut by the interface. There are seven subpolygons (triangles) for each triangular
+domain, if it is cut by the interface. The coordinates and weights of the Gauss
+points for modified integration are also computed by this subroutine call. 
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_polygonize()
 {
   INT              i;
@@ -2186,9 +2384,19 @@ void ls_polygonize()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief initialize material data
+
+<pre>                                                            irhan 05/04
+In this subroutine each element is assigned to a material number. The elements
+inside the closed interface are assigned to material number 2, whereas those
+outside are assigned to 1. The elements located on the interface are assigned
+to material number 3. Third material is used only when the enrichment is off,
+i.e., it is used for the formulation where material properties are smeared
+around the interface.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_init_material()
 {
   INT          i,j;
@@ -2250,9 +2458,16 @@ void ls_init_material()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief update material data
+
+<pre>                                                            irhan 05/04
+In this subroutine material data is updated. This update is necessary, because
+interface change position time. This update process can be confined to a region
+around the interface.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_updt_material()
 {
   INT          i,j;
@@ -2319,9 +2534,18 @@ void ls_updt_material()
 
 
 
-/************************************************************************
- ----------------------------------------- last checked by Irhan 26.04.04
- ************************************************************************/
+/*!----------------------------------------------------------------------
+\brief check level set profile
+
+<pre>                                                            irhan 05/04
+In this subroutine nodal values of the levelset are checked. The nodes lying
+on the interface are detected. Then they are assigned to THRESHOLD value
+different from zero, therefore they are not on the interface anymore. This
+perturbation is necessary because while developing the code it is assumed that
+each line segment constructing the interface falls inside the element domain.
+</pre>
+
+*----------------------------------------------------------------------*/
 void ls_check_profile()
 {
   INT         i;
@@ -2356,4 +2580,5 @@ void ls_check_profile()
   
   return;
 } /* end of ls_check_profile */
+/*! @} (documentation module close)*/
 #endif
