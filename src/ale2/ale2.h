@@ -27,7 +27,7 @@ This structure contains all specific information for a 2D ale element
 typedef struct _ALE2
 {
 
-INT                nGP[2];         /*!< number of gaussian points in rs direction */
+INT                nGP[3];         /*!< number of gaussian points in rs direction */
 INT                jacobi;         /*!< flag whether to use the Jacobean matrix    */
 struct _ELEMENT   *my_fluid;       /*!< pointer to fluid element associated to me  */
 DOUBLE             quality;        /*!< my element quality */
@@ -76,9 +76,9 @@ void ale2_intg(const ELEMENT *ele, ALE2_DATA  *data);
 /*----------------------------------------------------------------------*
  | ale2_jaco.c                                                 mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale2_jaco(DOUBLE **deriv, DOUBLE **xjm, DOUBLE *det, DOUBLE **xyz,
+void ale2_jaco(DOUBLE **deriv, DOUBLE **xjm, DOUBLE *det, DOUBLE xyz[2][MAXNOD],
 	      INT iel);
-void ale2_min_jaco(enum _DIS_TYP distyp, DOUBLE **xyz, DOUBLE *min_detF);
+void ale2_min_jaco(enum _DIS_TYP distyp, DOUBLE xyz[2][MAXNOD], DOUBLE *min_detF);
 /*----------------------------------------------------------------------*
  | ale2_main.c                                                 mn 06/02  |
  *----------------------------------------------------------------------*/
@@ -133,37 +133,46 @@ void ale2_hourglass(ELEMENT *ele, DOUBLE **s);
 /*----------------------------------------------------------------------*
  | ale2_elm_geometry.c                                        ck 06/03  |
  *----------------------------------------------------------------------*/
-DOUBLE ale2_el_area(DOUBLE **xyz);
-DOUBLE ale2_area_tria(DOUBLE **xyz, INT i, INT j, INT k);
+DOUBLE ale2_area_tria(DOUBLE xyz[2][MAXNOD], INT i, INT j, INT k);
 void edge_geometry(INT      i,
                    INT      j,
-         	   DOUBLE **xyz,
+         	   DOUBLE   xyz[2][MAXNOD],
 	           DOUBLE  *length,
 	           DOUBLE  *sin_alpha,
 	           DOUBLE  *cos_alpha);
 void ale2_torsional(INT      i,
                     INT      j,
 		    INT      k,
-		    DOUBLE **xyz,
+		    DOUBLE   xyz[2][MAXNOD],
 		    DOUBLE **k_torsion,
 		    INT      init);
-void ale2_tors_spring_quad4(DOUBLE **estif, DOUBLE **xyz, INT init);
-void ale2_tors_spring_tri3(DOUBLE **estif, DOUBLE **xyz, INT init);
+void ale2_tors_spring_quad4(DOUBLE **estif, DOUBLE xyz[2][MAXNOD], INT init);
+void ale2_tors_spring_tri3(DOUBLE **estif, DOUBLE xyz[2][MAXNOD], INT init);
 void ale2_deriv_xy(DOUBLE    **deriv_xy,
                    DOUBLE    **deriv,
                    DOUBLE    **xjm,
                    DOUBLE      det,
                    INT         iel);
+void crosspoint(DOUBLE 	a, 
+		DOUBLE 	b, 
+		DOUBLE 	c, 
+		DOUBLE 	d, 
+		DOUBLE 	e, 
+		DOUBLE 	f,
+		DOUBLE 	g,
+		DOUBLE 	h,
+		DOUBLE *sol,
+		INT	init);
 /*----------------------------------------------------------------------*
  | ale2_mesh_quality.c                                        ck 06/03  |
  *----------------------------------------------------------------------*/
-DOUBLE ale2_corner_angle(DOUBLE **xyz);
-DOUBLE ale2_corner_angle_tria(DOUBLE **xyz);
-DOUBLE ale2_aspect_ratio(DOUBLE **xyz);
-DOUBLE ale2_aspect_ratio_tria(DOUBLE **xyz);
+DOUBLE ale2_corner_angle(DOUBLE xyz[2][MAXNOD]);
+DOUBLE ale2_corner_angle_tria(DOUBLE xyz[2][MAXNOD]);
+DOUBLE ale2_aspect_ratio(DOUBLE xyz[2][MAXNOD]);
+DOUBLE ale2_aspect_ratio_tria(DOUBLE xyz[2][MAXNOD]);
 void write_element_quality(ELEMENT  *ele,
                            INT       quality,
-			   DOUBLE  **xyz,
+			   DOUBLE    xyz[2][MAXNOD],
 			   DOUBLE    min_detF);
 void ale_quality(FIELD *field,INT step,
                  INTRA  *actintra, PARTITION    *actpart);

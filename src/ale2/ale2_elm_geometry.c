@@ -18,74 +18,28 @@ Maintainer: Christiane Foerster
 \addtogroup Ale
 *//*! @{ (documentation module open)*/
 
-/*!----------------------------------------------------------------------
-\brief  area linear quadrilaterals
-
-<pre>                                                              ck 01/03
-This routine evaluates the area of a 4 noded quad ale element
-
-</pre>
-\param **xyz    DOUBLE    (i)   elemental coordinates 1st index: node
-                                                      2dn index: x or y
-
-\warning There is nothing special to this routine
-\return DOUBLE element area
-\sa calling:
-             called by: ale2_static_ke_prestress(),
-	                ale2_static_ke_step2()
-
-*----------------------------------------------------------------------*/
-DOUBLE ale2_el_area(DOUBLE **xyz)
-{
-DOUBLE a, b, c;  /* geometrical values */
-DOUBLE el_area;  /* element area */
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_enter("ale2_el_area");
-#endif
-/*----------------------------------------------------------------------*/
-a = (xyz[0][0]-xyz[1][0])*(xyz[0][0]-xyz[1][0])
-   +(xyz[0][1]-xyz[1][1])*(xyz[0][1]-xyz[1][1]); /* line 0-1 squared */
-b = (xyz[1][0]-xyz[2][0])*(xyz[1][0]-xyz[2][0])
-   +(xyz[1][1]-xyz[2][1])*(xyz[1][1]-xyz[2][1]); /* line 1-2 squared */
-c = (xyz[2][0]-xyz[0][0])*(xyz[2][0]-xyz[0][0])
-   +(xyz[2][1]-xyz[0][1])*(xyz[2][1]-xyz[0][1]); /* diag 2-0 squared */
-el_area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-a = (xyz[2][0]-xyz[3][0])*(xyz[2][0]-xyz[3][0])
-   +(xyz[2][1]-xyz[3][1])*(xyz[2][1]-xyz[3][1]); /* line 2-3 squared */
-b = (xyz[3][0]-xyz[0][0])*(xyz[3][0]-xyz[0][0])
-   +(xyz[3][1]-xyz[0][1])*(xyz[3][1]-xyz[0][1]); /* line 3-0 squared */
-/*-------------------------------------------- evaluate element area ---*/
-el_area += 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-
-return el_area;
-}
-
 
 /*!----------------------------------------------------------------------
 \brief  area linear triangles
 
 <pre>                                                              ck 01/03
-This routine evaluates the area of a 3 noded triangular ale element
+This routine evaluates the area of the triangle enclosed by the three
+nodes i, j, k
 
 </pre>
-\param **xyz    DOUBLE    (i)   elemental coordinates 1st index: node
+\param   xyz[2][9]  DOUBLE  (i)   elemental coordinates 1st index: node
                                                       2dn index: x or y
-\param   i      INT       (i)   node i
-\param   j      INT       (i)   node j
-\param   k      INT       (i)   node k
+\param   i          INT     (i)   node i
+\param   j          INT     (i)   node j
+\param   k          INT     (i)   node k
 
 \warning There is nothing special to this routine
-\return DOUBLE element area
+\return DOUBLE area
 \sa calling:
              called by: ale2_torsional()
 
 *----------------------------------------------------------------------*/
-DOUBLE ale2_area_tria(DOUBLE **xyz, INT i, INT j, INT k)
+DOUBLE ale2_area_tria(DOUBLE xyz[2][MAXNOD], INT i, INT j, INT k)
 {
 DOUBLE a, b, c;  /* geometrical values */
 DOUBLE el_area;  /* element area */
@@ -94,12 +48,12 @@ DOUBLE el_area;  /* element area */
 dstrc_enter("ale2_area_tria");
 #endif
 /*----------------------------------------------------------------------*/
-a = (xyz[i][0]-xyz[j][0])*(xyz[i][0]-xyz[j][0])
-   +(xyz[i][1]-xyz[j][1])*(xyz[i][1]-xyz[j][1]); /* line i-j squared */
-b = (xyz[j][0]-xyz[k][0])*(xyz[j][0]-xyz[k][0])
-   +(xyz[j][1]-xyz[k][1])*(xyz[j][1]-xyz[k][1]); /* line j-k squared */
-c = (xyz[k][0]-xyz[i][0])*(xyz[k][0]-xyz[i][0])
-   +(xyz[k][1]-xyz[i][1])*(xyz[k][1]-xyz[i][1]); /* line k-i squared */
+a = (xyz[0][i]-xyz[0][j])*(xyz[0][i]-xyz[0][j])
+   +(xyz[1][i]-xyz[1][j])*(xyz[1][i]-xyz[1][j]); /* line i-j squared */
+b = (xyz[0][j]-xyz[0][k])*(xyz[0][j]-xyz[0][k])
+   +(xyz[1][j]-xyz[1][k])*(xyz[1][j]-xyz[1][k]); /* line j-k squared */
+c = (xyz[0][k]-xyz[0][i])*(xyz[0][k]-xyz[0][i])
+   +(xyz[1][k]-xyz[1][i])*(xyz[1][k]-xyz[1][i]); /* line k-i squared */
 el_area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
 #ifdef DEBUG
 dstrc_exit();
@@ -118,11 +72,12 @@ This routine evaluates the length and direction (sin and cos) of a line
 between two points i and j.
 
 </pre>
-\param **xyz    DOUBLE    (i)   elemental coordinates 1st index: node
-                                                      2dn index: x or y
-\param   i      INT       (i)   node i
-\param   j      INT       (i)   node j
-\param   k      INT       (i)   node k
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+                                            1st index: x or y
+                                            2dn index: node
+\param   i              INT       (i)   node i
+\param   j              INT       (i)   node j
+\param   k              INT       (i)   node k
 
 \warning There is nothing special to this routine
 \return void
@@ -132,7 +87,7 @@ between two points i and j.
 *----------------------------------------------------------------------*/
 void edge_geometry(INT      i,
                    INT      j,
-         	   DOUBLE **xyz,
+         	   DOUBLE   xyz[2][MAXNOD],
 	           DOUBLE  *length,
 	           DOUBLE  *sin_alpha,
 	           DOUBLE  *cos_alpha)
@@ -143,8 +98,8 @@ DOUBLE   delta_x, delta_y;
 dstrc_enter("edge_length");
 #endif
 /*---------------------------------------------- x- and y-difference ---*/
-delta_x = xyz[j][0]-xyz[i][0];
-delta_y = xyz[j][1]-xyz[i][1];
+delta_x = xyz[0][j]-xyz[0][i];
+delta_y = xyz[1][j]-xyz[1][i];
 /*------------------------------- determine distance between i and j ---*/
 *length = sqrt( delta_x * delta_x
               + delta_y * delta_y );
@@ -171,13 +126,14 @@ It determines the 6 x 6 matrix which corresponds to the displacement
 degrees of freedom u and v of the nodes.
 
 </pre>
-\param   i         INT       (i)   node i
-\param   j         INT       (i)   node j
-\param   k         INT       (i)   node k
-\param **xyz       DOUBLE    (i)   elemental coordinates 1st index: node
-                                                      2dn index: x or y
-\param **k_torsion DOUBLE    (o)   torsional stiffness matrix (6x6)
-\param   init      INT       (i)   initialisation flag
+\param   i              INT       (i)   node i
+\param   j              INT       (i)   node j
+\param   k              INT       (i)   node k
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+                                            1st index: x or y
+                                            2dn index: node
+\param **k_torsion      DOUBLE    (o)   torsional stiffness matrix (6x6)
+\param   init           INT       (i)   initialisation flag
 
 \warning There is nothing special to this routine
 \return void
@@ -189,7 +145,7 @@ degrees of freedom u and v of the nodes.
 void ale2_torsional(INT      i,
                     INT      j,
 		    INT      k,
-		    DOUBLE **xyz,
+		    DOUBLE   xyz[2][MAXNOD],
 		    DOUBLE **k_torsion,
 		    INT      init)
 /*
@@ -229,12 +185,12 @@ if (init==1)
 /*----------------------------------------------------------------------*/
 amzero(&C_a);
 /*--------------------------------- determine basic geometric values ---*/
-x_ij = xyz[j][0] - xyz[i][0];
-x_jk = xyz[k][0] - xyz[j][0];
-x_ki = xyz[i][0] - xyz[k][0];
-y_ij = xyz[j][1] - xyz[i][1];
-y_jk = xyz[k][1] - xyz[j][1];
-y_ki = xyz[i][1] - xyz[k][1];
+x_ij = xyz[0][j] - xyz[0][i];
+x_jk = xyz[0][k] - xyz[0][j];
+x_ki = xyz[0][i] - xyz[0][k];
+y_ij = xyz[1][j] - xyz[1][i];
+y_jk = xyz[1][k] - xyz[1][j];
+y_ki = xyz[1][i] - xyz[1][k];
 
 l_ij = sqrt( x_ij*x_ij + y_ij*y_ij );
 l_jk = sqrt( x_jk*x_jk + y_jk*y_jk );
@@ -299,10 +255,11 @@ subtriangles and adds these values to the appropriate places in the elemental
 stiffness matrix.
 
 </pre>
-\param **estif     DOUBLE    (o)   element stiffness matrix
-\param **xyz       DOUBLE    (i)   elemental coordinates 1st index: node
-                                                      2dn index: x or y
-\param   init      INT       (i)   initialisation flag
+\param **estif          DOUBLE    (o)   element stiffness matrix
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+                                            1st index: x or y
+                                            2dn index: node
+\param   init           INT       (i)   initialisation flag
 
 \warning There is nothing special to this routine
 \return void
@@ -310,7 +267,7 @@ stiffness matrix.
              called by: ale2_static_ke_spring()
 
 *----------------------------------------------------------------------*/
-void ale2_tors_spring_quad4(DOUBLE **estif, DOUBLE **xyz, INT init)
+void ale2_tors_spring_quad4(DOUBLE **estif, DOUBLE xyz[2][MAXNOD], INT init)
 {
 INT i, j;                 /* counters */
 
@@ -390,10 +347,11 @@ linear triangle ale element
 
 </pre>
 
-\param **estif     DOUBLE    (o)   element stiffness matrix
-\param **xyz       DOUBLE    (i)   elemental coordinates 1st index: node
-                                                      2dn index: x or y
-\param   init      INT       (i)   initialisation flag
+\param **estif          DOUBLE    (o)   element stiffness matrix
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+                                            1st index: x or y
+                                            2dn index: node
+\param   init           INT       (i)   initialisation flag
 
 \warning There is nothing special to this routine
 \return void
@@ -401,7 +359,7 @@ linear triangle ale element
              called by: ale2_static_ke_spring()
 
 *----------------------------------------------------------------------*/
-void ale2_tors_spring_tri3(DOUBLE **estif, DOUBLE **xyz, INT init)
+void ale2_tors_spring_tri3(DOUBLE **estif, DOUBLE xyz[2][MAXNOD], INT init)
 {
 INT i, j;      /* counters */
 
@@ -486,6 +444,88 @@ dstrc_exit();
 return;
 } /* end of ale2_deriv_xy */
 /*----------------------------------------------------------------------*/
+
+
+
+
+/*!----------------------------------------------------------------------
+\brief calculates the cross point of two lines
+
+<pre>                                                        chfoe 09/03
+This routine calculates the cross point of two lines. It gets the 
+coordinates a - h of the vector description of the problem
+
+  _  _        _  _     _  _        _  _
+ | a |       | b |    | e |       | f |
+ | c | + x_1 | d | =  | g | + x_2 | h | 
+ -  -        -  -     -  -        -  - 
+                                       _    _
+                                      | x_1 |
+and returns the solution vector sol = | x_2 |.
+                                      -    - 
+</pre> 
+\param 	a	DOUBLE	(i) 
+\param 	b	DOUBLE	(i) 
+\param 	c	DOUBLE	(i) 
+\param 	d	DOUBLE	(i) 
+\param 	e	DOUBLE	(i)
+\param 	f	DOUBLE	(i)
+\param *sol	DOUBLE 	(o)
+\param  init	INT	(i)	initialisation flag
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale2_static_ke_mode()
+
+*----------------------------------------------------------------------*/
+void crosspoint(DOUBLE 	a, 
+		DOUBLE 	b, 
+		DOUBLE 	c, 
+		DOUBLE 	d, 
+		DOUBLE 	e, 
+		DOUBLE 	f,
+		DOUBLE 	g,
+		DOUBLE 	h,
+		DOUBLE *sol,
+		INT	init)
+{
+static ARRAY    matrix_a; /*  */
+static DOUBLE **matrix;  
+static ARRAY    rhs_a;
+static DOUBLE  *rhs;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("crosspoint");
+#endif
+/*--------------------------------------------------- initialisation ---*/
+if (init==1)
+{
+   matrix = amdef("matrix", &matrix_a, 2, 2, "DA");
+   rhs    = amdef("rhs",    &rhs_a,    1, 2, "DV");
+   goto end;
+}
+/*--------------------------------------------- build matrix and rhs ---*/
+matrix[0][0] =  b;
+matrix[1][0] =  d;
+matrix[0][1] = -f;
+matrix[1][1] = -h;
+
+rhs[0] = e - a;
+rhs[1] = g - c;
+/*---------------------------------------------------- invert matrix ---*/
+math_unsym_inv(matrix, 2, 2); /* matrix <= matrix^{-1}*/
+
+/*----------------------------------------------------- solve system ---*/
+math_matvecdense(sol, matrix, rhs, 2, 2, 0, 1.0);
+
+/*----------------------------------------------------------------------*/
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of crosspoint */
 
 /*! @} (documentation module close)*/
 #endif
