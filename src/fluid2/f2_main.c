@@ -16,6 +16,7 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2.h"
 #include "fluid2_prototypes.h"
+#include "../fluid2ml/fluid2ml_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -23,6 +24,16 @@ Maintainer: Steffen Genkinger
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;   
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -74,17 +85,17 @@ void fluid2(PARTITION   *actpart,
 #ifdef D_FLUID2 
 /*----------------------------------------------------------------------*/
 
-static INT              numff;      /* actual number of fluid field     */
 static INT              viscstr;
 static FLUID_DATA      *data;      
 static FLUID_DYNAMIC   *fdyn;
+#ifdef FLUID2_ML
 static FLUID_DYN_ML    *mlvar;
 static FLUID_ML_SMESH  *submesh;
 static FLUID_ML_SMESH  *ssmesh;
 static INT              ndum;       /* dummy variable                   */
 static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
-FIELD                  *actfield;   /* actual field                     */
 INT smisal;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("fluid2");
@@ -95,7 +106,6 @@ switch (*action)
 {
 /*------------------------------------------------------ initialization */
 case calc_fluid_init:
-/* ----------------------------------------- find number of fluid field */
    fdyn   = alldyn[genprob.numff].fdyn;
    data   = alldyn[genprob.numff].fdyn->data;
    viscstr= alldyn[genprob.numff].fdyn->viscstr;
@@ -110,9 +120,9 @@ case calc_fluid_init:
 #ifdef FLUID2_ML
   if (fdyn->mlfem==1) 
   {  
-    mlvar   = alldyn[numff].fdyn->mlvar;
-    submesh = &(alldyn[numff].fdyn->mlvar->submesh);
-    ssmesh  = &(alldyn[numff].fdyn->mlvar->ssmesh);
+    mlvar   = alldyn[genprob.numff].fdyn->mlvar;
+    submesh = &(alldyn[genprob.numff].fdyn->mlvar->submesh);
+    ssmesh  = &(alldyn[genprob.numff].fdyn->mlvar->ssmesh);
 /*------- determine number of submesh elements in coordinate directions */   
     math_intextract(mlvar->smelenum,&ndum,&xele,&yele,&zele);
 /*------------------------------------- create submesh on parent domain */   
@@ -172,7 +182,9 @@ break;
 
 /*-------------------------------------------- calculate fluid stresses */
 case calc_fluid_stress:
-    f2_stress(container->str,viscstr,data,ele,container->is_relax);
+   /*------ calculate stresses only for elements belonging to this proc */
+   if (par.myrank==ele->proc)
+      f2_stress(container->str,viscstr,data,ele,container->is_relax);
 break;
 
 /*------------------- calculate fluid stresses for lift&drag calculation */
@@ -189,9 +201,24 @@ case calc_fluid_curvature:
    f2_curvature(data,ele,actintra->intra_rank);
 break;
 
+/*--------------------------------- calculate height function matrices */
+case calc_fluid_heightfunc: 
+   f2_heightfunc(data,ele,estif_global,
+                 eiforce_global,container);
+break;
+
 /*---------------------------------------- calculate the shear stresses */
 case calc_fluid_shearvelo:
    f2_shearstress(ele);
+break;
+
+/*--------------------------- calculate element stabilisation parameter */
+case calc_fluid_stab:
+   f2_calstab(ele,data);
+break;
+
+case calc_fluid_normal:
+   f2_calnormal(ele,data);
 break;
 
 /*------------------------------------------------------- write restart */
