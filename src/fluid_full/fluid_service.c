@@ -2899,6 +2899,8 @@ void fluid_init_pos_euler(void)
   dstrc_enter("fluid_init_pos_euler");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 if (fdyn->adaptive)
 {
    /*---------------------------------------- adaptive time stepping ---*/
