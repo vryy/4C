@@ -152,6 +152,10 @@ else if(init==3)
   calstr = 1;
   newval = 0;
 }
+else if(init==0)/*?!*/
+{
+  newval = 1; /* foam plasticity with large deformations ?! */
+}
 /*------------------------------------------- integration parameters ---*/
 c1intg(ele,data,1);
 /*-------------- some of the fields have to be reinitialized to zero ---*/

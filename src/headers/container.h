@@ -27,4 +27,9 @@ double        *ftimerhs;     /*!< ab hier fuer fluid */
 double        *fiterhs;
 int            nii;
 int            nif;
+
+#ifdef D_OPTIM                /* include optimization code to ccarat        */
+double         getvalue ;     /*!< optimization */   
+double        *getvector;     /*!< optimization */   
+#endif                        /* stop including optimization code to ccarat */
 } CONTAINER;

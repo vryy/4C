@@ -45,6 +45,10 @@ inptrace();
 /*=========================== tracing is active and working from now on */
 /*----------------------- input of not mesh or time based problem data  */
 inpctr();
+#ifdef D_OPTIM
+/*------------------------------------------------input of optimization */
+if (genprob.probtyp == prb_opt) inpctropt();
+#endif
 /*------------------------------------------------ input of design data */
 /* read description of design volumes, surfaces, lines and nodes, allocate
    and fill the structures DVOL, DSURF, DLINE and DNODE 

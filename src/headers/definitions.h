@@ -86,6 +86,7 @@ typedef char      CHAR;
 #define mlpcgupdvec         mlpcgupdvec_
 #define dveczero            dveczero_
 #define iveczero            iveczero_
+#define fsdoc               fsdoc_
 #endif
 #ifndef AZTEC_PACKAGE
 void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);

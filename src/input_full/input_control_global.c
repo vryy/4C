@@ -97,6 +97,16 @@ dstrc_enter("inpctr");
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
    }
+   if (genprob.probtyp == prb_opt)
+   {
+      if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
+      
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+      if (!solv) dserror("Allocation of SOLVAR failed");
+      
+      solv[0].fieldtyp = structure;
+      inpctrsol(&(solv[0]));
+   }
    if (genprob.probtyp == prb_fluid)   
    {
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));

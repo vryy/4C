@@ -260,6 +260,37 @@ dstrc_exit();
 #endif
 return; 
 } /* end of c1_call_matd */
+/*----------------------------------------------------------------------*
+ | get density out of material law                          al 08/02    |
+ *----------------------------------------------------------------------*/
+void c1_getdensity(MATERIAL   *mat, double *density)
+{
+#ifdef DEBUG 
+dstrc_enter("c1_getdensity");
+#endif
+/*----------------------------------------------------------------------*/
+/*------------------------------------------------ switch material type */
+switch(mat->mattyp)
+{
+case m_stvenant:/*-------------------------- ST.VENANT-KIRCHHOFF-MATERIAL */
+   *density = mat->m.stvenant->density;
+break;
+case m_neohooke:/*------------------------------ kompressible neo-hooke */
+   *density = mat->m.neohooke->density;
+break;
+case m_stvenpor:/*------------------------ porous linear elastic ---*/
+   *density = mat->m.stvenpor->density;
+break;
+default:
+   dserror("Ilegal typ of material for this element");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of c1_getdensity */
 /*----------------------------------------------------------------------*/
 #endif
 /*! @} (documentation module close)*/

@@ -92,6 +92,18 @@ if (genprob.probtyp==prb_structure)
    else field[0].ndis=1;
    inp_struct_field(&(field[0]));
 }
+/*---------------------------------------- Optimisation type of problem */
+if (genprob.probtyp == prb_opt)
+{  /*-- structure type of problem */
+   if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
+   field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+   if (field==NULL) dserror("Allocation of fields failed");
+
+   field[0].fieldtyp = structure;
+   if (genprob.multidis>0) inpdis(&(field[0]));
+   else field[0].ndis=1;
+   inp_struct_field(&(field[0]));
+}
 /*----------------------------------------------- fluid type of problem */
 if (genprob.probtyp==prb_fluid)
 {

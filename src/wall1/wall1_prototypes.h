@@ -910,6 +910,16 @@ void  w1_updalpha(double  *alpha,  /*O: internal dof for incomp modes   */
                   double **knninv, /*I: inverse of incomp. stiffness    */
                   double  *fintn,  /*I: int. forces of inc. modes       */
                   int      istore);/*I: update after loadstep->istore=1 */
+/*----------------------------------------------------------------------*
+ |  integration routine for WALL1 element                      al 6/01  |
+ *----------------------------------------------------------------------*/
+void w1_oint(
+             ELEMENT   *ele, 
+             W1_DATA   *data, 
+             MATERIAL  *mat,
+             double    *retval,  /* return value */
+             int        init     /* ==2 calc.strain energy */
+             );
                                                                         
                                                                         
                                                                         

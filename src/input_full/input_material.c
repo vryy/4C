@@ -66,6 +66,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"    ,&(mat[i].m.stvenant->possionratio),&ierr);
       frdouble("DENS",&(mat[i].m.stvenant->density)     ,&ierr);
    }
+   frchk("MAT_Struct_STVENPOR",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_stvenpor;
+      mat[i].m.stvenpor = (STVENPOR*)CCACALLOC(1,sizeof(STVENPOR));
+      if (mat[i].m.stvenpor==NULL) dserror("Alloocation of Porous StVen. material failed");
+      frdouble("YOUNG"  ,&(mat[i].m.stvenpor->youngs)        ,&ierr);
+      frdouble("NUE"    ,&(mat[i].m.stvenpor->possionratio)  ,&ierr);
+      frdouble("DENS"   ,&(mat[i].m.stvenpor->density)       ,&ierr);
+      frdouble("REFDENS",&(mat[i].m.stvenpor->refdens)       ,&ierr);
+      frdouble("EXPO"   ,&(mat[i].m.stvenpor->exponent)      ,&ierr);
+   }
    frchk("MAT_Struct_NeoHooke",&ierr);
    if (ierr==1)
    {
@@ -90,6 +102,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       mat[i].m.pl_mises->GF   = 0.; 
       frdouble("Hard" ,&(mat[i].m.pl_mises->Hard)          ,&ierr);
       frdouble("GF"   ,&(mat[i].m.pl_mises->GF)            ,&ierr);
+   }
+   frchk("MAT_FoamPlastic",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_pl_foam;
+      mat[i].m.pl_foam = (PL_FOAM*)CCACALLOC(1,sizeof(PL_FOAM));
+      if (mat[i].m.pl_foam==NULL) dserror("Alloocation of FOAM material failed");
+      frdouble("YOUNG",&(mat[i].m.pl_foam->youngs)        ,&ierr);
+      frdouble("NUE"  ,&(mat[i].m.pl_foam->possionratio)  ,&ierr);
+      frdouble("ALFAT",&(mat[i].m.pl_foam->ALFAT)         ,&ierr);
+      frdouble("Sigy" ,&(mat[i].m.pl_foam->Sigy)          ,&ierr);
+      mat[i].m.pl_foam->Hard = 0.; 
+      mat[i].m.pl_foam->GF   = 0.; 
+      frdouble("Hard" ,&(mat[i].m.pl_foam->Hard)          ,&ierr);
+      frdouble("GF"   ,&(mat[i].m.pl_foam->GF)            ,&ierr);
    }
    frchk("MAT_DP_Plastic",&ierr);
    if (ierr==1)

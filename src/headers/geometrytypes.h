@@ -61,6 +61,16 @@ typedef struct _ELEMENT
      struct _GSURF    *gsurf;                   /* my gsurf, if I am a 2D element */
      struct _GVOL     *gvol;                    /* my gvol,  if I am a 3D element */
      }                          g;              /* name of union */           
+/*----------------------------------------------------------------------*/
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
+/*----------------------------------------------------------------------*/
+     int *optdata;                  /* optimization variable number ... */
+/*----------------------------------------------------------------------*/
+#endif                   /* stop including optimization code to ccarat :*/
+/*----------------------------------------------------------------------*/
+
+
+
 } ELEMENT;
 
 

@@ -82,6 +82,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   /*--------------------------------------------- init working array ---*/
   if(mat[actele->mat-1].mattyp == m_pl_mises    ||
      mat[actele->mat-1].mattyp == m_pl_mises_ls ||
+     mat[actele->mat-1].mattyp == m_pl_foam     ||
      mat[actele->mat-1].mattyp == m_stvenpor    ||
      mat[actele->mat-1].mattyp == m_mfoc        ||
      mat[actele->mat-1].mattyp == m_mfcc        ||
@@ -204,6 +205,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   }
   /*------------------------------ init working array for plasticity ---*/
   if(mat[actele->mat-1].mattyp == m_pl_mises ||
+     mat[actele->mat-1].mattyp == m_pl_foam  ||
      mat[actele->mat-1].mattyp == m_pl_hash)
   {
     size_j = actele->e.c1->nGP[0]*actele->e.c1->nGP[1]*actele->e.c1->nGP[2];
@@ -229,12 +231,35 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     }
    /*-------------------------------------------------------------------*/
   }
-  /*------------------------------ init working array for plasticity ---*/
+  /*------- init working array for mises plasticity - finite strains ---*/
   if(mat[actele->mat-1].mattyp == m_pl_mises_ls)
   {
     size_j = actele->e.c1->nGP[0]*actele->e.c1->nGP[1]*actele->e.c1->nGP[2];
     actele->e.c1->elewa[0].ipwa = 
                                (C1_IP_WA*)CCACALLOC(size_j,sizeof(C1_IP_WA));
+    if (actele->e.c1->elewa[0].ipwa==NULL)
+    {
+      dserror("Allocation of ipwa in ELEMENT failed");
+      break;
+    }  
+    for (k=0; k<size_j; k++)
+    {
+      actele->e.c1->elewa[0].ipwa[k].epstn = 0.;
+      actele->e.c1->elewa[0].ipwa[k].yip   = -1;
+      
+      for (j=0; j<6; j++) actele->e.c1->elewa[0].ipwa[k].sig[j] = 0.;
+      for (j=0; j<9; j++) actele->e.c1->elewa[0].ipwa[k].eps[j] = 0.;
+      for (j=0; j<3; j++) actele->e.c1->elewa[0].ipwa[k].sig[j] = 1.;
+      for (j=0; j<3; j++) actele->e.c1->elewa[0].ipwa[k].eps[j] = 1.;
+    }
+  }
+  /*------- init working array for foam plasticity - finite strains ---*/
+  if(mat[actele->mat-1].mattyp == m_pl_foam)
+  {
+    size_j = actele->e.c1->nGP[0]*actele->e.c1->nGP[1]*actele->e.c1->nGP[2];
+    actele->e.c1->elewa[0].ipwa = 
+                               (C1_IP_WA*)CCACALLOC(size_j,sizeof(C1_IP_WA));
+
     if (actele->e.c1->elewa[0].ipwa==NULL)
     {
       dserror("Allocation of ipwa in ELEMENT failed");

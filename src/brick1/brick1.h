@@ -66,6 +66,13 @@ int          yip;   /*!< stress state: 1=elastic 2=plastic            */
 /* hashin delamination (plasticity) ...*/
 double      kappa;  /*!< damage threshold value                       */ 
 int         imod;   /*!< flag, indicates if sigy has been reached     */
+/* foam plasticity */
+double EQpVol;
+int iHVol ;/* last position in hardening curve */
+int iHPhi ;
+int iHEla ;
+
+
 } C1_IP_WA;
 
 

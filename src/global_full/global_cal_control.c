@@ -65,6 +65,13 @@ if (par.myrank==0)
          out_gid_msh();
    }
 }
+/*------------------------ program to control execution of optimization */
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
+if(genprob.probtyp==prb_opt)
+{
+  caloptmain();
+}   
+#endif
 /*------------------ call control programs of static or dynamic control */
 if (genprob.timetyp==time_static)
 {

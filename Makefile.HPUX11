@@ -5,8 +5,8 @@ include ./Makefile.personal_path
 #--------------------------------------------------------------------
 # choose seq. or par. executable
 #--------------------------------------------------------------------
-include ./Makefile.par
-#include ./Makefile.seq
+#include ./Makefile.par
+include ./Makefile.seq
 #
 #--------------------------------------------------------------------
 #    Makefile CARAT (parallel and sequentiel)
@@ -29,10 +29,12 @@ PROGRAM       = $(PROGRAM_NAME)
 # dependencies
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
-                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15)
+                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
+                $(OBJS_OPT)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) $(LIBS) $(INCLUDES) -o $(PROGRAM)
+                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) \
+                $(OBJS14) $(OBJS15) $(OBJS_OPT) $(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
 #
@@ -100,9 +102,13 @@ $(OBJS14):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
-		@echo "MainMake is back."
 #
 $(OBJS15):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
+$(OBJS_OPT):     
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
@@ -122,5 +128,6 @@ $(OBJS13):
 	$(FXX) $(FFLAGS) $(INCLUDES) -c  $<
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15)
+                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS_OPT)
 $

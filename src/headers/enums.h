@@ -79,6 +79,7 @@ typedef enum _MATERIAL_TYP
                        m_stvenant,    /* St.Venant Kirchhoff material */
                        m_pl_mises_3D, /* Stefans Mises*/
                        m_pl_mises,    /* von Mises material */
+                       m_pl_foam,     /* foam material - large strains */
                        m_pl_mises_ls, /* von Mises material - large strains*/
                        m_pl_dp,       /* Drucker Prager material */
                        m_pl_epc,      /* elastoplastic concrete material */
@@ -141,7 +142,18 @@ typedef enum _CALC_ACTION
                        calc_fluid_vort,
 		       calc_ale_init,
 		       calc_ale_stiff,
-		       calc_ale_rhs
+		       calc_ale_rhs,
+                       /* optimization: */
+                       calc_struct_opt_init, /* initialize integr. rout. for opt. */
+                       calc_struct_ste,  /* strain energy */
+                       calc_struct_sve,  /* von mises stress */
+                       calc_struct_stv,  /* volume */
+                       calc_struct_stm,  /* mass   */
+                       calc_struct_dee,  /* derivative of strain energy   */
+                       calc_struct_dmc,  /* derivative of mass constraint */
+                       update_struct_odens,/* updata density in ele wa    */
+                       upd_optvar,
+                       put_optvar
 } CALC_ACTION;                         
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
@@ -220,5 +232,18 @@ typedef enum _HYPREPRECTYP
                        hypreprec_parasails,      /* apporximate inverse precond. */
                        hypreprec_amg             /* algebraic multigrid precond. */
 } HYPREPRECTYP;                         
+/*----------------------------------------------------------------------*
+ | enum STALIN_EXEC                                           al 09/02  |
+ | to tell control routine for static structural analysis               |
+ | what to do (up to now for optimization only)                         |
+ *----------------------------------------------------------------------*/
+typedef enum _CALSTA_EXEC
+{
+                       calsta_none,         /* initialize struct. analysis module */    
+                       calsta_init,         /* initialize struct. analysis module */  
+                       calsta_init_solve,   /* initialize and solve */  
+                       calsta_solve,        /* solve                */
+                       calsta_free          /* free memory          */
+} CALSTA_EXEC;                         
 
 

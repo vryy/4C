@@ -14,6 +14,7 @@
 # -DD_FLUID3     defines element fluid3
 # -DD_ALE        defines element ale
 # -DD_WALL1      defines element wall1
+# -DD_OPTIM      defines optimization
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm

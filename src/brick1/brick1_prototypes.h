@@ -563,6 +563,51 @@ void c1_mat_plast_mises_ls(
                         int istore,     /* controls storing of stresses */
                         int newval);    /* controls eval. of stresses   */
 /*----------------------------------------------------------------------*
+ | constitutive matrix - forces - foam material - 3D             al 9/01|
+ *----------------------------------------------------------------------*/
+void c1_mat_plast_foam( double ym,      /* young's modulus              */
+                        double pv,      /* poisson's ratio              */
+                        double alfat,   /* temperature expansion factor */
+                        double uniax,   /* yield stresse                */
+                        double fhard,   /* hardening modulus            */
+                        double gf,      /* fracture energy              */
+                        ELEMENT   *ele, /* actual element               */
+                        double **bop,   /* derivative operator          */
+                        int ip,         /* integration point Id         */
+                        double *stress, /*ele stress (-resultant) vector*/      
+                        double **d,     /* material matrix              */
+                        double  *disd,  /* displacement derivatives     */
+                        double g[6][6], /* transformation matrix        */
+                        double gi[6][6],/* inverse of g                 */
+                        int istore,     /* controls storing of stresses */
+                        int newval);    /* controls eval. of stresses   */
+/*----------------------------------------------------------------------*
+ |                                                        al    9/01    |
+ |   radial return for elements with mises material model               |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void c1radf(double e,        /* young's modulus                         */
+            double eh,       /* hardening modulus                       */
+            double uniax,    /* yield stresse                           */
+            double vnu,      /* poisson's ratio                         */
+            double sig2,
+            double *dev,     /* elastic predicor projected onto yield   */
+            double *epstn,   /* equivalent uniaxial plastic strain      */
+            double *dlam);   /* increment of plastic multiplier         */
+/*----------------------------------------------------------------------*
+ |                                                        al    9/01    |
+ |   forms the elasto-plastic consistent tangent material tensor        |
+ *----------------------------------------------------------------------*/
+void c1matpf(double e,       /* young's modulus                         */
+             double fhard,   /* hardening modulus                       */
+             double uniax,   /* yield stresse                           */
+             double vnu,     /* poisson's ratio                         */
+             double sig2,
+             double *tau,    /* current stresses (local)                */
+             double epstn,   /* equivalent uniaxial plastic strain      */ 
+             double dlam,    /* increment of plastic multiplier         */
+             double **cc);   /* material matrix to be calculated        */
+/*----------------------------------------------------------------------*
  | initialize the element                                    al 6/01    |
  *----------------------------------------------------------------------*/
 void c1init(PARTITION *actpart,MATERIAL    *mat );
@@ -679,6 +724,20 @@ void c1_mat_plast_hashdel
                         double gi[6][6],/* inverse of g                 */
                         int istore,     /* controls storing of stresses */
                         int newval);    /* controls eval. of stresses   */
+/*----------------------------------------------------------------------*
+ |  integration routine for BRICK1 element                     al 6/01  |
+ *----------------------------------------------------------------------*/
+void c1_oint(
+             ELEMENT   *ele, 
+             C1_DATA   *data, 
+             MATERIAL  *mat,
+             double    *retval,  /* return value */
+             int        init
+             );
+/*----------------------------------------------------------------------*
+ | get density out of material law                          al 08/02    |
+ *----------------------------------------------------------------------*/
+void c1_getdensity(MATERIAL   *mat, double *density);
 /*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/

@@ -51,12 +51,13 @@ void brick1(      PARTITION   *actpart,
 /*----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 /*----------------------------------------------------------------------*/
-int  i, kstep;
+int  i, kstep, iloc;
 C1_DATA      actdata;
 MATERIAL    *actmat;
 
 int          imyrank;
 double      *intforce;
+double       getval;
 
 #ifdef DEBUG 
 dstrc_enter("brick1");
@@ -116,6 +117,73 @@ case calc_struct_update_istep:
    if(actmat->mattyp == m_fluid)    break;
    c1_cint(ele,&actdata,actmat,estif_global,intforce,2);
 break;/*----------------------------------------------------------------*/
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
+/*-------------- init the element integration routines for optimization */
+case calc_struct_opt_init:
+  c1_oint(NULL,NULL,NULL,NULL,1);
+break;/*----------------------------------------------------------------*/
+/*---------------------------------------------- evaluate strain energy */
+case calc_struct_ste:
+   actmat = &(mat[ele->mat-1]);
+   c1_oint(ele,
+           &actdata,
+           actmat,
+           &getval,
+           2 /* flag for strain energy */
+           );
+   (*container).getvalue += getval;
+break;/*----------------------------------------------------------------*/
+/*------------------------------------------------------- evaluate mass */
+case calc_struct_stm:
+   actmat = &(mat[ele->mat-1]);
+   c1_oint(ele,
+           &actdata,
+           actmat,
+           &getval,
+           3 /* flag for mass */
+           );
+   (*container).getvalue += getval;
+break;/*----------------------------------------------------------------*/
+/*-------------------------------- evaluate derivative of strain energy */
+case calc_struct_dee:
+   if(ele->optdata==NULL) break; /* element does not take part in opt. */
+   if(ele->optdata[0]==0) break; /* position in variable vector        */
+   iloc = ele->optdata[0];
+   
+   actmat = &(mat[ele->mat-1]);
+   c1_oint(ele,
+           &actdata,
+           actmat,
+           &getval,
+           4 /* flag for derivative of strain energy */
+           );
+   (*container).getvector[iloc-1] += getval;
+break;/*----------------------------------------------------------------*/
+/*------------------------------ evaluate derivative of mass constraint */
+case calc_struct_dmc:
+   if(ele->optdata==NULL) break; /* element does not take part in opt. */
+   if(ele->optdata[0]==0) break; /* position in variable vector        */
+   iloc = ele->optdata[0];
+   
+   actmat = &(mat[ele->mat-1]);
+   c1_oint(ele,
+           &actdata,
+           actmat,
+           &getval,
+           5 /* flag for volume */
+           );
+   (*container).getvector[iloc-1] += getval;
+break;/*----------------------------------------------------------------*/
+/*---------------------------------------------------- update densities */
+case update_struct_odens:
+   if(ele->optdata==NULL) break; /* element does not take part in opt. */
+   if(ele->optdata[0]==0) break; /* position in variable vector        */
+   iloc = ele->optdata[0];
+
+   getval = (*container).getvector[iloc-1]   ;
+   ele->e.c1->elewa->matdata[0]   =  getval;
+break;/*----------------------------------------------------------------*/
+#endif /* stop including optimization code to ccarat :*/
 default:
    dserror("action unknown");
 break;

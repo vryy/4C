@@ -57,28 +57,28 @@ include ./Makefile.personal_path
 #
 # sequentiell part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_seq_10.20.
-#FXX     = f77
-#CCX     = cc
-#LDX     = cc
-#PFL     = -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE -DD_SHELL8 \
-#          -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK 
-#AZTEC   = -laztec_seriell21
-#UMFPACK = -lumfpack40_hpux10_32
-#SPOOLES = 
+PROGRAM_NAME  = cca_seq_10.20.
+FXX     = f77
+CCX     = cc
+LDX     = cc
+PFL     = -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE -DD_SHELL8 \
+          -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK 
+AZTEC   = -laztec_seriell21
+UMFPACK = -lumfpack40_hpux10_32
+SPOOLES = 
 ##--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_par_10.20.
-FXX     = /opt/mpi/bin/mpif77
-CCX     = /opt/mpi/bin/mpicc
-LDX     = /opt/mpi/bin/mpicc
-PFL     = -DPARALLEL -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE \
-          -DD_SHELL8 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE  
-AZTEC   = -laztec_par21
-UMFPACK = -lumfpack40_hpux10_32
-SPOOLES = -lspoolesMPI_10.20  -lspooles_10.20
+#PROGRAM_NAME  = cca_par_10.20.
+#FXX     = /opt/mpi/bin/mpif77
+#CCX     = /opt/mpi/bin/mpicc
+#LDX     = /opt/mpi/bin/mpicc
+#PFL     = -DPARALLEL -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE \
+#          -DD_SHELL8 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE  
+#AZTEC   = -laztec_par21
+#UMFPACK = -lumfpack40_hpux10_32
+#SPOOLES = -lspoolesMPI_10.20  -lspooles_10.20
 #
 #--------------------------------------------------------------------
 #
@@ -163,11 +163,12 @@ PROGRAM       = $(PROGRAMM)
 # dependencies
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
-                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) 
+                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
+                $(OBJS_OPT)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(LIBS) $(INCLUDES) -o $(PROGRAM)
+                $(OBJS15) $(OBJS_OPT) $(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
 #
@@ -241,6 +242,11 @@ $(OBJS15):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
+$(OBJS_OPT):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
 # fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -257,5 +263,5 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) 
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS_OPT) 
 $

@@ -251,15 +251,29 @@ OBJS15        = src/fluid_full/fluid_dyn.o \
                 src/fluid_full/fluid_service.o \
                 src/fluid_full/fluid_visual.o \
 		src/fluid_full/inp_fluid_start_data.o
+#                optimization
+OBJS_OPT      = src/optimization/opt_cal_main.o \
+                src/optimization/input_optdata.o \
+                src/optimization/opt_init.o \
+                src/optimization/opt_cal_static_control.o \
+                src/optimization/opt_c1_cint.o \
+                src/optimization/opt_w1_cint.o \
+                src/optimization/opt_fsd.o \
+                src/optimization/opt_func.o \
+                src/optimization/opt_vsa.o \
+                src/optimization/opt_smo.o \
+                src/optimization/opt_g_out.o
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS13           = src/fortran/colsol.o \
                    src/fortran/mpcg_futils.o \
                    src/fortran/vis2_qat2v2.o \
-                   src/fortran/hex_fserv.o
+                   src/fortran/hex_fserv.o \
+                   src/fortran/opt_ffsd.o
 #---------------------------------------------  fortran parallel on HPUX11.0
 #            
 #OBJS13         = src/fortran/mumps_interface.o \
 #                 src/fortran/bi_f77_get_constants.o \
 #                 src/fortran/colsol.o \
 #                 src/fortran/mpcg_futils.o \
-#                 src/fortran/hex_fserv.o
+#                 src/fortran/hex_fserv.o \
+#                 src/fortran/opt_ffsd.o

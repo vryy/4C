@@ -12,6 +12,7 @@ typedef struct _MATERIAL
      {
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
+     struct _PL_FOAM          *pl_foam;      /* foam material - large strains */
      struct _PL_MISES_LS      *pl_mises_ls;  /* von Mises material - large strains*/
      struct _PL_DP            *pl_dp;        /* Drucker Prager material */
      struct _PL_EPC           *pl_epc;       /* elastoplastic concrete material */
@@ -101,6 +102,18 @@ typedef struct _PL_MISES_LS
      double                    GF;
 } PL_MISES_LS;
 
+/*----------------------------------------------------------------------*
+ | plastic foam  material                              a.lipka 02/12    |
+ *----------------------------------------------------------------------*/
+typedef struct _PL_FOAM
+{
+     double                    youngs;        /* Young's modulus */
+     double                    possionratio;  /* Possion ratio */
+     double                    ALFAT;
+     double                    Sigy;
+     double                    Hard;
+     double                    GF;
+} PL_FOAM;
 /*----------------------------------------------------------------------*
  | plastic drucker prager material                     a.lipka 17/05    |
  *----------------------------------------------------------------------*/

@@ -87,6 +87,10 @@ dstrc_enter("w1_call_mat");
   break;
   case m_stvenpor:/*------------------------ porous linear elastic ---*/
     w1_mat_stvpor(mat, ele->e.w1->elewa->matdata, wtype, d);
+    w1_disd(ele,bop,gop,alpha,wtype,disd);
+    w1_eps (disd,ele->e.w1->wtype,strain);
+    for (i=0; i<4; i++) stress[i] = 0.0;
+    for (i=0; i<4; i++) for (j=0; j<4; j++) stress[i] += d[i][j]*strain[j];
   break;
   case m_pl_mises:/*--------------------- von mises material law ---*/
     w1_mat_plast_mises(mat->m.pl_mises->youngs,
@@ -220,6 +224,12 @@ switch(mat->mattyp)
 {
 case m_stvenant:/*-------------------------------------- linear elastic */
    *density = mat->m.stvenant->density;
+break;
+case m_neohooke:/*------------------------------ kompressible neo-hooke */
+   *density = mat->m.neohooke->density;
+break;
+case m_stvenpor:/*------------------------ porous linear elastic ---*/
+   *density = mat->m.stvenpor->density;
 break;
 case m_pl_mises:/*--------------------------- von mises material law ---*/
   dserror("Ilegal typ of material for this element");
