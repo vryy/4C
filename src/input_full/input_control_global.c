@@ -271,9 +271,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("STRUCT_STRESS_GID",buffer,&ierr);
    if (ierr)
    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_disp_file=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_disp_file=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_disp_file=1;
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_gid=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid=1;
    }
    frchar("FLUID_SOL_GID",buffer,&ierr);
    if (ierr)
