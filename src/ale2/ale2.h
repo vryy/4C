@@ -151,7 +151,13 @@ void ale2_deriv_xy(DOUBLE    **deriv_xy,
  | ale2_mesh_quality.c                                        ck 06/03  |
  *----------------------------------------------------------------------*/
 DOUBLE ale2_corner_angle(DOUBLE **xyz);
+DOUBLE ale2_corner_angle_tria(DOUBLE **xyz);
 DOUBLE ale2_aspect_ratio(DOUBLE **xyz);
+DOUBLE ale2_aspect_ratio_tria(DOUBLE **xyz);
+void write_element_quality(ELEMENT  *ele, 
+                           INT       quality, 
+			   DOUBLE  **xyz, 
+			   DOUBLE    min_detF);
 void ale_quality(FIELD *field,INT step);
 /*----------------------------------------------------------------------*/
 #endif

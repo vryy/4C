@@ -201,7 +201,7 @@ determinant
 \return void                                               
 \sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
              ale2_mat_linel(), ale_keku(), ale2_hourglass(),
-	     ale2_min_jaco(); 
+	     ale2_min_jaco(), write_element_quality(); 
              called by: ale2()
 
 *----------------------------------------------------------------------*/
@@ -226,7 +226,6 @@ DOUBLE              e1,e2;         /* GP-coords */
 DOUBLE              facr,facs;   /* weights at GP */
 INT                 stepswitch = 0;
 
-DOUBLE              el_area;          /* element area */
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
 static ARRAY    D_a;      /* material tensor */     
@@ -300,18 +299,8 @@ for (i=0; i<iel; i++)
 /*================================================== element quality ===*/
 /*------------------------------------------------look for min(det F)---*/
 ale2_min_jaco(ele->distyp,xyz,&min_detF);
-/*---------------------------------------- determine element quality ---*/ 
-if (quality == 0)       /* no quality monitoring */
-   ele->e.ale2->quality = 0.0; 
-else if (quality == 1)  /* case aspect ratio */
-   ele->e.ale2->quality = ale2_aspect_ratio(xyz); 
-else if (quality == 2)  /* case corner angle */
-   ele->e.ale2->quality = ale2_corner_angle(xyz); 
-else if (quality == 3)  /* case (normalised) min. Jacobian determinant */
-{
-   el_area = ale2_el_area(xyz);
-   ele->e.ale2->quality = min_detF * 4.0/el_area;
-}
+/*----------------------------------- write element quality meassure ---*/
+write_element_quality(ele,quality,xyz,min_detF);
 /*================================================ integration loops ===*/
 for (lr=0; lr<nir; lr++)
 {
@@ -393,7 +382,7 @@ distortion
 \return void                                               
 \sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
              ale2_mat_linel(), ale_keku(), ale2_hourglass(),
-	     ale2_min_jaco(); 
+	     ale2_min_jaco(), write_element_quality(); 
              called by: ale2()
 
 *----------------------------------------------------------------------*/
@@ -527,14 +516,7 @@ square[2][1] = square[1][1] - 2.0 * b;
 square[3][0] = square[0][0] + 2.0 * c;
 square[3][1] = square[0][1] - 2.0 * b;
 /*----------------------------------- write element quality meassure ---*/
-if (quality == 0)           /* no quality monitoring */
-   ele->e.ale2->quality = 0.0; 
-else if (quality == 1)      /* aspect ratio */
-   ele->e.ale2->quality = ale2_aspect_ratio(xyz); 
-else if (quality == 2)      /* corner angle */
-   ele->e.ale2->quality = ale2_corner_angle(xyz); 
-else if (quality == 3)      /* normalised minimal Jacobian determinant */
-   ele->e.ale2->quality = min_detF * 4.0/el_area; 
+write_element_quality(ele,quality,xyz,min_detF);
 /*================================================ integration loops ===*/
 for (lr=0; lr<nir; lr++)
 {
@@ -644,10 +626,10 @@ the results of a test step [see Chiandussi et al. 2000]
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: ale2_min_jaco(), ale2_el_area(), ale2_aspect_ratio(),
-             ale2_corner_angle(),ale2_intg(), ale2_funct_deriv(),
-	     ale2_jaco(), ale2_bop(), ale2_mat_linel(), ale_keku(),
-             ale2_hourglass(), ale2_min_jaco();
+\sa calling: ale2_min_jaco(), ale2_el_area(), ale2_intg(), 
+             ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
+	     ale2_mat_linel(), ale_keku(), ale2_hourglass(), 
+	     ale2_min_jaco(), write_element_quality();
              called by: ale2()
 
 *----------------------------------------------------------------------*/
@@ -760,14 +742,7 @@ for (i=0; i<iel; i++)
    ale2_min_jaco(ele->distyp,xyz,&min_detF); 
    el_area = ale2_el_area(xyz);
 /*----------------------------------- write element quality meassure ---*/
-if (quality == 0)         /* no quality monitoring */
-   ele->e.ale2->quality = 0.0; 
-else if (quality == 1)    /* aspect ratio */
-   ele->e.ale2->quality = ale2_aspect_ratio(xyz); 
-else if (quality == 2)    /* corner angle */
-   ele->e.ale2->quality = ale2_corner_angle(xyz); 
-else if (quality == 3)    /* normalised minimal Jacobian determinant */
-   ele->e.ale2->quality = min_detF * 4.0/el_area; 
+write_element_quality(ele,quality,xyz,min_detF);
 /*================================================ integration loops ===*/
 for (lr=0; lr<nir; lr++)
 {
@@ -880,7 +855,7 @@ This routine
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: amdef(), amzero(), ale2_min_jaco(), edge_geometry()
+\sa calling: ale2_min_jaco(), edge_geometry(), write_element_quality()
              called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
@@ -899,7 +874,6 @@ DOUBLE              min_detF;
 DOUBLE              length;          /* length of actual edge*/
 DOUBLE              sin, cos;        /* direction of actual edge */
 DOUBLE              factor;
-DOUBLE              el_area;         /* element area */
 
 static DOUBLE **estif;    /* element stiffness matrix ke */ 
       
@@ -935,17 +909,7 @@ for (i=0; i<iel; i++)
 /* check 'jacobian determinant' just to determine degenerated elements -*/
 ale2_min_jaco(ele->distyp,xyz,&min_detF); 
 /*----------------------------------- write element quality meassure ---*/
-if (quality == 0)       /* no quality monitoring */
-   ele->e.ale2->quality = 0.0; 
-else if (quality == 1)  /* case aspect ratio */
-   ele->e.ale2->quality = ale2_aspect_ratio(xyz); 
-else if (quality == 2)  /* case corner angle */
-   ele->e.ale2->quality = ale2_corner_angle(xyz); 
-else if (quality == 3)  /* case (normalised) min. Jacobian determinant */
-{
-   el_area = ale2_el_area(xyz);
-   ele->e.ale2->quality = min_detF * 4.0/el_area;
-}
+write_element_quality(ele,quality,xyz,min_detF);
 /*----------------------- lineal springs from all nodes to all nodes ---*/
 /*----------------- loop over all edges and diagonals of the element ---*/
 for (node_i=0; node_i<iel; node_i++)
@@ -1034,7 +998,7 @@ the element which is represented by the minimal Jacobian determinant.
 \return void                                               
 \sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
              ale2_mat_linel(), ale_keku(), ale2_hourglass(),
-	     ale2_min_jaco(); 
+	     ale2_min_jaco(), write_element_quality(); 
              called by: ale2()
 
 *----------------------------------------------------------------------*/
@@ -1058,7 +1022,6 @@ DOUBLE              e1,e2;            /* GP-coords */
 DOUBLE              facr,facs;        /* weights at GP */
 INT                 stepswitch = 0;
 
-DOUBLE              el_area;          /* element area */
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
 DOUBLE              k_diff;
@@ -1135,32 +1098,7 @@ for (i=0; i<iel; i++)
 /*------------------------------------------------look for min(det F)---*/
 ale2_min_jaco(ele->distyp,xyz,&min_detF);
 /*----------------------------------- write element quality meassure ---*/
-if (quality == 0)       /* no quality monitoring */
-   ele->e.ale2->quality = 0.0; 
-else if (quality == 1)  /* case aspect ratio */
-   ele->e.ale2->quality = ale2_aspect_ratio(xyz); 
-else if (quality == 2)  /* case corner angle */
-   ele->e.ale2->quality = ale2_corner_angle(xyz); 
-else if (quality == 3)  /* case (normalised) min. Jacobian determinant */
-{
-   switch (ele->distyp)
-   {
-       case quad4:
-          el_area = ale2_el_area(xyz);
-	  ele->e.ale2->quality = min_detF * 4.0/el_area;
-	  break;
-       case tri3:
-       /* here a warning is needed, because min J monitoring with linear 
-          triangles doesn't work, so nothing is done and calculation goes
-	  on. */
-	  break;
-       default:
-	  /* an ongoing calculation and a warning at the end about the 
-	  monitoring would be much better! */
-	  dserror("min J quality monitoring for disytp not implemented");
-	  break;
-   }
-}
+write_element_quality(ele,quality,xyz,min_detF);
 /*================================================ integration loops ===*/
 for (lr=0; lr<nir; lr++)
 {
