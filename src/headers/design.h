@@ -90,19 +90,21 @@ typedef struct _DLINE
    struct _NEUM_CONDITION   *neum;          /* neumann conditions to this DLINE, else NULL */
    struct _DIRICH_CONDITION *dirich;        /* dirichlet conditions to this DLINE, else NULL */
    struct _COUPLE_CONDITION *couple;        /* coupling conditions to this DLINE, else NULL */
+
 #ifdef D_FSI
    struct _FSI_COUPLE_CONDITION *fsicouple;
 #endif
+   
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
-   INT                       liftdrag;
-   DOUBLE                    ld_center[2];	/* center of body */
-   INT                       aledline;
+   struct _FLUID_LIFTDRAG_CONDITION *liftdrag;
 #endif
+
 #ifdef D_AXISHELL
    struct _SAXI_THICK_CONDITION   *thickness;
    struct _SAXI_LOAD_CONDITION    *axishellload;
 #endif
+
 #ifdef WALLCONTACT
    enum   _CONTACTTYPE       contype;
 #endif
@@ -164,6 +166,11 @@ typedef struct _DSURF
    struct _NEUM_CONDITION   *neum;        /* neumann conditions to this DSURF, else NULL */
    struct _DIRICH_CONDITION *dirich;      /* dirichlet conditions to this DSURF, else NULL */
    struct _COUPLE_CONDITION *couple;      /* coupling conditions to this DSURF, else NULL */
+
+#ifdef D_FLUID
+   struct _FLUID_LIFTDRAG_CONDITION *liftdrag;
+#endif
+
    
 #ifdef D_FLUID /* fluid2 stabilisation is condition assigned to dsurface */
    enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
