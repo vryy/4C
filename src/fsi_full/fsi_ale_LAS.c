@@ -108,7 +108,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 \warning
 \return void
 
-\sa   calling: calelm(), monitoring(), ale_setdirich(), ale_rhs()
+\sa   calling: calelm(), monitoring(), ale_setdirich(),
       called by: fsi_ale()
 
 *----------------------------------------------------------------------*/
