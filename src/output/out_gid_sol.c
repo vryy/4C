@@ -133,6 +133,7 @@ for (i=0; i<genprob.numfld; i++)
             actgid->shell8_33_name = "shell8_33";
          }
       break;
+#ifdef D_SHELL9
       case el_shell9: 
 #ifdef D_SHELL9
          if (actele->numnp==4)  
@@ -176,6 +177,7 @@ for (i=0; i<genprob.numfld; i++)
          }
 #endif
       break;
+#endif /*D_SHELL9*/
       case el_brick1: 
          if (actele->numnp==8)  
          {
