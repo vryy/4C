@@ -236,23 +236,20 @@ for (i=0; i<genprob.numfld; i++)
       thick    = actnode->element[0]->e.s9->thick;
       num_klay = actnode->element[0]->e.s9->num_klay;
       node_ID  = actnode->Id+1;
-      /*get director of this node: NOTE: in the undeformed geometrie, the directors of the different kinematic
-                                         layers are equal to the director in the total reference layer*/
-      for (k=0; k<actnode->numele; k++)
+
+      /*get the director of this node from the first element to this node*/
+      for (l=0; l<actnode->element[0]->numnp; l++)
       {
-         actele = actnode->element[k];
-         if (actele->eltyp != el_shell9) continue;
-         for (l=0; l<actele->numnp; l++)
+         if (actnode->element[0]->node[l] == actnode)
          {
-            if (actele->node[l] == actnode)
-            {
-               a3ref_l[0]= actele->e.s9->a3ref.a.da[0][l];
-               a3ref_l[1]= actele->e.s9->a3ref.a.da[1][l];
-               a3ref_l[2]= actele->e.s9->a3ref.a.da[2][l];
-               break;
-            }
+            a3ref_l[0]= actnode->element[0]->e.s9->a3ref.a.da[0][l];
+            a3ref_l[1]= actnode->element[0]->e.s9->a3ref.a.da[1][l];
+            a3ref_l[2]= actnode->element[0]->e.s9->a3ref.a.da[2][l];
+            break;
          }
       }
+
+
       /*switch the elementtype */
       if (type == 4) /* quad4 -> Hex8 */
       {
