@@ -138,7 +138,7 @@ int gid_write_values(GID_POST_ASCII* gid, int id, int n, ... )
   va_start(ap, n);
   for ( i = 0; i < n; i++ ) {
     value = va_arg(ap, double);
-    fprintf(gid->file, " %g", value);
+    fprintf(gid->file, " %12.5E", value);
   }
   fprintf(gid->file, "\n");
   va_end(ap);
@@ -154,7 +154,7 @@ int gid_write_buffer(GID_POST_ASCII* gid, int id, int n, double* buffer)
     gid->LastID = id;
   }
   for ( i = 0; i < n; i++ ) {
-    fprintf(gid->file, " %g", buffer[i]);
+    fprintf(gid->file, " %12.5E", buffer[i]);
   }
   return 0;
 }
@@ -163,7 +163,7 @@ int gid_write2d(GID_POST_ASCII* gid, double x, double y)
 {
   char line[256];
 
-  sprintf( line, "%g %g", x, y );
+  sprintf( line, "%12.5E %12.5E", x, y );
   return gid_write_string(gid, line);
 }
 
@@ -171,7 +171,7 @@ int gid_write3d(GID_POST_ASCII* gid, double x, double y, double z)
 {
   char line[256];
 
-  sprintf( line, "%g %g %g", x, y, z );
+  sprintf( line, "%12.5E %12.5E %12.5E", x, y, z );
   return gid_write_string(gid, line);
 }
 
@@ -847,7 +847,7 @@ int GiD_WriteMinRange( double max, char * name )
   /* check state */
   assert(CheckState(POST_RANGE_S0, level_res));
 
-  snprintf(line, LINE_SIZE-1, " - %g : \"%s\"", max, name);
+  snprintf(line, LINE_SIZE-1, " - %12.5E : \"%s\"", max, name);
   return gid_write_string(&ResultFile, line);
 }
 
@@ -858,7 +858,7 @@ int GiD_WriteRange( double min, double max, char * name )
   /* check state */
   assert(CheckState(POST_RANGE_S0, level_res));
 
-  snprintf(line, LINE_SIZE-1, " %g - %g : \"%s\"", min, max, name);
+  snprintf(line, LINE_SIZE-1, " %12.5E - %12.5E : \"%s\"", min, max, name);
   return gid_write_string(&ResultFile, line);
 }
 
@@ -869,7 +869,7 @@ int GiD_WriteMaxRange( double min, char * name )
   /* check state */
   assert(CheckState(POST_RANGE_S0, level_res));
 
-  snprintf(line, LINE_SIZE-1, "%g - : \"%s\"", min, name);
+  snprintf(line, LINE_SIZE-1, "%12.5E - : \"%s\"", min, name);
   return gid_write_string(&ResultFile, line);
 }
 
@@ -890,7 +890,7 @@ int GiD_BeginResult(char * Result, char * Analysis, double step,
   assert(CheckState(POST_S0, level_res));
 
   loc = (Where == GiD_OnNodes) ? "OnNodes" : "OnGaussPoints";
-  snprintf(line, LINE_SIZE-1, "Result \"%s\" \"%s\" %g %s %s",
+  snprintf(line, LINE_SIZE-1, "Result \"%s\" \"%s\" %12.5E %s %s",
 	   Result, Analysis, step, GetResultTypeName(Type), loc);
   if (Where == GiD_OnGaussPoints) {
     strcat(line, " \"");
@@ -934,7 +934,7 @@ int GiD_BeginResultHeader(char * Result, char * Analysis, double step,
   assert(Analysis);
 
   loc = (Where == GiD_OnNodes) ? "OnNodes" : "OnGaussPoints";
-  snprintf(line, LINE_SIZE-1, "Result \"%s\" \"%s\" %g %s %s",
+  snprintf(line, LINE_SIZE-1, "Result \"%s\" \"%s\" %12.5E %s %s",
 	   Result, Analysis, step, GetResultTypeName(Type), loc);
   if (Where == GiD_OnGaussPoints) {
     strcat(line, " \"");
@@ -1031,7 +1031,7 @@ int GiD_BeginResultGroup(char * Analysis, double step, GiD_ResultLocation Where,
   assert(Analysis);
 
   loc = (Where == GiD_OnNodes) ? "OnNodes" : "OnGaussPoints";
-  snprintf(line, LINE_SIZE-1, "ResultGroup \"%s\" %g %s", Analysis, step, loc);
+  snprintf(line, LINE_SIZE-1, "ResultGroup \"%s\" %12.5E %s", Analysis, step, loc);
   if (Where == GiD_OnGaussPoints) {
     strcat(line, " \"");
     assert(GaussPointsName);

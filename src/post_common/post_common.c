@@ -999,10 +999,11 @@ INT next_result(RESULT_DATA* result)
       }
 
       /*
-       * We cannot use the real step numbers here if ccarat didn't
-       * write results for each step. */
-      /*step = map_read_int(map, "step");*/
-      step = i;
+       * We use the real step numbers here. That is a user has to give
+       * the real numbers, too. Maybe that's the best way to handle
+       * it. */
+      /* In case of FSI everything else hurts even more. */
+      step = map_read_int(map, "step");
 
       /* we are only interessted if the result matches the slice */
       if ((step >= problem->start) &&

@@ -51,26 +51,6 @@ possible). You might want to start reading the file from there.
 #include "../output/gid.h"
 
 
-#if 0
-/* map from DIS_TYP to GiD_ElementType */
-static GiD_ElementType gid_type_map[] = {
-  GiD_NoElement,                /* dis_none,       -- unknown dis type */
-  GiD_Quadrilateral,            /* quad4,          -- 4 noded quadrilateral */
-  GiD_Quadrilateral,            /* quad8,          -- 8 noded quadrilateral */
-  GiD_Quadrilateral,            /* quad9,          -- 9 noded quadrilateral */
-  GiD_Triangle,                 /* tri3,           -- 3 noded triangle */
-  GiD_Triangle,                 /* tri6,           -- 6 noded triangle */
-  GiD_Hexahedra,                /* hex8,           -- 8 noded hexahedra */
-  GiD_Hexahedra,                /* hex20,          -- 20 noded hexahedra */
-  GiD_Hexahedra,                /* hex27,          -- 27 noded hexahedra */
-  GiD_Tetrahedra,               /* tet4,           -- 4 noded tetrahedra */
-  GiD_Tetrahedra,               /* tet10,          -- 4 noded tetrahedra */
-  GiD_Linear,                   /* line2,          -- 2 noded line */
-  GiD_Linear                    /* line3           -- 3 noded line */
-};
-#endif
-
-
 
 /*----------------------------------------------------------------------*/
 /*!
