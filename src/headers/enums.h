@@ -110,6 +110,7 @@ typedef enum _MATERIAL_TYP
                        m_pl_mises_ls, /* von Mises material - large strains*/
                        m_pl_dp,       /* Drucker Prager material */
                        m_pl_epc,      /* elastoplastic concrete material */
+                       m_pl_epc3D,    /* elastoplastic concrete material 3D formulation */
                        m_stvenpor,    /* porous St.Venant Kirchhoff material */
                        m_pl_por_mises,/* porous von Mises material */
                        m_neohooke,    /* Neo-Hooke material */

@@ -325,6 +325,41 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         frdouble("REBHARD" ,&(mat[i].m.pl_epc->reb_hard[j]  ),&ierr);
       }
    }
+   frchk("MAT_3DConcretePlastic",&ierr);  /* 3D formulation, the same as used for multilayer materials*/
+   if (ierr==1)
+   {
+      /*write a warning to use an unsymmetric solver*/
+      printf("|---------------------------------------------------------------------------------------| \n");
+      printf("|    WARNING in input_material.c:    ================================================   | \n");
+      printf("|    WARNING in input_material.c:    MAT_ConcretePlastic -> use an UNsymmetric solver   | \n");
+      printf("|    WARNING in input_material.c:    if trial stresses could be in the apex region      | \n");
+      printf("|    WARNING in input_material.c:    ================================================   | \n");
+      printf("|---------------------------------------------------------------------------------------| \n");
+
+      mat[i].mattyp = m_pl_epc3D;
+      mat[i].m.pl_epc = (PL_EPC*)CCACALLOC(1,sizeof(PL_EPC));
+
+      /* initialize */
+      mat[i].m.pl_epc->dfac = 0.;
+      mat[i].m.pl_epc->gamma1 = 3.;
+      mat[i].m.pl_epc->gamma2 = 6./5.;
+      mat[i].m.pl_epc->gamma3 = 1./3.;
+      mat[i].m.pl_epc->gamma4 = 4./3.;
+      mat[i].m.pl_epc->maxreb = 0;
+      
+      /* concrete */
+      frdouble("YOUNG"   ,&(mat[i].m.pl_epc->youngs      )        ,&ierr);
+      frdouble("NUE"     ,&(mat[i].m.pl_epc->possionratio)        ,&ierr);
+      frdouble("FTM"     ,&(mat[i].m.pl_epc->ftm         )        ,&ierr);
+      frdouble("FCM"     ,&(mat[i].m.pl_epc->fcm         )        ,&ierr);
+      frdouble("GT"      ,&(mat[i].m.pl_epc->gt          )        ,&ierr);
+      frdouble("GC"      ,&(mat[i].m.pl_epc->gc          )        ,&ierr);
+      frdouble("DFAC"    ,&(mat[i].m.pl_epc->dfac        )        ,&ierr);
+      frdouble("GAMMA1"  ,&(mat[i].m.pl_epc->gamma1      )        ,&ierr);
+      frdouble("GAMMA2"  ,&(mat[i].m.pl_epc->gamma2      )        ,&ierr);
+      frdouble("GAMMA3"  ,&(mat[i].m.pl_epc->gamma3      )        ,&ierr);
+      frdouble("GAMMA4"  ,&(mat[i].m.pl_epc->gamma4      )        ,&ierr);
+   }
    frchk("MAT_Porous_MisesPlastic",&ierr);
    if (ierr==1)
    {
@@ -669,6 +704,40 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("HA12"    ,&(multimat[i].m.pl_hoff->ha12)         ,&ierr);
       frdouble("HA23"    ,&(multimat[i].m.pl_hoff->ha23)         ,&ierr);
       frdouble("HA13"    ,&(multimat[i].m.pl_hoff->ha13)         ,&ierr);
+   }
+   frchk("MAT_ConcretePlastic",&ierr);
+   if (ierr==1)
+   {
+      /*write a warning to use an unsymmetric solver*/
+      printf("|---------------------------------------------------------------------------------------| \n");
+      printf("|    WARNING in input_material.c:    ================================================   | \n");
+      printf("|    WARNING in input_material.c:    MAT_ConcretePlastic -> use an UNsymmetric solver   | \n");
+      printf("|    WARNING in input_material.c:    if trial stresses could be in the apex region      | \n");
+      printf("|    WARNING in input_material.c:    ================================================   | \n");
+      printf("|---------------------------------------------------------------------------------------| \n");
+
+      multimat[i].mattyp = m_pl_epc;
+      multimat[i].m.pl_epc = (PL_EPC*)CCACALLOC(1,sizeof(PL_EPC));
+
+      /* initialize */
+      multimat[i].m.pl_epc->dfac = 0.;
+      multimat[i].m.pl_epc->gamma1 = 3.;
+      multimat[i].m.pl_epc->gamma2 = 6./5.;
+      multimat[i].m.pl_epc->gamma3 = 1./3.;
+      multimat[i].m.pl_epc->gamma4 = 4./3.;
+      multimat[i].m.pl_epc->maxreb = 0;
+      
+      /* concrete */
+      frdouble("YOUNG"   ,&(multimat[i].m.pl_epc->youngs      )        ,&ierr);
+      frdouble("NUE"     ,&(multimat[i].m.pl_epc->possionratio)        ,&ierr);
+      frdouble("FTM"     ,&(multimat[i].m.pl_epc->ftm         )        ,&ierr);
+      frdouble("FCM"     ,&(multimat[i].m.pl_epc->fcm         )        ,&ierr);
+      frdouble("GT"      ,&(multimat[i].m.pl_epc->gt          )        ,&ierr);
+      frdouble("GC"      ,&(multimat[i].m.pl_epc->gc          )        ,&ierr);
+      frdouble("GAMMA1"  ,&(multimat[i].m.pl_epc->gamma1      )        ,&ierr);
+      frdouble("GAMMA2"  ,&(multimat[i].m.pl_epc->gamma2      )        ,&ierr);
+      frdouble("GAMMA3"  ,&(multimat[i].m.pl_epc->gamma3      )        ,&ierr);
+      frdouble("GAMMA4"  ,&(multimat[i].m.pl_epc->gamma4      )        ,&ierr);
    }
    i++;
 /*----------------------------------------------------------------------*/

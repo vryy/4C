@@ -407,6 +407,7 @@ typedef struct _MULTIMAT
      struct _PL_MISES         *pl_mises;     /* von Mises material */
      struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
      struct _PL_DP            *pl_dp;        /* Drucker Prager material */
+     struct _PL_EPC           *pl_epc;       /* elastoplastic concrete material */
      }                         m;            /* union pointer to material specific structure */
 
 } MULTIMAT;

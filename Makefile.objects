@@ -256,6 +256,7 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_mat_plast_dp.o \
                 src/wall1/w1_mat_plast_epc.o \
                 src/wall1/w1_mat_plast_epc_serv.o \
+                src/wall1/w1_mat_plast_epc3D.o \
                 src/wall1/w1_mat_plast_mises.o \
                 src/wall1/w1_mat_plast_mises3D.o \
                 src/wall1/w1_mat_plast_serv.o \
@@ -407,6 +408,7 @@ OBJS_SHELL9   = src/shell9/s9_main.o \
                 src/shell9/s9_mat_plast_hoff.o \
                 src/shell9/s9_mat_plast_mises.o \
                 src/shell9/s9_mat_plast_dp.o \
+                src/shell9/s9_mat_plast_epc.o \
                 src/shell9/s9_math.o\
                 src/shell9/s9_out.o\
                 src/shell9/s9_out_unsmo.o\
@@ -495,6 +497,7 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
                 src/materials/mat_el_orth.o \
                 src/materials/mat_pl_hoff.o \
                 src/materials/mat_pl_mises_lin.o \
+                src/materials/mat_pl_epc.o \
                 src/materials/mat_pl_dp_lin.o
 #
 OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
