@@ -31,6 +31,10 @@ Maintainer: Malte Neumann
 #include "../ls/ls_prototypes.h"
 #include "../xfem/xfem_prototypes.h"
 
+#ifdef D_SSI
+#include "../ssi_full/ssi_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -424,6 +428,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_struct_def             : assemble_action = assemble_do_nothing; break;
    case calc_struct_stv             : assemble_action = assemble_do_nothing; break;
    case calc_struct_dee             : assemble_action = assemble_do_nothing; break;
+   case calc_struct_ssi_coup_force  : assemble_action = assemble_do_nothing; break;
    case calc_deriv_self_adj         : assemble_action = assemble_do_nothing; break;
    case calc_struct_dmc             : assemble_action = assemble_do_nothing; break;
    case update_struct_odens         : assemble_action = assemble_do_nothing; break;
@@ -484,6 +489,14 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
       /* dynamic case */
       if (container->dirich && container->isdyn==1)
       assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
+      /*-- calculate internal forces at dirichlet nodes, used for ssi */
+#ifdef D_SSI
+      /*-------------------------------------------- firl / genk 10/03*/
+      if (*action == calc_struct_ssi_coup_force)
+      {
+        calc_ssi_coupforce_mod(actele, &estif_global, &emass_global, container);
+      }
+#endif
    break;
 #ifdef D_FLUID
    case fluid:
@@ -582,6 +595,7 @@ case calc_struct_stm             : assemble_action = assemble_do_nothing;   brea
 case calc_struct_def             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stv             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dmc             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_ssi_coup_force  : assemble_action = assemble_do_nothing;   break;
 case update_struct_odens         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
 case calc_deriv_self_adj         : assemble_action = assemble_do_nothing;   break;
@@ -646,6 +660,7 @@ case calc_struct_stm             : assemble_action = assemble_do_nothing;   brea
 case calc_struct_def             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stv             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dmc             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_ssi_coup_force  : assemble_action = assemble_do_nothing;   break;
 case update_struct_odens         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
 case calc_deriv_self_adj         : assemble_action = assemble_do_nothing;   break;

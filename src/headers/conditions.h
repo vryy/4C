@@ -32,6 +32,7 @@ typedef struct _NEUM_CONDITION
      neum_live_FSI,            /* on shells surfaces it's possible to have both */
      neum_opres_FSI,            /* on shells surfaces it's possible to have both */
      neum_FSI,
+     neum_SSI,
      pres_domain_load,
      neum_consthydro_z,
      neum_increhydro_z,
@@ -66,6 +67,7 @@ typedef struct _DIRICH_CONDITION
      dirich_none,                            /* no specification */
      dirich_FSI,                             /* fluid-structure interaction */
      dirich_FSI_pseudo,
+     dirich_SSI,
      dirich_freesurf,
      dirich_slip
      }                         dirich_type;
@@ -115,6 +117,18 @@ typedef struct _FSI_COUPLE_CONDITION
 	   fsi_pseudo
 	  }                   fsi_typ;
 } FSI_COUPLE_CONDITION;
+/*----------------------------------------------------------------------*
+ | ssi coupling condition                                 genk 10/02    |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+typedef struct _SSI_COUPLE_CONDITION
+{
+     enum _SSI_COUPTYP         ssi_couptyp;        /* type of field this structure is in */
+     INT                       ssi_coupleId;
+     enum _SSI_MESH            ssi_mesh;
+     
+} SSI_COUPLE_CONDITION;
+
 /*----------------------------------------------------------------------*
  | fluid freesurface condition                            genk 10/02    |
  |                                                                      |

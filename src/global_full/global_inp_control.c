@@ -13,6 +13,9 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"
+#ifdef D_SSI
+#include "../ssi_full/ssi_prototypes.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -242,6 +245,9 @@ inp_conditions();
 #ifdef D_FSI
 if (genprob.probtyp==prb_fsi) fsi_createfsicoup();
 #endif
+#ifdef D_SSI
+if (genprob.probtyp==prb_ssi) ssi_createssicoup();
+#endif
 #ifdef D_FLUID
 /*----------------- inherit the freesurface condition inside the design
    condition is transformed into a dirichlet condition for ale fiedl    */
@@ -282,6 +288,15 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
    for (i=0; i<genprob.numfld; i++)
       for (j=0; j<field[i].ndis; j++)
          inherit_design_dis_fsicouple(&(field[i].dis[j]));
+}
+#endif
+#ifdef D_SSI
+/*---- set pointers in the discretisations to the design ssi conditions */
+if (genprob.probtyp==prb_ssi)
+{
+   for (i=0; i<genprob.numfld; i++)
+      for (j=0; j<field[i].ndis; j++)
+         inherit_design_dis_ssicouple(&(field[i].dis[j]));
 }
 #endif
 /*------ set pointers in the discr. to the design freesurface condition */
