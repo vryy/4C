@@ -1,6 +1,7 @@
 #include "../headers/standardtypes.h"
 #include "gid.h"
 #include "../shell8/shell8.h"
+#include "../shell9/shell9.h"
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../ale2/ale2.h"
@@ -92,6 +93,12 @@ for (i=0; i<genprob.numfld; i++)
    /*--------------------------- find and set meshes and gausspointsets */
    actgid->is_shell8_22 = 0;
    actgid->is_shell8_33 = 0;
+   actgid->is_shell9_4_22 = 0;
+   actgid->is_shell9_4_33 = 0;
+   actgid->is_shell9_8_22 = 0;
+   actgid->is_shell9_8_33 = 0;
+   actgid->is_shell9_9_22 = 0;
+   actgid->is_shell9_9_33 = 0;
    actgid->is_brick1_222= 0;
    actgid->is_brick1_333= 0;
    actgid->is_fluid2_22 = 0;
@@ -124,6 +131,47 @@ for (i=0; i<genprob.numfld; i++)
          {
             actgid->is_shell8_33   = 1;
             actgid->shell8_33_name = "shell8_33";
+         }
+      break;
+      case el_shell9: 
+         if (actele->numnp==4)  
+         {
+             if (actele->e.s9->nGP[0]==2 && actele->e.s9->nGP[1]==2)
+             {
+                 actgid->is_shell9_4_22   = 1;
+                 actgid->shell9_4_22_name = "shell9_4_22";
+             }
+             if (actele->e.s9->nGP[0]==3 && actele->e.s9->nGP[1]==3)
+             {
+                 actgid->is_shell9_4_33   = 1;
+                 actgid->shell9_4_33_name = "shell9_4_33";
+             }
+         }
+         if (actele->numnp==8)  
+         {
+             if (actele->e.s9->nGP[0]==2 && actele->e.s9->nGP[1]==2)
+             {
+                 actgid->is_shell9_8_22   = 1;
+                 actgid->shell9_8_22_name = "shell9_8_22";
+             }
+             if (actele->e.s9->nGP[0]==3 && actele->e.s9->nGP[1]==3)
+             {
+                 actgid->is_shell9_8_33   = 1;
+                 actgid->shell9_8_33_name = "shell9_8_33";
+             }
+         }
+         if (actele->numnp==9)  
+         {
+             if (actele->e.s9->nGP[0]==2 && actele->e.s9->nGP[1]==2)
+             {
+                 actgid->is_shell9_9_22   = 1;
+                 actgid->shell9_9_22_name = "shell9_9_22";
+             }
+             if (actele->e.s9->nGP[0]==3 && actele->e.s9->nGP[1]==3)
+             {
+                 actgid->is_shell9_9_33   = 1;
+                 actgid->shell9_9_33_name = "shell9_9_33";
+             }
          }
       break;
       case el_brick1: 
@@ -219,8 +267,9 @@ for (i=0; i<genprob.numfld; i++)
              }
          }
       break;
-#endif
+#endif /*D_ALE*/
 /*---------------------------------------------------------fh 06/02----*/
+#ifdef D_WALL1
       case el_wall1:    
          if (actele->e.w1->nGP[0]==2)  
          {
@@ -233,6 +282,7 @@ for (i=0; i<genprob.numfld; i++)
             actgid->wall1_33_name = "wall1_33";
          }
       break;
+#endif /*D_WALL1*/
       default:
          dserror("Unknown type of element");
       break;
@@ -279,6 +329,83 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+
+#ifdef D_SHELL9
+   /* this is the shell9 visualization using Hexahedra */
+   if (actgid->is_shell9_4_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL9 2x2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                   sign,actgid->shell9_4_22_name,sign,
+                                                                   sign,actgid->shell9_4_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_shell9_4_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL9 3x3x3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                   sign,actgid->shell9_4_33_name,sign,
+                                                                   sign,actgid->shell9_4_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_shell9_8_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL9 2x2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                   sign,actgid->shell9_8_22_name,sign,
+                                                                   sign,actgid->shell9_8_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_shell9_8_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL9 3x3x3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                   sign,actgid->shell9_8_33_name,sign,
+                                                                   sign,actgid->shell9_8_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_shell9_9_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL9 2x2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                   sign,actgid->shell9_9_22_name,sign,
+                                                                   sign,actgid->shell9_9_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_shell9_9_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL9 3x3x3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                   sign,actgid->shell9_9_33_name,sign,
+                                                                   sign,actgid->shell9_9_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+#endif /*D_SHELL9*/
+
    if (actgid->is_brick1_222)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -551,6 +678,128 @@ if (actgid->is_shell8_33)
    }
    fprintf(out,"END VALUES\n");
 }
+
+
+
+#ifdef D_SHELL9
+/*4-noded*/
+if (actgid->is_shell9_4_22) 
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_4_22_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->shell9_4_22_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_shell9 || actele->numnp != 4) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   /* for (j=1; j<4; j++)/* quadrilateral version */
+      for (j=1; j<8; j++)/* hexahedra version */
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+if (actgid->is_shell9_4_33) 
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_4_33_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->shell9_4_33_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_shell9 || actele->numnp != 4) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   /* for (j=1; j<9; j++)/* quadrilateral version */
+      for (j=1; j<27; j++)/* hexahedra version */
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+/*8-noded*/
+if (actgid->is_shell9_8_22)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_8_22_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->shell9_8_22_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_shell9 || actele->numnp != 8) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   /* for (j=1; j<4; j++)/* quadrilateral version */
+      for (j=1; j<8; j++)/* hexahedra version */
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+if (actgid->is_shell9_8_33)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_8_33_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->shell9_8_33_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_shell9 || actele->numnp != 8) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   /* for (j=1; j<9; j++)/* quadrilateral version */
+      for (j=1; j<27; j++)/* hexahedra version */
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+/*9-noded*/
+if (actgid->is_shell9_9_22)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_9_22_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->shell9_9_22_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_shell9 || actele->numnp != 9) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   /* for (j=1; j<4; j++)/* quadrilateral version */
+      for (j=1; j<8; j++)/* hexahedra version */
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+if (actgid->is_shell9_9_33)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_9_33_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->shell9_9_33_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_shell9 || actele->numnp != 9) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   /* for (j=1; j<9; j++)/* quadrilateral version */
+      for (j=1; j<27; j++)/* hexahedra version */
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+#endif /*D_SHELL9*/
 
 if (actgid->is_brick1_222)
 {
@@ -875,6 +1124,8 @@ double      **stress;
 
 double        a1,a2,a3,thick,scal,sdc;
 int           tot_numnp;
+
+int           num_klay,klay,ele_ID,numele;   /*for shell9*/
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
@@ -927,6 +1178,23 @@ if (strncmp(string,"displacement",stringlenght)==0)
    fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
                                             sign,actgid->standardrangetable,sign
                                             );
+
+#ifdef D_SHELL9
+   /*if shell9, the displacement have to be written in 3 components */
+   /*NOTE: only first element is tested, as it is assumed that there
+           is no coupling of different element types            sh 12/02 */
+   if (actfield->dis[0].element[0].eltyp == el_shell9)   
+   {
+       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+                                                       sign,componentnames[0],sign,
+                                                       sign,componentnames[1],sign,
+                                                       sign,componentnames[2],sign
+                                                       );
+       s9_out_gid_sol_dis(out,actfield,place);          
+    goto next;
+   }
+#endif /*D_SHELL9*/
+   
    switch (genprob.ndim)
    {
      case 3:
@@ -1003,6 +1271,12 @@ if (strncmp(string,"displacement",stringlenght)==0)
    }
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"displacement",stringlenght)==0) */
+
+/*-> for shell9*/
+#ifdef D_SHELL9
+   next:
+#endif /*D_SHELL9*/
+
 /*========================================= result type is eigenmodes */
 if (strncmp(string,"eigenmodes",stringlenght)==0)
 {
@@ -1264,8 +1538,87 @@ if (strncmp(string,"stress",stringlenght)==0)
       }
       fprintf(out,"END VALUES\n");
    }
-#endif
-#endif
+#endif /*D_SHELL8*/
+#endif /* 0 */
+
+#ifdef D_SHELL9
+   if (actgid->is_shell9_4_22 || actgid->is_shell9_8_22 || actgid->is_shell9_9_22 ||
+       actgid->is_shell9_4_33 || actgid->is_shell9_8_33 || actgid->is_shell9_9_33)
+   {
+      /*===============================shell9 element with 2x2 gausspoints */
+      if (actgid->is_shell9_4_22 || actgid->is_shell9_8_22 || actgid->is_shell9_9_22) ngauss = 8;
+      /*===============================shell9 element with 3x3 gausspoints */
+      if (actgid->is_shell9_4_33 || actgid->is_shell9_8_33 || actgid->is_shell9_9_33) ngauss = 27;
+
+      resulttype                             = "MATRIX";
+      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
+      if      (actgid->is_shell9_4_22) gpset = actgid->shell9_4_22_name;
+      else if (actgid->is_shell9_8_22) gpset = actgid->shell9_8_22_name;
+      else if (actgid->is_shell9_9_22) gpset = actgid->shell9_9_22_name;
+      else if (actgid->is_shell9_4_33) gpset = actgid->shell9_4_33_name;
+      else if (actgid->is_shell9_8_33) gpset = actgid->shell9_8_33_name;
+      else if (actgid->is_shell9_9_33) gpset = actgid->shell9_9_33_name;
+      rangetable        = actgid->standardrangetable;
+      /*--- print the physical stresses */
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT shell9_stresses on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cshell9_stresses%c %cpcarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      /*check only first element and assume, that the others are the same*/
+      actele = &(actfield->dis[0].element[0]); 
+      switch(actele->e.s9->forcetyp)
+      {
+      case s9_xyz:
+      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-xy%c,%cStress-yy%c,%cStress-xz%c,%cStress-yz%c,%cStress-zz%c\n",
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign);
+      break;
+      case s9_rst:
+      fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-rs%c,%cStress-ss%c,%cStress-rt%c,%cStress-st%c,%cStress-tt%c\n",
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign);
+      break;
+      case s9_rst_ortho:
+      fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-rs%c,%cStress-ss%c,%cStress-rt%c,%cStress-st%c,%cStress-tt%c\n",
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign,
+              sign,sign);
+      break;
+      }
+      fprintf(out,"VALUES\n");
+
+  /*NOTE: it is assumed that there is no coupling of different element types      sh 01/03 */
+     
+      /*write stresses at gp*/
+      s9_out_gid_sol_str(out,actfield,place);          
+
+      fprintf(out,"END VALUES\n");
+   }
+#endif /*D_SHELL9*/
+
+
+
+
+
+
 #ifdef D_WALL1
 /*---------------------------------------------------------fh 06/02----*/
    /*--------- ---------now go through the meshes and print the results */

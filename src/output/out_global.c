@@ -1,6 +1,14 @@
 #include "../headers/standardtypes.h"
-#include "../shell8/shell8.h"
-#include "../wall1/wall1.h"
+
+#ifdef D_SHELL8
+  #include "../shell8/shell8.h"
+#endif /*D_SHELL8*/
+#ifdef D_SHELL9
+  #include "../shell9/shell9.h"
+#endif /*D_SHELL9*/
+#ifdef D_WALL1
+  #include "../wall1/wall1.h"
+#endif /*D_WALL1*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -57,6 +65,7 @@ and the type is in partition.h
 void out_general()
 {
 int        i,j,k,l;
+int        is_shell9;
 FILE      *out = allfiles.out_out;
 FIELD     *actfield;
 INTRA     *actintra;
@@ -189,6 +198,9 @@ switch(actele->eltyp)
 case el_shell8:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL8\n",actele->Id,actele->Id_loc);
 break;
+case el_shell9:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d SHELL9\n",actele->Id,actele->Id_loc);
+break;
 case el_brick1:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d BRICK1\n",actele->Id,actele->Id_loc);
 break;
@@ -225,6 +237,27 @@ fprintf(out,"Degrees of Freedom:\n");
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
 actnode = &(actfield->dis[0].node[j]);
+
+/* check if actnode belongs to a shell9 element */
+#ifdef D_SHELL9
+   is_shell9 = 0;
+   for (k=0; k<actnode->numele; k++)
+   {
+     switch(actnode->element[k]->eltyp)
+     {
+     case el_shell9:
+       is_shell9 = 1;    
+     break;
+     }
+   }
+   /* write dofs for shell9 */
+   if (is_shell9 == 1) 
+   {
+     s9out_dof(actnode,j);
+     continue;
+   }
+#endif /*D_SHELL9*/
+
 switch (actnode->numdf)
 {
 case 2:
@@ -276,6 +309,8 @@ void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
              int step, int place)
 {
 int        i,j,k,l;
+int        is_shell9;    /*->shell9*/
+int        num_klay,kl;  /*->shell9*/
 FILE      *out = allfiles.out_out;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -323,6 +358,38 @@ if (ioflags.struct_disp_file==1)
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
    actnode = &(actfield->dis[0].node[j]);
+
+   /* check if actnode belongs to a shell9 element */
+   #ifdef D_SHELL9
+      is_shell9 = 0;
+      for (k=0; k<actnode->numele; k++)
+      {
+        switch(actnode->element[k]->eltyp)
+        {
+        case el_shell9:
+          is_shell9 = 1;
+        break;
+        }
+      }
+      /* print nodal values for shell9 */
+      if (is_shell9 == 1)
+      {
+        if(actnode->numdf == 6) /*only one kinematic layer*/
+        {
+          fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+          for (k=0; k<actnode->numdf; k++)
+          {
+             if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+             fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
+          }
+          fprintf(out,"\n");
+        }
+        else
+          s9out_nodal_dis(actnode,place);
+          continue;
+      }
+   #endif /*D_SHELL9*/
+
    fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
    for (k=0; k<actnode->numdf; k++) 
    {
@@ -415,10 +482,90 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.s8->forces.a.d3[place][15][i]
        );
        }
-#endif
+#endif /*D_SHELL8*/
+   break;
+/*---------------------------------------------------------sh 9/02-------*/  
+   case el_shell9:
+#ifdef D_SHELL9
+/*NOTE: It does not seem to be very interesting to write the forces of each kinematic layer; it is more
+        usefull to look at the stresses. These are writen to the flavia.res-File, so that they could be
+        visualized with gid.   sh 02/03 */
+        
+/*       ngauss   = actele->e.s9->nGP[0] * actele->e.s9->nGP[1];
+       num_klay = actele->e.s9->num_klay;
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                SHELL9\n",actele->Id,actele->Id_loc);
+       switch(actele->e.s9->forcetyp)
+       {
+       case s9_xyz:
+       fprintf(out,"Gaussian   Layer      Force-xx     Force-xy     Force-yx     Force-yy     Force-xz     Force-zx     Force-yz     Force-zy     Force-zz\n");
+       break;
+       case s9_rst:
+       fprintf(out,"Gaussian   Layer      Force-rr     Force-rs     Force-sr     Force-ss     Force-rt     Force-tr     Force-st     Force-ts     Force-tt\n");
+       break;
+       case s9_rst_ortho:
+       fprintf(out,"Gaussian   Layer      Force-rr     Force-rs     Force-sr     Force-ss     Force-rt     Force-tr     Force-st     Force-ts     Force-tt\n");
+       break;
+       default:
+          dserror("Unknown type of element stresses");
+       }
+       for (i=0; i<ngauss; i++)
+       {
+          for (kl=0; kl<num_klay; kl++)  /*write forces for each kinematic layer*/
+/*          {
+          fprintf(out,"Gauss %d    Layer %d %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+          i,
+          kl,
+          actele->e.s9->forces.a.d3[place][0][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][2][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][8][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][1][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][3][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][16][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][4][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][17][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][9][(i*num_klay)+kl]
+          );
+          }
+       }
+       switch(actele->e.s9->forcetyp)
+       {
+       case s9_xyz:
+       fprintf(out,"Gaussian   Layer      Moment-xx    Moment-xy    Moment-yx    Moment-yy    Moment-xz    Moment-zx    Moment-yz    Moment-zy    Moment-zz\n"); 
+       break;
+       case s9_rst:
+       fprintf(out,"Gaussian   Layer      Moment-rr    Moment-rs    Moment-sr    Moment-ss    Moment-rt    Moment-tr    Moment-st    Moment-ts    Moment-tt\n"); 
+       break;
+       case s9_rst_ortho:
+       fprintf(out,"Gaussian   Layer      Moment-rr    Moment-rs    Moment-sr    Moment-ss    Moment-rt    Moment-tr    Moment-st    Moment-ts    Moment-tt\n"); 
+       break;
+       default:
+          dserror("Unknown type of element stresses");
+       }
+       for (i=0; i<ngauss; i++)
+       {
+          for (kl=0; kl<num_klay; kl++)  /*write forces for each kinematic layer*/
+/*          {
+          fprintf(out,"Gauss %d    Layer %d %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+          i,
+          kl,
+          actele->e.s9->forces.a.d3[place][5][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][7][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][14][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][6][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][10][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][12][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][11][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][13][(i*num_klay)+kl],
+          actele->e.s9->forces.a.d3[place][15][(i*num_klay)+kl]
+          );
+          }
+       }
+*/#endif /*D_SHELL9*/
    break;
 /*---------------------------------------------------------fh 03/02-------*/  
    case el_wall1:
+#ifdef D_WALL1
        ngauss = actele->e.w1->nGP[0] * actele->e.w1->nGP[1];
        fprintf(out,"________________________________________________________________________________\n");
        fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n",actele->Id,actele->Id_loc);
@@ -448,7 +595,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.w1->stress_GP.a.d3[place][6][i]
        );
        }           
-   
+#endif /*D_WALL1*/   
    break;
    
    default:
@@ -465,6 +612,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
    switch(actele->eltyp)
    {
    case el_wall1:
+   #ifdef D_WALL1
        
        numnp = actele->numnp;
        fprintf(out,"________________________________________________________________________________\n");
@@ -497,8 +645,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.w1->stress_ND.a.d3[place][6][i]
        );
        }
-       
-             
+   #endif /*D_WALL1*/                       
    break;
    
    }
@@ -516,4 +663,4 @@ if (myrank==0 && imyrank==0) fflush(out);
 dstrc_exit();
 #endif
 return;
-} /* end of out_general */
+} /* end of out_sol */

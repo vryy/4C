@@ -12,6 +12,18 @@ typedef struct _GIDSET
      char                      *shell8_22_name;
      int                        is_shell8_33;           /* 8/9-noded shell8 3x3 GP */
      char                      *shell8_33_name;
+     int                        is_shell9_4_22;         /* 4-noded shell9 2x2 GP */
+     char                      *shell9_4_22_name;
+     int                        is_shell9_4_33;         /* 4-noded shell9 3x3 GP */
+     char                      *shell9_4_33_name;
+     int                        is_shell9_8_22;         /* 8-noded shell9 2x2 GP */
+     char                      *shell9_8_22_name;
+     int                        is_shell9_8_33;         /* 8-noded shell9 3x3 GP */
+     char                      *shell9_8_33_name;
+     int                        is_shell9_9_22;         /* 9-noded shell9 2x2 GP */
+     char                      *shell9_9_22_name;
+     int                        is_shell9_9_33;         /* 9-noded shell9 3x3 GP */
+     char                      *shell9_9_33_name;
      int                        is_wall1_22;            /* 4-noded wall1 2x2 GP */
      char                      *wall1_22_name;
      int                        is_wall1_33;            /* 8/9-noded wall1 3x3 GP */

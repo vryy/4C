@@ -1,8 +1,11 @@
 #include "../headers/standardtypes.h"
 #include "gid.h"
 #ifdef D_SHELL8
-#include "../shell8/shell8.h"
-#endif
+  #include "../shell8/shell8.h"
+#endif /*D_SHELL8*/
+#ifdef D_SHELL9
+  #include "../shell9/shell9.h"
+#endif /*D_SHELL9*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -177,7 +180,118 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
-#endif
+#endif /*D_SHELL8*/
+
+#ifdef D_SHELL9
+   /* 4-noded shell9 element -> Hex8 */
+   if (actgid->is_shell9_4_22 || actgid->is_shell9_4_33)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      if (actgid->is_shell9_4_22) /*2x2 gp*/
+      {   
+       fprintf(out,"# MESH %s FOR FIELD %s SHELL9 2x2x2 GP\n",actgid->shell9_4_22_name,actgid->fieldname);
+       fprintf(out,"#-------------------------------------------------------------------------------\n");
+       fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->shell9_4_22_name);
+      }
+      else if (actgid->is_shell9_4_33) /*3x3 gp*/
+      {   
+       fprintf(out,"# MESH %s FOR FIELD %s SHELL9 3x3x3 GP\n",actgid->shell9_4_33_name,actgid->fieldname);
+       fprintf(out,"#-------------------------------------------------------------------------------\n");
+       fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->shell9_4_33_name);
+      }
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         s9_out_gid_allcoords(out,4);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_shell9 || actele->numnp !=4) continue;
+         s9_out_gid_eletop(out,4,actele);
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+
+   /* 8-noded shell9 element -> Hex20 */
+   if (actgid->is_shell9_8_22 || actgid->is_shell9_8_33)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      if (actgid->is_shell9_8_22) /*2x2 gp*/
+      {
+       fprintf(out,"# MESH %s FOR FIELD %s SHELL9 2x2x2 GP\n",actgid->shell9_8_22_name,actgid->fieldname);
+       fprintf(out,"#-------------------------------------------------------------------------------\n");
+       fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 20\n",actgid->shell9_8_22_name);
+      }
+      else if (actgid->is_shell9_8_33) /*3x3 gp*/
+      {
+       fprintf(out,"# MESH %s FOR FIELD %s SHELL9 3x3x3 GP\n",actgid->shell9_8_33_name,actgid->fieldname);
+       fprintf(out,"#-------------------------------------------------------------------------------\n");
+       fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 20\n",actgid->shell9_8_33_name);
+      }
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         s9_out_gid_allcoords(out,8);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_shell9 || actele->numnp !=8) continue;
+         s9_out_gid_eletop(out,8,actele);
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+
+   /* 9-noded shell9 element -> Hex27 */
+   if (actgid->is_shell9_9_22 || actgid->is_shell9_9_33)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      if (actgid->is_shell9_9_22) /*2x2 gp*/
+      {
+       fprintf(out,"# MESH %s FOR FIELD %s SHELL9 2x2x2 GP\n",actgid->shell9_9_22_name,actgid->fieldname);
+       fprintf(out,"#-------------------------------------------------------------------------------\n");
+       fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 27\n",actgid->shell9_9_22_name);
+      }
+      if (actgid->is_shell9_9_33) /*3x3 gp*/
+      {
+       fprintf(out,"# MESH %s FOR FIELD %s SHELL9 3x3x3 GP\n",actgid->shell9_9_33_name,actgid->fieldname);
+       fprintf(out,"#-------------------------------------------------------------------------------\n");
+       fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 27\n",actgid->shell9_9_33_name);
+      }
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         s9_out_gid_allcoords(out,9);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_shell9 || actele->numnp !=9) continue;
+         s9_out_gid_eletop(out,9,actele);
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+#endif /*D_SHELL9*/
+
 
    if (actgid->is_brick1_222)
    {
