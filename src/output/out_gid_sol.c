@@ -465,7 +465,8 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to write solution of a step to GID           m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step)
+void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step,
+                 int place)
 {
 int           i,j;
 
@@ -597,7 +598,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       {
          actele = &(actfield->element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
-         forces = actele->e.s8->forces.a.d3[step];
+         forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
                              actele->Id+1,
                              forces[0][gaussperm4[0]],
@@ -643,7 +644,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       {
          actele = &(actfield->element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
-         forces = actele->e.s8->forces.a.d3[step];
+         forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
                              actele->Id+1,
                              forces[5] [gaussperm4[0]],
@@ -701,7 +702,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       {
          actele = &(actfield->element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
-         forces = actele->e.s8->forces.a.d3[step];
+         forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
                              actele->Id+1,
                              forces[0][gaussperm9[0]],
@@ -747,7 +748,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       {
          actele = &(actfield->element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
-         forces = actele->e.s8->forces.a.d3[step];
+         forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E %18.5#E \n",
                              actele->Id+1,
                              forces[5] [gaussperm9[0]],

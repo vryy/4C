@@ -221,7 +221,8 @@ return;
 /*----------------------------------------------------------------------*
  |  print out solution of a certain step                     m.gee 12/01|
  *----------------------------------------------------------------------*/
-void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, int step)
+void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
+             int step, int place)
 {
 int        i,j,k,l;
 FILE      *out = allfiles.out_out;
@@ -273,8 +274,8 @@ for (j=0; j<actfield->numnp; j++)
    fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
    for (k=0; k<actnode->numdf; k++) 
    {
-      if (step >= actnode->sol.fdim) dserror("Cannot print solution step");
-      fprintf(out,"%20.7#E ",actnode->sol.a.da[step][k]);
+      if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+      fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
    }
    fprintf(out,"\n");
 }
@@ -308,15 +309,15 @@ for (j=0; j<actfield->numele; j++)
        {
        fprintf(out,"Gauss %d   %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
        i,
-       actele->e.s8->forces.a.d3[step][0][i],
-       actele->e.s8->forces.a.d3[step][2][i],
-       actele->e.s8->forces.a.d3[step][8][i],
-       actele->e.s8->forces.a.d3[step][1][i],
-       actele->e.s8->forces.a.d3[step][3][i],
-       actele->e.s8->forces.a.d3[step][16][i],
-       actele->e.s8->forces.a.d3[step][4][i],
-       actele->e.s8->forces.a.d3[step][17][i],
-       actele->e.s8->forces.a.d3[step][9][i]
+       actele->e.s8->forces.a.d3[place][0][i],
+       actele->e.s8->forces.a.d3[place][2][i],
+       actele->e.s8->forces.a.d3[place][8][i],
+       actele->e.s8->forces.a.d3[place][1][i],
+       actele->e.s8->forces.a.d3[place][3][i],
+       actele->e.s8->forces.a.d3[place][16][i],
+       actele->e.s8->forces.a.d3[place][4][i],
+       actele->e.s8->forces.a.d3[place][17][i],
+       actele->e.s8->forces.a.d3[place][9][i]
        );
        }
        switch(actele->e.s8->forcetyp)
@@ -337,15 +338,15 @@ for (j=0; j<actfield->numele; j++)
        {
        fprintf(out,"Gauss %d   %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
        i,
-       actele->e.s8->forces.a.d3[step][5][i],
-       actele->e.s8->forces.a.d3[step][7][i],
-       actele->e.s8->forces.a.d3[step][14][i],
-       actele->e.s8->forces.a.d3[step][6][i],
-       actele->e.s8->forces.a.d3[step][10][i],
-       actele->e.s8->forces.a.d3[step][12][i],
-       actele->e.s8->forces.a.d3[step][11][i],
-       actele->e.s8->forces.a.d3[step][13][i],
-       actele->e.s8->forces.a.d3[step][15][i]
+       actele->e.s8->forces.a.d3[place][5][i],
+       actele->e.s8->forces.a.d3[place][7][i],
+       actele->e.s8->forces.a.d3[place][14][i],
+       actele->e.s8->forces.a.d3[place][6][i],
+       actele->e.s8->forces.a.d3[place][10][i],
+       actele->e.s8->forces.a.d3[place][12][i],
+       actele->e.s8->forces.a.d3[place][11][i],
+       actele->e.s8->forces.a.d3[place][13][i],
+       actele->e.s8->forces.a.d3[place][15][i]
        );
        }
        
