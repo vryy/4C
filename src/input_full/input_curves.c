@@ -170,7 +170,7 @@ for (i=0; i<counter; i++)
    else
    {
        colpointer = strstr(allfiles.actplace,"BYABSTIME");
-       colpointer += 12;
+       colpointer += 13;
        actcurve->time.a.da[i][0] = strtod(colpointer,&colpointer);
        actcurve->time.a.da[i][1] = strtod(colpointer,&colpointer);
        colpointer = strstr(allfiles.actplace,"FACTOR");
