@@ -196,6 +196,18 @@ void s8static_ke(ELEMENT   *ele,
                     int        kstep,                   
                     int        init);                   
 /*----------------------------------------------------------------------*
+ |  s8_static_keug.c                                       m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void s8static_keug(ELEMENT   *ele,                         /* the element structure */
+                    S8_DATA   *data,                       /* element integration data */
+                    MATERIAL  *mat,                        /* the material structure */
+                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
+                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
+                    double    *force,                      /* global vector for internal forces (initialized!) */
+                    int        iforce,                     /* size of force */
+                    int        kstep,                      /* actual step in nonlinear analysis */
+                    int        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+/*----------------------------------------------------------------------*
  |  s8_tmat.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void s8_tmat(ELEMENT    *ele,

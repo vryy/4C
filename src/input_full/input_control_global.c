@@ -387,8 +387,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("GAMMA"   ,&(sdyn->gamma)  ,&ierr);
    frdouble("ALPHA_M" ,&(sdyn->alpha_m),&ierr);
    frdouble("ALPHA_F" ,&(sdyn->alpha_f),&ierr);
-   frdouble("M_DAMP"  ,&(sdyn->m_damp),&ierr);
-   frdouble("K_DAMP"  ,&(sdyn->k_damp),&ierr);
+   frdouble("M_DAMP"  ,&(sdyn->m_damp) ,&ierr);
+   frdouble("K_DAMP"  ,&(sdyn->k_damp) ,&ierr);
+   frdouble("TOLDISP" ,&(sdyn->toldisp),&ierr);
 
    frread();
 }

@@ -38,7 +38,7 @@ switch (*action)
 case calc_struct_init:
    s8init(actfield);
    s8static_ke(NULL,NULL,NULL,NULL,NULL,0,0,1);
-   s8static_keug(NULL,NULL,NULL,NULL,NULL,0,0,1);
+   s8static_keug(NULL,NULL,NULL,NULL,NULL,NULL,0,0,1);
    s8eleload(NULL,NULL,NULL,NULL,0,1);
    s8jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,NULL,1);
    s8_stress(NULL,NULL,NULL,0,1);
@@ -46,18 +46,43 @@ break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
-   s8static_ke(ele,&actdata,actmat,estif_global,NULL,0,0,0);
+   s8static_ke(ele,
+               &actdata,
+               actmat,
+               estif_global,
+               NULL,
+               0,
+               0,
+               0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:
    actmat = &(mat[ele->mat-1]);
-   s8static_keug(ele,&actdata,actmat,estif_global,global_vec,global_numeq,kstep,0);
+   s8static_keug(ele,
+                 &actdata,
+                 actmat,
+                 estif_global,
+                 NULL,
+                 global_vec,
+                 global_numeq,
+                 kstep,
+                 0);
 break;/*----------------------------------------------------------------*/
 /*-------------------------- calculate linear stiffness and mass matrix */
 case calc_struct_linstiffmass:
 break;/*----------------------------------------------------------------*/
 /*----------------------- calculate nonlinear stiffness and mass matrix */
 case calc_struct_nlnstiffmass:
+   actmat = &(mat[ele->mat-1]);
+   s8static_keug(ele,
+                 &actdata,
+                 actmat,
+                 estif_global,
+                 emass_global,
+                 global_vec,
+                 global_numeq,
+                 kstep,
+                 0);
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:

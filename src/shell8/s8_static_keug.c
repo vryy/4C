@@ -8,6 +8,7 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
                     S8_DATA   *data,                       /* element integration data */
                     MATERIAL  *mat,                        /* the material structure */
                     ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
+                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
                     double    *force,                      /* global vector for internal forces (initialized!) */
                     int        iforce,                     /* size of force */
                     int        kstep,                      /* actual step in nonlinear analysis */

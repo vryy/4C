@@ -13,10 +13,14 @@ extern struct _FILES  allfiles;
 extern struct _DYNAMIC  *dyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
- | global variables only needed in this file                            |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | int                   numcurve;                                      |
+ | struct _CURVE        *curve;                                         |
  *----------------------------------------------------------------------*/
 int    numcurve;
-CURVE *curve;
+struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | input of curves                                        m.gee 4/01    |
  *----------------------------------------------------------------------*/
