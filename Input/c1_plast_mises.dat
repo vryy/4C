@@ -1,0 +1,600 @@
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Default_title
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS           1 
+NODES             20
+DIM                3
+MATERIALS          1
+NUMDF        6
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+NUMFIELD     1
+TIMETYP      Static
+TRACE        secure
+RESTART      0
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE   No
+STRUCT_STRESS_FILE No
+STRUCT_DISP_GID    No
+STRUCT_STRESS_GID  No
+FLUID_SOL_FILE     No
+------------------------------------------------------------STATIC
+GEONONLINEAR
+NEWTONRAPHSO Displacement_Control
+NUMSTEP      3
+MAXITER      40
+TOLRESID     1.0E-06
+TOLDISP      1.0E-07
+STEPSIZE     0.1
+IARC         No
+ARCSCL       1.0
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Gen_Alfa
+EIGEN        0
+RESEVRYDISP  10
+RESEVRYSTRS  20
+RESTARTEVRY  20
+TIMESTEP     0.05 
+NUMSTEP      200 
+MAXTIME      5.0
+BETA         0.25 
+GAMMA        0.5 
+ALPHA_M      0.5 
+ALPHA_F      0.5
+DAMPING      Yes 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
+TOLDISP      1.0E-08
+MAXITER      50
+-----------------------------------------------------FLUID DYNAMIC
+SOLVE_FLUID  No
+DYNAMICTYP   Nlin_Time_Int
+TIMEINTEGR   One_Step_Theta
+NUMDF        3
+IPRERHS      1
+NUMCONT      1
+UPPSS        100
+SAVESTEP     100
+MAXTIME      5.0
+NUMSTEP      200  
+TIMESTEP     0.05
+ALPHA        1.00
+THETA        1.00
+GAMMA        1.00
+NONLINITER   fixed_point_like
+ITEMAX       3
+CONVCHECK    No
+CONVTOL      1.0E-6
+STEADYCHECK  No
+STEADYSTEP   5
+STEADYTOL    1.0E-6
+STARTINGALGO One_Step_Theta
+NUMSTASTEPS  0
+FLUID_START1 0.67
+INITIALFIELD zero_field
+STARTFUNCNO  2
+------------------------------------------------------FLUID SOLVER
+SOLVER         SPOOLES_nonsym
+PARTITION      Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         Colsol
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 8
+NDLINE  12
+NDSURF  6
+NDVOL   1
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.000000 1.000000 0.500000
+END POINT
+POINT
+Num: 2 HigherEntity: 3 conditions: 2 material: 0
+LAYER: Layer0
+Coord: 1.000000 1.000000 -0.500000
+END POINT
+POINT
+Num: 3 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.000000 0.000000 -0.500000
+END POINT
+POINT
+Num: 4 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 1.000000 0.000000 0.500000
+END POINT
+POINT
+Num: 5 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 1.000000 0.500000
+END POINT
+POINT
+Num: 6 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 1.000000 -0.500000
+END POINT
+POINT
+Num: 7 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 -0.500000
+END POINT
+POINT
+Num: 8 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 0.500000
+END POINT
+------------------------------------------------------DESIGN LINES
+STLINE
+Num: 1 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 2
+END STLINE
+STLINE
+Num: 2 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 2 3
+END STLINE
+STLINE
+Num: 3 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 3 4
+END STLINE
+STLINE
+Num: 4 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 4
+END STLINE
+STLINE
+Num: 5 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 5 6
+END STLINE
+STLINE
+Num: 6 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 6 7
+END STLINE
+STLINE
+Num: 7 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 7 8
+END STLINE
+STLINE
+Num: 8 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 5 8
+END STLINE
+STLINE
+Num: 9 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 5
+END STLINE
+STLINE
+Num: 10 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 2 6
+END STLINE
+STLINE
+Num: 11 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 3 7
+END STLINE
+STLINE
+Num: 12 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=12) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 4 8
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=6) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: DIFF1ST
+Line: 1 Orientation: SAME1ST
+Line: 2 Orientation: SAME1ST
+Line: 3 Orientation: SAME1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:1.000000,0.512672,-1.099824
+Point 1,2 coords:1.000000,-0.586976,-0.027667
+Point 2,1 coords:1.000000,1.611976,0.027667
+Point 2,2 coords:1.000000,0.512328,1.099824
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 1.000000 0.500000 -0.000000
+Normal: -1.000000 0.000000 0.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 2 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=6) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 1 Orientation: DIFF1ST
+Line: 9 Orientation: SAME1ST
+Line: 5 Orientation: SAME1ST
+Line: 10 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:1.000000,1.000000,-0.500000
+Point 1,2 coords:1.000000,1.000000,0.500000
+Point 2,1 coords:0.000000,1.000000,-0.500000
+Point 2,2 coords:0.000000,1.000000,0.500000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 0.500000 1.000000 0.000000
+Normal: 0.000000 -1.000000 0.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 3 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=6) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 2 Orientation: DIFF1ST
+Line: 10 Orientation: SAME1ST
+Line: 6 Orientation: SAME1ST
+Line: 11 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:1.000000,0.000000,-0.500000
+Point 1,2 coords:1.000000,1.000000,-0.500000
+Point 2,1 coords:0.000000,0.000000,-0.500000
+Point 2,2 coords:0.000000,1.000000,-0.500000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 0.500000 0.500000 -0.500000
+Normal: 0.000000 -0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 4 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=6) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 3 Orientation: DIFF1ST
+Line: 11 Orientation: SAME1ST
+Line: 7 Orientation: SAME1ST
+Line: 12 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:1.000000,0.000000,0.500000
+Point 1,2 coords:1.000000,0.000000,-0.500000
+Point 2,1 coords:0.000000,0.000000,0.500000
+Point 2,2 coords:0.000000,0.000000,-0.500000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 0.500000 0.000000 0.000000
+Normal: 0.000000 1.000000 0.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 5 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=6) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: SAME1ST
+Line: 12 Orientation: SAME1ST
+Line: 8 Orientation: DIFF1ST
+Line: 9 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:1.000000,1.000000,0.500000
+Point 1,2 coords:1.000000,0.000000,0.500000
+Point 2,1 coords:0.000000,1.000000,0.500000
+Point 2,2 coords:0.000000,0.000000,0.500000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 0.500000 0.500000 0.500000
+Normal: -0.000000 -0.000000 -1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 6 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=6) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 8 Orientation: SAME1ST
+Line: 7 Orientation: DIFF1ST
+Line: 6 Orientation: DIFF1ST
+Line: 5 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:0.000000,-0.586976,-0.027667
+Point 1,2 coords:0.000000,0.512672,-1.099824
+Point 2,1 coords:0.000000,0.512328,1.099824
+Point 2,2 coords:0.000000,1.611976,0.027667
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 0.000000 0.500000 -0.000000
+Normal: 1.000000 -0.000000 0.000000
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+VOLUME
+Num: 1 HigherEntity: 0 conditions: 2 material: 2
+LAYER: Layer0
+Meshing Info: (num=1,NOE=1) Elemtype=5 IsStructured=1 size=0 Meshing=Default
+NumSurfaces: 6
+Surface: 1 Orientation: SAME1ST
+Surface: 5 Orientation: SAME1ST
+Surface: 4 Orientation: SAME1ST
+Surface: 3 Orientation: SAME1ST
+Surface: 2 Orientation: SAME1ST
+Surface: 6 Orientation: SAME1ST
+Center: 0.500000 0.500000 -0.000000
+END VOLUME
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 1
+ E 6 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DLINE 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DSURF 1
+ E 1 -   none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live 
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE       1 DNODE 1
+NODE       5 DNODE 2
+NODE      14 DNODE 3
+NODE       6 DNODE 4
+NODE       7 DNODE 5
+NODE      15 DNODE 6
+NODE      20 DNODE 7
+NODE      16 DNODE 8
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE       1 DLINE 1
+NODE       2 DLINE 1
+NODE       5 DLINE 1
+NODE       5 DLINE 2
+NODE       8 DLINE 2
+NODE      14 DLINE 2
+NODE      14 DLINE 3
+NODE       9 DLINE 3
+NODE       6 DLINE 3
+NODE       1 DLINE 4
+NODE       3 DLINE 4
+NODE       6 DLINE 4
+NODE       7 DLINE 5
+NODE      10 DLINE 5
+NODE      15 DLINE 5
+NODE      15 DLINE 6
+NODE      17 DLINE 6
+NODE      20 DLINE 6
+NODE      20 DLINE 7
+NODE      18 DLINE 7
+NODE      16 DLINE 7
+NODE       7 DLINE 8
+NODE      11 DLINE 8
+NODE      16 DLINE 8
+NODE       1 DLINE 9
+NODE       4 DLINE 9
+NODE       7 DLINE 9
+NODE       5 DLINE 10
+NODE      12 DLINE 10
+NODE      15 DLINE 10
+NODE      14 DLINE 11
+NODE      19 DLINE 11
+NODE      20 DLINE 11
+NODE       6 DLINE 12
+NODE      13 DLINE 12
+NODE      16 DLINE 12
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE       1 DSURFACE 1
+NODE       5 DSURFACE 1
+NODE      14 DSURFACE 1
+NODE       6 DSURFACE 1
+NODE       2 DSURFACE 1
+NODE       8 DSURFACE 1
+NODE       9 DSURFACE 1
+NODE       3 DSURFACE 1
+NODE       1 DSURFACE 2
+NODE       5 DSURFACE 2
+NODE       7 DSURFACE 2
+NODE      15 DSURFACE 2
+NODE       2 DSURFACE 2
+NODE      10 DSURFACE 2
+NODE       4 DSURFACE 2
+NODE      12 DSURFACE 2
+NODE       5 DSURFACE 3
+NODE      14 DSURFACE 3
+NODE      15 DSURFACE 3
+NODE      20 DSURFACE 3
+NODE       8 DSURFACE 3
+NODE      17 DSURFACE 3
+NODE      12 DSURFACE 3
+NODE      19 DSURFACE 3
+NODE      14 DSURFACE 4
+NODE       6 DSURFACE 4
+NODE      20 DSURFACE 4
+NODE      16 DSURFACE 4
+NODE       9 DSURFACE 4
+NODE      18 DSURFACE 4
+NODE      19 DSURFACE 4
+NODE      13 DSURFACE 4
+NODE       1 DSURFACE 5
+NODE       6 DSURFACE 5
+NODE       7 DSURFACE 5
+NODE      16 DSURFACE 5
+NODE       3 DSURFACE 5
+NODE      11 DSURFACE 5
+NODE       4 DSURFACE 5
+NODE      13 DSURFACE 5
+NODE       7 DSURFACE 6
+NODE      15 DSURFACE 6
+NODE      20 DSURFACE 6
+NODE      16 DSURFACE 6
+NODE      10 DSURFACE 6
+NODE      17 DSURFACE 6
+NODE      18 DSURFACE 6
+NODE      11 DSURFACE 6
+-----------------------------------------------DVOL-NODE TOPOLOGY
+NODE       1 DVOLUME 1
+NODE       5 DVOLUME 1
+NODE      14 DVOLUME 1
+NODE       6 DVOLUME 1
+NODE       7 DVOLUME 1
+NODE      15 DVOLUME 1
+NODE      20 DVOLUME 1
+NODE      16 DVOLUME 1
+NODE       2 DVOLUME 1
+NODE       8 DVOLUME 1
+NODE       9 DVOLUME 1
+NODE       3 DVOLUME 1
+NODE      10 DVOLUME 1
+NODE      17 DVOLUME 1
+NODE      18 DVOLUME 1
+NODE      11 DVOLUME 1
+NODE       4 DVOLUME 1
+NODE      12 DVOLUME 1
+NODE      19 DVOLUME 1
+NODE      13 DVOLUME 1
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 1.000000000000000e+00     1.000000000000000e+00     5.000000000000000e-01   
+NODE            2     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+NODE            3     COORD 1.000000000000000e+00     5.000000000000000e-01     5.000000000000000e-01   
+NODE            4     COORD 5.000000000000000e-01     1.000000000000000e+00     5.000000000000000e-01   
+NODE            5     COORD 1.000000000000000e+00     1.000000000000000e+00     -5.000000000000000e-01   
+NODE            6     COORD 1.000000000000000e+00     0.000000000000000e+00     5.000000000000000e-01   
+NODE            7     COORD 0.000000000000000e+00     1.000000000000000e+00     5.000000000000000e-01   
+NODE            8     COORD 1.000000000000000e+00     5.000000000000000e-01     -5.000000000000000e-01   
+NODE            9     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           10     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+NODE           11     COORD 0.000000000000000e+00     5.000000000000000e-01     5.000000000000000e-01   
+NODE           12     COORD 5.000000000000000e-01     1.000000000000000e+00     -5.000000000000000e-01   
+NODE           13     COORD 5.000000000000000e-01     0.000000000000000e+00     5.000000000000000e-01   
+NODE           14     COORD 1.000000000000000e+00     0.000000000000000e+00     -5.000000000000000e-01   
+NODE           15     COORD 0.000000000000000e+00     1.000000000000000e+00     -5.000000000000000e-01   
+NODE           16     COORD 0.000000000000000e+00     0.000000000000000e+00     5.000000000000000e-01   
+NODE           17     COORD 0.000000000000000e+00     5.000000000000000e-01     -5.000000000000000e-01   
+NODE           18     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           19     COORD 5.000000000000000e-01     0.000000000000000e+00     -5.000000000000000e-01   
+NODE           20     COORD 0.000000000000000e+00     0.000000000000000e+00     -5.000000000000000e-01   
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 BRICK1 HEX20      15     20     14      5      7     16      6      1     17     19      8     12     10     18      9      2     11     13      3      4 MAT       1 GP 3 3 3 GP_TET 2 
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+MAT      1 MAT_MisesPlastic  YOUNG 10.0  NUE  0.0  Xsi 0.0  Sigy 2.01  Hard 5.0
+------------------------------------------------------CONTROL NODE
+NODE       5 DOF 1 
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+---------------------------------------------------------------END
+// END
