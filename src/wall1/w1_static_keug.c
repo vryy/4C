@@ -32,19 +32,22 @@ void w1static_keug(ELEMENT   *ele,
                    INT        init)
 {
 INT                 i,k,a,b;          /* some loopers              */
-INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 nir=0;          /* num GP in r/s/t direction */
+INT                 nis=0;          /* num GP in r/s/t direction */
 INT                 lr, ls;           /* loopers over GP           */
 INT                 iel;              /* numnp to this element     */
 INT                 nd;               /* dof of this element       */
 INT                 ip;
-INT                 intc;                /* "integration case" for tri-element     */
+INT                 intc=0;                /* "integration case" for tri-element     */
 INT                 istore = 0;          /* controls storing of new stresses to wa */
 const INT           numdf  = 2;          /* number dof per node                    */
 const INT           numeps = 4;          /* number of strain components            */
 
 DOUBLE              fac,facm;            /* integration factors                    */
-DOUBLE              e1,e2;               /*GP-coords                               */
-DOUBLE              facr,facs;           /* weights at GP                          */
+DOUBLE              e1=0.0;               /*GP-coords                               */
+DOUBLE              e2=0.0;               /*GP-coords                               */
+DOUBLE              facr=0.0;           /* weights at GP                          */
+DOUBLE              facs=0.0;           /* weights at GP                          */
 DOUBLE              thick,density;       /* for calculation of mass matrix         */
 INT                 imass;               /* flag -> mass matrix is to evaluate?    */
 

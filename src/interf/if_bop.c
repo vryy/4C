@@ -1,7 +1,13 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 'if_bop' which calculates the linear operator
+\brief contains the routine 'if_bop' which calculates the linear operator 
 matrix for a interface element at gaussian points
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 
 *-----------------------------------------------------------------------*/
 #ifdef D_INTERF
@@ -9,24 +15,28 @@ matrix for a interface element at gaussian points
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*!
+/*! 
 \addtogroup INTERF
-*//*! @{ (documentation module open)*/
+*/
+/*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculate operator matrix at gaussian point
+\brief calculate operator matrix at gaussian point                                           
 
-<pre>                                                             mn 05/03
+<pre>                                                             ah 05/03 
 This routine calcuates the operator matrix B at the given gaussian point
 for an interface element.
-
 </pre>
-\param **B       DOUBLE  (o)   the calculated operator matrix
-\param   xsi     DOUBLE  (i)   blabla
+
+\param   typ           DIS_TYP (I)   quad4 or quad8
+\param **bop           DOUBLE  (O)   B-Operator-Matrix
+\param  *funct         DOUBLE  (I)   Ansatz-functions
+\param   co            DOUBLE  (I)   cosinus of angle bet x-dir and orient. of IF-ele
+\param   si            DOUBLE  (I)   sinus of angle bet x-dir and orient. of IF-ele
+\param   flag          INT     (I)   flag for case differentiation
 
 \warning There is nothing special to this routine
-\return void
-\sa calling: ---; called by: if_static_ke()
+\return void                                               
 
 *----------------------------------------------------------------------*/
 void if_bop(DIS_TYP    typ,
@@ -37,7 +47,7 @@ void if_bop(DIS_TYP    typ,
             INT        flag)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_enter("if_bop");
 #endif
 
@@ -158,15 +168,19 @@ case quad8:
       bop[1][15] = funct[2]*co;
      }
 break;
+default:
+   dserror("discretisation unknown for Interface");
+break;
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of if_bop */
-
 /*----------------------------------------------------------------------*/
-#endif /*D_INTERF*/
+
 /*! @} (documentation module close)*/
+
+#endif /*D_INTERF*/

@@ -1,58 +1,73 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 'if_mat_dyn' which is the material law
+\brief contains the routine 'if_mat_dyn' which is the material law 
  for the interface element in the dynamic case
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *-----------------------------------------------------------------------*/
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*!
+/*! 
 \addtogroup INTERF
-*//*! @{ (documentation module open)*/
+*/
+/*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  contains the material law for the interface element
 
-<pre>                                                              mn 05/03
+<pre>                                                              ah 05/03 
 This routine computes the constitutive  matrix of the interface element
 
 </pre>
-\param *mat          STVENANT   (i)   blabal
+\param   *ele          ELEMENT   (I)   actual element (macro)
+\param   *mat          MATERIAL  (I)   actual material
+\param  **bop          DOUBLE    (I)   B-operator
+\param  **D            DOUBLE    (O)   material tangent
+\param   *T            DOUBLE    (O)   stresses 
+\param    ip           INT       (I)   ID of actual GP
+\param    istore       INT       (I)   is it update?
+\param    newval       INT       (I)   is it stress calculation
 
 \warning There is nothing special to this routine
-\return void
-\sa calling:   ---;
-    called by: if_static_ke();
+\return void                                               
 
 *----------------------------------------------------------------------*/
 void if_mat_dyn(ELEMENT   *ele,
-                MATERIAL  *mat,
+                MATERIAL  *mat, 
                 DOUBLE   **bop,
                 DOUBLE   **D,
                 DOUBLE    *T,
                 INT        ip,
                 DOUBLE     istore,
-                DOUBLE     newval)
+                DOUBLE     newval) 
 {
 INT i,j;
 INT yip;
-DOUBLE E,K,G,thick,Q,delta_n,delta_t,mu,Ynmax,Ytmax;
-DOUBLE dn,dn_neu,Yn;
-DOUBLE dt,dt_neu,dt_tr,Yt,Yt_tr,Tt_tr,ut_pl,ut_pl_neu,f_tr;
+DOUBLE E,K,G,thick,delta_n,delta_t,mu,Ynmax,Ytmax;
+DOUBLE dn,Yn;
+DOUBLE dn_neu=0.0;
+DOUBLE dt_neu=0.0;
+DOUBLE ut_pl_neu=0.0;
+DOUBLE dt,dt_tr,Yt,Yt_tr,Tt_tr,ut_pl,f_tr;
 DOUBLE deltalambda;
 DOUBLE disjump[2];
 DOUBLE Deltadisjump[2];
 
 /*------------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_enter("if_mat");
 #endif
 /*---------------------------------------------- material parameters -----*/
 
-E       = mat->m.ifmat->emod;   /*- Normalzugsteifigkeit-*/
-K       = mat->m.ifmat->kmod;   /*- Normaldrucksteifigkeit-*/
+E       = mat->m.ifmat->emod;   /*- Normalzugsteifigkeit-*/   
+K       = mat->m.ifmat->kmod;   /*- Normaldrucksteifigkeit-*/ 
 G       = mat->m.ifmat->gmod;   /*- Schubsteifigkeit,die bei Dekohaesion abnimmt-*/
 thick   = mat->m.ifmat->dick;   /*- Pseudodicke des Interfaces -*/
 /*Q       = mat->m.ifmat->qmod;  - konstanter Anteil der Schubsteifigkeit-*/
@@ -91,7 +106,7 @@ else if (yip < 0)
   Ynmax  = (E * delta_n * delta_n) / (TWO * thick);
   Ytmax  = (G * delta_t * delta_t) / (TWO * thick);
   /*-------------------------------------------- reinitalization to zero---*/
-  /*-- calc. tang. and normal displ jumps [un],[ut],[DELTAun],[DELTAut] ---*/
+  /*-- calc. tang. and normal displ jumps [un],[ut],[DELTAun],[DELTAut] ---*/        
   if_jumpu(ele,bop,disjump,Deltadisjump);
   /*----------------------------------- Werte des letzten Lastschrittes ---*/
   dn = ele->e.interf->elewa[0].ipwa[ip].dn;
@@ -107,7 +122,7 @@ else if (yip < 0)
     /*--------------------- Normaldekohaesionsfortschritt (Schaedigung)---*/
     if (disjump[1]*Deltadisjump[1]>=0.0)
     {
-       Yn     = (E * disjump[1] * disjump[1])/ (TWO * thick);
+       Yn     = (E * disjump[1] * disjump[1])/ (TWO * thick); 
        dn_neu = 1.0 - (1.0 - sqrt(Yn/Ynmax)) * (1.0 - sqrt(Yn/Ynmax));
        if (dn_neu < dn)
        {
@@ -121,18 +136,18 @@ else if (yip < 0)
        D[1][0] = 0.0;
        if (dn_neu <1.0)
        {
-         D[1][1] = (E * (1.0 - dn_neu)) / thick
-                 - (E * E * disjump[1] *disjump[1]*(1.0/sqrt(Yn/Ynmax) -1.0))
+         D[1][1] = (E * (1.0 - dn_neu)) / thick 
+                 - (E * E * disjump[1] *disjump[1]*(1.0/sqrt(Yn/Ynmax) -1.0)) 
                     / (thick * thick * Ynmax);
        }
        else
-       {
+       { 
          D[1][1] = (E * 1.0E-8)/ thick;
 # if 0
          D[1][1] = 0.0;
-# endif
+# endif         
        }
-    }
+    } 
     /*----------------------------- Normaldekohaesionsstop (elastisch) ---*/
     else
     {
@@ -161,17 +176,17 @@ else if (yip < 0)
        if (dt_neu <1.0)
        {
 
-         D[0][0] = (G * (1.0 - dt_neu))/thick
+         D[0][0] = (G * (1.0 - dt_neu))/thick 
                  - (G*G*(disjump[0]-ut_pl)*(disjump[0]-ut_pl)*(1.0/sqrt(Yt/Ytmax) -1.0))
                    /(thick * thick * Ytmax);
-       }
+       } 
        else
        {
          D[0][0] = (G * 1.0E-8)/ thick;
 # if 0
          D[0][0] = 0;
 # endif
-       }
+       } 
     }
     /*------------------------- Tangentialdekohaesionsstop (elastisch) ---*/
     else
@@ -182,7 +197,7 @@ else if (yip < 0)
        D[0][1] = 0.0;
        D[0][0] = (G * (1.0 - dt_neu))/thick;
     }
-    yip=1;
+    yip=1;  
   }/* end of: if (disjump[1]>1) */
   /*----------------------------------------------------------------------*/
   /*                           compression case                           */
@@ -215,7 +230,7 @@ else if (yip < 0)
          T[0]    = ((G * (1.0 - dt_neu) - (mu * K * disjump[1])/(delta_t))* disjump[0])/ thick;
          D[1][0] = 0.0;
          D[0][1] = -(mu * K * disjump[0])/(delta_t * thick);
-         D[0][0] = (G * (1.0 - dt_neu) - (mu * K * disjump[1])/(delta_t)) / thick
+         D[0][0] = (G * (1.0 - dt_neu) - (mu * K * disjump[1])/(delta_t)) / thick 
                  - (G * G * disjump[0] * disjump[0]*(1.0/sqrt(Yt_tr/Ytmax) -1))
                    /(thick * thick * Ytmax);
        }
@@ -242,16 +257,16 @@ else if (yip < 0)
        {
          deltalambda = FABS(disjump[0] - ut_pl) - delta_t;
          ut_pl_neu   = ut_pl + deltalambda * FSIGN(Tt_tr);
-         T[0]        = Tt_tr +
+         T[0]        = Tt_tr + 
                       (mu* K* disjump[1]* deltalambda* FSIGN(Tt_tr))/(thick*delta_t);
          D[1][0] = 0.0;
-# if 0
+# if 0         
          D[0][0] = 0.0;
-# endif
+# endif         
      /*----------------- Achtung diese Steigung ist eigentlich Null!!! ---*/
          D[0][0] = (mu * K * 1.0E-4)/ thick;
      /*-------------------------------------------------------------------*/
-         D[0][1] = - (mu * K)/(thick * FSIGN(T[0]));
+         D[0][1] = - (mu * K)/(thick * FSIGN(T[0])); 
          yip = 2;
        }
      /*------------------------------------------------------- elastic ---*/
@@ -297,17 +312,17 @@ else if (yip < 0)
        if (dt_neu <1.0)
        {
 
-         D[0][0] = (G * (1.0 - dt_neu))/thick
+         D[0][0] = (G * (1.0 - dt_neu))/thick 
                  - (G*G*(disjump[0]-ut_pl)*(disjump[0]-ut_pl)*(1.0/sqrt(Yt/Ytmax) -1.0))
                    /(thick * thick * Ytmax);
-       }
+       } 
        else
        {
          D[0][0] = (G * 1.0E-8)/ thick;
 # if 0
          D[0][0] = 0.0;
 # endif
-       }
+       } 
     }
     /*------------------------- Tangentialdekohaesionsstop (elastisch) ---*/
     else
@@ -318,7 +333,7 @@ else if (yip < 0)
        D[0][1] = 0.0;
        D[0][0] = (G * (1.0 - dt_neu))/thick;
     }
-    yip=1;
+    yip=1;  
   }/* end of: if (disjump[1]==0) */
   /*----------------------------------------------------------------------*/
   /*              update the converged results of a loadstep              */
@@ -338,16 +353,13 @@ else if (yip < 0)
       }
     }
     ele->e.interf->elewa[0].ipwa[ip].yip = yip;
-  }/*end of: if (istore==1) */
+  }/*end of: if (istore==1) */  
 }/*end of: if (yip<0) */
-
 /*----------------------------------------------------------------------*/
-end:
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_exit();
 #endif
-return;
+return; 
 } /* end of if_mat_dyn */
 
 /*----------------------------------------------------------------------*/

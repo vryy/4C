@@ -3,30 +3,42 @@
 \brief contains the routine 'if_funcderiv' which calculates ansatzfunctions,
        its derivatives with respect to xi and the jacobi-determinant
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
-#include "interf_prototypes.h"
+#include "interf_prototypes.h" 
 
-/*!
+/*! 
 \addtogroup INTERF
-*//*! @{ (documentation module open)*/
+*/
+/*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  calculates ansatzfunctions,
         its derivatives with respect to xi and the jacobi-determinant
-<pre>                                                              mn 05/03
+<pre>                                                              ah 05/03 
 This routine calculates ansatzfunctions,
              its derivatives with respect to xi and the jacobi-determinant
 
 </pre>
-\param *ele  ELEMENT  (o)   the element
-
-\warning buffer[50] is not needed locally
-\return void
-\sa caling:    ---;
-    called by: inp_struct_field()
+\param   e1        DOUBLE  (I)   xi - coordinate of actual gaussian point
+\param   typ       DIS_TYP (I)   quad4 or quad8
+\param  *x_mid     DOUBLE  (I)   x-coordinates of fictive nodes on midline of element
+\param  *y_mid     DOUBLE  (I)   y-coordinates of fictive nodes on midline of element
+\param   b_parabel DOUBLE  (I)   y = a + b*x + c*x^2 
+\param   c_parabel DOUBLE  (I)   y = a + b*x + c*x^2 
+\param  *funct     DOUBLE  (O)   shape functions for [u] 
+\param   co        DOUBLE  (O)   cosinus of angle bet x-dir and orient. of IF-ele
+\param   si        DOUBLE  (O)   sinus of angle bet x-dir and orient. of IF-ele
+\param  *det       DOUBLE  (O)   determinants of jacobian matrix  
+\return void                                               
 
 *----------------------------------------------------------------------*/
 void if_funcderiv(DOUBLE  e1,
@@ -40,16 +52,15 @@ void if_funcderiv(DOUBLE  e1,
                   DOUBLE *si,
                   DOUBLE *det)
 {
-INT  i;
-DOUBLE ell;
 DOUBLE x_GP;
 DOUBLE dy_dx;
 DOUBLE dx_dxi;
 DOUBLE deltax,deltay;
 DOUBLE deriv[3];
-DOUBLE beta,alpha;
+DOUBLE beta;
+DOUBLE alpha=0.0;
 
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_enter("if_funcderiv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -71,7 +82,7 @@ case quad4:
    else if (deltax <0)                   alpha = beta + PI;
    else if (deltay < 0 && deltax ==0)    alpha =  (3*PI)/TWO;
    else if (deltay < 0 && deltax >0)     alpha =  beta + TWO*PI;
-
+   
 break;
 /*-----------------------------------------------------------------------*/
 case quad8:
@@ -98,8 +109,11 @@ case quad8:
    else if (dx_dxi <0)                  alpha = beta + PI;
    else if (dy_dx < 0 && dx_dxi ==0)    alpha =  (3*PI)/TWO;
    else if (dy_dx < 0 && dx_dxi >0)     alpha =  beta + TWO*PI;
-
-
+   
+  
+break;
+default:
+   dserror("discretisation unknown for Interface");
 break;
 }
 
@@ -107,127 +121,12 @@ break;
 *si = sin(alpha);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of if_funcderiv */
 /*----------------------------------------------------------------------*/
-
-
-
-/*----------------------------------------------------------------------*/
-void if_func_bope(DOUBLE   e1,
-                  DOUBLE  *x_mid,
-                  DOUBLE  *y_mid,
-                  DOUBLE  *functe,
-                  DOUBLE  *coe,
-                  DOUBLE  *sie,
-                  DOUBLE  *dete,
-                  INT      flag,
-                  DOUBLE **bope)
-{
-INT  i;
-DOUBLE ell;
-DOUBLE x_GP;
-DOUBLE dy_dx;
-DOUBLE dx_dxi;
-DOUBLE deltax,deltay,deltay_help;
-DOUBLE beta,alpha;
-DOUBLE derive[4];
-
-#ifdef DEBUG
-dstrc_enter("if_func_bope");
-#endif
-/*----------------------------------------------------------------------*/
-deltax = x_mid[1] - x_mid[0];
-deltay = y_mid[1] - y_mid[0];
-/*-------------------------------------- Jacobidet = ds/dxi = L/2 ---*/
-*dete = sqrt(deltax*deltax + deltay*deltay)/TWO;
-/*--------------------------------------- cosinus and sinus alpha ---*/
-beta = atan( deltay / deltax ); /* angle between X and xi direction in [0,..pi/4] */
-
-if(flag==1)
-{
- functe[0] = (ONE/TWO) *(ONE/TWO) * (1 - e1);
- functe[1] = (ONE/TWO) *(ONE/TWO) * (1 + e1);
- functe[2] = (ONE/TWO) *(ONE/TWO) * (1 + e1);
- functe[3] = (ONE/TWO) *(ONE/TWO) * (1 - e1);
-
- derive[0] = -(ONE/TWO) *(ONE/TWO);
- derive[1] =  (ONE/TWO) *(ONE/TWO);
- derive[2] =  (ONE/TWO) *(ONE/TWO);
- derive[3] = -(ONE/TWO) *(ONE/TWO);
-
-}
-else if(flag==2)
-{
- functe[0] = (ONE/TWO) *(ONE/TWO) * (1 - e1);
- functe[1] = (ONE/TWO) *(ONE/TWO) * (1 - e1);
- functe[2] = (ONE/TWO) *(ONE/TWO) * (1 + e1);
- functe[3] = (ONE/TWO) *(ONE/TWO) * (1 + e1);
-
- derive[0] = -(ONE/TWO) *(ONE/TWO);
- derive[1] = -(ONE/TWO) *(ONE/TWO);
- derive[2] =  (ONE/TWO) *(ONE/TWO);
- derive[3] =  (ONE/TWO) *(ONE/TWO);
-}
-if(deltax !=0)
-{
- bope[0][0]= derive[0]* (TWO/deltax);
- bope[0][1]= derive[1]* (TWO/deltax);
- bope[0][2]= derive[2]* (TWO/deltax);
- bope[0][3]= derive[3]* (TWO/deltax);
-}
-else if(deltax ==0)
-{
- bope[0][0]= 0.0;
- bope[0][1]= 0.0;
- bope[0][2]= 0.0;
- bope[0][3]= 0.0;
-}
-
-if(deltay !=0)
-{
-
- bope[1][0]= derive[0]* (TWO/deltay);
- bope[1][1]= derive[1]* (TWO/deltay);
- bope[1][2]= derive[2]* (TWO/deltay);
- bope[1][3]= derive[3]* (TWO/deltay);
-
-}
-else if(deltay ==0)
-{
- deltay_help=1.0E-50;
- bope[1][0]= derive[0]* (TWO/deltay_help);
- bope[1][1]= derive[1]* (TWO/deltay_help);
- bope[1][2]= derive[2]* (TWO/deltay_help);
- bope[1][3]= derive[3]* (TWO/deltay_help);
-}
-
-
- if(deltay >=0 && deltax >0)           alpha = beta;
- else if (deltay > 0 && deltax ==0)    alpha =  PI/TWO;
- else if (deltax <0)                   alpha = beta + PI;
- else if (deltay < 0 && deltax ==0)    alpha =  (3*PI)/TWO;
- else if (deltay < 0 && deltax >0)     alpha =  beta + TWO*PI;
-
-
-*coe = cos(alpha);
-*sie = sin(alpha);
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of if_func_bope */
-/*----------------------------------------------------------------------*/
-
-
-
-
-
 
 
 #endif /*D_INTERF*/

@@ -33,7 +33,8 @@ void w1static_ke(ELEMENT   *ele,
                  INT        init)
 {
 INT                 i,a,b;            /* some loopers */
-INT                 nir,nis;          /* num GP in r/s direction */
+INT                 nir=0;          /* num GP in r/s direction */
+INT                 nis=0;          /* num GP in r/s direction */
 INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
 INT                 nd;
@@ -47,8 +48,10 @@ const INT           numeps = 3;
 
 DOUBLE              fac,facm;         /* integration factors            */
 DOUBLE              stifac;           /* thickness                      */
-DOUBLE              e1,e2;            /* GP-coords                      */
-DOUBLE              facr,facs;        /* weights at GP                  */
+DOUBLE              e1=0.0;            /* GP-coords                      */
+DOUBLE              e2=0.0;            /* GP-coords                      */
+DOUBLE              facr=0.0;        /* weights at GP                  */
+DOUBLE              facs=0.0;        /* weights at GP                  */
 DOUBLE              density;          /* for calculation of mass matrix */
 INT                 imass;            /* flag for calc of mass matrix   */
 
@@ -364,5 +367,6 @@ dstrc_exit();
 return;
 } /* end of w1fi */
 /*----------------------------------------------------------------------*/
-#endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+
+#endif /*D_WALL1*/

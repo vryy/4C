@@ -2,38 +2,42 @@
 \file
 \brief contains the routine 'ifinit' which initializes the element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*!
+/*! 
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  initialization routine for the interface element
 
-<pre>                                                              mn 05/03
+<pre>                                                              ah 05/03 
 This routine inits the integration points and allocates stresses.
 
 </pre>
-\param *actpart      PARTITION   (i)   my partition
+\param *actpart      PARTITION   (I)   my partition
 
 \warning There is nothing special to this routine.
-\return void
-\sa calling:   ifintg;
-    called by: interf();
+\return void                                               
 
 *----------------------------------------------------------------------*/
 void ifinit(PARTITION *actpart)
 {
 INT             i,k,size_i,size_j;
 ELEMENT     *actele;
-INTERF_DATA    data;
 
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_enter("ifinit");
 #endif
 
@@ -44,8 +48,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   /*---------------------------------------- init integration points ---*/
   /*ifintg(&data);*/
   /*-------------------------------- allocate the space for stresses ---*/
- am4def("stress_GP",&(actele->e.interf->stress_GP),1,3,4,0,"D3");
- am4def("stress_ND",&(actele->e.interf->stress_ND),1,3,8,0,"D3");
+ am4def("stress_GP",&(actele->e.interf->stress_GP),1,3,4,0,"D3");   
+ am4def("stress_ND",&(actele->e.interf->stress_ND),1,3,8,0,"D3");  
  size_i = 1;
  actele->e.interf->elewa = (IF_ELE_WA*)CCACALLOC(size_i,sizeof(IF_ELE_WA));
  size_j = actele->e.interf->nGP;
@@ -62,6 +66,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     actele->e.interf->elewa[0].ipwa[k].dt = 0.0;
     actele->e.interf->elewa[0].ipwa[k].Tn = 0.0;
     actele->e.interf->elewa[0].ipwa[k].Tt = 0.0;
+    actele->e.interf->elewa[0].ipwa[k].kappa_n = 0.0;
+    actele->e.interf->elewa[0].ipwa[k].kappa_t = 0.0;
  }
 
 }

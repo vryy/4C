@@ -43,18 +43,15 @@ void w1_mat_dam_mp(DOUBLE     youngs,
                    INT        istore,
                    INT        newval)
 {
-INT i,j,k;
 INT yip;
-/*------------------------------------------------------------------------*/
-INT flag;
 /*------------------------------------------------------------------------*/
 DOUBLE disd[5];    /* displacement derivatives*/
 DOUBLE strain[4];  /* strains*/
 DOUBLE meps[3];    /* main strains*/
-DOUBLE eps_eq;     /* equivalent strain*/
-DOUBLE kappa;      /* maximum value of equivalent strain in the past*/
+DOUBLE eps_eq=0.0;     /* equivalent strain*/
+DOUBLE kappa=0.0;      /* maximum value of equivalent strain in the past*/
 DOUBLE kappa_n;    /* maximum value of equivalent strain in the past (load step n)*/
-DOUBLE d;          /* damage variable*/
+DOUBLE d=0.0;          /* damage variable*/
 DOUBLE e1,e2,e3,wurzel,bruch,help1,help2,help3;   /* working values*/
 DOUBLE ev_e1,ev_e2,ev_e3;/* (partial equiv. strain)/(partial main strains)*/
 DOUBLE D_ev;         /* (partial D)/(partial equiv. strain)*/

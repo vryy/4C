@@ -2,42 +2,50 @@
 \file
 \brief contains the routine 'if_jumpu' which calculates [un],[ut],
        DELTA[un] andDELTA[ut]
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *-----------------------------------------------------------------------*/
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*!
+/*! 
 \addtogroup INTERF
-*//*! @{ (documentation module open)*/
+*/
+/*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  contains the dispacement-jump calculation for the interface element
 
-<pre>                                                              mn 05/03
+<pre>                                                              ah 05/03 
 This routine computes the dispacement-jump of the interface element
 
 </pre>
-\param *mat          STVENANT   (i)   blabal
+\param  *ele           ELEMENT (I)     actual interface element
+\param **bop           DOUBLE  (I)     B-Operator-Matrix
+\param  *disjump       DOUBLE  (O)     total displacement jump over element thickness
+\param  *Deltadisjump  DOUBLE  (O)     incremental displacement jump over element thickness
 
 \warning There is nothing special to this routine
-\return void
-\sa calling:   ---;
-    called by: if_mat();
+\return void                                               
 
 *----------------------------------------------------------------------*/
-void if_jumpu(ELEMENT  *ele,
+void if_jumpu(ELEMENT  *ele, 
               DOUBLE  **bop,
               DOUBLE   *disjump,
-              DOUBLE   *Deltadisjump)
+              DOUBLE   *Deltadisjump) 
 {
 INT i,j,nodei,iel;
 DOUBLE d[16];
 DOUBLE Deltad[16];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_enter("if_deltau");
 #endif
 /* get nodal displ. and nodal increm. displ (=Delta d + sum delta d) ---*/
@@ -63,10 +71,10 @@ for (i=0; i<2; i++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
+#ifdef DEBUG 
 dstrc_exit();
 #endif
-return;
+return; 
 } /* end of if_jumpu */
 
 /*----------------------------------------------------------------------*/
