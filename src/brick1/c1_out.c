@@ -39,20 +39,20 @@ versions of "Gid" for integration point value visualization!
 void c1_out_gid_sol_str(
                         FILE       *out, /* File pointer to flavia.res */
                         FIELD *actfield, /* active field               */ 
-                        int       place, /* current solution           */
-                        int         init /* allocate/free memory       */
+                        INT       place, /* current solution           */
+                        INT         init /* allocate/free memory       */
                         )
 {
 /*----------------------------------------------------------------------*/
-int              i,j,inod;         /* counter                           */
-int                 numnp;         /*number of nodal points in actfield */
-int                   nnp;
-int              startstr;
-double             divstr;
-double           **stress;
+INT              i,j,inod;         /* counter                           */
+INT                 numnp;         /*number of nodal points in actfield */
+INT                   nnp;
+INT              startstr;
+DOUBLE             divstr;
+DOUBLE           **stress;
 ELEMENT           *actele;
 NODE             *actnode;
-static double **tmpnodval;         /* vector with smoothed nodal values */
+static DOUBLE **tmpnodval;         /* vector with smoothed nodal values */
 static ARRAY  tmpnodval_a;         /* dito.                             */   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

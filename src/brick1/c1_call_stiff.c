@@ -34,16 +34,16 @@ This routine calcuates the usual stiffness matrix for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_keku(double  **s, 
-             double  **bs, 
-             double  **d, 
-             double    fac, 
-             int       nd,
-             int       neps)
+void c1_keku(DOUBLE  **s, 
+             DOUBLE  **bs, 
+             DOUBLE  **d, 
+             DOUBLE    fac, 
+             INT       nd,
+             INT       neps)
 {
-int            i, j, k, l, m;
-double         dum;
-double         db[6];
+INT            i, j, k, l, m;
+DOUBLE         dum;
+DOUBLE         db[6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_keku");
@@ -95,15 +95,15 @@ This routine calcuates the usual stiffness matrix for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1vkg(  double  **s,   /* element stiffness-matrix                 */
-             double  **bn,  /* b-operator matrix                        */
-             double   *f,   /* force vector integral (stress-resultants)*/
-             double    fac, /* multiplier for numerical integration     */
-             int       iel) /* number of nodes at actual element         */
+void c1vkg(  DOUBLE  **s,   /* element stiffness-matrix                 */
+             DOUBLE  **bn,  /* b-operator matrix                        */
+             DOUBLE   *f,   /* force vector integral (stress-resultants)*/
+             DOUBLE    fac, /* multiplier for numerical integration     */
+             INT       iel) /* number of nodes at actual element         */
 {
-int            i, j, l, m, n, sc1, sc2;
-double         g11, g12, g13, b11, b21, b31, n11, n22, n33, n12, n23, n31;
-double         nb[9][3];
+INT            i, j, l, m, n, sc1, sc2;
+DOUBLE         g11, g12, g13, b11, b21, b31, n11, n22, n33, n12, n23, n31;
+DOUBLE         nb[9][3];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1vkg");
@@ -180,12 +180,12 @@ This routine reorders stiffness matrix for 'gid'  hex20 for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1kgid( double  **si,  /* element stiffness-matrix - convent.      */
-             double  **so)  /* element stiffness-matrix - gid.          */
+void c1kgid( DOUBLE  **si,  /* element stiffness-matrix - convent.      */
+             DOUBLE  **so)  /* element stiffness-matrix - gid.          */
 {
 /*----------------------------------------------------------------------*/
-  int i,j;
-  int reor[20] = {0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,12,13,14,15};
+  INT i,j;
+  INT reor[20] = {0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,12,13,14,15};
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1kgid");
@@ -229,12 +229,12 @@ This routine reorders force vector for 'gid'  hex20 for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1fgid( double  *fi,  /* element force vector - convent.       */
-             double  *fo)  /* element force vector - gid.           */
+void c1fgid( DOUBLE  *fi,  /* element force vector - convent.       */
+             DOUBLE  *fo)  /* element force vector - gid.           */
 {
 /*----------------------------------------------------------------------*/
-  int i;
-  int reor[20] = {0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,12,13,14,15};
+  INT i;
+  INT reor[20] = {0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,12,13,14,15};
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1fgid");

@@ -42,22 +42,22 @@ defined in opt_cal_main.c
 void optfsd()
 {
 /*----------------------------------------------------------------------*/
-  int  i;            /* a counter */
-  int  fsdstep, max_fsdstep;
-  double objective, constraint;
+  INT  i;            /* a counter */
+  INT  fsdstep, max_fsdstep;
+  DOUBLE objective, constraint;
 /*----------------------------------------------------------------------*/
-  int numvar, iprint, indcon;
-  double beta, accit, accitfsd, delta, etha, iota;
-  double diff, obj_old;
-  double *grdobj;
-  double *grdcon;
-  double *var   ;
-  double *resu  ;
-  double *resl  ;
+  INT numvar, iprint, indcon;
+  DOUBLE beta, accit, accitfsd, delta, etha, iota;
+  DOUBLE diff, obj_old;
+  DOUBLE *grdobj;
+  DOUBLE *grdcon;
+  DOUBLE *var   ;
+  DOUBLE *resu  ;
+  DOUBLE *resl  ;
   
-  double *etai  ;
-  double *varup ;
-  double *varlo ;
+  DOUBLE *etai  ;
+  DOUBLE *varup ;
+  DOUBLE *varlo ;
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("optfsd");
@@ -82,9 +82,9 @@ void optfsd()
   resu   = opt->strat.fsd->resu  ;
   resl   = opt->strat.fsd->resl  ; 
 /*----------------------------------------------------------------------*/
-  etai  = (double*)CCACALLOC(numvar,sizeof(double));
-  varup = (double*)CCACALLOC(numvar,sizeof(double));
-  varlo = (double*)CCACALLOC(numvar,sizeof(double));
+  etai  = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
+  varup = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
+  varlo = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
   for (i=0; i<numvar; i++) etai[i] =0.0;   
   for (i=0; i<numvar; i++) varup[i]=0.0;
   for (i=0; i<numvar; i++) varlo[i]=0.0;

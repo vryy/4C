@@ -30,8 +30,8 @@ This routine initializes the 3D-hex-element.
 *----------------------------------------------------------------------*/
 void c1init(PARTITION *actpart,MATERIAL    *mat )
 {
-int          i,j,k,ngp,nnp;
-int          size_i, size_j;
+INT          i,j,k,ngp,nnp;
+INT          size_i, size_j;
 ELEMENT     *actele;
 
 #ifdef DEBUG 
@@ -78,7 +78,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
+    actele->e.c1->elewa->matdata = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     if (actele->e.c1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -89,7 +89,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
+    actele->e.c1->elewa->optdata = (INT*)CCACALLOC(size_j,sizeof(INT));
     if (actele->e.c1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -104,7 +104,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
+    actele->e.c1->elewa->matdata = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     if (actele->e.c1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -115,7 +115,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
+    actele->e.c1->elewa->optdata = (INT*)CCACALLOC(size_j,sizeof(INT));
     if (actele->e.c1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -129,7 +129,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
+    actele->e.c1->elewa->matdata = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     if (actele->e.c1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -140,7 +140,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
+    actele->e.c1->elewa->optdata = (INT*)CCACALLOC(size_j,sizeof(INT));
     if (actele->e.c1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -158,22 +158,22 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     /* */
     size_j = actele->e.c1->nhyb*3;
     actele->e.c1->elewa[0].eas[0].ehdis 
-                                  = (double*)CCACALLOC(size_j,sizeof(double));
+                                  = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].ehdis[k]=0.;
     /* */
     size_j = 24; /* 8noded element only!*/
     actele->e.c1->elewa[0].eas[0].disl
-                                  = (double*)CCACALLOC(size_j,sizeof(double));
+                                  = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].disl[k]=0.;
     /* */
     size_j = 24*actele->e.c1->nhyb*3; 
     actele->e.c1->elewa[0].eas[0].hil
-                                  = (double*)CCACALLOC(size_j,sizeof(double));
+                                  = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].hil[k]=0.;
     /* */
     size_j = actele->e.c1->nhyb*3; 
     actele->e.c1->elewa[0].eas[0].hih
-                                  = (double*)CCACALLOC(size_j,sizeof(double));
+                                  = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].hih[k]=0.;
     /* */
   }

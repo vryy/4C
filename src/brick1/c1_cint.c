@@ -62,72 +62,72 @@ void c1_cint(
              C1_DATA   *data, 
              MATERIAL  *mat,
              ARRAY     *estif_global, 
-             double    *force, 
-             int        init
+             DOUBLE    *force, 
+             INT        init
              )
 {
-int                 i,j,k;            /* some loopers */
-int                 nir,nis,nit;      /* num GP in r/s/t direction */
-int                 lr, ls, lt;       /* loopers over GP */
-int                 ip;
-int                 iel;              /* numnp to this element */
-int                 nd, nd1;
-int                 istore = 0;/* controls storing of new stresses to wa */
-int                 newval = 0;/* controls evaluation of new stresses    */
-const int           numdf =3;
-const int           numeps=6;
+INT                 i,j,k;            /* some loopers */
+INT                 nir,nis,nit;      /* num GP in r/s/t direction */
+INT                 lr, ls, lt;       /* loopers over GP */
+INT                 ip;
+INT                 iel;              /* numnp to this element */
+INT                 nd, nd1;
+INT                 istore = 0;/* controls storing of new stresses to wa */
+INT                 newval = 0;/* controls evaluation of new stresses    */
+const INT           numdf =3;
+const INT           numeps=6;
 
-double              fac;
-double              e1,e2,e3;         /*GP-coords*/
-double              facr,facs,fact;   /* weights at GP */
-double disd[9];
-double F[6]; /* element stress vector   (stress-resultants) */
-double fielo[81];
-double strain[6];
-double xyze[60];
-double edis[60];  
-double  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
-double gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
+DOUBLE              fac;
+DOUBLE              e1,e2,e3;         /*GP-coords*/
+DOUBLE              facr,facs,fact;   /* weights at GP */
+DOUBLE disd[9];
+DOUBLE F[6]; /* element stress vector   (stress-resultants) */
+DOUBLE fielo[81];
+DOUBLE strain[6];
+DOUBLE xyze[60];
+DOUBLE edis[60];  
+DOUBLE  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
+DOUBLE gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
 
 /*-------------------------  for postprocessing - stress calculation ---*/
-double gpstrs[27][26]; /* [number of gp   ][stresses] */
-double nostrs[20][26]; /* [number of nodes][stresses] */
-double srst[6];
-double s123[12];
-double gpcod[3]; /* natural coordinates of g.p.*/
+DOUBLE gpstrs[27][26]; /* [number of gp   ][stresses] */
+DOUBLE nostrs[20][26]; /* [number of nodes][stresses] */
+DOUBLE srst[6];
+DOUBLE s123[12];
+DOUBLE gpcod[3]; /* natural coordinates of g.p.*/
 /*-------------------------------------------  for eas elements only ---*/
-int    l1, l3, ihyb, cc;
-double ehdis[3][10],fi[6][6],ff[6][6];
-double det0, det1;
-double bn1[3][10];
-double disd1[9];
-double fieh[30];
-double epsh[6];
+INT    l1, l3, ihyb, cc;
+DOUBLE ehdis[3][10],fi[6][6],ff[6][6];
+DOUBLE det0, det1;
+DOUBLE bn1[3][10];
+DOUBLE disd1[9];
+DOUBLE fieh[30];
+DOUBLE epsh[6];
 
-static double **estiflo;       
+static DOUBLE **estiflo;       
 static ARRAY    estiflo_a; /* local element stiffness matrix ke for eas */   
 
-static double **estif9;       
+static DOUBLE **estif9;       
 static ARRAY    estif9_a;   /* element stiffness matrix ke for eas */   
 
 /*----------------------------------------------------------------------*/
 static ARRAY    D_a;      /* material tensor */     
-static double **D;         
+static DOUBLE **D;         
 static ARRAY    funct_a;  /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    bop_a;    /* B-operator */   
-static double **bop;       
+static DOUBLE **bop;       
 static ARRAY    bnop_a;   /* BN-operator */   
-static double **bn;       
-static double **estif;    /* element stiffness matrix ke */
-double det;
+static DOUBLE **bn;       
+static DOUBLE **estif;    /* element stiffness matrix ke */
+DOUBLE det;
 /*----------------------------------------------------------------------*/
-int    iform;             /* index for nonlinear formulation of element */
-int    calstr;            /* flag for stress calculation                */
+INT    iform;             /* index for nonlinear formulation of element */
+INT    calstr;            /* flag for stress calculation                */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_cint");
@@ -498,15 +498,15 @@ This routine evaluates element forces of an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1fi( double  *F,   /*  force vector integral (stress-resultants)  */
-           double   fac, /*  multiplier for numerical integration       */
-           double **bop, /*  b-operator matrix                          */
-           int      nd,  /*  total number degrees of freedom of element */
-           double  *fie) /*  internal force vector                      */
+void c1fi( DOUBLE  *F,   /*  force vector integral (stress-resultants)  */
+           DOUBLE   fac, /*  multiplier for numerical integration       */
+           DOUBLE **bop, /*  b-operator matrix                          */
+           INT      nd,  /*  total number degrees of freedom of element */
+           DOUBLE  *fie) /*  internal force vector                      */
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
-double n11,n22,n33,n12,n23,n31;
+INT i,j,k;
+DOUBLE n11,n22,n33,n12,n23,n31;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1fi");
@@ -554,16 +554,16 @@ This routine evaluates material transformation matricies for a 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1tram( double **xjm,   /* jacobian matrix r,s,t-direction         */
-             double g[6][6], /* transformation matrix s(glob)=g*s(loc)  */
-             double gi[6][6])/* inverse of g          s(loc) =gi*s(glob)*/
+void c1tram( DOUBLE **xjm,   /* jacobian matrix r,s,t-direction         */
+             DOUBLE g[6][6], /* transformation matrix s(glob)=g*s(loc)  */
+             DOUBLE gi[6][6])/* inverse of g          s(loc) =gi*s(glob)*/
 {
 /*----------------------------------------------------------------------*/
-double dm;
-double x1r, x2r, x3r, x1s, x2s, x3s;
-double x1n, x2n, x3n, x1c, x2c, x3c;
-double a11, a21, a31, a12, a22, a32, a13, a23, a33;
-double dum[3][3];
+DOUBLE dm;
+DOUBLE x1r, x2r, x3r, x1s, x2s, x3s;
+DOUBLE x1n, x2n, x3n, x1c, x2c, x3c;
+DOUBLE a11, a21, a31, a12, a22, a32, a13, a23, a33;
+DOUBLE dum[3][3];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1tram");
@@ -741,12 +741,12 @@ This routine transforms of local material-matrix to global axes for a 3D-hex-ele
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1gld(double **d,     /* material matrix                           */
-           double g[6][6]) /* transformation matrix                     */
+void c1gld(DOUBLE **d,     /* material matrix                           */
+           DOUBLE g[6][6]) /* transformation matrix                     */
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
-double dgt[6][6];
+INT i,j,k;
+DOUBLE dgt[6][6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1gld");
@@ -797,12 +797,12 @@ This routine transforms of global stress vector to local axes for a 3D-hex-eleme
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1trss2local(double *s,       /* stress vector to be transformed   */
-                  double gi[6][6]) /* inverse of transformation matrix  */
+void c1trss2local(DOUBLE *s,       /* stress vector to be transformed   */
+                  DOUBLE gi[6][6]) /* inverse of transformation matrix  */
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-double sh[6];
+INT i,j;
+DOUBLE sh[6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1trss2local");
@@ -839,12 +839,12 @@ This routine transforms of local stress vector to global axes for a 3D-hex-eleme
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1trss2global(double *s,       /* stress vector to be transformed  */
-                   double g[6][6])  /* transformation matrix            */
+void c1trss2global(DOUBLE *s,       /* stress vector to be transformed  */
+                   DOUBLE g[6][6])  /* transformation matrix            */
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-double sh[6];
+INT i,j;
+DOUBLE sh[6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG  
 dstrc_enter("c1trss2global");

@@ -33,20 +33,20 @@ for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_bop(double    **b,
-            double    **bn,
-            double    **deriv,
-            double    **xjm,
-            double      det,
-            int         iel)
+void c1_bop(DOUBLE    **b,
+            DOUBLE    **bn,
+            DOUBLE    **deriv,
+            DOUBLE    **xjm,
+            DOUBLE      det,
+            INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int i,node_start;
-double dum;
-double x1r, x2r, x3r, x1s, x2s, x3s, x1t, x2t, x3t;
-double xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
-double hr, hs, ht;
-double h1, h2, h3;
+INT i,node_start;
+DOUBLE dum;
+DOUBLE x1r, x2r, x3r, x1s, x2s, x3s, x1t, x2t, x3t;
+DOUBLE xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
+DOUBLE hr, hs, ht;
+DOUBLE h1, h2, h3;
 #ifdef DEBUG 
 dstrc_enter("c1_bop");
 #endif
@@ -131,14 +131,14 @@ for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_bdis( double   **bop, /* b-operator matrix                      */
-              double   *disd, /* displacement derivatives               */
-              int        iel) /* number of nodes at actual element      */
+void c1_bdis( DOUBLE   **bop, /* b-operator matrix                      */
+              DOUBLE   *disd, /* displacement derivatives               */
+              INT        iel) /* number of nodes at actual element      */
 {
 /*----------------------------------------------------------------------*/
-int node_start, inode;
-double rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
-double h1, h2, h3;
+INT node_start, inode;
+DOUBLE rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
+DOUBLE h1, h2, h3;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_bdis");

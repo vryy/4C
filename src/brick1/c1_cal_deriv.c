@@ -31,14 +31,14 @@ This routine calcuates the displacement derivatives for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_disd(double    **bop, /* b-operator matrix                      */
-             double    *edis, /* element displacements                  */ 
-             double    *disd, /* displacement derivatives               */
-             int         iel) /* number of element nodes                */
+void c1_disd(DOUBLE    **bop, /* b-operator matrix                      */
+             DOUBLE    *edis, /* element displacements                  */ 
+             DOUBLE    *disd, /* displacement derivatives               */
+             INT         iel) /* number of element nodes                */
 {
 /*----------------------------------------------------------------------*/
-int    i, cc;
-double h1, h2, h3, ed1, ed2, ed3;
+INT    i, cc;
+DOUBLE h1, h2, h3, ed1, ed2, ed3;
 #ifdef DEBUG 
 dstrc_enter("c1_disd");
 #endif

@@ -71,24 +71,24 @@ defined in opt_cal_main.c
 /*----------------------------------------------------------------------*
  | variational sensitivity analysis                         al 05/01    |
  *----------------------------------------------------------------------*/
-void optsmo(double *vvar, int init)
+void optsmo(DOUBLE *vvar, INT init)
 {
 /*----------------------------------------------------------------------*/
-  int    i, j, k;               /* some counters */
+  INT    i, j, k;               /* some counters */
 /*----------------------------------------------------------------------*/
-  int iloc;
-  int    maxneighbour = 1000;
-  int    ngbevec[1000];
-  double ngbeval[1000];
-  double dist, sstab, rstb, rzl, sumo;
-  double cpsum[4];
-  double **cpele;
+  INT iloc;
+  INT    maxneighbour = 1000;
+  INT    ngbevec[1000];
+  DOUBLE ngbeval[1000];
+  DOUBLE dist, sstab, rstb, rzl, sumo;
+  DOUBLE cpsum[4];
+  DOUBLE **cpele;
   
-  static  int     **nbele;
-  static  double  **nbelv;
-  static  double  *stbobj;
+  static  INT     **nbele;
+  static  DOUBLE  **nbelv;
+  static  DOUBLE  *stbobj;
 /*----------------------------------------------------------------------*/
-  int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+  INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
   SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
   PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
   FIELD        *actfield;         /* pointer to the structural FIELD */
@@ -122,12 +122,12 @@ void optsmo(double *vvar, int init)
 /*----------------------------------------------------------------------*/
   if(init==1)
   {
-    stbobj  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+    stbobj  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
     /*------------------------ evaluate coordinates of center points ---*/
-    cpele  = (double**)CCACALLOC(actfield->dis[0].numele,sizeof(double*));
+    cpele  = (DOUBLE**)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE*));
     for (i=0; i<actfield->dis[0].numele; i++)
     {
-      cpele[i]  = (double*)CCACALLOC(3,sizeof(double));
+      cpele[i]  = (DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));
     }
     /*----------*/
     if(opt->smoothtype==sm_grad)
@@ -153,7 +153,7 @@ void optsmo(double *vvar, int init)
     }
     /*---- determine all elements in the neigbourhood of one element ---*/
     nbele = (int**   )CCACALLOC(actfield->dis[0].numele,sizeof(int*   ));
-    nbelv = (double**)CCACALLOC(actfield->dis[0].numele,sizeof(double*));
+    nbelv = (DOUBLE**)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE*));
     
     
     for (i=0; i<actfield->dis[0].numele; i++)
@@ -185,8 +185,8 @@ void optsmo(double *vvar, int init)
           ngbevec[0]++;
         }
       }
-      nbele[i]  = (int*   )CCACALLOC(ngbevec[0]+1,sizeof(int   ));
-      nbelv[i]  = (double*)CCACALLOC(ngbevec[0]+1,sizeof(double));
+      nbele[i]  = (INT*   )CCACALLOC(ngbevec[0]+1,sizeof(INT   ));
+      nbelv[i]  = (DOUBLE*)CCACALLOC(ngbevec[0]+1,sizeof(DOUBLE));
       nbele[i][0]  = ngbevec[0]; /* store number of neighbours */
       for (j=1; j<=ngbevec[0]; j++)
       {

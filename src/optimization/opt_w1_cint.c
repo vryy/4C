@@ -21,17 +21,17 @@
 void w1_call_matd(ELEMENT     *ele,
                  MATERIAL     *mat, 
                  WALL_TYPE   wtype,
-                 double      **bop,
-                 double    *stress,
-                 double        **d);
+                 DOUBLE      **bop,
+                 DOUBLE    *stress,
+                 DOUBLE        **d);
 /*----------------------------------------------------------------------*
  | constitutive matrix - linear elastic porous - 2D       al    9/01    |
  | plane stress, plane strain, rotational symmetry                      |
  *----------------------------------------------------------------------*/
 void w1_matd_stvpor(MATERIAL  *mat,
-                    double *matdata,
+                    DOUBLE *matdata,
                     WALL_TYPE wtype, 
-                    double **d);
+                    DOUBLE **d);
 
 /*! 
 \addtogroup WALL1 
@@ -59,51 +59,51 @@ void w1_oint(
              ELEMENT   *ele, 
              W1_DATA   *data, 
              MATERIAL  *mat,
-             double    *retval,  /* return value */
-             int        init     /* ==2 calc.strain energy */
+             DOUBLE    *retval,  /* return value */
+             INT        init     /* ==2 calc.strain energy */
              )
 {
 
 /*----------------------------------------------------------------------*/
-int                 i;                                /* some loopers */
-int                 nir,nis;          /* num GP in r/s/t direction */
-int                 lr, ls;           /* loopers over GP */
-int                 iel;              /* numnp to this element */
-int                 nd;
-int                 ip;
-int                 istore, newval;
-const int           numdf  = 2;
-const int           numeps = 3;
-double              fac;              /* integration factors            */
-double              stifac;           /* thickness                      */
-double              e1,e2;            /* GP-coords                      */
-double              facr,facs;        /* weights at GP                  */
+INT                 i;                                /* some loopers */
+INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 lr, ls;           /* loopers over GP */
+INT                 iel;              /* numnp to this element */
+INT                 nd;
+INT                 ip;
+INT                 istore, newval;
+const INT           numdf  = 2;
+const INT           numeps = 3;
+DOUBLE              fac;              /* integration factors            */
+DOUBLE              stifac;           /* thickness                      */
+DOUBLE              e1,e2;            /* GP-coords                      */
+DOUBLE              facr,facs;        /* weights at GP                  */
 /*----------------------------------------------------------------------*/
 static ARRAY    D_a;         /* material tensor */     
-static double **D;         
+static DOUBLE **D;         
 static ARRAY   DD_a;         /* material tensor */     
-static double **DD;         
+static DOUBLE **DD;         
 static ARRAY    funct_a;     /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;     /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;       /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    bop_a;       /* B-operator */   
-static double **bop;       
+static DOUBLE **bop;       
 
-double det;             /* Jacobi-det*/
-double disd[5];
-double strain[4];
-double  F[4];                 /* stress */
-double DF[4];                 /* stress */
+DOUBLE det;             /* Jacobi-det*/
+DOUBLE disd[5];
+DOUBLE strain[4];
+DOUBLE  F[4];                 /* stress */
+DOUBLE DF[4];                 /* stress */
 /*----------------------------------------------------------------------*/
-double  ste;  /* strain energy               */
-double dste;  /* derivative of strain energy */
-double  stm;  /* mass                        */
-double  stv;  /* volume                      */
+DOUBLE  ste;  /* strain energy               */
+DOUBLE dste;  /* derivative of strain energy */
+DOUBLE  stm;  /* mass                        */
+DOUBLE  stv;  /* volume                      */
 
-double dens;  /* density                     */
+DOUBLE dens;  /* density                     */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_oint");
@@ -226,14 +226,14 @@ return;
 void w1_call_matd(ELEMENT     *ele,
                  MATERIAL     *mat, 
                  WALL_TYPE   wtype,
-                 double      **bop,
-                 double    *stress,
-                 double        **d)
+                 DOUBLE      **bop,
+                 DOUBLE    *stress,
+                 DOUBLE        **d)
 {
-int i;
-int j;
-double disd[4];
-double strain[6];
+INT i;
+INT j;
+DOUBLE disd[4];
+DOUBLE strain[6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_call_matd");
@@ -264,12 +264,12 @@ return;
  | plane stress, plane strain, rotational symmetry                      |
  *----------------------------------------------------------------------*/
 void w1_matd_stvpor(MATERIAL  *mat,
-                    double *matdata,
+                    DOUBLE *matdata,
                     WALL_TYPE wtype, 
-                    double **d)
+                    DOUBLE **d)
 {
-double e1, e2, e3, a1, b1, c1;
-double dym, ym, pv, dn, rd, ex;
+DOUBLE e1, e2, e3, a1, b1, c1;
+DOUBLE dym, ym, pv, dn, rd, ex;
 #ifdef DEBUG 
 dstrc_enter("w1_matd_stvpor");
 #endif

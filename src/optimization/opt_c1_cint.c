@@ -42,62 +42,62 @@ void c1_oint(
              ELEMENT   *ele, 
              C1_DATA   *data, 
              MATERIAL  *mat,
-             double    *retval,  /* return value */
-             int        init     /* ==2 calc.strain energy */
+             DOUBLE    *retval,  /* return value */
+             INT        init     /* ==2 calc.strain energy */
              )
 {
-int                 i,j;              /* some loopers */
-int                 nir,nis,nit;      /* num GP in r/s/t direction */
-int                 lr, ls, lt;       /* loopers over GP */
-int                 ip;
-int                 iel;              /* numnp to this element */
-int                 nd;
-int                 istore = 0;/* controls storing of new stresses to wa */
-int                 newval = 0;/* controls evaluation of new stresses    */
-const int           numdf =3;
-const int           numeps=6;
+INT                 i,j;              /* some loopers */
+INT                 nir,nis,nit;      /* num GP in r/s/t direction */
+INT                 lr, ls, lt;       /* loopers over GP */
+INT                 ip;
+INT                 iel;              /* numnp to this element */
+INT                 nd;
+INT                 istore = 0;/* controls storing of new stresses to wa */
+INT                 newval = 0;/* controls evaluation of new stresses    */
+const INT           numdf =3;
+const INT           numeps=6;
 
-double              fac;
-double              e1,e2,e3;         /*GP-coords*/
-double              facr,facs,fact;   /* weights at GP */
+DOUBLE              fac;
+DOUBLE              e1,e2,e3;         /*GP-coords*/
+DOUBLE              facr,facs,fact;   /* weights at GP */
 
-double disd[9];
-double F[6];  /* element stress vector   (stress-resultants) */
-double DF[6]; /* derivative of element stress vector         */
-double strain[6];
-double xyze[60];
-double edis[60];  
-double  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
-double gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
+DOUBLE disd[9];
+DOUBLE F[6];  /* element stress vector   (stress-resultants) */
+DOUBLE DF[6]; /* derivative of element stress vector         */
+DOUBLE strain[6];
+DOUBLE xyze[60];
+DOUBLE edis[60];  
+DOUBLE  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
+DOUBLE gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
 /*-------------------------------------------  for eas elements only ---*/
-int    cc;
+INT    cc;
 
 static ARRAY    D_a;      /* material tensor */     
-static double **D;         
+static DOUBLE **D;         
 static ARRAY    DD_a;      /* material tensor */     
-static double **DD;         
+static DOUBLE **DD;         
 static ARRAY    funct_a;  /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    bop_a;    /* B-operator */   
-static double **bop;       
+static DOUBLE **bop;       
 static ARRAY    bnop_a;   /* BN-operator */   
-static double **bn;       
+static DOUBLE **bn;       
 
-double det;
+DOUBLE det;
 
-int    iform;             /* index for nonlinear formulation of element */
-int    calstr;            /* flag for stress calculation                */
+INT    iform;             /* index for nonlinear formulation of element */
+INT    calstr;            /* flag for stress calculation                */
 
-double  ste;  /* strain energy               */
-double dste;  /* derivative of strain energy */
-double  stm;  /* mass                        */
-double  stv;  /* volume                      */
+DOUBLE  ste;  /* strain energy               */
+DOUBLE dste;  /* derivative of strain energy */
+DOUBLE  stm;  /* mass                        */
+DOUBLE  stv;  /* volume                      */
 
-double dens;  /* density                     */
+DOUBLE dens;  /* density                     */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_oint");

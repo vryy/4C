@@ -36,21 +36,21 @@ This routine calcuates shape functions and derivatives for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_funct_deriv(double     *funct, 
-                    double    **deriv, 
-                    double          r, 
-                    double          s,
-                    double          t,
-                    int           typ,
-                    int         option)
+void c1_funct_deriv(DOUBLE     *funct, 
+                    DOUBLE    **deriv, 
+                    DOUBLE          r, 
+                    DOUBLE          s,
+                    DOUBLE          t,
+                    INT           typ,
+                    INT         option)
 {
-const double   q12 = 1.0/2.0;
-const double   q14 = 1.0/4.0;
-const double   q16 = 1.0/6.0;
-const double   q18 = 1.0/8.0;
-const double   q64 = 1.0/64.0;
-const double   q964= 9.0/64.0;
-double         rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
+const DOUBLE   q12 = 1.0/2.0;
+const DOUBLE   q14 = 1.0/4.0;
+const DOUBLE   q16 = 1.0/6.0;
+const DOUBLE   q18 = 1.0/8.0;
+const DOUBLE   q64 = 1.0/64.0;
+const DOUBLE   q964= 9.0/64.0;
+DOUBLE         rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
 #ifdef DEBUG 
 dstrc_enter("c1_funct_deriv");
 #endif

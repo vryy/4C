@@ -35,15 +35,15 @@ This routine calcuates the Jacobian matrix for a 3D-hex-element.
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s,t                  al 9/01    |
  *----------------------------------------------------------------------*/
-void c1_jaco(double  **deriv,
-             double    **xjm,
-             double     *det,
-             double    *xyze,
-             int         iel)
+void c1_jaco(DOUBLE  **deriv,
+             DOUBLE    **xjm,
+             DOUBLE     *det,
+             DOUBLE    *xyze,
+             INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int i,j,l,pc;
-double dum;
+INT i,j,l,pc;
+DOUBLE dum;
 #ifdef DEBUG 
 dstrc_enter("c1_jaco");
 #endif

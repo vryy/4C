@@ -82,9 +82,9 @@ defined in opt_cal_main.c
 void opt_g_out(OPT_GR_OUT gract)
 {
 /*----------------------------------------------------------------------*/
-  static int nummeshw;       /* local Id of mesh, which will be written */
-  static int numdataw;       /* local Id of data, which will be written */
-  static int numdispw;       /* local Id of data, which will be written */
+  static INT nummeshw;       /* local Id of mesh, which will be written */
+  static INT numdataw;       /* local Id of data, which will be written */
+  static INT numdispw;       /* local Id of data, which will be written */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("opt_g_out");
@@ -120,12 +120,12 @@ return;
 /*----------------------------------------------------------------------*
  | output of fe-mesh, loads, dirichlet conditions...        al 05/01    |
  *----------------------------------------------------------------------*/
-void og_write_mesh(int nmesh)
+void og_write_mesh(INT nmesh)
 {
 /*----------------------------------------------------------------------*/
-int j, k, l;
-int dof, bnodeflag, lnodeflag;
-double lval;
+INT j, k, l;
+INT dof, bnodeflag, lnodeflag;
+DOUBLE lval;
 /*----------------------------------------------------------------------*/
 static FILE         *out;
 static FILE         *fp_tmp;
@@ -134,7 +134,7 @@ char         *line1="_";
 char         *line2="=";
 /*----------------------------------------------------------------------*/
  static ARRAY   rhspv_a;
- static double *rhspv;
+ static DOUBLE *rhspv;
 /*----------------------------------------------------------------------*/
   SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
   PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
@@ -350,13 +350,13 @@ return;
 /*----------------------------------------------------------------------*
  | output of element density in case of topoopt             al 05/01    |
  *----------------------------------------------------------------------*/
-void og_write_eledens(int ndataofmesh)
+void og_write_eledens(INT ndataofmesh)
 {
 /*----------------------------------------------------------------------*/
-  int i;
+  INT i;
 #ifdef PARALLEL 
-  static  double *svec;   /* vector with sensitivities on element level */
-  static  double *sveh;   /* necsessary for allreducing element values  */
+  static  DOUBLE *svec;   /* vector with sensitivities on element level */
+  static  DOUBLE *sveh;   /* necsessary for allreducing element values  */
 #endif
 /*----------------------------------------------------------------------*/
   PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
@@ -386,8 +386,8 @@ actintra->intra_nprocs   = 1;
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
-  svec  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
-  sveh  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+  svec  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
+  sveh  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
   for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
   
@@ -474,10 +474,10 @@ dstrc_exit();
 return;
 } /* end of og_write_eledens */
 /*----------------------------------------------------------------------*/
-void og_write_displacements(int kstep)
+void og_write_displacements(INT kstep)
 {
 /*----------------------------------------------------------------------*/
-int i;
+INT i;
 NODE    *actnode;
 FIELD   *actfield;
 /*----------------------------------------------------------------------*/

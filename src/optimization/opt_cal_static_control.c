@@ -92,11 +92,11 @@ return;
  *----------------------------------------------------------------------*/
 void opt_stalin(CALSTA_EXEC stalact) 
 {
-int           i;                /* a counter */
-int           numeq;            /* number of equations on this proc */
-int           numeq_total;      /* total number of equations over all procs */
-int           init;             /* init flag for solver */
-int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+INT           i;                /* a counter */
+INT           numeq;            /* number of equations on this proc */
+INT           numeq_total;      /* total number of equations over all procs */
+INT           init;             /* init flag for solver */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
 SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
 PARTITION    *actpart;          /* pointer to the fields PARTITION structure */

@@ -29,19 +29,19 @@ for a 3D hex element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1pstr(double    *srst,/* stresses at given gauss point           */
-            double    *s123 /* principal stresses and direction at g.p.*/
+void c1pstr(DOUBLE    *srst,/* stresses at given gauss point           */
+            DOUBLE    *s123 /* principal stresses and direction at g.p.*/
             )
 {
 /*----------------------------------------------------------------------*/
-int i, j, k, ci, cj;
-int i1[3];
-double a[9], v[9], vn;
-double pi, p;
-double c180=180.;
-double wr,ws,wt;
-double strmin  = 1.0E-9;
-double strzero = 0.;
+INT i, j, k, ci, cj;
+INT i1[3];
+DOUBLE a[9], v[9], vn;
+DOUBLE pi, p;
+DOUBLE c180=180.;
+DOUBLE wr,ws,wt;
+DOUBLE strmin  = 1.0E-9;
+DOUBLE strzero = 0.;
 #ifdef DEBUG 
 dstrc_enter("c1pstr");
 #endif
@@ -137,17 +137,17 @@ pstrs[24..26] [x y z ] -global coordinates of integration points
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_cstr(double    *srst,
-             double    *s123,
-             double    *pstrs
+void c1_cstr(DOUBLE    *srst,
+             DOUBLE    *s123,
+             DOUBLE    *pstrs
             )
 {
 /*----------------------------------------------------------------------*/
-int i;
-double aux[6];
-double strmin  = 1.0E-9;
-double strzero = 0.;
-double seqv;
+INT i;
+DOUBLE aux[6];
+DOUBLE strmin  = 1.0E-9;
+DOUBLE strzero = 0.;
+DOUBLE seqv;
 #ifdef DEBUG 
 dstrc_enter("c1_cstr");
 #endif
@@ -222,14 +222,14 @@ for a 3D hex element.
 
 *----------------------------------------------------------------------*/
 void c1gcor( 
-             double     *funct, /* value of form functions              */
-             double     *xyze,  /* element coordinates                  */
-             int         iel,   /* number of nodes                      */
-             double     *gpcod  /* global coordinates of actual point   */
+             DOUBLE     *funct, /* value of form functions              */
+             DOUBLE     *xyze,  /* element coordinates                  */
+             INT         iel,   /* number of nodes                      */
+             DOUBLE     *gpcod  /* global coordinates of actual point   */
             )
 {
 /*----------------------------------------------------------------------*/
-int i,k,pc;
+INT i,k,pc;
 #ifdef DEBUG 
 dstrc_enter("c1gcor");
 #endif
@@ -263,26 +263,26 @@ for a 3D hex element.
 \param    irs     INT  (i)   flag for r,s or t             
 
 \warning There is nothing special to this routine
-\return double local coordinates of element node                                               
+\return DOUBLE local coordinates of element node                                               
 \sa calling: ---; called by: c1_cstr()
 
 *----------------------------------------------------------------------*/
-double c1rsn (
-             int node,
-             int irs
+DOUBLE c1rsn (
+             INT node,
+             INT irs
              )
 {
 /*----------------------------------------------------------------------*/
-static double  xh8[24] = { 1., 1.,-1.,-1., 1., 1.,-1.,-1.,
+static DOUBLE  xh8[24] = { 1., 1.,-1.,-1., 1., 1.,-1.,-1.,
                           -1., 1., 1.,-1.,-1., 1., 1.,-1.,
                           -1.,-1.,-1.,-1., 1., 1., 1., 1.};
-static double xh20[36] = { 
+static DOUBLE xh20[36] = { 
               1.,  0., -1.,  0.,  1.,  0., -1.,  0.,  1.,  1., -1., -1., 
               0.,  1.,  0., -1.,  0.,  1.,  0., -1., -1.,  1.,  1., -1., 
              -1., -1., -1., -1.,  1.,  1.,  1.,  1.,  0.,  0.,  0.,  0. };
 /*----------------------------------------------------------------------*/
-int inode;
-double ret_val;
+INT inode;
+DOUBLE ret_val;
 #ifdef DEBUG 
 dstrc_enter("c1rsn");
 #endif
@@ -328,16 +328,16 @@ for a 3D hex element.
 
 *----------------------------------------------------------------------*/
 void c1lgpl (
-              int         i,
-              int         n,
-              double    *zr,  
-              double      z,
-              double *value
+              INT         i,
+              INT         n,
+              DOUBLE    *zr,  
+              DOUBLE      z,
+              DOUBLE *value
               )
 {
 /*----------------------------------------------------------------------*/
-int j;
-double zi, zj;
+INT j;
+DOUBLE zi, zj;
 #ifdef DEBUG 
 dstrc_enter("c1lgpl");
 #endif
@@ -375,22 +375,22 @@ subroutine of c1_sext
 
 *----------------------------------------------------------------------*/
 void c1hxsm (
-              int nir,
-              int nis,
-              int nit,  
-              double rk,
-              double sk,
-              double tk,
-              double f[8][27],
-              double *fp,
-              double *xgr,
-              double *xgs,
-              double *xgt
+              INT nir,
+              INT nis,
+              INT nit,  
+              DOUBLE rk,
+              DOUBLE sk,
+              DOUBLE tk,
+              DOUBLE f[8][27],
+              DOUBLE *fp,
+              DOUBLE *xgr,
+              DOUBLE *xgs,
+              DOUBLE *xgt
               )
 {
 /*----------------------------------------------------------------------*/
-int i, j, k, ns, kkk, ngp;
-double xlr, xls, xlt;
+INT i, j, k, ns, kkk, ngp;
+DOUBLE xlr, xls, xlt;
 #ifdef DEBUG 
 dstrc_enter("c1rsn");
 #endif
@@ -438,16 +438,16 @@ pstrs[    26]: equivalent stress
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_nstr(double    *srst,     
-             double    *s123,
-             double    *pstrs
+void c1_nstr(DOUBLE    *srst,     
+             DOUBLE    *s123,
+             DOUBLE    *pstrs
             )
 {
 /*----------------------------------------------------------------------*/
-int i;
-double aux[6];
-double strmin  = 1.0E-9;
-double strzero = 0.;
+INT i;
+DOUBLE aux[6];
+DOUBLE strmin  = 1.0E-9;
+DOUBLE strzero = 0.;
 #ifdef DEBUG 
 dstrc_enter("c1_nstr");
 #endif
@@ -532,29 +532,29 @@ nostrs[element node] [12..23]: stress-11 stress-22 stress-33 ang-r1 ang-s1 ang-t
 
 *----------------------------------------------------------------------*/
 void c1_sext(
-            double nostrs[20][26],
-            double     *funct,
-            double    **deriv,
-            double      **xjm,
-            double      *xyze,
-            double gpstress[27][26],
-            double       *xgr,
-            double       *xgs,
-            double       *xgt,
-            int           nir,
-            int           nis, 
-            int           nit,
-            int           iel 
+            DOUBLE nostrs[20][26],
+            DOUBLE     *funct,
+            DOUBLE    **deriv,
+            DOUBLE      **xjm,
+            DOUBLE      *xyze,
+            DOUBLE gpstress[27][26],
+            DOUBLE       *xgr,
+            DOUBLE       *xgs,
+            DOUBLE       *xgt,
+            INT           nir,
+            INT           nis, 
+            INT           nit,
+            INT           iel 
             )
 {
 /*----------------------------------------------------------------------*/
-int nn,i,j,ngp;
-double g[6][6]; 
-double gi[6][6];
-double cnp1, cnp2, cnp3, det;
-double s123[12];
-double fgp[8][27];
-double fnp[8];
+INT nn,i,j,ngp;
+DOUBLE g[6][6]; 
+DOUBLE gi[6][6];
+DOUBLE cnp1, cnp2, cnp3, det;
+DOUBLE s123[12];
+DOUBLE fgp[8][27];
+DOUBLE fnp[8];
 #ifdef DEBUG 
 dstrc_enter("c1_sext");
 #endif

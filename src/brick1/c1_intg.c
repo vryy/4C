@@ -35,12 +35,12 @@ void c1intg(ELEMENT         *ele,
             C1_DATA         *data)
 {
 
-double zero  = 0.0;
-double one   = 1.0;
-double two   = 2.0;
-double three = 3.0;
+DOUBLE zero  = 0.0;
+DOUBLE one   = 1.0;
+DOUBLE two   = 2.0;
+DOUBLE three = 3.0;
 
-static double xg[6][6],wgt[6][6];
+static DOUBLE xg[6][6],wgt[6][6];
 #ifdef DEBUG 
 dstrc_enter("c1intg");
 #endif

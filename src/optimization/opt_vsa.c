@@ -71,14 +71,14 @@ defined in opt_cal_main.c
 /*----------------------------------------------------------------------*
  | variational sensitivity analysis                         al 05/01    |
  *----------------------------------------------------------------------*/
-void optvsa(double *grdobj, double *grdcon,int init)
+void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
 {
 /*----------------------------------------------------------------------*/
-  int    i, iloc, cc;               /* a counter */
-  static  double *svec;   /* vector with sensitivities on element level */
-  static  double *sveh;   /* necsessary for allreducing element values  */
+  INT    i, iloc, cc;               /* a counter */
+  static  DOUBLE *svec;   /* vector with sensitivities on element level */
+  static  DOUBLE *sveh;   /* necsessary for allreducing element values  */
 /*----------------------------------------------------------------------*/
-  int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+  INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
   SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
   PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
   FIELD        *actfield;         /* pointer to the structural FIELD */
@@ -112,9 +112,9 @@ void optvsa(double *grdobj, double *grdcon,int init)
 /*--------------------------- initialize evaluation of sensitivities ---*/
   if(init==1)
   {
-    svec  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+    svec  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
     #ifdef PARALLEL 
-    sveh  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+    sveh  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
     #endif
     goto end;
   }

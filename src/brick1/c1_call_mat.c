@@ -26,14 +26,14 @@ This routine selects proper material law evaluates element stresses.
 \param      ele ELEMENT * (i)   element data
 \param      mat MATERIAL* (i)   material data
 \param       ip int       (i)   integration point Id      
-\param   stress double*   (o)   stress vector
-\param   strain double*   (o)   strain vector
-\param        d double**  (o)   constitutive matrix
-\param     disd double*   (i)   displacement derivatives 
-\param  g[6][6] double    (i)   transformation matrix s(glob)=g*s(loc)
-\param gi[6][6] double    (i)   inverse of g          s(loc) =gi*s(glob)
-\param   istore int       (i)   controls storing of new stresses to wa
-\param   newval int       (i)   controls evaluation of new stresses
+\param   stress DOUBLE*   (o)   stress vector
+\param   strain DOUBLE*   (o)   strain vector
+\param        d DOUBLE**  (o)   constitutive matrix
+\param     disd DOUBLE*   (i)   displacement derivatives 
+\param  g[6][6] DOUBLE    (i)   transformation matrix s(glob)=g*s(loc)
+\param gi[6][6] DOUBLE    (i)   inverse of g          s(loc) =gi*s(glob)
+\param   istore INT       (i)   controls storing of new stresses to wa
+\param   newval INT       (i)   controls evaluation of new stresses
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -42,15 +42,15 @@ This routine selects proper material law evaluates element stresses.
 *----------------------------------------------------------------------*/
 void c1_call_mat(ELEMENT   *ele,
                  MATERIAL  *mat, 
-                 int ip,       
-                 double *stress,
-                 double *strain,
-                 double **d,
-                 double *disd,
-                 double g[6][6], 
-                 double gi[6][6],
-                 int istore,
-                 int newval)
+                 INT ip,       
+                 DOUBLE *stress,
+                 DOUBLE *strain,
+                 DOUBLE **d,
+                 DOUBLE *disd,
+                 DOUBLE g[6][6], 
+                 DOUBLE gi[6][6],
+                 INT istore,
+                 INT newval)
 {
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -150,10 +150,10 @@ This routine calculates derivatives of material law.
 </pre>
 \param      ele ELEMENT * (i)   element data
 \param      mat MATERIAL* (i)   material data
-\param   stress double*   (o)   stress vector
-\param   strain double*   (o)   strain vector
-\param        d double**  (o)   DERIVATIVE of constitutive matrix
-\param  g[6][6] double    (i)   transformation matrix s(glob)=g*s(loc)
+\param   stress DOUBLE*   (o)   stress vector
+\param   strain DOUBLE*   (o)   strain vector
+\param        d DOUBLE**  (o)   DERIVATIVE of constitutive matrix
+\param  g[6][6] DOUBLE    (i)   transformation matrix s(glob)=g*s(loc)
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -162,10 +162,10 @@ This routine calculates derivatives of material law.
 *----------------------------------------------------------------------*/
 void c1_call_matd(ELEMENT   *ele,
                  MATERIAL  *mat, 
-                 double *stress,
-                 double *strain,
-                 double **d,
-                 double g[6][6])
+                 DOUBLE *stress,
+                 DOUBLE *strain,
+                 DOUBLE **d,
+                 DOUBLE g[6][6])
 {
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -210,14 +210,14 @@ This routine gives density out of material law.
 
 </pre>
 \param      mat MATERIAL*   (i)   material data
-\param    density double*   (i)   density value 
+\param    density DOUBLE*   (i)   density value 
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: opt_c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_getdensity(MATERIAL   *mat, double *density)
+void c1_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
 #ifdef DEBUG 
 dstrc_enter("c1_getdensity");

@@ -30,9 +30,9 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 void inpctropt()
 {
-int    ierr;
-int    i, idum, iloop;
-int    ccdv=0; /* n.of.variables */
+INT    ierr;
+INT    i, idum, iloop;
+INT    ccdv=0; /* n.of.variables */
 char   buffer[50]; 
 OSNLP *nlp;
 OSFSD *fsd;
@@ -40,7 +40,7 @@ OSFSD *fsd;
 dstrc_enter("inpctropt");
 #endif
 /*----------------------------------------------------------------------*/
-opt = (OPTI*)calloc(1,sizeof(OPTI));
+opt = (OPTI*)CCACALLOC(1,sizeof(OPTI));
 if (opt==NULL) dserror("Allocation of OPTIMIZATION failed");
 /*------------------------------------------------- initialize data ----*/
   opt->opttype   = ot_topology_optimization;
@@ -68,7 +68,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      if (strncmp(buffer,"FSD",3)==0 )
      {    
          opt->strategy=os_fsd;
-         opt->strat.fsd = (OSFSD*)calloc(1,sizeof(OSFSD));
+         opt->strat.fsd = (OSFSD*)CCACALLOC(1,sizeof(OSFSD));
          if (opt->strat.fsd==NULL) 
                              dserror("Allocation of OPTIMIZATION failed");
          /*---------------------- initialize  data for fsd-stragedy ----*/
@@ -85,7 +85,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      else if (strncmp(buffer,"NLP",3)==0 )
      {    
          opt->strategy=os_nlp;
-         opt->strat.nlp = (OSNLP*)calloc(1,sizeof(OSNLP));
+         opt->strat.nlp = (OSNLP*)CCACALLOC(1,sizeof(OSNLP));
          if (opt->strat.nlp==NULL) 
                              dserror("Allocation of OPTIMIZATION failed");
          /*---------------------- initialize  data for nlp-stragedy ----*/

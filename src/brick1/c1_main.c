@@ -52,13 +52,13 @@ void brick1(      PARTITION   *actpart,
 /*----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 /*----------------------------------------------------------------------*/
-int  kstep, iloc;
+INT  kstep, iloc;
 C1_DATA      actdata;
 MATERIAL    *actmat;
 
-int          imyrank;
-double      *intforce;
-double       getval;
+INT          imyrank;
+DOUBLE      *intforce;
+DOUBLE       getval;
 
 #ifdef DEBUG 
 dstrc_enter("brick1");

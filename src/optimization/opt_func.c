@@ -83,13 +83,13 @@ extern struct _FIELD      *field;
  |                                                      a.lipka 5/01    |
  | evaluate values of objective function and constraints                |
  *----------------------------------------------------------------------*/
-void func(int *m, double *f, double *g)
+void func(INT *m, DOUBLE *f, DOUBLE *g)
 {
 /*----------------------------------------------------------------------*/
-int indcon;
+INT indcon;
 /*----------------------------------------------------------------------*/
-double objective;
-double constraint;
+DOUBLE objective;
+DOUBLE constraint;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("func");
@@ -127,16 +127,16 @@ return;
  |                                                      a.lipka 5/01    |
  | control program for evaluation of equality constraints               |
  *----------------------------------------------------------------------*/
-void opteqc(double *constraint,int init)
+void opteqc(DOUBLE *constraint,INT init)
 {
 /*----------------------------------------------------------------------*/
-int ione=1;
-static double refvolu; /* reference or initial volume */
-static double refmass; /* reference or initial mass   */
-double tmpobj;
+INT ione=1;
+static DOUBLE refvolu; /* reference or initial volume */
+static DOUBLE refmass; /* reference or initial mass   */
+DOUBLE tmpobj;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
 PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
 FIELD        *actfield;         /* pointer to the structural FIELD */
@@ -244,13 +244,13 @@ return;
  |                                                      a.lipka 5/01    |
  | control program for update of fem-arrays for act. variable           |
  *----------------------------------------------------------------------*/
-void optupd(int init)
+void optupd(INT init)
 {
 /*----------------------------------------------------------------------*/
-  int i, j, cc;
-  static  double *svec;   /* vector with values for element level */
+  INT i, j, cc;
+  static  DOUBLE *svec;   /* vector with values for element level */
 /*----------------------------------------------------------------------*/
-int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
 SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
 PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
@@ -287,7 +287,7 @@ dstrc_enter("optupd");
   {
     if(opt->opttype == ot_topology_optimization)
     {
-      svec  = (double*)CCACALLOC(actfield->dis[0].numele,sizeof(double));
+      svec  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
     } 
     goto end;
   }
@@ -363,7 +363,7 @@ void updvar(void)
 /*----------------------------------------------------------------------*/
 OSNLP *nlp;
 /*----------------------------------------------------------------------*/
-int iscvar;
+INT iscvar;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("updvar");
@@ -387,13 +387,13 @@ return;
  |                                                      a.lipka 5/01    |
  | control program for calculation of objective functions               |
  *----------------------------------------------------------------------*/
-void optobj(double *objective)
+void optobj(DOUBLE *objective)
 {
 /*----------------------------------------------------------------------*/
-int ione=1;
-double tmpobj;
+INT ione=1;
+DOUBLE tmpobj;
 /*----------------------------------------------------------------------*/
-int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
 SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
 PARTITION    *actpart;          /* pointer to the fields PARTITION structure */

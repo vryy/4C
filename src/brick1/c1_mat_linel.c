@@ -31,12 +31,12 @@ This routine to establish local material law
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_mat_linel(double youngs,
-                  double possionratio,
-                  double **d)
+void c1_mat_linel(DOUBLE youngs,
+                  DOUBLE possionratio,
+                  DOUBLE **d)
 {
-double d1,d2,d3;
-double ym,pv;/*------------------------------------------ mat constants */
+DOUBLE d1,d2,d3;
+DOUBLE ym,pv;/*------------------------------------------ mat constants */
 #ifdef DEBUG 
 dstrc_enter("c1_mat_linel");
 #endif
@@ -114,12 +114,12 @@ This routine to establish local porous material law
 
 *----------------------------------------------------------------------*/
 void c1_mat_stvpor(MATERIAL  *mat,
-                   double *matdata,
-                   double **d)
+                   DOUBLE *matdata,
+                   DOUBLE **d)
 {
-double d1,d2,d3;
+DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
-double ym, pv, dn, rd, ex;
+DOUBLE ym, pv, dn, rd, ex;
 #ifdef DEBUG 
 dstrc_enter("c1_mat_stvpor");
 #endif
@@ -206,12 +206,12 @@ This routine to establish derivatives of llocal porous material law
 
 *----------------------------------------------------------------------*/
 void c1_matd_stvpor(MATERIAL  *mat,
-                   double *matdata,
-                   double **d)
+                   DOUBLE *matdata,
+                   DOUBLE **d)
 {
-double d1,d2,d3;
+DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
-double dym, ym, pv, dn, rd, ex;
+DOUBLE dym, ym, pv, dn, rd, ex;
 #ifdef DEBUG 
 dstrc_enter("c1_matd_stvpor");
 #endif
@@ -302,12 +302,12 @@ This routine to establish derivatives of llocal porous material law
 
 *----------------------------------------------------------------------*/
 void c1_mat_mfoc(  MATERIAL  *mat,
-                   double *matdata,
-                   double **d)
+                   DOUBLE *matdata,
+                   DOUBLE **d)
 {
-double d1,d2,d3;
+DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
-double es, ym, pr, dens, denss, oce, ocf, denmin, denmax;
+DOUBLE es, ym, pr, dens, denss, oce, ocf, denmin, denmax;
 #ifdef DEBUG 
 dstrc_enter("c1_mat_mfoc");
 #endif
@@ -398,12 +398,12 @@ This routine to establish derivatives of llocal porous material law
 
 *----------------------------------------------------------------------*/
 void c1_mat_mfcc(  MATERIAL  *mat,
-                   double *matdata,
-                   double **d)
+                   DOUBLE *matdata,
+                   DOUBLE **d)
 {
-double d1,d2,d3;
+DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
-double es, ym, pr, dens, denss, cce, ccf, denmin, denmax;
+DOUBLE es, ym, pr, dens, denss, cce, ccf, denmin, denmax;
 #ifdef DEBUG 
 dstrc_enter("c1_mat_mfcc");
 #endif
@@ -494,12 +494,12 @@ This routine to establish derivatives of llocal porous material law
 
 *----------------------------------------------------------------------*/
 void c1_matd_mfoc( MATERIAL  *mat,
-                   double *matdata,
-                   double **d)
+                   DOUBLE *matdata,
+                   DOUBLE **d)
 {
 /*----------------------------------------------------------------------*/
-double d1,d2,d3;
-double es, dym, pr, dens, denss, oce, ocf, denmin, denmax;
+DOUBLE d1,d2,d3;
+DOUBLE es, dym, pr, dens, denss, oce, ocf, denmin, denmax;
 #ifdef DEBUG 
 dstrc_enter("c1_matd_mfoc");
 #endif
@@ -592,12 +592,12 @@ This routine to establish derivatives of llocal porous material law
 
 *----------------------------------------------------------------------*/
 void c1_matd_mfcc( MATERIAL  *mat,
-                   double *matdata,
-                   double **d)
+                   DOUBLE *matdata,
+                   DOUBLE **d)
 {
 /*----------------------------------------------------------------------*/
-double d1,d2,d3;
-double es, dym, pr, dens, denss, cce, ccf, denmin, denmax;
+DOUBLE d1,d2,d3;
+DOUBLE es, dym, pr, dens, denss, cce, ccf, denmin, denmax;
 #ifdef DEBUG 
 dstrc_enter("c1_matd_mfcc");
 #endif
@@ -688,12 +688,12 @@ This routine to evaluate stresses for elastic material for a 3D-hex-element.
 \sa calling: ---; called by: c1_call_matd()
 
 *----------------------------------------------------------------------*/
-void c1mefm(double *strain, /* global strains                           */
-            double **d,     /* material matrices                        */
-            double *stress) /* forces/moments/additional terms          */
+void c1mefm(DOUBLE *strain, /* global strains                           */
+            DOUBLE **d,     /* material matrices                        */
+            DOUBLE *stress) /* forces/moments/additional terms          */
 {
 /*----------------------------------------------------------------------*/
-int    i, j;
+INT    i, j;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1mefm");
@@ -733,23 +733,23 @@ This routine to establish of llocal porous material law
 \sa calling: ---; called by: c1_call_mat()
 
 *----------------------------------------------------------------------*/
-void c1_mat_elorth(double   emod1 ,
-                   double   emod2 ,
-                   double   emod3 ,
-                   double   xnue23,
-                   double   xnue13,
-                   double   xnue12,
-                   double   gmod12,
-                   double   gmod23,
-                   double   gmod13,
-                   double      **c)
+void c1_mat_elorth(DOUBLE   emod1 ,
+                   DOUBLE   emod2 ,
+                   DOUBLE   emod3 ,
+                   DOUBLE   xnue23,
+                   DOUBLE   xnue13,
+                   DOUBLE   xnue12,
+                   DOUBLE   gmod12,
+                   DOUBLE   gmod23,
+                   DOUBLE   gmod13,
+                   DOUBLE      **c)
 {
-int i,j;
-double xnue31        = 0.;
-double xnue32        = 0.;
-double xnue21        = 0.;
-double emod          = 0.;
-double delta         = 0.;
+INT i,j;
+DOUBLE xnue31        = 0.;
+DOUBLE xnue32        = 0.;
+DOUBLE xnue21        = 0.;
+DOUBLE emod          = 0.;
+DOUBLE delta         = 0.;
 #ifdef DEBUG 
 dstrc_enter("c1_mat_elorth");
 #endif

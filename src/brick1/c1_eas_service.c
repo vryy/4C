@@ -32,15 +32,15 @@ for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1t0( double   fi[6][6],    
-           double   ff[6][6],    
-           double     **xjm0)  
+void c1t0( DOUBLE   fi[6][6],    
+           DOUBLE   ff[6][6],    
+           DOUBLE     **xjm0)  
 {
 /*----------------------------------------------------------------------*/
-int i,j,cc;
-int fdim=6;
-double ffi[36];
-double fii[36];
+INT i,j,cc;
+INT fdim=6;
+DOUBLE ffi[36];
+DOUBLE fii[36];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1t0");
@@ -128,26 +128,26 @@ for an 3D-hex-element.
 
 *----------------------------------------------------------------------*/
 void c1bop9(
-            double          **bop9,
-            double      bn1[3][10],
-            double        fi[6][6],
-            double        disd1[9],
-            double    ehdis[3][10],
-            double            det0,
-            double            det1,
-            double              e1,
-            double              e2,
-            double              e3,
-            int                iel,
-            int                 l1,
-            int                 l3 
+            DOUBLE          **bop9,
+            DOUBLE      bn1[3][10],
+            DOUBLE        fi[6][6],
+            DOUBLE        disd1[9],
+            DOUBLE    ehdis[3][10],
+            DOUBLE            det0,
+            DOUBLE            det1,
+            DOUBLE              e1,
+            DOUBLE              e2,
+            DOUBLE              e3,
+            INT                iel,
+            INT                 l1,
+            INT                 l3 
            )  
 {
 /*----------------------------------------------------------------------*/
-int i,j,k,m,cb,ce;
-int fdim=6;
-double rdet, dum;
-double eas[6][30],aux[9];
+INT i,j,k,m,cb,ce;
+INT fdim=6;
+DOUBLE rdet, dum;
+DOUBLE eas[6][30],aux[9];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1bop9");
@@ -280,17 +280,17 @@ for an 3D-hex-element.
 
 *----------------------------------------------------------------------*/
 void c1bdish(
-            double       **bop,
-            double   bn[3][10],
-            double     disd[9],
-            int            iel,
-            int             l3 
+            DOUBLE       **bop,
+            DOUBLE   bn[3][10],
+            DOUBLE     disd[9],
+            INT            iel,
+            INT             l3 
            )  
 {
 /*----------------------------------------------------------------------*/
-int l,k,node_start;
-double rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
-double h1, h2, h3;
+INT l,k,node_start;
+DOUBLE rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
+DOUBLE h1, h2, h3;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1bdish");
@@ -363,26 +363,26 @@ for an 3D-hex-element.
 *----------------------------------------------------------------------*/
 void c1rkefi(
             ELEMENT    *ele,
-            double **estif9,
-            double  **estif,
-            double    *fieh,
-            double     *fie,
-            int          l1
+            DOUBLE **estif9,
+            DOUBLE  **estif,
+            DOUBLE    *fieh,
+            DOUBLE     *fie,
+            INT          l1
            )  
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-int cc;
-int dim1 = 1;
-int dim24=24;
-double estif1[576];
-double fiehi[30];
-double saa[ 576];
-double sab[ 720];
-double sba[ 720];
-double sbai[720];
-double sbb[ 900];
-double sbbi[900];
+INT i,j;
+INT cc;
+INT dim1 = 1;
+INT dim24=24;
+DOUBLE estif1[576];
+DOUBLE fiehi[30];
+DOUBLE saa[ 576];
+DOUBLE sab[ 720];
+DOUBLE sba[ 720];
+DOUBLE sbai[720];
+DOUBLE sbb[ 900];
+DOUBLE sbbi[900];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1rkefi");
@@ -491,17 +491,17 @@ for an 3D-hex-element.
 
 *----------------------------------------------------------------------*/
 void c1res( 
-           double     *F,    /*  force vector integral (stress-resultants)*/
-           double    fac,    /*  multiplier for numerical integration     */
-           double **bop9,    /*  b-operator matrix                        */
-           int       iel,    /*  number nodes of element                  */
-           double  *fieh,    /*  internal force vector                    */
-           int        l3)    /*                                           */
+           DOUBLE     *F,    /*  force vector integral (stress-resultants)*/
+           DOUBLE    fac,    /*  multiplier for numerical integration     */
+           DOUBLE **bop9,    /*  b-operator matrix                        */
+           INT       iel,    /*  number nodes of element                  */
+           DOUBLE  *fieh,    /*  internal force vector                    */
+           INT        l3)    /*                                           */
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
-int ca,ce;
-double n11,n22,n33,n12,n23,n31;
+INT i,j,k;
+INT ca,ce;
+DOUBLE n11,n22,n33,n12,n23,n31;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1res");
@@ -556,19 +556,19 @@ for an 3D-hex-element.
 *----------------------------------------------------------------------*/
 void c1upenh(  
              ELEMENT         *ele,
-             double      edis[60],  
-             double  ehdis[3][10],
-             int               l1,
-             int               l3
+             DOUBLE      edis[60],  
+             DOUBLE  ehdis[3][10],
+             INT               l1,
+             INT               l3
             )
 {
 /*----------------------------------------------------------------------*/
-int i,j,k;
-int cc;
-double disl[24];
-double ehdisl[30];
-double hih[30];
-double hil[30][24];
+INT i,j,k;
+INT cc;
+DOUBLE disl[24];
+DOUBLE ehdisl[30];
+DOUBLE hih[30];
+DOUBLE hil[30][24];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1upenh");

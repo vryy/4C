@@ -72,20 +72,20 @@ for a 3D hex element
 
 *----------------------------------------------------------------------*/
 void c1_lint(
-             int        ngr,       int ngs,        int ngt, 
-             double    *xgp,   double *wgx,    double *ygp,
-             double    *wgy,   double *zgp,    double *wgz,
-             double   *xyze, double *funct, double **deriv, double **xjm,
-             int        iel,    int ngnode,       int *shn,  RSTF rstgeo,
-             int    *lonoff,  double *lval, 
-             double **eload
+             INT        ngr,       INT ngs,        INT ngt, 
+             DOUBLE    *xgp,   DOUBLE *wgx,    DOUBLE *ygp,
+             DOUBLE    *wgy,   DOUBLE *zgp,    DOUBLE *wgz,
+             DOUBLE   *xyze, DOUBLE *funct, DOUBLE **deriv, DOUBLE **xjm,
+             INT        iel,    INT ngnode,       INT *shn,  RSTF rstgeo,
+             INT    *lonoff,  DOUBLE *lval, 
+             DOUBLE **eload
              )
 {
 /*----------------------------------------------------------------------*/
-   int i,j, gpr, gps, gpt;
-   double e1, e2, e3, facr, facs, fact;
-   double det0, ds;
-   double ap[3], ar[3];
+   INT i,j, gpr, gps, gpt;
+   DOUBLE e1, e2, e3, facr, facs, fact;
+   DOUBLE det0, ds;
+   DOUBLE ap[3], ar[3];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_lint");
@@ -148,7 +148,7 @@ dstrc_enter("c1_lint");
       /*- ar[i] = ar[i] * facr * facs* da * onoffflag[i] * loadvalue[i] */
       for (i=0; i<3; i++)
       {
-         ar[i] *= facr * facs * fact * (double)(lonoff[i]) * lval[i];
+         ar[i] *= facr * facs * fact * (DOUBLE)(lonoff[i]) * lval[i];
       }
       /*-------------------- add load components to element load vector */
       for (i=0; i<ngnode; i++)
@@ -188,45 +188,45 @@ for a 3D hex element
 void c1_eleload(
              ELEMENT   *ele, 
              C1_DATA   *data, 
-             double    *loadvec,  
-             int        init
+             DOUBLE    *loadvec,  
+             INT        init
              )
 {
 /* for element integration */
-int                 i,j,cc;         /* some loopers and counters      */
-int                 nir,nis,nit;      /* num GP in r/s/t direction      */
-int                 iel;              /* numnp to this element          */
-const int           numdf =3;
+INT                 i,j,cc;         /* some loopers and counters      */
+INT                 nir,nis,nit;      /* num GP in r/s/t direction      */
+INT                 iel;              /* numnp to this element          */
+const INT           numdf =3;
 static ARRAY        funct_a;          /* shape functions                */    
-static double      *funct;     
+static DOUBLE      *funct;     
 static ARRAY        deriv_a;          /* derivatives of shape functions */   
-static double     **deriv;     
+static DOUBLE     **deriv;     
 static ARRAY        xjm_a;            /* jacobian matrix                */     
-static double     **xjm;         
-double              xyze[60];         /* element-node coordinates       */
+static DOUBLE     **xjm;         
+DOUBLE              xyze[60];         /* element-node coordinates       */
 /* load specific */
-static ARRAY eload_a; static double **eload;
-int             idof,inode;
-int             ngsurf;
-int             ngline;
-int             ngnode;
-int             surf;
-int             line;
-int             foundline;
-int             foundsurf;
-int             foundvolu;
+static ARRAY eload_a; static DOUBLE **eload;
+INT             idof,inode;
+INT             ngsurf;
+INT             ngline;
+INT             ngnode;
+INT             surf;
+INT             line;
+INT             foundline;
+INT             foundsurf;
+INT             foundvolu;
 GSURF          *gsurf[6];
 NEUM_CONDITION *surfneum[6];
 GLINE          *gline[12];
 NEUM_CONDITION *lineneum[12];
-int             ngr, ngs, ngt;
-double          xgp[3], ygp[3], zgp[3];
-double          wgx[3], wgy[3], wgz[3];
+INT             ngr, ngs, ngt;
+DOUBLE          xgp[3], ygp[3], zgp[3];
+DOUBLE          wgx[3], wgy[3], wgz[3];
 /* */
-static int h20perm[8]  = {16, 17, 18, 19,
+static INT h20perm[8]  = {16, 17, 18, 19,
                           12, 13, 14, 15};
 /*--------------------- variables needed for integration of line loads */
-static int lhnod[12][3] = {0, 1,  8,  /* 1st line nodes */
+static INT lhnod[12][3] = {0, 1,  8,  /* 1st line nodes */
                            1, 2,  9,  /* 2nd line nodes */
                            2, 3, 10,
                            3, 0, 11,
@@ -238,17 +238,17 @@ static int lhnod[12][3] = {0, 1,  8,  /* 1st line nodes */
                            5, 6, 13, 
                            6, 7, 14,
                            7, 4, 15};
-int *lhn; /* pointer to line node topology */
+INT *lhn; /* pointer to line node topology */
 /*--------------------- variables needed for integration of surf loads */
-static int shnod[6][8] = {0, 1, 2, 3,  8,  9, 10, 11,  /* 1st surf nodes */
+static INT shnod[6][8] = {0, 1, 2, 3,  8,  9, 10, 11,  /* 1st surf nodes */
                           4, 5, 1, 0, 12, 17,  8, 16,  /* 2nd surf nodes */
                           5, 6, 2, 1, 13, 18,  9, 17,
                           3, 2, 6, 7, 10, 18, 14, 19,
                           7, 4, 0, 3, 15, 16, 11, 19,
                           7, 6, 5, 4, 14, 13, 12, 15};
-int *shn; /* pointer to surface node topology */
+INT *shn; /* pointer to surface node topology */
 /*--------------------- variables needed for integration of volu loads */
-static int vhn[20] = 
+static INT vhn[20] = 
                          {0, 1, 2, 3,  4, 5, 6, 7, 8,   /*  hex 8 nods */
              9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};/*     20 nods */
 RSTF rstgeo;

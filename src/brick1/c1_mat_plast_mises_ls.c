@@ -37,16 +37,16 @@ material law (Simo/Pister).
 \sa calling: ---; called by: c1elpag()
 *----------------------------------------------------------------------*/
 void c1mate(
-            double detf,   /*   */
-            double rk,     /*   */
-            double bmu,    /*   */
-            double sig2,   /*   */
-            double *devn,  /*   */
-            double **d)    /*   */
+            DOUBLE detf,   /*   */
+            DOUBLE rk,     /*   */
+            DOUBLE bmu,    /*   */
+            DOUBLE sig2,   /*   */
+            DOUBLE *devn,  /*   */
+            DOUBLE **d)    /*   */
 {
 /*----------------------------------------------------------------------*/
-int    i, j;
-double a, b, c, f, e, fac;
+INT    i, j;
+DOUBLE a, b, c, f, e, fac;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1mate");
@@ -130,26 +130,26 @@ Nonlinear Ramberg-Osgood -Hardening law (large def. model).
 \sa calling: ---; called by: c1elpag()
 *----------------------------------------------------------------------*/
 void c1radg(
-            double fhard,    /* hardening modulus                       */
-            double uniax,    /* yield stresse                           */
-            double bmu,      /*                        */
-            double sig2,     /*                                         */
-            double *dhard,   /* hardening modulus                       */
-            double *dev,     /* elastic predicor projected onto yield   */
-            double *epstn,   /* equivalent uniaxial plastic strain      */
-            double *dlam)    /* increment of plastic multiplier         */
+            DOUBLE fhard,    /* hardening modulus                       */
+            DOUBLE uniax,    /* yield stresse                           */
+            DOUBLE bmu,      /*                        */
+            DOUBLE sig2,     /*                                         */
+            DOUBLE *dhard,   /* hardening modulus                       */
+            DOUBLE *dev,     /* elastic predicor projected onto yield   */
+            DOUBLE *epstn,   /* equivalent uniaxial plastic strain      */
+            DOUBLE *dlam)    /* increment of plastic multiplier         */
 {
 /*----------------------------------------------------------------------*/
-int i;
-int isoft1 = 0;
-int imax = 30;
-double epst, ro32, ro23, esig, f, dfdl, dum, mot, epsth;
-double rnorm[6];
-double tol = 1.0E-5;
-double alpha = 0.;
-double expo  = 0.;
-double rlin  = 0.;
-double rqua  = 0.;
+INT i;
+INT isoft1 = 0;
+INT imax = 30;
+DOUBLE epst, ro32, ro23, esig, f, dfdl, dum, mot, epsth;
+DOUBLE rnorm[6];
+DOUBLE tol = 1.0E-5;
+DOUBLE alpha = 0.;
+DOUBLE expo  = 0.;
+DOUBLE rlin  = 0.;
+DOUBLE rqua  = 0.;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1radg");
@@ -275,21 +275,21 @@ Nonlinear Ramberg-Osgood -Hardening law (large def. model).
 
 *----------------------------------------------------------------------*/
 void c1matpg(
-             double dlam,   
-             double detf,
-             double rk,
-             double bmu,
-             double sig2,
-             double hard,
-             double *devn,
-             double **d)    
+             DOUBLE dlam,   
+             DOUBLE detf,
+             DOUBLE rk,
+             DOUBLE bmu,
+             DOUBLE sig2,
+             DOUBLE hard,
+             DOUBLE *devn,
+             DOUBLE **d)    
 {
 /*----------------------------------------------------------------------*/
-int i, j;
-double a,b,c,f,e,b0,b1,b2,b3,trrn2,fac;
-double rn2[6];
-double drn2[6];
-double aux[6][6];
+INT i, j;
+DOUBLE a,b,c,f,e,b0,b1,b2,b3,trrn2,fac;
+DOUBLE rn2[6];
+DOUBLE drn2[6];
+DOUBLE aux[6][6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1matpg");
@@ -401,14 +401,14 @@ This routine performs a push forward(deformations)/pull-back(stresses)
 
 *----------------------------------------------------------------------*/
 void c1pushf(
-            double *be,   
-            double *bet,  
-            double *fn
+            DOUBLE *be,   
+            DOUBLE *bet,  
+            DOUBLE *fn
             )   
 {
 /*----------------------------------------------------------------------*/
-int dim3 = 3;
-double fb[9],bbe[9],fc[9],fa[9];
+INT dim3 = 3;
+DOUBLE fb[9],bbe[9],fc[9],fa[9];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1pushf");
@@ -479,31 +479,31 @@ for large deformation model.
 
 *----------------------------------------------------------------------*/
 void c1elpag(
-             double ym,      
-             double pv,      
-             double uniax,   
-             double fhard,   
-             double *stress, 
-             double *sig,    
-             double *fn,     
-             double *fni,    
-             double detf,    
-             double **d,     
-             double *epstn,  
-             int    *iupd,   
-             int    *yip)    
+             DOUBLE ym,      
+             DOUBLE pv,      
+             DOUBLE uniax,   
+             DOUBLE fhard,   
+             DOUBLE *stress, 
+             DOUBLE *sig,    
+             DOUBLE *fn,     
+             DOUBLE *fni,    
+             DOUBLE detf,    
+             DOUBLE **d,     
+             DOUBLE *epstn,  
+             INT    *iupd,   
+             INT    *yip)    
 {
 /*----------------------------------------------------------------------*/
-int i;
-double mot, dlam, rlin, rqua, rmu, rk, deth, trtau, sig2, ft;
-double epstnh, expo, yld, bmu, fac, press, deti;
-double sq23, alpha, sm, dhard, expoh;
-double tol = 1.0E-10;
-double sigf[6];
-double tau[6];
-double dev[6];
-double rnorm[6];
-double faux[9];
+INT i;
+DOUBLE mot, dlam, rlin, rqua, rmu, rk, deth, trtau, sig2, ft;
+DOUBLE epstnh, expo, yld, bmu, fac, press, deti;
+DOUBLE sq23, alpha, sm, dhard, expoh;
+DOUBLE tol = 1.0E-10;
+DOUBLE sigf[6];
+DOUBLE tau[6];
+DOUBLE dev[6];
+DOUBLE rnorm[6];
+DOUBLE faux[9];
 #ifdef DEBUG 
 dstrc_enter("c1elpag");
 #endif
@@ -739,38 +739,38 @@ This routine to establish local material law - plastic large strain
 
 *----------------------------------------------------------------------*/
 void c1_mat_plast_mises_ls(
-                        double ym,      /* young's modulus              */
-                        double pv,      /* poisson's ratio              */
-                        double uniax,   /* yield stresse                */
-                        double fhard,   /* hardening modulus            */
+                        DOUBLE ym,      /* young's modulus              */
+                        DOUBLE pv,      /* poisson's ratio              */
+                        DOUBLE uniax,   /* yield stresse                */
+                        DOUBLE fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
-                        int ip,         /* integration point Id         */
-                        double *stress, /*ele stress (-resultant) vector*/      
-                        double **d,     /* material matrix              */
-                        double  *disd,  /* displacement derivatives     */
-                        int istore,     /* controls storing of stresses */
-                        int newval)     /* controls eval. of stresses   */
+                        INT ip,         /* integration point Id         */
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE **d,     /* material matrix              */
+                        DOUBLE  *disd,  /* displacement derivatives     */
+                        INT istore,     /* controls storing of stresses */
+                        INT newval)     /* controls eval. of stresses   */
 {
 /*----------------------------------------------------------------------*/
-int i;
-int yip;
-int iupd;
-double epstn;
-double sig[6];
-double eps[9];
-double tol = 1.0E-10;
+INT i;
+INT yip;
+INT iupd;
+DOUBLE epstn;
+DOUBLE sig[6];
+DOUBLE eps[9];
+DOUBLE tol = 1.0E-10;
 
-double mot, deth;
-double rmu, rk, fac, press, det, detf;
-double aux[9];
-double disd1[9];
-double stress1[6];
-double sigf[6];
+DOUBLE mot, deth;
+DOUBLE rmu, rk, fac, press, det, detf;
+DOUBLE aux[9];
+DOUBLE disd1[9];
+DOUBLE stress1[6];
+DOUBLE sigf[6];
 
 
-double sm;
-double expo  = 0.;
-double alpha = 0.;
+DOUBLE sm;
+DOUBLE expo  = 0.;
+DOUBLE alpha = 0.;
 #ifdef DEBUG 
 dstrc_enter("c1_mat_plast_mises_ls");
 #endif

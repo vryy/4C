@@ -22,14 +22,14 @@ integration of a 3D hex element
 *----------------------------------------------------------------------*/
 typedef struct _C1_DATA
 {
-double        xgrr[13]; /*!< natural coordinates r of gaussian points */
-double        wgtr[13]; /*!< weights at natural coordinates r */
+DOUBLE        xgrr[13]; /*!< natural coordinates r of gaussian points */
+DOUBLE        wgtr[13]; /*!< weights at natural coordinates r */
 
-double        xgss[13]; /*!< natural coordinates s of gaussian points */
-double        wgts[13]; /*!< weights at natural coordinates s */
+DOUBLE        xgss[13]; /*!< natural coordinates s of gaussian points */
+DOUBLE        wgts[13]; /*!< weights at natural coordinates s */
 
-double        xgtt[13]; /*!< natural coordinates t of gaussian points */
-double        wgtt[13]; /*!< weights at natural coordinates t */
+DOUBLE        xgtt[13]; /*!< natural coordinates t of gaussian points */
+DOUBLE        wgtt[13]; /*!< weights at natural coordinates t */
 } C1_DATA;
 /*!----------------------------------------------------------------------
 \brief 3D hex element
@@ -42,10 +42,10 @@ This structure contains eas data
 typedef struct _C1_EASDAT
 {
 /* eas ...*/
-double     *disl;  /*!< element displacements (last step) */
-double     *ehdis; /*!< element displacements             */ 
-double     *hil;   /*!< element parameters                */ 
-double     *hih;   /*!< element parameters                */ 
+DOUBLE     *disl;  /*!< element displacements (last step) */
+DOUBLE     *ehdis; /*!< element displacements             */ 
+DOUBLE     *hil;   /*!< element parameters                */ 
+DOUBLE     *hih;   /*!< element parameters                */ 
 } C1_EASDAT;
 
 /*!----------------------------------------------------------------------
@@ -59,13 +59,13 @@ This structure contains the working array for g.p. values
 typedef struct _C1_IP_WA
 {
 /* mises ...*/
-double      sig[6]; /*!< global stresses                              */
-double      eps[9]; /*!< global strains                               */
-double       epstn; /*!< equivalent strain                            */
-int          yip;   /*!< stress state: 1=elastic 2=plastic            */
+DOUBLE      sig[6]; /*!< global stresses                              */
+DOUBLE      eps[9]; /*!< global strains                               */
+DOUBLE       epstn; /*!< equivalent strain                            */
+INT          yip;   /*!< stress state: 1=elastic 2=plastic            */
 /* hashin delamination (plasticity) ...*/
-double      kappa;  /*!< damage threshold value                       */ 
-int         imod;   /*!< flag, indicates if sigy has been reached     */
+DOUBLE      kappa;  /*!< damage threshold value                       */ 
+INT         imod;   /*!< flag, indicates if sigy has been reached     */
 } C1_IP_WA;
 
 
@@ -82,8 +82,8 @@ typedef struct _C1_ELE_WA
 /* eas ...*/
 C1_EASDAT     *eas;     /*!< eas specific data                          */
 C1_IP_WA      *ipwa;    /*!< working array for integration points       */
-double        *matdata; /*!< element material data, actual density ...  */
-int           *optdata; /*!< optimization variable number ...           */
+DOUBLE        *matdata; /*!< element material data, actual density ...  */
+INT           *optdata; /*!< optimization variable number ...           */
 } C1_ELE_WA;
 /*!----------------------------------------------------------------------
 \brief 3D hex element
@@ -95,9 +95,9 @@ This structure contains all specific information for a 3D hex element
 *----------------------------------------------------------------------*/
 typedef struct _BRICK1
 {
-int           nGP[3];    /*!< number of gaussian points in rst direction*/
-int           nhyb;      /*!< flag whether to use the eas formulation   */
-int           form;      /*!< ==2: T.L.  */
+INT           nGP[3];    /*!< number of gaussian points in rst direction*/
+INT           nhyb;      /*!< flag whether to use the eas formulation   */
+INT           form;      /*!< ==2: T.L.  */
 
 C1_ELE_WA     *elewa;                        /*!< element working array */
 /*----------------------------- stresses in local and global systems ---*/
@@ -170,8 +170,8 @@ void c1inp(ELEMENT *ele);
 void c1_out_gid_sol_str(
                         FILE       *out, /* File pointer to flavia.res */
                         FIELD *actfield, /* active field               */ 
-                        int       place, /* current solution           */
-                        int         init /* allocate/free memory       */
+                        INT       place, /* current solution           */
+                        INT         init /* allocate/free memory       */
                         );
 #endif
 /*! @} (documentation module close)*/

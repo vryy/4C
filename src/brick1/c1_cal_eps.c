@@ -31,15 +31,15 @@ for an 3D-hex-element.
 \sa calling: ---; called by: c1_cint() and routines for plasticity
 
 *----------------------------------------------------------------------*/
-void c1_eps( double   *disd,                /* displacement derivatives */
-             double   *eps,                 /* strain vector            */
-             int      iform)         /* index for nonlinear formulation */
+void c1_eps( DOUBLE   *disd,                /* displacement derivatives */
+             DOUBLE   *eps,                 /* strain vector            */
+             INT      iform)         /* index for nonlinear formulation */
 {
 /*----------------------------------------------------------------------*/
-int i;
-double fac, half;
-double u11, u12, u13, u21, u22, u23, u31, u32, u33;
-double dn[6];
+INT i;
+DOUBLE fac, half;
+DOUBLE u11, u12, u13, u21, u22, u23, u31, u32, u33;
+DOUBLE dn[6];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_eps");

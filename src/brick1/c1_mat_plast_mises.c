@@ -43,38 +43,38 @@ This routine to establish local material law
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_mat_plast_mises(double ym,      /* young's modulus              */
-                        double pv,      /* poisson's ratio              */
-                        double uniax,   /* yield stresse                */
-                        double fhard,   /* hardening modulus            */
+void c1_mat_plast_mises(DOUBLE ym,      /* young's modulus              */
+                        DOUBLE pv,      /* poisson's ratio              */
+                        DOUBLE uniax,   /* yield stresse                */
+                        DOUBLE fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
-                        int ip,         /* integration point Id         */
-                        double *stress, /*ele stress (-resultant) vector*/      
-                        double **d,     /* material matrix              */
-                        double  *disd,  /* displacement derivatives     */
-                        double g[6][6], /* transformation matrix        */
-                        double gi[6][6],/* inverse of g                 */
-                        int istore,     /* controls storing of stresses */
-                        int newval)     /* controls eval. of stresses   */
+                        INT ip,         /* integration point Id         */
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE **d,     /* material matrix              */
+                        DOUBLE  *disd,  /* displacement derivatives     */
+                        DOUBLE g[6][6], /* transformation matrix        */
+                        DOUBLE gi[6][6],/* inverse of g                 */
+                        INT istore,     /* controls storing of stresses */
+                        INT newval)     /* controls eval. of stresses   */
 {
 /*----------------------------------------------------------------------*/
-int i,j;
-int yip;
-int iupd;
-double epstn, ft;
-double sig[6];
-double eps[6];
-double strain[6];
-double delsig[6];
-double deleps[6];
-double tau[6];
-double tol = 1.0E-10;
-double dlam;
+INT i,j;
+INT yip;
+INT iupd;
+DOUBLE epstn, ft;
+DOUBLE sig[6];
+DOUBLE eps[6];
+DOUBLE strain[6];
+DOUBLE delsig[6];
+DOUBLE deleps[6];
+DOUBLE tau[6];
+DOUBLE tol = 1.0E-10;
+DOUBLE dlam;
 
 
-double yld, sm, sx, sy, sz, sxy, sxz, syz, sig2;
-double expo  = 0.;
-double alpha = 0.;
+DOUBLE yld, sm, sx, sy, sz, sxy, sxz, syz, sig2;
+DOUBLE expo  = 0.;
+DOUBLE alpha = 0.;
 #ifdef DEBUG 
 dstrc_enter("c1_mat_plast_mises");
 #endif
@@ -250,23 +250,23 @@ Nonlinear Ramberg-Osgood -Hardening law.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1rad1(double e,        /* young's modulus                         */
-            double fhard,    /* hardening modulus                       */
-            double uniax,    /* yield stresse                           */
-            double vnu,      /* poisson's ratio                         */
-            double sig2,     /* equivalent stress                       */
-            double *dev,     /* elastic predicor projected onto yield   */
-            double *epstn,   /* equivalent uniaxial plastic strain      */
-            double *dlam)    /* increment of plastic multiplier         */
+void c1rad1(DOUBLE e,        /* young's modulus                         */
+            DOUBLE fhard,    /* hardening modulus                       */
+            DOUBLE uniax,    /* yield stresse                           */
+            DOUBLE vnu,      /* poisson's ratio                         */
+            DOUBLE sig2,     /* equivalent stress                       */
+            DOUBLE *dev,     /* elastic predicor projected onto yield   */
+            DOUBLE *epstn,   /* equivalent uniaxial plastic strain      */
+            DOUBLE *dlam)    /* increment of plastic multiplier         */
 {
 /*----------------------------------------------------------------------*/
-int i;
-int isoft1 = 0;
-int nsoft  = 1;
-double ro23, ro32, bmu, sm, epst, esig, f, fobj, dfdl, dum, dhard;
-double rnorm[6];
-double alpha = 0.;
-double expo  = 0.;
+INT i;
+INT isoft1 = 0;
+INT nsoft  = 1;
+DOUBLE ro23, ro32, bmu, sm, epst, esig, f, fobj, dfdl, dum, dhard;
+DOUBLE rnorm[6];
+DOUBLE alpha = 0.;
+DOUBLE expo  = 0.;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1rad1");
@@ -369,22 +369,22 @@ This routine forms the elasto-plastic consistent tangent material tensor.
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1matp1(double e,       /* young's modulus                         */
-             double fhard,   /* hardening modulus                       */
-             double vnu,     /* poisson's ratio                         */
-             double sig2,
-             double *tau,    /* current stresses (local)                */
-             double epstn,   /* equivalent uniaxial plastic strain      */ 
-             double dlam,    /* increment of plastic multiplier         */
-             double **cc)    /* material matrix to be calculated        */
+void c1matp1(DOUBLE e,       /* young's modulus                         */
+             DOUBLE fhard,   /* hardening modulus                       */
+             DOUBLE vnu,     /* poisson's ratio                         */
+             DOUBLE sig2,
+             DOUBLE *tau,    /* current stresses (local)                */
+             DOUBLE epstn,   /* equivalent uniaxial plastic strain      */ 
+             DOUBLE dlam,    /* increment of plastic multiplier         */
+             DOUBLE **cc)    /* material matrix to be calculated        */
 {
 /*----------------------------------------------------------------------*/
-int i, j, k, l;
-double alpha, expo, fobj, sq23, sm, sqsig, b, fac1, fac2, fac3;
-double fkh, g, hard;
-double rn[3][3];
-double c[3][3][3][3];
-double gk[3][3] = {1.,0.,0.,0.,1.,0.,0.,0.,1.};
+INT i, j, k, l;
+DOUBLE alpha, expo, fobj, sq23, sm, sqsig, b, fac1, fac2, fac3;
+DOUBLE fkh, g, hard;
+DOUBLE rn[3][3];
+DOUBLE c[3][3][3][3];
+DOUBLE gk[3][3] = {1.,0.,0.,0.,1.,0.,0.,0.,1.};
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1matp1");
