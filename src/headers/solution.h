@@ -30,6 +30,10 @@
 #include "../../../lib_linux/aztec21/lib/az_aztec.h"
 #endif
 
+#ifdef AZUSA
+#include "../../../../lib_ita1/aztec21/lib/az_aztec.h"
+#endif
+
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
 #ifdef HPUXITA
@@ -99,7 +103,7 @@
 #endif
 
 /*----------------------------------------------------------------------*
- | includes for solver package Spooles              s.offermanns 5/02    |
+ | includes for solver package UMFPACK              s.offermanns 5/02    |
  *----------------------------------------------------------------------*/
 #ifdef UMFPACK
 #include "/bau/stat16/users/statik/lib/UMFPACK/include/umfpack.h"
