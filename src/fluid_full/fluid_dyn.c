@@ -118,10 +118,6 @@ else if (dyntyp==0)
       }
    break;
 
-/*   case 6:		/* Generalised alpha time integration		*/
-/*      fluid_gen_alpha(fdyn);
-   break; */
-
    case 7:		/* 2nd order backward differencing (BDF2)	*/
       fluid_isi(fdyn);
    break;
