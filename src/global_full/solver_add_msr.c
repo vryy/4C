@@ -17,7 +17,8 @@ void  add_msr(struct _PARTITION     *actpart,
                 struct _SOLVAR        *actsolv,
                 struct _INTRA         *actintra,
                 struct _ELEMENT       *actele,
-                struct _AZ_ARRAY_MSR  *msr)
+                struct _AZ_ARRAY_MSR  *msr1,
+                struct _AZ_ARRAY_MSR  *msr2)
 {
 #ifdef AZTEC_PACKAGE
 int         i,j,k,l,counter;          /* some counter variables */
@@ -36,15 +37,18 @@ int         owner[MAXDOFPERELE];      /* the owner of every dof */
 int         myrank;                   /* my intra-proc number */
 int         nprocs;                   /* my intra- number of processes */
 double    **estif;                    /* element matrix to be added to system matrix */
+double    **emass;                    /* element matrix to be added to system matrix */
 int        *update;                   /* msr-vector update see AZTEC manual */
 int         shift;                    /* variables for aztec quick finding algorithms */
 int        *bins;
 int        *bindx;                    /*    "       bindx         "         */
-double     *val;                      /*    "       val           "         */
+double     *val1,*val2;               /*    "       val           "         */
 int       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
 int         ncdofs;                   /* total number of coupled dofs */
-int       **isend;                    /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend;                    /* pointer to sendbuffer to communicate coupling conditions */
+int       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+double    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+int       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+double    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
 int         nsend;
 #ifdef DEBUG 
 dstrc_enter("add_msr");
@@ -54,32 +58,41 @@ dstrc_enter("add_msr");
 myrank     = actintra->intra_rank;
 nprocs     = actintra->intra_nprocs;
 estif      = estif_global.a.da;
+if (msr2) emass = emass_global.a.da;
+else      emass = NULL;
 nd         = actele->numnp * actele->node[0]->numdf;
 ndnd       = nd*nd;
-nnz        = msr->nnz;
-numeq_total= msr->numeq_total;
-numeq      = msr->numeq;
-update     = msr->update.a.iv;
-bindx      = msr->bindx.a.iv;
-val        = msr->val.a.dv;
+nnz        = msr1->nnz;
+numeq_total= msr1->numeq_total;
+numeq      = msr1->numeq;
+update     = msr1->update.a.iv;
+bindx      = msr1->bindx.a.iv;
+val1       = msr1->val.a.dv;
+if (msr2) val2 = msr2->val.a.dv;
+else      val2 = NULL;
 cdofs      = actpart->pdis[0].coupledofs.a.ia;
 ncdofs     = actpart->pdis[0].coupledofs.fdim;
 /*------ allocate and calculate shifts and bins for quick_find routines */
-if (!(msr->bins))
+if (!(msr1->bins))
 {
-   msr->bins = (int*)CALLOC( ABS(4+numeq/4),sizeof(int));
-   if (!(msr->bins)) dserror("Allocation of msr->bins failed");
-   AZ_init_quick_find(update,numeq,&(msr->shift),msr->bins);
+   msr1->bins = (int*)CALLOC( ABS(4+numeq/4),sizeof(int));
+   if (!(msr1->bins)) dserror("Allocation of msr->bins failed");
+   AZ_init_quick_find(update,numeq,&(msr1->shift),msr1->bins);
 }
-shift      = msr->shift;
-bins       = msr->bins;
+shift      = msr1->shift;
+bins       = msr1->bins;
 /*---------------------------------- put pointers to sendbuffers if any */
 #ifdef PARALLEL 
-if (msr->couple_i_send) 
+if (msr1->couple_i_send) 
 {
-   isend = msr->couple_i_send->a.ia;
-   dsend = msr->couple_d_send->a.da;
-   nsend = msr->couple_i_send->fdim;
+   isend1 = msr1->couple_i_send->a.ia;
+   dsend1 = msr1->couple_d_send->a.da;
+   nsend  = msr1->couple_i_send->fdim;
+   if (msr2)
+   {
+      isend2 = msr2->couple_i_send->a.ia;
+      dsend2 = msr2->couple_d_send->a.da;
+   }
 }
 #endif
 /*---------------------------------------------- make location vector lm*/
@@ -138,7 +151,9 @@ for (i=0; i<nd; i++)
          {
             ii_index = AZ_quick_find(ii,update,numeq,shift,bins);
             if (ii_index==-1) dserror("dof ii not found on this proc");
-            val[ii_index] += estif[i][j];
+            val1[ii_index] += estif[i][j];
+            if (msr2)
+            val2[ii_index] += emass[i][j];
          } 
          /*============================ do off-diagonal entry in row ii */
       /*                (either not a coupled dof or I am master owner) */
@@ -151,17 +166,19 @@ for (i=0; i<nd; i++)
             index       = AZ_find_index(jj,&(bindx[start]),lenght);
             if (ii_index==-1) dserror("dof jj not found in this row ii");
             index      += start;
-            val[index] += estif[i][j];
+            val1[index] += estif[i][j];
+            if (msr2)
+            val2[index] += emass[i][j];
          }
       }
       /*======================================== do main-diagonal entry */
       /*                           (a coupled dof and I am slave owner) */
       else
       {
-         add_msr_sendbuff(ii,jj,i,j,ii_owner,isend,dsend,estif,nsend);
+         add_msr_sendbuff(ii,jj,i,j,ii_owner,isend1,dsend1,estif,nsend);
+         if (msr2)
+         add_msr_sendbuff(ii,jj,i,j,ii_owner,isend2,dsend2,emass,nsend);
       }
-
-
    } /* end loop over j */
 }/* end loop over i */
 /*----------------------------------------------------------------------*/

@@ -59,6 +59,8 @@ else
 /*----------------------------------------------------------------------*/
 if (assemble_action==assemble_two_matrix)
 {
+   if (sysa1_typ != sysa2_typ)
+   dserror("Assembly of element matrices in different types of sparse mat. not impl.");
 /*------------------------------------------------ switch typ of matrix */
 /*-------------------------------------------- add to 2 system matrices */
    switch(sysa1_typ)
@@ -67,7 +69,7 @@ if (assemble_action==assemble_two_matrix)
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
    case msr:
-      dserror("Simultanous assembly of 2 system matrices not yet impl.");
+      add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
    break;
    case parcsr:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
@@ -82,7 +84,7 @@ if (assemble_action==assemble_two_matrix)
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
    case skymatrix:
-      dserror("Simultanous assembly of 2 system matrices not yet impl.");
+      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,sysa2->sky);
    break;
    case sparse_none:
       dserror("Unspecified type of system matrix");
@@ -101,7 +103,7 @@ if (assemble_action==assemble_one_matrix)
       add_mds(actpart,actsolv,actele,sysa1->mds);
    break;
    case msr:
-      add_msr(actpart,actsolv,actintra,actele,sysa1->msr);
+      add_msr(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
    break;
    case parcsr:
       add_parcsr(actpart,actsolv,actintra,actele,sysa1->parcsr);
@@ -116,7 +118,7 @@ if (assemble_action==assemble_one_matrix)
       add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr);
    break;
    case skymatrix:
-      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky);
+      add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,NULL);
    break;
    case sparse_none:
       dserror("Unspecified typ of system matrix");
@@ -136,7 +138,8 @@ if (assemble_action==assemble_two_exchange)
       switch(sysa1_typ)
       {
       case msr:
-         dserror("Simultanous assembly of 2 system matrices not yet impl.");
+         exchange_coup_msr(actpart,actsolv,actintra,sysa1->msr);
+         exchange_coup_msr(actpart,actsolv,actintra,sysa2->msr);
       break;
       case parcsr:
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
@@ -151,7 +154,7 @@ if (assemble_action==assemble_two_exchange)
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
       break;
       case skymatrix:
-         dserror("Simultanous assembly of 2 system matrices not yet impl.");
+         redundant_skyline(actpart,actsolv,actintra,sysa1->sky,sysa2->sky);
       break;
       case sparse_none:
          dserror("Unspecified type of system matrix");
@@ -179,7 +182,7 @@ if (assemble_action==assemble_one_exchange)
          redundant_dense(actpart,actsolv,actintra,sysa1->dense,NULL);
       break;
       case skymatrix:
-         redundant_skyline(actpart,actsolv,actintra,sysa1->sky);
+         redundant_skyline(actpart,actsolv,actintra,sysa1->sky,NULL);
       break;
       case rc_ptr:
          exchange_coup_rc_ptr(actpart,actsolv,actintra,sysa1->rc_ptr);

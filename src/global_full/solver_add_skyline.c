@@ -17,7 +17,8 @@ void  add_skyline(struct _PARTITION     *actpart,
                   struct _SOLVAR        *actsolv,
                   struct _INTRA         *actintra,
                   struct _ELEMENT       *actele,
-                  struct _SKYMATRIX     *sky)
+                  struct _SKYMATRIX     *sky1,
+                  struct _SKYMATRIX     *sky2)
 {
 int               i,j,counter;           /* some counter variables */
 int               ii,jj;                 /* counter variables for system matrix */
@@ -31,8 +32,10 @@ int               owner[MAXDOFPERELE];   /* the owner of every dof */
 #endif
 int               myrank;                /* my intra-proc number */
 int               nprocs;                /* my intra- number of processes */
-double          **estif;                  /* element matrix to be added to system matrix */
-double           *A;                      /* the skyline matrix */
+double          **estif;                  /* element matrix 1 to be added to system matrix */
+double          **emass;                  /* element matrix 2 to be added to system matrix */
+double           *A;                      /* the skyline matrix 1 */
+double           *B;                      /* the skyline matrix 2 */
 int              *maxa;
 
 int               startindex;
@@ -51,11 +54,16 @@ dstrc_enter("add_skyline");
 myrank     = actintra->intra_rank;
 nprocs     = actintra->intra_nprocs;
 estif      = estif_global.a.da;
+emass      = emass_global.a.da;
 nd         = actele->numnp * actele->node[0]->numdf;
-numeq_total= sky->numeq_total;
-numeq      = sky->numeq;
-A          = sky->A.a.dv;
-maxa       = sky->maxa.a.iv;
+numeq_total= sky1->numeq_total;
+numeq      = sky1->numeq;
+A          = sky1->A.a.dv;
+maxa       = sky1->maxa.a.iv;
+if (sky2)
+B          = sky2->A.a.dv;
+else
+B          = NULL;
 /*
 cdofs      = actpart->coupledofs.a.ia;
 ncdofs     = actpart->coupledofs.fdim;
@@ -109,6 +117,8 @@ for (i=0; i<nd; i++)
       if (distance>=height) dserror("Cannot assemble skyline");
       index     = startindex+distance;
       A[index] += estif[i][j];
+      if (B)
+      B[index] += emass[i][j];
    } /* end loop over j */
 }/* end loop over i */
 /*----------------------------------------------------------------------*/
@@ -127,7 +137,8 @@ void redundant_skyline(
                         PARTITION     *actpart,
                         SOLVAR        *actsolv,
                         INTRA         *actintra,
-                        SKYMATRIX     *sky
+                        SKYMATRIX     *sky1,
+                        SKYMATRIX     *sky2
                         )
 {
 int      i;
@@ -164,16 +175,28 @@ inprocs = actintra->intra_nprocs;
 /*--- very comfortable: the only thing to do is to alreduce the ARRAY a */
 /*                      (all coupling conditions are done then as well) */
 /*--------------------------------------------------- allocate recvbuff */
-recv = amdef("recv_a",&recv_a,sky->A.fdim,sky->A.sdim,"DV");
+recv = amdef("recv_a",&recv_a,sky1->A.fdim,sky1->A.sdim,"DV");
 /*----------------------------------------------------------- Allreduce */  
-MPI_Allreduce(sky->A.a.dv,
+MPI_Allreduce(sky1->A.a.dv,
               recv,
-              (sky->A.fdim)*(sky->A.sdim),
+              (sky1->A.fdim)*(sky1->A.sdim),
               MPI_DOUBLE,
               MPI_SUM,
               actintra->MPI_INTRA_COMM);
 /*----------------------------------------- copy reduced data back to a */
-amcopy(&recv_a,&(sky->A));
+amcopy(&recv_a,&(sky1->A));
+if (sky2)
+{
+/*----------------------------------------------------------- Allreduce */  
+MPI_Allreduce(sky2->A.a.dv,
+              recv,
+              (sky2->A.fdim)*(sky2->A.sdim),
+              MPI_DOUBLE,
+              MPI_SUM,
+              actintra->MPI_INTRA_COMM);
+/*----------------------------------------- copy reduced data back to a */
+amcopy(&recv_a,&(sky2->A));
+}
 /*----------------------------------------------------- delete recvbuff */
 amdel(&recv_a);
 #endif /*---------------------------------------------- end of PARALLEL */ 
