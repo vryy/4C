@@ -64,14 +64,14 @@ dstrc_enter("calsta");
 #endif
 /*----------------------------------------------------------------------*/
 
-if (statvar->geolinear==1 && statvar->geononlinear==1)
+if (statvar->linear==1 && statvar->nonlinear==1)
    dserror("linear and nonlinear static analysis on");
    
-if (statvar->geolinear==1) 
+if (statvar->linear==1) 
 {
    stalin();
 }
-if (statvar->geononlinear==1) 
+if (statvar->nonlinear==1) 
 {
    stanln(); 
 }
@@ -106,7 +106,8 @@ CONTAINER     container;        /* contains variables defined in container.h */
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
-container.isdyn = 0;            /* static calculation */
+container.isdyn  = 0;           /* static calculation */
+container.kintyp = 0;           /* kintyp = 0: geo_lin*/
 
 #ifdef DEBUG 
 dstrc_enter("stalin");
@@ -122,7 +123,7 @@ actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 #ifdef PARALLEL 
-actintra    = &(par.intra[0]);
+actintra    = &(par.intra[0]); 
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
