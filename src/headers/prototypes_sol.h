@@ -1013,7 +1013,8 @@ void restart_read_nlnstructdyn(INT restart,
                                ARRAY *intforce_a,
                                ARRAY *dirich_a,
                                CONTAINER    *container);
-void restart_write_nlnstructstat(STATIC_VAR     *statvar, 
+void restart_write_nlnstructstat(STATIC_VAR     *statvar,               
+                STANLN          *nln_data,  
                 FIELD           *actfield,  
                 PARTITION       *actpart,   
                 INTRA           *actintra,  
@@ -1022,7 +1023,7 @@ void restart_write_nlnstructstat(STATIC_VAR     *statvar,
                 INT nrhs,  DIST_VECTOR *rhs,
                 INT nsol,  DIST_VECTOR *sol,
                 INT ndis,  DIST_VECTOR *dispi,
-                CONTAINER    *container);	
+                CONTAINER    *container) ;	
 void restart_read_nlnstructstat(INT restart,   
                 STATIC_VAR     *statvar,                         
                 STANLN          *nln_data,     
