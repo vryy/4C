@@ -3,7 +3,7 @@
 /*----------------------------------------------------------------------*
  | ST.VENANT-KIRCHHOFF-MATERIAL                           m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel(LINEAR_ELASTIC *mat, double **g, double **CC)
+void s8_mat_linel(STVENANT *mat, double **g, double **CC)
 {
 int i,j,k,l;
 double xsi=1.0; /*----- shear correction coefficient not yet introduced */

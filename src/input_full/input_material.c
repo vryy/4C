@@ -50,16 +50,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       mat[i].m.fluid = (FLUID*)calloc(1,sizeof(FLUID));
       if (mat[i].m.fluid==NULL) dserror("Alloocation of FLUID material failed");
       frdouble("VISCOSITY",&(mat[i].m.fluid->viscosity),&ierr);
-      frdouble("DENSITY"  ,&(mat[i].m.fluid->density)  ,&ierr);
+      frdouble("DENS"  ,&(mat[i].m.fluid->density)  ,&ierr);
    }
-   frchk("MAT_Struct_Linear_Elastic",&ierr);
+   frchk("MAT_Struct_StVenantKirchhoff",&ierr);
    if (ierr==1)
    {
-      mat[i].mattyp = m_lin_el;
-      mat[i].m.lin_el = (LINEAR_ELASTIC*)calloc(1,sizeof(LINEAR_ELASTIC));
-      if (mat[i].m.lin_el==NULL) dserror("Alloocation of LINEAR_ELASTIC material failed");
-      frdouble("YOUNG",&(mat[i].m.lin_el->youngs)        ,&ierr);
-      frdouble("NUE"  ,&(mat[i].m.lin_el->possionratio)  ,&ierr);
+      mat[i].mattyp = m_stvenant;
+      mat[i].m.stvenant = (STVENANT*)calloc(1,sizeof(STVENANT));
+      if (mat[i].m.stvenant==NULL) dserror("Alloocation of STVENANT material failed");
+      frdouble("YOUNG"  ,&(mat[i].m.stvenant->youngs)      ,&ierr);
+      frdouble("NUE"    ,&(mat[i].m.stvenant->possionratio),&ierr);
+      frdouble("DENS",&(mat[i].m.stvenant->density)     ,&ierr);
    }
    frchk("MAT_Struct_NeoHooke",&ierr);
    if (ierr==1)
@@ -69,6 +70,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (mat[i].m.neohooke==NULL) dserror("Alloocation of NEO_HOOKE material failed");
       frdouble("YOUNG",&(mat[i].m.neohooke->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.neohooke->possionratio)  ,&ierr);
+      frdouble("DENSITY",&(mat[i].m.neohooke->density)     ,&ierr);
    }
    frchk("MAT_MisesPlastic",&ierr);
    if (ierr==1)

@@ -19,9 +19,9 @@ dstrc_enter("w1_call_mat");
 /*------------------------------------------------ call material law ---*/
   switch(mat->mattyp)
   {
-  case m_lin_el:/*------------------------------- linear elastic ---*/
-    w1_mat_linel(mat->m.lin_el->youngs,
-                 mat->m.lin_el->possionratio,
+  case m_stvenant:/*------------------------------- linear elastic ---*/
+    w1_mat_linel(mat->m.stvenant->youngs,
+                 mat->m.stvenant->possionratio,
                  wtype,
                  d);
   break;

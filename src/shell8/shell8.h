@@ -165,7 +165,7 @@ void shell8(      FIELD      *actfield,
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel(LINEAR_ELASTIC *mat, double **g, double **CC);
+void s8_mat_linel(STVENANT *mat, double **g, double **CC);
 void s8_mat_stress1(double *stress, double *strain, double **C);
 /*----------------------------------------------------------------------*
  |  s8_mtr.c                                             m.gee 11/01    |

@@ -28,9 +28,9 @@ dstrc_enter("s8_tmat");
 /*------------------------------------------------ switch material type */
 switch(mat->mattyp)
 {
-case m_lin_el:/*-------------------------- ST.VENANT-KIRCHHOFF-MATERIAL */
+case m_stvenant:/*-------------------------- ST.VENANT-KIRCHHOFF-MATERIAL */
    s8_eps(strain,gmkovc,gmkovr); 
-   s8_mat_linel(mat->m.lin_el,gmkonr,C);
+   s8_mat_linel(mat->m.stvenant,gmkonr,C);
    s8_mat_stress1(stress,strain,C);
 break;
 case m_neohooke:/*------------------------------ kompressible neo-hooke */
