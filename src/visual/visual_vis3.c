@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Call and control VISUAL2 
+\brief Call and control VISUAL3
 
 <pre>
 Maintainer: Steffen Genkinger
