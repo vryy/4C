@@ -68,13 +68,13 @@ dstrc_enter("mask_global_matrices");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------ loop over all fields */
-for (i=0; i<genprob.numfld; i++)
+for (j=0; j<genprob.numfld; j++)
 {
-   actfield = &(field[i]);
-   actsolv  = &(solv[i]);
-   actpart  = &(partition[i]);
+   actfield = &(field[j]);
+   actsolv  = &(solv[j]);
+   actpart  = &(partition[j]);
 #ifdef PARALLEL 
-   actintra = &(par.intra[i]);
+   actintra = &(par.intra[j]);
 #else
    /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
    actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
