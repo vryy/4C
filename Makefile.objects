@@ -103,7 +103,9 @@ OBJS4	      = src/input_full/input_control_global.o \
                 src/input_full/input_monitor.o \
                 src/input_full/inherit_insidedesign.o \
                 src/input_full/inherit_design_dis.o \
-                src/input_full/input_conditions.o
+                src/input_full/input_conditions.o \
+                src/input_full/inp_cal_dirich_fac.o \
+                src/input_full/input_funct.o
 #                fluid3
 OBJS5	      = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
