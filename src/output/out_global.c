@@ -107,7 +107,7 @@ fprintf(out,"Total Number of Steps     : %d\n",statvar->nstep);
 break;
 case time_dynamic:
 fprintf(out,"Type of Time              : Dynamic\n");
-fprintf(out,"Total Number of Steps     : %d\n",dyn->nstep);
+/*fprintf(out,"Total Number of Steps     : %d\n",dyn->nstep);*/
 break;
 default:
 dserror("Cannot print time type");

@@ -11,7 +11,12 @@ extern struct _FILES  allfiles;
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
 extern struct _DYNAMIC  *dyn;
-
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | global variables only needed in this file                            |
+ *----------------------------------------------------------------------*/
+int    numcurve;
+CURVE *curve;
 /*----------------------------------------------------------------------*
  | input of curves                                        m.gee 4/01    |
  *----------------------------------------------------------------------*/
@@ -26,38 +31,38 @@ dstrc_enter("inp_cond_curve");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------ count the number of different curves (max=5) */
-dyn->numcurve=0;
+numcurve=0;
 frfind("--CURVE1");
 frread();
 frchk("---",&ierr);
-if (ierr==0) (dyn->numcurve)++;
+if (ierr==0) (numcurve)++;
 
 frfind("--CURVE2");
 frread();
 frchk("---",&ierr);
-if (ierr==0) (dyn->numcurve)++;
+if (ierr==0) (numcurve)++;
 
 frfind("--CURVE3");
 frread();
 frchk("---",&ierr);
-if (ierr==0) (dyn->numcurve)++;
+if (ierr==0) (numcurve)++;
 
 frfind("--CURVE4");
 frread();
 frchk("---",&ierr);
-if (ierr==0) (dyn->numcurve)++;
+if (ierr==0) (numcurve)++;
 
 frfind("--CURVE5");
 frread();
 frchk("---",&ierr);
-if (ierr==0) (dyn->numcurve)++;
+if (ierr==0) (numcurve)++;
 
 
 
 /*------------------------------------------------- allocate the curves */
-dyn->curve = (CURVE*)calloc(dyn->numcurve,sizeof(CURVE));
-if (dyn->curve==NULL) dserror("Allocation of CURVE failed");
-for (i=0; i<dyn->numcurve; i++) dyn->curve[i].Id=0;
+curve = (CURVE*)calloc(numcurve,sizeof(CURVE));
+if (curve==NULL) dserror("Allocation of CURVE failed");
+for (i=0; i<numcurve; i++) curve[i].Id=0;
 /*----------------------------------------------------- read the curves */
 inp_read_curve("--CURVE1");
 inp_read_curve("--CURVE2");
@@ -98,11 +103,11 @@ frread();
 frchk("---",&ierr);
 if (ierr==1) goto end;
 /*------------------------------------------- find the first free curve */
-for (i=0; i<dyn->numcurve; i++)
+for (i=0; i<numcurve; i++)
 {
-   if (dyn->curve[i].Id==0) 
+   if (curve[i].Id==0) 
    {
-      actcurve=&(dyn->curve[i]);
+      actcurve=&(curve[i]);
       break;
    }
 }

@@ -36,6 +36,14 @@ extern struct _STATIC_VAR  *statvar;
  | defined in out_global.c                                              |
  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ | struct _FIELD         *field;                                        |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD       *field;      
+
+
 
 /*----------------------------------------------------------------------*
  | input of control information                           m.gee 8/00    |
@@ -50,10 +58,6 @@ dstrc_enter("inpctr");
    inpctrhed();
 /*--------------------------------------- input of general problem data */
    inpctrprob(); 
-/*--------------------------------------- input of general dynamic data */
-   if (genprob.timetyp==time_dynamic) inpctrdyn();
-/*---------------------------------------- input of general static data */
-   else inpctrstat();
 /*---------------------------------------- input of general solver data */
    if (genprob.probtyp == prb_fsi)
    {
@@ -81,8 +85,6 @@ dstrc_enter("inpctr");
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
    }
-/*------------------------------------ input of print-control variables */
-/* nothing implemented yet */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -200,73 +202,6 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | input of dynamic problem data                          m.gee 2/01    |
- *----------------------------------------------------------------------*/
-void inpctrdyn()
-{
-int  ierr;
-int  i;
-char buffer[50];
-#ifdef DEBUG 
-dstrc_enter("inpctrdyn");
-#endif
-
-dyn = (DYNAMIC*)calloc(1,sizeof(DYNAMIC));
-if (dyn==NULL) dserror("Allocation of DYNAMIC failed");
-
-frfind("-DYNAMIC");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-/*--------------read chars */
-   frchar("DYNAMICTYP",dyn->dyntyp,&ierr);
-   frchar("DAMPING"   ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"Yes",3)==0 ||
-          strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 )
-          
-          dyn->damp=1;
-      else
-          dyn->damp=0;
-   }
-   frchar("ITERATION"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"full",3)==0 ||
-          strncmp(buffer,"Full",3)==0 ||
-          strncmp(buffer,"FULL",3)==0 )
-          
-          dyn->iter=1;
-      else
-          dyn->iter=0;
-   }
-
-/*--------------read int */
-   frint("NUMSTEP",&(dyn->nstep)  ,&ierr);
-   frint("MAXITER",&(dyn->maxiter),&ierr);
-   
-/*--------------read double */
-   frdouble("TIMESTEP",&(dyn->dt)     ,&ierr);
-   frdouble("MAXTIME" ,&(dyn->maxtime),&ierr);
-   frdouble("BETA"    ,&(dyn->beta)   ,&ierr);
-   frdouble("GAMMA"   ,&(dyn->gamma)  ,&ierr);
-   frdouble("ALPHA_M" ,&(dyn->alpha_m),&ierr);
-   frdouble("ALPHA_F" ,&(dyn->alpha_f),&ierr);
-   frdouble("M_DAMP"  ,&(dyn->m_damp),&ierr);
-   frdouble("K_DAMP"  ,&(dyn->k_damp),&ierr);
-
-   frread();
-}
-frrewind();
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of inpctrdyn */
 
 
 
@@ -349,3 +284,118 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctrstat */
+
+
+
+
+/*----------------------------------------------------------------------*
+ | input of dynamic problem data                          m.gee 2/01    |
+ *----------------------------------------------------------------------*/
+void inpctrdyn()
+{
+int    ierr;
+int    i;
+char   buffer[50];
+FIELD *actfield;
+#ifdef DEBUG 
+dstrc_enter("inpctrdyn");
+#endif
+/*----------------------------------------------------------------------*/
+dyn = (DYNAMIC*)calloc(genprob.numfld,sizeof(DYNAMIC));
+if (!dyn) dserror("Allocation of DYNAMIC failed");
+/*----------------------------------------------------------------------*/
+for (i=0; i<genprob.numfld; i++)
+{
+   actfield = &(field[i]);
+   switch(actfield->fieldtyp)
+   {
+   case fluid:
+   break;
+   case ale:
+   break;
+   case structure:
+      dyn[i].sdyn = (STRUCT_DYNAMIC*)calloc(1,sizeof(STRUCT_DYNAMIC));
+      if (!dyn[i].sdyn) dserror("Allocation of DYNAMIC failed");
+      inpctr_dyn_struct(dyn[i].sdyn);
+   break;
+   case none:
+      dserror("Cannot find type of field");
+   break;
+   default:
+      dserror("Cannot find type of field");
+   break;
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpctrdyn */
+
+
+
+/*----------------------------------------------------------------------*
+ | input of dynamic problem data  for field structure     m.gee 2/02    |
+ *----------------------------------------------------------------------*/
+int inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn)
+{
+int    ierr;
+int    i;
+char   buffer[50];
+#ifdef DEBUG 
+dstrc_enter("inpctr_dyn_struct");
+#endif
+
+frfind("-STRUCTURAL DYNAMIC");
+frread();
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+/*--------------read chars */
+   frchar("DYNAMICTYP",sdyn->dyntyp,&ierr);
+   frchar("DAMPING"   ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"Yes",3)==0 ||
+          strncmp(buffer,"yes",3)==0 ||
+          strncmp(buffer,"YES",3)==0 )
+          
+          sdyn->damp=1;
+      else
+          sdyn->damp=0;
+   }
+   frchar("ITERATION"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"full",3)==0 ||
+          strncmp(buffer,"Full",3)==0 ||
+          strncmp(buffer,"FULL",3)==0 )
+          
+          sdyn->iter=1;
+      else
+          sdyn->iter=0;
+   }
+
+/*--------------read int */
+   frint("NUMSTEP",&(sdyn->nstep)  ,&ierr);
+   frint("MAXITER",&(sdyn->maxiter),&ierr);
+   
+/*--------------read double */
+   frdouble("TIMESTEP",&(sdyn->dt)     ,&ierr);
+   frdouble("MAXTIME" ,&(sdyn->maxtime),&ierr);
+   frdouble("BETA"    ,&(sdyn->beta)   ,&ierr);
+   frdouble("GAMMA"   ,&(sdyn->gamma)  ,&ierr);
+   frdouble("ALPHA_M" ,&(sdyn->alpha_m),&ierr);
+   frdouble("ALPHA_F" ,&(sdyn->alpha_f),&ierr);
+   frdouble("M_DAMP"  ,&(sdyn->m_damp),&ierr);
+   frdouble("K_DAMP"  ,&(sdyn->k_damp),&ierr);
+
+   frread();
+}
+frrewind();
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpctr_dyn_struct */

@@ -22,11 +22,8 @@ int  i;
 dstrc_enter("inp_conditions");
 #endif
 /*----------------------------------------------------------------------*/
-/*----------------------------- input load curves is problem is dynamic */
-if (genprob.timetyp==time_dynamic)
-{
-    inp_cond_curve();
-}
+/*------------------------------------------------ input of time curves */
+inp_cond_curve();
 /*----- input all element and nodal conditions as Dirich / Neumann .... */
 for (i=0; i<genprob.numfld; i++)
 {
