@@ -76,6 +76,7 @@ if (genprob.numaf>-1) alefield    = &(field[genprob.numaf]);
    
 switch (genprob.probtyp)
 {
+#ifdef D_FLUID
 case prb_fluid:
    /*------------------------ check results of f2_drivencavity20x20.dat */
    if(strstr(allfiles.title[0],"dRIVEN_cAVITY_iNPUT_tESTING") != NULL)
@@ -152,7 +153,20 @@ case prb_fluid:
       if (FABS(actresult-givenresult)>EPS6)
          dserror("RESULTCHECK: pressure not correct!");
    }
+   else if(strstr(allfiles.title[0],"BELTRAMI-FLOW") != NULL)
+   {
+      printf("\nCalculating Errors for Beltrami-Flow ...\n");
+
+      fluid_cal_error(fluidfield,1);
+   }
+   else if(strstr(allfiles.title[0],"KIM-MOIN-FLOW") != NULL)
+   {
+      printf("\nCalculating Errors for Kim-Moin-Flow ...\n");
+
+      fluid_cal_error(fluidfield,2);
+   }
 break;
+#endif
 case prb_fsi:
    /*------------------------------- check results of fsi_tank20x10.dat */
    if(strstr(allfiles.title[0],"fsi_swfsload_nieder_iNPUT_tESTING") != NULL)
