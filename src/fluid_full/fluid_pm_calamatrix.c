@@ -13,7 +13,7 @@ Maintainer: Steffen Genkinger
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID
+#ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "fluid_prototypes.h"
@@ -207,9 +207,7 @@ mlpcg_csr_zero(amatrix_csr,actintra);
 /*------------------------------ call the elements and calculate lumped
                                  mass matrix and the gradient matrices  */
 if (par.myrank==0) printf("  -> calling elements ...");
-container->nif = 0;
 container->nii = 0;
-container->nim = 0;
 container->gradmatrix  = gradmatrix_csr;
 container->lumpedmass  = lumpedmass_csr;
 container->actndis = veldis;
