@@ -11,6 +11,16 @@ Maintainer: Baris Irhan
 
 *----------------------------------------------------------------------*/
 #ifdef D_XFEM
+
+/*----------------------------------------------------------------------*
+ | structures for level set                               irhan 04/04   |
+ *----------------------------------------------------------------------*/
+#include "../ls/ls.h"
+/*----------------------------------------------------------------------*
+ | structures for xfem                                    irhan 04/04   |
+ *----------------------------------------------------------------------*/
+#include "xfem.h"
+
 /* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE !!!

@@ -11,6 +11,10 @@ Maintainer: Baris Irhan
 
 *----------------------------------------------------------------------*/
 #ifdef D_LS
+
+#ifndef LS_H
+#define LS_H
+
 /*! 
 \addtogroup LEVELSET
 *//*! @{ (documentation module open)*/
@@ -265,4 +269,6 @@ typedef enum _FRONTLSFLAG
   front_ls_finalize
 } FRONTLSFLAG;
 /*! @} (documentation module close)*/
+
+#endif
 #endif

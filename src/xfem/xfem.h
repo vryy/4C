@@ -11,6 +11,10 @@ Maintainer: Baris Irhan
 
 *----------------------------------------------------------------------*/
 #ifdef D_XFEM
+
+#ifndef XFEM_H
+#define XFEM_H
+
 /*! 
 \addtogroup XFEM 
 *//*! @{ (documentation module open)*/
@@ -35,4 +39,6 @@ typedef enum _XFEMPOLYFLAG
       xfem_poly_close,      
 } XFEMPOLYFLAG;
 /*! @} (documentation module close)*/
+
+#endif
 #endif

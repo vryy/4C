@@ -13,6 +13,14 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h" 
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+/*----------------------------------------------------------------------*
+ | structures for level set                               irhan 04/04   |
+ *----------------------------------------------------------------------*/
+#include "../ls/ls.h"
+/*----------------------------------------------------------------------*
+ | structures for xfem                                    irhan 04/04   |
+ *----------------------------------------------------------------------*/
+#include "../xfem/xfem.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
