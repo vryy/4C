@@ -57,8 +57,13 @@ struct _RESULTDESCR      *resultdescr;
 /*
  * Read a positions description. See if its name equals |name|. If so
  * read |nargs| integer arguments and store them in |args|.
+ * 
+ * \param position   a string of the form "name(x1,...,xn)" read from the input file
+ * \param name       the expected name
+ * \param nargs      the expected number of arguments
+ * \param args       an array of size |nargs| that is going to be filled
  */
-INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
+static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
 {
   CHAR* lp;
   INT name_length;
@@ -106,8 +111,13 @@ INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
 
 /*
  * return the specified value
+ * 
+ * \param actnode    a node
+ * \param position   a string of the form "name(x1,...,xn)" read from the input file
+ *                   It describes a value in one of the solution array
+ *                   of the given node.
  */
-DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
+static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 {
   INT args[2];
   DOUBLE ret = -1234567890;
@@ -153,6 +163,13 @@ DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 }
 
 
+/*
+ * Compare |actresult| with |givenresult| and return |0| if they are
+ * considered to be equal.
+ * 
+ * \param err        the file where to document both values
+ * \param res        the describtion of the expected result including name and tolerance
+ */
 static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESULTDESCR *res)
 {
   INT ret = 0;
