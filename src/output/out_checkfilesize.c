@@ -43,6 +43,7 @@ is opened.
 ------------------------------------------------------------------------*/
 void out_checkfilesize(INT opt)
 {
+#ifdef D_GENK
 char  filename[100]=("                                                    ");
 char  kenner[100]=("                                                      ");
 char *charpointer;
@@ -147,6 +148,7 @@ case 1: /* flavia.res file */
 
 #ifdef DEBUG 
 dstrc_exit();
+#endif
 #endif
 return;
 } /* end of out_checkfilesize */
