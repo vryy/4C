@@ -48,8 +48,10 @@ case curve_polygonal:
       time_a.a.dv[fdim]    = curve[actcurve].time.a.da[fdim-1][1];
       rlcurve_a.a.dv[fdim] = curve[actcurve].value.a.da[fdim-1][1];
       /*----------- check whether the time curve is long enough in time */
+ /*     
       if (nstep*dt-EPS14 > time_a.a.dv[fdim]) dserror("Curve not long enough");
       if (maxtime  > time_a.a.dv[fdim])       dserror("Curve not long enough");
+ */
       /* copy the arrays time_a and rlcurve_a to the structure curve[actcurve] */
       amdel(&(curve[actcurve].time));
       amdel(&(curve[actcurve].value));
