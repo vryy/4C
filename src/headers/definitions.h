@@ -217,6 +217,12 @@ static INT iminarg1,iminarg2;
 #define MAXDOFPERELE     (MAXNOD*MAXDOFPERNODE)
 
 /*----------------------------------------------------------------------*
+ | maximum size of a file system is able to handle (KB)                 |
+ *----------------------------------------------------------------------*/
+#define MAXFILESIZE     (2000000)
+
+
+/*----------------------------------------------------------------------*
  | maximum number nonzero entries in a row of a sparse system matrix    |
  | is number of nodes to an element *                                   |
  | number of dofs to a node *                                           |
