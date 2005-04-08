@@ -80,7 +80,6 @@ static CHAR*** group_names;
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
-  CHAR basename[100];
   MAP monitor_table;
   PROBLEM_DATA problem;
   INT i;
@@ -155,17 +154,17 @@ int main(int argc, char** argv)
     switch (problem.discr[i].type)
     {
       case structure:
-        sprintf(buf, "%s.structure.%d.mon", basename, problem.discr[i].field_pos);
+        sprintf(buf, "%s.structure.%d.mon", problem.basename, problem.discr[i].field_pos);
         if ( (allfiles.out_smoni=fopen(buf,"w"))==NULL)
           dserror("failed to open output file");
         break;
       case fluid:
-        sprintf(buf, "%s.fluid.%d.mon", basename, problem.discr[i].field_pos);
+        sprintf(buf, "%s.fluid.%d.mon", problem.basename, problem.discr[i].field_pos);
         if ( (allfiles.out_fmoni=fopen(buf,"w"))==NULL)
           dserror("failed to open output file");
         break;
       case ale:
-        sprintf(buf, "%s.ale.%d.mon", basename, problem.discr[i].field_pos);
+        sprintf(buf, "%s.ale.%d.mon", problem.basename, problem.discr[i].field_pos);
         if ( (allfiles.out_amoni=fopen(buf,"w"))==NULL)
           dserror("failed to open output file");
         break;
