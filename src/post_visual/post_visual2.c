@@ -896,12 +896,11 @@ void post_v2cell(FIELD_DATA *field, POST_DISCRETIZATION* discret, DIS_TYP distyp
 /*----------------------------------------------------------------------*/
 void v2movie()
 {
-  char string[100]=("xwd -name Visual2  -out vis          ");
+  char string[100];
   char *charpointer;
 
-  char convert[100]=("convert vis                         ");
-  char remove[100] =("rm vis                               ");
-  char screen[100] =("Storing vis                          ");
+  char convert[100];
+  char remove[100];
 
 #ifdef DEBUG
   dstrc_enter("v2movie");
@@ -913,29 +912,11 @@ void v2movie()
   goto end;
 #endif
 
-  sprintf(&string[27] ,"%-d" ,ACTSTEP);
-  sprintf(&convert[11],"%-d" ,ACTSTEP);
-  sprintf(&remove[6]  ,"%-d" ,ACTSTEP);
-  sprintf(&screen[11 ],"%-d" ,ACTSTEP);
+  sprintf(string ,"xwd -name Visual2  -out vis%04d.xwd", ACTSTEP);
+  sprintf(convert ,"convert vis%04d.xwd vis%04d.png", ACTSTEP, ACTSTEP);
+  sprintf(remove ,"rm vis%04d.xwd", ACTSTEP);
 
-/*---------------------------------------- add extensions to file names */
-  charpointer = string+strlen(&string[0]);
-  strncpy(charpointer,".xwd",4);
-
-  charpointer = remove+strlen(&remove[0]);
-  strncpy(charpointer,".xwd",4);
-
-  charpointer = screen+strlen(&screen[0]);
-  strncpy(charpointer,".gif\n",6);
-
-  charpointer = convert+strlen(&convert[0]);
-  strncpy(charpointer,".xwd vis",8);
-  charpointer +=8;
-  sprintf(charpointer,"%-d" ,icol);
-  charpointer = convert+strlen(&convert[0]);
-  strncpy(charpointer,".gif",4);
-
-  printf(screen);
+  printf("write vis%04d.png\n", ACTSTEP);
 
 /*--------------------------------------------------- call UNIX-system */
   system(&string[0]);
@@ -1221,12 +1202,12 @@ static void post_visual2()
    *---------------------------------------------------------------------*/
 
   /*----------------------------------------------- data structure sizes */
-  MPTRI  = 100000;
-  MPPTRI = 3500;
-  MFACE  = 175000;
-  MPFACE = 10000;
-  MEDGE  = 10000;
-  MPEDGE = 1000;
+  MPTRI  = 1000000;
+  MPPTRI = 35000;
+  MFACE  = 1750000;
+  MPFACE = 100000;
+  MEDGE  = 100000;
+  MPEDGE = 10000;
   MNODE  = fluid_field->numnp;
 
   for (;;) {
@@ -1504,9 +1485,24 @@ bgcolour+=20;
   dxy= sqrt(dx*dx+dy*dy);
 
   /* window size */
-  hsize = 700;
-  vsize = 525;
-  ratio = 700.0/525.0;
+  /*
+                         qntsc:   352x240 (NTSC quarter screen)
+                         qpal:    352x288 (PAL quarter screen)
+                         ntsc:    720x480 (standard NTSC)
+                         pal:     720x576 (standard PAL)
+                         sntsc:   640x480 (square pixel NTSC)
+                         spal:    768x576 (square pixel PAL)
+   */
+  /*
+  hsize = 720;
+  vsize = 576;
+  ratio = 720.0/576.0;
+  */
+
+  /* write the images (for the movie) in double size */
+  hsize = 1024;
+  vsize = 768;
+  ratio = 1024.0/768.0;
 
 /*------------------------ modify x/y - limits to window aspect ratio */
   centerx =XYMIN[0]+dx/TWO;
@@ -1918,6 +1914,7 @@ int main(int argc, char** argv)
   init_result_data(fluid_field, &result);
   for (counter1 = 0; next_result(&result); counter1++)
   {
+    /*printf("% 2d: pos=%d\n", counter1, result.pos);*/
     time_a.a.dv[counter1] = map_read_real(result.group, "time");
     step_a.a.iv[counter1] = map_read_int(result.group, "step");
   }
