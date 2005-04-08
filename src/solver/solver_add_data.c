@@ -48,11 +48,14 @@ dstrc_enter("assemble");
 /*----------------------------------------------------------------------*/
 if (assemble_action==assemble_do_nothing) goto end;
 /*----------------------- check for presence and typ of system matrices */
+estif       = NULL;
+emass       = NULL;
 if (sysarray1>=0)
 {
    sysa1       = &(actsolv->sysarray[sysarray1]);
    sysa1_typ   =   actsolv->sysarray_typ[sysarray1];
-   estif       = elearray1->a.da;
+   if (elearray1 != NULL)
+     estif       = elearray1->a.da;
 }
 else
 {
@@ -63,7 +66,8 @@ if (sysarray2>=0)
 {
    sysa2     = &(actsolv->sysarray[sysarray2]);
    sysa2_typ =   actsolv->sysarray_typ[sysarray2];
-   emass     = elearray2->a.da;
+   if (elearray2 != NULL)
+     emass     = elearray2->a.da;
 }
 else
 {
