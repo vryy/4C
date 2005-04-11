@@ -212,11 +212,16 @@ init_bin_out_field(&out_context,
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0 && ioflags.output_gid==1)
    out_gid_msh();
+
+/*---------------- put the scaled prescribed displacements to the nodes */
+/*             in field sol at place 0 together with free displacements */
+solserv_putdirich_to_dof(actfield,0,0,1.,0);
+
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_struct_linstiff;
 container.dvec         = NULL;
-container.dirich       = NULL;
-container.global_numeq = 0;
+container.dirich       = dirich;
+container.global_numeq = numeq_total;
 container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 /*----------------------------------- call rhs-routines to assemble rhs */
