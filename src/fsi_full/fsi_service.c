@@ -71,7 +71,7 @@ static FLUID_DYNAMIC *fdyn;
 
 <pre>                                                        chfoe 11/04
 
-This structure contains the positions of the various fluid solutions 
+This structure contains the positions of the various fluid solutions
 within the nodal array of sol_increment.a.da[ipos][dim].
 
 extern variable defined in fluid_service.c
@@ -335,7 +335,7 @@ for (i=0;i<numnp_total;i++) /* loop nodes */
    /*
    if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
    */
-   if (actgnode->fsicouple == NULL) continue; 
+   if (actgnode->fsicouple == NULL) continue;
    numele=actnode->numele;
    for (j=0; j<numele; j++) /* loop elements belonging to node */
    {
@@ -767,20 +767,20 @@ switch (fsidyn->inrmfsi)
 case 1:
    if (converged==0)
    {
-      printf("|| g(i) || / sqrt(neq) = %10.3E >= TOL = %10.3E \n",
+      printf("|| g(i) || / sqrt(neq) = " RED_LIGHT "%10.3E" END_COLOR " >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
    if (converged==1)
    {
-      printf("|| g(i) || / sqrt(neq) = %10.3E >= TOL = %10.3E \n",
+      printf("|| g(i) || / sqrt(neq) = " RED "%10.3E" END_COLOR " >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n\n");
    }
    if (converged>=2)
    {
-      printf("|| g(i) || / sqrt(neq) = %10.3E < TOL = %10.3E \n",
+      printf("|| g(i) || / sqrt(neq) = " GREEN_LIGHT "%10.3E" END_COLOR " < TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
@@ -788,20 +788,20 @@ break;
 case 2:
    if (converged==0)
    {
-      printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
+      printf("|| g(i) || / || g(0) || = " RED_LIGHT "%10.3E" END_COLOR " >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
    if (converged==1)
    {
-      printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
+      printf("|| g(i) || / || g(0) || = " RED "%10.3E" END_COLOR " >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n\n");
    }
    if (converged>=2)
    {
-      printf("|| g(i) || / || g(0) || = %10.3E < TOL = %10.3E \n",
+      printf("|| g(i) || / || g(0) || = " GREEN_LIGHT "%10.3E" END_COLOR " < TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
@@ -865,7 +865,7 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief init positions in sol_increment 
+\brief init positions in sol_increment
 
 <pre>                                                        chfoe 11/04
 
