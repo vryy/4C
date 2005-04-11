@@ -4,16 +4,16 @@ PLATFORM=LINUX_MUENCH
 PARALLEL=yes
 
 # just for convenience
-MPIDIR=/opt/mpich
+MPIDIR=/usr
 INTELDIR=/lnm/intel/compiler80
 MKLDIR=/lnm/intel/mkl61
 
 PROGRAMNAME=cca_icc_par_linux
-CC="$MPIDIR/bin/mpiCC -CC=$INTELDIR/bin/icc"
-F77="$MPIDIR/bin/mpif77 -fc=$INTELDIR/bin/ifort"
-LD=$F77
+CC="MPICH_CC=$INTELDIR/bin/icc $MPIDIR/bin/mpicc"
+F77="MPICH_F77=$INTELDIR/bin/ifort $MPIDIR/bin/mpif77"
+LD="MPICH_FLINKER=$INTELDIR/bin/ifort $MPIDIR/bin/mpif77"
 
-INCLUDEDIRS="-I$MPIDIR/include -I$MKLDIR/include -I/lnm/include"
+INCLUDEDIRS="-I/usr/lib/mpich/include -I$MKLDIR/include -I/lnm/include"
 LIBDIRS="-L$MPIDIR/lib -L$MKLDIR/lib/32 -L/lnm/lib"
 
 # aztec
