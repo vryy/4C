@@ -701,17 +701,6 @@ else
                            and store them in rhs[1]                     */
 solserv_add_vec(&(actsolv->rhs[4]),&(actsolv->rhs[1]),ONE);
 
-/*---------------- put the scaled prescribed displacements to the nodes */
-/*             in field sol at place 0 together with free displacements */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
-
-/* put the prescribed scaled displacements to the nodes in field sol at */
-/*                                  place 4 separate from the free dofs */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,4);
-
-/*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
-solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
-
 /*----- set factors needed for prescribed displacement terms on rhs eff */
 /*
 dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))
@@ -741,6 +730,9 @@ else {
    dirichfacs[7] =  0.0;
    dirichfacs[8] =  0.0;}
 
+/* -- calculate internal forces f(n) before new prescribed displacements
+ * ------------------------------------------------------------- are set */
+
 /*- calculate tangential stiffness/mass and internal forces at time t-dt */
 solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
@@ -748,15 +740,40 @@ amzero(&dirich_a);
 amzero(&intforce_a);
 *action = calc_struct_nlnstiffmass;
 container.dvec          = intforce;
+container.dirich        = NULL;
+container.global_numeq  = numeq_total;
+container.dirichfacs    = dirichfacs;
+container.kstep         = 0;
+calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
+
+/*---------------------------- store positive internal forces on fie[1] */
+solserv_zero_vec(&fie[1]);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
+             &(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
+
+/*---------------- put the scaled prescribed displacements to the nodes */
+/*             in field sol at place 0 together with free displacements */
+solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
+
+/* put the prescribed scaled displacements to the nodes in field sol at */
+/*                                  place 4 separate from the free dofs */
+solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,4);
+
+/*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
+solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
+
+/*- calculate tangential stiffness/mass and internal forces at time t-dt */
+solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
+amzero(&dirich_a);
+amzero(&intforce_a);
+*action = calc_struct_nlnstiffmass;
+container.dvec          = NULL;
 container.dirich        = dirich;
 container.global_numeq  = numeq_total;
 container.dirichfacs    = dirichfacs;
 container.kstep         = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
-/*---------------------------- store positive internal forces on fie[1] */
-solserv_zero_vec(&fie[1]);
-assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
-             &(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
 
 /* interpolate external forces rhs[0] = (1-alphaf)rhs[1] + alphaf*rhs[2] */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));

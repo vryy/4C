@@ -60,6 +60,7 @@ Input/struct2ml_ifvers.dat              x        -        x        -
 Input/w1_3DmisGF.dat                    x        x        x        x
 Input/w1_Eulerstab.dat                  x        x        x        x
 Input/w1_Eulerstab_sd.dat               x        x        x        x
+Input/w1_dyn_dirich.dat                 x        x        x        x
 Input/w1_epc3D.dat                      x        x        x        x
 Input/w1_gemm_contact_emconserv.dat     -        -        -        -
 Input/w1_incompmode.dat                 x        x        x        x
