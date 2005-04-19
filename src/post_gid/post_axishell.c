@@ -30,7 +30,6 @@ void axishell_write_stress(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk, DO
 
     for (i=0; i<field->numele; ++i)
     {
-      INT l;
       INT numnp;
       INT el_type;
       INT Id;
@@ -42,8 +41,8 @@ void axishell_write_stress(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk, DO
 
       if (el_type != el_axishell || numnp !=2) continue;
 
-      chunk_read_value_entry(&chunk, i);
-      stress = chunk.value_buf;
+      chunk_read_value_entry(chunk, i);
+      stress = chunk->value_buf;
 
       GiD_Write3DMatrix(Id+1,
                         stress[0], stress[1], stress[2],
@@ -100,12 +99,14 @@ void axishell_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
 
   if (gid->is_axishell)
   {
+    INT i;
+
     GiD_BeginMesh(gid->axishell_name, 2, GiD_Linear, 2);
 
     if (*first_mesh)
     {
       *first_mesh = 0;
-      write_coords(problem, num);
+      write_coords(field, gid);
     }
 
     GiD_BeginElements();

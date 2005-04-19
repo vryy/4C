@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#include <ctype.h>
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
@@ -41,6 +42,20 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
+
+/* Very simple stack used to include files. */
+
+#ifndef INCLUDE_STACK_DEPTH
+#define INCLUDE_STACK_DEPTH 20
+#endif
+
+typedef struct
+{
+  FILE* file;
+  CHAR* filename;
+} include_stack_entry;
+
+
 /*!---------------------------------------------------------------------
 \brief init file reading system
 
@@ -52,7 +67,11 @@ reads it twice:
 -Broadcasting allfiles.input_file to all procs
 -Sets the fr-systems pointers used by the fr routines on all procs
 </pre>
-\return void
+
+Additionally it's possible to #include outer files. The files are
+merged in memory to one set of lines. Thus no other function is
+concerned with this feature. Here, however, it adds a little
+complexity.
 
 ------------------------------------------------------------------------*/
 void frinit()
@@ -60,25 +79,119 @@ void frinit()
 INT     i=0;
 INT     linecount=0;
 char   *remarkpointer;
+
+static include_stack_entry include_stack[INCLUDE_STACK_DEPTH];
+static INT include_stack_head = 0;
+FILE* f;
+
 allfiles.numcol=MAXNUMCOL;
 if (par.myrank==0)
 {
-/*--------------------make a copy of the input file without commentars */
-   rewind(allfiles.in_input);
-/*----------------------------------------------------------read a line */
-   while ( feof(allfiles.in_input) == 0 )
-   {
-      if ( (fgets(allfiles.line,499,allfiles.in_input) == NULL) &&
-           (feof(allfiles.in_input) == 0) )
+  /*-------------------- make a copy of the input file without comments */
+  
+  include_stack[0].file = allfiles.in_input;
+  include_stack[0].filename = allfiles.inputfile_name;
+
+  f = allfiles.in_input;
+  rewind(f);
+    
+  while ( feof(f) == 0 )
+  {
+    INT p;
+
+    for (;;)
+    {
+      /* see if we reached the end of a included file */
+      if ((feof(f) != 0) && (include_stack_head>0))
       {
-         dserror("An error occured reading a line from input file");
+        fclose(include_stack[include_stack_head].file);
+        CCAFREE(include_stack[include_stack_head].filename);
+        include_stack_head--;
+        f = include_stack[include_stack_head].file;
       }
-/* ----------------------------------check whether its a commentar line */
-      if (strncmp(allfiles.line,"//",2)!=0)
+      
+      /* Read a line. Up to 499 characters. */
+      if (fgets(allfiles.line,499,f) == NULL)
       {
-         linecount++;
+        if ((feof(f) != 0) && (include_stack_head>0))
+        {
+          /* end of included file. handled above. */
+          continue;
+        }
+        else if ((feof(f) != 0) && (include_stack_head==0))
+        {
+          /* end of main file. */
+          break;
+        }
+        else
+        {
+          dserror("An error occured reading file '%s'",
+                  include_stack[include_stack_head].filename);
+        }
       }
-   }
+      
+      /* skip whitespaces */
+      for (p=0; isspace(allfiles.line[p]); ++p)
+      {}
+
+      /* we accept this line only if it's not fully commented */
+      if ((allfiles.line[p] != '/') ||
+          (allfiles.line[p+1] != '/'))
+      {
+
+        /* look for includes */
+        for (p=0; isspace(allfiles.line[p]); ++p)
+        {}
+        if (allfiles.line[p]=='#')
+        {
+          for (++p; isspace(allfiles.line[p]); ++p)
+          {}
+          if (strncmp("include", &(allfiles.line[p]), 7)==0)
+          {
+            CHAR* nameend;
+            INT namelength;
+        
+            /* So we've got an include. Prepare the stack. Find the
+             * filename. */
+
+            include_stack_head++;
+            if (include_stack_head >= INCLUDE_STACK_DEPTH)
+              dserror("include stack overflow");
+        
+            for (p+=7; isspace(allfiles.line[p]); ++p)
+            {}
+            if (allfiles.line[p]!='"')
+              dserror("'\"' expected in #include line");
+            p += 1;
+            nameend = strstr(&(allfiles.line[p]), "\"");
+            if (nameend==NULL)
+              dserror("terminating '\"' missing in #include line");
+
+            namelength = nameend - &(allfiles.line[p]);
+            include_stack[include_stack_head].filename =
+              (CHAR*)CCACALLOC(namelength+1, 1);
+            strncpy(include_stack[include_stack_head].filename,
+                    &(allfiles.line[p]),
+                    namelength);
+
+            include_stack[include_stack_head].file =
+              fopen(include_stack[include_stack_head].filename, "r");
+            f = include_stack[include_stack_head].file;
+            if (f==NULL)
+              dserror("failed to open file '%s'",
+                      include_stack[include_stack_head].filename);
+            continue;
+          }
+        }
+      }
+
+      break;
+    }
+
+    /* count any non-comment lines */
+    if (feof(f) == 0)
+      linecount++;
+  }                             
 }
 /*--------------------------------------------broadcast number of lines */
 #ifdef PARALLEL
@@ -102,24 +215,114 @@ for (i=0; i<linecount; i++)
 /*------------------- now read the input file into allfiles.input_file */
 if (par.myrank==0)
 {
-   rewind(allfiles.in_input);
-   for (i=0; i<linecount; i++)
-   {
-      read:
-      if (fgets(allfiles.input_file[i],499,allfiles.in_input)==NULL)
-         dserror("An error occured reading a line from input file");
-/*----------------------------------check whether its a commentar line */
-      if ((strncmp(allfiles.input_file[i],"//",2)==0))
+  include_stack[0].file = allfiles.in_input;
+  include_stack[0].filename = allfiles.inputfile_name;
+  
+  f = allfiles.in_input;
+  rewind(f);
+
+  for (i=0; i<linecount; i++)
+  {
+    INT p;
+
+    for (;;)
+    {
+      /* see if we reached the end of a included file */
+      if ((feof(f) != 0) && (include_stack_head>0))
       {
-         goto read;
+        fclose(include_stack[include_stack_head].file);
+        CCAFREE(include_stack[include_stack_head].filename);
+        include_stack_head--;
+        f = include_stack[include_stack_head].file;
       }
-/*----------------------check whether there is a commentar in the line */
-      remarkpointer=strchr(allfiles.input_file[i],'/');
-      if (remarkpointer!=NULL)
+      
+      if (fgets(allfiles.input_file[i],499,f)==NULL)
       {
-         strcpy(remarkpointer,"\n\0");
+        if ((feof(f) != 0) && (include_stack_head>0))
+        {
+          /* end of included file. handled above. */
+          continue;
+        }
+        else if ((feof(f) != 0) && (include_stack_head==0))
+        {
+          /* end of main file. */
+          break;
+        }
+        else
+        {
+          dserror("An error occured reading file '%s'",
+                  include_stack[include_stack_head].filename);
+        }
       }
-   }
+
+      /* skip whitespaces */
+      for (p=0; isspace(allfiles.input_file[i][p]); ++p)
+      {}
+
+      /* we accept this line only if it's not fully commented */
+      if ((allfiles.input_file[i][p] != '/') ||
+          (allfiles.input_file[i][p+1] != '/'))
+      {
+        
+        /* look for includes */
+        for (p=0; isspace(allfiles.input_file[i][p]); ++p)
+        {}
+        if (allfiles.input_file[i][p]=='#')
+        {
+          for (++p; isspace(allfiles.input_file[i][p]); ++p)
+          {}
+          if (strncmp("include", &(allfiles.input_file[i][p]), 7)==0)
+          {
+            CHAR* nameend;
+            INT namelength;
+        
+            /* So we've got an include. Prepare the stack. Find the
+             * filename. */
+
+            include_stack_head++;
+            if (include_stack_head >= INCLUDE_STACK_DEPTH)
+              dserror("include stack overflow");
+        
+            for (p+=7; isspace(allfiles.input_file[i][p]); ++p)
+            {}
+            if (allfiles.input_file[i][p]!='"')
+              dserror("'\"' expected in #include line");
+            p += 1;
+            nameend = strstr(&(allfiles.input_file[i][p]), "\"");
+            if (nameend==NULL)
+              dserror("terminating '\"' missing in #include line");
+
+            namelength = nameend - &(allfiles.input_file[i][p]);
+            include_stack[include_stack_head].filename =
+              (CHAR*)CCACALLOC(namelength+1, 1);
+            strncpy(include_stack[include_stack_head].filename,
+                    &(allfiles.input_file[i][p]),
+                    namelength);
+
+            include_stack[include_stack_head].file =
+              fopen(include_stack[include_stack_head].filename, "r");
+            f = include_stack[include_stack_head].file;
+            if (f==NULL)
+              dserror("failed to open file '%s'",
+                      include_stack[include_stack_head].filename);
+            continue;
+          }
+        }
+
+        /* So this is not a comment line and on include here
+         * either. We'll have to read this line the ordinary way. */
+        break;
+      }
+    }
+      
+    /* cut comments that start inside the line */
+    remarkpointer=strchr(allfiles.input_file[i],'/');
+    if ((remarkpointer!=NULL) && (remarkpointer[1] == '/'))
+    {
+      remarkpointer[0] = '\n';
+      remarkpointer[1] = '\0';
+    }
+  }
 }
 /*--------------------------------broadcast the copy of the input file */
 #ifdef PARALLEL

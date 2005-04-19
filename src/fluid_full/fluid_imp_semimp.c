@@ -111,7 +111,7 @@ extern struct _FILES  allfiles;
 
 <pre>                                                        chfoe 11/04
 
-This structure contains the positions of the various fluid solutions 
+This structure contains the positions of the various fluid solutions
 within the nodal array of sol_increment.a.da[ipos][dim].
 
 extern variable defined in fluid_service.c
@@ -264,7 +264,7 @@ if (fdyn->liftdrag==ld_nodeforce)
 
 if (ioflags.fluid_stress==1)
   str         = str_all;
-  
+
 /*------------------------------- init the dist sparse matrices to zero */
 solserv_zero_mat(
                  actintra,
@@ -512,6 +512,9 @@ solserv_zero_vec(&(actsolv->rhs[0]));
 solserv_zero_mat(actintra,&(actsolv->sysarray[actsysarray]),
                  &(actsolv->sysarray_typ[actsysarray]));
 
+/*------------------------------------------- re-initialise neumann bcs */
+inherit_design_dis_neum(&(actfield->dis[0]));
+
 /*------------------------------------------- initialise iterations-rhs */
 amzero(&frhs_a);
 
@@ -571,7 +574,7 @@ if (converged==0)
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration                                      |
  *----------------------------------------------------------------------*/
- 
+
 /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
 if (fdyn->iop == 1)
 {
@@ -609,7 +612,7 @@ if(fdyn->adaptive)
 
 /*---------------------------------------------- update acceleration ---*/
 if (fdyn->adaptive                        /* for adaptive time stepping */
-    || ( fdyn->iop != 7 )  )              /* not for pure BDF2 */ 
+    || ( fdyn->iop != 7 )  )              /* not for pure BDF2 */
 {
   /*----- copy solution from sol_increment[5][j] to sol_increment[4][j] */
   /*--- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/

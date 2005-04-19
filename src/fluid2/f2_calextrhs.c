@@ -369,5 +369,218 @@ dstrc_exit();
 return;
 } /* end of f2_stabexfp */
 
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief calculate Neumann BC
+
+  \param  *ele       ELEMENT          (i)    actual element
+  \param   imyrank   INT              (i)    proc number
+  \param  *eforce    DOUBLE           (o)    element force vector
+  \param **xyze      DOUBLE           (-)    nodal coordinates at n+theta
+  \param  *funct     DOUBLE           (-)    natural shape functions
+  \param **deriv     DOUBLE           (-)    deriv. of nat. shape funcs
+  \param **xjm       DOUBLE           (-)    jacobian matrix
+  \param   *edeadn   DOUBLE           (-)    line load at n
+  \param   *edeadng  DOUBLE           (-)    line load at n+g
+
+  \author u.kue (based on the work of genk)
+  \date 04/05
+ */
+/*----------------------------------------------------------------------*/
+void f2_calneumann(ELEMENT         *ele,
+                   INT              imyrank,
+                   DOUBLE          *eforce,
+                   DOUBLE         **xyze,
+                   DOUBLE          *funct,
+                   DOUBLE         **deriv,
+                   DOUBLE         **xjm,
+                   DOUBLE          *edeadn,
+                   DOUBLE          *edeadng
+  )
+{
+  INT       i;
+  INT       iel;
+  DIS_TYP   typ;
+  FLUID_DYNAMIC   *fdyn;
+  FLUID_DATA   *data;
+
+  INT       nir,nis;    /* number of integration nodesin r,s direction  */
+  INT       nil;
+  INT       ihoel=0;    /* flag for higher order elements               */
+  INT       icode=2;    /* flag for eveluation of shape functions       */
+  INT       intc;
+
+  INT       foundline;
+  INT       ngline;
+  INT       line;
+  INT       ngnode;
+  GLINE    *gline[4];
+  NEUM_CONDITION *lineneum[4];
+  INT       iedgnod[MAXNOD_F2];
+  const INT numdf  = 2; /* dof per node                    */
+
+
+#ifdef DEBUG
+  dstrc_enter("f2_calneumann");
+#endif
+
+  /*--------------------------------------------------- initialisation */
+  iel = ele->numnp;
+  typ = ele->distyp;
+
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
+
+  /*-------------------------------- check for presence of freesurface  */
+  foundline=0;
+  /*----------------------------------- number of lines to this element */
+  ngline=ele->g.gsurf->ngline;
+  /*-------- loop over lines, check for freesurface conditions on lines */
+  for (i=0; i<ngline; i++)
+  {
+    gline[i] = ele->g.gsurf->gline[i];
+    lineneum[i] = gline[i]->neum;
+#if 0 /* to be checked */
+    if (gline[i]->proc!=imyrank) lineneum[i]=NULL;
+#endif
+    if (lineneum[i]==NULL) continue;
+    foundline++;
+  }
+  if (foundline==0) goto end;
+
+  /*----- get integraton data and check if elements are "higher order" */
+  switch (typ)
+  {
+  case quad4: case quad8: case quad9:  /* --> quad - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* initialise integration */
+    nir = ele->e.f2->nGP[0];
+    nis = ele->e.f2->nGP[1];
+    break;
+  case tri6: /* --> tri - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* do NOT break at this point!!! */
+  case tri3:    /* initialise integration */
+    nir  = ele->e.f2->nGP[0];
+    nis  = 1;
+    intc = ele->e.f2->nGP[1];
+    dserror("no neumann bc on triangular elements yet");
+    break;
+  default:
+    dserror("type %d unknown", typ);
+  }
+
+
+  /*-------------------------------------- set number of gauss points */
+  /* We don't expect different numbers of gauss points for different
+   * directions. But in case, let's use the larger one on all lines. */
+  nil = MAX(nir,nis);
+
+  /*---------------------------------- loop over lines at free surface */
+  for (line=0; line<ngline; line++)
+  {
+    INT lr;
+    if (lineneum[line]==NULL) continue;
+
+    /*--------------------------------- check number of nodes on line */
+    ngnode = gline[line]->ngnode;
+
+    /*------------------------------------------------ get edge nodes */
+    f2_iedg(iedgnod,ele,line,0);
+
+    /*------------------------------ integration loop on actual gline */
+    for (lr=0;lr<nil;lr++)
+    {
+      DOUBLE    e1;
+      DOUBLE    facr;
+      DOUBLE    fac;
+      DOUBLE    det;
+      INT       inode;
+      INT       actcurve;
+      DOUBLE    acttimefac;
+      DOUBLE    acttimefacn;
+
+      /*---------- get values of  shape functions and their derivatives */
+      e1   = data->qxg[lr][nil-1];
+      facr = data->qwgt[lr][nil-1];
+      f2_degrectri(funct,deriv,e1,typ,1);
+
+      /*------------------------------- compute jacobian determinant */
+      f2_edgejaco(xyze,deriv,xjm,&det,ngnode,iedgnod);
+      fac = det*facr;
+
+      actcurve = lineneum[line]->curve-1;
+      if (actcurve<0)
+      {
+        acttimefac = 1.;
+        acttimefacn= 1.;
+      }
+      else
+      {
+        DOUBLE acttime;
+        acttime = fdyn->acttime;
+        dyn_facfromcurve(actcurve,acttime,&acttimefac) ;
+        acttime = fdyn->acttime-fdyn->dta;
+        dyn_facfromcurve(actcurve,acttime,&acttimefacn) ;
+      }
+      for (i=0;i<numdf;i++)
+      {
+        if (lineneum[line]->neum_onoff.a.iv[i]==0)
+        {
+          edeadn[i]  = 0.;
+          edeadng[i] = 0.;
+        }
+        if (lineneum[line]->neum_onoff.a.iv[i]!=0)
+        {
+          edeadn[i]  = lineneum[line]->neum_val.a.dv[i]*acttimefacn;
+          edeadng[i] = lineneum[line]->neum_val.a.dv[i]*acttimefac;
+        }
+      }
+
+      /*-------------------------------------------------------------*/
+      /*                                uniform prescribed line load */
+      /*-------------------------------------------------------------*/
+
+      /*
+        Calculate external forces:
+
+                  /
+          + facs |  v * h   d_gamma
+                /
+      */
+
+      for (inode=0;inode<ngnode;inode++)
+      {
+        INT irow, isd;
+
+        /* matrices already permuted */
+        irow = NUMDOF_FLUID2*iedgnod[inode];
+        for (isd=0;isd<numdf;isd++)
+        {
+          /* NOTE
+           * Right now neumann bc are constant along a line. */
+          eforce[irow] += funct[inode]*(edeadng[isd]*fdyn->thsl +
+                                        edeadn[isd] *fdyn->thsr)*fac;
+          irow++;
+        }
+      }
+    }
+
+    /* To avoid double calculation. Won't work in parallel. (?) */
+    ele->g.gsurf->gline[line]->neum=NULL;
+  }
+
+end:
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+
 #endif
 /*! @} (documentation module close)*/

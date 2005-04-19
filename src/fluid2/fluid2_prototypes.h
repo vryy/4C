@@ -238,7 +238,16 @@ void f2_calstabexfp(
                      INT              iel,
                      INT              flag
                    );
-
+void f2_calneumann(ELEMENT         *ele,
+                   INT              imyrank,
+                   DOUBLE          *eforce,
+                   DOUBLE         **xyze,
+                   DOUBLE          *funct,
+                   DOUBLE         **deriv,
+                   DOUBLE         **xjm,
+                   DOUBLE          *edeadn,
+                   DOUBLE          *edeadng
+  );
 /************************************************************************
  | f2_calfuncderiv.c                                                    |
  ************************************************************************/
@@ -599,22 +608,22 @@ void f2_calmkapome(
  ************************************************************************/
 void f2_calint(
 	       ELEMENT         *ele,
-               DOUBLE         **estif,   
-	       DOUBLE         **emass, 
-	       DOUBLE          *eforce, 
+               DOUBLE         **estif,
+	       DOUBLE         **emass,
+	       DOUBLE          *eforce,
 	       DOUBLE         **xyze,
-	       DOUBLE          *funct,   
-	       DOUBLE         **deriv,   
-	       DOUBLE         **deriv2,  
-	       DOUBLE         **xjm,     
-	       DOUBLE         **derxy,   
-	       DOUBLE         **derxy2, 
-	       DOUBLE         **evelng, 
+	       DOUBLE          *funct,
+	       DOUBLE         **deriv,
+	       DOUBLE         **deriv2,
+	       DOUBLE         **xjm,
+	       DOUBLE         **derxy,
+	       DOUBLE         **derxy2,
+	       DOUBLE         **evelng,
 	       DOUBLE         **vderxy,
-	       DOUBLE         **wa1,     
+	       DOUBLE         **wa1,
 	       DOUBLE         **wa2,
-               DOUBLE           visc  
-	      );	      	      	      	     	     	    	   	   
+               DOUBLE           visc
+	      );
 void f2_calinta(
                   ELEMENT         *ele,
                   INT              imyrank,
@@ -806,38 +815,38 @@ void f2_calstabifkapome(
 /************************************************************************
  | f2_calmatvec_usfem.c                                                 |
  ************************************************************************/
-void f2_calmat( DOUBLE **estif,  
-		DOUBLE  *eforce,  
+void f2_calmat( DOUBLE **estif,
+		DOUBLE  *eforce,
 		DOUBLE  *velint,
-		DOUBLE   histvec[2], 
+		DOUBLE   histvec[2],
 		DOUBLE   gridvint[2],
 		DOUBLE **vderxy,
                 DOUBLE **vderxy2,
                 DOUBLE   gradp[2],
-		DOUBLE  *funct,  
-		DOUBLE **derxy,   
+		DOUBLE  *funct,
+		DOUBLE **derxy,
 		DOUBLE **derxy2,
                 DOUBLE  *edeadng,
-		DOUBLE   fac,    
-		DOUBLE   visc,   
+		DOUBLE   fac,
+		DOUBLE   visc,
 		INT      iel,
                 INT     *hasext,
                 INT      isale
               );
-void f2_calresvec(  DOUBLE  *eforce,  
+void f2_calresvec(  DOUBLE  *eforce,
                     DOUBLE  *velint,
-                    DOUBLE   histvec[2], 
-                    DOUBLE **vderxy, 
+                    DOUBLE   histvec[2],
+                    DOUBLE **vderxy,
                     DOUBLE **vderxy2,
-                    DOUBLE  *funct,  
-                    DOUBLE **derxy,   
+                    DOUBLE  *funct,
+                    DOUBLE **derxy,
 		    DOUBLE **derxy2,
                     DOUBLE  *edeadng,
                     DOUBLE   aleconv[2],
                     DOUBLE  *press,
                     DOUBLE   gradp[2],
-                    DOUBLE   fac,    
-                    DOUBLE   visc,   
+                    DOUBLE   fac,
+                    DOUBLE   visc,
                     INT      iel,
                     INT     *hasext,
                     INT      is_ale
@@ -846,11 +855,11 @@ void f2_calresvec(  DOUBLE  *eforce,
 /************************************************************************
  | f2_calservice.c                                                      |
  ************************************************************************/
-void f2_calset( 
+void f2_calset(
 	        ELEMENT         *ele,
                 DOUBLE         **xyze,
-                DOUBLE         **eveln,   
-	        DOUBLE         **evelng,    
+                DOUBLE         **eveln,
+	        DOUBLE         **evelng,
 	        DOUBLE         **evhist,
 	        DOUBLE          *epren,
 		DOUBLE          *edeadn,
@@ -1425,14 +1434,14 @@ void f2_calsurftenfv(
 /************************************************************************
  | f2_caltau.c                                                          |
  ************************************************************************/
-void f2_caltau(			     
-	       ELEMENT         *ele, 
+void f2_caltau(
+	       ELEMENT         *ele,
 	       DOUBLE         **xyze,
-	       DOUBLE          *funct,  
-	       DOUBLE         **deriv,              
+	       DOUBLE          *funct,
+	       DOUBLE         **deriv,
 	       DOUBLE         **xjm,
 	       DOUBLE         **evelng,
-               DOUBLE           visc  
+               DOUBLE           visc
               );
 
 /************************************************************************
@@ -1682,9 +1691,9 @@ void f2_int_stress_project(
 void f2_get_tau(ELEMENT  *ele,
                 DOUBLE  **xjm,
                 DOUBLE  **xyze,
-                DOUBLE   *funct, 
-                DOUBLE    det, 
-                DOUBLE   *velint, 
+                DOUBLE   *funct,
+                DOUBLE    det,
+                DOUBLE   *velint,
                 DOUBLE    visc,
                 INT       whichtau,
                 INT       which_hk);

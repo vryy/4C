@@ -88,7 +88,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 <pre>                                                        chfoe 11/04
 
-This structure contains the positions of the various fluid solutions 
+This structure contains the positions of the various fluid solutions
 within the nodal array of sol_increment.a.da[ipos][dim].
 
 extern variable defined in fluid_service.c
@@ -430,7 +430,7 @@ if (fdyn->step<=(fdyn->nums+1))
 fluid_tcons();
 
 /*------------------------------------------------ output to the screen */
-if (par.myrank==0) 
+if (par.myrank==0)
 {
   if (fdyn->iop == 4) printf("Solving FLUID by One-Step-Theta ...\n");
   else if (fdyn->iop == 7) printf("Solving FLUID by BDF2 ...\n");
@@ -504,6 +504,9 @@ if (fdyn->surftens!=0)
 solserv_zero_vec(&(actsolv->rhs[0]));
 solserv_zero_mat(actintra,&(actsolv->sysarray[actsysarray]),
                  &(actsolv->sysarray_typ[actsysarray]));
+
+/*------------------------------------------- re-initialise neumann bcs */
+inherit_design_dis_neum(&(actfield->dis[0]));
 
 /*--------------------------------------------------- initialise rhs ---*/
 amzero(&frhs_a);
@@ -653,7 +656,7 @@ if (fdyn->checkarea>0) out_area(totarea_a,fdyn->acttime,itnum,0);
 if (fsidyn->ifsi>0)
 {
    *action = calc_fluid_stress;
-   container.nii= 0; 
+   container.nii= 0;
    container.str=str;
    container.is_relax = 0;
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,

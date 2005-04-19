@@ -52,7 +52,7 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                        chfoe 11/04
 
-This structure contains the positions of the various fluid solutions 
+This structure contains the positions of the various fluid solutions
 within the nodal array of sol_increment.a.da[ipos][dim].
 
 extern variable defined in fluid_service.c
@@ -247,21 +247,21 @@ case 0:
 /*                                            and element force vectors */
       f2_calint(ele,estif,emass,eforce,
                 xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
-                evelng,vderxy,wa1,wa2,visc); 
+                evelng,vderxy,wa1,wa2,visc);
    break;
-   case stab_usfem:   
+   case stab_usfem:
       /*---------------------------------------------- get viscosity ---*/
       visc = mat[ele->mat-1].m.fluid->viscosity;
-      
-      /*--------------------------------------------- stab-parameter ---*/     
-      f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);  
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
 
       /*-------------------------------- perform element integration ---*/
       f2_int_usfem(ele,hasext,estif,eforce,xyze,
                    funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
                    evhist,NULL,epren,edeadng,
                    vderxy,vderxy2,visc,wa1,wa2,estress);
-      goto dirich; /* avoid permutation in this case!!!! */
+      break;
    default: dserror("unknown stabilisation type");
    }
 break;
@@ -288,8 +288,8 @@ case 1:
       {
       /*---------------------------------------------- get viscosity ---*/
       visc = mat[ele->mat-1].m.fluid->viscosity;
-      
-      /*--------------------------------------------- stab-parameter ---*/     
+
+      /*--------------------------------------------- stab-parameter ---*/
       f2_caltau(ele,xyze,funct,deriv,xjm,ealecovng,visc);
 
       /*--------------------------------- care for stress projection ---*/
@@ -298,7 +298,7 @@ case 1:
       INT i;
       NODE *actnode;
       for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-         {  
+         {
             actnode=ele->node[i];
             /*---------------- set interpolated velocity derivatives ---*/
             estress[0][i]=actnode->sol_increment.a.da[ipos.stresspro][0];
@@ -312,7 +312,7 @@ case 1:
                    funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
                    evhist,egridv,epren,edeadng,
                    vderxy,vderxy2,visc,wa1,wa2,estress);
-      goto dirich; /* avoid permutation in this case!!!! */
+      break;
       }
     default: dserror("unknown stabilisation type");
    }
@@ -321,6 +321,8 @@ default:
    dserror("parameter is_ale not 0 or 1!\n");
 } /*end switch */
 
+if (ele->e.f2->stab_type != stab_usfem)
+{
 #ifdef PERF
   perf_begin(21);
 #endif
@@ -350,9 +352,12 @@ default:
   perf_end(21);
 #endif
 /*---------------------------------- calculate rhs: emass * vel_hist ---*/
-f2_massrhs(ele,emass,evhist,edeadng,eforce,hasext); 
+f2_massrhs(ele,emass,evhist,edeadng,eforce,hasext);
+}
 
-dirich:
+/* look for neumann bc */
+f2_calneumann(ele, imyrank, eforce, xyze, funct, deriv, xjm, edeadn, edeadng);
+
 /*-------------------------------------------- local co-ordinate system */
 if(ele->locsys==locsys_yes)
    locsys_trans(ele,estif,NULL,NULL,eforce);
@@ -455,7 +460,7 @@ case str_liftdrag:
    if (ldflag>0)
    /* calculate element stresses for selected elements */
    f2_calelestress(viscstr,ele,evelng,epren,funct,
-                   deriv,derxy,vderxy,xjm,xyze,sigmaint,0);      
+                   deriv,derxy,vderxy,xjm,xyze,sigmaint,0);
 break;
 case str_all:
    dserror("stress computation for all elements not implemented yet\n");
@@ -951,7 +956,7 @@ return;
 <pre>                                                        chfoe 11/04
 
 This routine controls the integration of the elemental residual which is
-required to compute consistent nodal forces. These are also used to be 
+required to compute consistent nodal forces. These are also used to be
 FSI coupling forces
 
 </pre>
@@ -991,8 +996,8 @@ case 0:
 
    /*---------------------------------------------- get viscosity ---*/
    visc = mat[ele->mat-1].m.fluid->viscosity;
-   
-   /*--------------------------------------------- stab-parameter ---*/     
+
+   /*--------------------------------------------- stab-parameter ---*/
    f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
 
    /*-------------------------------- perform element integration ---*/
@@ -1008,14 +1013,14 @@ case 1:
 
    /*------------------------------------------------- get viscosity ---*/
    visc = mat[ele->mat-1].m.fluid->viscosity;
-      
+
    /*------------------------------------------------ stab-parameter ---*/
    f2_caltau(ele,xyze,funct,deriv,xjm,ealecovng,visc);
    /*---------- prepare second derivatives in stress projection case ---*/
    if (fdyn->stresspro)
    {
       for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-      {  
+      {
          actnode=ele->node[i];
          /*--------------------------------- set nodal stress values ---*/
          estress[0][i]=actnode->sol_increment.a.da[ipos.stresspro][0];
@@ -1081,9 +1086,9 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */
    evelng[0][i]=actnode->sol_increment.a.da[ipos.velnp][0];
-   evelng[1][i]=actnode->sol_increment.a.da[ipos.velnp][1];   
+   evelng[1][i]=actnode->sol_increment.a.da[ipos.velnp][1];
 } /* end of loop over nodes of element */
-   
+
 if (ele->e.f2->stab_type == stab_usfem)
 {
    /*-------------------------------- perform element integration ---*/
