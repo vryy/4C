@@ -563,8 +563,7 @@ void f2_calneumann(ELEMENT         *ele,
         {
           /* NOTE
            * Right now neumann bc are constant along a line. */
-          eforce[irow] += funct[inode]*(edeadng[isd]*fdyn->thsl +
-                                        edeadn[isd] *fdyn->thsr)*fac;
+          eforce[irow] += funct[inode]*(edeadng[isd]*fdyn->thsl)*fac;
           irow++;
         }
       }
