@@ -413,13 +413,13 @@ case 4:
 break;
 case 5:
    printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION\n");
-   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
+   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
    printf("\n");
 break;
 case 6:
    printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD\n");
-   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
+   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
    printf("\n");
 break;

@@ -41,7 +41,7 @@ extern struct _PAR   par;
 
 <pre>                                                        chfoe 11/04
 
-This structure contains the positions of the various fluid solutions 
+This structure contains the positions of the various fluid solutions
 within the nodal array of sol_increment.a.da[ipos][dim].
 
 extern variable defined in fluid_service.c
@@ -218,6 +218,8 @@ for (i=0;i<numnp_total;i++)
    actnode  = &(actfield->dis[0].node[i]);
    actgnode = actnode->gnode;
    actfnode = actgnode->mfcpnode[1];
+   if (actfnode==NULL)          /* no corresponding fluid node */
+     continue;
    actfgnode = actfnode->gnode;
    if (actfgnode->dirich==NULL)  /* no dirichlet boundary condition */
          continue;

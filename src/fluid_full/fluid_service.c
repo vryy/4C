@@ -71,7 +71,7 @@ static FLUID_DYNAMIC *fdyn;
 
 <pre>                                                        chfoe 11/04
 
-This structure contains the positions of the various fluid solutions 
+This structure contains the positions of the various fluid solutions
 within the nodal array of sol_increment.a.da[ipos][dim].
 
 extern variable defined in fluid_service.c
@@ -120,9 +120,9 @@ if (init==1)  /* save parameter from input */
    itemax_s = fdyn->itemax;
    theta_s  = fdyn->theta;
    thetas_s = fdyn->thetas;
-   if (theta_s < EPS5) 
+   if (theta_s < EPS5)
    {
-     theta_s = 1.0; /* hier bei Gelegenheit mal noch 'ne dswarning */     
+     theta_s = 1.0; /* hier bei Gelegenheit mal noch 'ne dswarning */
    }
    if (iop_s == 7) /* BDF2 */
      theta_s = 1.0;
@@ -185,7 +185,9 @@ void fluid_cons( void )
 #ifdef DEBUG
 dstrc_enter("fluid_cons");
 #endif
+
 /*----------------------------------------------------- initialisation */
+fdyn = alldyn[genprob.numff].fdyn;
 fdyn->nir=0;
 fdyn->nil=0;
 fdyn->nii=0;
@@ -193,7 +195,6 @@ fdyn->nis=0;
 fdyn->totarea=ZERO;
 
 /*----------------------------------------------------------------------*/
-fdyn = alldyn[genprob.numff].fdyn;
 fdyn->dtp = fdyn->dt; /* set starting 'previous' step to prescribed value */
 fluid_startproc(NULL,1);
 
@@ -231,7 +232,7 @@ case 1:		/* gen alpha implementation */
        printf("\nWarning: Theta, Alpha_m and Alpha_f do not satisfy 2nd order condition.\n");
        printf("         Theta is recalculated.\n");
        printf("\n Theta = Alpha_m / (2 Alpha_f) = %6.4f \n\n", fdyn->theta);
-   } 
+   }
    fdyn->dta = 0.0;
 break;
 
@@ -276,7 +277,7 @@ return;
 in this routine the constants for the time integration algorithms are
 calculated, here time dependent values only are calculated.
 
-NOTE: The time discretisation scheme itself is time dependent since 
+NOTE: The time discretisation scheme itself is time dependent since
       starting steps using another scheme are possible!
 
 </pre>
@@ -334,7 +335,7 @@ case 7:		/* 2nd order backward differencing BDF2 */
                      / (2.0*fdyn->dta + fdyn->dtp);
       fdyn->thpl = fdyn->thsl;
       fdyn->thsr = 0.0;
-      fdyn->thpr = fdyn->thsr; 
+      fdyn->thpr = fdyn->thsr;
 
    }
    else /* constant time step size */
@@ -368,8 +369,8 @@ return;
 
 <pre>                                                         genk 03/02
 
-in this routine the free surface flags for the different nonlinear 
-iteration schemes are set. Depending on the iteration schemes the 
+in this routine the free surface flags for the different nonlinear
+iteration schemes are set. Depending on the iteration schemes the
 evaluation of some termes in the LHS or the RHS have to turned on or off.
 
 NOTE: This routine is not called any more in the Euler case! It is required
@@ -2882,7 +2883,7 @@ void fluid_cal_error(
 
 
 /*!---------------------------------------------------------------------
-\brief init positions in sol_increment 
+\brief init positions in sol_increment
 
 <pre>                                                        chfoe 11/04
 
@@ -2905,14 +2906,14 @@ if (fdyn->adaptive)
 {
    /*---------------------------------------- adaptive time stepping ---*/
    ipos.velnm = 0;
-   ipos.veln  = 1;  
-   ipos.hist  = 2; 
-   ipos.velnp = 3; 
+   ipos.veln  = 1;
+   ipos.hist  = 2;
+   ipos.velnp = 3;
    ipos.accnm = 4;
    ipos.accn  = 5;
    ipos.pred  = 6;
    ipos.terr  = 7;
-   
+
    ipos.numsol = 8;
 }
 else
@@ -2924,7 +2925,7 @@ else
    ipos.accnm = 3;  /* acceleration at time n-1 */
    ipos.accn  = 4;  /* acceleration at time n */
    ipos.hist  = 5;  /* linear combination of old solutions */
-   
+
    ipos.numsol = 6;
 }
 /*----------------------------------------------------------------------*/
