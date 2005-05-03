@@ -60,7 +60,7 @@ Mistakes to avoid:
 #include "../pss_full/pss_table.h"
 
 
-/* output version to the part common to all element */
+/* output version of the part common to all elements */
 #define ELEMENT_IO_VERSION 1
 
 

@@ -349,10 +349,12 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
 
     init_chunk_data(result, &chunk, "displacement");
 
+#if 0
     if ((chunk.value_entry_length != 2) && (chunk.value_entry_length != 3))
     {
       dserror("illegal displacement entry length %d", chunk.value_entry_length);
     }
+#endif
 
     fprintf(out,DBLLINE);
     fprintf(out,"Converged Solution of Discretisation %d in step %d \n",

@@ -10,3 +10,5 @@ FLUID_SOL         Yes
 FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
+RELATIVE_DISP_NUM 0
+FILESTEPS         1000

@@ -275,7 +275,7 @@ static void shell8_write_coords(FIELD_DATA* field, GIDSET* gid)
      * elements used. */
     GiD_WriteCoordinates(Id+1,
                          x[0]-d[0], x[1]-d[1], x[2]-d[2]);
-    GiD_WriteCoordinates(Id+1 + field->numnp,
+    GiD_WriteCoordinates(Id+1 + field->problem->numnp,
                          x[0]+d[0], x[1]+d[1], x[2]+d[2]);
   }
 
@@ -305,6 +305,7 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   if (gid->is_shell8_22)
   {
     INT i;
+    PROBLEM_DATA* problem = field->problem;
 
     /* this is the hexahedra version */
     GiD_BeginMesh(gid->shell8_22_name, 3, GiD_Hexahedra, 8);
@@ -337,10 +338,10 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
        * filter. We relay on beeing the only discretization of this
        * problem. */
       /* ok. This is a particularly nasty hack. */
-      get_gid_node_ids(field, field->mesh.size_buf, &(mesh_entry[numnp+k]), numnp);
+      get_gid_node_ids(field, field->mesh.size_buf, &(mesh_entry[numnp]), numnp);
       for (k=0; k<numnp; ++k)
       {
-        mesh_entry[numnp+k] += field->numnp;
+        mesh_entry[numnp+k] += problem->numnp;
       }
 
       GiD_WriteElement(Id+1, mesh_entry);
@@ -453,7 +454,7 @@ void shell8_write_displacement(FIELD_DATA *field, RESULT_DATA* result)
 
     GiD_WriteVector(Id+1,
                     x[0]-x[3]*scal/sdc, x[1]-x[4]*scal/sdc, x[2]-x[5]*scal/sdc);
-    GiD_WriteVector(Id+1+field->numnp,
+    GiD_WriteVector(Id+1 + field->problem->numnp,
                     x[0]+x[3]*scal/sdc, x[1]+x[4]*scal/sdc, x[2]+x[5]*scal/sdc);
   }
 

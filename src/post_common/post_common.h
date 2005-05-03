@@ -206,6 +206,14 @@ typedef struct _PROBLEM_DATA {
   INT num_discr;
   FIELD_DATA* discr;
 
+  /* total number of items over all fields */
+  /* Some elements introduce artificial nodes (shell8,shell9) in the
+   * postprocessing step. We assume that nodes are consecutively
+   * numbered from 0 to numnp-1 and assign numbers starting with numnp
+   * to these new ones. */
+  INT numele;
+  INT numnp;
+
   CHAR basename[100];
   MAP control_table;
 

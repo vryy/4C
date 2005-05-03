@@ -64,7 +64,7 @@ extern struct _PAR   par;
 /*!
   \brief Write all results for one step.
 
-  Write results for potprocessing. All algorithms call this function
+  Write results for postprocessing. All algorithms call this function
   (if they support binary output).
 
   This function can be called many times in a row per time step. But
@@ -89,6 +89,8 @@ void out_results(struct _BIN_OUT_FIELD* context,
 {
   INT rank = context->actintra->intra_rank;
 
+  /* We remember the step for with we are called. This way we notice
+   * when a new time step comes and output the appropriate header. */
   static DOUBLE last_time = -1;
   static INT last_step = -1;
   static INT last_discr = -1;

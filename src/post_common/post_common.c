@@ -833,13 +833,15 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
   /*--------------------------------------------------------------------*/
   /* setup all fields */
 
-  /* We need to output each field separately. */
   problem->num_discr = map_symbol_count(control_table, "field");
   if (problem->num_discr==0)
   {
     dserror("no field group found");
   }
   problem->discr = (FIELD_DATA*)CCACALLOC(problem->num_discr, sizeof(FIELD_DATA));
+
+  problem->numele = 0;
+  problem->numnp = 0;
 
   /* find the first field (the last one that has been written) */
   symbol = map_find_symbol(control_table, "field");
@@ -853,6 +855,9 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
     }
 
     init_field_data(problem, &(problem->discr[i]), symbol_map(symbol));
+
+    problem->numele += problem->discr[i].numele;
+    problem->numnp  += problem->discr[i].numnp;
 
     symbol = symbol->next;
   }
@@ -1007,7 +1012,7 @@ INT next_result(RESULT_DATA* result)
 
       /* we are only interessted if the result matches the slice */
       if ((step >= problem->start) &&
-          ((step < problem->end) || (problem->end == -1)) &&
+          ((step <= problem->end) || (problem->end == -1)) &&
           ((step - problem->start) % problem->step == 0))
       {
         result->pos = i;
