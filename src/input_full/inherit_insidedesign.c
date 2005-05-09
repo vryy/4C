@@ -361,15 +361,15 @@ dstrc_enter("inherit_dsurfdline_fsicouple");
 for (i=0; i<design->ndsurf; i++)
 {
    actdsurf = &(design->dsurf[i]);
-   /*-------------------- do nothing if DLINE has no dirichlet condition */
+   /*----------------- do nothing if DUSRF has no fsi coupling condition */
    if (actdsurf->fsicouple==NULL) continue;
-   /*------------------------------- loop the DNODEs related to actdline */
+   /*------------------------------- loop the DLINES related to actdline */
    for (j=0; j<actdsurf->ndline; j++)
    {
       actdline = actdsurf->dline[j];
-      /*--------------- if actdnode has its own fsi condition do nothing */
+      /*--------------- if actdline has its own fsi condition do nothing */
       if (actdline->fsicouple != NULL) continue;
-      /*------ inherit the dirichlet condition from actdline to actdnode */
+      /*------ inherit the dirichlet condition from actdsurf to actdline */
       actdline->fsicouple = (FSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(FSI_COUPLE_CONDITION));
       actdline->fsicouple->fieldtyp = actdsurf->fsicouple->fieldtyp;
       actdline->fsicouple->fsi_coupleId = actdsurf->fsicouple->fsi_coupleId;
