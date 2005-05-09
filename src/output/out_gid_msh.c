@@ -66,7 +66,7 @@ GIDSET *sm_gid;
 void out_gid_msh()
 {
 #ifndef NO_TEXT_OUTPUT
-INT           i,j,k;
+INT           i,j,k,kk;
 FILE         *out = allfiles.gidmsh;
 FIELD        *actfield;
 GIDSET       *actgid;
@@ -91,13 +91,13 @@ fprintf(out,"# P_CARAT postprocessing output to GiD - MESH file\n");
 fprintf(out,"#--------------------------------------------------------------------------------\n");
 /*---------------------------------------------------- loop over fields */
 is_firstmesh=1;
-for (i=0; i<genprob.numfld; i++)
+for (kk=0; kk<genprob.numfld; kk++)
 {
-   actfield = &(field[i]);
-   actgid   = &(gid[i]);
+   actfield = &(field[kk]);
+   actgid   = &(gid[kk]);
    /*----------------------------------- print the meshes of this field */
 #ifdef D_SHELL8
-#if 0
+#if 1
    /* this is the quadrilateral version */
    if (actgid->is_shell8_22)
    {
@@ -128,6 +128,7 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"END ELEMENTS\n");
    }
 #endif
+#if 0
    /* this is the hexahedra version */
    if (actgid->is_shell8_22)
    {
@@ -185,6 +186,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
+#endif
 
    if (actgid->is_shell8_33)
    {
