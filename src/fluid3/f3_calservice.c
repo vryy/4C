@@ -624,8 +624,8 @@ In this routine the 2nd derivatives of the velocity
 w.r.t x/y/z are calculated
    vderxy2[0][0] = Ux,xx
    vderxy2[0][3] = Ux,xy
-   vderxy2[1][4] = Ux,xz
-   vderxy2[2][5] = Ux,yz
+   vderxy2[1][4] = Uy,xz
+   vderxy2[2][5] = Uz,yz
 
 </pre>
 \param  **vderxy2  DOUBLE        (o)   2nd velocity derivativs
