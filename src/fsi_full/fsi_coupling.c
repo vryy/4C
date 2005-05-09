@@ -557,9 +557,9 @@ for (i=0;i<numfnp;i++)
       dserror("numdf not possible for fluid node #%d at FSI interface!", actfnode->Id);
    for (j=0;j<dim;j++)
       if (actfgnode->dirich->dirich_onoff.a.iv[j]!=1)
-         dserror("wrong onoff() at fluid node #%d",actfnode->Id);
+         dserror("onoff(%d)=%d at fluid node #%d",j,actfgnode->dirich->dirich_onoff.a.iv[j],actfnode->Id);
    if (actfgnode->dirich->dirich_onoff.a.iv[dim]!=0)
-      dserror("wrong onoff() at fluid node #%d",actfnode->Id);
+      dserror("onoff(%d)=%d at fluid node #%d",dim,actfgnode->dirich->dirich_onoff.a.iv[j],actfnode->Id);
 } /* end of loop over fluid nodes */
 
 for (i=0;i<numanp;i++)
