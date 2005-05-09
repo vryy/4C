@@ -691,12 +691,9 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       /*------------------------ compute traction vector at gauss point *
        |  force = sigma * n  (Cauchy's law)                             |
        *----------------------------------------------------------------*/
-      /*################################################################
-         VZW NUR FUER AKTUELLE RECHNUNG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      */
-      forcesurf[0] = -sigmaint[0]*ap[0]+sigmaint[3]*ap[1]+sigmaint[4]*ap[2];
-      forcesurf[1] = -sigmaint[3]*ap[0]+sigmaint[1]*ap[1]+sigmaint[5]*ap[2];
-      forcesurf[2] = -sigmaint[4]*ap[0]+sigmaint[5]*ap[1]+sigmaint[2]*ap[2];
+      forcesurf[0] = sigmaint[0]*ap[0]+sigmaint[3]*ap[1]+sigmaint[4]*ap[2];
+      forcesurf[1] = sigmaint[3]*ap[0]+sigmaint[1]*ap[1]+sigmaint[5]*ap[2];
+      forcesurf[2] = sigmaint[4]*ap[0]+sigmaint[5]*ap[1]+sigmaint[2]*ap[2];
 
       /*------------------- loop over all degrees of freedom at element */
       /*
