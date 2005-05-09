@@ -452,7 +452,7 @@ for (i=0; i<genprob.numfld; i++)
       }
    } /* end of (j=0; j<actfield->numele; j++) */
    /*----------------------------- now we can write the gausspoint sets */
-#if 0/* this is the shell visualization using Quadrilateral */
+#if 1/* this is the shell visualization using Quadrilateral */
    if (actgid->is_shell8_22)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -466,6 +466,7 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"END GAUSSPOINTS\n");
    }
 #endif
+#if 0
    /* this is the shell visualization using Hexahedra */
    if (actgid->is_shell8_22)
    {
@@ -492,7 +493,7 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
-
+#endif
 #ifdef D_SHELL9
    /* this is the shell9 visualization using Hexahedra */
    if (actgid->is_shell9_4_22)
@@ -1003,10 +1004,12 @@ if (actgid->is_shell8_22)
       actele = &(actfield->dis[0].element[i]);
       if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-#if 0
+#if 1
       for (j=1; j<4; j++)/* quadrilateral version */
 #endif
+#if 0
       for (j=1; j<8; j++)/* hexahedra version */
+#endif
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
@@ -1798,7 +1801,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    }
    fprintf(out,"VALUES\n");
 #ifdef D_SHELL8
-#if 1 /* this is hexahedra output */
+#if 0 /* this is hexahedra output */
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
