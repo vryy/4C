@@ -42,6 +42,19 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+struct _FLUID_POSITION ipos;
 
 /*----------------------------------------------------------------------*
  | write restart                                         m.gee 05/02    |
@@ -1276,6 +1289,7 @@ long int           **node_handles;
 INT                  numele;
 long int           **ele_handles;
 char                 resname[100];
+char                 iposname[100];
 long int             longdummy;
 FILE                *out;
 RESTART_DYNFLUID     res;
@@ -1294,6 +1308,7 @@ out = allfiles.out_pss;
 res.step = fdyn->step;
 res.time = fdyn->acttime;
 sprintf(resname,"fres%d",res.step);
+sprintf(iposname,"ipos%d",res.step);
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1430,6 +1445,8 @@ CCAFREE(res.ele_handles);
    names are limited to 9 characters, so a step larger then fres99999
    can not be restarted at the moment !!!!
 */
+pss_write(iposname,1,1,sizeof(FLUID_POSITION),&ipos,&longdummy,out,&ierr);
+if (ierr != 1) dserror("Error writing restart data");
 pss_write(resname,1,1,sizeof(RESTART_DYNFLUID),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
@@ -1503,6 +1520,7 @@ INT                  numele;
 long int           **ele_handles;
 long int           **node_handles;
 char                 resname[100];
+char                 iposname[100];
 FILE                *in;
 RESTART_DYNFLUID     res;
 NODE                *actnode;
@@ -1521,6 +1539,7 @@ dstrc_enter("restart_read_fluiddyn");
 in = allfiles.in_pss;
 /*----------------------------------- check the step that shall be read */
 sprintf(resname,"fres%d",restart);
+sprintf(iposname,"ipos%d",restart);
 pss_chck(resname,&reshandle,in,&ierr);
 if (ierr != 1) dserror("Cannot restart, step doesn't exist in pss-file");
 /*----------------------------- the structure res exists, so we read it */
@@ -1528,6 +1547,14 @@ pss_read_name_handle(resname,&i,&i,&byte,&res,&reshandle,in,&ierr);
 if (ierr != 1) dserror("Restart structure exists, but cannot read it");
 fdyn->step=res.step;
 fdyn->acttime=res.time;
+/*------------------------------------------------------- get positions */
+pss_chck(resname,&reshandle,in,&ierr);
+if (ierr != 1) dserror("Cannot restart, step doesn't exist in pss-file");
+pss_chck(iposname,&reshandle,in,&ierr);
+/*---------------------------- the structure ipos exists, so we read it */
+pss_read_name_handle(iposname,&i,&i,&byte,&ipos,&reshandle,in,&ierr);
+if (ierr != 1) dserror("Restart structure exists, but cannot read it");
+
 
 /*----------------------------------------------------------------------*/
 /*
@@ -1663,7 +1690,7 @@ CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /*
    now we have to make the arrays node->sol, node->sol_increment,
-   node->sol_residual redundant for the whole field
+   node->sol_mf redundant for the whole field
 */
 #ifdef PARALLEL
 numnp = actfield->dis[0].numnp;
