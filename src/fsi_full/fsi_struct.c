@@ -528,6 +528,9 @@ if (restart)
    /*----------------------------------------------------- measure time */
    t1_res = ds_cputime();
    fprintf(allfiles.out_err,"TIME for restart reading is %f sec\n",t1_res-t0_res);
+   /*--------------------------------------------- initialise predictor */
+   if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
+   fsi_structpredictor(actfield,2);
 }
 /*------------------------------------------------------- printout head */
 /* if (par.myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);*/

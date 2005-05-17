@@ -451,10 +451,11 @@ void fsi_structpredictor(
                               INT                init
 		         )
 {
-INT    i,j;                    /* some counters                         */
+INT    i,j,k;                   /* some counters                         */
+INT    olddim;
 INT    actcurve;               /* actual time curve                     */
 INT    numnp_total;            /* total number of nodes                 */
-static INT    FDIM=11;         /* dimension of structural sol field     */
+const INT    FDIM=11;          /* dimension of structural sol field     */
 DOUBLE T,dt;                   /* actual time, time increment           */
 DOUBLE **sol;                  /* nodal solution history                */
 DOUBLE **sol_mf;               /* nodal multifield solution history     */
@@ -502,8 +503,25 @@ if (init==1)
 	 amzero(&(actnode->sol));
       } /* endif enlargement */
    }
-goto end;
+   goto end;
 }
+else if (init==2)
+{
+   for (i=0;i<numnp_total;i++)
+   {
+      actnode=&(actfield->dis[0].node[i]);
+      olddim=actnode->sol.fdim;
+      if (FDIM >= olddim)
+      {
+         amredef(&(actnode->sol),FDIM,actnode->sol.sdim,"DA");
+         for (j=olddim;j<FDIM;j++)
+            for (k=0;k<actnode->sol.sdim;k++)
+               actnode->sol.a.da[j][k]=ZERO;
+      } /* endif enlargement */
+   }
+   goto end;
+}
+
 
 T  = fsidyn->time;
 dt = fsidyn->dt;
