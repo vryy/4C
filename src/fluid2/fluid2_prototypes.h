@@ -55,11 +55,14 @@ void f2_calele(
                 INT            *hasdirich,
                 INT            *hasext,
                 INT             imyrank,
+                ARRAY_POSITION *ipos,
                 INT             is_relax,
                 INT             init
 	       );
 void f2_stress(FLUID_STRESS str, INT viscstr ,
-               ELEMENT *ele, INT is_relax );
+               ELEMENT *ele,
+               ARRAY_POSITION *ipos,
+               INT is_relax );
 void f2_curvature(
                      ELEMENT        *ele,
                      INT             imyrank
@@ -68,20 +71,24 @@ void f2_heightfunc(
                    ELEMENT              *ele,
                    ARRAY                *estif_global,
 		   ARRAY                *eforce_global,
+                   ARRAY_POSITION       *ipos,
 		   CONTAINER            *container
 		   );
-void f2_calstab(ELEMENT *ele);
+void f2_calstab(ELEMENT *ele, ARRAY_POSITION *ipos);
 void f2_calnormal(ELEMENT *ele);
 void f2_caleleres(
 	           ELEMENT        *ele,
 	           ARRAY          *eforce_global,
+                   ARRAY_POSITION *ipos,
                    INT            *hasdirich,
                    INT            *hasext
 	       );
 void f2_calstresspro(ELEMENT   *ele,
                      INT       *hasext,
                      ARRAY     *estif_global,
-		     ARRAY     *eforce_global );
+		     ARRAY     *eforce_global,
+                     ARRAY_POSITION *ipos
+  );
 
 /************************************************************************
  | f2_calele_tu.c                                                       |
@@ -95,6 +102,7 @@ void f2_calele_tu(
 	          ARRAY          *eiforce_global,
                   ARRAY          *edforce_global,
                   ARRAY          *eproforce_global,
+                  ARRAY_POSITION *fluid_ipos,
                   INT            *hasdirich,
                   INT            *hasext,
                   INT             init
@@ -112,6 +120,7 @@ void f2_calele_tu_1(
                      ARRAY          *eiforce_global,
                      ARRAY          *edforce_global,
                      ARRAY          *eproforce_global,
+                     ARRAY_POSITION *ipos,
                      INT            *hasdirich,
                      INT            *hasext,
                      INT             init
@@ -134,6 +143,7 @@ void f2_calelesize(
                      DOUBLE          *ephing,
                      DOUBLE          *eddy,
                      DOUBLE          *visc,
+                     ARRAY_POSITION  *ipos,
                      INT              cpele
                      );
 void f2_calelesize2(
@@ -864,6 +874,7 @@ void f2_calset(
 	        DOUBLE          *epren,
 		DOUBLE          *edeadn,
 		DOUBLE          *edeadng,
+                ARRAY_POSITION *ipos,
 		INT             *hasext
               );
 void f2_calseta(
@@ -884,6 +895,7 @@ void f2_calseta(
                   DOUBLE          *ephing,
                   DOUBLE         **evnng,
                   DOUBLE         **evnn,
+                  ARRAY_POSITION *ipos,
                   INT             *hasext,
                   INT              is_relax
 	      );
@@ -992,11 +1004,13 @@ void f2_calset_tu(
                      DOUBLE          *kappan,
                      DOUBLE          *epsilon,
                      DOUBLE         **evel,
-                     DOUBLE         **xyze
+                     DOUBLE         **xyze,
+                     ARRAY_POSITION *fluid_ipos
 	           );
 
 void f2_shearstress(
-                     ELEMENT    *ele
+                     ELEMENT    *ele,
+                     ARRAY_POSITION *ipos
                  );
 
 void f2_kapepsi(
@@ -1072,6 +1086,7 @@ void f2_eddyirans(
                      DOUBLE     *eddyint,
                      DOUBLE     *funct,
                      DOUBLE     *eddy,
+                     ARRAY_POSITION *fluid_ipos,
                      INT         iel
 	     );
 void f2_vel_dc(
@@ -1115,7 +1130,8 @@ void f2_calset_tu_1(
                      DOUBLE          *kappan,
                      DOUBLE          *omega,
                      DOUBLE         **evel,
-                     DOUBLE         **xyze
+                     DOUBLE         **xyze,
+                     ARRAY_POSITION  *ipos
                    );
 
 void f2_kapomei(
@@ -1415,6 +1431,7 @@ void f2_calelestress(
 		      DOUBLE        **xjm,
 		      DOUBLE        **xyze,
 		      DOUBLE        **sigmaint,
+                      ARRAY_POSITION *ipos,
 		      INT             is_relax
 		    );
 /************************************************************************

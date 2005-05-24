@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief evaluate 2D fluid coefficient matrix 
+\brief evaluate 2D fluid coefficient matrix
 
 <pre>
 Maintainer: Christiane Foerster
@@ -10,10 +10,10 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 /*#include "fluid2_new_prototypes.h" */
 #include "fluid2.h"
@@ -23,7 +23,7 @@ Maintainer: Christiane Foerster
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -39,8 +39,8 @@ static FLUID_DYNAMIC *fdyn;
 <pre>                                                        chfoe 04/04
 
 In this routine the Gauss point contributions to the elemental coefficient
-matrix of a stabilised fluid2 element are calculated. The procedure is 
-based on the Rothe method of first integrating in time. Hence the 
+matrix of a stabilised fluid2 element are calculated. The procedure is
+based on the Rothe method of first integrating in time. Hence the
 resulting terms include coefficients containing time integration variables
 such as theta or delta t which are represented by 'timefac'.
 
@@ -48,20 +48,20 @@ The routine was completed to contain ALE-terms also.         chfoe 11/04
 
 The stabilisation is based on the residuum:
 
-R_M = u + timefac u * grad u - timefac * 2 nu div epsilon(u) 
+R_M = u + timefac u * grad u - timefac * 2 nu div epsilon(u)
     + timefac grad p - rhsint
 
 R_C = div u
 
 The corresponding weighting operators are
-L_M = v + timefac u_old * grad v + timefac v * grad u_old 
+L_M = v + timefac u_old * grad v + timefac v * grad u_old
     - timefac * 2 nu alpha div epsilon (v) + timefac beta grad q
 
 L_C = div v
 
 where alpha = -1
-      beta  = -1 
-are sign regulating factors and rhsint differs for different time 
+      beta  = -1
+are sign regulating factors and rhsint differs for different time
 These factores are worked in now and cannot be changed any more.
 
 integration schemes:
@@ -75,7 +75,7 @@ generalised alpha:
 
 
 The stabilisation by means of the momentum residuum R_M is of the unusual
-type: 
+type:
    Galerkin parts MINUS sum over elements (stabilising parts)
 The stabilisation by means of the continuity equation R_C is done in the
 usual way:
@@ -87,10 +87,10 @@ The calculation proceeds as follows.
 3) build stabilising terms from them
 4) build Galerkin and stabilising terms of RHS
 
-NOTE: u_old represents the last iteration value. (The most recent one 
+NOTE: u_old represents the last iteration value. (The most recent one
       we've got!)
 
-NOTE: Galerkin and stabilisation matrices are calculated within one 
+NOTE: Galerkin and stabilisation matrices are calculated within one
       routine.
 
 NOTE: In order to increase the performance plenty of terms are concentrated
@@ -124,38 +124,38 @@ for further comments see comment lines within code.
 \param **vderxy     DOUBLE        (i)   global vel derivatives
 \param  *vderxy2    DOUBLE        (i)   2nd global vel derivatives
 \param  *funct      DOUBLE        (i)   nat. shape funcs
-\param **derxy      DOUBLE        (i)   global coord. deriv.  
+\param **derxy      DOUBLE        (i)   global coord. deriv.
 \param **derxy2     DOUBLE        (i)   2nd global coord. deriv.
 \param  *edeadng    DOUBLE        (i)   dead load at time n+1
-\param   fac 	    DOUBLE        (i)   weighting factor	      
-\param   visc       DOUBLE        (i)   fluid viscosity	     
+\param   fac 	    DOUBLE        (i)   weighting factor
+\param   visc       DOUBLE        (i)   fluid viscosity
 \param   iel	    INT           (i)   number of nodes of act. ele
 \param  *hasext     INT           (i)   flag, if element has volume load
 \param   isale      INT           (i)   flag, if ALE or EULER
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calmat( DOUBLE **estif,  
-		DOUBLE  *eforce,  
+void f2_calmat( DOUBLE **estif,
+		DOUBLE  *eforce,
 		DOUBLE  *velint,
-		DOUBLE   histvec[2], 
+		DOUBLE   histvec[2],
 		DOUBLE   gridvint[2],
 		DOUBLE **vderxy,
                 DOUBLE **vderxy2,
                 DOUBLE   gradp[2],
-		DOUBLE  *funct,  
-		DOUBLE **derxy,   
+		DOUBLE  *funct,
+		DOUBLE **derxy,
 		DOUBLE **derxy2,
                 DOUBLE  *edeadng,
-		DOUBLE   fac,    
-		DOUBLE   visc,   
+		DOUBLE   fac,
+		DOUBLE   visc,
 		INT      iel,
                 INT     *hasext,
                 INT      isale
               )
 {
 INT     i, j, ri, ci;
-DOUBLE  timefac;    /* One-step-Theta: timefac = theta*dt 
+DOUBLE  timefac;    /* One-step-Theta: timefac = theta*dt
                        BDF2:           timefac = 2/3 * dt               */
 DOUBLE  dt;         /* time step size*/
 DOUBLE  aux;
@@ -176,9 +176,9 @@ DOUBLE  rhsint[2];   /* total right hand side terms at int.-point       */
 DOUBLE  time2nue, timetauM, timetauMp, ttimetauM, ttimetauMp, timefacfac;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calmat");
-#endif	
+#endif
 /*========================== initialisation ============================*/
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -193,7 +193,7 @@ dt      = fdyn->dta;
 /* integration factors and koefficients of single terms */
 time2nue  = timefac * 2.0 * visc;
 timetauM   = timefac * tau_M;
-timetauMp  = timefac * tau_Mp; 
+timetauMp  = timefac * tau_Mp;
 
 ttimetauM  = timefac * timetauM;
 ttimetauMp = timefac * timetauMp;
@@ -216,7 +216,7 @@ else
 
 /* Convective term  u_old * grad u_old: */
 conv_old[0] = vderxy[0][0] * velint[0] + vderxy[0][1] * velint[1];
-conv_old[1] = vderxy[1][0] * velint[0] + vderxy[1][1] * velint[1]; 
+conv_old[1] = vderxy[1][0] * velint[0] + vderxy[1][1] * velint[1];
 
 /* Viscous term  div epsilon(u_old) */
 visc_old[0] = 0.5 * (2.0*vderxy2[0][0] + vderxy2[0][1] + vderxy2[1][2]);
@@ -227,15 +227,15 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
 {
    /* Reactive term  u:  funct */
    /* linearise convective term */
-   
+
    /*--- convective part u_old * grad (funct) --------------------------*/
    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
    conv_c[i] = derxy[0][i] * velint[0] + derxy[1][i] * velint[1] ;
-   
+
    /*--- convective grid part u_G * grad (funct) -----------------------*/
    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
    conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1] ;
-   
+
    /*--- reactive part funct * grad (u_old) ----------------------------*/
    /* /                          \
       |  u_old_x,x   u_old_x,y   |
@@ -246,9 +246,9 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    conv_r[0][2*i+1] = vderxy[0][1]*funct[i];
    conv_r[1][2*i]   = vderxy[1][0]*funct[i];
    conv_r[1][2*i+1] = vderxy[1][1]*funct[i];
-   
+
    /*--- viscous term  - grad * epsilon(u): ----------------------------*/
-   /*   /                              \   
+   /*   /                              \
       1 |  2 N_x,xx + N_x,yy + N_y,xy  |    with N_x .. x-line of N
     - - |                              |         N_y .. y-line of N
       2 |  N_y,xx + N_x,yx + 2 N_y,yy  |
@@ -259,7 +259,7 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    viscs2[1][2*i+1] = - 0.5 * ( derxy2[0][i] + 2.0 * derxy2[1][i] );
 
    /*--- viscous term (after integr. by parts) -------------------------*/
-   /*   /                            \   
+   /*   /                            \
       1 |  2 N_x,x    N_x,y + N_y,x  |    with N_x .. x-line of N
       - |                            |         N_y .. y-line of N
       2 |  N_y,x + N_x,y    2 N_y,y  |
@@ -272,14 +272,14 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    viscous[1][0][2*i+1] = 0.5 * derxy[0][i];  /* 3rd index:             */
    viscous[1][1][2*i+1] = derxy[1][i];        /*   elemental vel dof    */
    viscous[1][1][2*i]   = 0.0;
-   
+
    /* pressure gradient term derxy, funct without or with integration   *
     * by parts, respectively                                            */
 
    /*--- divergence u term ---------------------------------------------*/
    div[2*i]   = derxy[0][i];
    div[2*i+1] = derxy[1][i];
-   
+
    /*--- ugradv-Term ---------------------------------------------------*/
    /*
      /                                                          \
@@ -298,7 +298,7 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
       ugradv[i][2*j]   = derxy[0][i] * funct[j];
       ugradv[i][2*j+1] = derxy[1][i] * funct[j];
    }
-   
+
 }
 
 /*--------------------------------- now build single stiffness terms ---*/
@@ -309,7 +309,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /************** integrate element coefficient matrix **************/
 /*===================== GALERKIN part of the matrix ====================*/
 
-      /* a concentration of the following terms: */      
+      /* a concentration of the following terms: */
       /* 'mass matrix' (u,v) */
       /* N_c (u_old * grad u, v) */
       /* N_r (u * grad u_old, v) */
@@ -382,12 +382,12 @@ for (ri=0; ri<iel; ri++)      /* row index */
                                              +viscs2[0][2*ci+1]*aux );
       estif[ri*3+1][ci*3]   += conv_c[ri] * ( conv_r[1][2*ci]*ttimetauM
                                              +viscs2[1][2*ci]*aux );
-      estif[ri*3+1][ci*3+1] += conv_c[ri] * ( conv_r[1][2*ci+1]*ttimetauM 
+      estif[ri*3+1][ci*3+1] += conv_c[ri] * ( conv_r[1][2*ci+1]*ttimetauM
                                              +viscs2[1][2*ci+1]*aux );
       /* -tau_M*timefac*timefac*(grad p, u_old * grad v) */
       estif[ri*3][ci*3+2]   += conv_c[ri] * derxy[0][ci] * ttimetauM;
       estif[ri*3+1][ci*3+2] += conv_c[ri] * derxy[1][ci] * ttimetauM;
-      
+
       /*--- ALE only: CONVECTIVE GRID stabilisation ---*/
       if(isale)
       {
@@ -395,7 +395,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
          /* -tau_M*timefac*(u, -u_G * grad v) */
          /* -tau_M*timefac*timefac*(u_old * grad u, -u_G * grad v) */
          /* -tau_M*timefac*timefac*(-u_G * grad u, -u_G * grad v) */
-         aux = conv_g[ri] * 
+         aux = conv_g[ri] *
               (ttimetauM*(conv_c[ci]+conv_g[ci]) + timetauM*funct[ci]);
          estif[ri*3][ci*3]     += aux;
          estif[ri*3+1][ci*3+1] += aux;
@@ -415,7 +415,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
          estif[ri*3][ci*3+2]   += conv_g[ri] * derxy[0][ci] * ttimetauM;
          estif[ri*3+1][ci*3+2] += conv_g[ri] * derxy[1][ci] * ttimetauM;
       }
-      
+
       /*--- DIFFUSION part of stabilisation ---*/
       /* a concentration of the following two terms: */
       /* tau_M*timefac*2*nu*(u, div epsilon(v)) */
@@ -445,7 +445,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*3+1][ci*3+1] += (viscs2[0][2*ri+1] * conv_r[0][2*ci+1]
                                +viscs2[1][2*ri+1] * conv_r[1][2*ci+1]) * aux;
       /* -tau_M*timefac*timefac*4*nu^2(div epsilon(u), div epsilon(v)) */
-      aux = time2nue * time2nue * tau_Mp; 
+      aux = time2nue * time2nue * tau_Mp;
       estif[ri*3][ci*3]     += (viscs2[0][2*ri]   * viscs2[0][2*ci]
                                +viscs2[1][2*ri]   * viscs2[1][2*ci]) * aux;
       estif[ri*3+1][ci*3]   += (viscs2[0][2*ri+1] * viscs2[0][2*ci]
@@ -465,9 +465,9 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /* a concentration of the following terms: */
       /* -tau_M*timefac*(u, grad q) */
       /* -tau_M*timefac*timefac*(u_old * grad u, grad q) */
-      estif[ri*3+2][ci*3]   += derxy[0][ri] * ( funct[ci]*timetauMp 
+      estif[ri*3+2][ci*3]   += derxy[0][ri] * ( funct[ci]*timetauMp
                                                +conv_c[ci]*ttimetauMp );
-      estif[ri*3+2][ci*3+1] += derxy[1][ri] * ( funct[ci]*timetauMp 
+      estif[ri*3+2][ci*3+1] += derxy[1][ri] * ( funct[ci]*timetauMp
                                                +conv_c[ci]*ttimetauMp );
       /*ALE -tau_M*timefac*timefac*(-u_G * grad u, grad q) */
       if(isale)
@@ -478,7 +478,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /* -tau_M*timefac*timefac*(u * grad u_old, grad q) */
       estif[ri*3+2][ci*3]   += (derxy[0][ri] * conv_r[0][2*ci]
                                +derxy[1][ri] * conv_r[1][2*ci]) * ttimetauMp;
-      estif[ri*3+2][ci*3+1] += (derxy[0][ri] * conv_r[0][2*ci+1] 
+      estif[ri*3+2][ci*3+1] += (derxy[0][ri] * conv_r[0][2*ci+1]
                                +derxy[1][ri] * conv_r[1][2*ci+1]) * ttimetauMp;
       /* tau_M*timefac*timefac*2*nu*(div epsilon(u), grad q) */
       aux = timetauMp * time2nue;
@@ -489,7 +489,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /* -tau_M*timefac*timefac*(grad p, grad q) */
       estif[ri*3+2][ci*3+2] += (derxy[0][ri] * derxy[0][ci]
                                +derxy[1][ri] * derxy[1][ci]) * timefac * timetauMp;
-      
+
       /*--- R(u_old) * L_conv STABILISATION ---*/
       /* a concentration of the following terms: */
       /* -tau_M*timefac*(u_old, u * grad v) */
@@ -499,17 +499,17 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /*--- linear part of RHS stabilisation (goes into matrix) ---*/
       /* tau_M*timefac*(rhsint, u * grad v) */
       aux = - timetauM * time2nue;
-      estif[ri*3][ci*3]     += ( (velint[0]-rhsint[0]) * timetauM 
-                                +(conv_old[0] + gradp[0]) * ttimetauM 
+      estif[ri*3][ci*3]     += ( (velint[0]-rhsint[0]) * timetauM
+                                +(conv_old[0] + gradp[0]) * ttimetauM
                                 + visc_old[0] * aux ) * ugradv[ri][2*ci];
-      estif[ri*3][ci*3+1]   += ( (velint[0]-rhsint[0]) * timetauM 
-                                +(conv_old[0] + gradp[0]) * ttimetauM 
+      estif[ri*3][ci*3+1]   += ( (velint[0]-rhsint[0]) * timetauM
+                                +(conv_old[0] + gradp[0]) * ttimetauM
                                 + visc_old[0] * aux ) * ugradv[ri][2*ci+1];
-      estif[ri*3+1][ci*3]   += ( (velint[1]-rhsint[1]) * timetauM 
-                                +(conv_old[1] + gradp[1]) * ttimetauM 
+      estif[ri*3+1][ci*3]   += ( (velint[1]-rhsint[1]) * timetauM
+                                +(conv_old[1] + gradp[1]) * ttimetauM
                                 + visc_old[1] * aux ) * ugradv[ri][2*ci];
-      estif[ri*3+1][ci*3+1] += ( (velint[1]-rhsint[1]) * timetauM 
-                                +(conv_old[1] + gradp[1]) * ttimetauM 
+      estif[ri*3+1][ci*3+1] += ( (velint[1]-rhsint[1]) * timetauM
+                                +(conv_old[1] + gradp[1]) * ttimetauM
                                 + visc_old[1] * aux ) * ugradv[ri][2*ci+1];
 
       /*--- CONTINUITY equation stabilisation ---*/
@@ -520,7 +520,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*3+1][ci*3]   += div[ri*2+1] * div[ci*2] * aux;
       estif[ri*3+1][ci*3+1] += div[ri*2+1] * div[ci*2+1] * aux;
    }  /* end column loop (ci) */
-   
+
    /**************** integrate element force vector *********************/
    /*================== Galerkin part of the RHS =======================*/
    /*--- 'Original' RHS, concentrated ---*/
@@ -533,7 +533,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
    /* (dt-timefac)*(div u_old, q)*/
 /*   aux = - (dt-timefac) * fac;
    eforce[ri*3+2] += *divuold * funct[ri] * aux;
-   
+*/
    /*================ Stabilisation part of the RHS ====================*/
    /*--- 'Original' RHS ---*/
    /* tau_M*timefac*2*nu*(rhsint, div epsilon(v)) */
@@ -557,11 +557,11 @@ for (ri=0; ri<iel; ri++)      /* row index */
    /* tau_M*timefac*timefac*2*nu*(div epsilon(u_old), u_old * grad v) */
    /* -tau_M*timefac*timefac*(grad p_old, u_old * grad v) */
    aux = - timetauM * time2nue;
-   eforce[ri*3]   += conv_c[ri] * ( velint[0]*timetauM 
-                                   +visc_old[0]*aux 
+   eforce[ri*3]   += conv_c[ri] * ( velint[0]*timetauM
+                                   +visc_old[0]*aux
                                    +gradp[0]*ttimetauM );
-   eforce[ri*3+1] += conv_c[ri] * ( velint[1]*timetauM 
-                                   +visc_old[1]*aux 
+   eforce[ri*3+1] += conv_c[ri] * ( velint[1]*timetauM
+                                   +visc_old[1]*aux
                                    +gradp[1]*ttimetauM );
    /* -tau_M*2*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
    aux = ttimetauM * 2.0;
@@ -586,7 +586,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 }
@@ -597,22 +597,22 @@ dstrc_exit();
 
 <pre>                                                         chfoe 03/05
 
-This routine evaluates the Gauss point vaulues of the residual vector 
-of one element taking stabilisation effects into account. Only the 
+This routine evaluates the Gauss point vaulues of the residual vector
+of one element taking stabilisation effects into account. Only the
 residual of the momentum equation R_M is calculated.
 
-R_M = u + timefac u * grad u - timefac * 2 nu div epsilon(u) 
+R_M = u + timefac u * grad u - timefac * 2 nu div epsilon(u)
     + timefac grad p - rhsint
 
 The residual contains stabilisation of the type
 
 Sum_over_k (R_M, tau L_M)_k with
 
-L_M = v + timefac u_old * grad v + timefac v * grad u_old 
+L_M = v + timefac u_old * grad v + timefac v * grad u_old
     - timefac * 2 nu alpha div epsilon (v) + timefac beta grad q
 
 where alpha = -1
-      beta  = -1 
+      beta  = -1
 
 timefac depends on the time integration scheme:
 
@@ -643,30 +643,30 @@ NOTE: this works perfectly only when the fluid is solved via usfem
 \param   iel       INT       (i)    number of elemental nodes
 \param  *hasext    INT       (i)    flag, if there is body force
 \param   is_ale    INT       (i)    flag, if it's ale or Euler
-\return void                                              
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calresvec(  DOUBLE  *eforce,  
+void f2_calresvec(  DOUBLE  *eforce,
                     DOUBLE  *velint,
-                    DOUBLE   histvec[2], 
-                    DOUBLE **vderxy, 
+                    DOUBLE   histvec[2],
+                    DOUBLE **vderxy,
                     DOUBLE **vderxy2,
-                    DOUBLE  *funct,  
-                    DOUBLE **derxy,   
+                    DOUBLE  *funct,
+                    DOUBLE **derxy,
 		    DOUBLE **derxy2,
                     DOUBLE  *edeadng,
                     DOUBLE   aleconv[2],
                     DOUBLE  *press,
                     DOUBLE   gradp[2],
-                    DOUBLE   fac,    
-                    DOUBLE   visc,   
+                    DOUBLE   fac,
+                    DOUBLE   visc,
                     INT      iel,
                     INT     *hasext,
                     INT      is_ale
               )
 {
 INT     i, ri;
-DOUBLE  timefac;    /* One-step-Theta: timefac = theta*dt 
+DOUBLE  timefac;    /* One-step-Theta: timefac = theta*dt
                        BDF2:           timefac = 2/3 * dt               */
 DOUBLE  dt;         /* time step size*/
 DOUBLE  tau_M, tau_C;             /* stabilisation parameter            */
@@ -682,9 +682,9 @@ DOUBLE  twovisc;
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calresvec");
-#endif	
+#endif
 /*========================== initialisation ============================*/
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -705,7 +705,7 @@ if(is_ale)
 {
    if (*hasext)
    {
-      rhsint[0] = timefac * ( edeadng[0] 
+      rhsint[0] = timefac * ( edeadng[0]
                   - vderxy[0][0] * aleconv[0] - vderxy[0][1] * aleconv[1] )
                   + histvec[0] - velint[0];
       rhsint[1] = timefac * ( edeadng[1]
@@ -714,9 +714,9 @@ if(is_ale)
    }
    else
    {
-      rhsint[0] = histvec[0] - velint[0] - timefac * 
+      rhsint[0] = histvec[0] - velint[0] - timefac *
                  ( vderxy[0][0] * aleconv[0] + vderxy[0][1] * aleconv[1] );
-      rhsint[1] = histvec[1] - velint[1] - timefac * 
+      rhsint[1] = histvec[1] - velint[1] - timefac *
                  ( vderxy[1][0] * aleconv[0] + vderxy[1][1] * aleconv[1] );
    }
 }
@@ -724,7 +724,7 @@ else /* pure Euler element */
 {
    if (*hasext)
    {
-      rhsint[0] = timefac * ( edeadng[0] 
+      rhsint[0] = timefac * ( edeadng[0]
                   - vderxy[0][0] * velint[0] - vderxy[0][1] * velint[1] )
                   + histvec[0] - velint[0];
       rhsint[1] = timefac * ( edeadng[1]
@@ -733,15 +733,15 @@ else /* pure Euler element */
    }
    else
    {
-      rhsint[0] = histvec[0] - velint[0] - timefac * 
+      rhsint[0] = histvec[0] - velint[0] - timefac *
                  ( vderxy[0][0] * velint[0] + vderxy[0][1] * velint[1] );
-      rhsint[1] = histvec[1] - velint[1] - timefac * 
+      rhsint[1] = histvec[1] - velint[1] - timefac *
                  ( vderxy[1][0] * velint[0] + vderxy[1][1] * velint[1] );
    }
 }
 
 /*--- viscous term (after integr. by parts) -------------------------*/
-/*   /                            \   
+/*   /                            \
    1 |  2 u_x,x    u_x,y + u_y,x  |
    - |                            |
    2 |  u_y,x + u_x,y    2 u_y,y  |
@@ -764,7 +764,7 @@ resid[1] = rhsint[1] + timefac * (twovisc * visc2[1] - gradp[1]);
 for (i=0; i<iel; i++) /* loop over nodes of element */
 {
    /*--- viscous term (after integr. by parts) -------------------------*/
-   /*   /                            \   
+   /*   /                            \
       1 |  2 N_x,x    N_x,y + N_y,x  |    with N_x .. x-line of N
       - |                            |         N_y .. y-line of N
       2 |  N_y,x + N_x,y    2 N_y,y  |
@@ -783,11 +783,11 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
    if (is_ale)
       conv_c[i] = derxy[0][i] * aleconv[0] + derxy[1][i] * aleconv[1] ;
-   else 
+   else
       conv_c[i] = derxy[0][i] * velint[0] + derxy[1][i] * velint[1] ;
-   
+
    /*--- viscous term  - grad * epsilon(u): ----------------------------*/
-   /*   /                              \   
+   /*   /                              \
       1 |  2 N_x,xx + N_x,yy + N_y,xy  |    with N_x .. x-line of N
     - - |                              |         N_y .. y-line of N
       2 |  N_y,xx + N_x,yx + 2 N_y,yy  |
@@ -808,19 +808,19 @@ for (ri=0; ri<iel; ri++)      /* row index */
    eforce[ri*3+1] += funct[ri] * rhsint[1] * fac;
 
    /* viscous forces integrated by parts */
-   eforce[ri*3]   -= ( viscous[0][0][ri*2] * eps_u[0][0] 
-                      +viscous[0][1][ri*2] * eps_u[0][1]  
-                      +viscous[1][0][ri*2] * eps_u[1][0]  
+   eforce[ri*3]   -= ( viscous[0][0][ri*2] * eps_u[0][0]
+                      +viscous[0][1][ri*2] * eps_u[0][1]
+                      +viscous[1][0][ri*2] * eps_u[1][0]
                       +viscous[1][1][ri*2] * eps_u[1][1] ) * timefac * twovisc * fac;
-   eforce[ri*3+1] -= ( viscous[0][0][ri*2+1] * eps_u[0][0] 
-                      +viscous[0][1][ri*2+1] * eps_u[0][1]  
-                      +viscous[1][0][ri*2+1] * eps_u[1][0]  
+   eforce[ri*3+1] -= ( viscous[0][0][ri*2+1] * eps_u[0][0]
+                      +viscous[0][1][ri*2+1] * eps_u[0][1]
+                      +viscous[1][0][ri*2+1] * eps_u[1][0]
                       +viscous[1][1][ri*2+1] * eps_u[1][1] ) * timefac * twovisc * fac;
 
    /* pressure forces integrated by parts*/
    eforce[ri*3]   += *press * derxy[0][ri] * timefac * fac;
    eforce[ri*3+1] += *press * derxy[1][ri] * timefac * fac;
-   
+
    /* stabilisation part - impulse stabilisation */
    eforce[ri*3]   += tau_M * timefac * conv_c[ri] * resid[0];
    eforce[ri*3+1] += tau_M * timefac * conv_c[ri] * resid[1];
@@ -837,7 +837,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
 } /* end loop over rows */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 }

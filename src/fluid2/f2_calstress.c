@@ -36,19 +36,6 @@ extern struct _GENPROB     genprob;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 /*!---------------------------------------------------------------------
 \brief calculation of fluid stresses
@@ -72,6 +59,7 @@ calculation of the stress tensor sigma, which es stored at the nodes
 \param **xjm        DOUBLE      (-)    jacobian matrix
 \param **xyze       DOUBLE      (-)    element coordinates
 \param **sigmaint   DOUBLE      (-)    stresses at GAUSS point
+\param  *ipos                   (i)    node array positions
 \return void
 
 ------------------------------------------------------------------------*/
@@ -87,6 +75,7 @@ void f2_calelestress(
 		      DOUBLE        **xjm,
 		      DOUBLE        **xyze,
 		      DOUBLE        **sigmaint,
+                      ARRAY_POSITION *ipos,
 		      INT             is_relax
 		    )
 {
@@ -122,8 +111,8 @@ dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity*dens; /* here we need dynamic viscosity! */
 typ  = ele->distyp;
 
-if (is_relax) pos = ipos.relax;
-else          pos = ipos.velnp;
+if (is_relax) pos = ipos->relax;
+else          pos = ipos->velnp;
 
 switch(viscstr)
 {

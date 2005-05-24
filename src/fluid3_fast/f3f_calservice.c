@@ -48,21 +48,6 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
-
-
 
 static INT PREDOF = 3;
 static FLUID_DYNAMIC   *fdyn;
@@ -130,6 +115,7 @@ void f3fcalelecord(
   \param epren          *DOUBLE   (o) pres at time n
   \param edeadn         *DOUBLE   (o) dead load at n
   \param edeadng        *DOUBLE   (o) dead load at n+g
+  \param ipos                     (i) node array positions
   \param hasext         *INT      (i) flag for external loads
   \param sizevec[6]      INT      (i) some sizes
 
@@ -146,6 +132,7 @@ void f3fcalset(
     DOUBLE          *epren,
     DOUBLE          *edeadn,
     DOUBLE          *edeadng,
+    ARRAY_POSITION  *ipos,
     INT             *hasext,
     INT              sizevec[6]
     )
@@ -164,20 +151,20 @@ void f3fcalset(
 #endif
 
   fdyn    = alldyn[genprob.numff].fdyn;
-  velnp   = ipos.velnp;
-  hist    = ipos.hist;
+  velnp   = ipos->velnp;
+  hist    = ipos->hist;
 
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
  |       sol_increment[ipos][i]: solution at some time level           |
- |       ipos-flags:  ipos.velnp ... solution at time (n+1)            |
- |                    ipos.veln  ... solution at time (n)              |
- |                    ipos.velnm ... solution at time (n-1)            |
- |                    ipos.gridv ... mesh velocity in actual time step |
- |                    ipos.convn ... convective velocity at time (n)   |
- |                    ipos.convnp... convective velocity at time (n+1) |
- |                    ipos.hist  ... sol. data for rhs                 |
+ |       ipos-flags:  ipos->velnp ... solution at time (n+1)            |
+ |                    ipos->veln  ... solution at time (n)              |
+ |                    ipos->velnm ... solution at time (n-1)            |
+ |                    ipos->gridv ... mesh velocity in actual time step |
+ |                    ipos->convn ... convective velocity at time (n)   |
+ |                    ipos->convnp... convective velocity at time (n+1) |
+ |                    ipos->hist  ... sol. data for rhs                 |
  *---------------------------------------------------------------------*/
 
   for(i=0;i<sizevec[1];i++) /* loop nodes */
@@ -265,6 +252,7 @@ void f3fcalset(
   \param epren          *DOUBLE   (o) pres at time n
   \param edeadn         *DOUBLE   (o) dead load at n
   \param edeadng        *DOUBLE   (o) dead load at n+g
+  \param ipos                     (i) node array positions
   \param hasext         *INT      (i) flag for external loads
   \param sizevec[6]      INT      (i) some sizes
 
@@ -284,6 +272,7 @@ void f3fcalseta(
     DOUBLE          *epren,
     DOUBLE          *edeadn,
     DOUBLE          *edeadng,
+    ARRAY_POSITION  *ipos,
     INT             *hasext,
     INT              sizevec[6]
     )
@@ -304,17 +293,17 @@ void f3fcalseta(
 #endif
 
   fdyn    = alldyn[genprob.numff].fdyn;
-  velnp   = ipos.velnp;
-  hist    = ipos.hist;
-  convnp  = ipos.convnp;
-  convn   = ipos.convn;
-  gridv   = ipos.gridv;
+  velnp   = ipos->velnp;
+  hist    = ipos->hist;
+  convnp  = ipos->convnp;
+  convn   = ipos->convn;
+  gridv   = ipos->gridv;
 
   /*---------------------------------------------------------------------*
     | position of the different solutions:                                |
     | node->sol_incement: solution history used for calculations          |
-    |     sol_increment[ipos.flag][i]: solution at (n-1)                  |
-    |     ipos.flgas: velnp  ... velocity at time (n+1)                   |
+    |     sol_increment[ipos->flag][i]: solution at (n-1)                  |
+    |     ipos->flgas: velnp  ... velocity at time (n+1)                   |
     |                 veln   ... velocity at time (n)                     |
     |                 hist   ... old solution data needed for rhs         |
     |                 convnp ... convective velocity at time (n+1)        |
@@ -947,7 +936,7 @@ void f3fcalelesize2(
 
   in this routine the element load vector due to dirichlet conditions
   is calcluated. The prescribed values are taken from the node solution
-  history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos.velnp][j]'.
+  history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos->velnp][j]'.
   the element load vector 'dforce' is calculated by eveluating
   </pre>
   \code
@@ -957,6 +946,7 @@ void f3fcalelesize2(
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
   \param dforces        *DOUBLE   (o) dirichlet force vector
   \param estif          *DOUBLE   (i) element stiffness matrix
+  \param ipos                     (i) node array positions
   \param hasdirich      *INT      (i) flag if s.th. was written to dforces
   \param isrelax         INT      (i) flag for relaxation
   \param sizevec[6]      INT      (i) some sizes
@@ -971,6 +961,7 @@ void f3fcaldirich(
     ELEMENT         *ele[LOOPL],
     DOUBLE          *dforces,
     DOUBLE          *estif,
+    ARRAY_POSITION  *ipos,
     INT             *hasdirich,
     INT              is_relax,
     INT              sizevec[6]
@@ -1022,7 +1013,7 @@ void f3fcaldirich(
 
     /* fill vectors dirich and dirich_onoff
        dirichlet values at (n+1) were already
-       written to the nodes (sol_increment[ipos.velnp][j]) */
+       written to the nodes (sol_increment[ipos->velnp][j]) */
     nrow=0;
     for (i=0; i<ele[0]->numnp; i++) /* loop nodes */
     {
@@ -1034,10 +1025,10 @@ void f3fcaldirich(
         if (actgnode->dirich==NULL) continue;
         dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
         if (is_relax) /* calculation for relax.-Param. reads
-                         dbc from (sol_increment[ipos.relax][j]) */
-          dirich[nrow+j] = actnode->sol_increment.a.da[ipos.relax][j];
+                         dbc from (sol_increment[ipos->relax][j]) */
+          dirich[nrow+j] = actnode->sol_increment.a.da[ipos->relax][j];
         else
-          dirich[nrow+j] = actnode->sol_increment.a.da[ipos.velnp][j];
+          dirich[nrow+j] = actnode->sol_increment.a.da[ipos->velnp][j];
       } /* end loop over dofs */
       nrow+=numdf;
     } /* end loop over nodes */

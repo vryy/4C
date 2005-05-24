@@ -81,7 +81,7 @@ void f3_calsmft(FLUID_DYN_ML	*mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,icn,isd;
 DOUBLE con,ccon,beta,divvc,cb,facsr,facpr;
 DOUBLE aux;
@@ -304,7 +304,7 @@ void f3_calstabsmft(FLUID_DYN_ML    *mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,icn;
 DOUBLE con,ccon,beta,divvc,cb,ccb,cbb;
 DOUBLE aux,auxc;

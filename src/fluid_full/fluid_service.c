@@ -66,19 +66,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 static FLUID_DYNAMIC *fdyn;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief routine to check starting algorithm
 
@@ -469,6 +456,7 @@ these data are copied to sol_increment.
 \param  disnum     INT             (i)     discretization number
 \param *fdyn	   FLUID_DYNAMIC   (i)
 \param  numr	   INT             (i/o)   number of rows in sol_incr
+\param *ipos                       (i)     node array positions
 \param  str        FLUID_STRESS    (i)     flag for stress calculation
 \return void
 
@@ -481,6 +469,7 @@ void fluid_init(
                           CALC_ACTION       *action,
 			  CONTAINER         *container,
 		          INT                numr,
+                          ARRAY_POSITION    *ipos,
 		          FLUID_STRESS       str
 	       )
 {
@@ -602,9 +591,9 @@ if (fdyn->freesurf==3 || fdyn->freesurf==5)
          amzero(&(actnode->sol_mf));
          phi = actnode->x[numdf-2];
          actnode->sol.a.da[0][numdf] = phi;
-         actnode->sol_increment.a.da[ipos.velnm][numdf] = phi;
-         actnode->sol_increment.a.da[ipos.veln][numdf] = phi;
-         actnode->sol_increment.a.da[ipos.velnp][numdf] = phi;
+         actnode->sol_increment.a.da[ipos->velnm][numdf] = phi;
+         actnode->sol_increment.a.da[ipos->veln][numdf] = phi;
+         actnode->sol_increment.a.da[ipos->velnp][numdf] = phi;
          actnode->sol_mf.a.da[0][numdf] = phi;
       }
    }
@@ -939,7 +928,7 @@ inherit_design_dis_neum(&(actfield->dis[disnum]));
 if (fdyn->init>=1)
 {
    if (fdyn->init==1) /*------------ initial data from fluid_start.data */
-      inp_fluid_start_data(actfield);
+      inp_fluid_start_data(actfield, ipos, fdyn);
 
    if (fdyn->init==2) { /*------------------ initial data from pss file */
 #if defined(BINIO)
@@ -983,18 +972,18 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos.veln][2] = p ;
-	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos.velnp][2] = p ;
+	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos->veln][2] = p ;
+	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos->velnp][2] = p ;
          if (fdyn->freesurf==2 && actnode->xfs!=NULL)
 	 {
-	    actnode->sol_increment.a.da[ipos.veln][3] = u1;
-	    actnode->sol_increment.a.da[ipos.veln][4] = u2;
-	    actnode->sol_increment.a.da[ipos.velnp][3] = u1;
-	    actnode->sol_increment.a.da[ipos.velnp][4] = u2;
+	    actnode->sol_increment.a.da[ipos->veln][3] = u1;
+	    actnode->sol_increment.a.da[ipos->veln][4] = u2;
+	    actnode->sol_increment.a.da[ipos->velnp][3] = u1;
+	    actnode->sol_increment.a.da[ipos->velnp][4] = u2;
             actgnode = actnode->gnode;
             if (actgnode->dirich!=NULL)
 	    {
@@ -1004,8 +993,8 @@ if (fdyn->init>=1)
                {
                   if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
 	          {
-		     actnode->sol_increment.a.da[ipos.veln][j] = ZERO;
-		     actnode->sol_increment.a.da[ipos.velnp][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
                   }
 	       } /* end loop over dofs */
 	    }
@@ -1055,18 +1044,18 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos.veln][2] = p ;
-	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos.velnp][2] = p ;
+	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos->veln][2] = p ;
+	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos->velnp][2] = p ;
          if (fdyn->freesurf==2 && actnode->xfs!=NULL)
 	 {
-	    actnode->sol_increment.a.da[ipos.veln][3] = u1;
-	    actnode->sol_increment.a.da[ipos.veln][4] = u2;
-	    actnode->sol_increment.a.da[ipos.velnp][3] = u1;
-	    actnode->sol_increment.a.da[ipos.velnp][4] = u2;
+	    actnode->sol_increment.a.da[ipos->veln][3] = u1;
+	    actnode->sol_increment.a.da[ipos->veln][4] = u2;
+	    actnode->sol_increment.a.da[ipos->velnp][3] = u1;
+	    actnode->sol_increment.a.da[ipos->velnp][4] = u2;
             actgnode = actnode->gnode;
             if (actgnode->dirich!=NULL)
 	    {
@@ -1076,8 +1065,8 @@ if (fdyn->init>=1)
                {
                   if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
 	          {
-		     actnode->sol_increment.a.da[ipos.veln][j] = ZERO;
-		     actnode->sol_increment.a.da[ipos.velnp][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
+		     actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
                   }
 	       } /* end loop over dofs */
 	    }
@@ -1118,18 +1107,18 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = u3;
 	 actnode->sol.a.da[0][3] = p ;
-	 actnode->sol_increment.a.da[ipos.velnm][0] = u1;
-	 actnode->sol_increment.a.da[ipos.velnm][1] = u2;
-	 actnode->sol_increment.a.da[ipos.velnm][2] = u3;
-	 actnode->sol_increment.a.da[ipos.velnm][3] = p ;
-	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos.veln][2] = u3;
-	 actnode->sol_increment.a.da[ipos.veln][3] = p ;
-	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos.velnp][2] = u3;
-	 actnode->sol_increment.a.da[ipos.velnp][3] = p ;
+	 actnode->sol_increment.a.da[ipos->velnm][0] = u1;
+	 actnode->sol_increment.a.da[ipos->velnm][1] = u2;
+	 actnode->sol_increment.a.da[ipos->velnm][2] = u3;
+	 actnode->sol_increment.a.da[ipos->velnm][3] = p ;
+	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos->veln][2] = u3;
+	 actnode->sol_increment.a.da[ipos->veln][3] = p ;
+	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos->velnp][2] = u3;
+	 actnode->sol_increment.a.da[ipos->velnp][3] = p ;
       }
    }
 
@@ -1155,15 +1144,15 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[ipos.velnm][0] = u1;
-	 actnode->sol_increment.a.da[ipos.velnm][1] = u2;
-	 actnode->sol_increment.a.da[ipos.velnm][2] = p ;
-	 actnode->sol_increment.a.da[ipos.veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos.veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos.veln][2] = p ;
-	 actnode->sol_increment.a.da[ipos.velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos.velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos.velnp][2] = p ;
+	 actnode->sol_increment.a.da[ipos->velnm][0] = u1;
+	 actnode->sol_increment.a.da[ipos->velnm][1] = u2;
+	 actnode->sol_increment.a.da[ipos->velnm][2] = p ;
+	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
+	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
+	 actnode->sol_increment.a.da[ipos->veln][2] = p ;
+	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+	 actnode->sol_increment.a.da[ipos->velnp][2] = p ;
       }
    }
 }
@@ -1499,6 +1488,7 @@ check are calculated:
 \param  numeq_total   INT	     (i)   total number of equations
 \param *vrat	      DOUBLE	     (o)   vel.  conv. ratio
 \param *prat	      DOUBLE	     (o)   pres. conv. ratio
+\param *ipos                         (i)   node array positions
 \return void
 
 ------------------------------------------------------------------------*/
@@ -1506,7 +1496,8 @@ void fluid_norm(
                           FIELD             *actfield,
 		          INT                numeq_total,
                           DOUBLE            *vrat,
-		          DOUBLE            *prat
+		          DOUBLE            *prat,
+                          ARRAY_POSITION    *ipos
 	       )
 {
 INT         i,j;           /* simply some counters                      */
@@ -1552,9 +1543,9 @@ case fnst_Linf: /* L_infinity norm */
 #else
          if (actdof>=numeq_total) continue;
 #endif
-         dvnorm = DMAX(dvnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j]  \
-	                          -actnode->sol_increment.a.da[ipos.veln][j]));
-          vnorm = DMAX( vnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j]));
+         dvnorm = DMAX(dvnorm,FABS(actnode->sol_increment.a.da[ipos->velnp][j]  \
+	                          -actnode->sol_increment.a.da[ipos->veln][j]));
+          vnorm = DMAX( vnorm,FABS(actnode->sol_increment.a.da[ipos->velnp][j]));
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
@@ -1564,9 +1555,9 @@ case fnst_Linf: /* L_infinity norm */
 #else
       if (actdof>=numeq_total) continue;
 #endif
-      dpnorm = DMAX(dpnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof]  \
-	                       -actnode->sol_increment.a.da[ipos.veln][predof]));
-       pnorm = DMAX( pnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof]));
+      dpnorm = DMAX(dpnorm,FABS(actnode->sol_increment.a.da[ipos->velnp][predof]  \
+	                       -actnode->sol_increment.a.da[ipos->veln][predof]));
+       pnorm = DMAX( pnorm,FABS(actnode->sol_increment.a.da[ipos->velnp][predof]));
    } /* end of loop over nodes */
 break;
 /*----------------------------------------------------------------------*/
@@ -1585,9 +1576,9 @@ case fnst_L1: /* L_1 norm */
 #else
          if (actdof>=numeq_total) continue;
 #endif
-         dvnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][j]  \
-	               -actnode->sol_increment.a.da[ipos.veln][j]);
-          vnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][j]);
+         dvnorm += FABS(actnode->sol_increment.a.da[ipos->velnp][j]  \
+	               -actnode->sol_increment.a.da[ipos->veln][j]);
+          vnorm += FABS(actnode->sol_increment.a.da[ipos->velnp][j]);
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
@@ -1597,9 +1588,9 @@ case fnst_L1: /* L_1 norm */
 #else
       if (actdof>=numeq_total) continue;
 #endif
-      dpnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof]  \
-	            -actnode->sol_increment.a.da[ipos.veln][predof]);
-       pnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof]);
+      dpnorm += FABS(actnode->sol_increment.a.da[ipos->velnp][predof]  \
+	            -actnode->sol_increment.a.da[ipos->veln][predof]);
+       pnorm += FABS(actnode->sol_increment.a.da[ipos->velnp][predof]);
    } /* end of loop over nodes */
 break;
 /*----------------------------------------------------------------------*/
@@ -1618,9 +1609,9 @@ case fnst_L2: /* L_2 norm */
 #else
          if (actdof>=numeq_total) continue;
 #endif
-         dvnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][j]  \
-	               -actnode->sol_increment.a.da[ipos.veln][j]);
-          vnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][j]);
+         dvnorm += DSQR(actnode->sol_increment.a.da[ipos->velnp][j]  \
+	               -actnode->sol_increment.a.da[ipos->veln][j]);
+          vnorm += DSQR(actnode->sol_increment.a.da[ipos->velnp][j]);
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
@@ -1630,9 +1621,9 @@ case fnst_L2: /* L_2 norm */
 #else
       if (actdof>=numeq_total) continue;
 #endif
-      dpnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][predof]  \
-	            -actnode->sol_increment.a.da[ipos.veln][predof]);
-       pnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][predof]);
+      dpnorm += DSQR(actnode->sol_increment.a.da[ipos->velnp][predof]  \
+	            -actnode->sol_increment.a.da[ipos->veln][predof]);
+       pnorm += DSQR(actnode->sol_increment.a.da[ipos->velnp][predof]);
    } /* end of loop over nodes */
    dvnorm = sqrt(dvnorm);
     vnorm = sqrt( vnorm);
@@ -1899,12 +1890,14 @@ calculated and the result is printed to the screen.
 
 </pre>
 \param *actfield      FIELD	     (i)  actual field
+\param *ipos                         (i)  node array positions
 \param  numeq_total   INT	     (i)  total number of equations
 \return INT steady
 
 ------------------------------------------------------------------------*/
 INT fluid_steadycheck(
                           FIELD             *actfield,
+                          ARRAY_POSITION    *ipos,
 		          INT                numeq_total
 		     )
 {
@@ -1919,7 +1912,7 @@ dstrc_enter("fluid_steadycheck");
 fdyn = alldyn[genprob.numff].fdyn;
 if (fdyn->stnorm==fnst_no) goto end;
 /*------------------------------------------ determine the conv. ratios */
-fluid_norm(actfield,numeq_total,&vrat,&prat);
+fluid_norm(actfield,numeq_total,&vrat,&prat,ipos);
 
 /*------------------------------------ output to the screen and to .out */
 if (par.myrank==0)
@@ -2467,6 +2460,7 @@ beltramii and kim-moin flow are calculated.
 
 </pre>
 \param *actfield      FIELD          (i)   actual field
+\param *ipos                         (i)   node array positions
 \param  index         INT            (i)   index for type of flow
                                            index = 1: beltrami
                                            index = 2: kim-moin
@@ -2475,6 +2469,7 @@ beltramii and kim-moin flow are calculated.
 ------------------------------------------------------------------------*/
 void fluid_cal_error(
     FIELD             *actfield,
+    ARRAY_POSITION    *ipos,
     INT                index
     )
 {
@@ -2566,7 +2561,7 @@ void fluid_cal_error(
 #else
           if (actdof>=numeq_total) continue;
 #endif
-          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]));
+          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]));
           vinorm = DMAX( vinorm,FABS(u[j]));
         } /* end of loop over vel-dofs */
 
@@ -2578,7 +2573,7 @@ void fluid_cal_error(
 #else
         if (actdof>=numeq_total) continue;
 #endif
-        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p));
+        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p));
         pinorm = DMAX( pinorm,FABS(p));
 
 
@@ -2593,7 +2588,7 @@ void fluid_cal_error(
 #else
           if (actdof>=numeq_total) continue;
 #endif
-          dv1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]);
+          dv1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]);
           v1norm += FABS(u[j]);
         } /* end of loop over vel-dofs */
 
@@ -2605,7 +2600,7 @@ void fluid_cal_error(
 #else
         if (actdof>=numeq_total) continue;
 #endif
-        dp1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p);
+        dp1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p);
         p1norm += FABS(p);
 
 
@@ -2621,7 +2616,7 @@ void fluid_cal_error(
 #else
           if (actdof>=numeq_total) continue;
 #endif
-          dv2norm += pow(actnode->sol_increment.a.da[ipos.velnp][j] - u[j],2);
+          dv2norm += pow(actnode->sol_increment.a.da[ipos->velnp][j] - u[j],2);
           v2norm += pow(u[j],2);
         } /* end of loop over vel-dofs */
 
@@ -2633,7 +2628,7 @@ void fluid_cal_error(
 #else
         if (actdof>=numeq_total) continue;
 #endif
-        dp2norm += pow(actnode->sol_increment.a.da[ipos.velnp][predof] - p,2);
+        dp2norm += pow(actnode->sol_increment.a.da[ipos->velnp][predof] - p,2);
         p2norm += pow(p,2);
 
       } /* end ol LOOP all nodes */
@@ -2732,7 +2727,7 @@ void fluid_cal_error(
 #else
           if (actdof>=numeq_total) continue;
 #endif
-          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]));
+          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]));
           vinorm = DMAX( vinorm,FABS(u[j]));
         } /* end of loop over vel-dofs */
 
@@ -2744,7 +2739,7 @@ void fluid_cal_error(
 #else
         if (actdof>=numeq_total) continue;
 #endif
-        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p));
+        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p));
         pinorm = DMAX( pinorm,FABS(p));
 
 
@@ -2759,7 +2754,7 @@ void fluid_cal_error(
 #else
           if (actdof>=numeq_total) continue;
 #endif
-          dv1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]);
+          dv1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]);
           v1norm += FABS(u[j]);
         } /* end of loop over vel-dofs */
 
@@ -2771,7 +2766,7 @@ void fluid_cal_error(
 #else
         if (actdof>=numeq_total) continue;
 #endif
-        dp1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p);
+        dp1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p);
         p1norm += FABS(p);
 
 
@@ -2787,7 +2782,7 @@ void fluid_cal_error(
 #else
           if (actdof>=numeq_total) continue;
 #endif
-          dv2norm += pow(actnode->sol_increment.a.da[ipos.velnp][j] - u[j],2);
+          dv2norm += pow(actnode->sol_increment.a.da[ipos->velnp][j] - u[j],2);
           v2norm += pow(u[j],2);
         } /* end of loop over vel-dofs */
 
@@ -2799,7 +2794,7 @@ void fluid_cal_error(
 #else
         if (actdof>=numeq_total) continue;
 #endif
-        dp2norm += pow(actnode->sol_increment.a.da[ipos.velnp][predof] - p,2);
+        dp2norm += pow(actnode->sol_increment.a.da[ipos->velnp][predof] - p,2);
         p2norm += pow(p,2);
 
       } /* end ol LOOP all nodes */
@@ -2890,11 +2885,12 @@ void fluid_cal_error(
 This routine inits the positions in sol_increment in the case of a pure
 Eulerian problem.
 
+\param  *ipos                           (i)   node array positions
 </pre>
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_init_pos_euler(void)
+void fluid_init_pos_euler(ARRAY_POSITION    *ipos)
 {
 #ifdef DEBUG
   dstrc_enter("fluid_init_pos_euler");
@@ -2905,28 +2901,28 @@ fdyn = alldyn[genprob.numff].fdyn;
 if (fdyn->adaptive)
 {
    /*---------------------------------------- adaptive time stepping ---*/
-   ipos.velnm = 0;
-   ipos.veln  = 1;
-   ipos.hist  = 2;
-   ipos.velnp = 3;
-   ipos.accnm = 4;
-   ipos.accn  = 5;
-   ipos.pred  = 6;
-   ipos.terr  = 7;
+   ipos->velnm = 0;
+   ipos->veln  = 1;
+   ipos->hist  = 2;
+   ipos->velnp = 3;
+   ipos->accnm = 4;
+   ipos->accn  = 5;
+   ipos->pred  = 6;
+   ipos->terr  = 7;
 
-   ipos.numsol = 8;
+   ipos->numsol = 8;
 }
 else
 {
    /*------------------------------------------ fixed time step size ---*/
-   ipos.velnp = 0;  /* most recent solution */
-   ipos.veln  = 1;  /* previous soulution (at time n) */
-   ipos.velnm = 2;  /* last historical solution (at time n-1) */
-   ipos.accnm = 3;  /* acceleration at time n-1 */
-   ipos.accn  = 4;  /* acceleration at time n */
-   ipos.hist  = 5;  /* linear combination of old solutions */
+   ipos->velnp = 0;  /* most recent solution */
+   ipos->veln  = 1;  /* previous soulution (at time n) */
+   ipos->velnm = 2;  /* last historical solution (at time n-1) */
+   ipos->accnm = 3;  /* acceleration at time n-1 */
+   ipos->accn  = 4;  /* acceleration at time n */
+   ipos->hist  = 5;  /* linear combination of old solutions */
 
-   ipos.numsol = 6;
+   ipos->numsol = 6;
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

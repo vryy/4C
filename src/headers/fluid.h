@@ -217,7 +217,7 @@ DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS       */
 DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS       */
 DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS        */
 DOUBLE thpr;     /*!< theta-p,r: const. for "pressure" terms RHS        */
-DOUBLE sigma;    /*!< const. for nonlinear iteration                    */ 
+DOUBLE sigma;    /*!< const. for nonlinear iteration                    */
 /* tolerances */
 DOUBLE  ittol;     /*!< tolerance for iteration convergence check       */
 DOUBLE  sttol;     /*!< tolerance for steady state check                */
@@ -262,34 +262,3 @@ typedef struct _FLUID_VARIA
 DOUBLE             c_f_shear;     /*!< dim. shearstress c_f of node     */
 } FLUID_VARIA;
 
-
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[pos][dim].
-
-extern variable defined in fluid_imp_semimp.c
-</pre>
-
-------------------------------------------------------------------------*/
-typedef struct _FLUID_POSITION
-{
- INT numsol; /*!< number of solution fields within sol_increment (fluid)*/
- INT veln; /*!< position of sol_increment occupied by velocity at time n*/
- INT velnp; /*!< position of sol_increment occupied by vel. at time n+1 */
- INT velnm; /*!< position of sol_increment occupied by vel. at time n-1 */
- INT accn;  /*!< position of sol_increment occupied by accel. at time n */
- INT accnm; /*!< position of sol_increment occup. by accel. at time n-1 */
- INT hist;  /*!< pos. of lin. comb. of hist. values needed for mass rhs */
- INT pred;  /*!< position of sol_increment occypied by predicted vels.  */
- INT terr;  /*!< position of sol_increment occypied by truncation error */
- INT gridv; /*!< position of grid velocity in solution vector order     */
- INT relax; /*!< position of relaxation parameter solution in sol vec's */
- INT convn; /*!< position of convective velocity at n in sol vectors    */
- INT convnp; /*!< position of convective velocity at n+1 in sol vectors */
- INT stresspro; /*! position to write projected stresses to */
- INT eddy;
-} FLUID_POSITION;

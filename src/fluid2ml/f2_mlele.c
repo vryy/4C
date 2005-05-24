@@ -273,6 +273,7 @@ This routine controls the element evaluation of the large-scale element:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
+\param  *ipos                           (i)   node array positions
 \param  *hasdirich       int	        (o)   element flag
 \param  *hasext          int	        (o)   element flag
 \param   init	         int	        (i)   init flag
@@ -289,6 +290,7 @@ void f2_lsele(FLUID_DATA     *data,
 	      ARRAY	     *etforce_global,
 	      ARRAY	     *eiforce_global,
 	      ARRAY	     *edforce_global,
+              ARRAY_POSITION *ipos,
 	      INT	     *hasdirich,
               INT	     *hasext,
 	      INT	      init)
@@ -353,7 +355,7 @@ amzero(edforce_global);
 *hasext=0;
 
 /*---------------------------- set element data for large-scale element */
-f2_lsset(ele,eveln,evel,epre,edeadn,edead,hasext);
+f2_lsset(ele,eveln,evel,epre,edeadn,edead,ipos,hasext);
 
 /*------------------------------- dynamic subgrid viscosity calculation */
 if (mlvar->smsgvi>2) f2_dynsgv(data,mlvar,submesh,ssmesh,ele);

@@ -15,7 +15,7 @@ Maintainer: Christiane Foerster
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
-#include "../solver/solver.h" 
+#include "../solver/solver.h"
 #include "fluid_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
@@ -49,19 +49,6 @@ and the type is in partition.h
 extern ALLDYNA      *alldyn;
 
 static FLUID_DYNAMIC *fdyn;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
@@ -79,14 +66,15 @@ dirichlet boundary lines for lift & drag values.
 Within an init phase (init=0) all elements which participate at a liftdrag
 line are searched and labled by setting the flag
 actele->e.f2->force_on on the respective liftdrag evaluation flag.
-In the main part these elements are visited again, its interesting nodes 
-(the ones which are situated on the lift&drag line) are found and the 
-elemental residual vector is calculated. 
+In the main part these elements are visited again, its interesting nodes
+(the ones which are situated on the lift&drag line) are found and the
+elemental residual vector is calculated.
 Lift&drag forces are the respective sum of the elemental residual entities.
 
 </pre>
-\param   *actpdis        PARTDISCRET    (i)   
-\param   *container      CONTAINER      (i)   
+\param   *actpdis        PARTDISCRET    (i)
+\param   *container      CONTAINER      (i)
+\param   *ipos                          (i)   node array positions
 \param    init           INT            (i)   init flag
 
 \warning At the moment only elements with the same number of dofs at all
@@ -97,6 +85,7 @@ Lift&drag forces are the respective sum of the elemental residual entities.
 ------------------------------------------------------------------------*/
 void fluid_cbf(PARTDISCRET *actpdis,
 	       CONTAINER   *container,
+               ARRAY_POSITION *ipos,
                INT          init)
 {
 INT i, j, k, l;
@@ -113,9 +102,9 @@ DOUBLE   timefac;
 DOUBLE   xforce, yforce;
 DOUBLE   center[2];
 DOUBLE   xy[2];                  /* relative coordinates of actual node */
-static DOUBLE **estif;           /* pointer to global ele-stif          */
+/*static DOUBLE **estif;*/           /* pointer to global ele-stif          */
 static DOUBLE  *eforce;
-static DOUBLE  *edforce;
+/*static DOUBLE  *edforce;*/
 static DOUBLE  *liftdrag;        /* pointer to liftdrag field           */
 
 NODE    *actnode;
@@ -153,7 +142,7 @@ if (init==0)
             actdline = actgline->dline;
             if (actdline->liftdrag == NULL) continue; /* not on l&d line   */
             foundsome++; /* actele has lift&drag line */
-            if(actele->e.f2->force_on != 0 && 
+            if(actele->e.f2->force_on != 0 &&
                actele->e.f2->force_on != actdline->liftdrag->liftdrag)
                dswarning(1,13);
             actele->e.f2->force_on = actdline->liftdrag->liftdrag;
@@ -172,7 +161,7 @@ if (init==0)
                   actdline = actgline->dline;
                   if (actdline->liftdrag == NULL) continue; /* not on l&d line   */
                   foundsome++;
-                  if(actele->e.f2->force_on != 0 && 
+                  if(actele->e.f2->force_on != 0 &&
                      actele->e.f2->force_on != actdline->liftdrag->liftdrag)
                      dswarning(1,13);
                   actele->e.f2->force_on = actdline->liftdrag->liftdrag;
@@ -204,8 +193,8 @@ case 2: /* problem is two-dimensional */
 #ifdef D_FLUID2
    numdf = 3;
    for(i=0; i<actpdis->numele; i++)
-   { 
-      
+   {
+
       actele = actpdis->element[i];
 
      /*------------------------------------------------------------------*/
@@ -224,7 +213,7 @@ case 2: /* problem is two-dimensional */
          /* get center of liftdrag momentum (only one per node!) */
          center[0] = actdline->liftdrag->ld_center[0];
          center[1] = actdline->liftdrag->ld_center[1];
-         
+
          /*--------- get list of Ids of interesting nodes at element ---*/
          for(k=0; k<actgline->ngnode; k++)
          {
@@ -290,7 +279,7 @@ case 2: /* problem is two-dimensional */
             dsassert(foundit,"something is wrong!");
          }
          /*--- get force vector ---*/
-         f2_caleleres(actele,&eforce_global,&hasdirich,&hasext);
+         f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 
          /*--------------------- perform matrix-vector multiplication...
            ------------------------------------ ...on selected lines ---*/
@@ -306,9 +295,9 @@ case 2: /* problem is two-dimensional */
 
             xforce += eforce[line]   * timefac;
             yforce += eforce[line+1] * timefac;
-            
+
             testforce += eforce[24] * timefac;
-            
+
             /* write nodal result from this ele to total ld sum */
             liftdrag[(ld_id-1)*6+0] += xforce;
             liftdrag[(ld_id-1)*6+1] += yforce;

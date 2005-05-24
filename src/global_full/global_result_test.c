@@ -385,11 +385,13 @@ void global_result_test()
   fprintf(err,"\n===========================================\n");
   fprintf(err,"Checking results ...\n");
 
-  for (i=0; i<genprob.numresults; ++i) {
+  for (i=0; i<genprob.numresults; ++i)
+  {
     PARTITION* actpart = NULL;
     RESULTDESCR* res = &(resultdescr[i]);
 
-    switch (res->field) {
+    switch (res->field)
+    {
     case fluid:
       actpart = fluidpart;
       break;
@@ -403,38 +405,46 @@ void global_result_test()
       dserror("Unknown field typ");
     }
 
-    if (res->node != -1) {
+    if (res->node != -1)
+    {
       /* We have a value at a node. Find the node and compare with the
        * value there. */
       actnode = find_node(actpart, res->dis, res->node);
-      if (actnode != 0) {
+      if (actnode != 0)
+      {
         actresult = get_node_result_value(actnode, res->position);
         nerr += compare_values(err, actresult, res->value, res);
         test_count++;
       }
     }
-    else if (res->element != -1) {
+    else if (res->element != -1)
+    {
       /* We have a value at an element. Find the element. If we have
        * it its depending on the element type what needs to be done. */
       ELEMENT* actelement = find_element(actpart, res->dis, res->element);
-      if (actelement == 0) {
+      if (actelement == 0)
+      {
         continue;
       }
 
       switch (actelement->eltyp) {
 
 #ifdef D_AXISHELL
-      case el_axishell: {
+      case el_axishell:
+      {
         INT args[3];
-        if (parse_position_descr(res->position, "stress_GP", 3, args) == 1) {
+        if (parse_position_descr(res->position, "stress_GP", 3, args) == 1)
+        {
           actresult = actelement->e.saxi->stress_GP.a.d3[args[0]][args[1]][args[2]];
           nerr += compare_values(err, actresult, res->value, res);
         }
-        else if (parse_position_descr(res->position, "stress_ND", 3, args) == 1) {
+        else if (parse_position_descr(res->position, "stress_ND", 3, args) == 1)
+        {
           actresult = actelement->e.saxi->stress_ND.a.d3[args[0]][args[1]][args[2]];
           nerr += compare_values(err, actresult, res->value, res);
         }
-        else {
+        else
+        {
           dserror("Unknown position specifier");
         }
         break;
@@ -442,13 +452,16 @@ void global_result_test()
 #endif
 
 #ifdef D_SHELL9
-      case el_shell9: {
+      case el_shell9:
+      {
         INT args[3];
-        if (parse_position_descr(res->position, "stresses", 3, args) == 1) {
+        if (parse_position_descr(res->position, "stresses", 3, args) == 1)
+        {
           actresult = actelement->e.s9->stresses.a.d3[args[0]][args[1]][args[2]];
           nerr += compare_values(err, actresult, res->value, res);
         }
-        else {
+        else
+        {
           dserror("Unknown position specifier");
         }
         break;
@@ -456,13 +469,16 @@ void global_result_test()
 #endif
 
 #ifdef D_WALL1
-      case el_wall1: {
+      case el_wall1:
+      {
         INT args[3];
-        if (parse_position_descr(res->position, "stress_GP", 3, args) == 1) {
+        if (parse_position_descr(res->position, "stress_GP", 3, args) == 1)
+        {
           actresult = actelement->e.w1->stress_GP.a.d3[args[0]][args[1]][args[2]];
           nerr += compare_values(err, actresult, res->value, res);
         }
-        else {
+        else
+        {
           dserror("Unknown position specifier");
         }
         break;
@@ -475,16 +491,22 @@ void global_result_test()
 
       test_count++;
     }
-    else {
+    else
+    {
       /* special cases that need further code support */
-      switch (genprob.probtyp) {
-      case prb_fluid:
+      switch (genprob.probtyp)
+      {
 #ifdef D_FLUID
+      case prb_fluid:
+      {
 #ifndef PARALLEL
-        fluid_cal_error(fluidfield,res->dis);
+        ARRAY_POSITION* ipos;
+        ipos = &(fluidfield->dis[res->dis - 1].ipos);
+        fluid_cal_error(fluidfield,ipos,res->dis);
 #endif
         test_count = -1;
         break;
+      }
 #endif
       default:
         break;

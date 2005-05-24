@@ -66,19 +66,6 @@ extern struct _MATERIAL  *mat;
  *----------------------------------------------------------------------*/
 extern INT            numcurve;
 extern struct _CURVE *curve;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 
@@ -103,11 +90,12 @@ elements are initialised:
 
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)
+\param *ipos                   (i)  node array positions
 
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_initdirich(  FIELD          *actfield )
+void fluid_initdirich(  FIELD          *actfield, ARRAY_POSITION *ipos )
 {
 INT        i,j;
 INT        numnp_total;               /* total number of fluid nodes    */
@@ -224,7 +212,7 @@ if (fdyn->init==0)
                acttimefac = timefac[actcurve];
             initval   = actgnode->dirich->dirich_val.a.dv[j];
             funct_fac = actgnode->d_funct[j];
-            actnode->sol_increment.a.da[ipos.veln][j] = initval*acttimefac*funct_fac;
+            actnode->sol_increment.a.da[ipos->veln][j] = initval*acttimefac*funct_fac;
             actnode->sol.a.da[0][j] = initval*acttimefac*funct_fac;
          } /* end loop over dofs */
       break;
@@ -232,16 +220,16 @@ if (fdyn->init==0)
       case dirich_FSI: /* FSI --> dirichvalues = grid velocity!!! */
 	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
 	 {
-	    initval = actnode->sol_increment.a.da[ipos.gridv][j];
-	    actnode->sol_increment.a.da[ipos.veln][j] = initval;
+	    initval = actnode->sol_increment.a.da[ipos->gridv][j];
+	    actnode->sol_increment.a.da[ipos->veln][j] = initval;
 	    actnode->sol.a.da[0][j] = initval;
 	 }
       break;
       case dirich_FSI_pseudo: /* FSI --> dirichvalues = grid velocity!!! */
 	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
 	 {
-	    initval = actnode->sol_increment.a.da[ipos.gridv][j];
-	    actnode->sol_increment.a.da[ipos.veln][j] = initval;
+	    initval = actnode->sol_increment.a.da[ipos->gridv][j];
+	    actnode->sol_increment.a.da[ipos->veln][j] = initval;
 	    actnode->sol.a.da[0][j] = initval;
 	 }
       break;
@@ -287,15 +275,15 @@ if (fdyn->init==0)
             r=ract/length*TEN;
             uact = fluid_usd(r,alpha);
             u10  = fluid_usd(TEN,alpha);
-            actnode->sol_increment.a.da[ipos.veln][1]=uact/u10*initval*acttimefac;
-            actnode->sol_increment.a.da[ipos.veln][0]=ZERO;
+            actnode->sol_increment.a.da[ipos->veln][1]=uact/u10*initval*acttimefac;
+            actnode->sol_increment.a.da[ipos->veln][0]=ZERO;
             actnode->sol.a.da[0][1]=uact/u10*initval*acttimefac;
             actnode->sol.a.da[0][0]=ZERO;
          }
          else
          {
-            actnode->sol_increment.a.da[ipos.veln][1]=initval*acttimefac;
-            actnode->sol_increment.a.da[ipos.veln][0]=ZERO;
+            actnode->sol_increment.a.da[ipos->veln][1]=initval*acttimefac;
+            actnode->sol_increment.a.da[ipos->veln][0]=ZERO;
             actnode->sol.a.da[0][1]=uact/u10*initval*acttimefac;
             actnode->sol.a.da[0][0]=ZERO;
          }
@@ -338,13 +326,15 @@ nodes:
                                          factor from timecurve
 </pre>
 \param *actfield FIELD		(i)  actual field (fluid)
+\param *ipos                    (i)  node array positions
 \param  pos	 INT		(i)	position, where to write dbc
 
 \return void
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich(   FIELD           *actfield,
-			INT		 pos
+                        ARRAY_POSITION  *ipos,
+                        INT		 pos
 	            )
 {
 INT        i,j;
@@ -420,12 +410,12 @@ for (i=0;i<numnp_total;i++)
    case dirich_FSI: /* dirichvalues = grid velocity!!! */
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[pos][j]
-	=actnode->sol_increment.a.da[ipos.gridv][j];
+	=actnode->sol_increment.a.da[ipos->gridv][j];
    break;
    case dirich_FSI_pseudo: /* dirichvalues = grid velocity!!! */
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[pos][j]
-	=actnode->sol_increment.a.da[ipos.gridv][j];
+	=actnode->sol_increment.a.da[ipos->gridv][j];
    break;
    case dirich_slip: /* slip boundary condition */
       /*--------------------------------------- get values and pointers */
@@ -451,7 +441,7 @@ for (i=0;i<numnp_total;i++)
       initval = actgnode->slipdirich->dirich_val;
 #endif
       acttimefac=ONE;
-      initval = lastnode->sol_increment.a.da[ipos.gridv][1];
+      initval = lastnode->sol_increment.a.da[ipos->gridv][1];
       /*--------------------------- actual total length of slip BC line */
       for(j=0;j<3;j++)
          rtotalv[j]= (lastnode->x[j]+alnode->sol_mf.a.da[1][j])
@@ -512,18 +502,19 @@ in this routine the dirichlet boundary conditions for fluid2pro
 elements are set at time <T=fdyn->acttime>.
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac'
+    'actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac'
                                           |        |         |
                                      time (n+1)    |         |
                                    initial value from input  |
                                                 factor from timecurve
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)
+\param *ipos                   (i)  node array positions
 
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_parabolic(FIELD  *actfield)
+void fluid_setdirich_parabolic(FIELD  *actfield, ARRAY_POSITION *ipos)
 {
 INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
@@ -585,14 +576,14 @@ for (i=0;i<numnp_total;i++)
             /*--parabolic profile is formulated as below---*/
             initval  = -(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE;
             /*--it is multiplied with a timefac------------*/
-	    actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac;
+	    actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac;
          }else{
 	    initval  = actgnode->dirich->dirich_val.a.dv[j];
-            actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac;
+            actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac;
 	 }/*end of if (j==0)*/
       }else{
          initval  = actgnode->dirich->dirich_val.a.dv[j];
-         actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac;
+         actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac;
       }/*end of (actnode->x[0]==-0.5)*/
    } /* end loop over dofs */
 } /*end loop over nodes */
@@ -615,18 +606,19 @@ in this routine the dirichlet boundary conditions for fluid2 and fluid3
 elements are set at time <T=fdyn->acttime>.
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac'
+    'actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac'
                                           |        |         |
                                      time (n+1)    |         |
                                    initial value from input  |
                                                 factor from timecurve
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)
+\param *ipos                   (i)  node array positions
 
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_cyl(FIELD  *actfield)
+void fluid_setdirich_cyl(FIELD  *actfield, ARRAY_POSITION *ipos)
 {
 INT        i,j;
 INT        numnp_total;                /* total number of fluid nodes     */
@@ -637,7 +629,7 @@ DOUBLE   timefac[MAXTIMECURVE];      /* factors from time-curve         */
 DOUBLE   T;  		             /* actual time		        */
 DOUBLE   acttimefac;                 /* actual factor from timecurve    */
 DOUBLE   initval;  	             /* intial dirichlet value	        */
-/*DOUBLE   Um=1.5;                     /* maximum velocity                */
+/*DOUBLE   Um=1.5;*/                     /* maximum velocity                */
 DOUBLE   Um=0.3;                     /* maximum velocity                */
 DOUBLE   H=0.41;                     /* height of the channel           */
 GNODE     *actgnode;	              /* actual GNODE		         */
@@ -691,14 +683,14 @@ for (i=0;i<numnp_total;i++)
             /*--parabolic profile is formulated as below---*/
 	    initval  = FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
             /*--it is multiplied with a timefac------------*/
-	    actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac;
+	    actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac;
          }else{
 	    initval  = actgnode->dirich->dirich_val.a.dv[j];
-            actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac;
+            actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac;
 	 }/*end of if (j==0)*/
       }else{
          initval  = actgnode->dirich->dirich_val.a.dv[j];
-         actnode->sol_increment.a.da[ipos.velnp][j] = initval*acttimefac;
+         actnode->sol_increment.a.da[ipos->velnp][j] = initval*acttimefac;
       }/*end of if (actnode->x[0]==0.0)*/
    } /* end loop over dofs */
 } /*end loop over nodes */
@@ -723,24 +715,25 @@ parameter via steepest descent method.
 
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[ipos.relax][j] = 0.0
+    'actnode->sol_increment.a.da[ipos->relax][j] = 0.0
                                  |          |
                 fluid sol. for RelaxParam   |
 					at Dirichlet boundaries
   AND:
-    'actnode->sol_increment.a.da[ipos.relax][j] 
-                                 |  = actnode->sol_increment.a.da[ipos.gridv][j]
+    'actnode->sol_increment.a.da[ipos->relax][j]
+                                 |  = actnode->sol_increment.a.da[ipos->gridv][j]
                                  |                  |
                 fluid sol. for RelaxParam           |
 					at fsi coupling interface,
 					      grid velocity
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)
+\param *ipos                   (i)  node array positions
 
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_sd( FIELD *actfield )
+void fluid_setdirich_sd( FIELD *actfield, ARRAY_POSITION *ipos )
 {
 INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
@@ -777,14 +770,14 @@ for (i=0;i<numnp_total;i++)
       {
          if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             continue;
-         actnode->sol_increment.a.da[ipos.relax][j] = 0.0;
-         actnode->sol_increment.a.da[ipos.convnp][j] = 0.0;
+         actnode->sol_increment.a.da[ipos->relax][j] = 0.0;
+         actnode->sol_increment.a.da[ipos->convnp][j] = 0.0;
       } /* end loop over dofs */
    break;
    case dirich_FSI: /* dirichvalues = grid velocity!!! */
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
-         actnode->sol_increment.a.da[ipos.relax][j]
-	=actnode->sol_increment.a.da[ipos.gridv][j];
+         actnode->sol_increment.a.da[ipos->relax][j]
+	=actnode->sol_increment.a.da[ipos->gridv][j];
    break;
    default:
       dserror("dirch_type unknown!\n");
@@ -975,7 +968,7 @@ for (i=0; i<nd; i++)
 
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 /*                               dirichlet values at (n+1) were already */
-/*                  written to the nodes (sol_increment[ipos.velnp][j]) */
+/*                  written to the nodes (sol_increment[ipos->velnp][j]) */
 nrow=0;
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
@@ -1042,7 +1035,7 @@ projection method (constant velocity profile)
 
 in this routine the element load vector due to dirichlet conditions
 is calcluated. The prescribed values are taken from the node solution
-history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos.velnp][j]'.
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos->velnp][j]'.
 the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
@@ -1056,6 +1049,7 @@ the element load vector 'dforce' is calculated by eveluating
 \param   dt        DOUBLE    (i)   time increment
 \param  theta      DOUBLE    (i)   variable for the time integration of viscousity matrix
                                    for the implicitly treated K, theta=1.0
+\param *ipos                 (i)   node array positions
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
 \return void
 ------------------------------------------------------------------------*/
@@ -1066,6 +1060,7 @@ void fluid_pm_caldirich(
 		     DOUBLE   **emass,
 		     DOUBLE   dt,
 		     DOUBLE   theta,
+                     ARRAY_POSITION *ipos,
 		     INT       *hasdirich
 		    )
 {
@@ -1109,7 +1104,7 @@ for (i=0; i<nd; i++)
 
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 /*                               dirichlet values at (n+1) were already */
-/*                  written to the nodes (sol_increment[ipos.velnp][j]) */
+/*                  written to the nodes (sol_increment[ipos->velnp][j]) */
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
    numdf    = actele->node[i]->numdf;
@@ -1119,7 +1114,7 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
    {
       if (actgnode->dirich==NULL) continue;
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[i*numdf+j] = actnode->sol_increment.a.da[ipos.velnp][j];
+      dirich[i*numdf+j] = actnode->sol_increment.a.da[ipos->velnp][j];
    } /* end loop over dofs */
 } /* end loop over nodes */
 
@@ -1153,7 +1148,7 @@ return;
 
 in this routine the element load vector due to dirichlet conditions
 is calcluated. The prescribed values are taken from the node solution
-history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos.velnp][j]'.
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos->velnp][j]'.
 the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
@@ -1226,7 +1221,7 @@ for (i=0; i<nd; i++)
 
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 /*                               dirichlet values at (n+1) were already */
-/*                  written to the nodes (sol_increment[ipos.velnp][j]) */
+/*                  written to the nodes (sol_increment[ipos->velnp][j]) */
 /*----------------------------------------------------------------------*/
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
@@ -1282,7 +1277,7 @@ return;
 
 in this routine the element load vector due to dirichlet conditions
 is calcluated. The prescribed values are taken from the node solution
-history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos.velnp][j]'.
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[ipos->velnp][j]'.
 the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
@@ -1359,7 +1354,7 @@ for (i=0; i<nd; i++)
 }
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 /*                               dirichlet values at (n+1) were already */
-/*                  written to the nodes (sol_increment[ipos.velnp][j]) */
+/*                 written to the nodes (sol_increment[ipos->velnp][j]) */
 /*----------------------------------------------------------------------*/
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {

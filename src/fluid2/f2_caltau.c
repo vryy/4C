@@ -10,10 +10,10 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -23,7 +23,7 @@ Maintainer: Christiane Foerster
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -41,7 +41,7 @@ extern struct _MATERIAL  *mat;
 \brief routine to prepare the determination of the stabilisation parameter
 
 <pre>                                                        chfoe 10/04
-This routine prepares the evaluation of the stabilisation parameter for 
+This routine prepares the evaluation of the stabilisation parameter for
 USFEM stabilised fluid elements in 2D if tau is calculated once per
 element which currently is the default implementation.
 
@@ -53,17 +53,17 @@ element which currently is the default implementation.
 \param **xjm     DOUBLE 	       (-)   jacobian matrix
 \param **evelng  DOUBLE                (i)   (newest) element velocities
 \param  *visc    DOUBLE 	       (-)   viscosity
-\return void             
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_caltau(			     
-	       ELEMENT         *ele, 
+void f2_caltau(
+	       ELEMENT         *ele,
 	       DOUBLE         **xyze,
-	       DOUBLE          *funct,  
-	       DOUBLE         **deriv,              
+	       DOUBLE          *funct,
+	       DOUBLE         **deriv,
 	       DOUBLE         **xjm,
 	       DOUBLE         **evelng,
-               DOUBLE           visc  
+               DOUBLE           visc
               )
 {
 
@@ -77,24 +77,24 @@ DOUBLE         det;
 FLUID_DYNAMIC *fdyn;
 DIS_TYP        typ;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_caltau");
-#endif		
+#endif
 
-/* The following includes the decision which stabilisation parameter 
-   will be used. It should rather be moved to the input. Current 
-   observations indicate however that the chosen selection behaves 
-   slightly better in most cases. It is therefore used preferabely while 
-   the other possibilities will be kept for research purpose 
-   for detailed explainations of the different tau concepts see 
+/* The following includes the decision which stabilisation parameter
+   will be used. It should rather be moved to the input. Current
+   observations indicate however that the chosen selection behaves
+   slightly better in most cases. It is therefore used preferabely while
+   the other possibilities will be kept for research purpose
+   for detailed explainations of the different tau concepts see
    preamble to routine 'f2_get_tau'                                     */
 whichtau = 0; /* Franca  */
-/*whichtau = 1; /* Whiting */
+/*whichtau = 1;*/ /* Whiting */
 
 which_hk = 0; /* area square root */
-/*which_hk = 1; /* length in flow direction (Wall) */
-/*which_hk = 2; /* length in flow direction approximative (Codina) */
-/*which_hk = 3; /* length for anisotropic meshes (Codina) */
+/*which_hk = 1;*/ /* length in flow direction (Wall) */
+/*which_hk = 2;*/ /* length in flow direction approximative (Codina) */
+/*which_hk = 3;*/ /* length for anisotropic meshes (Codina) */
 
 /*------------------------------------------------------- initialise ---*/
 fdyn    = alldyn[genprob.numff].fdyn;
@@ -116,7 +116,7 @@ f2_jaco(xyze,deriv,xjm,&det,iel,ele);
 f2_get_tau(ele,xjm,xyze,funct,det,velint,visc,whichtau,which_hk);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

@@ -90,6 +90,7 @@ static INT              ndum;       /* dummy variable                   */
 static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 INT smisal;
 #endif
+ARRAY_POSITION* ipos;
 
 INT       i;        /* simply a counter */
 INT       ldflag;
@@ -100,6 +101,8 @@ DSURF    *actdsurf;
 #ifdef DEBUG
 dstrc_enter("fluid3");
 #endif
+
+ipos = &(field[genprob.numff].dis[container->actndis].ipos);
 
 /*------------------------------------------------- switch to do option */
 switch (*action)
@@ -113,7 +116,7 @@ case calc_fluid_init:
 /*------------------------------------------- init the element routines */
   f3_intg(0);
   f3_calele(NULL,estif_global,emass_global,
-            eforce_global,edforce_global,NULL,NULL,1);
+            eforce_global,edforce_global,ipos,NULL,NULL,1);
 /*---------------------------------------------------- multi-level FEM? */
 #ifdef FLUID3_ML
   if (fdyn->mlfem==1)
@@ -135,7 +138,7 @@ case calc_fluid_init:
     }
 /*----------------------- init the element routines for multi-level FEM */
     f3_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
-          eforce_global,edforce_global,hasdirich,hasext,1);
+          eforce_global,edforce_global,ipos,hasdirich,hasext,1);
   }
 #endif
 break;
@@ -163,14 +166,14 @@ if (fdyn->mlfem==1)
 else
 #endif
   f3_calele(ele,estif_global,emass_global,
-                 eforce_global,edforce_global,hasdirich,hasext,0);
+                 eforce_global,edforce_global,ipos,hasdirich,hasext,0);
 break;
 
 /*-------------------------------------------- calculate fluid stresses */
 case calc_fluid_stress:
    /*------ calculate stresses only for elements belonging to this proc */
    if (par.myrank==ele->proc)
-      f3_stress(container->str,viscstr,ele);
+      f3_stress(container->str,viscstr,ele,ipos);
 break;
 
 /* calculate fluid stresses for lift&drag calculation */
@@ -191,7 +194,7 @@ case calc_fluid_liftdrag:
     }
     if (ldflag>0)
     {
-      f3_stress(container->str,viscstr,ele);
+      f3_stress(container->str,viscstr,ele,ipos);
       f3_liftdrag(ele,container);
     }
   }
@@ -200,7 +203,7 @@ break;
 /*--------------------------------- calculate height function matrices */
 case calc_fluid_heightfunc:
    f3_heightfunc(ele,estif_global,
-                 eforce_global,container);
+                 eforce_global,container,ipos);
 break;
 
 /*------------------------------------------------------- write restart */

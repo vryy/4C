@@ -278,6 +278,7 @@ void f3fcalele(
     ARRAY           *emass_fast,
     ARRAY           *eforce_fast,
     ARRAY           *edforce_fast,
+    ARRAY_POSITION  *ipos,
     INT            *hasdirich,
     INT            *hasext,
     INT             init,
@@ -330,6 +331,7 @@ void f3fcalint(
         DOUBLE          *epren,
         DOUBLE          *edeadn,
         DOUBLE          *edeadng,
+        ARRAY_POSITION  *ipos,
         INT             *hasext,
         INT              sizevec[5]
         );
@@ -408,6 +410,7 @@ void f3fcalint(
 
     void f3fcalstab(
         ELEMENT      *ele[LOOPL],
+        ARRAY_POSITION* ipos,
         INT           loop
         );
 
@@ -415,6 +418,7 @@ void f3fcalint(
         ELEMENT         *actele[LOOPL],
         DOUBLE          *dforces,
         DOUBLE          *estif,
+        ARRAY_POSITION  *ipos,
         INT             *hasdirich,
         INT              is_relax,
         INT              sizevec[5]
@@ -436,6 +440,7 @@ void f3fcalint(
         FLUID_STRESS  str,
         INT           viscstr,
         ELEMENT      *ele[LOOPL],
+        ARRAY_POSITION *ipos,
         INT           is_relax,
         INT           aloopl
         );
@@ -497,6 +502,7 @@ void f3fcalelestress(
     DOUBLE         *elecord,
     DOUBLE         *sigint,
     DOUBLE         *nostr,
+    ARRAY_POSITION *ipos,
     INT             sizevec[6]
     );
 
@@ -535,6 +541,7 @@ void f3fcalseta(
     DOUBLE          *epren,
     DOUBLE          *edeadn,
     DOUBLE          *edeadng,
+    ARRAY_POSITION  *ipos,
     INT             *hasext,
     INT              sizevec[5]
     );

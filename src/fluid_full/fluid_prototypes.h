@@ -21,15 +21,18 @@ Maintainer: Steffen Genkinger
  | fluid_adapt_service.c                                                |
  ************************************************************************/
 void fluid_acceleration(	FIELD 		*actfield,
+                                ARRAY_POSITION *ipos,
 				INT 	 	iop
 			);
-void fluid_prep_rhs( FIELD *actfield );
-void fluid_predictor( FIELD *actfield, INT iop );
+void fluid_prep_rhs( FIELD *actfield, ARRAY_POSITION *ipos );
+void fluid_predictor( FIELD *actfield, ARRAY_POSITION *ipos, INT iop );
 void fluid_lte(	FIELD	 	*actfield,
+                ARRAY_POSITION  *ipos,
 		INT 		 iop );
 void fluid_lte_norm(
 			PARTITION 	*actpart,
 			INTRA		*actintra,
+                        ARRAY_POSITION  *ipos,
 			INT		*iststep,
 			INT		*repeat,
 			INT		*repeated,
@@ -41,6 +44,7 @@ void fluid_lte_norm(
  ************************************************************************/
 void fluid_cbf(PARTDISCRET *actpdis,
 	       CONTAINER   *container,
+               ARRAY_POSITION *ipos,
                INT          init);
 
 /************************************************************************
@@ -54,13 +58,14 @@ void fluid_curvature(FIELD        *actfield,
 /************************************************************************
  | fluid_dirich.c                                                       |
  ************************************************************************/
-void fluid_initdirich(  FIELD          *actfield );
+void fluid_initdirich(  FIELD          *actfield, ARRAY_POSITION *ipos );
 void fluid_setdirich(   FIELD           *actfield,
+                        ARRAY_POSITION  *ipos,
 			INT              pos
 	            );
-void fluid_setdirich_cyl(FIELD  *actfield );
-void fluid_setdirich_parabolic(FIELD  *actfield );
-void fluid_setdirich_sd(   FIELD           *actfield );
+void fluid_setdirich_cyl(FIELD  *actfield, ARRAY_POSITION *ipos);
+void fluid_setdirich_parabolic(FIELD  *actfield, ARRAY_POSITION *ipos );
+void fluid_setdirich_sd(   FIELD           *actfield, ARRAY_POSITION *ipos );
 void fluid_caldirich(
                         ELEMENT         *actele,
 		        DOUBLE          *dforces,
@@ -75,6 +80,7 @@ void fluid_pm_caldirich(
 		     DOUBLE   **emass,
 		     DOUBLE   dt,
 		     DOUBLE   theta,
+                     ARRAY_POSITION *ipos,
 		     INT       *hasdirich
 		    );
 void fluid_pm_caldirich_parabolic(
@@ -102,13 +108,15 @@ void fluid_pm_caldirich_cyl(
 void fluid_setdirich_tu(
                        FIELD  *actfield,
                        DOUBLE   *lower_limit_kappa,
-                       DOUBLE   *lower_limit_eps
+                       DOUBLE   *lower_limit_eps,
+                       ARRAY_POSITION *ipos
                        );
 
 void fluid_caldirich_tu(
                      ELEMENT   *actele,
 		        DOUBLE    *dforces,
                     DOUBLE   **estif,
+                        ARRAY_POSITION *ipos,
 		       INT       *hasdirich
 		       );
 
@@ -118,13 +126,15 @@ void fluid_caldirich_tu(
 void fluid_setdirich_tu_1(
                        FIELD  *actfield,
                        DOUBLE   *lower_limit_kappa,
-                       DOUBLE   *lower_limit_omega
+                       DOUBLE   *lower_limit_omega,
+                       ARRAY_POSITION *ipos
                        );
 
 void fluid_caldirich_tu_1(
                          ELEMENT   *actele,
 		             DOUBLE    *dforces,
                          DOUBLE   **estif,
+                        ARRAY_POSITION *ipos,
 		             INT       *hasdirich
 		             );
 
@@ -141,7 +151,9 @@ void fluid_createfreesurf(void);
 void fluid_freesurf_setdofs(void);
 void fluid_modcoor(void);
 void fluid_updfscoor(FIELD *fluidfield, FLUID_DYNAMIC *fdyn,
-                     DOUBLE dt, INT flag);
+                     DOUBLE dt,
+                     ARRAY_POSITION *ipos,
+                     INT flag);
 
 /************************************************************************
  | fluid_heightfunction.c                                               |
@@ -153,6 +165,7 @@ void fluid_heightfunc(INT                  hctrl,
                       INTRA               *actintra,
                       CALC_ACTION         *action,
                       CONTAINER           *container,
+                      ARRAY_POSITION      *ipos,
                       INT                  converged);
 
 /************************************************************************
@@ -179,7 +192,8 @@ void fluid_liftdrag(INT            init,
 		    FIELD         *actfield,
 		    SOLVAR        *actsolv,
 		    PARTITION     *actpart,
-		    INTRA         *actintra);
+		    INTRA         *actintra,
+                    ARRAY_POSITION *ipos);
 
 /************************************************************************
  | fluid_locsys.c                                                       |
@@ -294,13 +308,15 @@ void fluid_init(
                           CALC_ACTION       *action,
                           CONTAINER         *container,
                           INT                numr,
+                          ARRAY_POSITION    *ipos,
                           FLUID_STRESS       str
 	       );
 void fluid_norm(
                           FIELD             *actfield,
 		          INT                numeq_total,
                           DOUBLE            *vrat,
-		          DOUBLE            *prat
+		          DOUBLE            *prat,
+                          ARRAY_POSITION    *ipos
 	       );
 void fluid_sol_copy(
                           FIELD             *actfield,
@@ -321,6 +337,7 @@ void fluid_transpres(
 		    );
 INT fluid_steadycheck(
                           FIELD             *actfield,
+                          ARRAY_POSITION    *ipos,
 		          INT                numeq_total
 		     );
 INT fluid_convcheck(
@@ -346,9 +363,10 @@ void fluid_reducestress(
 		       );
 void fluid_cal_error(
     FIELD             *actfield,
+    ARRAY_POSITION    *ipos,
     INT                index
     );
-void fluid_init_pos_euler(void);
+void fluid_init_pos_euler(ARRAY_POSITION    *ipos);
 
 /************************************************************************
  | fluid_service_tu.c                                                   |
@@ -360,9 +378,11 @@ void fluid_tcons_tu(void);
 
 void fluid_set_check_tu(
                        FIELD  *actfield,
+                       ARRAY_POSITION    *ipos,
                        DOUBLE lower_limit_kappa);
 
-void fluid_eddy_pro(FIELD         *actfield
+void fluid_eddy_pro(FIELD         *actfield,
+                    ARRAY_POSITION    *ipos
                   );
 
 INT fluid_convcheck_tu(DOUBLE         kapepsrat,
@@ -372,6 +392,7 @@ INT fluid_convcheck_tu(DOUBLE         kapepsrat,
 		          );
 INT fluid_convcheck_test(
                      FIELD         *actfield,
+                     ARRAY_POSITION    *ipos,
                      INT            itnum_check
 		         );
 
@@ -393,7 +414,7 @@ void fluid_copysol_test(
 		       );
 
 void fluid_algoout_tu( void );
-void fluid_init_pos_euler_tu(void);
+void fluid_init_pos_euler_tu(ARRAY_POSITION    *ipos);
 
 /************************************************************************
  | fluid_service_tu_1.c                                                 |
@@ -401,7 +422,8 @@ void fluid_init_pos_euler_tu(void);
 void fluid_set_check_tu_1(
                        FIELD  *actfield,
                        DOUBLE lower_limit_kappa,
-                       DOUBLE lower_limit_omega
+                       DOUBLE lower_limit_omega,
+                       ARRAY_POSITION    *ipos
                        );
 
 /************************************************************************
@@ -413,6 +435,9 @@ void fluid_stat(void);
 /************************************************************************
  | inp_fluid_start_data.c                                               |
  ************************************************************************/
-void inp_fluid_start_data( FIELD   *actfield );
+void inp_fluid_start_data( FIELD   *actfield,
+                           ARRAY_POSITION    *ipos,
+                           FLUID_DYNAMIC *fdyn
+  );
 
 /*! @} (documentation module close)*/

@@ -29,19 +29,6 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 /*----------------------------------------------------------------------*/
 static ARRAY     ehist_a;  /* element history data                      */
@@ -119,6 +106,7 @@ This routine controls the element evaluation:
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
 \param  *eforce_global   ARRAY	        (o)   ele force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
+\param  *ipos                           (i)   node array positions
 \param  *hasdirich       INT	        (o)   element flag
 \param  *hasext          INT	        (o)   element flag
 \param   init	         INT	        (i)   init flag
@@ -131,6 +119,7 @@ void f3_calele(
                 ARRAY          *emass_global,
 	        ARRAY          *eforce_global,
 		ARRAY          *edforce_global,
+                ARRAY_POSITION *ipos,
 		INT            *hasdirich,
 		INT            *hasext,
 		INT             init
@@ -189,7 +178,7 @@ switch(ele->e.f3->is_ale)
 {
 case 0:
 /*---------------------------------------------------- set element data */
-   f3_calset(ele,xyze,ehist,evelng,epren,edeadn,edeadng,hasext);
+   f3_calset(ele,xyze,ehist,evelng,epren,edeadn,edeadng,ipos,hasext);
 
 /*------------------------- calculate element size and stab-parameter: */
    f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
@@ -203,7 +192,7 @@ break;
 case 1:
 /*---------------------------------------------------- set element data */
    f3_calseta(ele,xyze,ehist,evelng,ealecovn,
-              ealecovng,egridv,epren,edeadn,edeadng,hasext);
+              ealecovng,egridv,epren,edeadn,edeadng,ipos,hasext);
 /*------------------------- calculate element size and stab-parameter: */
    f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
 /*------------------------------- calculate element stiffness matrices */
@@ -252,7 +241,7 @@ if(ele->locsys==locsys_yes)
 /*------------------------------------------------ condensation of DBCs */
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
-fluid_caldirich(ele,edforce,estif,hasdirich,ipos.velnp);
+fluid_caldirich(ele,edforce,estif,hasdirich,ipos->velnp);
 
 /*------------------------------------------ calculate emass * ehist ---*/
 f3_massrhs(ele,emass,ehist,edeadng,eforce,hasext);
@@ -277,12 +266,14 @@ return;
 \param     str       FLUID_STRESS   (i)    flag for stress calculation
 \param     viscstr   INT            (i)    viscose stresses yes/no?
 \param    *ele       ELEMENt        (i)    actual element
+\param   *ipos                      (i)    node array positions
 \return void
 
 ------------------------------------------------------------------------*/
 void f3_stress(FLUID_STRESS  str,
                INT           viscstr,
-	       ELEMENT      *ele  )
+	       ELEMENT      *ele,
+               ARRAY_POSITION *ipos)
 {
 #ifdef D_FSI
 INT       i;
@@ -314,13 +305,13 @@ case str_fsicoupling:
    }
    if (coupled==1)
    f3_calelestress(viscstr,ele,eveln,epren,funct,
-                   deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);
+                   deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint,ipos);
 break;
 #endif
 case str_liftdrag:
 case str_all:
    f3_calelestress(viscstr,ele,eveln,epren,funct,
-                  deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);
+                  deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint,ipos);
 break;
 default:
   dserror("stress calculation not possible!\n");
@@ -345,6 +336,7 @@ evaluation of heightfunction
 \param   *estif_global     DOUBLE            element stiffness matrix
 \param   *eforce_global    DOUBLE            ele RHS
 \param   *container        CONTAINER
+\param   *ipos                           (i) node array positions
 \return void
 
 ------------------------------------------------------------------------*/
@@ -352,7 +344,8 @@ void f3_heightfunc(
                    ELEMENT              *ele,
                    ARRAY                *estif_global,
 		   ARRAY                *eforce_global,
-		   CONTAINER            *container
+		   CONTAINER            *container,
+                   ARRAY_POSITION       *ipos
 		   )
 {
 #ifdef D_FSI
@@ -386,15 +379,15 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    actfnode=ele->node[i];
    if(actfnode->hfdof==NULL) continue;
    /*---------------------------------------- set element values at n+1 */
-   evelng[0][i]   =actfnode->sol_increment.a.da[ipos.velnp][0];
-   evelng[1][i]   =actfnode->sol_increment.a.da[ipos.velnp][1];
-   evelng[2][i]   =actfnode->sol_increment.a.da[ipos.velnp][2];
+   evelng[0][i]   =actfnode->sol_increment.a.da[ipos->velnp][0];
+   evelng[1][i]   =actfnode->sol_increment.a.da[ipos->velnp][1];
+   evelng[2][i]   =actfnode->sol_increment.a.da[ipos->velnp][2];
    ephing[i]      =actfnode->xfs[2];
    /*------------------------------------------ set element values at n */
-   eveln[0][i]    =actfnode->sol_increment.a.da[ipos.veln][0];
-   eveln[1][i]    =actfnode->sol_increment.a.da[ipos.veln][1];
-   eveln[2][i]    =actfnode->sol_increment.a.da[ipos.veln][2];
-   ephin[i]       =actfnode->sol_increment.a.da[ipos.veln][4];
+   eveln[0][i]    =actfnode->sol_increment.a.da[ipos->veln][0];
+   eveln[1][i]    =actfnode->sol_increment.a.da[ipos->veln][1];
+   eveln[2][i]    =actfnode->sol_increment.a.da[ipos->veln][2];
+   ephin[i]       =actfnode->sol_increment.a.da[ipos->veln][4];
 } /* end of loop over nodes of element */
 
 typ  = ele->distyp;
@@ -461,10 +454,11 @@ evaluation of stabilisation parameter at the end of a time step
 
 </pre>
 \param   *ele     ELEMENT        the acutal element
+\param   *ipos                           (i)   node array positions
 \return void
 
 ------------------------------------------------------------------------*/
-void f3_calstab(ELEMENT *ele)
+void f3_calstab(ELEMENT *ele, ARRAY_POSITION *ipos)
 {
 INT      i;
 NODE    *actfnode;
@@ -490,9 +484,9 @@ else
 for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 {
    actfnode=ele->node[i];
-   evelng[0][i]   =actfnode->sol_increment.a.da[ipos.velnp][0];
-   evelng[1][i]   =actfnode->sol_increment.a.da[ipos.velnp][1];
-   evelng[2][i]   =actfnode->sol_increment.a.da[ipos.velnp][2];
+   evelng[0][i]   =actfnode->sol_increment.a.da[ipos->velnp][0];
+   evelng[1][i]   =actfnode->sol_increment.a.da[ipos->velnp][1];
+   evelng[2][i]   =actfnode->sol_increment.a.da[ipos->velnp][2];
 }
 
 /*-------------------------- calculate element size and stab-parameter: */

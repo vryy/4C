@@ -73,7 +73,8 @@ void fluid_liftdrag(INT            init,
                     FIELD         *actfield,
                     SOLVAR        *actsolv,
                     PARTITION     *actpart,
-                    INTRA         *actintra)
+                    INTRA         *actintra,
+                    ARRAY_POSITION *ipos)
 {
 INT     i, j, k;
 INT     numline;
@@ -107,14 +108,14 @@ fdyn = alldyn[genprob.numff].fdyn;
  * only for 2 D  !!!
  *
  ************************************************************************/
- 
+
 /*----------- keep track of the lift&drag center of angular momentum ---*/
 switch (init)
 {
 case -1: /* init elemental data for liftdrag calculation */
    if(fdyn->liftdrag==ld_nodeforce)
    {
-      fluid_cbf(&(actpart->pdis[0]),container,0);
+      fluid_cbf(&(actpart->pdis[0]),container,ipos,0);
    }
 break;
 
@@ -184,7 +185,7 @@ if (init>0)
   {
    liftdrag[i] = ZERO;
   }
-   
+
    if(fdyn->liftdrag==ld_stress)
    {
       /*---------------------- get fluid stresses and integrate them ---*/
@@ -195,10 +196,10 @@ if (init>0)
    }
    if(fdyn->liftdrag==ld_nodeforce)
    {
-      /*--------------------------- evaluate consistent nodal forces ---*/   
+      /*--------------------------- evaluate consistent nodal forces ---*/
       container->liftdrag = liftdrag;
       container->nii      = 0;
-      fluid_cbf(&(actpart->pdis[0]),container,1);
+      fluid_cbf(&(actpart->pdis[0]),container,ipos,1);
    }
 
    /*----------- distribute lift- and drag- coefficient to all procs ---*/

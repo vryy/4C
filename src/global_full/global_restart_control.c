@@ -42,19 +42,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-struct _FLUID_POSITION ipos;
 
 /*----------------------------------------------------------------------*
  | write restart                                         m.gee 05/02    |
@@ -1445,7 +1432,7 @@ CCAFREE(res.ele_handles);
    names are limited to 9 characters, so a step larger then fres99999
    can not be restarted at the moment !!!!
 */
-pss_write(iposname,1,1,sizeof(FLUID_POSITION),&ipos,&longdummy,out,&ierr);
+pss_write(iposname,1,1,sizeof(ARRAY_POSITION),&actfield->dis[0].ipos,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 pss_write(resname,1,1,sizeof(RESTART_DYNFLUID),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
@@ -1552,7 +1539,7 @@ pss_chck(resname,&reshandle,in,&ierr);
 if (ierr != 1) dserror("Cannot restart, step doesn't exist in pss-file");
 pss_chck(iposname,&reshandle,in,&ierr);
 /*---------------------------- the structure ipos exists, so we read it */
-pss_read_name_handle(iposname,&i,&i,&byte,&ipos,&reshandle,in,&ierr);
+pss_read_name_handle(iposname,&i,&i,&byte,&actfield->dis[0].ipos,&reshandle,in,&ierr);
 if (ierr != 1) dserror("Restart structure exists, but cannot read it");
 
 

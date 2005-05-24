@@ -38,19 +38,6 @@ extern struct _GENPROB     genprob;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 
 /*!---------------------------------------------------------------------
@@ -76,6 +63,7 @@ extern struct _FLUID_POSITION ipos;
   \param  **wa1        DOUBLE      (-)    working array
   \param  **xyze       DOUBLE      (-)    element coordinates
   \param  **sigmaint   DOUBLE      (-)    stresses at GAUSS point
+  \param  *ipos                    (i)    node array positions
 
   \return void
 
@@ -92,7 +80,8 @@ void f3_calelestress(
     DOUBLE        **xjm,
     DOUBLE        **wa1,
     DOUBLE        **xyze,
-    DOUBLE        **sigmaint
+    DOUBLE        **sigmaint,
+    ARRAY_POSITION *ipos
     )
 {
   INT     i,j,lr,ls,lt;   /* some counters */
@@ -140,9 +129,9 @@ case 0: /* only real pressure */
   for (i=0;i<iel;i++)
   {
     actnode=ele->node[i];
-    ele->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[ipos.velnp][3]*dens;
-    ele->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[ipos.velnp][3]*dens;
-    ele->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[ipos.velnp][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[ipos->velnp][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[ipos->velnp][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[ipos->velnp][3]*dens;
     ele->e.f3->stress_ND.a.da[i][3]= ZERO;
     ele->e.f3->stress_ND.a.da[i][4]= ZERO;
     ele->e.f3->stress_ND.a.da[i][5]= ZERO;
@@ -182,10 +171,10 @@ case 1: /* real pressure + viscose stresses */
   /* set element velocities, real pressure and coordinates */
   for (j=0;j<iel;j++)
   {
-    evel[0][j] = ele->node[j]->sol_increment.a.da[ipos.velnp][0];
-    evel[1][j] = ele->node[j]->sol_increment.a.da[ipos.velnp][1];
-    evel[2][j] = ele->node[j]->sol_increment.a.da[ipos.velnp][2];
-    epre[j]    = ele->node[j]->sol_increment.a.da[ipos.velnp][3]*dens;
+    evel[0][j] = ele->node[j]->sol_increment.a.da[ipos->velnp][0];
+    evel[1][j] = ele->node[j]->sol_increment.a.da[ipos->velnp][1];
+    evel[2][j] = ele->node[j]->sol_increment.a.da[ipos->velnp][2];
+    epre[j]    = ele->node[j]->sol_increment.a.da[ipos->velnp][3]*dens;
   }/*end for (j=0;j<iel;j++) */
    switch (ele->e.f3->is_ale)
    {

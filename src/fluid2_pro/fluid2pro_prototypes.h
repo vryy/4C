@@ -73,6 +73,7 @@ void f2pro_calele(
 	        ARRAY          *etforce_global,
 		ARRAY          *eiforce_global,
 		ARRAY          *edforce_global,
+                ARRAY_POSITION *ipos,
 		INT             *hasdirich,
 		INT             init
 	       );
@@ -112,7 +113,8 @@ void f2pro_calset(
 		ELEMENT         *elepre,
 		DOUBLE         **xyze,
                 DOUBLE         **eveln,
-	        DOUBLE          *epren
+	        DOUBLE          *epren,
+                ARRAY_POSITION  *ipos
 	      );
 void pro_putdirich_to_dof(FIELD *actfield, INT disnum, DOUBLE scale, INT place);
 void pro_putdirich_parabolic_to_dof(FIELD *actfield, INT disnum, DOUBLE scale, INT place);

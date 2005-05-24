@@ -272,6 +272,7 @@ This routine controls the element evaluation of the large-scale element:
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
 \param  *eforce_global   ARRAY	        (o)   ele force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
+\param  *ipos                           (i)   node array positions
 \param  *hasdirich       INT	        (o)   element flag
 \param  *hasext          INT	        (o)   element flag
 \param   init	         INT	        (i)   init flag
@@ -287,6 +288,7 @@ void f3_lsele(FLUID_DATA     *data,
               ARRAY	     *emass_global,
 	      ARRAY	     *eforce_global,
 	      ARRAY	     *edforce_global,
+              ARRAY_POSITION *ipos,
 	      INT	     *hasdirich,
               INT	     *hasext,
 	      INT	      init)
@@ -350,7 +352,7 @@ amzero(edforce_global);
 *hasext=0;
 
 /*---------------------------- set element data for large-scale element */
-f3_lsset(ele,eveln,evel,epre,edeadn,edead,hasext);
+f3_lsset(ele,eveln,evel,epre,edeadn,edead,ipos,hasext);
 
 /*------------------------------- dynamic subgrid viscosity calculation */
 if (mlvar->smsgvi>2) f3_dynsgv(data,mlvar,submesh,ssmesh,ele);

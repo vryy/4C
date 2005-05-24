@@ -107,12 +107,13 @@ void fluid3_fast(
   GVOL     *actgvol;
   GSURF    *actgsurf;
   DSURF    *actdsurf;
-
+  ARRAY_POSITION* ipos;
 
 #ifdef DEBUG
   dstrc_enter("fluid3_fast");
 #endif
 
+  ipos = &(field[genprob.numff].dis[container->actndis].ipos);
 
   /* switch to do option */
   switch (*action)
@@ -131,7 +132,7 @@ void fluid3_fast(
       f3_intg(0);
 
       f3fcalele(NULL, estif_fast,
-          emass_fast,eforce_fast,edforce_fast,
+          emass_fast,eforce_fast,edforce_fast,ipos,
           NULL,NULL,1,loop);
 #ifdef PERF
     perf_end(42);
@@ -145,7 +146,7 @@ void fluid3_fast(
     perf_begin(43);
 #endif
       f3fcalele(ele, estif_fast,
-          emass_fast,eforce_fast,edforce_fast,
+          emass_fast,eforce_fast,edforce_fast,ipos,
           hasdirich,hasext,0,loop);
 #ifdef PERF
     perf_end(43);
@@ -158,7 +159,7 @@ void fluid3_fast(
 
       /* calculate stresses only for elements belonging to this proc */
       /*if (par.myrank==ele[0]->proc)*/
-        f3fstress(container->str,viscstr,ele,container->is_relax,loop);
+        f3fstress(container->str,viscstr,ele,ipos,container->is_relax,loop);
       break;
 
 
@@ -182,7 +183,7 @@ void fluid3_fast(
           }
           if (ldflag>0)
           {
-            f3fstress(container->str,viscstr,ele,container->is_relax,loop);
+            f3fstress(container->str,viscstr,ele,ipos,container->is_relax,loop);
             f3fliftdrag(ele[l],container);
           }
         }

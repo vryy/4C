@@ -119,6 +119,7 @@ extern struct _MATERIAL  *mat;
 \param  *velint  DOUBLE 	       (-)   vel. at integr. point
 \param  *eddyint  DOUBLE 	       (-)   eddy-visc. at integr. point (only for turbulence)
 \param  *visc     DOUBLE 	       (-)   viscosity
+\param  *ipos                          (i)   node array positions
 \return void
 
 ------------------------------------------------------------------------*/
@@ -137,6 +138,7 @@ void f2_calelesize(
                      DOUBLE          *ephing,
                      DOUBLE          *eddy,
                      DOUBLE          *visc,
+                     ARRAY_POSITION  *ipos,
                      INT              cpele
                      )
 {
@@ -383,7 +385,7 @@ if(gls->istapc==1 || istrnint==1)
 
   if (ele->e.f2->turbu == 2 || ele->e.f2->turbu == 3)
   {
-   f2_eddyirans(eleke,&eddyint,funct,eddy,iel);
+   f2_eddyirans(eleke,&eddyint,funct,eddy,ipos,iel);
    (*visc) += eddyint;
   }
 #endif

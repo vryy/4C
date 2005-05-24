@@ -72,7 +72,7 @@ void f3_calbkvv(DOUBLE         **estif,
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol,irn,icn;
 DOUBLE  con,aux,beta,divv;
 
@@ -318,7 +318,7 @@ void f3_calbkvp(DOUBLE         **estif,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol,irn,posc;
 DOUBLE  con,aux,aux0,aux1,aux2,beta,divv;
 
@@ -531,7 +531,7 @@ void f3_calbkpv(DOUBLE         **estif,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol,icn,icd,posr;
 DOUBLE  aux;
 
@@ -599,7 +599,7 @@ void f3_calbkpp(DOUBLE         **estif,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol,posr,posc;
 DOUBLE  aux;
 
@@ -664,7 +664,7 @@ void f3_calbmvv(DOUBLE         **emass,
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 INT     nvdfe;             /* number of velocity dofs of actual element */
 DOUBLE  aux;
@@ -736,7 +736,7 @@ void f3_calbmvp(DOUBLE         **emass,
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol,irn,posc;
 INT     nvdfe;             /* number of velocity dofs of actual element */
 

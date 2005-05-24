@@ -36,19 +36,6 @@ extern struct _GENPROB     genprob;
 extern struct _MATERIAL  *mat;
 
 static FLUID_DYNAMIC *fdyn;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
@@ -68,6 +55,7 @@ extern struct _FLUID_POSITION ipos;
 \param   *omega      DOUBLE	     (o)    omega
 \param  **evel       DOUBLE	     (o)    ele velocity
 \param  **xzye       DOUBLE        (o)   nodal coordinates
+\param  *ipos                        (i)    node array positions
 \return void
 
 ------------------------------------------------------------------------*/
@@ -82,7 +70,8 @@ void f2_calset_tu_1(
 	              DOUBLE          *kappan,
 	              DOUBLE          *omega,
 	              DOUBLE         **evel,
-	              DOUBLE         **xyze
+	              DOUBLE         **xyze,
+                      ARRAY_POSITION  *ipos
                    )
 {
 INT i,j;            /* simply a counter                                 */
@@ -124,37 +113,37 @@ for(i=0;i<ele->numnp;i++)
      actnode=ele->node[i];
 
 /*----------------------------------- set element kapome (n+1,i)       */
-      kapomeg[i]  =actnode->sol_increment.a.da[ipos.velnp][kap_ome];
+      kapomeg[i]  =actnode->sol_increment.a.da[ipos->velnp][kap_ome];
 /*----------------------------------- set element kapome (n)           */
-      kapomen[i]  =actnode->sol_increment.a.da[ipos.veln][kap_ome];
+      kapomen[i]  =actnode->sol_increment.a.da[ipos->veln][kap_ome];
 /*----------------------------------- set eddy viscosity for timestep  */
-      eddyg[i]    =actnode->sol_increment.a.da[ipos.velnp][1];
-      eddypro[i]  =actnode->sol_increment.a.da[ipos.eddy][1];
+      eddyg[i]    =actnode->sol_increment.a.da[ipos->velnp][1];
+      eddypro[i]  =actnode->sol_increment.a.da[ipos->eddy][1];
 
 /*------------------- for kappa equation: omega is needed for factors  */
     if (fdyn->kapomega_flag==0)
     {
-     omega[i] = actnode->sol_increment.a.da[ipos.velnp][2];
+     omega[i] = actnode->sol_increment.a.da[ipos->velnp][2];
 
      if (fdyn->kappan==2)
      {
-      actnode->sol_increment.a.da[ipos.eddy][0] = actnode->sol_increment.a.da[ipos.velnp][0];
+      actnode->sol_increment.a.da[ipos->eddy][0] = actnode->sol_increment.a.da[ipos->velnp][0];
      }
     }
 /*---------- for omega equation: kappan is needed for production term  */
     if (fdyn->kapomega_flag==1 && fdyn->kappan==2)
     {
-      actnode->sol_increment.a.da[ipos.eddy][2] = actnode->sol_increment.a.da[ipos.velnp][2];
-      kappan[i] = actnode->sol_increment.a.da[ipos.eddy][0];
+      actnode->sol_increment.a.da[ipos->eddy][2] = actnode->sol_increment.a.da[ipos->velnp][2];
+      kappan[i] = actnode->sol_increment.a.da[ipos->eddy][0];
     }
 /*----------------------------------- set element kapome (pro)         */
-      kapomepro[i]=actnode->sol_increment.a.da[ipos.eddy][kap_ome];
+      kapomepro[i]=actnode->sol_increment.a.da[ipos->eddy][kap_ome];
 
 /*----------------------- get velocities calculated form Navier-Stokes */
     for(j=0;j<2;j++)
     {
       actnode=elev->node[i];
-      evel[j][i]=actnode->sol_increment.a.da[ipos.velnp][j];
+      evel[j][i]=actnode->sol_increment.a.da[ipos->velnp][j];
     }
 
  } /* end of loop over nodes of element */

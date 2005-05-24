@@ -50,12 +50,19 @@ if grep '^DEBUG' "$definefile" 2>&1 > /dev/null ; then
     DEBUGFLAG=-g
     PROGRAMNAME=$PROGRAMNAME.debg
 else
-    DEBUGFLAG=
-    PROGRAMNAME=$PROGRAMNAME.fast
 
-    CFLAGS="$CFLAGS $CFLAGS_OPT"
-    FFLAGS="$FFLAGS $FFLAGS_OPT"
-    LDFLAGS="$LDFLAGS $LDFLAGS_OPT"
+    # we want to switch on debug mode by an environment variable, too
+    if [ x$DEBUG = "xyes" ] ; then
+        DEBUGFLAG=-g
+        PROGRAMNAME=$PROGRAMNAME.debg
+    else
+        DEBUGFLAG=
+        PROGRAMNAME=$PROGRAMNAME.fast
+
+        CFLAGS="$CFLAGS $CFLAGS_OPT"
+        FFLAGS="$FFLAGS $FFLAGS_OPT"
+        LDFLAGS="$LDFLAGS $LDFLAGS_OPT"
+    fi
 fi
 
 # a parallel version needs one more compile time flag

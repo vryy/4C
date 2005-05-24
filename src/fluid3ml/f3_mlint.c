@@ -1202,7 +1202,7 @@ for (lt=0;lt<nit;lt++)
 /*----------------------------------------------------------------------*
  |         compute "External" Force Vector                              |
  *----------------------------------------------------------------------*/
-/*    if (*hasext!=0)
+/*    if (*hasext!=0)*/
 /*----------------- calculate "External" force vector for velocity dofs */
 /*         f3_lscalgalexfv(etforce,funct,edeadn,edead,fac,iel);*/
 }

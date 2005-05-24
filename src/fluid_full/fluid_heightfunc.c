@@ -35,19 +35,6 @@ extern struct _ARRAY eforce_global;   /* element RHS                    */
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -93,6 +80,7 @@ during the nonlinear iteration.
 \param   *actintra    INTRA               actual intra-com.
 \param   *action      CALC_ACTION
 \param   *container   CONTAINER
+\param   *ipos                           (i)   node array positions
 \param    converged   INT                 convergence flag
 
 \return void
@@ -105,6 +93,7 @@ void fluid_heightfunc(INT                  hctrl,
                       INTRA               *actintra,
                       CALC_ACTION         *action,
                       CONTAINER           *container,
+                      ARRAY_POSITION      *ipos,
                       INT                  converged)
 {
 #ifdef D_FSI
@@ -238,7 +227,7 @@ for (i=0;i<numnp_total;i++)
    actnode = &(actdis->node[i]);
    if (actnode->hfdof==NULL) continue;
    dof = actnode->hfdof[0];
-   result[dof]= actnode->sol_increment.a.da[ipos.velnp][numdf];
+   result[dof]= actnode->sol_increment.a.da[ipos->velnp][numdf];
 }
 break; /* break for initialisation phase */
 
@@ -285,7 +274,7 @@ for (i=0;i<numnp_total;i++)
    actnode = &(actdis->node[i]);
    if (actnode->hfdof==NULL) continue;
    dof = actnode->hfdof[0];
-   actnode->sol_increment.a.da[ipos.velnp][numdf] = result[dof];
+   actnode->sol_increment.a.da[ipos->velnp][numdf] = result[dof];
 }
 
 /*-------------------------------------------------- check convergence */

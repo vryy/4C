@@ -44,19 +44,6 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 /*!---------------------------------------------------------------------
 \brief calculate fluid acceleration field
@@ -65,7 +52,7 @@ extern struct _FLUID_POSITION ipos;
 
 the fluid acceleration is calculated depending on the actual time
 stepping scheme. It is written to sol_increment[accn][i], where accn is
-the acceleration at time n position flag initialised differently for 
+the acceleration at time n position flag initialised differently for
 euler and ale calcualations.
 
 
@@ -87,11 +74,13 @@ acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
 
 </pre>
 \param  *actsolv         SOLVAR          (i)     pointer to solvar
+\param  *ipos                            (i)     node array positions
 \param   iop             INT             (i)     flag, which scheme
 \return void
 
 ------------------------------------------------------------------------*/
 void fluid_acceleration(FIELD           *actfield,
+                        ARRAY_POSITION *ipos,
 			INT              iop
 			)
 {
@@ -104,11 +93,11 @@ dstrc_enter("fluid_acceleration");
 #endif
 
 /*------------------------------------------------------- initialise ---*/
-veln  = ipos.veln;
-velnm = ipos.velnm;
-velnp = ipos.velnp;
-accn  = ipos.accn;
-accnm = ipos.accnm;
+veln  = ipos->veln;
+velnm = ipos->velnm;
+velnp = ipos->velnp;
+accn  = ipos->accn;
+accnm = ipos->accnm;
 
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -201,11 +190,11 @@ for adaptive time step:
 
 </pre>
 \param *actfield	FIELD		(i)	the actual field
-\param   iop		INT		(i)	flag, which scheme
+\param *ipos                            (i)     node array positions
 \return  void
 
 ------------------------------------------------------------------------*/
-void fluid_prep_rhs(FIELD *actfield)
+void fluid_prep_rhs(FIELD *actfield, ARRAY_POSITION *ipos)
 {
 DOUBLE 	fact;
 INT     veln, velnm, velnp, accn, accnm, hist;
@@ -216,12 +205,12 @@ dstrc_enter("fluid_prep_rhs");
 #endif
 
 /*------------------------------------------------------- initialise ---*/
-veln  = ipos.veln;
-velnm = ipos.velnm;
-velnp = ipos.velnp;
-accn  = ipos.accn;
-accnm = ipos.accnm;
-hist  = ipos.hist;
+veln  = ipos->veln;
+velnm = ipos->velnm;
+velnp = ipos->velnp;
+accn  = ipos->accn;
+accnm = ipos->accnm;
+hist  = ipos->hist;
 
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -296,11 +285,12 @@ vel_P(n+1) = vel(n) + dt(n) | 1 + ------- |*acc(n)-|-------| * [u(n)-u(n-1)]
 
 </pre>
 \param *actfield	FIELD		(i)	the actual field
+\param *ipos                            (i)     node array positions
 \param   iop		INT		(i)	flag, which scheme
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_predictor(FIELD *actfield, INT iop)
+void fluid_predictor(FIELD *actfield, ARRAY_POSITION *ipos, INT iop)
 {
 INT veln, velnm, velnp, accn, accnm, pred;
 DOUBLE 	fact1, fact2;
@@ -311,12 +301,12 @@ dstrc_enter("fluid_predictor");
 #endif
 
 /*------------------------------------------------------- initialise ---*/
-veln  = ipos.veln;
-velnm = ipos.velnm;
-velnp = ipos.velnp;
-accn  = ipos.accn;
-accnm = ipos.accnm;
-pred  = ipos.pred;
+veln  = ipos->veln;
+velnm = ipos->velnm;
+velnp = ipos->velnp;
+accn  = ipos->accn;
+accnm = ipos->accnm;
+pred  = ipos->pred;
 
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -423,11 +413,13 @@ LTE = -------------------------------------  * [ vel(n+1) - vel_P(n+1) ]
 
 </pre>
 \param *actfield	FIELD		(i)	the actual field
+\param *ipos                            (i)     node array positions
 \param   iop		INT		(i)	flag, which scheme
 \return void
 
 ------------------------------------------------------------------------*/
 void fluid_lte(	FIELD           *actfield,
+                ARRAY_POSITION  *ipos,
                 INT              iop)
 {
 INT velnp, pred, terr;
@@ -439,9 +431,9 @@ dstrc_enter("fluid_lte");
 #endif
 
 /*------------------------------------------------------- initialise ---*/
-velnp = ipos.velnp;
-pred  = ipos.pred;
-terr  = ipos.terr;
+velnp = ipos->velnp;
+pred  = ipos->pred;
+terr  = ipos->terr;
 
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -507,9 +499,8 @@ NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the
 
 </pre>
 \param *actpart		PARTITION	(i) 	actual partition
-\param *actfield	FIELD		(i)	the actual field
 \param *actintra	INTRA		(i)
-\param *fdyn		FLUID_DYNAMIC	(i/o)
+\param *ipos                            (i)     node array positions
 \param *iststep		INT		(i/o)
 \param *repeat		INT		(o)	flag, if to repeat
 \param *repeated	INT		(i/o)	flag, if was repeated
@@ -520,6 +511,7 @@ NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the
 void fluid_lte_norm(
 			PARTITION 	*actpart,
 			INTRA		*actintra,
+                        ARRAY_POSITION  *ipos,
 			INT		*iststep,
 			INT		*repeat,
 			INT		*repeated,
@@ -552,8 +544,8 @@ dstrc_enter("fluid_lte_norm");
 #endif
 /*------------------------------------------- initialise some values ---*/
 fdyn = alldyn[genprob.numff].fdyn;
-velnp = ipos.velnp;
-terr  = ipos.terr;
+velnp = ipos->velnp;
+terr  = ipos->terr;
 
 numveldof = fdyn->numdf - 1;
 nvel = 0;

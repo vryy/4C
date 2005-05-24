@@ -132,50 +132,50 @@ void fsi_gradient(
  | fsi_mortar.c                                                         |
  ************************************************************************/
 #ifdef D_MORTAR
-void fsi_initcoupling_intfaces( 
+void fsi_initcoupling_intfaces(
                   FIELD          *masterfield,
-                  FIELD          *slavefield, 
+                  FIELD          *slavefield,
                   INTERFACES     *int_faces
 		  );
 void fsi_init_interfaces(
-                  FIELD          *masterfield, 
+                  FIELD          *masterfield,
                   FIELD          *slavefield,
                   INTERFACES     *int_faces
                   );
 void fsi_mortar_coeff(
-                  FSI_DYNAMIC    *fsidyn, 
+                  FSI_DYNAMIC    *fsidyn,
                   INTERFACES     *int_faces
                   );
 void fsi_detect_intersection(
-                  DOUBLE         lambdr1_2, 
-                  DOUBLE         lambdr2_1, 
-                  DOUBLE         lambdr2_2, 
-                  DOUBLE         nr1_2, 
-                  DOUBLE         nr2_1, 
-                  DOUBLE         nr2_2, 
-                  DOUBLE         *b1, 
-                  DOUBLE         *b2, 
+                  DOUBLE         lambdr1_2,
+                  DOUBLE         lambdr2_1,
+                  DOUBLE         lambdr2_2,
+                  DOUBLE         nr1_2,
+                  DOUBLE         nr2_1,
+                  DOUBLE         nr2_2,
+                  DOUBLE         *b1,
+                  DOUBLE         *b2,
                   INT            *intersection
                   );
 void fsi_calc_disp4ale(
-                  FSI_DYNAMIC    *fsidyn, 
+                  FSI_DYNAMIC    *fsidyn,
                   INTERFACES     *int_faces
                   );
 void fsi_calc_intforces(
                   INTERFACES     *int_faces
                   );
-void f2_fsiload(  
+void f2_fsiload(
                   ELEMENT        *ele
                   );
 void fsi_put_coupforc2struct(
-                  FIELD          *masterfield, 
+                  FIELD          *masterfield,
                   INTERFACES     *int_faces
                   );
 void fsiserv_rhs_point_neum(
-                  DOUBLE         *rhs, 
-                  INT            dimrhs, 
+                  DOUBLE         *rhs,
+                  INT            dimrhs,
                   PARTITION      *actpart
-                  );     
+                  );
 #endif
 /************************************************************************
  | fsi_relax_intdisp.c                                                  |
@@ -220,7 +220,7 @@ INT fsi_convcheck(            FIELD            *structfield,
 			      INT               itnum
 		 );
 void fsi_init_ale(FIELD *actfield,INT numr);
-void fluid_init_pos_ale(void);
+void fluid_init_pos_ale(FIELD* fluidfield);
 
 /************************************************************************
  | fsi_struct.c                                                         |

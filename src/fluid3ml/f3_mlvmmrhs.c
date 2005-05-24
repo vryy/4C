@@ -72,7 +72,7 @@ void f3_calsmfv(FLUID_DYN_ML	*mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,icn,isd;
 DOUBLE con,beta,divv,cb,facsl,facpl;
 DOUBLE aux;
@@ -261,7 +261,7 @@ void f3_calstabsmfv(FLUID_DYN_ML    *mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,icn,isd;
 DOUBLE con,ccon,beta,divv,cb,ccb,cbb;
 DOUBLE aux,auxc;
@@ -754,7 +754,7 @@ void f3_calbfv(FLUID_DYN_ML    *mlvar,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,inode,isd,j;
 DOUBLE  con,facsl,aux,auxc,beta,divv;
 
@@ -957,7 +957,7 @@ void f3_calbfp(DOUBLE          *eiforce,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     inode,posr;
 DOUBLE  facsl,aux;
 

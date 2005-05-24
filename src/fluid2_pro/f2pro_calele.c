@@ -55,6 +55,7 @@ This routine controls the element evaluation:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
+\param  *ipos                           (i)   node array positions
 \param*  hasdirich       int	        (o)   element flag
 \param   init	         int	        (i)   init flag
 \return void
@@ -70,6 +71,7 @@ void f2pro_calele(
 	        ARRAY          *etforce_global,
 		ARRAY          *eiforce_global,
 		ARRAY          *edforce_global,
+                ARRAY_POSITION *ipos,
 		INT             *hasdirich,
 		INT             init
 	       )
@@ -163,7 +165,7 @@ amzero(edforce_global);
 *hasdirich=0;
 /*---------------------------------------------------- set element data */
 if (fdyn->pro_calveln==1)
-   f2pro_calset(elev,elep,xyze,eveln,epren);
+   f2pro_calset(elev,elep,xyze,eveln,epren,ipos);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
 f2pro_calint(elev,elep,
@@ -184,7 +186,7 @@ if (fdyn->pro_caldirich==1)
       fluid_pm_caldirich_parabolic(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,hasdirich);
    break;
    case 2:
-      fluid_pm_caldirich(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,hasdirich);
+      fluid_pm_caldirich(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,ipos,hasdirich);
    break;
    case 3:
       fluid_pm_caldirich_cyl(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,hasdirich);

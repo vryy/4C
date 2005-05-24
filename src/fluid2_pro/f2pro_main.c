@@ -79,10 +79,14 @@ void fluid2_pro(     PARTITION     *actpart,
 /*----------------------------------------------------------------------*/
 #ifdef D_FLUID2_PRO
 /*----------------------------------------------------------------------*/
+ARRAY_POSITION* ipos;
 
 #ifdef DEBUG
 dstrc_enter("fluid2_pro");
 #endif
+
+ipos = &(field[genprob.numff].dis[0].ipos);
+
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
@@ -93,25 +97,25 @@ case calc_fluid_init:
    /*----------- f2_pro element is initialized, some arrays are defined */
    f2pro_calele(NULL,NULL,estif_global,emass_global,
                lmass_global,gradopr_global,etforce_global,eiforce_global,
-	       edforce_global,NULL,1);
+	       edforce_global,ipos,NULL,1);
 break;
 /*---------------------------------------- calculate the A=(Ct)(Ml-1)(C)*/
 case calc_fluid_amatrix:
    f2pro_calele(elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,hasdirich,0);
+		edforce_global,ipos,hasdirich,0);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid_f2pro:
    f2pro_calele(elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,hasdirich,0);
+		edforce_global,ipos,hasdirich,0);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid_f2pro_rhs_both:
    f2pro_calele(elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,hasdirich,0);
+		edforce_global,ipos,hasdirich,0);
 break;
 /*----------------------------------------------------------------------*/
 default:

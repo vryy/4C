@@ -106,19 +106,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 
@@ -208,6 +195,7 @@ DOUBLE         *frhs;	            /* iteration - RHS                  */
 
 CONTAINER       container;          /* contains variables defined in container.h */
 FILE           *out = allfiles.out_out;
+ARRAY_POSITION *ipos;
 
 #ifdef BINIO
 BIN_OUT_FIELD   out_context;
@@ -233,6 +221,8 @@ restart     = genprob.restart;
 container.actndis   = 0;
 container.turbu     = fdyn->turbu;
 container.fieldtyp  = actfield->fieldtyp;
+
+ipos = &(actfield->dis[0].ipos);
 
 /* set flag for stress evaluation */
 str         = str_none;
@@ -260,7 +250,7 @@ if (fdyn->liftdrag==ld_stress)
   str         = str_liftdrag;
 if (fdyn->liftdrag==ld_nodeforce)
   fluid_liftdrag(-1,action,&container,actfield,
-                 actsolv,actpart,actintra);
+                 actsolv,actpart,actintra,ipos);
 
 if (ioflags.fluid_stress==1)
   str         = str_all;
@@ -334,8 +324,8 @@ if (restart != 0)
   }
 }
 
-fluid_init_pos_euler();
-fluid_init(actpart,actintra,actfield, 0,action,&container,8,str);
+fluid_init_pos_euler(ipos);
+fluid_init(actpart,actintra,actfield, 0,action,&container,8,ipos,str);
 actpos=0;
 
 /*------------------------------------ initialize multilevel algorithm */
@@ -348,7 +338,7 @@ for (actcurve=0; actcurve<numcurve; actcurve++)
   dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
 
 /*-------------------------------------- init the dirichlet-conditions -*/
-fluid_initdirich(actfield);
+fluid_initdirich(actfield, ipos);
 
 /*---------------------------------- initialize solver on all matrices */
 /*
@@ -448,14 +438,14 @@ dsmemreport();
  * sol[0...actpos][j]  ... solution for visualisation (real pressure)	*
  * sol_increment[position][j] ... solution at some time level time      *
  * position flags:                                                      *
- *  ipos.velnp ... velocity at time (n+1)                               *
- *  ipos.veln  ... velocity at time (n)                                 *
- *  ipos.velnm ... velocity at time (n-1)                               *
- *  ipos.accn  ... acceleration at time (n)                             *
- *  ipos.accnm ... acceleration at time (n-1)                           *
- *  ipos.hist  ... old solution data depending on time integration      *
- *  ipos.pred  ... predicted solution for new time level                *
- *  ipos.terr  ... local truncation error                               *
+ *  ipos->velnp ... velocity at time (n+1)                               *
+ *  ipos->veln  ... velocity at time (n)                                 *
+ *  ipos->velnm ... velocity at time (n-1)                               *
+ *  ipos->accn  ... acceleration at time (n)                             *
+ *  ipos->accnm ... acceleration at time (n-1)                           *
+ *  ipos->hist  ... old solution data depending on time integration      *
+ *  ipos->pred  ... predicted solution for new time level                *
+ *  ipos->terr  ... local truncation error                               *
  *======================================================================*/
 timeloop:
 t2=ds_cputime();
@@ -481,15 +471,15 @@ if (par.myrank==0) fluid_algoout();
 /*------------------------ predictor step for adaptive time stepping ---*/
 if (fdyn->adaptive && fdyn->step > 1)
 {
-  fluid_predictor(actfield,fdyn->iop);
+  fluid_predictor(actfield,ipos,fdyn->iop);
 }
 
 /*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
-fluid_setdirich(actfield,ipos.velnp);
+fluid_setdirich(actfield,ipos,ipos->velnp);
 /*fluid_setdirich_cyl(actfield);*/
 
 /*------------------------------------ prepare time rhs in mass form ---*/
-fluid_prep_rhs(actfield);
+fluid_prep_rhs(actfield, ipos);
 
 /*------------------------------------- start time step on the screen---*/
 if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -557,7 +547,7 @@ fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
 fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),
-                     ipos.velnp,
+                     ipos->velnp,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
 		     &vrat,&prat,NULL);
@@ -578,10 +568,10 @@ if (converged==0)
 /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
 if (fdyn->iop == 1)
 {
-  solserv_sol_zero(actfield,0,node_array_sol_increment,ipos.accnm);
-  solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos.velnp,ipos.accnm,1.0/fdyn->alpha_f);
-  solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos.veln,ipos.accnm,1.0-1.0/fdyn->alpha_f);
-  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos.accnm,ipos.velnp);
+  solserv_sol_zero(actfield,0,node_array_sol_increment,ipos->accnm);
+  solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos->velnp,ipos->accnm,1.0/fdyn->alpha_f);
+  solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos->veln,ipos->accnm,1.0-1.0/fdyn->alpha_f);
+  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos->accnm,ipos->velnp);
 
   fdyn->acttime += fdyn->dta * (1.0 - fdyn->alpha_f);
 }
@@ -591,10 +581,10 @@ if(fdyn->adaptive)
   if (fdyn->step > 1)
   {
     /*------------------------ evaluate local truncation error (LTE) ---*/
-    fluid_lte(actfield,fdyn->iop);
+    fluid_lte(actfield,ipos,fdyn->iop);
 
     /*------------------ evaluate norm of LTE and new time step size ---*/
-    fluid_lte_norm(actpart,actintra,
+    fluid_lte_norm(actpart,actintra,ipos,
                    &iststep,&repeat,&repeated,itnum);
     if (repeat)
     {
@@ -619,24 +609,24 @@ if (fdyn->adaptive                        /* for adaptive time stepping */
   if (fdyn->step > 1)
      solserv_sol_copy(actfield,0,node_array_sol_increment,
                                  node_array_sol_increment,
-                                 ipos.accn,ipos.accnm);
+                                 ipos->accn,ipos->accnm);
   /*------------------------ evaluate acceleration in this time step ---*
    *-------------------------------- depending on integration method ---*/
   if (fdyn->step == 1)
   { /* do just a linear interpolation within the first timestep */
-    solserv_sol_zero(actfield,0,node_array_sol_increment,ipos.accnm);
+    solserv_sol_zero(actfield,0,node_array_sol_increment,ipos->accnm);
     solserv_sol_add(actfield,0,node_array_sol_increment,
                                node_array_sol_increment,
-                               ipos.velnp,ipos.accn, 1.0/fdyn->dta);
+                               ipos->velnp,ipos->accn, 1.0/fdyn->dta);
     solserv_sol_add(actfield,0,node_array_sol_increment,
                                node_array_sol_increment,
-                               ipos.veln,ipos.accn,-1.0/fdyn->dta);
+                               ipos->veln,ipos->accn,-1.0/fdyn->dta);
     solserv_sol_copy(actfield,0,node_array_sol_increment,
                                 node_array_sol_increment,
-                                ipos.accn,ipos.accnm);
+                                ipos->accn,ipos->accnm);
   }
   else
-    fluid_acceleration(actfield,fdyn->iop);
+    fluid_acceleration(actfield,ipos,fdyn->iop);
 }
 
 /*------------------------------------------- update time step sizes ---*/
@@ -650,7 +640,7 @@ if (fdyn->adaptive)
 if (fdyn->stchk==iststep)
 {
   iststep=0;
-  steady = fluid_steadycheck(actfield,numeq_total);
+  steady = fluid_steadycheck(actfield,ipos,numeq_total);
 }
 
 /*----------------------------------------------- lift&drag computation */
@@ -659,7 +649,7 @@ if (fdyn->liftdrag==ld_stress || fdyn->liftdrag==ld_nodeforce)
   container.str = str;
   *action = calc_fluid_liftdrag;
   fluid_liftdrag(1,action,&container,actfield,
-                 actsolv,actpart,actintra);
+                 actsolv,actpart,actintra,ipos);
 }
 
 
@@ -675,16 +665,16 @@ if (ioflags.fluid_stress==1)
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
 /* reset flags instead */
-leftspace = ipos.velnm;
-ipos.velnm = ipos.veln;
+leftspace = ipos->velnm;
+ipos->velnm = ipos->veln;
 
 /*------- copy solution from sol_increment[3][j] to sol_increment[1][j] */
 /*--- -> actual solution becomes previous solution of next time step ---*/
 /* reset flags instead */
-ipos.veln = ipos.velnp;
+ipos->veln = ipos->velnp;
 
 /* use remaining space for new solution */
-ipos.velnp = leftspace;
+ipos->velnp = leftspace;
 
 /*---------------------------------------------- finalise this timestep */
 outstep++;
@@ -703,10 +693,10 @@ if (restartstep==fdyn->uprestart)
 #endif
 }
 
-/*-------- copy solution from sol_increment[ipos.velnp][j] to sol_[actpos][j]
+/*-------- copy solution from sol_increment[ipos->velnp][j] to sol_[actpos][j]
            and transform kinematic to real pressure --------------------*/
 solserv_sol_copy(actfield,0,node_array_sol_increment,
-                            node_array_sol,ipos.veln,actpos);
+                            node_array_sol,ipos->veln,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
 /*-- copy solution on level 2 at (n+1) to place (n) for multi-level FEM */

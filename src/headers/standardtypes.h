@@ -210,6 +210,35 @@ INT               steps_per_file;         /* number of result steps per binary f
 
 
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief positions of physical values in node arrays
+
+This structure contains the positions of the various fluid solutions
+within the nodal array of sol_increment.a.da[pos][dim].
+
+\author chfoe
+\date 11/04
+*/
+/*----------------------------------------------------------------------*/
+typedef struct _ARRAY_POSITION
+{
+ INT numsol; /*!< number of solution fields within sol_increment (fluid)*/
+ INT veln; /*!< position of sol_increment occupied by velocity at time n*/
+ INT velnp; /*!< position of sol_increment occupied by vel. at time n+1 */
+ INT velnm; /*!< position of sol_increment occupied by vel. at time n-1 */
+ INT accn;  /*!< position of sol_increment occupied by accel. at time n */
+ INT accnm; /*!< position of sol_increment occup. by accel. at time n-1 */
+ INT hist;  /*!< pos. of lin. comb. of hist. values needed for mass rhs */
+ INT pred;  /*!< position of sol_increment occypied by predicted vels.  */
+ INT terr;  /*!< position of sol_increment occypied by truncation error */
+ INT gridv; /*!< position of grid velocity in solution vector order     */
+ INT relax; /*!< position of relaxation parameter solution in sol vec's */
+ INT convn; /*!< position of convective velocity at n in sol vectors    */
+ INT convnp; /*!< position of convective velocity at n+1 in sol vectors */
+ INT stresspro; /*! position to write projected stresses to */
+ INT eddy;
+} ARRAY_POSITION;
 
 
 /*----------------------------------------------------------------------*
@@ -239,6 +268,10 @@ INT                numdf;          /* number of degrees of freedom */
 
 struct _ELEMENT   *element;       /* vector of elements */
 struct _NODE      *node;          /* vector of nodes */
+
+/* meaning of this discretization's node array entries */
+/* should be used by all problem types */
+ARRAY_POSITION     ipos;
 
 INT                ngnode;        /* number of geometry points */
 INT                ngline;        /* number of geometry lines */

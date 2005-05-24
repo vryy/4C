@@ -63,7 +63,7 @@ void f3_calsmk(FLUID_DYN_ML    *mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol;
 DOUBLE  con,aux,beta,divv;
 
@@ -165,7 +165,7 @@ void f3_calsmm(DOUBLE         **smemass,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol;
 
 #ifdef DEBUG
@@ -219,7 +219,7 @@ void f3_calsmkd(DOUBLE         **smiediff,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol;
 
 #ifdef DEBUG
@@ -301,7 +301,7 @@ void f3_lscalkvv(DOUBLE	      **estif,
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 DOUBLE  con,aux,beta,divv;
 
@@ -548,7 +548,7 @@ void f3_lscalkvp(DOUBLE         **estif,
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow, icol,irn,ird;
 INT     posc;
 DOUBLE  aux;
@@ -629,7 +629,7 @@ void f3_lscalmvv(DOUBLE         **estif,
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 INT     nvdfe;             /* number of velocity dofs of actual element */
 DOUBLE  aux;

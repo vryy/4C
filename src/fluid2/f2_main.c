@@ -93,10 +93,16 @@ static INT              ndum;       /* dummy variable                   */
 static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 INT smisal;
 #endif
+ARRAY_POSITION* ipos;
 
 #ifdef DEBUG
 dstrc_enter("fluid2");
 #endif
+
+if (container!=NULL)
+  ipos = &(field[genprob.numff].dis[container->actndis].ipos);
+else
+  ipos = NULL;
 
 /*------------------------------------------------- switch to do option */
 switch (*action)
@@ -110,7 +116,7 @@ case calc_fluid_init:
    f2_calele(NULL,NULL,
              estif_global,emass_global,
 	     eforce_global,edforce_global,
-	     NULL,NULL,0,0,1);
+	     NULL,NULL,0,ipos,0,1);
    f2_iedg(NULL,ele,-1,1);
 /*---------------------------------------------------- multi-level FEM? */
 #ifdef FLUID2_ML
@@ -170,7 +176,7 @@ else
    f2_calele(ele,eleke,
              estif_global,emass_global,
 	     eforce_global,edforce_global,
-	     hasdirich,hasext,actintra->intra_rank,container->is_relax,0);
+	     hasdirich,hasext,actintra->intra_rank,ipos,container->is_relax,0);
 break;
 
 /*------------------------------------------- calculate fluid vorticity */
@@ -182,21 +188,21 @@ break;
 case calc_fluid_stress:
    /*------ calculate stresses only for elements belonging to this proc */
    if (par.myrank==ele->proc)
-      f2_stress(container->str,viscstr,ele,container->is_relax);
+      f2_stress(container->str,viscstr,ele,ipos,container->is_relax);
 break;
 
 /*------------------- calculate fluid stresses for lift&drag calculation */
 case calc_fluid_liftdrag:
    if (ele->proc == actintra->intra_rank)
    {
-      f2_stress(container->str,viscstr,ele,container->is_relax);
+      f2_stress(container->str,viscstr,ele,ipos,container->is_relax);
       f2_calliftdrag(ele,container);
    }
 break;
 
 /*-------------------- do stress projection for lower order elements ---*/
 case calc_fluid_stressprojection:
-   f2_calstresspro(ele,hasext,estif_global,eforce_global);
+   f2_calstresspro(ele,hasext,estif_global,eforce_global, ipos);
 break;
 
 /*--------------------------------- calculate curvature at free surface */
@@ -207,12 +213,12 @@ break;
 /*--------------------------------- calculate height function matrices */
 case calc_fluid_heightfunc:
    f2_heightfunc(ele,estif_global,
-                 eforce_global,container);
+                 eforce_global,ipos,container);
 break;
 
 /*---------------------------------------- calculate the shear stresses */
 case calc_fluid_shearvelo:
-   f2_shearstress(ele);
+   f2_shearstress(ele, ipos);
 break;
 
 case calc_fluid_normal:

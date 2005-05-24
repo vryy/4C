@@ -16,19 +16,6 @@ Maintainer: Steffen Genkinger
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "fluid2pro_prototypes.h"
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -42,6 +29,7 @@ get the element velocities and the pressure at different times
 \param   **xyze       DOUBLE	   (o)    coordinates of the element
 \param   **eveln      DOUBLE	   (o)    ele velocities at time n
 \param   *epren       DOUBLE	   (o)    ele pressures at time n
+\param   *ipos                     (i)    node array positions
 \return void
 
 ------------------------------------------------------------------------*/
@@ -50,7 +38,8 @@ void f2pro_calset(
 		ELEMENT         *elepre,
 		DOUBLE         **xyze,
                 DOUBLE         **eveln,
-	        DOUBLE          *epren
+	        DOUBLE          *epren,
+                ARRAY_POSITION  *ipos
 	      )
 {
 INT i, veln;         /* simply some counters                            */
@@ -60,7 +49,7 @@ NODE *actnode;       /* actual node for element                         */
 dstrc_enter("f2pro_calset");
 #endif
 
-veln = ipos.veln;
+veln = ipos->veln;
 /*--------------------------------------------- set element coordinates */
 for(i=0;i<elevel->numnp;i++)
 {
@@ -71,9 +60,9 @@ for(i=0;i<elevel->numnp;i++)
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
  |       sol_increment[ipos][i]: solution at some time level           |
- |       ipos.velnp .. solution at time n+1                            |
- |       ipos.veln  .. solution at time n                              |
- |       ipos.velnm .. solution at time n-1                            |
+ |       ipos->velnp .. solution at time n+1                            |
+ |       ipos->veln  .. solution at time n                              |
+ |       ipos->velnm .. solution at time n-1                            |
  *---------------------------------------------------------------------*/
 
 /* -> computation of time forces -------------------

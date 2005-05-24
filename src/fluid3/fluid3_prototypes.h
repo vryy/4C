@@ -26,20 +26,23 @@ void f3_calele(
                 ARRAY          *emass_global,
 	        ARRAY          *eforce_global,
 		ARRAY          *edforce_global,
+                ARRAY_POSITION *ipos,
 		INT            *hasdirich,
 		INT            *hasext,
 		INT             init
 	       );
 void f3_stress(FLUID_STRESS  str,
                INT           viscstr,
-	       ELEMENT      *ele );
+	       ELEMENT      *ele,
+               ARRAY_POSITION *ipos);
 void f3_heightfunc(
                    ELEMENT              *ele,
                    ARRAY                *estif_global,
 		   ARRAY                *eiforce_global,
-		   CONTAINER            *container
+		   CONTAINER            *container,
+                   ARRAY_POSITION       *ipos
 		   );
-void f3_calstab(ELEMENT *ele);
+void f3_calstab(ELEMENT *ele, ARRAY_POSITION *ipos);
 
 /************************************************************************
  | f3_calelesize.c                                                      |
@@ -382,6 +385,7 @@ void f3_calset(
                DOUBLE          *epren,
                DOUBLE          *edeadn,
                DOUBLE          *edeadng,
+               ARRAY_POSITION  *ipos,
                INT             *hasext
 	      );
 void f3_calseta(
@@ -395,6 +399,7 @@ void f3_calseta(
                   DOUBLE          *epren,
                   DOUBLE          *edeadn,
                   DOUBLE          *edeadng,
+                  ARRAY_POSITION  *ipos,
                   INT             *hasext
                );
 void f3_alecoor(
@@ -627,10 +632,10 @@ void fluid3(
 /************************************************************************
  | f3_massrhs.c                                                         |
  ************************************************************************/
-void f3_massrhs(ELEMENT *ele, 
-                DOUBLE **emass, 
-                DOUBLE **hist,  
-                DOUBLE  *edeadng, 
+void f3_massrhs(ELEMENT *ele,
+                DOUBLE **emass,
+                DOUBLE **hist,
+                DOUBLE  *edeadng,
                 DOUBLE *eiforce,
                 INT     *hasext);
 
@@ -647,7 +652,8 @@ void f3_calelestress(
     DOUBLE        **xjm,
     DOUBLE        **wa1,
     DOUBLE        **xyze,
-    DOUBLE        **sigmaint
+    DOUBLE        **sigmaint,
+    ARRAY_POSITION *ipos
     );
 DOUBLE f3_rsn (
     INT   node,

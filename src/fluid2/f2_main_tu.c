@@ -84,9 +84,13 @@ MATERIAL               *actmat;     /* actual material                  */
 FLUID_DYNAMIC          *fdyn;
 FIELD                  *actfield;   /* actual field                     */
 INT                    start;
+ARRAY_POSITION* ipos;
+
 #ifdef DEBUG
 dstrc_enter("fluid2_tu");
 #endif
+
+ipos = &(field[genprob.numff].dis[container->actndis].ipos);
 
 /*--------------------------------------------------------------------- */
 /*------------------------------------------------- KAPPA-EPSILON MODEL */
@@ -109,14 +113,14 @@ case calc_fluid_init:
    f2_calele_tu(NULL,NULL,
                 estif_global,emass_global,
 	        etforce_global,eiforce_global,edforce_global,eproforce_global,
-	        NULL,NULL,1);
+	        ipos,NULL,NULL,1);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid:
    f2_calele_tu(eleke,elev,
                 estif_global,emass_global,
 	          etforce_global,eiforce_global,edforce_global,eproforce_global,
-	          hasdirich,hasext,0);
+	          ipos,hasdirich,hasext,0);
 break;
 
 /*----------------------------------------------------------------------*/
@@ -148,14 +152,14 @@ case calc_fluid_init:
    f2_calele_tu_1(NULL,NULL,
                   estif_global,emass_global,
 	            etforce_global,eiforce_global,edforce_global,eproforce_global,
-	            NULL,NULL,1);
+	            ipos,NULL,NULL,1);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid:
    f2_calele_tu_1(eleke,elev,
                   estif_global,emass_global,
 	            etforce_global,eiforce_global,edforce_global,eproforce_global,
-	            hasdirich,hasext,0);
+	            ipos,hasdirich,hasext,0);
 break;
 
 /*----------------------------------------------------------------------*/

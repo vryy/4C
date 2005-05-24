@@ -32,19 +32,6 @@ extern struct _GENPROB     genprob;
 
 static INT PREDOF = 3;
 static FLUID_DYNAMIC   *fdyn;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -64,6 +51,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param   *epren    DOUBLE           (o)    ele pres at time n
 \param   *edeadn   DOUBLE           (o)    ele dead load at n (selfweight)
 \param   *edeadng  DOUBLE           (o)    ele dead load at n+g (selfweight)
+\param   *ipos                      (i)    node array positions
 \param   *hasext   INT              (o)    flag for external loads
 \return void
 
@@ -76,6 +64,7 @@ void f3_calset(
                DOUBLE          *epren,
                DOUBLE          *edeadn,
                DOUBLE          *edeadng,
+               ARRAY_POSITION  *ipos,
                INT             *hasext
 	      )
 {
@@ -120,12 +109,12 @@ for(i=0;i<ele->numnp;i++) /* loop nodes */
 {
    actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */
-   evelng[0][i]=actnode->sol_increment.a.da[ipos.velnp][0];
-   evelng[1][i]=actnode->sol_increment.a.da[ipos.velnp][1];
-   evelng[2][i]=actnode->sol_increment.a.da[ipos.velnp][2];
-   ehist[0][i] = actnode->sol_increment.a.da[ipos.hist][0];
-   ehist[1][i] = actnode->sol_increment.a.da[ipos.hist][1];
-   ehist[2][i] = actnode->sol_increment.a.da[ipos.hist][2];
+   evelng[0][i]=actnode->sol_increment.a.da[ipos->velnp][0];
+   evelng[1][i]=actnode->sol_increment.a.da[ipos->velnp][1];
+   evelng[2][i]=actnode->sol_increment.a.da[ipos->velnp][2];
+   ehist[0][i] = actnode->sol_increment.a.da[ipos->hist][0];
+   ehist[1][i] = actnode->sol_increment.a.da[ipos->hist][1];
+   ehist[2][i] = actnode->sol_increment.a.da[ipos->hist][2];
 } /* end of loop over nodes */
 
 /*------------------------------------------------ check for dead load */
@@ -192,6 +181,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param   *epren     DOUBLE          (o)    ele pres at time n
 \param   *edeadn    DOUBLE          (o)    ele dead load at n (selfweight)
 \param   *edeadng   DOUBLE          (o)    ele dead load at n+g (selfweight)
+\param   *ipos                      (i)    node array positions
 \param   *hasext    INT             (o)    flag for external loads
 \return void
 
@@ -207,6 +197,7 @@ void f3_calseta(
                   DOUBLE          *epren,
                   DOUBLE          *edeadn,
                   DOUBLE          *edeadng,
+                  ARRAY_POSITION  *ipos,
                   INT             *hasext
                )
 {
@@ -242,18 +233,18 @@ for(i=0;i<ele->numnp;i++) /* loop nodes */
 {
    actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */
-   evelng[0][i]   =actnode->sol_increment.a.da[ipos.velnp][0];
-   evelng[1][i]   =actnode->sol_increment.a.da[ipos.velnp][1];
-   evelng[2][i]   =actnode->sol_increment.a.da[ipos.velnp][2];
-   ealecovng[0][i]=actnode->sol_increment.a.da[ipos.convnp][0];
-   ealecovng[1][i]=actnode->sol_increment.a.da[ipos.convnp][1];
-   ealecovng[2][i]=actnode->sol_increment.a.da[ipos.convnp][2];
-   egridv[0][i]   =actnode->sol_increment.a.da[ipos.gridv][0];
-   egridv[1][i]   =actnode->sol_increment.a.da[ipos.gridv][1];
-   egridv[2][i]   =actnode->sol_increment.a.da[ipos.gridv][2];
-   ehist[0][i] = actnode->sol_increment.a.da[ipos.hist][0];
-   ehist[1][i] = actnode->sol_increment.a.da[ipos.hist][1];
-   ehist[2][i] = actnode->sol_increment.a.da[ipos.hist][2];
+   evelng[0][i]   =actnode->sol_increment.a.da[ipos->velnp][0];
+   evelng[1][i]   =actnode->sol_increment.a.da[ipos->velnp][1];
+   evelng[2][i]   =actnode->sol_increment.a.da[ipos->velnp][2];
+   ealecovng[0][i]=actnode->sol_increment.a.da[ipos->convnp][0];
+   ealecovng[1][i]=actnode->sol_increment.a.da[ipos->convnp][1];
+   ealecovng[2][i]=actnode->sol_increment.a.da[ipos->convnp][2];
+   egridv[0][i]   =actnode->sol_increment.a.da[ipos->gridv][0];
+   egridv[1][i]   =actnode->sol_increment.a.da[ipos->gridv][1];
+   egridv[2][i]   =actnode->sol_increment.a.da[ipos->gridv][2];
+   ehist[0][i] = actnode->sol_increment.a.da[ipos->hist][0];
+   ehist[1][i] = actnode->sol_increment.a.da[ipos->hist][1];
+   ehist[2][i] = actnode->sol_increment.a.da[ipos->hist][2];
 } /* end of loop over nodes */
 
 /*------------------------------------------------ check for dead load */

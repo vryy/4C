@@ -34,19 +34,6 @@ extern struct _MATERIAL  *mat;
  | variables needed for parallel comp.                    m.gee 8/00    |
  *----------------------------------------------------------------------*/
 extern struct _PAR   par;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief input from file 'fluid_start-data'
 
@@ -59,6 +46,7 @@ and stored in the array 'start'
 \return void
 ------------------------------------------------------------------------*/
 void inp_fluid_start_data( FIELD   *actfield,
+                           ARRAY_POSITION    *ipos,
                            FLUID_DYNAMIC *fdyn
 			 )
 {
@@ -265,30 +253,30 @@ for (i=0;i<numnp;i++)
    actnode=&(actfield->dis[0].node[i]);
    num = actnode->Id_loc;
    actnode->sol.a.da[0][0] = velx[num];
-   actnode->sol_increment.a.da[ipos.velnm][0] = velx[num];
-   actnode->sol_increment.a.da[ipos.veln][0] = velx[num];
-   actnode->sol_increment.a.da[ipos.velnp][0] = velx[num];
+   actnode->sol_increment.a.da[ipos->velnm][0] = velx[num];
+   actnode->sol_increment.a.da[ipos->veln][0] = velx[num];
+   actnode->sol_increment.a.da[ipos->velnp][0] = velx[num];
    actnode->sol.a.da[0][1] = vely[num];
-   actnode->sol_increment.a.da[ipos.velnm][1] = vely[num];
-   actnode->sol_increment.a.da[ipos.veln][1] = vely[num];
-   actnode->sol_increment.a.da[ipos.velnp][1] = vely[num];
+   actnode->sol_increment.a.da[ipos->velnm][1] = vely[num];
+   actnode->sol_increment.a.da[ipos->veln][1] = vely[num];
+   actnode->sol_increment.a.da[ipos->velnp][1] = vely[num];
    if(numdf==4)
    {
       actnode->sol.a.da[0][2] = velz[num];
-      actnode->sol_increment.a.da[ipos.velnm][2] = velz[num];
-      actnode->sol_increment.a.da[ipos.veln][2] = velz[num];
-      actnode->sol_increment.a.da[ipos.velnp][2] = velz[num];
+      actnode->sol_increment.a.da[ipos->velnm][2] = velz[num];
+      actnode->sol_increment.a.da[ipos->veln][2] = velz[num];
+      actnode->sol_increment.a.da[ipos->velnp][2] = velz[num];
       actnode->sol.a.da[0][3] = pre[num]/dens;
-      actnode->sol_increment.a.da[ipos.velnm][3] = pre[num]/dens;
-      actnode->sol_increment.a.da[ipos.veln][3] = pre[num]/dens;
-      actnode->sol_increment.a.da[ipos.velnp][3] = pre[num]/dens;
+      actnode->sol_increment.a.da[ipos->velnm][3] = pre[num]/dens;
+      actnode->sol_increment.a.da[ipos->veln][3] = pre[num]/dens;
+      actnode->sol_increment.a.da[ipos->velnp][3] = pre[num]/dens;
    }
    else
    {
       actnode->sol.a.da[0][2] = pre[num];
-      actnode->sol_increment.a.da[ipos.velnm][2] = pre[num]/dens;
-      actnode->sol_increment.a.da[ipos.veln][2] = pre[num]/dens;
-      actnode->sol_increment.a.da[ipos.velnp][2] = pre[num]/dens;
+      actnode->sol_increment.a.da[ipos->velnm][2] = pre[num]/dens;
+      actnode->sol_increment.a.da[ipos->veln][2] = pre[num]/dens;
+      actnode->sol_increment.a.da[ipos->velnp][2] = pre[num]/dens;
    }
 }
 /*--------------------------------------------- delete temporary arrays */

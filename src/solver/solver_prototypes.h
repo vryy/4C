@@ -1252,14 +1252,14 @@ void dyn_ale(void);
 /*----------------------------------------------------------------------*
  | ale_rhs.c                                                  mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_rhs(SOLVAR       *actsolv, 
+void ale_rhs(SOLVAR       *actsolv,
              PARTITION    *actpart,
-             INTRA        *actintra, 
-             INT           sysarray1, 
-             INT           sysarray2, 
+             INTRA        *actintra,
+             INT           sysarray1,
+             INT           sysarray2,
              DOUBLE       *dirich,
-             INT           global_numeq, 
-             CONTAINER    *container, 
+             INT           global_numeq,
+             CONTAINER    *container,
              CALC_ACTION  *action);
 
 
@@ -1313,7 +1313,8 @@ void fluid_liftdrag(
     FIELD         *actfield,
     SOLVAR        *actsolv,
     PARTITION     *actpart,
-    INTRA         *actintra);
+    INTRA         *actintra,
+    ARRAY_POSITION *ipos);
 
 /************************************************************************
  | fluid_service_tu.c                                                   |
@@ -1331,10 +1332,12 @@ void fluid_result_incre_tu(FIELD         *actfield,
 		              );
 
 void fluid_eddy_update(FIELD         *actfield,
+                       ARRAY_POSITION    *ipos,
                        DIST_VECTOR   *sol
                        );
 
 void fluid_lenght_update(FIELD         *actfield,
+                         ARRAY_POSITION    *ipos,
                          DIST_VECTOR   *sol,
 		             DOUBLE        *lenghtrat
                         );
@@ -1353,12 +1356,14 @@ void fluid_result_incre_tu_1( FIELD       *actfield,
 		              );
 
 void fluid_eddy_update_1(FIELD         *actfield,
+                         ARRAY_POSITION    *ipos,
                          DIST_VECTOR   *sol
                         );
 
 void fluid_lenght_update_1(FIELD         *actfield,
-                          DIST_VECTOR   *sol,
-		              DOUBLE        *lenghtrat
+                           ARRAY_POSITION    *ipos,
+                           DIST_VECTOR   *sol,
+                           DOUBLE        *lenghtrat
                          );
 /* -------------------------------------------------------------------- *
  *   global_oll_add.c                                          mn 05/03 *

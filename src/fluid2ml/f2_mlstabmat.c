@@ -68,7 +68,7 @@ void f2_calstabsmk(FLUID_DYN_ML    *mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol;
 DOUBLE tau;
 DOUBLE con,ccon,beta,divv,cb,cbb,ccb;
@@ -312,7 +312,7 @@ void f2_calstabsmm(FLUID_DYN_ML    *mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol;
 DOUBLE tau;
 DOUBLE con,ccon,beta,divv,cb;
@@ -567,7 +567,7 @@ void f2_lscalstabkvv(ELEMENT         *ele,
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn,ird;
 DOUBLE taumu;
 DOUBLE taump;
@@ -667,7 +667,7 @@ if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nc(u):
-/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*
     /
    |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega
   /
@@ -1294,7 +1294,7 @@ void f2_lscalstabkvp(ELEMENT         *ele,
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,irn,ird,posc;
 DOUBLE taumu;
 DOUBLE taump;
@@ -1523,7 +1523,7 @@ void f2_lscalstabmvv(ELEMENT         *ele,
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn,ird;
 DOUBLE taumu;
 DOUBLE taump;
@@ -1762,7 +1762,7 @@ void f2_lscalstabkpv(DOUBLE	  **estif,
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,irn,ird,icn,posr;
 DOUBLE con,beta,divv,cb;
 DOUBLE aux;
@@ -1983,7 +1983,7 @@ void f2_lscalstabkpp(DOUBLE	  **estif,
  |          row number has to be changed!                               |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,posc,posr;
 DOUBLE con;
 DOUBLE taump;
@@ -2063,7 +2063,7 @@ void f2_lscalstabmpv(DOUBLE	  **emass,
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,icn,posr;
 DOUBLE con;
 DOUBLE taump;

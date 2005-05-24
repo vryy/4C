@@ -41,21 +41,6 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
-
-
 static DOUBLE   *eveln;
 static DOUBLE   *evelng;
 static DOUBLE   *ealecovn;
@@ -115,6 +100,7 @@ static FLUID_DYNAMIC   *fdyn;
   \param emass          *DOUBLE   (i) element mass matrix
   \param eforce         *DOUBLE   (i) element force
   \param edforce        *DOUBLE   (i) element dirichlet force
+  \param ipos                     (i) node array positions
   \param hasdirich      *INT      (i) flag if s.th. was written to edforce
   \param hasext         *INT      (i) flag if there are ext forces
   \param init            INT      (i) init flag
@@ -132,6 +118,7 @@ void f3fcalele(
     ARRAY          *emass_fast,
     ARRAY          *eforce_fast,
     ARRAY          *edforce_fast,
+    ARRAY_POSITION *ipos,
     INT            *hasdirich,
     INT            *hasext,
     INT             init,
@@ -226,7 +213,7 @@ void f3fcalele(
     perf_begin(44);
 #endif
       /* set element data */
-      f3fcalset(ele,eveln,evelng,epren,edeadn,edeadng,hasext,sizevec);
+      f3fcalset(ele,eveln,evelng,epren,edeadn,edeadng,ipos,hasext,sizevec);
 #ifdef PERF
     perf_end(44);
 #endif
@@ -283,7 +270,7 @@ void f3fcalele(
 #endif
       /* set element data */
       f3fcalseta(ele,eveln,evelng,ealecovn,ealecovng,egridv,
-          epren,edeadn,edeadng,hasext,sizevec);
+          epren,edeadn,edeadng,ipos,hasext,sizevec);
 #ifdef PERF
     perf_end(44);
 #endif
@@ -368,7 +355,7 @@ void f3fcalele(
 #endif
 
   /* calculate element load vector edforce */
-  f3fcaldirich(ele,edforce,estif,hasdirich,0,sizevec);
+  f3fcaldirich(ele,edforce,estif,ipos,hasdirich,0,sizevec);
 
 #ifdef PERF
     perf_end(49);
@@ -402,6 +389,7 @@ end:
   evaluation of stabilisation parameter at the end of a time step
 
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
+  \param ipos                     (i) node array positions
   \param aloopl          INT      (i) num of elements in ele[]
 
   \return void
@@ -412,6 +400,7 @@ end:
 /*-----------------------------------------------------------------------*/
 void f3fcalstab(
     ELEMENT      *ele[LOOPL],
+    ARRAY_POSITION* ipos,
     INT           aloopl
     )
 {
@@ -420,14 +409,14 @@ void f3fcalstab(
   NODE    *actnode;
   INT      sizevec[6];
   INT      velnp;
-  
+
 
 #ifdef DEBUG
   dstrc_enter("f3fcalstab");
 #endif
 
   fdyn   = alldyn[genprob.numff].fdyn;
-  velnp  = ipos.velnp;
+  velnp  = ipos->velnp;
 
 
   sizevec[0] = MAXNOD_F3;
@@ -482,6 +471,7 @@ void f3fcalstab(
   \param str             FLUID_STRESS (i) flag for stress calculation
   \param viscstr         INT      (i) viscose stresses yes/no?
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
+  \param ipos                     (i) node array positions
   \param is_relax        INT      (i) flag for relaxation
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
 
@@ -495,6 +485,7 @@ void f3fstress(
     FLUID_STRESS  str,
     INT           viscstr,
     ELEMENT      *ele[LOOPL],
+    ARRAY_POSITION *ipos,
     INT           is_relax,
     INT           aloopl
     )
@@ -549,14 +540,14 @@ void f3fstress(
 
       if (coupled==1)
         f3fcalelestress(viscstr,ele,eveln,epren,funct,
-            deriv,derxy,vderxy,xjm,wa1,elecord,sigint,nostr,sizevec);
+            deriv,derxy,vderxy,xjm,wa1,elecord,sigint,nostr,ipos,sizevec);
       break;
 #endif
 
     case str_liftdrag:
     case str_all:
       f3fcalelestress(viscstr,ele,eveln,epren,funct,
-          deriv,derxy,vderxy,xjm,wa1,elecord,sigint,nostr,sizevec);
+          deriv,derxy,vderxy,xjm,wa1,elecord,sigint,nostr,ipos,sizevec);
       break;
 
     default:

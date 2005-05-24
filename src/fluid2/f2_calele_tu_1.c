@@ -36,6 +36,7 @@ This routine controls the element evaluation:
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
 \param  *eproforce_global  ARRAY	        (o)   ele production force
+\param  *ipos                           (i)   node array positions
 \param  *hasdirich       INT	              (o)   element flag
 \param  *hasext          INT	              (o)   element flag
 \param   init	        INT	              (i)   init flag
@@ -51,6 +52,7 @@ void f2_calele_tu_1(
 	          ARRAY          *eiforce_global,
                 ARRAY          *edforce_global,
                 ARRAY          *eproforce_global,
+                  ARRAY_POSITION *ipos,
                 INT            *hasdirich,
                 INT            *hasext,
 		    INT             init
@@ -167,7 +169,7 @@ amzero(eproforce_global);
 
 /*---------------------------------------------------- set element data */
 f2_calset_tu_1(eleke,elev,kapomen,kapomeg,kapomepro,eddyg,eddypro,
-               kappan,omega,evel,xyze);
+               kappan,omega,evel,xyze,ipos);
 
 /*-------------- calculate stab-parameter and parameter for DISC. CAPT. */
 f2_calelesize_tu_1(eleke,elev,funct,deriv,deriv2,evel,eddyg,
@@ -184,7 +186,7 @@ f2_calint_tu_1(eleke,elev,estif,emass,etforce,eiforce,eproforce,
 f2_estifadd_tu(estif,emass,wa1,eleke->numnp);
 
 /*------------------------------- calculate element load vector edforce */
-fluid_caldirich_tu_1(eleke,edforce,estif,hasdirich);
+fluid_caldirich_tu_1(eleke,edforce,estif,ipos,hasdirich);
 
 end:
 /*----------------------------------------------------------------------*/

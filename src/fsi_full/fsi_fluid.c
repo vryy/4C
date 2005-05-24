@@ -83,19 +83,6 @@ extern struct _CURVE *curve;
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 /*!---------------------------------------------------------------------
 \brief implicit and semi-implicit algorithms for
@@ -160,6 +147,7 @@ static CONTAINER       container;          /* variables for calelm             *
 static FLUID_STRESS    str;
 static FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
 static FSI_DYNAMIC    *fsidyn;             /* fsi dynamic variables     */
+static ARRAY_POSITION *ipos;
 
 #ifdef BINIO
 static BIN_OUT_FIELD out_context;
@@ -204,6 +192,8 @@ fdyn->acttime=ZERO;
 
 if (fdyn->freesurf==5)
    fdyn->hf_stab=0;
+
+ipos = &(actfield->dis[0].ipos);
 
 /*---------------- if we are not parallel, we have to allocate an alibi *
   ---------------------------------------- intra-communicator structure */
@@ -263,11 +253,11 @@ if (fdyn->checkarea>0)
 if (fdyn->liftdrag==ld_stress)
 {
   str         = str_liftdrag;
-  if(genprob.numfld==3) fluid_liftdrag(0,NULL,NULL,NULL,NULL,NULL,NULL);
+  if(genprob.numfld==3) fluid_liftdrag(0,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 }
 if (fdyn->liftdrag==ld_nodeforce)
   fluid_liftdrag(-1,action,&container,actfield,
-                 actsolv,actpart,actintra);
+                 actsolv,actpart,actintra,ipos);
 
 /*--------------------------------------------- initialise fluid field */
 if (restart > 0)
@@ -280,17 +270,17 @@ if (restart > 0)
       fdyn->init=2;
    }
 }
-fluid_init_pos_ale();
-if(fdyn->iop == 4) ipos.numsol = 9;
-else               ipos.numsol = 7;
-if(stresspro) ipos.numsol++; /* stress projection and ...*/
+fluid_init_pos_ale(actfield);
+if(fdyn->iop == 4) ipos->numsol = 9;
+else               ipos->numsol = 7;
+if(stresspro) ipos->numsol++; /* stress projection and ...*/
 if(fsidyn->ifsi == 6)        /* ... steepest descent relaxation ... */
-   ipos.numsol++;            /* ... each need one more solution field. */
-fluid_init(actpart,actintra,actfield,0,action,&container,ipos.numsol,str);
+   ipos->numsol++;            /* ... each need one more solution field. */
+fluid_init(actpart,actintra,actfield,0,action,&container,ipos->numsol,ipos,str);
 actpos=0;         /* ... each need one more solution field. */
 
 /*-------------------------------------- init the dirichlet-conditions */
-fluid_initdirich(actfield);
+fluid_initdirich(actfield, ipos);
 
 /*---------------------------------- initialize solver on all matrices */
 /*
@@ -341,7 +331,7 @@ if (par.myrank==0) printf("\n\n");
 /*--------------------------------- initialise height function solution */
 if (fdyn->freesurf==3)
 fluid_heightfunc(1,&grat,actfield,actpart,actintra,action,
-                 &container,converged);
+                 &container,ipos,converged);
 
 /*-------------------------------- calculate curvature at the beginning */
 if (fdyn->surftens!=0)
@@ -359,7 +349,7 @@ fluid_locsys(actfield,fdyn);
 
 /*------------------------- predictor for free surface at the beginning */
 if (fdyn->freesurf>0)
-fluid_updfscoor(actfield, fdyn, fdyn->dt, -1);
+fluid_updfscoor(actfield, fdyn, fdyn->dt, ipos, -1);
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
@@ -444,15 +434,15 @@ if (fsidyn->iale==1)
    /*---------------------------------------------- change element flag */
    fdyn->ishape=1;
    /*------------------ calculate ALE-convective velocities at time (n) */
-   fsi_aleconv(actfield,fdyn->numdf,ipos.convn,ipos.veln);
+   fsi_aleconv(actfield,fdyn->numdf,ipos->convn,ipos->veln);
 }
 else  dserror("ALE field by function not implemented yet!\n");
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
-fluid_setdirich(actfield,ipos.velnp);
+fluid_setdirich(actfield,ipos,ipos->velnp);
 
 /*------------------------------------ prepare time rhs in mass form ---*/
-fluid_prep_rhs(actfield);
+fluid_prep_rhs(actfield, ipos);
 
 /*--------------------------- start time step for fluid on the screen---*/
 if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -489,7 +479,7 @@ if (fsidyn->iale==1)
       fdyn->ishape=1;
    }
    /*--------------- calculate ale-convective velocities at  time (n+1) */
-   fsi_aleconv(actfield,fdyn->numdf,ipos.convnp,ipos.velnp);
+   fsi_aleconv(actfield,fdyn->numdf,ipos->convnp,ipos->velnp);
 }
 else  dserror("ALE field by function not implemented yet!\n");
 
@@ -551,7 +541,7 @@ tss+=ts;
 fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),ipos.velnp,
+fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),ipos->velnp,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
 		     &vrat,&prat,&grat);
@@ -607,7 +597,7 @@ if (stresspro)
    solserv_result_incre(actfield,
 		        actintra,
 		        &(actsolv->sol[1]),
-		        ipos.stresspro,
+		        ipos->stresspro,
 		        &(actsolv->sysarray[actsysarray]),
 		        &(actsolv->sysarray_typ[actsysarray]),
 		        0);
@@ -624,11 +614,11 @@ if (fdyn->checkarea>0)
 /*------------------------------------- solve heightfunction seperately */
 if (fdyn->freesurf==3)
 fluid_heightfunc(2,&grat,actfield,actpart,actintra,action,
-                 &container,converged);
+                 &container,ipos,converged);
 
 /*---------------------------------- update coordinates at free surface */
 if (fdyn->freesurf>1)
-fluid_updfscoor(actfield, fdyn, fdyn->dta, 1);
+fluid_updfscoor(actfield, fdyn, fdyn->dta, ipos, 1);
 
 /*---------- based on the new position calculate normal at free surface */
 if (itnum==1) fluid_cal_normal(actfield,0,action);
@@ -697,7 +687,7 @@ if (fdyn->liftdrag>0)
    *action = calc_fluid_liftdrag;
    container.str=str_liftdrag;
    fluid_liftdrag(genprob.numfld,action,&container,actfield,
-                  actsolv,actpart,actintra);
+                  actsolv,actpart,actintra,ipos);
 }
 
 /*---------------------------------------------- update acceleration ---*/
@@ -707,53 +697,53 @@ if (fdyn->iop==4) /* for step theta */
    *-------------------------------- depending on integration method ---*/
   if (fdyn->step == 1)
   { /* do just a linear interpolation within the first timestep */
-    solserv_sol_zero(actfield,0,node_array_sol_increment,ipos.accn);
+    solserv_sol_zero(actfield,0,node_array_sol_increment,ipos->accn);
     solserv_sol_add(actfield,0,node_array_sol_increment,
                                node_array_sol_increment,
-                               ipos.velnp,ipos.accn, 1.0/fdyn->dta);
+                               ipos->velnp,ipos->accn, 1.0/fdyn->dta);
     solserv_sol_add(actfield,0,node_array_sol_increment,
                                node_array_sol_increment,
-                               ipos.veln,ipos.accn, -1.0/fdyn->dta);
+                               ipos->veln,ipos->accn, -1.0/fdyn->dta);
     solserv_sol_copy(actfield,0,node_array_sol_increment,
-                                node_array_sol_increment,ipos.accn,ipos.accnm);
+                                node_array_sol_increment,ipos->accn,ipos->accnm);
   }
   else
   {
     /* previous acceleration becomes (n-1)-acceleration of next step    */
-    leftspace = ipos.accnm;
-    ipos.accnm = ipos.accn;
-    ipos.accn  = leftspace;
-    fluid_acceleration(actfield,fdyn->iop);
+    leftspace = ipos->accnm;
+    ipos->accnm = ipos->accn;
+    ipos->accn  = leftspace;
+    fluid_acceleration(actfield,ipos,fdyn->iop);
   }
 }
 
 /*-------------------------------------- make predictor at free surface */
 if (fdyn->freesurf>0)
-   fluid_updfscoor(actfield, fdyn, fdyn->dta, 0);
+   fluid_updfscoor(actfield, fdyn, fdyn->dta, ipos, 0);
 
 /*--------- based on the predictor calculate new normal at free surface */
 fluid_cal_normal(actfield,2,action);
 
 /*-------------------------- shift position of old velocity solution ---*/
-leftspace = ipos.velnm;
-ipos.velnm = ipos.veln;
+leftspace = ipos->velnm;
+ipos->velnm = ipos->veln;
 
 /*--------------------- shift position of previous velocity solution ---*/
-ipos.veln = ipos.velnp;
+ipos->veln = ipos->velnp;
 
 /*--------- set place for new solution to be solved in the next step ---*/
-ipos.velnp = leftspace;
+ipos->velnp = leftspace;
 /*---------- it is however necessary to have the newest solution ...
-                                             ... still on ipos.velnp ---*/
+                                             ... still on ipos->velnp ---*/
 solserv_sol_copy(actfield,0,node_array_sol_increment,
-                            node_array_sol_increment,ipos.veln,ipos.velnp);
+                            node_array_sol_increment,ipos->veln,ipos->velnp);
 
 /*---------------------- for multifield fluid problems with freesurface */
-/*----- copy solution from sol_increment[ipos.veln][j] to sol_mf[0][j] -*/
+/*----- copy solution from sol_increment[ipos->veln][j] to sol_mf[0][j] -*/
 /* check this for FSI with free surface!!! */
 if (fdyn->freesurf>0) solserv_sol_copy(actfield,0,node_array_sol_increment,
                                                   node_array_sol_mf,
-                                                  ipos.velnp,0);
+                                                  ipos->velnp,0);
 
 /*---------------------------------------------- finalise this timestep */
 outstep++;
@@ -770,10 +760,10 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis==1)
    actpos++;
 }
 
-/*-----copy solution from sol_increment[ipos.veln][j] to sol[actpos][j]
+/*-----copy solution from sol_increment[ipos->veln][j] to sol[actpos][j]
            and transform kinematic to real pressure --------------------*/
 solserv_sol_copy(actfield,0,node_array_sol_increment,
-                            node_array_sol,ipos.velnp,actpos);
+                            node_array_sol,ipos->velnp,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
 if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
@@ -841,11 +831,11 @@ if (fsidyn->iale!=0)
   /*----------------------------------------------- change element flag */
   fdyn->ishape=1;
   /*------------------- calculate ALE-convective velocities at time (n) */
-  fsi_aleconv(actfield,fdyn->numdf,ipos.convnp,ipos.velnp);
+  fsi_aleconv(actfield,fdyn->numdf,ipos->convnp,ipos->velnp);
 }
 
 /*----------------------------------- set dirichlet boundary conditions */
-fluid_setdirich_sd(actfield);
+fluid_setdirich_sd(actfield, ipos);
 
 /*------------------------- calculate constants for nonlinear iteration */
 /*
@@ -917,7 +907,7 @@ solserv_result_incre(
 		     actfield,
 		     actintra,
 		     &(actsolv->sol[actsysarray]),
-		     ipos.relax,
+		     ipos->relax,
 		     &(actsolv->sysarray[actsysarray]),
 		     &(actsolv->sysarray_typ[actsysarray]),
 		     0);

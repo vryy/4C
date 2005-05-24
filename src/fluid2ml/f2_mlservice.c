@@ -27,19 +27,6 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!----------------------------------------------------------------------
-\brief positions of physical values in node arrays
-
-<pre>                                                        chfoe 11/04
-
-This structure contains the positions of the various fluid solutions 
-within the nodal array of sol_increment.a.da[ipos][dim].
-
-extern variable defined in fluid_service.c
-</pre>
-
-------------------------------------------------------------------------*/
-extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 
@@ -73,6 +60,7 @@ NOTE: Due to the use of the time rhs edeadn will not be needed any more!
 \param   *epre     DOUBLE	   (o)    ele pres at time step n+1
 \param   *edeadn   DOUBLE          (o)    ele dead load at time step n
 \param   *edead    DOUBLE          (o)    ele dead load at time step n+1
+\param   *ipos                     (i)    node array positions
 \param   *hasext   INT             (o)    flag for external loads
 \return void
 
@@ -83,6 +71,7 @@ void f2_lsset(ELEMENT	      *ele,
 	      DOUBLE	      *epre,
 	      DOUBLE	      *edeadn,
 	      DOUBLE	      *edead,
+              ARRAY_POSITION  *ipos,
 	      INT	      *hasext)
 {
 INT i,j,irow;       /* simply some counters                             */
@@ -111,13 +100,13 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of large-scale element */
 {
   actnode=ele->node[i];
 /*------------------------------------ set element velocities at (n+1) */
-  evel[0][i]=actnode->sol_increment.a.da[ipos.velnp][0];
-  evel[1][i]=actnode->sol_increment.a.da[ipos.velnp][1];
+  evel[0][i]=actnode->sol_increment.a.da[ipos->velnp][0];
+  evel[1][i]=actnode->sol_increment.a.da[ipos->velnp][1];
 /*------------------------------------- set element pressures at (n+1) */
-  epre[i]   =actnode->sol_increment.a.da[ipos.velnp][PREDOF];
-/*----------------------------------- set history data for time rhs ---*/  
-  ehist[0][i]=actnode->sol_increment.a.da[ipos.hist][0];
-  ehist[1][i]=actnode->sol_increment.a.da[ipos.hist][1];
+  epre[i]   =actnode->sol_increment.a.da[ipos->velnp][PREDOF];
+/*----------------------------------- set history data for time rhs ---*/
+  ehist[0][i]=actnode->sol_increment.a.da[ipos->hist][0];
+  ehist[1][i]=actnode->sol_increment.a.da[ipos->hist][1];
 
 } /* end of loop over nodes of large-scale element */
 

@@ -108,6 +108,6 @@ void fluid_pm_lmatmulvec(
 void fluid_pm_fullvel(FIELD *actfield, INT disnum,
                       DOUBLE *fullvel, INT place);
 void fluid_pm_pretovel(FIELD *actfield,INT actpos);
-void fluid_init_pos_pm(void);
+void fluid_init_pos_pm(ARRAY_POSITION *ipos);
 
 /*! @} (documentation module close)*/
