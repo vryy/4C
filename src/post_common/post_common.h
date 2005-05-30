@@ -35,6 +35,11 @@ functions.
 
 #define FILTER
 
+#ifndef BINIO
+#define BINIO
+#warning BINIO assumed for filters
+#endif
+
 #ifdef PARALLEL
 #undef PARALLEL
 #endif
