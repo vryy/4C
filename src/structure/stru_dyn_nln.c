@@ -595,6 +595,14 @@ dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 /*------------------------ multiply rhs[1] by actual load factor rldfac */
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
+/* put the prescribed scaled displacements to the nodes in field sol at */
+/*                                  place 4 separate from the free dofs */
+/* these are used to calculate the rhs due to dirichlet conditions */
+solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,4);
+
+/*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
+solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
+
 /*----- set factors needed for prescribed displacement terms on rhs eff */
 /*
 dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))
@@ -624,45 +632,11 @@ else {
    dirichfacs[7] =  0.0;
    dirichfacs[8] =  0.0;}
 
-/* -- calculate internal forces f(n) before new prescribed displacements
- * ------------------------------------------------------------- are set */
-
 /*- calculate tangential stiffness/mass and internal forces at time t-dt */
 solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
 amzero(&dirich_a);
 amzero(&intforce_a);
-
-/*-------------------------------------------------------- call elements */
-*action = calc_struct_nlnstiffmass;
-container.dvec          = intforce;
-container.dirich        = NULL;
-container.global_numeq  = numeq_total;
-container.dirichfacs    = dirichfacs;
-container.kstep         = 0;
-calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
-
-/*---------------------------- store positive internal forces on fie[1] */
-solserv_zero_vec(&fie[1]);
-assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
-
-/*---------------- put the scaled prescribed displacements to the nodes */
-/*             in field sol at place 0 together with free displacements */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
-
-/* put the prescribed scaled displacements to the nodes in field sol at */
-/*                                  place 4 separate from the free dofs */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,4);
-
-/*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
-solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
-
-/*- calculate tangential stiffness/mass and internal forces at time t-dt */
-solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
-solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
-amzero(&dirich_a);
-amzero(&intforce_a);
-
 /*---------------------------------------------------- contact detection */
 #ifdef S8CONTACT
 if (contactflag)
@@ -684,12 +658,16 @@ if (contactflag)
 
 /*-------------------------------------------------------- call elements */
 *action = calc_struct_nlnstiffmass;
-container.dvec          = NULL;
+container.dvec          = intforce;
 container.dirich        = dirich;
 container.global_numeq  = numeq_total;
 container.dirichfacs    = dirichfacs;
 container.kstep         = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
+
+/*---------------------------- store positive internal forces on fie[1] */
+solserv_zero_vec(&fie[1]);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
 
 /*-------------------------------- put contact forces to internal forces */
 #ifdef S8CONTACT
@@ -747,6 +725,11 @@ solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv
 /*------------------------------------------ sol[1] = sol[0] + dispi[0] */
 solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
+
+/*---------------- put the scaled prescribed displacements to the nodes */
+/*             in field sol at place 0 together with free displacements */
+/* these are used to calculate the stiffness matrix */
+solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
 
 /*----------------------------- return total displacements to the nodes */
 solserv_result_total(actfield,actintra,
