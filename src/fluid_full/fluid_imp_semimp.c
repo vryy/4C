@@ -662,19 +662,25 @@ if (ioflags.fluid_stress==1)
       &container,action);
 }
 
-/*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
+/* copy solution from sol_increment[veln][j] to sol_increment[velnm][j] */
 /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
 /* reset flags instead */
-leftspace = ipos->velnm;
-ipos->velnm = ipos->veln;
+solserv_sol_copy(actfield,0,node_array_sol_increment,
+                            node_array_sol_increment,ipos->veln,ipos->velnm);
 
-/*------- copy solution from sol_increment[3][j] to sol_increment[1][j] */
+/* copy solution from sol_increment[velnp][j] to sol_increment[veln][j] */
 /*--- -> actual solution becomes previous solution of next time step ---*/
-/* reset flags instead */
-ipos->veln = ipos->velnp;
+solserv_sol_copy(actfield,0,node_array_sol_increment,
+                            node_array_sol_increment,ipos->velnp,ipos->veln);
 
-/* use remaining space for new solution */
-ipos->velnp = leftspace;
+/* some time could be saved here by swapping flags instead of copying but
+   this interferes with restart */                            
+ /* leftspace = ipos->velnm;
+    ipos->velnm = ipos->veln;*/
+ /* ipos->veln = ipos->velnp; */
+
+ /* use remaining space for new solution */
+ /* ipos->velnp = leftspace; */
 
 /*---------------------------------------------- finalise this timestep */
 outstep++;
