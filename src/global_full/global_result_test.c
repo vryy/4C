@@ -501,7 +501,7 @@ void global_result_test()
       {
 #ifndef PARALLEL
         ARRAY_POSITION* ipos;
-        ipos = &(fluidfield->dis[res->dis - 1].ipos);
+        ipos = &(fluidfield->dis[0].ipos);
         fluid_cal_error(fluidfield,ipos,res->dis);
 #endif
         test_count = -1;
