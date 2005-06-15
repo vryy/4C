@@ -710,9 +710,14 @@ if (fdyn->iop==4) /* for step theta */
   else
   {
     /* previous acceleration becomes (n-1)-acceleration of next step    */
-    leftspace = ipos->accnm;
-    ipos->accnm = ipos->accn;
-    ipos->accn  = leftspace;
+    solserv_sol_copy(actfield,0,node_array_sol_increment,
+                                node_array_sol_increment,
+                                ipos->accn,ipos->accnm);
+    /* the following alternative to the previous copy command interferes 
+       with the restart! */
+    /*   leftspace = ipos->accnm;
+         ipos->accnm = ipos->accn;
+         ipos->accn  = leftspace;    */
     fluid_acceleration(actfield,ipos,fdyn->iop);
   }
 }
@@ -724,19 +729,34 @@ if (fdyn->freesurf>0)
 /*--------- based on the predictor calculate new normal at free surface */
 fluid_cal_normal(actfield,2,action);
 
+/* copy solution from sol_increment[veln][j] to sol_increment[velnm][j] */
+/*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
+/* reset flags instead */
+solserv_sol_copy(actfield,0,node_array_sol_increment,
+                            node_array_sol_increment,ipos->veln,ipos->velnm);
+
+/* copy solution from sol_increment[velnp][j] to sol_increment[veln][j] */
+/*--- -> actual solution becomes previous solution of next time step ---*/
+solserv_sol_copy(actfield,0,node_array_sol_increment,
+                            node_array_sol_increment,ipos->velnp,ipos->veln);
+
+/* alternative to the above copys which does not work with restart: */
 /*-------------------------- shift position of old velocity solution ---*/
-leftspace = ipos->velnm;
-ipos->velnm = ipos->veln;
+/* leftspace = ipos->velnm;
+   ipos->velnm = ipos->veln; */
 
 /*--------------------- shift position of previous velocity solution ---*/
-ipos->veln = ipos->velnp;
+/* ipos->veln = ipos->velnp; */
 
 /*--------- set place for new solution to be solved in the next step ---*/
-ipos->velnp = leftspace;
+/* ipos->velnp = leftspace; */
+
 /*---------- it is however necessary to have the newest solution ...
                                              ... still on ipos->velnp ---*/
+/*
 solserv_sol_copy(actfield,0,node_array_sol_increment,
                             node_array_sol_increment,ipos->veln,ipos->velnp);
+*/
 
 /*---------------------- for multifield fluid problems with freesurface */
 /*----- copy solution from sol_increment[ipos->veln][j] to sol_mf[0][j] -*/
