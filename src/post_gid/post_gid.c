@@ -605,6 +605,20 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
         gid->is_fluid2_33    = 1;
         gid->fluid2_33_name  = "fluid2_33";
       }
+
+      /*
+       * There are many ways to implement triangle elements. But we
+       * are only concerned about the number of nodes. */
+      if (numnp==3)
+      {
+        gid->is_fluid2_3    = 1;
+        gid->fluid2_3_name  = "fluid2_3";
+      }
+      if (numnp==6)
+      {
+        gid->is_fluid2_6    = 1;
+        gid->fluid2_6_name  = "fluid2_6";
+      }
       break;
     }
 #endif
