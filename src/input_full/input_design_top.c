@@ -558,6 +558,8 @@ dstrc_enter("inpdesign_dpoint_fenode");
 for (i=0; i<design->ndnode; i++)
 {
    actdnode = &(design->dnode[i]);
+   if (dnode_fenode[i] == NULL)
+     dserror("DNODE without FE node. Uncollapsed nodes in GiD?");
    nodeId   = dnode_fenode[i][0];
    actgnode = genprob.gnodes[nodeId];
    if (actgnode == NULL) continue;
