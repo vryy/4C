@@ -655,6 +655,9 @@ void v2update(float *TIME)
       ACTSTEP=step_a.a.iv[icol];
     }
     *TIME = time_a.a.dv[icol];
+
+    printf("Time: %8.4f    Step: %5d/%-5d\r",time_a.a.dv[icol],ACTSTEP,LASTSTEP);
+    fflush(stdout);
     break;
   case structure:
     dserror("fieldtyp not implemented yet!\n");
@@ -708,7 +711,7 @@ void v2string(char STRING[81])
     for (i=len; i<80; ++i) {
       STRING[i] = ' ';
     }
-    STRING[i] = '\0';
+    /*STRING[i] = '\0';*/
     break;
   case structure:
     dserror("fieldtyp not implemented yet!\n");
