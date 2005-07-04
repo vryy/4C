@@ -356,6 +356,39 @@ for (line=0; line<ngline; line++)
            /* der Faktor  2 x PI tritt bei Fint und Fext auf, ->kuerzt sich */
             facline = ds * facr * facs * x_GP;
           }
+
+          /*-------------------------------------------------------------*/
+          /* orthonormal pressure. The pressure value must be at
+           * position 0. Positive values mean pressure.
+           * Only linear elements supported!
+           * Any other type is expected to be a uniform load. */
+          if ( gline[line]->neum->neum_type==neum_orthopressure )
+          {
+            DOUBLE r[2];
+            DOUBLE lr;
+            DOUBLE n[2];
+            forceline[0] = gline[line]->neum->neum_val.a.dv[0];
+            if ( gline[line]->ngnode != 2 )
+              dserror( "orthonormal pressure on wall elements for linear elements only" );
+
+            /* Find the outward normal to this line */
+            r[0] = gline[line]->gnode[1]->node->x[0] - gline[line]->gnode[0]->node->x[0];
+            r[1] = gline[line]->gnode[1]->node->x[1] - gline[line]->gnode[0]->node->x[1];
+            lr = sqrt( r[0]*r[0] + r[1]*r[1] );
+            n[0] = r[1]/lr;
+            n[1] = -r[0]/lr;
+
+            /*-------- add load vector component to element load vector */
+            for (j=0; j<iel; j++)
+            {
+              for (i=0; i<numdf; i++)
+              {
+                eload[i][j] += funct[j] * forceline[0] * -n[i] * facline;
+              }
+            }
+          }
+          else
+          {
           /*-------------------------------------------------------------*/
           /*                                uniform prescribed line load */
           /*-------------------------------------------------------------*/
@@ -371,6 +404,7 @@ for (line=0; line<ngline; line++)
                     eload[i][j] += funct[j] * forceline[i] * facline;
                  }
              }
+          }
        }/*========================================== end of loop over ls */
     }/*============================================= end of loop over lr */
     /* line number lie has been done,switch of the neumann pointer of it */
@@ -393,6 +427,10 @@ for (line=0; line<ngline; line++)
       /*---------------------------------- compute jacobian determinant */
      	 w1_edgejaco(ele,deriv,xjm,&det,ngnode,iedgnod);
      	 fac = det*facr;
+         if ( gline[line]->neum->neum_type==neum_orthopressure )
+         {
+           dserror("no orthonormal pressure for triangles yet");
+         }
       /*-------------------------------------------------------------*/
       /*                                uniform prescribed line load */
       /*-------------------------------------------------------------*/

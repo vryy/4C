@@ -863,6 +863,22 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        actdline->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
      else
        strtod(colptr,&colptr);
+   /*----------------------------------- read type of neumann condition */
+   actdline->neum->neum_type = neum_live; /* initialize */
+   frchk("Live",&ierr);
+   if (ierr) actdline->neum->neum_type = neum_live;
+   frchk("Dead",&ierr);
+   if (ierr) actdline->neum->neum_type = neum_dead;
+   frchk("PrescribedDomainLoad",&ierr);
+   if (ierr) actdline->neum->neum_type = pres_domain_load;
+   frchk("constHydro_z",&ierr);
+   if (ierr) actdline->neum->neum_type = neum_consthydro_z;
+   frchk("increaseHydro_z",&ierr);
+   if (ierr) actdline->neum->neum_type = neum_increhydro_z;
+   frchk("orthopressure",&ierr);
+   if (ierr) actdline->neum->neum_type = neum_orthopressure;
+   frchk("LAS",&ierr);
+   if (ierr) actdline->neum->neum_type = neum_LAS;
    /*----------- read if load is applied on surface -> shell elements */
    frchk("Mid",&ierr);
    if (ierr) actdline->neum->neum_surf = mid;
@@ -2708,7 +2724,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr++;
     colptr += 5;
   }
-  else dserror("Unknown stabilisation type!");  
+  else dserror("Unknown stabilisation type!");
 
   /*---- All the following is done for eigther stabilisation type! ----*/
   switch (actdsurf->stab_type)

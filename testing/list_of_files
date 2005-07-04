@@ -66,5 +66,6 @@ Input/w1_epc3D.dat                      x        x        x        x
 Input/w1_gemm_contact_emconserv.dat     -        -        -        -
 Input/w1_incompmode.dat                 x        x        x        x
 Input/w1_mises.dat                      x        x        x        x
+Input/w1_neumann_ortho.dat              x        x        x        x
 Input/w1_stalin_dirich.dat              x        x        x        x
 Input/w1dyn.dat                         x        x        x        x
