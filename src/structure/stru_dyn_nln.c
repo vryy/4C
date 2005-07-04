@@ -402,24 +402,24 @@ if (damp_array>0)
                    &(actsolv->sysarray[mass_array]),
                    sdyn->m_damp);
 }
-/*----------------------- init the time curve applied to the loads here */
-/*-------------- this control routine at the moment always uses curve 0 */
-/*-------------------------------------------------- init the timecurve */
-actcurve = 0;
-dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
 
-/* put a zero to the place 11 in node->sol to init the velocities and accels */
+/*------------------------------------------- set initial step and time */
+sdyn->step = -1;
+sdyn->time = 0.0;
+
+/*--------------------------------------- init all applied time curves -*/
+for (actcurve=0; actcurve<numcurve; actcurve++)
+   dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
+
+/* put a zero to the place 12 in node->sol to init the velocities and accels */
 /* of prescribed displacements */
-solserv_putdirich_to_dof(actfield,0,0,0.0,12);
+solserv_sol_zero(actfield, 0, node_array_sol, 12);
+
 
 /*-------------------- put a zero to the place 1 and 2 in sol_increment */
 /*------------------ later this will hold internal forces at t and t-dt */
 solserv_sol_zero(actfield,0,node_array_sol_increment,2);
 solserv_sol_zero(actfield,0,node_array_sol_increment,1);
-
-/*------------------------------------------- set initial step and time */
-sdyn->step = -1;
-sdyn->time = 0.0;
 
 #ifdef BINIO
 
@@ -589,16 +589,18 @@ container.point_neum = 1;
 *action = calc_struct_eleload;
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
        &(actsolv->rhs[1]),action,&container);
-/*------------------------------------------------ get factor at time t */
-dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 
-/*------------------------ multiply rhs[1] by actual load factor rldfac */
+/*----------- multiply rhs[1] by actual load factor rldfac from curve 0 */
+/*-- this control routine at the moment always uses curve 0 for the rhs */
+/*------------------------------------------------ get factor at time t */
+actcurve = 0;
+dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
 /* put the prescribed scaled displacements to the nodes in field sol at */
 /*                                  place 4 separate from the free dofs */
 /* these are used to calculate the rhs due to dirichlet conditions */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,4);
+solserv_putdirich_to_dof(actfield,0,0,4,sdyn->time);
 
 /*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
 solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
@@ -729,7 +731,7 @@ solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 /*---------------- put the scaled prescribed displacements to the nodes */
 /*             in field sol at place 0 together with free displacements */
 /* these are used to calculate the stiffness matrix */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
+solserv_putdirich_to_dof(actfield,0,0,0,sdyn->time);
 
 /*----------------------------- return total displacements to the nodes */
 solserv_result_total(actfield,actintra,

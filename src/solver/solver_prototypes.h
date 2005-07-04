@@ -1120,8 +1120,7 @@ void solserv_sol_add(FIELD *actfield, INT disnum, NODE_ARRAY arrayfrom, NODE_ARR
                       INT from, INT to, DOUBLE fac);
 void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, DOUBLE *localvec, INT arraynum,
                               INT place);
-void solserv_putdirich_to_dof(FIELD *actfield, INT disnum, INT arraynum, DOUBLE scale,
-                              INT place);
+void solserv_putdirich_to_dof(FIELD *actfield, INT disnum, INT arraynum, INT place, DOUBLE T);
 void solserv_adddirich(FIELD *actfield, INT disnum, INT arraynum,
                               INT from1,INT from2,INT to,
                               DOUBLE facfrom1, DOUBLE facfrom2);

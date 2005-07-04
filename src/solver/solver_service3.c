@@ -12,6 +12,18 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+/*!----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | INT                   numcurve;                                      |
+ | struct _CURVE      *curve;                                           |
+ *----------------------------------------------------------------------*/
+extern INT            numcurve;
+extern struct _CURVE *curve;
+
+
 /*----------------------------------------------------------------------*
  |                                                            m.gee 4/03|
  | init sol[place] to zero                                              |
@@ -360,8 +372,11 @@ return;
  | DOUBLE scale    (i) scaling factor for dirichlet condition           |
  | INT place       (i) row to put values in the ARRAY sol               |
  *----------------------------------------------------------------------*/
-void solserv_putdirich_to_dof(FIELD *actfield, INT disnum, INT arraynum, DOUBLE scale,
-                              INT place)
+void solserv_putdirich_to_dof(FIELD *actfield,
+                              INT    disnum,
+                              INT    arraynum,
+                              INT    place,
+                              DOUBLE T          /* actual time		        */)
 {
 INT               i,j;
 INT               diff,max;
@@ -369,11 +384,23 @@ ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
 DIRICH_CONDITION *dirich;
+
+INT        actcurve;	             /* actual timecurve		*/
+DOUBLE     timefac[MAXTIMECURVE];    /* factors from time-curve         */
+DOUBLE     acttimefac;               /* actual factor from timecurve    */
+DOUBLE     initval;	             /* intial dirichlet value	        */
+
+
 #ifdef DEBUG
 dstrc_enter("solserv_putdirich_to_dof");
 #endif
 /*----------------------------------------------------------------------*/
 actdis = &(actfield->dis[disnum]);
+
+/*------------------------------------------ get values from time curve */
+for (actcurve=0;actcurve<numcurve;actcurve++)
+  dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
+
 /*------------ loop nodes and put the result back to the node structure */
 for (i=0; i<actdis->numnp; i++)
 {
@@ -410,10 +437,23 @@ for (i=0; i<actdis->numnp; i++)
       amredef(array,array->fdim+max+1,array->sdim,"DA");
    }
    /* put values dirich->dirich_val.a.dv[j] * scale to actnode->sol.a.dv[place] */
-   for (j=0; j<actnode->numdf; j++)
+   for (j=0; j<actnode->numdf; j++)   /* for each degree of freedom */
    {
-      if (dirich->dirich_onoff.a.iv[j]==0) continue;
-      array->a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
+      if (dirich->dirich_onoff.a.iv[j]==0)  /*  if no Dirichlet Cond., continue */
+         continue;
+      actcurve = dirich->curve.a.iv[j]-1;
+
+      if (actcurve<0)
+         acttimefac = 1.;
+      else if (actcurve >= 0 && actcurve < numcurve)
+         acttimefac = timefac[actcurve];
+      else
+         dserror("Solid Dirichlet BC: actual curve > number defined curves\n");
+
+      initval = dirich->dirich_val.a.dv[j];
+      /*printf("actcurve=%i\n", actcurve);
+        printf("initval=%f, acttimefac=%f, node=%i, dof=%i\n", initval, acttimefac, i, j);*/
+      array->a.da[place][j] = initval * acttimefac;
 
 #ifdef D_SSI
       /* special approach for ssi - problems mfirl 03/04 */
@@ -431,7 +471,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_putdirich_to_dof */
-
 
 
 /*----------------------------------------------------------------------*

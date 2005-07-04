@@ -215,7 +215,7 @@ if (par.myrank==0 && ioflags.output_gid==1)
 
 /*---------------- put the scaled prescribed displacements to the nodes */
 /*             in field sol at place 0 together with free displacements */
-solserv_putdirich_to_dof(actfield,0,0,1.,0);
+solserv_putdirich_to_dof(actfield,0,0,0,0.0);
 
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_struct_linstiff;

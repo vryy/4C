@@ -476,7 +476,7 @@ solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[3]));
 
 /* put a zero the the place 7 in node->sol to init the velocities and accels */
 /* of prescribed displacements */
-solserv_putdirich_to_dof(actfield,0,0,0.0,8);
+solserv_sol_zero(actfield, 0, node_array_sol, 8);
 
 /*---------------------------------- get factor at a certain time t=0.0 */
 dyn_facfromcurve(actcurve,0.0,&(dynvar.rldfac));
@@ -486,12 +486,13 @@ solserv_scalarprod_vec(&(actsolv->rhs[2]),dynvar.rldfac);
 
 /*---------------- put the scaled prescribed displacements to the nodes */
 /*             in field sol at place 0 together with free displacements */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
+solserv_putdirich_to_dof(actfield,0,0,0,sdyn->time);
+
 
 
 /*----- also put prescribed displacements to the nodes in field sol at  */
 /*                                  place 3 separate from the free dofs */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,3);
+solserv_putdirich_to_dof(actfield,0,0,3,sdyn->time);
 
 /*-------------------------------------------- make norm of initial rhs */
 solserv_vecnorm_euclid(actintra,&(actsolv->rhs[2]),&(dynvar.rnorm));
@@ -815,11 +816,13 @@ if (numaf == 1)
 
 /*---------------- put the scaled prescribed displacements to the nodes */
 /*             in field sol at place 0 together with free displacements */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,0);
+/* if ssi follows the structural dunamic closely this has to be done
+ * after the predictor step. After the solution. */
+solserv_putdirich_to_dof(actfield,0,0,0, sdyn->time);
 
 /* put the prescribed scaled displacements to the nodes in field sol at */
 /*                                  place 4 separate from the free dofs */
-solserv_putdirich_to_dof(actfield,0,0,dynvar.rldfac,4);
+solserv_putdirich_to_dof(actfield,0,0,4, sdyn->time);
 
 /*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
 solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
@@ -917,6 +920,11 @@ solserv_result_incre(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]),0);
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
+
+/*---------------- put the scaled prescribed displacements to the nodes */
+/*             in field sol at place 0 together with free displacements */
+/* This is where u.kue suspects it should be. */
+/*solserv_putdirich_to_dof(actfield,0,0,0, sdyn->time);*/
 
 /*----------------------------------------------------------------------*/
 /*                     PERFORM EQUILLIBRIUM ITERATION                   */
