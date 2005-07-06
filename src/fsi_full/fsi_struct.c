@@ -155,6 +155,8 @@ static DIST_VECTOR  *work;		 /* working vectors                                 
 
 static ARRAY         intforce_a;	 /* redundant vector of full length for internal forces */
 static DOUBLE       *intforce;
+static ARRAY         fsiforce_a;	 /* redundant vector of full length for internal forces */
+static DOUBLE       *fsiforce;
 static ARRAY         dirich_a;  	 /* red. vector of full length for dirich-part of rhs   */
 static DOUBLE       *dirich;
 static DOUBLE        dirichfacs[10];	 /* factors needed for dirichlet-part of rhs            */
@@ -329,6 +331,8 @@ for (i=0; i<1; i++) solserv_zero_vec(&(acc[i]));
 intforce = amdef("intforce",&intforce_a,numeq_total,1,"DV");
 /*----------- create a vector of full length for dirichlet part of rhs */
 dirich = amdef("dirich",&dirich_a,numeq_total,1,"DV");
+/*---------------- this is used to assemble the fsi-coupling forces ---*/
+fsiforce = amdef("fsiforce",&fsiforce_a,numeq_total,1,"DV");
 /*----------------------------------------- allocate 3 DIST_VECTOR fie */
 /*                    to hold internal forces at t, t-dt and inbetween */
 solserv_create_vec(&fie,3,numeq_total,numeq,"DV");
@@ -681,11 +685,29 @@ if (fsidyn->coupmethod == 1)
 /* conforming discretization, take values from coincodent nodes         */
 {
   solserv_zero_vec(&(actsolv->rhs[4]));
-  container.inherit = 0;
-  container.point_neum = 0;
-  *action = calc_struct_fsiload;
-  calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-         &(actsolv->rhs[4]),action,&container);
+
+  switch (fsidyn->coupforce)
+  {
+  /* determine coupling forces from consistent nodal fluid forces */
+  case cf_nodeforce:
+    /* initialise full vector to store consistent nodal fluid forces ---*/
+    amzero(&fsiforce_a);
+    /*------- get consistent nodal forces from respective fluid node ---*/
+    fsi_load(actpart,fsiforce,numeq_total);
+    /*-------------------------- assemble the forces into the rhs[4] ---*/
+    assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
+             &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[4]),fsiforce,1.0);
+  break;
+  /* determine coupling forces from stresses */
+  case cf_stress:
+    container.inherit = 0;
+    container.point_neum = 0;
+    *action = calc_struct_fsiload;
+    calrhs(actfield,actsolv,actpart,actintra,stiff_array,
+           &(actsolv->rhs[4]),action,&container);
+  break;
+  default: dserror("FSI coupling force type unknown");
+  }
 }
 /* mortar method (mtr) */
 else if(fsidyn->coupmethod == 0)
@@ -1150,6 +1172,7 @@ if (outstep!=0)
 }
 
 amdel(&intforce_a);
+amdel(&fsiforce_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 solserv_del_vec(&dispi,1);

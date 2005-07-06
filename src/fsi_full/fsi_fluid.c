@@ -83,7 +83,6 @@ extern struct _CURVE *curve;
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
-
 /*!---------------------------------------------------------------------
 \brief implicit and semi-implicit algorithms for
        multifield fluid problems
@@ -117,7 +116,6 @@ INT                    i;		   /* counters			       */
 static INT             numeq;              /* number of equations on this proc */
 static INT             numeq_total;        /* total number of equations        */
 INT                    init;               /* flag for solver_control call     */
-INT                    leftspace;        /* flag used to circulate other flags */
 static INT             actsysarray=0;      /* number of actual sysarray        */
 static INT             outstep;            /* counter for output control       */
 static INT             pssstep;            /* counter for output control       */
@@ -140,6 +138,14 @@ static CALC_ACTION    *action;             /* pointer to the cal_action enum   *
 
 static ARRAY           frhs_a;
 static DOUBLE         *frhs;               /* iteration - RHS  		       */
+#ifdef PARALLEL
+static INT             dof;
+static INT             numddof;            /* number of Dirichlet dofs         */
+static ARRAY           fcouple_a;
+static DOUBLE         *fcouple;            /* to store fsi coupling forces     */
+static ARRAY           recvfcouple_a;
+static DOUBLE         *recvfcouple;        /* to communicate fsi coupling forces*/
+#endif
 static ARRAY           time_a;             /* stored time                      */
 static ARRAY           totarea_a;
 static DOUBLE         *totarea;
@@ -259,7 +265,39 @@ if (fdyn->liftdrag==ld_nodeforce)
   fluid_liftdrag(-1,action,&container,actfield,
                  actsolv,actpart,actintra,ipos);
 
-/*--------------------------------------------- initialise fluid field */
+/*-------------------- init fsi coupling via consistent nodal forces ---*/
+if (fsidyn->coupforce == cf_nodeforce)
+{
+/* Scheme for parallelisation of fsi coupling forces:
+   a) Solution for all dofs (including Dirichlet boundary conditions):
+      - allocate vector of full length on every proc
+      - collect nodal force values on the respective proc
+      - allreduce the full vector
+      - distribute the values to the nodal field sol_mf[1]
+   b) Solution without Dbcs
+      - allocate vector of length of number of Dirichlet dofs
+      - collect nodal force vectors and allreduce this (small) vector
+      - distribute the values to the nodal field sol_mf[1]
+*/
+#ifdef PARALLEL
+ #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+   /*-----------  allocate vectors for coupling force of full lenght ---*/
+   fcouple = amdef("fcouple",&fcouple_a,numeq_total,1,"DV");
+   recvfcouple = amdef("recvfcouple",&recvfcouple_a,numeq_total,1,"DV");
+   numddof = 0;
+ #else
+   numddof = actfield->dis[0].numdf-numeq_total,
+   fcouple = amdef("fcouple",&fcouple_a,numddof,1,"DV");
+   recvfcouple = amdef("recvfcouple",&recvfcouple_a,numddof,1,"DV");
+ #endif /* SOLVE_DIRICH */
+   fsi_cbf(actpart->pdis,fcouple,ipos,numeq_total,1);
+#else
+   fsi_cbf(actpart->pdis,NULL,ipos,0,1);
+   solserv_sol_zero(actfield,0,node_array_sol_mf,1);
+#endif /* PARALLEL */
+}
+
+/*------------------------------------------- initialise fluid field ---*/
 if (restart > 0)
 {
    if (fdyn->init>0)
@@ -645,23 +683,37 @@ if (fdyn->checkarea>0) out_area(totarea_a,fdyn->acttime,itnum,0);
 /*------------------------- calculate stresses transferred to structure */
 if (fsidyn->ifsi>0)
 {
-   *action = calc_fluid_stress;
-   container.nii= 0;
-   container.str=str;
-   container.is_relax = 0;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
-          &container,action);
+   if(fsidyn->coupforce == cf_nodeforce)
+   {
+      solserv_sol_zero(actfield,0,node_array_sol_mf,1);
+#ifdef PARALLEL
+      amzero(&fcouple_a);
+      fsi_cbf(actpart->pdis,fcouple,ipos,numeq_total,0);
+      fsi_allreduce_coupforce(fcouple,recvfcouple,numeq_total,numddof,
+                              actintra,actfield);
+#else
+      fsi_cbf(actpart->pdis,NULL,ipos,0,0);
+#endif  /* PARALLEL */
+   }
+   else
+   {
+      *action = calc_fluid_stress;
+      container.nii= 0;
+      container.str=str;
+      container.is_relax = 0;
+      calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+             &container,action);
 
    /* since stresses are stored locally at the element it's necassary to
       reduce them to all procs! ----------------------------------------*/
-   dsassert(actsolv->parttyp==cut_elements,
-   "Stress reduction for 'cut_nodes' not possible\n");
-   fluid_reducestress(actintra,actpart,actfield,fdyn->numdf,str);
+      dsassert(actsolv->parttyp==cut_elements,
+      "Stress reduction for 'cut_nodes' not possible\n");
+      fluid_reducestress(actintra,actpart,actfield,fdyn->numdf,str);
    /*----------------------------------------- store stresses in sol_mf */
-   solserv_sol_zero(actfield,0,node_array_sol_mf,1);
-   fsi_fluidstress_result(actfield,fdyn->numdf);
+      solserv_sol_zero(actfield,0,node_array_sol_mf,1);
+      fsi_fluidstress_result(actfield,fdyn->numdf);
+   }
 }
-
 
 #ifdef D_MORTAR
 if(fsidyn->coupmethod == 0) /* mortar method */
@@ -680,7 +732,6 @@ break;
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
-
 /*----------------------------------------------- lift&drag computation */
 if (fdyn->liftdrag>0)
 {
@@ -1017,6 +1068,13 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 
 /*------------------------------------------------------------- tidy up */
 amdel(&frhs_a);
+#ifdef PARALLEL
+if (fsidyn->coupforce == cf_nodeforce)
+{
+amdel(&fcouple_a);
+amdel(&recvfcouple_a);
+}
+#endif
 amdel(&time_a);
 if (fdyn->checkarea>0) amdel(&totarea_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
@@ -1043,3 +1101,4 @@ return;
 #endif
 
 /*! @} (documentation module close)*/
+
