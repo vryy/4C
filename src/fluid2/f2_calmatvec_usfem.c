@@ -147,7 +147,7 @@ void f2_calmat( DOUBLE **estif,
 		DOUBLE **derxy,
 		DOUBLE **derxy2,
                 DOUBLE  *edeadng,
-		DOUBLE   fac,
+		DOUBLE   fac,    
 		DOUBLE   visc,
 		INT      iel,
                 INT     *hasext,
@@ -182,10 +182,9 @@ dstrc_enter("f2_calmat");
 /*========================== initialisation ============================*/
 fdyn = alldyn[genprob.numff].fdyn;
 
-tau_M = fdyn->tau[0]*fac;
+tau_M  = fdyn->tau[0]*fac;
 tau_Mp = fdyn->tau[0]*fac;
-tau_C = fdyn->tau[2]*fac;
-
+tau_C  = fdyn->tau[2]*fac;
 
 timefac = fdyn->thsl;
 dt      = fdyn->dta;
@@ -445,7 +444,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*3+1][ci*3+1] += (viscs2[0][2*ri+1] * conv_r[0][2*ci+1]
                                +viscs2[1][2*ri+1] * conv_r[1][2*ci+1]) * aux;
       /* -tau_M*timefac*timefac*4*nu^2(div epsilon(u), div epsilon(v)) */
-      aux = time2nue * time2nue * tau_Mp;
+      aux = time2nue * time2nue * tau_Mp; 
       estif[ri*3][ci*3]     += (viscs2[0][2*ri]   * viscs2[0][2*ci]
                                +viscs2[1][2*ri]   * viscs2[1][2*ci]) * aux;
       estif[ri*3+1][ci*3]   += (viscs2[0][2*ri+1] * viscs2[0][2*ci]
@@ -529,11 +528,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
    /* timefac*(u_old * grad u_old, v) */
    eforce[ri*3]   += funct[ri] * ( rhsint[0]*fac + conv_old[0]*timefacfac);
    eforce[ri*3+1] += funct[ri] * ( rhsint[1]*fac + conv_old[1]*timefacfac);
-   /*--- from 'time integration' of conservation equation ---*/
-   /* (dt-timefac)*(div u_old, q)*/
-/*   aux = - (dt-timefac) * fac;
-   eforce[ri*3+2] += *divuold * funct[ri] * aux;
-*/
+
    /*================ Stabilisation part of the RHS ====================*/
    /*--- 'Original' RHS ---*/
    /* tau_M*timefac*2*nu*(rhsint, div epsilon(v)) */
@@ -567,7 +562,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
    aux = ttimetauM * 2.0;
    eforce[ri*3]   += conv_old[0] * conv_c[ri] * aux;
    eforce[ri*3+1] += conv_old[1] * conv_c[ri] * aux;
-   /* ALE: -tau_M*2*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
+   /* ALE: -tau_M*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
    if(isale)
    {
       eforce[ri*3]   += conv_old[0] * conv_g[ri] * ttimetauM;
@@ -668,6 +663,7 @@ void f2_calresvec(  DOUBLE  *eforce,
 INT     i, ri;
 DOUBLE  timefac;    /* One-step-Theta: timefac = theta*dt
                        BDF2:           timefac = 2/3 * dt               */
+DOUBLE  invtime;    /* 1 / timefac                                      */
 DOUBLE  dt;         /* time step size*/
 DOUBLE  tau_M, tau_C;             /* stabilisation parameter            */
 DOUBLE  tau_Mp;             /* stabilisation parameter            */
@@ -689,13 +685,13 @@ dstrc_enter("f2_calresvec");
 fdyn = alldyn[genprob.numff].fdyn;
 
 
-tau_M = fdyn->tau[0]*fac;
+tau_M  = fdyn->tau[0]*fac;
 tau_Mp = fdyn->tau[0]*fac;
-tau_C = fdyn->tau[2]*fac;
-
+tau_C  = fdyn->tau[2]*fac;
 
 timefac = fdyn->thsl;
 dt      = fdyn->dta;
+invtime = 1.0 / timefac;
 
 twovisc = 2.0 * visc;
 
@@ -804,34 +800,34 @@ for (ri=0; ri<iel; ri++)      /* row index */
 {
    /*************** integrate element residuum vector *******************/
    /* simple parts, which are not partially integrated */
-   eforce[ri*3]   += funct[ri] * rhsint[0] * fac;
-   eforce[ri*3+1] += funct[ri] * rhsint[1] * fac;
+   eforce[ri*3]   += funct[ri] * rhsint[0] * invtime * fac;
+   eforce[ri*3+1] += funct[ri] * rhsint[1] * invtime * fac;
 
    /* viscous forces integrated by parts */
-   eforce[ri*3]   -= ( viscous[0][0][ri*2] * eps_u[0][0]
-                      +viscous[0][1][ri*2] * eps_u[0][1]
-                      +viscous[1][0][ri*2] * eps_u[1][0]
-                      +viscous[1][1][ri*2] * eps_u[1][1] ) * timefac * twovisc * fac;
-   eforce[ri*3+1] -= ( viscous[0][0][ri*2+1] * eps_u[0][0]
-                      +viscous[0][1][ri*2+1] * eps_u[0][1]
-                      +viscous[1][0][ri*2+1] * eps_u[1][0]
-                      +viscous[1][1][ri*2+1] * eps_u[1][1] ) * timefac * twovisc * fac;
+   eforce[ri*3]   -= ( viscous[0][0][ri*2] * eps_u[0][0] 
+                      +viscous[0][1][ri*2] * eps_u[0][1]  
+                      +viscous[1][0][ri*2] * eps_u[1][0]  
+                      +viscous[1][1][ri*2] * eps_u[1][1] ) * twovisc * fac;
+   eforce[ri*3+1] -= ( viscous[0][0][ri*2+1] * eps_u[0][0] 
+                      +viscous[0][1][ri*2+1] * eps_u[0][1]  
+                      +viscous[1][0][ri*2+1] * eps_u[1][0]  
+                      +viscous[1][1][ri*2+1] * eps_u[1][1] ) * twovisc * fac;
 
    /* pressure forces integrated by parts*/
-   eforce[ri*3]   += *press * derxy[0][ri] * timefac * fac;
-   eforce[ri*3+1] += *press * derxy[1][ri] * timefac * fac;
-
+   eforce[ri*3]   += *press * derxy[0][ri] * fac;
+   eforce[ri*3+1] += *press * derxy[1][ri] * fac;
+   
    /* stabilisation part - impulse stabilisation */
-   eforce[ri*3]   += tau_M * timefac * conv_c[ri] * resid[0];
-   eforce[ri*3+1] += tau_M * timefac * conv_c[ri] * resid[1];
+   eforce[ri*3]   += tau_M * conv_c[ri] * resid[0];
+   eforce[ri*3+1] += tau_M * conv_c[ri] * resid[1];
 
-   eforce[ri*3]   += tau_M * timefac * twovisc * ( viscs2[0][ri*2] * resid[0]
-                                                  +viscs2[1][ri*2] * resid[1] );
-   eforce[ri*3+1] += tau_M * timefac * twovisc * ( viscs2[0][ri*2+1] * resid[0]
+   eforce[ri*3]   += tau_M * twovisc * ( viscs2[0][ri*2] * resid[0]
+                                        +viscs2[1][ri*2] * resid[1] );
+   eforce[ri*3+1] += tau_M * twovisc * ( viscs2[0][ri*2+1] * resid[0]
                                                   +viscs2[1][ri*2+1] * resid[1] );
    /* stabilisation part - continuity stabilistation */
-   eforce[ri*3]   -= tau_C * timefac * timefac * (vderxy[0][0]+vderxy[1][1]) * derxy[0][ri];
-   eforce[ri*3+1] -= tau_C * timefac * timefac * (vderxy[0][0]+vderxy[1][1]) * derxy[1][ri];
+   eforce[ri*3]   -= tau_C * timefac * (vderxy[0][0]+vderxy[1][1]) * derxy[0][ri];
+   eforce[ri*3+1] -= tau_C * timefac * (vderxy[0][0]+vderxy[1][1]) * derxy[1][ri];
 
 
 } /* end loop over rows */
