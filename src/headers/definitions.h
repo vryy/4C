@@ -191,11 +191,12 @@ typedef char      CHAR;
 #define f3fcalstabexf      f3fcalstabexf_
 #define f3fcalgalexf       f3fcalgalexf_
 
-#define f3fcaltf           f3fcaltf_
-
 #define f3fmast            f3fmast_
 #define f3fmassrhs         f3fmassrhs_
 #define f3fsigint          f3fsigint_
+
+#define f3fcalmat          f3fcalmat_
+#define f3fcalresvec       f3fcalresvec_
 
 #define fadm               fadm_
 #define fadmp              fadmp_
