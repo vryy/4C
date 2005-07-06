@@ -29,6 +29,14 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
 
 /*----------------------------------------------------------------------*/
 static ARRAY     ehist_a;  /* element history data                      */
@@ -45,10 +53,8 @@ static ARRAY     egridv_a; /* element grid velocity                     */
 static DOUBLE  **egridv;
 static ARRAY     epren_a;  /* element pressures at (n)  		*/
 static DOUBLE   *epren;
-static ARRAY     edeadn_a; /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
 static ARRAY     edeadng_a;/* element dead load (selfweight)            */
-static DOUBLE   *edeadn;
 static ARRAY     funct_a;  /* shape functions				*/
 static DOUBLE   *funct;
 static ARRAY     deriv_a;  /* first natural derivatives 		*/
@@ -85,6 +91,8 @@ static DOUBLE  **estif;    /* pointer to global ele-stif		*/
 static DOUBLE  **emass;    /* pointer to galerkin ele-stif		*/
 static DOUBLE   *eforce;   /* pointer to RHS                            */
 static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
+
+static DOUBLE    visc;
 
 static FLUID_DYNAMIC   *fdyn;
 /*!---------------------------------------------------------------------
@@ -139,7 +147,6 @@ if (init==1) /* allocate working arrays and set pointers */
    ealecovng = amdef("ealecovng",&ealecovng_a,NUM_F3_VELDOF,MAXNOD_F3,"DA");
    egridv    = amdef("egridv"   ,&egridv_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
    epren     = amdef("epren"  ,&epren_a  ,MAXNOD_F3,1,"DV");
-   edeadn    = amdef("edeadn" ,&edeadn_a ,3,1,"DV");
    edeadng   = amdef("edeadng",&edeadng_a,3,1,"DV");
    funct     = amdef("funct"  ,&funct_a  ,MAXNOD_F3,1,"DV");
    deriv     = amdef("deriv"  ,&deriv_a  ,3,MAXNOD_F3,"DA");
@@ -174,37 +181,79 @@ amzero(eforce_global);
 amzero(edforce_global);
 *hasdirich=0;
 *hasext=0;
+
 switch(ele->e.f3->is_ale)
 {
 case 0:
 /*---------------------------------------------------- set element data */
-   f3_calset(ele,xyze,ehist,evelng,epren,edeadn,edeadng,ipos,hasext);
+   f3_calset(ele,xyze,ehist,evelng,epren,edeadng,ipos,hasext);
 
+   switch (ele->e.f3->stab_type)
+   {
+   case stab_gls:
 /*------------------------- calculate element size and stab-parameter: */
-   f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
+      f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
 
 /*------------------------------- calculate element stiffness matrices */
 /*                                           and element force vectors */
-   f3_calint(ele,estif,emass,eforce,
-             xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
-             evelng,vderxy,wa1,wa2);
+      f3_calint(ele,estif,emass,eforce,xyze,funct,deriv,deriv2,xjm,
+                derxy,derxy2,evelng,vderxy,wa1,wa2);
+   break;
+   case stab_usfem:
+      /*---------------------------------------------- get viscosity ---*/
+      visc = mat[ele->mat-1].m.fluid->viscosity;
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+      /*-------------------------------- perform element integration ---*/
+      f3_int_usfem(ele,hasext,estif,eforce,xyze,
+                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                   ehist,NULL,epren,edeadng,
+                   vderxy,vderxy2,visc,wa1,wa2);
+   break;
+   default: dserror("unknown stabilisation type");
+   }
 break;
 case 1:
 /*---------------------------------------------------- set element data */
-   f3_calseta(ele,xyze,ehist,evelng,ealecovn,
-              ealecovng,egridv,epren,edeadn,edeadng,ipos,hasext);
-/*------------------------- calculate element size and stab-parameter: */
-   f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
-/*------------------------------- calculate element stiffness matrices */
-/*                                           and element force vectors */
-   f3_calinta(ele,estif,emass,eforce,
-              xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
-              evelng,ealecovng,egridv,vderxy,wa1,wa2);
+   f3_calseta(ele,xyze,ehist,evelng,
+              ealecovng,egridv,epren,edeadng,ipos,hasext);
+
+   switch (ele->e.f3->stab_type)
+   {
+   case stab_gls:
+      /*------------------- calculate element size and stab-parameter: */
+      f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
+      /*------------------------- calculate element stiffness matrices */
+      /*                                     and element force vectors */
+      f3_calinta(ele,estif,emass,eforce,xyze,funct,deriv,deriv2,xjm,
+                 derxy,derxy2,evelng,ealecovng,egridv,vderxy,wa1,wa2);
+   break;
+   case stab_usfem:
+      {
+      /*---------------------------------------------- get viscosity ---*/
+      visc = mat[ele->mat-1].m.fluid->viscosity;
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f3_caltau(ele,xyze,funct,deriv,derxy,xjm,ealecovng,wa1,visc);
+
+      /*-------------------------------- perform element integration ---*/
+      f3_int_usfem(ele,hasext,estif,eforce,xyze,
+                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                   ehist,egridv,epren,edeadng,
+                   vderxy,vderxy2,visc,wa1,wa2);
+      break;
+      }
+    default: dserror("unknown stabilisation type");
+   }
 break;
 default:
    dserror("parameter is_ale not 0 or 1!\n");
-}
+}  /* end switch */
 
+if (ele->e.f3->stab_type != stab_usfem)
+{
 #ifdef PERF
   perf_begin(21);
 #endif
@@ -234,6 +283,10 @@ default:
   perf_end(21);
 #endif
 
+/*------------------------------------------ calculate emass * ehist ---*/
+f3_massrhs(ele,emass,ehist,edeadng,eforce,hasext);
+}
+
 /*-------------------------------------------- local co-ordinate system */
 if(ele->locsys==locsys_yes)
    locsys_trans(ele,estif,NULL,NULL,eforce);
@@ -242,9 +295,6 @@ if(ele->locsys==locsys_yes)
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
 fluid_caldirich(ele,edforce,estif,hasdirich,ipos->velnp);
-
-/*------------------------------------------ calculate emass * ehist ---*/
-f3_massrhs(ele,emass,ehist,edeadng,eforce,hasext);
 
 end:
 /*----------------------------------------------------------------------*/
@@ -501,5 +551,84 @@ return;
 } /* end of f2_calstab */
 
 
+/*!---------------------------------------------------------------------
+\brief control routine for integration of element residual
+
+<pre>                                                        chfoe 05/05
+
+This routine controls the integration of the elemental residual which is
+required to compute consistent nodal forces. These are also used to be
+FSI coupling forces
+
+</pre>
+
+\param  *ele	         ELEMENT	(i)   actual element
+\param  *eforce_global   ARRAY	        (o)   ele iteration force
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag
+\return void
+
+------------------------------------------------------------------------*/
+void f3_caleleres(
+	           ELEMENT         *ele,
+	           ARRAY           *eforce_global,
+                   INT             *hasdirich,
+                   INT             *hasext,
+                   ARRAY_POSITION  *ipos
+	       )
+{
+#ifdef DEBUG
+dstrc_enter("f3_caleleres");
+#endif
+
+/*--------------------------------------------- initialise with ZERO ---*/
+amzero(eforce_global);
+*hasdirich=0;
+*hasext=0;
+
+switch(ele->e.f3->is_ale)
+{
+case 0:
+/*---------------------------------------------------- set element data */
+   f3_calset(ele,xyze,ehist,evelng,epren,edeadng,ipos,hasext);
+
+   /*---------------------------------------------- get viscosity ---*/
+   visc = mat[ele->mat-1].m.fluid->viscosity;
+
+   /*--------------------------------------------- stab-parameter ---*/
+   f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+   /*-------------------------------- perform element integration ---*/
+   f3_int_res(ele,hasext,eforce,xyze,funct,deriv,deriv2,xjm,derxy,
+              derxy2,evelng,ehist,NULL,epren,edeadng,vderxy,
+              vderxy2,visc,wa1,wa2);
+break;
+case 1:
+   /*---------------------------------------------- set element data ---*/
+   f3_calseta(ele,xyze,ehist,evelng,ealecovng,egridv,
+              epren,edeadng,ipos,hasext);
+
+   /*------------------------------------------------- get viscosity ---*/
+   visc = mat[ele->mat-1].m.fluid->viscosity;
+
+   /*------------------------------------------------ stab-parameter ---*/
+   f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+   /*----------------------------------- perform element integration ---*/
+   f3_int_res(ele,hasext,eforce,xyze,funct,deriv,deriv2,xjm,derxy,
+              derxy2,evelng,ehist,ealecovng,epren,edeadng,
+              vderxy,vderxy2,visc,wa1,wa2);
+break;
+default:
+   dserror("parameter is_ale not 0 or 1!\n");
+} /*end switch */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+
+return;
+} /* end of f3_caleleres */
 
 #endif

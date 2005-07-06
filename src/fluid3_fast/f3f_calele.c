@@ -41,7 +41,8 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-static DOUBLE   *eveln;
+
+static DOUBLE   *evhist;
 static DOUBLE   *evelng;
 static DOUBLE   *ealecovn;
 static DOUBLE   *ealecovng;
@@ -143,7 +144,7 @@ void f3fcalele(
     eforce  = eforce_fast->a.dv;
     edforce = edforce_fast->a.dv;
 
-    eveln     = (DOUBLE *)CCAMALLOC(LOOPL*NUM_F3_VELDOF*MAXNOD_F3*sizeof(DOUBLE));
+    evhist    = (DOUBLE *)CCAMALLOC(LOOPL*NUM_F3_VELDOF*MAXNOD_F3*sizeof(DOUBLE));
     evelng    = (DOUBLE *)CCAMALLOC(LOOPL*NUM_F3_VELDOF*MAXNOD_F3*sizeof(DOUBLE));
     ealecovn  = (DOUBLE *)CCAMALLOC(LOOPL*NUM_F3_VELDOF*MAXNOD_F3*sizeof(DOUBLE));
     ealecovng = (DOUBLE *)CCAMALLOC(LOOPL*NUM_F3_VELDOF*MAXNOD_F3*sizeof(DOUBLE));
@@ -213,11 +214,10 @@ void f3fcalele(
     perf_begin(44);
 #endif
       /* set element data */
-      f3fcalset(ele,eveln,evelng,epren,edeadn,edeadng,ipos,hasext,sizevec);
+      f3fcalset(ele,evhist,evelng,epren,edeadn,edeadng,ipos,hasext,sizevec);
 #ifdef PERF
     perf_end(44);
 #endif
-
 
 #ifdef PERF
     perf_begin(45);
@@ -229,6 +229,10 @@ void f3fcalele(
     perf_end(45);
 #endif
 
+
+    switch (ele[0]->e.f3->stab_type)
+    {
+      case stab_gls:
 
 #ifdef PERF
     perf_begin(46);
@@ -249,7 +253,7 @@ void f3fcalele(
       f3fcalint(ele,elecord,tau,hasext,estif,
           emass,eforce,
           funct,deriv,deriv2,
-          xjm,derxy,derxy2,eveln,evelng,
+          xjm,derxy,derxy2,evelng,
           epren,edeadn,edeadng,velint,vel2int,
           covint,vderxy,pderxy,vderxy2,wa1,
           wa2,sizevec);
@@ -257,8 +261,25 @@ void f3fcalele(
       perf_end(47);
 #endif
 
-      break;
+      break; /* end WAW GLS */
 
+      case stab_usfem: /* completely linearised version */
+      /* stab-parameter */
+      f3fcaltau(ele,elecord,funct,deriv,derxy,velint,xjm,evelng,
+                tau,wa1,sizevec);
+
+      /* perform element integration */
+      f3fint_usfem(ele,elecord,tau,hasext,estif,eforce,
+                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                   evhist,NULL,epren,edeadng,velint,vel2int,NULL,
+                   vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
+      goto dirich;
+
+      default: dserror("unknown stabilisation type");
+
+    } /* end switch over stab_type */
+    
+    break;
 
 #ifdef D_FSI
 
@@ -269,7 +290,7 @@ void f3fcalele(
     perf_begin(44);
 #endif
       /* set element data */
-      f3fcalseta(ele,eveln,evelng,ealecovn,ealecovng,egridv,
+      f3fcalseta(ele,evhist,evelng,ealecovng,egridv,
           epren,edeadn,edeadng,ipos,hasext,sizevec);
 #ifdef PERF
     perf_end(44);
@@ -286,7 +307,9 @@ void f3fcalele(
     perf_end(45);
 #endif
 
-
+    switch (ele[0]->e.f3->stab_type)
+    {
+      case stab_gls:
 #ifdef PERF
     perf_begin(46);
 #endif
@@ -306,7 +329,7 @@ void f3fcalele(
       f3fcalinta(ele,elecord,tau,hasext,estif,
           emass,eforce,
           funct,deriv,deriv2,
-          xjm,derxy,derxy2,eveln,evelng,
+          xjm,derxy,derxy2,evelng,
           ealecovn,ealecovng,egridv,
           epren,edeadn,edeadng,velint,vel2int,
           covint,alecovint,gridvint,vderxy,pderxy,vderxy2,wa1,
@@ -314,6 +337,22 @@ void f3fcalele(
 #ifdef PERF
       perf_end(47);
 #endif
+        break;/* end WAW GLS */
+
+        case stab_usfem: /* completely linearised version */
+        /* stab-parameter */
+        f3fcaltau(ele,elecord,funct,deriv,derxy,alecovint,xjm,ealecovng,
+                  tau,wa1,sizevec);
+
+        /* perform element integration */
+        f3fint_usfem(ele,elecord,tau,hasext,estif,eforce,
+                     funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                     evhist,egridv,epren,edeadng,velint,vel2int,gridvint,
+                     vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
+        goto dirich;
+
+        default: dserror("unknown stabilisation type");
+      } /* end switch over stab_type */
 
       break;
 
@@ -351,6 +390,18 @@ void f3fcalele(
 
 
 #ifdef PERF
+    perf_begin(50);
+#endif
+    /* calculate emass * hist */
+    f3fmassrhs(emass,evhist,edeadng,eforce,hasext,&(fdyn->thsl),sizevec);
+#ifdef PERF
+    perf_end(50);
+#endif
+
+
+dirich:
+
+#ifdef PERF
     perf_begin(49);
 #endif
 
@@ -361,14 +412,6 @@ void f3fcalele(
     perf_end(49);
 #endif
 
-#ifdef PERF
-    perf_begin(50);
-#endif
-    /* calculate emass * hist */
-    f3fmassrhs(emass,eveln,edeadng,eforce,hasext,&(fdyn->thsl),sizevec);
-#ifdef PERF
-    perf_end(50);
-#endif
 
 end:
 
@@ -472,7 +515,6 @@ void f3fcalstab(
   \param viscstr         INT      (i) viscose stresses yes/no?
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
   \param ipos                     (i) node array positions
-  \param is_relax        INT      (i) flag for relaxation
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
 
   \return void
@@ -486,7 +528,6 @@ void f3fstress(
     INT           viscstr,
     ELEMENT      *ele[LOOPL],
     ARRAY_POSITION *ipos,
-    INT           is_relax,
     INT           aloopl
     )
 {
@@ -539,14 +580,14 @@ void f3fstress(
       }
 
       if (coupled==1)
-        f3fcalelestress(viscstr,ele,eveln,epren,funct,
+        f3fcalelestress(viscstr,ele,evelng,epren,funct,
             deriv,derxy,vderxy,xjm,wa1,elecord,sigint,nostr,ipos,sizevec);
       break;
 #endif
 
     case str_liftdrag:
     case str_all:
-      f3fcalelestress(viscstr,ele,eveln,epren,funct,
+      f3fcalelestress(viscstr,ele,evelng,epren,funct,
           deriv,derxy,vderxy,xjm,wa1,elecord,sigint,nostr,ipos,sizevec);
       break;
 
@@ -560,6 +601,141 @@ void f3fstress(
 
   return;
 } /* end of f3fstress */
+
+/*!---------------------------------------------------------------------
+\brief control routine for integration of element residual
+
+<pre>                                                        chfoe 05/05
+
+This routine controls the integration of the elemental residual for fast
+elements which is required to compute consistent nodal forces. 
+These are used to be FSI coupling forces
+
+</pre>
+
+\param  *ele	         ELEMENT	(i)   actual element
+\param  *eforce_global   ARRAY	        (o)   ele iteration force
+\param  *hasext          INT	        (o)   element flag
+\param  *ipos            ARRAY_POSITION (i)   position flag for solution
+\return void
+
+------------------------------------------------------------------------*/
+void f3fcaleleres(
+    ELEMENT        *ele[LOOPL],
+    ARRAY          *eforce_fast,
+    INT            *hasext,
+    ARRAY_POSITION *ipos,
+    INT             aloopl
+    )
+{
+
+  INT l;
+  INT sizevec[6];
+
+#ifdef DEBUG
+  dstrc_enter("f3fcaleleres");
+#endif
+
+/* initialise with ZERO */
+amzero(eforce_fast);
+
+for(l=0;l<LOOPL;l++)
+{
+  hasext[l]=0;
+}
+
+
+/*Variables for fortran functions.*/
+sizevec[0] = MAXNOD_F3;
+sizevec[1] = ele[0]->numnp;
+sizevec[2] = MAXNOD*MAXDOFPERNODE;
+sizevec[3] = LOOPL;
+sizevec[4] = aloopl;
+sizevec[5] = MAXGAUSS;
+
+
+
+switch(ele[0]->e.f3->is_ale)
+{
+  /* Euler */
+  case 0:
+
+#ifdef PERF
+  perf_begin(44);
+#endif
+  /* set element data */
+  f3fcalset(ele,evhist,evelng,epren,edeadn,edeadng,ipos,hasext,sizevec);
+#ifdef PERF
+  perf_end(44);
+#endif
+
+#ifdef PERF
+  perf_begin(45);
+#endif
+  /*A "C-function", but elecord[3,8] used in fortran this can be out of
+    the gauss point loop*/
+  f3fcalelecord(ele,elecord,sizevec);
+#ifdef PERF
+  perf_end(45);
+#endif
+
+  /* stab-parameter */
+  f3fcaltau(ele,elecord,funct,deriv,derxy,velint,xjm,evelng,
+            tau,wa1,sizevec);
+
+  /* perform element integration */
+  f3fint_res(ele,elecord,tau,hasext,eforce,
+             funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+             evhist,NULL,epren,edeadng,velint,vel2int,NULL,
+             vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
+
+  break;
+
+#ifdef D_FSI
+
+ /* ALE */
+  case 1:
+
+#ifdef PERF
+    perf_begin(44);
+#endif
+   /* set element data */
+  f3fcalseta(ele,evhist,evelng,ealecovng,egridv,
+      epren,edeadn,edeadng,ipos,hasext,sizevec);
+#ifdef PERF
+    perf_end(44);
+#endif
+
+#ifdef PERF
+    perf_begin(45);
+#endif
+  /*A "C-function", but elecord[3,8] used in fortran this can be out of
+    the gauss point loop*/
+  f3falecord(ele,elecord,sizevec);
+#ifdef PERF
+    perf_end(45);
+#endif
+  /* stab-parameter */
+  f3fcaltau(ele,elecord,funct,deriv,derxy,alecovint,xjm,ealecovng,
+            tau,wa1,sizevec);
+
+    /* perform element integration */
+  f3fint_res(ele,elecord,tau,hasext,eforce,
+             funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+             evhist,ealecovng,epren,edeadng,velint,vel2int,alecovint,
+             vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
+#endif /* D_FSI */
+  break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of f3_caleleres */
 
 
 #endif
