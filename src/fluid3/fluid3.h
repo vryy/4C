@@ -45,6 +45,9 @@ INT                fs_on;    /*! element belongs to free surface          */
 /*-------------------------------------------------------- stress results */
 struct _ARRAY      stress_ND; /*!< nodal stresses                         */
 
+/*----------------------------------- coupling via fsi coupling forces ---*/
+INT                force_on; /*! flag for element fsi coupling force calc.*/
+
 /*------------------------------------------------- structure for submesh */
 #ifdef FLUID2_ML
 INT                smisal;        /* flag for element submesh creation    */
