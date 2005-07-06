@@ -97,7 +97,7 @@ for (i=0;i<numanp;i++)
 {
    actanode  = &(alefield->dis[0].node[i]);
    actagnode = actanode->gnode;
-   amdef("sol_mf",&actanode->sol_mf,2,actanode->numdf,"DA");
+   amdef("sol_mf",&actanode->sol_mf,3,actanode->numdf,"DA");
    amzero(&(actanode->sol_mf));
    actagnode->mfcpnode=(NODE**)CCACALLOC(numfld,sizeof(NODE*));
    for (j=0;j<numfld;j++) actagnode->mfcpnode[j]=NULL;
