@@ -232,7 +232,7 @@ DOUBLE              e1,e2=0;         /* GP-coords */
 DOUBLE              facr,facs=0;     /* weights at GP */
 
 DOUBLE              min_detF;         /* minimal Jacobian determinant   */
-DOUBLE              xyz[2][MAXNOD];        /* element coordinates            */
+DOUBLE              xyz[2][MAXNOD];   /* element coordinates            */
 
 static ARRAY    D_a;      /* material tensor */
 static DOUBLE **D;
@@ -339,9 +339,6 @@ for (lr=0; lr<nir; lr++)
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
      ale2_keku(estif,bop,D,fac,nd,numeps);
-     /*---------------- hourglass stabalization  stiffness matrix ke ---*/
-/*     if(nir == 1 && nis == 1)
-       ale2_hourglass(ele,estif); */
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
@@ -799,9 +796,9 @@ for (lr=0; lr<nir; lr++)
      /* equations refere to paper of Chiandussi et al. 2000 */
      /* elemental strain energy density criterion: eq. (15) */
 /*        stiff = (1.0-pv)/2.0/(1.0-2.0*pv)/(1+pv) * ( strain[0]*strain[0]
-              + strain[1]*strain[1] + 2.0*pv/(1.0-pv)*strain[0]*strain[1]); */
+              + strain[1]*strain[1] + 2.0*pv/(1.0-pv)*strain[0]*strain[1]);*/
         /* elemental distortion energy density criterion: eq. (17) */
-/*        stiff = (strain[0]-strain[1])*(strain[0]-strain[1])/12.0/(1.0 + pv); */
+/*        stiff = (strain[0]-strain[1])*(strain[0]-strain[1])/12.0/(1.0 + pv);*/
         /* square norm of element principal strain criterion: eq. (13) */
         stiff = (strain[0]*strain[0] + strain[1]*strain[1]) / 2.0;
         *min_stiff = (stiff < *min_stiff) ? stiff:*min_stiff;
