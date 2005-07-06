@@ -49,7 +49,6 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param  **ehist    DOUBLE           (o)    ele history data
 \param  **evelng   DOUBLE           (o)    ele vels at time n+g
 \param   *epren    DOUBLE           (o)    ele pres at time n
-\param   *edeadn   DOUBLE           (o)    ele dead load at n (selfweight)
 \param   *edeadng  DOUBLE           (o)    ele dead load at n+g (selfweight)
 \param   *ipos                      (i)    node array positions
 \param   *hasext   INT              (o)    flag for external loads
@@ -62,7 +61,6 @@ void f3_calset(
                DOUBLE         **ehist,
                DOUBLE         **evelng,
                DOUBLE          *epren,
-               DOUBLE          *edeadn,
                DOUBLE          *edeadng,
                ARRAY_POSITION  *ipos,
                INT             *hasext
@@ -108,13 +106,16 @@ for(i=0;i<ele->numnp;i++)
 for(i=0;i<ele->numnp;i++) /* loop nodes */
 {
    actnode=ele->node[i];
-/*----------------------------------- set element velocities (n+gamma) */
+/*------------------------------------- set element velocities (n+1) ---*/
    evelng[0][i]=actnode->sol_increment.a.da[ipos->velnp][0];
    evelng[1][i]=actnode->sol_increment.a.da[ipos->velnp][1];
    evelng[2][i]=actnode->sol_increment.a.da[ipos->velnp][2];
+/*---------------------------------------- set vel. histories at (n) ---*/
    ehist[0][i] = actnode->sol_increment.a.da[ipos->hist][0];
    ehist[1][i] = actnode->sol_increment.a.da[ipos->hist][1];
    ehist[2][i] = actnode->sol_increment.a.da[ipos->hist][2];
+/*---------------------------------------------- set pressures (n+1) ---*/
+   epren[i]    = actnode->sol_increment.a.da[ipos->velnp][PREDOF]; 
 } /* end of loop over nodes */
 
 /*------------------------------------------------ check for dead load */
@@ -138,13 +139,11 @@ if (actgvol->neum!=NULL)
    {
       if (actgvol->neum->neum_onoff.a.iv[i]==0)
       {
-         edeadn[i]  = ZERO;
          edeadng[i] = ZERO;
       }
       if (actgvol->neum->neum_type==neum_dead  &&
           actgvol->neum->neum_onoff.a.iv[i]!=0)
       {
-         edeadn[i]  = actgvol->neum->neum_val.a.dv[i]*acttimefacn;
          edeadng[i] = actgvol->neum->neum_val.a.dv[i]*acttimefac;
          (*hasext)++;
       }
@@ -175,11 +174,9 @@ NOTE: in contradiction to the old programm the kinematic pressure
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
 \param  **ehist     DOUBLE          (o)    ele history data
 \param  **evelng    DOUBLE          (o)    ele vels at time n+g
-\param  **ealecovn  DOUBLE          (o)    ALE-convective vels at time n
 \param  **ealecovng DOUBLE          (o)    ALE-convective vels at time n+g
 \param  **egridv    DOUBLE          (o)    element grid velocity
 \param   *epren     DOUBLE          (o)    ele pres at time n
-\param   *edeadn    DOUBLE          (o)    ele dead load at n (selfweight)
 \param   *edeadng   DOUBLE          (o)    ele dead load at n+g (selfweight)
 \param   *ipos                      (i)    node array positions
 \param   *hasext    INT             (o)    flag for external loads
@@ -191,11 +188,9 @@ void f3_calseta(
                   DOUBLE         **xyze,
                   DOUBLE         **ehist,
                   DOUBLE         **evelng,
-                  DOUBLE         **ealecovn,
                   DOUBLE         **ealecovng,
                   DOUBLE         **egridv,
                   DOUBLE          *epren,
-                  DOUBLE          *edeadn,
                   DOUBLE          *edeadng,
                   ARRAY_POSITION  *ipos,
                   INT             *hasext
@@ -245,6 +240,9 @@ for(i=0;i<ele->numnp;i++) /* loop nodes */
    ehist[0][i] = actnode->sol_increment.a.da[ipos->hist][0];
    ehist[1][i] = actnode->sol_increment.a.da[ipos->hist][1];
    ehist[2][i] = actnode->sol_increment.a.da[ipos->hist][2];
+/*---------------------------------------------- set pressures (n+1) ---*/
+   epren[i]    = actnode->sol_increment.a.da[ipos->velnp][PREDOF];
+
 } /* end of loop over nodes */
 
 /*------------------------------------------------ check for dead load */
@@ -260,11 +258,8 @@ if (actgvol->neum!=NULL)
       dyn_facfromcurve(actcurve,acttime,&acttimefac) ;
       acttime=fdyn->acttime-fdyn->dta;
       dyn_facfromcurve(actcurve,acttime,&acttimefacn) ;
-      edeadn[0]  = actgvol->neum->neum_val.a.dv[0]*acttimefacn;
       edeadng[0] = actgvol->neum->neum_val.a.dv[0]*acttimefac;
-      edeadn[1]  = ZERO;
       edeadng[1] = ZERO;
-      edeadn[2]  = actgvol->neum->neum_val.a.dv[2];
       edeadng[2] = actgvol->neum->neum_val.a.dv[2];
       (*hasext)++;
    }
@@ -287,13 +282,11 @@ if (actgvol->neum!=NULL)
       {
          if (actgvol->neum->neum_onoff.a.iv[i]==0)
          {
-            edeadn[i]  = ZERO;
             edeadng[i] = ZERO;
          }
          if (actgvol->neum->neum_type==neum_dead  &&
              actgvol->neum->neum_onoff.a.iv[i]!=0)
          {
-            edeadn[i]  = actgvol->neum->neum_val.a.dv[i]*acttimefacn;
             edeadng[i] = actgvol->neum->neum_val.a.dv[i]*acttimefac;
             (*hasext)++;
          }
@@ -617,6 +610,14 @@ w.r.t x/y/z are calculated
    vderxy2[0][3] = Ux,xy
    vderxy2[1][4] = Uy,xz
    vderxy2[2][5] = Uz,yz
+
+1st index: direction x,y,z
+2nd index: derivative: 0 .. xx
+                       1 .. yy
+                       2 .. zz
+                       3 .. xy
+                       4 .. xz
+                       5 .. yz
 
 </pre>
 \param  **vderxy2  DOUBLE        (o)   2nd velocity derivativs
