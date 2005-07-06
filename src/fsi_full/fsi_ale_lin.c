@@ -280,9 +280,9 @@ calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 #ifdef D_MORTAR
 if(adyn->coupmethod == 0) /* mortar method */
 {
-  /*------- redefine the size of sol_mf from 2 to 4, the fourth field is */
+  /*------- redefine the size of sol_mf from 3 to 4, the fourth field is */
   /*------------- necessary to store the nodal displacements due to fsi */
-  solserv_sol_zero(actfield, 0, node_array_sol_mf, 3);
+  solserv_sol_zero(actfield, 0, node_array_sol_mf, 4);
 }
 #endif
 
@@ -421,7 +421,11 @@ case 3:
 /*------------------------------------ for iterative staggared schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
+{
+   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,0,2);
    solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
+}
+
 /*--------------------- to get the corrected free surface position copy
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
 solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol,1,actpos);
