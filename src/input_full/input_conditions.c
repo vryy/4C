@@ -3100,6 +3100,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr++;
     colptr += 7;
   }
+  else if (strncmp(buffer,"USFEM",5)==0)
+  {
+    actdvol->stab_type = stab_usfem;
+    /* move pointer after "USFEM" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 5;
+  }
   else dserror("Unknown stabilisation type!");
 
   /*---- All the following is done for eigther stabilisation type! ----*/
@@ -3366,6 +3374,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   break;
   case stab_prespro:
     dserror("Pressure Projection type of stabilisation has not yet been implemented!");
+  break;
+  case stab_usfem:
+    ;
   break;
   default:
     dserror("Unknown stabilisation type!");

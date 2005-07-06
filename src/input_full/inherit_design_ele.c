@@ -99,13 +99,18 @@ for (i=0; i<actdis->numele; i++)
       fluid3->stab_type = actdvol->stab_type;
 
       /*--- assign pointer to corresponding stabilisation parameters ---*/
-      if (fluid3->stab_type == stab_gls)
+      switch (fluid3->stab_type)
       {
+        case stab_gls:
         dsassert(actdvol->stabi.gls!=NULL,"no stabilisation at DVOL!\n");
         fluid3->stabi.gls = actdvol->stabi.gls;
+        break;
+        case stab_usfem:
+         /* nothing needs to be done at the moment (no parameters!) */
+        break;
+        default:
+        dserror("Unknown stabilisation for fluid3!");
       }
-      else
-        dserror("Other than gls stabilisation not yet implemented!");
 #endif
     break;
 
@@ -119,13 +124,18 @@ for (i=0; i<actdis->numele; i++)
       fluid3->stab_type = actdvol->stab_type;
 
       /*--- assign pointer to corresponding stabilisation parameters ---*/
-      if (fluid3->stab_type == stab_gls)
+      switch (fluid3->stab_type)
       {
+        case stab_gls:
         dsassert(actdvol->stabi.gls!=NULL,"no stabilisation at DVOL!\n");
         fluid3->stabi.gls = actdvol->stabi.gls;
+        break;
+        case stab_usfem:
+         /* nothing needs to be done at the moment (no parameters!) */
+        break;
+        default:
+        dserror("Unknown stabilisation for fluid3f!");
       }
-      else
-        dserror("Other than gls stabilisation not yet implemented!");
     break;
 #endif
 
