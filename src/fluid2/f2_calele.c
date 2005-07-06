@@ -247,10 +247,10 @@ case 0:
 
       /*-------------------------------- perform element integration ---*/
       f2_int_usfem(ele,hasext,estif,eforce,xyze,
-                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
                    evhist,NULL,epren,edeadng,
                    vderxy,vderxy2,visc,wa1,wa2,estress);
-      break;
+   break;
    default: dserror("unknown stabilisation type");
    }
 break;
@@ -298,7 +298,7 @@ case 1:
 
       /*-------------------------------- perform element integration ---*/
       f2_int_usfem(ele,hasext,estif,eforce,xyze,
-                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
                    evhist,egridv,epren,edeadng,
                    vderxy,vderxy2,visc,wa1,wa2,estress);
       break;
@@ -308,7 +308,7 @@ case 1:
 break;
 default:
    dserror("parameter is_ale not 0 or 1!\n");
-} /*end switch */
+} /* end switch */
 
 if (ele->e.f2->stab_type != stab_usfem)
 {
@@ -1044,7 +1044,28 @@ dstrc_exit();
 return;
 } /* end of f2_caleleres */
 
+/*!---------------------------------------------------------------------
+\brief control routine for integration of stress projection matrix and rhs
 
+<pre>                                                        chfoe 11/04
+
+This routine controls the integration of the elemental matrix and rhs 
+to serve an L2-stress projection. The projection matrix has the structure
+of a mass matrix (i.e. int(N^T N)dx ) and the right hand side carries
+weighted stress values.
+
+For further comments see header of f2_int_stress_project
+
+</pre>
+
+\param  *ele	         ELEMENT	(i)   actual element
+\param  *hasext          INT	        (o)   element flag
+\param **estif_global    ARRAY	        (o)   ele projection matrix
+\param  *eforce_global   ARRAY	        (o)   elemental rhs
+\param  *ipos                           (i)   node array positions
+\return void
+
+------------------------------------------------------------------------*/
 void f2_calstresspro(ELEMENT   *ele,
                      INT       *hasext,
                      ARRAY     *estif_global,
