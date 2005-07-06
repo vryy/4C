@@ -84,6 +84,25 @@ void fsi_ale_spring(
 	           );
 
 /************************************************************************
+ | fsi_coupforce.c                                                      |
+ ************************************************************************/
+void fsi_cbf(PARTDISCRET    *actpdis,
+	     DOUBLE         *fcouple,
+             ARRAY_POSITION *ipos,
+             INT             numeq_total,
+             INT             init);
+#ifdef PARALLEL
+void fsi_allreduce_coupforce( DOUBLE *fcouple,
+                              DOUBLE *recvfcouple,
+                              INT     numeq_total,
+                              INT     numddof,
+                              INTRA  *actintra,
+                              FIELD  *actfield
+                            );
+#endif
+void fsi_load(PARTITION *actpart, DOUBLE *fsiforce, INT global_numeq);
+
+/************************************************************************
  | fsi_coupling.c                                                       |
  ************************************************************************/
 void fsi_createfsicoup(void);
