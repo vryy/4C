@@ -96,9 +96,11 @@ INT     numnp_total;     /* total number of nodes                       */
 INT     numveldof;       /* number of velocity dofs                     */
 INT     numaf;           /* number of ALE field                         */
 INT     phipos;          /* index of free surface movement (height func)*/
+DOUBLE  dxyznm;          /* ale-displement at (n-1)                     */
 DOUBLE  dxyzn;           /* ale-displement at (n)                       */
 DOUBLE  dxyz;            /* ale-displement at (n+1)                     */
 DOUBLE  phi,phin;        /* heightfunction values                       */
+DOUBLE  theta;           /**/
 NODE   *actfnode;        /* actual fluid node                           */
 NODE   *actanode;        /* actual ale node                             */
 GNODE  *actfgnode;       /* actual fluid gnode                          */
@@ -146,7 +148,18 @@ case 1: /* ALE-PHASE I: get grid velocity from mesh displacements ------*/
       {
           dxyzn  = actanode->sol_mf.a.da[0][j];
           dxyz   = actanode->sol_mf.a.da[1][j];
-          actfnode->sol_increment.a.da[ipos->gridv][j] = (dxyz-dxyzn)/dt;
+          switch (fdyn->iop)
+          {
+          case 4: /* BE grid velocity: 1st order accuracy */
+             actfnode->sol_increment.a.da[ipos->gridv][j] = (dxyz-dxyzn)/dt;
+          break;
+          case 7: /* BDF2 grid velocity: 2nd order accuracy */
+             dxyznm = actanode->sol_mf.a.da[2][j];
+             actfnode->sol_increment.a.da[ipos->gridv][j] = 
+                               (1.5*dxyz-2.0*dxyzn+0.5*dxyznm)/dt;
+          break;
+          default: dserror("Time integration scheme unknown for FSI");
+          }
       } /* end of loop over vel dofs */
    } /* end of loop over all nodes */
 break;
