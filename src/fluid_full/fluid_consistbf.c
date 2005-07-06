@@ -39,16 +39,7 @@ and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
-static FLUID_DYNAMIC *fdyn;
+extern struct _PAR   par;
 
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
@@ -98,7 +89,6 @@ INT force_on_node[MAXNOD];
 INT nfnode;  /* number of nodes of actele where forces are searched for */
 static INT num_ldele; /* number of elements along lift&drag line */
 
-DOUBLE   timefac;
 DOUBLE   xforce, yforce;
 DOUBLE   center[2];
 DOUBLE   xy[2];                  /* relative coordinates of actual node */
@@ -122,7 +112,6 @@ dstrc_enter("fluid_calc_cforce");
 /*--------------------------------------------------- initialisation ---*/
 if (init==0)
 {
-   fdyn      = alldyn[genprob.numff].fdyn;
    num_ldele = 0;
 
    /*--- preselect elements that have lift&drag line or fsi coupling ---*/
@@ -182,7 +171,6 @@ if (init==0)
 }
 
 liftdrag = container->liftdrag;
-timefac  = 1.0/fdyn->thsl;
 
 eforce  = eforce_global.a.dv;
 
@@ -293,10 +281,10 @@ case 2: /* problem is two-dimensional */
             testforce = 0.0;
             line = force_on_node[j] * 3;
 
-            xforce += eforce[line]   * timefac;
-            yforce += eforce[line+1] * timefac;
-
-            testforce += eforce[24] * timefac;
+            xforce += eforce[line];
+            yforce += eforce[line+1];
+            
+            testforce += eforce[24];
 
             /* write nodal result from this ele to total ld sum */
             liftdrag[(ld_id-1)*6+0] += xforce;
