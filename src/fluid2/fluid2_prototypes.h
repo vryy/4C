@@ -1658,6 +1658,7 @@ void f2_int_usfem(
 	              DOUBLE         **derxy,
 	              DOUBLE         **derxy2,
 	              DOUBLE         **evelng,
+	              DOUBLE         **eveln,
 	              DOUBLE         **evhist,
 	              DOUBLE         **egridv,
 	              DOUBLE          *epren,
