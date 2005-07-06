@@ -80,6 +80,7 @@ void f2_int_usfem(
 	              DOUBLE         **derxy,
 	              DOUBLE         **derxy2,
 	              DOUBLE         **evelng,
+	              DOUBLE         **eveln,
 	              DOUBLE         **evhist,
 	              DOUBLE         **egridv,
 	              DOUBLE          *epren,
@@ -109,6 +110,7 @@ DOUBLE    gradp[2];   /* pressure gradient at integration point         */
 DOUBLE    velint[2];  /* velocity vector at integration point           */
 DOUBLE    histvec[2]; /* history data at integration point              */
 DOUBLE    gridvelint[2]; /* grid velocity                               */
+DOUBLE    divuold;
 DIS_TYP   typ;	      /* element type                                   */
 
 FLUID_DYNAMIC   *fdyn;
@@ -195,6 +197,10 @@ for (lr=0;lr<nir;lr++)
       /*--------------------- get grid velocity at integration point ---*/
       if(is_ale) f2_veci(gridvelint,funct,egridv,iel);
            
+      /*-------- get velocity (n,i) derivatives at integration point ---*/
+      f2_vder(vderxy,derxy,eveln,iel);
+      divuold = vderxy[0][0] + vderxy[1][1];
+
       /*------ get velocity (n+1,i) derivatives at integration point ---*/
       f2_vder(vderxy,derxy,evelng,iel);
 
@@ -643,6 +649,7 @@ return;
 } /* end of f2_int_stress*/
 
 
+
 /*!---------------------------------------------------------------------
 \brief routine to evaluate the stabilisation parameter within USFEM
 
@@ -768,7 +775,7 @@ case 0: /* Franca */
       mk = 0.083333333333333333333;
       h0 = 2.0;
    break;
-   default: dserror("not implemented!");
+   default: dserror("element type not implemented!");
    }
    /*----------------- choose appropriate element length calculation ---*/
    switch (which_hk)
@@ -817,8 +824,12 @@ case 0: /* Franca */
       /*-------------------------------- get half trace of (J * J^T) ---*/
       trace = (xjm[0][0]*xjm[0][0] + xjm[0][1]*xjm[0][1] 
              + xjm[1][0]*xjm[1][0] + xjm[1][1]*xjm[1][1]) * 0.5;
-
-      hk = sqrt(trace - sqrt(trace*trace - det*det));
+      /* a quick check for numerical rubbish */
+      if (trace<det) /* this can be caused by numerical dust only */
+      {
+         hk = sqrt(trace) * 2.0;
+      }
+      else hk = sqrt(trace - sqrt(trace*trace - det*det)) * 2.0;
    break;
    default: dserror("Evaluation of element length unknown!");
    }
