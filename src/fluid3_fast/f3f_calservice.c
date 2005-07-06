@@ -183,6 +183,8 @@ void f3fcalset(
       ehist[                   LOOPL*i+j]=actnode->sol_increment.a.da[hist][0];
       ehist[  sizevec[0]*LOOPL+LOOPL*i+j]=actnode->sol_increment.a.da[hist][1];
       ehist[2*sizevec[0]*LOOPL+LOOPL*i+j]=actnode->sol_increment.a.da[hist][2];
+      /* pressure at time (n+1) */
+      epren[LOOPL*i+j]=actnode->sol_increment.a.da[velnp][3];
     } /*loop*/
 
   } /* end of loop over nodes */
@@ -266,7 +268,6 @@ void f3fcalseta(
     ELEMENT         *ele[LOOPL],
     DOUBLE          *ehist,
     DOUBLE          *evelng,
-    DOUBLE          *ealecovn,
     DOUBLE          *ealecovng,
     DOUBLE          *egridv,
     DOUBLE          *epren,
@@ -336,6 +337,8 @@ void f3fcalseta(
       ehist[                   LOOPL*i+j]= actnode->sol_increment.a.da[hist][0];
       ehist[  sizevec[0]*LOOPL+LOOPL*i+j]= actnode->sol_increment.a.da[hist][1];
       ehist[2*sizevec[0]*LOOPL+LOOPL*i+j]= actnode->sol_increment.a.da[hist][2];
+      /* pressure at time (n+1) */
+      epren[LOOPL*i+j]=actnode->sol_increment.a.da[velnp][3];
 
     }/*loop*/
 
@@ -473,7 +476,7 @@ void f3fcalelesize(
   INT ishvol;                /* evaluation flag */
   INT actmat;                /* number of actual material */
   DOUBLE visc;               /* fluid viscosity */
-  DOUBLE det[LOOPL];       /* determinant of jacobian */
+  DOUBLE det[LOOPL];         /* determinant of jacobian */
   DOUBLE vol[LOOPL];         /* element volume */
   DOUBLE val[LOOPL];         /* temporary calculation value */
   DOUBLE velno;              /* velocity norm */
@@ -1143,7 +1146,7 @@ void f3falecord(
 
 {
 
-  INT    l,i,j;
+  INT    l,i;
   DOUBLE omt,theta;
   DOUBLE xy,xyn,xyng;
   DOUBLE dt;

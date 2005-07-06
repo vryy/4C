@@ -270,7 +270,7 @@ void f3fliftdrag(
 
           /* shape functions and derivatives at this point */
           f3fhexc(funct,deriv,e1,e2,e3,typ);
-          f3fjacoc(funct,deriv,xjm,&det0,ele,iel);
+          f3fjacoc(deriv,xjm,&det0,ele,iel);
 
           fac = facr * facs * fact;
 
@@ -753,7 +753,6 @@ void f3fhexc(
  */
 /*-----------------------------------------------------------------------*/
 void f3fjacoc(
-    DOUBLE      funct[MAXNOD_F3],
     DOUBLE      deriv[3][MAXNOD_F3],
     DOUBLE      xjm[3][3],
     DOUBLE     *det,

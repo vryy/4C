@@ -72,7 +72,6 @@ extern struct _MATERIAL  *mat;
   \param xjm            *DOUBLE   (i) jacobian matrix
   \param derxy          *DOUBLE   (i) global derivatives
   \param derxy2         *DOUBLE   (i) 2nd global derivatives
-  \param eveln          *DOUBLE   (i) vels at time n
   \param evelng         *DOUBLE   (i) vels at time n+g
   \param epren          *DOUBLE   (i) pres at time n
   \param edeadn         *DOUBLE   (i) dead load at n
@@ -106,7 +105,6 @@ void f3fcalint(
     DOUBLE          *xjm,
     DOUBLE          *derxy,
     DOUBLE          *derxy2,
-    DOUBLE          *eveln,
     DOUBLE          *evelng,
     DOUBLE          *epren,
     DOUBLE          *edeadn,

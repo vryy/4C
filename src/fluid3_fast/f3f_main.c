@@ -159,7 +159,7 @@ void fluid3_fast(
 
       /* calculate stresses only for elements belonging to this proc */
       /*if (par.myrank==ele[0]->proc)*/
-        f3fstress(container->str,viscstr,ele,ipos,container->is_relax,loop);
+        f3fstress(container->str,viscstr,ele,ipos,loop);
       break;
 
 
@@ -183,7 +183,7 @@ void fluid3_fast(
           }
           if (ldflag>0)
           {
-            f3fstress(container->str,viscstr,ele,ipos,container->is_relax,loop);
+            f3fstress(container->str,viscstr,ele,ipos,loop);
             f3fliftdrag(ele[l],container);
           }
         }
