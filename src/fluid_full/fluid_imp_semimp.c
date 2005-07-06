@@ -158,7 +158,6 @@ void fluid_isi(void)
 {
 INT             itnum;              /* counter for nonlinear iteration  */
 INT             i;                  /* simply a counter                 */
-INT             leftspace;        /* flag used to circulate other flags */
 INT             numeq;              /* number of equations on this proc */
 INT             numeq_total;        /* total number of equations        */
 INT             init;               /* flag for solver_control call     */
@@ -182,6 +181,7 @@ DOUBLE          t1,t2,ts,te,tt;	    /*					*/
 DOUBLE          tes=0.0;            /*					*/
 DOUBLE          tss=0.0;            /*					*/
 DOUBLE          tts=0.0;            /*					*/
+DOUBLE          fact1,fact2;
 FLUID_STRESS    str;
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
@@ -473,7 +473,21 @@ if (fdyn->adaptive && fdyn->step > 1)
 {
   fluid_predictor(actfield,ipos,fdyn->iop);
 }
-
+else
+{
+/* do explicit predictor step to start iteration from better value */
+  fact1 = fdyn->dta*(1.0+fdyn->dta/fdyn->dtp);
+  fact2 = DSQR(fdyn->dta/fdyn->dtp);
+  solserv_sol_add(actfield,0,node_array_sol_increment,
+                             node_array_sol_increment,
+                             ipos->accn,ipos->velnp, fact1);
+  solserv_sol_add(actfield,0,node_array_sol_increment,
+                             node_array_sol_increment,
+                             ipos->veln,ipos->velnp,-fact2);
+  solserv_sol_add(actfield,0,node_array_sol_increment,
+                             node_array_sol_increment,
+                             ipos->velnm,ipos->velnp,fact2);
+}
 /*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
 fluid_setdirich(actfield,ipos,ipos->velnp);
 /*fluid_setdirich_cyl(actfield);*/
@@ -601,33 +615,29 @@ if(fdyn->adaptive)
 }
 
 /*---------------------------------------------- update acceleration ---*/
-if (fdyn->adaptive                        /* for adaptive time stepping */
-    || ( fdyn->iop != 7 )  )              /* not for pure BDF2 */
-{
-  /*----- copy solution from sol_increment[5][j] to sol_increment[4][j] */
-  /*--- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/
-  if (fdyn->step > 1)
-     solserv_sol_copy(actfield,0,node_array_sol_increment,
-                                 node_array_sol_increment,
-                                 ipos->accn,ipos->accnm);
-  /*------------------------ evaluate acceleration in this time step ---*
-   *-------------------------------- depending on integration method ---*/
-  if (fdyn->step == 1)
-  { /* do just a linear interpolation within the first timestep */
-    solserv_sol_zero(actfield,0,node_array_sol_increment,ipos->accnm);
-    solserv_sol_add(actfield,0,node_array_sol_increment,
+/*----- copy solution from sol_increment[5][j] to sol_increment[4][j] */
+/*--- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/
+if (fdyn->step > 1)
+   solserv_sol_copy(actfield,0,node_array_sol_increment,
                                node_array_sol_increment,
-                               ipos->velnp,ipos->accn, 1.0/fdyn->dta);
-    solserv_sol_add(actfield,0,node_array_sol_increment,
-                               node_array_sol_increment,
-                               ipos->veln,ipos->accn,-1.0/fdyn->dta);
-    solserv_sol_copy(actfield,0,node_array_sol_increment,
-                                node_array_sol_increment,
-                                ipos->accn,ipos->accnm);
-  }
-  else
-    fluid_acceleration(actfield,ipos,fdyn->iop);
+                               ipos->accn,ipos->accnm);
+/*------------------------ evaluate acceleration in this time step ---*
+ *-------------------------------- depending on integration method ---*/
+if (fdyn->step == 1)
+{ /* do just a linear interpolation within the first timestep */
+  solserv_sol_zero(actfield,0,node_array_sol_increment,ipos->accnm);
+  solserv_sol_add(actfield,0,node_array_sol_increment,
+                             node_array_sol_increment,
+                             ipos->velnp,ipos->accn, 1.0/fdyn->dta);
+  solserv_sol_add(actfield,0,node_array_sol_increment,
+                             node_array_sol_increment,
+                             ipos->veln,ipos->accn,-1.0/fdyn->dta);
+  solserv_sol_copy(actfield,0,node_array_sol_increment,
+                              node_array_sol_increment,
+                              ipos->accn,ipos->accnm);
 }
+else
+  fluid_acceleration(actfield,ipos,fdyn->iop);
 
 /*------------------------------------------- update time step sizes ---*/
 fdyn->dtp = fdyn->dta;
@@ -662,9 +672,8 @@ if (ioflags.fluid_stress==1)
       &container,action);
 }
 
-/* copy solution from sol_increment[veln][j] to sol_increment[velnm][j] */
+/*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
-/* reset flags instead */
 solserv_sol_copy(actfield,0,node_array_sol_increment,
                             node_array_sol_increment,ipos->veln,ipos->velnm);
 
