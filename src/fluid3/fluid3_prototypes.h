@@ -43,6 +43,13 @@ void f3_heightfunc(
                    ARRAY_POSITION       *ipos
 		   );
 void f3_calstab(ELEMENT *ele, ARRAY_POSITION *ipos);
+void f3_caleleres(
+	           ELEMENT          *ele,
+	           ARRAY            *eforce_global,
+                   INT              *hasdirich,
+                   INT              *hasext,
+                   ARRAY_POSITION   *ipos
+	       );
 
 /************************************************************************
  | f3_calelesize.c                                                      |
@@ -67,42 +74,6 @@ void f3_calelesize2(
                      INT              iel,
                      DIS_TYP          typ
                    );
-
-/************************************************************************
- | f3_calextrhs.c                                                       |
- ************************************************************************/
-void f3_calgalexfv(
-                  DOUBLE          *eforce,
-		  DOUBLE          *funct,
-                  DOUBLE          *edeadn,
-		  DOUBLE          *edeadng,
-		  DOUBLE           fac,
-		  INT              iel
-              );
-void f3_calstabexfv(
-                     STAB_PAR_GLS    *gls,
-                     ELEMENT         *ele,
-                     DOUBLE          *eforce,
-                     DOUBLE         **derxy,
-                     DOUBLE         **derxy2,
-                     DOUBLE          *edead,
-                     DOUBLE          *velint,
-                     DOUBLE           fac,
-                     DOUBLE           visc,
-                     INT              iel,
-                     INT              ihoel,
-                     INT              flag
-
-                   );
-void f3_calstabexfp(
-                     STAB_PAR_GLS    *gls,
-                     DOUBLE          *eforce,
-                     DOUBLE         **derxy,
-                     DOUBLE          *edead,
-                     DOUBLE           fac,
-                     INT              iel,
-                     INT              flag
-                   ) ;
 
 /************************************************************************
  | f3_calfuncderiv.c                                                    |
@@ -375,6 +346,46 @@ void f3_calstabifp(
                  );
 
 /************************************************************************
+ | f3_calmatvec_usfem.c                                                 |
+ ************************************************************************/
+void f3_calmat( DOUBLE **estif,  
+		DOUBLE  *eforce,  
+		DOUBLE  *velint,
+		DOUBLE   histvec[3], 
+		DOUBLE   gridvint[3],
+		DOUBLE **vderxy,
+                DOUBLE **vderxy2,
+                DOUBLE   gradp[3],
+		DOUBLE  *funct,  
+		DOUBLE **derxy,   
+		DOUBLE **derxy2,
+                DOUBLE  *edeadng,
+		DOUBLE   fac,    
+		DOUBLE   visc,   
+		INT      iel,
+                INT     *hasext,
+                INT      isale
+              );
+void f3_calresvec(  DOUBLE  *eforce,  
+                    DOUBLE  *velint,
+                    DOUBLE   histvec[3], 
+                    DOUBLE **vderxy, 
+                    DOUBLE **vderxy2,
+                    DOUBLE  *funct,  
+                    DOUBLE **derxy,   
+		    DOUBLE **derxy2,
+                    DOUBLE  *edeadng,
+                    DOUBLE   aleconv[3],
+                    DOUBLE  *press,
+                    DOUBLE   gradp[3],
+                    DOUBLE   fac,    
+                    DOUBLE   visc,   
+                    INT      iel,
+                    INT     *hasext,
+                    INT      is_ale
+              );
+
+/************************************************************************
  | f3_calservice.c                                                      |
  ************************************************************************/
 void f3_calset(
@@ -383,7 +394,6 @@ void f3_calset(
                DOUBLE         **ehist,
                DOUBLE         **evelng,
                DOUBLE          *epren,
-               DOUBLE          *edeadn,
                DOUBLE          *edeadng,
                ARRAY_POSITION  *ipos,
                INT             *hasext
@@ -392,12 +402,10 @@ void f3_calseta(
                   ELEMENT         *ele,
                   DOUBLE         **xyze,
                   DOUBLE         **ehist,
-                  DOUBLE         **ealecovn,
+                  DOUBLE         **evelng,
                   DOUBLE         **ealecovng,
                   DOUBLE         **egridv,
-                  DOUBLE         **evelng,
                   DOUBLE          *epren,
-                  DOUBLE          *edeadn,
                   DOUBLE          *edeadng,
                   ARRAY_POSITION  *ipos,
                   INT             *hasext
@@ -600,6 +608,20 @@ void f3_calstabpar(
 		    INT              iflag
                   );
 
+/************************************************************************
+ | f3_caltau.c                                                          |
+ ************************************************************************/
+void f3_caltau(			     
+	       ELEMENT         *ele, 
+	       DOUBLE         **xyze,
+	       DOUBLE          *funct,  
+	       DOUBLE         **deriv,  
+	       DOUBLE         **derxy,              
+	       DOUBLE         **xjm,  
+	       DOUBLE         **evelng,
+               DOUBLE         **wa1,
+               DOUBLE           visc  
+              );
 
 /************************************************************************
  | f3_inpele.c                                                          |
@@ -611,6 +633,55 @@ void f3inp(ELEMENT *ele, INT counter);
  ************************************************************************/
 void f3_intg(
              INT              option);
+
+/************************************************************************
+ | f3_int_usfem.c                                                       |
+ ************************************************************************/
+void f3_int_usfem(
+	              ELEMENT         *ele,
+                      INT             *hasext,
+                      DOUBLE         **estif,
+	              DOUBLE          *force,
+	              DOUBLE         **xyze,
+	              DOUBLE          *funct,
+	              DOUBLE         **deriv,
+	              DOUBLE         **deriv2,
+	              DOUBLE         **xjm,
+	              DOUBLE         **derxy,
+	              DOUBLE         **derxy2,
+	              DOUBLE         **evelng,
+	              DOUBLE         **evhist,
+	              DOUBLE         **egridv,
+	              DOUBLE          *epren,
+	              DOUBLE          *edeadng,
+	              DOUBLE         **vderxy,
+                      DOUBLE         **vderxy2,
+                      DOUBLE           visc,
+	              DOUBLE         **wa1,
+	              DOUBLE         **wa2
+	             );
+void f3_int_res(
+	        ELEMENT         *ele,
+                INT             *hasext,
+	        DOUBLE          *force,
+	        DOUBLE         **xyze,
+	        DOUBLE          *funct,
+	        DOUBLE         **deriv,
+	        DOUBLE         **deriv2,
+	        DOUBLE         **xjm,
+	        DOUBLE         **derxy,
+	        DOUBLE         **derxy2,
+	        DOUBLE         **evelng,
+	        DOUBLE         **evhist,
+	        DOUBLE         **ealecovng,
+	        DOUBLE          *epren,
+	        DOUBLE          *edeadng,
+	        DOUBLE         **vderxy,
+                DOUBLE         **vderxy2,
+                DOUBLE           visc,
+	        DOUBLE         **wa1,
+	        DOUBLE         **wa2
+	       );
 
 /************************************************************************
  | f3_main.c                                                            |
@@ -707,7 +778,6 @@ void f3_liftdrag(
     CONTAINER     *container
     );
 void f3_jaco2(
-    DOUBLE      funct[MAXNOD_F3],
     DOUBLE      deriv[3][MAXNOD_F3],
     DOUBLE      xjm[3][3],
     DOUBLE     *det,
