@@ -92,7 +92,6 @@ DOUBLE  recv[(FLUID_NUM_LD+1)*12];      /* receive buffer               */
 FIELD  *structfield;
 NODE   *actnode;
 DLINE  *actdline, *aledline;
-DNODE  *actdnode;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
