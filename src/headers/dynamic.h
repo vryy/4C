@@ -122,6 +122,11 @@ ARRAY              sid;             /*!< structural interface dofs */
 INT                numsid;          /*!< number of structural interface dofs */
 INT                actpos;          /*!<  */
 INT                coupmethod;      /*!< flag, 0=mortar , 1=conforming */
+enum {
+      cf_none,       /*! No evaluation of coupling force                */
+      cf_stress,     /*! Evaluation using stress values (derivatives)   */
+      cf_nodeforce   /*! Evaluation via consistent nodal forces         */
+     } coupforce;    /*!< how to calculate fsi coupling force */
 } FSI_DYNAMIC;
 
 /*----------------------------------------------------------------------*
@@ -172,8 +177,8 @@ enum
 		  min_Je_stiff,  /*!< incremental calculation
 		                    stiffened with min J_element^2 */
                   two_step,      /*!< calculation in 2 steps per timestep */
-		  springs,       /*!< springs rather than continous pseudo material */
-		  laplace,       /*!< Laplace smoothing algorithm */
+                  springs,       /*!< springs rather than continous pseudo material */
+                  laplace,       /*!< Laplace smoothing algorithm */
                   LAS            /*!< large amplitude sloshing */
    } typ;                        /*!< switch dynamic algorithm */
 
@@ -194,3 +199,6 @@ DOUBLE             maxtime;      /*!< maximum total time */
 DOUBLE             time;         /*!< actual time */
 INT                coupmethod;   /*!< flag, 0=mortar , 1=conforming */
 } ALE_DYNAMIC;
+
+
+
