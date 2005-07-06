@@ -259,7 +259,7 @@ void f3_liftdrag(
 
           /* shape functions and derivatives at this point */
           f3_hex2(funct,deriv,e1,e2,e3,typ);
-          f3_jaco2(funct,deriv,xjm,&det0,ele,iel);
+          f3_jaco2(deriv,xjm,&det0,ele,iel);
 
           fac = facr * facs * fact;
 
@@ -738,7 +738,6 @@ void f3_hex2(
 
   ------------------------------------------------------------------------*/
 void f3_jaco2(
-    DOUBLE      funct[MAXNOD_F3],
     DOUBLE      deriv[3][MAXNOD_F3],
     DOUBLE      xjm[3][3],
     DOUBLE     *det,
