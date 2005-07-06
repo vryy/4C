@@ -108,7 +108,7 @@ typedef enum _ELEMENT_TYP
                        el_fluid3_fast,
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3,        /* 3D pseudo structural ale element */
-                       el_axishell,    /* 1D axisymmetrical shell element */
+                       el_axishell,    /* 1D axisymmetrical shell element */  
                        el_interf,      /* 1D interface element (combination only with wall) */
                        el_wallge,      /* gradient enhanced wall element */
                        el_count        /* The number of known
@@ -257,7 +257,6 @@ typedef enum _CALC_ACTION
 		       calc_fluid_heightfunc,
 		       calc_fluid_liftdrag,
                        calc_fluid_shearvelo,
-		       calc_fluid_time_rhs,
 		       calc_fluid_normal,
                        calc_fluid_stressprojection,
 		       /* ale */
@@ -501,3 +500,5 @@ typedef enum _STABILISATION_TYP
    stab_usfem,  /*! Unusual 'least square' stabilisation                */
    stab_prespro	/*! Stabilisation based on pressure projection		*/
 } STABILISATION_TYP;
+
+
