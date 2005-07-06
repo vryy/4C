@@ -257,7 +257,7 @@ INT                ndis;          /* number of discretizations in this field */
 struct _DISCRET   *dis;           /* structure holding a number of discretisations */
 } FIELD;
 /*----------------------------------------------------------------------*
- | this structure hold one discretization of a field      m.gee 2/02    |
+ | this structure holds one discretization of a field     m.gee 2/02    |
  *----------------------------------------------------------------------*/
 typedef struct _DISCRET
 {
