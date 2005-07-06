@@ -32,3 +32,5 @@ CONVTOL      1.0E-6
 ISDMAX       0
 // Coupling Method Mortar (mtr) or conforming nodes at interface
 COUPMETHOD   conforming
+// Couple with stresses or consistent nodal forces (default: stress)
+COUPFORCE    stress/nodeforce
