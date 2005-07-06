@@ -1644,6 +1644,7 @@ fsidyn->entol=EPS6;
 fsidyn->relax=ONE;
 fsidyn->convtol=EPS6;
 fsidyn->coupmethod=1;
+fsidyn->coupforce = cf_stress; /* couple by stresses */
 
 if (frfind("-FSI DYNAMIC")==0) goto end;
 frread();
@@ -1736,6 +1737,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
                fsidyn->coupmethod=1;
       else
          dserror("Parameter unknown: COUPMETHOD");
+   }
+   frchar("COUPFORCE"    ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if ((strncmp(buffer,"none",4)==0) && length==4)
+          fsidyn->coupforce=cf_none;
+      else if (strncmp(buffer,"stress",6)==0 && length==6)
+          fsidyn->coupforce=cf_stress;
+      else if (strncmp(buffer,"nodeforce",9)==0 && length==9)
+          fsidyn->coupforce=cf_nodeforce;
+      else
+         dserror("Parameter unknown: COUPFORCE");
    }
 /*--------------read INT */
    frint("ISDMAX"     ,&(fsidyn->isdmax)     ,&ierr);
@@ -2058,3 +2072,4 @@ dstrc_exit();
 return;
 } /* end of inpctr_dyn_ale */
 #endif
+
