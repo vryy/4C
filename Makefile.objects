@@ -110,17 +110,19 @@ OBJS_INPUT    = src/input_full/input_control_global.o \
 #                fluid3
 OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
-                src/fluid3/f3_calextrhs.o \
                 src/fluid3/f3_calfuncderiv.o \
                 src/fluid3/f3_calgalmat.o \
                 src/fluid3/f3_calheightfunc_sep.o \
                 src/fluid3/f3_calint.o \
                 src/fluid3/f3_caliterrhs.o \
+                src/fluid3/f3_calmatvec_usfem.o \
                 src/fluid3/f3_calservice.o \
                 src/fluid3/f3_calstabmat.o \
                 src/fluid3/f3_calstabpar.o \
                 src/fluid3/f3_calstress.o \
+                src/fluid3/f3_caltau.o \
                 src/fluid3/f3_inpele.o \
+                src/fluid3/f3_int_usfem.o \
                 src/fluid3/f3_intg.o \
                 src/fluid3/f3_massrhs.o \
                 src/fluid3/f3_main.o \
@@ -133,9 +135,11 @@ OBJS_F3F      = src/fluid3_fast/f3f_calele.o \
                 src/fluid3_fast/f3f_calinta.o \
                 src/fluid3_fast/f3f_calservice.o \
                 src/fluid3_fast/f3f_calstabpar.o \
+                src/fluid3_fast/f3f_caltau.o \
                 src/fluid3_fast/f3f_main.o \
                 src/fluid3_fast/f3f_restart.o \
                 src/fluid3_fast/f3f_calstress.o \
+                src/fluid3_fast/f3f_int_usfem.o \
                 src/fluid3_fast/f3f_liftdrag.o \
                 src/fluid3_fast/f3f_out.o
 #               fluid3_fast (fortran)
@@ -145,7 +149,7 @@ OBJS_F3F_F    = src/fluid3_fast/f3f_calextrhs.o \
                 src/fluid3_fast/f3f_caliterrhs.o \
                 src/fluid3_fast/f3f_calservice_2.o \
                 src/fluid3_fast/f3f_calstabmat.o \
-                src/fluid3_fast/f3f_caltimerhs.o \
+                src/fluid3_fast/f3f_calmatvec_usfem.o \
                 src/fluid3_fast/f3f_massrhs.o
 #               shell8
 OBJS_SHELL8   = src/shell8/s8_main.o \
@@ -410,6 +414,7 @@ OBJS_FSI      = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_ale_spring.o \
                 src/fsi_full/fsi_ale_laplace.o \
                 src/fsi_full/fsi_ale_LAS.o \
+                src/fsi_full/fsi_coupforce.o \
                 src/fsi_full/fsi_coupling.o \
                 src/fsi_full/fsi_dyn.o \
                 src/fsi_full/fsi_energy.o \
