@@ -1102,6 +1102,7 @@ static void write_fsi(PROBLEM_DATA* problem)
   GIDSET fluid_gid;
 
   RESULT_DATA result;
+  RESULT_DATA struct_result;
 
 #ifdef DEBUG
   dstrc_enter("write_fsi");
@@ -1209,10 +1210,12 @@ static void write_fsi(PROBLEM_DATA* problem)
     init_result_data(struct_field, &result);
     while (next_result(&result))
     {
+      /*
       if (map_has_map(result.group, "displacement"))
       {
         write_displacement(struct_field, &result);
       }
+      */
       if (map_has_map(result.group, "velocity"))
       {
         write_velocity(struct_field, &result);
@@ -1228,7 +1231,14 @@ static void write_fsi(PROBLEM_DATA* problem)
 
   /* Do the ale results. */
   init_result_data(ale_field, &result);
-  while (next_result(&result))
+
+  /* We expect struct and ale results for the same time steps! No
+   * discrepancies allowed! */
+  if (struct_field != NULL)
+    init_result_data(struct_field, &struct_result);
+
+  while (next_result(&result) &&
+         ((struct_field == NULL) || next_result(&struct_result)))
   {
     /* We read the displacements of the ale elements and write fluid
      * displacments. That's why this is special and not treated by the
@@ -1241,15 +1251,31 @@ static void write_fsi(PROBLEM_DATA* problem)
       DOUBLE time;
       INT step;
       CHUNK_DATA chunk;
+      CHUNK_DATA struct_chunk;
 
       init_chunk_data(&result, &chunk, "displacement");
 
       time = map_read_real(result.group, "time");
       step = map_read_int(result.group, "step");
 
+      if (struct_field != NULL)
+      {
+        if (!map_has_map(struct_result.group, "displacement"))
+        {
+          dserror("structure displacement required for fsi");
+        }
+
+        init_chunk_data(&struct_result, &struct_chunk, "displacement");
+        if ((fabs(time - map_read_real(struct_result.group, "time")) > 1e-6) ||
+            (step != map_read_int(struct_result.group, "step")))
+        {
+          dserror("struct -- ale result discrepancy");
+        }
+      }
+
       post_log(3, "%s: Write displacement of step %d\n", ale_field->name, step);
 
-      GiD_BeginResult("fluid_displacement", "ccarat", step, GiD_Vector, GiD_OnNodes,
+      GiD_BeginResult("displacement", "ccarat", step, GiD_Vector, GiD_OnNodes,
                       NULL, NULL, chunk.value_entry_length, componentnames);
 
       /* In case this is a 2d problem. */
@@ -1278,7 +1304,29 @@ static void write_fsi(PROBLEM_DATA* problem)
         }
       }
 
+      /*
+       * All displacements are to be shown together. So they must be
+       * in one result set. */
+      if (struct_field != NULL)
+      {
+        for (k = 0; k < struct_field->numnp; ++k)
+        {
+          INT i;
+          chunk_read_size_entry(&(struct_field->coords), k);
+          chunk_read_value_entry(&struct_chunk, k);
+          for (i=0; i<struct_chunk.value_entry_length; ++i)
+          {
+            x[i] = struct_chunk.value_buf[i];
+          }
+
+          GiD_WriteVector(struct_field->coords.size_buf[node_variables.coords_size_Id]+1,
+                          x[0], x[1], x[2]);
+        }
+      }
+
       GiD_EndResult();
+      if (struct_field != NULL)
+        destroy_chunk_data(&struct_chunk);
       destroy_chunk_data(&chunk);
     }
   }
