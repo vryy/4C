@@ -1870,7 +1870,10 @@ static void lexan(PARSER_DATA* data)
           goto end;
         }
         else {
-          dserror("unexpected char '%c' at line %d", t, data->lineno);
+          if (t >= 32)
+            dserror("unexpected char '%c' at line %d", t, data->lineno);
+          else
+            dserror("unexpected char '%d' at line %d", t, data->lineno);
           data->tok = tok_none;
           goto end;
         }
