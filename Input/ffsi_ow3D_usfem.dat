@@ -7,6 +7,7 @@
 // necessary defines: D_FLUID D_FLUID3 D_FLUID3_F D_FLUID3_FAST_F AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX
 //
 // #define MAXNOD           (8)
+// #define MAXNOD_F3        (8)
 // #define MAXELE           (8)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (8)
