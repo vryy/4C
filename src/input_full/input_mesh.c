@@ -818,7 +818,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
 
 /* elementtyp is FLUID3 */
-   frchk("FLUID3",&ierr);
+   frchk("FLUID3 ",&ierr);
    if (ierr==1)
    {
 #ifndef D_FLUID3
