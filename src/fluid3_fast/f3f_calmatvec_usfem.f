@@ -97,12 +97,12 @@ C \param  *gridvint   DOUBLE        (i)   gridvel at INT point
 C \param **vderxy     DOUBLE        (i)   global vel derivatives
 C \param  *vderxy2    DOUBLE        (i)   2nd global vel derivatives
 C \param  *funct      DOUBLE        (i)   nat. shape funcs
-C \param **derxy      DOUBLE        (i)   global coord. deriv.  
+C \param **derxy      DOUBLE        (i)   global coord. deriv
 C \param **derxy2     DOUBLE        (i)   2nd global coord. deriv.
 C \param  *edeadng    DOUBLE        (i)   dead load at time n+1
-C \param   fac 	    DOUBLE        (i)   weighting factor	      
-C \param   visc       DOUBLE        (i)   fluid viscosity	     
-C \param   iel	    INT           (i)   number of nodes of act. ele
+C \param   fac        DOUBLE        (i)   weighting factor
+C \param   visc       DOUBLE        (i)   fluid viscosity
+C \param   iel        INT           (i)   number of nodes of act. ele
 C \param  *hasext     INT           (i)   flag, if element has volume load
 C \param   isale      INT           (i)   flag, if ALE or EULER
 C
@@ -136,18 +136,18 @@ C     the remaining arguments
       real*8 fac(sizevec(4))
       real*8 tau(sizevec(4),3)
       integer hasext(sizevec(4))
-      
+
 C     locally required variables and arrays
       integer i, j, ri, ci
       integer cix, ciy, ciz, cip
       integer rix, riy, riz, rip
       integer l ! loop counter for THE LOOP
       real*8  timefac    ! One-step-Theta: timefac = theta*dt
-C                          BDF2:           timefac = 2/3 * dt 
+C                          BDF2:           timefac = 2/3 * dt
       real*8  aux(sizevec(4))
       real*8  auxmat(sizevec(4),3,3)
 
-      real*8  tau_M(sizevec(4)) 
+      real*8  tau_M(sizevec(4))
       real*8  tau_Mp(sizevec(4))
       real*8  tau_C(sizevec(4))
       real*8  viscs2(sizevec(4),3,3*sizevec(1))
@@ -158,9 +158,9 @@ C                          BDF2:           timefac = 2/3 * dt
       real*8  ugradv(sizevec(4),sizevec(1),3*sizevec(1))
       real*8  conv_old(sizevec(4),3), visc_old(sizevec(4),3)
       real*8  rhsint(sizevec(4),3)
-      real*8  time2nue 
+      real*8  time2nue
       real*8  timetauM(sizevec(4)), timetauMp(sizevec(4))
-      real*8  ttimetauM(sizevec(4)), ttimetauMp(sizevec(4)) 
+      real*8  ttimetauM(sizevec(4)), ttimetauMp(sizevec(4))
       real*8  timefacfac(sizevec(4))
 
 
@@ -169,7 +169,7 @@ C========================== initialisation =============================
 
 C     evaluate rhs vector at integration point
       do l=1,sizevec(5)
-        if(hasext(l).ne.0) then
+        if (hasext(l).ne.0) then
           rhsint(l,1) = timefac * edeadng(l,1) + histint(l,1)
           rhsint(l,2) = timefac * edeadng(l,2) + histint(l,2)
           rhsint(l,3) = timefac * edeadng(l,3) + histint(l,3)
@@ -181,7 +181,7 @@ C     evaluate rhs vector at integration point
       enddo
 
       do l=1,sizevec(5)
-C       integration factors and koefficients of single terms 
+C       integration factors and koefficients of single terms
         tau_M(l)  = tau(l,1)*fac(l)
         tau_Mp(l) = tau(l,2)*fac(l)
         tau_C(l)  = tau(l,3)*fac(l)
@@ -229,12 +229,6 @@ C           with  N .. form function matrix
           conv_c(l,i) = derxy(l,i,1) * velint(l,1)
      &                + derxy(l,i,2) * velint(l,2)
      &                + derxy(l,i,3) * velint(l,3)
-C         convective grid part u_G * grad (funct)
-C         u_G,old_x * N,x  +  u_G,old_y * N,y  +  u_G,old_z * N,z
-C           with  N .. form function matrix */
-          conv_g(l,i) = - derxy(l,i,1) * gridvint(l,1)
-     &                  - derxy(l,i,2) * gridvint(l,2)
-     &                  - derxy(l,i,3) * gridvint(l,3)
 C         reactive part funct * grad (u_old)
 C         /                                     \
 C         |  u_old_x,x   u_old_x,y   u_old x,z  |
@@ -315,6 +309,17 @@ C                 N_z .. z-line of N
           viscous(l,3,3,3*i)   = derxy(l,i,3)
         enddo ! the loop
 
+        if (flagvec(2).ne.0) then
+          do l=1,sizevec(5)     ! the loop
+C           convective grid part u_G * grad (funct)
+C           u_G,old_x * N,x  +  u_G,old_y * N,y  +  u_G,old_z * N,z
+C             with  N .. form function matrix */
+            conv_g(l,i) = - derxy(l,i,1) * gridvint(l,1)
+     &                    - derxy(l,i,2) * gridvint(l,2)
+     &                    - derxy(l,i,3) * gridvint(l,3)
+          enddo ! the loop
+        endif
+
         do j=1,sizevec(2)
           do l=1,sizevec(5)     ! the loop
 C           ugradv-Term
@@ -350,7 +355,7 @@ C         prepare indices
           rix = ri*4-3
           riy = ri*4-2
           riz = ri*4-1
-          rip = ri*4          
+          rip = ri*4
 C       ************** integrate element coefficient matrix ************
 C===================== GALERKIN part of the matrix =====================
 C         a concentration of the following terms:
@@ -1013,7 +1018,7 @@ C
 C NOTE: this works perfectly only when the fluid is solved via usfem
 C
 C </pre>
-C \param  *eforce	   DOUBLE    (o)    element force vector (residual)
+C \param  *eforce    DOUBLE    (o)    element force vector (residual)
 C \param  *velint    DOUBLE    (i)    (converged) vel. at int.-point
 C \param   histvec   DOUBLE    (i)    histroy data
 C \param **vderxy    DOUBLE    (i)    velocity gradient at int.-point
@@ -1029,7 +1034,7 @@ C \param   visc      DOUBLE    (i)    fluid viscosity
 C \param   iel       INT       (i)    number of elemental nodes
 C \param  *hasext    INT       (i)    flag, if there is body force
 C \param   is_ale    INT       (i)    flag, if it's ale or Euler
-C \return void                                              
+C \return void
 C 
 C ----------------------------------------------------------------------
 C23456789012345678901234567890123456789012345678901234567890123456789012
@@ -1066,11 +1071,10 @@ C     locally required variables and arrays
       integer rix, riy, riz
       integer l ! loop counter for THE LOOP
       real*8  timefac    ! One-step-Theta: timefac = theta*dt
-C                          BDF2:           timefac = 2/3 * dt 
+C                          BDF2:           timefac = 2/3 * dt
       real*8  invtime    !  1 / timefac
       real*8  dt
       real*8  twovisc
-      real*8  aux(sizevec(4))
 
       real*8  tau_M(sizevec(4)) 
       real*8  tau_Mp(sizevec(4))
@@ -1095,62 +1099,62 @@ C      ... including actual velocity and convective term
         if(flagvec(1).ne.0) then
           if(hasext(l).ne.0) then
             rhsint(l,1) = timefac * ( edeadng(l,1)
-     &                  - vderxy(l,1,1) * aleconvint(l,1) 
-     &                  - vderxy(l,2,1) * aleconvint(l,2)
-     &                  - vderxy(l,3,1) * aleconvint(l,3) ) 
-     &                  + histint(l,1) - velint(l,1)
-            rhsint(l,2) = timefac * ( edeadng(l,2)
-     &                  - vderxy(l,1,2) * aleconvint(l,1) 
-     &                  - vderxy(l,2,2) * aleconvint(l,2)
-     &                  - vderxy(l,3,2) * aleconvint(l,3) ) 
-     &                  + histint(l,2) - velint(l,2)
-            rhsint(l,3) = timefac * ( edeadng(l,3)
-     &                  - vderxy(l,1,3) * aleconvint(l,1) 
-     &                  - vderxy(l,2,3) * aleconvint(l,2)
-     &                  - vderxy(l,3,3) * aleconvint(l,3) ) 
-     &                  + histint(l,3) - velint(l,3)
-          else
-            rhsint(l,1) = histint(l,1) - velint(l,1) + timefac * ( 
-     &                  - vderxy(l,1,1) * aleconvint(l,1) 
+     &                  - vderxy(l,1,1) * aleconvint(l,1)
      &                  - vderxy(l,2,1) * aleconvint(l,2)
      &                  - vderxy(l,3,1) * aleconvint(l,3) )
-            rhsint(l,2) = histint(l,2) - velint(l,2) + timefac * ( 
-     &                  - vderxy(l,1,2) * aleconvint(l,1) 
+     &                  + histint(l,1) - velint(l,1)
+            rhsint(l,2) = timefac * ( edeadng(l,2)
+     &                  - vderxy(l,1,2) * aleconvint(l,1)
      &                  - vderxy(l,2,2) * aleconvint(l,2)
      &                  - vderxy(l,3,2) * aleconvint(l,3) )
-            rhsint(l,3) = histint(l,3) - velint(l,3) + timefac * ( 
-     &                  - vderxy(l,1,3) * aleconvint(l,1) 
+     &                  + histint(l,2) - velint(l,2)
+            rhsint(l,3) = timefac * ( edeadng(l,3)
+     &                  - vderxy(l,1,3) * aleconvint(l,1)
+     &                  - vderxy(l,2,3) * aleconvint(l,2)
+     &                  - vderxy(l,3,3) * aleconvint(l,3) )
+     &                  + histint(l,3) - velint(l,3)
+          else
+            rhsint(l,1) = histint(l,1) - velint(l,1) + timefac * (
+     &                  - vderxy(l,1,1) * aleconvint(l,1)
+     &                  - vderxy(l,2,1) * aleconvint(l,2)
+     &                  - vderxy(l,3,1) * aleconvint(l,3) )
+            rhsint(l,2) = histint(l,2) - velint(l,2) + timefac * (
+     &                  - vderxy(l,1,2) * aleconvint(l,1)
+     &                  - vderxy(l,2,2) * aleconvint(l,2)
+     &                  - vderxy(l,3,2) * aleconvint(l,3) )
+            rhsint(l,3) = histint(l,3) - velint(l,3) + timefac * (
+     &                  - vderxy(l,1,3) * aleconvint(l,1)
      &                  - vderxy(l,2,3) * aleconvint(l,2)
      &                  - vderxy(l,3,3) * aleconvint(l,3) )
           endif
         else ! no ALE
           if(hasext(l).ne.0) then
             rhsint(l,1) = timefac * ( edeadng(l,1)
-     &                  - vderxy(l,1,1) * velint(l,1) 
-     &                  - vderxy(l,2,1) * velint(l,2)
-     &                  - vderxy(l,3,1) * velint(l,3) ) 
-     &                  + histint(l,1) - velint(l,1)
-            rhsint(l,2) = timefac * ( edeadng(l,2)
-     &                  - vderxy(l,1,2) * velint(l,1) 
-     &                  - vderxy(l,2,2) * velint(l,2)
-     &                  - vderxy(l,3,2) * velint(l,3) ) 
-     &                  + histint(l,2) - velint(l,2)
-            rhsint(l,3) = timefac * ( edeadng(l,3)
-     &                  - vderxy(l,1,3) * velint(l,1) 
-     &                  - vderxy(l,2,3) * velint(l,2)
-     &                  - vderxy(l,3,3) * velint(l,3) ) 
-     &                  + histint(l,3) - velint(l,3)
-          else
-            rhsint(l,1) = histint(l,1) - velint(l,1) + timefac * ( 
-     &                  - vderxy(l,1,1) * velint(l,1) 
+     &                  - vderxy(l,1,1) * velint(l,1)
      &                  - vderxy(l,2,1) * velint(l,2)
      &                  - vderxy(l,3,1) * velint(l,3) )
-            rhsint(l,2) = histint(l,2) - velint(l,2) + timefac * ( 
-     &                  - vderxy(l,1,2) * velint(l,1) 
+     &                  + histint(l,1) - velint(l,1)
+            rhsint(l,2) = timefac * ( edeadng(l,2)
+     &                  - vderxy(l,1,2) * velint(l,1)
      &                  - vderxy(l,2,2) * velint(l,2)
      &                  - vderxy(l,3,2) * velint(l,3) )
-            rhsint(l,3) = histint(l,3) - velint(l,3) + timefac * ( 
-     &                  - vderxy(l,1,3) * velint(l,1) 
+     &                  + histint(l,2) - velint(l,2)
+            rhsint(l,3) = timefac * ( edeadng(l,3)
+     &                  - vderxy(l,1,3) * velint(l,1)
+     &                  - vderxy(l,2,3) * velint(l,2)
+     &                  - vderxy(l,3,3) * velint(l,3) )
+     &                  + histint(l,3) - velint(l,3)
+          else
+            rhsint(l,1) = histint(l,1) - velint(l,1) + timefac * (
+     &                  - vderxy(l,1,1) * velint(l,1)
+     &                  - vderxy(l,2,1) * velint(l,2)
+     &                  - vderxy(l,3,1) * velint(l,3) )
+            rhsint(l,2) = histint(l,2) - velint(l,2) + timefac * (
+     &                  - vderxy(l,1,2) * velint(l,1)
+     &                  - vderxy(l,2,2) * velint(l,2)
+     &                  - vderxy(l,3,2) * velint(l,3) )
+            rhsint(l,3) = histint(l,3) - velint(l,3) + timefac * (
+     &                  - vderxy(l,1,3) * velint(l,1)
      &                  - vderxy(l,2,3) * velint(l,2)
      &                  - vderxy(l,3,3) * velint(l,3) )
           endif
@@ -1161,9 +1165,9 @@ C      ... including actual velocity and convective term
         tau_M(l)  = tau(l,1)*fac(l)
         tau_Mp(l) = tau(l,2)*fac(l)
         tau_C(l)  = tau(l,3)*fac(l)
- 
+
 C       viscous term (after integr. by parts)
-C         /                                             \   
+C         /                                             \
 C         |  2 u_x,x    u_x,y + u_y,x    u_x,z + u_z,x  |
 C       1 |                                             |
 C       - |  u_y,x + u_x,y    2 u_y,y    u_y,z + u_z,y  |
@@ -1289,7 +1293,7 @@ C     now build single residual terms
         do l=1,sizevec(5)  ! the loop
           rix = ri*4-3
           riy = ri*4-2
-          riz = ri*4-1   
+          riz = ri*4-1
 C         ************ integrate element residuum vector ***************
 C         simple parts, which are not partially integrated
           eforce(l,rix) = eforce(l,rix) 
@@ -1344,20 +1348,20 @@ C         stabilisation part - impulse stabilisation
           eforce(l,riz) = eforce(l,riz)
      &                  + tau_M(l) * conv_c(l,ri) * resid(l,3)
 C 
-          eforce(l,rix) = eforce(l,rix) + tau_Mp(l) * twovisc * 
+          eforce(l,rix) = eforce(l,rix) + tau_Mp(l) * twovisc *
      &                  ( viscs2(l,1,ri*3-2) * resid(l,1)
      &                   +viscs2(l,2,ri*3-2) * resid(l,2)
      &                   +viscs2(l,3,ri*3-2) * resid(l,3) )
-          eforce(l,riy) = eforce(l,riy) + tau_Mp(l) * twovisc * 
+          eforce(l,riy) = eforce(l,riy) + tau_Mp(l) * twovisc *
      &                  ( viscs2(l,1,ri*3-1) * resid(l,1)
      &                   +viscs2(l,2,ri*3-1) * resid(l,2)
      &                   +viscs2(l,3,ri*3-1) * resid(l,3) ) 
-          eforce(l,riz) = eforce(l,riz) + tau_Mp(l) * twovisc *  
+          eforce(l,riz) = eforce(l,riz) + tau_Mp(l) * twovisc *
      &                  ( viscs2(l,1,ri*3) * resid(l,1)
      &                   +viscs2(l,2,ri*3) * resid(l,2)
-     &                   +viscs2(l,3,ri*3) * resid(l,3) ) 
+     &                   +viscs2(l,3,ri*3) * resid(l,3) )
 C         stabilisation part - continuity stabilistation
-          eforce(l,rix) = eforce(l,rix) - tau_C(l) * timefac * 
+          eforce(l,rix) = eforce(l,rix) - tau_C(l) * timefac *
      &                   ( vderxy(l,1,1)
      &                   + vderxy(l,2,2)
      &                   + vderxy(l,3,3) ) * derxy(l,ri,1)

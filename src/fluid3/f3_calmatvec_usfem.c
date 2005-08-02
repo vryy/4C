@@ -123,35 +123,35 @@ for further comments see comment lines within code.
 \param **vderxy     DOUBLE        (i)   global vel derivatives
 \param  *vderxy2    DOUBLE        (i)   2nd global vel derivatives
 \param  *funct      DOUBLE        (i)   nat. shape funcs
-\param **derxy      DOUBLE        (i)   global coord. deriv.  
+\param **derxy      DOUBLE        (i)   global coord. deriv
 \param **derxy2     DOUBLE        (i)   2nd global coord. deriv.
 \param  *edeadng    DOUBLE        (i)   dead load at time n+1
-\param   fac 	    DOUBLE        (i)   weighting factor	      
-\param   visc       DOUBLE        (i)   fluid viscosity	     
-\param   iel	    INT           (i)   number of nodes of act. ele
+\param   fac        DOUBLE        (i)   weighting factor
+\param   visc       DOUBLE        (i)   fluid viscosity
+\param   iel        INT           (i)   number of nodes of act. ele
 \param  *hasext     INT           (i)   flag, if element has volume load
 \param   isale      INT           (i)   flag, if ALE or EULER
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f3_calmat( DOUBLE **estif,  
-		DOUBLE  *eforce,  
-		DOUBLE  *velint,
-		DOUBLE   histvec[3], 
-		DOUBLE   gridvint[3],
-		DOUBLE **vderxy,
+void f3_calmat( DOUBLE **estif,
+                DOUBLE  *eforce,
+                DOUBLE  *velint,
+                DOUBLE   histvec[3],
+                DOUBLE   gridvint[3],
+                DOUBLE **vderxy,
                 DOUBLE **vderxy2,
                 DOUBLE   gradp[3],
-		DOUBLE  *funct,  
-		DOUBLE **derxy,   
-		DOUBLE **derxy2,
+                DOUBLE  *funct,
+                DOUBLE **derxy,
+                DOUBLE **derxy2,
                 DOUBLE  *edeadng,
-		DOUBLE   fac,    
-		DOUBLE   visc,   
-		INT      iel,
+                DOUBLE   fac,
+                DOUBLE   visc,
+                INT      iel,
                 INT     *hasext,
                 INT      isale
-              )
+                )
 {
 INT     i, j, ri, ci;
 DOUBLE  timefac;    /* One-step-Theta: timefac = theta*dt 
@@ -177,7 +177,7 @@ DOUBLE  time2nue, timetauM, timetauMp, ttimetauM, ttimetauMp, timefacfac;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("f2_calmat");
-#endif	
+#endif
 /*========================== initialisation ============================*/
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -234,18 +234,21 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
 {
    /* Reactive term  u:  funct */
    /* linearise convective term */
-   
+
    /*--- convective part u_old * grad (funct) --------------------------*/
    /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
       with  N .. form function matrix                                   */
    conv_c[i] = derxy[0][i] * velint[0] + derxy[1][i] * velint[1] 
              + derxy[2][i] * velint[2];
-   
+
    /*--- convective grid part u_G * grad (funct) -----------------------*/
    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
-   conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1] 
-               - derxy[2][i] * gridvint[2] ;
-   
+   if(isale)
+   {
+     conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1]
+                 - derxy[2][i] * gridvint[2];
+   }
+
    /*--- reactive part funct * grad (u_old) ----------------------------*/
    /* /                                     \
       |  u_old_x,x   u_old_x,y   u_old x,z  |
@@ -253,7 +256,7 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
       |  u_old_y,x   u_old_y,y   u_old_y,z  | * N 
       |                                     |
       |  u_old_z,x   u_old_z,y   u_old_z,z  |
-      \                                     /                                       
+      \                                     /
       with  N .. form function matrix                                   */
 
    conv_r[0][3*i]   = vderxy[0][0]*funct[i];
@@ -265,16 +268,16 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    conv_r[2][3*i]   = vderxy[2][0]*funct[i];
    conv_r[2][3*i+1] = vderxy[2][1]*funct[i];
    conv_r[2][3*i+2] = vderxy[2][2]*funct[i];
-   
+
    /*--- viscous term  - grad * epsilon(u): ----------------------------*/
-   /*   /                                                \   
+   /*   /                                                \
         |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
       1 |                                                |
     - - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
       2 |                                                |
         |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
-        \                                                /                                 
-    
+        \                                                /
+
     with N_x .. x-line of N
          N_y .. y-line of N                                             */
 
@@ -289,45 +292,45 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    viscs2[2][3*i+2] = - 0.5 * (derxy2[0][i] + derxy2[1][i] + 2.0 * derxy2[2][i]);
 
    /*--- viscous term (after integr. by parts) -------------------------*/
-   /*   /                                             \   
+   /*   /                                             \
         |  2 N_x,x    N_x,y + N_y,x    N_x,z + N_z,x  |
       1 |                                             |
       - |  N_y,x + N_x,y   2 N_y,y     N_y,z + N_z,y  |
       2 |                                             |
         |  N_z,x + N_x,z   N_z,y + N_y,z    2 N_z,z   |
-        \                                             /                                   
+        \                                             /
    with N_x .. x-line of N
-        N_y .. y-line of N   
+        N_y .. y-line of N
         N_z .. z-line of N                                              */
 
    viscous[0][0][3*i]   = derxy[0][i];
-   viscous[0][0][3*i+1] = 0.0;        
+   viscous[0][0][3*i+1] = 0.0;
    viscous[0][0][3*i+2] = 0.0;                /* 1st index:             */
    viscous[0][1][3*i]   = 0.5 * derxy[1][i];  /*   line of epsilon      */
-   viscous[0][1][3*i+1] = 0.5 * derxy[0][i];  /* 2nd index:             */        
+   viscous[0][1][3*i+1] = 0.5 * derxy[0][i];  /* 2nd index:             */
    viscous[0][1][3*i+2] = 0.0;                /*   column of epsilon    */
    viscous[0][2][3*i]   = 0.5 * derxy[2][i];  /* 3rd index:             */
    viscous[0][2][3*i+1] = 0.0;                /*   elemental vel dof    */
    viscous[0][2][3*i+2] = 0.5 * derxy[0][i];
    viscous[1][0][3*i]   = 0.5 * derxy[1][i];
    viscous[1][0][3*i+1] = 0.5 * derxy[0][i];
-   viscous[1][0][3*i+2] = 0.0;  
-   viscous[1][1][3*i]   = 0.0; 
+   viscous[1][0][3*i+2] = 0.0;
+   viscous[1][1][3*i]   = 0.0;
    viscous[1][1][3*i+1] = derxy[1][i];
-   viscous[1][1][3*i+2] = 0.0;  
+   viscous[1][1][3*i+2] = 0.0;
    viscous[1][2][3*i]   = 0.0;
    viscous[1][2][3*i+1] = 0.5 * derxy[2][i];
-   viscous[1][2][3*i+2] = 0.5 * derxy[1][i];  
+   viscous[1][2][3*i+2] = 0.5 * derxy[1][i];
    viscous[2][0][3*i]   = 0.5 * derxy[2][i];
    viscous[2][0][3*i+1] = 0.0;
-   viscous[2][0][3*i+2] = 0.5 * derxy[0][i];  
+   viscous[2][0][3*i+2] = 0.5 * derxy[0][i];
    viscous[2][1][3*i]   = 0.0;
    viscous[2][1][3*i+1] = 0.5 * derxy[2][i];
-   viscous[2][1][3*i+2] = 0.5 * derxy[1][i];  
+   viscous[2][1][3*i+2] = 0.5 * derxy[1][i];
    viscous[2][2][3*i]   = 0.0;
    viscous[2][2][3*i+1] = 0.0;
    viscous[2][2][3*i+2] = derxy[2][i];
-   
+
    /* pressure gradient term derxy, funct without or with integration   *
     * by parts, respectively                                            */
 
@@ -335,7 +338,7 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    div[3*i]   = derxy[0][i];
    div[3*i+1] = derxy[1][i];
    div[3*i+2] = derxy[2][i];
-   
+
    /*--- ugradv-Term ---------------------------------------------------*/
    /*
      /                                                          \
@@ -355,7 +358,7 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
       ugradv[i][3*j+1] = derxy[1][i] * funct[j];
       ugradv[i][3*j+2] = derxy[2][i] * funct[j];
    }
-   
+
 }
 
 /*--------------------------------- now build single stiffness terms ---*/
@@ -366,7 +369,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /************** integrate element coefficient matrix **************/
 /*===================== GALERKIN part of the matrix ====================*/
 
-      /* a concentration of the following terms: */      
+      /* a concentration of the following terms: */
       /* 'mass matrix' (u,v) */
       /* N_c (u_old * grad u, v) */
       /* N_r (u * grad u_old, v) */
@@ -535,7 +538,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*4][ci*4+3]   += conv_c[ri] * derxy[0][ci] * ttimetauM;
       estif[ri*4+1][ci*4+3] += conv_c[ri] * derxy[1][ci] * ttimetauM;
       estif[ri*4+2][ci*4+3] += conv_c[ri] * derxy[2][ci] * ttimetauM;
-      
+
       /*--- ALE only: CONVECTIVE GRID stabilisation ---*/
       if(isale)
       {
@@ -575,7 +578,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
          estif[ri*4+1][ci*4+3] += conv_g[ri] * derxy[1][ci] * ttimetauM;
          estif[ri*4+2][ci*4+3] += conv_g[ri] * derxy[2][ci] * ttimetauM;
       }
-      
+
       /*--- DIFFUSION part of stabilisation ---*/
       /* a concentration of the following two terms: */
       /* tau_M*timefac*2*nu*(u, div epsilon(v)) */
@@ -716,7 +719,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*4+3][ci*4+3] += (derxy[0][ri] * derxy[0][ci]
                                +derxy[1][ri] * derxy[1][ci]
                                +derxy[2][ri] * derxy[2][ci]) * timefac * timetauMp;
-      
+
       /*--- R(u_old) * L_conv STABILISATION ---*/
       /* a concentration of the following terms: */
       /* -tau_M*timefac*(u_old, u * grad v) */
@@ -767,7 +770,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*4+2][ci*4+1] += div[ri*3+2] * div[ci*3+1] * aux;
       estif[ri*4+2][ci*4+2] += div[ri*3+2] * div[ci*3+2] * aux;
    }  /* end column loop (ci) */
-   
+
    /**************** integrate element force vector *********************/
    /*================== Galerkin part of the RHS =======================*/
    /*--- 'Original' RHS, concentrated ---*/
@@ -781,7 +784,8 @@ for (ri=0; ri<iel; ri++)      /* row index */
    /* (dt-timefac)*(div u_old, q)*/
 /*   aux = - (dt-timefac) * fac;
    eforce[ri*4+3] += *divuold * funct[ri] * aux;
-   
+*/
+
    /*================ Stabilisation part of the RHS ====================*/
    /*--- 'Original' RHS ---*/
    /* tau_M*timefac*2*nu*(rhsint, div epsilon(v)) */
@@ -909,23 +913,23 @@ NOTE: this works perfectly only when the fluid is solved via usfem
 \param   iel       INT       (i)    number of elemental nodes
 \param  *hasext    INT       (i)    flag, if there is body force
 \param   is_ale    INT       (i)    flag, if it's ale or Euler
-\return void                                              
+\return void
 
 ------------------------------------------------------------------------*/
-void f3_calresvec(  DOUBLE  *eforce,  
+void f3_calresvec(  DOUBLE  *eforce,
                     DOUBLE  *velint,
-                    DOUBLE   histvec[3], 
-                    DOUBLE **vderxy, 
+                    DOUBLE   histvec[3],
+                    DOUBLE **vderxy,
                     DOUBLE **vderxy2,
-                    DOUBLE  *funct,  
-                    DOUBLE **derxy,   
-		    DOUBLE **derxy2,
+                    DOUBLE  *funct,
+                    DOUBLE **derxy,
+                    DOUBLE **derxy2,
                     DOUBLE  *edeadng,
                     DOUBLE   aleconv[3],
                     DOUBLE  *press,
                     DOUBLE   gradp[3],
-                    DOUBLE   fac,    
-                    DOUBLE   visc,   
+                    DOUBLE   fac,
+                    DOUBLE   visc,
                     INT      iel,
                     INT     *hasext,
                     INT      is_ale
@@ -951,7 +955,7 @@ DOUBLE  twovisc;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("f2_calresvec");
-#endif	
+#endif
 /*========================== initialisation ============================*/
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -1065,22 +1069,22 @@ resid[2] = rhsint[2] + timefac * (twovisc * visc2[2] - gradp[2]);
 for (i=0; i<iel; i++) /* loop over nodes of element */
 {
    /*--- viscous term (after integr. by parts) -------------------------*/
-   /*   /                                             \   
+   /*   /                                             \
         |  2 N_x,x    N_x,y + N_y,x    N_x,z + N_z,x  |
       1 |                                             |
       - |  N_y,x + N_x,y   2 N_y,y     N_y,z + N_z,y  |
       2 |                                             |
         |  N_z,x + N_x,z   N_z,y + N_y,z    2 N_z,z   |
-        \                                             /                                   
+        \                                             /
    with N_x .. x-line of N
-        N_y .. y-line of N   
+        N_y .. y-line of N
         N_z .. z-line of N                                              */
 
    viscous[0][0][3*i]   = derxy[0][i];
-   viscous[0][0][3*i+1] = 0.0;        
+   viscous[0][0][3*i+1] = 0.0;
    viscous[0][0][3*i+2] = 0.0;                /* 1st index:             */
    viscous[0][1][3*i]   = 0.5 * derxy[1][i];  /*   line of epsilon      */
-   viscous[0][1][3*i+1] = 0.5 * derxy[0][i];  /* 2nd index:             */        
+   viscous[0][1][3*i+1] = 0.5 * derxy[0][i];  /* 2nd index:             */
    viscous[0][1][3*i+2] = 0.0;                /*   column of epsilon    */
    viscous[0][2][3*i]   = 0.5 * derxy[2][i];  /* 3rd index:             */
    viscous[0][2][3*i+1] = 0.0;                /*   elemental vel dof    */
@@ -1093,13 +1097,13 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    viscous[1][1][3*i+2] = 0.0;  
    viscous[1][2][3*i]   = 0.0;
    viscous[1][2][3*i+1] = 0.5 * derxy[2][i];
-   viscous[1][2][3*i+2] = 0.5 * derxy[1][i];  
+   viscous[1][2][3*i+2] = 0.5 * derxy[1][i];
    viscous[2][0][3*i]   = 0.5 * derxy[2][i];
    viscous[2][0][3*i+1] = 0.0;
-   viscous[2][0][3*i+2] = 0.5 * derxy[0][i];  
+   viscous[2][0][3*i+2] = 0.5 * derxy[0][i];
    viscous[2][1][3*i]   = 0.0;
    viscous[2][1][3*i+1] = 0.5 * derxy[2][i];
-   viscous[2][1][3*i+2] = 0.5 * derxy[1][i];  
+   viscous[2][1][3*i+2] = 0.5 * derxy[1][i];
    viscous[2][2][3*i]   = 0.0;
    viscous[2][2][3*i+1] = 0.0;
    viscous[2][2][3*i+2] = derxy[2][i];
@@ -1115,16 +1119,16 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
       conv_c[i] = derxy[0][i] * velint[0]
                 + derxy[1][i] * velint[1]
                 + derxy[2][i] * velint[2];
-   
+
    /*--- viscous term  - grad * epsilon(u): ----------------------------*/
-   /*   /                                                \   
+   /*   /                                                \
         |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
       1 |                                                |
     - - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
       2 |                                                |
         |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
-        \                                                /                                 
-    
+        \                                                /
+
     with N_x .. x-line of N
          N_y .. y-line of N                                             */
 
@@ -1150,39 +1154,39 @@ for (ri=0; ri<iel; ri++)      /* row index */
    eforce[ri*4+2] += funct[ri] * rhsint[2] * invtime * fac;
 
    /* viscous forces integrated by parts */
-   eforce[ri*4]   -= ( viscous[0][0][ri*3] * eps_u[0][0] 
-                      +viscous[0][1][ri*3] * eps_u[0][1]  
-                      +viscous[0][2][ri*3] * eps_u[0][2] 
-                      +viscous[1][0][ri*3] * eps_u[1][0]  
-                      +viscous[1][1][ri*3] * eps_u[1][1]   
-                      +viscous[1][2][ri*3] * eps_u[1][2] 
-                      +viscous[2][0][ri*3] * eps_u[2][0]  
-                      +viscous[2][1][ri*3] * eps_u[2][1]   
+   eforce[ri*4]   -= ( viscous[0][0][ri*3] * eps_u[0][0]
+                      +viscous[0][1][ri*3] * eps_u[0][1]
+                      +viscous[0][2][ri*3] * eps_u[0][2]
+                      +viscous[1][0][ri*3] * eps_u[1][0]
+                      +viscous[1][1][ri*3] * eps_u[1][1]
+                      +viscous[1][2][ri*3] * eps_u[1][2]
+                      +viscous[2][0][ri*3] * eps_u[2][0]
+                      +viscous[2][1][ri*3] * eps_u[2][1]
                       +viscous[2][2][ri*3] * eps_u[2][2]) * twovisc * fac;
    eforce[ri*4+1] -= ( viscous[0][0][ri*3+1] * eps_u[0][0]
                       +viscous[0][1][ri*3+1] * eps_u[0][1]
-                      +viscous[0][2][ri*3+1] * eps_u[0][2] 
+                      +viscous[0][2][ri*3+1] * eps_u[0][2]
                       +viscous[1][0][ri*3+1] * eps_u[1][0]
-                      +viscous[1][1][ri*3+1] * eps_u[1][1]  
-                      +viscous[1][2][ri*3+1] * eps_u[1][2]  
+                      +viscous[1][1][ri*3+1] * eps_u[1][1]
+                      +viscous[1][2][ri*3+1] * eps_u[1][2]
                       +viscous[2][0][ri*3+1] * eps_u[2][0]
-                      +viscous[2][1][ri*3+1] * eps_u[2][1]  
+                      +viscous[2][1][ri*3+1] * eps_u[2][1]
                       +viscous[2][2][ri*3+1] * eps_u[2][2]) * twovisc * fac;
    eforce[ri*4+2] -= ( viscous[0][0][ri*3+2] * eps_u[0][0]
                       +viscous[0][1][ri*3+2] * eps_u[0][1]
-                      +viscous[0][2][ri*3+2] * eps_u[0][2] 
+                      +viscous[0][2][ri*3+2] * eps_u[0][2]
                       +viscous[1][0][ri*3+2] * eps_u[1][0]
-                      +viscous[1][1][ri*3+2] * eps_u[1][1]  
-                      +viscous[1][2][ri*3+2] * eps_u[1][2]  
+                      +viscous[1][1][ri*3+2] * eps_u[1][1]
+                      +viscous[1][2][ri*3+2] * eps_u[1][2]
                       +viscous[2][0][ri*3+2] * eps_u[2][0]
-                      +viscous[2][1][ri*3+2] * eps_u[2][1]  
+                      +viscous[2][1][ri*3+2] * eps_u[2][1]
                       +viscous[2][2][ri*3+2] * eps_u[2][2]) * twovisc * fac;
 
    /* pressure forces integrated by parts*/
    eforce[ri*4]   += *press * derxy[0][ri] * fac;
    eforce[ri*4+1] += *press * derxy[1][ri] * fac;
    eforce[ri*4+2] += *press * derxy[2][ri] * fac;
-   
+
    /* stabilisation part - impulse stabilisation */
    eforce[ri*4]   += tau_M * conv_c[ri] * resid[0];
    eforce[ri*4+1] += tau_M * conv_c[ri] * resid[1];

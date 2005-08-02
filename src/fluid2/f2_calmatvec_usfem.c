@@ -233,7 +233,10 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
 
    /*--- convective grid part u_G * grad (funct) -----------------------*/
    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
-   conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1] ;
+   if(isale)
+   {
+     conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1];
+   }
 
    /*--- reactive part funct * grad (u_old) ----------------------------*/
    /* /                          \
