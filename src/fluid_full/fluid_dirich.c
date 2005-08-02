@@ -409,28 +409,9 @@ for (i=0;i<numnp_total;i++)
 #ifdef D_FSI
    case dirich_FSI: /* dirichvalues = grid velocity!!! */
    case dirich_FSI_pseudo: 
-      switch (fdyn->iop) /* which time integration scheme? */
-      {
-      case 4: /* One step Theta */
-         for (j=0;j<numveldof;j++)  /* loop vel-dofs */
-            actnode->sol_increment.a.da[pos][j]
-	   =actnode->sol_increment.a.da[ipos->gridv][j];
-/* the following should be formally more accurate but may cause oscillations */
-/*          actnode->sol_increment.a.da[pos][j]
-	   =2*actnode->sol_increment.a.da[ipos->gridv][j]
-            -actnode->sol_increment.a.da[ipos->veln][j];*/
-      break;
-      case 7: /* BDF2 */
-         actanode = actgnode->mfcpnode[genprob.numaf];
-         for (j=0;j<numveldof;j++)  /* loop vel-dofs */
-            actnode->sol_increment.a.da[pos][j] = 
-            ( actanode->sol_mf.a.da[1][j]-actanode->sol_mf.a.da[0][j] )
-              * 2.4 / fdyn->dta 
-            - 1.6 * actnode->sol_increment.a.da[ipos->veln][j]
-            + 0.2 * actnode->sol_increment.a.da[ipos->velnm][j];
-      break;
-      default: dserror("Time integration scheme unknown");
-      }
+      for (j=0;j<numveldof;j++)  /* loop vel-dofs */
+         actnode->sol_increment.a.da[pos][j]
+         =actnode->sol_increment.a.da[ipos->gridv][j];
    break;
    case dirich_slip: /* slip boundary condition */
       /*--------------------------------------- get values and pointers */
