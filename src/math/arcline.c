@@ -249,6 +249,10 @@ void interpolate_axishell_conds(
   for (i=0; i<design->ndline; i++)
   {
     actdline = &(design->dline[i]);
+
+    if (actdline->thickness == NULL && actdline->axishellload == NULL )
+      continue;
+
     switch (actdline->typ)
     {
       case stline:
