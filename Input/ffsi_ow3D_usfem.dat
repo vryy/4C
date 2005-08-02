@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/foerster/
 //             0711 - 685-6572
 // 
-// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F D_FLUID3_FAST_F AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX
+// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX
 //
 // #define MAXNOD           (8)
 // #define MAXNOD_F3        (8)
