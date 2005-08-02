@@ -448,7 +448,10 @@ for (i=0; i<actdis->numnp; i++)
       else if (actcurve >= 0 && actcurve < numcurve)
          acttimefac = timefac[actcurve];
       else
-         dserror("Solid Dirichlet BC: actual curve > number defined curves\n");
+      {
+        acttimefac=0.0;
+        dserror("Solid Dirichlet BC: actual curve > number defined curves\n");
+      }
 
       initval = dirich->dirich_val.a.dv[j];
       /*printf("actcurve=%i\n", actcurve);

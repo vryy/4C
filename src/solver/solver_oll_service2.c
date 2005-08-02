@@ -345,12 +345,17 @@ This function deletes the contents of the structure OLL
 ------------------------------------------------------------------------*/
 void oll_delete(OLL*  matrix)
 {
+
+#if 0
   INT        i,dim;
   MATENTRY  *rowptr,*nextptr;
-  /*----------------------------------------------------------------------*/
+#endif
+
+
 #ifdef DEBUG
   dstrc_enter("oll_delete");
 #endif
+
   /*----------------------------------------------------------------------*/
   /*-------------------------------------------- destroy the general part */
   if (matrix->update.Typ != cca_XX)
@@ -1285,7 +1290,6 @@ void oll_to_ccf(
 CCF	   *ccf;         /* a sparse matrix in compressed column format */
 INT	   *Ap;          /* column pointer vector			*/
 INT	   *Ai;          /* row pointer vector			        */
-INT        *update;      /* dofs updated on this proc                   */
 DOUBLE     *Ax;          /* values of the matrix			*/
 MATENTRY **col;          /* matrix column                               */
 MATENTRY  *actentry;     /* actual matrix entry                         */
