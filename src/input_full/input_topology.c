@@ -536,7 +536,7 @@ void inp_detailed_topology(DISCRET   *actdis)
         }
         break;
       default:
-        dserror("Unknown type of discretization 2");
+        dserror("Unknown type of discretization 2: %s",actele->distyp);
         break;
     }
   }
