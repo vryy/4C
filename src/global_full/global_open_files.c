@@ -102,7 +102,7 @@ INT    length;
      allfiles.outlenght=strlen(argv[2]);
      allfiles.outputfile_kenner=argv[2];
      allfiles.num_outputfiles=13;
-     if (allfiles.outlenght>=40)
+     if (allfiles.outlenght>=100)
      {
         if (par.myrank==0)
         {

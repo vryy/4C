@@ -889,16 +889,18 @@ iel     = ele->numnp;
 nd      = numdf * iel;
 switch (ele->distyp)
 {
-case quad4:
-case quad8:
-case quad9:
-numcnd = 4;
-break;
-case tri3:
-case tri6:
-numcnd = 3;
-break;
-default: dserror("distyp unkown");
+  case quad4:
+  case quad8:
+  case quad9:
+    numcnd = 4;
+    break;
+  case tri3:
+  case tri6:
+    numcnd = 3;
+    break;
+  default:
+    numcnd = 0;
+    dserror("distyp unkown");
 }
 /*--------------------------------------- actual element coordinates ---*/
 for (j=0; j<numdf; j++)

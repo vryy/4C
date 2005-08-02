@@ -30,7 +30,7 @@ Maintainer: Malte Neumann
 
 /* check shell contact definitions */
 #if defined(S8CONTACT) && !defined(D_CONTACT)
-#error "s*CONTACT needs D_CONTACT."
+#error "S8CONTACT needs D_CONTACT."
 #error "Use -DD_CONTACT in the makefile."
 #endif
 

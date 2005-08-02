@@ -13,6 +13,7 @@
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
+#include "../fluid3_fast/f3f_prototypes.h"
 INT cmp_int(const void *a, const void *b );
 void fluid_calelm_hf(
                       PARTITION           *actpart,
@@ -405,13 +406,14 @@ for (i=0;i<numele;i++)
    break;
 #endif
 
+
 #ifdef D_FLUID3_F
+
    case el_fluid3_fast:
       if (actele->e.f3->fs_on!=3) continue;
-      fluid3_fast(actpart,actintra,actele,
-             &estif_global,NULL,
-             &eforce_global,NULL,
-             action,NULL,NULL,container);
+
+      dserror("calling fluid3_fast from fluid_calelm_hf does not work!!");
+
    break;
 #endif
 

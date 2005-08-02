@@ -266,7 +266,7 @@ for (i=0; i<design->ndnode; i++)
    case ale:
        dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DNODE\n");
        dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DNODE\n");
-       dsassert(hasneum==0,"neumann- and fsi-coupling condition defined on same DNODE\n");
+       dsassert(hasneum==0  ,"neumann- and fsi-coupling condition defined on same DNODE\n");
       /*-------- allocate space for a dirichlet condition in this dnode */
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
@@ -320,7 +320,7 @@ void fsi_initcoupling(
 {
 INT     numfnp, numsnp, numanp;              /* number of nodes         */
 INT     numdf;                               /* number of dofs          */
-INT     numc;                                /* number of columns in mf */
+INT     numc=0;                              /* number of columns in mf */
 INT     numaf,numsf,numff;
 INT     i,j;                                 /* simply some counters    */
 INT     ierr;                                /* flag                    */
@@ -328,8 +328,8 @@ INT     dim;                                 /* dimension of problem    */
 INT     sfound,afound;                       /* flag                    */
 INT     is_ale;
 DOUBLE  tol=EPS4;                            /* tolerance for node dist */
-NODE   *actfnode, *actsnode, *actanode;      /* actual nodes            */
-GNODE  *actfgnode,*actsgnode,*actagnode;     /* actual gnodes           */
+NODE   *actfnode=NULL, *actsnode=NULL, *actanode=NULL;  /* actual nodes */
+GNODE  *actfgnode=NULL,*actsgnode=NULL,*actagnode=NULL; /* actual gnodes*/
 ELEMENT *actele;
 ARRAY   aindex_a, sindex_a;
 INT    *aindex, *sindex;

@@ -100,7 +100,6 @@ DOUBLE  dxyznm;          /* ale-displement at (n-1)                     */
 DOUBLE  dxyzn;           /* ale-displement at (n)                       */
 DOUBLE  dxyz;            /* ale-displement at (n+1)                     */
 DOUBLE  phi,phin;        /* heightfunction values                       */
-DOUBLE  theta;           /**/
 NODE   *actfnode;        /* actual fluid node                           */
 NODE   *actanode;        /* actual ale node                             */
 GNODE  *actfgnode;       /* actual fluid gnode                          */
@@ -715,7 +714,7 @@ INT    *sid;           /* structural interface dofs                     */
 DOUBLE  fac;
 DOUBLE  gnorm=ZERO;
 DOUBLE  g;
-DOUBLE  grat;
+DOUBLE  grat=0.0;
 NODE   *actsnode;      /* actual struct node                            */
 static DOUBLE g0norm;  /* norm of first iteration                       */
 

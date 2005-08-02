@@ -54,8 +54,8 @@ INT     ierr;                                /* flag                    */
 INT     afound;                              /* flag                    */
 INT     numff,numaf;
 DOUBLE  tol=EPS8;                            /* tolerance for node dist */
-NODE   *actfnode, *actanode;                 /* actual nodes            */
-GNODE  *actfgnode,*actagnode;                /* actual gnodes           */
+NODE   *actfnode=NULL, *actanode=NULL;       /* actual nodes            */
+GNODE  *actfgnode=NULL,*actagnode=NULL;      /* actual gnodes           */
 ARRAY   aindex_a;
 INT    *aindex;
 DLINE  *actdline;

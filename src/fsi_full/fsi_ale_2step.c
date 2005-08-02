@@ -156,7 +156,9 @@ static SPARSE_TYP    array_typ;   /* type of psarse system matrix               
 static FSI_DYNAMIC  *fsidyn;
 static ALE_DYNAMIC  *adyn;
 
+#ifdef PARALLEL
 DOUBLE getmin,getmax;
+#endif
 
 #ifdef BINIO
 static BIN_OUT_FIELD out_context;

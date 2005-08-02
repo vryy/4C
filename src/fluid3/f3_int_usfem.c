@@ -292,46 +292,48 @@ lift and drag forces and FSI coupling forces.
 
 ------------------------------------------------------------------------*/
 void f3_int_res(
-	        ELEMENT         *ele,
-                INT             *hasext,
-	        DOUBLE          *force,
-	        DOUBLE         **xyze,
-	        DOUBLE          *funct,
-	        DOUBLE         **deriv,
-	        DOUBLE         **deriv2,
-	        DOUBLE         **xjm,
-	        DOUBLE         **derxy,
-	        DOUBLE         **derxy2,
-	        DOUBLE         **evelng,
-	        DOUBLE         **evhist,
-	        DOUBLE         **ealecovng,
-	        DOUBLE          *epren,
-	        DOUBLE          *edeadng,
-	        DOUBLE         **vderxy,
-                DOUBLE         **vderxy2,
-                DOUBLE           visc,
-	        DOUBLE         **wa1,
-	        DOUBLE         **wa2
-	       )
-{ 
+    ELEMENT         *ele,
+    INT             *hasext,
+    DOUBLE          *force,
+    DOUBLE         **xyze,
+    DOUBLE          *funct,
+    DOUBLE         **deriv,
+    DOUBLE         **deriv2,
+    DOUBLE         **xjm,
+    DOUBLE         **derxy,
+    DOUBLE         **derxy2,
+    DOUBLE         **evelng,
+    DOUBLE         **evhist,
+    DOUBLE         **ealecovng,
+    DOUBLE          *epren,
+    DOUBLE          *edeadng,
+    DOUBLE         **vderxy,
+    DOUBLE         **vderxy2,
+    DOUBLE           visc,
+    DOUBLE         **wa1,
+    DOUBLE         **wa2
+    )
+{
 INT       i;          /* a couter                                       */
 INT       iel;        /* number of nodes                                */
-INT       intc;       /* "integration case" for tri for further infos
+INT       intc=0;     /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       is_ale;     /* ALE or Euler element flag                      */
-INT       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
+INT       nir=0,nis=0,nit=0;
+                      /* number of integration nodesin r,s,t direction  */
 INT       ihoel=0;    /* flag for higher order elements                 */
-INT       icode=2;    /* flag for eveluation of shape functions         */     
+INT       icode=2;    /* flag for eveluation of shape functions         */
 INT       lr, ls, lt; /* counter for integration                        */
 
 DOUBLE    fac;        /* total integration vactor                       */
-DOUBLE    facr, facs, fact; /* integration weights                      */
+DOUBLE    facr=0.0, facs=0.0, fact=0.0;
+                      /* integration weights                            */
 DOUBLE    det;        /* determinant of jacobian matrix                 */
 DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
 DOUBLE    velint[3];  /* velocity vector at integration point           */
 DOUBLE    histvec[3]; /* history data at integration point              */
 DOUBLE    aleconv[3]; /* ALE convective velocity at Gauss point         */
-DIS_TYP   typ;	      /* element type                                   */
+DIS_TYP   typ;        /* element type                                   */
 DOUBLE    presint;    /* pressure at integration point                  */
 DOUBLE    gradp[3];   /* pressure gradient                              */
 FLUID_DYNAMIC   *fdyn;

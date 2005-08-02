@@ -75,8 +75,9 @@ INT            i, iel;
 DOUBLE         hk;
 DOUBLE         velint[3];
 DOUBLE         det, vol;
-DOUBLE         e1, e2, e3, facr, facs, fact;
-DOUBLE         mk, norm_p, pe, re, xi1, xi2, timefac;
+DOUBLE         e1, e2, e3;
+DOUBLE         facr=0.0, facs=0.0, fact=0.0;
+DOUBLE         mk=0.0, norm_p, pe, re, xi1, xi2, timefac;
 DOUBLE         val, strle;
 DOUBLE         velino[3]; /* normed velocity at element centre */
 

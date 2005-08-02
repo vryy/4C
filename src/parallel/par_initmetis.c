@@ -325,8 +325,9 @@ for (i=0; i<genprob.numfld; i++)
                           &(part.a.iv[0])
                          );
 #endif
-      }
-   }
+
+      }  /* if (nparts < 8) */
+   }  /* if (imyrank==0) */
 /*-------------------------------------- broadcast partitioning results */
 #ifdef PARALLEL
    MPI_Bcast(&(part.a.iv[0]),

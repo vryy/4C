@@ -575,11 +575,18 @@ for (i=0;i<numnp_total;i++)
    /*----------------------------------- fill the local solution vector */
    switch (array)
    {
-   case 0:  nodalsol=actnode->sol.a.da;           break;
-   case 1:  nodalsol=actnode->sol_increment.a.da; break;
-   case 2:  nodalsol=actnode->sol_residual.a.da;  break;
-   case 3:  nodalsol=actnode->sol_mf.a.da;        break;
-   default: dserror("index out of range!\n");     break;
+     case 0:
+       nodalsol=actnode->sol.a.da;           break;
+     case 1:
+       nodalsol=actnode->sol_increment.a.da; break;
+     case 2:
+       nodalsol=actnode->sol_residual.a.da;  break;
+     case 3:
+       nodalsol=actnode->sol_mf.a.da;        break;
+     default:
+       nodalsol=NULL;
+       dserror("index out of range!\n");
+       break;
    } /* end switch (array) */
 
    /* copy values to working vector */

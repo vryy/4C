@@ -637,6 +637,10 @@ for (i=0;i<actpart->pdis[disnum].numele;i++)
        amzero(&(actele->e.f3->tau_old));
        break;
 #endif
+
+     default:
+       dserror("wrong type of element for fluid init!");
+       break;
    }
 }
 

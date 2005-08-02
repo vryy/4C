@@ -319,31 +319,32 @@ time-RHS for one fluid3 element is calculated
 
 ------------------------------------------------------------------------*/
 void f3_calinta(
-                  ELEMENT         *ele,
-                  DOUBLE         **estif,
-                  DOUBLE         **emass,
-                  DOUBLE          *eforce,
-                  DOUBLE         **xyze,
-                  DOUBLE          *funct,
-                  DOUBLE         **deriv,
-                  DOUBLE         **deriv2,
-                  DOUBLE         **xjm,
-                  DOUBLE         **derxy,
-                  DOUBLE         **derxy2,
-                  DOUBLE         **evelng,
-                  DOUBLE         **ealecovng,
-                  DOUBLE         **egridv,
-                  DOUBLE         **vderxy,
-                  DOUBLE         **wa1,
-                  DOUBLE         **wa2
-	      )
+                ELEMENT         *ele,
+                DOUBLE         **estif,
+                DOUBLE         **emass,
+                DOUBLE          *eforce,
+                DOUBLE         **xyze,
+                DOUBLE          *funct,
+                DOUBLE         **deriv,
+                DOUBLE         **deriv2,
+                DOUBLE         **xjm,
+                DOUBLE         **derxy,
+                DOUBLE         **derxy2,
+                DOUBLE         **evelng,
+                DOUBLE         **ealecovng,
+                DOUBLE         **egridv,
+                DOUBLE         **vderxy,
+                DOUBLE         **wa1,
+                DOUBLE         **wa2
+                )
 {
 #ifdef D_FSI
 INT      i;
-INT      iel;	        /* number of nodes 			        */
+INT      iel;         /* number of nodes                                */
 INT      intc;        /* "integration case" for tet for further infos
                           see f3_inpele.c and f3_intg.c                 */
-INT      nir,nis,nit; /* number of integration nodes in r,s,t direction */
+INT      nir=0,nis=0,nit=0;
+                      /* number of integration nodes in r,s,t direction */
 INT      nil;
 INT      actmat;      /* material number of the element                 */
 INT      ihoel=0;     /* flag for higher order elements                 */
@@ -352,8 +353,9 @@ INT      lr, ls, lt;  /* counter for integration                        */
 DOUBLE   dens;        /* density                                        */
 DOUBLE   visc;        /* viscosity                                      */
 DOUBLE   fac;
-DOUBLE   facr,facs,fact; /* integration weights                         */
-DOUBLE   det;	      /* determinant of jacobian matrix                 */
+DOUBLE   facr=0.0,facs=0.0,fact=0.0;
+                      /* integration weights                            */
+DOUBLE   det;         /* determinant of jacobian matrix                 */
 DOUBLE   e1,e2,e3;    /* natural coordinates of integr. point           */
 DOUBLE   velint[3];
 DOUBLE   alecovint[3];

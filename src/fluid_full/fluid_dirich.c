@@ -102,7 +102,7 @@ INT        numnp_total;               /* total number of fluid nodes    */
 INT        numele_total;              /* total number of fluid elements */
 INT        predof;	              /* number of pressure dof	        */
 INT        numdf;	              /* number of fluid dofs	        */
-INT        actcurve;	              /* actual timecurve  	        */
+INT        actcurve;	              /* actual timecurve	        */
 INT        numveldof;
 DOUBLE     dens;	              /* density			*/
 DOUBLE     timefac[MAXTIMECURVE];     /* factors from time-curve        */
@@ -119,7 +119,7 @@ NODE      *actanode,*alnode,*afnode;
 DOUBLE     ract,rtotal,r;
 DOUBLE     rtotalv[3],ractv[3];
 DOUBLE     alpha,length;
-DOUBLE     uact,u10;
+DOUBLE     uact=0.0,u10=0.0;
 #endif
 
 INT counter=0;

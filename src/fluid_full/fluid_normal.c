@@ -67,9 +67,11 @@ DOUBLE      norm;          /* length of normal */
 ELEMENT    *actele;        /* the actual element */
 NODE       *actnode;       /* the actual node */
 #ifdef D_FSI
+#ifdef D_FLUID2
 INT         ngnode,k;        /* number of gnodes */
 INT         ngline;        /* number of glines */
 GLINE      *actgline;      /* the actual gline */
+#endif
 #endif
 LOCSYS     *actlocsys;     /* the actual local co-system xzy* */
 FLUID_DYNAMIC *fdyn;

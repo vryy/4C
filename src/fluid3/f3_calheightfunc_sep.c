@@ -88,8 +88,9 @@ void f3_calint_hfsep(
 {
 INT    icode=2;
 INT    lr,ls;
-INT    intc;
-DOUBLE phiderxy[2],e1,e2,facr,facs,fac,det;
+INT    intc=0;
+DOUBLE facr=0.0,facs=0.0;
+DOUBLE phiderxy[2],e1,e2,fac,det;
 DOUBLE phiintn, phiintng;
 FLUID_DYNAMIC *fdyn;
 FLUID_DATA    *data;

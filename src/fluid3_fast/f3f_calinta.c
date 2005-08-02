@@ -152,10 +152,7 @@ void f3fcalinta(
 
   INT      inttyp;
   DOUBLE   det[LOOPL];
-  DOUBLE   facsl,facsr;
   DOUBLE   facsll[LOOPL];
-  DOUBLE   preint[LOOPL];
-  DOUBLE   ths,thp;
 
 
 #ifdef DEBUG

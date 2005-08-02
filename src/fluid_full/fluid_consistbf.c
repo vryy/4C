@@ -79,6 +79,8 @@ void fluid_cbf(PARTDISCRET *actpdis,
                ARRAY_POSITION *ipos,
                INT          init)
 {
+
+#ifdef D_FLUID2
 INT i, j, k, l;
 INT line;
 INT ld_id;                            /* Id of the actual liftdrag line */
@@ -87,15 +89,12 @@ INT foundsome, foundit;
 INT hasdirich, hasext;
 INT force_on_node[MAXNOD];
 INT nfnode;  /* number of nodes of actele where forces are searched for */
-static INT num_ldele; /* number of elements along lift&drag line */
 
 DOUBLE   xforce, yforce;
 DOUBLE   center[2];
 DOUBLE   xy[2];                  /* relative coordinates of actual node */
 /*static DOUBLE **estif;*/           /* pointer to global ele-stif          */
-static DOUBLE  *eforce;
 /*static DOUBLE  *edforce;*/
-static DOUBLE  *liftdrag;        /* pointer to liftdrag field           */
 
 NODE    *actnode;
 GNODE   *actgnode;
@@ -104,6 +103,14 @@ GLINE   *actgline;
 DLINE   *actdline;
 
 DOUBLE testforce;
+
+#endif
+
+
+static INT num_ldele; /* number of elements along lift&drag line */
+static DOUBLE  *eforce;
+static DOUBLE  *liftdrag;        /* pointer to liftdrag field           */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("fluid_calc_cforce");
@@ -283,7 +290,7 @@ case 2: /* problem is two-dimensional */
 
             xforce += eforce[line];
             yforce += eforce[line+1];
-            
+
             testforce += eforce[24];
 
             /* write nodal result from this ele to total ld sum */

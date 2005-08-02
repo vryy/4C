@@ -113,12 +113,12 @@ INT       l;          /* a couter                                       */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
-INT       ihoel=0;    /* flag for higher order elements                 */
-INT       icode=2;    /* flag for eveluation of shape functions         */     
+INT       icode=2;    /* flag for eveluation of shape functions         */
 INT       lr, ls, lt; /* counter for integration                        */
 INT       actmat;     /* actual material number                         */
 DOUBLE    fac[LOOPL]; /* total integration vactor                       */
-DOUBLE    facr, facs, fact; /* integration weights                      */
+DOUBLE    facr=0.0, facs=0.0, fact=0.0;
+                      /* integration weights                            */
 DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
 DIS_TYP   typ;	      /* element type                                   */
 
@@ -358,13 +358,13 @@ INT       l;          /* a couter                                       */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
-INT       ihoel=0;    /* flag for higher order elements                 */
-INT       icode=2;    /* flag for eveluation of shape functions         */     
+INT       icode=2;    /* flag for eveluation of shape functions         */
 INT       actmat;     /* actual material number                         */
 INT       lr, ls, lt; /* counter for integration                        */
 
 DOUBLE    fac[LOOPL];       /* total integration vector                 */
-DOUBLE    facr, facs, fact; /* integration weights                      */
+DOUBLE    facr=0.0, facs=0.0, fact=0.0;
+                      /* integration weights                            */
 DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
 DOUBLE    presint[LOOPL];
 DIS_TYP   typ;	      /* element type                                   */

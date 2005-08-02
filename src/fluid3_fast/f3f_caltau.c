@@ -86,8 +86,9 @@ DOUBLE         norm_p[LOOPL];
 DOUBLE         strle[LOOPL];
 DOUBLE         xi1[LOOPL];
 DOUBLE         xi2[LOOPL];
-DOUBLE         e1, e2, e3, facr, facs, fact;
-DOUBLE         mk, timefac;
+DOUBLE         e1, e2, e3;
+DOUBLE         facr=0.0, facs=0.0, fact=0.0;
+DOUBLE         mk=0.0, timefac;
 DOUBLE         velino[3]; /* normed velocity at element centre */
 
 FLUID_DYNAMIC *fdyn;

@@ -37,6 +37,8 @@ extern struct _GENPROB     genprob;
 extern struct _MATERIAL  *mat;
 /*!----------------------------------------------------------------------
 \brief positions of physical values in node arrays
+ *----------------------------------------------------------------------*/
+
 
 /*----------------------------------------------------------------------*/
 static ARRAY     ehist_a;  /* element history data                      */
@@ -402,7 +404,7 @@ void f3_heightfunc(
 INT       i,surf;
 INT       nir ,nil;
 INT       ngsurf;
-INT       ngnode;
+INT       ngnode=0;
 INT       foundsurf;
 DOUBLE    velint[3],vel2int[3];
 DIS_TYP   typ;

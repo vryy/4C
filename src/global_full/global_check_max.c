@@ -153,7 +153,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
           {
             gauss += actele->e.s9->kinlay[l].num_mlay;
           }
-          gauss = gauss * actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2];
+          gauss =gauss * actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2];
 
           /* check maxdofpernode for shell9 */
           if (actele->e.s9->numdf > maxdofpernode)
@@ -181,13 +181,19 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
 #ifdef D_FLUID3
         case el_fluid3:
-          gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
+          if (actele->distyp == tet4 || actele->distyp == tet10)
+            gauss = actele->e.f3->nGP[0];
+          if (actele->distyp == hex8 || actele->distyp == hex20)
+            gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
           break;
 #endif
 
 #ifdef D_FLUID3_F
         case el_fluid3_fast:
-          gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
+          if (actele->distyp == tet4 || actele->distyp == tet10)
+            gauss = actele->e.f3->nGP[0];
+          if (actele->distyp == hex8 || actele->distyp == hex20)
+            gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
           break;
 #endif
 

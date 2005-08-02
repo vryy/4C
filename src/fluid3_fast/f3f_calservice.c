@@ -49,7 +49,6 @@ extern struct _GENPROB     genprob;
 extern struct _MATERIAL  *mat;
 
 
-static INT PREDOF = 3;
 static FLUID_DYNAMIC   *fdyn;
 
 

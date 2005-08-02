@@ -136,19 +136,6 @@ void s8_tvhe_lin(DOUBLE **gmkovr,
                  DOUBLE   e3)
 {
 INT i,j,k;
-DOUBLE b11c=0.0;
-DOUBLE b12c=0.0;
-DOUBLE b21c=0.0;
-DOUBLE b22c=0.0;
-DOUBLE b31c=0.0;
-DOUBLE b32c=0.0;
-
-DOUBLE b11r=0.0;
-DOUBLE b12r=0.0;
-DOUBLE b21r=0.0;
-DOUBLE b22r=0.0;
-DOUBLE b31r=0.0;
-DOUBLE b32r=0.0;
 
 DOUBLE heps[3][3];
 DOUBLE det_dummy;

@@ -381,7 +381,7 @@ method iop
 2nd Order Generalised Alpha:
 with 2nd order Adams-Bashford:
 
-		6*alpha_f - 2
+              6*alpha_f - 2
 LTE = ------------------------------- * [vel(n+1) - vel_P(n+1)]
       3*( dt(n-1)/dt(n) + 2*alpha_f )
 
@@ -401,9 +401,9 @@ LTE = |1 - ------- | * [ vel(n+1) - vel_P(n+1) ]
 
 BDF2 with generalised leapfrog:
 
-	       /    dt(n-1) \2
-	      | 1 + ------- |
-	      \     dt(n)  /
+            /    dt(n-1) \2
+           | 1 + ------- |
+           \     dt(n)  /
 LTE = -------------------------------------  * [ vel(n+1) - vel_P(n+1) ]
         dt(n-1)     /dt(n-1)\2    /dt(n-1)\3
      1+3------- + 4| -------| + 2| -------|
@@ -412,18 +412,18 @@ LTE = -------------------------------------  * [ vel(n+1) - vel_P(n+1) ]
  the values at the nodes are
 
 </pre>
-\param *actfield	FIELD		(i)	the actual field
+\param *actfield        FIELD           (i)     the actual field
 \param *ipos                            (i)     node array positions
-\param   iop		INT		(i)	flag, which scheme
+\param   iop            INT             (i)     flag, which scheme
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_lte(	FIELD           *actfield,
+void fluid_lte( FIELD           *actfield,
                 ARRAY_POSITION  *ipos,
                 INT              iop)
 {
 INT velnp, pred, terr;
-DOUBLE 	fact, ratio;
+DOUBLE     fact=0.0, ratio;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
