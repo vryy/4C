@@ -164,7 +164,7 @@ case 0:
           }
           /* symbolic -> (with respect to the mask of matrix A) factorization */
 
-#if defined(LINUX_MUENCH) || defined(HPUX_MUENCH) || defined(WIN_MUENCH)
+#if defined(LINUX_MUENCH) || defined(HPUX_MUENCH) || defined(WIN_MUENCH) || defined(TX7)
        status = umfpack_di_symbolic (n, n, Ap, Ai, Ax, &symbolic, control, info);
 #else
        status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);

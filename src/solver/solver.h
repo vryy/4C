@@ -45,6 +45,14 @@ Maintainer: Malte Neumann
 #include <aztec21/az_aztec.h>
 #endif
 
+#ifdef SX8
+#include <aztec21/az_aztec.h>
+#endif
+
+#ifdef TX7
+#include <aztec21/az_aztec.h>
+#endif
+
 #ifdef AZUSA
 #include "../../../../lib_ita1/aztec21/lib/az_aztec.h"
 #endif
@@ -88,6 +96,14 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef SX6
+#include <aztec21/az_aztec.h>
+#endif
+
+#ifdef SX8
+#include <aztec21/az_aztec.h>
+#endif
+
+#ifdef TX7
 #include <aztec21/az_aztec.h>
 #endif
 
@@ -146,6 +162,14 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef SX6
+#include <spooles/MPI/spoolesMPI.h>
+#endif
+
+#ifdef SX8
+#include <spooles/MPI/spoolesMPI.h>
+#endif
+
+#ifdef TX7
 #include <spooles/MPI/spoolesMPI.h>
 #endif
 

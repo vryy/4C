@@ -45,7 +45,7 @@ double cputime_thread();
 #include <sys/times.h>
 #endif
 
-#if defined(SX6)
+#if defined(SX6) || defined(SX8)
 #include <unistd.h>
 #include <sys/times.h>
 #endif
@@ -249,7 +249,7 @@ DOUBLE perf_time ()
 #endif
 
 
-#ifdef SX6
+#if defined(SX6) || defined(SX8)
   /*ret = clock();*/
   DOUBLE clk_tck;
   struct tms buf;
@@ -334,7 +334,7 @@ void perf_begin (INT index)
   DOUBLE perf_cpu();
   DOUBLE perf_time();
 
-#ifdef SX6
+#if defined(SX6) || defined(SX8)
   char   name[28];
   sprintf(name, "%2i_%24s",index,name[index]);
   ftrace_region_begin(name);
@@ -385,7 +385,7 @@ void perf_end (INT index)
 
   DOUBLE end_time, elapsed_time;
 
-#ifdef SX6
+#if defined(SX6) || defined(SX8)
   char   name[28];
   sprintf(name, "%2i_%24s",index,name[index]);
   ftrace_region_end(name);

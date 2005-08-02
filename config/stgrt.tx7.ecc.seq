@@ -1,0 +1,58 @@
+# -*- shell-script -*-
+PLATFORM=TX7
+PARALLEL=no
+
+
+F77=efc
+CC=ecc
+LD=efc
+
+PLAIN_F77=efc
+PLAIN_CC=ecc
+PLAIN_LD=efc
+
+BASEDIR="/nfs/home5/rus/rus/stati/lib/tx7"
+
+INCLUDEDIRS="-I/nfs/home5/rus/rus/stati/include"
+LIBDIRS="-L/opt/MathKeisan/lib/ "
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21/ -laztec_seq"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack -lamd"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB=""
+
+
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
+
+LIBS="-llapack -lblas"
+PLAIN_LIBS=""
+
+# FAST
+PROGRAMNAME=cca_tx7_seq
+CFLAGS_OPT="-O3"
+FFLAGS_OPT="-O"
+LDFLAGS_OPT="-O"
+CFLAGS="-ansi -Wall"
+FFLAGS="-Wall"
+LDFLAGS="-C90 -Vaxlib -openmp"
+
+if [ x$BIT = "x32" ] ; then
+    echo $0: Warning: Only 64 bit executable on platform TX-7.
+    BIT=64
+    CFLAGS=" -DSIXTYFOUR $CFLAGS"
+    FFLAGS=" -DSIXTYFOUR $FFLAGS"
+fi

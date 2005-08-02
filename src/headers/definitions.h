@@ -96,6 +96,10 @@ typedef char      CHAR;
 #define CCA_APPEND_U (1)
 #endif
 
+#ifdef TX7
+#define CCA_APPEND_U (1)
+#endif
+
 /* append underslash for CUSS Sunfire */
 #ifdef SUN
 #define CCA_APPEND_U (1)

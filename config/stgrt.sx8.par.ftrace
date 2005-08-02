@@ -1,0 +1,48 @@
+# -*- shell-script -*-
+PLATFORM=SX8
+PARALLEL=yes
+
+F77=sxmpif90
+CC=sxmpic++
+LD=sxmpic++
+
+PLAIN_F77=sxf90
+PLAIN_CC=sxc++
+PLAIN_LD=sxc++
+
+
+BASEDIR="/nfs/home5/rus/rus/stati/lib/sx8"
+
+
+INCLUDEDIRS="-I/nfs/home5/rus/rus/stati/include"
+LIBDIRS="-L$BASEDIR/metis"
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_par"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-L$BASEDIR/spooles -lspooles"
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB=""
+
+# fast elements
+LOOPL="-DLOOPL=512"
+
+
+
+LIBS="-lmetis -lc -lm -llapack  -lblas"
+
+# FAST
+PROGRAMNAME=cca_sx8_par_ftrace
+CFLAGS_OPT="-O nooverlap -alias nopointer"
+FFLAGS_OPT=""
+CFLAGS="-Xc -DSIXTYFOUR -pvctl loopcnt=500000 noassume -ftrace"
+FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl loopcnt=500000 noassume\" -ftrace"
+LDFLAGS="-f90lib -ftrace"
+
+
+

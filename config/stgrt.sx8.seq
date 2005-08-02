@@ -1,0 +1,46 @@
+# -*- shell-script -*-
+PLATFORM=SX8
+PARALLEL=no
+
+F77=sxf90
+CC=sxc++
+LD=sxc++
+
+PLAIN_F77=sxf90
+PLAIN_CC=sxc++
+PLAIN_LD=sxc++
+
+
+BASEDIR="/nfs/home5/rus/rus/stati/lib/sx8"
+
+
+INCLUDEDIRS="-I/nfs/home5/rus/rus/stati/include"
+LIBDIRS=""
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seq"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB=""
+
+# fast elements
+LOOPL="-DLOOPL=512"
+
+
+
+LIBS="-lc -lm -llapack  -lblas"
+
+# FAST
+PROGRAMNAME=cca_sx8_seq
+CFLAGS_OPT="-O nooverlap -alias nopointer"
+FFLAGS_OPT=""
+CFLAGS="-Xc -DSIXTYFOUR -pvctl loopcnt=500000 noassume"
+FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl loopcnt=500000 noassume\""
+LDFLAGS="-f90lib"
+
