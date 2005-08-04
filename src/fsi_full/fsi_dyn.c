@@ -203,6 +203,14 @@ if (par.myrank==0) out_gid_msh();
 /*----------------------------- print out solution to 0.flavia.res file */
 if (par.myrank==0) out_gid_sol_fsi(fluidfield,structfield);
 
+/*
+ * Binary output has to be done by the algorithms because the
+ * contexts are there. */
+mctrl = 98;
+fsi_ale(alefield,mctrl);
+fsi_fluid(fluidfield,mctrl);
+fsi_struct(structfield,mctrl,itnum);
+
 #ifdef D_MORTAR
 if (fsidyn->coupmethod == 0) /* mortar method */
 {

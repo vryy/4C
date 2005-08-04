@@ -160,8 +160,13 @@ typedef char      CHAR;
 #define v2grid              v2grid_
 #define v2scal              v2scal_
 #define v2vect              v2vect_
-/* The number of underscores your fortran requires might differ. */
+/* The number of underscores your fortran requires might differ.
+ * On i386 Linux we need 2. */
+#ifdef LINUX_MUENCH
 #define v2_cursor           v2_cursor__
+#else
+#define v2_cursor           v2_cursor_
+#endif
 #define v2update            v2update_
 #define qat2v2              qat2v2_
 #define v3call              v3call_

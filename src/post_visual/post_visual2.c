@@ -1721,6 +1721,8 @@ int main(int argc, char** argv)
   INT res_count;
   INT counter1;
   RESULT_DATA result;
+  CHAR gimmick[]="|/-\\";
+  INT gimmick_size=4;
 
   init_problem_data(&problem, argc, argv);
 
@@ -1917,11 +1919,16 @@ int main(int argc, char** argv)
   init_result_data(fluid_field, &result);
   for (counter1 = 0; next_result(&result); counter1++)
   {
+    if (counter1>=nsteps)
+      dserror("too many fluid result steps");
+    printf("Find number of results: %c\r", gimmick[counter1 % gimmick_size]);
     /*printf("% 2d: pos=%d\n", counter1, result.pos);*/
     time_a.a.dv[counter1] = map_read_real(result.group, "time");
     step_a.a.iv[counter1] = map_read_int(result.group, "step");
   }
   destroy_result_data(&result);
+  nsteps = counter1;
+  printf("Find number of results: done.\n");
 
   /*--------------------------------------------------------------------*/
   /* Now read the selected steps' results. */
@@ -1934,11 +1941,22 @@ int main(int argc, char** argv)
     init_result_data(struct_field, &result);
     for (counter1 = 0; next_result(&result); counter1++)
     {
+      if (counter1>=nsteps)
+        dserror("too many structure result steps");
+      if (counter1 % 10 == 0)
+      {
+        printf("Read structure results: %c\r", gimmick[(counter1/10) % gimmick_size]);
+        fflush(stdout);
+      }
       post_read_displacement(&(discret[struct_idx]), &result, counter1, nsteps);
     }
     destroy_result_data(&result);
+    if (nsteps != counter1)
+    {
+      dserror("too few structure results");
+    }
+    printf("Read structure results: done.\n");
   }
-
   if (ale_field != NULL)
   {
 
@@ -1947,25 +1965,48 @@ int main(int argc, char** argv)
     init_result_data(ale_field, &result);
     for (counter1 = 0; next_result(&result); counter1++)
     {
+      if (counter1>=nsteps)
+        dserror("too many ale result steps");
+      if (counter1 % 10 == 0)
+      {
+        printf("Read ale results: %c\r", gimmick[(counter1/10) % gimmick_size]);
+        fflush(stdout);
+      }
       post_read_displacement(&(discret[ale_idx]), &result, counter1, nsteps);
     }
     destroy_result_data(&result);
+    if (nsteps != counter1)
+    {
+      dserror("too few ale results");
+    }
+    printf("Read ale results: done.\n");
   }
 
   init_result_data(fluid_field, &result);
   for (counter1 = 0; next_result(&result); counter1++)
   {
+    if (counter1>=nsteps)
+      dserror("too many fluid result steps: panic");
+    if (counter1 % 10 == 0)
+    {
+      printf("Read fluid results: %c\r", gimmick[(counter1/10) % gimmick_size]);
+      fflush(stdout);
+    }
     post_read_vel_pres(&(discret[fluid_idx]), &result, counter1, nsteps);
   }
   destroy_result_data(&result);
+  printf("Read fluid results: done.\n");
 
 #ifdef D_FSI
   /* Find coupled nodes. If there's at least an ale field. */
   if (ale_field != NULL)
   {
+    post_log(1, "Find fsi coupling...");
+    fflush(stdout);
     post_find_fsi_coupling(&problem,
                            struct_field, fluid_field, ale_field,
                            &fluid_struct_connect, &fluid_ale_connect);
+    post_log(1, "\n");
   }
 #endif
 
