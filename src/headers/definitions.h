@@ -160,6 +160,7 @@ typedef char      CHAR;
 #define v2grid              v2grid_
 #define v2scal              v2scal_
 #define v2vect              v2vect_
+/* The number of underscores your fortran requires might differ. */
 #define v2_cursor           v2_cursor__
 #define v2update            v2update_
 #define qat2v2              qat2v2_

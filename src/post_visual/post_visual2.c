@@ -1977,8 +1977,14 @@ int main(int argc, char** argv)
 
 
 /*----------------------------------------------------------------------*/
-/* Evil hack just to make it compile. */
+/* Evil hack just to make it link. */
 
+void v3_init()
+{
+}
+void v3_init_()
+{
+}
 void v3_init__()
 {
 }

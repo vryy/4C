@@ -9,8 +9,8 @@ post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_OUT) $(OBJS_POST_COMMON) -o post_out
 
 # We need the fortran objects here, visual is called by fortran code.
-post_visual2: $(OBJS_POST_VISUAL2) $(OBJS_POST_COMMON) $(OBJS_FORTRAN)
-	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_VISUAL2) $(OBJS_FORTRAN) $(OBJS_POST_COMMON) $(PLAIN_LIBS) $(VISUAL2_LIB) -o post_visual2
+post_visual2: $(OBJS_POST_VISUAL2) $(OBJS_POST_COMMON) src/fortran/vis2_qat2v2.o
+	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_VISUAL2) src/fortran/vis2_qat2v2.o $(OBJS_POST_COMMON) $(PLAIN_LIBS) $(VISUAL2_LIB) -o post_visual2
 
 post_monitor: $(OBJS_POST_MONITOR) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_MONITOR) $(OBJS_POST_COMMON) $(PLAIN_LIBS) -o post_monitor
