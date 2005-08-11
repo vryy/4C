@@ -467,7 +467,8 @@ case newIV:/*---------------------------------------------new typ is IV */
       amdef(copyarray.name,a,newfdim,newsdim,"IV");
       amzero(a);
       size1 = IMIN(newfdim*newsdim,copyarray.fdim*copyarray.sdim);
-      for (i=0; i<size1; a->a.iv[i++]=copyarray.a.iv[i]);
+      for (i=0; i<size1; ++i)
+        a->a.iv[i]=copyarray.a.iv[i];
       amdel(&copyarray);
    goto end;
 
@@ -478,10 +479,14 @@ case newIV:/*---------------------------------------------new typ is IV */
       amzero(a);
       if (newfdim==1) {
           size1 = IMIN(newsdim,copyarray.sdim);
-          for (i=0; i<size1; a->a.iv[i++]=copyarray.a.ia[0][i]);}
+          for (i=0; i<size1; ++i)
+	    a->a.iv[i]=copyarray.a.ia[0][i];
+      }
       else {
           size1 = IMIN(newfdim,copyarray.fdim);
-          for (i=0; i<size1; a->a.iv[i++]=copyarray.a.ia[i][0]);}
+          for (i=0; i<size1; ++i)
+	    a->a.iv[i]=copyarray.a.ia[i][0];
+      }
       amdel(&copyarray);
    goto end;
 
@@ -500,10 +505,14 @@ case newIA:/*---------------------------------------------new typ is IA */
       amzero(a);
       if (copyarray.fdim==1){
          size1 = IMIN(newsdim,copyarray.sdim);
-         for (i=0; i<size1; a->a.ia[0][i++]=copyarray.a.iv[i]);}
+         for (i=0; i<size1; ++i)
+	   a->a.ia[0][i]=copyarray.a.iv[i];
+      }
       else{
          size1 = IMIN(newfdim,copyarray.fdim);
-         for (i=0; i<size1; a->a.ia[i++][0]=copyarray.a.iv[i]);}
+	 for (i=0; i<size1; ++i)
+           a->a.ia[i][0]=copyarray.a.iv[i];
+      }
       amdel(&copyarray);
    goto end;
 
@@ -537,7 +546,8 @@ case newDV:/*---------------------------------------------new typ is DV */
       amdef(copyarray.name,a,newfdim,newsdim,"DV");
       amzero(a);
       size1 = IMIN(newfdim*newsdim,copyarray.fdim*copyarray.sdim);
-      for (i=0; i<size1; a->a.dv[i++]=copyarray.a.dv[i]);
+      for (i=0; i<size1; ++i)
+        a->a.dv[i]=copyarray.a.dv[i];
       amdel(&copyarray);
    goto end;
 
@@ -548,10 +558,14 @@ case newDV:/*---------------------------------------------new typ is DV */
       amzero(a);
       if (newfdim==1){
           size1 = IMIN(newsdim,copyarray.sdim);
-          for (i=0; i<size1; a->a.dv[i++]=copyarray.a.da[0][i]);}
+          for (i=0; i<size1; ++i)
+	    a->a.dv[i]=copyarray.a.da[0][i];
+      }
       else{
           size1 = IMIN(newfdim,copyarray.fdim);
-          for (i=0; i<size1; a->a.dv[i++]=copyarray.a.da[i][0]);}
+          for (i=0; i<size1; ++i)
+	    a->a.dv[i]=copyarray.a.da[i][0];
+      }
       amdel(&copyarray);
    goto end;
    default:
@@ -569,10 +583,14 @@ case newDA:/*---------------------------------------------new typ is DA */
       amzero(a);
       if (copyarray.fdim==1){
          size1 = IMIN(newsdim,copyarray.sdim);
-         for (i=0; i<size1; a->a.da[0][i++]=copyarray.a.dv[i]);}
+         for (i=0; i<size1; ++i)
+	   a->a.da[0][i]=copyarray.a.dv[i];
+      }
       else{
          size1 = IMIN(newfdim,copyarray.fdim);
-         for (i=0; i<size1; a->a.da[i++][0]=copyarray.a.dv[i]);}
+         for (i=0; i<size1; ++i)
+	   a->a.da[i][0]=copyarray.a.dv[i];
+      }
       amdel(&copyarray);
    goto end;
 
