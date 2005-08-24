@@ -181,10 +181,9 @@ enum {
      } liftdrag;     /*!< calculate lift&drag */
 INT    adaptive;     /*!< flag if adaptive time stepping    */
 INT    stresspro;    /*!< flag if stress projection or not  */
-/* control flags from ml fluid (presumably) */
+/* variables governing form of convective and viscous term (only ml so far) */
 INT    conte;    /*!< form of convective term                        */
 INT    vite;     /*!< form of viscous term                           */
-INT    sgvisc;   /*!< type of subgrid viscosity                      */
 /* evaluation flags for left and right hand side */
 INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION		*/
 INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)	*/
@@ -217,7 +216,7 @@ DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS       */
 DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS       */
 DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS        */
 DOUBLE thpr;     /*!< theta-p,r: const. for "pressure" terms RHS        */
-DOUBLE sigma;    /*!< const. for nonlinear iteration                    */
+DOUBLE sigma;    /*!< const. for nonlinear iteration                    */ 
 /* tolerances */
 DOUBLE  ittol;     /*!< tolerance for iteration convergence check       */
 DOUBLE  sttol;     /*!< tolerance for steady state check                */
@@ -234,12 +233,13 @@ INT    hf_numdf_total;
 DOUBLE  lenght;         /*!< internal lenght of problem                 */
 DOUBLE  rought;         /*!< roughtness of solid boundaries             */
 DOUBLE  coord_scale[2]; /*!< coordinates for scaling the turbulence variables */
+DOUBLE  washvel;        /*!< wall shear velocity */
 /*!< variables related to stabilisation                                 */
 DOUBLE tau[3];   /*!< array for stabilitity parameter */
 DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
 DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
-/*!< variables related to ml or turbulence (?) */
-DOUBLE washvel;  /*!< wall shear velocity */
+/* variables related to potential subgrid viscosity term (only ml so far) */
+INT    sgvisc;   /*!< type of subgrid viscosity                      */
 DOUBLE sugrvisc; /*!< subgrid viscosity       */
 DOUBLE smagcon;  /*!< Smagorinsky constant       */
 /**/
