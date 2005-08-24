@@ -566,9 +566,9 @@ void f2_lscalstabkvv(ELEMENT         *ele,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |
+ |   icn  - column node: number of node considered for matrix-column    |
  *----------------------------------------------------------------------*/
-INT    irow,icol,irn,icn,ird;
+INT    irow,icol,irn,icn;
 DOUBLE taumu;
 DOUBLE taump;
 DOUBLE tauc;
@@ -1291,11 +1291,10 @@ void f2_lscalstabkvp(ELEMENT         *ele,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
  *----------------------------------------------------------------------*/
-INT    irow,icol,irn,ird,posc;
+INT    irow,icol,irn,posc;
 DOUBLE taumu;
 DOUBLE taump;
 DOUBLE con,beta,divv,cb;
@@ -1522,9 +1521,9 @@ void f2_lscalstabmvv(ELEMENT         *ele,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |
+ |   icn  - column node: number of node considered for matrix-column    |
  *----------------------------------------------------------------------*/
-INT    irow,icol,irn,icn,ird;
+INT    irow,icol,irn,icn;
 DOUBLE taumu;
 DOUBLE taump;
 DOUBLE con,beta,divv,cb;
@@ -1758,12 +1757,11 @@ void f2_lscalstabkpv(DOUBLE	  **estif,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
- |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |
+ |   icn  - column node: number of node considered for matrix-column    |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
  *----------------------------------------------------------------------*/
-INT    irow,icol,irn,ird,icn,posr;
+INT    irow,icol,icn,posr;
 DOUBLE con,beta,divv,cb;
 DOUBLE aux;
 DOUBLE taump;
@@ -2059,8 +2057,7 @@ void f2_lscalstabmpv(DOUBLE	  **emass,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
- |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |
+ |   icn  - column node: number of node considered for matrix-column    |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
  *----------------------------------------------------------------------*/

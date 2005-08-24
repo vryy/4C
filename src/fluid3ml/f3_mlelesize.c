@@ -87,7 +87,7 @@ void f3_smelesize(ELEMENT         *ele,
 		  DOUBLE	 **wa1)
 {
 
-INT     i,ilen,inod;    /* simply some counters	        		*/
+INT     inod;           /* simply a counter	        		*/
 INT     nsmtyp;         /* l-s and sm element type (TRI or QUAD)        */
 INT     actmat;         /* number of actual material		        */
 INT     iel,smiel;      /* l-s and sm number of nodes of actual element */
@@ -101,7 +101,7 @@ DOUBLE  e1,e2,e3;       /* natural coordinates of inegration point      */
 DOUBLE  fac,facr;       /* factors                                      */
 DOUBLE  facs,fact;      /* factors                                      */
 DOUBLE  velino[3];      /* normed velocity vector at integration point  */
-DOUBLE  gcoor[3],coor[3];/* global coordinates                           */
+DOUBLE  coor[3];        /* coordinates                                  */
 DIS_TYP typ,smtyp;
 
 #ifdef DEBUG
@@ -245,20 +245,92 @@ dstrc_exit();
 return;
 } /* end of f3_smelesize */
 
-void f3_mlcalelesize(ELEMENT         *ele,
-		     FLUID_DATA      *data,
-	             DOUBLE          *funct,
-	             DOUBLE         **deriv,
-	             DOUBLE         **deriv2,
-                     DOUBLE         **derxy,
-		     DOUBLE         **xjm,
-		     DOUBLE         **evel,
-		     DOUBLE          *velint,
-	             DOUBLE         **vderxy,
-		     DOUBLE         **wa1)
+/*!---------------------------------------------------------------------
+\brief routine to calculate large-scale element size and stab. parameter
+
+<pre>                                                       gravem 05/05
+
+   ele->e.f3->stabi.gls->iadvec: adevction stab.
+      0 = no
+      1 = yes
+   ele->e.f3->stabi.gls->ipres: pressure stab.
+      0 = no
+      1 = yes
+   ele->e.f3->stabi.gls->ivisc: diffusion stab.
+      0 = no
+      1 = GLS-
+      2 = GLS+
+   ele->e.f3->stabi.gls->icont: continuity stab.
+      0 = no
+      1 = yes
+   ele->e.f3->stabi.gls->istapa: version of stab. parameter
+      35 = diss wall instationary
+      36 = diss wall stationanary
+   ele->e.f3->stabi.gls->norm_P: p-norm
+      p = 1<=p<=oo
+      0 = max.-norm (p=oo)
+   ele->e.f3->stabi.gls->mk: higher order elements control flag
+      0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)
+      1 = min(1/3,2*C)
+     -1 = mk=1/3  (--> element order via approx. nodal-distance)
+   ele->e.f3->stabi.gls->ihele[]:
+      x/y/z = length-def. for velocity/pressure/continuity stab
+      0 = don't compute
+      1 = sqrt(area)
+      2 = area equivalent diameter
+      3 = diameter/sqrt(2)
+      4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle)
+      5 = streamlength (element length in flow direction
+   ele->e.f3->stabi.gls->ninths: number of integration points for streamlength
+      1 = at center of element
+      2 = at every INT pt used for element.-stab.-matrices
+   ele->e.f3->stabi.gls->istapc: flag for stabilisation parameter calculation
+      1 = at center of element
+      2 = at every integration point
+   ele->e.f3->stabi.gls->clamb \
+   ele->e.f3->c1               |_>> stabilisation constants (input)
+   ele->e.f3->c2               |
+   ele->e.f3->c3              /
+   ele->e.f3->stabi.gls->istrle: has streamlength to be computed
+   ele->e.f3->stabi.gls->iarea: calculation of area length
+   ele->e.f3->stabi.gls->iduring: calculation during INT.-pt.loop
+   ele->e.f3->stabi.gls->itau[0]: flag for tau_mu calc. (-1: before, 1:during)
+   ele->e.f3->stabi.gls->itau[1]: flag for tau_mp calc. (-1: before, 1:during)
+   ele->e.f3->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)
+   ele->e.f3->hk[i]: "element sizes" (vel / pre / cont)
+   ele->e.f3->stabi.gls->idiaxy: has diagonals to be computed
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)
+   fdyn->tau[2]: stability parameter continuity (tau_c)
+</pre>
+\param  *ele     ELEMENT         (i)   actual element
+\param  *data    FLUID_DATA      (i)   actual element
+\param  *funct   DOUBLE          (-)   shape functions
+\param **deriv   DOUBLE          (-)   deriv. of shape funcs
+\param **deriv2  DOUBLE          (-)   2nd deriv. of sh. funcs
+\param **derxy   DOUBLE          (-)   global derivatives
+\param **xjm     DOUBLE          (-)   jacobian matrix
+\param **evel    DOUBLE          (i)   element velocities
+\param  *velint  DOUBLE          (-)   velocity at integr. point
+\param **vderxy  DOUBLE          (-)   velocity der. at integr. point
+\param **wa1     DOUBLE          (-)   working array
+\return void
+
+------------------------------------------------------------------------*/
+void f3_lselesize(ELEMENT         *ele,
+		  FLUID_DATA      *data,
+	          DOUBLE          *funct,
+	          DOUBLE         **deriv,
+	          DOUBLE         **deriv2,
+                  DOUBLE         **derxy,
+		  DOUBLE         **xjm,
+		  DOUBLE         **evel,
+		  DOUBLE          *velint,
+	          DOUBLE         **vderxy,
+		  DOUBLE         **wa1)
 {
 INT ieval = 0;       /* evaluation flag			                */
-INT i,ilen, inod;    /* simply a counter	        		*/
+INT ilen,inod;       /* simply two counters	        		*/
 INT istrnint;        /* evaluation flag		     	                */
 INT ishvol;          /* evaluation flag		        	        */
 INT actmat;          /* number of actual material		        */
@@ -277,7 +349,7 @@ DIS_TYP typ;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG
-dstrc_enter("f3_mlcalelesize");
+dstrc_enter("f3_lselesize");
 #endif
 
 /*---------------------------------------------------------- initialise */
@@ -503,7 +575,7 @@ if(gls->istapc==1 || istrnint==1)
 /*----------------------------------- calculate stabilisation parameter */
    actmat=ele->mat-1;
    visc = mat[actmat].m.fluid->viscosity;
-   f3_mlcalstabpar(ele,velint,visc,iel,typ,-1);
+   f3_lsstabpar(ele,velint,visc,iel,typ,-1);
 /*--------------------------------------------------- subgrid viscosity */
    if (fdyn->sgvisc>0)
    {
@@ -512,7 +584,7 @@ if(gls->istapc==1 || istrnint==1)
 /*---------------------- get velocity derivatives at integration point */
      f3_vder(vderxy,derxy,evel,iel);
 /*---------------------------------------- calculate subgrid viscosity */
-     f3_calsgvisc(ele,velint,vderxy,visc,iel,typ);
+     f3_lssgvisc(ele,velint,vderxy,visc,iel,typ);
    }
 } /* endif (ele->e.f3->istapc==1 || istrnint==1) */
 
@@ -522,16 +594,36 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of f3_mlcalelesize */
+} /* end of f3_lselesize */
 
 
-void f3_mlcalelesize2(ELEMENT         *ele,
-                      DOUBLE	    *velint,
-		      DOUBLE	   **vderxy,
-                      DOUBLE	   **derxy,
-		      DOUBLE	     visc,
-		      INT 	     iel,
-		      DIS_TYP 	     typ)
+/*!---------------------------------------------------------------------
+\brief routine to calculate large-scale element size and stab. parameter
+
+<pre>                                                       gravem 05/05
+
+In this routine, the element size and the stabilisation parameter
+is calculated for one element during the integration loop
+
+</pre>
+\param  *ele     ELEMENT         (i)    actual element
+\param  *velint  DOUBLE          (-)    velocity at integr. point
+\param **vderxy  DOUBLE          (-)    velocity der. at integr. point
+\param **derxy   DOUBLE          (-)    global derivatives
+\param   visc    DOUBLE          (i)    fluid viscosity
+\param   iel     INT             (i)    act. num. of ele nodes
+\param   typ     DIS_TYP         (i)    element type
+\return void
+\sa f3_lselesize()
+
+------------------------------------------------------------------------*/
+void f3_lselesize2(ELEMENT         *ele,
+                   DOUBLE	   *velint,
+		   DOUBLE	  **vderxy,
+                   DOUBLE	  **derxy,
+		   DOUBLE	    visc,
+		   INT 	            iel,
+		   DIS_TYP 	    typ)
 {
 INT    ilen, inod; /* simply a counter                                  */
 INT    istrnint;   /* evaluation flag                                   */
@@ -542,7 +634,7 @@ DOUBLE velino[3];  /* normed velocity vector at integration point       */
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG
-dstrc_enter("f3_mlcalelesize2");
+dstrc_enter("f3_lselesize2");
 #endif
 
 /*---------------------------------------------------------- initialise */
@@ -551,10 +643,6 @@ fdyn = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 istrnint = gls->istrle * gls->ninths;
 val = ZERO;
-
-if (ele->e.f3->stab_type != stab_gls)
-   dserror("routine with no or wrong stabilisation called");
-
 
 if (istrnint==2)
 {
@@ -590,10 +678,10 @@ if (istrnint==2)
    } /* end of loop over ilen */
 } /* endif (istrnint==2) */
 /*----------------------------------- calculate stabilisation parameter */
-f3_mlcalstabpar(ele,velint,visc,iel,typ,1);
+f3_lsstabpar(ele,velint,visc,iel,typ,1);
 
 /*----------------------------------------- calculate subgrid viscosity */
-if (fdyn->sgvisc>0) f3_calsgvisc(ele,velint,vderxy,visc,iel,typ);
+if (fdyn->sgvisc>0) f3_lssgvisc(ele,velint,vderxy,visc,iel,typ);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -601,6 +689,6 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of f3_mlcalelesize2 */
+} /* end of f3_lselesize2 */
 
 #endif

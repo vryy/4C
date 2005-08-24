@@ -387,8 +387,8 @@ for (lr=0;lr<nir;lr++)
  |         compute "Standard Galerkin" matrices for submesh             |
  *----------------------------------------------------------------------*/
 /*-------------------------------------------------  compute matrix SMK */
-      f3_calsmk(mlvar,smestif,velint,vderxy,smfunct,smderxy,fac,
-                visc,smiel);
+      f3_calsmk(mlvar,smestif,velint,vderxy,smfunct,smderxy,fac,visc,
+                smiel);
 /*-------------------------------------------------- compute matrix SMM */
       if (fdyn->nis==0 && mlvar->quastabub==0)
         f3_calsmm(smemass,smfunct,fac,smiel);
@@ -403,7 +403,7 @@ for (lr=0;lr<nir;lr++)
 	  f3_mlcogder2(smxyze,smxjm,wa2,smderxy,smderxy2,smderiv2,smiel);
 /*---------------------------------------- stabilization for matrix SMK */
         f3_calstabsmk(mlvar,smestif,velint,vderxy,smfunct,smderxy,
-                      smderxy2,fac,visc,smiel,ihoelsm);
+	              smderxy2,fac,visc,smiel,ihoelsm);
 /*---------------------------------------- stabilization for matrix SMM */
         if (fdyn->nis==0)
 	  f3_calstabsmm(mlvar,smemass,velint,vderxy,smfunct,smderxy,
@@ -431,15 +431,14 @@ for (lr=0;lr<nir;lr++)
 
      if (fdyn->nis==0)
       {
- dserror("time force vector has been removed! Change ML code adequately!");
 /*------- get large-scale pressure derivatives (n) at integration point */
-/*        if (fdyn->iprerhs>0) f3_pder(pderxyn,derxy,epren,iel);*/
+        if (fdyn->iprerhs>0) f3_pder(pderxyn,derxy,epren,iel);
 /*------------------ get large-scale velocities (n) at integraton point */
-/*        f3_veci(velintn,funct,eveln,iel);*/
+        f3_veci(velintn,funct,eveln,iel);
 /*------- get large-scale velocity derivatives (n) at integration point */
-/*        f3_vder(vderxyn,derxy,eveln,iel);*/
+        f3_vder(vderxyn,derxy,eveln,iel);
 /*--- get large-scale 2nd velocity derivatives (n) at integration point */
-/*        if (ihoel!=0) f3_vder2(vderxy2n,derxy2,eveln,iel);*/
+        if (ihoel!=0) f3_vder2(vderxy2n,derxy2,eveln,iel);
 
         if (mlvar->quastabub==0)
         {
@@ -475,11 +474,11 @@ for (lr=0;lr<nir;lr++)
           if (ihoelsm!=0) f3_vder2(smvderxy2n,vbubderxy2n,eveln,iel);
 
 /*----------------- get small-scale 'pressures' (n) at integraton point */
-/*          f3_smprei (smpreintn,pbubintn,epren,iel);*/
+          f3_smprei (smpreintn,pbubintn,epren,iel);
 /*------ get small-scale 'pressure' derivatives (n) at integraton point */
-/*          f3_smpder (smpderxyn,pbubderxyn,epren,iel);*/
+          f3_smpder (smpderxyn,pbubderxyn,epren,iel);
 /*-- get small-scale 2nd 'pressure' derivatives (n) at integraton point */
-/*          if (ihoelsm!=0) f3_smpder2(smpderxy2n,pbubderxy2n,epren,iel);*/
+          if (ihoelsm!=0) f3_smpder2(smpderxy2n,pbubderxy2n,epren,iel);
 	}
 
 /*----- calculate various velocities for "Time" force vector evaluation */
@@ -556,8 +555,8 @@ for (lr=0;lr<nir;lr++)
 		   visc,smiel,iel,ihoel);
 /*-------------------------- stabilization part for "Time" force vector */
         if (mlvar->smstabi>0)
-          f3_calstabsmft(mlvar,smetfor,velintn,velintnt,velintnc,
-	                 vderxyn,vderxync,vderxynv,vderxy2n,pderxyn,smfunct,
+          f3_calstabsmft(mlvar,smetfor,velintn,velintnt,velintnc,vderxyn,
+	                 vderxync,vderxynv,vderxy2n,pderxyn,smfunct,
 			 smderxy,smderxy2,fac,visc,smiel,iel,ihoelsm,ihoel);
       }
    } /* end of loop over integration points lt*/
@@ -588,7 +587,7 @@ element is calculated.
 \param  *submesh     FLUID_ML_SMESH(i)
 \param **estif        DOUBLE	   (o)  element stiffness matrix
 \param **emass        DOUBLE	   (o)  element mass matrix
-\param  *eiforce      DOUBLE	   (o)  element iteration force vector
+\param  *eforce       DOUBLE	   (o)  element force vector
 \param  *smxyze	      DOUBLE	   (i)  submesh element coordinates
 \param  *smxyzep      DOUBLE	   (i)  sm ele. coord. on parenyt dom.
 \param  *funct        DOUBLE       (-)	natural shape functions
@@ -630,7 +629,7 @@ void f3_bubint(FLUID_DATA      *data,
 	       FLUID_ML_SMESH  *submesh,
                DOUBLE	      **estif,
 	       DOUBLE	      **emass,
-	       DOUBLE	       *eiforce,
+	       DOUBLE	       *eforce,
 	       DOUBLE         **smxyze,
 	       DOUBLE         **smxyzep,
 	       DOUBLE          *funct,
@@ -891,10 +890,10 @@ for (lr=0;lr<nir;lr++)
       if (fdyn->nis==0)
       {
 /*------------------------ compute "VMM" force vector for velocity dofs */
-        f3_calbfv(mlvar,eiforce,velint,vderxy,funct,derxy,smfint,
-                  smfderxy,fac,visc,iel);
+        f3_calbfv(mlvar,eforce,velint,vderxy,funct,derxy,smfint,smfderxy,
+	          fac,visc,iel);
 /*------------------------ compute "VMM" force vector for pressure dofs */
-        f3_calbfp(eiforce,funct,smfderxy,fac,iel);
+        f3_calbfp(eforce,funct,smfderxy,fac,iel);
       }
 
 /*----------------------------------------------------------------------*
@@ -926,7 +925,7 @@ for (lr=0;lr<nir;lr++)
 /*-------------- get convective velocities (n+1,i) at integration point */
         f3_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-        f3_lscalgalifv(eiforce,covint,velint,vderxy,funct,fac,iel);
+        f3_lscalgalifv(eforce,covint,velint,vderxy,funct,fac,iel);
       } /* endif (fdyn->nii!=0) */
    } /* end of loop over integration points lt*/
    } /* end of loop over integration points ls*/
@@ -956,7 +955,7 @@ large-scale element is calculated
 \param  *hasext    int             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
-\param  *eiforce   DOUBLE	   (o)    element iter force vector
+\param  *eforce    DOUBLE	   (o)    element force vector
 \param  *funct     DOUBLE	   (-)    natural shape functions
 \param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
 \param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
@@ -986,7 +985,7 @@ void f3_lsint(FLUID_DATA      *data,
               INT             *hasext,
               DOUBLE	     **estif,
 	      DOUBLE	     **emass,
-	      DOUBLE	      *eiforce,
+	      DOUBLE	      *eforce,
 	      DOUBLE	      *funct,
 	      DOUBLE	     **deriv,
 	      DOUBLE	     **deriv2,
@@ -1038,9 +1037,6 @@ dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
 typ  = ele->distyp;
 gls    = ele->e.f3->stabi.gls;
-
-if (ele->e.f3->stab_type != stab_gls)
-   dserror("routine with no or wrong stabilisation called");
 
 /*------- get integraton data and check if elements are "higher order" */
 switch (typ)
@@ -1114,9 +1110,8 @@ for (lt=0;lt<nit;lt++)
    f3_vder(vderxy,derxy,evel,iel);
 
 /*---- compute stab. par. or subgrid viscosity during integration loop */
-      if (gls->iduring!=0 ||
-          (fdyn->sgvisc>0    && gls->iduring!=0))
-        f3_mlcalelesize2(ele,velint,vderxy,derxy,visc,iel,typ);
+   if (gls->iduring!=0 || (fdyn->sgvisc>0 && gls->iduring!=0))
+      f3_lselesize2(ele,velint,vderxy,derxy,visc,iel,typ);
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
  | NOTE:                                                                |
@@ -1172,7 +1167,7 @@ for (lt=0;lt<nit;lt++)
 /*-------------- get convective velocities (n+1,i) at integration point */
      f3_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-     f3_lscalgalifv(eiforce,covint,velint,vderxy,funct,fac,iel);
+     f3_lscalgalifv(eforce,covint,velint,vderxy,funct,fac,iel);
    } /* endif (fdyn->nii!=0) */
 
 /*----------------------------------------------------------------------*
@@ -1180,31 +1175,30 @@ for (lt=0;lt<nit;lt++)
  *----------------------------------------------------------------------*/
     if (fdyn->nis==0)
     {
-      dserror("Time force vector etforce has been removed. \nML code has to be corrected, ask Dr. Gravemeier for further information!");
 /*------------------------------ get pressure (n) at integration point */
-/*      if (fdyn->iprerhs>0)
-         preintn=f3_scali(funct,epren,iel);*/
+      if (fdyn->iprerhs>0)
+         preintn=f3_scali(funct,epren,iel);
 /*----------------------------- get velocities (n) at integration point */
-/*      f3_veci(velintn,funct,eveln,iel);*/
+      f3_veci(velintn,funct,eveln,iel);
 /*------------------- get velocity derivatives (n) at integration point */
-/*      f3_vder(vderxyn,derxy,eveln,iel);*/
+      f3_vder(vderxyn,derxy,eveln,iel);
 /*------------------ get convective velocities (n) at integration point */
       f3_covi(vderxyn,velintn,covintn);
 
 /*--------------------- calculate "Time" force vector for velocity dofs */
-/*      f3_lscalgaltfv(etforce,velintn,velintn,covintn,funct,derxy,
-	             vderxyn,preintn,visc,fac,iel); */
+      f3_lscalgaltfv(eforce,velintn,velintn,covintn,funct,derxy,
+	             vderxyn,preintn,visc,fac,iel);
 /*--------------------- calculate "Time" force vector for pressure dofs */
-/*      if (fdyn->thsr!=ZERO)
-	f3_lscalgaltfp(&(etforce[3*iel]),funct,vderxyn,fac,iel);*/
+      if (fdyn->thsr!=ZERO)
+	f3_lscalgaltfp(&(eforce[3*iel]),funct,vderxyn,fac,iel);
       }
 
 /*----------------------------------------------------------------------*
  |         compute "External" Force Vector                              |
  *----------------------------------------------------------------------*/
-/*    if (*hasext!=0)*/
+    if (*hasext!=0)
 /*----------------- calculate "External" force vector for velocity dofs */
-/*         f3_lscalgalexfv(etforce,funct,edeadn,edead,fac,iel);*/
+         f3_lscalgalexfv(eforce,funct,edeadn,edead,fac,iel);
 }
 }
 } /* end of loop over integration points */
@@ -1254,7 +1248,7 @@ void f3_smint2(FLUID_DATA      *data,
 	       DOUBLE	      **wa1)
 {
 INT       smiel;      /* submesh number of nodes                        */
-INT       nsmtyp;     /* submesh element type: 1 - hex; 2 - tri        */
+INT       nsmtyp;     /* submesh element type: 1 - hex; 2 - tri         */
 INT       intc;       /* "integration case" for tet for further infos
                           see f3_inpele.c and f3_intg.c                 */
 INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
@@ -1263,7 +1257,7 @@ DOUBLE    fac;
 DOUBLE    facr,facs,fact;/* integration weights                         */
 DOUBLE    det;        /* determinant of jacobian matrix                 */
 DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
-DIS_TYP   typ,smtyp;  /* large-scale and submesh element type           */
+DIS_TYP   smtyp;      /* submesh element type                           */
 
 #ifdef DEBUG
 dstrc_enter("f3_smint2");

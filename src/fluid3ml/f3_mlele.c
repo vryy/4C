@@ -293,7 +293,6 @@ void f3_lsele(FLUID_DATA     *data,
               INT	     *hasext,
 	      INT	      init)
 {
-INT              hasdead;
 INT              info=0;
 INT              infrhs=0;
 INT              i,j;
@@ -408,23 +407,21 @@ f3_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
 f3_bubele(data,mlvar,submesh,ele);
 
 /*- calculate charact. l-s element length and stab. param. if necessary */
-dsassert(ele->e.f3->stab_type == stab_gls,
-        "wrong stabilisation within muli level context");
-
-f3_mlcalelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,
-                vderxy,wa1);
+if (ele->e.f3->stab_type == stab_gls || ele->e.f3->stab_type == stab_usfem)
+  f3_lselesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,vderxy,
+               wa1);
 
 /*------ calculate large-scale part of element stiffness matrices and
                                                   element force vectors */
-f3_lsint(data,ele,mlvar,hasext,estif,emass,eforce,funct,
-         deriv,deriv2,xjm,derxy,derxy2,evel,eveln,epren,edeadn,edead,
-	 velint,velintn,covint,covintn,vderxy,vderxyn,wa1,wa2);
+f3_lsint(data,ele,mlvar,hasext,estif,emass,eforce,funct,deriv,deriv2,xjm,
+         derxy,derxy2,evel,eveln,epren,edeadn,edead,velint,velintn,covint,
+	 covintn,vderxy,vderxyn,wa1,wa2);
 
 /*----------------- add emass and estif to estif and permute the matrix */
 f3_mlpermestif(estif,emass,wa1,ele->numnp);
 
 /*---------------------------------- permute element load vector eforce */
-if (fdyn->nii+(*hasext)!=0) f3_permeforce(eforce,wa1,ele->numnp);
+f3_permeforce(eforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
 fluid_mlcaldirich(ele,edforce,estif,hasdirich);
@@ -519,11 +516,12 @@ if (init==1) /* allocate working arrays and set pointers */
    velintnc = amdef("velintnc" ,&velintnc_a ,3,1,"DV");
    covintn  = amdef("covintn"  ,&covintn_a  ,3,1,"DV");
 
-   vderxyn  = amdef("vderxyn" ,&vderxyn_a ,3,3,"DA");
-   vderxync = amdef("vderxync",&vderxync_a,3,3,"DA");
-   vderxynv = amdef("vderxynv",&vderxynv_a,3,3,"DA");
-   vderxy2n = amdef("vderxy2n",&vderxy2n_a,3,6,"DA");
-   pderxyn  = amdef("pderxyn" ,&pderxyn_a ,3,1,"DV");
+   vderxyn   = amdef("vderxyn"  ,&vderxyn_a  ,3,3,"DA");
+   vderxync  = amdef("vderxync" ,&vderxync_a ,3,3,"DA");
+   vderxynv  = amdef("vderxynv" ,&vderxynv_a ,3,3,"DA");
+   vderxy2n  = amdef("vderxy2n" ,&vderxy2n_a ,3,6,"DA");
+   vderxy2nv = amdef("vderxy2nv",&vderxy2nv_a,3,6,"DA");
+   pderxyn   = amdef("pderxyn"  ,&pderxyn_a  ,3,1,"DV");
 
    smvelint  = amdef("smvelint" ,&smvelint_a ,3,1,"DV");
    smvderxy  = amdef("smvderxy" ,&smvderxy_a ,3,3,"DA");
@@ -713,7 +711,7 @@ DOUBLE           sgtol;      /* tolerance for subgr. visc. iteration    */
 DOUBLE           sgdiff;     /* iterative difference in subgr. visc.    */
 DOUBLE           sgvisc;     /* subgrid viscosity                       */
 DOUBLE           ssinbu;     /* ssm integral of normalized bubble fun.  */
-DOUBLE           matvec[7000],rhsvec[2000];
+DOUBLE           matvec[7000];
 
 #ifdef DEBUG
 dstrc_enter("f3_dynsgv");

@@ -76,7 +76,6 @@ void f3_calsmfv(FLUID_DYN_ML	*mlvar,
 INT    irow,icol,icn,isd;
 DOUBLE con,beta,divv,cb,facsl,facpl;
 DOUBLE aux;
-DOUBLE sign;
 
 #ifdef DEBUG
 dstrc_enter("f3_calsmfv");
@@ -724,7 +723,7 @@ velocity dofs is calculated.
 
 </pre>
 \param  *mlvar     FLUID_DYN_ML    (i)
-\param **eiforce   DOUBLE	   (i/o)  element iterative rhs
+\param **eforce    DOUBLE	   (i/o)  element rhs
 \param  *velint    DOUBLE	   (i)    velocity at int point
 \param **vderxy    DOUBLE	   (i)    global velocity derivatives
 \param  *funct     DOUBLE	   (i)    natural shape functions
@@ -738,7 +737,7 @@ velocity dofs is calculated.
 
 ------------------------------------------------------------------------*/
 void f3_calbfv(FLUID_DYN_ML    *mlvar,
-	       DOUBLE          *eiforce,
+	       DOUBLE          *eforce,
 	       DOUBLE          *velint,
 	       DOUBLE         **vderxy,
 	       DOUBLE          *funct,
@@ -773,8 +772,8 @@ con=facsl*visc;
    |  - v * f_bub   d_omega
    /
 ----------------------------------------------------------------------- */
-if (fdyn->nis==0 && mlvar->transterm==0 ||
-    fdyn->nis==0 && mlvar->transterm==2)
+if ((fdyn->nis==0 && mlvar->transterm==0) ||
+    (fdyn->nis==0 && mlvar->transterm==2))
 {
   irow=-1;
   for (inode=0;inode<iel;inode++)
@@ -783,7 +782,7 @@ if (fdyn->nis==0 && mlvar->transterm==0 ||
     for (isd=0;isd<3;isd++)
     {
       irow++;
-      eiforce[irow] -= aux*smfint[isd];
+      eforce[irow] -= aux*smfint[isd];
     } /* end loop over irn */
   } /* end loop over icn */
 }
@@ -805,7 +804,7 @@ if (fdyn->nis==0 && mlvar->transterm==0 ||
       aux = (velint[0]*smfderxy[0][isd]+velint[1]*smfderxy[1][isd]\
             +velint[2]*smfderxy[2][isd])*auxc;
       irow++;
-      eiforce[irow] -= aux;
+      eforce[irow] -= aux;
     } /* end loop over irn */
   } /* end loop over icn */
 
@@ -826,7 +825,7 @@ if (fdyn->nis==0 && mlvar->transterm==0 ||
       for (isd=0;isd<3;isd++)
       {
         irow++;
-        eiforce[irow] -= aux*smfint[isd];
+        eforce[irow] -= aux*smfint[isd];
       } /* end loop over irn */
     } /* end loop over icn */
   }
@@ -850,7 +849,7 @@ if(fdyn->nir != 0)
       aux = (smfint[0]*vderxy[isd][0]+smfint[1]*vderxy[isd][1]\
             +smfint[2]*vderxy[isd][2])*auxc;
       irow++;
-      eiforce[irow] -= aux;
+      eforce[irow] -= aux;
     } /* end loop over irn */
   } /* end loop over icn */
 
@@ -871,7 +870,7 @@ if(fdyn->nir != 0)
       for (isd=0;isd<3;isd++)
       {
         irow++;
-        eiforce[irow] -= aux*velint[isd];
+        eforce[irow] -= aux*velint[isd];
       } /* end loop over irn */
     } /* end loop over icn */
   }
@@ -893,7 +892,7 @@ if (fdyn->vite==0)
     for (isd=0;isd<3;isd++)
     {
       irow++;
-      eiforce[irow] -= (derxy[0][inode]*smfderxy[isd][0] \
+      eforce[irow] -= (derxy[0][inode]*smfderxy[isd][0] \
                        +derxy[1][inode]*smfderxy[isd][1] \
                        +derxy[2][inode]*smfderxy[isd][2])*con;
     } /* end loop over irn */
@@ -914,7 +913,7 @@ else
       irow++;
       for (j=0;j<3;j++)
       {
-        eiforce[irow] -= derxy[j][inode]*(smfderxy[isd][j] \
+        eforce[irow] -= derxy[j][inode]*(smfderxy[isd][j] \
 	                                 +smfderxy[j][isd])*con;
       }
     } /* end loop over irn */
@@ -938,7 +937,7 @@ In this routine, the bubble part of the large-scale rhs for the
 pressure dofs is calculated.
 
 </pre>
-\param **eiforce   DOUBLE	   (i/o)  element iterative rhs
+\param **eforce    DOUBLE	   (i/o)  element rhs
 \param  *funct     DOUBLE	   (i)    natural shape functions
 \param **smfderxy  DOUBLE	   (i)    global deriv. of rhs bub. fun.
 \param   fac 	   DOUBLE	   (i)    weighting factor
@@ -946,7 +945,7 @@ pressure dofs is calculated.
 \return void
 
 ------------------------------------------------------------------------*/
-void f3_calbfp(DOUBLE          *eiforce,
+void f3_calbfp(DOUBLE          *eforce,
 	       DOUBLE          *funct,
 	       DOUBLE         **smfderxy,
 	       DOUBLE           fac,
@@ -979,7 +978,7 @@ aux=(smfderxy[0][0]+smfderxy[1][1]+smfderxy[2][2])*facsl;
 for (inode=0;inode<iel;inode++)
 {
   posr = 3*iel + inode;
-  eiforce[posr] += aux*funct[inode];
+  eforce[posr] += aux*funct[inode];
 } /* end loop over icn */
 
 
@@ -990,495 +989,5 @@ dstrc_exit();
 
 return;
 } /* end of f3_calbfp */
-
-/*!---------------------------------------------------------------------
-\brief galerkin part of external forces for vel dofs
-
-<pre>                                                         genk 09/02
-
-In this routine the galerkin part of the time forces for vel dofs
-is calculated:
-
-                   /
-   + (1-THETA)*dt |  v * b_old   d_omega
-                 /
-
-               /
-   + THETA*dt |  v * b   d_omega
-             /
-
-see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-
-
-</pre>
-\param   *eforce      DOUBLE	      (i/o)  element force vector
-\param	 *funct       DOUBLE	      (i)    nat. shape functions
-\param   *edeadn      DOUBLE          (i)    ele dead load at n
-\param   *edeadng     DOUBLE          (i)    ele dead load at n+1
-\param	  fac	      DOUBLE	      (i)    weighting factor
-\param	  iel	      INT	      (i)    num. of nodes in ele
-\return void
-
-------------------------------------------------------------------------*/
-void f3_lscalgalexfv(DOUBLE          *eforce,
-		   DOUBLE          *funct,
-                   DOUBLE          *edeadn,
-		   DOUBLE          *edeadng,
-		   DOUBLE           fac,
-		   INT              iel)
-{
-DOUBLE  facsl, facsr;
-INT     inode,irow,isd;
-
-fdyn = alldyn[genprob.numff].fdyn;
-
-/*--------------------------------------------------- set some factors */
-facsl = fac*fdyn->thsl;
-facsr = fac*fdyn->thsr;
-/*----------------------------------------------------------------------*
-   Calculate galerkin part of external forces:
-
-                   /
-   + (1-THETA)*dt |  v * b_old   d_omega
-                 /
-
-               /
-   + THETA*dt |  v * b   d_omega
-             /
-
- *----------------------------------------------------------------------*/
-irow=-1;
-for (inode=0;inode<iel;inode++)
-{
-   for (isd=0;isd<3;isd++)
-   {
-      irow++;
-      eforce[irow] += funct[inode]*(edeadn[isd]*facsr+edeadng[isd]*facsl);
-   } /* end of loop over isd */
-} /* end of loop over inode */
-
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-
-return;
-} /* end of f3_lscalgalexfv */
-
-/*!---------------------------------------------------------------------
-\brief galerkin part of iteration forces for vel dofs
-
-<pre>                                                         genk 05/02
-
-In this routine the galerkin part of the iteration forces for vel dofs
-is calculated:
-
-                   /
-   (+/-) THETA*dt |  v * u * grad(u)  d_omega
-                 /
-
-
-see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-
-</pre>
-\param  *eforce    DOUBLE	   (i/o)  element force vector
-\param  *covint    DOUBLE	   (i)	  conv. vels at int. point
-\param  *velint    DOUBLE	   (i)    vel. at integr. point
-\param **vderxy    DOUBLE	   (i)    vel. der. at integr. point
-\param  *funct     DOUBLE	   (i)    nat. shape funcs
-\param   fac 	   DOUBLE	   (i)    weighting factor
-\param	 iel	   INT		   (i)	  num. of nodes of act. ele
-\return void
-
-------------------------------------------------------------------------*/
-void f3_lscalgalifv(DOUBLE          *eforce,
-		  DOUBLE          *covint,
-		  DOUBLE          *velint,
-		  DOUBLE         **vderxy,
-		  DOUBLE          *funct,
-		  DOUBLE           fac,
-		  INT              iel)
-{
-INT    inode,isd;
-INT    irow;
-DOUBLE facsl,beta,betsl,divv;
-
-#ifdef DEBUG
-dstrc_enter("f3_lscalgalifv");
-#endif
-
-fdyn = alldyn[genprob.numff].fdyn;
-/*--------------------------------------------------- set some factors */
-facsl = fac * fdyn->thsl * fdyn->sigma;
-
-switch (fdyn->conte) /* determine parameter beta of convective term */
-{
-case 0:
-  beta = ZERO;
-break;
-case 1:
-  beta = ONE;
-  divv= vderxy[0][0]+vderxy[1][1]+vderxy[2][2];
-break;
-case 2:
-  beta = ONE/TWO;
-  divv= vderxy[0][0]+vderxy[1][1]+vderxy[2][2];
-break;
-default:
-   dserror("unknown form of convective term");
-} /* end switch (fdyn->conte) */
-
-/*----------------------------------------------------------------------*
-   Calculate convective forces of iteration force vector:
- *----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*
-                   /
-   (+/-) THETA*dt |  v * u_old * grad(u_old)  d_omega
-    |            /
-    |-> signs due to nonlin. iteration scheme (fdyn->sigma)
- *----------------------------------------------------------------------*/
-irow = -1;
-for (inode=0;inode<iel;inode++)
-{
-   for (isd=0;isd<3;isd++)
-   {
-      irow++;
-      eforce[irow] += funct[inode]*covint[isd]*facsl;
-   } /* end of loop over isd */
-} /* end of loop over inode */
-
-if (fdyn->conte!=0)
-{
-  betsl = facsl * beta;
-/*----------------------------------------------------------------------*
-                   /
-   (+/-) THETA*dt |  v * u_old * div(u_old)  d_omega
-    |            /
-    |-> signs due to nonlin. iteration scheme (fdyn->sigma)
- *----------------------------------------------------------------------*/
-  irow = -1;
-  for (inode=0;inode<iel;inode++)
-  {
-    for (isd=0;isd<3;isd++)
-    {
-      irow++;
-      eforce[irow] += funct[inode]*velint[isd]*divv*betsl;
-    } /* end loop over isd */
-  } /* end loop over inode */
-}
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-
-return;
-} /* end of f3_lscalgalifv */
-
-/*!---------------------------------------------------------------------
-\brief galerkin part of time forces for vel dofs
-
-<pre>                                                         genk 05/02
-
-In this routine the galerkin part of the time forces for vel dofs
-is calculated:
-
-      /
-   + |  v * u     d_omega
-    /
-
-                      /
-   (-) (1-THETA)*dt  |  v * u * grad(u)     d_omega
-                    /
-
-                      /
-   (-) (1-THETA)*dt  |  2*nue * eps(v) : eps(u)  d_omega
-                    /
-
-                    /
-   + (1-THETA)*dt  |  div(v) * p  d_omega
-                  /
-
-see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-
-NOTE:
-   in ONESTEP methods: velint  = vel2int = U(n)
-   in TWOSTEP methods: velint  = U(n+gamma)
-   in TWOSTEP methods: vel2int = U(n)
-
-</pre>
-\param   *eforce      DOUBLE	      (i/o)  element force vector
-\param   *velint      DOUBLE	      (i)    vel. at integr. point
-\param   *vel2int     DOUBLE	      (i)    vel. at integr. point
-\param   *covint      DOUBLE	      (i)    conv. vel. at integr. p.
-\param	 *funct       DOUBLE	      (i)    nat. shape functions
-\param	**derxy       DOUBLE	      (i)    global derivatives
-\param	**vderxy      DOUBLE	      (i/    global vel. deriv.
-\param	  preint      DOUBLE	      (i)    pres. at integr. point
-\param	  visc	      DOUBLE	      (i)    fluid viscosity
-\param	  fac	      DOUBLE	      (i)    weighting factor
-\param	  iel	      INT	      (i)    num. of nodes in ele
-\return void
-
-------------------------------------------------------------------------*/
-void f3_lscalgaltfv(DOUBLE          *eforce,
-		  DOUBLE          *velint,
-		  DOUBLE          *vel2int,
-		  DOUBLE          *covint,
-		  DOUBLE          *funct,
-		  DOUBLE         **derxy,
-		  DOUBLE         **vderxy,
-		  DOUBLE           preint,
-		  DOUBLE           visc,
-		  DOUBLE           fac,
-		  INT              iel)
-{
-INT    j,irow,isd,inode;
-DOUBLE con,beta,divv,betsr;
-DOUBLE aux;
-DOUBLE facsr;
-DOUBLE facpr;
-DOUBLE fact[3];
-
- #ifdef DEBUG
-dstrc_enter("f3_lscalgaltfv");
-#endif
-
-fdyn = alldyn[genprob.numff].fdyn;
-
-/*--------------------------------------------------- set some factors */
-facsr = fac * fdyn->thsr;
-facpr = fac * fdyn->thpr;
-con   = facsr * visc;
-
-switch (fdyn->conte) /* determine parameter beta of convective term */
-{
-case 0:
-  beta = ZERO;
-break;
-case 1:
-  beta = ONE;
-  divv= vderxy[0][0]+vderxy[1][1]+vderxy[2][2];
-break;
-case 2:
-  beta = ONE/TWO;
-  divv= vderxy[0][0]+vderxy[1][1]+vderxy[2][2];
-break;
-default:
-   dserror("unknown form of convective term");
-} /* end switch (fdyn->conte) */
-
-/*----------------------------------------------------------------------*
-   Calculate intertia forces of time force vector:
-      /
-   + |  v * u     d_omega
-    /
- *----------------------------------------------------------------------*/
-
-fact[0] = vel2int[0]*fac;
-fact[1] = vel2int[1]*fac;
-fact[2] = vel2int[2]*fac;
-irow=-1;
-for (inode=0;inode<iel;inode++)
-{
-   for (isd=0;isd<3;isd++)
-   {
-      irow++;
-      eforce[irow] += funct[inode]*fact[isd];
-   } /* end of loop over isd */
-} /* end of loop over inode */
-
-/*----------------------------------------------------------------------*
-   Calculate convective forces of time force vector:
-                    /
-   - (1-THETA)*dt  |  v * u * grad(u)     d_omega
-                  /
- *----------------------------------------------------------------------*/
-irow=-1;
-for (inode=0;inode<iel;inode++)
-{
-   for (isd=0;isd<3;isd++)
-   {
-      irow++;
-      eforce[irow] -= funct[inode]*covint[isd]*facsr;
-   } /* end of loop over isd */
-} /* end of loop over inode */
-
-if (fdyn->conte!=0)
-{
-  betsr = facsr * beta;
-/*----------------------------------------------------------------------*
-                   /
-   - (1-THETA)*dt |  v * u * div(u)  d_omega
-                 /
- *----------------------------------------------------------------------*/
-  irow = -1;
-  for (inode=0;inode<iel;inode++)
-  {
-    for (isd=0;isd<3;isd++)
-    {
-      irow++;
-      eforce[irow] += funct[inode]*velint[isd]*divv*betsr;
-    } /* end loop over isd */
-  } /* end loop over inode */
-}
-
-/*----------------------------------------------------------------------*
-   Calculate viscous forces of time force vector:
- *----------------------------------------------------------------------*/
-if (fdyn->vite==0)
-{
-/*----------------------------------------------------------------------*
-                    /
-   - (1-THETA)*dt  |  nue * grad(v) : grad(u)  d_omega
-                  /
- *----------------------------------------------------------------------*/
-  irow=-1;
-  for (inode=0;inode<iel;inode++)
-  {
-    for (isd=0;isd<3;isd++)
-    {
-      irow++;
-      eforce[irow] -= (derxy[0][inode]*vderxy[0][isd] \
-                     + derxy[1][inode]*vderxy[1][isd] \
-                     + derxy[2][inode]*vderxy[2][isd])*con;
-    } /* end of loop over isd */
-  } /* end of loop over inode */
-}
-else
-{
-/*----------------------------------------------------------------------*
-                    /
-   - (1-THETA)*dt  |  2*nue * eps(v) : eps(u)  d_omega
-                  /
- *----------------------------------------------------------------------*/
-  irow=-1;
-  for (inode=0;inode<iel;inode++)
-  {
-    for (isd=0;isd<3;isd++)
-    {
-      irow++;
-      for (j=0;j<3;j++)
-      {
-        eforce[irow] -= (derxy[j][inode]*(vderxy[isd][j]+vderxy[j][isd])*con);
-      } /* end of loop over j */
-    } /* end of loop over isd */
-  } /* end of loop over inode */
-}
-
-/*----------------------------------------------------------------------*
-   Calculate pressure forces of time force vector:
-                    /
-   + (1-THETA)*dt  |  div(v) * p  d_omega
-                  /
- *----------------------------------------------------------------------*/
-if (fdyn->iprerhs>0)
-{
-   aux = preint * facpr;
-   irow=-1;
-   for (inode=0;inode<iel;inode++)
-   {
-      for (isd=0;isd<3;isd++)
-      {
-         irow++;
-         eforce[irow] += derxy[isd][inode]*aux;
-      } /* end of loop over isd */
-   } /* end of loop over inode */
-} /*endif (fdyn->iprerhs>0) */
-/*----------------------------------------------------------------------*
-   Calculate external forces of time force vector (due to self-weight):
-                    /
-   + (1-THETA)*dt  |  v * b  d_omega
-                  /
- *----------------------------------------------------------------------*/
-/* NOT IMPLEMENTED YET!!!!! */
-
-/*----------------------------------------------------------------------*
-   Calculate external forces of time force vector
-                         (due to surface tension):
-                    /
-   + (1-THETA)*dt  |  v * h  d_gamma
-                  /
- *----------------------------------------------------------------------*/
-/* NOT IMPLEMENTED YET!!!!!!!!!!!!!!!
-   maybe its better to do the integration over the element edge in
-   a seperate loop (different gauss-points!!!!)
-*/
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-
-return;
-} /* end of f3_lscalgaltfv */
-
-/*!---------------------------------------------------------------------
-\brief galerkin part of time forces for pre dofs
-
-<pre>                                                         genk 05/02
-
-In this routine the galerkin part of the time forces for pre dofs
-is calculated:
-
-                    /
-   + (1-THETA)*dt  |  q * div(u)  d_omega
-                  /
-
-see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-
-NOTE:
-    there's only one full element force vector
-    for pre-dofs the pointer eforce points to the entry
-    eforce[3*iel]
-
-</pre>
-\param   *eforce      DOUBLE	      (i/o)  element force vector
-\param   *funct       DOUBLE	      (i)    nat. shape functions
-\param  **vderxy      DOUBLE	      (i)    global vel. deriv.
-\param    fac         DOUBLE	      (i)    weighting factor
-\param	  iel	      INT	      (i)    num. of nodes in ele
-\return void
-
-------------------------------------------------------------------------*/
-void f3_lscalgaltfp(DOUBLE	  *eforce,
-		  DOUBLE	  *funct,
-		  DOUBLE	 **vderxy,
-		  DOUBLE	   fac,
-		  INT		   iel)
-{
-INT      inode;
-DOUBLE   aux;
-DOUBLE   facsr;
-
-#ifdef DEBUG
-dstrc_enter("f3_lscalgaltfp");
-#endif
-
-fdyn = alldyn[genprob.numff].fdyn;
-/*--------------------------------------------------- set some factors */
-facsr = fac * fdyn->thsr;
-
-/*----------------------------------------------------------------------*
-   Calculate continuity forces of time force vector:
-                    /
-   + (1-THETA)*dt  |  q * div(u)  d_omega
-                  /
- *----------------------------------------------------------------------*/
-aux = facsr * (vderxy[0][0] + vderxy[1][1] + vderxy[2][2]);
-for(inode=0;inode<iel;inode++)
-{
-   eforce[inode] += funct[inode]*aux;
-} /* end of loop over inode */
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-
-return;
-} /* end of f3_lscalgaltfp */
-
 
 #endif

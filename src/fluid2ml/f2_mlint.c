@@ -382,8 +382,8 @@ for (lr=0;lr<nir;lr++)
  |         compute "Standard Galerkin" matrices for submesh             |
  *----------------------------------------------------------------------*/
 /*-------------------------------------------------  compute matrix SMK */
-      f2_calsmk(mlvar,smestif,velint,vderxy,smfunct,smderxy,fac,
-                visc,smiel);
+      f2_calsmk(mlvar,smestif,velint,vderxy,smfunct,smderxy,fac,visc,
+                smiel);
 /*-------------------------------------------------- compute matrix SMM */
       if (fdyn->nis==0 && mlvar->quastabub==0)
         f2_calsmm(smemass,smfunct,fac,smiel);
@@ -550,8 +550,8 @@ for (lr=0;lr<nir;lr++)
 		   visc,smiel,iel,ihoelsm,ihoel);
 /*-------------------------- stabilization part for "Time" force vector */
         if (mlvar->smstabi>0)
-          f2_calstabsmft(mlvar,smetfor,velintn,velintnt,velintnc,
-	                 vderxyn,vderxync,vderxynv,vderxy2n,pderxyn,smfunct,
+          f2_calstabsmft(mlvar,smetfor,velintn,velintnt,velintnc,vderxyn,
+	                 vderxync,vderxynv,vderxy2n,pderxyn,smfunct,
 			 smderxy,smderxy2,fac,visc,smiel,iel,ihoelsm,ihoel);
       }
    } /* end of loop over integration points ls*/
@@ -581,7 +581,7 @@ element is calculated.
 \param  *submesh     FLUID_ML_SMESH(i)
 \param **estif        DOUBLE	   (o)  element stiffness matrix
 \param **emass        DOUBLE	   (o)  element mass matrix
-\param  *eiforce      DOUBLE	   (o)  element iteration force vector
+\param  *eforce       DOUBLE	   (o)  element force vector
 \param  *smxyze	      DOUBLE	   (i)  submesh element coordinates
 \param  *smxyzep      DOUBLE	   (i)  sm ele. coord. on parent dom.
 \param  *funct        DOUBLE       (-)	natural shape functions
@@ -623,7 +623,7 @@ void f2_bubint(FLUID_DATA      *data,
 	       FLUID_ML_SMESH  *submesh,
                DOUBLE	      **estif,
 	       DOUBLE	      **emass,
-	       DOUBLE	       *eiforce,
+	       DOUBLE	       *eforce,
 	       DOUBLE         **smxyze,
 	       DOUBLE         **smxyzep,
 	       DOUBLE          *funct,
@@ -879,10 +879,10 @@ for (lr=0;lr<nir;lr++)
       if (fdyn->nis==0)
       {
 /*------------------------ compute "VMM" force vector for velocity dofs */
-        f2_calbfv(mlvar,eiforce,velint,vderxy,funct,derxy,smfint,
-                  smfderxy,fac,visc,iel);
+        f2_calbfv(mlvar,eforce,velint,vderxy,funct,derxy,smfint,smfderxy,
+	          fac,visc,iel);
 /*------------------------ compute "VMM" force vector for pressure dofs */
-        f2_calbfp(eiforce,funct,smfderxy,fac,iel);
+        f2_calbfp(eforce,funct,smfderxy,fac,iel);
       }
 
 /*----------------------------------------------------------------------*
@@ -914,7 +914,7 @@ for (lr=0;lr<nir;lr++)
 /*-------------- get convective velocities (n+1,i) at integration point */
         f2_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-        f2_lscalgalifv(eiforce,covint,velint,vderxy,funct,fac,iel);
+        f2_lscalgalifv(eforce,covint,velint,vderxy,funct,fac,iel);
       } /* endif (fdyn->nii!=0) */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
@@ -943,8 +943,7 @@ large-scale element is calculated
 \param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
-\param  *eiforce   DOUBLE	   (o)    element iter force vector
-\param  *etforce   DOUBLE	   (o)    element time force vector
+\param  *eforce    DOUBLE	   (o)    element force vector
 \param  *funct     DOUBLE	   (-)    natural shape functions
 \param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
 \param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
@@ -974,8 +973,7 @@ void f2_lsint(FLUID_DATA      *data,
               INT             *hasext,
               DOUBLE	     **estif,
 	      DOUBLE	     **emass,
-	      DOUBLE	      *eiforce,
-	      DOUBLE	      *etforce,
+	      DOUBLE	      *eforce,
 	      DOUBLE	      *funct,
 	      DOUBLE	     **deriv,
 	      DOUBLE	     **deriv2,
@@ -1027,9 +1025,6 @@ dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
 typ  = ele->distyp;
 gls    = ele->e.f2->stabi.gls;
-
-if (ele->e.f2->stab_type != stab_gls)
-   dserror("routine with no or wrong stabilisation called");
 
 /*------ get integration data and check if elements are "higher order" */
 switch (typ)
@@ -1096,7 +1091,7 @@ for (lr=0;lr<nir;lr++)
 
  /*--- compute stab. par. or subgrid viscosity during integration loop */
       if (gls->iduring!=0 || ( fdyn->sgvisc>0    && gls->iduring!=0))
-         f2_mlcalelesize2(ele,funct,velint,vderxy,wa1,visc,iel,typ);
+         f2_lselesize2(ele,funct,velint,vderxy,wa1,visc,iel,typ);
 
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
@@ -1154,7 +1149,7 @@ for (lr=0;lr<nir;lr++)
 /*-------------- get convective velocities (n+1,i) at integration point */
         f2_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-        f2_lscalgalifv(eiforce,covint,velint,vderxy,funct,fac,iel);
+        f2_lscalgalifv(eforce,covint,velint,vderxy,funct,fac,iel);
       } /* endif (fdyn->nii!=0) */
 
 /*----------------------------------------------------------------------*
@@ -1172,11 +1167,11 @@ for (lr=0;lr<nir;lr++)
 /*------------------ get convective velocities (n) at integration point */
         f2_covi(vderxyn,velintn,covintn);
 /*--------------------- calculate "Time" force vector for velocity dofs */
-	f2_lscalgaltfv(etforce,velintn,velintn,covintn,funct,derxy,
-	             vderxyn,preintn,visc,fac,iel);
+	f2_lscalgaltfv(eforce,velintn,velintn,covintn,funct,derxy,vderxyn,
+	               preintn,visc,fac,iel);
 /*--------------------- calculate "Time" force vector for pressure dofs */
         if (fdyn->thsr!=ZERO)
-	  f2_lscalgaltfp(&(etforce[2*iel]),funct,vderxyn,fac,iel);
+	  f2_lscalgaltfp(&(eforce[2*iel]),funct,vderxyn,fac,iel);
       }
 
 /*----------------------------------------------------------------------*
@@ -1184,7 +1179,7 @@ for (lr=0;lr<nir;lr++)
  *----------------------------------------------------------------------*/
       if (*hasext!=0)
 /*----------------- calculate "External" force vector for velocity dofs */
-        f2_lscalgalexfv(etforce,funct,edeadn,edead,fac,iel);
+        f2_lscalgalexfv(eforce,funct,edeadn,edead,fac,iel);
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
 
@@ -1241,7 +1236,7 @@ DOUBLE    fac;
 DOUBLE    facr, facs; /* integration weights                            */
 DOUBLE    det;        /* determinant of jacobian matrix                 */
 DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
-DIS_TYP   typ,smtyp;  /* large-scale and submesh element type           */
+DIS_TYP   smtyp;      /* submesh element type                           */
 
 #ifdef DEBUG
 dstrc_enter("f2_smint2");

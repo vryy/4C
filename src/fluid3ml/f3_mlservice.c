@@ -67,10 +67,9 @@ void f3_lsset(ELEMENT	      *ele,
               ARRAY_POSITION *ipos,
 	      INT	      *hasext)
 {
-INT i,j,irow;       /* simply some counters                             */
+INT    i;           /* simply a counter                                 */
 INT    actmat  ;    /* material number of the element                   */
 DOUBLE dens;        /* density                                          */
-DOUBLE visc;        /* viscosity                                        */
 NODE  *actnode;     /* actual node                                      */
 GVOL  *actgvol;     /* actual g-volume                                  */
 
