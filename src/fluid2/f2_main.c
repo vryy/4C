@@ -138,10 +138,8 @@ case calc_fluid_init:
       f2_pdsubmesh(ssmesh,xele,yele,mlvar->ssmorder,1);
     }
 /*----------------------- init the element routines for multi-level FEM */
-    dserror("etforce has been removed, this has to be checked by Dr. Gravemeier");
-/*    f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
-             etforce_global,eforce_global,edforce_global,hasdirich,hasext,1);
-             */
+    f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+             eforce_global,edforce_global,ipos,hasdirich,hasext,1);
   }
 #endif
 break;
@@ -166,10 +164,8 @@ if (fdyn->mlfem==1)
 /*-------------------------- create element sub-submesh if not yet done */
     if (mlvar->smsgvi>2) f2_elesubmesh(ele,ssmesh,1);
   }
-  dserror("etforce has been removed, this has to be checked by Dr. Gravemeier");
-/*  f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
-           etforce_global,eforce_global,edforce_global,hasdirich,hasext,0);
-           */
+  f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+           eforce_global,edforce_global,ipos,hasdirich,hasext,0);
 }
 else
 #endif
