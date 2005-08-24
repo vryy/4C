@@ -49,7 +49,7 @@ struct _ARRAY      stress_ND; /*!< nodal stresses                         */
 INT                force_on; /*! flag for element fsi coupling force calc.*/
 
 /*------------------------------------------------- structure for submesh */
-#ifdef FLUID2_ML
+#ifdef FLUID3_ML
 INT                smisal;        /* flag for element submesh creation    */
 DOUBLE             smcml;	  /* charact. mesh length for submesh 	  */
 struct _ARRAY      xyzsm;         /* coordinates of submesh nodes         */
