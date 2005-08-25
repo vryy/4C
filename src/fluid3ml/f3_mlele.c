@@ -296,6 +296,7 @@ void f3_lsele(FLUID_DATA     *data,
 INT              info=0;
 INT              infrhs=0;
 INT              i,j;
+INT		 readfrom;	/* where to read dbc from 		*/
 DOUBLE           matvec[7000],rhsvec[2000];
 
 #ifdef DEBUG
@@ -424,7 +425,8 @@ f3_mlpermestif(estif,emass,wa1,ele->numnp);
 f3_permeforce(eforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
-fluid_mlcaldirich(ele,edforce,estif,hasdirich);
+readfrom = ipos->velnp;
+fluid_mlcaldirich(ele,edforce,estif,hasdirich,readfrom);
 
 /*----------------------------------------------------- local co-system */
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
