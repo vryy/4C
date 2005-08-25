@@ -42,6 +42,13 @@ and the type is in partition.h
 extern struct _PAR   par;
 
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+
+/*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY eforce_global;   /* element RHS                    */
@@ -90,6 +97,8 @@ INT hasdirich, hasext;
 INT force_on_node[MAXNOD];
 INT nfnode;  /* number of nodes of actele where forces are searched for */
 
+DOUBLE   rho;
+
 DOUBLE   xforce, yforce;
 DOUBLE   center[2];
 DOUBLE   xy[2];                  /* relative coordinates of actual node */
@@ -101,8 +110,6 @@ GNODE   *actgnode;
 ELEMENT *actele;
 GLINE   *actgline;
 DLINE   *actdline;
-
-DOUBLE testforce;
 
 #endif
 
@@ -186,6 +193,7 @@ switch (genprob.ndim)
 {
 case 2: /* problem is two-dimensional */
 #ifdef D_FLUID2
+   rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
    numdf = 3;
    for(i=0; i<actpdis->numele; i++)
    {
@@ -285,13 +293,10 @@ case 2: /* problem is two-dimensional */
             xy[0] = actnode->x[0] - center[0];
             xy[1] = actnode->x[1] - center[1];
             xforce = yforce = 0.0;
-            testforce = 0.0;
             line = force_on_node[j] * 3;
 
-            xforce += eforce[line];
-            yforce += eforce[line+1];
-
-            testforce += eforce[24];
+            xforce += eforce[line]*rho;
+            yforce += eforce[line+1]*rho;
 
             /* write nodal result from this ele to total ld sum */
             liftdrag[(ld_id-1)*6+0] += xforce;
