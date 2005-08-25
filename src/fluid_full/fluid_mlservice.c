@@ -804,11 +804,34 @@ dstrc_exit();
 return;
 } /* end of fluid_calnofo */
 
+/*!--------------------------------------------------------------------
+\brief routine to calculate ele. dirichlet load vector for multilevel
+
+<pre>                                                     gravem 08/05
+
+in this routine the element load vector due to dirichlet conditions
+is calcluated. The prescribed values are taken from the node solution
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[velnp][j]'.
+the element load vector 'dforce' is calculated by eveluating
+</pre>
+\code
+      dforces[i] -= estif[i][j] * dirich[j];
+\endcode
+
+\param  *actele    ELEMENT   (i)   actual element
+\param  *dforces   DOUBLE    (o)   dirichlet force vector
+\param **estif     DOUBLE    (i)   element stiffness matrix
+\param  *hasdirich INT       (o)   flag if s.th. was written to dforces
+\param   readfrom  INT       (i)   position, where to read dbc from
+
+\return void
+------------------------------------------------------------------------*/
 void fluid_mlcaldirich(
                        ELEMENT   *actele,
 		       DOUBLE    *dforces,
                        DOUBLE   **estif,
-		       INT       *hasdirich
+		       INT       *hasdirich,
+		       INT        readfrom
 		      )
 {
 
@@ -854,14 +877,14 @@ for (i=0; i<nd; i++)
 /*                           written to the nodes (sol_increment[3][j]) */
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
-   numdf    = actele->node[i]->numdf;
    actnode  = actele->node[i];
+   numdf    = actnode->numdf;
    actgnode = actnode->gnode;
    for (j=0; j<numdf; j++) /* loop dofs */
    {
       if (actgnode->dirich==NULL) continue;
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[i*numdf+j] = actnode->sol_increment.a.da[3][j];
+      dirich[i*numdf+j] = actnode->sol_increment.a.da[readfrom][j];
    } /* end loop over dofs */
 } /* end loop over nodes */
 /*----------------------------------------- loop rows of element matrix */

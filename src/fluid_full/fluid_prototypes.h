@@ -276,7 +276,8 @@ void fluid_mlcaldirich(
                        ELEMENT   *actele,
 		       DOUBLE    *dforces,
                        DOUBLE   **estif,
-		       INT       *hasdirich
+		       INT       *hasdirich,
+		       INT        readfrom
 		      );
 
 /************************************************************************
