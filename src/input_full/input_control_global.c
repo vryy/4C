@@ -201,7 +201,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 /*------------------------------------------------------ check values */
 if (genprob.nmat<=0)
-   dserror ("No Material defined!");
+   dserror("No Material defined!");
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
 /*----------------------------------------- defualt values for output */

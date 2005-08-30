@@ -171,7 +171,7 @@ for (i=1;i<numele;i++) /* loop all elements */
 {
    actele=&(actfield->dis[0].element[i]);
    if (actele->distyp!=distyp)
-      dserror ("up to now, all elements have to be the same distyp!\n");
+      dserror("up to now, all elements have to be the same distyp!\n");
 } /* end loop over all elements */
 
 switch (distyp)
@@ -506,7 +506,7 @@ for (i=1;i<numele;i++) /* loop all elements */
 {
    actele=&(actfield->dis[0].element[i]);
    if (actele->distyp!=distyp)
-      dserror ("up to now, all elements have to be the same distyp!\n");
+      dserror("up to now, all elements have to be the same distyp!\n");
 } /* end loop over all elements */
 
 switch (distyp)

@@ -441,7 +441,7 @@ if (icode==0 || icode==1)
       fpar[8] = p5;
    }/*--end of if(igauss ==1)--*/
    else
-     dserror ("extropolation for number of gauss point not implemented yet!\n");
+     dserror("extropolation for number of gauss point not implemented yet!\n");
    icode++;
 } /* endif (icode==0) || (icode==1) */
 
@@ -476,7 +476,7 @@ if (icode==2)
       *funval = p1*r*s*r*s+p2*r*s*r+p3*r*s*s+p4*r*r+p5*r*s+p6*s*s+p7*r+p8*s+p9;
    }/*--end of if (igauss ==1)--*/
    else
-     dserror ("extropolation for number of gauss point not implemented yet!\n");
+     dserror("extropolation for number of gauss point not implemented yet!\n");
 } /* endif (icode==2) */
 
 #ifdef DEBUG
@@ -780,7 +780,7 @@ if (icode==2)
       *funval = fpar[0]*r*r + fpar[1]*r*s + fpar[2]*s*s
                +fpar[3]*r   + fpar[4]*s   + fpar[5];
    else
-     dserror ("extropolation for number of gauss point not implemented yet!\n");
+     dserror("extropolation for number of gauss point not implemented yet!\n");
 } /* endif (icode==2) */
 
 #ifdef DEBUG

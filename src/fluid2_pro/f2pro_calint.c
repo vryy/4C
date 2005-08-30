@@ -149,7 +149,7 @@ if (mode==dm_q2q1)
 }
 else
 {
-   dserror ("unknown discretization mode");
+   dserror("unknown discretization mode");
 }/*end of if(mode==dm_q2q1)*/
 
 /*--------------------------------- an additional plausibility check */

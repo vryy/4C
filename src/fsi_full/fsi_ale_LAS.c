@@ -205,7 +205,7 @@ for (i=0;i<numnp_total;i++)
 /*-------------------------------------------------------------- check */
 for (i=0;i<numnp_total;i++)
    if (index[i]==mone)
-      dserror ("something went wrong!\n");
+      dserror("something went wrong!\n");
 
 #ifdef BINIO
 

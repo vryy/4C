@@ -1137,11 +1137,11 @@ if (fdyn->iop==4)   /* one step theta */
     fdyn->thpr = fdyn->thsr;
 }
 else
-   dserror ("constants for time algorithm not implemented yet!\n");
+   dserror("constants for time algorithm not implemented yet!\n");
 
 /*----------------------------------------------- treatment of pressure */
 if (fdyn->iprerhs!=1)
-    dserror ("treatment of pressure not implemented yet!\n");
+    dserror("treatment of pressure not implemented yet!\n");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

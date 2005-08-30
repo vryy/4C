@@ -71,10 +71,10 @@ amzero(&dummy_a);
 switch (*amatrix_typ)
 {
 case msr:
-dserror ("copy of matrix failed: parallel version csrmsr not implemented yet!!!\n");
+dserror("copy of matrix failed: parallel version csrmsr not implemented yet!!!\n");
 break;
 default:
-dserror ("copy of matrix failed: sysarray_typ not implemented yet!!!\n");
+dserror("copy of matrix failed: sysarray_typ not implemented yet!!!\n");
 }
 
 
@@ -149,7 +149,7 @@ case msr: /* copy A-matrix csr to msr format */
    amdel(&iwk_a);
 break;
 default:
-dserror ("copy of matrix failed: sysarray_typ not implemented yet!!!\n");
+dserror("copy of matrix failed: sysarray_typ not implemented yet!!!\n");
 }
 #endif
 

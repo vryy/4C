@@ -174,7 +174,7 @@ case 0:
           {
              umfpack_di_report_info (control, info) ;
              umfpack_di_report_status (control, status) ;
-             dserror ("umfpack_di_symbolic failed") ;
+             dserror("umfpack_di_symbolic failed") ;
           }
 #endif
           /* numeric-> (with respect to the values of matrix A) factorization */
@@ -184,7 +184,7 @@ case 0:
           {
              umfpack_di_report_info (control, info) ;
              umfpack_di_report_status (control, status) ;
-             dserror ("umfpack_di_numeric failed") ;
+             dserror("umfpack_di_numeric failed") ;
           }
 #endif
           umfpack_di_free_symbolic (&symbolic);
@@ -195,7 +195,7 @@ case 0:
           {
              umfpack_di_report_info (control, info) ;
              umfpack_di_report_status (control, status) ;
-             dserror ("umfpack_di_solve failed") ;
+             dserror("umfpack_di_solve failed") ;
           }
 #endif
           t = umfpack_timer ( ) - t ;
@@ -212,7 +212,7 @@ case 0:
           {
              umfpack_di_report_info (control, info) ;
              umfpack_di_report_status (control, status) ;
-             dserror ("umfpack_di_solve failed") ;
+             dserror("umfpack_di_solve failed") ;
           }
 #endif
 

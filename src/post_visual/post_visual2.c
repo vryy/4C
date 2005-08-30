@@ -1387,7 +1387,7 @@ bgcolour+=20;
   {
     ELEMENT* actele = &(discret[fluid_idx].element[i]);
     if (actele->distyp!=distype)
-      dserror ("up to now, all elements have to be the same distyp!\n");
+      dserror("up to now, all elements have to be the same distyp!\n");
   }
 
   /* set up modified element topology */
