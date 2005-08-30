@@ -139,6 +139,7 @@ OBJS_F3F      = src/fluid3_fast/f3f_calele.o \
                 src/fluid3_fast/f3f_main.o \
                 src/fluid3_fast/f3f_restart.o \
                 src/fluid3_fast/f3f_calstress.o \
+                src/fluid3_fast/f3f_calerror.o \
                 src/fluid3_fast/f3f_int_usfem.o \
                 src/fluid3_fast/f3f_liftdrag.o \
                 src/fluid3_fast/f3f_out.o
@@ -147,6 +148,7 @@ OBJS_F3F_F    = src/fluid3_fast/f3f_calextrhs.o \
                 src/fluid3_fast/f3f_calfuncderiv.o \
                 src/fluid3_fast/f3f_calgalmat.o \
                 src/fluid3_fast/f3f_caliterrhs.o \
+                src/fluid3_fast/f3f_interror.o \
                 src/fluid3_fast/f3f_calservice_2.o \
                 src/fluid3_fast/f3f_calstabmat.o \
                 src/fluid3_fast/f3f_calmatvec_usfem.o \
