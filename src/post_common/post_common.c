@@ -105,7 +105,6 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
   dstrc_exit();
   dstrc_exit();
   dstrc_enter("setup_filter");
-  trace.trace_on = 1;
 #endif
 
   /* The warning system is not set up. It's rather stupid anyway. */

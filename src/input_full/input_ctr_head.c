@@ -67,29 +67,3 @@ return;
 } /* end of inpctrhed */
 
 
-
-/*----------------------------------------------------------------------*
- | input of tracing variable                              m.gee 8/00    |
- *----------------------------------------------------------------------*/
-void inptrace()
-{
-
-#ifdef DEBUG
-char buffer[40];
-INT  ierr=0;
-
-frrewind();
-if (frfind("TRACE")==0) return;
-frchar("TRACE",buffer,&ierr);
-
-if (
-    strncmp(buffer,"secure",6)==0 ||
-    strncmp(buffer,"Secure",6)==0 ||
-    strncmp(buffer,"SECURE",6)==0
-   )
-    trace.trace_on=1;
-else
-    trace.trace_on=0;
-#endif
-return;
-} /* end of inptrace */

@@ -84,7 +84,6 @@ defined in pss_ds.c, declared in tracing.h
 typedef struct _CCA_TRACE
 {
 /* variables for watching the ARRAYS */
-INT                 trace_on;             /*!< switches trace on/off */
 INT                 num_arrays;           /*!< number of current INT-arrays */
 
 struct _TRACEARRAY *arraychain;           /*!< start of the linear chained list */

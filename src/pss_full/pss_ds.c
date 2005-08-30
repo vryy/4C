@@ -176,19 +176,21 @@ see dsinit()
 \sa dstrc_exit() , dsinit()
 
 ------------------------------------------------------------------------*/
-void dstrc_enter(char string[])
+void dstrc_enter(
+    char        string[])
 {
+
 #ifdef DEBUG
-if (trace.trace_on==1)
-{
-trace.actroutine = trace.actroutine->next;
-trace.actroutine->name = string;
-trace.actroutine->dsroutcontrol=dsin;
-trace.deepness++;
-}
+  trace.actroutine = trace.actroutine->next;
+  trace.actroutine->name = string;
+  trace.actroutine->dsroutcontrol=dsin;
+  trace.deepness++;
 #endif
-return;
+
+  return;
 } /* end of dstrc_enter */
+
+
 
 /*!---------------------------------------------------------------------
 \brief report exit to routine
@@ -204,17 +206,18 @@ see dsinit()
 ------------------------------------------------------------------------*/
 void dstrc_exit()
 {
+
 #ifdef DEBUG
-if (trace.trace_on==1)
-{
-trace.actroutine->dsroutcontrol=dsout;
-trace.actroutine = trace.actroutine->prev;
-trace.deepness--;
-dsassert(trace.deepness >= 0, "trace stack underflow");
-}
-return;
+  trace.actroutine->dsroutcontrol=dsout;
+  trace.actroutine = trace.actroutine->prev;
+  trace.deepness--;
+  dsassert(trace.deepness >= 0, "trace stack underflow");
 #endif
+
+  return;
 } /* end of dstrc_exit */
+
+
 
 
 /*----------------------------------------------------------------------*/
@@ -224,6 +227,7 @@ return;
 /*----------------------------------------------------------------------*/
 void dstrc_whereami()
 {
+
 #ifdef DEBUG
   INT i;
   TRACEROUT *routhis = trace.actroutine;
@@ -234,6 +238,7 @@ void dstrc_whereami()
     printf("%s\n",routhis->name);
   }
 #endif
+
 }
 
 
@@ -278,7 +283,8 @@ break;
 }
 /*----------------------- allocate a new piece to the end of the chain */
 trace.endarraychain->next = (TRACEARRAY*)CCACALLOC(1,sizeof(TRACEARRAY));
-if (!trace.endarraychain->next) dserror("Allocation of memory failed");
+if (!trace.endarraychain->next)
+  dserror("Allocation of memory failed");
 /*---------------------------- set pointer backwards in this new piece */
 trace.endarraychain->next->prev = trace.endarraychain;
 /*------------------------------------- set endarraychain to new piece */
@@ -375,134 +381,141 @@ void dstrace_to_err()
 {
 
 #ifdef DEBUG
-INT         i=0;
-TRACEARRAY *acttracer;
 
+  INT         i=0;
+  TRACEARRAY *acttracer;
 
-if (trace.trace_on==1)
-{
-acttracer = trace.arraychain;
+  acttracer = trace.arraychain;
 
-fprintf(allfiles.out_err,"===========================================\n");;
-fprintf(allfiles.out_err,"dstrace - array report from routine %s\n",trace.actroutine->name);
-fprintf(allfiles.out_err,"===========================================\n");;
-fprintf(allfiles.out_err,"number of actual arrays: %d\n",trace.num_arrays);
-while (acttracer->next != NULL)
-{
-      /* print for a ARRAY */
-   if (acttracer->arraytyp == array_2d)
+  fprintf(allfiles.out_err,"===========================================\n");;
+  fprintf(allfiles.out_err,"dstrace - array report from routine %s\n",trace.actroutine->name);
+  fprintf(allfiles.out_err,"===========================================\n");;
+  fprintf(allfiles.out_err,"number of actual arrays: %d\n",trace.num_arrays);
+  while (acttracer->next != NULL)
+  {
+    /* print for a ARRAY */
+    if (acttracer->arraytyp == array_2d)
       switch(acttracer->a.a2->Typ)
       {
-      case cca_DA:
-fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DOUBLE-ARRAY \n",
-        i,
-        acttracer->a.a2->name,
-        acttracer->a.a2->fdim,
-        acttracer->a.a2->sdim);
-        break;
-      case cca_DV:
-fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DOUBLE-VECTOR \n",
-        i,
-        acttracer->a.a2->name,
-        acttracer->a.a2->fdim,
-        acttracer->a.a2->sdim);
-        break;
-      case cca_IA:
-fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: INTEGER-ARRAY \n",
-        i,
-        acttracer->a.a2->name,
-        acttracer->a.a2->fdim,
-        acttracer->a.a2->sdim);
-        break;
-      case cca_IV:
-fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: INTEGER-VECTOR \n",
-        i,
-        acttracer->a.a2->name,
-        acttracer->a.a2->fdim,
-        acttracer->a.a2->sdim);
-        break;
-      default:
-fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DAMAGED TYPE !!!!!!!!!!\n",
-        i,
-        acttracer->a.a2->name,
-        acttracer->a.a2->fdim,
-        acttracer->a.a2->sdim);
+        case cca_DA:
+          fprintf(allfiles.out_err,
+              "ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DOUBLE-ARRAY \n",
+              i,
+              acttracer->a.a2->name,
+              acttracer->a.a2->fdim,
+              acttracer->a.a2->sdim);
+          break;
+        case cca_DV:
+          fprintf(allfiles.out_err,
+              "ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DOUBLE-VECTOR \n",
+              i,
+              acttracer->a.a2->name,
+              acttracer->a.a2->fdim,
+              acttracer->a.a2->sdim);
+          break;
+        case cca_IA:
+          fprintf(allfiles.out_err,
+              "ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: INTEGER-ARRAY \n",
+              i,
+              acttracer->a.a2->name,
+              acttracer->a.a2->fdim,
+              acttracer->a.a2->sdim);
+          break;
+        case cca_IV:
+          fprintf(allfiles.out_err,
+              "ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: INTEGER-VECTOR \n",
+              i,
+              acttracer->a.a2->name,
+              acttracer->a.a2->fdim,
+              acttracer->a.a2->sdim);
+          break;
+        default:
+          fprintf(allfiles.out_err,
+              "ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DAMAGED TYPE !!!\n",
+              i,
+              acttracer->a.a2->name,
+              acttracer->a.a2->fdim,
+              acttracer->a.a2->sdim);
       }
 
-      /* print for a ARRAY4D */
-   if (acttracer->arraytyp == array_4d)
+    /* print for a ARRAY4D */
+    if (acttracer->arraytyp == array_4d)
       switch(acttracer->a.a4->Typ)
       {
-      case cca_D3:
-fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DOUBLE 3D ARRAY\n",
-        i,
-        acttracer->a.a4->name,
-        acttracer->a.a4->fdim,
-        acttracer->a.a4->sdim,
-        acttracer->a.a4->tdim,
-        acttracer->a.a4->fodim
-        );
-      break;
-      case cca_D4:
-fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DOUBLE 4D ARRAY\n",
-        i,
-        acttracer->a.a4->name,
-        acttracer->a.a4->fdim,
-        acttracer->a.a4->sdim,
-        acttracer->a.a4->tdim,
-        acttracer->a.a4->fodim
-        );
-      break;
-      case cca_I3:
-fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: INTEGER 3D ARRAY\n",
-        i,
-        acttracer->a.a4->name,
-        acttracer->a.a4->fdim,
-        acttracer->a.a4->sdim,
-        acttracer->a.a4->tdim,
-        acttracer->a.a4->fodim
-        );
-      break;
-      case cca_I4:
-fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: INTEGER 4D ARRAY\n",
-        i,
-        acttracer->a.a4->name,
-        acttracer->a.a4->fdim,
-        acttracer->a.a4->sdim,
-        acttracer->a.a4->tdim,
-        acttracer->a.a4->fodim
-        );
-      break;
-      default:
-fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DAMAGED TYPE !!!!!!!!!!\n",
-        i,
-        acttracer->a.a4->name,
-        acttracer->a.a4->fdim,
-        acttracer->a.a4->sdim,
-        acttracer->a.a4->tdim,
-        acttracer->a.a4->fodim
-        );
-      break;
+        case cca_D3:
+          fprintf(allfiles.out_err,
+              "ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DOUBLE 3D ARRAY\n",
+              i,
+              acttracer->a.a4->name,
+              acttracer->a.a4->fdim,
+              acttracer->a.a4->sdim,
+              acttracer->a.a4->tdim,
+              acttracer->a.a4->fodim
+              );
+          break;
+        case cca_D4:
+          fprintf(allfiles.out_err,
+              "ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DOUBLE 4D ARRAY\n",
+              i,
+              acttracer->a.a4->name,
+              acttracer->a.a4->fdim,
+              acttracer->a.a4->sdim,
+              acttracer->a.a4->tdim,
+              acttracer->a.a4->fodim
+              );
+          break;
+        case cca_I3:
+          fprintf(allfiles.out_err,
+              "ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: INTEGER 3D ARRAY\n",
+              i,
+              acttracer->a.a4->name,
+              acttracer->a.a4->fdim,
+              acttracer->a.a4->sdim,
+              acttracer->a.a4->tdim,
+              acttracer->a.a4->fodim
+              );
+          break;
+        case cca_I4:
+          fprintf(allfiles.out_err,
+              "ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: INTEGER 4D ARRAY\n",
+              i,
+              acttracer->a.a4->name,
+              acttracer->a.a4->fdim,
+              acttracer->a.a4->sdim,
+              acttracer->a.a4->tdim,
+              acttracer->a.a4->fodim
+              );
+          break;
+        default:
+          fprintf(allfiles.out_err,
+              "ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DAMAGED TYPE !!!\n",
+              i,
+              acttracer->a.a4->name,
+              acttracer->a.a4->fdim,
+              acttracer->a.a4->sdim,
+              acttracer->a.a4->tdim,
+              acttracer->a.a4->fodim
+              );
+          break;
       }
 
-   /* set acttracer to next tracer */
-   acttracer = acttracer->next;
-   i++;
+    /* set acttracer to next tracer */
+    acttracer = acttracer->next;
+    i++;
 
-} /* end of loop (i=0; i<trace.num_arrays; i++) */
-fprintf(allfiles.out_err,"===========================================\n");;
-fprintf(allfiles.out_err,"dstrace - array report END                 \n");
-fprintf(allfiles.out_err,"===========================================\n");;
-fflush(allfiles.out_err);
-}
-else
-{
+  } /* end of loop (i=0; i<trace.num_arrays; i++) */
+  fprintf(allfiles.out_err,"===========================================\n");;
+  fprintf(allfiles.out_err,"dstrace - array report END                 \n");
+  fprintf(allfiles.out_err,"===========================================\n");;
+  fflush(allfiles.out_err);
+
+#else
+
+  fprintf(allfiles.out_err,"bugtracing only in DEBUG - noreport\n");
+
 #endif
-fprintf(allfiles.out_err,"bugtracing was switched off - noreport\n");
-#ifdef DEBUG
-}
-#endif
-return;
+
+  return;
 } /* end of dstrace_to_err */
 
 
@@ -524,44 +537,35 @@ see dsinit()
 ------------------------------------------------------------------------*/
 void dsmemreport()
 {
-#ifdef DEBUG
-char   *colptr;
-char    message[300];
-DOUBLE  mbyte;
-/*----------------------------------------------------------------------*/
-mbyte = (DOUBLE)num_byte_allocated;
-mbyte /= 1048576.0;
 
-if (trace.trace_on==1)
-{
-   strcpy(message,"PROC ");
-   colptr = message + strlen(message);
-   sprintf(colptr,"%d",par.myrank);
-   colptr = message + strlen(message);
-   strcpy(colptr," memory used in ");
-   colptr = message + strlen(message);
-   strcpy(colptr,trace.actroutine->name);
-   colptr = message + strlen(message);
-   strcpy(colptr," : ");
-   colptr = message + strlen(message);
-   sprintf(colptr,"%.6f MegaByte\n",mbyte);
-}
-else
-{
-   strcpy(message,"PROC ");
-   colptr = message + strlen(message);
-   sprintf(colptr,"%d",par.myrank);
-   colptr = message + strlen(message);
-   strcpy(colptr," memory used : ");
-   colptr = message + strlen(message);
-   sprintf(colptr,"%.6f MegaByte\n",mbyte);
-}
-fprintf(allfiles.out_err,"%s",message);
-printf (                 "%s",message);
-fflush(allfiles.out_err);
-/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+
+
+  char   *colptr;
+  char    message[300];
+  DOUBLE  mbyte;
+
+  mbyte = (DOUBLE)num_byte_allocated;
+  mbyte /= 1048576.0;
+
+  strcpy(message,"PROC ");
+  colptr = message + strlen(message);
+  sprintf(colptr,"%d",par.myrank);
+  colptr = message + strlen(message);
+  strcpy(colptr," memory used in ");
+  colptr = message + strlen(message);
+  strcpy(colptr,trace.actroutine->name);
+  colptr = message + strlen(message);
+  strcpy(colptr," : ");
+  colptr = message + strlen(message);
+  sprintf(colptr,"%.6f MegaByte\n",mbyte);
+  fprintf(allfiles.out_err,"%s",message);
+  printf (                 "%s",message);
+  fflush(allfiles.out_err);
+
 #endif
-return;
+
+  return;
 } /* end of dsmemreport */
 
 
@@ -581,15 +585,21 @@ making it slow when running as fast-exe
 \sa dserror()
 
 ------------------------------------------------------------------------*/
-void dsassert_func(INT test, char string[], char* file, INT line)
+void dsassert_func(
+    INT        test,
+    char       string[],
+    char      *file,
+    INT        line)
 {
+
 #ifdef DEBUG
-/*----------------------------------------------------------------------*/
-if (!test)
-  dserror("%s\n%s:%d", string, file, line);
-/*----------------------------------------------------------------------*/
+
+  if (!test)
+    dserror(string);
+
 #endif
-return;
+
+  return;
 } /* end of dsassert */
 
 
@@ -608,69 +618,87 @@ return;
 \sa dsassert()
 
 ------------------------------------------------------------------------*/
-void dserror(char string[], ...)
+void dserror(
+    char string[],
+    ...)
 {
+
   va_list ap;
   char line[] = "=========================================================================\n";
+
 #ifdef DEBUG
   INT i=0;
   TRACEROUT *routhis = NULL;
 #endif
 
 
-  /* write warnings */
-  /* No! This might cause dead locks as it's not guaranteed that all
-   * processes call dserror and these stupid warnings cause
-   * communication. */
-  /*dswarning(2,0);*/
-
 
 #ifdef DEBUG
-  if (trace.trace_on==1)
+  char message[300];
+  char *colptr=NULL;
+
+  va_start(ap, string);
+
+  printf("\n");
+  printf("\n");
+  printf(line);
+  printf("PROC %d ERROR:\n",par.myrank);
+  vprintf(string,ap);
+  printf("\n");
+  printf("\n");
+
+  fprintf(allfiles.out_err,"\n");
+  fprintf(allfiles.out_err,"\n");
+  fprintf(allfiles.out_err,line);
+  fprintf(allfiles.out_err,"PROC %d ERROR:\n",par.myrank);
+  vfprintf(allfiles.out_err,string,ap);
+  fprintf(allfiles.out_err,"\n");
+  fprintf(allfiles.out_err,"\n");
+
+  routhis = trace.actroutine;
+
+  printf("Calling stack:\n");
+  printf("--------------\n");
+  printf("%s  <== ERROR is in here!!\n",routhis->name);
+
+  fprintf(allfiles.out_err,"Calling stack:\n");
+  fprintf(allfiles.out_err,"--------------\n");
+  fprintf(allfiles.out_err,"%s  <== ERROR is in here!!\n",routhis->name);
+
+  for (i=0; i<trace.deepness; i++)
   {
-    char message[300];
-    char *colptr=NULL;
-
-    va_start(ap, string);
-    sprintf(message,"PROC %d ERROR IN %s : ", par.myrank, trace.actroutine->name);
-    colptr = message + strlen(message);
-    vsprintf(colptr,string,ap);
-
-    fprintf(allfiles.out_err,line);
-    fprintf(allfiles.out_err,"%s\n",message);
-    printf(line);
-    printf("%s\n",message);
-
-    fprintf(allfiles.out_err,"This routine was called by:\n");
-    printf("This routine was called by:\n");
-    routhis = trace.actroutine;
-    for (i=0; i<trace.deepness; i++)
-    {
-      routhis = routhis->prev;
-      fprintf(allfiles.out_err,"%s\n",routhis->name);
-      printf("%s\n",routhis->name);
-    }
-
-    fprintf(allfiles.out_err,line);
-    printf(line);
-    va_end(ap);
+    routhis = routhis->prev;
+    printf("%s\n",routhis->name);
+    fprintf(allfiles.out_err,"%s\n",routhis->name);
   }
-  else
-  {
+
+  printf(line);
+  printf("\n");
+
+  fprintf(allfiles.out_err,line);
+  fprintf(allfiles.out_err,"\n");
+
+  va_end(ap);
+
+#else
+
+  va_start(ap, string);
+
+  fprintf(allfiles.out_err,line);
+  fprintf(allfiles.out_err,"PROC %d ERROR:\n",par.myrank);
+  vfprintf(allfiles.out_err,string,ap);
+  fprintf(allfiles.out_err,"\n");
+  fprintf(allfiles.out_err,line);
+
+  printf(line);
+  printf("PROC %d ERROR:\n",par.myrank);
+  vprintf(string,ap);
+  printf("\n");
+  printf(line);
+
+  va_end(ap);
 #endif
-    va_start(ap, string);
-    fprintf(allfiles.out_err,line);
-    vfprintf(allfiles.out_err,string,ap);
-    fprintf(allfiles.out_err,"\n");
-    printf(line);
-    vprintf(string,ap);
-    printf("\n");
-    fprintf(allfiles.out_err,line);
-    printf(line);
-    va_end(ap);
-#ifdef DEBUG
-  }
-#endif
+
   fflush(stdout);
   fflush(allfiles.out_err);
 
@@ -682,13 +710,20 @@ void dserror(char string[], ...)
   /* Hehehe! */
   *((INT*)0x0) = 123456;
 #endif
+
+
 #ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
-exit(EXIT_FAILURE);
+  exit(EXIT_FAILURE);
 #endif
+
   return;
 } /* end of dserror */
+
+
+
+
 
 /*!-----------------------------------------------------------------------
 \brief get warnings and writes them to the screen at the end
@@ -962,10 +997,10 @@ void ds_cputime_init()
 #endif
 
 
-  /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
+
   return;
 }
 
@@ -981,6 +1016,7 @@ routine to meassure the cpu - time
 ------------------------------------------------------------------------*/
 DOUBLE ds_cputime()
 {
+
 #ifdef PARALLEL
   DOUBLE par_end;
 #endif
@@ -998,10 +1034,10 @@ DOUBLE ds_cputime()
   diff    = perf_time();
 #endif
 
-  /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
+
   return ((DOUBLE)(diff));
 }
 

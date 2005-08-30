@@ -379,7 +379,7 @@ dserror("Unknown type of array given");
 }
 /*------------------- make report about new array to bugtraceing system */
 #ifdef DEBUG
-if (trace.trace_on==1) dsreportarray(a,1);
+dsreportarray(a,1);
 
 dstrc_exit();
 #endif
@@ -693,7 +693,7 @@ array->sdim=0;
 array->Typ = cca_XX;
 /*------------------------- delete the array from the bugtracing system */
 #ifdef DEBUG
-if (trace.trace_on==1) dsdeletearray(array,1);
+dsdeletearray(array,1);
 
 dstrc_exit();
 #endif
@@ -1229,7 +1229,8 @@ dserror("Unknown type of array given");
 }
 /*------------------- make report about new array to bugtraceing system */
 #ifdef DEBUG
-if (trace.trace_on==1) dsreportarray(a,2);
+dsreportarray(a,2);
+
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -1299,7 +1300,8 @@ dserror("Unknown type of array given");
 array->Typ = cca_XX4D;
 /*------------------------- delete the array from the bugtracing system */
 #ifdef DEBUG
-if (trace.trace_on==1) dsdeletearray(array,2);
+dsdeletearray(array,2);
+
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -1785,7 +1787,7 @@ fprintf(err,"\n");
 
 /*------------------- make report about new array to bugtraceing system */
 #ifdef DEBUG
-if (trace.trace_on==1) dsreportarray(a,1);
+dsreportarray(a,1);
 
 dstrc_exit();
 #endif

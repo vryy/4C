@@ -72,11 +72,7 @@ trace.actroutine->dsroutcontrol=dsin;
 trace.deepness++;
 #endif
 
-/*--------------------------------------------- input of tracing option */
-#ifdef DEBUG
-inptrace();
-#endif
-/*=========================== tracing is active and working from now on */
+
 /*----------------------- input of not mesh or time based problem data  */
 #ifdef PERF
   perf_begin(3);
