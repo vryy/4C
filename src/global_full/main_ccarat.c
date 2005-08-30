@@ -114,7 +114,7 @@ if (par.myrank==0)
    printf("*  Lehrstuhl fuer Numerische Mechanik  *\n");
    printf("*   Technische Universitaet Muenchen   *\n");
    printf("*                                      *\n");
-   printf("*    (c) 2004 All Rights Reserved.     *\n");
+   printf("*    (c) 2005 All Rights Reserved.     *\n");
    printf("*                                      *\n");
    printf("****************************************\n\n");
 #ifdef PARALLEL
