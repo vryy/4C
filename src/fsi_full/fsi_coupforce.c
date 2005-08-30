@@ -310,9 +310,11 @@ case 3: /* problem is three-dimensional */
       {
          case fele_f3f_hex8_e:
          case fele_f3f_hex8_a:
+         case fele_f3f_hex20_e:
+         case fele_f3f_hex20_a:
          case fele_f3f_tet4_e:
          case fele_f3f_tet4_a:
-         
+
          aloopl = act_fast_eles->aloopl;
          coupled = 0;
          l = 0;

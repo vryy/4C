@@ -174,6 +174,44 @@ C--------------------------------------------------------------------------
 
         elseif (typ.EQ.20) then
 
+c       Shape functions and their derivatives for a 20 noded hexaedron
+c       ==============================================================
+c
+c   Numbering of the nodes:
+c   -----------------------
+c   - this is the numbering used in GiD!!
+c   - the numbering of the brick1 element is different!!
+c
+c
+c
+c                          ^ t          / s
+c                          |           /
+c                          |          /
+c                    8     |   19    /   7
+c                    o-----|---o---------o
+c                   /|     |       /    /|
+c                  / |     |      /    / |
+c                 /  |     |     /    /  |
+c              20o   |     |    /    o18 |
+c               /  16o     |   /    /    o15
+c              /     |     |  /    /     |
+c             /      |  17 | /  6 /      |
+c          5 o---------o---------o       |
+c            |       |     *-----|---------------->
+c            |       o---------o-|-------o         r
+c            |      / 4       11 |      /3
+c            |     /             |     /
+c          13o    /              o14  /
+c            | 12o               |   o10
+c            |  /                |  /
+c            | /                 | /
+c            |/                  |/
+c            o---------o---------o
+c           1         9         2
+c
+
+
+
 c       form basic values
         rp=one+r
         rm=one-r
@@ -185,251 +223,262 @@ c       form basic values
         ssm=one-s*s
         ttm=one-t*t
 
-        funct(1 ) =q18*rp*sm*tm*(rp+sm+tm-five)
-        funct(2 ) =q18*rp*sp*tm*(rp+sp+tm-five)
-        funct(3 ) =q18*rm*sp*tm*(rm+sp+tm-five)
-        funct(4 ) =q18*rm*sm*tm*(rm+sm+tm-five)
-        funct(5 ) =q18*rp*sm*tp*(rp+sm+tp-five)
-        funct(6 ) =q18*rp*sp*tp*(rp+sp+tp-five)
-        funct(7 ) =q18*rm*sp*tp*(rm+sp+tp-five)
-        funct(8 ) =q18*rm*sm*tp*(rm+sm+tp-five)
-        funct(9 ) =q14*rp*ssm*tm
-        funct(10) =q14*rrm*sp*tm
-        funct(11)=q14*rm*ssm*tm
-        funct(12)=q14*rrm*sm*tm
-        funct(13)=q14*rp*ssm*tp
-        funct(14)=q14*rrm*sp*tp
-        funct(15)=q14*rm*ssm*tp
-        funct(16)=q14*rrm*sm*tp
-        funct(17)=q14*rp*sm*ttm
-        funct(18)=q14*rp*sp*ttm
-        funct(19)=q14*rm*sp*ttm
-        funct(20)=q14*rm*sm*ttm
+        funct( 1) = -q18*rm*sm*tm*(TWO+r+s+t)
+        funct( 2) = -q18*rp*sm*tm*(TWO-r+s+t)
+        funct( 3) = -q18*rp*sp*tm*(TWO-r-s+t)
+        funct( 4) = -q18*rm*sp*tm*(TWO+r-s+t)
+        funct( 5) = -q18*rm*sm*tp*(TWO+r+s-t)
+        funct( 6) = -q18*rp*sm*tp*(TWO-r+s-t)
+        funct( 7) = -q18*rp*sp*tp*(TWO-r-s-t)
+        funct( 8) = -q18*rm*sp*tp*(TWO+r-s-t)
+
+        funct( 9) =  q14*rrm*sm*tm
+        funct(10) =  q14*rp*ssm*tm
+        funct(11) =  q14*rrm*sp*tm
+        funct(12) =  q14*rm*ssm*tm
+
+        funct(13) =  q14*rm*sm*ttm
+        funct(14) =  q14*rp*sm*ttm
+        funct(15) =  q14*rp*sp*ttm
+        funct(16) =  q14*rm*sp*ttm
+
+        funct(17) =  q14*rrm*sm*tp
+        funct(18) =  q14*rp*ssm*tp
+        funct(19) =  q14*rrm*sp*tp
+        funct(20) =  q14*rm*ssm*tp
 
         if(icode.GT.1) then
 
-          deriv(1,1) = q18*sm*tm*(TWO*rp+sm+tm-five)
-          deriv(1,2) =-q18*tm*rp*(TWO*sm+tm+rp-five)
-          deriv(1,3) =-q18*rp*sm*(TWO*tm+rp+sm-five)
+          deriv( 1,1) =  q18*   sm*tm*(TWO*r+s+t+ONE)
+          deriv( 1,2) =  q18*rm*   tm*(r+TWO*s+t+ONE)
+          deriv( 1,3) =  q18*rm*sm*   (r+s+TWO*t+ONE)
 
-          deriv(2,1) = q18*sp*tm*(TWO*rp+sp+tm-five)
-          deriv(2,2) = q18*tm*rp*(TWO*sp+tm+rp-five)
-          deriv(2,3) =-q18*rp*sp*(TWO*tm+rp+sp-five)
+          deriv( 2,1) =  q18*   sm*tm*(TWO*r-s-t-ONE)
+          deriv( 2,2) = -q18*rp*   tm*(r-TWO*s-t-ONE)
+          deriv( 2,3) = -q18*rp*sm*   (r-s-TWO*t-ONE)
 
-          deriv(3,1) =-q18*sp*tm*(TWO*rm+sp+tm-five)
-          deriv(3,2) = q18*tm*rm*(TWO*sp+tm+rm-five)
-          deriv(3,3) =-q18*rm*sp*(TWO*tm+rm+sp-five)
+          deriv( 3,1) =  q18*   sp*tm*(TWO*r+s-t-ONE)
+          deriv( 3,2) =  q18*rp*   tm*(r+TWO*s-t-ONE)
+          deriv( 3,3) = -q18*rp*sp*   (r+s-TWO*t-ONE)
 
-          deriv(4,1) =-q18*sm*tm*(TWO*rm+sm+tm-five)
-          deriv(4,2) =-q18*tm*rm*(TWO*sm+tm+rm-five)
-          deriv(4,3) =-q18*rm*sm*(TWO*tm+rm+sm-five)
+          deriv( 4,1) =  q18*   sp*tm*(TWO*r-s+t+ONE)
+          deriv( 4,2) = -q18*rm*   tm*(r-TWO*s+t+ONE)
+          deriv( 4,3) =  q18*rm*sp*   (r-s+TWO*t+ONE)
 
-          deriv(5,1) = q18*sm*tp*(TWO*rp+sm+tp-five)
-          deriv(5,2) =-q18*tp*rp*(TWO*sm+tp+rp-five)
-          deriv(5,3) = q18*rp*sm*(TWO*tp+rp+sm-five)
+          deriv( 5,1) =  q18*   sm*tp*(TWO*r+s-t+ONE)
+          deriv( 5,2) =  q18*rm*   tp*(r+TWO*s-t+ONE)
+          deriv( 5,3) = -q18*rm*sm*   (r+s-TWO*t+ONE)
 
-          deriv(6,1) = q18*sp*tp*(TWO*rp+sp+tp-five)
-          deriv(6,2) = q18*tp*rp*(TWO*sp+tp+rp-five)
-          deriv(6,3) = q18*rp*sp*(TWO*tp+rp+sp-five)
+          deriv( 6,1) =  q18*   sm*tp*(TWO*r-s+t-ONE)
+          deriv( 6,2) = -q18*rp*   tp*(r-TWO*s+t-ONE)
+          deriv( 6,3) =  q18*rp*sm*   (r-s+TWO*t-ONE)
 
-          deriv(7,1) =-q18*sp*tp*(TWO*rm+sp+tp-five)
-          deriv(7,2) = q18*tp*rm*(TWO*sp+tp+rm-five)
-          deriv(7,3) = q18*rm*sp*(TWO*tp+rm+sp-five)
+          deriv( 7,1) =  q18*   sp*tp*(TWO*r+s+t-ONE)
+          deriv( 7,2) =  q18*rp*   tp*(r+TWO*s+t-ONE)
+          deriv( 7,3) =  q18*rp*sp*   (r+s+TWO*t-ONE)
 
-          deriv(8,1) =-q18*sm*tp*(TWO*rm+sm+tp-five)
-          deriv(8,2) =-q18*tp*rm*(TWO*sm+tp+rm-five)
-          deriv(8,3) = q18*rm*sm*(TWO*tp+rm+sm-five)
+          deriv( 8,1) =  q18*   sp*tp*(TWO*r-s-t+ONE)
+          deriv( 8,2) = -q18*rm*   tp*(r-TWO*s-t+ONE)
+          deriv( 8,3) = -q18*rm*sp*   (r-s-TWO*t+ONE)
 
-          deriv(9,1) = q14*ssm*tm
-          deriv(9,2) =-q12*s*tm*rp
-          deriv(9,3) =-q14*ssm*rp
 
-          deriv(10,1) =-q12*r*sp*tm
-          deriv(10,2) = q14*rrm*tm
-          deriv(10,3) =-q14*rrm*sp
+          deriv( 9,1) = -q12*r*sm*tm
+          deriv( 9,2) = -q14*rm*rp*tm
+          deriv( 9,3) = -q14*rm*rp*sm
 
-          deriv(11,1)=-deriv(9,1)
-          deriv(11,2)=-q12*s*tm*rm
-          deriv(11,3)=-q14*ssm*rm
+          deriv(10,1) =  q14*sm*sp*tm
+          deriv(10,2) = -q12*rp*s*tm
+          deriv(10,3) = -q14*rp*sm*sp
 
-          deriv(12,1)=-q12*r*sm*tm
-          deriv(12,2)=-deriv(10,2)
-          deriv(12,3)=-q14*rrm*sm
+          deriv(11,1) = -q12*r*sp*tm
+          deriv(11,2) =  q14*rm*rp*tm
+          deriv(11,3) = -q14*rm*rp*sp
 
-          deriv(13,1)= q14*ssm*tp
-          deriv(13,2)=-q12*s*tp*rp
-          deriv(13,3)=-deriv(9,3)
+          deriv(12,1) = -q14*sm*sp*tm
+          deriv(12,2) = -q12*s*tm*rm
+          deriv(12,3) = -q14*sm*sp*rm
 
-          deriv(14,1)=-q12*r*sp*tp
-          deriv(14,2)= q14*rrm*tp
-          deriv(14,3)=-deriv(9,3)
 
-          deriv(15,1)=-deriv(13,1)
-          deriv(15,2)=-q12*s*tp*rm
-          deriv(15,3)=-deriv(11,3)
+          deriv(13,1) = -q14*sm*tm*tp
+          deriv(13,2) = -q14*rm*tm*tp
+          deriv(13,3) = -q12*t*rm*sm
 
-          deriv(16,1)=-q12*r*sm*tp
-          deriv(16,2)=-deriv(14,2)
-          deriv(16,3)=-deriv(12,3)
+          deriv(14,1) =  q14*sm*tm*tp
+          deriv(14,2) = -q14*rp*tm*tp
+          deriv(14,3) = -q12*t*rp*sm
 
-          deriv(17,1)= q14*sm*ttm
-          deriv(17,2)=-q14*ttm*rp
-          deriv(17,3)=-q12*t*rp*sm
+          deriv(15,1) =  q14*sp*tm*tp
+          deriv(15,2) =  q14*rp*tm*tp
+          deriv(15,3) = -q12*t*rp*sp
 
-          deriv(18,1)= q14*sp*ttm
-          deriv(18,2)=-deriv(17,2)
-          deriv(18,3)=-q12*t*rp*sp
+          deriv(16,1) = -q14*sp*tm*tp
+          deriv(16,2) =  q14*rm*tm*tp
+          deriv(16,3) = -q12*t*rm*sp
 
-          deriv(19,1)=-deriv(18,1)
-          deriv(19,2)= q14*ttm*rm
-          deriv(19,3)=-q12*t*rm*sp
 
-          deriv(20,1)=-deriv(17,1)
-          deriv(20,2)=-deriv(19,2)
-          deriv(20,3)=-q12*t*rm*sm
+          deriv(17,1) = -q12*r*sm*tp
+          deriv(17,2) = -q14*rm*rp*tp
+          deriv(17,3) =  q14*rm*rp*sm
+
+          deriv(18,1) =  q14*sm*sp*tp
+          deriv(18,2) = -q12*s*tp*rp
+          deriv(18,3) =  q14*sm*sp*rp
+
+          deriv(19,1) = -q12*r*sp*tp
+          deriv(19,2) =  q14*rm*rp*tp
+          deriv(19,3) =  q14*rm*rp*sp
+
+          deriv(20,1) = -q14*sm*sp*tp
+          deriv(20,2) = -q12*s*tp*rm
+          deriv(20,3) =  q14*sm*sp*rm
 
         endif
         if(icode.EQ.3) then
 
-          deriv2(1,1) = q14*sm*tm
-          deriv2(1,2) = q14*tm*rp
-          deriv2(1,3) = q14*rp*sm
-          deriv2(1,4) =-q18*(tm*(2*rp+sm+tm-five+sm*tm))
-          deriv2(1,5) =-q18*(sm*(2*rp+sm+tm-five+sm*tm))
-          deriv2(1,6) = q18*(rp*(2*sm+tm+rp-five+tm*rp))
+          deriv2( 1,1) =  q14*sm*tm
+          deriv2( 1,2) =  q14*rm*tm
+          deriv2( 1,3) =  q14*rm*sm
+          deriv2( 1,4) = -q18*tm*(TWO*r*TWO*s+t)
+          deriv2( 1,5) = -q18*sm*(TWO*r+s+TWO*t)
+          deriv2( 1,6) = -q18*rm*(r+TWO*s+TWO*t)
 
-          deriv2(2,1) = q14*sp*tm
-          deriv2(2,2) = deriv2(2,3)
-          deriv2(2,3) = q14*rp*sp
-          deriv2(2,4) =-q18*(tm*(2*rp+sp+tm-five+sp*tm))
-          deriv2(2,5) =-q18*(sp*(2*rp+sp+tm-five+sp*tm))
-          deriv2(2,6) =-q18*(rp*(2*sp+tm+rp-five+tm*rp))
+          deriv2( 2,1) =  q14*sm*tm
+          deriv2( 2,2) =  q14*rp*tm
+          deriv2( 2,3) =  q14*rp*sm
+          deriv2( 2,4) = -q18*tm*(TWO*r-TWO*s-t)
+          deriv2( 2,5) = -q18*sm*(TWO*r-s-TWO*t)
+          deriv2( 2,6) =  q18*rp*(r-TWO*s-TWO*t)
 
-          deriv2(3,1) =-deriv2(3,2)
-          deriv2(3,2) = q14*tm*rm
-          deriv2(3,3) = q14*rm*sp
-          deriv2(3,4) =-q18*(tm*(2*rm+sp+tm-five+sp*tm))
-          deriv2(3,5) = q18*(sp*(2*rm+sp+tm-five+sp*tm))
-          deriv2(3,6) =-q18*(rm*(2*sp+tm+rm-five+tm*rm))
+          deriv2( 3,1) =  q14*sp*tm
+          deriv2( 3,2) =  q14*rp*tm
+          deriv2( 3,3) =  q14*rp*sp
+          deriv2( 3,4) =  q18*tm*(TWO*r+TWO*s-t)
+          deriv2( 3,5) = -q18*sp*(TWO*r+s-TWO*t)
+          deriv2( 3,6) = -q18*rp*(r+TWO*s-TWO*t)
 
-          deriv2(4,1) =-deriv2(2,1)
-          deriv2(4,2) = deriv2(4,3)
-          deriv2(4,3) = q14*rm*sm
-          deriv2(4,4) =-q18*(tm*(2*rm+sm+tm-five+sm*tm))
-          deriv2(4,5) = q18*(sm*(2*rm+sm+tm-five+sm*tm))
-          deriv2(4,6) = q18*(rm*(2*sm+tm+rm-five+tm*rm))
+          deriv2( 4,1) =  q14*sp*tm
+          deriv2( 4,2) =  q14*rm*tm
+          deriv2( 4,3) =  q14*rm*sp
+          deriv2( 4,4) =  q18*tm*(TWO*r-TWO*s+t)
+          deriv2( 4,5) = -q18*sp*(TWO*r-s+TWO*t)
+          deriv2( 4,6) =  q18*rm*(r-TWO*s+TWO*t)
 
-          deriv2(5,1) = q14*sm*tp
-          deriv2(5,2) = q14*tp*rp
-          deriv2(5,3) = deriv2(2,4)
-          deriv2(5,4) =-q18*(tp*(2*rp+sm+tp-five+sm*tp))
-          deriv2(5,5) = q18*(sm*(2*rp+sm+tp-five+sm*tp))
-          deriv2(5,6) =-q18*(rp*(2*sm+tp+rp-five+tp*rp))
+          deriv2( 5,1) =  q14*sm*tp
+          deriv2( 5,2) =  q14*rm*tp
+          deriv2( 5,3) =  q14*rm*sm
+          deriv2( 5,4) = -q18*tp*(TWO*r+TWO*s-t)
+          deriv2( 5,5) =  q18*sm*(TWO*r+s-TWO*t)
+          deriv2( 5,6) =  q18*rm*(r+TWO*s-TWO*t)
 
-          deriv2(6,1) = q14*sp*tp
-          deriv2(6,2) = deriv2(6,3)
-          deriv2(6,3) = deriv2(3,4)
-          deriv2(6,4) =-q18*(tp*(2*rp+sp+tp-five+sp*tp))
-          deriv2(6,5) = q18*(sp*(2*rp+sp+tp-five+sp*tp))
-          deriv2(6,6) = q18*(rp*(2*sp+tp+rp-five+tp*rp))
+          deriv2( 6,1) =  q14*sm*tp
+          deriv2( 6,2) =  q14*rp*tp
+          deriv2( 6,3) =  q14*rp*sm
+          deriv2( 6,4) = -q18*tp*(TWO*r-TWO*s+t)
+          deriv2( 6,5) =  q18*sm*(TWO*r-s+TWO*t)
+          deriv2( 6,6) = -q18*rp*(r-TWO*s+TWO*t)
 
-          deriv2(7,1) =-deriv2(7,2)
-          deriv2(7,2) = q14*tp*rm
-          deriv2(7,3) = deriv2(4,4)
-          deriv2(7,4) =-q18*(tp*(2*rm+sp+tp-five+sp*tp))
-          deriv2(7,5) =-q18*(sp*(2*rm+sp+tp-five+sp*tp))
-          deriv2(7,6) = q18*(rm*(2*sp+tp+rm-five+tp*rm))
+          deriv2( 7,1) =  q14*sp*tp
+          deriv2( 7,2) =  q14*rp*tp
+          deriv2( 7,3) =  q14*rp*sp
+          deriv2( 7,4) =  q18*tp*(TWO*r+TWO*s+t)
+          deriv2( 7,5) =  q18*sp*(TWO*r+s+TWO*t)
+          deriv2( 7,6) =  q18*rp*(r+TWO*s+TWO*t)
 
-          deriv2(8,1) =-deriv2(6,2)
-          deriv2(8,2) = deriv2(8,3)
-          deriv2(8,3) = deriv2(5,4)
-          deriv2(8,4) =-q18*(tp*(2*rm+sm+tp-five+sm*tp))
-          deriv2(8,5) =-q18*(sm*(2*rm+sm+tp-five+sm*tp))
-          deriv2(8,6) =-q18*(rm*(2*sm+tp+rm-five+tp*rm))
+          deriv2( 8,1) =  q14*sp*tp
+          deriv2( 8,2) =  q14*rm*tp
+          deriv2( 8,3) =  q14*rm*sp
+          deriv2( 8,4) =  q18*tp*(TWO*r-TWO*s-t)
+          deriv2( 8,5) =  q18*sp*(TWO*r-s-TWO*t)
+          deriv2( 8,6) =  q18*rm*(r-TWO*s-TWO*t)
 
-          deriv2(9,1) = zero
-          deriv2(9,2) = -q12*tm*rp
-          deriv2(9,3) = zero
-          deriv2(9,4) =-q12*s*tm
-          deriv2(9,5) =-q14*ssm
-          deriv2(9,6) = q12*s*rp
 
-          deriv2(10,1)=-q12*sp*tm
-          deriv2(10,2)= zero
-          deriv2(10,3)= zero
-          deriv2(10,4)=-q12*r*tm
-          deriv2(10,5)= q12*r*sp
-          deriv2(10,6)=-q14*rrm
+          deriv2( 9,1) = -q12*sm*tm
+          deriv2( 9,2) =  zero
+          deriv2( 9,3) =  zero
+          deriv2( 9,4) =  q12*r*tm
+          deriv2( 9,5) =  q12*r*sm
+          deriv2( 9,6) =  q14*tm*tp
 
-          deriv2(11,1)= zero
-          deriv2(11,2)= -q12*tm*rm
-          deriv2(11,3)= zero
-          deriv2(11,4)= q12*s*tm
-          deriv2(11,5)=-deriv2(9,5)
-          deriv2(11,6)= q12*s*rm
+          deriv2(10,1) =  zero
+          deriv2(10,2) = -q12*tm*rp
+          deriv2(10,3) =  zero
+          deriv2(10,4) = -q12*s*tm
+          deriv2(10,5) = -q14*sm*sp
+          deriv2(10,6) =  q12*s*rp
 
-          deriv2(12,1)=-q12*sm*tm
-          deriv2(12,2)= zero
-          deriv2(12,3)= zero
-          deriv2(12,4)= q12*r*tm
-          deriv2(12,5)= q12*r*sm
-          deriv2(12,6)=-deriv2(10,6)
+          deriv2(11,1) = -q12*sp*tm
+          deriv2(11,2) =  zero
+          deriv2(11,3) =  zero
+          deriv2(11,4) = -q12*r*tm
+          deriv2(11,5) =  q12*r*sp
+          deriv2(11,6) = -q14*rm*rp
 
-          deriv2(13,1)= zero
-          deriv2(13,2)= -q12*tp*rp
-          deriv2(13,3)= zero
-          deriv2(13,4)=-q12*s*tp
-          deriv2(13,5)=-deriv2(9,5)
-          deriv2(13,6)=-deriv2(9,6)
+          deriv2(12,1) =  zero
+          deriv2(12,2) = -q12*tm*rm
+          deriv2(12,3) =  zero
+          deriv2(12,4) =  q12*s*tm
+          deriv2(12,5) =  q14*sm*sp
+          deriv2(12,6) =  q12*s*rm
 
-          deriv2(14,1)=-q12*sp*tp
-          deriv2(14,2)= zero
-          deriv2(14,3)= zero
-          deriv2(14,4)=-q12*r*tp
-          deriv2(14,5)=-deriv2(10,5)
-          deriv2(14,6)=-deriv2(10,6)
 
-          deriv2(15,1)= zero
-          deriv2(15,2)= -q12*tp*rm
-          deriv2(15,3)= zero
-          deriv2(15,4)= q12*s*tp
-          deriv2(15,5)= deriv2(9,5)
-          deriv2(15,6)=-deriv2(11,6)
+          deriv2(13,1) =  zero
+          deriv2(13,2) =  zero
+          deriv2(13,3) = -q12*rm*sm
+          deriv2(13,4) =  q14*tm*tp
+          deriv2(13,5) =  q12*t*sm
+          deriv2(13,6) =  q12*rm*t
 
-          deriv2(16,1)=-q12*sm*tp
-          deriv2(16,2)= zero
-          deriv2(16,3)= zero
-          deriv2(16,4)= q12*r*tp
-          deriv2(16,5)=-deriv2(12,5)
-          deriv2(16,6)= deriv2(10,6)
+          deriv2(14,1) =  zero
+          deriv2(14,2) =  zero
+          deriv2(14,3) = -q12*rp*sm
+          deriv2(14,4) = -q14*tm*tp
+          deriv2(14,5) = -q12*t*sm
+          deriv2(14,6) =  q12*t*rp
 
-          deriv2(17,1)= zero
-          deriv2(17,2)= zero
-          deriv2(17,3)= zero
-          deriv2(17,4)=-q14*ttm
-          deriv2(17,5)=-q12*t*sm
-          deriv2(17,6)= q12*t*rp
+          deriv2(15,1) =  zero
+          deriv2(15,2) =  zero
+          deriv2(15,3) = -q12*rp*sp
+          deriv2(15,4) =  q14*tm*tp
+          deriv2(15,5) = -q12*t*sp
+          deriv2(15,6) = -q12*rp*t
 
-          deriv2(18,1)= zero
-          deriv2(18,2)= zero
-          deriv2(18,3)= zero
-          deriv2(18,4)= q14*ttm
-          deriv2(18,5)=-q12*t*sp
-          deriv2(18,6)=-deriv2(17,6)
+          deriv2(16,1) =  zero
+          deriv2(16,2) =  zero
+          deriv2(16,3) = -q12*rm*sp
+          deriv2(16,4) = -q14*tm*tp
+          deriv2(16,5) =  q12*t*sp
+          deriv2(16,6) = -q12*t*rm
 
-          deriv2(19,1)= zero
-          deriv2(19,2)= zero
-          deriv2(19,3)= zero
-          deriv2(19,4)= deriv2(17,4)
-          deriv2(19,5)= q12*t*sp
-          deriv2(19,6)= q12*t*rm
 
-          deriv2(20,1)= zero
-          deriv2(20,2)= zero
-          deriv2(20,3)= zero
-          deriv2(20,4)= deriv2(18,4)
-          deriv2(20,5)= q12*t*sm
-          deriv2(20,6)=-deriv2(19,6)
+          deriv2(17,1) = -q12*sm*tp
+          deriv2(17,2) =  zero
+          deriv2(17,3) =  zero
+          deriv2(17,4) =  q12*r*tp
+          deriv2(17,5) = -q12*r*sm
+          deriv2(17,6) = -q14*rm*rp
+
+          deriv2(18,1) =  zero
+          deriv2(18,2) = -q12*tp*rp
+          deriv2(18,3) =  zero
+          deriv2(18,4) = -q12*s*tp
+          deriv2(18,5) =  q14*sm*sp
+          deriv2(18,6) = -q12*rp*s
+
+          deriv2(19,1) = -q12*sp*tp
+          deriv2(19,2) =  zero
+          deriv2(19,3) =  zero
+          deriv2(19,4) = -q12*r*tp
+          deriv2(19,5) = -q12*r*sp
+          deriv2(19,6) =  q14*rm*rp
+
+          deriv2(20,1) =  zero
+          deriv2(20,2) = -q12*tp*rm
+          deriv2(20,3) =  zero
+          deriv2(20,4) =  q12*s*tp
+          deriv2(20,5) = -q14*sm*sp
+          deriv2(20,6) = -q12*rm*s
+
+
 
         endif
 

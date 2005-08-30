@@ -218,7 +218,7 @@ break;
 case hex20: /* QUADRATIC shape functions and their natural derivatives
                          without central nodes                      ----*/
 
-   dserror("shape functions for hex20 not implemented yet - see f3_calfuncderiv!\n");
+   dserror("shape functions for hex20 are not correct!!! Compare with f3f_calfunctderiv.f \n");
 /*--------------------------------------------------- form basic values */
    rp=ONE+r;
    rm=ONE-r;

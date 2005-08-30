@@ -81,6 +81,11 @@ void divide_fast(
   INT         cur_vec_f3f_hex8_e = 0;
   INT         cur_ele_f3f_hex8_e = 0;
 
+  INT         num_f3f_hex20_e = 0;
+  INT         vec_f3f_hex20_e = 0;
+  INT         cur_vec_f3f_hex20_e = 0;
+  INT         cur_ele_f3f_hex20_e = 0;
+
   INT         num_f3f_tet4_e = 0;
   INT         vec_f3f_tet4_e = 0;
   INT         cur_vec_f3f_tet4_e = 0;
@@ -90,6 +95,11 @@ void divide_fast(
   INT         vec_f3f_hex8_a = 0;
   INT         cur_vec_f3f_hex8_a = 0;
   INT         cur_ele_f3f_hex8_a = 0;
+
+  INT         num_f3f_hex20_a = 0;
+  INT         vec_f3f_hex20_a = 0;
+  INT         cur_vec_f3f_hex20_a = 0;
+  INT         cur_ele_f3f_hex20_a = 0;
 
   INT         num_f3f_tet4_a = 0;
   INT         vec_f3f_tet4_a = 0;
@@ -118,8 +128,10 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
     actpdis->num_fele   = 0;
     num_f3f_hex8_e      = 0;
+    num_f3f_hex20_e     = 0;
     num_f3f_tet4_e      = 0;
-    num_f3f_hex8_a      = 0;
+    num_f3f_hex8_e      = 0;
+    num_f3f_hex20_a     = 0;
     num_f3f_tet4_a      = 0;
 
     for (k=0; k<actpdis->numele; k++)  /* loop all elements */
@@ -138,18 +150,25 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
             else
               num_f3f_hex8_e += 1;
             break;
+
+          case hex20:
+            if (actele->e.f3->is_ale == 1)
+              num_f3f_hex20_a += 1;
+            else
+              num_f3f_hex20_e += 1;
+            break;
+
           case tet4:
             if (actele->e.f3->is_ale == 1)
               num_f3f_tet4_a += 1;
             else
               num_f3f_tet4_e += 1;
             break;
-          case hex20:
-            dserror("hex20 not yet possible for fluid3_fast");
-            break;
+
           case tet10:
             dserror("tet10 not yet possible for fluid3_fast");
             break;
+
           default:
             dserror("unknown element typ for fluid3_fast");
             break;
@@ -185,6 +204,26 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
       printf("vec_f3f_hex8_a = %5i\n",vec_f3f_hex8_a);
     }
 
+    /* ... for fluid3 hex20 on euler */
+    vec_f3f_hex20_e = num_f3f_hex20_e/LOOPL;
+    if (num_f3f_hex20_e%LOOPL != 0)
+      vec_f3f_hex20_e += 1;
+    if (num_f3f_hex20_e != 0)
+    {
+      printf("num_f3f_hex20_e = %5i\n",num_f3f_hex20_e);
+      printf("vec_f3f_hex20_e = %5i\n",vec_f3f_hex20_e);
+    }
+
+    /* ... for fluid3 hex20 on ale */
+    vec_f3f_hex20_a = num_f3f_hex20_a/LOOPL;
+    if (num_f3f_hex20_a%LOOPL != 0)
+      vec_f3f_hex20_a += 1;
+    if (num_f3f_hex20_a != 0)
+    {
+      printf("num_f3f_hex20_a = %5i\n",num_f3f_hex20_a);
+      printf("vec_f3f_hex20_a = %5i\n",vec_f3f_hex20_a);
+    }
+
     /* ... for fluid3 tet4 on euler */
     vec_f3f_tet4_e = num_f3f_tet4_e/LOOPL;
     if (num_f3f_tet4_e%LOOPL != 0)
@@ -209,6 +248,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
     /* total number of vectors with fast elements */
     actpdis->num_fele = vec_f3f_hex8_e + vec_f3f_hex8_a +
+      vec_f3f_hex20_e + vec_f3f_hex20_a +
       vec_f3f_tet4_e + vec_f3f_tet4_a;
 
 
@@ -240,6 +280,34 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
       for (k=0;k<vec_f3f_hex8_a;k++)
       {
         actpdis->fast_eles[count_vec].fast_ele_typ = fele_f3f_hex8_a;
+        actpdis->fast_eles[count_vec].aloopl  = 0;
+        actpdis->fast_eles[count_vec].ele_vec =
+          (ELEMENT**) CCAMALLOC(LOOPL*sizeof(ELEMENT*));
+        count_vec++;
+      }
+    }
+
+    /* ... for fluid3 hex20 on euler */
+    if (vec_f3f_hex20_e != 0)
+    {
+      cur_vec_f3f_hex20_e = count_vec;
+      for (k=0;k<vec_f3f_hex20_e;k++)
+      {
+        actpdis->fast_eles[count_vec].fast_ele_typ = fele_f3f_hex20_e;
+        actpdis->fast_eles[count_vec].aloopl  = 0;
+        actpdis->fast_eles[count_vec].ele_vec =
+          (ELEMENT**) CCAMALLOC(LOOPL*sizeof(ELEMENT*));
+        count_vec++;
+      }
+    }
+
+    /* ... for fluid3 hex20 on ale */
+    if (vec_f3f_hex20_a != 0)
+    {
+      cur_vec_f3f_hex20_a = count_vec;
+      for (k=0;k<vec_f3f_hex20_a;k++)
+      {
+        actpdis->fast_eles[count_vec].fast_ele_typ = fele_f3f_hex20_a;
         actpdis->fast_eles[count_vec].aloopl  = 0;
         actpdis->fast_eles[count_vec].ele_vec =
           (ELEMENT**) CCAMALLOC(LOOPL*sizeof(ELEMENT*));
@@ -323,6 +391,39 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
             }
             break;
 
+          case hex20:
+
+            if (actele->e.f3->is_ale == 1)
+            {
+              /* ... with fluid3 hex20 on ale */
+              actpdis->fast_eles[cur_vec_f3f_hex20_a].ele_vec[cur_ele_f3f_hex20_a] =
+                actele;
+              cur_ele_f3f_hex20_a++;
+              /* check if vector is full */
+              if (cur_ele_f3f_hex20_a == LOOPL)
+              {
+                actpdis->fast_eles[cur_vec_f3f_hex20_a].aloopl = cur_ele_f3f_hex20_a;
+                cur_vec_f3f_hex20_a++;
+                cur_ele_f3f_hex20_a = 0;
+              }
+            }
+
+            else
+            {
+              /* ... with fluid3 hex20 on euler */
+              actpdis->fast_eles[cur_vec_f3f_hex20_e].ele_vec[cur_ele_f3f_hex20_e] =
+                actele;
+              cur_ele_f3f_hex20_e++;
+              /* check if vector is full */
+              if (cur_ele_f3f_hex20_e == LOOPL)
+              {
+                actpdis->fast_eles[cur_vec_f3f_hex20_e].aloopl = cur_ele_f3f_hex20_e;
+                cur_vec_f3f_hex20_e++;
+                cur_ele_f3f_hex20_e = 0;
+              }
+            }
+            break;
+
           case tet4:
             if (actele->e.f3->is_ale == 1)
             {
@@ -353,9 +454,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
               }
             }
             break;
-          case hex20:
-            dserror("hex20 not yet possible for fluid3_fast");
-            break;
+
           case tet10:
             dserror("tet10 not yet possible for fluid3_fast");
             break;
@@ -373,6 +472,12 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
     if (vec_f3f_hex8_a != 0 && cur_ele_f3f_hex8_a != 0)
       actpdis->fast_eles[cur_vec_f3f_hex8_a].aloopl = cur_ele_f3f_hex8_a;
+
+    if (vec_f3f_hex20_e != 0 && cur_ele_f3f_hex20_e != 0)
+      actpdis->fast_eles[cur_vec_f3f_hex20_e].aloopl = cur_ele_f3f_hex20_e;
+
+    if (vec_f3f_hex20_a != 0 && cur_ele_f3f_hex20_a != 0)
+      actpdis->fast_eles[cur_vec_f3f_hex20_a].aloopl = cur_ele_f3f_hex20_a;
 
     if (vec_f3f_tet4_e != 0 && cur_ele_f3f_tet4_e != 0)
       actpdis->fast_eles[cur_vec_f3f_tet4_e].aloopl = cur_ele_f3f_tet4_e;

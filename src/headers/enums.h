@@ -108,7 +108,7 @@ typedef enum _ELEMENT_TYP
                        el_fluid3_fast,
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3,        /* 3D pseudo structural ale element */
-                       el_axishell,    /* 1D axisymmetrical shell element */  
+                       el_axishell,    /* 1D axisymmetrical shell element */
                        el_interf,      /* 1D interface element (combination only with wall) */
                        el_wallge,      /* gradient enhanced wall element */
                        el_count        /* The number of known
@@ -137,6 +137,8 @@ typedef enum _FAST_ELE_TYP
 {
   fele_f3f_hex8_e,        /* fluid3 fast, hexaeder,   8 nodes, euler */
   fele_f3f_hex8_a,        /* fluid3 fast, hexaeder,   8 nodes, ale   */
+  fele_f3f_hex20_e,       /* fluid3 fast, hexaeder,  20 nodes, euler */
+  fele_f3f_hex20_a,       /* fluid3 fast, hexaeder,  20 nodes, ale   */
   fele_f3f_tet4_e,        /* fluid3 fast, tetraheder, 4 nodes, euler */
   fele_f3f_tet4_a         /* fluid3 fast, tetraheder, 4 nodes, ale   */
 } FAST_ELE_TYP;
@@ -259,6 +261,7 @@ typedef enum _CALC_ACTION
                        calc_fluid_shearvelo,
 		       calc_fluid_normal,
                        calc_fluid_stressprojection,
+                       calc_fluid_error,
 		       /* ale */
 		       calc_ale_init,   	/* classic linear ale calculation */
 		       calc_ale_stiff,
