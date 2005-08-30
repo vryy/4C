@@ -26,7 +26,6 @@ NUMDF        6
 PROBLEMTYP   Structure
 NUMFIELD     1
 TIMETYP      Static
-TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   Yes

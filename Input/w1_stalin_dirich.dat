@@ -28,7 +28,6 @@ PROBLEMTYP   Structure
 NUMFIELD     1
 ENRONOFF     no
 TIMETYP      Static
-TRACE        secure
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

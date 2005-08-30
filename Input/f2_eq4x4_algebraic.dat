@@ -27,7 +27,6 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 MULTIDIS     no
 TIMETYP      Dynamic
-TRACE        secure
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

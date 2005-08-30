@@ -3,9 +3,9 @@
 //             genk@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
-// 
+//
 // necessary defines: D_FLUID D_FLUID2 UMFPACK RESULTTEST CHECK_MAX
-//                    
+//
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)
@@ -28,7 +28,6 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 ENRONOFF     no
 TIMETYP      Dynamic
-TRACE        secure
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

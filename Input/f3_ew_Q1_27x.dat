@@ -5,7 +5,7 @@
 //             0711 - 685-6127
 // 
 // necessary defines: D_FLUID D_FLUID3 AZTEC_PACKAGE RESULTTEST  CHECK_MAX
-//                     
+//
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)
@@ -27,7 +27,6 @@ NUMDF        4
 PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
-TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No

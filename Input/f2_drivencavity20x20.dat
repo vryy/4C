@@ -27,7 +27,6 @@ NUMDF        3
 PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
-TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No

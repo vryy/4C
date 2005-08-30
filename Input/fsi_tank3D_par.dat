@@ -27,7 +27,6 @@ PROBLEMTYP   Fluid_Structure_Interaction
 NUMFIELD     3
 ENRONOFF     no
 TIMETYP      Dynamic
-TRACE        secure
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

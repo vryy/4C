@@ -28,7 +28,6 @@ NUMDF        4
 PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
-TRACE        SECURE
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

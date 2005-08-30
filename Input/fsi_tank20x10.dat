@@ -26,7 +26,6 @@ NUMDF        5
 PROBLEMTYP   Fluid_Structure_Interaction
 NUMFIELD     3
 TIMETYP      Dynamic
-TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   Yes
