@@ -118,6 +118,12 @@ case calc_fluid_f2pro_rhs_both:
 		edforce_global,ipos,hasdirich,0);
 break;
 /*----------------------------------------------------------------------*/
+
+/* integrate errors for beltrami and kim-moin */
+case calc_fluid_error:
+dserror("Error integration not yet implemented for fluid2pro!!\n");
+break;
+
 default:
    dserror("action unknown\n");
 break;

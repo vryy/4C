@@ -207,6 +207,7 @@ typedef char      CHAR;
 
 #define f3fcalmat          f3fcalmat_
 #define f3fcalresvec       f3fcalresvec_
+#define f3finterr          f3finterr_
 
 #define fadm               fadm_
 #define fadmp              fadmp_
