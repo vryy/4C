@@ -221,6 +221,13 @@ case calc_fluid_normal:
    f2_calnormal(ele);
 break;
 
+
+/* integrate errors for beltrami and kim-moin */
+case calc_fluid_error:
+f2_calerr(ele,container,ipos);
+break;
+
+
 /*------------------------------------------------------- write restart */
 case write_restart:
    f2_write_restart(ele,container->handsize,container->handles);

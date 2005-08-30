@@ -454,7 +454,8 @@ case str_liftdrag:
                    deriv,derxy,vderxy,xjm,xyze,sigmaint,ipos,0);
 break;
 case str_all:
-   dserror("stress computation for all elements not implemented yet\n");
+   dserror(
+       "stress computation for all elements not implemented yet\n");
 break;
 default:
    dserror("stress calculation not possible!\n");
@@ -1123,6 +1124,93 @@ else dserror("No stress projection with other stabilisation than USFEM");
 dstrc_exit();
 #endif
 }
+
+
+
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief control function for error calculation of f2 elements
+
+
+  \param ele        *ELEMENT        (i) the element
+  \param container  *CONTAINER      (i) contains variables defined in container.h
+  \param ipos       *ARRAY_POSITION (i)
+
+  \return void
+
+  \author mn
+  \date   08/05
+ */
+/*-----------------------------------------------------------------------*/
+void f2_calerr(
+    ELEMENT          *ele,
+    CONTAINER        *container,
+    ARRAY_POSITION   *ipos)
+{
+
+  INT       i;
+  DOUBLE    visc;
+  NODE     *actnode;
+
+#ifdef DEBUG
+  dstrc_enter("f2_err");
+#endif
+
+
+  /* get viscosity */
+  visc = mat[ele->mat-1].m.fluid->viscosity;
+
+
+  switch(ele->e.f2->is_ale)
+  {
+    case 0:
+
+      /* set element coordinates */
+      for(i=0;i<ele->numnp;i++)
+      {
+        xyze[0][i]=ele->node[i]->x[0];
+        xyze[1][i]=ele->node[i]->x[1];
+      }
+      break;
+
+
+    case 1:
+      f2_alecoor(ele,xyze);
+      break;
+
+
+    default:
+      dserror("parameter is_ale not 0 or 1!\n");
+
+  }  /* switch(ele->e.f2->is_ale) */
+
+
+  /* loop nodes of element */
+  for(i=0;i<ele->numnp;i++)
+  {
+    actnode=ele->node[i];
+
+    /* set element velocities (n+gamma) */
+    evelng[0][i]=actnode->sol_increment.a.da[ipos->velnp][0];
+    evelng[1][i]=actnode->sol_increment.a.da[ipos->velnp][1];
+
+    /* set pressures (n+1) */
+    epren[i]   =actnode->sol_increment.a.da[ipos->velnp][2];
+
+  }  /* for(i=0;i<ele->numnp;i++) */
+
+
+  /* perform element integration */
+  f2_int_kim_moin_err(ele,xyze,funct,deriv,xjm,evelng,visc,
+      epren,container);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+} /* f2_calerr */
 
 
 #endif

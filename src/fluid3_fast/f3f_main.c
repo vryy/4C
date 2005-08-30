@@ -190,6 +190,13 @@ void fluid3_fast(
       }
       break;
 
+
+    case calc_fluid_error:
+      f3f_calerror(ele,hasext,container,ipos,loop);
+      break;
+
+
+
     case write_restart:
       f3f_write_restart(ele[0],container->handsize,container->handles);
       break;

@@ -811,3 +811,27 @@ void f3_elesubmesh(ELEMENT        *ele,
  ************************************************************************/
 void f3_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
 void f3_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
+
+
+
+
+
+void f3_int_beltrami_err(
+    ELEMENT         *ele,
+    DOUBLE         **xyze,
+    DOUBLE          *funct,
+    DOUBLE         **deriv,
+    DOUBLE         **xjm,
+    DOUBLE         **evelng,
+    DOUBLE           visc,
+    DOUBLE          *epren,
+    CONTAINER       *container
+    );
+
+void f3_calerr(
+    ELEMENT          *ele,
+    CONTAINER        *container,
+    ARRAY_POSITION   *ipos);
+
+
+

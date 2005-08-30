@@ -603,76 +603,122 @@ void f3fcalinta(
     INT              sizevec[6]
     );
 
-void f3fcaltau(			     
-	       ELEMENT         *ele[LOOPL], 
-	       DOUBLE          *elecord,
-	       DOUBLE          *funct,  
-	       DOUBLE          *deriv,  
-	       DOUBLE          *derxy, 
-               DOUBLE          *velint,
-	       DOUBLE          *xjm,  
-	       DOUBLE          *evelng,
-               DOUBLE          *tau,
-               DOUBLE          *wa1,
-               INT              sizevec[6]
-              );
+
+
+
+void f3f_calerror(
+    ELEMENT          *ele[LOOPL],
+    INT              *hasext,
+    CONTAINER        *container,
+    ARRAY_POSITION   *ipos,
+    INT               aloopl
+    );
+
+void f3f_int_error(
+    ELEMENT         *ele[LOOPL],
+    DOUBLE          *elecord,
+    DOUBLE          *funct,
+    DOUBLE          *deriv,
+    DOUBLE          *xjm,
+    DOUBLE          *evelng,
+    DOUBLE          *epren,
+    DOUBLE          *velint,
+    DOUBLE          *xyzint,
+    CONTAINER       *container,
+    INT              sizevec[6]
+    );
+
+INT f3finterr(
+    DOUBLE          *elecord,
+    DOUBLE          *xyzint,
+    DOUBLE          *evelng,
+    DOUBLE          *velint,
+    DOUBLE          *epren,
+    DOUBLE          *preint,
+    DOUBLE          *velerr,
+    DOUBLE          *preerr,
+    DOUBLE          *velsol,
+    DOUBLE          *presol,
+    INT             *norm,
+    DOUBLE          *fac,
+    DOUBLE           paravec[4],
+    INT              sizevec[6]
+    );
+
+
+
+
+void f3fcaltau(
+    ELEMENT         *ele[LOOPL],
+    DOUBLE          *elecord,
+    DOUBLE          *funct,
+    DOUBLE          *deriv,
+    DOUBLE          *derxy,
+    DOUBLE          *velint,
+    DOUBLE          *xjm,
+    DOUBLE          *evelng,
+    DOUBLE          *tau,
+    DOUBLE          *wa1,
+    INT              sizevec[6]
+    );
 
 void f3fint_usfem(
-	              ELEMENT         *ele[LOOPL],
-                      DOUBLE          *elecord,
-                      DOUBLE          *tau,
-                      INT             *hasext,
-                      DOUBLE          *estif,
-	              DOUBLE          *force,
-	              DOUBLE          *funct,
-	              DOUBLE          *deriv,
-	              DOUBLE          *deriv2,
-	              DOUBLE          *xjm,
-	              DOUBLE          *derxy,
-	              DOUBLE          *derxy2,
-	              DOUBLE          *evelng,
-	              DOUBLE          *evhist,
-	              DOUBLE          *egridv,
-	              DOUBLE          *epren,
-	              DOUBLE          *edeadng,
-                      DOUBLE          *velint,
-                      DOUBLE          *histint,
-                      DOUBLE          *gridvelint,
-	              DOUBLE          *vderxy,
-                      DOUBLE          *vderxy2,
-                      DOUBLE          *pderxy,
-	              DOUBLE          *wa1,
-	              DOUBLE          *wa2,
-                      INT              sizevec[6]
-	             );
+    ELEMENT         *ele[LOOPL],
+    DOUBLE          *elecord,
+    DOUBLE          *tau,
+    INT             *hasext,
+    DOUBLE          *estif,
+    DOUBLE          *force,
+    DOUBLE          *funct,
+    DOUBLE          *deriv,
+    DOUBLE          *deriv2,
+    DOUBLE          *xjm,
+    DOUBLE          *derxy,
+    DOUBLE          *derxy2,
+    DOUBLE          *evelng,
+    DOUBLE          *evhist,
+    DOUBLE          *egridv,
+    DOUBLE          *epren,
+    DOUBLE          *edeadng,
+    DOUBLE          *velint,
+    DOUBLE          *histint,
+    DOUBLE          *gridvelint,
+    DOUBLE          *vderxy,
+    DOUBLE          *vderxy2,
+    DOUBLE          *pderxy,
+    DOUBLE          *wa1,
+    DOUBLE          *wa2,
+    INT              sizevec[6]
+    );
 
 void f3fint_res(
-	        ELEMENT         *ele[LOOPL],
-                DOUBLE          *elecord,
-                DOUBLE          *tau,
-                INT             *hasext,
-	        DOUBLE          *force,
-	        DOUBLE          *funct,
-	        DOUBLE          *deriv,
-	        DOUBLE          *deriv2,
-	        DOUBLE          *xjm,
-	        DOUBLE          *derxy,
-	        DOUBLE          *derxy2,
-	        DOUBLE          *evelng,
-	        DOUBLE          *evhist,
-	        DOUBLE          *ealecovng,
-	        DOUBLE          *epren,
-	        DOUBLE          *edeadng,
-                DOUBLE          *velint,
-                DOUBLE          *histint,
-                DOUBLE          *aleconvint,
-	        DOUBLE          *vderxy,
-                DOUBLE          *vderxy2,
-                DOUBLE          *pderxy,
-	        DOUBLE          *wa1,
-	        DOUBLE          *wa2,
-                INT              sizevec[6]
-	       );
+    ELEMENT         *ele[LOOPL],
+    DOUBLE          *elecord,
+    DOUBLE          *tau,
+    INT             *hasext,
+    DOUBLE          *force,
+    DOUBLE          *funct,
+    DOUBLE          *deriv,
+    DOUBLE          *deriv2,
+    DOUBLE          *xjm,
+    DOUBLE          *derxy,
+    DOUBLE          *derxy2,
+    DOUBLE          *evelng,
+    DOUBLE          *evhist,
+    DOUBLE          *ealecovng,
+    DOUBLE          *epren,
+    DOUBLE          *edeadng,
+    DOUBLE          *velint,
+    DOUBLE          *histint,
+    DOUBLE          *aleconvint,
+    DOUBLE          *vderxy,
+    DOUBLE          *vderxy2,
+    DOUBLE          *pderxy,
+    DOUBLE          *wa1,
+    DOUBLE          *wa2,
+    INT              sizevec[6]
+    );
+
 
 void f3falecord(
     ELEMENT     *ele[LOOPL],

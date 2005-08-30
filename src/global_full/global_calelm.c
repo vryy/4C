@@ -458,6 +458,8 @@ dstrc_enter("calelm");
    case calc_fluid_vort             : assemble_action = assemble_do_nothing; break;
    case calc_fluid_normal           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_stress           : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_error            : assemble_action = assemble_do_nothing;
+                                      continue; break;
    case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing; break;
    case calc_fluid_f2pro            : assemble_action = assemble_two_matrix; break;
    case calc_fluid_amatrix          : assemble_action = assemble_do_nothing; break;
@@ -525,7 +527,7 @@ dstrc_enter("calelm");
 #ifdef D_FLUID2_PRO
       if (*action==calc_fluid_amatrix)
          assemble_fluid_amatrix(container,actele,actele2,actintra);
-      
+
       if (*action==calc_fluid_f2pro_rhs_both)
       {
          container->dvec = container->fvelrhs2;
@@ -544,7 +546,7 @@ dstrc_enter("calelm");
          {
           container->dvec = container->ftimerhs;
           assemble_intforce(actele,&etforce_global,container,actintra);
-         } 
+         }
          container->dvec = container->frhs;
          assemble_intforce(actele,&eforce_global,container,actintra);
       }
@@ -624,8 +626,9 @@ case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_normal           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_error            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
-case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; break;
 default: dserror("Unknown type of assembly 2"); break;
@@ -691,8 +694,9 @@ case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_normal           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_error            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
-case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_do_nothing;   break;
 default: dserror("Unknown type of assembly 3"); break;
@@ -742,6 +746,7 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
       case calc_fluid_vort:
       case calc_fluid_normal:
       case calc_fluid_stress:
+      case calc_fluid_error:
       case calc_fluid_f2pro:
       case calc_fluid_amatrix:
       case calc_fluid_f2pro_rhs_both: break;

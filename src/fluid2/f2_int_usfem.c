@@ -892,5 +892,230 @@ dstrc_exit();
 #endif
 }
 
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief integration loop for the error calculation
+
+
+  \param  *ele       ELEMENT   (i)    actual element
+  \param **xyze      DOUBLE    (i)    nodal coordinates
+  \param  *funct     DOUBLE    (i)    natural shape functions
+  \param **deriv     DOUBLE    (i)    deriv. of nat. shape funcs
+  \param **xjm       DOUBLE    (i)    jacobian matrix
+  \param **evelng    DOUBLE    (i)    ele vel. at time n+g
+  \param   visc      DOUBLE    (i)    viscosity
+  \param  *epren     DOUBLE    (i)    ele pre
+  \param  *container CONTAINER (i)    contains variables defined in container.h
+
+  \return void
+
+  \author mn
+  \date   08/05
+
+ */
+/*-----------------------------------------------------------------------*/
+void f2_int_kim_moin_err(
+    ELEMENT         *ele,
+    DOUBLE         **xyze,
+    DOUBLE          *funct,
+    DOUBLE         **deriv,
+    DOUBLE         **xjm,
+    DOUBLE         **evelng,
+    DOUBLE           visc,
+    DOUBLE          *epren,
+    CONTAINER       *container
+    )
+
+{
+  INT       i;          /* a couter                                       */
+  INT       iel;        /* number of nodes                                */
+  INT       intc;       /* "integration case" for tri for further infos
+                           see f2_inpele.c and f2_intg.c                 */
+  INT       is_ale;     /* ALE or Euler element flag                      */
+  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       actmat;     /* material number of the element                 */
+  INT       lr, ls;     /* counter for integration                        */
+
+  DOUBLE    fac;        /* total integration vactor                       */
+  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    det;        /* determinant of jacobian matrix                 */
+  DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
+  DOUBLE    preint;     /* pressure at integration point                  */
+  DOUBLE    velint[2];  /* velocity vector at integration point           */
+  DOUBLE    xint[2];    /* coordinates at integration point               */
+  DIS_TYP   typ;        /* element type                                   */
+  DOUBLE    divuold;    /* velocity divergence at t=t^n                   */
+  DOUBLE    presint;    /* pressure at integration point                  */
+  DOUBLE    diffx, diffy, diffp;
+  DOUBLE    solx, soly, solp;
+  DOUBLE    a=2.0, t;
+  FLUID_DYNAMIC   *fdyn;
+  FLUID_DATA      *data;
+  NODE     *actnode;
+
+
+#ifdef DEBUG
+  dstrc_enter("f2_int_kim_moin_err");
 #endif
+
+
+  /* initialisation */
+  iel    = ele->numnp;
+  typ    = ele->distyp;
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
+
+  t = fdyn->acttime;
+
+  is_ale = ele->e.f2->is_ale;
+
+  /* get integraton data and check if elements are "higher order" */
+  switch (typ)
+  {
+    case quad4: case quad8: case quad9:  /* --> quad - element */
+      /* initialise integration */
+      nir = ele->e.f2->nGP[0];
+      nis = ele->e.f2->nGP[1];
+      break;
+
+    case tri6: /* --> tri - element */
+    case tri3:
+      /* initialise integration */
+      nir  = ele->e.f2->nGP[0];
+      intc = ele->e.f2->nGP[1];
+      break;
+
+    default:
+      dserror("typ unknown!");
+
+  }  /* switch (typ) */
+
+
+  /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (lr=0;lr<nir;lr++)
+  {
+    for (ls=0;ls<nis;ls++)
+    {
+
+      /* get values of  shape functions and their derivatives */
+      switch(typ)
+      {
+        case quad4: case quad8: case quad9:   /* --> quad - element */
+          e1   = data->qxg[lr][nir-1];
+          facr = data->qwgt[lr][nir-1];
+          e2   = data->qxg[ls][nis-1];
+          facs = data->qwgt[ls][nis-1];
+          f2_rec(funct,deriv,NULL,e1,e2,typ,2);
+          break;
+
+        case tri3: case tri6:   /* --> tri - element */
+          e1   = data->txgr[lr][intc];
+          facr = data->twgt[lr][intc];
+          e2   = data->txgs[lr][intc];
+          facs = ONE;
+          f2_tri(funct,deriv,NULL,e1,e2,typ,2);
+          break;
+
+        default:
+          dserror("typ unknown!");
+      } /* end switch(typ) */
+
+      /* compute Jacobian matrix */
+      f2_jaco(xyze,deriv,xjm,&det,iel,ele);
+      fac = facr*facs*det;
+
+
+      /* get velocities at integration point */
+      f2_veci(velint,funct,evelng,iel);
+
+
+      /* get coordinates at integration point */
+      f2_veci(xint,funct,xyze,iel);
+
+
+      /* get pressure at integration point */
+      presint = f2_scali(funct,epren,iel);
+
+
+      if (fdyn->init == 9 )
+      {
+        /* calculate analytical solution */
+        solx = - cos(a*PI*xint[0]) * sin(a*PI*xint[1])
+          * exp(-2.0*a*a*PI*PI*t*visc);
+        soly = sin(a*PI*xint[0]) * cos(a*PI*xint[1])
+          * exp(-2.0*a*a*PI*PI*t*visc);
+        solp = - 0.25 * ( cos(2.0*a*PI*xint[0])
+            + cos(2.0*a*PI*xint[1]) )
+          * exp(-4.0*a*a*PI*PI*t*visc);
+      }
+      else
+        dserror(
+            "Error calculation for fluid2 only possible for kim moin problem");
+
+
+      /* calculate difference between anlytical and fe solution */
+      diffx = (velint[0] - solx);
+      diffy = (velint[1] - soly);
+      diffp = (presint - solp);
+
+
+      switch (container->error_norm)
+      {
+        case 0:
+          /* infinity norm */
+          container->vel_error = MAX( ABS(diffx), container->vel_error);
+          container->vel_error = MAX( ABS(diffy), container->vel_error);
+          container->pre_error = MAX( ABS(diffp), container->pre_error);
+
+          container->vel_norm  = MAX( ABS(solx),  container->vel_norm);
+          container->vel_norm  = MAX( ABS(soly),  container->vel_norm);
+          container->pre_norm  = MAX( ABS(solp),  container->pre_norm);
+          break;
+
+        case 1:
+          /* L1 norm */
+          container->vel_error +=  ( ABS(diffx) + ABS(diffy) ) * fac ;
+          container->pre_error +=  ( ABS(diffp) ) * fac ;
+
+          container->vel_norm  +=  ( ABS(solx) + ABS(diffy) ) * fac ;
+          container->pre_norm  +=  ( ABS(solp) ) * fac ;
+          break;
+
+        case 2:
+          /* L2 norm */
+          container->vel_error += (diffx*diffx + diffy*diffy) * fac;
+          container->pre_error += diffp*diffp * fac;
+
+          container->vel_norm  += (solx*solx + soly*soly) * fac;
+          container->pre_norm  += solp*solp * fac;
+          break;
+
+        default:
+          dserror(
+              "Error norm %2i not available!!",container->error_norm);
+          break;
+      }
+
+
+    } /* end of loop over integration points ls*/
+  } /* end of loop over integration points lr */
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of f2_int_kim_moin_err */
+
+
+
+#endif
+
+
 /*! @} (documentation module close)*/
+
+

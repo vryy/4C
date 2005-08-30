@@ -672,6 +672,30 @@ if (ioflags.fluid_stress==1)
       &container,action);
 }
 
+
+/* error calculation for beltrami and kim-moin */
+if (fdyn->init==8 || fdyn->init==9)
+{
+  container.vel_error  = 0.0;
+  container.pre_error  = 0.0;
+  container.error_norm = 2;
+
+  *action = calc_fluid_error;
+  calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+      &container,action);
+
+
+  container.vel_error = sqrt(container.vel_error);
+  container.pre_error = sqrt(container.pre_error);
+
+  printf("\n  L2_err  :  velocity %f  pressure %f \n\n",
+      container.vel_error,container.pre_error);
+}
+
+
+
+
+
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
 solserv_sol_copy(actfield,0,node_array_sol_increment,

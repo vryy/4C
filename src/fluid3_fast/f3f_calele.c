@@ -278,7 +278,7 @@ void f3fcalele(
       default: dserror("unknown stabilisation type");
 
     } /* end switch over stab_type */
-    
+
     break;
 
 #ifdef D_FSI
@@ -724,8 +724,10 @@ switch(ele[0]->e.f3->is_ale)
              funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
              evhist,ealecovng,epren,edeadng,velint,vel2int,alecovint,
              vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
-#endif /* D_FSI */
   break;
+#endif /* D_FSI */
+
+
   default:
     dserror("parameter is_ale not 0 or 1!\n");
 }
@@ -736,6 +738,111 @@ switch(ele[0]->e.f3->is_ale)
 
   return;
 } /* end of f3_caleleres */
+
+
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief control function for error calculation of f3f elements
+
+
+  \param ele[LOOPL]  ELEMENT        (i) the set of elements
+  \param hasext     *INT            (i) flag whether there are ext forces
+  \param container  *CONTAINER      (i) contains variables defined in container.h
+  \param ipos       *ARRAY_POSITION (i)
+  \param aloopl      INT            (i) num of elements in ele[]
+
+  \return void
+
+  \author mn
+  \date   08/05
+ */
+/*-----------------------------------------------------------------------*/
+void f3f_calerror(
+    ELEMENT          *ele[LOOPL],
+    INT              *hasext,
+    CONTAINER        *container,
+    ARRAY_POSITION   *ipos,
+    INT               aloopl
+    )
+{
+
+  INT l;
+  INT sizevec[6];
+
+  DOUBLE thsl;
+  INT    nis;
+
+#ifdef DEBUG
+  dstrc_enter("f3f_calerror");
+#endif
+
+
+
+  /*Variables for fortran functions.*/
+  sizevec[0] = MAXNOD_F3;
+  sizevec[1] = ele[0]->numnp;
+  sizevec[2] = MAXNOD*MAXDOFPERNODE;
+  sizevec[3] = LOOPL;
+  sizevec[4] = aloopl;
+  sizevec[5] = MAXGAUSS;
+
+
+
+  switch(ele[0]->e.f3->is_ale)
+  {
+    /* Euler */
+    case 0:
+
+      /* set element data */
+      f3fcalset(ele,evhist,evelng,epren,edeadn,edeadng,ipos,hasext,sizevec);
+
+
+      /*A "C-function", but elecord[3,8] used in fortran this can be out of
+        the gauss point loop*/
+      f3fcalelecord(ele,elecord,sizevec);
+      break;
+
+#ifdef D_FSI
+
+      /* ALE */
+    case 1:
+
+      /* set element data */
+      f3fcalseta(ele,evhist,evelng,ealecovng,egridv,
+          epren,edeadn,edeadng,ipos,hasext,sizevec);
+
+
+      /*A "C-function", but elecord[3,8] used in fortran this can be out of
+        the gauss point loop*/
+      f3falecord(ele,elecord,sizevec);
+
+      break;
+
+#endif /* ifdef D_FSI */
+
+
+    default:
+      dserror("parameter is_ale not 0 or 1!\n");
+  }
+
+
+  /* perform element integration */
+  f3f_int_error(ele, elecord, funct, deriv, xjm, evelng, epren, velint, vel2int,
+      container, sizevec);
+
+end:
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of f3f_calerror */
+
+
+
 
 
 #endif

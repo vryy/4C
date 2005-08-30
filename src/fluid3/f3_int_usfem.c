@@ -467,5 +467,263 @@ return;
 } /* end of f3_int_res*/
 
 
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief integration loop for the error calculation
+
+
+  \param  *ele       ELEMENT   (i)    actual element
+  \param **xyze      DOUBLE    (i)    nodal coordinates
+  \param  *funct     DOUBLE    (i)    natural shape functions
+  \param **deriv     DOUBLE    (i)    deriv. of nat. shape funcs
+  \param **xjm       DOUBLE    (i)    jacobian matrix
+  \param **evelng    DOUBLE    (i)    ele vel. at time n+g
+  \param   visc      DOUBLE    (i)    viscosity
+  \param  *epren     DOUBLE    (i)    ele pre
+  \param  *container CONTAINER (i)    contains variables defined in container.h
+
+  \return void
+
+  \author mn
+  \date   08/05
+
+ */
+/*-----------------------------------------------------------------------*/
+void f3_int_beltrami_err(
+    ELEMENT         *ele,
+    DOUBLE         **xyze,
+    DOUBLE          *funct,
+    DOUBLE         **deriv,
+    DOUBLE         **xjm,
+    DOUBLE         **evelng,
+    DOUBLE           visc,
+    DOUBLE          *epren,
+    CONTAINER       *container
+    )
+
+{
+  INT       iel;        /* number of nodes                                */
+  INT       intc;       /* "integration case" for tri for further infos
+                           see f2_inpele.c and f2_intg.c                 */
+  INT       is_ale;     /* ALE or Euler element flag                      */
+  INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
+  INT       lr, ls, lt; /* counter for integration                        */
+
+  DOUBLE    fac;        /* total integration vactor                       */
+  DOUBLE    facr, facs, fact; /* integration weights                            */
+  DOUBLE    det;        /* determinant of jacobian matrix                 */
+  DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
+  DOUBLE    velint[3];  /* velocity vector at integration point           */
+  DOUBLE    xint[3];    /* coordinates at integration point               */
+  DIS_TYP   typ;        /* element type                                   */
+  DOUBLE    presint;    /* pressure at integration point                  */
+  DOUBLE    diffx, diffy,diffz, diffp;
+  DOUBLE    solx, soly,solz, solp;
+  DOUBLE    a=2.0, t;
+  FLUID_DYNAMIC   *fdyn;
+  FLUID_DATA      *data;
+  NODE     *actnode;
+  DOUBLE    x1,x2,x3,d;
+
+
+#ifdef DEBUG
+  dstrc_enter("f3_int_beltrami_err");
+#endif
+
+
+  /* initialisation */
+  iel    = ele->numnp;
+  typ    = ele->distyp;
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
+
+  t = fdyn->acttime;
+
+  is_ale = ele->e.f3->is_ale;
+
+  /* get integraton data and check if elements are "higher order" */
+
+  switch (typ)
+  {
+
+    case hex8: case hex20: case hex27:  /* --> hex - element */
+      /* initialise integration */
+      nir = ele->e.f3->nGP[0];
+      nis = ele->e.f3->nGP[1];
+      nit = ele->e.f3->nGP[2];
+      intc= 0;
+      break;
+
+    case tet10: /* --> tet - element */
+    case tet4:    /* initialise integration */
+      nir  = ele->e.f3->nGP[0];
+      nis  = 1;
+      nit  = 1;
+      intc = ele->e.f3->nGP[1];
+      break;
+
+    default:
+      dserror("typ unknown!");
+
+  } /* end switch (typ) */
+
+
+
+  /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (lr=0;lr<nir;lr++)
+  {
+    for (ls=0;ls<nis;ls++)
+    {
+      for (lt=0;lt<nit;lt++)
+      {
+
+        /* get values of  shape functions and their derivatives */
+        switch(typ)
+        {
+          case hex8: case hex20: case hex27:   /* --> hex - element */
+            e1   = data->qxg[lr][nir-1];
+            facr = data->qwgt[lr][nir-1];
+            e2   = data->qxg[ls][nis-1];
+            facs = data->qwgt[ls][nis-1];
+            e3   = data->qxg[lt][nit-1];
+            fact = data->qwgt[lt][nit-1];
+            f3_hex(funct,deriv,NULL,e1,e2,e3,typ,2);
+            break;
+
+          case tet4: case tet10:   /* --> tet - element */
+            e1   = data->txgr[lr][intc];
+            facr = data->twgt[lr][intc];
+            e2   = data->txgs[lr][intc];
+            facs = ONE;
+            e3   = data->txgt[lr][intc];
+            fact = ONE;
+            f3_tet(funct,deriv,NULL,e1,e2,e3,typ,2);
+            break;
+
+          default:
+            facr = facs = fact = 0.0;
+            e1 = e2 = e3 = 0.0;
+            dserror("typ unknown!");
+
+        } /* end switch (typ) */
+
+        /*----------------------------------------- compute Jacobian matrix */
+        f3_jaco(xyze,deriv,xjm,&det,ele,iel);
+        fac = facr*facs*fact*det;
+
+
+        /* get velocities at integration point */
+        f3_veci(velint,funct,evelng,iel);
+
+
+        /* get coordinates at integration point */
+        f3_veci(xint,funct,xyze,iel);
+
+
+        /* get pressure at integration point */
+        presint = f3_scali(funct,epren,iel);
+
+        x1 = xint[0];
+        x2 = xint[1];
+        x3 = xint[2];
+
+        a = PI/4.0;
+        d = PI/2.0;
+
+        if (fdyn->init == 8 )
+        {
+          /* calculate analytical solution */
+          solp = -a*a/2.0 * ( exp(2.0*a*x1) + exp(2.0*a*x2) + exp(2.0*a*x3)
+              + 2.0 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
+              + 2.0 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
+              + 2.0 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)))
+            * exp(-2.0*visc*d*d*t);
+
+
+          solx   = -a * ( exp(a*x1) * sin(a*x2 + d*x3)
+              + exp(a*x3) * cos(a*x1 + d*x2) ) * exp(-visc*d*d*t);
+
+          soly   = -a * ( exp(a*x2) * sin(a*x3 + d*x1)
+              + exp(a*x1) * cos(a*x2 + d*x3) ) * exp(-visc*d*d*t);
+
+          solz   = -a * ( exp(a*x3) * sin(a*x1 + d*x2)
+              + exp(a*x2) * cos(a*x3 + d*x1) ) * exp(-visc*d*d*t);
+
+        }
+        else
+          dserror(
+              "Error calculation for fluid3 only possible for beltrami problem");
+
+
+        /* calculate difference between anlytical and fe solution */
+        diffx = (velint[0] - solx);
+        diffy = (velint[1] - soly);
+        diffz = (velint[2] - solz);
+        diffp = (presint - solp);
+
+
+        switch (container->error_norm)
+        {
+          case 0:
+            /* infinity norm */
+            container->vel_error = MAX( ABS(diffx), container->vel_error);
+            container->vel_error = MAX( ABS(diffy), container->vel_error);
+            container->vel_error = MAX( ABS(diffz), container->vel_error);
+            container->pre_error = MAX( ABS(diffp), container->pre_error);
+
+            container->vel_norm  = MAX( ABS(solx),  container->vel_norm);
+            container->vel_norm  = MAX( ABS(soly),  container->vel_norm);
+            container->vel_norm  = MAX( ABS(solz),  container->vel_norm);
+            container->pre_norm  = MAX( ABS(solp),  container->pre_norm);
+            break;
+
+          case 1:
+            /* L1 norm */
+            container->vel_error +=  ( ABS(diffx) + ABS(diffy) + ABS(diffz) ) * fac ;
+            container->pre_error +=  ( ABS(diffp) ) * fac ;
+
+            container->vel_norm  +=  ( ABS(solx) + ABS(soly) + ABS(solz) ) * fac ;
+            container->pre_norm  +=  ( ABS(solp) ) * fac ;
+            break;
+
+          case 2:
+            /* L2 norm */
+            container->vel_error += (diffx*diffx + diffy*diffy + diffz*diffz) * fac;
+            container->pre_error += diffp*diffp * fac;
+
+            container->vel_norm  += (solx*solx + soly*soly + solz*solz) * fac;
+            container->pre_norm  += solp*solp * fac;
+            break;
+
+          default:
+            dserror(
+                "Error norm %2i not available!!",container->error_norm);
+            break;
+        }
+
+
+      }  /* for (lt=0;lt<nit;lt++) */
+    }  /* for (ls=0;ls<nis;ls++) */
+  }  /* for (lr=0;lr<nir;lr++) */
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of f3_int_beltrami_err */
+
+
+
+
+
+
+
+
+
 #endif
 /*! @} (documentation module close)*/

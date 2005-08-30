@@ -122,6 +122,8 @@ dstrc_enter("calelm_fast");
     {
       case fele_f3f_hex8_e:
       case fele_f3f_hex8_a:
+      case fele_f3f_hex20_e:
+      case fele_f3f_hex20_a:
       case fele_f3f_tet4_e:
       case fele_f3f_tet4_a:
 
@@ -149,28 +151,34 @@ dstrc_enter("calelm_fast");
 #endif
 
 
-    assemble_action = assemble_one_matrix;
 
-    iel=act_fast_eles->ele_vec[0]->numnp;
+
+    if (*action != calc_fluid_error)
+    {
+      assemble_action = assemble_one_matrix;
+
+      iel=act_fast_eles->ele_vec[0]->numnp;
 
 #ifdef PERF
-    perf_begin(41);
+      perf_begin(41);
 #endif
-    assemble_fast(
-        sysarray1,
-        actpart,
-        actsolv,
-        actintra,
-        act_fast_eles->ele_vec,
-        assemble_action,
-        container,
-        iel,
-        hasext_fast,
-        hasdirich_fast,
-        act_fast_eles->aloopl);
+      assemble_fast(
+          sysarray1,
+          actpart,
+          actsolv,
+          actintra,
+          act_fast_eles->ele_vec,
+          assemble_action,
+          container,
+          iel,
+          hasext_fast,
+          hasdirich_fast,
+          act_fast_eles->aloopl);
 #ifdef PERF
-    perf_end(41);
+      perf_end(41);
 #endif
+
+    }  /* if (*action != fluid_cal_error) */
 
         break;
 

@@ -26,6 +26,23 @@ Maintainer: Steffen Genkinger
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
 /*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+/*!----------------------------------------------------------------------
+\brief one proc's info about his partition
+
+<pre>                                                         m.gee 8/00
+-the partition of one proc (all discretizations)
+-the type is in partition.h
+</pre>
+
+*----------------------------------------------------------------------*/
+extern struct _PARTITION  *partition;
+/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
@@ -44,6 +61,17 @@ extern ALLDYNA      *alldyn;
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+
+
+/*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ *----------------------------------------------------------------------*/
+extern enum _CALC_ACTION calc_action[MAXFIELD];
+
+
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -126,7 +154,7 @@ if (fdyn->step<=fdyn->nums) /* set parameter for starting phase */
    if (iops_s==2 || iops_s==3)
       fdyn->itemax = 1;
    if (fdyn->step==fdyn->nums && iop_s==3)
-       dserror ("starting algo for semi-impl. two-step method not implemented yet\n");
+       dserror("starting algo for semi-impl. two-step method not implemented yet\n");
        /* set U(n-1) in last step of start-algo */
 }
 else if (fdyn->step==(fdyn->nums+1)) /* set original parameter */
@@ -244,7 +272,7 @@ break;
 
 
 default:
-   dserror ("constants for time algorithm not implemented yet!\n");
+   dserror("constants for time algorithm not implemented yet!\n");
 } /* end switch */
 
 /*----------------------------------------------------------------------*/
@@ -335,12 +363,12 @@ case 7:		/* 2nd order backward differencing BDF2 */
    }
 break;
 default:
-   dserror ("constants for time algorithm not implemented yet!\n");
+   dserror("constants for time algorithm not implemented yet!\n");
 }
 
 /*----------------------------------------------- treatment of pressure */
 if (fdyn->iprerhs!=1)
-    dserror ("treatment of pressure not implemented yet!\n");
+    dserror("treatment of pressure not implemented yet!\n");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -711,6 +739,8 @@ case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nod
     {
       case fele_f3f_hex8_e:
       case fele_f3f_hex8_a:
+      case fele_f3f_hex20_e:
+      case fele_f3f_hex20_a:
       case fele_f3f_tet4_e:
       case fele_f3f_tet4_a:
 
@@ -848,6 +878,8 @@ case str_liftdrag:
     {
       case fele_f3f_hex8_e:
       case fele_f3f_hex8_a:
+      case fele_f3f_hex20_e:
+      case fele_f3f_hex20_a:
       case fele_f3f_tet4_e:
       case fele_f3f_tet4_a:
 
@@ -915,12 +947,12 @@ if (fdyn->surftens>0)
 
 #ifdef D_FLUID3
       if (actele->eltyp == el_fluid3)
-         dserror("curvature not implemented for 3D fluid elements!\n");
+        dserror("curvature not implemented for 3D fluid elements!\n");
 #endif
 
 #ifdef D_FLUID3_F
       if (actele->eltyp == el_fluid3_fast)
-         dserror("curvature not implemented for 3D fluid fast elements!\n");
+        dserror("curvature not implemented for 3D fluid fast elements!\n");
 #endif
    }
 }
@@ -1063,16 +1095,16 @@ if (fdyn->init>=1)
             actgnode = actnode->gnode;
             if (actgnode->dirich!=NULL)
 	    {
-               if (actgnode->dirich->dirich_type!=dirich_none)
-	          dserror("dirich type not allowed for solwave init\n");
-	       for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
-               {
-                  if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
-	          {
-		     actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
-		     actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
-                  }
-	       } /* end loop over dofs */
+              if (actgnode->dirich->dirich_type!=dirich_none)
+	        dserror("dirich type not allowed for solwave init\n");
+	      for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
+              {
+                if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
+	        {
+		   actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
+		   actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
+                }
+	      } /* end loop over dofs */
 	    }
 	 }
       }
@@ -1095,11 +1127,11 @@ if (fdyn->init>=1)
 	 x2   = actnode->x[1];
 	 x3   = actnode->x[2];
 	 /* calculate initial values */
-	 p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3)
-                + 2 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
-                + 2 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
-                + 2 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
-                * exp(-2*visc*d*d*t);
+	 p    = -a*a/2.0 * ( exp(2.0*a*x1) + exp(2.0*a*x2) + exp(2.0*a*x3)
+                + 2.0 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
+                + 2.0 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
+                + 2.0 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
+                * exp(-2.0*visc*d*d*t);
 	 u1   = -a * ( exp(a*x1) * sin(a*x2 + d*x3) +
                      exp(a*x3) * cos(a*x1 + d*x2) ) * exp(-visc*d*d*t);
 	 u2   = -a * ( exp(a*x2) * sin(a*x3 + d*x1) +
@@ -1315,19 +1347,22 @@ case fncc_Linf: /* L_infinity norm */
 #endif
          if (j==predof) /* pressure dof */
          {
-            dpnorm = DMAX(dpnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
+            dpnorm = DMAX(dpnorm,
+                FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
             pnorm  = DMAX(pnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] = result[dof];
          } /* endif pressure dof */
          else if (j>predof) /* grid velocity or height function dof */
          {
-            dgnorm = DMAX(dgnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
+            dgnorm = DMAX(dgnorm,
+                FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
             gnorm  = DMAX(gnorm,FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] = result[dof];
          }
          else /* vel - dof */
          {
-            dvnorm = DMAX(dvnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
+            dvnorm = DMAX(dvnorm,
+                FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
             vnorm  = DMAX(vnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] = result[dof];
          } /* endif vel dof */
@@ -2500,21 +2535,45 @@ void fluid_cal_error(
   DOUBLE      dp2norm=ZERO;   /* L2 norms */
   DOUBLE       p2norm=ZERO;   /* L2 norms */
 
+  SOLVAR      *actsolv;       /* pointer to active sol. structure */
+  PARTITION   *actpart;       /* pointer to active partition      */
+  INTRA       *actintra;      /* pointer to active intra-communic.*/
+
+  CONTAINER    container;     /* contains variables defined in container.h */
+  CALC_ACTION *action;        /* pointer to the cal_action enum   */
+
   NODE        *actnode;       /* actual node */
   ELEMENT     *actele;
   INT          actmat;
-  DOUBLE       visc,a,d,t;
-  DOUBLE       x1,x2,x3;
-  DOUBLE       u[3],p;
 
   INT            numeq_total;
   FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
+
+
 
 #ifdef DEBUG
   dstrc_enter("fluid_cal_error");
 #endif
 
   /*---------------------------------------------------- set some values */
+#ifdef PARALLEL
+  actintra    = &(par.intra[0]);
+#else
+  actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+  actintra->intra_fieldtyp = fluid;
+  actintra->intra_rank     = 0;
+  actintra->intra_nprocs   = 1;
+#endif
+
+  action      = &(calc_action[0]);
+  *action     = calc_struct_none;
+
+  actsolv     = &(solv[0]);
+  actpart     = &(partition[0]);
+
+  container.actndis  = 0;
+  container.fieldtyp = fluid;
+
   fdyn = alldyn[genprob.numff].fdyn;
   numdf        = fdyn->numdf;
   numnp_total  = actfield->dis[0].numnp;
@@ -2522,356 +2581,85 @@ void fluid_cal_error(
   predof       = numdf-1;
   numvel       = numdf-1;
 
+
+  /* new error calculation, or better integration */
+  for (i=0;i<=2;i++)
+  {
+    container.vel_error  = 0.0;
+    container.pre_error  = 0.0;
+    container.vel_norm   = 0.0;
+    container.pre_norm   = 0.0;
+    container.error_norm = i;
+
+    *action = calc_fluid_error;
+    calelm(actfield,actsolv,actpart,actintra,-1,-1,
+        &container,action);
+
+
+    if (i==2)
+    {
+      container.vel_error = sqrt(container.vel_error);
+      container.pre_error = sqrt(container.pre_error);
+    }
+
+    switch (i)
+    {
+      case 0:
+        dvinorm = container.vel_error;
+        dpinorm = container.pre_error;
+        vinorm  = container.vel_norm;
+        pinorm  = container.pre_norm;
+        break;
+
+      case 1:
+        dv1norm = container.vel_error;
+        dp1norm = container.pre_error;
+        v1norm  = container.vel_norm;
+        p1norm  = container.pre_norm;
+        break;
+
+      case 2:
+        dv2norm = container.vel_error;
+        dp2norm = container.pre_error;
+        v2norm  = container.vel_norm;
+        p2norm  = container.pre_norm;
+        break;
+
+      default:
+        dserror("Error norm %2i not possible!!", i);
+        break;
+
+    }  /* switch (i) */
+
+  }  /* for (i=0;i<=2;i++) */
+
+
   switch (index)
   {
     case 1: /* BELTRAMI */
-
-      for (i=0;i<numnp_total;i++) /* loop nodes */
-      {
-        actnode=&(actfield->dis[0].node[i]);
-
-        /* calculate analytical solution */
-        actele = actnode->element[0];
-        actmat = actele->mat-1;
-        /* set some constants */
-        visc   = mat[actmat].m.fluid->viscosity;
-        a      = PI/4.0;
-        d      = PI/2.0;
-        t      = fdyn->acttime;
-        x1   = actnode->x[0];
-        x2   = actnode->x[1];
-        x3   = actnode->x[2];
-        /* calculate analytical values */
-        p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3)
-            + 2 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
-            + 2 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
-            + 2 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
-          * exp(-2*visc*d*d*t);
-        u[0]   = -a * ( exp(a*x1) * sin(a*x2 + d*x3) +
-            exp(a*x3) * cos(a*x1 + d*x2) ) * exp(-visc*d*d*t);
-        u[1]   = -a * ( exp(a*x2) * sin(a*x3 + d*x1) +
-            exp(a*x1) * cos(a*x2 + d*x3) ) * exp(-visc*d*d*t);
-        u[2]   = -a * ( exp(a*x3) * sin(a*x1 + d*x2) +
-            exp(a*x2) * cos(a*x3 + d*x1) ) * exp(-visc*d*d*t);
-
-        /* infinity norm */
-        for (j=0;j<numvel;j++) /* loop vel-dofs */
-        {
-          actdof = actnode->dof[j];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-          if (actnode->gnode->dirich!=NULL &&
-              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-            continue;
-#else
-          if (actdof>=numeq_total) continue;
-#endif
-          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]));
-          vinorm = DMAX( vinorm,FABS(u[j]));
-        } /* end of loop over vel-dofs */
-
-        actdof = actnode->dof[predof];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-        if (actnode->gnode->dirich!=NULL &&
-            actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-          continue;
-#else
-        if (actdof>=numeq_total) continue;
-#endif
-        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p));
-        pinorm = DMAX( pinorm,FABS(p));
-
-
-        /* L1 norm */
-        for (j=0;j<numvel;j++) /* loop vel-dofs */
-        {
-          actdof = actnode->dof[j];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-          if (actnode->gnode->dirich!=NULL &&
-              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-            continue;
-#else
-          if (actdof>=numeq_total) continue;
-#endif
-          dv1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]);
-          v1norm += FABS(u[j]);
-        } /* end of loop over vel-dofs */
-
-        actdof = actnode->dof[predof];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-        if (actnode->gnode->dirich!=NULL &&
-            actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-          continue;
-#else
-        if (actdof>=numeq_total) continue;
-#endif
-        dp1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p);
-        p1norm += FABS(p);
-
-
-        /* L_2 norm */
-        actnode=&(actfield->dis[0].node[i]);
-        for (j=0;j<numvel;j++) /* loop vel-dofs */
-        {
-          actdof = actnode->dof[j];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-          if (actnode->gnode->dirich!=NULL &&
-              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-            continue;
-#else
-          if (actdof>=numeq_total) continue;
-#endif
-          dv2norm += pow(actnode->sol_increment.a.da[ipos->velnp][j] - u[j],2);
-          v2norm += pow(u[j],2);
-        } /* end of loop over vel-dofs */
-
-        actdof = actnode->dof[predof];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-        if (actnode->gnode->dirich!=NULL &&
-            actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-          continue;
-#else
-        if (actdof>=numeq_total) continue;
-#endif
-        dp2norm += pow(actnode->sol_increment.a.da[ipos->velnp][predof] - p,2);
-        p2norm += pow(p,2);
-
-      } /* end ol LOOP all nodes */
-
-
-      dv2norm = sqrt(dv2norm);
-      v2norm = sqrt( v2norm);
-      dp2norm = sqrt(dp2norm);
-      p2norm = sqrt( p2norm);
-
-
-      /* check for "ZERO-field" */
-      if (vinorm<EPS5)
-      {
-        vinorm = ONE;
-        printf("ATTENTION: zero vel field - inf norm <= 1.0e-5 set to 1.0!! \n");
-      }
-      if (pinorm<EPS5)
-      {
-        pinorm = ONE;
-        printf("ATTENTION: zero pre field - inf norm <= 1.0e-5 set to 1.0!! \n");
-      }
-
-      if (v1norm<EPS5)
-      {
-        v1norm = ONE;
-        printf("ATTENTION: zero vel field - L1 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-      if (p1norm<EPS5)
-      {
-        p1norm = ONE;
-        printf("ATTENTION: zero pre field - L1 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-
-      if (v2norm<EPS5)
-      {
-        v2norm = ONE;
-        printf("ATTENTION: zero vel field - L2 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-      if (p2norm<EPS5)
-      {
-        p2norm = ONE;
-        printf("ATTENTION: zero pre field - L2 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-
-      /*
-         printf("\nabsolute vel error for Beltrami in inf norm:  %11.4E \n",  dvinorm);
-         printf("absolute pre error for Beltrami in inf norm:  %11.4E \n\n",dpinorm);
-
-         printf("absolute vel error for Beltrami in L1  norm:  %11.4E \n",  dv1norm);
-         printf("absolute pre error for Beltrami in L1  norm:  %11.4E \n\n",dp1norm);
-
-         printf("absolute vel error for Beltrami in L2  norm:  %11.4E \n",  dv2norm);
-         printf("absolute pre error for Beltrami in L2  norm:  %11.4E \n\n",dp2norm);
-         */
-
-
       printf("\nErrors for Beltrami flow:\n");
-      printf("norm | abs. vel.  | rel. vel.  | abs. pre.  | rel. pre.  |\n");
-      printf("----------------------------------------------------------\n");
-      printf("inf  |%11.4E |%11.4E |%11.4E |%11.4E |\n",dvinorm,dvinorm/vinorm,dpinorm,dpinorm/pinorm);
-      printf("L1   |%11.4E |%11.4E |%11.4E |%11.4E |\n",dv1norm,dv1norm/v1norm,dp1norm,dp1norm/p1norm);
-      printf("L2   |%11.4E |%11.4E |%11.4E |%11.4E |\n\n",dv2norm,dv2norm/v2norm,dp2norm,dp2norm/p2norm);
-
       break;
       /* end of BELTRAMI */
 
+
+
     case 2: /* KIM-MOIN */
-
-      for (i=0;i<numnp_total;i++) /* loop nodes */
-      {
-        actnode=&(actfield->dis[0].node[i]);
-
-        /* calculate analytical solution */
-        actele = actnode->element[0];
-        actmat = actele->mat-1;
-        /* set some constants */
-        visc   = mat[actmat].m.fluid->viscosity;
-        a      = 2.0;
-        t      = fdyn->acttime;
-        x1   = actnode->x[0];
-        x2   = actnode->x[1];
-        /* calculate analytical values */
-        p      = -1.0/4.0 * ( cos(2.0*a*PI*x1) + cos(2.0*a*PI*x2) ) * exp(-4.0*a*a*PI*PI*t*visc);
-        u[0]   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
-        u[1]   = + sin(a*PI*x1) * cos(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
-
-        /* infinity norm */
-        for (j=0;j<numvel;j++) /* loop vel-dofs */
-        {
-          actdof = actnode->dof[j];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-          if (actnode->gnode->dirich!=NULL &&
-              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-            continue;
-#else
-          if (actdof>=numeq_total) continue;
-#endif
-          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]));
-          vinorm = DMAX( vinorm,FABS(u[j]));
-        } /* end of loop over vel-dofs */
-
-        actdof = actnode->dof[predof];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-        if (actnode->gnode->dirich!=NULL &&
-            actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-          continue;
-#else
-        if (actdof>=numeq_total) continue;
-#endif
-        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p));
-        pinorm = DMAX( pinorm,FABS(p));
-
-
-        /* L1 norm */
-        for (j=0;j<numvel;j++) /* loop vel-dofs */
-        {
-          actdof = actnode->dof[j];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-          if (actnode->gnode->dirich!=NULL &&
-              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-            continue;
-#else
-          if (actdof>=numeq_total) continue;
-#endif
-          dv1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][j] - u[j]);
-          v1norm += FABS(u[j]);
-        } /* end of loop over vel-dofs */
-
-        actdof = actnode->dof[predof];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-        if (actnode->gnode->dirich!=NULL &&
-            actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-          continue;
-#else
-        if (actdof>=numeq_total) continue;
-#endif
-        dp1norm += FABS(actnode->sol_increment.a.da[ipos->velnp][predof] - p);
-        p1norm += FABS(p);
-
-
-        /* L_2 norm */
-        actnode=&(actfield->dis[0].node[i]);
-        for (j=0;j<numvel;j++) /* loop vel-dofs */
-        {
-          actdof = actnode->dof[j];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-          if (actnode->gnode->dirich!=NULL &&
-              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-            continue;
-#else
-          if (actdof>=numeq_total) continue;
-#endif
-          dv2norm += pow(actnode->sol_increment.a.da[ipos->velnp][j] - u[j],2);
-          v2norm += pow(u[j],2);
-        } /* end of loop over vel-dofs */
-
-        actdof = actnode->dof[predof];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-        if (actnode->gnode->dirich!=NULL &&
-            actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-          continue;
-#else
-        if (actdof>=numeq_total) continue;
-#endif
-        dp2norm += pow(actnode->sol_increment.a.da[ipos->velnp][predof] - p,2);
-        p2norm += pow(p,2);
-
-      } /* end ol LOOP all nodes */
-
-
-      dv2norm = sqrt(dv2norm);
-      v2norm = sqrt( v2norm);
-      dp2norm = sqrt(dp2norm);
-      p2norm = sqrt( p2norm);
-
-
-      /* check for "ZERO-field" */
-      if (vinorm<EPS5)
-      {
-        vinorm = ONE;
-        printf("ATTENTION: zero vel field - inf norm <= 1.0e-5 set to 1.0!! \n");
-      }
-      if (pinorm<EPS5)
-      {
-        pinorm = ONE;
-        printf("ATTENTION: zero pre field - inf norm <= 1.0e-5 set to 1.0!! \n");
-      }
-
-      if (v1norm<EPS5)
-      {
-        v1norm = ONE;
-        printf("ATTENTION: zero vel field - L1 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-      if (p1norm<EPS5)
-      {
-        p1norm = ONE;
-        printf("ATTENTION: zero pre field - L1 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-
-      if (v2norm<EPS5)
-      {
-        v2norm = ONE;
-        printf("ATTENTION: zero vel field - L2 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-      if (p2norm<EPS5)
-      {
-        p2norm = ONE;
-        printf("ATTENTION: zero pre field - L2 norm <= 1.0e-5 set to 1.0!! \n");
-      }
-
-      /*
-         printf("\nabsolute vel error for Beltrami in inf norm:  %11.4E \n",  dvinorm);
-         printf("absolute pre error for Beltrami in inf norm:  %11.4E \n\n",dpinorm);
-
-         printf("absolute vel error for Beltrami in L1  norm:  %11.4E \n",  dv1norm);
-         printf("absolute pre error for Beltrami in L1  norm:  %11.4E \n\n",dp1norm);
-
-         printf("absolute vel error for Beltrami in L2  norm:  %11.4E \n",  dv2norm);
-         printf("absolute pre error for Beltrami in L2  norm:  %11.4E \n\n",dp2norm);
-         */
-
-
       printf("\nErrors for Kim-Moin flow:\n");
-      printf("norm | abs. vel.  | rel. vel.  | abs. pre.  | rel. pre.  |\n");
-      printf("----------------------------------------------------------\n");
-      printf("inf  |%11.4E |%11.4E |%11.4E |%11.4E |\n",dvinorm,dvinorm/vinorm,dpinorm,dpinorm/pinorm);
-      printf("L1   |%11.4E |%11.4E |%11.4E |%11.4E |\n",dv1norm,dv1norm/v1norm,dp1norm,dp1norm/p1norm);
-      printf("L2   |%11.4E |%11.4E |%11.4E |%11.4E |\n\n",dv2norm,dv2norm/v2norm,dp2norm,dp2norm/p2norm);
-
       break;
-  /* end of KIM-MOIN */
+      /* end of KIM-MOIN */
 
     default:
       dserror("Unknown type of flow for error calculation");
       break;
   }
 
-  /*----------------------------------------------------------------------*/
+  printf("norm | abs. vel.  | rel. vel.  | abs. pre.  | rel. pre.  |\n");
+  printf("----------------------------------------------------------\n");
+  printf("inf  |%11.4E |%11.4E |%11.4E |%11.4E |\n",dvinorm,dvinorm/vinorm,dpinorm,dpinorm/pinorm);
+  printf("L1   |%11.4E |%11.4E |%11.4E |%11.4E |\n",dv1norm,dv1norm/v1norm,dp1norm,dp1norm/p1norm);
+  printf("L2   |%11.4E |%11.4E |%11.4E |%11.4E |\n\n",dv2norm,dv2norm/v2norm,dp2norm,dp2norm/p2norm);
+
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
