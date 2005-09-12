@@ -127,9 +127,6 @@ dstrc_enter("calelm_fast");
       case fele_f3f_tet4_e:
       case fele_f3f_tet4_a:
 
-#ifdef PERF
-    perf_begin(40);
-#endif
 
     /* perform integration for a group of elements*/
     fluid3_fast(
@@ -146,10 +143,6 @@ dstrc_enter("calelm_fast");
         container,
         act_fast_eles->aloopl);
 
-#ifdef PERF
-    perf_end(40);
-#endif
-
 
 
 
@@ -159,9 +152,6 @@ dstrc_enter("calelm_fast");
 
       iel=act_fast_eles->ele_vec[0]->numnp;
 
-#ifdef PERF
-      perf_begin(41);
-#endif
       assemble_fast(
           sysarray1,
           actpart,
@@ -174,9 +164,6 @@ dstrc_enter("calelm_fast");
           hasext_fast,
           hasdirich_fast,
           act_fast_eles->aloopl);
-#ifdef PERF
-      perf_end(41);
-#endif
 
     }  /* if (*action != fluid_cal_error) */
 
