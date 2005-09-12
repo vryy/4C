@@ -80,7 +80,7 @@ dstrc_enter("out_gid_sol_init");
 /*----------------------------------------------------------------------*/
 fprintf(out,"Gid Post Results File 1.0\n");
 fprintf(out,"#-------------------------------------------------------------------------------\n");
-fprintf(out,"# P_CARAT postprocessing output to GID\n");
+fprintf(out,"# CCARAT postprocessing output to GID\n");
 fprintf(out,"#-------------------------------------------------------------------------------\n");
 /*----------------------------------------------------------------------*/
 /*------------------------- check number of fields and allocate storage */
@@ -124,8 +124,13 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"  1000000.0 -            : %cvery large%c\n",sign,sign);
    fprintf(out,"END RESULTRANGESTABLE\n");
    /*--------------------------- find and set meshes and gausspointsets */
-   actgid->is_shell8_22 = 0;
-   actgid->is_shell8_33 = 0;
+   actgid->is_shell8_4_22 = 0;
+   actgid->is_shell8_4_33 = 0;
+   actgid->is_shell8_8_22 = 0;
+   actgid->is_shell8_8_33 = 0;
+   actgid->is_shell8_9_22 = 0;
+   actgid->is_shell8_9_33 = 0;
+
    actgid->is_shell9_4_22 = 0;
    actgid->is_shell9_4_33 = 0;
    actgid->is_shell9_8_22 = 0;
@@ -142,14 +147,24 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_fluid2_pro_33 = 0;
    actgid->is_fluid3_222= 0;
    actgid->is_fluid3_333= 0;
-   actgid->is_f3f_222   = 0;
-   actgid->is_f3f_333   = 0;
+
+   actgid->is_f3f_8_222   = 0;
+   actgid->is_f3f_8_333   = 0;
+   actgid->is_f3f_20_222   = 0;
+   actgid->is_f3f_20_333   = 0;
+
    actgid->is_ale_11    = 0;
    actgid->is_ale_22    = 0;
    actgid->is_ale_tri_1 = 0;
    actgid->is_ale_tri_3 = 0;
-   actgid->is_ale_111   = 0;
-   actgid->is_ale_222   = 0;
+
+   actgid->is_ale_8_111   = 0;
+   actgid->is_ale_8_222   = 0;
+   actgid->is_ale_8_333   = 0;
+   actgid->is_ale_20_111   = 0;
+   actgid->is_ale_20_222   = 0;
+   actgid->is_ale_20_333   = 0;
+
    actgid->is_wall1_11  = 0;
    actgid->is_wall1_22  = 0;
    actgid->is_wall1_33  = 0;
@@ -164,24 +179,66 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_interf_33  = 0;
    actgid->is_wallge_22  = 0;
    actgid->is_wallge_33  = 0;
-   /*---------------------------- check for different types of elements */
+
+
+
+
+   /* check for different types of elements */
    for (j=0; j<actfield->dis[0].numele; j++)
    {
       actele = &(actfield->dis[0].element[j]);
       switch(actele->eltyp)
       {
+
+
+#ifdef D_SHELL8
       case el_shell8:
          if (actele->numnp==4)
          {
-            actgid->is_shell8_22   = 1;
-            actgid->shell8_22_name = "shell8_22";
+           if (actele->e.s8->nGP[0]==2 && actele->e.s8->nGP[1]==2)
+           {
+             actgid->is_shell8_4_22   = 1;
+             actgid->shell8_4_22_name = "shell8_4_22";
+           }
+           if (actele->e.s8->nGP[0]==3 && actele->e.s8->nGP[1]==3)
+           {
+             actgid->is_shell8_4_33   = 1;
+             actgid->shell8_4_33_name = "shell8_4_33";
+           }
          }
-         if (actele->numnp==8 || actele->numnp==9)
+
+         if (actele->numnp==8)
          {
-            actgid->is_shell8_33   = 1;
-            actgid->shell8_33_name = "shell8_33";
+           if (actele->e.s8->nGP[0]==2 && actele->e.s8->nGP[1]==2)
+           {
+             actgid->is_shell8_8_22   = 1;
+             actgid->shell8_8_22_name = "shell8_8_22";
+           }
+           if (actele->e.s8->nGP[0]==3 && actele->e.s8->nGP[1]==3)
+           {
+             actgid->is_shell8_8_33   = 1;
+             actgid->shell8_8_33_name = "shell8_8_33";
+           }
+         }
+
+         if (actele->numnp==9)
+         {
+           if (actele->e.s8->nGP[0]==2 && actele->e.s8->nGP[1]==2)
+           {
+             actgid->is_shell8_9_22   = 1;
+             actgid->shell8_9_22_name = "shell8_9_22";
+           }
+           if (actele->e.s8->nGP[0]==3 && actele->e.s8->nGP[1]==3)
+           {
+             actgid->is_shell8_9_33   = 1;
+             actgid->shell8_9_33_name = "shell8_9_33";
+           }
          }
       break;
+#endif
+
+
+
 #ifdef D_SHELL9
       case el_shell9:
          if (actele->numnp==4)
@@ -225,12 +282,14 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif /*D_SHELL9*/
+
+
+
+#ifdef D_BRICK1
       case el_brick1:
          /*--- initialize stress output for hex ---*/
-#ifdef D_BRICK1
          c1_out_gid_sol_str(NULL, actfield, 0, 1);
-#endif
-         /*----------------------------------------*/
+
          if (actele->numnp==8)
          {
             actgid->is_brick1_222   = 1;
@@ -242,6 +301,11 @@ for (i=0; i<genprob.numfld; i++)
             actgid->brick1_333_name = "brick1_333";
          }
       break;
+#endif
+
+
+
+
 #ifdef D_FLUID2
       case el_fluid2:
          if (actele->numnp==4)
@@ -256,6 +320,9 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif
+
+
+
 #ifdef D_FLUID2_PRO
       case el_fluid2_pro:
          if (actele->numnp==4)
@@ -270,6 +337,8 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif
+
+
 
 #ifdef D_FLUID3
       case el_fluid3:
@@ -286,20 +355,50 @@ for (i=0; i<genprob.numfld; i++)
       break;
 #endif
 
+
+
 #ifdef D_FLUID3_F
       case el_fluid3_fast:
          if (actele->numnp==8)
          {
-            actgid->is_f3f_222   = 1;
-            actgid->f3f_222_name = "f3f_222";
+           if (actele->e.f3->nGP[0]==2 &&
+               actele->e.f3->nGP[1]==2 &&
+               actele->e.f3->nGP[2]==2 )
+           {
+             actgid->is_f3f_8_222   = 1;
+             actgid->f3f_8_222_name = "f3f_8_222";
+           }
+           if (actele->e.f3->nGP[0]==3 &&
+               actele->e.f3->nGP[1]==3 &&
+               actele->e.f3->nGP[2]==3 )
+           {
+             actgid->is_f3f_8_333   = 1;
+             actgid->f3f_8_333_name = "f3f_8_333";
+           }
          }
-         if (actele->numnp==20 || actele->numnp==27)
+         if (actele->numnp==20)
          {
-            actgid->is_f3f_333   = 1;
-            actgid->f3f_333_name = "f3f_333";
+           if (actele->e.f3->nGP[0]==2 &&
+               actele->e.f3->nGP[1]==2 &&
+               actele->e.f3->nGP[2]==2 )
+           {
+            actgid->is_f3f_20_222   = 1;
+            actgid->f3f_20_222_name = "f3f_20_222";
+           }
+           if (actele->e.f3->nGP[0]==3 &&
+               actele->e.f3->nGP[1]==3 &&
+               actele->e.f3->nGP[2]==3 )
+           {
+            actgid->is_f3f_20_333   = 1;
+            actgid->f3f_20_333_name = "f3f_20_333";
+           }
          }
+         if (actele->numnp==27)
+           dserror("Fluid3_fast elements with 27 nodes not possible with GiD output!!");
       break;
 #endif
+
+
 
 #ifdef D_ALE
       case el_ale2:
@@ -330,35 +429,85 @@ for (i=0; i<genprob.numfld; i++)
              }
          }
       break;
+
+
       case el_ale3:
-         if (actele->numnp==8)
-         {
-             if (actele->e.ale3->nGP[0]==1 && actele->e.ale3->nGP[1]==1 && actele->e.ale3->nGP[2]==1 )
-             {
-                 actgid->is_ale_111   = 1;
-                 actgid->ale_111_name = "ale_111";
-             }
-             else if (actele->e.ale3->nGP[0]==2 && actele->e.ale3->nGP[1]==2 && actele->e.ale3->nGP[2]==2 )
-             {
-                 actgid->is_ale_222   = 1;
-                 actgid->ale_222_name = "ale_222";
-             }
-         }
-         if (actele->numnp==4)
-         {
-             if ( actele->e.ale3->nGP[0] == 1)
-             {
-                 actgid->is_ale_tet_1    = 1;
-                 actgid->ale_tet_1_name  = "ale_tet_1";
-             }
-             else if ( actele->e.ale3->nGP[0] == 4)
-             {
-                 actgid->is_ale_tet_4    = 1;
-                 actgid->ale_tet_4_name  = "ale_tet_4";
-             }
-         }
+
+      if (actele->numnp==8)
+      {
+        if (actele->e.ale3->nGP[0]==1 &&
+            actele->e.ale3->nGP[1]==1 &&
+            actele->e.ale3->nGP[2]==1 )
+        {
+          actgid->is_ale_8_111   = 1;
+          actgid->ale_8_111_name = "ale_8_111";
+        }
+        if (actele->e.ale3->nGP[0]==2 &&
+            actele->e.ale3->nGP[1]==2 &&
+            actele->e.ale3->nGP[2]==2 )
+        {
+          actgid->is_ale_8_222   = 1;
+          actgid->ale_8_222_name = "ale_8_222";
+        }
+        if (actele->e.ale3->nGP[0]==3 &&
+            actele->e.ale3->nGP[1]==3 &&
+            actele->e.ale3->nGP[2]==3 )
+        {
+          actgid->is_ale_8_333   = 1;
+          actgid->ale_8_333_name = "ale_8_333";
+        }
+      }
+
+
+      if (actele->numnp==20)
+      {
+        if (actele->e.ale3->nGP[0]==1 &&
+            actele->e.ale3->nGP[1]==1 &&
+            actele->e.ale3->nGP[2]==1 )
+        {
+          actgid->is_ale_20_111   = 1;
+          actgid->ale_20_111_name = "ale_20_111";
+        }
+        if (actele->e.ale3->nGP[0]==2 &&
+            actele->e.ale3->nGP[1]==2 &&
+            actele->e.ale3->nGP[2]==2 )
+        {
+          actgid->is_ale_20_222   = 1;
+          actgid->ale_20_222_name = "ale_20_222";
+        }
+        if (actele->e.ale3->nGP[0]==3 &&
+            actele->e.ale3->nGP[1]==3 &&
+            actele->e.ale3->nGP[2]==3 )
+        {
+          actgid->is_ale_20_333   = 1;
+          actgid->ale_20_333_name = "ale_20_333";
+        }
+      }
+
+
+      if (actele->numnp==27)
+        dserror("Ale3 elements with 27 nodes not possible with GiD output");
+
+
+
+      if (actele->numnp==4)
+      {
+        if ( actele->e.ale3->nGP[0] == 1)
+        {
+          actgid->is_ale_tet_1    = 1;
+          actgid->ale_tet_1_name  = "ale_tet_1";
+        }
+        else if ( actele->e.ale3->nGP[0] == 4)
+        {
+          actgid->is_ale_tet_4    = 1;
+          actgid->ale_tet_4_name  = "ale_tet_4";
+        }
+      }
       break;
 #endif /*D_ALE*/
+
+
+
 /*---------------------------------------------------------fh 06/02----*/
 #ifdef D_WALL1
       case el_wall1:
@@ -379,6 +528,9 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif /*D_WALL1*/
+
+
+
 #ifdef D_BEAM3
 /*---------------------------------------------------------fh 10/02----*/
       case el_beam3:
@@ -409,16 +561,19 @@ for (i=0; i<genprob.numfld; i++)
 	    }
 	 }
       break;
-
 #endif /*D_BEAM3*/
 
-/*---------------------------------------------------------fh 06/02----*/
+
+
 #ifdef D_AXISHELL
       case el_axishell:
             actgid->is_axishell    = 1;
             actgid->axishell_name  = "axishell";
       break;
 #endif /*D_AXISHELL*/
+
+
+
 #ifdef D_INTERF
       case el_interf:
          if (actele->e.interf->nGP==2)
@@ -433,6 +588,9 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif /*D_INTERF*/
+
+
+
 #ifdef D_WALLGE
       case el_wallge:
          if (actele->e.wallge->nGP[0]==2)
@@ -448,26 +606,100 @@ for (i=0; i<genprob.numfld; i++)
      break;
 #endif /*D_WALLGE*/
 
+
+
       default:
          dserror("Unknown type of element");
       break;
       }
    } /* end of (j=0; j<actfield->numele; j++) */
+
+
+
    /*----------------------------- now we can write the gausspoint sets */
-#if 1/* this is the shell visualization using Quadrilateral */
-   if (actgid->is_shell8_22)
+
+
+   /* this is the shell visualization using Quadrilateral */
+   if (actgid->is_shell8_4_22)
    {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
-                                                                   sign,actgid->shell8_22_name,sign,
-                                                                   sign,actgid->shell8_22_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+         sign,actgid->shell8_4_22_name,sign,
+         sign,actgid->shell8_4_22_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
    }
-#endif
+
+   if (actgid->is_shell8_4_33)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 3x3 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+         sign,actgid->shell8_4_33_name,sign,
+         sign,actgid->shell8_4_33_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_shell8_8_22)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+         sign,actgid->shell8_8_22_name,sign,
+         sign,actgid->shell8_8_22_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_shell8_8_33)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 3x3 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+         sign,actgid->shell8_8_33_name,sign,
+         sign,actgid->shell8_8_33_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_shell8_9_22)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+         sign,actgid->shell8_9_22_name,sign,
+         sign,actgid->shell8_9_22_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_shell8_9_33)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 3x3 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+         sign,actgid->shell8_9_33_name,sign,
+         sign,actgid->shell8_9_33_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+
+
 #if 0
    /* this is the shell visualization using Hexahedra */
    if (actgid->is_shell8_22)
@@ -674,32 +906,59 @@ for (i=0; i<genprob.numfld; i++)
 #endif
 
 #ifdef D_FLUID3_F
-   if (actgid->is_f3f_222)
+   if (actgid->is_f3f_8_222)
    {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 2x2x2 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
-                                                                sign,actgid->f3f_222_name,sign,
-                                                                sign,actgid->f3f_222_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 2x2x2 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->f3f_8_222_name,sign,
+         sign,actgid->f3f_8_222_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
    }
 
-   if (actgid->is_f3f_333)
+   if (actgid->is_f3f_8_333)
    {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 3x3x3 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
-                                                                sign,actgid->f3f_333_name,sign,
-                                                                sign,actgid->f3f_333_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 3x3x3 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->f3f_8_333_name,sign,
+         sign,actgid->f3f_8_333_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_f3f_20_222)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 2x2x2 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->f3f_20_222_name,sign,
+         sign,actgid->f3f_20_222_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_f3f_20_333)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 3x3x3 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->f3f_20_333_name,sign,
+         sign,actgid->f3f_20_333_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
    }
 #endif
+
 
    if (actgid->is_ale_11)
    {
@@ -749,30 +1008,87 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
-   if (actgid->is_ale_111)
+
+
+   if (actgid->is_ale_8_111)
    {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 1x1x1 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
-                                                               sign,actgid->ale_111_name,sign,
-                                                               sign,actgid->ale_111_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 1x1x1 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->ale_8_111_name,sign,
+         sign,actgid->ale_8_111_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
    }
-   if (actgid->is_ale_222)
+
+   if (actgid->is_ale_8_222)
    {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 2x2x2 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
-                                                               sign,actgid->ale_222_name,sign,
-                                                               sign,actgid->ale_222_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 2x2x2 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->ale_8_222_name,sign,
+         sign,actgid->ale_8_222_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
    }
+
+   if (actgid->is_ale_8_333)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 3x3x3 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->ale_8_333_name,sign,
+         sign,actgid->ale_8_333_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_ale_20_111)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 1x1x1 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->ale_20_111_name,sign,
+         sign,actgid->ale_20_111_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_ale_20_222)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 2x2x2 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->ale_20_222_name,sign,
+         sign,actgid->ale_20_222_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_ale_20_333)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s ALE 3x3x3 GP\n",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s%cELEMTYPE Hexahedra %c%s%c\n",
+         sign,actgid->ale_20_333_name,sign,
+         sign,actgid->ale_20_333_name,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+
    if (actgid->is_ale_tet_1)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -993,48 +1309,122 @@ for (i=0; i<genprob.numfld; i++)
 }
 if (!actgid) dserror("Cannot find correct field");
 /*----------------------------------------------------------------------*/
-if (actgid->is_shell8_22)
+
+
+if (actgid->is_shell8_4_22)
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_22_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
-                                                                               sign,actgid->shell8_22_name,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[0].numele; i++)
-   {
-      actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-#if 1
-      for (j=1; j<4; j++)/* quadrilateral version */
-#endif
-#if 0
-      for (j=1; j<8; j++)/* hexahedra version */
-#endif
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_4_22_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->shell8_4_22_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<4; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  }
+  fprintf(out,"END VALUES\n");
 }
 
-if (actgid->is_shell8_33)
+if (actgid->is_shell8_4_33)
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_33_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
-                                                                               sign,actgid->shell8_33_name,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[0].numele; i++)
-   {
-      actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<9; j++)
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_4_33_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->shell8_4_33_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<9; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  }
+  fprintf(out,"END VALUES\n");
 }
+
+if (actgid->is_shell8_8_22)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_8_22_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->shell8_8_22_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_shell8 || actele->numnp != 8) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<4; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_shell8_8_33)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_8_33_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->shell8_8_33_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_shell8 || actele->numnp != 8) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<9; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_shell8_9_22)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_9_22_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->shell8_9_22_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<4; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_shell8_9_33)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_9_33_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->shell8_9_33_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<9; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
 
 
 
@@ -1158,6 +1548,9 @@ if (actgid->is_shell9_9_33)
 }
 #endif /*D_SHELL9*/
 
+
+
+
 if (actgid->is_brick1_222)
 {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1238,44 +1631,83 @@ if (actgid->is_fluid3_333)
 }
 
 
+
+
 #ifdef D_FLUID3_F
-if (actgid->is_f3f_222)
+if (actgid->is_f3f_8_222)
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_222_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
-                                                                               sign,actgid->f3f_222_name,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[0].numele; i++)
-   {
-      actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_fluid3_fast || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<8; j++)
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_8_222_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->f3f_8_222_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_fluid3_fast || actele->numnp != 8) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<8; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  }
+  fprintf(out,"END VALUES\n");
 }
 
-
-if (actgid->is_f3f_333)
+if (actgid->is_f3f_8_333)
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_333_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
-                                                                               sign,actgid->f3f_333_name,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[0].numele; i++)
-   {
-      actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_fluid3_fast || (actele->numnp != 20 || actele->numnp != 27)) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<27; j++)
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_8_333_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->f3f_8_333_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_fluid3_fast || actele->numnp != 8) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<27; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_f3f_20_222)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_20_222_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->f3f_20_222_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_fluid3_fast || actele->numnp != 20) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<8; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_f3f_20_333)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_20_333_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->f3f_20_333_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_fluid3_fast || actele->numnp != 20) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<27; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
 }
 #endif
 
@@ -1360,43 +1792,114 @@ if (actgid->is_ale_tri_3)
 }
 
 
-if (actgid->is_ale_111)
+if (actgid->is_ale_8_111)
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_111_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
-                                                                               sign,actgid->ale_111_name,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[0].numele; i++)
-   {
-      actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_8_111_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->ale_8_111_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
 }
 
-
-if (actgid->is_ale_222)
+if (actgid->is_ale_8_222)
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_222_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
-                                                                               sign,actgid->ale_222_name,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[0].numele; i++)
-   {
-      actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<8; j++)
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_8_222_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->ale_8_222_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<8; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_ale_8_333)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_8_333_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->ale_8_333_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<27; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_ale_20_111)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_20_111_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->ale_20_111_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 20) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_ale_20_222)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_20_222_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->ale_20_222_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 20) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<8; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_ale_20_333)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_20_333_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+      sign,actgid->ale_20_333_name,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    actele = &(actfield->dis[0].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 20) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<27; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
 }
 
 
@@ -1587,6 +2090,11 @@ return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_domains */
 
+
+
+
+
+
 /*----------------------------------------------------------------------*
  |  write the domain numbers to GiD as gausspointvalues     m.gee 12/01 |
  *----------------------------------------------------------------------*/
@@ -1763,6 +2271,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
    genprob.ndim = 3;
 #endif
 #endif
+
+
+
 #ifdef D_SHELL9
    /*if shell9, the displacement have to be written in 3 components */
    /*NOTE: only first element is tested, as it is assumed that there
@@ -1802,6 +2313,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
      break;
    }
    fprintf(out,"VALUES\n");
+
+
+
 #ifdef D_SHELL8
 #if 0 /* this is hexahedra output */
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
@@ -1831,6 +2345,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
    else
 #endif
 #endif
+
+
+
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
@@ -1856,13 +2373,117 @@ if (strncmp(string,"displacement",stringlenght)==0)
         break;
       }
    }
+
+
+
+#ifdef SPLIT_HEX20
+   /* write solutions for additional nodes */
+   for (j=0; j<actfield->dis[0].numele; j++)
+   {
+     INT l;
+     INT eleid,nodebase;
+     DOUBLE x[3];
+     actele = &(actfield->dis[0].element[j]);
+
+
+     if ( !(actele->eltyp == el_ale3 || actele->eltyp == el_fluid3_fast)
+         || actele->numnp !=20) continue;
+
+
+     eleid = actele->Id+1;
+     nodebase = eleid * NODESHIFT_HEX20;
+
+     /* node 01 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[ 8]->sol.a.da[place][l] + actele->node[ 9]->sol.a.da[place][l]
+                  + actele->node[10]->sol.a.da[place][l] + actele->node[11]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 1,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 02 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[16]->sol.a.da[place][l] + actele->node[17]->sol.a.da[place][l]
+                  + actele->node[18]->sol.a.da[place][l] + actele->node[19]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 2,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 03 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[ 8]->sol.a.da[place][l] + actele->node[13]->sol.a.da[place][l]
+                  + actele->node[16]->sol.a.da[place][l] + actele->node[12]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 3,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 04 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[ 9]->sol.a.da[place][l] + actele->node[14]->sol.a.da[place][l]
+                  + actele->node[17]->sol.a.da[place][l] + actele->node[13]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 4,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 05 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[10]->sol.a.da[place][l] + actele->node[14]->sol.a.da[place][l]
+                  + actele->node[18]->sol.a.da[place][l] + actele->node[15]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 5,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 06 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[11]->sol.a.da[place][l] + actele->node[15]->sol.a.da[place][l]
+                  + actele->node[19]->sol.a.da[place][l] + actele->node[12]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 6,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 07 */
+     for (l=0;l<3;l++)
+       x[l] = 0.0833333333
+           *(actele->node[ 8]->sol.a.da[place][l] +actele->node[ 9]->sol.a.da[place][l]
+           + actele->node[10]->sol.a.da[place][l] +actele->node[11]->sol.a.da[place][l]
+           + actele->node[12]->sol.a.da[place][l] +actele->node[13]->sol.a.da[place][l]
+           + actele->node[14]->sol.a.da[place][l] +actele->node[15]->sol.a.da[place][l]
+           + actele->node[16]->sol.a.da[place][l] +actele->node[17]->sol.a.da[place][l]
+           + actele->node[18]->sol.a.da[place][l] +actele->node[19]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 7,
+         x[0],
+         x[1],
+         x[2]);
+
+   }  /* for (j=0; j<actfield->dis[0].numele; j++) */
+#endif
+
+
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"displacement",stringlenght)==0) */
+
+
+
 
 /*-> for shell9*/
 #ifdef D_SHELL9
    next:
 #endif /*D_SHELL9*/
+
+
 
 /*============================================ result type is contact */
 #ifdef D_CONTACT
@@ -1965,6 +2586,10 @@ if (strncmp(string,"contact",stringlenght)==0)
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"contact",stringlenght)==0) */
 #endif
+
+
+
+
 /*========================================= result type is eigenmodes */
 if (strncmp(string,"eigenmodes",stringlenght)==0)
 {
@@ -2011,7 +2636,10 @@ for (j=0; j<place; j++)
    fprintf(out,"END VALUES\n");
 }
 } /* end of (strncmp(string,"eigenmodes",stringlenght)==0) */
-/*======================================================================*/
+
+
+
+
 /*=============================================== result type is stress */
 if (strncmp(string,"stress",stringlenght)==0)
 {
@@ -2705,12 +3333,12 @@ if (strncmp(string,"stress",stringlenght)==0)
 
 #ifdef D_FLUID3_F
    /* bricks have 6 stress - use 3D matrix */
-   if (actgid->is_f3f_222)
+   if (actgid->is_f3f_8_222)
    {
-     resulttype                             = "MATRIX";
-     resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-     gpset             = actgid->f3f_222_name;
-     rangetable        = actgid->standardrangetable;
+     resulttype       = "MATRIX";
+     resultplace      = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset            = actgid->f3f_8_222_name;
+     rangetable       = actgid->standardrangetable;
 
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
@@ -2724,31 +3352,74 @@ if (strncmp(string,"stress",stringlenght)==0)
      fprintf(out,"VALUES\n");
      f3f_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
-
    }
 
-   if (actgid->is_f3f_333)
+   if (actgid->is_f3f_8_333)
    {
-     resulttype                             = "MATRIX";
-     resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-     gpset             = actgid->f3f_333_name;
-     rangetable        = actgid->standardrangetable;
-
+     resulttype       = "MATRIX";
+     resultplace      = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset            = actgid->f3f_8_333_name;
+     rangetable       = actgid->standardrangetable;
 
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
      fprintf(out,"# TIME %18.5E \n",time);
      fprintf(out,"# STEP %6d    \n",step);
      fprintf(out,"#-------------------------------------------------------------------------------\n");
-     fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+     fprintf(out,"RESULT %cfluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
          sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
      fprintf(out,"VALUES\n");
      f3f_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
-
    }
+
+   if (actgid->is_f3f_20_222)
+   {
+     resulttype       = "MATRIX";
+     resultplace      = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset            = actgid->f3f_20_222_name;
+     rangetable       = actgid->standardrangetable;
+
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+     fprintf(out,"# TIME %18.5E \n",time);
+     fprintf(out,"# STEP %6d    \n",step);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"RESULT %cfluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+         sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
+     fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+     fprintf(out,"VALUES\n");
+     f3f_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
+     fprintf(out,"END VALUES\n");
+   }
+
+   if (actgid->is_f3f_20_333)
+   {
+     resulttype       = "MATRIX";
+     resultplace      = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset            = actgid->f3f_20_333_name;
+     rangetable       = actgid->standardrangetable;
+
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+     fprintf(out,"# TIME %18.5E \n",time);
+     fprintf(out,"# STEP %6d    \n",step);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"RESULT %cfluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+         sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
+     fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+     fprintf(out,"VALUES\n");
+     f3f_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
+     fprintf(out,"END VALUES\n");
+   }
+
+
+
+
 #endif
 
 #ifdef D_AXISHELL
@@ -2856,14 +3527,20 @@ if (strncmp(string,"stress",stringlenght)==0)
    {
     dserror("stress output for 3-noded ale not yet impl.");
    }
-   if (actgid->is_ale_111)
+
+   if (actgid->is_ale_8_111 ||
+       actgid->is_ale_8_222 ||
+       actgid->is_ale_8_333)
    {
     dserror("stress output for 8-noded ale not yet impl.");
    }
-   if (actgid->is_ale_222)
+   if (actgid->is_ale_20_111 ||
+       actgid->is_ale_20_222 ||
+       actgid->is_ale_20_333)
    {
-    dserror("stress output for 8-noded ale not yet impl.");
+    dserror("stress output for 20-noded ale not yet impl.");
    }
+
    if (actgid->is_ale_tet_1)
    {
     dserror("stress output for 4-noded ale not yet impl.");
@@ -3419,6 +4096,10 @@ if (strncmp(string,"stress",stringlenght)==0)
 #endif
 
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
+
+
+
+
 /*========================================= result type is velocity */
 if (strncmp(string,"velocity",stringlenght)==0)
 {
@@ -3491,8 +4172,110 @@ if (strncmp(string,"velocity",stringlenght)==0)
         break;
       }
    }
+
+
+#ifdef SPLIT_HEX20
+   /* write solutions for additional nodes */
+   for (j=0; j<actfield->dis[0].numele; j++)
+   {
+     INT l;
+     INT eleid,nodebase;
+     DOUBLE x[3];
+     actele = &(actfield->dis[0].element[j]);
+
+
+     if ( !(actele->eltyp == el_ale3 || actele->eltyp == el_fluid3_fast)
+         || actele->numnp !=20) continue;
+
+
+     eleid = actele->Id+1;
+     nodebase = eleid * NODESHIFT_HEX20;
+
+     /* node 01 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[ 8]->sol.a.da[place][l] + actele->node[ 9]->sol.a.da[place][l]
+                  + actele->node[10]->sol.a.da[place][l] + actele->node[11]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 1,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 02 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[16]->sol.a.da[place][l] + actele->node[17]->sol.a.da[place][l]
+                  + actele->node[18]->sol.a.da[place][l] + actele->node[19]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 2,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 03 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[ 8]->sol.a.da[place][l] + actele->node[13]->sol.a.da[place][l]
+                  + actele->node[16]->sol.a.da[place][l] + actele->node[12]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 3,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 04 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[ 9]->sol.a.da[place][l] + actele->node[14]->sol.a.da[place][l]
+                  + actele->node[17]->sol.a.da[place][l] + actele->node[13]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 4,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 05 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[10]->sol.a.da[place][l] + actele->node[14]->sol.a.da[place][l]
+                  + actele->node[18]->sol.a.da[place][l] + actele->node[15]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 5,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 06 */
+     for (l=0;l<3;l++)
+       x[l] = 0.25*(actele->node[11]->sol.a.da[place][l] + actele->node[15]->sol.a.da[place][l]
+                  + actele->node[19]->sol.a.da[place][l] + actele->node[12]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 6,
+         x[0],
+         x[1],
+         x[2]);
+
+     /* node 07 */
+     for (l=0;l<3;l++)
+       x[l] = 0.0833333333
+           *(actele->node[ 8]->sol.a.da[place][l] +actele->node[ 9]->sol.a.da[place][l]
+           + actele->node[10]->sol.a.da[place][l] +actele->node[11]->sol.a.da[place][l]
+           + actele->node[12]->sol.a.da[place][l] +actele->node[13]->sol.a.da[place][l]
+           + actele->node[14]->sol.a.da[place][l] +actele->node[15]->sol.a.da[place][l]
+           + actele->node[16]->sol.a.da[place][l] +actele->node[17]->sol.a.da[place][l]
+           + actele->node[18]->sol.a.da[place][l] +actele->node[19]->sol.a.da[place][l] );
+     fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+         nodebase + 7,
+         x[0],
+         x[1],
+         x[2]);
+
+   }  /* for (j=0; j<actfield->dis[0].numele; j++) */
+#endif
+
+
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"velocity",stringlenght)==0) */
+
+
+
+
 /*========================================= result type is pressure */
 if (strncmp(string,"pressure",stringlenght)==0)
 {
@@ -3559,6 +4342,10 @@ if (strncmp(string,"pressure",stringlenght)==0)
    }
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"pressure",stringlenght)==0) */
+
+
+
+
 /*========================================= result type is thickness */
 #ifdef D_AXISHELL
 if (strncmp(string,"thickness",stringlenght)==0)
@@ -3608,7 +4395,11 @@ if (strncmp(string,"thickness",stringlenght)==0)
   }
 } /* end of (strncmp(string,"thickness",stringlenght)==0) */
 #endif
-/*========================================= result type is thickness */
+
+
+
+
+/*========================================= result type is axi-loads */
 #ifdef D_AXISHELL
 if (strncmp(string,"axi_loads",stringlenght)==0)
 {
@@ -3691,6 +4482,12 @@ return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_sol */
 
+
+
+
+
+
+
 #ifdef D_MLSTRUCT
 /*----------------------------------------------------------------------*
  |  init output of multiscale-submesh-results for GID       ah 06/04    |
@@ -3739,30 +4536,47 @@ fprintf(out," -1000000.0 -  1000000.0 : %cnormal%c\n",sign,sign);
 fprintf(out,"  1000000.0 -            : %cvery large%c\n",sign,sign);
 fprintf(out,"END RESULTRANGESTABLE\n");
 /*--------------------------- find and set meshes and gausspointsets */
-actsmgid->is_shell8_22 = 0;
-actsmgid->is_shell8_33 = 0;
+actsmgid->is_shell8_4_22 = 0;
+actsmgid->is_shell8_4_33 = 0;
+actsmgid->is_shell8_8_22 = 0;
+actsmgid->is_shell8_8_33 = 0;
+actsmgid->is_shell8_9_22 = 0;
+actsmgid->is_shell8_9_33 = 0;
+
 actsmgid->is_shell9_4_22 = 0;
 actsmgid->is_shell9_4_33 = 0;
 actsmgid->is_shell9_8_22 = 0;
 actsmgid->is_shell9_8_33 = 0;
 actsmgid->is_shell9_9_22 = 0;
 actsmgid->is_shell9_9_33 = 0;
-actsmgid->is_brick1_222= 0;
-actsmgid->is_brick1_333= 0;
-actsmgid->is_fluid2_22 = 0;
-actsmgid->is_fluid2_33 = 0;
-actsmgid->is_fluid2_3 = 0;
-actsmgid->is_fluid2_6 = 0;
+actsmgid->is_brick1_222  = 0;
+actsmgid->is_brick1_333  = 0;
+actsmgid->is_fluid2_22   = 0;
+actsmgid->is_fluid2_33   = 0;
+actsmgid->is_fluid2_3    = 0;
+actsmgid->is_fluid2_6    = 0;
 actsmgid->is_fluid2_pro_22 = 0;
 actsmgid->is_fluid2_pro_33 = 0;
-actsmgid->is_fluid3_222= 0;
-actsmgid->is_fluid3_333= 0;
-actsmgid->is_ale_11    = 0;
-actsmgid->is_ale_22    = 0;
-actsmgid->is_ale_tri_1 = 0;
-actsmgid->is_ale_tri_3 = 0;
-actsmgid->is_ale_111   = 0;
-actsmgid->is_ale_222   = 0;
+actsmgid->is_fluid3_222  = 0;
+actsmgid->is_fluid3_333  = 0;
+
+actsmgid->is_f3f_8_222   = 0;
+actsmgid->is_f3f_8_333   = 0;
+actsmgid->is_f3f_20_222  = 0;
+actsmgid->is_f3f_20_333  = 0;
+
+actsmgid->is_ale_11      = 0;
+actsmgid->is_ale_22      = 0;
+actsmgid->is_ale_tri_1   = 0;
+actsmgid->is_ale_tri_3   = 0;
+
+actsmgid->is_ale_8_111   = 0;
+actsmgid->is_ale_8_222   = 0;
+actsmgid->is_ale_8_333   = 0;
+actsmgid->is_ale_20_111  = 0;
+actsmgid->is_ale_20_222  = 0;
+actsmgid->is_ale_20_333  = 0;
+
 actsmgid->is_wall1_22  = 0;
 actsmgid->is_wall1_33  = 0;
 actsmgid->is_beam3_21  = 0;

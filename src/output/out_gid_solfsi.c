@@ -91,10 +91,14 @@ extern struct _CURVE *curve;
   \return void
 
   ------------------------------------------------------------------------*/
-void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
+void out_gid_sol_fsi(
+    FIELD       *fluidfield,
+    FIELD       *structfield)
 {
+
 #ifndef NO_TEXT_OUTPUT
-  INT           i;
+
+  INT           i,j;
 
   static FLUID_DYNAMIC  *fdyn;
   static FSI_DYNAMIC    *fsidyn;
@@ -108,6 +112,9 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   NODE         *actnode;
   NODE         *actanode;
 
+  ELEMENT      *actele;
+  INT           place;
+
   char         *resulttype;
   char         *resultplace;
   char         *rangetable;
@@ -120,12 +127,14 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
 #ifdef DEBUG
   dstrc_enter("out_gid_sol_fsi");
 #endif
-  /*----------------------------------------------------------------------*/
+
+
   if (structfield!=NULL)
-  sdyn= alldyn[genprob.numsf].sdyn;
+    sdyn= alldyn[genprob.numsf].sdyn;
   fdyn= alldyn[genprob.numff].fdyn;
   fsidyn= alldyn[genprob.numfld].fsidyn;
-  /*----------------------------------------------------------------------*/
+
+
 #ifdef PARALLEL
   actintraf    = &(par.intra[genprob.numff]);
   if (structfield!=NULL)
@@ -136,27 +145,30 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   actintraf->intra_fieldtyp = fluid;
   actintraf->intra_rank     = 0;
   actintraf->intra_nprocs   = 1;
+
   if (structfield!=NULL)
   {
-  actintras   = (INTRA*)CCACALLOC(1,sizeof(INTRA));
-  if (!actintras) dserror("Allocation of INTRA failed");
-  actintras->intra_fieldtyp = structure;
-  actintras->intra_rank     = 0;
-  actintras->intra_nprocs   = 1;
+    actintras   = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+    if (!actintras) dserror("Allocation of INTRA failed");
+    actintras->intra_fieldtyp = structure;
+    actintras->intra_rank     = 0;
+    actintras->intra_nprocs   = 1;
   }
 #endif
 
   if (structfield!=NULL)
-  if ( sdyn->step != fdyn->step)
-    dserror("Something is wrong!!");
+    if ( sdyn->step != fdyn->step)
+      dserror("Something is wrong!!");
 
   fprintf(out,"#-------------------------------------------------------------------------------\n");
   fprintf(out,"# Converged Solution of timestep %d\n",fdyn->step);
   fprintf(out,"#-------------------------------------------------------------------------------\n");
 
-  /* ------------- write displacements of structure field */
-  /*----------------------------------------------------------------------*/
-  if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
+
+
+  /* write header for displacements of structure & ale fields */
+  /*----------------------------------------------------------*/
+  if (ioflags.struct_disp == 1 || ioflags.ale_disp == 1)
   {
     resulttype        = "VECTOR";
     resultplace       = "ONNODES";
@@ -181,7 +193,8 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
         sign,rangetable,sign
         );
-    /*-------------------------------------------------------------------*/
+
+
     switch (genprob.ndim)
     {
       case 3:
@@ -201,9 +214,14 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
         dserror("Unknown numer of dimensions");
         break;
     }
-    /*-------------------------------------------------------------------*/
+
+
     fprintf(out,"VALUES\n");
   }
+
+
+  /* write values for displ. of structure field */
+  /*--------------------------------------------*/
   if (ioflags.struct_disp==1 && structfield!=NULL)
   {
     for (i=0; i<structfield->dis[0].numnp; i++)
@@ -231,11 +249,13 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
           break;
       }
     }
-
-    /* write displacements of fluid field */
-    /*-------------------------------------------------------------------*/
   }
-  if (ioflags.fluid_sol==1)
+
+
+
+  /* write values for displacements of fluid (ale) field */
+  /*-----------------------------------------------------*/
+  if (ioflags.ale_disp == 1)
   {
     for (i=0; i<fluidfield->dis[0].numnp; i++)
     {
@@ -283,16 +303,145 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
         }
       }
     }
+
+
+#ifdef SPLIT_HEX20
+    /* write solutions for additional nodes */
+    for (j=0; j<fluidfield->dis[0].numele; j++)
+    {
+      INT l;
+      INT eleid,nodebase;
+      DOUBLE x[3];
+      actele = &(fluidfield->dis[0].element[j]);
+      place  = fsidyn->actpos;
+
+      /*
+      ->gnode->mfcpnode[genprob.numaf]
+      */
+
+      if ( !(actele->eltyp == el_ale3 || actele->eltyp == el_fluid3_fast)
+          || actele->numnp !=20) continue;
+
+
+      eleid = actele->Id+1;
+      nodebase = eleid * 1000;
+
+      /* node 01 */
+      for (l=0;l<3;l++)
+        x[l] = 0.25*(actele->node[ 8]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[ 9]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[10]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[11]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l] );
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+          nodebase + 1,
+          x[0],
+          x[1],
+          x[2]);
+
+      /* node 02 */
+      for (l=0;l<3;l++)
+        x[l] = 0.25*(actele->node[16]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[17]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[18]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[19]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l] );
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+          nodebase + 2,
+          x[0],
+          x[1],
+          x[2]);
+
+      /* node 03 */
+      for (l=0;l<3;l++)
+        x[l] = 0.25*(actele->node[ 8]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[13]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[16]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[12]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l] );
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+          nodebase + 3,
+          x[0],
+          x[1],
+          x[2]);
+
+      /* node 04 */
+      for (l=0;l<3;l++)
+        x[l] = 0.25*(actele->node[ 9]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[14]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[17]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[13]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l] );
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+          nodebase + 4,
+          x[0],
+          x[1],
+          x[2]);
+
+      /* node 05 */
+      for (l=0;l<3;l++)
+        x[l] = 0.25*(actele->node[10]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[14]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[18]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[15]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l] );
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+          nodebase + 5,
+          x[0],
+          x[1],
+          x[2]);
+
+      /* node 06 */
+      for (l=0;l<3;l++)
+        x[l] = 0.25*(actele->node[11]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[15]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[19]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+            + actele->node[12]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l] );
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+          nodebase + 6,
+          x[0],
+          x[1],
+          x[2]);
+
+      /* node 07 */
+      for (l=0;l<3;l++)
+        x[l] = 0.0833333333
+          *(actele->node[ 8]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[ 9]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[10]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[11]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[12]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[13]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[14]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[15]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[16]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[17]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[18]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l]
+              + actele->node[19]->gnode->mfcpnode[genprob.numaf]->sol.a.da[place][l] );
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+          nodebase + 7,
+          x[0],
+          x[1],
+          x[2]);
+
+    }  /* for (j=0; j<actfield->dis[0].numele; j++) */
+#endif
+
+
+
+
+
+
   }
-  if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
+
+
+  if (ioflags.struct_disp == 1 || ioflags.ale_disp == 1)
   {
     fprintf(out,"END VALUES\n");
   }
-  /*-------------------------------------------------------------------*/
+
+
+
+
+  /* write fsi loads of structure field */
+  /*------------------------------------*/
+  /*   THIS DOES NOT WORK UP TO NOW!!!  */
 #if 0
-  /* ------------- write fsi loads of structure field
-   THIS DOES NOT WORK UP TO NOW!!!
-  /-----------------------------------------------------------------------*/
   if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
   {
     resulttype        = "VECTOR";
@@ -375,7 +524,10 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   }
 #endif
 
+
+
   /* write velocities and pressure of fluid field */
+  /*----------------------------------------------*/
   if (ioflags.fluid_sol==1)
   {
     out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
@@ -383,7 +535,10 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   }
 
 
+
+
   /* write velocities, accelerations and stresses of structure field */
+  /*-----------------------------------------------------------------*/
   if (ioflags.struct_disp==1 && structfield!=NULL)
   {
     out_gid_sol("velocities",structfield,actintras,sdyn->step,1,fsidyn->time);
@@ -393,14 +548,22 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     out_gid_sol("stress"      ,structfield,actintras,sdyn->step,0,fsidyn->time);
 
 
-  /*----------------------------------------------------------------------*/
+
   fflush(out);
-  /*----------------------------------------------------------------------*/
+
+
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
+
+
   return;
+
+
 #endif /* NO_TEXT_OUTPUT */
+
+
 } /* end of out_gid_sol_fsi */
 
 #endif

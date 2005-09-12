@@ -24,10 +24,19 @@ typedef struct _GIDSET
      char                      *fieldname;              /* name of the field in characters */
      char                       standardrangetable[18]; /* name of standardrangetable */
 
-     INT                        is_shell8_22;           /* 4-noded shell8 2x2 GP */
-     char                      *shell8_22_name;
-     INT                        is_shell8_33;           /* 8/9-noded shell8 3x3 GP */
-     char                      *shell8_33_name;
+     INT                        is_shell8_4_22;           /* 4-noded shell8 2x2 GP */
+     char                      *shell8_4_22_name;
+     INT                        is_shell8_4_33;           /* 4-noded shell8 3x3 GP */
+     char                      *shell8_4_33_name;
+     INT                        is_shell8_8_22;           /* 8-noded shell8 2x2 GP */
+     char                      *shell8_8_22_name;
+     INT                        is_shell8_8_33;           /* 8-noded shell8 3x3 GP */
+     char                      *shell8_8_33_name;
+     INT                        is_shell8_9_22;           /* 9-noded shell8 2x2 GP */
+     char                      *shell8_9_22_name;
+     INT                        is_shell8_9_33;           /* 9-noded shell8 3x3 GP */
+     char                      *shell8_9_33_name;
+
      INT                        is_shell9_4_22;         /* 4-noded shell9 2x2 GP */
      char                      *shell9_4_22_name;
      INT                        is_shell9_4_33;         /* 4-noded shell9 3x3 GP */
@@ -69,19 +78,33 @@ typedef struct _GIDSET
      INT                        is_fluid3_333;          /* 20/27-noded fluid3 3x3x3 GP */
      char                      *fluid3_333_name;
 
-     INT                        is_f3f_222;             /* 8-noded fluid3_fast 2x2x2 GP */
-     char                      *f3f_222_name;
-     INT                        is_f3f_333;             /* 20/27-noded fluid3_fast 3x3x3 GP */
-     char                      *f3f_333_name;
+     INT                        is_f3f_8_222;             /* 8-noded fluid3_fast 2x2x2 GP */
+     char                      *f3f_8_222_name;
+     INT                        is_f3f_8_333;             /* 8-noded fluid3_fast 3x3x3 GP */
+     char                      *f3f_8_333_name;
+     INT                        is_f3f_20_222;             /* 20-noded fluid3_fast 2x2x2 GP */
+     char                      *f3f_20_222_name;
+     INT                        is_f3f_20_333;             /* 20-noded fluid3_fast 3x3x3 GP */
+     char                      *f3f_20_333_name;
 
      INT                        is_ale_11;              /* 4-noded ale 1x1 GP */
      char                      *ale_11_name;
      INT                        is_ale_22;              /* 4-noded ale 2x2 GP */
      char                      *ale_22_name;
-     INT                        is_ale_111;             /* 8-noded ale 1x1x1 GP */
-     char                      *ale_111_name;
-     INT                        is_ale_222;             /* 8-noded ale 2x2x2 GP */
-     char                      *ale_222_name;
+
+     INT                        is_ale_8_111;             /* 8-noded ale 1x1x1 GP */
+     char                      *ale_8_111_name;
+     INT                        is_ale_8_222;             /* 8-noded ale 2x2x2 GP */
+     char                      *ale_8_222_name;
+     INT                        is_ale_8_333;             /* 8-noded ale 3x3x3 GP */
+     char                      *ale_8_333_name;
+     INT                        is_ale_20_111;             /* 20-noded ale 1x1x1 GP */
+     char                      *ale_20_111_name;
+     INT                        is_ale_20_222;             /* 20-noded ale 2x2x2 GP */
+     char                      *ale_20_222_name;
+     INT                        is_ale_20_333;             /* 20-noded ale 3x3x3 GP */
+     char                      *ale_20_333_name;
+
      INT			is_beam3_21;		/* 2-noded beam3 1 GP */
      char		       *beam3_21_name;
      INT			is_beam3_22;		/* 2-noded beam3 2 GP */
@@ -90,6 +113,7 @@ typedef struct _GIDSET
      char		       *beam3_32_name;
      INT			is_beam3_33;		/* 3-noded beam3 3 GP */
      char		       *beam3_33_name;
+
      INT                        is_ale_tri_1;           /* 3-noded tri ale 1 GP */
      char                      *ale_tri_1_name;
      INT                        is_ale_tri_3;           /* 3-noded tri ale 3 GP */
