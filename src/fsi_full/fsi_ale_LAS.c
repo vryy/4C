@@ -226,7 +226,11 @@ if (ioflags.monitor==1)
 }
 
 /*------------------------------------------- print out results to .out */
-out_sol(actfield,actpart,actintra,adyn->step,actpos);
+if (ioflags.ale_disp==1 && ioflags.output_out==1)
+{
+    out_sol(actfield,actpart,actintra,adyn->step,actpos);
+}
+
 
 break;
 

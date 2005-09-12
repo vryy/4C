@@ -491,8 +491,9 @@ if (outstep==adyn->updevry_disp && ioflags.ale_disp==1 && ioflags.output_out==1)
 {
     outstep=0;
     out_sol(actfield,actpart,actintra,adyn->step,actpos);
-/*    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);*/
 }
+
+
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
 monitoring(actfield,numaf,actpos,adyn->time);
@@ -620,7 +621,7 @@ if (pssstep==0) actpos--;
 
 /*------------------------------------------- print out results to .out */
 if (outstep!=0 && ioflags.ale_disp==1 && ioflags.output_out==1)
-out_sol(actfield,actpart,actintra,adyn->step,actpos);
+  out_sol(actfield,actpart,actintra,adyn->step,actpos);
 
 /*------------------------------------------- print out result to 0.pss */
 if (ioflags.fluid_vis==1 && par.myrank==0)

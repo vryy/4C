@@ -53,6 +53,20 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;
+
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+
 /*!----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -717,6 +731,7 @@ DOUBLE  g;
 DOUBLE  grat=0.0;
 NODE   *actsnode;      /* actual struct node                            */
 static DOUBLE g0norm;  /* norm of first iteration                       */
+FILE           *out = allfiles.out_out;
 
 #ifdef DEBUG
 dstrc_enter("fsi_convcheck");
@@ -831,6 +846,10 @@ break;
 default:
    dserror("parameter out of range: inrmfsi\n");
 }/* end switch (fsidyn->inrmfsi) */
+
+fprintf(out," %10.3E |",grat);
+
+
 }/* end if (par.myrank==0)*/
 
 #ifdef DEBUG

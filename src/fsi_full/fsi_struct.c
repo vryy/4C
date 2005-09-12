@@ -165,6 +165,7 @@ static CONTAINER       container;        /* contains variables defined in contai
 
 static FSI_DYNAMIC       *fsidyn;
 static STRUCT_DYNAMIC    *sdyn;
+FILE           *out = allfiles.out_out;
 
 #ifdef BINIO
 static BIN_OUT_FIELD out_context;
@@ -476,11 +477,15 @@ init_bin_out_field(&out_context,
                    actfield, actpart, actintra, 0);
 #endif
 
+
+
+#ifdef PARALLEL
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.output_gid==1 && par.myrank==0)
 {
   out_gid_domains(actfield);
 }
+#endif
 
 /*--------------------------------------------------- check for restart */
 if (restart)
@@ -984,6 +989,10 @@ if (par.myrank==0)
              itnum+1);
    printf("---------------------------------------------------------------- \n");
    printf("\n");
+
+   fprintf(out," %3d |",itnum+1);
+
+
 }
 if (fsidyn->ifsi>=4)
 break;
@@ -1126,15 +1135,18 @@ case 98:
 #ifdef BINIO
   if (ioflags.output_bin)
   {
-    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
 
-    /* This was not implemented before. I doubt it works. */
-    if (ioflags.struct_disp==1) {
+    if (ioflags.struct_disp==1)
+    {
+      out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
+
+      /* This was not implemented before. I doubt it works. */
       out_results(&out_context, sdyn->time, sdyn->step, 1, OUTPUT_VELOCITY);
       out_results(&out_context, sdyn->time, sdyn->step, 2, OUTPUT_ACCELERATION);
     }
 
-    if (ioflags.struct_stress==1) {
+    if (ioflags.struct_stress==1)
+    {
       out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
     }
   }

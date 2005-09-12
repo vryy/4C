@@ -1956,7 +1956,6 @@ fluid_norm(actfield,numeq_total,&vrat,&prat,ipos);
 /*------------------------------------ output to the screen and to .out */
 if (par.myrank==0)
 {
-   fprintf(out,"---------------------------------------------------\n");
    switch (fdyn->stnorm)
    {
    case fnst_Linf:
@@ -1976,9 +1975,13 @@ if (par.myrank==0)
    default:
       dserror("Norm for steady state check unknwon!\n");
    } /* end switch (fdyn->stnorm)  */
+
    printf("         velocities: %10.3E	   pressures:   %10.3E  \n",vrat,prat);
-   fprintf(out," - steady state check:    %10.3E   %10.3E |\n",vrat,prat);
+   fprintf(out," %10.3E | %10.3E |",vrat,prat);
+
 } /* endif (par.myrank) */
+
+
 /* check if the ratios are smaller than the given tolerance and set flag */
 if (vrat<fdyn->sttol && prat<fdyn->sttol)
 {
@@ -1988,11 +1991,10 @@ if (vrat<fdyn->sttol && prat<fdyn->sttol)
       printf("\n");
       printf("    >>>>>> STEADY STATE REACHED <<<<<< \n");
       printf("\n");
-      fprintf(out,"    >>>>>> STEADY STATE REACHED <<<<<<\n");
+      fprintf(out,">>> STEADY STATE REACHED <<<");
    }
 }
 if (par.myrank==0)
-  fprintf(out,"---------------------------------------------------\n");
 
 /*----------------------------------------------------------------------*/
 end:
@@ -2078,9 +2080,9 @@ if (fdyn->itnorm!=fncc_no)
       printf("---------------------------------------------------------------- \n");
       printf("|          >>>>>> not converged in itemax steps!               | \n");
       printf("---------------------------------------------------------------- \n");
-      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n",
-          fdyn->step,fdyn->acttime,itnum,vrat,prat);
-      fprintf(out,"not converged in itemax steps\n");
+      fprintf(out," %3d | %10.3E | %10.3E |",
+          itnum,vrat,prat);
+      fprintf(out," not converged in itemax steps\n");
    }
    else if (converged>0 && par.myrank==0)
    {
@@ -2089,8 +2091,8 @@ if (fdyn->itnorm!=fncc_no)
       else
       printf("---------------------------------------------------------------- \n");
       printf("\n");
-      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n",
-          fdyn->step,fdyn->acttime,itnum,vrat,prat);
+      fprintf(out," %3d | %10.3E | %10.3E |",
+          itnum,vrat,prat);
    }
 } /* endif (fdyn->itchk) */
 else

@@ -322,7 +322,12 @@ if (ioflags.monitor==1)
 }
 
 /*------------------------------------------- print out results to .out */
-out_sol(actfield,actpart,actintra,adyn->step,actpos);
+if (ioflags.ale_disp==1 && ioflags.output_out==1)
+{
+    out_sol(actfield,actpart,actintra,adyn->step,actpos);
+}
+
+
 #ifdef PARALLEL
 /*if (ioflags.ale_disp==1 && par.myrank==0)
 out_gid_domains(actfield);*/
@@ -550,7 +555,9 @@ break;
  *======================================================================*/
 case 98:
 #ifdef BINIO
-  out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+  if (ioflags.output_bin)
+    if (ioflags.ale_disp==1)
+      out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
 #endif
   break;
 

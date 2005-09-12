@@ -195,6 +195,10 @@ DOUBLE         *frhs;	            /* iteration - RHS                  */
 
 CONTAINER       container;          /* contains variables defined in container.h */
 FILE           *out = allfiles.out_out;
+
+FILE           *sol = allfiles.out_sol;
+
+
 ARRAY_POSITION *ipos;
 
 #ifdef BINIO
@@ -283,19 +287,130 @@ if (par.myrank==0)
 printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
 if (par.myrank==0) printf("\n\n");
 
+
+
+
 /* write general data to .out */
 if (par.myrank==0)
 {
-  fprintf(out,"max. values for:\n");
-  fprintf(out," step |    time    | ite|   ite tol  | steady tol |\n");
-  fprintf(out,"---------------------------------------------------\n");
-  fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n",
+  fprintf(out,"max. values:\n");
+  fprintf(out,"============\n");
+
+
+  /* table head */
+  fprintf(out," time |            |fluid| fluid error in ");
+
+  switch(fdyn->itnorm)
+  {
+    case fncc_Linf: /* infinity norm */
+      fprintf(out,"inf-norm");
+      break;
+    case fncc_L1: /* L_1 norm */
+      fprintf(out,"L_1-norm");
+      break;
+    case fncc_L2: /* L_2 norm */
+      fprintf(out,"L_2-norm");
+      break;
+    default:
+      dserror("Norm for nonlin. convergence check unknown!!\n");
+  }  /* switch(fdyn->itnorm) */
+
+  fprintf(out," | steady state in ");
+
+  switch(fdyn->stnorm)
+  {
+    case fnst_Linf: /* infinity norm */
+      fprintf(out,"inf-norm|");
+      break;
+    case fnst_L1: /* L_1 norm */
+      fprintf(out,"L_1-norm|");
+      break;
+    case fnst_L2: /* L_2 norm */
+      fprintf(out,"L_2-norm|");
+      break;
+    default:
+      dserror("Norm for nonlin. convergence check unknown!!\n");
+  }  /* switch(fdyn->itnorm) */
+  fprintf(out,"    total   |\n");
+
+  fprintf(out," step |  sim. time | ite |     vel.   |     pre.   |     vel.   |     pre.   | calc. time |\n");
+  fprintf(out,"-------------------------------------------------------------------------------------------\n");
+
+
+
+  fprintf(out,"%5d | %10.3E | %3d |        %10.3E       |        %10.3E       |            |\n",
       fdyn->nstep,fdyn->maxtime,fdyn->itemax,fdyn->ittol,fdyn->sttol);
-  fprintf(out,"---------------------------------------------------\n");
-  fprintf(out,"\n");
-  fprintf(out," step |    time    | ite| vel. error | pre. error |\n");
-  fprintf(out,"---------------------------------------------------\n");
-}
+  fprintf(out,"-------------------------------------------------------------------------------------------\n");
+
+
+
+  fprintf(out,"\n\ntimeloop:  ");
+
+  switch(fdyn->iop)
+  {
+    case 1:
+      fprintf(out,"Generalised Alpha\n");
+      break;
+    case 4:
+      fprintf(out,"One-Step-Theta\n");
+      break;
+    case 7:
+      fprintf(out,"BDF2\n");
+      break;
+    default:
+      dserror("parameter out of range: IOP\n");
+  }  /* switch(fdyn->iop) */
+
+  fprintf(out,"=========\n");
+
+
+  /* table head */
+  fprintf(out," time |            |fluid| fluid error in ");
+
+  switch(fdyn->itnorm)
+  {
+    case fncc_Linf: /* infinity norm */
+      fprintf(out,"inf-norm");
+      break;
+    case fncc_L1: /* L_1 norm */
+      fprintf(out,"L_1-norm");
+      break;
+    case fncc_L2: /* L_2 norm */
+      fprintf(out,"L_2-norm");
+      break;
+    default:
+      dserror("Norm for nonlin. convergence check unknown!!\n");
+  }  /* switch(fdyn->itnorm) */
+
+  fprintf(out," | steady state in ");
+
+  switch(fdyn->stnorm)
+  {
+    case fnst_Linf: /* infinity norm */
+      fprintf(out,"inf-norm|");
+      break;
+    case fnst_L1: /* L_1 norm */
+      fprintf(out,"L_1-norm|");
+      break;
+    case fnst_L2: /* L_2 norm */
+      fprintf(out,"L_2-norm|");
+      break;
+    default:
+      dserror("Norm for nonlin. convergence check unknown!!\n");
+  }  /* switch(fdyn->itnorm) */
+  fprintf(out,"    total   |\n");
+
+  fprintf(out," step |  sim. time | ite |     vel.   |     pre.   |     vel.   |     pre.   | calc. time |\n");
+  fprintf(out,"-------------------------------------------------------------------------------------------\n");
+
+  fflush(out);
+
+
+}  /* if (par.myrank==0) */
+
+
+
+
 
 /*---------------------------------------- allocate dist. vectors 'rhs' */
 actsolv->nrhs = 1;
@@ -453,6 +568,9 @@ t2=ds_cputime();
 fdyn->step++;
 iststep++;
 
+if (par.myrank==0)
+  fprintf(out,"%5d | %10.3E |",fdyn->step,fdyn->acttime);
+
 /*------------------------------------------ check (starting) algorithm */
 if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(&nfrastep,0);
 
@@ -523,6 +641,10 @@ inherit_design_dis_neum(&(actfield->dis[0]));
 amzero(&frhs_a);
 
 /*-------------- form incremental matrices, residual and element forces */
+#ifdef PERF
+  perf_begin(81);
+#endif
+
 *action = calc_fluid;
 t1=ds_cputime();
 container.dvec         = NULL;
@@ -536,6 +658,10 @@ calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
 te=ds_cputime()-t1;
 tes+=te;
 
+#ifdef PERF
+  perf_end(81);
+#endif
+
 /*--------------------------------------------------------- add rhs: ---*/
 assemble_vec(actintra,
              &(actsolv->sysarray_typ[actsysarray]),
@@ -545,6 +671,23 @@ assemble_vec(actintra,
              1.0
              );
 /*-------------------------------------------------------- solve system */
+#ifdef PERF
+  perf_begin(80);
+#endif
+
+
+
+#if 0
+  fprintf(sol,"\nval:\n====\n");
+  for (i=0; i<actsolv->sysarray[actsysarray].msr->val.fdim; i++)
+  fprintf(sol,"%12.4e\n",actsolv->sysarray[actsysarray].msr->val.a.dv[i]);
+
+  fprintf(sol,"\nrhs:\n====\n");
+  for (i=0; i<actsolv->rhs[0].vec.fdim; i++)
+  fprintf(sol,"%12.4e\n",actsolv->rhs[0].vec.a.dv[i]);
+#endif
+
+
 init=0;
 t1=ds_cputime();
 solver_control(actsolv, actintra,
@@ -555,6 +698,18 @@ solver_control(actsolv, actintra,
                init);
 ts=ds_cputime()-t1;
 tss+=ts;
+
+
+#if 0
+  fprintf(sol,"\nsol:\n====\n");
+  for (i=0; i<actsolv->sol[0].vec.fdim; i++)
+  fprintf(sol,"%12.4e\n",actsolv->sol[0].vec.a.dv[i]);
+#endif
+
+
+#ifdef PERF
+  perf_end(80);
+#endif
 
 /*-- set flags for stability parameter evaluation and convergence check */
 fdyn->ishape=0;
@@ -652,6 +807,12 @@ if (fdyn->stchk==iststep)
   iststep=0;
   steady = fluid_steadycheck(actfield,ipos,numeq_total);
 }
+else
+{
+  if (par.myrank==0)
+    fprintf(out,"            |            |");
+}
+
 
 /*----------------------------------------------- lift&drag computation */
 if (fdyn->liftdrag==ld_stress || fdyn->liftdrag==ld_nodeforce)
@@ -793,6 +954,14 @@ tt=ds_cputime()-t2;
 tts+=tt;
 printf("PROC  %3d | total time for this time step: %10.3e \n",par.myrank,tt);
 
+
+if (par.myrank==0)
+{
+  fprintf(out,"            |            |");
+  fprintf(out," %10.3E |\n",tt);
+  fflush(out);
+}
+
 dsmemreport();
 
 /*--------------------- check time and number of steps and steady state */
@@ -832,7 +1001,7 @@ printf("PROC  %3d | FIELD FLUID     | total time for time loop           : %10.3
 /* write total cpu-time to .out */
 if (par.myrank==0)
 {
-  fprintf(out,"\n");
+  fprintf(out,"\n\n\n");
   fprintf(out," total time element for calculations: %10.3E \n", tes);
   fprintf(out," total time for solver              : %10.3E \n", tss);
   fprintf(out," total time for time loop           : %10.3E \n", tts);
