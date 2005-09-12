@@ -27,7 +27,7 @@ SPOOLES_LIB=""
 
 # umfpack
 UMFPACK_INC=""
-UMFPACK_LIB=""
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack -lamd"
 
 # fast elements
 LOOPL="-DLOOPL=512"
