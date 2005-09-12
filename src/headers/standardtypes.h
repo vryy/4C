@@ -30,10 +30,6 @@ Maintainer: Malte Neumann
    #include "mpi.h"
 #endif
 /*----------------------------------------------------------------------*
- | check_defines file                                       mn 01/04    |
- *----------------------------------------------------------------------*/
-#include "check_defines.h"
-/*----------------------------------------------------------------------*
  | definitions file                                       m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "definitions.h"
@@ -107,6 +103,10 @@ Maintainer: Malte Neumann
 #include "container.h"
 /*----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+ | check_defines file                                       mn 01/04    |
+ *----------------------------------------------------------------------*/
+#include "check_defines.h"
 
 
 
@@ -156,6 +156,8 @@ FILE             *out_monarea;            /* file-pointer area of fluid  */
 FILE             *out_gemm;               /* file-pointer .gemm file*/
 #endif
 FILE             *out_tur;                /* file-pointer .tur  file     */
+
+FILE             *out_sol;
 
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
 FILE             *gidres;                 /* file pointer .flavia.res    */
@@ -281,6 +283,13 @@ struct _GNODE     *gnode;         /* vector of geometry points */
 struct _GLINE     *gline;         /* vector of geometry lines */
 struct _GSURF     *gsurf;         /* vector of geometry surfaces */
 struct _GVOL      *gvol;          /* vector of geometry volumes */
+
+INT                dismode;       /* type of discretization:
+                                       0 = normal
+                                       1 = created
+                                       2 = only for calculation
+                                   */
+
 } DISCRET;
 
 
@@ -292,43 +301,48 @@ struct _GVOL      *gvol;          /* vector of geometry volumes */
  *----------------------------------------------------------------------*/
 typedef struct _GENPROB
 {
-INT               nele;          /* total number of elements over all fields */
-INT               nnode;         /* total number of nodes over all fields*/
-INT               maxnode;       /* largest node id in the problem */
-INT               nodeshift;     /* shift of node ids for second dis */
-INT               ndim;          /* dimension of problem (2 or 3) */
-INT               nmat;          /* total number of material laws */
-INT               nmat_sm;       /* total number of material laws in submesh */
-INT               numfld;        /* number of fields */
-INT               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
-INT               restart;       /* is restart or not */
-INT               visual;        /* flag for visualise mode or not */
-INT               numsf;         /* actual number of struct-field */
-INT               numff;         /* actual number of fluid field */
-INT               numaf;         /* actual number of ale field */
-INT               numls;         /* actual number of ls field */
-INT               graderw;       /* flag is gradient enhanced material model */
-INT               multisc_struct;/* flag is structural multiscale analysis */
+  enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
+  enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
 
+  INT               numfld;        /* number of fields */
 
-enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
-enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
+  INT               nele;          /* total number of elements over all fields */
+  INT               nnode;         /* total number of nodes over all fields*/
+  INT               maxnode;       /* largest node id in the problem */
+
+  INT               ndim;          /* dimension of problem (2 or 3) */
+  INT               numdf;         /* maximum number of dofs to one node
+                                      (not used, in progress) */
+
+  INT               create_dis;    /* create a second discretization */
+  INT               create_ale;    /* create the ale filed */
+  INT               nodeshift;     /* shift of node ids for second dis */
+
+  INT               nmat;          /* total number of material laws */
+  INT               nmat_sm;       /* total number of material laws in submesh */
+
+  INT               restart;       /* is restart or not */
+  INT               visual;        /* flag for visualise mode or not */
+
+  INT               numsf;         /* actual number of struct-field */
+  INT               numff;         /* actual number of fluid field */
+  INT               numaf;         /* actual number of ale field */
+  INT               numls;         /* actual number of ls field */
+
+  INT               graderw;       /* flag is gradient enhanced material model */
+  INT               multisc_struct;/* flag is structural multiscale analysis */
+
 
 #ifdef RESULTTEST
-  INT             numresults;   /* number of known results waiting to
-                                 * be compared to the calculated ones. */
+  INT             numresults;       /* number of known results waiting to
+                                     * be compared to the calculated ones. */
 #endif
 
-NODE            **nodes;
-INT               ngnode;
-GNODE           **gnodes;
-INT               ngline;
-GLINE           **glines;
-INT               ngsurf;
-GSURF           **gsurfs;
-INT               ngvol;
-GVOL            **gvols;
+  NODE            **nodes;
+
 } GENPROB;
+
+
 
 /*---------------------------------------------------------------------*
  | monotoring informations                                  genk 01/03 |
