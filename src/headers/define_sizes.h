@@ -162,6 +162,13 @@ Maintainer: Malte Neumann
 #endif
 
 /*----------------------------------------------------------------------*
+ | ale3                                                               |
+ *----------------------------------------------------------------------*/
+#ifndef MAXNOD_ALE3
+#define MAXNOD_ALE3      (8) /* max. number of nodes per element */
+#endif
+
+/*----------------------------------------------------------------------*
  | shell8                                                               |
  *----------------------------------------------------------------------*/
 #ifndef MAXNOD_SHELL8
@@ -217,3 +224,17 @@ Maintainer: Malte Neumann
 #ifndef MAXNOD_WALL1
 #define MAXNOD_WALL1     (9)
 #endif
+
+
+/*----------------------------------------------------------------------*
+ | hex20 elemenst                                                      |
+ *----------------------------------------------------------------------*/
+#ifndef NODESHIFT_HEX20
+#define NODESHIFT_HEX20  (10000) /* must be larger than genprob.nnode */
+#endif
+
+#ifndef ELESHIFT_HEX20
+#define ELESHIFT_HEX20  (10000) /* must be larger than genprob.nele */
+#endif
+
+
