@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------------------*/
+/*!
 \file
 \brief read fluid3 element
 
@@ -9,34 +10,57 @@ Maintainer: Steffen Genkinger
             0711 - 685-6127
 </pre>
 
-------------------------------------------------------------------------*/
+ */
+/*-----------------------------------------------------------------------*/
+
+
 /*!
 \addtogroup FLUID3
 *//*! @{ (documentation module open)*/
+
+
 #ifdef D_FLUID3
+
+
 #include "../headers/standardtypes.h"
 #include "fluid3.h"
 #include "fluid3_prototypes.h"
-/*!---------------------------------------------------------------------
-\brief read fluid3 element from input-file
+#include "../ale3/ale3.h"
 
-<pre>                                                         genk 05/02
-</pre>
-\param  *ele	   ELEMENT	   (o)	   actual element
-\return void
-\warning Node Numbers of TET4 are changed compered to the input
-         file: node0=node1; node1=node0;
-         This is necessary, since the GID-TET4 element is defined in
-         a local left-system, which leads to a negative determinant
-         of the Jacobian matrix.
-------------------------------------------------------------------------*/
-void f3inp(ELEMENT *ele,INT counter)
+
+/*----------------------------------------------------------------------*
+  |                                                       m.gee 06/01  |
+  | general problem data                                               |
+  | global variable GENPROB genprob is defined in global_control.c     |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief read fluid3 element from input-file
+
+  \param  *ele      ELEMENT     (o)     actual element
+  \param   counter  INT         (i)     how many elements have been read before
+
+  \return void
+
+  \author genk
+  \date   05/02
+
+ */
+/*-----------------------------------------------------------------------*/
+void f3inp(
+    ELEMENT   *ele,
+    INT        counter)
 {
-  INT  i;
-  INT  ierr=0;
-  INT  lmtmp;
-  char buffer[50];
-  static INT cmat;
+
+  INT         i;
+  INT         ierr = 0;
+  INT         lmtmp;
+  INT         create_ale;
+  char        buffer[50];
+  static INT  cmat;
 
 
 #ifdef DEBUG
@@ -71,16 +95,7 @@ void f3inp(ELEMENT *ele,INT counter)
     if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
     frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-
-#if 0
-    /* rearrange element node numbers for hex20 */
-    lmtmp=ele->lm[12]; ele->lm[12]=ele->lm[16]; ele->lm[16]=lmtmp;
-    lmtmp=ele->lm[13]; ele->lm[13]=ele->lm[17]; ele->lm[17]=lmtmp;
-    lmtmp=ele->lm[14]; ele->lm[14]=ele->lm[18]; ele->lm[18]=lmtmp;
-    lmtmp=ele->lm[15]; ele->lm[15]=ele->lm[19]; ele->lm[19]=lmtmp;
-#endif
   }
-
 
   frchk("HEX27",&ierr);
   if (ierr==1)
@@ -93,7 +108,6 @@ void f3inp(ELEMENT *ele,INT counter)
     frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
   }
-
 
   frchk("TET4",&ierr);
   if (ierr==1)
@@ -138,27 +152,28 @@ void f3inp(ELEMENT *ele,INT counter)
   else dsassert(ele->mat==cmat,"no different materials for fluid elements allowed!\n");
 
 
-  /* read the gaussian points */
+  /* read number of gaussian points */
   if (ele->numnp==8 || ele->numnp==20 || ele->numnp==27)
   {
     frint_n("GP",&(ele->e.f3->nGP[0]),3,&ierr);
-    if (ierr!=1) dserror("Reading of FLUID3 element failed\n");
+    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP\n");
   }
 
 
-  /* read gaussian points for tetrahedral elements */
+  /* read number of gaussian points for tetrahedral elements */
   if (ele->numnp==4 || ele->numnp==10)
   {
-    /*   dserror("Tetrahedal Element not implemented yet!!!\n"); */
     frint("GP_TET",&(ele->e.f3->nGP[0]),&ierr);
-    if (ierr!=1) dserror("Reading of FLUID3 element failed\n");
+    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP_TET\n");
+
     frchar("GP_ALT",buffer,&ierr);
+    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP_ALT\n");
     /*
-       integration for TET-elements is distinguished into different cases. This is
-       necessary to get the right integration parameters from FLUID_DATA.
-       The flag for the integration case is saved in nGP[1]. For detailed informations
-       see /fluid3/f3_intg.c.
-       */
+     * integration for TET-elements is distinguished into different cases. This is
+     * necessary to get the right integration parameters from FLUID_DATA.
+     * The flag for the integration case is saved in nGP[1]. For detailed informations
+     * see /fluid3/f3_intg.c.
+     */
     switch(ele->e.f3->nGP[0])
     {
       case 1:
@@ -184,7 +199,6 @@ void f3inp(ELEMENT *ele,INT counter)
       default:
         dserror("Reading of FLUID3 element failed: integration points\n");
     } /* end switch(ele->e.f3->nGP[0]) */
-    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP_ALT\n");
   }
 
 
@@ -206,6 +220,27 @@ void f3inp(ELEMENT *ele,INT counter)
   else
     dserror("Reading of FLUID3 element failed: NA\n");
 
+
+  /* read type of ale elements, created or read */
+  frint("CA",&(create_ale),&ierr);
+
+  /*if (ierr!=1) dserror("Reading of FLUID3 element failed: flag CA not available\n");*/
+  if (ierr!=1)
+    create_ale = 0;
+
+  if (create_ale == 1 && ele->e.f3->is_ale == 1)
+  {
+    genprob.create_ale    = 1;
+    ele->e.f3->create_ale = 1;
+  }
+  else
+  {
+    genprob.create_ale    = 0;
+    ele->e.f3->create_ale = 0;
+  }
+
+
+
   /* set initial value for free surface flag */
   ele->e.f3->fs_on=0;
 
@@ -223,6 +258,116 @@ void f3inp(ELEMENT *ele,INT counter)
 
   return;
 } /* end of f3inp */
+
+
+
+
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief create ale elements
+
+  \param  *ele0       ELEMENT     (i) the source (fluid) element
+  \parem  *ele1       ELEMENT     (o) the created ale element
+  \param   numele     INT         (i) total number of elements in the problem
+  \param   nodeshift  INT         (i) total number of nodes in the problem
+
+  \return void
+
+  \author mn
+  \date   08/05
+
+ */
+/*-----------------------------------------------------------------------*/
+void f3_createale(
+    ELEMENT *ele0,
+    ELEMENT *ele1,
+    INT      numele,
+    INT      nodeshift)
+{
+
+#ifdef D_ALE
+
+
+  INT       j;             /* a counter */
+
+
+#ifdef DEBUG
+  dstrc_enter("f3_createale");
+#endif
+
+  /* allocate the element */
+  ele1->e.ale3 = (ALE3*)CCACALLOC(1,sizeof(ALE3));
+  if (ele1->e.ale3==NULL) dserror("Allocation of element ALE failed");
+
+
+  /* set some general data */
+  ele1->Id             = ele0->Id + numele;
+  ele1->eltyp          = el_ale3;
+
+  /* set data depending on dis type */
+  switch (ele0->distyp)
+  {
+    case hex8:
+      ele1->distyp  = hex8;
+      ele1->numnp   = 8;
+      ele1->lm      = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
+      if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
+      for (j=0;j<ele1->numnp;j++)
+      {
+        ele1->lm[j] = ele0->lm[j] + nodeshift;
+      }
+
+      ele1->mat            = 1;
+      ele1->e.ale3->nGP[0] = 2;
+      ele1->e.ale3->nGP[1] = 2;
+      ele1->e.ale3->nGP[2] = 2;
+      ele1->e.ale3->jacobi = 0;
+      ele1->e.ale3->hex20_red = 0;
+      break;
+
+    case hex20:
+      ele1->distyp  = hex20;
+      ele1->numnp   = 20;
+      ele1->lm      = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
+      if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
+      for (j=0;j<ele1->numnp;j++)
+      {
+        ele1->lm[j] = ele0->lm[j] + nodeshift;
+      }
+
+      ele1->mat            = 1;
+      ele1->e.ale3->nGP[0] = 2;
+      ele1->e.ale3->nGP[1] = 2;
+      ele1->e.ale3->nGP[2] = 2;
+      ele1->e.ale3->jacobi = 0;
+      ele1->e.ale3->hex20_red = 1;
+      break;
+
+    default:
+      dserror("Creation of ale elements only for hex8 and hex20 elements!!\n");
+  }  /* switch (ele0->distyp) */
+
+
+  /* make ale element known to the fluid and vice versa */
+  ele1->e.ale3->fluid_ele = ele0;
+  ele0->e.f3->ale_ele     = ele1;
+
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+
+#endif  /* ifdef D_ALE */
+
+  return;
+} /* end of f3_createale */
+
+
 
 #endif
 

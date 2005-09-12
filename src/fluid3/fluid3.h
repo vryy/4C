@@ -26,6 +26,9 @@ typedef struct _FLUID3
 {
 INT                nGP[3];   /*!< number of gaussian points in rs direct. */
 INT                is_ale;   /*!< flag whether there is ale to me or not  */
+INT                create_ale;
+
+struct _ELEMENT   *ale_ele;  /*!< pointer to the corresponding ale element */
 
 /*---------------------------------------------------- stabilisation ---*/
 enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
@@ -51,7 +54,7 @@ INT                force_on; /*! flag for element fsi coupling force calc.*/
 /*------------------------------------------------- structure for submesh */
 #ifdef FLUID3_ML
 INT                smisal;        /* flag for element submesh creation    */
-DOUBLE             smcml;	  /* charact. mesh length for submesh 	  */
+DOUBLE             smcml;	  /* charact. mesh length for submesh	  */
 struct _ARRAY      xyzsm;         /* coordinates of submesh nodes         */
 struct _ARRAY      solsm;         /* sol. of current and last timestep    */
 struct _ARRAY      solsmn;        /* sol. of last timestep                */

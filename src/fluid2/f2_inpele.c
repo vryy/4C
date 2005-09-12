@@ -17,6 +17,17 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+#include "../ale2/ale2.h"
+
+
+/*----------------------------------------------------------------------*
+  |                                                       m.gee 06/01  |
+  | general problem data                                               |
+  | global variable GENPROB genprob is defined in global_control.c     |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
 /*!---------------------------------------------------------------------
 \brief read fluid2 element from input-file
 
@@ -31,6 +42,7 @@ void f2_inp(ELEMENT *ele, INT counter)
 {
 INT        i;             /* simply a counter                           */
 INT        ierr=0;        /* error flag                                 */
+INT        create_ale;
 char      buffer[50];
 static INT cmat;
 
@@ -222,6 +234,30 @@ else
 dsassert(ele->e.f2->turbu==0,"Turbulence needed but not compiled in!\n");
 #endif
 
+
+
+
+  /* read type of ale elements, created or read */
+  frint("CA",&(create_ale),&ierr);
+
+  /*if (ierr!=1) dserror("Reading of FLUID3 element failed: flag CA not available\n");*/
+  if (ierr!=1)
+    create_ale = 0;
+
+  if (create_ale == 1 && ele->e.f2->is_ale == 1)
+  {
+    genprob.create_ale    = 1;
+    ele->e.f2->create_ale = 1;
+  }
+  else
+  {
+    genprob.create_ale    = 0;
+    ele->e.f2->create_ale = 0;
+  }
+
+
+
+
 /*----------------------------- set initial value for free surface flag */
 ele->e.f2->fs_on=0;
 
@@ -236,6 +272,128 @@ dstrc_exit();
 
 return;
 } /* end of f2inp */
+
+
+
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief create ale elements
+
+  \param  *ele0       ELEMENT     (i) the source (fluid) element
+  \parem  *ele1       ELEMENT     (o) the created ale element
+  \param   numele     INT         (i) total number of elements in the problem
+  \param   nodeshift  INT         (i) total number of nodes in the problem
+
+  \return void
+
+  \author mn
+  \date   08/05
+
+ */
+/*-----------------------------------------------------------------------*/
+void f2_createale(
+    ELEMENT *ele0,
+    ELEMENT *ele1,
+    INT      numele,
+    INT      nodeshift)
+{
+
+#ifdef D_ALE
+
+
+  INT       j;             /* a counter */
+
+
+#ifdef DEBUG
+  dstrc_enter("f2_createale");
+#endif
+
+  /* allocate the element */
+  ele1->e.ale2 = (ALE2*)CCACALLOC(1,sizeof(ALE2));
+  if (ele1->e.ale2==NULL) dserror("Allocation of element ALE failed");
+
+
+  /* set some general data */
+  ele1->Id             = ele0->Id + numele;
+  ele1->eltyp          = el_ale2;
+
+  /* set data depending on dis type */
+  switch (ele0->distyp)
+  {
+    case quad4:
+      ele1->distyp  = quad4;
+      ele1->numnp   = 4;
+      ele1->lm      = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
+      if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
+      for (j=0;j<ele1->numnp;j++)
+      {
+        ele1->lm[j] = ele0->lm[j] + nodeshift;
+      }
+
+      ele1->mat            = 1;
+      ele1->e.ale2->nGP[0] = 2;
+      ele1->e.ale2->nGP[1] = 2;
+      ele1->e.ale2->jacobi = 0;
+      break;
+
+    case quad8:
+      ele1->distyp  = quad8;
+      ele1->numnp   = 8;
+      ele1->lm      = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
+      if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
+      for (j=0;j<ele1->numnp;j++)
+      {
+        ele1->lm[j] = ele0->lm[j] + nodeshift;
+      }
+
+      ele1->mat            = 1;
+      ele1->e.ale2->nGP[0] = 2;
+      ele1->e.ale2->nGP[1] = 2;
+      ele1->e.ale2->jacobi = 0;
+      break;
+
+    case quad9:
+      ele1->distyp  = quad9;
+      ele1->numnp   = 9;
+      ele1->lm      = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
+      if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
+      for (j=0;j<ele1->numnp;j++)
+      {
+        ele1->lm[j] = ele0->lm[j] + nodeshift;
+      }
+
+      ele1->mat            = 1;
+      ele1->e.ale2->nGP[0] = 2;
+      ele1->e.ale2->nGP[1] = 2;
+      ele1->e.ale2->jacobi = 0;
+      break;
+
+    default:
+      dserror("Creation of ale elements only for quad4, quad8 and quad9 elements!!\n");
+  }  /* switch (ele0->distyp) */
+
+
+  /* make ale element known to the fluid and vice versa */
+  ele1->e.ale2->fluid_ele = ele0;
+  ele0->e.f2->ale_ele     = ele1;
+
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+
+#endif  /* ifdef D_ALE */
+
+  return;
+} /* end of f2_createale */
+
+
 
 
 #endif
