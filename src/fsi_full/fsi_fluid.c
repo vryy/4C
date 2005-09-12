@@ -169,6 +169,11 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1:
+
+#ifdef PERF
+perf_begin(46);
+#endif
+
 numff  = genprob.numff;
 fdyn   = alldyn[numff].fdyn;
 fsidyn = alldyn[genprob.numaf+1].fsidyn;
@@ -399,7 +404,8 @@ if (ioflags.monitor==1)
 if (fdyn->checkarea>0) out_area(totarea_a,fdyn->acttime,0,1);
 
 /*-------------------------------------- print out initial data to .out */
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+if (ioflags.output_out==1 && ioflags.fluid_sol==1)
+  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*---------- calculate time independent constants for time algorithm ---*/
 fluid_cons();
@@ -418,6 +424,11 @@ fluid_cons();
                      &(actsolv->sysarray_typ[actsysarray]),
                      &(actsolv->sysarray[actsysarray]),
                      actfield, actpart, actintra, 0);
+#endif
+
+
+#ifdef PERF
+perf_end(46);
 #endif
 
 break;
@@ -444,6 +455,11 @@ break;
  *  convnp ...  nodal convective velocity at time (n+1)                 *
  *======================================================================*/
 case 2:
+
+#ifdef PERF
+perf_begin(47);
+#endif
+
 
 grat=ZERO;
 /*- there are only procs allowed in here, that belong to the fluid -----*/
@@ -497,10 +513,20 @@ if (fdyn->itnorm!=fncc_no && par.myrank==0)
    }
 }
 itnum=1;
+
+#ifdef PERF
+perf_end(47);
+#endif
+
 /*======================================================================*
  |               N O N L I N E A R   I T E R A T I O N                  |
  *======================================================================*/
 nonlniter:
+
+#ifdef PERF
+perf_begin(48);
+#endif
+
 fdyn->itnum=itnum;
 /*------------------------- calculate constants for nonlinear iteration */
 if(fdyn->freesurf) fluid_icons(itnum);
@@ -563,7 +589,17 @@ assemble_vec(actintra,
              1.0
              );
 
+#ifdef PERF
+perf_end(48);
+#endif
+
+
 /*-------------------------------------------------------- solve system */
+
+#ifdef PERF
+perf_begin(49);
+#endif
+
 init=0;
 t1=ds_cputime();
 solver_control(actsolv, actintra,
@@ -575,8 +611,18 @@ solver_control(actsolv, actintra,
 ts=ds_cputime()-t1;
 tss+=ts;
 
+#ifdef PERF
+perf_end(49);
+#endif
+
+
 /*-- set flags for stability parameter evaluation and convergence check */
 fdyn->ishape=0;
+
+#ifdef PERF
+perf_begin(50);
+#endif
+
 
 /*--- return solution to the nodes and calculate the convergence ratios */
 fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),ipos->velnp,
@@ -665,6 +711,11 @@ if (itnum==1) fluid_cal_normal(actfield,0,action);
 /*----------------------------------------- iteration convergence check */
 converged = fluid_convcheck(vrat,prat,grat,itnum,te,ts);
 
+
+#ifdef PERF
+perf_end(50);
+#endif
+
 /*--------------------- check if nonlinear iteration has to be finished */
 if (converged==0)
 {
@@ -675,10 +726,18 @@ if (converged==0)
  | -->  end of nonlinear iteration                                      |
  *----------------------------------------------------------------------*/
 
+
 /*-------------------------------------------------- steady state check */
 /*  no steady state check for fsi-problems!!!                           */
 /*-------------------------------------- output of area to monitor file */
 if (fdyn->checkarea>0) out_area(totarea_a,fdyn->acttime,itnum,0);
+
+
+
+
+#ifdef PERF
+perf_begin(51);
+#endif
 
 /*------------------------- calculate stresses transferred to structure */
 if (fsidyn->ifsi>0)
@@ -687,12 +746,17 @@ if (fsidyn->ifsi>0)
    {
       solserv_sol_zero(actfield,0,node_array_sol_mf,1);
 #ifdef PARALLEL
+
       amzero(&fcouple_a);
       fsi_cbf(actpart->pdis,fcouple,ipos,numeq_total,0);
+
       fsi_allreduce_coupforce(fcouple,recvfcouple,numeq_total,numddof,
                               actintra,actfield);
+
 #else
+
       fsi_cbf(actpart->pdis,NULL,ipos,0,0);
+
 #endif  /* PARALLEL */
    }
    else
@@ -715,6 +779,11 @@ if (fsidyn->ifsi>0)
    }
 }
 
+#ifdef PERF
+perf_end(51);
+#endif
+
+
 #ifdef D_MORTAR
 if(fsidyn->coupmethod == 0) /* mortar method */
 {
@@ -732,6 +801,11 @@ break;
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
+
+#ifdef PERF
+perf_begin(52);
+#endif
+
 /*----------------------------------------------- lift&drag computation */
 if (fdyn->liftdrag>0)
 {
@@ -859,6 +933,11 @@ if (ioflags.monitor==1)
 monitoring(actfield,numff,actpos,fdyn->acttime);
 
 fsidyn->actpos = actpos;
+
+#ifdef PERF
+perf_end(52);
+#endif
+
 
 /*--------------------------------------------------------------------- */
 break;
@@ -1029,7 +1108,7 @@ if (pssstep==0) actpos--;
 
 /*------------------------------------- print out solution to .out file */
 if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1)
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*------------------------------------ print out solution to 0.pss file */
 if (ioflags.fluid_vis==1)

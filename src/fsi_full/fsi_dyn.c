@@ -17,6 +17,16 @@ Maintainer: Steffen Genkinger
 #include "../solver/solver.h"
 #include "fsi_prototypes.h"
 #include "../io/io.h"
+
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -55,6 +65,20 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
  extern INT            numcurve;
  extern struct _CURVE *curve;
+
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+
 /*!---------------------------------------------------------------------
 \brief routine to control fsi dynamic analyis
 
@@ -95,6 +119,9 @@ static FLUID_DYNAMIC  *fdyn;
 static FSI_DYNAMIC    *fsidyn;
 static STRUCT_DYNAMIC *sdyn;
 static ALE_DYNAMIC    *adyn;
+FILE           *out = allfiles.out_out;
+
+DOUBLE          t2,tt;
 
 #ifdef D_MORTAR
 INTERFACES            *int_faces; /* interface information for mortar   */
@@ -102,6 +129,10 @@ INTERFACES            *int_faces; /* interface information for mortar   */
 
 #ifdef DEBUG
 dstrc_enter("dyn_fsi");
+#endif
+
+#ifdef PERF
+perf_begin(40);
 #endif
 
 /*----------------------------------------------------------------------*/
@@ -133,6 +164,11 @@ dsassert(alefield->fieldtyp==ale,"FIELD 2 has to be ale\n");
 /*======================================================================*
                     I N I T I A L I S A T I O N
  *======================================================================*/
+
+#ifdef PERF
+perf_begin(41);
+#endif
+
 mctrl=1;
 sdyn= alldyn[0].sdyn;
 fdyn= alldyn[1].fdyn;
@@ -219,10 +255,117 @@ if (fsidyn->coupmethod == 0) /* mortar method */
 }
 #endif
 
+
+
+/* write general data to .out */
+if (par.myrank==0)
+{
+  fprintf(out,"max. values:\n");
+  fprintf(out,"============\n");
+
+
+  /* table head */
+  fprintf(out," time |            |field|fluid| fluid error in ");
+
+  switch(fdyn->itnorm)
+  {
+    case fncc_Linf: /* infinity norm */
+      fprintf(out,"inf-norm");
+      break;
+    case fncc_L1: /* L_1 norm */
+      fprintf(out,"L_1-norm");
+      break;
+    case fncc_L2: /* L_2 norm */
+      fprintf(out,"L_2-norm");
+      break;
+    default:
+      dserror("Norm for nonlin. convergence check unknown!!\n");
+  }  /* switch(fdyn->itnorm) */
+
+  fprintf(out," |struc| convergence| relaxation |   total    |\n");
+
+  fprintf(out," step |  sim. time | ite | ite |     vel.   |     pre.   | ite | over fields|  parameter | calc. time |\n");
+  fprintf(out,"-------------------------------------------------------------------------------------------------------\n");
+
+
+
+  /* max values */
+  fprintf(out,"%5d | %10.3f | %3d | %3d |        %10.3E       | %3d | %10.3E |            |            |\n",
+      fdyn->nstep,fdyn->maxtime,fsidyn->itemax,fdyn->itemax,fdyn->ittol,sdyn->maxiter,fsidyn->convtol);
+  fprintf(out,"-------------------------------------------------------------------------------------------------------\n");
+
+
+
+  fprintf(out,"\n\ntimeloop:  ");
+
+  switch (fsidyn->ifsi)
+  {
+    case 1:
+      fprintf(out,"Basic Sequential Staggered Scheme\n");
+      break;
+    case 2:
+      fprintf(out,"Sequential Staggered Scheme with Predictor\n");
+      break;
+    case 4:
+      fprintf(out,"Iterative Staggered Scheme with Fixed Relaxation Parameter\n");
+      break;
+    case 5:
+      fprintf(out,"Iterative Staggered Scheme with Relaxation Parameter via Aitken Iteration\n");
+      break;
+    case 6:
+      fprintf(out,"Iterative Staggered Scheme with Relaxation Parameter via Steepest Descent Method\n");
+      break;
+    default:
+      dserror("algoout not implemented yet\n");
+  }
+  fprintf(out,"=========\n");
+
+
+
+  /* table head */
+  fprintf(out," time |            |field|fluid| fluid error in ");
+
+  switch(fdyn->itnorm)
+  {
+    case fncc_Linf: /* infinity norm */
+      fprintf(out,"inf-norm");
+      break;
+    case fncc_L1: /* L_1 norm */
+      fprintf(out,"L_1-norm");
+      break;
+    case fncc_L2: /* L_2 norm */
+      fprintf(out,"L_2-norm");
+      break;
+    default:
+      dserror("Norm for nonlin. convergence check unknown!!\n");
+  }  /* switch(fdyn->itnorm) */
+
+  fprintf(out," |struc| convergence| relaxation |   total    |\n");
+
+  fprintf(out," step |  sim. time | ite | ite |     vel.   |     pre.   | ite | over fields|  parameter | calc. time |\n");
+  fprintf(out,"-------------------------------------------------------------------------------------------------------\n");
+
+
+}  /* if (par.myrank==0) */
+
+fflush(out);
+
+
+
+
+#ifdef PERF
+perf_end(41);
+#endif
+
+
 /*======================================================================*
                               T I M E L O O P
  *======================================================================*/
 timeloop:
+
+t2=ds_cputime();
+
+
 mctrl=2;
 fsidyn->step++;
 fsidyn->time += fsidyn->dt;
@@ -240,18 +383,57 @@ itnum=0;
 fielditer:
 /*------------------------------------------------ output to the screen */
 if (par.myrank==0) fsi_algoout(itnum);
+
+if (par.myrank==0)
+  fprintf(out,"%5d | %10.3f | %3d |",fsidyn->step,fsidyn->time,itnum);
+
+
 /*----------------------------------- basic sequential staggered scheme */
 if (fsidyn->ifsi==1 || fsidyn->ifsi==3)
 {
 
    dsassert(fsidyn->ifsi!=3,"Scheme with DT/2-shift not implemented yet!\n");
 
+
+
    /*------------------------------- CFD -------------------------------*/
+#ifdef PERF
+perf_begin(42);
+#endif
+
    fsi_fluid(fluidfield,mctrl);
+
+#ifdef PERF
+perf_end(42);
+#endif
+
+
+
    /*------------------------------- CSD -------------------------------*/
+#ifdef PERF
+perf_begin(43);
+#endif
+
    fsi_struct(structfield,mctrl,itnum);
+
+#ifdef PERF
+perf_end(43);
+#endif
+
+
+
+
    /*------------------------------- CMD -------------------------------*/
+#ifdef PERF
+perf_begin(44);
+#endif
+
    fsi_ale(alefield,mctrl);
+
+#ifdef PERF
+perf_end(44);
+#endif
+
 } /* endif (fsidyn->ifsi==1 || fsidyn->ifsi==3) */
 
 /*---------------------------------------------- schemes with predictor */
@@ -269,7 +451,17 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
    /*----------------- CSD - predictor for itnum==0 --------------------*/
    if (itnum==0)
    {
+
+#ifdef PERF
+perf_begin(43);
+#endif
+
       fsi_struct(structfield,mctrlpre,itnum);
+
+#ifdef PERF
+perf_end(43);
+#endif
+
    }
    #ifdef D_MORTAR
    if (fsidyn->coupmethod == 0) /* mortar method */
@@ -280,10 +472,32 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
    }
    #endif
 
+
+
    /*------------------------------- CMD -------------------------------*/
+#ifdef PERF
+perf_begin(44);
+#endif
+
    fsi_ale(alefield,mctrl);
+
+#ifdef PERF
+perf_begin(44);
+#endif
+
+
+
    /*------------------------------- CFD -------------------------------*/
+#ifdef PERF
+perf_begin(42);
+#endif
+
    fsi_fluid(fluidfield,mctrl);
+
+#ifdef PERF
+perf_end(42);
+#endif
+
 
    #ifdef D_MORTAR
    if (fsidyn->coupmethod == 0) /* mortar method */
@@ -294,8 +508,20 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
    }
    #endif
 
+
+
+
    /*------------------------------- CSD -------------------------------*/
+#ifdef PERF
+perf_begin(43);
+#endif
+
    fsi_struct(structfield,mctrl,itnum);
+
+#ifdef PERF
+perf_end(43);
+#endif
+
 }
 /*--------------------------------------------- strong coupling schemes */
 if (fsidyn->ifsi>=4)
@@ -305,7 +531,14 @@ if (fsidyn->ifsi>=4)
 
    if (converged==0) /*--------------------------------- no convergence */
    {
+
+
    /*----------------------------- compute optimal relaxation parameter */
+
+#ifdef PERF
+perf_begin(45);
+#endif
+
       if (fsidyn->ifsi==5)
       {
          fsi_aitken(structfield,itnum,1);
@@ -318,42 +551,118 @@ if (fsidyn->ifsi>=4)
       {
          dserror("RELAX via CHEBYCHEV not implemented yet!\n");
       }
+
+
+      if (par.myrank==0)
+        fprintf(out,"   %7.5f  |",fsidyn->relax);
+
+
       /*-------------- relaxation of structural interface displacements */
       fsi_relax_intdisp(structfield);
+
+#ifdef PERF
+perf_end(45);
+#endif
+
       itnum++;
+      if (par.myrank==0)
+        fprintf(out,"            |\n");
+      fflush(out);
       goto fielditer;
    }
    else /*------------------------------------------------- convergence */
    {
+     if (par.myrank==0)
+       fprintf(out,"            |");
+
+
       mctrl=3;
+
+
       /*--------------------- update MESH data -------------------------*/
+#ifdef PERF
+perf_begin(44);
+#endif
+
       fsi_ale(alefield,mctrl);
+
+#ifdef PERF
+perf_end(44);
+#endif
+
+
+
+
       /*-------------------- update FLUID data -------------------------*/
+#ifdef PERF
+perf_begin(42);
+#endif
+
       fsi_fluid(fluidfield,mctrl);
+
+#ifdef PERF
+perf_end(42);
+#endif
+
+
+
+
       /*------------------ update STRUCTURE data -----------------------*/
+#ifdef PERF
+perf_begin(43);
+#endif
+
       fsi_struct(structfield,mctrl,itnum);
+
+#ifdef PERF
+perf_end(43);
+#endif
+
    }
 }
-/*--------------------------------------- write current solution to gid */
-/*----------------------------- print out solution to 0.flavia.res file */
+else
+{
+  if (par.myrank==0)
+    fprintf(out,"            |            |");
+}
+
+
+tt=ds_cputime()-t2;
+if (par.myrank==0)
+{
+  fprintf(out," %10.3f |\n",tt);
+  fprintf(out,"-------------------------------------------------------------------------------------------------------\n");
+}
+fflush(out);
+
+/* write current solution */
 resstep++;
 restartstep++;
 
 if (resstep==fsidyn->upres)
 {
    resstep=0;
-   if (par.myrank==0) {
+
+   /* print out solution to GiD */
+   if (ioflags.output_gid==1 && par.myrank==0) {
      out_checkfilesize(1);
      out_gid_sol_fsi(fluidfield,structfield);
    }
 
+
+#ifdef BINIO
    /*
     * Binary output has to be done by the algorithms because the
     * contexts are there. */
-   mctrl = 98;
-   fsi_ale(alefield,mctrl);
-   fsi_fluid(fluidfield,mctrl);
-   fsi_struct(structfield,mctrl,itnum);
+   if (ioflags.output_bin==1)
+   {
+     mctrl = 98;
+     fsi_ale(alefield,mctrl);
+     fsi_fluid(fluidfield,mctrl);
+     fsi_struct(structfield,mctrl,itnum);
+   }
+#endif
+
 }
 
 /*---------------------------------------------- write fsi-restart data */
@@ -387,6 +696,16 @@ fsi_ale(alefield,mctrl);
 #else
 dserror("FSI routines are not compiled in!\n");
 #endif
+
+
+
+
+#ifdef PERF
+perf_end(40);
+#endif
+
+
+
 #ifdef DEBUG
 dstrc_exit();
 #endif
