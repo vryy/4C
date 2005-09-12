@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief controlling calculation of consistent boundary forces 
+\brief controlling calculation of consistent boundary forces
        for fsi-coupling
 
 <pre>
@@ -16,7 +16,7 @@ Maintainer: Christiane Foerster
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
-#include "../solver/solver.h" 
+#include "../solver/solver.h"
 /*#include "fluid_prototypes.h"*/
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
@@ -98,313 +98,388 @@ III. PARALLEL with SOLVE_DIRICH defined
 \return void
 
 ------------------------------------------------------------------------*/
-void fsi_cbf(PARTDISCRET    *actpdis,
-	     DOUBLE         *fcouple,
-             ARRAY_POSITION *ipos,
-             INT             numeq_total,
-             INT             init)
+void fsi_cbf(
+    PARTDISCRET    *actpdis,
+    DOUBLE         *fcouple,
+    ARRAY_POSITION *ipos,
+    INT             numeq_total,
+    INT             init)
 {
-INT i, j, l;
-INT line;
-INT numdf;
-INT hasdirich, hasext;
-INT force_on_node[MAXNOD];
-INT nfnode;  /* number of nodes of actele where forces are searched for */
+
+  INT i, j, l;
+  INT line;
+  INT numdf;
+  INT hasdirich, hasext;
+  INT force_on_node[MAXNOD];
+  INT nfnode;  /* number of nodes of actele where forces are searched for */
+
+
 #ifdef PARALLEL
-INT dofx, dofy, dofz;
+  INT dofx, dofy, dofz;
 #endif
 
-DOUBLE    rho;
 
-static DOUBLE  *eforce;
+  DOUBLE    rho;
 
-NODE    *actnode;
-GNODE   *actgnode;
-ELEMENT *actele;
+  static DOUBLE  *eforce;
+
+  NODE    *actnode;
+  GNODE   *actgnode;
+  ELEMENT *actele;
 
 #ifdef D_FLUID3_F
-INT               hasext_f[LOOPL];
-INT               aloopl, coupled;
-FAST_ELES        *act_fast_eles;
+  INT               hasext_f[LOOPL];
+  INT               aloopl, coupled;
+  FAST_ELES        *act_fast_eles;
 #endif
 
-/*----------------------------------------------------------------------*/
+
+
 #ifdef DEBUG
-dstrc_enter("fsi_cbf");
+  dstrc_enter("fsi_cbf");
 #endif
 
-/*--------------------------------------------------- initialisation ---*/
-if (init==1)
-{
-   for(j=0; j<MAXNOD; j++) /* ensure that MAXNOD >= MAX(MAXNOD_F2, MAXNOD_F3)! */
-      force_on_node[j] = -1;
-   /*--- preselect elements that have fsi coupling ---*/
-   switch (genprob.ndim)
-   {
-   case 2:
+
+
+  /* initialisation */
+  if (init==1)
+  {
+
+
+    /* preselect elements that have fsi coupling */
+    switch (genprob.ndim)
+    {
+
+      case 2:
 #ifdef D_FLUID2
-      for(i=0; i<actpdis->numele; i++)
-      {
-         actele = actpdis->element[i];
-         if (par.myrank!=actele->proc) continue; /* only my elments */
-         for(j=0; j<actele->numnp; j++)
-         {
+        for(i=0; i<actpdis->numele; i++)
+        {
+          actele = actpdis->element[i];
+          if (par.myrank!=actele->proc)
+            continue; /* only my elments */
+
+          for(j=0; j<actele->numnp; j++)
+          {
             actgnode = actele->node[j]->gnode;
             /* check if there is a coupled struct node */
             if (actgnode->mfcpnode[genprob.numsf]==NULL)
-               continue;
+              continue;
+
             actele->e.f2->force_on = 1;
             break;
-         }
-      }
+          }
+        }
 #endif
-   break;
-   case 3:
+        break;
+
+
+      case 3:
 #ifdef D_FLUID3
-      for(i=0; i<actpdis->numele; i++)
-      {
-         actele = actpdis->element[i];
-         if (par.myrank!=actele->proc) continue; /* only my elments */
-         for(j=0; j<actele->numnp; j++)
-         {
+        for(i=0; i<actpdis->numele; i++)
+        {
+          actele = actpdis->element[i];
+          if (par.myrank!=actele->proc)
+            continue; /* only my elments */
+
+          for(j=0; j<actele->numnp; j++)
+          {
             actgnode = actele->node[j]->gnode;
             /* check if there is a coupled struct node */
             if (actgnode->mfcpnode[genprob.numsf]==NULL)
-               continue;
+              continue;
+
             actele->e.f3->force_on = 1;
             break;
-         }
-      }      
+          }
+        }
 #endif
-   break;
-   }
-   goto end;
-}
+        break;
 
-/*--------------------------------------- the elemental force vector ---*/
-eforce  = eforce_global.a.dv;
 
-/*-------------- evaluate fsi coupling forces depending on dimension ---*/
-switch (genprob.ndim)
-{
-case 2: /* problem is two-dimensional */
+      default:
+        dserror("genprob.ndim != 2 or 3!!");
+
+    }  /* switch (genprob.ndim) */
+
+
+    goto end;
+
+
+  }  /* if (init==1) */
+
+
+
+  /* the elemental force vector */
+  eforce  = eforce_global.a.dv;
+
+
+  /* evaluate fsi coupling forces depending on dimension */
+  switch (genprob.ndim)
+  {
+
+    case 2: /* problem is two-dimensional */
 #ifdef D_FLUID2
-   rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
-   numdf = 3;
-   for(i=0; i<actpdis->numele; i++)
-   { 
-      actele = actpdis->element[i];
+      rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
+      numdf = 3;
+      for(i=0; i<actpdis->numele; i++)
+      { 
+        actele = actpdis->element[i];
 
-     /*------------------------------------------------------------------*/
-      if (actele->e.f2->force_on==0) continue; /* element not of interest*/
-      nfnode = 0;
-      for(j=0; j<MAXNOD_F2; j++)
-        force_on_node[j] = -1;
 
-      for(j=0; j<actele->numnp; j++)
-      {
-         actgnode = actele->node[j]->gnode;
-         /* check if there is a coupled struct node */
-         if (actgnode->mfcpnode[genprob.numsf]==NULL)
+        if (actele->e.f2->force_on==0) continue; /* element not of interest*/
+        nfnode = 0;
+        for(j=0; j<MAXNOD_F2; j++)
+          force_on_node[j] = -1;
+
+        for(j=0; j<actele->numnp; j++)
+        {
+          actgnode = actele->node[j]->gnode;
+          /* check if there is a coupled struct node */
+          if (actgnode->mfcpnode[genprob.numsf]==NULL)
             continue;
-         force_on_node[nfnode] = j;
-         nfnode++;
-      }
-      /*--- get force vector ---*/
-      f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+          force_on_node[nfnode] = j;
+          nfnode++;
+        }
+        /*--- get force vector ---*/
+        f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 
-      for(j=0; j<nfnode; j++)
-      {
-         actnode = actele->node[force_on_node[j]];
-         line = force_on_node[j] * 3;
+        for(j=0; j<nfnode; j++)
+        {
+          actnode = actele->node[force_on_node[j]];
+          line = force_on_node[j] * 3;
 #ifdef PARALLEL
-         dofx = actnode->dof[0];
-         dofy = actnode->dof[1];
- #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-         fcouple[dofx] += eforce[line]*rho;
-         fcouple[dofy] += eforce[line+1]*rho;
- #else
-         if(dofx<numeq_total)
-            dserror("can not fsi couple free dof!\n");
-         if(dofy<numeq_total)
-            dserror("can not fsi couple free dof!\n");
-
-         fcouple[dofx-numeq_total] += eforce[line]*rho;
-         fcouple[dofy-numeq_total] += eforce[line+1]*rho;
- #endif /* SOLVE_DIRICH */
-#else
-         actnode->sol_mf.a.da[1][0] += eforce[line]*rho;
-         actnode->sol_mf.a.da[1][1] += eforce[line+1]*rho;
-#endif  /* PARALLEL */
-      }
-   }
-#endif
-break;
-case 3: /* problem is three-dimensional */
-#ifdef D_FLUID3
-   rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
-   numdf = 4;
-   for(i=0; i<actpdis->numele; i++)
-   { 
-      actele = actpdis->element[i];
-      /*------------------------ fast elements will be treated later ---*/
-      if (actele->eltyp == el_fluid3_fast) continue;
-
-      /*----------------------------------------------------------------*/
-      if (actele->e.f3->force_on==0) continue; /* element not of interest*/
-      nfnode = 0;
-      for(j=0; j<MAXNOD_F3; j++)
-        force_on_node[j] = -1;
-
-      for(j=0; j<actele->numnp; j++)
-      {
-         actgnode = actele->node[j]->gnode;
-         /* check if there is a coupled struct node */
-         if (actgnode->mfcpnode[genprob.numsf]==NULL)
-            continue;
-         force_on_node[nfnode] = j;
-         nfnode++;
-      }
-
-      /*--- get force vector ---*/
-      f3_caleleres(actele,&eforce_global,&hasdirich,&hasext,ipos);
-
-      for(j=0; j<nfnode; j++)
-      {
-         actnode = actele->node[force_on_node[j]];
-         line = force_on_node[j] * 4;
-#ifdef PARALLEL
-         dofx = actnode->dof[0];
-         dofy = actnode->dof[1];
-         dofz = actnode->dof[2];
- #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-         fcouple[dofx] += eforce[line]*rho;
-         fcouple[dofy] += eforce[line+1]*rho;
-         fcouple[dofz] += eforce[line+2]*rho;
- #else
-         if(dofx<numeq_total)
-            dserror("can not fsi couple free dof!\n");
-         if(dofy<numeq_total)
-            dserror("can not fsi couple free dof!\n");
-         if(dofz<numeq_total)
-            dserror("can not fsi couple free dof!\n");
-
-         fcouple[dofx-numeq_total] += eforce[line]*rho;
-         fcouple[dofy-numeq_total] += eforce[line+1]*rho;
-         fcouple[dofz-numeq_total] += eforce[line+2]*rho;
- #endif /* SOLVE_DIRICH */
-#else /* the sequential case: */
-         actnode->sol_mf.a.da[1][0] += eforce[line]*rho;
-         actnode->sol_mf.a.da[1][1] += eforce[line+1]*rho;
-         actnode->sol_mf.a.da[1][2] += eforce[line+2]*rho;
-#endif  /* PARALLEL */
-      }
-   }
-#endif
-#ifdef D_FLUID3_F
-   rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
-   for (i=0; i<actpdis->num_fele; i++)
-   {
-      act_fast_eles = &(actpdis->fast_eles[i]);
-      switch(act_fast_eles->fast_ele_typ)
-      {
-         case fele_f3f_hex8_e:
-         case fele_f3f_hex8_a:
-         case fele_f3f_hex20_e:
-         case fele_f3f_hex20_a:
-         case fele_f3f_tet4_e:
-         case fele_f3f_tet4_a:
-
-         aloopl = act_fast_eles->aloopl;
-         coupled = 0;
-         l = 0;
-
-         /* look if there is a fsi coupled element within the set */
-         while ( coupled == 0 && l < aloopl )
-         {
-            actele = act_fast_eles->ele_vec[l];
-            if (actele->e.f3->force_on!=0)
-               coupled++;
-            l++;
-         }
-         if (!coupled) continue; /* goto next set if no coupling element */
-
-
-         /*--- get force vector ---*/
-         f3fcaleleres(act_fast_eles->ele_vec,&eforce_fast,hasext_f,ipos,aloopl);
-         /* element set force vector */
-         eforce = eforce_fast.a.dv;
-
-         /* loop all elements of this set */
-         for(l=0; l<aloopl; l++)
-         {
-            actele = act_fast_eles->ele_vec[l];
-            if (actele->e.f3->force_on==0) continue; /* element not of interest*/
-            nfnode = 0;
-
-            /* do some initialisation */
-            for(j=0; j<MAXNOD_F3; j++)
-               force_on_node[j] = -1;
-
-            for(i=0; i<actele->numnp; i++)
-            {
-               actgnode = actele->node[i]->gnode;
-               /* check if there is a coupled struct node */
-               if (actgnode->mfcpnode[genprob.numsf]==NULL)
-                  continue;
-               force_on_node[nfnode] = i;
-               nfnode++;
-            }
-
-            for(j=0; j<nfnode; j++) /* loop coupled nodes of this ele */
-            {
-               actnode = actele->node[force_on_node[j]];
-               line = force_on_node[j] * 4;
-#ifdef PARALLEL
-               dofx = actnode->dof[0];
-               dofy = actnode->dof[1];
-               dofz = actnode->dof[2];
+          dofx = actnode->dof[0];
+          dofy = actnode->dof[1];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-               fcouple[dofx] += eforce[line*LOOPL+l]*rho;
-               fcouple[dofy] += eforce[line*LOOPL+LOOPL+l]*rho;
-               fcouple[dofz] += eforce[line*LOOPL+LOOPL*2+l]*rho;
+          fcouple[dofx] += eforce[line]*rho;
+          fcouple[dofy] += eforce[line+1]*rho;
 #else
-               if(dofx<numeq_total)
-                  dserror("can not fsi couple free dof!\n");
-               if(dofy<numeq_total)
-                  dserror("can not fsi couple free dof!\n");
-               if(dofz<numeq_total)
-                  dserror("can not fsi couple free dof!\n");
+          if(dofx<numeq_total)
+            dserror("can not fsi couple free dof!\n");
+          if(dofy<numeq_total)
+            dserror("can not fsi couple free dof!\n");
 
-               fcouple[dofx-numeq_total] += eforce[line*LOOPL+l]*rho;
-               fcouple[dofy-numeq_total] += eforce[line*LOOPL+LOOPL+l]*rho;
-               fcouple[dofz-numeq_total] += eforce[line*LOOPL+LOOPL*2+l]*rho;
+          fcouple[dofx-numeq_total] += eforce[line]*rho;
+          fcouple[dofy-numeq_total] += eforce[line+1]*rho;
+#endif /* SOLVE_DIRICH */
+#else
+          actnode->sol_mf.a.da[1][0] += eforce[line]*rho;
+          actnode->sol_mf.a.da[1][1] += eforce[line+1]*rho;
+#endif  /* PARALLEL */
+        }
+      }
+#endif
+      break;
+
+
+
+    case 3: /* problem is three-dimensional */
+
+#ifdef D_FLUID3
+
+      rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
+      numdf = 4;
+
+      for(i=0; i<actpdis->numele; i++)
+      {
+        actele = actpdis->element[i];
+
+
+        /* fast elements will be treated later ---*/
+        if (actele->eltyp == el_fluid3_fast) continue;
+
+        if (actele->e.f3->force_on==0)
+          continue; /* element not of interest*/
+
+        nfnode = 0;
+        for(j=0; j<MAXNOD_F3; j++)
+          force_on_node[j] = -1;
+
+        for(j=0; j<actele->numnp; j++)
+        {
+          actgnode = actele->node[j]->gnode;
+          /* check if there is a coupled struct node */
+          if (actgnode->mfcpnode[genprob.numsf]==NULL)
+            continue;
+          force_on_node[nfnode] = j;
+          nfnode++;
+        }
+
+
+        /* get force vector */
+        f3_caleleres(actele,&eforce_global,&hasdirich,&hasext,ipos);
+
+
+        for(j=0; j<nfnode; j++)
+        {
+          actnode = actele->node[force_on_node[j]];
+          line = force_on_node[j] * 4;
+#ifdef PARALLEL
+          dofx = actnode->dof[0];
+          dofy = actnode->dof[1];
+          dofz = actnode->dof[2];
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+          fcouple[dofx] += eforce[line]*rho;
+          fcouple[dofy] += eforce[line+1]*rho;
+          fcouple[dofz] += eforce[line+2]*rho;
+#else
+          if(dofx<numeq_total)
+            dserror("can not fsi couple free dof!\n");
+          if(dofy<numeq_total)
+            dserror("can not fsi couple free dof!\n");
+          if(dofz<numeq_total)
+            dserror("can not fsi couple free dof!\n");
+
+          fcouple[dofx-numeq_total] += eforce[line]*rho;
+          fcouple[dofy-numeq_total] += eforce[line+1]*rho;
+          fcouple[dofz-numeq_total] += eforce[line+2]*rho;
 #endif /* SOLVE_DIRICH */
 #else /* the sequential case: */
-               actnode->sol_mf.a.da[1][0] += eforce[line*LOOPL+l]*rho;
-               actnode->sol_mf.a.da[1][1] += eforce[line*LOOPL+LOOPL+l]*rho;
-               actnode->sol_mf.a.da[1][2] += eforce[line*LOOPL+LOOPL*2+l]*rho;
+          actnode->sol_mf.a.da[1][0] += eforce[line]*rho;
+          actnode->sol_mf.a.da[1][1] += eforce[line+1]*rho;
+          actnode->sol_mf.a.da[1][2] += eforce[line+2]*rho;
 #endif  /* PARALLEL */
-            }
-         } /* end the loop */
-      break;
-      default:
-         dserror("unknown typ of fast element");
-      } /* switch(act_fast_eles->fast_ele_typ) */
-   }    /* end loop over element sets */
+        }
+      }
 #endif
-break;
-default:
-   dserror("genprob->ndim not valid");
-}
+
+
+
+#ifdef D_FLUID3_F
+
+      rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
+
+      for (i=0; i<actpdis->num_fele; i++)
+      {
+        act_fast_eles = &(actpdis->fast_eles[i]);
+
+        switch(act_fast_eles->fast_ele_typ)
+        {
+          case fele_f3f_hex8_e:
+          case fele_f3f_hex8_a:
+          case fele_f3f_hex20_e:
+          case fele_f3f_hex20_a:
+          case fele_f3f_tet4_e:
+          case fele_f3f_tet4_a:
+
+            aloopl = act_fast_eles->aloopl;
+            coupled = 0;
+            l = 0;
+
+            /* look if there is a fsi coupled element within the set */
+            while ( coupled == 0 && l < aloopl )
+            {
+              actele = act_fast_eles->ele_vec[l];
+              if (actele->e.f3->force_on!=0)
+                coupled++;
+              l++;
+            }
+
+            if (!coupled)
+              continue; /* goto next set if no coupling element */
+
+
+            /* get force vector */
+            f3fcaleleres(act_fast_eles->ele_vec,&eforce_fast,hasext_f,ipos,aloopl);
+
+
+            /* element set force vector */
+            eforce = eforce_fast.a.dv;
+
+
+            /* loop all elements of this set */
+            for(l=0; l<aloopl; l++)
+            {
+
+              actele = act_fast_eles->ele_vec[l];
+
+              if (actele->e.f3->force_on==0)
+                continue; /* element not of interest*/
+
+
+              nfnode = 0;
+
+              /* do some initialisation */
+              for(j=0; j<MAXNOD_F3; j++)
+                force_on_node[j] = -1;
+
+
+              for(j=0; j<actele->numnp; j++)
+              {
+                actgnode = actele->node[j]->gnode;
+                /* check if there is a coupled struct node */
+                if (actgnode->mfcpnode[genprob.numsf]==NULL)
+                  continue;
+                force_on_node[nfnode] = j;
+                nfnode++;
+              }
+
+
+              for(j=0; j<nfnode; j++) /* loop coupled nodes of this ele */
+              {
+                actnode = actele->node[force_on_node[j]];
+                line = force_on_node[j] * 4;
+#ifdef PARALLEL
+                dofx = actnode->dof[0];
+                dofy = actnode->dof[1];
+                dofz = actnode->dof[2];
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+                fcouple[dofx] += eforce[line*LOOPL+l]*rho;
+                fcouple[dofy] += eforce[line*LOOPL+LOOPL+l]*rho;
+                fcouple[dofz] += eforce[line*LOOPL+LOOPL*2+l]*rho;
+#else
+                if(dofx<numeq_total)
+                  dserror("can not fsi couple free dof!\n");
+                if(dofy<numeq_total)
+                  dserror("can not fsi couple free dof!\n");
+                if(dofz<numeq_total)
+                  dserror("can not fsi couple free dof!\n");
+
+                fcouple[dofx-numeq_total] += eforce[line*LOOPL+l]*rho;
+                fcouple[dofy-numeq_total] += eforce[line*LOOPL+LOOPL+l]*rho;
+                fcouple[dofz-numeq_total] += eforce[line*LOOPL+LOOPL*2+l]*rho;
+#endif /* SOLVE_DIRICH */
+#else /* the sequential case: */
+                actnode->sol_mf.a.da[1][0] += eforce[line*LOOPL+l]*rho;
+                actnode->sol_mf.a.da[1][1] += eforce[line*LOOPL+LOOPL+l]*rho;
+                actnode->sol_mf.a.da[1][2] += eforce[line*LOOPL+LOOPL*2+l]*rho;
+#endif  /* PARALLEL */
+
+              }  /* for(j=0; j<nfnode; j++) */
+
+            }  /* for(l=0; l<aloopl; l++) */
+
+            break;
+
+
+          default:
+            dserror("unknown typ of fast element");
+            break;
+
+        } /* switch(act_fast_eles->fast_ele_typ) */
+
+      }    /* end loop over element sets */
+
+#endif
+      break;
+    default:
+      dserror("genprob->ndim not valid");
+  }
 
 end:
-/*----------------------------------------------------------------------*/
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+
+  return;
 }
+
+
+
+
 
 
 
