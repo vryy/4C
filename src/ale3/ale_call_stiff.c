@@ -40,7 +40,7 @@ formulation.
 *----------------------------------------------------------------------*/
 void ale3_keku(
     DOUBLE  **s,
-    DOUBLE    bs[6][6*MAXNOD_BRICK1],
+    DOUBLE    bs[6][3*MAXNOD_ALE3],
     DOUBLE    d[6][6],
     DOUBLE    fac,
     INT       nd

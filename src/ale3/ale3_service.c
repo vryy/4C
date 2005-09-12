@@ -32,6 +32,11 @@ Maintainer: Malte Neumann
 extern struct _MATERIAL  *mat;
 
 
+static DOUBLE Q12 = ONE/TWO;
+static DOUBLE Q14 = ONE/FOUR;
+static DOUBLE Q18 = ONE/EIGHT;
+
+
 /*-----------------------------------------------------------------------*/
 /*!
   \brief calculates the shape functions and derivatives
@@ -57,8 +62,8 @@ extern struct _MATERIAL  *mat;
  */
 /*-----------------------------------------------------------------------*/
 void ale3_funct_deriv(
-    DOUBLE      funct[MAXNOD_BRICK1],
-    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      funct[MAXNOD_ALE3],
+    DOUBLE      deriv[3][MAXNOD_ALE3],
     DOUBLE      r,
     DOUBLE      s,
     DOUBLE      t,
@@ -127,6 +132,171 @@ void ale3_funct_deriv(
         deriv[2][7]=-deriv[2][3];
       }
       break;
+
+
+    case hex20: /* QUADRATIC shape functions and their natural derivatives
+                   without central nodes */
+
+
+      /*   Shape functions and their derivatives for a 20 noded hexaedron
+       *   ==============================================================
+       *
+       *   Numbering of the nodes:
+       *   -----------------------
+       *   - this is the numbering used in GiD!!
+       *   - the numbering of the brick1 element is different!!
+       *
+       *
+       *
+       *                          ^ t          / s
+       *                          |           /
+       *                          |          /
+       *                    8     |   19    /   7
+       *                    o-----|---o---------o
+       *                   /|     |       /    /|
+       *                  / |     |      /    / |
+       *                 /  |     |     /    /  |
+       *              20o   |     |    /    o18 |
+       *               /  16o     |   /    /    o15
+       *              /     |     |  /    /     |
+       *             /      |  17 | /  6 /      |
+       *          5 o---------o---------o       |
+       *            |       |     *-----|---------------->
+       *            |       o---------o-|-------o         r
+       *            |      / 4       11 |      /3
+       *            |     /             |     /
+       *          13o    /              o14  /
+       *            | 12o               |   o10
+       *            |  /                |  /
+       *            | /                 | /
+       *            |/                  |/
+       *            o---------o---------o
+       *           1         9         2
+       */
+
+
+
+      /* form basic values */
+      rp  = ONE+r;
+      rm  = ONE-r;
+      sp  = ONE+s;
+      sm  = ONE-s;
+      tp  = ONE+t;
+      tm  = ONE-t;
+      rrm = ONE-r*r;
+      ssm = ONE-s*s;
+      ttm = ONE-t*t;
+
+      funct[ 0] = -Q18*rm*sm*tm*(TWO+r+s+t);
+      funct[ 1] = -Q18*rp*sm*tm*(TWO-r+s+t);
+      funct[ 2] = -Q18*rp*sp*tm*(TWO-r-s+t);
+      funct[ 3] = -Q18*rm*sp*tm*(TWO+r-s+t);
+      funct[ 4] = -Q18*rm*sm*tp*(TWO+r+s-t);
+      funct[ 5] = -Q18*rp*sm*tp*(TWO-r+s-t);
+      funct[ 6] = -Q18*rp*sp*tp*(TWO-r-s-t);
+      funct[ 7] = -Q18*rm*sp*tp*(TWO+r-s-t);
+
+      funct[ 8] =  Q14*rrm*sm*tm;
+      funct[ 9] =  Q14*rp*ssm*tm;
+      funct[10] =  Q14*rrm*sp*tm;
+      funct[11] =  Q14*rm*ssm*tm;
+
+      funct[12] =  Q14*rm*sm*ttm;
+      funct[13] =  Q14*rp*sm*ttm;
+      funct[14] =  Q14*rp*sp*ttm;
+      funct[15] =  Q14*rm*sp*ttm;
+
+      funct[16] =  Q14*rrm*sm*tp;
+      funct[17] =  Q14*rp*ssm*tp;
+      funct[18] =  Q14*rrm*sp*tp;
+      funct[19] =  Q14*rm*ssm*tp;
+
+
+      /* first derivative evaluation */
+      deriv[0][ 0] =  Q18*   sm*tm*(TWO*r+s+t+ONE);
+      deriv[1][ 0] =  Q18*rm*   tm*(r+TWO*s+t+ONE);
+      deriv[2][ 0] =  Q18*rm*sm*   (r+s+TWO*t+ONE);
+
+      deriv[0][ 1] =  Q18*   sm*tm*(TWO*r-s-t-ONE);
+      deriv[1][ 1] = -Q18*rp*   tm*(r-TWO*s-t-ONE);
+      deriv[2][ 1] = -Q18*rp*sm*   (r-s-TWO*t-ONE);
+
+      deriv[0][ 2] =  Q18*   sp*tm*(TWO*r+s-t-ONE);
+      deriv[1][ 2] =  Q18*rp*   tm*(r+TWO*s-t-ONE);
+      deriv[2][ 2] = -Q18*rp*sp*   (r+s-TWO*t-ONE);
+
+      deriv[0][ 3] =  Q18*   sp*tm*(TWO*r-s+t+ONE);
+      deriv[1][ 3] = -Q18*rm*   tm*(r-TWO*s+t+ONE);
+      deriv[2][ 3] =  Q18*rm*sp*   (r-s+TWO*t+ONE);
+
+      deriv[0][ 4] =  Q18*   sm*tp*(TWO*r+s-t+ONE);
+      deriv[1][ 4] =  Q18*rm*   tp*(r+TWO*s-t+ONE);
+      deriv[2][ 4] = -Q18*rm*sm*   (r+s-TWO*t+ONE);
+
+      deriv[0][ 5] =  Q18*   sm*tp*(TWO*r-s+t-ONE);
+      deriv[1][ 5] = -Q18*rp*   tp*(r-TWO*s+t-ONE);
+      deriv[2][ 5] =  Q18*rp*sm*   (r-s+TWO*t-ONE);
+
+      deriv[0][ 6] =  Q18*   sp*tp*(TWO*r+s+t-ONE);
+      deriv[1][ 6] =  Q18*rp*   tp*(r+TWO*s+t-ONE);
+      deriv[2][ 6] =  Q18*rp*sp*   (r+s+TWO*t-ONE);
+
+      deriv[0][ 7] =  Q18*   sp*tp*(TWO*r-s-t+ONE);
+      deriv[1][ 7] = -Q18*rm*   tp*(r-TWO*s-t+ONE);
+      deriv[2][ 7] = -Q18*rm*sp*   (r-s-TWO*t+ONE);
+
+
+      deriv[0][ 8] = -Q12*r*sm*tm;
+      deriv[1][ 8] = -Q14*rm*rp*tm;
+      deriv[2][ 8] = -Q14*rm*rp*sm;
+
+      deriv[0][ 9] =  Q14*sm*sp*tm;
+      deriv[1][ 9] = -Q12*rp*s*tm;
+      deriv[2][ 9] = -Q14*rp*sm*sp;
+
+      deriv[0][10] = -Q12*r*sp*tm;
+      deriv[1][10] =  Q14*rm*rp*tm;
+      deriv[2][10] = -Q14*rm*rp*sp;
+
+      deriv[0][11] = -Q14*sm*sp*tm;
+      deriv[1][11] = -Q12*s*tm*rm;
+      deriv[2][11] = -Q14*sm*sp*rm;
+
+
+      deriv[0][12] = -Q14*sm*tm*tp;
+      deriv[1][12] = -Q14*rm*tm*tp;
+      deriv[2][12] = -Q12*t*rm*sm;
+
+      deriv[0][13] =  Q14*sm*tm*tp;
+      deriv[1][13] = -Q14*rp*tm*tp;
+      deriv[2][13] = -Q12*t*rp*sm;
+
+      deriv[0][14] =  Q14*sp*tm*tp;
+      deriv[1][14] =  Q14*rp*tm*tp;
+      deriv[2][14] = -Q12*t*rp*sp;
+
+      deriv[0][15] = -Q14*sp*tm*tp;
+      deriv[1][15] =  Q14*rm*tm*tp;
+      deriv[2][15] = -Q12*t*rm*sp;
+
+
+      deriv[0][16] = -Q12*r*sm*tp;
+      deriv[1][16] = -Q14*rm*rp*tp;
+      deriv[2][16] =  Q14*rm*rp*sm;
+
+      deriv[0][17] =  Q14*sm*sp*tp;
+      deriv[1][17] = -Q12*s*tp*rp;
+      deriv[2][17] =  Q14*sm*sp*rp;
+
+      deriv[0][18] = -Q12*r*sp*tp;
+      deriv[1][18] =  Q14*rm*rp*tp;
+      deriv[2][18] =  Q14*rm*rp*sp;
+
+      deriv[0][19] = -Q14*sm*sp*tp;
+      deriv[1][19] = -Q12*s*tp*rm;
+      deriv[2][19] =  Q14*sm*sp*rm;
+      break;
+
 
     case tet4: /* LINEAR SHAPE FUNCTIONS */
       t1=r;
@@ -262,8 +432,8 @@ void ale3_funct_deriv(
  */
 /*-----------------------------------------------------------------------*/
 void ale3_bop(
-    DOUBLE      b[6][6*MAXNOD_BRICK1],
-    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      b[6][3*MAXNOD_ALE3],
+    DOUBLE      deriv[3][MAXNOD_ALE3],
     DOUBLE      xjm[3][3],
     DOUBLE      det,
     INT         iel
@@ -369,7 +539,7 @@ void ale3_bop(
  */
 /*-----------------------------------------------------------------------*/
 void ale3_jaco(
-    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      deriv[3][MAXNOD_ALE3],
     DOUBLE      xjm[3][3],
     DOUBLE     *det,
     ELEMENT    *ele,
@@ -406,7 +576,7 @@ void ale3_jaco(
     xjm[0][0]*xjm[1][2]*xjm[2][1]-
     xjm[0][1]*xjm[1][0]*xjm[2][2];
 
-  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+  if (*det<0.0) dserror("Negative Jacobian = %12.4e in element %3i",*det,ele->Id);
 
 #ifdef DEBUG
   dstrc_exit();
@@ -461,6 +631,15 @@ void ale3_intg(
        *----------------------------------------------------------------------*/
       switch(ele->e.ale3->nGP[0])/* direction r */
       {
+        case 3:
+          data->xgpr[0] = -0.7745966692415;
+          data->xgpr[1] =  0.0;
+          data->xgpr[2] =  0.7745966692415;
+
+          data->wgtr[0] =  0.5555555555556;
+          data->wgtr[1] =  0.8888888888889;
+          data->wgtr[2] =  0.5555555555556;
+          break;
         case 2:
           data->xgpr[0] = -0.5773502691896;
           data->xgpr[1] =  0.5773502691896;
@@ -479,6 +658,15 @@ void ale3_intg(
       }
       switch(ele->e.ale3->nGP[1])/* direction s */
       {
+        case 3:
+          data->xgps[0] = -0.7745966692415;
+          data->xgps[1] =  0.0;
+          data->xgps[2] =  0.7745966692415;
+
+          data->wgts[0] =  0.5555555555556;
+          data->wgts[1] =  0.8888888888889;
+          data->wgts[2] =  0.5555555555556;
+          break;
         case 2:
           data->xgps[0] = -0.5773502691896;
           data->xgps[1] =  0.5773502691896;
@@ -497,6 +685,15 @@ void ale3_intg(
       }
       switch(ele->e.ale3->nGP[2])/* direction t */
       {
+        case 3:
+          data->xgpt[0] = -0.7745966692415;
+          data->xgpt[1] =  0.0;
+          data->xgpt[2] =  0.7745966692415;
+
+          data->wgtt[0] =  0.5555555555556;
+          data->wgtt[1] =  0.8888888888889;
+          data->wgtt[2] =  0.5555555555556;
+          break;
         case 2:
           data->xgpt[0] = -0.5773502691896;
           data->xgpt[1] =  0.5773502691896;

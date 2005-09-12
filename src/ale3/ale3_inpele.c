@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------------------*/
+/*!
 \file
 \brief contains the routine 'ale3inp' which reads a 3d ale element
 
@@ -9,35 +10,44 @@ Maintainer: Malte Neumann
             0711 - 685-6121
 </pre>
 
-*----------------------------------------------------------------------*/
-#ifdef D_ALE
-#include "../headers/standardtypes.h"
-#include "../fluid3/fluid3.h"
-#include "../fluid2/fluid2.h"
-#include "ale3.h"
-#include "../ale2/ale2.h"
+ */
+/*-----------------------------------------------------------------------*/
+
 
 /*!
 \addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 
-/*!----------------------------------------------------------------------
-\brief reads a 3d ale element from the input file
+#ifdef D_ALE
 
-<pre>                                                              mn 06/02
-This routine reads a 3d ale element from the input file
 
-</pre>
-\param *ele  ELEMENT  (o)   the element
+#include "../headers/standardtypes.h"
+#include "../fluid3/fluid3.h"
+#include "../fluid2/fluid2.h"
+#include "ale3.h"
+#include "../ale2/ale2.h"
 
-\warning There is nothing special to this routine
-\return void
-\sa caling: ---; called by: inp_ale_field()
 
-*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief reads a 3d ale element from the input file
+
+  This routine reads a 3d ale element from the input file
+
+  \param *ele   ELEMENT  (o)   the element
+
+  \return void
+
+  \sa caling: ---; called by: inp_ale_field()
+
+  \author mn
+  \date   06/02
+
+ */
+/*-----------------------------------------------------------------------*/
 void ale3inp(
-    ELEMENT *ele
+    ELEMENT       *ele
     )
 {
 
@@ -45,13 +55,16 @@ void ale3inp(
   INT  ierr=0;
   INT  lmtmp;
 
+
 #ifdef DEBUG
   dstrc_enter("ale3inp");
 #endif
 
+
   /* allocate the element */
   ele->e.ale3 = (ALE3*)CCACALLOC(1,sizeof(ALE3));
   if (ele->e.ale3==NULL) dserror("Allocation of element ALE failed");
+
 
   /* read stuff needed for ALE element */
   /* read the element nodes */
@@ -133,194 +146,8 @@ void ale3inp(
 } /* end of ale3inp */
 
 
-#if 0
 
-/* we don't need this stuff, at least at the moment!!!!
-                                                             genk 05/03 */
-/*!----------------------------------------------------------------------
-  \brief  copy element info from fluidfield to ale field
-
-  <pre>                                                              mg 04/01
-
-  </pre>
-  \param *fluidfield  FIELD  (i/o)
-  \param *alefield    FIELD  (i/o)
-
-  \warning There is nothing special to this routine
-  \return void
-  \sa caling: ---; called by: inpfield()
-
- *----------------------------------------------------------------------*/
-void fluid_to_ale(
-    const FIELD *fluidfield,
-    const FIELD *alefield
-    )
-{
-
-#if defined(D_FLUID2) || defined(D_FLUID3)
-  INT  ierr=0;
-  INT  j;
-#endif
-
-  INT  i;
-  ELEMENT *fluid_ele =NULL;
-  ELEMENT *ale_ele;
-
-#ifdef DEBUG
-  dstrc_enter("fluid_to_ale");
-#endif
-
-  for (i=0; i<fluidfield->dis[0].numele; i++)
-  {
-    fluid_ele = &(fluidfield->dis[0].element[i]);
-#ifdef D_FLUID3
-    if (fluid_ele->eltyp==el_fluid3)
-    {
-      fluid_ele->e.f3->my_ale  = NULL;
-    }
-#endif
-#ifdef D_FLUID2
-    if (fluid_ele->eltyp==el_fluid2)
-    {
-      fluid_ele->e.f2->my_ale  = NULL;
-    }
-#endif
-}
-for (i=0; i<alefield->dis[0].numele; i++)
-{
-   ale_ele = &(alefield->dis[0].element[i]);
-   if (ale_ele->eltyp==el_ale3)
-   {
-      ale_ele->e.ale3->my_fluid = NULL;
-   }
-   if (ale_ele->eltyp==el_ale2)
-   {
-       ale_ele->e.ale2->my_fluid = NULL;
-   }
-}
-/*----------------------------------------------------------------------*/
-for (i=0; i<fluidfield->dis[0].numele; i++)/*------ loop fluid elements */
-{
-    fluid_ele = &(fluidfield->dis[0].element[i]);
-
-#ifdef D_FLUID3
-    if (fluid_ele->eltyp==el_fluid3)
-    {
-      if (fluid_ele->e.f3->is_ale!=1) continue;
-      for (j=0; j<alefield->dis[0].numele; j++)/* loop ale elements */
-      {
-        ale_ele = &(alefield->dis[0].element[j]);
-        if (ale_ele->e.ale3->my_fluid!=NULL) continue;
-
-        /* check the geometry of the two elements */
-        find_compatible_ele(fluid_ele,ale_ele,&ierr);
-        if (ierr==0) continue;
-
-        /* set ale flag in fluid element */
-        fluid_ele->e.f3->my_ale  = ale_ele;
-        ale_ele->e.ale3->my_fluid = fluid_ele;
-        break;
-      } /* end of loop over alefield */
-    } /* endif (fluid_ele->eltyp==el_fluid3) */
-#endif
-
-
-#ifdef D_FLUID2
-    if (fluid_ele->eltyp==el_fluid2)
-    {
-      if (fluid_ele->e.f2->is_ale!=1) continue;
-      for (j=0; j<alefield->dis[0].numele; j++)/* loop ale elements */
-      {
-        ale_ele = &(alefield->dis[0].element[j]);
-        if (ale_ele->e.ale2->my_fluid!=NULL) continue;
-
-        /* check the geometry of the two elements */
-        find_compatible_ele(fluid_ele,ale_ele,&ierr);
-        if (ierr==0) continue;
-
-        /* set ale flag in fluid element */
-        fluid_ele->e.f2->my_ale  = ale_ele;
-        ale_ele->e.ale2->my_fluid = fluid_ele;
-        break;
-      } /* end of loop over alefield */
-    } /* endif (fluid_ele->eltyp==el_fluid2) */
-#endif
-
-  } /* end of loop over fluidfield */
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-
-  return;
-} /* end of fluid_to_ale */
-
-
-
-
-/*!----------------------------------------------------------------------
-  \brief finds the compatible ale element
-
-  <pre>                                                              mg 04/01
-
-  </pre>
-  \param *ele1    ELEMENT  (i/o)
-  \param *ele2    ELEMENT  (i/o)
-  \param *ierr    INT      (i/o)
-
-  \warning There is nothing special to this routine
-  \return void
-  \sa calling: ---; called by: fluid_to_ale()
-
- *----------------------------------------------------------------------*/
-void find_compatible_ele(
-    const ELEMENT *ele1,
-    const ELEMENT *ele2,
-    INT           *ierr)
-{
-
-  INT  i;
-  DOUBLE tol=EPS8;
-  DOUBLE x1,y1,z1, x2,y2,z2;
-  DOUBLE x,y,z;
-
-#ifdef DEBUG
-  dstrc_enter("find_compatible_ele");
-#endif
-
-  x1=0.0;y1=0.0;z1=0.0;x2=0.0;y2=0.0;z2=0.0;
-  for (i=0; i<ele1->numnp; i++)
-  {
-    x1 += ele1->node[i]->x[0];
-    y1 += ele1->node[i]->x[1];
-    z1 += ele1->node[i]->x[2];
-  }
-  x1 /= (ele1->numnp);
-  y1 /= (ele1->numnp);
-  z1 /= (ele1->numnp);
-  for (i=0; i<ele1->numnp; i++)
-  {
-    x2 += ele2->node[i]->x[0];
-    y2 += ele2->node[i]->x[1];
-    z2 += ele2->node[i]->x[2];
-  }
-  x2 /= (ele1->numnp);
-  y2 /= (ele1->numnp);
-  z2 /= (ele1->numnp);
-  x = FABS(x1-x2);
-  y = FABS(x1-x2);
-  z = FABS(x1-x2);
-  if (x<=tol && y<=tol && z<=tol) *ierr=1;
-  else *ierr=0;
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-
-  return;
-} /* end of find_compatible_ele */
-
-
-#endif
-#endif
 /*! @} (documentation module close)*/
+
+#endif
+

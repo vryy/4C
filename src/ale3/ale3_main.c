@@ -72,7 +72,12 @@ void ale3(
     /* calculate linear stiffness matrix */
     case calc_ale_stiff:
       actmat = &(mat[ele->mat-1]);
-      ale3_static_ke(ele,&actdata,actmat,estif_global,0);
+
+      if (ele->distyp == hex20 && ele->e.ale3->hex20_red == 1)
+        ale3_static_ke_red(ele,&actdata,actmat,estif_global,0);
+      else
+        ale3_static_ke(ele,&actdata,actmat,estif_global,0);
+
       break;
 
     /* do nothig */
