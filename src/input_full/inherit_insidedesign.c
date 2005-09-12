@@ -102,125 +102,272 @@ return;
  *----------------------------------------------------------------------*/
 static void inherit_dvoldsurf_dirich()
 {
-INT             i,j;
-DVOL           *actdvol;
-DSURF          *actdsurf;
+  INT             i,j;
+  DVOL           *actdvol;
+  DSURF          *actdsurf;
+
 #ifdef DEBUG
-dstrc_enter("inherit_dvoldsurf_dirich");
+  dstrc_enter("inherit_dvoldsurf_dirich");
 #endif
-/*
-dirichlet conditions are inherited as follows:
-DVOL inherits to its DSURFS if the DSURF does not have its own
-*/
-/*----------------------------------------------------------------------*/
-/*---------------------------------------------------------- loop DVOLs */
-for (i=0; i<design->ndvol; i++)
-{
-   actdvol = &(design->dvol[i]);
-   /*-------------------- do nothing if DVOL has no dirichlet condition */
-   if (actdvol->dirich==NULL) continue;
-   /*------------------------------- loop the DSURFs related to actdvol */
-   for (j=0; j<actdvol->ndsurf; j++)
-   {
-      actdsurf = actdvol->dsurf[j];
-      /*-------- if actdsurf has its own dirichlet condition do nothing */
-      if (actdsurf->dirich != NULL) continue;
-      /*------ inherit the dirichlet condition from actdvol to actdsurf */
-      actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      if (!actdsurf->dirich) dserror("Allocation of memory failed");
-      actdsurf->dirich->dirich_type = actdvol->dirich->dirich_type;
-      am_alloc_copy(&(actdvol->dirich->dirich_onoff),&(actdsurf->dirich->dirich_onoff));
-      am_alloc_copy(&(actdvol->dirich->dirich_val),&(actdsurf->dirich->dirich_val));
-      am_alloc_copy(&(actdvol->dirich->curve),&(actdsurf->dirich->curve));
-      am_alloc_copy(&(actdvol->dirich->funct),&(actdsurf->dirich->funct));
-   }/* loop j over dsurfs */
-}/* loop i over dvols */
-/*----------------------------------------------------------------------*/
+
+  /*
+     dirichlet conditions are inherited as follows:
+     DVOL inherits to its DSURFS if the DSURF does not have its own
+     */
+
+
+  /* loop DVOLs */
+  for (i=0; i<design->ndvol; i++)
+  {
+    actdvol = &(design->dvol[i]);
+
+    /* do nothing if DVOL has no dirichlet condition */
+    if (actdvol->dirich != NULL)
+    {
+
+      /* loop the DSURFs related to actdvol */
+      for (j=0; j<actdvol->ndsurf; j++)
+      {
+        actdsurf = actdvol->dsurf[j];
+
+        /* if actdsurf has its own dirichlet condition do nothing */
+        if (actdsurf->dirich != NULL) continue;
+
+        /* inherit the dirichlet condition from actdvol to actdsurf */
+        actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+        if (!actdsurf->dirich) dserror("Allocation of memory failed");
+        actdsurf->dirich->dirich_type = actdvol->dirich->dirich_type;
+
+        am_alloc_copy(&(actdvol->dirich->dirich_onoff),
+            &(actdsurf->dirich->dirich_onoff));
+        am_alloc_copy(&(actdvol->dirich->dirich_val),&(actdsurf->dirich->dirich_val));
+        am_alloc_copy(&(actdvol->dirich->curve),&(actdsurf->dirich->curve));
+        am_alloc_copy(&(actdvol->dirich->funct),&(actdsurf->dirich->funct));
+
+      }  /* loop j over dsurfs */
+
+    }  /* if (actdvol->dirich != NULL) */
+
+
+#ifdef D_FSI
+    /* do nothing if DVOL has no ale_dirichlet condition */
+    if (actdvol->ale_dirich != NULL)
+    {
+
+      /* loop the DSURFs related to actdvol */
+      for (j=0; j<actdvol->ndsurf; j++)
+      {
+        actdsurf = actdvol->dsurf[j];
+
+        /* if actdsurf has its own dirichlet condition do nothing */
+        if (actdsurf->ale_dirich != NULL) continue;
+
+        /* inherit the dirichlet condition from actdvol to actdsurf */
+        actdsurf->ale_dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+        if (!actdsurf->ale_dirich) dserror("Allocation of memory failed");
+        actdsurf->ale_dirich->dirich_type = actdvol->ale_dirich->dirich_type;
+
+        am_alloc_copy(&(actdvol->ale_dirich->dirich_onoff),
+            &(actdsurf->ale_dirich->dirich_onoff));
+        am_alloc_copy(&(actdvol->ale_dirich->dirich_val),
+            &(actdsurf->ale_dirich->dirich_val));
+        am_alloc_copy(&(actdvol->ale_dirich->curve),&(actdsurf->ale_dirich->curve));
+        am_alloc_copy(&(actdvol->ale_dirich->funct),&(actdsurf->ale_dirich->funct));
+
+      }  /* loop j over dsurfs */
+
+    }  /* if (actdvol->ale_dirich != NULL) */
+#endif
+
+  }  /* loop i over dvols */
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
 } /* end of inherit_dvoldsurf_dirich */
+
+
+
+
+
 /*----------------------------------------------------------------------*
  | inherit boundary conditions DSURF to DLINE                m.gee 3/02 |
  *----------------------------------------------------------------------*/
 static void inherit_dsurfdline_dirich()
 {
-INT             i,j;
-DSURF          *actdsurf;
-DLINE          *actdline;
+  INT             i,j;
+  DSURF          *actdsurf;
+  DLINE          *actdline;
+
 #ifdef DEBUG
-dstrc_enter("inherit_dsurfdline_dirich");
+  dstrc_enter("inherit_dsurfdline_dirich");
 #endif
-/*----------------------------------------------------------------------*/
-/*--------------------------------------------------------- loop DSURFs */
-for (i=0; i<design->ndsurf; i++)
-{
-   actdsurf = &(design->dsurf[i]);
-   /*-------------------- do nothing if DSURF has no dirichlet condition */
-   if (actdsurf->dirich==NULL) continue;
-   /*------------------------------- loop the DLINEs related to actsurf */
-   for (j=0; j<actdsurf->ndline; j++)
-   {
-      actdline = actdsurf->dline[j];
-      /*-------- if actdline has its own dirichlet condition do nothing */
-      if (actdline->dirich != NULL) continue;
-      /*------ inherit the dirichlet condition from actdsurf to actdline */
-      actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      if (!actdline->dirich) dserror("Allocation of memory failed");
-      actdline->dirich->dirich_type = actdsurf->dirich->dirich_type;
-      am_alloc_copy(&(actdsurf->dirich->dirich_onoff),&(actdline->dirich->dirich_onoff));
-      am_alloc_copy(&(actdsurf->dirich->dirich_val),&(actdline->dirich->dirich_val));
-      am_alloc_copy(&(actdsurf->dirich->curve),&(actdline->dirich->curve));
-      am_alloc_copy(&(actdsurf->dirich->funct),&(actdline->dirich->funct));
-   }/* loop j over dlines */
-}/* loop i over dsurfs */
-/*----------------------------------------------------------------------*/
+
+
+  /* loop DSURFs */
+  for (i=0; i<design->ndsurf; i++)
+  {
+    actdsurf = &(design->dsurf[i]);
+
+    /* do nothing if DSURF has no dirichlet condition */
+    if (actdsurf->dirich != NULL)
+    {
+
+      /* loop the DLINEs related to actsurf */
+      for (j=0; j<actdsurf->ndline; j++)
+      {
+        actdline = actdsurf->dline[j];
+
+        /* if actdline has its own dirichlet condition do nothing */
+        if (actdline->dirich != NULL) continue;
+
+        /* inherit the dirichlet condition from actdsurf to actdline */
+        actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+        if (!actdline->dirich) dserror("Allocation of memory failed");
+        actdline->dirich->dirich_type = actdsurf->dirich->dirich_type;
+        am_alloc_copy(&(actdsurf->dirich->dirich_onoff),
+            &(actdline->dirich->dirich_onoff));
+        am_alloc_copy(&(actdsurf->dirich->dirich_val),&(actdline->dirich->dirich_val));
+        am_alloc_copy(&(actdsurf->dirich->curve),&(actdline->dirich->curve));
+        am_alloc_copy(&(actdsurf->dirich->funct),&(actdline->dirich->funct));
+
+      }  /* loop j over dlines */
+
+    }  /* if (actdsurf->dirich != NULL) */
+
+
+
+#ifdef D_FSI
+    /* do nothing if DSURF has no ale_dirichlet condition */
+    if (actdsurf->ale_dirich != NULL)
+    {
+
+      /* loop the DLINEs related to actsurf */
+      for (j=0; j<actdsurf->ndline; j++)
+      {
+        actdline = actdsurf->dline[j];
+
+        /* if actdline has its own dirichlet condition do nothing */
+        if (actdline->ale_dirich != NULL) continue;
+
+        /* inherit the dirichlet condition from actdsurf to actdline */
+        actdline->ale_dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+        if (!actdline->ale_dirich) dserror("Allocation of memory failed");
+        actdline->ale_dirich->dirich_type = actdsurf->ale_dirich->dirich_type;
+
+        am_alloc_copy(&(actdsurf->ale_dirich->dirich_onoff),
+            &(actdline->ale_dirich->dirich_onoff));
+        am_alloc_copy(&(actdsurf->ale_dirich->dirich_val),
+            &(actdline->ale_dirich->dirich_val));
+        am_alloc_copy(&(actdsurf->ale_dirich->curve),&(actdline->ale_dirich->curve));
+        am_alloc_copy(&(actdsurf->ale_dirich->funct),&(actdline->ale_dirich->funct));
+
+      }  /* loop j over dlines */
+
+    }  /* if (actdsurf->ale_dirich != NULL) */
+#endif
+
+  }  /* loop i over dsurfs */
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
 } /* end of inherit_dsurfdline_dirich */
+
+
+
+
+
 /*----------------------------------------------------------------------*
  | inherit boundary conditions DLINE to DNODE                m.gee 3/02 |
  *----------------------------------------------------------------------*/
 static void inherit_dlinednode_dirich()
 {
-INT             i,j;
-DNODE          *actdnode;
-DLINE          *actdline;
+  INT             i,j;
+  DNODE          *actdnode;
+  DLINE          *actdline;
+
 #ifdef DEBUG
-dstrc_enter("inherit_dlinednode_dirich");
+  dstrc_enter("inherit_dlinednode_dirich");
 #endif
-/*----------------------------------------------------------------------*/
-/*--------------------------------------------------------- loop DLINE */
-for (i=0; i<design->ndline; i++)
-{
-   actdline = &(design->dline[i]);
-   /*-------------------- do nothing if DLINE has no dirichlet condition */
-   if (actdline->dirich==NULL) continue;
-   /*-------------------------- do not inherit for slip dirich condition */
-   if (actdline->dirich->dirich_type==dirich_slip) continue;
-   /*------------------------------- loop the DNODEs related to actdline */
-   for (j=0; j<actdline->ndnode; j++)
-   {
-      actdnode = actdline->dnode[j];
-      /*-------- if actdnode has its own dirichlet condition do nothing */
-      if (actdnode->dirich != NULL) continue;
-      /*------ inherit the dirichlet condition from actdline to actdnode */
-      actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      actdnode->dirich->dirich_type = actdline->dirich->dirich_type;
-      am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));
-      am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));
-      am_alloc_copy(&(actdline->dirich->curve),&(actdnode->dirich->curve));
-      am_alloc_copy(&(actdline->dirich->funct),&(actdnode->dirich->funct));
-   }/* loop j over dnodes */
-}/* loop i over dlines */
-/*----------------------------------------------------------------------*/
+
+
+  /* loop DLINE */
+  for (i=0; i<design->ndline; i++)
+  {
+    actdline = &(design->dline[i]);
+
+    /* do nothing if DLINE has no dirichlet condition */
+    if (actdline->dirich != NULL)
+    {
+
+      /* do not inherit for slip dirich condition */
+      if (actdline->dirich->dirich_type==dirich_slip) continue;
+
+      /* loop the DNODEs related to actdline */
+      for (j=0; j<actdline->ndnode; j++)
+      {
+        actdnode = actdline->dnode[j];
+
+        /* if actdnode has its own dirichlet condition do nothing */
+        if (actdnode->dirich != NULL) continue;
+
+        /* inherit the dirichlet condition from actdline to actdnode */
+        actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+        actdnode->dirich->dirich_type = actdline->dirich->dirich_type;
+        am_alloc_copy(&(actdline->dirich->dirich_onoff),
+            &(actdnode->dirich->dirich_onoff));
+        am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));
+        am_alloc_copy(&(actdline->dirich->curve),&(actdnode->dirich->curve));
+        am_alloc_copy(&(actdline->dirich->funct),&(actdnode->dirich->funct));
+
+      }  /* loop j over dnodes */
+
+    }  /* if (actdline->dirich!=NULL) */
+
+
+
+#ifdef D_FSI
+    /* do nothing if DLINE has no ale_dirichlet condition */
+    if (actdline->ale_dirich != NULL)
+    {
+
+      /* loop the DNODEs related to actdline */
+      for (j=0; j<actdline->ndnode; j++)
+      {
+        actdnode = actdline->dnode[j];
+
+        /* if actdnode has its own dirichlet condition do nothing */
+        if (actdnode->ale_dirich != NULL) continue;
+
+        /* inherit the dirichlet condition from actdline to actdnode */
+        actdnode->ale_dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+        actdnode->ale_dirich->dirich_type = actdline->ale_dirich->dirich_type;
+
+        am_alloc_copy(&(actdline->ale_dirich->dirich_onoff),
+            &(actdnode->ale_dirich->dirich_onoff));
+        am_alloc_copy(&(actdline->ale_dirich->dirich_val),
+            &(actdnode->ale_dirich->dirich_val));
+        am_alloc_copy(&(actdline->ale_dirich->curve),&(actdnode->ale_dirich->curve));
+        am_alloc_copy(&(actdline->ale_dirich->funct),&(actdnode->ale_dirich->funct));
+
+      }  /* loop j over dnodes */
+
+    }  /* if (actdline->dirich==NULL) */
+#endif
+
+  }  /* loop i over dlines */
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
 } /* end of inherit_dlinednode_dirich */
 
 

@@ -10,13 +10,27 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+
 #include "../headers/standardtypes.h"
+
+
+/*----------------------------------------------------------------------*
+  |                                                       m.gee 06/01  |
+  | general problem data                                               |
+  | global variable GENPROB genprob is defined in global_control.c     |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate design if needed                                 |
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _DESIGN *design;
+
+
 /*----------------------------------------------------------------------*
  | functions only accessible in this file                               |
  *----------------------------------------------------------------------*/
@@ -25,47 +39,130 @@ void cal_dirich_fac(
     INT index
     );
 
+
+
 /*----------------------------------------------------------------------*
  | inherit boundary conditions from design to GNODEs         m.gee 3/02 |
  *----------------------------------------------------------------------*/
-void inherit_design_dis_dirichlet(DISCRET *actdis)
+void inherit_design_dis_dirichlet(
+    FIELD         *actfield,
+    DISCRET       *actdis)
 {
-INT     i,j;
-GNODE  *actgnode;
+
+  INT     i,j;
+  GNODE  *actgnode;
+
+
 #ifdef DEBUG
-dstrc_enter("inherit_design_dis_dirichlet");
+  dstrc_enter("inherit_design_dis_dirichlet");
 #endif
-/*----------------------------------------------------------------------*/
-for (i=0; i<actdis->ngnode; i++)
-{
-   actgnode = &(actdis->gnode[i]);
-   switch(actgnode->ondesigntyp)
-   {
-   case ondnode:    actgnode->dirich = actgnode->d.dnode->dirich;   break;
-   case ondline:    actgnode->dirich = actgnode->d.dline->dirich;   break;
-   case ondsurf:    actgnode->dirich = actgnode->d.dsurf->dirich;   break;
-   case ondvol:     actgnode->dirich = actgnode->d.dvol->dirich;    break;
-   case ondnothing: dserror("GNODE not owned by any design object");break;
-   default: dserror("Cannot inherit dirichlet condition");          break;
-   }
-   /* calculate factors for spatial functions */
-   if (actgnode->dirich != NULL)
-   {
-     for (j=0; j<MAXDOFPERNODE; j++)
-     {
-       if (actgnode->dirich->funct.a.iv[j] == 0)
-         actgnode->d_funct[j] = 1.0;
-       else
-         cal_dirich_fac(actgnode,j);
-     }
-   }
-}
-/*----------------------------------------------------------------------*/
+
+
+#ifdef D_FSI
+  if (actfield->fieldtyp == ale && genprob.create_ale == 1)
+  {
+    /* read the ale DIRICH conditions from the fluid design */
+
+    for (i=0; i<actdis->ngnode; i++)
+    {
+      actgnode = &(actdis->gnode[i]);
+      switch(actgnode->ondesigntyp)
+      {
+        case ondnode:
+          if (actgnode->d.dnode->ale_dirich != NULL)
+            actgnode->dirich = actgnode->d.dnode->ale_dirich;
+          break;
+
+        case ondline:
+          if (actgnode->d.dline->ale_dirich != NULL)
+            actgnode->dirich = actgnode->d.dline->ale_dirich;
+          break;
+
+        case ondsurf:
+          if (actgnode->d.dsurf->ale_dirich != NULL)
+            actgnode->dirich = actgnode->d.dsurf->ale_dirich;
+          break;
+
+        case ondvol:
+          break;
+
+        case ondnothing:
+          dserror("ALE-GNODE not owned by any design object");
+          break;
+
+        default:
+          dserror("Cannot inherit dirichlet condition");
+          break;
+      }
+
+
+      /* calculate factors for spatial functions */
+      if (actgnode->dirich != NULL)
+      {
+        for (j=0; j<MAXDOFPERNODE; j++)
+        {
+          if (actgnode->dirich->funct.a.iv[j] == 0)
+            actgnode->d_funct[j] = 1.0;
+          else
+            cal_dirich_fac(actgnode,j);
+
+        }  /* for (j=0; j<MAXDOFPERNODE; j++) */
+
+      }  /* if (actgnode->dirich != NULL) */
+
+    }  /* for (i=0; i<actdis->ngnode; i++) */
+
+  }  /* if (actfield->fieldtyp == ale && genprob.create_ale == 1) */
+
+  else
+#endif
+  {
+
+    for (i=0; i<actdis->ngnode; i++)
+    {
+      actgnode = &(actdis->gnode[i]);
+      switch(actgnode->ondesigntyp)
+      {
+        case ondnode:    actgnode->dirich = actgnode->d.dnode->dirich;   break;
+        case ondline:    actgnode->dirich = actgnode->d.dline->dirich;   break;
+        case ondsurf:    actgnode->dirich = actgnode->d.dsurf->dirich;   break;
+        case ondvol:     actgnode->dirich = actgnode->d.dvol->dirich;    break;
+        case ondnothing: dserror("GNODE not owned by any design object");break;
+        default: dserror("Cannot inherit dirichlet condition");          break;
+      }
+
+
+      /* calculate factors for spatial functions */
+      if (actgnode->dirich != NULL)
+      {
+        for (j=0; j<MAXDOFPERNODE; j++)
+        {
+          if (actgnode->dirich->funct.a.iv[j] == 0)
+            actgnode->d_funct[j] = 1.0;
+          else
+            cal_dirich_fac(actgnode,j);
+
+        }  /* for (j=0; j<MAXDOFPERNODE; j++) */
+
+      }  /* if (actgnode->dirich != NULL) */
+
+    }  /* for (i=0; i<actdis->ngnode; i++) */
+
+  }  /* else (actfield->fieldtyp == ale && genprob.create_ale == 1) */
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of inherit_design_dis_dirichlet */
+
+
+
+
+
 /*----------------------------------------------------------------------*
  | inherit couple conditions from design to GNODEs           m.gee 3/02 |
  *----------------------------------------------------------------------*/
