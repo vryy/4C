@@ -225,7 +225,7 @@ void part_fields()
     if (upbound < 10)
       upbound = 10;
 
-#ifdef 0
+#if 0
     printf("Upper Bound for adjncy: %d\n",upbound);
     fflush(stdout);
 #endif
@@ -309,7 +309,7 @@ void part_fields()
           else
           {
             amredef(&(adjncy[i]),(adjncy[i].fdim+0.1*upbound),1,"IV");
-#ifdef 0
+#if 0
             printf("REDEFINE: New size: %d\n",adjncy[i].fdim);
             fflush(stdout);
 #endif
@@ -320,7 +320,7 @@ void part_fields()
       }
     }  /* end of loop over nodes */
 
-#ifdef 0
+#if 0
     printf("Check size of adjncy!! Current size: %d  --- Requiered size: %d\n",
         adjncy[i].fdim,adjcounter);
     fflush(stdout);
