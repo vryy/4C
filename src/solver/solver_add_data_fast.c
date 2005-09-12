@@ -166,9 +166,6 @@ static  INT        *invbindx = NULL;
         if (!invupd)
         {
 
-#ifdef PERF
-    perf_begin(64);
-#endif
           /* allocate invupd */
           invupd = (INT*)CCACALLOC( numeq_total,sizeof(INT));
           if (!invupd) dserror("Allocation of invupd failed");
@@ -184,9 +181,6 @@ static  INT        *invbindx = NULL;
           {
             invupd[update[k]] = k+1;
           }
-#ifdef PERF
-    perf_end(64);
-#endif
         }
 
 
@@ -201,15 +195,9 @@ static  INT        *invbindx = NULL;
 
         if (!invbindx)
         {
-#ifdef PERF
-    perf_begin(65);
-#endif
           /* allocate invbindx */
           invbindx = (INT*)CCACALLOC( numeq_total,sizeof(INT));
           if (!invbindx) dserror("Allocation of invbindx failed");
-#ifdef PERF
-    perf_end(65);
-#endif
         }
 
 
@@ -220,9 +208,6 @@ static  INT        *invbindx = NULL;
 
 
 
-#ifdef PERF
-    perf_begin(66);
-#endif
           /* make location vector lm*/
           counter=0;
           for (i=0; i<actele->numnp; i++)
@@ -247,18 +232,12 @@ static  INT        *invbindx = NULL;
           }
           /* end of loop over element nodes */
           nd = counter;
-#ifdef PERF
-    perf_end(66);
-#endif
 
 
           /* now start looping the dofs */
           /* loop over i (the element row) */
 
 
-#ifdef PERF
-    perf_begin(67);
-#endif
 
 
 #if defined(SOLVE_DIRICH)
@@ -389,27 +368,15 @@ static  INT        *invbindx = NULL;
 
 
 
-#ifdef PERF
-    perf_end(67);
-#endif
 
 
 
-#ifdef PERF
-    perf_begin(68);
-#endif
           for(j=0;j<iel*4;j++)
           {
             eforce[j] =eforce_f[j*LOOPL+l];
             edforce[j]=edforce_f[j*LOOPL+l];
           }
-#ifdef PERF
-    perf_end(68);
-#endif
 
-#ifdef PERF
-    perf_begin(69);
-#endif
           /* assemble iteration rhs */
           if (container->nii+hasext[l]!=0)
           {
@@ -425,9 +392,6 @@ static  INT        *invbindx = NULL;
           }
 
           container->dvec=NULL;
-#ifdef PERF
-    perf_end(69);
-#endif
 
         } /* for(i=0;i<aloopl;i++) */
 
