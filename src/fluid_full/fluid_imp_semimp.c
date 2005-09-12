@@ -196,9 +196,6 @@ DOUBLE         *frhs;	            /* iteration - RHS                  */
 CONTAINER       container;          /* contains variables defined in container.h */
 FILE           *out = allfiles.out_out;
 
-FILE           *sol = allfiles.out_sol;
-
-
 ARRAY_POSITION *ipos;
 
 #ifdef BINIO

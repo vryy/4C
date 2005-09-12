@@ -156,9 +156,6 @@ FILE             *out_monarea;            /* file-pointer area of fluid  */
 FILE             *out_gemm;               /* file-pointer .gemm file*/
 #endif
 FILE             *out_tur;                /* file-pointer .tur  file     */
-
-FILE             *out_sol;
-
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
 FILE             *gidres;                 /* file pointer .flavia.res    */
 FILE             *gnu;                    /* file pointer .plt */
