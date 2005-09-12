@@ -164,7 +164,7 @@ case 0:
           }
           /* symbolic -> (with respect to the mask of matrix A) factorization */
 
-#if defined(LINUX_MUENCH) || defined(HPUX_MUENCH) || defined(WIN_MUENCH) || defined(TX7)
+#if defined(LINUX_MUENCH) || defined(HPUX_MUENCH) || defined(WIN_MUENCH) || defined(TX7) || defined(SX8)
        status = umfpack_di_symbolic (n, n, Ap, Ai, Ax, &symbolic, control, info);
 #else
        status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
@@ -238,7 +238,8 @@ case 0:
       sol->vec.a.dv[i] = x[dof];
    }
    ccf->ncall++;
-   ccf->is_factored=1;
+   ccf->is_factored = 1;
+   /*ccf->reuse       = 1;*/
 
    amdel(&x_a);
    amdel(&b_a);
