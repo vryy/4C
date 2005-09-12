@@ -21,18 +21,35 @@ extern struct _GENPROB     genprob;
  | prototypes of routines which are only to be called inside this file  |
  |                                                        m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inptop_findadjele(ELEMENT *centerele, ELEMENT *elepatch[400], INT nelepatch,
-                              ELEMENT *adjele[400], INT adjelelinenum[400], INT *nadjele,
-                              INT linenodes[3]);
+static void inptop_findadjele(
+    ELEMENT       *centerele,
+    ELEMENT       *elepatch[400],
+    INT            nelepatch,
+    ELEMENT       *adjele[400],
+    INT            adjelelinenum[400],
+    INT           *nadjele,
+    INT            linenodes[3]);
 
-static void inptop_makelinestoele(ELEMENT *actele, INT linenodes[12][3]);
+static void inptop_makelinestoele(
+    ELEMENT       *actele,
+    INT            linenodes[12][3]);
 
-static void inptop_findotherele(ELEMENT *firstele, ELEMENT **otherele, INT *facenumber,
-                                ELEMENT *elepatch[400], INT npatch, INT surfnodes[4]);
+static void inptop_findotherele(
+    ELEMENT       *firstele,
+    ELEMENT      **otherele,
+    INT           *facenumber,
+    ELEMENT       *elepatch[400],
+    INT            npatch,
+    INT            surfnodes[4]);
 
-static void inptop_makepatch(ELEMENT *centerele, ELEMENT *elepatch[400], INT *nelepatch);
+static void inptop_makepatch(
+    ELEMENT       *centerele,
+    ELEMENT       *elepatch[400],
+    INT           *nelepatch);
 
-static void inptop_makesurfnodes(ELEMENT *actele, INT surfnodes[6][4]);
+static void inptop_makesurfnodes(
+    ELEMENT       *actele,
+    INT            surfnodes[6][4]);
 
 
 
@@ -40,8 +57,10 @@ static void inptop_makesurfnodes(ELEMENT *actele, INT surfnodes[6][4]);
 /*----------------------------------------------------------------------*
  | create the node-element topology for this field        m.gee 4/01    |
  *----------------------------------------------------------------------*/
-void inp_topology(DISCRET *actdis)
+void inp_topology(
+    DISCRET       *actdis)
 {
+
   INT  i,j,k;
   INT  node_id;
   ELEMENT *actele;

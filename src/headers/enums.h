@@ -35,6 +35,8 @@ typedef enum _TIME_TYP
                        time_static,  /* time independent static analysis */
                        time_dynamic  /* time dependent analysis */
 } TIME_TYP;
+
+
 /*----------------------------------------------------------------------*
  | FIELD TYPES                                            m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -48,6 +50,8 @@ typedef enum _FIELDTYP
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
 #define FIELDNAMES {"none", "fluid", "ale", "structure", NULL}
+
+
 /*----------------------------------------------------------------------*
  | DISRCETISATION MODES                                   genk 08/02    |
  *----------------------------------------------------------------------*/

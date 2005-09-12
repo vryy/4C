@@ -117,28 +117,44 @@ dstrc_exit();
 #endif
 return;
 } /* end of math_tran */
+
+
+
 /*----------------------------------------------------------------------*
  |  make a vector unit lenght and return orig lenght         m.gee 6/01 |
  *----------------------------------------------------------------------*/
-void math_unvc(DOUBLE *enorm,DOUBLE *vec, INT n)
+void math_unvc(
+    DOUBLE       *enorm,
+    DOUBLE       *vec,
+    INT           n)
 {
-INT    i;
-DOUBLE skalar;
+
+  INT    i;
+  DOUBLE skalar;
+
 #ifdef DEBUG
-dstrc_enter("math_unvc");
+  dstrc_enter("math_unvc");
 #endif
-/*----------------------------------------------------------------------*/
-skalar=0.0;
-for (i=0; i<n; i++) skalar += vec[i]*vec[i];
-*enorm = sqrt(skalar);
-if (*enorm < EPS13) dserror("Vector of lenght < EPS13 appeared");
-for (i=0; i<n; i++) vec[i] /= (*enorm);
-/*----------------------------------------------------------------------*/
+
+
+  skalar=0.0;
+  for (i=0; i<n; i++) skalar += vec[i]*vec[i];
+  *enorm = sqrt(skalar);
+  if (*enorm < EPS13) dserror("Vector of lenght < EPS13 appeared");
+  for (i=0; i<n; i++) vec[i] /= (*enorm);
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
 } /* end of math_unvc */
+
+
+
+
+
 /*----------------------------------------------------------------------*
  |  r(I) = A(I,K)*b(K) -----  r = A*b                        m.gee 6/01 |
  |  or                                                                  |

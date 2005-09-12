@@ -90,7 +90,7 @@ typedef struct _ELEMENT
      {
      struct _SHELL9     *s9;                    /* shell9 element */
      struct _SHELL8     *s8;                    /* shell8 element */
-     struct _BEAM3      *b3;                    /* structural beam 3D element */    
+     struct _BEAM3      *b3;                    /* structural beam 3D element */
      struct _BRICK1     *c1;                    /* structural volume element */
      struct _WALL1      *w1;                    /* 2D plane stress - plane strain element */
      struct _FLUID2     *f2;                    /* 2D fluid element */
@@ -129,56 +129,76 @@ typedef struct _ELEMENT
  *----------------------------------------------------------------------*/
 typedef struct _GNODE
 {
+
 #ifdef DEBUG
-     INT                           Id;          /* for debugging only, do not use in code !*/
+  INT                           Id;          /* for debugging only,
+                                                do not use in code !*/
 #endif
-   /*------------fe topology section */
-     struct _NODE                 *node;        /* pointer to my node */
-     INT                           ngline;      /* number of GLINEs to me */
-     struct _GLINE               **gline;       /* pointers to the GLINEs to me */
-   /*------- design topology section */
-     enum
-     {
-        ondnothing,                             /* I am NOT positioned on any design object (error!) */
-        ondnode,                                /* I am on a DNODE */
-        ondline,                                /* I am on a DLINE */
-        ondsurf,                                /* I am on a DSURF */
-        ondvol                                  /* I am inside a DVOL */
-     }                             ondesigntyp;
-     union
-     {
-        struct _DNODE      *dnode;
-        struct _DLINE      *dline;
-        struct _DSURF      *dsurf;
-        struct _DVOL       *dvol;
-     }                             d;           /* ptr to the design object I am positioned on */
-   /* boundary and coupling conditions */
-     struct _DIRICH_CONDITION     *dirich;      /* a dirichlet condition on this gnode, else NULL */
-     DOUBLE                        d_funct[MAXDOFPERNODE];  /* factors of the spatial functions  at this gnode
-                                                   for the dirich conditins */
-     struct _COUPLE_CONDITION     *couple;      /* a coupling conditions on this gnode, else NULL */
-     struct _NEUM_CONDITION       *neum;        /* a neumann condition on this gnode, else NULL */
+
+  /* fe topology section */
+  struct _NODE                 *node;        /* pointer to my node */
+  INT                           ngline;      /* number of GLINEs to me */
+  struct _GLINE               **gline;       /* pointers to the GLINEs to me */
+
+
+  /* design topology section */
+  enum
+  {
+    ondnothing,                             /* I am NOT positioned on any
+                                               design object (error!) */
+    ondnode,                                /* I am on a DNODE */
+    ondline,                                /* I am on a DLINE */
+    ondsurf,                                /* I am on a DSURF */
+    ondvol                                  /* I am inside a DVOL */
+  }                             ondesigntyp;
+  union
+  {
+    struct _DNODE      *dnode;
+    struct _DLINE      *dline;
+    struct _DSURF      *dsurf;
+    struct _DVOL       *dvol;
+  }                             d;           /* ptr to the design object I
+                                                am positioned on */
+
+
+  /* boundary and coupling conditions */
+  struct _DIRICH_CONDITION     *dirich;      /* a dirichlet condition on
+                                                this gnode, else NULL */
+  DOUBLE            d_funct[MAXDOFPERNODE];  /* factors of the spatial
+                                                functions  at this gnode
+                                                for the dirich conditins */
+  struct _COUPLE_CONDITION     *couple;      /* a coupling conditions on
+                                                this gnode, else NULL */
+  struct _NEUM_CONDITION       *neum;        /* a neumann condition on this
+                                                gnode, else NULL */
+
+
 #ifdef D_FSI
-     struct _FSI_COUPLE_CONDITION *fsicouple;
-     struct _FLUID_FREESURF_CONDITION *freesurf;
-     struct _SLIPDIRICH_CONDITION     *slipdirich;
-     struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
+  struct _FSI_COUPLE_CONDITION *fsicouple;
+  struct _FLUID_FREESURF_CONDITION *freesurf;
+  struct _SLIPDIRICH_CONDITION     *slipdirich;
+  struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
 #endif
+
+
 #ifdef D_SSI
-     struct _SSI_COUPLE_CONDITION *ssicouple;
-  #ifndef D_FSI
-     struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
-  #endif
+  struct _SSI_COUPLE_CONDITION *ssicouple;
+#ifndef D_FSI
+  struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
 #endif
+#endif
+
+
 #ifdef WALLCONTACT
-     enum   _CONTACTTYPE       contype;
-     enum   _CONTACTFLAG   contactflag;
-     struct _ARRAY          *stiffness;
-     struct _ARRAY          *int_force;
-     struct _ARRAY          *ass_index;
-     struct _GNODE          *mymasters[2];
-     struct _HISTORY        *history;
+  enum   _CONTACTTYPE       contype;
+  enum   _CONTACTFLAG   contactflag;
+  struct _ARRAY          *stiffness;
+  struct _ARRAY          *int_force;
+  struct _ARRAY          *ass_index;
+  struct _GNODE          *mymasters[2];
+  struct _HISTORY        *history;
 #endif
+
 } GNODE;
 
 

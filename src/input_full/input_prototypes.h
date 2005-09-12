@@ -25,6 +25,7 @@ void inherit_dirich_coup_indesign(void);
   |  inherit_design_dis.c                                  m.gee 3/02  |
  *----------------------------------------------------------------------*/
 void inherit_design_dis_dirichlet(
+    FIELD         *actfield,
     DISCRET       *actdis);
 
 void inherit_design_dis_couple(
