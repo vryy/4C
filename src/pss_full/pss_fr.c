@@ -314,7 +314,7 @@ if (par.myrank==0)
         break;
       }
     }
-      
+
     /* cut comments that start inside the line */
     remarkpointer=strchr(allfiles.input_file[i],'/');
     if ((remarkpointer!=NULL) && (remarkpointer[1] == '/'))
@@ -337,20 +337,23 @@ if (par.nprocs>1)
 #endif
 
 /*---------------------give a copy of the "cleaned" input file on .err */
-#ifdef DEBUG
+#if defined(DEBUG) || defined(OUTPUT_INPUT)
 if (par.myrank==0)
 {
-   fprintf(allfiles.out_err,"===========================================\n");
-   fprintf(allfiles.out_err,"broadcasted copy of input file:            \n");
-   fprintf(allfiles.out_err,"===========================================\n");
-   for (i=0; i<linecount; i++)
-   {
-      fprintf(allfiles.out_err,"%s",allfiles.input_file[i]);
-   }
-   fprintf(allfiles.out_err,"===========================================\n");
-   fprintf(allfiles.out_err,"end of broadcasted copy of input file      \n");
-   fprintf(allfiles.out_err,"===========================================\n");
-   fflush(allfiles.out_err);
+  printf("\nNow writing a copy of the input file into the *.err-file.");
+  printf("\nThis takes a lot of time and is usually not necessary...\n\n");
+
+  fprintf(allfiles.out_err,"===========================================\n");
+  fprintf(allfiles.out_err,"broadcasted copy of input file:            \n");
+  fprintf(allfiles.out_err,"===========================================\n");
+  for (i=0; i<linecount; i++)
+  {
+    fprintf(allfiles.out_err,"%s",allfiles.input_file[i]);
+  }
+  fprintf(allfiles.out_err,"===========================================\n");
+  fprintf(allfiles.out_err,"end of broadcasted copy of input file      \n");
+  fprintf(allfiles.out_err,"===========================================\n");
+  fflush(allfiles.out_err);
 }
 #endif /* ifdef DEBUG */
 
