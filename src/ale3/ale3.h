@@ -35,8 +35,9 @@ typedef struct _ALE3
 {
 
 INT                nGP[3];         /*!< number of gaussian points in rst direction */
-INT                jacobi;         /*!< flag whether to use the Jacobean matrix    */
-/*struct _ELEMENT   *my_fluid; */  /*!< pointer to fluid element associated to me  */
+INT                jacobi;         /*!< flag whether to use the Jacobean matrix */
+struct _ELEMENT   *fluid_ele;      /*!< pointer to fluid element associated to me */
+INT                hex20_red;      /*!< use reduced stiffness matrix for hex20 */
 
 } ALE3;
 
@@ -80,8 +81,8 @@ number of time curves for ale elements
  | ale3_bop.c                                                 mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_bop(
-    DOUBLE      b[6][6*MAXNOD_BRICK1],
-    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      b[6][3*MAXNOD_ALE3],
+    DOUBLE      deriv[3][MAXNOD_ALE3],
     DOUBLE      xjm[3][3],
     DOUBLE      det,
     INT         iel
@@ -91,7 +92,7 @@ void ale3_bop(
  *----------------------------------------------------------------------*/
 void ale3_keku(
     DOUBLE  **s,
-    DOUBLE    bs[6][6*MAXNOD_BRICK1],
+    DOUBLE    bs[6][3*MAXNOD_ALE3],
     DOUBLE    d[6][6],
     DOUBLE    fac,
     INT       nd
@@ -143,8 +144,8 @@ void ale_init(
  | ale3_funct_deriv.c                                         mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_funct_deriv(
-    DOUBLE      funct[MAXNOD_BRICK1],
-    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      funct[MAXNOD_ALE3],
+    DOUBLE      deriv[3][MAXNOD_ALE3],
     DOUBLE      r,
     DOUBLE      s,
     DOUBLE      t,
@@ -165,7 +166,7 @@ void ale3_intg(const ELEMENT *ele, ALE3_DATA  *data);
  | ale3_jaco.c                                                mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_jaco(
-    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      deriv[3][MAXNOD_ALE3],
     DOUBLE      xjm[3][3],
     DOUBLE     *det,
     ELEMENT    *ele,
