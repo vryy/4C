@@ -236,10 +236,10 @@ void f3f_int_error(
 
 
 
-        ierr = f3finterr(elecord, xyzint, evelng, velint, epren, preint,
+        f3finterr(elecord, xyzint, evelng, velint, epren, preint,
             &(container->vel_error), &(container->pre_error),
             &(container->vel_norm), &(container->pre_norm),
-            &(container->error_norm), fac, paravec, sizevec);
+            &(container->error_norm), fac, paravec, sizevec, &ierr);
 
 
         if (ierr == 1)

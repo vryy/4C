@@ -44,7 +44,7 @@ C
 C--------------------------------------------------------------------------
       subroutine f3finterr(elecord, xyzint, evelng, velint, epren,
      &      preint, velerr, preerr, velsol, presol, norm,
-     &      fac, paravec, sizevec)
+     &      fac, paravec, sizevec, ierr)
 
       implicit none
 
@@ -63,6 +63,7 @@ C--------------------------------------------------------------------------
       real*8 presol
       integer norm
       real*8 fac(sizevec(4))
+      integer ierr
 
 
       integer l
@@ -81,7 +82,6 @@ C--------------------------------------------------------------------------
       a    = pi/4.0
       d    = pi/2.0
       t    = paravec(1)
-
 
 
 
@@ -116,7 +116,8 @@ c     loop elements
           difz = velint(l,3) - solz
           difp = preint(l)   - solp
         else
-          return 1
+          ierr = 1
+          return
         endif
 
 
@@ -155,8 +156,9 @@ c         L2 norm
       enddo
 
 
+      ierr = 0
 
-      return 0
+      return
       end subroutine
 
 

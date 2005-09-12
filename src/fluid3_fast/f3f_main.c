@@ -121,9 +121,6 @@ void fluid3_fast(
 
     /* initialisation */
     case calc_fluid_init:
-#ifdef PERF
-    perf_begin(42);
-#endif
       /* find number of fluid field */
       fdyn   = alldyn[genprob.numff].fdyn;
       viscstr= alldyn[genprob.numff].fdyn->viscstr;
@@ -134,23 +131,14 @@ void fluid3_fast(
       f3fcalele(NULL, estif_fast,
           emass_fast,eforce_fast,edforce_fast,ipos,
           NULL,NULL,1,loop);
-#ifdef PERF
-    perf_end(42);
-#endif
       break;
 
 
       /* call the element routines */
     case calc_fluid:
-#ifdef PERF
-    perf_begin(43);
-#endif
       f3fcalele(ele, estif_fast,
           emass_fast,eforce_fast,edforce_fast,ipos,
           hasdirich,hasext,0,loop);
-#ifdef PERF
-    perf_end(43);
-#endif
       break;
 
 

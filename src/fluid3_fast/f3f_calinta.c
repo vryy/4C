@@ -244,9 +244,6 @@ void f3fcalinta(
     {
       for (lt=0;lt<nit;lt++)
       {
-#ifdef PERF
-    perf_begin(51);
-#endif
         /* get values of  shape functions and their derivatives */
         switch(typ)
         {
@@ -287,47 +284,23 @@ void f3fcalinta(
           default:
             dserror("typ unknown!");
         } /* end switch (typ) */
-#ifdef PERF
-    perf_end(51);
-#endif
 
 
-#ifdef PERF
-    perf_begin(52);
-#endif
         /* compute Jacobian matrix */
         f3fjaco(funct, deriv, xjm, det, elecord, sizevec);
 
         for(l=0;l<sizevec[4];l++)
           fac[l] = facr * facs * fact * det[l];
-#ifdef PERF
-    perf_end(52);
-#endif
 
 
-#ifdef PERF
-    perf_begin(53);
-#endif
         /* compute global derivates */
         f3fgder(derxy, deriv, xjm, wa1, det, sizevec);
-#ifdef PERF
-    perf_end(53);
-#endif
 
-#ifdef PERF
-    perf_begin(54);
-#endif
         /* compute second global derivative */
         if (flagvec[5]!=0)
           /*f3fgder2(elecord, xjm, wa1, wa2, derxy, derxy2, deriv2, sizevec);*/
           f3fgder2loop(elecord, xjm, wa1, wa2, derxy, derxy2, deriv2, sizevec);
-#ifdef PERF
-    perf_end(54);
-#endif
 
-#ifdef PERF
-    perf_begin(55);
-#endif
         /* get velocities (n+g,i) at integraton point */
         f3fveli(velint, funct, evelng, sizevec);
 
@@ -336,28 +309,13 @@ void f3fcalinta(
 
         /* get grid velocity at integration point */
         f3fveli(gridvint,funct,egridv,sizevec);
-#ifdef PERF
-    perf_end(55);
-#endif
 
-#ifdef PERF
-    perf_begin(56);
-#endif
         /* get velocity (n+g,i) derivatives at integration point */
         f3fvder(vderxy, derxy, evelng, sizevec);
-#ifdef PERF
-    perf_end(56);
-#endif
 
-#ifdef PERF
-    perf_begin(57);
-#endif
         /* compute stabilisation parameter during ntegration &aloopl*/
         if (gls->iduring!=0)
           f3fcalelesize2(ele, velint, wa1, tau, paravec[1], inttyp, sizevec);
-#ifdef PERF
-    perf_end(57);
-#endif
 
 
 
@@ -367,9 +325,6 @@ void f3fcalinta(
           |  Standard Galerkin matrices are all stored in one matrix "estif"   |
           |  Standard Galerkin mass matrix is stored in "emass"                |
          *----------------------------------------------------------------------*/
-#ifdef PERF
-    perf_begin(58);
-#endif
 
         /* compute matrix Mvv */
         if (fdyn->nis==0)
@@ -379,10 +334,6 @@ void f3fcalinta(
         f3fcalgalk(estif, velint, gridvint, vderxy, funct, derxy, fac,
             paravec, flagvec, sizevec);
 
-#ifdef PERF
-    perf_end(58);
-#endif
-
 
 
         /*----------------------------------------------------------------------*
@@ -391,9 +342,6 @@ void f3fcalinta(
           |  Stabilisation matrices are all stored in one matrix "estif"       |
           |  Stabilisation mass matrices are all stored in one matrix "emass"  |
          *----------------------------------------------------------------------*/
-#ifdef PERF
-    perf_begin(59);
-#endif
 
         /* stabilisation for matrix Kvv Kvp Kpv Kpp */
         f3fcalstabk(estif,velint,alecovint,gridvint,vderxy,funct,derxy,derxy2,fac,
@@ -407,9 +355,6 @@ void f3fcalinta(
                   tau, paravec, flagvec, sizevec);
         }
 
-#ifdef PERF
-    perf_end(59);
-#endif
 
 
 
@@ -417,9 +362,6 @@ void f3fcalinta(
           |         compute "Iteration" Force Vectors                          |
           |      (for Newton iteration and for fixed-point iteration)          |
          *----------------------------------------------------------------------*/
-#ifdef PERF
-    perf_begin(60);
-#endif
         if (fdyn->nii!=0)
         {
           /* get convective velocities (n+1,i) at integration point */
@@ -435,9 +377,6 @@ void f3fcalinta(
               facsll, tau, paravec, flagvec, sizevec);
 
         } /* endif (fdyn->nii!=0) */
-#ifdef PERF
-    perf_end(60);
-#endif
       }
     }
   } /* end of loop over integration points */

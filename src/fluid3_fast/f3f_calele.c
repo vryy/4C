@@ -210,44 +210,23 @@ void f3fcalele(
     /* Euler */
     case 0:
 
-#ifdef PERF
-    perf_begin(44);
-#endif
       /* set element data */
       f3fcalset(ele,evhist,evelng,epren,edeadn,edeadng,ipos,hasext,sizevec);
-#ifdef PERF
-    perf_end(44);
-#endif
 
-#ifdef PERF
-    perf_begin(45);
-#endif
       /*A "C-function", but elecord[3,8] used in fortran this can be out of
         the gauss point loop*/
       f3fcalelecord(ele,elecord,sizevec);
-#ifdef PERF
-    perf_end(45);
-#endif
 
 
     switch (ele[0]->e.f3->stab_type)
     {
       case stab_gls:
 
-#ifdef PERF
-    perf_begin(46);
-#endif
       /* calculate element size and stab-parameter: */
       f3fcalelesize(ele,funct,deriv,deriv2,
           derxy,xjm,evelng,velint,wa1,elecord,tau,sizevec);
-#ifdef PERF
-    perf_end(46);
-#endif
 
 
-#ifdef PERF
-    perf_begin(47);
-#endif
       /* calculate element stiffness matrices
          and element force vectors */
       f3fcalint(ele,elecord,tau,hasext,estif,
@@ -257,9 +236,6 @@ void f3fcalele(
           epren,edeadn,edeadng,velint,vel2int,
           covint,vderxy,pderxy,vderxy2,wa1,
           wa2,sizevec);
-#ifdef PERF
-      perf_end(47);
-#endif
 
       break; /* end WAW GLS */
 
@@ -286,44 +262,23 @@ void f3fcalele(
     /* ALE */
     case 1:
 
-#ifdef PERF
-    perf_begin(44);
-#endif
       /* set element data */
       f3fcalseta(ele,evhist,evelng,ealecovng,egridv,
           epren,edeadn,edeadng,ipos,hasext,sizevec);
-#ifdef PERF
-    perf_end(44);
-#endif
 
 
-#ifdef PERF
-    perf_begin(45);
-#endif
       /*A "C-function", but elecord[3,8] used in fortran this can be out of
         the gauss point loop*/
       f3falecord(ele,elecord,sizevec);
-#ifdef PERF
-    perf_end(45);
-#endif
 
     switch (ele[0]->e.f3->stab_type)
     {
       case stab_gls:
-#ifdef PERF
-    perf_begin(46);
-#endif
       /* calculate element size and stab-parameter: */
       f3fcalelesize(ele,funct,deriv,deriv2,
           derxy,xjm,evelng,velint,wa1,elecord,tau,sizevec);
-#ifdef PERF
-    perf_end(46);
-#endif
 
 
-#ifdef PERF
-    perf_begin(47);
-#endif
       /* calculate element stiffness matrices
          and element force vectors */
       f3fcalinta(ele,elecord,tau,hasext,estif,
@@ -334,9 +289,6 @@ void f3fcalele(
           epren,edeadn,edeadng,velint,vel2int,
           covint,alecovint,gridvint,vderxy,pderxy,vderxy2,wa1,
           wa2,sizevec);
-#ifdef PERF
-      perf_end(47);
-#endif
         break;/* end WAW GLS */
 
         case stab_usfem: /* completely linearised version */
@@ -364,9 +316,6 @@ void f3fcalele(
   }
 
 
-#ifdef PERF
-    perf_begin(48);
-#endif
 
 #if 0
   /* add emass and estif to estif */
@@ -377,9 +326,6 @@ void f3fcalele(
   f3fmast(estif,emass,&thsl,&nis,sizevec);
 #endif
 
-#ifdef PERF
-    perf_end(48);
-#endif
 
 
 #if 0
@@ -389,28 +335,16 @@ void f3fcalele(
 #endif
 
 
-#ifdef PERF
-    perf_begin(50);
-#endif
     /* calculate emass * hist */
     f3fmassrhs(emass,evhist,edeadng,eforce,hasext,&(fdyn->thsl),sizevec);
-#ifdef PERF
-    perf_end(50);
-#endif
 
 
 dirich:
 
-#ifdef PERF
-    perf_begin(49);
-#endif
 
   /* calculate element load vector edforce */
   f3fcaldirich(ele,edforce,estif,ipos,hasdirich,0,sizevec);
 
-#ifdef PERF
-    perf_end(49);
-#endif
 
 
 end:
@@ -660,24 +594,12 @@ switch(ele[0]->e.f3->is_ale)
   /* Euler */
   case 0:
 
-#ifdef PERF
-  perf_begin(44);
-#endif
   /* set element data */
   f3fcalset(ele,evhist,evelng,epren,edeadn,edeadng,ipos,hasext,sizevec);
-#ifdef PERF
-  perf_end(44);
-#endif
 
-#ifdef PERF
-  perf_begin(45);
-#endif
   /*A "C-function", but elecord[3,8] used in fortran this can be out of
     the gauss point loop*/
   f3fcalelecord(ele,elecord,sizevec);
-#ifdef PERF
-  perf_end(45);
-#endif
 
   /* stab-parameter */
   f3fcaltau(ele,elecord,funct,deriv,derxy,velint,xjm,evelng,
@@ -696,25 +618,13 @@ switch(ele[0]->e.f3->is_ale)
  /* ALE */
   case 1:
 
-#ifdef PERF
-    perf_begin(44);
-#endif
    /* set element data */
   f3fcalseta(ele,evhist,evelng,ealecovng,egridv,
       epren,edeadn,edeadng,ipos,hasext,sizevec);
-#ifdef PERF
-    perf_end(44);
-#endif
 
-#ifdef PERF
-    perf_begin(45);
-#endif
   /*A "C-function", but elecord[3,8] used in fortran this can be out of
     the gauss point loop*/
   f3falecord(ele,elecord,sizevec);
-#ifdef PERF
-    perf_end(45);
-#endif
   /* stab-parameter */
   f3fcaltau(ele,elecord,funct,deriv,derxy,alecovint,xjm,ealecovng,
             tau,wa1,sizevec);

@@ -628,7 +628,7 @@ void f3f_int_error(
     INT              sizevec[6]
     );
 
-INT f3finterr(
+void f3finterr(
     DOUBLE          *elecord,
     DOUBLE          *xyzint,
     DOUBLE          *evelng,
@@ -642,7 +642,8 @@ INT f3finterr(
     INT             *norm,
     DOUBLE          *fac,
     DOUBLE           paravec[4],
-    INT              sizevec[6]
+    INT              sizevec[6],
+    INT             *ierr
     );
 
 
