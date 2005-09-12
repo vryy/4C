@@ -29,7 +29,7 @@ typedef struct _ALE2
 
 INT                nGP[3];         /*!< number of gaussian points in rs direction */
 INT                jacobi;         /*!< flag whether to use the Jacobean matrix    */
-struct _ELEMENT   *my_fluid;       /*!< pointer to fluid element associated to me  */
+struct _ELEMENT   *fluid_ele;      /*!< pointer to fluid element associated to me */
 DOUBLE             quality;        /*!< my element quality */
 
 } ALE2;
