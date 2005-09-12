@@ -539,88 +539,88 @@ void f3fhexc(
 
 
       /* first derivative evaluation */
-      deriv[ 0][0] =  Q18*   sm*tm*(TWO*r+s+t+ONE);
-      deriv[ 0][1] =  Q18*rm*   tm*(r+TWO*s+t+ONE);
-      deriv[ 0][2] =  Q18*rm*sm*   (r+s+TWO*t+ONE);
+      deriv[0][ 0] =  Q18*   sm*tm*(TWO*r+s+t+ONE);
+      deriv[1][ 0] =  Q18*rm*   tm*(r+TWO*s+t+ONE);
+      deriv[2][ 0] =  Q18*rm*sm*   (r+s+TWO*t+ONE);
 
-      deriv[ 1][0] =  Q18*   sm*tm*(TWO*r-s-t-ONE);
-      deriv[ 1][1] = -Q18*rp*   tm*(r-TWO*s-t-ONE);
-      deriv[ 1][2] = -Q18*rp*sm*   (r-s-TWO*t-ONE);
+      deriv[0][ 1] =  Q18*   sm*tm*(TWO*r-s-t-ONE);
+      deriv[1][ 1] = -Q18*rp*   tm*(r-TWO*s-t-ONE);
+      deriv[2][ 1] = -Q18*rp*sm*   (r-s-TWO*t-ONE);
 
-      deriv[ 2][0] =  Q18*   sp*tm*(TWO*r+s-t-ONE);
-      deriv[ 2][1] =  Q18*rp*   tm*(r+TWO*s-t-ONE);
-      deriv[ 2][2] = -Q18*rp*sp*   (r+s-TWO*t-ONE);
+      deriv[0][ 2] =  Q18*   sp*tm*(TWO*r+s-t-ONE);
+      deriv[1][ 2] =  Q18*rp*   tm*(r+TWO*s-t-ONE);
+      deriv[2][ 2] = -Q18*rp*sp*   (r+s-TWO*t-ONE);
 
-      deriv[ 3][0] =  Q18*   sp*tm*(TWO*r-s+t+ONE);
-      deriv[ 3][1] = -Q18*rm*   tm*(r-TWO*s+t+ONE);
-      deriv[ 3][2] =  Q18*rm*sp*   (r-s+TWO*t+ONE);
+      deriv[0][ 3] =  Q18*   sp*tm*(TWO*r-s+t+ONE);
+      deriv[1][ 3] = -Q18*rm*   tm*(r-TWO*s+t+ONE);
+      deriv[2][ 3] =  Q18*rm*sp*   (r-s+TWO*t+ONE);
 
-      deriv[ 4][0] =  Q18*   sm*tp*(TWO*r+s-t+ONE);
-      deriv[ 4][1] =  Q18*rm*   tp*(r+TWO*s-t+ONE);
-      deriv[ 4][2] = -Q18*rm*sm*   (r+s-TWO*t+ONE);
+      deriv[0][ 4] =  Q18*   sm*tp*(TWO*r+s-t+ONE);
+      deriv[1][ 4] =  Q18*rm*   tp*(r+TWO*s-t+ONE);
+      deriv[2][ 4] = -Q18*rm*sm*   (r+s-TWO*t+ONE);
 
-      deriv[ 5][0] =  Q18*   sm*tp*(TWO*r-s+t-ONE);
-      deriv[ 5][1] = -Q18*rp*   tp*(r-TWO*s+t-ONE);
-      deriv[ 5][2] =  Q18*rp*sm*   (r-s+TWO*t-ONE);
+      deriv[0][ 5] =  Q18*   sm*tp*(TWO*r-s+t-ONE);
+      deriv[1][ 5] = -Q18*rp*   tp*(r-TWO*s+t-ONE);
+      deriv[2][ 5] =  Q18*rp*sm*   (r-s+TWO*t-ONE);
 
-      deriv[ 6][0] =  Q18*   sp*tp*(TWO*r+s+t-ONE);
-      deriv[ 6][1] =  Q18*rp*   tp*(r+TWO*s+t-ONE);
-      deriv[ 6][2] =  Q18*rp*sp*   (r+s+TWO*t-ONE);
+      deriv[0][ 6] =  Q18*   sp*tp*(TWO*r+s+t-ONE);
+      deriv[1][ 6] =  Q18*rp*   tp*(r+TWO*s+t-ONE);
+      deriv[2][ 6] =  Q18*rp*sp*   (r+s+TWO*t-ONE);
 
-      deriv[ 7][0] =  Q18*   sp*tp*(TWO*r-s-t+ONE);
-      deriv[ 7][1] = -Q18*rm*   tp*(r-TWO*s-t+ONE);
-      deriv[ 7][2] = -Q18*rm*sp*   (r-s-TWO*t+ONE);
-
-
-      deriv[ 8][0] = -Q12*r*sm*tm;
-      deriv[ 8][1] = -Q14*rm*rp*tm;
-      deriv[ 8][2] = -Q14*rm*rp*sm;
-
-      deriv[ 9][0] =  Q14*sm*sp*tm;
-      deriv[ 9][1] = -Q12*rp*s*tm;
-      deriv[ 9][2] = -Q14*rp*sm*sp;
-
-      deriv[10][0] = -Q12*r*sp*tm;
-      deriv[10][1] =  Q14*rm*rp*tm;
-      deriv[10][2] = -Q14*rm*rp*sp;
-
-      deriv[11][0] = -Q14*sm*sp*tm;
-      deriv[11][1] = -Q12*s*tm*rm;
-      deriv[11][2] = -Q14*sm*sp*rm;
+      deriv[0][ 7] =  Q18*   sp*tp*(TWO*r-s-t+ONE);
+      deriv[1][ 7] = -Q18*rm*   tp*(r-TWO*s-t+ONE);
+      deriv[2][ 7] = -Q18*rm*sp*   (r-s-TWO*t+ONE);
 
 
-      deriv[12][0] = -Q14*sm*tm*tp;
-      deriv[12][1] = -Q14*rm*tm*tp;
-      deriv[12][2] = -Q12*t*rm*sm;
+      deriv[0][ 8] = -Q12*r*sm*tm;
+      deriv[1][ 8] = -Q14*rm*rp*tm;
+      deriv[2][ 8] = -Q14*rm*rp*sm;
 
-      deriv[13][0] =  Q14*sm*tm*tp;
-      deriv[13][1] = -Q14*rp*tm*tp;
-      deriv[13][2] = -Q12*t*rp*sm;
+      deriv[0][ 9] =  Q14*sm*sp*tm;
+      deriv[1][ 9] = -Q12*rp*s*tm;
+      deriv[2][ 9] = -Q14*rp*sm*sp;
 
-      deriv[14][0] =  Q14*sp*tm*tp;
-      deriv[14][1] =  Q14*rp*tm*tp;
-      deriv[14][2] = -Q12*t*rp*sp;
+      deriv[0][10] = -Q12*r*sp*tm;
+      deriv[1][10] =  Q14*rm*rp*tm;
+      deriv[2][10] = -Q14*rm*rp*sp;
 
-      deriv[15][0] = -Q14*sp*tm*tp;
-      deriv[15][1] =  Q14*rm*tm*tp;
-      deriv[15][2] = -Q12*t*rm*sp;
+      deriv[0][11] = -Q14*sm*sp*tm;
+      deriv[1][11] = -Q12*s*tm*rm;
+      deriv[2][11] = -Q14*sm*sp*rm;
 
 
-      deriv[16][0] = -Q12*r*sm*tp;
-      deriv[16][1] = -Q14*rm*rp*tp;
-      deriv[16][2] =  Q14*rm*rp*sm;
+      deriv[0][12] = -Q14*sm*tm*tp;
+      deriv[1][12] = -Q14*rm*tm*tp;
+      deriv[2][12] = -Q12*t*rm*sm;
 
-      deriv[17][0] =  Q14*sm*sp*tp;
-      deriv[17][1] = -Q12*s*tp*rp;
-      deriv[17][2] =  Q14*sm*sp*rp;
+      deriv[0][13] =  Q14*sm*tm*tp;
+      deriv[1][13] = -Q14*rp*tm*tp;
+      deriv[2][13] = -Q12*t*rp*sm;
 
-      deriv[18][0] = -Q12*r*sp*tp;
-      deriv[18][1] =  Q14*rm*rp*tp;
-      deriv[18][2] =  Q14*rm*rp*sp;
+      deriv[0][14] =  Q14*sp*tm*tp;
+      deriv[1][14] =  Q14*rp*tm*tp;
+      deriv[2][14] = -Q12*t*rp*sp;
 
-      deriv[19][0] = -Q14*sm*sp*tp;
-      deriv[19][1] = -Q12*s*tp*rm;
-      deriv[19][2] =  Q14*sm*sp*rm;
+      deriv[0][15] = -Q14*sp*tm*tp;
+      deriv[1][15] =  Q14*rm*tm*tp;
+      deriv[2][15] = -Q12*t*rm*sp;
+
+
+      deriv[0][16] = -Q12*r*sm*tp;
+      deriv[1][16] = -Q14*rm*rp*tp;
+      deriv[2][16] =  Q14*rm*rp*sm;
+
+      deriv[0][17] =  Q14*sm*sp*tp;
+      deriv[1][17] = -Q12*s*tp*rp;
+      deriv[2][17] =  Q14*sm*sp*rp;
+
+      deriv[0][18] = -Q12*r*sp*tp;
+      deriv[1][18] =  Q14*rm*rp*tp;
+      deriv[2][18] =  Q14*rm*rp*sp;
+
+      deriv[0][19] = -Q14*sm*sp*tp;
+      deriv[1][19] = -Q12*s*tp*rm;
+      deriv[2][19] =  Q14*sm*sp*rm;
       break;
 
 
