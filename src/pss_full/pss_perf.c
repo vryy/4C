@@ -120,48 +120,46 @@ void perf_init_all ()
   strcpy(name[19],"exchange dofs");             bezug[19] = 0;
   strcpy(name[20],"solve system");              bezug[20] = 0;
 
-  strcpy(name[40],"calc matrices fast");        bezug[40] = 0;
-  strcpy(name[41],"assemble_fast");             bezug[41] = 0;
-  strcpy(name[42],"init element");              bezug[42] = 0;
-  strcpy(name[43],"calele");                    bezug[43] = 0;
+  strcpy(name[40],"fsi_dyn");                   bezug[40] = 0;
+  strcpy(name[41],"init");                      bezug[41] = 0;
+  strcpy(name[42],"fsi_fluid");                 bezug[42] = 0;
+  strcpy(name[43],"fsi_struct");                bezug[43] = 0;
+  strcpy(name[44],"fsi_ale");                   bezug[44] = 0;
+  strcpy(name[45],"comp relax");                bezug[45] = 0;
+  strcpy(name[46],"fsi_fluid-init");            bezug[46] = 42;
+  strcpy(name[47],"fsi_fluid-prep");            bezug[47] = 42;
+  strcpy(name[48],"fsi_fluid-calc");            bezug[48] = 42;
+  strcpy(name[49],"fsi_fluid-solv");            bezug[49] = 42;
 
-  strcpy(name[44],"calset");                    bezug[44] = 43;
-  strcpy(name[45],"elecord");                   bezug[45] = 43;
-  strcpy(name[46],"elesize");                   bezug[46] = 43;
-  strcpy(name[47],"calint");                    bezug[47] = 43;
-  strcpy(name[48],"make_estif");                bezug[48] = 43;
-  strcpy(name[49],"caldirich");                 bezug[49] = 43;
-  strcpy(name[50],"massrhs");                   bezug[50] = 43;
+  strcpy(name[50],"fsi_fluid-post");            bezug[50] = 42;
+  strcpy(name[51],"fsi_fluid-coup");            bezug[51] = 42;
+  strcpy(name[52],"fsi_fluid-fina");            bezug[52] = 42;
+  strcpy(name[53],"allocate_solmf");            bezug[53] = 41;
+  strcpy(name[54],"find coup nodes");           bezug[54] = 41;
+  strcpy(name[55],"plausibility");              bezug[55] = 41;
+  strcpy(name[56],"loop struct");               bezug[56] = 54;
+  strcpy(name[57],"loop ale");                  bezug[57] = 54;
+  strcpy(name[58],"");                          bezug[58] = 0;
+  strcpy(name[59],"");                          bezug[59] = 0;
 
-  strcpy(name[51],"functderiv");                bezug[51] = 47;
-  strcpy(name[52],"jacob");                     bezug[52] = 47;
-  strcpy(name[53],"gder");                      bezug[53] = 47;
-  strcpy(name[54],"gder2");                     bezug[54] = 47;
-  strcpy(name[55],"veli");                      bezug[55] = 47;
-  strcpy(name[56],"vder");                      bezug[56] = 47;
-  strcpy(name[57],"elesize_2");                 bezug[57] = 47;
-  strcpy(name[58],"gal_mat");                   bezug[58] = 47;
-  strcpy(name[59],"stab_mat");                  bezug[59] = 47;
-  strcpy(name[60],"iter_rhs");                  bezug[60] = 47;
-  strcpy(name[61],"ext_rhs");                   bezug[61] = 47;
-  strcpy(name[62],"time_rhs");                  bezug[62] = 47;
-  strcpy(name[63],"ext_rhs");                   bezug[63] = 47;
-
-  strcpy(name[64],"invupdate");                 bezug[64] = 41;
-  strcpy(name[65],"invbindx");                  bezug[65] = 41;
-  strcpy(name[66],"make lm");                   bezug[66] = 41;
-  strcpy(name[67],"faddmsr");                   bezug[67] = 41;
-  strcpy(name[68],"copy rhs");                  bezug[68] = 41;
-  strcpy(name[69],"assemble rhs");              bezug[69] = 41;
+  strcpy(name[60],"");                          bezug[60] = 0;
+  strcpy(name[61],"");                          bezug[61] = 0;
+  strcpy(name[62],"");                          bezug[62] = 0;
+  strcpy(name[63],"");                          bezug[63] = 0;
+  strcpy(name[64],"");                          bezug[64] = 0;
+  strcpy(name[65],"");                          bezug[65] = 0;
+  strcpy(name[66],"");                          bezug[66] = 0;
+  strcpy(name[67],"");                          bezug[67] = 0;
+  strcpy(name[68],"");                          bezug[68] = 0;
+  strcpy(name[69],"");                          bezug[69] = 0;
 
   strcpy(name[71],"out_results");               bezug[71] = 0;
   strcpy(name[72],"restart_write_bin");         bezug[72] = 0;
   strcpy(name[73],"out_gid");                   bezug[73] = 0;
   strcpy(name[74],"restart_write");             bezug[74] = 0;
 
-  strcpy(name[80],"write gid");                 bezug[80] = 0;
-  strcpy(name[81],"write binio");               bezug[81] = 0;
-  strcpy(name[82],"write restart_new");         bezug[82] = 0;
+  strcpy(name[80],"solver");                    bezug[80] = 0;
+  strcpy(name[81],"ele_calc");                  bezug[81] = 0;
 
   strcpy(name[92],"amzero");                    bezug[92] = 0;
   strcpy(name[93],"amdel");                     bezug[93] = 0;
@@ -535,8 +533,8 @@ void perf_out ()
 
     /* add separators at some points */
     if (index== 2 || index==11 || index==20 ||
-        index==43 || index==50 || index==63 ||
-        index==69 || index==74 || index==82 )
+        index==45 || index==52 || index==55 ||
+        index==57 || index==74 || index==82 )
     {
       fprintf(err,
           "------------------------------------------------------------\n");
@@ -674,8 +672,8 @@ void perf_out ()
 
       /* add separators at some points */
       if (index== 2 || index==11 || index==20 ||
-          index==43 || index==50 || index==63 ||
-          index==69 || index==74 || index==82 )
+          index==45 || index==52 || index==55 ||
+          index==57 || index==74 || index==82 )
       {
         for (proc=0;proc<par.nprocs;proc++)
           fprintf(err, "---------------------");
