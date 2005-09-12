@@ -47,6 +47,7 @@ typedef struct _DNODE
    struct _COUPLE_CONDITION *couple;       /* coupling conditions to this DNODE, else NULL */
 #ifdef D_FSI
    struct _FSI_COUPLE_CONDITION *fsicouple;
+   struct _DIRICH_CONDITION     *ale_dirich;   /* dirichlet conditions for ale dis */
 #endif
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
@@ -100,6 +101,7 @@ typedef struct _DLINE
 #ifdef D_FSI
    struct _FSI_COUPLE_CONDITION *fsicouple;
    struct _SLIPDIRICH_CONDITION *slipdirich;
+   struct _DIRICH_CONDITION     *ale_dirich;   /* dirichlet conditions for ale dis */
 #endif
 
 #ifdef D_FLUID
@@ -181,6 +183,7 @@ typedef struct _DSURF
    struct _COUPLE_CONDITION *couple;      /* coupling conditions to this DSURF, else NULL */
 #ifdef D_FSI
    struct _FSI_COUPLE_CONDITION *fsicouple;
+   struct _DIRICH_CONDITION     *ale_dirich;   /* dirichlet conditions for ale dis */
 #endif
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
@@ -224,5 +227,10 @@ typedef struct _DVOL
    /*  struct _STAB_PRES_PRO *pp; */
    } stabi;
 #endif
+
+#ifdef D_FSI
+   struct _DIRICH_CONDITION     *ale_dirich;   /* dirichlet conditions for ale dis */
+#endif
+
    INT                     locsysId;
 } DVOL;
