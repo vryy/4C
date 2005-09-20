@@ -34,6 +34,12 @@ Maintainer: Malte Neumann
 #error "Use -DD_CONTACT in the makefile."
 #endif
 
+/* no s8_hex8 without shell8 */
+#if defined(S8_HEX8) && !defined(D_SHELL8)
+#error "S8_HEX8 needs D_SHELL8."
+#error "Use -DD_SHELL8 in the makefile."
+#endif
+
 /* no shell9 without mat */
 #if defined(D_SHELL9) && !defined(D_MAT)
 #error "D_SHELL9 needs D_MAT."
