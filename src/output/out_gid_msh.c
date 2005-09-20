@@ -115,8 +115,46 @@ void out_gid_msh()
       fprintf(out,"COORDINATES\n");
     }
 
+#ifdef D_SHELL8  
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
+    if (is_firstmesh)
+    {
+      if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33)
+      {
+        tot_numnp = genprob.nnode;
+        for (i=0; i<actfield->dis[0].numnp; i++)
+        {
+           actnode = &(actfield->dis[0].node[i]);
+           /* find the director */
+           actele  = actnode->element[0];
+           for (j=0; j<actele->numnp; j++)
+              if (actele->node[j] == actnode) break;
+           if (j==4) dserror("Cannot find matching node in element");
+           thick = actele->e.s8->thick;
+           scal  = 1.0;
+           a1 = actele->e.s8->a3ref.a.da[0][j]*thick*scal/2.0;
+           a2 = actele->e.s8->a3ref.a.da[1][j]*thick*scal/2.0;
+           a3 = actele->e.s8->a3ref.a.da[2][j]*thick*scal/2.0;
+           /* the lower surface coordinate*/
+           fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",actnode->Id+1,
+                                                       actnode->x[0]-a1,
+                                                       actnode->x[1]-a2,
+                                                       actnode->x[2]-a3);
+           /* the upper surface coordinate */
+           fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",actnode->Id+1+tot_numnp,
+                                                       actnode->x[0]+a1,
+                                                       actnode->x[1]+a2,
+                                                       actnode->x[2]+a3);
+        }
+        goto elements;
 
-#ifdef D_SHELL9
+      }
+      else dserror("hexahedra output for shell8 only for Quad4 !!");
+    }
+#endif /*S8_HEX8*/
+#endif /*D_SHELL8*/
+
+#ifdef D_SHELL9  /* shell9 elements are always written as hexahedras */
     /* deal with shell9 elements */
     if (is_firstmesh)
     {
@@ -252,12 +290,10 @@ void out_gid_msh()
 
   }  /* for (kk=0; kk<genprob.numfld; kk++) */
 
-  fprintf(out,"END COORDINATES\n");
-
-
-
 elements:
   /* now print the elements of all fields */
+
+  fprintf(out,"END COORDINATES\n");
 
 
 
@@ -267,6 +303,46 @@ elements:
     actfield = &(field[kk]);
     actgid   = &(gid[kk]);
 
+
+#ifdef D_SHELL8
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
+    /* 4-noded shell8 element -> Hex8 */
+   if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33 )
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      if (actgid->is_shell8_4_22) /*2x2 gp*/
+      {
+        fprintf(out,"# MESH %s FOR FIELD %s SHELL8 2x2x2 GP\n",actgid->shell8_4_22_name,actgid->fieldname);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->shell8_4_22_name);
+      }
+      else if (actgid->is_shell8_4_33) /*3x3 gp*/
+      {
+        fprintf(out,"# MESH %s FOR FIELD %s SHELL8 3x3x3 GP\n",actgid->shell8_4_33_name,actgid->fieldname);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->shell8_4_33_name);
+      }
+       /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         /* lower surface nodes */
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         /* upper surface nodes */
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1+tot_numnp);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+      goto end_shell8;
+   }
+   else dserror("hexahedra output for shell8 only for Quad4 !!");
+#endif /*S8_HEX8*/
+#endif /*D_SHELL8*/
 
 #ifdef D_SHELL8
     if (actgid->is_shell8_4_22)
@@ -396,7 +472,8 @@ elements:
     }
 #endif /*D_SHELL8*/
 
-
+end_shell8:  /* end of writing shell8 elements */
+  
 
 #ifdef D_SHELL9
     /* 4-noded shell9 element -> Hex8 */

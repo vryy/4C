@@ -235,7 +235,7 @@ for (i=0; i<genprob.numfld; i++)
            }
          }
       break;
-#endif
+#endif /*D_SHELL8*/
 
 
 
@@ -301,8 +301,7 @@ for (i=0; i<genprob.numfld; i++)
             actgid->brick1_333_name = "brick1_333";
          }
       break;
-#endif
-
+#endif /*D_BRICK1*/
 
 
 
@@ -619,6 +618,42 @@ for (i=0; i<genprob.numfld; i++)
    /*----------------------------- now we can write the gausspoint sets */
 
 
+#ifdef D_SHELL8
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
+   /* this is the shell visualization using Hexahedra */
+   if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33 )
+   {
+       fprintf(out,"#-------------------------------------------------------------------------------\n");
+       if (actgid->is_shell8_4_22) /*2x2 gp*/
+       {
+          fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2x2 GP\n",actgid->fieldname);
+          fprintf(out,"#-------------------------------------------------------------------------------\n");
+          fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                          sign,actgid->shell8_4_22_name,sign,
+                                                                          sign,actgid->shell8_4_22_name,sign);
+          fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+          fprintf(out,"NATURAL COORDINATES: Internal\n");
+          fprintf(out,"END GAUSSPOINTS\n");
+       }
+       else if (actgid->is_shell8_4_33) /*3x3 gp*/
+       {
+          fprintf(out,"#-------------------------------------------------------------------------------\n");
+          fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 3x3 GP\n",actgid->fieldname);
+          fprintf(out,"#-------------------------------------------------------------------------------\n");
+          fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                           sign,actgid->shell8_4_33_name,sign,
+                                                                           sign,actgid->shell8_4_33_name,sign);
+          fprintf(out,"NUMBER OF GAUSS POINTS: 18\n");
+          fprintf(out,"NATURAL COORDINATES: Internal\n");
+          fprintf(out,"END GAUSSPOINTS\n");
+       }
+      goto end_s8_init;
+   }
+   else dserror("hexahedra output for shell8 only for Quad4 !!");
+#endif /*S8_HEX8*/
+#endif /*D_SHELL8*/
+
+#ifdef D_SHELL8
    /* this is the shell visualization using Quadrilateral */
    if (actgid->is_shell8_4_22)
    {
@@ -697,37 +732,11 @@ for (i=0; i<genprob.numfld; i++)
      fprintf(out,"NATURAL COORDINATES: Internal\n");
      fprintf(out,"END GAUSSPOINTS\n");
    }
+#endif /*D_SHELL8*/
+
+end_s8_init:  /* end of shell8 elements */
 
 
-
-#if 0
-   /* this is the shell visualization using Hexahedra */
-   if (actgid->is_shell8_22)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2x2 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
-                                                                   sign,actgid->shell8_22_name,sign,
-                                                                   sign,actgid->shell8_22_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-   /*-------------------------------------------------*/
-   if (actgid->is_shell8_33)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 3x3 GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
-                                                                    sign,actgid->shell8_33_name,sign,
-                                                                    sign,actgid->shell8_33_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-#endif
 #ifdef D_SHELL9
    /* this is the shell9 visualization using Hexahedra */
    if (actgid->is_shell9_4_22)
@@ -1311,6 +1320,45 @@ if (!actgid) dserror("Cannot find correct field");
 /*----------------------------------------------------------------------*/
 
 
+#ifdef D_SHELL8
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
+    /* 4-noded shell8 element -> Hex8 */
+   if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33 )
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      if (actgid->is_shell8_4_22) /*2x2 gp*/
+      {
+         fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_4_22_name);
+         fprintf(out,"#-------------------------------------------------------------------------------\n");
+         fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                                     sign,actgid->shell8_4_22_name,sign);
+      }
+      else if (actgid->is_shell8_4_33) /*3x3 gp*/
+      {
+         fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_4_33_name);
+         fprintf(out,"#-------------------------------------------------------------------------------\n");
+         fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                                     sign,actgid->shell8_4_33_name,sign);
+      }
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_shell8 || actele->numnp != 4) continue;
+         fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+         for (j=1; j<8; j++)/* hexahedra version */
+         {
+            fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+         }
+      }
+      fprintf(out,"END VALUES\n");
+      goto end_8_domains;
+   }
+   else dserror("hexahedra output for shell8 only for Quad4 !!");
+#endif /*S8_HEX8*/
+#endif /*D_SHELL8*/
+
+#ifdef D_SHELL8
 if (actgid->is_shell8_4_22)
 {
   fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1424,9 +1472,9 @@ if (actgid->is_shell8_9_33)
   }
   fprintf(out,"END VALUES\n");
 }
+#endif /*D_SHELL8*/
 
-
-
+end_8_domains:  /* end of shell8 elements */
 
 #ifdef D_SHELL9
 /*4-noded*/
@@ -2317,7 +2365,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
 
 
 #ifdef D_SHELL8
-#if 0 /* this is hexahedra output */
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
@@ -2343,8 +2391,8 @@ if (strncmp(string,"displacement",stringlenght)==0)
       }
    }
    else
-#endif
-#endif
+#endif /*S8_HEX8*/
+#endif /*D_SHELL8*/
 
 
 
@@ -2531,7 +2579,8 @@ if (strncmp(string,"contact",stringlenght)==0)
      break;
    }
    fprintf(out,"VALUES\n");
-#if 0 /* this is hexahedra output for shell8 element */
+#ifdef D_SHELL8
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
@@ -2556,7 +2605,10 @@ if (strncmp(string,"contact",stringlenght)==0)
                                                     );
       }
    }
-#else
+   else
+#endif /*S8_HEX8*/ 
+#endif /*D_SHELL8*/
+
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
@@ -2582,10 +2634,9 @@ if (strncmp(string,"contact",stringlenght)==0)
         break;
       }
    }
-#endif
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"contact",stringlenght)==0) */
-#endif
+#endif /*D_CONTACT*/
 
 
 
@@ -3195,7 +3246,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s%c\n",
                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
         fprintf(out,"VALUES\n");
           c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
         fprintf(out,"END VALUES\n");
@@ -3211,7 +3262,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s%c\n",
                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
         fprintf(out,"VALUES\n");
           c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
         fprintf(out,"END VALUES\n");
@@ -3254,7 +3305,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s%c\n",
                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
         fprintf(out,"VALUES\n");
           c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
         fprintf(out,"END VALUES\n");
@@ -3270,7 +3321,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s%c\n",
                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
         fprintf(out,"VALUES\n");
           c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
         fprintf(out,"END VALUES\n");

@@ -137,7 +137,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    }
    fprintf(out,"VALUES\n");
 #ifdef D_SHELL8
-#if 0 /* this is hexahedra output */
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
@@ -159,8 +159,8 @@ if (strncmp(string,"displacement",stringlenght)==0)
       }
    }
    else
-#endif
-#endif
+#endif /*S8_HEX8*/
+#endif /*D_SHELL8*/
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
@@ -214,8 +214,8 @@ if (strncmp(string,"contact",stringlenght)==0)
      break;
    }
    fprintf(out,"VALUES\n");
-#if 0 /* this is hexahedra output for shell8 element */
 #ifdef D_SHELL8
+#ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
@@ -236,8 +236,9 @@ if (strncmp(string,"contact",stringlenght)==0)
                                                     -actnode->sol.a.da[place][2]-actnode->sol.a.da[place][5]*scal/sdc);
       }
    }
-#endif
-#else
+   else
+#endif /*S8_HEX8*/
+#endif /*D_SHELL8*/
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
@@ -254,7 +255,6 @@ if (strncmp(string,"contact",stringlenght)==0)
         break;
       }
    }
-#endif
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"contact",stringlenght)==0) */
 #endif
