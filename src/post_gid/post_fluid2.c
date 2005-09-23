@@ -14,6 +14,81 @@
   \date 12/04
 */
 /*----------------------------------------------------------------------*/
+void fluid2_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
+{
+  INT i;
+  INT j;
+
+#ifdef DEBUG
+  dstrc_enter("fluid2_write_domain");
+#endif
+
+  if (gid->is_fluid2_22)
+  {
+    GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
+                    gid->fluid2_22_name, NULL, 0, NULL);
+
+    for (i=0; i<field->numele; i++)
+    {
+      INT numnp;
+      INT el_type;
+      INT Id;
+      INT dis;
+
+      /* read the element's data */
+      get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+      if (el_type != el_fluid2 || numnp != 4) continue;
+
+      chunk_read_size_entry(chunk, i);
+
+      for (j=0; j<4; j++)
+        GiD_WriteScalar(Id+1, chunk->size_buf[0]);
+    }
+    GiD_EndResult();
+  }
+
+  /*--------------------------------------------------------------------*/
+
+  if (gid->is_fluid2_33)
+  {
+    GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
+                    gid->fluid2_33_name, NULL, 0, NULL);
+
+    for (i=0; i<field->numele; i++)
+    {
+      INT numnp;
+      INT el_type;
+      INT Id;
+      INT dis;
+
+      /* read the element's data */
+      get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+      if (el_type != el_fluid2 || (numnp != 8 || numnp != 9)) continue;
+
+      chunk_read_size_entry(chunk, i);
+
+      for (j=0; j<9; j++)
+        GiD_WriteScalar(Id+1, chunk->size_buf[0]);
+    }
+    GiD_EndResult();
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Element specific service function.
+
+  \author u.kue
+  \date 12/04
+*/
+/*----------------------------------------------------------------------*/
 void fluid2_write_gauss(GIDSET* gid)
 {
 #ifdef DEBUG

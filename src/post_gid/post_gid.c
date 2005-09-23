@@ -181,6 +181,12 @@ static void write_domain(FIELD_DATA *field, GIDSET* gid)
 
   /*--------------------------------------------------------------------*/
 
+#ifdef D_FLUID2
+  fluid2_write_domain(field, gid, &chunk);
+#endif
+
+  /*--------------------------------------------------------------------*/
+
 #ifdef D_FLUID3
   fluid3_write_domain(field, gid, &chunk);
 #endif
@@ -1032,7 +1038,7 @@ static void write_field(PROBLEM_DATA* problem, INT num)
   /*--------------------------------------------------------------------*/
   /* Optionally there is one domain table per field. It's the first result. */
 
-#if 0
+#if 1
   if (map_has_map(field->group, "domain"))
   {
     write_domain(field, &gid);
@@ -1149,13 +1155,16 @@ static void write_fsi(PROBLEM_DATA* problem)
   /*--------------------------------------------------------------------*/
   /* Optionally there is one domain table per field. It's the first result. */
 
-#if 0
-  if (map_has_map(fluid_field->table, "domain")) {
-    write_domain(fluid_field, map_read_map(fluid_field->table, "domain"));
+#if 1
+  if (map_has_map(fluid_field->group, "domain"))
+  {
+    write_domain(fluid_field, &fluid_gid);
   }
-  if (struct_field != NULL) {
-    if (map_has_map(struct_field->table, "domain")) {
-      write_domain(struct_field, map_read_map(struct_field->table, "domain"));
+  if (struct_field != NULL)
+  {
+    if (map_has_map(struct_field->group, "domain"))
+    {
+      write_domain(struct_field, &struct_gid);
     }
   }
 #endif
