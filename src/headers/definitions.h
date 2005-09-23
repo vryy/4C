@@ -164,6 +164,8 @@ typedef char      CHAR;
  * On i386 Linux we need 2. */
 #ifdef LINUX_MUENCH
 #define v2_cursor           v2_cursor__
+#define v3cell              v3cell_
+#define v3string            v3string_
 #else
 #define v2_cursor           v2_cursor_
 #endif

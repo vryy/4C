@@ -1030,6 +1030,11 @@ C LINUX Stuttgart
           CMFILE='/home/ccarat/viscol/spec_black.col'
        ELSE IF (BGCOLOUR.EQ.11) THEN
           CMFILE='/home/ccarat/viscol/spec_white.col'
+C LINUX Muenchen
+       ELSE IF (BGCOLOUR.EQ.20) THEN
+          CMFILE='/lnm/lib/visual/spec_black.col'
+       ELSE IF (BGCOLOUR.EQ.21) THEN
+          CMFILE='/lnm/lib/visual/spec_white.col'
        ELSE
           WRITE(*,*) 'cannot find colour file - STOPPING!'
           STOP
@@ -1100,6 +1105,11 @@ C LINUX Stuttgart
           CMFILE='/home/ccarat/viscol/spec_black.col'
        ELSE IF (BGCOLOUR.EQ.11) THEN
           CMFILE='/home/ccarat/viscol/spec_white.col'
+C LINUX Muenchen
+       ELSE IF (BGCOLOUR.EQ.20) THEN
+          CMFILE='/lnm/lib/visual/spec_black.col'
+       ELSE IF (BGCOLOUR.EQ.21) THEN
+          CMFILE='/lnm/lib/visual/spec_white.col'
        ELSE
           WRITE(*,*) 'cannot find colour file - STOPPING!'
           STOP

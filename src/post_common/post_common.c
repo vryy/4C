@@ -99,11 +99,6 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
 
   /* Do we want to have tracing? We could. */
 #ifdef DEBUG
-  dsinit();
-
-  /* We need to take two steps back. dsinit is too close to ccarat. */
-  dstrc_exit();
-  dstrc_exit();
   dstrc_enter("setup_filter");
 #endif
 
@@ -624,6 +619,12 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
   CHAR* filename;
 
 #ifdef DEBUG
+  dsinit();
+
+  /* We need to take two steps back. dsinit is too close to ccarat. */
+  dstrc_exit();
+  dstrc_exit();
+
   dstrc_enter("init_problem_data");
 #endif
 

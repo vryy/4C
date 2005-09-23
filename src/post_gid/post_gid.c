@@ -1032,10 +1032,12 @@ static void write_field(PROBLEM_DATA* problem, INT num)
   /*--------------------------------------------------------------------*/
   /* Optionally there is one domain table per field. It's the first result. */
 
+#if 0
   if (map_has_map(field->group, "domain"))
   {
     write_domain(field, &gid);
   }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* Now it's time to write the time dependend results. */

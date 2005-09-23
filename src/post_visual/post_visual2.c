@@ -1411,12 +1411,14 @@ bgcolour+=20;
         minxy = MIN(minxy, actnode->x[0]);
         maxxy = MAX(maxxy, actnode->x[0]);
       }
-      else {
+      else
+      {
         INT j;
         DOUBLE xy;
         NODE* actanode = &(discret[ale_idx].node[fluid_ale_connect[i]]);
         xy = actanode->x[0];
-        for (j=0;j<nsteps;j++) {
+        for (j=0;j<nsteps;j++)
+        {
           DOUBLE dxy;
           dxy = xy+actanode->sol.a.da[j][0];
           minxy=DMIN(minxy,dxy);
@@ -1442,25 +1444,30 @@ bgcolour+=20;
   XYMAX[0] = maxxy + (maxxy-minxy)*0.1;
 
   /* find maximum y-coordinate */
-  if (IOPT>=2) {
+  if (IOPT>=2)
+  {
 #ifdef D_FSI
     NODE* actnode = &(discret[fluid_idx].node[0]);
     minxy = actnode->x[1];
     maxxy = actnode->x[1];
-    for (i=0;i<fluid_field->numnp;i++) {
+    for (i=0;i<fluid_field->numnp;i++)
+    {
       actnode = &(discret[fluid_idx].node[i]);
-      if (fluid_ale_connect[i] == -1) {
+      if (fluid_ale_connect[i] == -1)
+      {
         minxy = MIN(minxy, actnode->x[1]);
         maxxy = MAX(maxxy, actnode->x[1]);
       }
-      else {
+      else
+      {
         INT j;
         DOUBLE xy;
         NODE* actanode = &(discret[ale_idx].node[fluid_ale_connect[i]]);
-        xy = actanode->x[0];
-        for (j=0;j<nsteps;j++) {
+        xy = actanode->x[1];
+        for (j=0;j<nsteps;j++)
+        {
           DOUBLE dxy;
-          dxy = xy+actanode->sol.a.da[j][0];
+          dxy = xy+actanode->sol.a.da[j][1];
           minxy=DMIN(minxy,dxy);
           maxxy=DMAX(maxxy,dxy);
         }
@@ -1470,11 +1477,13 @@ bgcolour+=20;
     dserror("FSI-functions not compiled in!");
 #endif
   }
-  else {
+  else
+  {
     NODE* actnode = &(discret[fluid_idx].node[0]);
     minxy = actnode->x[1];
     maxxy = actnode->x[1];
-    for (i=1;i<fluid_field->numnp;i++) {
+    for (i=1;i<fluid_field->numnp;i++)
+    {
       actnode = &(discret[fluid_idx].node[i]);
       minxy = MIN(minxy, actnode->x[1]);
       maxxy = MAX(maxxy, actnode->x[1]);
@@ -1508,8 +1517,8 @@ bgcolour+=20;
   ratio = 1024.0/768.0;
 
 /*------------------------ modify x/y - limits to window aspect ratio */
-  centerx =XYMIN[0]+dx/TWO;
-  centery =XYMIN[1]+dy/TWO;
+  centerx =XYMIN[0]+dx/2.;
+  centery =XYMIN[1]+dy/2.;
   if (dx>=dy)
   {
     XYPIX[0] = hsize;
@@ -1517,14 +1526,14 @@ bgcolour+=20;
     if (dx/dy<ratio)
     {
       dx = dy*ratio;
-      XYMIN[0] = centerx - dx/TWO;
-      XYMAX[0] = centerx + dx/TWO;
+      XYMIN[0] = centerx - dx/2.;
+      XYMAX[0] = centerx + dx/2.;
     }
     else
     {
       dy = dx/ratio;
-      XYMIN[1] = centery - dy/TWO;
-      XYMAX[1] = centery + dy/TWO;
+      XYMIN[1] = centery - dy/2.;
+      XYMAX[1] = centery + dy/2.;
     }
   }
   else
@@ -1534,14 +1543,14 @@ bgcolour+=20;
     if (dy/dx<ratio)
     {
       dy = dx*ratio;
-      XYMIN[1] = centery - dy/TWO;
-      XYMAX[1] = centery + dy/TWO;
+      XYMIN[1] = centery - dy/2.;
+      XYMAX[1] = centery + dy/2.;
     }
     else
     {
       dx = dy/ratio;
-      XYMIN[0] = centerx - dx/TWO;
-      XYMAX[0] = centerx + dx/TWO;
+      XYMIN[0] = centerx - dx/2.;
+      XYMAX[0] = centerx + dx/2.;
     }
   }
   XYMIN[1] = XYMIN[1]/yscale;
