@@ -515,13 +515,13 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
     {
       if (numnp==4)
       {
-        gid->is_shell8_22   = 1;
-        gid->shell8_22_name = "shell8_22";
+        gid->is_shell8_4_22   = 1;
+        gid->shell8_4_22_name = "shell8_4_22";
       }
       if (numnp==8 || numnp==9)
       {
-        gid->is_shell8_33   = 1;
-        gid->shell8_33_name = "shell8_33";
+        gid->is_shell8_8_33   = 1;
+        gid->shell8_8_33_name = "shell8_8_33";
       }
       break;
     }
@@ -666,13 +666,13 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
     {
       if (numnp==8)
       {
-        gid->is_f3f_222   = 1;
-        gid->f3f_222_name = "f3f_222";
+        gid->is_f3f_8_222   = 1;
+        gid->f3f_8_222_name = "f3f_8_222";
       }
       if (numnp==20 || numnp==27)
       {
-        gid->is_f3f_333   = 1;
-        gid->f3f_333_name = "f3f_333";
+        gid->is_f3f_20_333   = 1;
+        gid->f3f_20_333_name = "f3f_333";
       }
       break;
     }
@@ -727,13 +727,13 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
       {
         if (nGP[0]==1 && nGP[1]==1 && nGP[2]==1 )
         {
-          gid->is_ale_111   = 1;
-          gid->ale_111_name = "ale_111";
+          gid->is_ale_8_111   = 1;
+          gid->ale_8_111_name = "ale_8_111";
         }
         else if (nGP[0]==2 && nGP[1]==2 && nGP[2]==2 )
         {
-          gid->is_ale_222   = 1;
-          gid->ale_222_name = "ale_222";
+          gid->is_ale_8_222   = 1;
+          gid->ale_8_222_name = "ale_222";
         }
       }
       if (numnp==4)

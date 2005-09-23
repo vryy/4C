@@ -23,10 +23,10 @@ void fluid3_fast_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
   dstrc_enter("fluid3_fast_write_domain");
 #endif
 
-  if (gid->is_f3f_222)
+  if (gid->is_f3f_8_222)
   {
     GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
-                    gid->f3f_222_name, NULL, 0, NULL);
+                    gid->f3f_8_222_name, NULL, 0, NULL);
 
     for (i=0; i<field->numele; i++)
     {
@@ -50,10 +50,10 @@ void fluid3_fast_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
 
   /*--------------------------------------------------------------------*/
 
-  if (gid->is_f3f_333)
+  if (gid->is_f3f_20_333)
   {
     GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
-                    gid->f3f_333_name, NULL, 0, NULL);
+                    gid->f3f_20_333_name, NULL, 0, NULL);
 
     for (i=0; i<field->numele; i++)
     {
@@ -97,11 +97,11 @@ void fluid3_fast_write_stress(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk,
 
   /* Do we want to output fluid stresses? */
 
-  if (gid->is_f3f_222)
+  if (gid->is_f3f_8_222)
   {
   }
 
-  if (gid->is_f3f_333)
+  if (gid->is_f3f_20_333)
   {
   }
 
@@ -125,14 +125,14 @@ void fluid3_fast_write_gauss(GIDSET* gid)
   dstrc_enter("fluid3_fast_write_gauss");
 #endif
 
-  if (gid->is_f3f_222)
+  if (gid->is_f3f_8_222)
   {
-    GiD_BeginGaussPoint(gid->f3f_222_name, GiD_Hexahedra, gid->f3f_222_name, 8, 0, 1);
+    GiD_BeginGaussPoint(gid->f3f_8_222_name, GiD_Hexahedra, gid->f3f_8_222_name, 8, 0, 1);
     GiD_EndGaussPoint();
   }
-  if (gid->is_f3f_333)
+  if (gid->is_f3f_20_333)
   {
-    GiD_BeginGaussPoint(gid->f3f_333_name, GiD_Hexahedra, gid->f3f_333_name, 27, 0, 1);
+    GiD_BeginGaussPoint(gid->f3f_20_333_name, GiD_Hexahedra, gid->f3f_20_333_name, 27, 0, 1);
     GiD_EndGaussPoint();
   }
 
@@ -156,7 +156,7 @@ void fluid3_fast_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   dstrc_enter("fluid3_fast_write_mesh");
 #endif
 
-  if (gid->is_f3f_222)
+  if (gid->is_f3f_8_222)
   {
     INT i;
 
@@ -194,7 +194,7 @@ void fluid3_fast_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
 
   /*--------------------------------------------------------------------*/
 
-  if (gid->is_f3f_333)
+  if (gid->is_f3f_20_333)
   {
     INT i;
 

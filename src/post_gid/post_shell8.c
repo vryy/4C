@@ -23,10 +23,10 @@ void shell8_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
   dstrc_enter("shell8_write_domain");
 #endif
 
-  if (gid->is_shell8_22)
+  if (gid->is_shell8_4_22)
   {
     GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
-                    gid->shell8_22_name, NULL, 0, NULL);
+                    gid->shell8_4_22_name, NULL, 0, NULL);
 
     for (i=0; i<field->numele; i++)
     {
@@ -53,10 +53,10 @@ void shell8_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
 
   /*--------------------------------------------------------------------*/
 
-  if (gid->is_shell8_33)
+  if (gid->is_shell8_8_33)
   {
     GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
-                    gid->shell8_33_name, NULL, 0, NULL);
+                    gid->shell8_8_33_name, NULL, 0, NULL);
 
     for (i=0; i<field->numele; i++)
     {
@@ -118,17 +118,17 @@ void shell8_write_gauss(GIDSET* gid)
   dstrc_enter("shell8_write_gauss");
 #endif
 
-  if (gid->is_shell8_22)
+  if (gid->is_shell8_4_22)
   {
     /*GiD_BeginGaussPoint(gid->shell8_22_name, GiD_Quadrilateral, gid->shell8_22_name, 4, 0, 1);*/
 
     /* this is the shell visualization using Hexahedra */
-    GiD_BeginGaussPoint(gid->shell8_22_name, GiD_Hexahedra, gid->shell8_22_name, 8, 0, 1);
+    GiD_BeginGaussPoint(gid->shell8_4_22_name, GiD_Hexahedra, gid->shell8_4_22_name, 8, 0, 1);
     GiD_EndGaussPoint();
   }
-  if (gid->is_shell8_33)
+  if (gid->is_shell8_8_33)
   {
-    GiD_BeginGaussPoint(gid->shell8_33_name, GiD_Quadrilateral, gid->shell8_33_name, 9, 0, 1);
+    GiD_BeginGaussPoint(gid->shell8_8_33_name, GiD_Quadrilateral, gid->shell8_8_33_name, 9, 0, 1);
     GiD_EndGaussPoint();
   }
 
@@ -302,13 +302,13 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   dstrc_enter("shell8_write_mesh");
 #endif
 
-  if (gid->is_shell8_22)
+  if (gid->is_shell8_4_22)
   {
     INT i;
     PROBLEM_DATA* problem = field->problem;
 
     /* this is the hexahedra version */
-    GiD_BeginMesh(gid->shell8_22_name, 3, GiD_Hexahedra, 8);
+    GiD_BeginMesh(gid->shell8_4_22_name, 3, GiD_Hexahedra, 8);
     if (*first_mesh)
     {
       *first_mesh = 0;
@@ -353,11 +353,11 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
 
   /*--------------------------------------------------------------------*/
 
-  if (gid->is_shell8_33)
+  if (gid->is_shell8_8_33)
   {
     INT i;
 
-    GiD_BeginMesh(gid->shell8_33_name, 3, GiD_Quadrilateral, 9);
+    GiD_BeginMesh(gid->shell8_8_33_name, 3, GiD_Quadrilateral, 9);
     if (first_mesh)
     {
       first_mesh = 0;

@@ -23,10 +23,10 @@ void ale3_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
   dstrc_enter("ale3_write_domain");
 #endif
 
-  if (gid->is_ale_111)
+  if (gid->is_ale_8_111)
   {
     GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
-                    gid->ale_111_name, NULL, 0, NULL);
+                    gid->ale_8_111_name, NULL, 0, NULL);
 
     for (i=0; i<field->numele; i++)
     {
@@ -50,10 +50,10 @@ void ale3_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
 
   /*--------------------------------------------------------------------*/
 
-  if (gid->is_ale_222)
+  if (gid->is_ale_8_222)
   {
     GiD_BeginResult("Domains", "ccarat", 0, GiD_Scalar, GiD_OnGaussPoints,
-                    gid->ale_222_name, NULL, 0, NULL);
+                    gid->ale_8_222_name, NULL, 0, NULL);
 
     for (i=0; i<field->numele; i++)
     {
@@ -149,14 +149,14 @@ void ale3_write_gauss(GIDSET* gid)
   dstrc_enter("ale3_write_gauss");
 #endif
 
-  if (gid->is_ale_111)
+  if (gid->is_ale_8_111)
   {
-    GiD_BeginGaussPoint(gid->ale_111_name, GiD_Hexahedra, gid->ale_111_name, 1, 0, 1);
+    GiD_BeginGaussPoint(gid->ale_8_111_name, GiD_Hexahedra, gid->ale_8_111_name, 1, 0, 1);
     GiD_EndGaussPoint();
   }
-  if (gid->is_ale_222)
+  if (gid->is_ale_8_222)
   {
-    GiD_BeginGaussPoint(gid->ale_222_name, GiD_Hexahedra, gid->ale_222_name, 8, 0, 1);
+    GiD_BeginGaussPoint(gid->ale_8_222_name, GiD_Hexahedra, gid->ale_8_222_name, 8, 0, 1);
     GiD_EndGaussPoint();
   }
   if (gid->is_ale_tet_1)
@@ -193,11 +193,11 @@ void ale3_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   /* In fsi calculations we don't want to show the ale elements */
   if (field->problem->type != prb_fsi)
   {
-    if (gid->is_ale_111)
+    if (gid->is_ale_8_111)
     {
       INT i;
 
-      GiD_BeginMesh(gid->ale_111_name, 3, GiD_Hexahedra, 8);
+      GiD_BeginMesh(gid->ale_8_111_name, 3, GiD_Hexahedra, 8);
 
       if (*first_mesh)
       {
@@ -231,11 +231,11 @@ void ale3_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
 
     /*--------------------------------------------------------------------*/
 
-    if (gid->is_ale_222)
+    if (gid->is_ale_8_222)
     {
       INT i;
 
-      GiD_BeginMesh(gid->ale_222_name, 3, GiD_Hexahedra, 8);
+      GiD_BeginMesh(gid->ale_8_222_name, 3, GiD_Hexahedra, 8);
 
       if (*first_mesh)
       {
