@@ -117,6 +117,13 @@ static void destroy_node(MAP_NODE* node)
       destroy_symbol(node->symbol);
     }
     CCAFREE(node->key);
+
+    node->lhs = 0;
+    node->rhs = 0;
+    node->symbol = 0;
+    node->key = 0;
+
+    CCAFREE(node);
   }
 
 #ifdef DEBUG
