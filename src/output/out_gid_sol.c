@@ -620,36 +620,41 @@ for (i=0; i<genprob.numfld; i++)
 
 #ifdef D_SHELL8
 #ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
-   /* this is the shell visualization using Hexahedra */
-   if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33 )
+   if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33 ||
+       actgid->is_shell8_8_22 || actgid->is_shell8_8_33 ||
+       actgid->is_shell8_9_22 || actgid->is_shell8_9_33)
    {
-       fprintf(out,"#-------------------------------------------------------------------------------\n");
-       if (actgid->is_shell8_4_22) /*2x2 gp*/
-       {
-          fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2x2 GP\n",actgid->fieldname);
-          fprintf(out,"#-------------------------------------------------------------------------------\n");
-          fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
-                                                                          sign,actgid->shell8_4_22_name,sign,
-                                                                          sign,actgid->shell8_4_22_name,sign);
-          fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
-          fprintf(out,"NATURAL COORDINATES: Internal\n");
-          fprintf(out,"END GAUSSPOINTS\n");
-       }
-       else if (actgid->is_shell8_4_33) /*3x3 gp*/
-       {
-          fprintf(out,"#-------------------------------------------------------------------------------\n");
-          fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 3x3 GP\n",actgid->fieldname);
-          fprintf(out,"#-------------------------------------------------------------------------------\n");
-          fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
-                                                                           sign,actgid->shell8_4_33_name,sign,
-                                                                           sign,actgid->shell8_4_33_name,sign);
-          fprintf(out,"NUMBER OF GAUSS POINTS: 18\n");
-          fprintf(out,"NATURAL COORDINATES: Internal\n");
-          fprintf(out,"END GAUSSPOINTS\n");
-       }
-      goto end_s8_init;
+      /* this is the shell visualization using Hexahedra */
+      if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33 )
+      {
+          if (actgid->is_shell8_4_22) /*2x2 gp*/
+          {
+             fprintf(out,"#-------------------------------------------------------------------------------\n");
+             fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 2x2x2 GP\n",actgid->fieldname);
+             fprintf(out,"#-------------------------------------------------------------------------------\n");
+             fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                             sign,actgid->shell8_4_22_name,sign,
+                                                                             sign,actgid->shell8_4_22_name,sign);
+             fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+             fprintf(out,"NATURAL COORDINATES: Internal\n");
+             fprintf(out,"END GAUSSPOINTS\n");
+          }
+          else if (actgid->is_shell8_4_33) /*3x3 gp*/
+          {
+             fprintf(out,"#-------------------------------------------------------------------------------\n");
+             fprintf(out,"# GAUSSPOINTSET FOR FIELD %s SHELL8 3x3 GP\n",actgid->fieldname);
+             fprintf(out,"#-------------------------------------------------------------------------------\n");
+             fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                              sign,actgid->shell8_4_33_name,sign,
+                                                                              sign,actgid->shell8_4_33_name,sign);
+             fprintf(out,"NUMBER OF GAUSS POINTS: 18\n");
+             fprintf(out,"NATURAL COORDINATES: Internal\n");
+             fprintf(out,"END GAUSSPOINTS\n");
+          }
+         goto end_s8_init;
+      }
+      else dserror("hexahedra output for shell8 only for Quad4 !!");
    }
-   else dserror("hexahedra output for shell8 only for Quad4 !!");
 #endif /*S8_HEX8*/
 #endif /*D_SHELL8*/
 
@@ -1354,7 +1359,6 @@ if (!actgid) dserror("Cannot find correct field");
       fprintf(out,"END VALUES\n");
       goto end_8_domains;
    }
-   else dserror("hexahedra output for shell8 only for Quad4 !!");
 #endif /*S8_HEX8*/
 #endif /*D_SHELL8*/
 

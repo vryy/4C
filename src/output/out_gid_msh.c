@@ -147,9 +147,7 @@ void out_gid_msh()
                                                        actnode->x[2]+a3);
         }
         goto elements;
-
       }
-      else dserror("hexahedra output for shell8 only for Quad4 !!");
     }
 #endif /*S8_HEX8*/
 #endif /*D_SHELL8*/
@@ -340,7 +338,6 @@ elements:
       fprintf(out,"END ELEMENTS\n");
       goto end_shell8;
    }
-   else dserror("hexahedra output for shell8 only for Quad4 !!");
 #endif /*S8_HEX8*/
 #endif /*D_SHELL8*/
 
