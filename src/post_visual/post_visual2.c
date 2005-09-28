@@ -1516,6 +1516,11 @@ bgcolour+=20;
   vsize = 768;
   ratio = 1024.0/768.0;
 
+  /* Original size from Steffen. Seems to be the most reliable one.  */
+  hsize = 700;
+  vsize = 525;
+  ratio = 700.0/525.0;
+
 /*------------------------ modify x/y - limits to window aspect ratio */
   centerx =XYMIN[0]+dx/2.;
   centery =XYMIN[1]+dy/2.;
