@@ -146,6 +146,25 @@ void inpfield()
 
   }
 
+  /* FSI XFEM typ of problem:
+   * ------------------------
+   */
+  if (genprob.probtyp == prb_fsi_xfem)
+  {
+    if (genprob.numfld!=2) dserror("numfld != 2 for FSI XFEM");
+
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+
+    field[genprob.numsf].fieldtyp = structure;
+    inpdis(&(field[genprob.numsf]));
+    inp_struct_field(&(field[genprob.numsf]));
+
+    field[genprob.numff].fieldtyp = fluid;
+    inpdis(&(field[genprob.numff]));
+    inp_fluid_field (&(field[genprob.numff]));
+
+  }
+
 
   /* SSI typ of problem:
    * -------------------
@@ -153,7 +172,7 @@ void inpfield()
 #ifdef D_SSI
   if (genprob.probtyp == prb_ssi)
   {
-    if (genprob.numfld!=2) dserror("numfld != 2 for FSI");
+    if (genprob.numfld!=2) dserror("numfld != 2 for SSI");
 
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
 
