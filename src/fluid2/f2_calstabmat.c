@@ -407,7 +407,7 @@ if (ihoel!=0 && gls->ivisc!=0)
          aux = funct[icn]*cc;
          for (irn=0;irn<iel;irn++)
          {
-            auxr = derxy2[0][irn]*derxy2[1][irn];
+            auxr = derxy2[0][irn] + derxy2[1][irn];
             estif[irow][icol]     -=  (derxy2[0][irn]*vderxy[0][0]   \
                                     + derxy2[2][irn]*vderxy[1][0]   \
                                     + auxr*vderxy[0][0])*aux        ;
