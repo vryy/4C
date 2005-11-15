@@ -1621,6 +1621,11 @@ void f2_calvort(
  | f2_inpele.c                                                          |
  ************************************************************************/
 void f2_inp(ELEMENT *ele, INT counter);
+void f2_createale(
+    ELEMENT *ele0,
+    ELEMENT *ele1,
+    INT      numele,
+    INT      nodeshift);
 
 /************************************************************************
  | f2_inpele_tu.c                                                       |
