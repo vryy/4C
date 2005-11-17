@@ -3030,6 +3030,12 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
       }
 #endif
 
+#ifdef D_BRICK1
+      case el_brick1:
+        /* Nothing to do?! */
+        break;
+#endif
+
       default:
       {
         static CHAR warning[el_count];
@@ -3837,6 +3843,12 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       }
       break;
     }
+#endif
+
+#ifdef D_BRICK1
+    case el_brick1:
+      /* Nothing to do?! */
+      break;
 #endif
 
     default:
