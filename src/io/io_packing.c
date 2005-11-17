@@ -3446,6 +3446,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 #ifdef D_SHELL8
     case el_shell8:
     {
+      INT el;
       INT arr_length;
       SHELL8* s8;
       DOUBLE* dst_ptr;
@@ -3501,6 +3502,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 #ifdef D_SHELL9
     case el_shell9:
     {
+      INT el;
       INT arr_length;
       SHELL9* s9;
       DOUBLE* dst_ptr;
@@ -3571,6 +3573,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
               case m_pl_dp:
                 for (k=0; k<ngauss; k++)
                 {
+                  INT el;
                   ipwa[k].yip = *size_src_ptr++;
                   ipwa[k].epstn = *src_ptr++;
                   for (el=0; el<6; el++)
@@ -3584,6 +3587,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
               case m_pl_epc:
                 for (k=0; k<ngauss; k++)
                 {
+                  INT el;
                   ipwa[k].yip = *size_src_ptr++;
                   ipwa[k].kappa_t = *src_ptr++;
                   ipwa[k].kappa_c = *src_ptr++;
@@ -3597,6 +3601,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
               case m_pl_hoff:
                 for (k=0; k<ngauss; k++)
                 {
+                  INT el;
                   ipwa[k].yip = *size_src_ptr++;
                   ipwa[k].dhard = *src_ptr++;
                   for (el=0; el<6; el++)
