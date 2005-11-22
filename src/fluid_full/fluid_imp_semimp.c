@@ -428,13 +428,14 @@ frhs = amdef("frhs",&frhs_a,numeq_total,1,"DV");
 if (restart != 0)
 {
   if (fdyn->init>0)
-    dserror("Initial field either by restart, or by function or from file ...\n");
-  else
-  {
-    fdyn->resstep=genprob.restart;
-    fdyn->init=2;
-  }
+    /*dserror("Initial field either by restart, or by function or from file ...\n");*/
+    printf("Restart: Initial field not used!!!\n\n\n");
+
+
+  fdyn->resstep=genprob.restart;
+  fdyn->init=2;
 }
+
 
 fluid_init_pos_euler(ipos);
 fluid_init(actpart,actintra,actfield, 0,action,&container,8,ipos,str);
@@ -865,7 +866,7 @@ solserv_sol_copy(actfield,0,node_array_sol_increment,
                             node_array_sol_increment,ipos->velnp,ipos->veln);
 
 /* some time could be saved here by swapping flags instead of copying but
-   this interferes with restart */                            
+   this interferes with restart */
  /* leftspace = ipos->velnm;
     ipos->velnm = ipos->veln;*/
  /* ipos->veln = ipos->velnp; */
@@ -873,11 +874,26 @@ solserv_sol_copy(actfield,0,node_array_sol_increment,
  /* use remaining space for new solution */
  /* ipos->velnp = leftspace; */
 
+
+/*-------- copy solution from sol_increment[ipos->velnp][j] to sol_[actpos][j]
+           and transform kinematic to real pressure --------------------*/
+solserv_sol_copy(actfield,0,node_array_sol_increment,
+                            node_array_sol,ipos->veln,actpos);
+fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
+
+/*-- copy solution on level 2 at (n+1) to place (n) for multi-level FEM */
+#if defined(FLUID2_ML) || defined(FLUID3_ML)
+if (fdyn->mlfem==1) fluid_smcopy(actpart);
+#endif
+
+
+
 /*---------------------------------------------- finalise this timestep */
 outstep++;
 pssstep++;
 resstep++;
 restartstep++;
+
 
 /*------------------------------------------- write restart to pss file */
 if (restartstep==fdyn->uprestart)
@@ -890,16 +906,6 @@ if (restartstep==fdyn->uprestart)
 #endif
 }
 
-/*-------- copy solution from sol_increment[ipos->velnp][j] to sol_[actpos][j]
-           and transform kinematic to real pressure --------------------*/
-solserv_sol_copy(actfield,0,node_array_sol_increment,
-                            node_array_sol,ipos->veln,actpos);
-fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
-
-/*-- copy solution on level 2 at (n+1) to place (n) for multi-level FEM */
-#if defined(FLUID2_ML) || defined(FLUID3_ML)
-if (fdyn->mlfem==1) fluid_smcopy(actpart);
-#endif
 
 /*--------------------------------------- write solution to .flavia.res */
 if (resstep==fdyn->upres && par.myrank==0 && ioflags.output_gid==1)
