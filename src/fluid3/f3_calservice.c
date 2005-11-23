@@ -324,8 +324,7 @@ void f3_alecoor(
 {
 #ifdef D_FSI
 INT i,j;
-DOUBLE omt,theta;
-DOUBLE xy,xyn,xyng;
+DOUBLE xy;
 DOUBLE dt;
 NODE  *actfnode;    /* actual fluid node                                */
 NODE  *actanode;    /* actual ale node                                  */
@@ -335,11 +334,6 @@ GNODE *actfgnode;   /* actual fluid gnode                               */
 #ifdef DEBUG
 dstrc_enter("f3_alecoor");
 #endif
-
-fdyn    = alldyn[genprob.numff].fdyn;
-theta = fdyn->theta;
-omt   = ONE-theta;
-dt = fdyn->dta;
 
 /*-------------------------------------------- set element coordinates */
 for(i=0;i<ele->numnp;i++)
@@ -352,20 +346,13 @@ for(i=0;i<ele->numnp;i++)
       for (j=0;j<3;j++)
       {
          xy     = actfnode->x[j];
-         xyng   = xy + actanode->sol_mf.a.da[1][j];
-         xyn    = xy + actanode->sol_mf.a.da[0][j];
-         xyze[j][i] =  theta*(xyng)+omt*(xyn);
+         xyze[j][i] =  xy + actanode->sol_mf.a.da[1][j];
       }
    }
    else /* free surface */
    {
       for (j=0;j<3;j++)
-      {
-         xy     = actfnode->x[j];
-         xyn    = xy + actanode->sol_mf.a.da[0][j];
-         xyng   = actfnode->xfs[j];
-         xyze[j][i] =  theta*(xyng)+omt*(xyn);
-      }
+         xyze[j][i] =  actfnode->xfs[j];
    }
 }
 
