@@ -1146,9 +1146,7 @@ void f3falecord(
 {
 
   INT    l,i;
-  DOUBLE omt,theta;
-  DOUBLE xy,xyn,xyng;
-  DOUBLE dt;
+  DOUBLE xy;
   NODE  *actfnode;    /* actual fluid node */
   NODE  *actanode;    /* actual ale node */
   GNODE *actfgnode;   /* actual fluid gnode */
@@ -1158,10 +1156,6 @@ void f3falecord(
   dstrc_enter("f3falecord");
 #endif
 
-  fdyn    = alldyn[genprob.numff].fdyn;
-  theta   = fdyn->theta;
-  omt     = ONE-theta;
-  dt      = fdyn->dta;
 
   /* set element coordinates */
   for (l=0; l<sizevec[1]; l++)
@@ -1173,19 +1167,13 @@ void f3falecord(
       actanode  = actfgnode->mfcpnode[genprob.numaf];
 
       xy     = actfnode->x[0];
-      xyng   = xy + actanode->sol_mf.a.da[1][0];
-      xyn    = xy + actanode->sol_mf.a.da[0][0];
-      elecord[                   LOOPL*l+i]=theta*(xyng)+omt*(xyn);
+      elecord[                   LOOPL*l+i]=xy + actanode->sol_mf.a.da[1][0];
 
       xy     = actfnode->x[1];
-      xyng   = xy + actanode->sol_mf.a.da[1][1];
-      xyn    = xy + actanode->sol_mf.a.da[0][1];
-      elecord[  sizevec[0]*LOOPL+LOOPL*l+i]=theta*(xyng)+omt*(xyn);
+      elecord[  sizevec[0]*LOOPL+LOOPL*l+i]=xy + actanode->sol_mf.a.da[1][1];
 
       xy     = actfnode->x[2];
-      xyng   = xy + actanode->sol_mf.a.da[1][2];
-      xyn    = xy + actanode->sol_mf.a.da[0][2];
-      elecord[2*sizevec[0]*LOOPL+LOOPL*l+i]=theta*(xyng)+omt*(xyn);
+      elecord[2*sizevec[0]*LOOPL+LOOPL*l+i]=xy + actanode->sol_mf.a.da[1][2];
 
     }
   }
