@@ -66,6 +66,40 @@ C--------------------------------------------------------------------------
       Q14=one/4.0
 
       if (typ.EQ.8) then
+
+
+c   Numbering of the nodes:
+c   -----------------------
+c   - this is the numbering used in GiD!!
+c
+c
+c
+c                          ^ t          / s
+c                          |           /
+c                          |          /
+c                    8     |         /   7
+c                    o-----|-------------o
+c                   /|     |       /    /|
+c                  / |     |      /    / |
+c                 /  |     |     /    /  |
+c                /   |     |    /    /   |
+c               /    |     |   /    /     
+c              /     |     |  /    /     |
+c             /      |     | /  6 /      |
+c          5 o-------------------o       |
+c            |       |     *-----|---------------->
+c            |       o-----------|-------o         r
+c            |      / 4          |      /3
+c            |     /             |     /
+c            |    /              |    /
+c            |   /               |    
+c            |  /                |  /
+c            | /                 | /
+c            |/                  |/
+c            o-------------------o
+c           1                   2
+
+
         rp=one+r
         rm=one-r
         sp=one+s
@@ -671,10 +705,33 @@ c     form basic values
       five = 5.0
 
       if(typ.EQ.4) then
-        t1=r
-        t2=s
-        t3=t
-        t4=one-r-s-t
+
+
+c   Numbering of the nodes:
+c   -----------------------
+c   - this is the numbering used in GiD!!
+c
+c
+c
+c
+c          4 o---
+c            |\  ---
+c            |  \   -o3
+c            |   \  / \
+c            |     \   \
+c            |    / \   \
+c            |   /    \  \
+c            |  /      \  \
+c            | /         \ \
+c            |/            \\
+c            o---------------o
+c           1                2
+
+
+        t1=one-r-s-t
+        t2=r
+        t3=s
+        t4=t
 
         funct(1)= t1
         funct(2)= t2
@@ -683,20 +740,20 @@ c     form basic values
 
         if(icode.GT.1) then
 
-          deriv(1,1)= one
-          deriv(2,1)= zero
+          deriv(1,1)=-one
+          deriv(2,1)= one
           deriv(3,1)= zero
-          deriv(4,1)=-one
+          deriv(4,1)= zero
 
-          deriv(1,2)= zero
-          deriv(2,2)= one
-          deriv(3,2)= zero
-          deriv(4,2)=-one
+          deriv(1,2)=-one
+          deriv(2,2)= zero
+          deriv(3,2)= one
+          deriv(4,2)= zero
 
-          deriv(1,3)= zero
+          deriv(1,3)=-one
           deriv(2,3)= zero
-          deriv(3,3)= one
-          deriv(4,3)=-one
+          deriv(3,3)= zero
+          deriv(4,3)= one
         endif
 
       endif
