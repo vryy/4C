@@ -106,43 +106,59 @@ Maintainer: Malte Neumann
 
 
 /* check the plausability of some defines */
-/*
+#ifdef D_AXISHELL
 #if MAXNOD < MAXNOD_AXISHELL
 #error "MAXNOD must be larger then or equal to MAXNOD_AXISHELL!!"
 #endif
+#endif
 
+#ifdef D_BEAM3
 #if MAXNOD < MAXNOD_BEAM3
 #error "MAXNOD must be larger then or equal to MAXNOD_BEAM3!!"
 #endif
+#endif
 
+#ifdef D_BRICK1
 #if MAXNOD < MAXNOD_BRICK1
 #error "MAXNOD must be larger then or equal to MAXNOD_BRICK1!!"
 #endif
+#endif
 
+#ifdef D_FLUID2
 #if MAXNOD < MAXNOD_F2
 #error "MAXNOD must be larger then or equal to MAXNOD_F2!!"
 #endif
+#endif
 
+#ifdef D_FLUID3
 #if MAXNOD < MAXNOD_F3
 #error "MAXNOD must be larger then or equal to MAXNOD_F3!!"
 #endif
+#endif
 
+#ifdef D_ALE
 #if MAXNOD < MAXNOD_ALE3
 #error "MAXNOD must be larger then or equal to MAXNOD_ALE3!!"
 #endif
+#endif
 
+#ifdef D_SHELL8
 #if MAXNOD < MAXNOD_SHELL8
 #error "MAXNOD must be larger then or equal to MAXNOD_SHELL8!!"
 #endif
+#endif
 
+#ifdef D_SHELL9
 #if MAXNOD < MAXNOD_SHELL9
 #error "MAXNOD must be larger then or equal to MAXNOD_SHELL9!!"
 #endif
+#endif
 
+#ifdef D_WALL1
 #if MAXNOD < MAXNOD_WALL1
 #error "MAXNOD must be larger then or equal to MAXNOD_WALL1!!"
 #endif
-*/
+#endif
 
 
 /*----------------------------------------------------------------------*/
