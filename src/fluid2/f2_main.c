@@ -100,7 +100,7 @@ dstrc_enter("fluid2");
 #endif
 
 if (container!=NULL)
-  ipos = &(field[genprob.numff].dis[container->actndis].ipos);
+  ipos = &(field[genprob.numff].dis[container->disnum].ipos);
 else
   ipos = NULL;
 

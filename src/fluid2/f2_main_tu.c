@@ -90,7 +90,7 @@ ARRAY_POSITION* ipos;
 dstrc_enter("fluid2_tu");
 #endif
 
-ipos = &(field[genprob.numff].dis[container->actndis].ipos);
+ipos = &(field[genprob.numff].dis[container->disnum].ipos);
 
 /*--------------------------------------------------------------------- */
 /*------------------------------------------------- KAPPA-EPSILON MODEL */

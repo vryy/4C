@@ -65,6 +65,7 @@ time t to actnode->sol.a.da[0][j].
 *----------------------------------------------------------------------*/
 void ale_setdirich(
     FIELD        *actfield,
+    INT           disnum,
     ALE_DYNAMIC  *adyn,
     INT           readstructpos
     )
@@ -93,8 +94,8 @@ DOUBLE                cx,cy,win,wino,dd;
 dstrc_enter("ale_setdirich");
 #endif
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 T            = adyn->time;
 dt           = adyn->dt;
 numff        = genprob.numff;
@@ -110,7 +111,7 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actanode  = &(actfield->dis[0].node[i]);
+   actanode  = &(actfield->dis[disnum].node[i]);
    actagnode = actanode->gnode;
    if (actagnode->dirich==NULL) continue;
 
@@ -268,9 +269,11 @@ return;
   fsi_ale_laplace()
 
  *----------------------------------------------------------------------*/
-void ale_setdirich_increment_fsi(FIELD        *actfield,
-                                 ALE_DYNAMIC  *adyn,
-				 INT           actpos)
+void ale_setdirich_increment_fsi(
+    FIELD              *actfield,
+    INT                 disnum,
+    ALE_DYNAMIC        *adyn,
+    INT                 actpos)
 {
 GNODE                *actagnode;
 NODE                 *actsnode;
@@ -295,8 +298,8 @@ DOUBLE                initval;
   dstrc_enter("ale_setdirich_increment_fsi");
 #endif
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 T            = adyn->time;
 dt           = adyn->dt;
 numff        = genprob.numff;
@@ -312,7 +315,7 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actanode  = &(actfield->dis[0].node[i]);
+   actanode  = &(actfield->dis[disnum].node[i]);
    dsassert(actanode->locsysId==0,"locsys not implemented yet!\n");
    actagnode = actanode->gnode;
    dsassert(actanode->locsysId==0,"incremental DBCs at ALE nodes!\n");
@@ -435,6 +438,7 @@ dstrc_exit();
  *----------------------------------------------------------------------*/
 void ale_setdirich_increment(
     FIELD        *actfield,
+    INT           disnum,
     ALE_DYNAMIC  *adyn
     )
 {
@@ -458,8 +462,8 @@ void ale_setdirich_increment(
   dstrc_enter("ale_setdirich_increment");
 #endif
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 T            = adyn->time;
 T_prev       = T - adyn->dt;
 
@@ -473,7 +477,7 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]);
+   actnode  = &(actfield->dis[disnum].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
