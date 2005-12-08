@@ -1095,7 +1095,7 @@ void f2_int_kim_moin_err(
           break;
 
         default:
-          dserror(
+          dserror_args(__FILE__, __LINE__,
               "Error norm %2i not available!!",container->error_norm);
           break;
       }

@@ -471,7 +471,7 @@ void f2_calneumann(ELEMENT         *ele,
     dserror("no neumann bc on triangular elements yet");
     break;
   default:
-    dserror("type %d unknown", typ);
+    dserror_args(__FILE__, __LINE__, "type %d unknown", typ);
   }
 
 
