@@ -72,23 +72,32 @@ for file in $liste; do
   fi
 
 
+
+
+
   # get the start-time in seconds:
   h=`date +"%H"`
   m=`date +"%M"`
   s=`date +"%S"`
   s_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
 
+
+
+
   if [ "x$PARALLEL" = "xno" ]; then
     # run the executable with the inputfile
     echo
     echo '  Running Input-file...'
     ./$exe $file test_out >test.tmp
+
   else
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
     mpirun -np 2 ./$exe $file test_out >test.tmp
+
   fi
+
 
   # get the end-time in seconds:
   h=`date +"%H"`
@@ -104,9 +113,72 @@ for file in $liste; do
     echo '    '$mins':'$secs' mins:secs'
   fi
 
+
+
   # evaluate the output
   # (look for the word 'normally' in the output
   count=`cat test.tmp | grep -c "normally"`
+  if [ $count -ge 1 ]; then
+    echo '    OK'
+  else
+    echo '    Failed!!'
+    # copy screen output to $file_ohne.scr
+    cp test.tmp $file_ohne.scr
+    continue
+  fi
+
+
+
+  # get the start-time in seconds:
+  h=`date +"%H"`
+  m=`date +"%M"`
+  s=`date +"%S"`
+  s_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+
+
+
+
+  if [ "x$PARALLEL" = "xno" ]; then
+    # run the executable with the inputfile
+
+    # modify the file
+    sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $file > restart_input.dat
+
+    echo '  Running Restart of Input-file...'
+    ./$exe restart_input.dat test_out restart >test2.tmp
+
+  else
+    # parallel run
+
+    # modify the file
+    sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $file > restart_input.dat
+
+    echo '  Running Restart of Input-file in parallel...'
+    mpirun -np 2 ./$exe restart_input.dat test_out restart >test2.tmp
+
+  fi
+
+
+
+  # get the end-time in seconds:
+  h=`date +"%H"`
+  m=`date +"%M"`
+  s=`date +"%S"`
+  e_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+  time=`expr $e_time - $s_time`
+  mins=`expr $time / 60`
+  secs=`expr $time % 60`
+  if [ $secs -le 9 ]; then
+    echo '    '$mins':0'$secs' mins:secs'
+  else
+    echo '    '$mins':'$secs' mins:secs'
+  fi
+
+
+
+  # evaluate the output
+  # (look for the word 'normally' in the output
+  count=`cat test2.tmp | grep -c "normally"`
   if [ $count -ge 1 ]; then
     echo '    OK'
     pass2=`expr $pass2 + 1`
@@ -114,9 +186,11 @@ for file in $liste; do
     echo '    Failed!!'
     fail2=`expr $fail2 + 1`
     # copy screen output to $file_ohne.scr
-    cp test.tmp $file_ohne.scr
+    cp test2.tmp $file_ohne.scr_res
     continue
   fi
+
+
 
 done
 # end of the loop over all input files

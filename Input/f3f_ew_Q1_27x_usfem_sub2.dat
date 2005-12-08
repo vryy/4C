@@ -30,6 +30,7 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      5
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  2
 NUMSTRUCDIS  1
@@ -53,7 +54,6 @@ FLUID_VIS         No
 ALE_DISP          No
 MONITORING        No
 ------------------------------------------------------------STATIC
-LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC

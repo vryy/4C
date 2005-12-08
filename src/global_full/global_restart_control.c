@@ -1645,30 +1645,37 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)/*======================= call element routines */
    {
-   case el_fluid2:
-#ifdef D_FLUID2
-      container->handsize = 5;
-      container->handles  = ele_handles[i];
-      fluid2(actpart,actintra,actele,NULL,
-             NULL,NULL,NULL,NULL,
-             action,NULL,NULL,container);
-#endif
-   break;
-   case el_fluid3:
-#ifdef D_FLUID3
-      container->handsize = 5;
-      container->handles  = ele_handles[i];
-      fluid3(actpart,actintra,actele,
-             NULL,NULL,NULL,NULL,
-             action,NULL,NULL,container);
-#endif
-   break;
-   case el_none:
-      dserror("Typ of element unknown");
-   break;
 
-   default:
-      dserror("Typ of element unknown");
+#ifdef D_FLUID2
+     case el_fluid2:
+       container->handsize = 5;
+       container->handles  = ele_handles[i];
+       fluid2(actpart,actintra,actele,NULL,
+           NULL,NULL,NULL,NULL,
+           action,NULL,NULL,container);
+       break;
+#endif
+
+
+#ifdef D_FLUID3
+     case el_fluid3:
+       container->handsize = 5;
+       container->handles  = ele_handles[i];
+       fluid3(actpart,actintra,actele,
+           NULL,NULL,NULL,NULL,
+           action,NULL,NULL,container);
+       break;
+#endif
+
+
+     case el_none:
+       dserror("Typ of element unknown");
+       break;
+
+
+     default:
+       dserror("Typ of element unknown");
+
    }/* end of calling elements */
 }
 /*----------------------------------------------------------------------*/

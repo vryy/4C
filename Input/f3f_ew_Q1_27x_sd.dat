@@ -5,7 +5,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 //
-// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST CHECK_MAX SOLVE_DIRICH
+// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST CHECK_MAX SOLVE_DIRICH BINIO
 //
 //
 // #define MAXNOD           (8)
@@ -30,6 +30,7 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      15
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1
@@ -48,7 +49,6 @@ ALE_DISP_FILE          No
 ALE_DISP_GID           No
 MONITORING             No
 ------------------------------------------------------------STATIC
-LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
@@ -59,7 +59,7 @@ IPRERHS      1
 UPPSS        1
 UPOUT        1
 UPRES        1
-RESTARTEVRY  1
+RESTARTEVRY  5
 MAXTIME      1000.0
 NUMSTEP      30
 TIMESTEP     0.05

@@ -3,7 +3,7 @@
 //             genk@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
-// 
+//
 // necessary defines: D_FLUID D_FLUID3 AZTEC_PACKAGE RESULTTEST  CHECK_MAX
 //
 //
@@ -19,7 +19,7 @@
 -------------------------------------------------------------TITLE
 einheitswuerfel
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS          27 
+ELEMENTS          27
 NODES             64
 DIM                3
 MATERIALS          1
@@ -29,6 +29,7 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      15
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No
 STRUCT_STRESS_FILE No
@@ -38,23 +39,8 @@ FLUID_SOL_FILE     Yes
 FLUID_SOL_GID      Yes
 FLUID_VIS_FILE     No
 ------------------------------------------------------------STATIC
-GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
-TIMESTEP     0.05 
-NUMSTEP      200 
-MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
-ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
-K_DAMP       0.5
-ITERATION    full 
-TOLDISP      1.0E-08
-MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 SOLVE_FLUID  Yes
 DYNAMICTYP   Nlin_Time_Int
@@ -64,15 +50,15 @@ IPRERHS      1
 UPPSS        1
 UPOUT        1
 UPRES        1
-RESTARTEVRY  1
+RESTARTEVRY  5
 MAXTIME      1000.0
-NUMSTEP      30  
+NUMSTEP      30
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        0.50
 GAMMA        1.00
 NONLINITER   fixed_point_like
-ITEMAX       5 
+ITEMAX       5
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-6
 STEADYCHECK  L_2_norm
@@ -88,51 +74,20 @@ STARTFUNCNO  2
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        1  
-AZTOL          1.0E-12  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        1
+AZTOL          1.0E-12
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
-SOLVER         Aztec_MSR
-AZSOLVE        CG
-AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
-//MATRIXTYP      OLL
-PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
-SOLVER         Aztec_MSR
-//SOLVER         UMFPACK
-AZSOLVE        CG
-AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
-//MATRIXTYP      OLL
-PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  12

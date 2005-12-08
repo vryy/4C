@@ -60,6 +60,16 @@ echo "" >> $out
 echo "" >> $out
 ./run_test rel $1 >> $out
 
+echo "" >> $out
+echo "" >> $out
+echo "============================================================" >> $out
+echo "Testing 'restart' with '$1'" >> $out
+echo "============================================================" >> $out
+echo "" >> $out
+echo "" >> $out
+./run_test restart $1 >> $out
+
+
 if [ $# -eq 2 ]; then
 
   echo "" >> $out
@@ -79,6 +89,16 @@ if [ $# -eq 2 ]; then
   echo "" >> $out
   echo "" >> $out
   ./run_test rel $2 >> $out
+
+  echo "" >> $out
+  echo "" >> $out
+  echo "============================================================" >> $out
+  echo "Testing 'restart' with '$2'" >> $out
+  echo "============================================================" >> $out
+  echo "" >> $out
+  echo "" >> $out
+  ./run_test restart $2 >> $out
+
 
 fi
 

@@ -29,6 +29,7 @@ PROBLEMTYP   Fluid_Structure_Interaction
 NUMFIELD     3
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      2
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1
@@ -106,7 +107,7 @@ STARTFUNCNO  2
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05
-NUMSTEP      2
+NUMSTEP      4
 UPPSS        1
 UPRES        1
 RESTARTEVRY  2
@@ -146,9 +147,9 @@ AZGFILL        0
 AZTOL          1.0E-08
 AZITER         2500
 AZSUB          70
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         7  
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         7
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Colsol
@@ -2812,7 +2813,7 @@ MAT       3 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0 
+CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
@@ -2823,9 +2824,9 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 105 POSITION sol(1,1) NAME vel-x VALUE 0.0003781447850149 TOLERANCE 1e-6
-FLUID DIS 1 NODE 105 POSITION sol(1,2) NAME vel-y VALUE 0.0000359315113200 TOLERANCE 1e-6
-FLUID DIS 1 NODE 105 POSITION sol(1,3) NAME vel-z VALUE 0.0005714893182095 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 65 POSITION sol(1,3) NAME disp-z VALUE 0.0000004751210153 TOLERANCE 1e-8
+FLUID DIS 1 NODE 105 POSITION sol(1,1) NAME vel-x VALUE 0.0015792418947161 TOLERANCE 1e-6
+FLUID DIS 1 NODE 105 POSITION sol(1,2) NAME vel-y VALUE 0.0002289647899929 TOLERANCE 1e-6
+FLUID DIS 1 NODE 105 POSITION sol(1,3) NAME vel-z VALUE 0.0016331412209101 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 65 POSITION sol(1,3) NAME disp-z VALUE 0.0000019389812738 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

@@ -3,8 +3,8 @@
 //             neumann@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
-// 
-// necessary defines: RESULTTEST D_FLUID D_FLUID3 AZTEC_PACKAGE CHECK_MAX FAST_ASS
+//
+// necessary defines: D_FLUID D_FLUID3 AZTEC_PACKAGE CHECK_MAX FAST_ASS
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)
@@ -18,7 +18,7 @@
 -------------------------------------------------------------TITLE
 BELTRAMI-FLOW
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS          64 
+ELEMENTS          64
 NODES            125
 DIM                3
 MATERIALS          1
@@ -28,6 +28,7 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      2
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1
@@ -59,7 +60,7 @@ NUMCONT      1
 UPPSS        1
 UPOUT        1
 UPRES        1
-RESTARTEVRY  20
+RESTARTEVRY  2
 MAXTIME      0.1
 NUMSTEP      4
 TIMESTEP     0.00625
@@ -74,7 +75,7 @@ STEADYTOL    1.0E-8
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  2
 START_THETA  0.80
-INITIALFIELD BELTRAMI-FLOW 
+INITIALFIELD BELTRAMI-FLOW
 RESSTEP      4
 STARTFUNCNO  8
 TURBULENCE   No
@@ -91,16 +92,16 @@ ERRORCAL     yes
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-12  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        0
+AZTOL          1.0E-12
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 --------------------------------------------------------ALE SOLVER

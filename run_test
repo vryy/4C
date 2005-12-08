@@ -11,13 +11,13 @@
 # some usability tests
 if [ "x$1" = "x" ]; then
   echo "usage: $0  typ config-file-name [input-file]"
-  echo "typ = all, rel, single"
+  echo "typ = all, rel, restart, single"
   exit 1
 fi
 
 if [ "x$2" = "x" ]; then
   echo "usage: $0 typ config-file-name [input-file]"
-  echo "typ = all, rel, single"
+  echo "typ = all, rel, restart, single"
   exit 1
 fi
 
@@ -50,7 +50,7 @@ function cleanup
 {
     #echo cleanup
     make -f $makefile clean >/dev/null
-    rm -f test.tmp test_out_* $exe make.log $makefile $definefile
+    rm -f test.tmp test2.tmp  test_out* $exe make.log $makefile $definefile restart_input.dat
 
     # remove hook
     trap "echo" 0 1 2 15
@@ -103,6 +103,18 @@ elif [ "x$1" = "xrel" ]; then
   # create the list
   liste=`awk '{ if ($'$typ' ~ /[xX]/) print $1 }' testing/list_of_files`
 
+elif [ "x$1" = "xrestart" ]; then
+
+  # test all files with restart
+  if [ "x$PARALLEL" = "xno" ]; then
+    typ=6
+  else
+    typ=7
+  fi
+
+  # create the list
+  liste=`awk '{ if ($'$typ' ~ /[xX]/) print $1 }' testing/list_of_files`
+
 elif [ "x$1" = "xsingle" ]; then
 
   # test only one file
@@ -125,7 +137,7 @@ else
   # unknown test typ
   echo "ERROR: Unknown typ of testing!!"
   echo "usage: $0  typ config-file-name [input-file]"
-  echo "typ = all, rel, single"
+  echo "typ = all, rel, restart, single"
   exit 1
 fi
 
@@ -164,6 +176,11 @@ elif [ "x$1" = "xrel" ]; then
   # test all files using one exe
   . ./testing/loop_rel.sh
 
+elif [ "x$1" = "xrestart" ]; then
+
+  # test all files with restart
+  . ./testing/loop_restart.sh
+
 elif [ "x$1" = "xsingle" ]; then
 
   # test only one file
@@ -174,7 +191,7 @@ else
   # unknown test typ
   echo "ERROR: Unknown typ of testing!!"
   echo "usage: $0  typ config-file-name [input-file]"
-  echo "typ = all, rel, single"
+  echo "typ = all, rel, restart, single"
   exit 1
 
 fi
@@ -234,7 +251,7 @@ echo '-----------------------------'
 echo
 
 # We are done. Clean up and remove the exit trap.
-cleanup
+#cleanup
 
 # exit with non-zero return code if something went wrong
 if [ $fail1 -ge 1 ]; then

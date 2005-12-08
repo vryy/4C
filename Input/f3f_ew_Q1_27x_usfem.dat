@@ -5,7 +5,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 //
-// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST CHECK_MAX SOLVE_DIRICH2
+// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST CHECK_MAX SOLVE_DIRICH2 BINIO
 //
 //
 // #define MAXNOD           (8)
@@ -30,25 +30,26 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      15
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1
 NUMALEDIS    1
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   No
-STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    No
-STRUCT_STRESS_GID  No
-STRUCT_STRESS_GID_SMO  No
-FLUID_SOL_FILE         No
-FLUID_SOL_GID          Yes
-FLUID_STRESS_GID       Yes
-FLUID_VIS_FILE         No
-ALE_DISP_FILE          No
-ALE_DISP_GID           No
-MONITORING             No
+OUTPUT_OUT        No
+OUTPUT_GID        Yes
+OUTPUT_BIN        No
+STRUCT_DISP       No
+STRUCT_STRESS     No
+STRUCT_STRESS_SMO No
+STRUCT_SM_DISP    No
+STRUCT_SM_STRESS  No
+FLUID_SOL         Yes
+FLUID_STRESS      No
+FLUID_VIS         No
+ALE_DISP          No
+MONITORING        No
 ------------------------------------------------------------STATIC
-LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
@@ -59,7 +60,7 @@ IPRERHS      1
 UPPSS        1
 UPOUT        1
 UPRES        1
-RESTARTEVRY  1
+RESTARTEVRY  5
 MAXTIME      1000.0
 NUMSTEP      30
 TIMESTEP     0.05

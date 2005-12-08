@@ -79,12 +79,12 @@ for file in $liste; do
     # run the executable with the inputfile
     echo
     echo '  Running Input-file...'
-    ./$exe $file test_out_ >test.tmp
+    ./$exe $file test_out >test.tmp
   else
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
-    mpirun -np 2 ./$exe $file test_out_ >test.tmp
+    mpirun -np 2 ./$exe $file test_out >test.tmp
   fi
 
   # get the end-time in seconds:

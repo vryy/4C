@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 //
-// necessary defines: RESULTTEST D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE CHECK_MAX
+// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE CHECK_MAX BINIO
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)
@@ -28,6 +28,7 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      2
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1
