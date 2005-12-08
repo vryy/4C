@@ -114,6 +114,7 @@ defined in opt_cal_main.c
  *----------------------------------------------------------------------*/
 void nlninc(
             FIELD         *actfield,     /* the actual physical field */
+            INT            disnum,
             SOLVAR        *actsolv,      /* the field-corresponding solver */
             PARTITION     *actpart,      /* the partition of the proc */
             INTRA         *actintra,     /* the intra-communicator of this field */
@@ -131,6 +132,7 @@ void nlninc(
  *----------------------------------------------------------------------*/
 void nlnequ(
             FIELD         *actfield,      /* the actual physical field */
+            INT            disnum,
             SOLVAR        *actsolv,       /* the field-corresponding solver */
             PARTITION     *actpart,       /* the partition of the proc */
             INTRA         *actintra,      /* the intra-communicator of this field */
@@ -213,6 +215,8 @@ CALC_ACTION  *action;             /* pointer to the structures cal_action enum *
 CONTAINER     container;          /* contains variables defined in container.h */
 
 INT           reldof[6];          /* the Id's of the dofs for output */
+
+INT           disnum = 0;
 
 #ifdef DEBUG
 dstrc_enter("opt_stanln");
@@ -351,7 +355,7 @@ if (ioflags.output_gid)
 container.kstep = 0;
 container.inherit = 1;
 container.isdyn   = 0;              /* static computation */
-container.actndis = 0;              /* only one discretisation */
+container.disnum  = 0;              /* only one discretisation */
 *action = calc_struct_eleload;
 calrhs(actfield,actsolv,actpart,actintra,actsysarray,
         &(actsolv->rhs[actsysarray]),action,&container);
@@ -381,7 +385,7 @@ if (ioflags.output_gid==1 && par.myrank==0)
 {
    /* colors the partitions in the postprocessing, if this is sequentiell*/
    /*              the picture of the partitions can be quite boring... */
-   out_gid_domains(actfield);
+   out_gid_domains(actfield,disnum);
 }
 /*------------------------------------------ initialialization finished */
 if(stalact == calsta_init || stalact==calsta_init_solve) goto end;
@@ -481,6 +485,7 @@ for (kstep=0; kstep<nstep; kstep++)
      iconv=0;
      nlninc(
            actfield,
+           disnum,
            actsolv,
            actpart,
            actintra,
@@ -501,6 +506,7 @@ for (kstep=0; kstep<nstep; kstep++)
        /*---------- put actsolv->sol[kstep] to the nodes (total displacements) */
        solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[0]),
                      0,
@@ -536,6 +542,7 @@ for (kstep=0; kstep<nstep; kstep++)
    /*-------------------------------------- make equillibrium iteration */
      nlnequ(
            actfield,
+           disnum,
            actsolv,
            actpart,
            actintra,
@@ -573,6 +580,7 @@ for (kstep=0; kstep<nstep; kstep++)
          &container);
    /*-------------------------------------- make equillibrium iteration */
    conequ(actfield,
+          disnum,
           actsolv,
           actpart,
           actintra,
@@ -597,7 +605,7 @@ for (kstep=0; kstep<nstep; kstep++)
    container.kstep        = 0;
    container.inherit = 1;
    container.isdyn   = 0;              /* static computation */
-   container.actndis = 0;              /* only one discretisation */
+   container.disnum  = 0;              /* only one discretisation */
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
    /*-------------- check, if output is to be written is this loadstep */
    mod_displ =    kstep  % statvar->resevry_disp;
@@ -615,14 +623,14 @@ for (kstep=0; kstep<nstep; kstep++)
          container.kstep        = 0;
          container.inherit = 1;
          container.isdyn   = 0;              /* static computation */
-         container.actndis = 0;              /* only one discretisation */
+         container.disnum  = 0;              /* only one discretisation */
          calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
          /*---------------------- reduce stresses, so they can be written */
          /*- this makes the result of the stress calculation redundant on */
          /*                                                         procs */
          *action = calc_struct_stressreduce;
          container.kstep = 0;
-         calreduce(actfield,actpart,actintra,action,&container);
+         calreduce(actfield,actpart,disnum,actintra,action,&container);
       }
    }
    /*--------------------------------------- print out results to .out */
@@ -630,16 +638,16 @@ for (kstep=0; kstep<nstep; kstep++)
    {
       if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
       {
-        out_sol(actfield,actpart,actintra,kstep,0);
+        out_sol(actfield,actpart,disnum,actintra,kstep,0);
       }
    }
    /*----------------------------------------- printout results to gid */
    if (par.myrank==0 && ioflags.output_gid==1)
    {
        if (ioflags.struct_disp==1 && mod_displ==0)
-         out_gid_sol("displacement",actfield,actintra,kstep,0,ZERO);
+         out_gid_sol("displacement",actfield,disnum,actintra,kstep,0,ZERO);
        if (ioflags.struct_stress==1 && mod_stress==0)
-         out_gid_sol("stress"      ,actfield,actintra,kstep,0,ZERO);
+         out_gid_sol("stress"      ,actfield,disnum,actintra,kstep,0,ZERO);
    }
    /*----------------------------------- printout results to pss file */
    if(mod_restart==0)
@@ -704,6 +712,7 @@ return;
  *----------------------------------------------------------------------*/
 void nlninc(
             FIELD         *actfield,     /* the actual physical field */
+            INT            disnum,
             SOLVAR        *actsolv,      /* the field-corresponding solver */
             PARTITION     *actpart,      /* the partition of the proc */
             INTRA         *actintra,     /* the intra-communicator of this field */
@@ -742,7 +751,7 @@ solserv_zero_mat(
 *action = calc_struct_nlnstiff;
 container->inherit = 1;
 container->isdyn   = 0;              /* static computation */
-container->actndis = 0;              /* only one discretisation */
+container->disnum  = 0;              /* only one discretisation */
 container->dvec         = intforce;
 container->dirich       = NULL;
 container->global_numeq = actsolv->sol[0].numeq_total;
@@ -801,6 +810,7 @@ return;
  *----------------------------------------------------------------------*/
 void nlnequ(
             FIELD         *actfield,      /* the actual physical field */
+            INT            disnum,
             SOLVAR        *actsolv,       /* the field-corresponding solver */
             PARTITION     *actpart,       /* the partition of the proc */
             INTRA         *actintra,      /* the intra-communicator of this field */
@@ -869,6 +879,7 @@ solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]),1.0);
 /*---------- put actsolv->sol[kstep] to the nodes (total displacements) */
 solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[0]),
                      0,
@@ -935,6 +946,7 @@ solserv_scalarprod_vec(&(re[0]),rlnew);
 /* put residual displacements to the nodes (needed for material, eas ..)*/
 solserv_result_resid(
                      actfield,
+                     disnum,
                      actintra,
                      &(rsd[0]),
                      0,
@@ -944,12 +956,13 @@ solserv_result_resid(
 /*-- put incremental displacements to the nodes (needed for material...)*/
 solserv_result_incre(
                      actfield,
+                     disnum,
                      actintra,
                      &(dispi[0]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray]),
-		     0);
+                     &(actsolv->sysarray_typ[actsysarray])
+                     );
 /*---------------------------------------------initialize system matrix */
 solserv_zero_mat(
                  actintra,
@@ -963,7 +976,7 @@ amzero(&intforce_a);
 *action = calc_struct_nlnstiff;
 container->inherit = 1;
 container->isdyn   = 0;              /* static computation */
-container->actndis = 0;              /* only one discretisation */
+container->disnum  = 0;              /* only one discretisation */
 container->dvec         = intforce;
 container->dirich       = NULL;
 container->global_numeq = actsolv->sol[0].numeq_total;
@@ -1009,6 +1022,7 @@ solserv_add_vec(&(rsd[2]),&(actsolv->sol[0]),1.0);
 /*----------------------------- put actual total displacements to nodes */
 solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[0]),
                      0,
@@ -1061,6 +1075,7 @@ solserv_copy_vec(&(actsolv->sol[0]),&(dispi[1]));
 /*----------------- put converged solution to the elements in next step */
 solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[0]),
                      0,

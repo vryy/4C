@@ -131,7 +131,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   #endif
   container.fieldtyp  = actfield->fieldtyp;
   container.isdyn = 0;            /* static calculation */
-  container.actndis      = 0;
+  container.disnum       = 0;
 /*--------------------------- initialize evaluation of sensitivities ---*/
   if(init==1)
   {
@@ -163,7 +163,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   container.dirich       = NULL;
   container.global_numeq = 0;
   container.kstep        = 0;
-  container.actndis      = 0;
+  container.disnum       = 0;
   container.getvalue      = 0.;
   container.getvector     = svec;
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
@@ -207,7 +207,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = kstep;
-    container.actndis       = 0;
+    container.disnum        = 0;
     container.isdyn         = 0;            /* static calculation */
     calelm(actfield,        /* active field                          */
            actsolv,         /* active solver typ                     */
@@ -241,6 +241,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
 
     solserv_result_total(
                      actfield,
+                     0,
                      actintra,
                      &(grdisp[0]),
                      1, /*---------- attentione ---------*//*!!!!!!!!!!!!!!!!!*/
@@ -251,7 +252,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
     /*     on element level for selfadjoint problems     */
     *action = calc_deriv_self_adj;
     container.getvector     = svec;
-    container.actndis       = 0;
+    container.disnum        = 0;
     container.isdyn         = 0;            /* static calculation */
     for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
 #ifdef PARALLEL

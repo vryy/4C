@@ -186,7 +186,7 @@ dstrc_enter("opteqc");
   #endif
   container.fieldtyp  = actfield->fieldtyp;
   container.isdyn   = 0;            /* static calculation */
-  container.actndis = 0;            /* only one discretisation */
+  container.disnum  = 0;            /* only one discretisation */
 /*--------------------------- volume and weight equality constraints ---*/
   if(opt->oeqc[0].oeqc_type == volume)
   {
@@ -218,7 +218,7 @@ dstrc_enter("opteqc");
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
-    container.actndis      = 0;            /* only one discretisation */
+    container.disnum       = 0;            /* only one discretisation */
 
     container.getvalue     = 0.;
 
@@ -294,7 +294,7 @@ dstrc_enter("optupd");
   actintra->intra_nprocs   = 1;
   #endif
   container.isdyn   = 0;            /* static calculation */
-  container.actndis = 0;            /* only one discretisation */
+  container.disnum  = 0;            /* only one discretisation */
   container.fieldtyp  = actfield->fieldtyp;
 /*--------------------------- initialize update of element materials ---*/
   if(init==1)
@@ -324,7 +324,7 @@ dstrc_enter("optupd");
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
-    container.actndis      = 0;            /* only one discretisation */
+    container.disnum       = 0;            /* only one discretisation */
 
     container.getvalue      = 0.;
     container.getvector     = svec;
@@ -452,7 +452,7 @@ dstrc_enter("optobj");
   #endif
 
   container.isdyn   = 0;            /* static calculation */
-  container.actndis = 0;            /* only one discretisation */
+  container.disnum  = 0;            /* only one discretisation */
 /*------------------------- set values of objective functions = zero ---*/
   objective[0] = 0.0; /* only one value, right now */
   container.fieldtyp  = actfield->fieldtyp;
@@ -470,7 +470,7 @@ dstrc_enter("optobj");
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
-    container.actndis      = 0;            /* only one discretisation */
+    container.disnum       = 0;            /* only one discretisation */
 
     container.getvalue     = 0.;
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);

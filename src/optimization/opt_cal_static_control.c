@@ -139,8 +139,10 @@ CONTAINER     container;        /* contains variables defined in container.h */
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
+INT           disnum = 0;
+
 container.isdyn   = 0;            /* static calculation */
-container.actndis = 0;            /* only one discretisation */
+container.disnum  = disnum;       /* only one discretisation */
 
 #ifdef DEBUG
 dstrc_enter("opt_stalin");
@@ -230,7 +232,7 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
   *action = calc_struct_linstiff;
   container.dvec         = NULL;
   container.dirich       = NULL;
-  container.actndis      = 0;
+  container.disnum       = 0;
   container.global_numeq = 0;
   container.kstep        = 0;
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
@@ -264,6 +266,7 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
 {
   solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[actsysarray]),
                      0,
@@ -274,8 +277,8 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
 /*--------------------------------------------- printout results to gid */
 if (ioflags.output_gid==1 && ioflags.struct_disp==1 && par.myrank==0 && stalact!=calsta_init)
 {
-   out_gid_sol("displacement",actfield,actintra,opt->optstep,0,ZERO);
-   /* out_gid_domains(actfield); */
+   out_gid_sol("displacement",actfield,disnum,actintra,opt->optstep,0,ZERO);
+   /* out_gid_domains(actfield,disnum); */
 }
 /*------------------------------------------ perform stress calculation */
 if (ioflags.struct_stress==1 && stalact!=calsta_init)
@@ -289,10 +292,10 @@ if (ioflags.struct_stress==1 && stalact!=calsta_init)
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    container.kstep = 0;
-   calreduce(actfield,actpart,actintra,action,&container);
-   out_sol(actfield,actpart,actintra,0,0);
+   calreduce(actfield,actpart,disnum,actintra,action,&container);
+   out_sol(actfield,actpart,disnum,actintra,0,0);
    if (par.myrank==0 && stalact!=calsta_init)
-   out_gid_sol("stress",actfield,actintra,opt->optstep,0,ZERO);
+   out_gid_sol("stress",actfield,disnum,actintra,opt->optstep,0,ZERO);
 }
 /*----------------------------------------------------------------------*/
 end:

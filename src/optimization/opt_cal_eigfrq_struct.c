@@ -197,7 +197,7 @@ actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 sdyn        =   alldyn[0].sdyn;
 container.isdyn   = 0;            /* static calculation */
-container.actndis = 0;            /* only one discretisation */
+container.disnum  = 0;            /* only one discretisation */
 container.fieldtyp  = actfield->fieldtyp;
 #ifdef PARALLEL
 actintra    = &(par.intra[0]);
@@ -372,7 +372,7 @@ container.dvec         = lumpedmass;
 container.dirich       = NULL;
 container.global_numeq = actsolv->sol[0].numeq_total;
 container.kstep        = 0;
-container.actndis      = 0;            /* only one discretisation */
+container.disnum       = 0;            /* only one discretisation */
 if(alleig->ilmp) *action = calc_struct_linstifflmass;
 if(alleig->ilmp)
 {
@@ -550,7 +550,7 @@ for (i=0;i<opt->oeig->numeigv;i++)
         actsolv->sol[0].vec.a.dv[i] = itervec->vec.a.dv[dof];
     }
     /*----------------------- return vectors of eigenforms to the nodes */
-    solserv_result_total(actfield,actintra, &(actsolv->sol[0]),0,
+    solserv_result_total(actfield,0,actintra, &(actsolv->sol[0]),0,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
 
@@ -565,7 +565,7 @@ for (i=0;i<opt->oeig->numeigv;i++)
         actsolv->sol[0].vec.a.dv[i] = itervec->vec.a.dv[dof];
     }
     /*----------------------- return vectors of eigenforms to the nodes */
-    solserv_result_total(actfield,actintra, &(actsolv->sol[0]),nvec,
+    solserv_result_total(actfield,0,actintra, &(actsolv->sol[0]),nvec,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
   }
