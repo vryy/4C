@@ -145,7 +145,9 @@ void inp_designsize(void);
  *---------------------------------------------------------------------*/
 void inpdesign_topology_design(void);
 
-void inpdesign_topology_fe(void);
+void inpdesign_topology_fe(
+    DISCRET        *actdis
+    );
 
 
 /*----------------------------------------------------------------------*
