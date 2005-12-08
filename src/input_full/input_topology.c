@@ -66,11 +66,31 @@ void inp_topology(
   ELEMENT *actele;
   NODE    *actnode;
 
+  INT  *node_ind;
+
 #ifdef DEBUG
   dstrc_enter("inp_topology");
 #endif
-  /* create pointer from elements to nodes */
 
+  node_ind = (INT*)CCACALLOC(genprob.maxnode,sizeof(INT));
+
+  /* initialize node_ind */
+  for(k=0;k<genprob.maxnode;k++)
+    node_ind[k] = -1;
+
+
+  /* loop the nodes in this dis */
+  for (k=0; k<actdis->numnp; k++)
+  {
+    /* fill node_ind to find the nodes */
+    node_id = actdis->node[k].Id;
+    dsassert(node_id < genprob.maxnode,"Zu wenig KNOTEN");
+
+    node_ind[node_id] = k;
+  }
+
+
+  /* create pointer from elements to nodes */
   for (i=0; i<actdis->numele; i++)
   {
     actele = &(actdis->element[i]);
@@ -78,10 +98,17 @@ void inp_topology(
 
     for (j=0; j<actele->numnp; j++)
     {
-      node_id = actele->lm[j];
-      actele->node[j] = genprob.nodes[node_id];
+      node_id = node_ind[actele->lm[j]];
+
+      if (node_id == -1 )
+        dserror_args(__FILE__, __LINE__,
+            "MIXUP NODE-ELEMENT: element: %d; fenode; %d; nodeid: %d",
+            actele->Id,actele->lm[j],node_id);
+
+      actele->node[j] = &(actdis->node[node_id]);
     } /* end of loop over elements nodes */
   }/* end of loop over elements */
+
 
 /*------------------------------ create pointers from nodes to elements */
 for (i=0; i<actdis->numnp; i++) actdis->node[i].numele=0;
@@ -296,7 +323,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         actdis->gvol[counter].element = actele;
         actele->g.gvol                = &(actdis->gvol[counter]);
         actdis->gvol[counter].ngsurf  = 6;
-        actdis->gvol[counter].gsurf   = (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
+        actdis->gvol[counter].gsurf   =
+          (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
         nsurftovol += actdis->gvol[counter].ngsurf;
         counter++;
         break;
@@ -305,7 +333,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         actdis->gvol[counter].element = actele;
         actele->g.gvol                = &(actdis->gvol[counter]);
         actdis->gvol[counter].ngsurf  = 4;
-        actdis->gvol[counter].gsurf   = (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
+        actdis->gvol[counter].gsurf   =
+          (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
         nsurftovol += actdis->gvol[counter].ngsurf;
         counter++;
         break;
@@ -382,17 +411,21 @@ void inp_detailed_topology(DISCRET   *actdis)
         /*--------------------- set the pointer in the actual actgvol */
         actgvol->gsurf[j] = &(actdis->gsurf[counter]);
         /*-------------------------------------------- check otherele */
-        dsassert(otherele->g.gvol->gsurf[facenumber]==NULL,"surfaces of volumetric elements got mixed up");
-        dsassert(otherele->g.gvol->ngsurf > facenumber,"surfaces of volumetric elements got mixed up");
+        dsassert(otherele->g.gvol->gsurf[facenumber]==NULL,
+            "surfaces of volumetric elements got mixed up 1");
+        dsassert(otherele->g.gvol->ngsurf > facenumber,
+            "surfaces of volumetric elements got mixed up 2");
         /*----------------- this is a surface to the otherele as well */
         /*--------------------------- set the pointer in the otherele */
         otherele->g.gvol->gsurf[facenumber] = &(actdis->gsurf[counter]);
         /*-------------- so the gsurf has 2 volumetric elements to it */
         /* set number of volumes in the surface to 2, allocate 2 pointers
            and point to actgvol and otherele.g.gvol */
-        dsassert(actdis->gsurf[counter].ngvol==0,"surfaces of volumetric elements got mixed up");
+        dsassert(actdis->gsurf[counter].ngvol==0,
+            "surfaces of volumetric elements got mixed up 3");
         actdis->gsurf[counter].ngvol = 2;
-        actdis->gsurf[counter].gvol = (GVOL**)CCACALLOC(actdis->gsurf[counter].ngvol,sizeof(GVOL*));
+        actdis->gsurf[counter].gvol =
+          (GVOL**)CCACALLOC(actdis->gsurf[counter].ngvol,sizeof(GVOL*));
         actdis->gsurf[counter].gvol[0] = actgvol;
         actdis->gsurf[counter].gvol[1] = otherele->g.gvol;
         /* increment gsurf, check whether we still have space in the initial guess */
@@ -408,9 +441,11 @@ void inp_detailed_topology(DISCRET   *actdis)
         /*--------------- so the gsurf has 1 volumetric element to it */
         /* set number of volumes in the surface to 1, allocate 1 pointer
            and point to actgvol */
-        dsassert(actdis->gsurf[counter].ngvol==0,"surfaces of volumetric elements got mixed up");
+        dsassert(actdis->gsurf[counter].ngvol==0,
+            "surfaces of volumetric elements got mixed up");
         actdis->gsurf[counter].ngvol = 1;
-        actdis->gsurf[counter].gvol = (GVOL**)CCACALLOC(actdis->gsurf[counter].ngvol,sizeof(GVOL*));
+        actdis->gsurf[counter].gvol =
+          (GVOL**)CCACALLOC(actdis->gsurf[counter].ngvol,sizeof(GVOL*));
         actdis->gsurf[counter].gvol[0] = actgvol;
         /* increment gsurf, check whether we still have space in the initial guess */
         dsassert(counter<actdis->ngsurf,"Initial guess of ngsurf too small");
@@ -433,7 +468,8 @@ void inp_detailed_topology(DISCRET   *actdis)
       case quad9:
       case tri3:
       case tri6:
-        dsassert(actdis->gsurf[counter].ngvol==0,"surfaces of 2D elements got mixed up with 3D elements");
+        dsassert(actdis->gsurf[counter].ngvol==0,
+            "surfaces of 2D elements got mixed up with 3D elements");
         actdis->gsurf[counter].element = actele;
         actele->g.gsurf = &(actdis->gsurf[counter]);
         counter++;
@@ -443,7 +479,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         break;
     }
   }
-  dsassert(counter-nsurftovol==nsurfelement,"surfaces of 2D elements got mixed up with 3D elements");
+  dsassert(counter-nsurftovol==nsurfelement,
+      "surfaces of 2D elements got mixed up with 3D elements");
   /*--------- surface topology is complete here, redefine the gsurf array */
   /* since the new array is smaller than the initial guess, I expect to keep
      the same pointer in an REALLOC, but this is checked here and in case it is not
@@ -539,7 +576,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         {
           actgvol->gsurf[j]->ngline = 4;
           if (!actgvol->gsurf[j]->gline)
-            actgvol->gsurf[j]->gline = (GLINE**)CCACALLOC(actgvol->gsurf[j]->ngline,sizeof(GLINE*));
+            actgvol->gsurf[j]->gline =
+              (GLINE**)CCACALLOC(actgvol->gsurf[j]->ngline,sizeof(GLINE*));
         }
         break;
       case tet4:
@@ -551,11 +589,13 @@ void inp_detailed_topology(DISCRET   *actdis)
         {
           actgvol->gsurf[j]->ngline = 3;
           if (!actgvol->gsurf[j]->gline)
-            actgvol->gsurf[j]->gline = (GLINE**)CCACALLOC(actgvol->gsurf[j]->ngline,sizeof(GLINE*));
+            actgvol->gsurf[j]->gline =
+              (GLINE**)CCACALLOC(actgvol->gsurf[j]->ngline,sizeof(GLINE*));
         }
         break;
       default:
-        dserror("Unknown type of discretization 2: %s",actele->distyp);
+        dserror_args(__FILE__, __LINE__, "Unknown type of discretization 2: %s",
+            actele->distyp);
         break;
     }
   }
@@ -676,16 +716,18 @@ void inp_detailed_topology(DISCRET   *actdis)
           case quad9:
           case tri3:
           case tri6:
-            dsassert(adjelepatch[k]->g.gsurf->gline[adjelelinenum[k]]==NULL,"Lines got mixed up");
-            adjelepatch[k]->g.gsurf->gline[adjelelinenum[k]] = &(actdis->gline[counter]);
+            dsassert(adjelepatch[k]->g.gsurf->gline[adjelelinenum[k]]==NULL,
+                "Lines got mixed up");
+            adjelepatch[k]->g.gsurf->gline[adjelelinenum[k]]=&(actdis->gline[counter]);
             break;
           case hex8:
           case hex20:
           case hex27:
           case tet4:
           case tet10:
-            dsassert(adjelepatch[k]->g.gvol->gline[adjelelinenum[k]]==NULL,"Lines got mixed up");
-            adjelepatch[k]->g.gvol->gline[adjelelinenum[k]] = &(actdis->gline[counter]);
+            dsassert(adjelepatch[k]->g.gvol->gline[adjelelinenum[k]]==NULL,
+                "Lines got mixed up");
+            adjelepatch[k]->g.gvol->gline[adjelelinenum[k]]=&(actdis->gline[counter]);
             break;
           default: dserror("Unknown type of discretization 4"); break;
         }
@@ -715,7 +757,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         break;
     }
   }
-  dsassert(counter-nlinetosurf==nlineelement,"lines of 1D elements got mixed up with 2D elements");
+  dsassert(counter-nlinetosurf==nlineelement,
+      "lines of 1D elements got mixed up with 2D elements");
   /*------------------------------------- reallocate the vector of glines */
   /*
      [[11]]

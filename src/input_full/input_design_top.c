@@ -43,19 +43,57 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  | prototypes of static routines in this file                      3/02 |
  *----------------------------------------------------------------------*/
-static void inpdesign_dpoint_fenode_read(void);
-static void inpdesign_dline_fenode_read(void);
-static void inpdesign_dsurf_fenode_read(void);
-static void inpdesign_dvol_fenode_read(void);
+static void inpdesign_dpoint_fenode_read(
+    INT        **dnode_fenode,
+    INT         *ndnode_fenode
+    );
 
-static void inpdesign_dpoint_fenode(DISCRET *actdis,INT **act_dnode_fenode);
-static void inpdesign_dline_feline(DISCRET *actdis,INT **act_dline_fenode);
-static void inpdesign_dsurf_fesurf(DISCRET *actdis,INT **act_dsurf_fenode);
-static void inpdesign_dvol_fevol(DISCRET *actdis,INT **act_dvol_fenode);
+static void inpdesign_dline_fenode_read(
+    INT        **dline_fenode,
+    INT         *ndline_fenode
+    );
+
+static void inpdesign_dsurf_fenode_read(
+    INT         **dsurf_fenode,
+    INT          *ndsurf_fenode
+    );
+
+static void inpdesign_dvol_fenode_read(
+    INT           **dvol_fenode,
+    INT            *ndvol_fenode
+    );
+
+
+static void inpdesign_dpoint_fenode(
+    DISCRET     *actdis,
+    INT        **act_dnode_fenode,
+    INT         *ndnode_fenode
+    );
+
+static void inpdesign_dline_feline(
+    DISCRET     *actdis,
+    INT        **act_dline_fenode,
+    INT         *ndline_fenode
+    );
+
+
+static void inpdesign_dsurf_fesurf(
+    DISCRET      *actdis,
+    INT         **act_dsurf_fenode,
+    INT          *ndsurf_fenode
+    );
+
+
+static void inpdesign_dvol_fevol(
+    DISCRET        *actdis,
+    INT           **act_dvol_fenode,
+    INT            *ndvol_fenode
+    );
 
 /*----------------------------------------------------------------------*
  | global variables in this file in this file                      3/02 |
  *----------------------------------------------------------------------*/
+#if 0
 static INT *ndnode_fenode;
 static INT **dnode_fenode;
 static INT **dnode_fenode2;
@@ -71,8 +109,11 @@ static INT **dsurf_fenode2;
 static INT *ndvol_fenode;
 static INT **dvol_fenode;
 static INT **dvol_fenode2;
+#endif
 
 static INT  *gnode_ind;
+
+static INT   init = 0;
 
 /*----------------------------------------------------------------------*
  | create the connectivity of the design                           1/02 |
@@ -243,8 +284,11 @@ return;
 /*----------------------------------------------------------------------*
  | create the connectivity between the design and the fields m.gee 4/01 |
  *----------------------------------------------------------------------*/
-void inpdesign_topology_fe()
+void inpdesign_topology_fe(
+    DISCRET        *actdis
+    )
 {
+
   INT i,j,k,l,id;
 
 
@@ -253,132 +297,135 @@ void inpdesign_topology_fe()
 #endif
 
 
-  /* allocate arrays for the fe-design info */
-  ndnode_fenode = (INT*)CCACALLOC(design->ndnode,sizeof(INT));
-  dnode_fenode  = (INT**)CCACALLOC(design->ndnode,sizeof(INT*));
-
-  ndline_fenode = (INT*)CCACALLOC(design->ndline,sizeof(INT));;
-  dline_fenode  = (INT**)CCACALLOC(design->ndline,sizeof(INT*));;
-
-  ndsurf_fenode = (INT*)CCACALLOC(design->ndsurf,sizeof(INT));;
-  dsurf_fenode  = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
-
-  ndvol_fenode = (INT*)CCACALLOC(design->ndvol,sizeof(INT));;
-  dvol_fenode  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
-
-
-  /* read the fe-nodes on each design object */
-  inpdesign_dpoint_fenode_read();
-  inpdesign_dline_fenode_read();
-  inpdesign_dsurf_fenode_read();
-  inpdesign_dvol_fenode_read();
-
-
-
-  /* create topology for artifical dis */
-  if (genprob.create_dis == 1 || genprob.create_ale == 1)
+  if (init != 1)
   {
-    dnode_fenode2 = (INT**)CCACALLOC(design->ndnode,sizeof(INT*));
-    dline_fenode2 = (INT**)CCACALLOC(design->ndline,sizeof(INT*));;
-    dsurf_fenode2 = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
-    dvol_fenode2  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
 
-    for (i=0; i<design->ndnode; i++)
+    /* allocate arrays for the fe-design info */
+    design->ndnode_fenode = (INT*)CCACALLOC(design->ndnode,sizeof(INT));
+    design->dnode_fenode  = (INT**)CCACALLOC(design->ndnode,sizeof(INT*));
+
+    design->ndline_fenode = (INT*)CCACALLOC(design->ndline,sizeof(INT));;
+    design->dline_fenode  = (INT**)CCACALLOC(design->ndline,sizeof(INT*));;
+
+    design->ndsurf_fenode = (INT*)CCACALLOC(design->ndsurf,sizeof(INT));;
+    design->dsurf_fenode  = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
+
+    design->ndvol_fenode = (INT*)CCACALLOC(design->ndvol,sizeof(INT));;
+    design->dvol_fenode  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
+
+
+    /* read the fe-nodes on each design object */
+    inpdesign_dpoint_fenode_read(design->dnode_fenode,design->ndnode_fenode);
+    inpdesign_dline_fenode_read(design->dline_fenode,design->ndline_fenode);
+    inpdesign_dsurf_fenode_read(design->dsurf_fenode,design->ndsurf_fenode);
+    inpdesign_dvol_fenode_read(design->dvol_fenode,design->ndvol_fenode);
+
+
+
+    /* create topology for artifical dis */
+    if (genprob.create_dis == 1 || genprob.create_ale == 1)
     {
-      dnode_fenode2[i] = (INT*)CCAMALLOC(ndnode_fenode[i]*sizeof(INT));
-      for ( j=0; j<ndnode_fenode[i]; j++)
-        dnode_fenode2[i][j] = dnode_fenode[i][j] + genprob.nodeshift;
+      design->dnode_fenode2 = (INT**)CCACALLOC(design->ndnode,sizeof(INT*));
+      design->dline_fenode2 = (INT**)CCACALLOC(design->ndline,sizeof(INT*));;
+      design->dsurf_fenode2 = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
+      design->dvol_fenode2  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
+
+      for (i=0; i<design->ndnode; i++)
+      {
+        design->dnode_fenode2[i]= (INT*)CCAMALLOC(design->ndnode_fenode[i]*sizeof(INT));
+        for ( j=0; j<design->ndnode_fenode[i]; j++)
+          design->dnode_fenode2[i][j] = design->dnode_fenode[i][j] + genprob.nodeshift;
+      }
+
+      for (i=0; i<design->ndline; i++)
+      {
+        design->dline_fenode2[i]= (INT*)CCAMALLOC(design->ndline_fenode[i]*sizeof(INT));
+        for ( j=0; j<design->ndline_fenode[i]; j++)
+          design->dline_fenode2[i][j] = design->dline_fenode[i][j] + genprob.nodeshift;
+      }
+
+      for (i=0; i<design->ndsurf; i++)
+      {
+        design->dsurf_fenode2[i]= (INT*)CCAMALLOC(design->ndsurf_fenode[i]*sizeof(INT));
+        for ( j=0; j<design->ndsurf_fenode[i]; j++)
+          design->dsurf_fenode2[i][j] = design->dsurf_fenode[i][j] + genprob.nodeshift;
+      }
+
+      for (i=0; i<design->ndvol; i++)
+      {
+        design->dvol_fenode2[i] = (INT*)CCAMALLOC(design->ndvol_fenode[i]*sizeof(INT));
+        for ( j=0; j<design->ndvol_fenode[i]; j++)
+          design->dvol_fenode2[i][j]  = design->dvol_fenode[i][j]  + genprob.nodeshift;
+      }
     }
 
-    for (i=0; i<design->ndline; i++)
-    {
-      dline_fenode2[i] = (INT*)CCAMALLOC(ndline_fenode[i]*sizeof(INT));
-      for ( j=0; j<ndline_fenode[i]; j++)
-        dline_fenode2[i][j] = dline_fenode[i][j] + genprob.nodeshift;
-    }
 
-    for (i=0; i<design->ndsurf; i++)
-    {
-      dsurf_fenode2[i] = (INT*)CCAMALLOC(ndsurf_fenode[i]*sizeof(INT));
-      for ( j=0; j<ndsurf_fenode[i]; j++)
-        dsurf_fenode2[i][j] = dsurf_fenode[i][j] + genprob.nodeshift;
-    }
 
-    for (i=0; i<design->ndvol; i++)
-    {
-      dvol_fenode2[i] = (INT*)CCAMALLOC(ndvol_fenode[i]*sizeof(INT));
-      for ( j=0; j<ndvol_fenode[i]; j++)
-        dvol_fenode2[i][j]  = dvol_fenode[i][j]  + genprob.nodeshift;
-    }
+    init = 1;
   }
-
-
-  gnode_ind = (INT*)CCACALLOC(genprob.maxnode,sizeof(INT));
-
 
 
   /* make the topology between DESIGN and GEOMETRY */
   /*===============================================*/
 
-
-  /* loop all dis */
-  for (i=0; i<genprob.numfld; i++)
-    for (j=0; j<field[i].ndis; j++)
-    {
+  gnode_ind = (INT*)CCACALLOC(genprob.maxnode,sizeof(INT));
 
 
-      /* initialize gnode_ind */
-      for(l=0;l<genprob.maxnode;l++)
-        gnode_ind[l] = -1;
+  /* initialize gnode_ind */
+  for(l=0;l<genprob.maxnode;l++)
+    gnode_ind[l] = -1;
 
 
-      /* loop the gnodes in this dis */
-      for (k=0; k<field[i].dis[j].ngnode; k++)
-      {
-        /* fill gnode_ind to find the nodes */
-        id = field[i].dis[j].gnode[k].node->Id;
-        dsassert(id < genprob.maxnode,"Zu wenig KNOTEN");
+  /* loop the gnodes in this dis */
+  for (k=0; k<actdis->ngnode; k++)
+  {
+    /* fill gnode_ind to find the nodes */
+    id = actdis->gnode[k].node->Id;
+    dsassert(id < genprob.maxnode,"Zu wenig KNOTEN");
 
-        gnode_ind[id] = k;
-      }
-
-
-      if (field[i].dis[j].dismode == 1)
-      {
-        inpdesign_dpoint_fenode(&(field[i].dis[j]),dnode_fenode2);
-        inpdesign_dline_feline(&(field[i].dis[j]),dline_fenode2);
-        inpdesign_dsurf_fesurf(&(field[i].dis[j]),dsurf_fenode2);
-        inpdesign_dvol_fevol(&(field[i].dis[j]),dvol_fenode2);
-      }
-      else
-      {
-        inpdesign_dpoint_fenode(&(field[i].dis[j]),dnode_fenode);
-        inpdesign_dline_feline(&(field[i].dis[j]),dline_fenode);
-        inpdesign_dsurf_fesurf(&(field[i].dis[j]),dsurf_fenode);
-        inpdesign_dvol_fevol(&(field[i].dis[j]),dvol_fenode);
-      }
-    }
+    gnode_ind[id] = k;
+  }
 
 
+  switch (actdis->disclass)
+  {
+    /* the normal case */
+    case dc_normal:
+    case dc_subdiv_io:
+      inpdesign_dpoint_fenode(actdis,design->dnode_fenode,design->ndnode_fenode);
+      inpdesign_dline_feline(actdis,design->dline_fenode,design->ndline_fenode);
+      inpdesign_dsurf_fesurf(actdis,design->dsurf_fenode,design->ndsurf_fenode);
+      inpdesign_dvol_fevol(actdis,design->dvol_fenode,design->ndvol_fenode);
+      break;
+
+    /* create ale field */
+    case dc_created_ale:
+    case dc_subdiv_io_created_ale:
+    case dc_created_f2p:
+    case dc_created_tu:
+      inpdesign_dpoint_fenode(actdis,design->dnode_fenode2,design->ndnode_fenode);
+      inpdesign_dline_feline(actdis,design->dline_fenode2,design->ndline_fenode);
+      inpdesign_dsurf_fesurf(actdis,design->dsurf_fenode2,design->ndsurf_fenode);
+      inpdesign_dvol_fevol(actdis,design->dvol_fenode2,design->ndvol_fenode);
+      break;
+
+    /* create discretization by subdivision */
+    case dc_subdiv_calc:
+      inpdesign_dpoint_fenode(actdis,design->dnode_fenode2,design->ndnode_fenode);
+      inpdesign_dline_feline(actdis,design->dline_fenode2,design->ndline_fenode);
+      inpdesign_dsurf_fesurf(actdis,design->dsurf_fenode2,design->ndsurf_fenode);
+      inpdesign_dvol_fevol(actdis,design->dvol_fenode2,design->ndvol_fenode);
+      break;
+
+    default:
+      dserror("Unknown disclass!!");
+      break;
+  }
 
 
 
-  /* tidy up */
-  for (i=0; i<design->ndnode; i++) CCAFREE(dnode_fenode[i]);
-  CCAFREE(dnode_fenode);
-  CCAFREE(ndnode_fenode);
 
-  for (i=0; i<design->ndline; i++) CCAFREE(dline_fenode[i]);
-  CCAFREE(dline_fenode);
-  CCAFREE(ndline_fenode);
 
-  for (i=0; i<design->ndsurf; i++) CCAFREE(dsurf_fenode[i]);
-  CCAFREE(dsurf_fenode);
-  CCAFREE(ndsurf_fenode);
-
-  for (i=0; i<design->ndvol; i++) CCAFREE(dvol_fenode[i]);
-  CCAFREE(dvol_fenode);
-  CCAFREE(ndvol_fenode);
 
   CCAFREE(gnode_ind);
 
@@ -393,10 +440,17 @@ void inpdesign_topology_fe()
 
 
 
+
+
+
+
 /*----------------------------------------------------------------------*
  | input of design nodes  to fe-node topology             m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dpoint_fenode_read()
+static void inpdesign_dpoint_fenode_read(
+    INT        **dnode_fenode,
+    INT         *ndnode_fenode
+    )
 {
 INT    i,ierr;
 INT    dnode;
@@ -422,7 +476,7 @@ for (i=0; i<design->ndnode; i++)
          {
             ndnode_fenode[i]=1;
             dnode_fenode[i] = (INT*)CCAMALLOC(ndnode_fenode[i]*sizeof(INT));
-            frint("NODE",&(dnode_fenode[i][0]),&ierr);
+            frint("NODE",&(design->dnode_fenode[i][0]),&ierr);
             dnode_fenode[i][0]--;
             goto nextdnode;
          }
@@ -447,7 +501,10 @@ return;
 /*----------------------------------------------------------------------*
  | input of design line  to fe-node topology             m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dline_fenode_read()
+static void inpdesign_dline_fenode_read(
+    INT        **dline_fenode,
+    INT         *ndline_fenode
+    )
 {
 INT    i,ierr;
 INT    counter;
@@ -506,7 +563,10 @@ return;
 /*----------------------------------------------------------------------*
  | input of design surface to fe-node topology             m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dsurf_fenode_read()
+static void inpdesign_dsurf_fenode_read(
+    INT         **dsurf_fenode,
+    INT          *ndsurf_fenode
+    )
 {
 INT    i,ierr;
 INT    counter;
@@ -565,7 +625,10 @@ return;
 /*----------------------------------------------------------------------*
  | input of design volumes to fe-node topology            m.gee 3/02    |
  *----------------------------------------------------------------------*/
-static void inpdesign_dvol_fenode_read()
+static void inpdesign_dvol_fenode_read(
+    INT           **dvol_fenode,
+    INT            *ndvol_fenode
+    )
 {
 INT    i,ierr;
 INT    counter;
@@ -629,7 +692,8 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dpoint_fenode(
     DISCRET     *actdis,
-    INT        **act_dnode_fenode
+    INT        **act_dnode_fenode,
+    INT         *ndnode_fenode
     )
 {
 
@@ -650,6 +714,10 @@ static void inpdesign_dpoint_fenode(
 
     if (act_dnode_fenode[i] == NULL)
       dserror("DNODE without FE node. Uncollapsed nodes in GiD?");
+
+    if (design->ndnode_fenode[i] == 0 )
+      continue;
+      /*dserror("Only one fe_node possible on each dnode !!");*/
 
       nodeId   = gnode_ind[act_dnode_fenode[i][0]];
 
@@ -680,7 +748,8 @@ static void inpdesign_dpoint_fenode(
  *----------------------------------------------------------------------*/
 static void inpdesign_dline_feline(
     DISCRET     *actdis,
-    INT        **act_dline_fenode
+    INT        **act_dline_fenode,
+    INT         *ndline_fenode
     )
 {
 INT           i,j,k;
@@ -792,7 +861,8 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dsurf_fesurf(
     DISCRET      *actdis,
-    INT         **act_dsurf_fenode
+    INT         **act_dsurf_fenode,
+    INT          *ndsurf_fenode
     )
 {
 INT           i,j,k;
@@ -898,7 +968,8 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dvol_fevol(
     DISCRET        *actdis,
-    INT           **act_dvol_fenode
+    INT           **act_dvol_fenode,
+    INT            *ndvol_fenode
     )
 {
 INT           i,j,k;

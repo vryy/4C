@@ -96,8 +96,7 @@ void inp_struct_field_ssi(FIELD *masterfield, FIELD *slavefield);
 /*-----------------------------------------------------------------------*/
 void inpfield()
 {
-  INT  i,j,k;
-  INT  node_id;
+  INT  i,j;
   INT  numnd;
   INT  nnode_total = 0;
 
@@ -261,7 +260,9 @@ void inpfield()
   {
     for (j=0;j<field[i].ndis;j++)
     {
-      inp_assign_nodes(&(field[i].dis[j]));
+      if (field[i].dis[j].disclass != dc_subdiv_calc)
+        inp_assign_nodes(&(field[i].dis[j]));
+
       nnode_total += field[i].dis[j].numnp;
     }
   }
@@ -272,22 +273,11 @@ void inpfield()
 
   /* make element-node-element topology */
   genprob.nnode = nnode_total;
-  genprob.nodes = (NODE**)CCACALLOC(genprob.maxnode,sizeof(NODE*));
 
   for (i=0; i<genprob.numfld; i++)
-  {
     for (j=0;j<field[i].ndis;j++)
-    {
-      /* make pointers to all nodes in genprob.nodes */
-      for (k=0; k<field[i].dis[j].numnp; k++)
-      {
-        node_id = field[i].dis[j].node[k].Id;
-        dsassert(node_id <= genprob.maxnode,"Zu wenig KNOTEN");
-        genprob.nodes[node_id] = &(field[i].dis[j].node[k]);
-      }
-      inp_topology(&(field[i].dis[j]));
-    }
-  }
+      if (field[i].dis[j].disclass != dc_subdiv_calc)
+        inp_topology(&(field[i].dis[j]));
 
 
 #ifdef DEBUG
@@ -424,11 +414,14 @@ void inpdis(
 #endif
 
 
-  /* set default value */
-  actfield->ndis=1;
+  /* set default values */
+  actfield->ndis      = 1;
+  actfield->subdivide = 0;
+
+
 
   /* read discretisation */
-  if (frfind("--DISCRETISATION")==0) goto end;
+  if (frfind("--DISCRETISATION")==0) goto end_dis;
   frread();
   switch(actfield->fieldtyp)
   {
@@ -466,8 +459,64 @@ void inpdis(
 
   frrewind();
 
+  if (actfield->ndis > MAXDIS)
+    dserror("Too many discretizations: Increase the value of MAXDIS!!");
 
-end:
+
+end_dis:
+
+
+
+  /* read subdivide */
+  if (frfind("--SUBDIVIDE")==0) goto end_sub;
+  frread();
+  switch(actfield->fieldtyp)
+  {
+    case fluid:
+      while(strncmp(allfiles.actplace,"------",6)!=0)
+      {
+        frint("FLUID_SUBDIVIDE", &(actfield->subdivide),&ierr);
+        frread();
+      }
+      break;
+
+
+    case structure:
+      while(strncmp(allfiles.actplace,"------",6)!=0)
+      {
+        frint("STRUCT_SUBDIVIDE", &(actfield->subdivide),&ierr);
+        frread();
+      }
+      break;
+
+
+    case ale:
+      while(strncmp(allfiles.actplace,"------",6)!=0)
+      {
+        frint("ALE_SUBDIVIDE", &(actfield->subdivide),&ierr);
+        frread();
+      }
+      break;
+
+
+    default:
+      dserror("Unknown fieldtype");
+      break;
+  }
+
+  frrewind();
+
+
+end_sub:
+
+#ifndef SUBDIV
+  if (actfield->subdivide > 0 )
+    dserror("Element subdivision chosen but not compiled!!");
+#endif
+
+  if (actfield->subdivide > 0 && actfield->ndis != 2 )
+    dserror("Two discretizations needed for element subdivision!!");
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -576,11 +625,18 @@ void inp_struct_field(
 
 
   /* allocate discretizations */
-  if (structfield->ndis>1)
-    dserror("different discretisations not implemented yet for structural elements\n");
   structfield->dis = (DISCRET*)CCACALLOC(structfield->ndis,sizeof(DISCRET));
 
-  structfield->dis[0].dismode = 0;
+
+  if (structfield->subdivide > 0)
+  {
+    structfield->dis[0].disclass = dc_subdiv_io;
+    structfield->dis[1].disclass = dc_subdiv_calc;
+  }
+  else
+    structfield->dis[0].disclass = dc_normal;
+
+
 
   /* count number of elements */
   if (frfind("--STRUCTURE ELEMENTS")==1)
@@ -839,8 +895,8 @@ void inp_struct_field_ssi(
   slavefield->dis  = (DISCRET*)CCACALLOC(slavefield->ndis,sizeof(DISCRET));
 
 
-  slavefield->dis[0].dismode = 0;
-  masterfield->dis[0].dismode = 0;
+  slavefield->dis[0].disclass  = dc_normal;
+  masterfield->dis[0].disclass = dc_normal;
 
 
 #ifndef D_WALL1
@@ -1043,7 +1099,13 @@ void inp_fluid_field(
    * from this discretisation all the other ones can be directly derived!!!
    */
 
-  fluidfield->dis[0].dismode = 0;
+  if (fluidfield->subdivide > 0)
+  {
+    fluidfield->dis[0].disclass = dc_subdiv_io;
+    fluidfield->dis[1].disclass = dc_subdiv_calc;
+  }
+  else
+    fluidfield->dis[0].disclass = dc_normal;
 
 
   /* count number of elements */
@@ -1101,7 +1163,7 @@ void inp_fluid_field(
           (ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
         cpro++;
         genprob.create_dis = 1;
-        fluidfield->dis[1].dismode = 1;
+        fluidfield->dis[1].disclass = dc_created_f2p;
       } /* endif (cpro==0) */
 
       fluidfield->dis[0].element[counter].eltyp=el_fluid2_pro;
@@ -1142,10 +1204,15 @@ void inp_fluid_field(
           allfiles.actplace = actplace_save;
           allfiles.actrow   = actrow_save;
 
-          if (alefield->ndis>1)
-            dserror("different discretisations not implemented yet for structural elements\n");
           alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
-          alefield->dis[0].dismode = 1;
+
+          if (alefield->subdivide > 0)
+          {
+            alefield->dis[0].disclass = dc_subdiv_io_created_ale;
+            alefield->dis[1].disclass = dc_subdiv_calc;
+          }
+          else
+            alefield->dis[0].disclass = dc_created_ale;
         }
 
 
@@ -1192,10 +1259,15 @@ void inp_fluid_field(
           allfiles.actplace = actplace_save;
           allfiles.actrow   = actrow_save;
 
-          if (alefield->ndis>1)
-            dserror("different discretisations not implemented yet for structural elements\n");
           alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
-          alefield->dis[0].dismode = 1;
+
+          if (alefield->subdivide > 0)
+          {
+            alefield->dis[0].disclass = dc_subdiv_io_created_ale;
+            alefield->dis[1].disclass = dc_subdiv_calc;
+          }
+          else
+            alefield->dis[0].disclass = dc_created_ale;
         }
 
 
@@ -1250,7 +1322,7 @@ void inp_fluid_field(
           if (alefield->ndis>1)
             dserror("different discretisations not implemented yet for structural elements\n");
           alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
-          alefield->dis[0].dismode = 1;
+          alefield->dis[0].disclass = dc_created_ale;
         }
 
 
@@ -1281,7 +1353,7 @@ void inp_fluid_field(
             (ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
           cpro++;
           genprob.create_dis = 1;
-          fluidfield->dis[1].dismode = 1;
+          fluidfield->dis[1].disclass = dc_created_tu;
         } /* endif (cpro==0) */
 
         fluidfield->dis[1].element[counter].eltyp=el_fluid2_tu;
@@ -1347,11 +1419,23 @@ void inp_ale_field(
 
 
   /* allocate discretizations */
-  if (alefield->ndis>1)
-    dserror("different discretisations not implemented yet for structural elements\n");
   alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
 
-  alefield->dis[0].dismode = 0;
+  /* remarks about different discretisations:
+   * ----------------------------------------
+   * we asume to read in one "global" discretisation from the input file.
+   * from this discretisation all the other ones can be directly derived!!!
+   */
+
+
+  if (alefield->subdivide > 0)
+  {
+    alefield->dis[0].disclass = dc_subdiv_io;
+    alefield->dis[1].disclass = dc_subdiv_calc;
+  }
+  else
+    alefield->dis[0].disclass = dc_normal;
+
 
   /* count number of elements */
   if (frfind("--ALE ELEMENTS")==1)
