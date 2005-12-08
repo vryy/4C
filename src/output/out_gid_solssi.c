@@ -92,7 +92,12 @@ output-file for gid.  The output includes:
 \return void
 
 ------------------------------------------------------------------------*/
-void out_gid_sol_ssi(FIELD *slavefield, FIELD *masterfield)
+void out_gid_sol_ssi(
+    FIELD              *slavefield,
+    FIELD              *masterfield,
+    INT                 disnums,
+    INT                 disnumm
+    )
 {
 #ifndef NO_TEXT_OUTPUT
 INT           i;
@@ -276,9 +281,9 @@ if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
 }
 /*---------------------------------------------------- some output ---*/
 if (ioflags.struct_stress==1 && masterfield!=NULL)
-  out_gid_sol("stress"      ,masterfield,actintram,ssidyn->step,0,ssidyn->time);
+  out_gid_sol("stress"      ,masterfield,disnumm,actintram,ssidyn->step,0,ssidyn->time);
 if (ioflags.struct_stress==1 && slavefield!=NULL)
-  out_gid_sol("stress"      ,slavefield,actintram,ssidyn->step,0,ssidyn->time);
+  out_gid_sol("stress"      ,slavefield,disnums,actintram,ssidyn->step,0,ssidyn->time);
 
 fflush(out);
 

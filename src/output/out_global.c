@@ -106,15 +106,21 @@ void out_general()
 #ifndef NO_TEXT_OUTPUT
 
 
-  INT        i,j,k;
+  INT        i;
+
+#ifdef DEBUG
+  INT        j,k;
+  ELEMENT   *actele;
+  NODE      *actnode;
+#endif
+
 #ifdef D_SHELL9
   INT        is_shell9;
 #endif
+
   FILE      *out = allfiles.out_out;
   FIELD     *actfield;
   INTRA     *actintra = NULL;
-  ELEMENT   *actele;
-  NODE      *actnode;
   INT        myrank;
   INT        nprocs;
 
@@ -408,11 +414,17 @@ void out_general()
 /*----------------------------------------------------------------------*
  |  print out solution of a certain step                     m.gee 12/01|
  *----------------------------------------------------------------------*/
-void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
-             INT step, INT place)
+void out_sol(
+    FIELD              *actfield,
+    PARTITION          *actpart,
+    INT                 disnum,
+    INTRA              *actintra,
+    INT                 step,
+    INT                 place
+    )
 {
 #ifndef NO_TEXT_OUTPUT
-INT        i,j,k,kk;
+INT        i,j,k;
 #ifdef D_SHELL9
 INT        is_shell9;    /*->shell9*/
 #endif
@@ -462,9 +474,9 @@ case structure:
    fprintf(out,"================================================================================\n");
    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step);
    fprintf(out,"================================================================================\n");
-   for (j=0; j<actfield->dis[0].numnp; j++)
+   for (j=0; j<actfield->dis[disnum].numnp; j++)
    {
-      actnode = &(actfield->dis[0].node[j]);
+      actnode = &(actfield->dis[disnum].node[j]);
 
       /* check if actnode belongs to a shell9 element */
       #ifdef D_SHELL9
@@ -502,39 +514,40 @@ case structure:
    }
    fprintf(out,"________________________________________________________________________________\n\n");
    }
-break;
+   break;
+
+
 case fluid:
-   if (ioflags.output_out==1 && ioflags.fluid_sol==1)
-   {
-      for (kk=0;kk<actfield->ndis;kk++)
+  if (ioflags.output_out==1 && ioflags.fluid_sol==1)
+  {
+    fprintf(out,"================================================================================\n");
+    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",disnum,step);
+    fprintf(out,"================================================================================\n");
+    for (j=0; j<actfield->dis[disnum].numnp; j++)
+    {
+      actnode = &(actfield->dis[disnum].node[j]);
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+      for (k=0; k<actnode->sol.sdim; k++)
       {
-         fprintf(out,"================================================================================\n");
-         fprintf(out,"Converged Solution of Discretisation %d in step %d \n",kk,step);
-         fprintf(out,"================================================================================\n");
-         for (j=0; j<actfield->dis[kk].numnp; j++)
-         {
-            actnode = &(actfield->dis[kk].node[j]);
-            fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-            for (k=0; k<actnode->sol.sdim; k++)
-            {
-               if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-               fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
-            }
-            fprintf(out,"\n");
-         }
+        if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+        fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
       }
-      fprintf(out,"________________________________________________________________________________\n\n");
-   }
-break;
+      fprintf(out,"\n");
+    }
+    fprintf(out,"________________________________________________________________________________\n\n");
+  }
+  break;
+
+
 case ale:
    if (ioflags.ale_disp==1)
    {
    fprintf(out,"================================================================================\n");
    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step);
    fprintf(out,"================================================================================\n");
-   for (j=0; j<actfield->dis[0].numnp; j++)
+   for (j=0; j<actfield->dis[disnum].numnp; j++)
    {
-      actnode = &(actfield->dis[0].node[j]);
+      actnode = &(actfield->dis[disnum].node[j]);
       fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
       for (k=0; k<actnode->numdf; k++)
       {
@@ -553,9 +566,9 @@ switch(actfield->fieldtyp)
 {
 case structure:
 if (ioflags.struct_stress==1)
-for (j=0; j<actfield->dis[0].numele; j++)
+for (j=0; j<actfield->dis[disnum].numele; j++)
 {
-   actele = &(actfield->dis[0].element[j]);
+   actele = &(actfield->dis[disnum].element[j]);
    switch(actele->eltyp)
    {
    case el_shell8:
@@ -974,9 +987,9 @@ fprintf(out,"\n");
 
 #if 0
 
-for (j=0; j<actfield->dis[0].numele; j++)
+for (j=0; j<actfield->dis[disnum].numele; j++)
 {
-   actele = &(actfield->dis[0].element[j]);
+   actele = &(actfield->dis[disnum].element[j]);
    switch(actele->eltyp)
    {
    case el_wall1:
@@ -1177,6 +1190,8 @@ void out_fsi(FIELD *fluidfield)
 void out_ssi(FIELD *masterfield)
 {
 #ifndef NO_TEXT_OUTPUT
+
+#ifdef D_SSI
 INT        i;
 FILE      *out = allfiles.out_out;
 NODE      *actmnode, *actsnode;
@@ -1189,7 +1204,6 @@ INT        numsf;
 dstrc_enter("out_ssi");
 #endif
 
-#ifdef D_SSI
 /*----------------------------------------------------------------------*/
 myrank = par.myrank;
 nprocs = par.nprocs;

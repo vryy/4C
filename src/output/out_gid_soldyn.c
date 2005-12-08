@@ -94,9 +94,9 @@ dstrc_enter("out_gid_soldyn");
 /*-------------------------------------- find the correct gid structure */
 for (i=0; i<genprob.numfld; i++)
 {
-   if (gid[i].fieldtyp == actfield->fieldtyp)
+   if (gid[i][0].fieldtyp == actfield->fieldtyp)
    {
-      actgid = &(gid[i]);
+      actgid = &(gid[i][0]);
       break;
    }
 }

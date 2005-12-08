@@ -59,13 +59,19 @@ typedef struct _GIDSET
      char                      *brick1_222_name;
      INT                        is_brick1_333;          /* 20/27 noded brick1 3x3x3 GP */
      char                      *brick1_333_name;
+
      INT                        is_fluid2_22;           /* 4-noded fluid2 2x2 GP */
      char                      *fluid2_22_name;
      INT                        is_fluid2_33;           /* 8/9-noded fluid2 3x3 GP */
      char                      *fluid2_33_name;
 
-     INT                        is_fluid2_3;            /* 3 noded fluid2 triangle */
-     char                      *fluid2_3_name;
+     INT                        is_fluid2_tu_22;           /* 4-noded fluid2 2x2 GP */
+     char                      *fluid2_tu_22_name;
+     INT                        is_fluid2_tu_33;           /* 8/9-noded fluid2 3x3 GP */
+     char                      *fluid2_tu_33_name;
+
+     INT                        is_fluid2_tri3;            /* 3 noded fluid2 triangle */
+     char                      *fluid2_tri3_name;
      INT                        is_fluid2_6;            /* 6 noded fluid2 triangle */
      char                      *fluid2_6_name;
 
@@ -77,6 +83,9 @@ typedef struct _GIDSET
      char                      *fluid3_222_name;
      INT                        is_fluid3_333;          /* 20/27-noded fluid3 3x3x3 GP */
      char                      *fluid3_333_name;
+
+     INT                        is_f3f_4_4;             /* 8-noded fluid3_fast 2x2x2 GP */
+     char                      *f3f_4_4_name;
 
      INT                        is_f3f_8_222;             /* 8-noded fluid3_fast 2x2x2 GP */
      char                      *f3f_8_222_name;
@@ -134,12 +143,22 @@ typedef struct _GIDSET
      char                      *wallge_33_name;
 
 } GIDSET;
+
+
+
 /*------------------------ global variable needed by gid postprocessing */
-extern GIDSET *gid;
+extern GIDSET **gid;
+
+
 
 #ifdef D_MLSTRUCT
 /*----------------------------- the same for submesh gid postprocessing */
 extern GIDSET *sm_gid;
 #endif /* D_MLSTRUCT */
 
+
+
 #endif
+
+
+

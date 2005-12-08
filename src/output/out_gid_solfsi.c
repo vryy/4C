@@ -93,12 +93,21 @@ extern struct _CURVE *curve;
   ------------------------------------------------------------------------*/
 void out_gid_sol_fsi(
     FIELD       *fluidfield,
-    FIELD       *structfield)
+    FIELD       *structfield,
+    INT          disnumf,
+    INT          disnums
+    )
 {
 
 #ifndef NO_TEXT_OUTPUT
 
-  INT           i,j;
+#ifdef SPLIT_HEX20
+  INT           j;
+  ELEMENT      *actele;
+  INT           place;
+#endif
+
+  INT           i;
 
   static FLUID_DYNAMIC  *fdyn;
   static FSI_DYNAMIC    *fsidyn;
@@ -112,8 +121,6 @@ void out_gid_sol_fsi(
   NODE         *actnode;
   NODE         *actanode;
 
-  ELEMENT      *actele;
-  INT           place;
 
   char         *resulttype;
   char         *resultplace;
@@ -179,7 +186,7 @@ void out_gid_sol_fsi(
     componentnames[2] = "z-displ";
     /*-------------------------------------------------------------------*/
     fprintf(out,"#-------------------------------------------------------------------------------\n");
-    fprintf(out,"# RESULT DISPLACEMENTS on FIELD FSI\n");
+    fprintf(out,"# RESULT DISPLACEMENTS on FIELD FSI, DIS %1i\n",disnumf);
     fprintf(out,"# TIME %18.5E \n",fsidyn->time);
     fprintf(out,"# STEP %6d    \n",fsidyn->step);
     fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -453,7 +460,7 @@ void out_gid_sol_fsi(
     componentnames[2] = "z-load";
     /*-------------------------------------------------------------------*/
     fprintf(out,"#-------------------------------------------------------------------------------\n");
-    fprintf(out,"# RESULT FSI LOADS on FIELD STRUCTURE\n");
+    fprintf(out,"# RESULT FSI LOADS on FIELD STRUCTURE, DIS %1i\n",disnums);
     fprintf(out,"# TIME %18.5E \n",fsidyn->time);
     fprintf(out,"# STEP %6d    \n",fsidyn->step);
     fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -530,8 +537,8 @@ void out_gid_sol_fsi(
   /*----------------------------------------------*/
   if (ioflags.fluid_sol==1)
   {
-    out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
-    out_gid_sol("pressure",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
+    out_gid_sol("velocity",fluidfield,disnumf,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
+    out_gid_sol("pressure",fluidfield,disnumf,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
   }
 
 
@@ -541,11 +548,11 @@ void out_gid_sol_fsi(
   /*-----------------------------------------------------------------*/
   if (ioflags.struct_disp==1 && structfield!=NULL)
   {
-    out_gid_sol("velocities",structfield,actintras,sdyn->step,1,fsidyn->time);
-    out_gid_sol("accelerations",structfield,actintras,sdyn->step,2,fsidyn->time);
+    out_gid_sol("velocities",structfield,disnums,actintras,sdyn->step,1,fsidyn->time);
+    out_gid_sol("accelerations",structfield,disnums,actintras,sdyn->step,2,fsidyn->time);
   }
   if (ioflags.struct_stress==1 && structfield!=NULL)
-    out_gid_sol("stress"      ,structfield,actintras,sdyn->step,0,fsidyn->time);
+    out_gid_sol("stress"      ,structfield,disnums,actintras,sdyn->step,0,fsidyn->time);
 
 
 
