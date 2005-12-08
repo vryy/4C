@@ -53,9 +53,10 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 void f3f_out_gid_sol_str(
-    FILE       *out,     /* File pointer to flavia.res */
-    FIELD *actfield,     /* active field */
-    INT         init     /* allocate/free memory */
+    FILE               *out,           /* File pointer to flavia.res */
+    FIELD              *actfield,      /* active field */
+    INT                 disnum,
+    INT                 init           /* allocate/free memory */
     )
 {
 
@@ -67,7 +68,8 @@ void f3f_out_gid_sol_str(
   DOUBLE           **stress;
   DOUBLE             str[6];
   ELEMENT           *actele;
-  NODE             *actnode;
+  NODE            *sactnode;
+  NODE            *mactnode;
 
 
 #ifdef DEBUG
@@ -75,23 +77,34 @@ void f3f_out_gid_sol_str(
 #endif
 
 
-  numnp  = actfield->dis[0].numnp;
+  numnp  = actfield->dis[disnum].numnp;
   /* write stresses */
   for (i=0; i<numnp; i++)
   {
-    actnode = &(actfield->dis[0].node[i]);
+    mactnode = &(actfield->dis[disnum].node[i]);
     count = 0;
+
+
+#ifdef SUBDIV
+    if (actfield->subdivide > 0)
+      sactnode = mactnode->slave_node;
+    else
+#endif
+      sactnode = mactnode;
+
+
     for (j=0; j<6; j++) str[j] = 0.0;
-    numele  = actnode->numele;
+    numele  = sactnode->numele;
+
 
     for (j=0; j<numele; j++)
     {
-      actele = actnode->element[j];
+      actele = sactnode->element[j];
       if (actele->eltyp != el_fluid3_fast || actele->numnp !=8) continue;
       count++;
       stress=actele->e.f3->stress_ND.a.da;
       for(k=0; k<8; k++)
-        if (actele->node[k] == actnode) break;
+        if (actele->node[k] == sactnode) break;
       str[0] += stress[k][0];
       str[1] += stress[k][1];
       str[2] += stress[k][2];
@@ -104,7 +117,7 @@ void f3f_out_gid_sol_str(
     for (j=0; j<6; j++) str[j] = str[j] * invcount;
 
     fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
-        actnode->Id+1,
+        mactnode->Id+1,
         str[0],
         str[1],
         str[2],
