@@ -54,8 +54,12 @@ extern struct _LOCSYS *locsys;
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_cal_normal(FIELD *actfield, INT init,
-                      CALC_ACTION *action         )
+void fluid_cal_normal(
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 init,
+    CALC_ACTION        *action
+    )
 {
 INT         i,j,l;       /* simply some counters */
 INT         foundit;       /* found flag */
@@ -81,19 +85,19 @@ dstrc_enter("fluid_cal_normal");
 #endif
 
 fdyn = alldyn[genprob.numff].fdyn;
-numele_total=actfield->dis[0].numele;
-numnp_total=actfield->dis[0].numnp;
+numele_total=actfield->dis[disnum].numele;
+numnp_total=actfield->dis[disnum].numnp;
 
 if (init==1) /* initialise and calculate initial normal */
 {
    numnorm=0;
-   numele_total=actfield->dis[0].numele;
-   numnp_total=actfield->dis[0].numnp;
+   numele_total=actfield->dis[disnum].numele;
+   numnp_total=actfield->dis[disnum].numnp;
    if (numlocsys==0 && fdyn->freesurf<6) goto end;
    /* loop elements and allocate normals at the nodes */
    for (i=0;i<numele_total;i++)
    {
-      actele=&(actfield->dis[0].element[i]);
+      actele=&(actfield->dis[disnum].element[i]);
       dsassert(actele->eltyp==el_fluid2,
       "normals only for fluid2 element implemented!\n");
       /* we need normals for
@@ -147,7 +151,7 @@ if (numnorm>0) /* calculate nodal normals */
    {
       for (i=0;i<numnp_total;i++)
       {
-         actnode=&(actfield->dis[0].node[i]);
+         actnode=&(actfield->dis[disnum].node[i]);
          if (actnode->oldn==NULL) continue;
          for(l=0;l<3;l++)
             actnode->oldn[l]=actnode->actn[l];
@@ -156,7 +160,7 @@ if (numnorm>0) /* calculate nodal normals */
    *action=calc_fluid_normal;
    for (i=0;i<numele_total;i++)
    {
-      actele=&(actfield->dis[0].element[i]);
+      actele=&(actfield->dis[disnum].element[i]);
       dsassert(actele->eltyp==el_fluid2,
       "normals only for fluid2 element implemented!\n");
       foundit=0;
@@ -182,7 +186,7 @@ if (numnorm>0) /* calculate nodal normals */
    /*------------------------------normalise actn and copy actn to oldn */
    for (i=0;i<numnp_total;i++)
    {
-      actnode=&(actfield->dis[0].node[i]);
+      actnode=&(actfield->dis[disnum].node[i]);
       if (actnode->actn==NULL) continue;
       norm=sqrt(DSQR(actnode->actn[0])+DSQR(actnode->actn[1])
                +DSQR(actnode->actn[2]));
@@ -199,7 +203,7 @@ if (numnorm>0) /* calculate nodal normals */
    {
       for (i=0;i<numnp_total;i++)
       {
-         actnode=&(actfield->dis[0].node[i]);
+         actnode=&(actfield->dis[disnum].node[i]);
          if (actnode->oldn==NULL) continue;
          for(l=0;l<3;l++)
             actnode->oldn[l]=actnode->actn[l];

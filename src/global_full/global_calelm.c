@@ -87,7 +87,7 @@ void calelm(FIELD        *actfield,     /* active field */
             CALC_ACTION  *action)       /* calculation option passed to element routines */
 /*----------------------------------------------------------------------*/
 {
-  INT               i,kk;
+  INT               i,disnum;
   INT               hasdirich=0;      /* flag                             */
   INT               hasext=0;         /* flag                             */
   ELEMENT          *actele;
@@ -240,8 +240,8 @@ dstrc_enter("calelm");
 #endif
   /* =======================================================call elements */
   /*---------------------------------------------- loop over all elements */
-  kk = container->actndis;
-  for (i=0; i<actpart->pdis[kk].numele; i++)
+  disnum = container->disnum;
+  for (i=0; i<actpart->pdis[disnum].numele; i++)
   {
 
 #ifdef PERF
@@ -249,7 +249,7 @@ dstrc_enter("calelm");
 #endif
 
     /*------------------------------------ set pointer to active element */
-    actele = actpart->pdis[kk].element[i];
+    actele = actpart->pdis[disnum].element[i];
     /* if present, init the element vectors intforce_global and dirich_global */
     /* Do it if it's there. Shell8 depends on it. */
     /*if (container->dvec)*/
@@ -535,7 +535,7 @@ dstrc_enter("calelm");
       }
 #endif
 #ifdef D_FLUID2TU
-      if (container->actndis==1 && (container->turbu==2 || container->turbu==3))
+      if (container->disnum==1 && (container->turbu==2 || container->turbu==3))
       {
          if (container->niturbu_pro!=0)
          {
@@ -773,7 +773,7 @@ void calinit(FIELD       *actfield,   /* the active physical field */
     CONTAINER   *container)  /*!< contains variables defined in container.h */
 {
 INT i;            /* a counter */
-INT kk;
+INT disnum;
 INT is_axishell=0;/* flags to check for presents of certain element types */
 INT is_shell8=0;
 INT is_shell9=0;
@@ -816,10 +816,10 @@ amdef("gforce",   &gforce_global,   (MAXNOD*MAXDOFPERNODE),1,"DV");
 #endif
 }
 /*--------------------what kind of elements are there in this example ? */
-for (kk=0;kk<actfield->ndis;kk++)
-for (i=0; i<actfield->dis[kk].numele; i++)
+for (disnum=0;disnum<actfield->ndis;disnum++)
+for (i=0; i<actfield->dis[disnum].numele; i++)
 {
-   actele = &(actfield->dis[kk].element[i]);
+   actele = &(actfield->dis[disnum].element[i]);
    switch(actele->eltyp)
    {
    case el_axishell:
@@ -1044,79 +1044,91 @@ container->kstep = 0;
 /*----------------------------------------------------------------------*
   |  in here the element's results are made redundant     m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void calreduce(FIELD       *actfield, /* the active field */
-               PARTITION   *actpart,  /* my partition of this field */
-               INTRA       *actintra, /* the field's intra-communicator */
-               CALC_ACTION *action,   /* action for element routines */
-               CONTAINER   *container)/* contains variables defined in container.h */
+void calreduce(
+    FIELD              *actfield, /* the active field */
+    PARTITION          *actpart,  /* my partition of this field */
+    INT                 disnum,
+    INTRA              *actintra, /* the field's intra-communicator */
+    CALC_ACTION        *action,   /* action for element routines */
+    CONTAINER          *container /* contains variables defined in container.h */
+    )
+
 {
-INT i;
-INT is_axishell=0;
-INT is_shell8=0;
-INT is_shell9=0;
-INT is_brick1=0;
-INT is_wall1 =0;
-INT is_fluid1=0;
-INT is_fluid3=0;
-INT is_ale3=0;
-INT is_beam3=0;
-INT is_interf=0;
-INT is_wallge=0;
+
+  INT i;
+  INT is_axishell=0;
+  INT is_shell8=0;
+  INT is_shell9=0;
+  INT is_brick1=0;
+  INT is_wall1 =0;
+  INT is_fluid1=0;
+  INT is_fluid3=0;
+  INT is_ale3=0;
+  INT is_beam3=0;
+  INT is_interf=0;
+  INT is_wallge=0;
 
   ELEMENT *actele;
+
+
 #ifdef DEBUG
   dstrc_enter("calreduce");
 #endif
-/*----------------------------------------------------------------------*/
-/*--------------------what kind of elements are there in this example ? */
-for (i=0; i<actfield->dis[0].numele; i++)
-{
-   actele = &(actfield->dis[0].element[i]);
-   switch(actele->eltyp)
-   {
-   case el_axishell:
-      is_axishell=1;
-   break;
-   case el_shell8:
-      is_shell8=1;
-   break;
-   case el_shell9:
-      is_shell9=1;
-   break;
-   case el_brick1:
-      is_brick1=1;
-   break;
-   case el_wall1:
-      is_wall1=1;
-   break;
-   case el_fluid2:
-      is_fluid1=1;
-   break;
-   case el_fluid3:
-      is_fluid3=1;
-   break;
-   case el_ale3:
-      is_ale3=1;
-   break;
-   case el_beam3:
-      is_beam3=1;
-   break;
-   case el_interf:
-      is_interf=1;
-   break;
-   case el_wallge:
-      is_wallge=1;
-   break;
-   default:
-      dserror("Unknown typ of element");
-   break;
-   }
-}/* end of loop over all elements */
-/*-----------------------------------------reduce results for axishell  */
-if (is_axishell==1)
-{
-}
-/*-------------------------------------------reduce results for shell8  */
+
+
+  /* what kind of elements are there in this example ? */
+  for (i=0; i<actfield->dis[disnum].numele; i++)
+  {
+    actele = &(actfield->dis[disnum].element[i]);
+    switch(actele->eltyp)
+    {
+      case el_axishell:
+        is_axishell=1;
+        break;
+      case el_shell8:
+        is_shell8=1;
+        break;
+      case el_shell9:
+        is_shell9=1;
+        break;
+      case el_brick1:
+        is_brick1=1;
+        break;
+      case el_wall1:
+        is_wall1=1;
+        break;
+      case el_fluid2:
+        is_fluid1=1;
+        break;
+      case el_fluid3:
+        is_fluid3=1;
+        break;
+      case el_ale3:
+        is_ale3=1;
+        break;
+      case el_beam3:
+        is_beam3=1;
+        break;
+      case el_interf:
+        is_interf=1;
+        break;
+      case el_wallge:
+        is_wallge=1;
+        break;
+      default:
+        dserror("Unknown typ of element");
+        break;
+    }
+  }/* end of loop over all elements */
+
+
+  /* reduce results for axishell */
+  if (is_axishell==1)
+  {
+  }
+
+
+  /*-------------------------------------------reduce results for shell8  */
 #ifdef D_SHELL8
   if (is_shell8==1)
   {
@@ -1135,41 +1147,49 @@ if (is_axishell==1)
     shell9(actfield,actintra,NULL,NULL,NULL,NULL,action,container);
   }
 #endif
-/*--------------------------------------------reduce results for brick1 */
-if (is_brick1==1)
-{
-}
-/*---------------------------------------------reduce results for wall1 */
-if (is_wall1==1)
-{
-}
-/*--------------------------------------------reduce results for fluid1 */
-if (is_fluid1==1)
-{
-}
-/*--------------------------------------------reduce results for fluid3 */
-if (is_fluid3==1)
-{
-}
-/*-----------------------------------------------reduce results for ale */
-if (is_ale3==1)
-{
-}
-/*---------------------------------------- reduce results for interface */
-if (is_interf==1)
-{
-}
-/*---------------------------------------------- reduce results for wge */
-if (is_wallge==1)
-{
-}
-/*---------------------------------------------reduce results for beam3 */
-if (is_beam3==1)
-{
-}
-/*----------------------------------------------------------------------*/
+  /*--------------------------------------------reduce results for brick1 */
+  if (is_brick1==1)
+  {
+  }
+  /*---------------------------------------------reduce results for wall1 */
+  if (is_wall1==1)
+  {
+  }
+  /*--------------------------------------------reduce results for fluid1 */
+  if (is_fluid1==1)
+  {
+  }
+  /*--------------------------------------------reduce results for fluid3 */
+  if (is_fluid3==1)
+  {
+  }
+  /*-----------------------------------------------reduce results for ale */
+  if (is_ale3==1)
+  {
+  }
+  /*---------------------------------------- reduce results for interface */
+  if (is_interf==1)
+  {
+  }
+  /*---------------------------------------------- reduce results for wge */
+  if (is_wallge==1)
+  {
+  }
+  /*---------------------------------------------reduce results for beam3 */
+  if (is_beam3==1)
+  {
+  }
+
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
+
   return;
+
 } /* end of calreduce */
+
+
+
+
+

@@ -79,10 +79,12 @@ acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_acceleration(FIELD           *actfield,
-                        ARRAY_POSITION *ipos,
-			INT              iop
-			)
+ void fluid_acceleration(
+     FIELD             *actfield,
+     INT                disnum,
+     ARRAY_POSITION    *ipos,
+     INT                iop
+     )
 {
 DOUBLE fact1, fact2, fact3, dta, dtp, sum;
 INT  veln, velnm, velnp, accn, accnm;
@@ -108,14 +110,14 @@ case 1:	/* Generalised Alpha time integration 				*/
 case 4:	/* One step Theta time integration 				*/
    fact1 = 1.0 / (fdyn->theta*fdyn->dta);
    fact2 =-1.0 / fdyn->theta + 1.0;	/* = -1/Theta + 1		*/
-   solserv_sol_zero(actfield,0,node_array_sol_increment,accn);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_zero(actfield,disnum,node_array_sol_increment,accn);
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,
                               velnp,accn,fact1);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,
                               veln, accn,-fact1);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,
                               accnm,accn, fact2);
 break;
@@ -128,14 +130,14 @@ case 7:	/* 2nd order backward differencing BDF2				*/
    fact1 = (2.0 * dta + dtp) / (dta*sum);
    fact2 =-sum / (dta*dtp);
    fact3 = dta / (dtp*sum);
-   solserv_sol_zero(actfield,0,node_array_sol_increment,accn);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_zero(actfield,disnum,node_array_sol_increment,accn);
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,
                               velnp,accn,fact1);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,
                               veln, accn,fact2);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,
                               velnm,accn,fact3);
 break;
@@ -194,7 +196,11 @@ for adaptive time step:
 \return  void
 
 ------------------------------------------------------------------------*/
-void fluid_prep_rhs(FIELD *actfield, ARRAY_POSITION *ipos)
+void fluid_prep_rhs(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos
+    )
 {
 DOUBLE 	fact;
 INT     veln, velnm, velnp, accn, accnm, hist;
@@ -220,26 +226,26 @@ switch (fdyn->iop)
 case 1:	/* Generalised Alpha time integration 				*/
    fact = -fdyn->dta * fdyn->alpha_f *
           (fdyn->theta - fdyn->alpha_m) / fdyn->alpha_m;
-   solserv_sol_copy(actfield,0,node_array_sol_increment,
+   solserv_sol_copy(actfield,disnum,node_array_sol_increment,
                                node_array_sol_increment,
                                veln,hist);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,
                               accn,hist,fact);
 break;
 case 4:	/* One step Theta time integration 				*/
    fact = fdyn->dta * (1.0 -fdyn->theta);     /* = dt*(1-Theta)         */
-   solserv_sol_copy(actfield,0,node_array_sol_increment,
+   solserv_sol_copy(actfield,disnum,node_array_sol_increment,
                                node_array_sol_increment,veln,hist);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,accn,hist,fact);
 break;
 case 7:	/* 2nd order backward differencing BDF2				*/
    fact = DSQR(fdyn->dta)/(fdyn->dtp*(2.0*fdyn->dta+fdyn->dtp));
-   solserv_sol_zero(actfield,0,node_array_sol_increment,hist);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_zero(actfield,disnum,node_array_sol_increment,hist);
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,veln, hist,1+fact);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,velnm,hist,-fact);
 break;
 default:
@@ -290,7 +296,11 @@ vel_P(n+1) = vel(n) + dt(n) | 1 + ------- |*acc(n)-|-------| * [u(n)-u(n-1)]
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_predictor(FIELD *actfield, ARRAY_POSITION *ipos, INT iop)
+void fluid_predictor(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos,
+    INT                 iop)
 {
 INT veln, velnm, velnp, accn, accnm, pred;
 DOUBLE 	fact1, fact2;
@@ -323,20 +333,20 @@ case 4:	/* One step Theta time integration (including TR)		*/
    {
       fact1 = fdyn->dta*0.5 * (2.0 + fdyn->dta/fdyn->dtp);
       fact2 =-fdyn->dta*0.5 * fdyn->dta/fdyn->dtp;
-      solserv_sol_copy(actfield,0,node_array_sol_increment,
+      solserv_sol_copy(actfield,disnum,node_array_sol_increment,
                                   node_array_sol_increment,veln,pred);
-      solserv_sol_add(actfield,0,node_array_sol_increment,
+      solserv_sol_add(actfield,disnum,node_array_sol_increment,
                                  node_array_sol_increment,
                                  accn,pred,fact1);
-      solserv_sol_add(actfield,0,node_array_sol_increment,
+      solserv_sol_add(actfield,disnum,node_array_sol_increment,
                                  node_array_sol_increment,
                                  accnm,pred,fact2);
    }
    else
    {
-      solserv_sol_copy(actfield,0,node_array_sol_increment,
+      solserv_sol_copy(actfield,disnum,node_array_sol_increment,
                                   node_array_sol_increment,veln,pred);
-      solserv_sol_add(actfield,0,node_array_sol_increment,
+      solserv_sol_add(actfield,disnum,node_array_sol_increment,
                                  node_array_sol_increment,
                                  accn,pred,fdyn->dta);
    }
@@ -344,20 +354,20 @@ break;
 case 7:	/* 2nd order backward differencing BDF2				*/
    fact1 = fdyn->dta*(1.0+fdyn->dta/fdyn->dtp);
    fact2 = DSQR(fdyn->dta/fdyn->dtp);
-   solserv_sol_copy(actfield,0,node_array_sol_increment,
+   solserv_sol_copy(actfield,disnum,node_array_sol_increment,
                                node_array_sol_increment,veln,pred);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,accn,pred, fact1);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,veln,pred,-fact2);
-   solserv_sol_add(actfield,0,node_array_sol_increment,
+   solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,velnm,pred,fact2);
 break;
 default:
    dserror("Time integration scheme unknown for adaptive time stepping!");
 }
 /*------------------ copy predicted velocities at (n+1) to sol_field ---*/
-solserv_sol_copy(actfield,0,node_array_sol_increment,
+solserv_sol_copy(actfield,disnum,node_array_sol_increment,
                             node_array_sol_increment,pred,velnp);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -418,10 +428,14 @@ LTE = -------------------------------------  * [ vel(n+1) - vel_P(n+1) ]
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_lte( FIELD           *actfield,
-                ARRAY_POSITION  *ipos,
-                INT              iop)
+void fluid_lte(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos,
+    INT                 iop
+    )
 {
+
 INT velnp, pred, terr;
 DOUBLE     fact=0.0, ratio;
 
@@ -460,11 +474,11 @@ default:
 }
 
 /*----------------------------------------------------- evaluate lte ---*/
-solserv_sol_zero(actfield,0,node_array_sol_increment,terr);
-solserv_sol_add(actfield,0,node_array_sol_increment,
+solserv_sol_zero(actfield,disnum,node_array_sol_increment,terr);
+solserv_sol_add(actfield,disnum,node_array_sol_increment,
                            node_array_sol_increment,
                            velnp,terr, fact);
-solserv_sol_add(actfield,0,node_array_sol_increment,
+solserv_sol_add(actfield,disnum,node_array_sol_increment,
                            node_array_sol_increment,
                            pred,terr,-fact);
 
@@ -509,14 +523,15 @@ NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the
 
 ------------------------------------------------------------------------*/
 void fluid_lte_norm(
-			PARTITION 	*actpart,
-			INTRA		*actintra,
-                        ARRAY_POSITION  *ipos,
-			INT		*iststep,
-			INT		*repeat,
-			INT		*repeated,
-			INT		 itnum
-			)
+    PARTITION        *actpart,
+    INT               disnum,
+    INTRA            *actintra,
+    ARRAY_POSITION   *ipos,
+    INT              *iststep,
+    INT              *repeat,
+    INT              *repeated,
+    INT               itnum
+    )
 {
 
 INT      i,j;		/* counters                                     */
@@ -554,9 +569,9 @@ vel0[0] = vel0[1] = vel0[2] = ZERO;
 
 /*---------------------- get maximum velocity in x, y, (z)-direction ---*/
 /* loop nodal points of this proc. */
-for (i=0; i<actpart->pdis[0].numnp; i++)
+for (i=0; i<actpart->pdis[disnum].numnp; i++)
 {
-  actnode  = (actpart->pdis[0].node[i]);
+  actnode  = (actpart->pdis[disnum].node[i]);
   if(actnode->numdf > 4)
     dserror("Too many degrees of freedom!!");
   for (j=0;j<actnode->numdf-1;j++) /* loop all velocity dofs */
@@ -581,9 +596,9 @@ MPI_Bcast(vel0,3,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
 /*------------------------- determine norm of local truncation error ---*/
 
 /* loop nodal points of this proc. */
-for (i=0; i<actpart->pdis[0].numnp; i++)
+for (i=0; i<actpart->pdis[disnum].numnp; i++)
 {
-  actnode  = (actpart->pdis[0].node[i]);
+  actnode  = (actpart->pdis[disnum].node[i]);
   actgnode = actnode->gnode;
   for (j=0;j<numveldof;j++) /* loop all velocity dofs */
   {

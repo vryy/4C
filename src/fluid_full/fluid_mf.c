@@ -86,6 +86,10 @@ static FLUID_DYNAMIC  *fdyn;
 static ALE_DYNAMIC    *adyn;
 static FSI_DYNAMIC    *fsidyn;
 
+INT                    disnumf = 0;
+INT                    disnums = 0;
+INT                    disnuma = 0;
+
 #ifdef DEBUG
 dstrc_enter("fluid_mf");
 #endif
@@ -134,9 +138,9 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,fsidyn->nstep,fsidyn->dt,fsidyn->maxtime);
 
 /*------------------------------------------------------ initialise ale */
-fsi_ale(alefield,mctrl);
+fsi_ale(alefield,disnuma,disnuma,mctrl);
 /*---------------------------------------------------- initialise fluid */
-fsi_fluid(fluidfield,mctrl);
+fsi_fluid(fluidfield,disnumf,disnumf,mctrl);
 
 if (genprob.restart>0)
 {
@@ -153,7 +157,7 @@ if (par.myrank==0) out_gid_msh();
 /*--------------------------------------- write initial solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
 if (par.myrank==0)
-  out_gid_sol_fsi(fluidfield,NULL);
+  out_gid_sol_fsi(fluidfield,NULL,disnumf, disnums);
 
 /*======================================================================*
                               T I M E L O O P
@@ -175,12 +179,12 @@ printf("\n");
 }
 
 /*------------------------------- CMD ----------------------------------*/
-fsi_ale(alefield,mctrl);
+fsi_ale(alefield,disnuma,disnuma,mctrl);
 /*------------------------------- CFD ----------------------------------*/
-fsi_fluid(fluidfield,mctrl);
+fsi_fluid(fluidfield,disnumf,disnumf,mctrl);
 /*------------------------------- CMD ----------------------------------*/
 mctrl=3; /*------------------------------------ finalise ALE - timestep */
-fsi_ale(alefield,mctrl);
+fsi_ale(alefield,disnuma,disnuma,mctrl);
 
 /*--------------------------------------- write current solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
@@ -189,7 +193,7 @@ if (resstep==fsidyn->upres && par.myrank==0)
 {
    resstep=0;
    out_checkfilesize(1);
-   out_gid_sol_fsi(fluidfield,NULL);
+   out_gid_sol_fsi(fluidfield,NULL,disnumf, disnums);
 }
 
 /*------------------------------------------- finalising this time step */
@@ -201,8 +205,8 @@ if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
  *======================================================================*/
 cleaningup:
 mctrl=99;
-fsi_fluid(fluidfield,mctrl);
-fsi_ale(alefield,mctrl);
+fsi_fluid(fluidfield,disnumf,disnumf,mctrl);
+fsi_ale(alefield,disnuma,disnuma,mctrl);
 
 #else
 dserror("FSI-functions not compiled in!\n");

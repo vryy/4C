@@ -95,7 +95,10 @@ elements are initialised:
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_initdirich(  FIELD          *actfield, ARRAY_POSITION *ipos )
+void fluid_initdirich(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos )
 {
 INT        i,j;
 INT        numnp_total;               /* total number of fluid nodes    */
@@ -130,21 +133,21 @@ dstrc_enter("fluid_initdirich");
 
 fdyn = alldyn[genprob.numff].fdyn;
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 numdf        = fdyn->numdf;
 predof       = numdf-1;
 numveldof    = numdf-1;
 
 /*-------------------------- since different materials are not allowed
               one can work with the material parameters of any element */
-actele = &(actfield->dis[0].element[0]);
+actele = &(actfield->dis[disnum].element[0]);
 dens  = mat[actele->mat-1].m.fluid->density;
 
 /*------------------------------------------ check dirichlet conditions */
 for (i=0;i<numnp_total;i++) /* loop all nodes */
 {
-   actnode  = &(actfield->dis[0].node[i]);
+   actnode  = &(actfield->dis[disnum].node[i]);
    actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
       continue;
@@ -194,7 +197,7 @@ if (fdyn->init==0)
 /*------------------------------------------------- loop over all nodes */
    for (i=0;i<numnp_total;i++)
    {
-      actnode  = &(actfield->dis[0].node[i]);
+      actnode  = &(actfield->dis[disnum].node[i]);
       actgnode = actnode->gnode;
       if (actgnode->dirich==NULL)
          continue;
@@ -295,8 +298,8 @@ if (fdyn->init==0)
    } /*end loop over nodes */
 
    /*------------------------------------- transform back to XYZ co-sys */
-   locsys_trans_sol_dirich(actfield,0,0,0,1);
-   locsys_trans_sol_dirich(actfield,0,1,1,1);
+   locsys_trans_sol_dirich(actfield,disnum,0,0,1);
+   locsys_trans_sol_dirich(actfield,disnum,1,1,1);
 
 } /* endif fdyn->init */
 
@@ -332,10 +335,12 @@ nodes:
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich(   FIELD           *actfield,
-                        ARRAY_POSITION  *ipos,
-                        INT		 pos
-	            )
+void fluid_setdirich(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos,
+    INT                 pos
+    )
 {
 INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
@@ -366,8 +371,8 @@ dstrc_enter("fluid_setdirich");
 /*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 T            = fdyn->acttime;
 numdf        = fdyn->numdf;
 numveldof    = numdf-1;
@@ -385,7 +390,7 @@ locsys_trans_sol_dirich(actfield,0,1,pos,0);
 /*-------------------- loop all nodes and set actual dirichlet condition */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]);
+   actnode  = &(actfield->dis[disnum].node[i]);
    actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
          continue;
@@ -510,7 +515,11 @@ nodes:
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_parabolic(FIELD  *actfield, ARRAY_POSITION *ipos)
+void fluid_setdirich_parabolic(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos
+    )
 {
 INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
@@ -537,8 +546,8 @@ dstrc_enter("fluid_setdirich_parabolic");
 *----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 T            = fdyn->acttime;
 numdf        = fdyn->numdf;
 
@@ -551,7 +560,7 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*-------------------- loop all nodes and set actual dirichlet condition */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]);
+   actnode  = &(actfield->dis[disnum].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;
    if (actgnode->dirich==NULL) continue;
@@ -614,7 +623,11 @@ nodes:
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_cyl(FIELD  *actfield, ARRAY_POSITION *ipos)
+void fluid_setdirich_cyl(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos
+    )
 {
 INT        i,j;
 INT        numnp_total;                /* total number of fluid nodes     */
@@ -645,8 +658,8 @@ dstrc_enter("fluid_setdirich_cyl");
 *----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 T            = fdyn->acttime;
 numdf        = fdyn->numdf;
 /*------------------------------------------ get values from time curve */
@@ -658,7 +671,7 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*-------------------- loop all nodes and set actual dirichlet condition */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]);
+   actnode  = &(actfield->dis[disnum].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
@@ -729,7 +742,11 @@ nodes:
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_sd( FIELD *actfield, ARRAY_POSITION *ipos )
+void fluid_setdirich_sd(
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos
+    )
 {
 INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
@@ -746,15 +763,15 @@ dstrc_enter("fluid_setdirich_sd");
 /*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
 
-numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele;
+numnp_total  = actfield->dis[disnum].numnp;
+numele_total = actfield->dis[disnum].numele;
 numdf        = fdyn->numdf;
 numveldof    = numdf-1;
 
 /*-------------------- loop all nodes and set actual dirichlet condition */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]);
+   actnode  = &(actfield->dis[disnum].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)

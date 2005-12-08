@@ -35,7 +35,11 @@ extern struct _LOCSYS *locsys;
 \return void
 
 ------------------------------------------------------------------------*/
-void fluid_locsys(FIELD *actfield, FLUID_DYNAMIC *fdyn)
+void fluid_locsys(
+    FIELD              *actfield,
+    INT                 disnum,
+    FLUID_DYNAMIC      *fdyn
+    )
 {
 INT i,j;
 INT numnp_total;
@@ -50,11 +54,11 @@ LOCSYS   *actlocsys;
 dstrc_enter("fluid_locsys");
 #endif
 
-numnp_total=actfield->dis[0].numnp;
+numnp_total=actfield->dis[disnum].numnp;
 
 for (i=0;i<numnp_total;i++)
 {
-   actnode=&(actfield->dis[0].node[i]);
+   actnode=&(actfield->dis[disnum].node[i]);
    /*------------------------------------------- check for local co-sys */
    ilocsys=actnode->locsysId-1;
    if (ilocsys==-1) continue;
@@ -141,7 +145,7 @@ if (fdyn->freesurf==6)
 {
    for (i=0;i<numnp_total;i++)
    {
-      actnode=&(actfield->dis[0].node[i]);
+      actnode=&(actfield->dis[disnum].node[i]);
       actgnode=actnode->gnode;
       /*---------------------------------------- check for free surface */
       if (actgnode->freesurf==NULL) continue;

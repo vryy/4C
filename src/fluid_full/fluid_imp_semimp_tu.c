@@ -135,7 +135,7 @@ INT             itnumke;            /* counter for nonlinear iteration  */
 INT             itnum_n=1;          /* counter for nonlinear iteration  */
 INT             itnum_check;        /* counter for nonlinear iteration  */
 INT             conv_check_rans;
-INT             i,kk;               /* simply a counter                 */
+INT             i,disnum;           /* simply a counter                 */
 INT             numeq[2];           /* number of equations on this proc */
 INT             numeq_total[2];     /* total number of equations        */
 INT             numeq_oll;
@@ -274,9 +274,9 @@ kesolv->sysarray[0].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
 
 
 /*------------------------------- loop the matrices and intitialise them */
-for(kk=0;kk<nsysarray;kk++)
+for(disnum=0;disnum<nsysarray;disnum++)
 {
-actsysarray=kk;
+actsysarray=disnum;
 
 /*------------------------------- init the dist sparse matrices to zero */
 solserv_zero_mat(
@@ -288,8 +288,8 @@ solserv_zero_mat(
 /*---------------------------- get global and local number of equations */
 solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                    actsolv->sysarray_typ[actsysarray],
-                   &numeq[kk],
-                   &numeq_total[kk]);
+                   &numeq[disnum],
+                   &numeq_total[disnum]);
 
 } /* end of loop over sys_arrays */
 
@@ -355,7 +355,7 @@ amdef("time",&time_a,1000,1,"DV");
 
 /*--------------------------------------------- initialise fluid field */
 /*fluid_init(actpart,actintra,actfield, 0,action,&container,4,str);*/
-fluid_init(actpart,actintra,actfield, 0,action,&container,6,ipos,str);
+fluid_init(actpart,actintra,actfield, 0, 0,action,&container,6,ipos,str);
 fluid_init_tu(actfield);
 actpos=0;
 fluid_init_pos_euler_tu(ipos);
@@ -365,7 +365,7 @@ for (actcurve=0; actcurve<numcurve; actcurve++)
    dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
 
 /*-------------------------------------- init the dirichlet-conditions */
-fluid_initdirich(actfield, ipos);
+fluid_initdirich(actfield, rans, ipos);
 /*---------------------------------- initialize solver on all matrices */
 /*
 NOTE: solver init phase has to be called with each matrix one wants to
@@ -402,7 +402,8 @@ alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
 calinit(actfield,actpart,action,&container);
 
 /*-------------------------------------- print out initial data to .out */
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+out_sol(actfield,actpart,rans,actintra,fdyn->step,actpos);
+out_sol(actfield,actpart,kapeps,actintra,fdyn->step,actpos);
 actpos++;
 
 fluid_cons();
@@ -439,16 +440,16 @@ conv_check_rans = 0;
 itnum_check = 1;
 
 nonlniter_check:
-container.actndis=0;
+container.disnum=0;
 
 /*------------------------------------------------ output to the screen */
 if (par.myrank==0) fluid_algoout();
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
-fluid_setdirich(actfield,ipos,ipos->velnp);
+fluid_setdirich(actfield,rans,ipos,ipos->velnp);
 
 /*------------------------------------ prepare time rhs in mass form ---*/
-fluid_prep_rhs(actfield,ipos);
+fluid_prep_rhs(actfield,rans,ipos);
 
 
 if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -554,7 +555,7 @@ if (fdyn->iop==4)    /* 1S-Theta */
                                 ipos->accn,ipos->accnm);
   }
   else
-    fluid_acceleration(actfield,ipos,fdyn->iop);
+    fluid_acceleration(actfield,rans,ipos,fdyn->iop);
 }
 /*======================================================================*
                  K A P P A - E P S I L O N
@@ -563,7 +564,7 @@ if (fdyn->iop==4)    /* 1S-Theta */
  *======================================================================*/
 if (kapeps_yeah == 1)
 {
-container.actndis=1;
+container.disnum=1;
 
 /*-------------- set dirichlet boundary conditions const. for timestep */
 fluid_setdirich_tu(actfield,&lower_limit_kappa,&lower_limit_eps,ipos);
@@ -819,7 +820,7 @@ endrans:
 if (fdyn->stchk==iststep)
 {
    iststep=0;
-   steady = fluid_steadycheck(actfield,ipos,numeq_total[rans]);
+   steady = fluid_steadycheck(actfield,rans,ipos,numeq_total[rans]);
 }
 
 /*--------------------------------- copy solution at (n+1) to place (n) *
@@ -846,7 +847,7 @@ if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 
 /*-------- calculate wall shear velocity and c_f (for TURBULENCE MODEL) */
    fdyn->washvel  = ZERO;
-   container.actndis=0;
+   container.disnum=0;
    *action = calc_fluid_shearvelo;
    container.nii= 0;
    calelm(actfield,actsolv,actpart,actintra,k_array,-1,
@@ -857,7 +858,8 @@ if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
   if (par.myrank==0) printf("wall shear velocity: %10.3E \n",fdyn->washvel);
 
   /*------------------------------------------------ print out to .out */
-  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+  out_sol(actfield,actpart,rans,actintra,fdyn->step,actpos);
+  out_sol(actfield,actpart,kapeps,actintra,fdyn->step,actpos);
   /*------------------------------------------------ print out to .tur */
   out_fluidtu(actfield,actintra,fdyn->step,actpos);
 
@@ -903,16 +905,17 @@ if (kapeps_yeah==0 && steady==1)
 if (pssstep==0) actpos--;
 /*------------------------ print out solution to .out and to .tur file */
 if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1){
- out_sol(actfield,actpart,actintra,fdyn->step,actpos);
- out_fluidtu(actfield,actintra,fdyn->step,actpos);}
+    out_sol(actfield,actpart,rans,actintra,fdyn->step,actpos);
+    out_sol(actfield,actpart,kapeps,actintra,fdyn->step,actpos);
+    out_fluidtu(actfield,actintra,fdyn->step,actpos);}
 
 /*----------------------------- print out solution to 0.flavia.res file */
 if (ioflags.output_gid==1 && ioflags.fluid_sol==1 && par.myrank==0)
 {
     for(i=0;i<actpos+1;i++)
     {
-        out_gid_sol("velocity",actfield,actintra,i,i,ZERO);
-        out_gid_sol("pressure",actfield,actintra,i,i,ZERO);
+        out_gid_sol("velocity",actfield,rans,actintra,i,i,ZERO);
+        out_gid_sol("pressure",actfield,rans,actintra,i,i,ZERO);
     }
 }
 

@@ -210,7 +210,7 @@ if (par.myrank==0) printf("  -> calling elements ...");
 container->nii = 0;
 container->gradmatrix  = gradmatrix_csr;
 container->lumpedmass  = lumpedmass_csr;
-container->actndis = veldis;
+container->disnum      = veldis;
 fdyn->pro_calmat = 1;
 fdyn->pro_calrhs = 0;
 fdyn->pro_calveln = 1;

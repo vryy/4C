@@ -119,7 +119,7 @@ VOL 11, pp. 587-659, (1990)
 void fluid_pm(void)
 {
 INT             actcurve;           /* actual timecurve                 */
-INT             kk;                 /* counter for discretisations      */
+INT             disnum;             /* counter for discretisations      */
 INT             numeq[3];           /* number of equations on this proc */
 INT             numeq_total[2];     /* total number of equations        */
 INT             numeq_total_full[2];/* number of dofs on this proc      */
@@ -267,9 +267,9 @@ solserv_alloc_cp_sparsemask(  actintra,
                             &(actsolv->sysarray[m_array]));
 
 /*------------------------------- loop the matrices and intitialise them */
-for(kk=0;kk<nsysarray;kk++)
+for(disnum=0;disnum<nsysarray;disnum++)
 {
-actsysarray=kk;
+actsysarray=disnum;
    /*----------------------------- init the dist sparse matrices to zero */
    solserv_zero_mat(
                     actintra,
@@ -279,8 +279,8 @@ actsysarray=kk;
    /*------------------------- get global and local number of equations */
    solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                       actsolv->sysarray_typ[actsysarray],
-                      &numeq[kk],
-                      &numeq_total[kk]);
+                      &numeq[disnum],
+                      &numeq_total[disnum]);
 
 } /* end of loop over sys_arrays */
 
@@ -375,8 +375,8 @@ if (ioflags.fluid_vis==1 )
 amdef("time",&time_a,1000,1,"DV");
 
 /*---------------------------------------------- initialise fluid field */
-fluid_init(actpart,actintra,actfield, 0,action,&container,2,ipos,str);
-fluid_init(actpart,actintra,actfield, 1,action,&container,2,ipos,str);
+fluid_init(actpart,actintra,actfield, 0, 0,action,&container,2,ipos,str);
+fluid_init(actpart,actintra,actfield, 1, 1,action,&container,2,ipos,str);
 actpos=0;
 fluid_init_pos_pm(ipos);
 
@@ -385,7 +385,7 @@ for (actcurve=0; actcurve<numcurve; actcurve++)
    dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
 
 /*--------------------------------------- init the dirichlet-conditions */
-fluid_initdirich(actfield, ipos);
+fluid_initdirich(actfield, veldis, ipos);
 
 /*----------------------------------- initialize solver on all matrices */
 /*
@@ -423,13 +423,16 @@ calinit(actfield,actpart,action,&container);
 
 /*-------------------------------------- print out initial data to .out */
 if (ioflags.output_out==1 && ioflags.fluid_sol==1)
-  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+{
+  out_sol(actfield,actpart,veldis,actintra,fdyn->step,actpos);
+  out_sol(actfield,actpart,predis,actintra,fdyn->step,actpos);
+}
 
 /*------------------------------- print out initial data to .flavia.res */
 if (ioflags.output_gid==1 && ioflags.fluid_sol==1 && par.myrank==0)
 {
-   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+   out_gid_sol("velocity",actfield,veldis,actintra,fdyn->step,actpos,fdyn->acttime);
+   out_gid_sol("pressure",actfield,predis,actintra,fdyn->step,actpos,fdyn->acttime);
 }
 
 /*----------------------------------------------------------------------*
@@ -524,13 +527,13 @@ solserv_zero_vec(sol_p);
 switch (fdyn->pro_profile)
 {
 case 1:
-   fluid_setdirich_parabolic(actfield, ipos);
+   fluid_setdirich_parabolic(actfield, veldis, ipos);
 break;
 case 2:
-   fluid_setdirich(actfield,ipos,ipos->velnp);
+   fluid_setdirich(actfield, veldis, ipos,ipos->velnp);
 break;
 case 3:
-   fluid_setdirich_cyl(actfield, ipos);
+   fluid_setdirich_cyl(actfield, veldis, ipos);
 break;
 default:
    dserror("unknown velocity profile!\n");
@@ -558,7 +561,7 @@ container.fvelrhs2     = fvelrhs2;
 container.fidrichrhs   = fdirich;
 container.global_numeq = numeq_total[veldis];
 container.kstep        = 0;
-container.actndis      = veldis;
+container.disnum       = veldis;
 fdyn->pro_calmat     = 1;
 fdyn->pro_caldirich  = 1;
 fdyn->pro_kvv        = 1;
@@ -633,9 +636,9 @@ solver_control(actsolv, actintra,
  | reduced gradient matrix but we believe that full A matrix is a       |
  | better approximation to the laplace operator over the whole domain   |                              |
  *----------------------------------------------------------------------*/
-solserv_result_incre(actfield,actintra,sol_v,ipos->velnp,
+solserv_result_incre(actfield,veldis,actintra,sol_v,ipos->velnp,
                      &(actsolv->sysarray[k_array]),
-                     &(actsolv->sysarray_typ[k_array]),veldis);
+                     &(actsolv->sysarray_typ[k_array]));
 
 /*--------------------------------------- form the full velocity vector */
 fluid_pm_fullvel(actfield,veldis,fullvel,ipos->velnp);
@@ -712,18 +715,18 @@ assemble_vec(actintra,
              1.0);
 
 /*---------------------- return divergence free velocities to the nodes */
-solserv_result_incre(actfield,actintra,sol_v,ipos->velnp,
+solserv_result_incre(actfield,veldis,actintra,sol_v,ipos->velnp,
                      &(actsolv->sysarray[k_array]),
-                     &(actsolv->sysarray_typ[k_array]),veldis);
+                     &(actsolv->sysarray_typ[k_array]));
 
 
 /*----------------------- update the pressure values-->Pn+1=Pn+2*phi/dt */
 solserv_add_vec(sol_p,sol_pnew,TWO/fdyn->dta);
 
 /*--------------------------------- return pressure values to the nodes */
-solserv_result_incre(actfield,actintra,sol_pnew,ipos->velnp,
+solserv_result_incre(actfield,predis,actintra,sol_pnew,ipos->velnp,
                      &(presolv->sysarray[0]),
-                     &(presolv->sysarray_typ[0]),predis);
+                     &(presolv->sysarray_typ[0]));
 
 /*-------- copy solution from sol_increment[3][j] to sol_increment[1[j] */
 solserv_sol_copy(actfield,veldis,node_array_sol_increment,node_array_sol_increment,ipos->velnp,ipos->veln);
@@ -748,15 +751,16 @@ resstep++;
 if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 {
    outstep=0;
-   out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+   out_sol(actfield,actpart,veldis,actintra,fdyn->step,actpos);
+   out_sol(actfield,actpart,predis,actintra,fdyn->step,actpos);
 }
 
 /*--------------------------------------- write solution to .flavia.res */
 if (resstep==fdyn->upres && ioflags.output_gid==1  &&ioflags.fluid_sol==1 && par.myrank==0)
 {
    resstep=0;
-   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+   out_gid_sol("velocity",actfield,veldis,actintra,fdyn->step,actpos,fdyn->acttime);
+   out_gid_sol("pressure",actfield,predis,actintra,fdyn->step,actpos,fdyn->acttime);
 }
 
 /*---------------------------------------------- write solution to .pss */
@@ -784,7 +788,10 @@ end:
 if (pssstep==0) actpos--;
 /*------------------------------------- print out solution to .out file */
 if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1)
-out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+{
+  out_sol(actfield,actpart,veldis,actintra,fdyn->step,actpos);
+  out_sol(actfield,actpart,predis,actintra,fdyn->step,actpos);
+}
 
 /*------------------------------------ print out solution to 0.pss file */
 if (ioflags.fluid_vis==1 && par.myrank==0)

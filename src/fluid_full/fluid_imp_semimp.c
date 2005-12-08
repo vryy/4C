@@ -161,7 +161,7 @@ INT             i;                  /* simply a counter                 */
 INT             numeq;              /* number of equations on this proc */
 INT             numeq_total;        /* total number of equations        */
 INT             init;               /* flag for solver_control call     */
-INT             actsysarray=0;      /* number of actual sysarray        */
+INT             actsysarray;        /* number of actual sysarray        */
 INT             outstep=0;          /* counter for output control       */
 INT             resstep=0;          /* counter for output control       */
 INT             pssstep=0;	    /* counter for output control	*/
@@ -198,8 +198,13 @@ FILE           *out = allfiles.out_out;
 
 ARRAY_POSITION *ipos;
 
+INT             disnum_calc;
+INT             disnum_io;
+
+
 #ifdef BINIO
 BIN_OUT_FIELD   out_context;
+BIN_OUT_FIELD   restart_context;
 #endif
 
 #ifdef DEBUG
@@ -212,6 +217,7 @@ dstrc_enter("fluid_isi");
  *======================================================================*/
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
+
 fdyn = alldyn[genprob.numff].fdyn;
 
 actfield    = &(field[0]);
@@ -219,11 +225,26 @@ actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 restart     = genprob.restart;
-container.actndis   = 0;
+
+
+#ifdef SUBDIV
+if (actfield->subdivide > 0)
+{
+  disnum_calc = 1;
+  disnum_io   = 0;
+}
+else
+#endif
+  disnum_calc = disnum_io = 0;
+
+
+actsysarray = disnum_calc;
+
+container.disnum    = disnum_calc;
 container.turbu     = fdyn->turbu;
 container.fieldtyp  = actfield->fieldtyp;
 
-ipos = &(actfield->dis[0].ipos);
+ipos = &(actfield->dis[disnum_calc].ipos);
 
 /* set flag for stress evaluation */
 str         = str_none;
@@ -250,7 +271,7 @@ if (actintra->intra_fieldtyp != fluid) goto end;
 if (fdyn->liftdrag==ld_stress)
   str         = str_liftdrag;
 if (fdyn->liftdrag==ld_nodeforce)
-  fluid_liftdrag(-1,action,&container,actfield,
+  fluid_liftdrag(-1,action,&container,actfield,disnum_calc,
                  actsolv,actpart,actintra,ipos);
 
 if (ioflags.fluid_stress==1)
@@ -271,18 +292,24 @@ solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
 
 /*------------------------------------------------ output to the screen */
 #ifdef PARALLEL
-MPI_Barrier(actintra->MPI_INTRA_COMM);
+  MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
-for (i=0;i<par.nprocs;i++)
-if (par.myrank==i)
-printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n",
-        par.myrank,numeq);
+
+
+  for (i=0;i<par.nprocs;i++)
+    if (par.myrank==i)
+      printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n",
+          par.myrank,numeq);
+
+
 #ifdef PARALLEL
-MPI_Barrier(actintra->MPI_INTRA_COMM);
+  MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
-if (par.myrank==0)
-printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
-if (par.myrank==0) printf("\n\n");
+
+
+  if (par.myrank==0)
+    printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
+  if (par.myrank==0) printf("\n\n");
 
 
 
@@ -438,8 +465,10 @@ if (restart != 0)
 
 
 fluid_init_pos_euler(ipos);
-fluid_init(actpart,actintra,actfield, 0,action,&container,8,ipos,str);
+fluid_init(actpart, actintra, actfield, disnum_calc, disnum_io,
+    action, &container, 8,ipos,str);
 actpos=0;
+
 
 /*------------------------------------ initialize multilevel algorithm */
 #if defined(FLUID2_ML) || defined(FLUID3_ML)
@@ -451,7 +480,7 @@ for (actcurve=0; actcurve<numcurve; actcurve++)
   dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
 
 /*-------------------------------------- init the dirichlet-conditions -*/
-fluid_initdirich(actfield, ipos);
+fluid_initdirich(actfield, disnum_calc, ipos);
 
 /*---------------------------------- initialize solver on all matrices */
 /*
@@ -471,7 +500,7 @@ solver_control(actsolv, actintra,
                init);
 
 /*------------------------------------- init the assembly for stiffness */
-init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+init_assembly(actpart,actsolv,actintra,actfield,actsysarray,disnum_calc);
 
 /*---------------------------------- allocate fluid integration data ---*/
 alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
@@ -488,33 +517,53 @@ calinit(actfield,actpart,action,&container);
 init_bin_out_field(&out_context,
                    &(actsolv->sysarray_typ[actsysarray]),
                    &(actsolv->sysarray[actsysarray]),
-                   actfield, actpart, actintra, 0);
+                   actfield, actpart, actintra, disnum_io);
+
+if (disnum_io != disnum_calc)
+  init_bin_out_field(&restart_context,
+      &(actsolv->sysarray_typ[actsysarray]),
+      &(actsolv->sysarray[actsysarray]),
+      actfield, actpart, actintra, disnum_calc);
 
 #endif
 
 /*--------------------------------------------- calculate nodal normals */
-fluid_cal_normal(actfield,1,action);
+fluid_cal_normal(actfield, disnum_calc, 1, action);
+
 
 /*------------------------------------------------- define local co-sys */
-fluid_locsys(actfield,fdyn);
+fluid_locsys(actfield, disnum_calc, fdyn);
+
+
+
+#ifdef SUBDIV
+/* transfer the solution to the nodes of the master-dis */
+if (actfield->subdivide > 0)
+{
+  solserv_sol_trans(actfield, disnum_calc, node_array_sol, actpos);
+}
+#endif
+
 
 /*-------------------------------------- print out initial data to .out */
 if (ioflags.output_out==1 && ioflags.fluid_sol==1 && par.myrank==0)
-  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+  out_sol(actfield,actpart,disnum_io,actintra,fdyn->step,actpos);
+
 
 /*------------------------------- print out initial data to .flavia.res */
 if (ioflags.output_gid==1 && par.myrank==0)
 {
   if (ioflags.fluid_sol==1)
   {
-    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("velocity",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("pressure",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
   }
   if (ioflags.fluid_stress==1)
   {
-    out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("stress",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
   }
 }
+
 
 /*-------------------------------------------- write solution to binary */
 #ifdef BINIO
@@ -535,7 +584,7 @@ if (ioflags.output_bin==1)
 if (ioflags.monitor==1)
 {
    out_monitor(actfield,genprob.numff,ZERO,1);
-   monitoring(actfield,genprob.numff,actpos,fdyn->acttime);
+   monitoring(actfield,disnum_io,genprob.numff,actpos,fdyn->acttime);
 }
 
 /*---------- calculate time independent constants for time algorithm ---*/
@@ -587,29 +636,29 @@ if (par.myrank==0) fluid_algoout();
 /*------------------------ predictor step for adaptive time stepping ---*/
 if (fdyn->adaptive && fdyn->step > 1)
 {
-  fluid_predictor(actfield,ipos,fdyn->iop);
+  fluid_predictor(actfield, disnum_calc, ipos,fdyn->iop);
 }
 else
 {
 /* do explicit predictor step to start iteration from better value */
   fact1 = fdyn->dta*(1.0+fdyn->dta/fdyn->dtp);
   fact2 = DSQR(fdyn->dta/fdyn->dtp);
-  solserv_sol_add(actfield,0,node_array_sol_increment,
+  solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
                              node_array_sol_increment,
                              ipos->accn,ipos->velnp, fact1);
-  solserv_sol_add(actfield,0,node_array_sol_increment,
+  solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
                              node_array_sol_increment,
                              ipos->veln,ipos->velnp,-fact2);
-  solserv_sol_add(actfield,0,node_array_sol_increment,
+  solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
                              node_array_sol_increment,
                              ipos->velnm,ipos->velnp,fact2);
 }
 /*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
-fluid_setdirich(actfield,ipos,ipos->velnp);
+fluid_setdirich(actfield, disnum_calc, ipos,ipos->velnp);
 /*fluid_setdirich_cyl(actfield);*/
 
 /*------------------------------------ prepare time rhs in mass form ---*/
-fluid_prep_rhs(actfield, ipos);
+fluid_prep_rhs(actfield, disnum_calc, ipos);
 
 /*------------------------------------- start time step on the screen---*/
 if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -633,7 +682,7 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[actsysarray]),
                  &(actsolv->sysarray_typ[actsysarray]));
 
 /*------------------------------------------- re-initialise neumann bcs */
-inherit_design_dis_neum(&(actfield->dis[0]));
+inherit_design_dis_neum(&(actfield->dis[disnum_calc]));
 
 /*------------------------------------------- initialise iterations-rhs */
 amzero(&frhs_a);
@@ -713,7 +762,7 @@ tss+=ts;
 fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),
+fluid_result_incre(actfield, disnum_calc, actintra,&(actsolv->sol[0]),
                      ipos->velnp,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
@@ -735,10 +784,13 @@ if (converged==0)
 /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
 if (fdyn->iop == 1)
 {
-  solserv_sol_zero(actfield,0,node_array_sol_increment,ipos->accnm);
-  solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos->velnp,ipos->accnm,1.0/fdyn->alpha_f);
-  solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos->veln,ipos->accnm,1.0-1.0/fdyn->alpha_f);
-  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,ipos->accnm,ipos->velnp);
+  solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->accnm);
+  solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,node_array_sol_increment,
+      ipos->velnp,ipos->accnm,1.0/fdyn->alpha_f);
+  solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,node_array_sol_increment,
+      ipos->veln,ipos->accnm,1.0-1.0/fdyn->alpha_f);
+  solserv_sol_copy(actfield,disnum_calc,node_array_sol_increment,node_array_sol_increment,
+      ipos->accnm,ipos->velnp);
 
   fdyn->acttime += fdyn->dta * (1.0 - fdyn->alpha_f);
 }
@@ -748,10 +800,10 @@ if(fdyn->adaptive)
   if (fdyn->step > 1)
   {
     /*------------------------ evaluate local truncation error (LTE) ---*/
-    fluid_lte(actfield,ipos,fdyn->iop);
+    fluid_lte(actfield, disnum_calc, ipos,fdyn->iop);
 
     /*------------------ evaluate norm of LTE and new time step size ---*/
-    fluid_lte_norm(actpart,actintra,ipos,
+    fluid_lte_norm(actpart, disnum_calc, actintra,ipos,
                    &iststep,&repeat,&repeated,itnum);
     if (repeat)
     {
@@ -771,26 +823,26 @@ if(fdyn->adaptive)
 /*----- copy solution from sol_increment[5][j] to sol_increment[4][j] */
 /*--- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/
 if (fdyn->step > 1)
-   solserv_sol_copy(actfield,0,node_array_sol_increment,
+   solserv_sol_copy(actfield, disnum_calc, node_array_sol_increment,
                                node_array_sol_increment,
                                ipos->accn,ipos->accnm);
 /*------------------------ evaluate acceleration in this time step ---*
  *-------------------------------- depending on integration method ---*/
 if (fdyn->step == 1)
 { /* do just a linear interpolation within the first timestep */
-  solserv_sol_zero(actfield,0,node_array_sol_increment,ipos->accnm);
-  solserv_sol_add(actfield,0,node_array_sol_increment,
+  solserv_sol_zero(actfield, disnum_calc,node_array_sol_increment,ipos->accnm);
+  solserv_sol_add(actfield, disnum_calc,node_array_sol_increment,
                              node_array_sol_increment,
                              ipos->velnp,ipos->accn, 1.0/fdyn->dta);
-  solserv_sol_add(actfield,0,node_array_sol_increment,
+  solserv_sol_add(actfield, disnum_calc,node_array_sol_increment,
                              node_array_sol_increment,
                              ipos->veln,ipos->accn,-1.0/fdyn->dta);
-  solserv_sol_copy(actfield,0,node_array_sol_increment,
+  solserv_sol_copy(actfield, disnum_calc,node_array_sol_increment,
                               node_array_sol_increment,
                               ipos->accn,ipos->accnm);
 }
 else
-  fluid_acceleration(actfield,ipos,fdyn->iop);
+  fluid_acceleration(actfield, disnum_calc, ipos,fdyn->iop);
 
 /*------------------------------------------- update time step sizes ---*/
 fdyn->dtp = fdyn->dta;
@@ -803,7 +855,7 @@ if (fdyn->adaptive)
 if (fdyn->stchk==iststep)
 {
   iststep=0;
-  steady = fluid_steadycheck(actfield,ipos,numeq_total);
+  steady = fluid_steadycheck(actfield, disnum_calc, ipos,numeq_total);
 }
 else
 {
@@ -817,7 +869,7 @@ if (fdyn->liftdrag==ld_stress || fdyn->liftdrag==ld_nodeforce)
 {
   container.str = str;
   *action = calc_fluid_liftdrag;
-  fluid_liftdrag(1,action,&container,actfield,
+  fluid_liftdrag(1,action,&container,actfield, disnum_calc,
                  actsolv,actpart,actintra,ipos);
 }
 
@@ -857,12 +909,12 @@ if (fdyn->init==8 || fdyn->init==9)
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
-solserv_sol_copy(actfield,0,node_array_sol_increment,
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_increment,
                             node_array_sol_increment,ipos->veln,ipos->velnm);
 
 /* copy solution from sol_increment[velnp][j] to sol_increment[veln][j] */
 /*--- -> actual solution becomes previous solution of next time step ---*/
-solserv_sol_copy(actfield,0,node_array_sol_increment,
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_increment,
                             node_array_sol_increment,ipos->velnp,ipos->veln);
 
 /* some time could be saved here by swapping flags instead of copying but
@@ -875,36 +927,53 @@ solserv_sol_copy(actfield,0,node_array_sol_increment,
  /* ipos->velnp = leftspace; */
 
 
-/*-------- copy solution from sol_increment[ipos->velnp][j] to sol_[actpos][j]
-           and transform kinematic to real pressure --------------------*/
-solserv_sol_copy(actfield,0,node_array_sol_increment,
-                            node_array_sol,ipos->veln,actpos);
-fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
-/*-- copy solution on level 2 at (n+1) to place (n) for multi-level FEM */
+/* copy solution from sol_increment[ipos->velnp][j] to sol_[actpos][j]
+   and transform kinematic to real pressure */
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_increment,
+                            node_array_sol,ipos->veln,actpos);
+fluid_transpres(actfield,disnum_calc,0,actpos,fdyn->numdf-1,0);
+
+
+
+/* copy solution on level 2 at (n+1) to place (n) for multi-level FEM */
 #if defined(FLUID2_ML) || defined(FLUID3_ML)
 if (fdyn->mlfem==1) fluid_smcopy(actpart);
 #endif
 
 
 
-/*---------------------------------------------- finalise this timestep */
+/* finalise this timestep */
 outstep++;
 pssstep++;
 resstep++;
 restartstep++;
 
 
-/*------------------------------------------- write restart to pss file */
+/* write restart to pss file */
 if (restartstep==fdyn->uprestart)
 {
    restartstep=0;
 #ifdef BINIO
+if (disnum_io != disnum_calc)
+   restart_write_bin_fluiddyn(&restart_context,fdyn);
+else
    restart_write_bin_fluiddyn(&out_context,fdyn);
 #else
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 #endif
 }
+
+
+
+#ifdef SUBDIV
+/* transfer the solution to the nodes of the master-dis */
+if (actfield->subdivide > 0)
+{
+  solserv_sol_trans(actfield, disnum_calc, node_array_sol, actpos);
+}
+#endif
+
 
 
 /*--------------------------------------- write solution to .flavia.res */
@@ -913,12 +982,12 @@ if (resstep==fdyn->upres && par.myrank==0 && ioflags.output_gid==1)
 
   if(ioflags.fluid_sol==1)
   {
-    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("velocity",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("pressure",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
   }
   if(ioflags.fluid_stress==1)
   {
-    out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("stress",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
   }
 }
 
@@ -946,12 +1015,12 @@ if (resstep==fdyn->upres) {
 if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 {
    outstep=0;
-   out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+   out_sol(actfield,actpart, disnum_io, actintra,fdyn->step,actpos);
 }
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,genprob.numff,actpos,fdyn->acttime);
+monitoring(actfield, disnum_io, genprob.numff,actpos,fdyn->acttime);
 
 tt=ds_cputime()-t2;
 tts+=tt;
@@ -982,7 +1051,7 @@ if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 if (pssstep==0) actpos--;
 /*------------------------------------- print out solution to .out file */
 if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1)
-  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+  out_sol(actfield,actpart, disnum_io, actintra,fdyn->step,actpos);
 
 /*---------------------------------- print total CPU-time to the screen */
 #ifdef PARALLEL
@@ -1017,6 +1086,8 @@ end:
 
 #ifdef BINIO
 destroy_bin_out_field(&out_context);
+if (disnum_io != disnum_calc)
+  destroy_bin_out_field(&restart_context);
 #endif
 
 /*--------------------------------------------------- cleaning up phase */

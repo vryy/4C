@@ -484,52 +484,54 @@ these data are copied to sol_increment.
 
 ------------------------------------------------------------------------*/
 void fluid_init(
-                          PARTITION	    *actpart,
-                          INTRA	            *actintra,
-			  FIELD             *actfield,
-                          INT                disnum,
-                          CALC_ACTION       *action,
-			  CONTAINER         *container,
-		          INT                numr,
-                          ARRAY_POSITION    *ipos,
-		          FLUID_STRESS       str
-	       )
+    PARTITION          *actpart,
+    INTRA              *actintra,
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    CALC_ACTION        *action,
+    CONTAINER          *container,
+    INT                 numr,
+    ARRAY_POSITION     *ipos,
+    FLUID_STRESS        str
+    )
 {
-INT    i,j;             /* simply counters                              */
-INT    actmat;          /* number of actual material                    */
-INT    numdf;           /* number of dofs in this discretisation        */
-INT    numnp_total=0;   /* total number of nodes in this discretisation */
-INT    numele_total;    /* total number of elements in this discr.      */
-INT    numnp=0;         /* number of nodes at actual element            */
-INT    ldflag;
-NODE  *actnode;         /* the actual node                              */
-ELEMENT *actele;        /* the actual element                           */
-GSURF   *actgsurf;
+  INT    i,j;             /* simply counters                              */
+  INT    actmat;          /* number of actual material                    */
+  INT    numdf;           /* number of dofs in this discretisation        */
+  INT    numnp_total=0;   /* total number of nodes in this discretisation */
+  INT    numele_total;    /* total number of elements in this discr.      */
+  INT    numnp=0;         /* number of nodes at actual element            */
+  INT    ldflag;
+  NODE  *actnode;         /* the actual node                              */
+  ELEMENT *actele;        /* the actual element                           */
+  GSURF   *actgsurf;
+
+  INT    found;
 
 #ifdef D_FSI
-INT    found;
-INT    addcol=0;
-DOUBLE dens;            /* density                                      */
-DOUBLE phi;
-NODE  *actanode;        /* the actual ale ode                           */
-GNODE *actgnode;        /* the actual gnode                             */
+  INT    addcol=0;
+  DOUBLE dens;            /* density                                      */
+  DOUBLE phi;
+  NODE  *actanode;        /* the actual ale ode                           */
+  GNODE *actgnode;        /* the actual gnode                             */
 #endif
 
 #ifdef D_FLUID3
-GVOL    *actgvol;
-DSURF   *actdsurf;
+  GVOL    *actgvol;
+  DSURF   *actdsurf;
 #endif
 
 #ifdef D_FLUID2
-GLINE   *actgline;
-DLINE   *actdline;
+  GLINE   *actgline;
+  DLINE   *actdline;
 #endif
 
-DOUBLE d,t,p,u1,u2,u3;
+  DOUBLE d,t,p,u1,u2,u3;
 
-/*----------------------------------------- variables for solitary wave */
+  /*----------------------------------------- variables for solitary wave */
 #ifdef D_FSI
-DOUBLE eta,c,g,H,x,y,fac,fac1,sech;
+  DOUBLE eta,c,g,H,x,y,fac,fac1,sech;
 #endif
 
 #ifdef D_FLUID3_F
@@ -538,163 +540,252 @@ DOUBLE eta,c,g,H,x,y,fac,fac1,sech;
 #endif
 
 
-/* variables for beltrami */
-DOUBLE    visc,a,x1,x2,x3;
+  /* variables for beltrami */
+  DOUBLE    visc,a,x1,x2,x3;
 
 #ifdef DEBUG
-dstrc_enter("fluid_init");
+  dstrc_enter("fluid_init");
 #endif
 
-/*----------------------- set control variables for element evaluation */
-fdyn = alldyn[genprob.numff].fdyn;
+  /*----------------------- set control variables for element evaluation */
+  fdyn = alldyn[genprob.numff].fdyn;
 
-fdyn->ishape = 1;
+  fdyn->ishape = 1;
 
-numdf = fdyn->numdf;
-numele_total = actfield->dis[disnum].numele;
+  numdf = fdyn->numdf;
+  numele_total = actfield->dis[disnum_calc].numele;
 
-/*---------------------------------------------------------------------*
-                      INITIALISE NODAL ARRAYS
- *---------------------------------------------------------------------*/
-/*-------------------------------- allocate space for solution history */
-   numnp_total=actfield->dis[disnum].numnp;
-   for (i=0;i<numnp_total;i++)
-   {
-      actnode=&(actfield->dis[disnum].node[i]);
-      amredef(&(actnode->sol_increment),numr,actnode->numdf,"DA");
-      amzero(&(actnode->sol_increment));
-   }
+  /*---------------------------------------------------------------------*
+    INITIALISE NODAL ARRAYS
+   *---------------------------------------------------------------------*/
+  /*-------------------------------- allocate space for solution history */
+  numnp_total=actfield->dis[disnum_calc].numnp;
+  for (i=0;i<numnp_total;i++)
+  {
+    actnode=&(actfield->dis[disnum_calc].node[i]);
+    amredef(&(actnode->sol_increment),numr,actnode->numdf,"DA");
+    amzero(&(actnode->sol_increment));
+  }
 
 
-/*----------------------------------- set initial free surface position */
+  /*----------------------------------- set initial free surface position */
 #ifdef D_FSI
-if (fdyn->freesurf>0)
-{
-   for (i=0;i<numnp_total;i++)
-   {
-      actnode=&(actfield->dis[disnum].node[i]);
+  if (fdyn->freesurf>0)
+  {
+    for (i=0;i<numnp_total;i++)
+    {
+      actnode=&(actfield->dis[disnum_calc].node[i]);
       actgnode = actnode->gnode;
       if (actgnode->freesurf!=NULL)
       {
-         actnode->xfs = (DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));
-	 if (genprob.restart==0)
-         {
-            actnode->xfs[0] = actnode->x[0];
-	    actnode->xfs[1] = actnode->x[1];
-	    actnode->xfs[2] = actnode->x[2];
-         }
-         else /* get free surf position from ale-displacements */
-         {
-            dserror("restart for free surface not checked up to now!\n");
-            actanode=actgnode->mfcpnode[genprob.numaf];
-            actnode->xfs[0] = actanode->x[0]+actanode->sol_mf.a.da[1][0];
-            actnode->xfs[1] = actanode->x[0]+actanode->sol_mf.a.da[1][1];
-            actnode->xfs[2] = actanode->x[0]+actanode->sol_mf.a.da[1][2];
-         }
+        actnode->xfs = (DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));
+        if (genprob.restart==0)
+        {
+          actnode->xfs[0] = actnode->x[0];
+          actnode->xfs[1] = actnode->x[1];
+          actnode->xfs[2] = actnode->x[2];
+        }
+        else /* get free surf position from ale-displacements */
+        {
+          dserror("restart for free surface not checked up to now!\n");
+          actanode=actgnode->mfcpnode[genprob.numaf];
+          actnode->xfs[0] = actanode->x[0]+actanode->sol_mf.a.da[1][0];
+          actnode->xfs[1] = actanode->x[0]+actanode->sol_mf.a.da[1][1];
+          actnode->xfs[2] = actanode->x[0]+actanode->sol_mf.a.da[1][2];
+        }
       }
       else
-         actnode->xfs=NULL;
-   }
-}
+        actnode->xfs=NULL;
+    }
+  }
 
-if (fdyn->freesurf==3 || fdyn->freesurf==5)
-{
-   if (fdyn->freesurf==3) addcol=1;
-   for (i=0;i<numnp_total;i++)
-   {
-      actnode=&(actfield->dis[disnum].node[i]);
+  if (fdyn->freesurf==3 || fdyn->freesurf==5)
+  {
+    if (fdyn->freesurf==3) addcol=1;
+    for (i=0;i<numnp_total;i++)
+    {
+      actnode=&(actfield->dis[disnum_calc].node[i]);
       if (actnode->xfs!=NULL)
       {
-         amredef(&(actnode->sol_increment),numr,actnode->numdf+addcol,"DA");
-         amzero(&(actnode->sol_increment));
-         amredef(&(actnode->sol),actnode->sol.fdim,actnode->numdf+addcol,"DA");
-         amzero(&(actnode->sol));
-         amredef(&(actnode->sol_mf),actnode->sol.fdim,actnode->numdf+addcol,"DA");
-         amzero(&(actnode->sol_mf));
-         phi = actnode->x[numdf-2];
-         actnode->sol.a.da[0][numdf] = phi;
-         actnode->sol_increment.a.da[ipos->velnm][numdf] = phi;
-         actnode->sol_increment.a.da[ipos->veln][numdf] = phi;
-         actnode->sol_increment.a.da[ipos->velnp][numdf] = phi;
-         actnode->sol_mf.a.da[0][numdf] = phi;
+        amredef(&(actnode->sol_increment),numr,actnode->numdf+addcol,"DA");
+        amzero(&(actnode->sol_increment));
+        amredef(&(actnode->sol),actnode->sol.fdim,actnode->numdf+addcol,"DA");
+        amzero(&(actnode->sol));
+        amredef(&(actnode->sol_mf),actnode->sol.fdim,actnode->numdf+addcol,"DA");
+        amzero(&(actnode->sol_mf));
+        phi = actnode->x[numdf-2];
+        actnode->sol.a.da[0][numdf] = phi;
+        actnode->sol_increment.a.da[ipos->velnm][numdf] = phi;
+        actnode->sol_increment.a.da[ipos->veln][numdf] = phi;
+        actnode->sol_increment.a.da[ipos->velnp][numdf] = phi;
+        actnode->sol_mf.a.da[0][numdf] = phi;
       }
-   }
-}
+    }
+  }
 #endif
-/*---------------------- redefine solution history for projecton method */
-if (fdyn->dyntyp==1)
-for (i=0;i<actfield->dis[disnum].numnp;i++)
-{
-   actnode=&(actfield->dis[disnum].node[i]);
-   amredef(&(actnode->sol),actnode->sol.fdim,actnode->sol.sdim+1,"DA");
-}
+  /*---------------------- redefine solution history for projecton method */
+  if (fdyn->dyntyp==1)
+    for (i=0;i<actfield->dis[disnum_calc].numnp;i++)
+    {
+      actnode=&(actfield->dis[disnum_calc].node[i]);
+      amredef(&(actnode->sol),actnode->sol.fdim,actnode->sol.sdim+1,"DA");
+    }
 
-/*---------------------------------------------------------------------*
-                     INITIALISE ELEMENT ARRAYS
- *---------------------------------------------------------------------*/
-/*------------- allocate array for stabilisation parameter (only pdis) */
-if (fdyn->dyntyp==0)
-for (i=0;i<actpart->pdis[disnum].numele;i++)
-{
-   actele = actpart->pdis[disnum].element[i];
-   switch(actele->eltyp)
-   {
+  /*---------------------------------------------------------------------*
+    INITIALISE ELEMENT ARRAYS
+   *---------------------------------------------------------------------*/
+  /*------------- allocate array for stabilisation parameter (only pdis) */
+  if (fdyn->dyntyp==0)
+    for (i=0;i<actpart->pdis[disnum_calc].numele;i++)
+    {
+      actele = actpart->pdis[disnum_calc].element[i];
+      switch(actele->eltyp)
+      {
 #ifdef D_FLUID2
-     case el_fluid2:
-       amdef("Stabpar",&(actele->e.f2->tau_old),3,1,"DV");
-       amzero(&(actele->e.f2->tau_old));
-       break;
+        case el_fluid2:
+          amdef("Stabpar",&(actele->e.f2->tau_old),3,1,"DV");
+          amzero(&(actele->e.f2->tau_old));
+          break;
 #endif
 
 #ifdef D_FLUID3
-     case el_fluid3:
-       amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
-       amzero(&(actele->e.f3->tau_old));
-       break;
+        case el_fluid3:
+          amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
+          amzero(&(actele->e.f3->tau_old));
+          break;
 #endif
 
 #ifdef D_FLUID3_F
-     case el_fluid3_fast:
-       amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
-       amzero(&(actele->e.f3->tau_old));
-       break;
+        case el_fluid3_fast:
+          amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
+          amzero(&(actele->e.f3->tau_old));
+          break;
 #endif
 
-     default:
-       dserror("wrong type of element for fluid init!");
-       break;
-   }
-}
+        default:
+          dserror("wrong type of element for fluid init!");
+          break;
+      }
+    }
 
-/* check for stress calculation and allocate arrays */
-switch (str)
-{
+  /* check for stress calculation and allocate arrays */
+  switch (str)
+  {
 
-case str_none: /* do nothing */
-break;
+    case str_none: /* do nothing */
+      break;
 
 
 #ifdef D_FSI
-case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nodes */
-   for (i=0;i<numele_total;i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-      numnp=actele->numnp;
-      found=0;
-      for (j=0;j<numnp;j++)
+    case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nodes */
+      for (i=0;i<numele_total;i++)
       {
-         actnode=actele->node[j];
-         actgnode = actnode->gnode;
-         /* this approach does not work with a nonconforming discretization
-            of the interface, thus it is replaced by the second one */
-         /*
-            if (actgnode->mfcpnode[0]!=NULL) found=1;
-         */
-         if (actgnode->fsicouple != NULL) found = 1;
+        actele = &(actfield->dis[disnum_calc].element[i]);
+        numnp=actele->numnp;
+        found=0;
+        for (j=0;j<numnp;j++)
+        {
+          actnode=actele->node[j];
+          actgnode = actnode->gnode;
+          /* this approach does not work with a nonconforming discretization
+             of the interface, thus it is replaced by the second one */
+          /*
+             if (actgnode->mfcpnode[0]!=NULL) found=1;
+             */
+          if (actgnode->fsicouple != NULL) found = 1;
+        }
+
+        if (found==1)
+        {
+#ifdef D_FLUID2
+          if (actele->eltyp == el_fluid2)
+          {
+            amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
+            amzero(&(actele->e.f2->stress_ND));
+          }
+#endif
+
+#ifdef D_FLUID3
+          if (actele->eltyp == el_fluid3)
+          {
+            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+            amzero(&(actele->e.f3->stress_ND));
+          }
+#endif
+
+#ifdef D_FLUID3_F
+          if (actele->eltyp == el_fluid3_fast)
+          {
+            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+            amzero(&(actele->e.f3->stress_ND));
+          }
+#endif
+
+        }
       }
 
-      if (found==1)
+
+#ifdef D_FLUID3_F
+      for (i=0; i<actpart->pdis[disnum_calc].num_fele; i++)
       {
+
+        act_fast_eles = &(actpart->pdis[disnum_calc].fast_eles[i]);
+
+        switch(act_fast_eles->fast_ele_typ)
+        {
+          case fele_f3f_hex8_e:
+          case fele_f3f_hex8_a:
+          case fele_f3f_hex20_e:
+          case fele_f3f_hex20_a:
+          case fele_f3f_tet4_e:
+          case fele_f3f_tet4_a:
+
+            found=0;
+            for (l=0;l<act_fast_eles->aloopl;l++)
+            {
+              actele = act_fast_eles->ele_vec[l];
+              numnp=actele->numnp;
+              for (j=0;j<numnp;j++)
+              {
+                actnode=actele->node[j];
+                actgnode = actnode->gnode;
+                if (actgnode->fsicouple != NULL)
+                  found = 1;
+              }
+            }
+
+            if (found == 1)
+            {
+              for (l=0;l<act_fast_eles->aloopl;l++)
+              {
+                actele = act_fast_eles->ele_vec[l];
+                if (actele->e.f3->stress_ND.Typ == cca_XX)
+                {
+                  amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+                  amzero(&(actele->e.f3->stress_ND));
+                }
+
+              }
+            }
+            break;
+
+          default:
+            break;
+
+        } /* switch(act_fast_eles->fast_ele_typ) */
+      }
+#endif
+
+      break;
+#endif
+
+
+    case str_all: /* allocate stress field for all elements */
+      for (i=0;i<numele_total;i++)
+      {
+        actele = &(actfield->dis[disnum_calc].element[i]);
+        numnp=actele->numnp;
+
 #ifdef D_FLUID2
         if (actele->eltyp == el_fluid2)
         {
@@ -710,178 +801,76 @@ case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nod
           amzero(&(actele->e.f3->stress_ND));
         }
 #endif
-
-#ifdef D_FLUID3_F
-        if (actele->eltyp == el_fluid3_fast)
-        {
-          amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-          amzero(&(actele->e.f3->stress_ND));
-        }
-#endif
-
       }
-   }
-
 
 #ifdef D_FLUID3_F
-  for (i=0; i<actpart->pdis[disnum].num_fele; i++)
-  {
+      for (i=0; i<actpart->pdis[disnum_calc].num_fele; i++)
+      {
 
-    act_fast_eles = &(actpart->pdis[disnum].fast_eles[i]);
+        act_fast_eles = &(actpart->pdis[disnum_calc].fast_eles[i]);
 
-    switch(act_fast_eles->fast_ele_typ)
-    {
-      case fele_f3f_hex8_e:
-      case fele_f3f_hex8_a:
-      case fele_f3f_hex20_e:
-      case fele_f3f_hex20_a:
-      case fele_f3f_tet4_e:
-      case fele_f3f_tet4_a:
-
-        found=0;
-        for (l=0;l<act_fast_eles->aloopl;l++)
+        switch(act_fast_eles->fast_ele_typ)
         {
-          actele = act_fast_eles->ele_vec[l];
-          numnp=actele->numnp;
-          for (j=0;j<numnp;j++)
-          {
-            actnode=actele->node[j];
-            actgnode = actnode->gnode;
-            if (actgnode->fsicouple != NULL)
-              found = 1;
-          }
-        }
+          case fele_f3f_hex8_e:
+          case fele_f3f_hex8_a:
+          case fele_f3f_hex20_e:
+          case fele_f3f_hex20_a:
+          case fele_f3f_tet4_e:
+          case fele_f3f_tet4_a:
 
-        if (found == 1)
-        {
-          for (l=0;l<act_fast_eles->aloopl;l++)
-          {
-            actele = act_fast_eles->ele_vec[l];
-            if (actele->e.f3->stress_ND.Typ == cca_XX)
+            for (l=0;l<act_fast_eles->aloopl;l++)
             {
-              amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-              amzero(&(actele->e.f3->stress_ND));
+              actele = act_fast_eles->ele_vec[l];
+              if (actele->e.f3->stress_ND.Typ == cca_XX)
+              {
+                amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+                amzero(&(actele->e.f3->stress_ND));
+              }
+
             }
+            break;
 
-          }
-        }
-        break;
+          default:
+            break;
 
-      default:
-        break;
-
-    } /* switch(act_fast_eles->fast_ele_typ) */
-  }
+        } /* switch(act_fast_eles->fast_ele_typ) */
+      }
 #endif
 
-break;
-#endif
+      break;
 
 
-case str_all: /* allocate stress field for all elements */
-   for (i=0;i<numele_total;i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-      numnp=actele->numnp;
-
+    case str_liftdrag:
+      for (i=0;i<numele_total;i++)
+      {
+        actele = &(actfield->dis[disnum_calc].element[i]);
 #ifdef D_FLUID2
-      if (actele->eltyp == el_fluid2)
-      {
-        amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
-        amzero(&(actele->e.f2->stress_ND));
-      }
-#endif
-
-#ifdef D_FLUID3
-      if (actele->eltyp == el_fluid3)
-      {
-        amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-        amzero(&(actele->e.f3->stress_ND));
-      }
-#endif
-
-#ifdef D_FLUID3_F
-      if (actele->eltyp == el_fluid3_fast)
-      {
-        amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-        amzero(&(actele->e.f3->stress_ND));
-      }
-#endif
-
-   }
-break;
-
-
-case str_liftdrag:
-   for (i=0;i<numele_total;i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-#ifdef D_FLUID2
-      if (actele->eltyp == el_fluid2)
-      {
-         actgsurf=actele->g.gsurf;
-         ldflag=0;
-         for (j=0;j<actgsurf->ngline;j++)
-         {
+        if (actele->eltyp == el_fluid2)
+        {
+          actgsurf=actele->g.gsurf;
+          ldflag=0;
+          for (j=0;j<actgsurf->ngline;j++)
+          {
             actgline=actgsurf->gline[j];
             actdline=actgline->dline;
             if (actdline==NULL) continue;
             if (actdline->liftdrag==NULL) continue;
             ldflag++;
             break;
-         }
-         if (ldflag>0)
-         {
-           amdef("stress_ND",&(actele->e.f2->stress_ND),actele->numnp,6,"DA");
-           amzero(&(actele->e.f2->stress_ND));
-         }
-      }
+          }
+          if (ldflag>0)
+          {
+            amdef("stress_ND",&(actele->e.f2->stress_ND),actele->numnp,6,"DA");
+            amzero(&(actele->e.f2->stress_ND));
+          }
+        }
 #endif
 
 #ifdef D_FLUID3
-      if (actele->eltyp == el_fluid3)
-      {
-         actgvol=actele->g.gvol;
-         ldflag=0;
-         for (j=0;j<actgvol->ngsurf;j++)
-         {
-            actgsurf=actgvol->gsurf[j];
-            actdsurf=actgsurf->dsurf;
-            if (actdsurf==NULL) continue;
-            if (actdsurf->liftdrag==NULL) continue;
-            ldflag++;
-            break;
-         }
-         if (ldflag>0)
-         {
-           amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
-           amzero(&(actele->e.f3->stress_ND));
-         }
-      }
-#endif
-   } /* for (i=0;i<numele_total;i++) */
-
-
-#ifdef D_FLUID3_F
-  for (i=0; i<actpart->pdis[disnum].num_fele; i++)
-  {
-
-    act_fast_eles = &(actpart->pdis[disnum].fast_eles[i]);
-
-    switch(act_fast_eles->fast_ele_typ)
-    {
-      case fele_f3f_hex8_e:
-      case fele_f3f_hex8_a:
-      case fele_f3f_hex20_e:
-      case fele_f3f_hex20_a:
-      case fele_f3f_tet4_e:
-      case fele_f3f_tet4_a:
-
-        ldflag=0;
-        for (l=0;l<act_fast_eles->aloopl;l++)
+        if (actele->eltyp == el_fluid3)
         {
-          actele = act_fast_eles->ele_vec[l];
           actgvol=actele->g.gvol;
+          ldflag=0;
           for (j=0;j<actgvol->ngsurf;j++)
           {
             actgsurf=actgvol->gsurf[j];
@@ -891,51 +880,90 @@ case str_liftdrag:
             ldflag++;
             break;
           }
-        }
-
-        if (ldflag > 0)
-        {
-          for (l=0;l<act_fast_eles->aloopl;l++)
+          if (ldflag>0)
           {
-            actele = act_fast_eles->ele_vec[l];
-            if (actele->e.f3->stress_ND.Typ == cca_XX)
-            {
-              amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
-              amzero(&(actele->e.f3->stress_ND));
-            }
-
+            amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+            amzero(&(actele->e.f3->stress_ND));
           }
         }
-        break;
+#endif
+      } /* for (i=0;i<numele_total;i++) */
 
-      default:
-        break;
 
-    } /* switch(act_fast_eles->fast_ele_typ) */
-  }
+#ifdef D_FLUID3_F
+      for (i=0; i<actpart->pdis[disnum_calc].num_fele; i++)
+      {
+
+        act_fast_eles = &(actpart->pdis[disnum_calc].fast_eles[i]);
+
+        switch(act_fast_eles->fast_ele_typ)
+        {
+          case fele_f3f_hex8_e:
+          case fele_f3f_hex8_a:
+          case fele_f3f_hex20_e:
+          case fele_f3f_hex20_a:
+          case fele_f3f_tet4_e:
+          case fele_f3f_tet4_a:
+
+            ldflag=0;
+            for (l=0;l<act_fast_eles->aloopl;l++)
+            {
+              actele = act_fast_eles->ele_vec[l];
+              actgvol=actele->g.gvol;
+              for (j=0;j<actgvol->ngsurf;j++)
+              {
+                actgsurf=actgvol->gsurf[j];
+                actdsurf=actgsurf->dsurf;
+                if (actdsurf==NULL) continue;
+                if (actdsurf->liftdrag==NULL) continue;
+                ldflag++;
+                break;
+              }
+            }
+
+            if (ldflag > 0)
+            {
+              for (l=0;l<act_fast_eles->aloopl;l++)
+              {
+                actele = act_fast_eles->ele_vec[l];
+                if (actele->e.f3->stress_ND.Typ == cca_XX)
+                {
+                  amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+                  amzero(&(actele->e.f3->stress_ND));
+                }
+
+              }
+            }
+            break;
+
+          default:
+            break;
+
+        } /* switch(act_fast_eles->fast_ele_typ) */
+      }
 #endif
 
-break;
+      break;
 
 
-default:
-   dserror("option for 'str' not implemented yet!\n");
-}
+    default:
+      dserror("option for 'str' not implemented yet!\n");
+  }
 
-/*--------------- allocate curvature field for elements at free surface */
-if (fdyn->surftens>0)
-{
-   for (i=0;i<numele_total;i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
+  /*--------------- allocate curvature field for elements at free surface */
+  if (fdyn->surftens>0)
+  {
+    for (i=0;i<numele_total;i++)
+    {
+      actele = &(actfield->dis[disnum_calc].element[i]);
 #ifdef D_FLUID2
       if (actele->eltyp == el_fluid2)
       {
-	 if (actele->e.f2->fs_on==0) continue;
-	 {
-	    amdef("kappa_ND",&(actele->e.f2->kappa_ND),numnp,2,"DA");
-            amzero(&(actele->e.f2->kappa_ND));
-         }
+        if (actele->e.f2->fs_on==0) continue;
+        {
+          amdef("kappa_ND",&(actele->e.f2->kappa_ND),numnp,2,"DA");
+          amzero(&(actele->e.f2->kappa_ND));
+        }
       }
 #endif
 
@@ -948,33 +976,34 @@ if (fdyn->surftens>0)
       if (actele->eltyp == el_fluid3_fast)
         dserror("curvature not implemented for 3D fluid fast elements!\n");
 #endif
-   }
-}
+    }
+  }
 
-/*-------- inherit the Neumann conditions from design to discretization */
-inherit_design_dis_neum(&(actfield->dis[disnum]));
+  /*-------- inherit the Neumann conditions from design to discretization */
+  inherit_design_dis_neum(&(actfield->dis[disnum_calc]));
 
-/*-------------------------------------------- create the initial field */
-if (fdyn->init>=1)
-{
-   if (fdyn->init==1) /*------------ initial data from fluid_start.data */
+  /*-------------------------------------------- create the initial field */
+  if (fdyn->init>=1)
+  {
+    if (fdyn->init==1) /*------------ initial data from fluid_start.data */
       inp_fluid_start_data(actfield, ipos, fdyn);
 
-   if (fdyn->init==2) { /*------------------ initial data from pss file */
+    if (fdyn->init==2) { /*------------------ initial data from pss file */
 #if defined(BINIO)
-     restart_read_bin_fluiddyn(fdyn, NULL, NULL, actfield, actpart, 0, actintra, fdyn->resstep);
+      restart_read_bin_fluiddyn(fdyn, NULL, NULL, actfield, actpart, disnum_calc,
+          actintra, fdyn->resstep);
 #else
       restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,
-                            action,container);
+          action,container);
 #endif
-   }
+    }
 
 #ifdef D_FSI
-   if (fdyn->init==6) /*--------------------------------- solitary wave */
-   {
-      actele = &(actfield->dis[disnum].element[0]);
+    if (fdyn->init==6) /*--------------------------------- solitary wave */
+    {
+      actele = &(actfield->dis[disnum_calc].element[0]);
       actmat = actele->mat-1;
-      numnp_total=actfield->dis[disnum].numnp;
+      numnp_total=actfield->dis[disnum_calc].numnp;
       /*-------------------------------------------- set some constants */
       dens   = mat[actmat].m.fluid->density;
       g      = -actele->g.gsurf->neum->neum_val.a.dv[1];
@@ -985,130 +1014,130 @@ if (fdyn->init>=1)
       t      = ZERO;
       for (i=0;i<numnp_total;i++) /* loop nodes */
       {
-         actnode=&(actfield->dis[disnum].node[i]);
-	 x   = actnode->x[0];
-	 y   = actnode->x[1];
-	 fac = fac1*(x-c*t);
-	 /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */
-	 sech = cosh(fac);
-	 sech = ONE/sech/sech;
-	 eta  = d + H*sech;
-	 /*---------------------------------------- modify initial values */
-	 p    = dens*g*(eta-y);
-	 u1   = sqrt(g*d)*H/d*sech;
-	 u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
-         actgnode = actnode->gnode;
-	 /*---------------------------------------- write values to nodes */
-	 actnode->sol.a.da[0][0] = u1;
-	 actnode->sol.a.da[0][1] = u2;
-	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos->veln][2] = p ;
-	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos->velnp][2] = p ;
-         if (fdyn->freesurf==2 && actnode->xfs!=NULL)
-	 {
-	    actnode->sol_increment.a.da[ipos->veln][3] = u1;
-	    actnode->sol_increment.a.da[ipos->veln][4] = u2;
-	    actnode->sol_increment.a.da[ipos->velnp][3] = u1;
-	    actnode->sol_increment.a.da[ipos->velnp][4] = u2;
-            actgnode = actnode->gnode;
-            if (actgnode->dirich!=NULL)
-	    {
-               if (actgnode->dirich->dirich_type!=dirich_none)
-	       dserror("dirich type not allowed for solwave init\n");
-	       for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
-               {
-                  if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
-	          {
-		     actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
-		     actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
-                  }
-	       } /* end loop over dofs */
-	    }
-	 }
-      }
-   }
-#endif
-
-#ifdef D_FSI
-   if (fdyn->init==7) /*-------------------------- wavebreaking problem */
-   {
-      actele = &(actfield->dis[disnum].element[0]);
-      actmat = actele->mat-1;
-      numnp_total=actfield->dis[disnum].numnp;
-      /*-------------------------------------------- set some constants */
-      dens   = mat[actmat].m.fluid->density;
-      g      = -actele->g.gsurf->neum->neum_val.a.dv[1];
-      d      = TEN;
-      H      = ONE/FIVE*d;
-      fac1   = sqrt((THREE*H)/(FOUR*d*d*d));
-      c      = sqrt(g*d*(1+H/d));
-      t      = ZERO;
-      for (i=0;i<numnp_total;i++) /* loop nodes */
-      {
-         actnode=&(actfield->dis[disnum].node[i]);
-	 x   = actnode->x[0];
-	 y   = actnode->x[1];
-	 fac = fac1*(x-c*t);
-	 /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */
-	 sech = cosh(fac);
-	 sech = ONE/sech/sech;
-	 eta  = d + H*sech;
-	 /*---------------------------------------- modify initial values */
-         if (x>=80.0)
-         {
-	    p    = dens*g*(d-y);
-            u1 = ZERO;
-            u2 = ZERO;
-         }
-         else
-         {
-	    p    = dens*g*(eta-y);
-	    u1   = sqrt(g*d)*H/d*sech;
-	    u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
-	 }
-         /*---------------------------------------- write values to nodes */
-	 actnode->sol.a.da[0][0] = u1;
-	 actnode->sol.a.da[0][1] = u2;
-	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos->veln][2] = p ;
-	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos->velnp][2] = p ;
-         if (fdyn->freesurf==2 && actnode->xfs!=NULL)
-	 {
-	    actnode->sol_increment.a.da[ipos->veln][3] = u1;
-	    actnode->sol_increment.a.da[ipos->veln][4] = u2;
-	    actnode->sol_increment.a.da[ipos->velnp][3] = u1;
-	    actnode->sol_increment.a.da[ipos->velnp][4] = u2;
-            actgnode = actnode->gnode;
-            if (actgnode->dirich!=NULL)
-	    {
-              if (actgnode->dirich->dirich_type!=dirich_none)
-	        dserror("dirich type not allowed for solwave init\n");
-	      for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
+        actnode=&(actfield->dis[disnum_calc].node[i]);
+        x   = actnode->x[0];
+        y   = actnode->x[1];
+        fac = fac1*(x-c*t);
+        /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */
+        sech = cosh(fac);
+        sech = ONE/sech/sech;
+        eta  = d + H*sech;
+        /*---------------------------------------- modify initial values */
+        p    = dens*g*(eta-y);
+        u1   = sqrt(g*d)*H/d*sech;
+        u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
+        actgnode = actnode->gnode;
+        /*---------------------------------------- write values to nodes */
+        actnode->sol.a.da[0][0] = u1;
+        actnode->sol.a.da[0][1] = u2;
+        actnode->sol.a.da[0][2] = p ;
+        actnode->sol_increment.a.da[ipos->veln][0] = u1;
+        actnode->sol_increment.a.da[ipos->veln][1] = u2;
+        actnode->sol_increment.a.da[ipos->veln][2] = p ;
+        actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+        actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+        actnode->sol_increment.a.da[ipos->velnp][2] = p ;
+        if (fdyn->freesurf==2 && actnode->xfs!=NULL)
+        {
+          actnode->sol_increment.a.da[ipos->veln][3] = u1;
+          actnode->sol_increment.a.da[ipos->veln][4] = u2;
+          actnode->sol_increment.a.da[ipos->velnp][3] = u1;
+          actnode->sol_increment.a.da[ipos->velnp][4] = u2;
+          actgnode = actnode->gnode;
+          if (actgnode->dirich!=NULL)
+          {
+            if (actgnode->dirich->dirich_type!=dirich_none)
+              dserror("dirich type not allowed for solwave init\n");
+            for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
+            {
+              if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
               {
-                if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
-	        {
-		   actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
-		   actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
-                }
-	      } /* end loop over dofs */
-	    }
-	 }
+                actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
+                actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
+              }
+            } /* end loop over dofs */
+          }
+        }
       }
-   }
+    }
 #endif
-   if (fdyn->init==8) /* Beltrami flow */
-   {
-      actele = &(actfield->dis[disnum].element[0]);
+
+#ifdef D_FSI
+    if (fdyn->init==7) /*-------------------------- wavebreaking problem */
+    {
+      actele = &(actfield->dis[disnum_calc].element[0]);
       actmat = actele->mat-1;
-      numnp_total=actfield->dis[disnum].numnp;
+      numnp_total=actfield->dis[disnum_calc].numnp;
+      /*-------------------------------------------- set some constants */
+      dens   = mat[actmat].m.fluid->density;
+      g      = -actele->g.gsurf->neum->neum_val.a.dv[1];
+      d      = TEN;
+      H      = ONE/FIVE*d;
+      fac1   = sqrt((THREE*H)/(FOUR*d*d*d));
+      c      = sqrt(g*d*(1+H/d));
+      t      = ZERO;
+      for (i=0;i<numnp_total;i++) /* loop nodes */
+      {
+        actnode=&(actfield->dis[disnum_calc].node[i]);
+        x   = actnode->x[0];
+        y   = actnode->x[1];
+        fac = fac1*(x-c*t);
+        /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */
+        sech = cosh(fac);
+        sech = ONE/sech/sech;
+        eta  = d + H*sech;
+        /*---------------------------------------- modify initial values */
+        if (x>=80.0)
+        {
+          p    = dens*g*(d-y);
+          u1 = ZERO;
+          u2 = ZERO;
+        }
+        else
+        {
+          p    = dens*g*(eta-y);
+          u1   = sqrt(g*d)*H/d*sech;
+          u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
+        }
+        /*---------------------------------------- write values to nodes */
+        actnode->sol.a.da[0][0] = u1;
+        actnode->sol.a.da[0][1] = u2;
+        actnode->sol.a.da[0][2] = p ;
+        actnode->sol_increment.a.da[ipos->veln][0] = u1;
+        actnode->sol_increment.a.da[ipos->veln][1] = u2;
+        actnode->sol_increment.a.da[ipos->veln][2] = p ;
+        actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+        actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+        actnode->sol_increment.a.da[ipos->velnp][2] = p ;
+        if (fdyn->freesurf==2 && actnode->xfs!=NULL)
+        {
+          actnode->sol_increment.a.da[ipos->veln][3] = u1;
+          actnode->sol_increment.a.da[ipos->veln][4] = u2;
+          actnode->sol_increment.a.da[ipos->velnp][3] = u1;
+          actnode->sol_increment.a.da[ipos->velnp][4] = u2;
+          actgnode = actnode->gnode;
+          if (actgnode->dirich!=NULL)
+          {
+            if (actgnode->dirich->dirich_type!=dirich_none)
+              dserror("dirich type not allowed for solwave init\n");
+            for (j=3;j<actnode->numdf;j++) /* loop all grid dofs */
+            {
+              if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
+              {
+                actnode->sol_increment.a.da[ipos->veln][j] = ZERO;
+                actnode->sol_increment.a.da[ipos->velnp][j] = ZERO;
+              }
+            } /* end loop over dofs */
+          }
+        }
+      }
+    }
+#endif
+    if (fdyn->init==8) /* Beltrami flow */
+    {
+      actele = &(actfield->dis[disnum_calc].element[0]);
+      actmat = actele->mat-1;
+      numnp_total=actfield->dis[disnum_calc].numnp;
       /* set some constants */
       visc   = mat[actmat].m.fluid->viscosity;
       a      = PI/4.0;
@@ -1116,83 +1145,83 @@ if (fdyn->init>=1)
       t      = 0.0;
       for (i=0;i<numnp_total;i++) /* loop nodes */
       {
-         actnode=&(actfield->dis[disnum].node[i]);
-	 x1   = actnode->x[0];
-	 x2   = actnode->x[1];
-	 x3   = actnode->x[2];
-	 /* calculate initial values */
-	 p    = -a*a/2.0 * ( exp(2.0*a*x1) + exp(2.0*a*x2) + exp(2.0*a*x3)
-                + 2.0 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
-                + 2.0 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
-                + 2.0 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
-                * exp(-2.0*visc*d*d*t);
-	 u1   = -a * ( exp(a*x1) * sin(a*x2 + d*x3) +
-                     exp(a*x3) * cos(a*x1 + d*x2) ) * exp(-visc*d*d*t);
-	 u2   = -a * ( exp(a*x2) * sin(a*x3 + d*x1) +
-                     exp(a*x1) * cos(a*x2 + d*x3) ) * exp(-visc*d*d*t);
-	 u3   = -a * ( exp(a*x3) * sin(a*x1 + d*x2) +
-                     exp(a*x2) * cos(a*x3 + d*x1) ) * exp(-visc*d*d*t);
-	 /* write values to nodes */
-	 actnode->sol.a.da[0][0] = u1;
-	 actnode->sol.a.da[0][1] = u2;
-	 actnode->sol.a.da[0][2] = u3;
-	 actnode->sol.a.da[0][3] = p ;
-	 actnode->sol_increment.a.da[ipos->velnm][0] = u1;
-	 actnode->sol_increment.a.da[ipos->velnm][1] = u2;
-	 actnode->sol_increment.a.da[ipos->velnm][2] = u3;
-	 actnode->sol_increment.a.da[ipos->velnm][3] = p ;
-	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos->veln][2] = u3;
-	 actnode->sol_increment.a.da[ipos->veln][3] = p ;
-	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos->velnp][2] = u3;
-	 actnode->sol_increment.a.da[ipos->velnp][3] = p ;
+        actnode=&(actfield->dis[disnum_calc].node[i]);
+        x1   = actnode->x[0];
+        x2   = actnode->x[1];
+        x3   = actnode->x[2];
+        /* calculate initial values */
+        p    = -a*a/2.0 * ( exp(2.0*a*x1) + exp(2.0*a*x2) + exp(2.0*a*x3)
+            + 2.0 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
+            + 2.0 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
+            + 2.0 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
+          * exp(-2.0*visc*d*d*t);
+        u1   = -a * ( exp(a*x1) * sin(a*x2 + d*x3) +
+            exp(a*x3) * cos(a*x1 + d*x2) ) * exp(-visc*d*d*t);
+        u2   = -a * ( exp(a*x2) * sin(a*x3 + d*x1) +
+            exp(a*x1) * cos(a*x2 + d*x3) ) * exp(-visc*d*d*t);
+        u3   = -a * ( exp(a*x3) * sin(a*x1 + d*x2) +
+            exp(a*x2) * cos(a*x3 + d*x1) ) * exp(-visc*d*d*t);
+        /* write values to nodes */
+        actnode->sol.a.da[0][0] = u1;
+        actnode->sol.a.da[0][1] = u2;
+        actnode->sol.a.da[0][2] = u3;
+        actnode->sol.a.da[0][3] = p ;
+        actnode->sol_increment.a.da[ipos->velnm][0] = u1;
+        actnode->sol_increment.a.da[ipos->velnm][1] = u2;
+        actnode->sol_increment.a.da[ipos->velnm][2] = u3;
+        actnode->sol_increment.a.da[ipos->velnm][3] = p ;
+        actnode->sol_increment.a.da[ipos->veln][0] = u1;
+        actnode->sol_increment.a.da[ipos->veln][1] = u2;
+        actnode->sol_increment.a.da[ipos->veln][2] = u3;
+        actnode->sol_increment.a.da[ipos->veln][3] = p ;
+        actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+        actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+        actnode->sol_increment.a.da[ipos->velnp][2] = u3;
+        actnode->sol_increment.a.da[ipos->velnp][3] = p ;
       }
-   }
+    }
 
-   if (fdyn->init==9) /* Kim-Moin flow */
-   {
-      actele = &(actfield->dis[disnum].element[0]);
+    if (fdyn->init==9) /* Kim-Moin flow */
+    {
+      actele = &(actfield->dis[disnum_calc].element[0]);
       actmat = actele->mat-1;
-      numnp_total=actfield->dis[disnum].numnp;
+      numnp_total=actfield->dis[disnum_calc].numnp;
       /* set some constants */
       visc   = mat[actmat].m.fluid->viscosity;
       a      = 2.0;
       t      = 0.0;
       for (i=0;i<numnp_total;i++) /* loop nodes */
       {
-         actnode=&(actfield->dis[disnum].node[i]);
-	 x1   = actnode->x[0];
-	 x2   = actnode->x[1];
-	 /* calculate initial values */
-	 p    = -1.0/4.0 * ( cos(2.0*a*PI*x1) + cos(2.0*a*PI*x2) ) * exp(-4.0*a*a*PI*PI*t*visc);
-	 u1   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
-	 u2   = + sin(a*PI*x1) * cos(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
-	 /* write values to nodes */
-	 actnode->sol.a.da[0][0] = u1;
-	 actnode->sol.a.da[0][1] = u2;
-	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[ipos->velnm][0] = u1;
-	 actnode->sol_increment.a.da[ipos->velnm][1] = u2;
-	 actnode->sol_increment.a.da[ipos->velnm][2] = p ;
-	 actnode->sol_increment.a.da[ipos->veln][0] = u1;
-	 actnode->sol_increment.a.da[ipos->veln][1] = u2;
-	 actnode->sol_increment.a.da[ipos->veln][2] = p ;
-	 actnode->sol_increment.a.da[ipos->velnp][0] = u1;
-	 actnode->sol_increment.a.da[ipos->velnp][1] = u2;
-	 actnode->sol_increment.a.da[ipos->velnp][2] = p ;
+        actnode=&(actfield->dis[disnum_calc].node[i]);
+        x1   = actnode->x[0];
+        x2   = actnode->x[1];
+        /* calculate initial values */
+        p    = -1.0/4.0 * ( cos(2.0*a*PI*x1) + cos(2.0*a*PI*x2) ) * exp(-4.0*a*a*PI*PI*t*visc);
+        u1   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
+        u2   = + sin(a*PI*x1) * cos(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
+        /* write values to nodes */
+        actnode->sol.a.da[0][0] = u1;
+        actnode->sol.a.da[0][1] = u2;
+        actnode->sol.a.da[0][2] = p ;
+        actnode->sol_increment.a.da[ipos->velnm][0] = u1;
+        actnode->sol_increment.a.da[ipos->velnm][1] = u2;
+        actnode->sol_increment.a.da[ipos->velnm][2] = p ;
+        actnode->sol_increment.a.da[ipos->veln][0] = u1;
+        actnode->sol_increment.a.da[ipos->veln][1] = u2;
+        actnode->sol_increment.a.da[ipos->veln][2] = p ;
+        actnode->sol_increment.a.da[ipos->velnp][0] = u1;
+        actnode->sol_increment.a.da[ipos->velnp][1] = u2;
+        actnode->sol_increment.a.da[ipos->velnp][2] = p ;
       }
-   }
-}
+    }
+  }
 
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
 
-return;
+  return;
 } /* end of fluid_init */
 
 
@@ -1526,12 +1555,13 @@ check are calculated:
 
 ------------------------------------------------------------------------*/
 void fluid_norm(
-                          FIELD             *actfield,
-		          INT                numeq_total,
-                          DOUBLE            *vrat,
-		          DOUBLE            *prat,
-                          ARRAY_POSITION    *ipos
-	       )
+    FIELD             *actfield,
+    INT                disnum,
+    INT                numeq_total,
+    DOUBLE            *vrat,
+    DOUBLE            *prat,
+    ARRAY_POSITION    *ipos
+    )
 {
 INT         i,j;           /* simply some counters                      */
 INT         numdf;         /* number of fluid dofs                      */
@@ -1553,7 +1583,7 @@ dstrc_enter("fluid_norm");
 fdyn = alldyn[genprob.numff].fdyn;
 
 numdf        = fdyn->numdf;
-numnp_total  = actfield->dis[0].numnp;
+numnp_total  = actfield->dis[disnum].numnp;
 predof       = numdf-1;
 numvel       = numdf-1;
 
@@ -1565,7 +1595,7 @@ case fnst_Linf: /* L_infinity norm */
    /*-------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
-      actnode=&(actfield->dis[0].node[i]);
+      actnode=&(actfield->dis[disnum].node[i]);
       for (j=0;j<numvel;j++) /* loop vel-dofs */
       {
 	 actdof = actnode->dof[j];
@@ -1598,7 +1628,7 @@ case fnst_L1: /* L_1 norm */
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
-      actnode=&(actfield->dis[0].node[i]);
+      actnode=&(actfield->dis[disnum].node[i]);
       for (j=0;j<numvel;j++) /* loop vel-dofs */
       {
 	 actdof = actnode->dof[j];
@@ -1631,7 +1661,7 @@ case fnst_L2: /* L_2 norm */
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
-      actnode=&(actfield->dis[0].node[i]);
+      actnode=&(actfield->dis[disnum].node[i]);
       for (j=0;j<numvel;j++) /* loop vel-dofs */
       {
 	 actdof = actnode->dof[j];
@@ -1840,13 +1870,13 @@ in this routine the pressure is transformed in the solution history.
 
 ------------------------------------------------------------------------*/
 void fluid_transpres(
-                          FIELD             *actfield,
-			  INT                disnum,
-			  INT                index,
-			  INT                actpos,
-                          INT                predof,
-			  INT                option
-		    )
+    FIELD             *actfield,
+    INT                disnum,
+    INT                index,
+    INT                actpos,
+    INT                predof,
+    INT                option
+    )
 {
 INT         i;		/* simply some counters				*/
 DOUBLE      dens;	/* density					*/
@@ -1929,74 +1959,83 @@ calculated and the result is printed to the screen.
 
 ------------------------------------------------------------------------*/
 INT fluid_steadycheck(
-                          FIELD             *actfield,
-                          ARRAY_POSITION    *ipos,
-		          INT                numeq_total
-		     )
+    FIELD              *actfield,
+    INT                 disnum,
+    ARRAY_POSITION     *ipos,
+    INT                 numeq_total
+    )
+
 {
-INT         steady=0;   /* flag for steady state                        */
-DOUBLE      vrat,prat;  /* vel. & pres. ratios                          */
-FILE       *out = allfiles.out_out;
+
+  INT         steady=0;   /* flag for steady state                        */
+  DOUBLE      vrat,prat;  /* vel. & pres. ratios                          */
+  FILE       *out = allfiles.out_out;
+
 
 #ifdef DEBUG
-dstrc_enter("fluid_steadycheck");
+  dstrc_enter("fluid_steadycheck");
 #endif
 
-fdyn = alldyn[genprob.numff].fdyn;
-if (fdyn->stnorm==fnst_no) goto end;
-/*------------------------------------------ determine the conv. ratios */
-fluid_norm(actfield,numeq_total,&vrat,&prat,ipos);
 
-/*------------------------------------ output to the screen and to .out */
-if (par.myrank==0)
-{
-   switch (fdyn->stnorm)
-   {
-   case fnst_Linf:
-      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_in] \n",
-	        fdyn->sttol);
-   break;
-   case fnst_L1:
-      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_1 ] \n",
-	        fdyn->sttol);
-   break;
-   case fnst_L2:
-      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_2 ] \n",
-	        fdyn->sttol);
-   break;
-   case fnst_no: /* do nothing */
-   break;
-   default:
-      dserror("Norm for steady state check unknwon!\n");
-   } /* end switch (fdyn->stnorm)  */
-
-   printf("         velocities: %10.3E	   pressures:   %10.3E  \n",vrat,prat);
-   fprintf(out," %10.3E | %10.3E |",vrat,prat);
-
-} /* endif (par.myrank) */
+  fdyn = alldyn[genprob.numff].fdyn;
+  if (fdyn->stnorm==fnst_no) goto end;
 
 
-/* check if the ratios are smaller than the given tolerance and set flag */
-if (vrat<fdyn->sttol && prat<fdyn->sttol)
-{
-   steady=1;
-   if (par.myrank==0)
-   {
+  /* determine the conv. ratios */
+  fluid_norm(actfield, disnum, numeq_total,&vrat,&prat,ipos);
+
+
+  /* output to the screen and to .out */
+  if (par.myrank==0)
+  {
+    switch (fdyn->stnorm)
+    {
+      case fnst_Linf:
+        printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_in] \n",
+            fdyn->sttol);
+        break;
+      case fnst_L1:
+        printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_1 ] \n",
+            fdyn->sttol);
+        break;
+      case fnst_L2:
+        printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_2 ] \n",
+            fdyn->sttol);
+        break;
+      case fnst_no: /* do nothing */
+        break;
+      default:
+        dserror("Norm for steady state check unknwon!\n");
+    } /* end switch (fdyn->stnorm)  */
+
+    printf("         velocities: %10.3E	   pressures:   %10.3E  \n",vrat,prat);
+    fprintf(out," %10.3E | %10.3E |",vrat,prat);
+
+  } /* endif (par.myrank) */
+
+
+  /* check if the ratios are smaller than the given tolerance and set flag */
+  if (vrat<fdyn->sttol && prat<fdyn->sttol)
+  {
+    steady=1;
+    if (par.myrank==0)
+    {
       printf("\n");
       printf("    >>>>>> STEADY STATE REACHED <<<<<< \n");
       printf("\n");
       fprintf(out,">>> STEADY STATE REACHED <<<");
-   }
-}
-if (par.myrank==0)
+    }
+  }
 
-/*----------------------------------------------------------------------*/
 end:
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
 
-return (steady);
+  return (steady);
+
 } /* end of fluid_steadycheck*/
 
 /*!---------------------------------------------------------------------
@@ -2195,7 +2234,8 @@ for (i=0; i<numnp_total; i++) /* loop nodes */
    MPI_Bcast(&(actnode->fluid_varia->c_f_shear),1,MPI_DOUBLE,actnode->proc,
              actintra->MPI_INTRA_COMM);
 /*------------------- compute shearvelocity for the scaned coordinates */
-   if (FABS(actnode->x[0]-fdyn->coord_scale[0])<EPS7 && FABS(actnode->x[1]-fdyn->coord_scale[1])<EPS15)
+   if (FABS(actnode->x[0]-fdyn->coord_scale[0])<EPS7 &&
+       FABS(actnode->x[1]-fdyn->coord_scale[1])<EPS15)
    MPI_Bcast(&(fdyn->washvel),1,MPI_DOUBLE,actnode->proc,
              actintra->MPI_INTRA_COMM);
 }
@@ -2279,211 +2319,228 @@ MPI to all procs!
 
 ------------------------------------------------------------------------*/
 void fluid_reducestress(
-                          INTRA             *actintra,
-                          PARTITION         *actpart,
-                          FIELD             *actfield,
-			  INT                numdf,
-			  FLUID_STRESS       str
-		       )
+    INTRA              *actintra,
+    PARTITION          *actpart,
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 numdf,
+    FLUID_STRESS        str
+    )
+
 {
+
 #ifdef PARALLEL
-INT      numele_total,numnp;
-INT      i,j, coupled;
-static INT dim;
-INT      start;
-INT      mone=-1;
-static ARRAY    index_a;
-static INT     *index;
-static DOUBLE  *buffer;
-static ARRAY    buffer_a;
-static DOUBLE  *recvbuffer;
-static ARRAY    recvbuffer_a;
-ELEMENT *actele;
-GNODE   *actgnode;
+  INT      numele_total,numnp;
+  INT      i,j, coupled;
+  static INT dim;
+  INT      start;
+  INT      mone=-1;
+  static ARRAY    index_a;
+  static INT     *index;
+  static DOUBLE  *buffer;
+  static ARRAY    buffer_a;
+  static DOUBLE  *recvbuffer;
+  static ARRAY    recvbuffer_a;
+  ELEMENT *actele;
+  GNODE   *actgnode;
 
 #ifdef DEBUG
-dstrc_enter("fluid_reducestress");
+  dstrc_enter("fluid_reducestress");
 #endif
 
-numele_total = actfield->dis[0].numele;
+  numele_total = actfield->dis[disnum].numele;
 
-if (index_a.Typ!= cca_IV)
-{
-   index=amdef("index",&index_a,numele_total,1,"IV");
-   aminit(&index_a,&mone);
-   switch(str)
-   {
+  if (index_a.Typ!= cca_IV)
+  {
+    index=amdef("index",&index_a,numele_total,1,"IV");
+    aminit(&index_a,&mone);
+    switch(str)
+    {
 #ifdef D_FSI
-   case str_fsicoupling: /*- sent only if element has fsi-coupled nodes */
-      coupled=0;
-      for(i=0;i<numele_total;i++) /* loop elements */
-      {
-         actele=&(actfield->dis[0].element[i]);
-         numnp = actele->numnp;
-         /*----- loop nodes and check if element has a fsi-coupled node */
-         for (j=0;j<numnp;j++)
-         {
+      case str_fsicoupling: /*- sent only if element has fsi-coupled nodes */
+        coupled=0;
+        for(i=0;i<numele_total;i++) /* loop elements */
+        {
+          actele=&(actfield->dis[disnum].element[i]);
+          numnp = actele->numnp;
+          /*----- loop nodes and check if element has a fsi-coupled node */
+          for (j=0;j<numnp;j++)
+          {
             actgnode = actele->node[j]->gnode;
             /* check if there is a coupled struct node */
             if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
             index[actele->Id_loc]=coupled;
             coupled++;
             break;
-         } /* end of loop over nodes */
-      }
-   break;
+          } /* end of loop over nodes */
+        }
+        break;
 #endif
-   default:
-      dserror("str not valid for reduction\n");
-   } /* end switch */
+      default:
+        dserror("str not valid for reduction\n");
+    } /* end switch */
 
-   /*------------------------------------------ allocate stress buffers */
-   if (numdf==3)
-   {
+    /*------------------------------------------ allocate stress buffers */
+    if (numdf==3)
+    {
       dim=MAXNOD*coupled*3;
       buffer     = amdef("buffer",&buffer_a,MAXNOD*coupled*3,1,"DV");
       recvbuffer = amdef("recvbuffer",&recvbuffer_a,dim,1,"DV");
-   }
-   else if (numdf==4)
-   {
+    }
+    else if (numdf==4)
+    {
       dim=MAXNOD*coupled*6;
       buffer     = amdef("buffer",&buffer_a,MAXNOD*coupled*6,1,"DV");
       recvbuffer = amdef("recvbuffer",&recvbuffer_a,dim,1,"DV");
-   }
-   else
+    }
+    else
       dserror("numdf out of range!\n");
-} /* endif */
+  } /* endif */
 
-amzero(&buffer_a);
-amzero(&recvbuffer_a);
+  amzero(&buffer_a);
+  amzero(&recvbuffer_a);
 
-for (i=0; i<actpart->pdis[0].numele; i++)
-{
-   actele = actpart->pdis[0].element[i];
-   coupled=index[actele->Id_loc];
-   /* continue if element belongs to other proc or is not coupled */
-   if (par.myrank!=actele->proc || coupled==-1) continue;
-   numnp=actele->numnp;
+  for (i=0; i<actpart->pdis[disnum].numele; i++)
+  {
+    actele = actpart->pdis[disnum].element[i];
+    coupled=index[actele->Id_loc];
+    /* continue if element belongs to other proc or is not coupled */
+    if (par.myrank!=actele->proc || coupled==-1) continue;
+    numnp=actele->numnp;
 
-   /*------------------------------------------- set buffer and dim */
+    /*------------------------------------------- set buffer and dim */
 #ifdef D_FLUID2
-   if (actele->eltyp == el_fluid2)
-   {
+    if (actele->eltyp == el_fluid2)
+    {
       start=coupled*MAXNOD*3;
       for (j=0;j<numnp;j++)
       {
-         buffer[start]  =actele->e.f2->stress_ND.a.da[j][0];
-         buffer[start+1]=actele->e.f2->stress_ND.a.da[j][1];
-         buffer[start+2]=actele->e.f2->stress_ND.a.da[j][2];
-         start+=3;
+        buffer[start]  =actele->e.f2->stress_ND.a.da[j][0];
+        buffer[start+1]=actele->e.f2->stress_ND.a.da[j][1];
+        buffer[start+2]=actele->e.f2->stress_ND.a.da[j][2];
+        start+=3;
       }
-   }
+    }
 #endif
 
 #ifdef D_FLUID3
-   if (actele->eltyp == el_fluid3)
-   {
+    if (actele->eltyp == el_fluid3)
+    {
       start=coupled*MAXNOD*6;
       for (j=0;j<numnp;j++)
       {
-         buffer[start]  =actele->e.f3->stress_ND.a.da[j][0];
-         buffer[start+1]=actele->e.f3->stress_ND.a.da[j][1];
-         buffer[start+2]=actele->e.f3->stress_ND.a.da[j][2];
-         buffer[start+3]=actele->e.f3->stress_ND.a.da[j][3];
-         buffer[start+4]=actele->e.f3->stress_ND.a.da[j][4];
-         buffer[start+5]=actele->e.f3->stress_ND.a.da[j][5];
-         start+=6;
+        buffer[start]  =actele->e.f3->stress_ND.a.da[j][0];
+        buffer[start+1]=actele->e.f3->stress_ND.a.da[j][1];
+        buffer[start+2]=actele->e.f3->stress_ND.a.da[j][2];
+        buffer[start+3]=actele->e.f3->stress_ND.a.da[j][3];
+        buffer[start+4]=actele->e.f3->stress_ND.a.da[j][4];
+        buffer[start+5]=actele->e.f3->stress_ND.a.da[j][5];
+        start+=6;
       }
-   }
+    }
 #endif
 
 #ifdef D_FLUID3_F
-   if (actele->eltyp == el_fluid3_fast)
-   {
+    if (actele->eltyp == el_fluid3_fast)
+    {
       start=coupled*MAXNOD*6;
       for (j=0;j<numnp;j++)
       {
-         buffer[start]  =actele->e.f3->stress_ND.a.da[j][0];
-         buffer[start+1]=actele->e.f3->stress_ND.a.da[j][1];
-         buffer[start+2]=actele->e.f3->stress_ND.a.da[j][2];
-         buffer[start+3]=actele->e.f3->stress_ND.a.da[j][3];
-         buffer[start+4]=actele->e.f3->stress_ND.a.da[j][4];
-         buffer[start+5]=actele->e.f3->stress_ND.a.da[j][5];
-         start+=6;
+        buffer[start]  =actele->e.f3->stress_ND.a.da[j][0];
+        buffer[start+1]=actele->e.f3->stress_ND.a.da[j][1];
+        buffer[start+2]=actele->e.f3->stress_ND.a.da[j][2];
+        buffer[start+3]=actele->e.f3->stress_ND.a.da[j][3];
+        buffer[start+4]=actele->e.f3->stress_ND.a.da[j][4];
+        buffer[start+5]=actele->e.f3->stress_ND.a.da[j][5];
+        start+=6;
       }
-   }
+    }
 #endif
 
-} /* end of loop over all elements */
+  } /* end of loop over all elements */
 
-/*------------------------------------------------------ allreduce the vector */
-MPI_Allreduce(buffer,recvbuffer,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+  /*------------------------------------------------------ allreduce the vector */
+  MPI_Allreduce(buffer,recvbuffer,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 
-/* now recbuffer contains all stresses, which have to be distrubuted to the
-   elements */
-for(i=0;i<numele_total;i++) /* loop elements */
-{
-   actele=&(actfield->dis[0].element[i]);
-   coupled=index[actele->Id_loc];
-   if (coupled==-1) continue; /* no stress reduction */
-   numnp=actele->numnp;
+  /* now recbuffer contains all stresses, which have to be distrubuted to the
+     elements */
+  for(i=0;i<numele_total;i++) /* loop elements */
+  {
+    actele=&(actfield->dis[disnum].element[i]);
+    coupled=index[actele->Id_loc];
+    if (coupled==-1) continue; /* no stress reduction */
+    numnp=actele->numnp;
 #ifdef D_FLUID2
-   if (actele->eltyp == el_fluid2)
-   {
+    if (actele->eltyp == el_fluid2)
+    {
       start=coupled*MAXNOD*3;
       for (j=0;j<numnp;j++)
       {
-         actele->e.f2->stress_ND.a.da[j][0]=recvbuffer[start]  ;
-         actele->e.f2->stress_ND.a.da[j][1]=recvbuffer[start+1];
-         actele->e.f2->stress_ND.a.da[j][2]=recvbuffer[start+2];
-         start+=3;
+        actele->e.f2->stress_ND.a.da[j][0]=recvbuffer[start]  ;
+        actele->e.f2->stress_ND.a.da[j][1]=recvbuffer[start+1];
+        actele->e.f2->stress_ND.a.da[j][2]=recvbuffer[start+2];
+        start+=3;
       }
-   }
+    }
 #endif
 
 #ifdef D_FLUID3
-   if (actele->eltyp == el_fluid3)
-   {
+    if (actele->eltyp == el_fluid3)
+    {
       start=coupled*MAXNOD*6;
       for (j=0;j<numnp;j++)
       {
-         actele->e.f3->stress_ND.a.da[j][0]=recvbuffer[start]  ;
-         actele->e.f3->stress_ND.a.da[j][1]=recvbuffer[start+1];
-         actele->e.f3->stress_ND.a.da[j][2]=recvbuffer[start+2];
-         actele->e.f3->stress_ND.a.da[j][3]=recvbuffer[start+3];
-         actele->e.f3->stress_ND.a.da[j][4]=recvbuffer[start+4];
-         actele->e.f3->stress_ND.a.da[j][5]=recvbuffer[start+5];
-         start+=6;
+        actele->e.f3->stress_ND.a.da[j][0]=recvbuffer[start]  ;
+        actele->e.f3->stress_ND.a.da[j][1]=recvbuffer[start+1];
+        actele->e.f3->stress_ND.a.da[j][2]=recvbuffer[start+2];
+        actele->e.f3->stress_ND.a.da[j][3]=recvbuffer[start+3];
+        actele->e.f3->stress_ND.a.da[j][4]=recvbuffer[start+4];
+        actele->e.f3->stress_ND.a.da[j][5]=recvbuffer[start+5];
+        start+=6;
       }
-   }
+    }
 #endif
 
 #ifdef D_FLUID3_F
-   if (actele->eltyp == el_fluid3_fast)
-   {
+    if (actele->eltyp == el_fluid3_fast)
+    {
       start=coupled*MAXNOD*6;
       for (j=0;j<numnp;j++)
       {
-         actele->e.f3->stress_ND.a.da[j][0]=recvbuffer[start]  ;
-         actele->e.f3->stress_ND.a.da[j][1]=recvbuffer[start+1];
-         actele->e.f3->stress_ND.a.da[j][2]=recvbuffer[start+2];
-         actele->e.f3->stress_ND.a.da[j][3]=recvbuffer[start+3];
-         actele->e.f3->stress_ND.a.da[j][4]=recvbuffer[start+4];
-         actele->e.f3->stress_ND.a.da[j][5]=recvbuffer[start+5];
-         start+=6;
+        actele->e.f3->stress_ND.a.da[j][0]=recvbuffer[start]  ;
+        actele->e.f3->stress_ND.a.da[j][1]=recvbuffer[start+1];
+        actele->e.f3->stress_ND.a.da[j][2]=recvbuffer[start+2];
+        actele->e.f3->stress_ND.a.da[j][3]=recvbuffer[start+3];
+        actele->e.f3->stress_ND.a.da[j][4]=recvbuffer[start+4];
+        actele->e.f3->stress_ND.a.da[j][5]=recvbuffer[start+5];
+        start+=6;
       }
-   }
+    }
 #endif
 
-} /* end of loop over all elements */
+  } /* end of loop over all elements */
 
-/*----------------------------------------------------------------------*/
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-#endif
-return;
+
+
+#endif  /* ifdef PARALLEL */
+
+
+  return;
+
 } /* end of fluid_reducestress*/
+
+
+
+
+
+
+
+
 
 /*!---------------------------------------------------------------------
 \brief calculating errors for beltrami and kim-moin
@@ -2508,12 +2565,11 @@ void fluid_cal_error(
     INT                index
     )
 {
-  INT         i,j;            /* simply some counters */
+  INT         i;            /* simply some counters */
   INT         numdf;          /* number of fluid dofs */
   INT         numvel;         /* total number of vel-dofs */
   INT         predof;         /* actual number of pres dof */
   INT         numnp_total;    /* total number of fluid nodes */
-  INT         actdof;         /* actual dof number */
 
   DOUBLE      dvinorm=ZERO;   /* infinity norms */
   DOUBLE       vinorm=ZERO;   /* infinity norms */
@@ -2537,10 +2593,6 @@ void fluid_cal_error(
 
   CONTAINER    container;     /* contains variables defined in container.h */
   CALC_ACTION *action;        /* pointer to the cal_action enum   */
-
-  NODE        *actnode;       /* actual node */
-  ELEMENT     *actele;
-  INT          actmat;
 
   INT            numeq_total;
   FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
@@ -2567,7 +2619,7 @@ void fluid_cal_error(
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
 
-  container.actndis  = 0;
+  container.disnum   = 0;
   container.fieldtyp = fluid;
 
   fdyn = alldyn[genprob.numff].fdyn;
@@ -2622,7 +2674,7 @@ void fluid_cal_error(
         break;
 
       default:
-        dserror("Error norm %2i not possible!!", i);
+        dserror_args(__FILE__, __LINE__, "Error norm %2i not possible!!", i);
         break;
 
     }  /* switch (i) */

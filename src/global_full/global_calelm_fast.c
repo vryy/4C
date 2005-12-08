@@ -84,7 +84,7 @@ void calelm_fast(
     CALC_ACTION  *action)       /* calculation option passed to element routines */
 
 {
-  INT               i,kk;
+  INT               i,disnum;
   ASSEMBLE_ACTION   assemble_action;
 
   FAST_ELES        *act_fast_eles;
@@ -109,14 +109,14 @@ dstrc_enter("calelm_fast");
 
 
   /* call elements */
-  kk = container->actndis;
+  disnum = container->disnum;
 
 
   /* loop all vectors of fast elements */
-  for (i=0; i<actpart->pdis[kk].num_fele; i++)
+  for (i=0; i<actpart->pdis[disnum].num_fele; i++)
   {
 
-    act_fast_eles = &(actpart->pdis[kk].fast_eles[i]);
+    act_fast_eles = &(actpart->pdis[disnum].fast_eles[i]);
 
     switch(act_fast_eles->fast_ele_typ)
     {
@@ -175,7 +175,7 @@ dstrc_enter("calelm_fast");
 
     } /* switch(act_fast_eles->fast_ele_typ) */
 
-  } /* for (i=0; i<actpart->pdis[kk].num_fele; i++) */
+  } /* for (i=0; i<actpart->pdis[disnum].num_fele; i++) */
 
 
 #ifdef DEBUG
