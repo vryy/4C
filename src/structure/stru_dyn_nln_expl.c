@@ -144,6 +144,8 @@ STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural s
 BIN_OUT_FIELD   out_context;
 #endif
 
+INT             disnum = 0;
+
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
 #ifdef DEBUG
@@ -158,7 +160,7 @@ actpart            = &(partition[0]);
 action             = &(calc_action[0]);
 sdyn               =   alldyn[0].sdyn;
 container.fieldtyp = actfield->fieldtyp;
-container.actndis  = 0;
+container.disnum   = disnum;
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL
 actintra    = &(par.intra[0]);
@@ -406,7 +408,7 @@ init_bin_out_field(&out_context,
 /*----------------------------------------- output to GID postprozessor */
 if (par.myrank==0 && ioflags.output_gid==1)
 {
-   out_gid_domains(actfield);
+   out_gid_domains(actfield, disnum);
 }
 /*------------------------------------------------------- printout head */
 if (par.myrank==0) dyn_nlnstru_outhead_expl();
@@ -429,13 +431,13 @@ solver_control(actsolv, actintra,
 /*---------------------- set incremental displacements dispi[0] to zero */
 solserv_zero_vec(&dispi[0]);
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &dispi[0],0,
+solserv_result_total(actfield,disnum,actintra, &dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,
+solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]),0);
+                     &(actsolv->sysarray_typ[stiff_array]));
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -515,7 +517,7 @@ if (sdyn->step==0)
    /*------------------- set incremental displacements dispi[0] to zero */
    solserv_zero_vec(&dispi[0]);
    /*---------------------- set residual displacements in nodes to zero */
-   solserv_result_resid(actfield,actintra,&dispi[0],0,
+   solserv_result_resid(actfield,disnum,actintra,&dispi[0],0,
                         &(actsolv->sysarray[stiff_array]),
                         &(actsolv->sysarray_typ[stiff_array]));
    /*---------------------------- calculate internal forces at time 0.0 */
@@ -542,7 +544,7 @@ else
 solserv_add_vec(&(vel[0]),&(actsolv->sol[1]),dynvar.constants[4]);
 solserv_add_vec(&(acc[0]),&(actsolv->sol[1]),dynvar.constants[2]);
 /*---------------------------------- put the displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
+solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*----------------- copy rhs in rhs[1] at time t to rhs[2] at time t-dt */
@@ -597,7 +599,7 @@ solserv_add_vec(&(work[0]),&(vel[0]),dthalf);
 /* work[0] -> acc[0] */
 solserv_copy_vec(&(work[0]),&(acc[0]));
 /* put sol[1] to nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
+solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*------------------------------------------ make all types of energies */
@@ -606,11 +608,11 @@ dynnle(&dynvar,sdyn,actintra,actsolv,&dispi[0],&fie[1],&fie[2],
 dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
 dynvar.etot = dynvar.epot + dynvar.ekin;
 /*-------------------------------------- return velocities to the nodes */
-solserv_result_total(actfield,actintra, &vel[0],1,
+solserv_result_total(actfield,disnum,actintra, &vel[0],1,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*------------------------------------------ return accel. to the nodes */
-solserv_result_total(actfield,actintra, &acc[0],2,
+solserv_result_total(actfield,disnum,actintra, &acc[0],2,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*------------------------------- check whether to write results or not */
@@ -632,13 +634,13 @@ if (ioflags.struct_stress==1)
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    container.kstep = 0;
-   calreduce(actfield,actpart,actintra,action,&container);
+   calreduce(actfield,actpart,disnum,actintra,action,&container);
 }
 /*-------------------------------------------- print out results to out */
 if (mod_stress==0 || mod_disp==0)
 if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
 {
-  out_sol(actfield,actpart,actintra,sdyn->step,0);
+  out_sol(actfield,actpart,disnum,actintra,sdyn->step,0);
 }
 /*--------------------------------------------- printout results to gid */
 #ifdef BINIO
@@ -661,13 +663,13 @@ if (par.myrank==0 && ioflags.output_gid==1)
    if (mod_disp==0)
    if (ioflags.struct_disp==1)
    {
-      out_gid_sol("displacement",actfield,actintra,sdyn->step,0,ZERO);
-      out_gid_sol("velocities",actfield,actintra,sdyn->step,1,ZERO);
-      out_gid_sol("accelerations",actfield,actintra,sdyn->step,2,ZERO);
+      out_gid_sol("displacement",actfield,disnum,actintra,sdyn->step,0,ZERO);
+      out_gid_sol("velocities",actfield,disnum,actintra,sdyn->step,1,ZERO);
+      out_gid_sol("accelerations",actfield,disnum,actintra,sdyn->step,2,ZERO);
    }
    if (mod_stress==0)
    if (ioflags.struct_stress==1)
-   out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0,ZERO);
+   out_gid_sol("stress"      ,actfield,disnum,actintra,sdyn->step,0,ZERO);
 }
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0) {

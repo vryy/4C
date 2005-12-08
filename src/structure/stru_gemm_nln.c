@@ -192,7 +192,7 @@ BIN_OUT_FIELD   out_context;
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
-container.actndis = 0;              /* only one discretisation */
+container.disnum  = 0;              /* only one discretisation */
 
 #ifdef DEBUG
 dstrc_enter("dyn_nln_gemm");

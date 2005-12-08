@@ -610,88 +610,124 @@ return;
  |                                                                      |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
-                      STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
-                      DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
-                      DIST_VECTOR *rhs_new, DIST_VECTOR *rhs_old,
-                      DIST_VECTOR *vel,     DIST_VECTOR *acc,
-                      DIST_VECTOR *work0,   DIST_VECTOR *work1,
-                      DIST_VECTOR *work2)
+void dyn_nlnstructupd(
+    FIELD              *actfield,
+    INT                 disnum,
+    STRUCT_DYN_CALC    *dynvar,
+    STRUCT_DYNAMIC     *sdyn,
+    SOLVAR             *actsolv,
+    DIST_VECTOR        *sol_old,
+    DIST_VECTOR        *sol_new,
+    DIST_VECTOR        *rhs_new,
+    DIST_VECTOR        *rhs_old,
+    DIST_VECTOR        *vel,
+    DIST_VECTOR        *acc,
+    DIST_VECTOR        *work0,
+    DIST_VECTOR        *work1,
+    DIST_VECTOR        *work2
+    )
+
 {
 
-DOUBLE a1,a2,a3,a4,a5,a6;
+  DOUBLE a1,a2,a3,a4,a5,a6;
+
 
 #ifdef DEBUG
-dstrc_enter("dyn_nlnstructupd");
+  dstrc_enter("dyn_nlnstructupd");
 #endif
-/*----------------------------------------------------------------------*/
-/*-------------------------------------------------- get some constants */
-a1 = dynvar->constants[8];
-a2 = dynvar->constants[9];
-a3 = dynvar->constants[10];
-a4 = dynvar->constants[11];
-a5 = dynvar->constants[12];
-a6 = dynvar->constants[13];
-/*----------------------------------------------------------------------*/
-/*----------------- work0 = sol_new - sol_old == displacement increment */
-solserv_copy_vec(sol_new,work0);
-solserv_add_vec(sol_old,work0,-1.0);
-/*-------------------------- copy displacements from sol_new to sol_old */
-solserv_copy_vec(sol_new,sol_old);
-/*---------------------------- copy load vector from rhs_new to rhs_old */
-solserv_copy_vec(rhs_new,rhs_old);
-/*--------------------------------- make temporary copy of acc to work1 */
-solserv_copy_vec(acc,work1);
-/*--------------------------------- make temporary copy of vel to work2 */
-solserv_copy_vec(vel,work2);
-/*--------------- make new acc = a1*(sol_new-sol_old)+a2*vel+a3*acc_old */
-/* this is equiv. to       acc = a1*work0            +a2*vel+a3*work1   */
-/*----------------------------------------------------------------------*/
-solserv_copy_vec(work0,acc);
-solserv_scalarprod_vec(acc,a1);
-solserv_add_vec(vel,acc,a2);
-solserv_add_vec(work1,acc,a3);
 
-/*--------------------------------------- for prescribed displacements: */
-/*  sol[7] = a1*(sol[4]-sol[3])+a2*sol[6]+a3*sol[7] */
-/*----------------------------------------------------------------------*/
-solserv_cpdirich(actfield,0,0,7,8);               /* make a copy of sol[7] in sol[8] */
-solserv_zerodirich(actfield,0,0,7);               /* init sol[7] to zero             */
-solserv_assdirich_fac(actfield,0,0,4,3,7,a1,-a1); /* sol[7]+=a1*sol[4]-a1*sol[3]     */
-solserv_assdirich_fac(actfield,0,0,6,0,7,a2,0.0); /* sol[7]+=a2*sol[6]               */
-solserv_assdirich_fac(actfield,0,0,8,0,7,a3,0.0); /* sol[7]+=a3*sol[8]               */
 
-/*--------------- make new vel = a4*(sol_new-sol_old)+a5*vel+a6*acc_old */
-/* this is equiv. to       vel = a4*work0            +a5*work2+a6*work1 */
-/*----------------------------------------------------------------------*/
-solserv_copy_vec(work0,vel);
-solserv_scalarprod_vec(vel,a4);
-solserv_add_vec(work2,vel,a5);
-solserv_add_vec(work1,vel,a6);
+  /* get some constants */
+  a1 = dynvar->constants[8];
+  a2 = dynvar->constants[9];
+  a3 = dynvar->constants[10];
+  a4 = dynvar->constants[11];
+  a5 = dynvar->constants[12];
+  a6 = dynvar->constants[13];
 
-/*--------------------------------------- for prescribed displacements: */
-/* sol[6] = a4*(sol[4]-sol[3])+a5*sol[6]+a6*sol[7]_old */
-/*----------------------------------------------------------------------*/
-solserv_adddirich(actfield,0,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */
-solserv_assdirich_fac(actfield,0,0,4,3,6,a4,-a4); /* sol[6] += a4 * sol[4] + -a4 * sol[3] */
-solserv_assdirich_fac(actfield,0,0,8,0,6,a6,0.0); /* sol[6] += a6 * sol[8] (=sol[7]_old)  */
 
-/*--------------------------------------- zero the working place sol[8] */
-solserv_zerodirich(actfield,0,0,8);
+  /* work0 = sol_new - sol_old == displacement increment */
+  solserv_copy_vec(sol_new,work0);
+  solserv_add_vec(sol_old,work0,-1.0);
 
-/*--------------------------------- update the prescribed displacements */
-/*------------------------------------------------ copy u(t) -> u(t-dt) */
-/*                                                copy sol[4] to sol[3] */
-solserv_adddirich(actfield,0,0,4,0,3,1.0,0.0);
-/*----------------------------------------------------------- zero u(t) */
-/*                                                          zero sol[4] */
-solserv_zerodirich(actfield,0,0,4);
-/*----------------------------------------------------------------------*/
+
+  /* copy displacements from sol_new to sol_old */
+  solserv_copy_vec(sol_new,sol_old);
+
+  /* copy load vector from rhs_new to rhs_old */
+  solserv_copy_vec(rhs_new,rhs_old);
+
+  /* make temporary copy of acc to work1 */
+  solserv_copy_vec(acc,work1);
+
+  /* make temporary copy of vel to work2 */
+  solserv_copy_vec(vel,work2);
+
+
+
+  /*--------------- make new acc = a1*(sol_new-sol_old)+a2*vel+a3*acc_old */
+  /* this is equiv. to       acc = a1*work0            +a2*vel+a3*work1   */
+  solserv_copy_vec(work0,acc);
+  solserv_scalarprod_vec(acc,a1);
+  solserv_add_vec(vel,acc,a2);
+  solserv_add_vec(work1,acc,a3);
+
+
+
+  /* for prescribed displacements: */
+  /*   sol[7] = a1*(sol[4]-sol[3])+a2*sol[6]+a3*sol[7] */
+  solserv_cpdirich(actfield,disnum,0,7,8);               /* make a copy of sol[7] in sol[8] */
+  solserv_zerodirich(actfield,disnum,0,7);               /* init sol[7] to zero             */
+  solserv_assdirich_fac(actfield,disnum,0,4,3,7,a1,-a1); /* sol[7]+=a1*sol[4]-a1*sol[3]     */
+  solserv_assdirich_fac(actfield,disnum,0,6,0,7,a2,0.0); /* sol[7]+=a2*sol[6]               */
+  solserv_assdirich_fac(actfield,disnum,0,8,0,7,a3,0.0); /* sol[7]+=a3*sol[8]               */
+
+
+
+  /*--------------- make new vel = a4*(sol_new-sol_old)+a5*vel+a6*acc_old */
+  /* this is equiv. to       vel = a4*work0            +a5*work2+a6*work1 */
+  /*----------------------------------------------------------------------*/
+  solserv_copy_vec(work0,vel);
+  solserv_scalarprod_vec(vel,a4);
+  solserv_add_vec(work2,vel,a5);
+  solserv_add_vec(work1,vel,a6);
+
+
+
+  /*--------------------------------------- for prescribed displacements: */
+  /* sol[6] = a4*(sol[4]-sol[3])+a5*sol[6]+a6*sol[7]_old */
+  /*----------------------------------------------------------------------*/
+  solserv_adddirich(actfield,disnum,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */
+  solserv_assdirich_fac(actfield,disnum,0,4,3,6,a4,-a4); /* sol[6] += a4 * sol[4] + -a4 * sol[3] */
+  solserv_assdirich_fac(actfield,disnum,0,8,0,6,a6,0.0); /* sol[6] += a6 * sol[8] (=sol[7]_old)  */
+
+
+
+  /*--------------------------------------- zero the working place sol[8] */
+  solserv_zerodirich(actfield,disnum,0,8);
+
+
+
+  /*--------------------------------- update the prescribed displacements */
+  /*------------------------------------------------ copy u(t) -> u(t-dt) */
+  /*                                                copy sol[4] to sol[3] */
+  solserv_adddirich(actfield,disnum,0,4,0,3,1.0,0.0);
+  /*----------------------------------------------------------- zero u(t) */
+  /*                                                          zero sol[4] */
+  solserv_zerodirich(actfield,disnum,0,4);
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of dyn_nlnstructupd */
+
+
+
+
 
 
 
@@ -866,10 +902,15 @@ return;
  |                                                                           |
  | see PhD theses Mok page 165                                               |
  *---------------------------------------------------------------------------*/
-void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global,
-                         ARRAY *emass_global, CONTAINER *container)
+void assemble_dirich_dyn(
+    ELEMENT            *actele,
+    ARRAY              *estif_global,
+    ARRAY              *emass_global,
+    CONTAINER          *container
+    )
+
 {
-INT                   i,j;
+  INT                   i,j;
 INT                   counter,hasdirich;
 INT                   numdf;
 INT                   nd=0;
@@ -883,9 +924,13 @@ DOUBLE                dforces[MAXDOFPERELE];
 INT                   dirich_onoff[MAXDOFPERELE];
 INT                   lm[MAXDOFPERELE];
 GNODE                *actgnode;
+
+
 #ifdef DEBUG
 dstrc_enter("assemble_dirich_dyn");
 #endif
+
+
 /*----------------------------------------------------------------------*/
 /*---------- check presence of any dirichlet conditions to this element */
 hasdirich=0;
@@ -897,8 +942,10 @@ for (i=0; i<actele->numnp; i++)
       break;
    }
 }
+
 /*--------------------- there are no dirichlet conditions here so leave */
 if (hasdirich==0) goto end;
+
 /*--------------------------------------- check for presence of damping */
 if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS13)
 {
@@ -906,11 +953,16 @@ if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS
    mdamp = container->dirichfacs[7];
    kdamp = container->dirichfacs[8];
 }
-/*----------------------------------------------------------------------*/
+
+
 estif  = estif_global->a.da;
 emass  = emass_global->a.da;
+
+
 /*---------------------------------- set number of dofs on this element */
 for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
+
+
 /*---------------------------- init the vectors dirich and dirich_onoff */
 for (i=0; i<nd; i++)
 {
@@ -918,6 +970,8 @@ for (i=0; i<nd; i++)
    dforces[i] = 0.0;
    dirich_onoff[i] = 0;
 }
+
+
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 for (i=0; i<actele->numnp; i++)
 {
@@ -930,6 +984,8 @@ for (i=0; i<actele->numnp; i++)
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
    }
 }
+
+
 /*----------------------------------------------------------------------*/
 /*------------------------------ make the entries -K * (u(t) - u(t-dt)) */
 /*--------------------------------                 K * facs[6]          */
@@ -950,6 +1006,8 @@ for (i=0; i<actele->numnp; i++)
       dirich[counter] = actele->node[i]->sol.a.da[5][j];
       counter++;
    }
+
+
 /*----------------------------------------- loop rows of element matrix */
 for (i=0; i<nd; i++)
 {
@@ -1327,6 +1385,10 @@ INT      *IWORK,liwork;
 INT       info=1;
 INT      *irn,*jcn, nnz;
 DIST_VECTOR    *distvecs;
+
+INT                     disnum = 0;
+
+
 #ifdef DEBUG
 dstrc_enter("solserv_eigen");
 #endif
@@ -1373,10 +1435,10 @@ for (i=0; i<numeq; i++)
    distvecs[i].vec.a.dv[k] = A[i][k];
 }
 for (i=0; i<numeq; i++)
-solserv_result_total(actfield,actintra, &(distvecs[i]),i,
+solserv_result_total(actfield,disnum,actintra, &(distvecs[i]),i,
                      &(actsolv->sysarray[0]),
                      &(actsolv->sysarray_typ[0]));
-out_gid_sol("eigenmodes",actfield,actintra,0,numeq,ZERO);
+out_gid_sol("eigenmodes",actfield,0,actintra,0,numeq,ZERO);
 /*----------------------------------------------------------------------*/
 fprintf(allfiles.out_err,"------------------Eigenanalysis of SYMMETRIC (K-lambda*I)*phi=0-----\n");
 fprintf(allfiles.out_err,"Eigenvalues in ascending order:\n");

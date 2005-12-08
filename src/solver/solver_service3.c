@@ -89,6 +89,8 @@ return;
 } /* end of solserv_sol_zero */
 
 
+
+
 /*----------------------------------------------------------------------*
  |                                                            m.gee 4/03|
  | copy values from array arrayfrom in place from      to               |
@@ -188,6 +190,137 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_sol_copy */
+
+
+
+
+#ifdef SUBDIV
+void solserv_sol_trans(
+    FIELD              *actfield,
+    INT                 disnum,
+    NODE_ARRAY          array,
+    INT                 place
+    )
+{
+
+  INT               i,j;
+  INT               min;
+  ARRAY            *arrayf,*arrayt;
+  NODE             *calc_node;
+  NODE             *io_node;
+  DISCRET          *actdis;
+
+
+#ifdef DEBUG
+  dstrc_enter("solserv_sol_trans");
+#endif
+
+
+  actdis = &(actfield->dis[disnum]);
+
+  /* loop calc dis */
+  for (i=0; i<actdis->numnp; i++)
+  {
+    calc_node = &(actdis->node[i]);
+
+    /* find corresponding io node */
+    if (calc_node->master_node != NULL)
+      io_node = calc_node->master_node;
+    else
+      continue;
+
+    /* select correct arrayf */
+    switch(array)
+    {
+      case 0:
+        arrayf = &(calc_node->sol);
+        break;
+
+      case 1:
+        arrayf = &(calc_node->sol_increment);
+        break;
+
+      case 2:
+        arrayf = &(calc_node->sol_residual);
+        break;
+
+      case 3:
+        arrayf = &(calc_node->sol_mf);
+        break;
+
+      default:
+        arrayf = NULL;
+        dserror
+          ("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
+        break;
+    }
+
+
+    /* select correct arrayt */
+    switch(array)
+    {
+      case 0:
+        arrayt = &(io_node->sol);
+        break;
+
+      case 1:
+        arrayt = &(io_node->sol_increment);
+        break;
+
+      case 2:
+        arrayt = &(io_node->sol_residual);
+        break;
+
+      case 3:
+        arrayt = &(io_node->sol_mf);
+        break;
+
+      default:
+        arrayt = NULL;
+        dserror
+          ("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
+        break;
+    }
+
+
+    /* check the size of arrayf */
+    if (place >= arrayf->fdim)
+      dserror("Cannot copy from array, because place doesn't exist");
+
+    /* check the size of arrayt */
+    if (place >= arrayt->fdim)
+    {
+      amredef(arrayt,place+1,arrayt->sdim,"DA");
+    }
+
+    /* There are strange cases where the source array has less columns
+     * than the destination. (sol_mf to sol in fluid/ale) */
+    min = MIN(arrayt->sdim, arrayf->sdim);
+    for (j=0; j<min; j++)
+      arrayt->a.da[place][j] = arrayf->a.da[place][j];
+
+    /* In this case zero the remaining fields. */
+    for (j=0; j<arrayt->sdim-min; j++)
+      arrayt->a.da[place][min+j] = 0;
+
+  }  /* for (i=0; i<actdis->numnp; i++) */
+
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+
+} /* end of solserv_sol_trans */
+
+#endif /* ifdef SUBDIV */
+
+
+
+
+
+
 
 /*----------------------------------------------------------------------*
  |                                                            m.gee 4/03|

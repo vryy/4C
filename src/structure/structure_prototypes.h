@@ -68,6 +68,7 @@ void conpre(
 
 void conequ(
     FIELD         *actfield,      /* the actual physical field */
+    INT            disnum,
     SOLVAR        *actsolv,       /* the field-corresponding solver */
     PARTITION     *actpart,       /* the partition of the proc */
     INTRA         *actintra,      /* the intra-communicator of this field */
@@ -214,6 +215,7 @@ void dyn_setconstants_expl(
 
 void dyn_nlnstructupd(
     FIELD           *actfield,
+    INT              disnum,
     STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn,
     SOLVAR          *actsolv,

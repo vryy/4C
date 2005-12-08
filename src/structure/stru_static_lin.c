@@ -125,9 +125,11 @@ SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 BIN_OUT_FIELD out_context;
 #endif
 
+INT           disnum = 0;
+
 container.isdyn   = 0;           /* static calculation */
 container.kintyp  = 0;           /* kintyp  = 0: geo_lin*/
-container.actndis = 0;           /* actndis = 0: only one discretisation*/
+container.disnum  = disnum;           /* disnum  = 0: only one discretisation*/
 
 #ifdef DEBUG
 dstrc_enter("stalin");
@@ -249,6 +251,7 @@ solver_control(
 /*-------------------------allreduce the result and put it to the nodes */
 solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[actsysarray]),
                      0,
@@ -267,14 +270,14 @@ if (ioflags.struct_stress==1)
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    container.kstep = 0;
-   calreduce(actfield,actpart,actintra,action,&container);
+   calreduce(actfield,actpart,disnum,actintra,action,&container);
 }
 
 
 /* printout results to out */
 if (ioflags.output_out==1 && ioflags.struct_disp==1)
 {
-  out_sol(actfield,actpart,actintra,0,0);
+  out_sol(actfield,actpart,disnum,actintra,0,0);
 }
 
 
@@ -301,18 +304,18 @@ if (ioflags.output_bin==1)
 /* printout results to gid */
 if (ioflags.output_gid==1 && ioflags.struct_disp==1 && par.myrank==0)
 {
-   out_gid_sol("displacement",actfield,actintra,0,0,ZERO);
-   out_gid_domains(actfield);
+   out_gid_sol("displacement",actfield,disnum,actintra,0,0,ZERO);
+   out_gid_domains(actfield, disnum);
 #ifdef D_AXISHELL
-   out_gid_sol("thickness",actfield,actintra,0,0,ZERO);
-   out_gid_sol("axi_loads",actfield,actintra,0,0,ZERO);
+   out_gid_sol("thickness",actfield,disnum,actintra,0,0,ZERO);
+   out_gid_sol("axi_loads",actfield,disnum,actintra,0,0,ZERO);
 #endif
 }
 
 /* printout stress to gid */
 if (ioflags.output_gid==1 && ioflags.struct_stress==1 && par.myrank==0)
 {
-   out_gid_sol("stress"      ,actfield,actintra,0,0,ZERO);
+   out_gid_sol("stress"      ,actfield,disnum,actintra,0,0,ZERO);
 }
 
 

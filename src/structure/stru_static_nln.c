@@ -138,9 +138,11 @@ CALC_ACTION  *action;             /* pointer to the structures cal_action enum *
 BIN_OUT_FIELD out_context;
 #endif
 
+INT           disnum = 0;
+
 CONTAINER     container;          /* contains variables defined in container.h */
 container.isdyn   = 0;              /* static computation */
-container.actndis = 0;              /* only one discretisation */
+container.disnum  = disnum;              /* only one discretisation */
 
 #ifdef DEBUG
 dstrc_enter("stanln");
@@ -330,7 +332,7 @@ if (par.myrank==0 && ioflags.output_gid==1)
 {
    /* colors the partitions in the postprocessing, if this is sequentiell*/
    /*              the picture of the partitions can be quite boring... */
-   out_gid_domains(actfield);
+   out_gid_domains(actfield, disnum);
 }
 /*======================================================================*/
 /*                     START LOOP OVER ALL STEPS                        */
@@ -437,6 +439,7 @@ for (kstep=0; kstep<nstep; kstep++)
          &container);
    /*-------------------------------------- make equillibrium iteration */
    conequ(actfield,
+          disnum,
           actsolv,
           actpart,
           actintra,
@@ -479,7 +482,7 @@ for (kstep=0; kstep<nstep; kstep++)
          /*                                                         procs */
          *action = calc_struct_stressreduce;
          container.kstep = 0;
-         calreduce(actfield,actpart,actintra,action,&container);
+         calreduce(actfield,actpart,disnum,actintra,action,&container);
       }
    }
    /*--------------------------------------- print out results to .out */
@@ -487,16 +490,16 @@ for (kstep=0; kstep<nstep; kstep++)
    {
       if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
       {
-        out_sol(actfield,actpart,actintra,kstep,0);
+        out_sol(actfield,actpart,disnum,actintra,kstep,0);
       }
    }
    /*----------------------------------------- printout results to gid */
    if (par.myrank==0 && ioflags.output_gid==1)
    {
        if (ioflags.struct_disp==1 && mod_displ==0)
-       out_gid_sol("displacement",actfield,actintra,kstep,0,ZERO);
+       out_gid_sol("displacement",actfield,disnum,actintra,kstep,0,ZERO);
        if (ioflags.struct_stress==1 && mod_stress==0)
-       out_gid_sol("stress"      ,actfield,actintra,kstep,0,ZERO);
+       out_gid_sol("stress"      ,actfield,disnum,actintra,kstep,0,ZERO);
    }
    /*------------------------------ printout multiscale results to gid */
 #ifdef D_MLSTRUCT
@@ -740,6 +743,7 @@ return;
  *----------------------------------------------------------------------*/
 void conequ( /*!< rueckgabe INT da kein prototyp definiert wurde! */
             FIELD         *actfield,      /* the actual physical field */
+            INT            disnum,
             SOLVAR        *actsolv,       /* the field-corresponding solver */
             PARTITION     *actpart,       /* the partition of the proc */
             INTRA         *actintra,      /* the intra-communicator of this field */
@@ -809,6 +813,7 @@ solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]),1.0);
 /*---------- put actsolv->sol[kstep] to the nodes (total displacements) */
 solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[0]),
                      0,
@@ -843,7 +848,8 @@ if (intforcerecv_a.Typ != cca_DV)
 if (intforcerecv_a.fdim < actsolv->sol[0].numeq_total)
 {
    amdel(&intforcerecv_a);
-   intforcerecv = amdef("tmpintforce",&intforcerecv_a,actsolv->sol[0].numeq_total,1,"DV");
+   intforcerecv = amdef("tmpintforce",&intforcerecv_a,
+       actsolv->sol[0].numeq_total,1,"DV");
 }
 amzero(&intforcerecv_a);
 #endif
@@ -863,6 +869,7 @@ solserv_scalarprod_vec(&(re[0]),rlnew);
 /* put residual displacements to the nodes (needed for material, eas ..)*/
 solserv_result_resid(
                      actfield,
+                     disnum,
                      actintra,
                      &(rsd[0]),
                      0,
@@ -872,13 +879,13 @@ solserv_result_resid(
 /*-- put incremental displacements to the nodes (needed for material...)*/
 solserv_result_incre(
                      actfield,
+                     disnum,
                      actintra,
                      &(dispi[0]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray]),
-		     actsysarray
-		     );
+                     &(actsolv->sysarray_typ[actsysarray])
+                     );
 /*---------------------------------------------initialize system matrix */
 solserv_zero_mat(
                  actintra,
@@ -961,6 +968,7 @@ solserv_add_vec(&(rsd[0]),&(actsolv->sol[0]),1.0);
 /*----------------------------- put actual total displacements to nodes */
 solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[0]),
                      0,
@@ -1048,6 +1056,7 @@ solserv_copy_vec(&(actsolv->sol[0]),&(dispi[1]));
 /*----------------- put converged solution to the elements in next step */
 solserv_result_total(
                      actfield,
+                     disnum,
                      actintra,
                      &(actsolv->sol[0]),
                      0,
