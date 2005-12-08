@@ -69,7 +69,7 @@ for (i=0; i<13; i++)
 /*----hinge code only at beam end nodes (nodes 1,2) -------------------*/
   hinge[i]=ele->e.b3->hc[i];
 /*----no hinges at internal beam nodes (nodes 3,4) --------------------*/
-  hinge[i+13]=0;
+  /*hinge[i+13]=0;*/
 }
 
 if (ele->e.b3->ike==1)
