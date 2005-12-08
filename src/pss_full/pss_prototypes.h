@@ -329,12 +329,14 @@ void dsmemreport( void);
  | string - (input) error message                                       |
  *----------------------------------------------------------------------*/
 void dsassert_func(
-    INT     test,
-    char    string[],
-    char* file,
-    INT line);
+    char               *file,
+    INT                 sline,
+    INT                 test,
+    char                string[]
+    );
 
-#define dsassert(test, string) dsassert_func(test, string, __FILE__, __LINE__)
+#define dsassert(test, string) dsassert_func( __FILE__, __LINE__, test, string)
+
 
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
@@ -342,9 +344,27 @@ void dsassert_func(
  | prints call tree, if DEBUG was defined                               |
  | aborts parallel and sequentiell programm                             |
  *----------------------------------------------------------------------*/
-void dserror(
-    char     string[],
-    ...);
+void dserror_func(
+    char               *file,
+    INT                 sline,
+    char                string[]
+    );
+
+#define dserror(string) dserror_func(__FILE__, __LINE__, string)
+
+/*----------------------------------------------------------------------*
+ | report an error and stop program                       m.gee 8/00    |
+ | prints error message string to console and *.err                     |
+ | prints call tree, if DEBUG was defined                               |
+ | aborts parallel and sequentiell programm                             |
+ *----------------------------------------------------------------------*/
+void dserror_args(
+    char               *file,
+    INT                 sline,
+    char                string[],
+    ...
+    );
+
 
 /*----------------------------------------------------------------------*
  | collects warnings during running process                  ck 07/03   |

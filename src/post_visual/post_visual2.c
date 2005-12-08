@@ -1263,7 +1263,7 @@ static void post_visual2()
     *action = calc_fluid_initvort;
     calinit(actfield,actpart,action,&container);
     *action = calc_fluid_vort;
-    container.actndis=0;
+    container.disnum =0;
 #ifdef D_FLUID
     container.nif=0;
     container.nii=0;
@@ -1273,7 +1273,7 @@ static void post_visual2()
     container.fieldtyp=fluid;
     container.dvec=NULL;
     container.dvec         = NULL;
-    container.actndis  = 0;
+    container.disnum   = 0;
     calelm(actfield,NULL,actpart,NULL,0,0,
            &container,action);
 #endif

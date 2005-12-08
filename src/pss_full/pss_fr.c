@@ -88,13 +88,13 @@ allfiles.numcol=MAXNUMCOL;
 if (par.myrank==0)
 {
   /*-------------------- make a copy of the input file without comments */
-  
+
   include_stack[0].file = allfiles.in_input;
   include_stack[0].filename = allfiles.inputfile_name;
 
   f = allfiles.in_input;
   rewind(f);
-    
+
   while ( feof(f) == 0 )
   {
     INT p;
@@ -109,7 +109,7 @@ if (par.myrank==0)
         include_stack_head--;
         f = include_stack[include_stack_head].file;
       }
-      
+
       /* Read a line. Up to 499 characters. */
       if (fgets(allfiles.line,499,f) == NULL)
       {
@@ -125,11 +125,11 @@ if (par.myrank==0)
         }
         else
         {
-          dserror("An error occured reading file '%s'",
+          dserror_args(__FILE__, __LINE__, "An error occured reading file '%s'",
                   include_stack[include_stack_head].filename);
         }
       }
-      
+
       /* skip whitespaces */
       for (p=0; isspace(allfiles.line[p]); ++p)
       {}
@@ -150,14 +150,14 @@ if (par.myrank==0)
           {
             CHAR* nameend;
             INT namelength;
-        
+
             /* So we've got an include. Prepare the stack. Find the
              * filename. */
 
             include_stack_head++;
             if (include_stack_head >= INCLUDE_STACK_DEPTH)
               dserror("include stack overflow");
-        
+
             for (p+=7; isspace(allfiles.line[p]); ++p)
             {}
             if (allfiles.line[p]!='"')
@@ -178,7 +178,7 @@ if (par.myrank==0)
               fopen(include_stack[include_stack_head].filename, "r");
             f = include_stack[include_stack_head].file;
             if (f==NULL)
-              dserror("failed to open file '%s'",
+              dserror_args(__FILE__, __LINE__, "failed to open file '%s'",
                       include_stack[include_stack_head].filename);
             continue;
           }
@@ -191,7 +191,7 @@ if (par.myrank==0)
     /* count any non-comment lines */
     if (feof(f) == 0)
       linecount++;
-  }                             
+  }
 }
 /*--------------------------------------------broadcast number of lines */
 #ifdef PARALLEL
@@ -217,7 +217,7 @@ if (par.myrank==0)
 {
   include_stack[0].file = allfiles.in_input;
   include_stack[0].filename = allfiles.inputfile_name;
-  
+
   f = allfiles.in_input;
   rewind(f);
 
@@ -235,7 +235,7 @@ if (par.myrank==0)
         include_stack_head--;
         f = include_stack[include_stack_head].file;
       }
-      
+
       if (fgets(allfiles.input_file[i],499,f)==NULL)
       {
         if ((feof(f) != 0) && (include_stack_head>0))
@@ -250,7 +250,7 @@ if (par.myrank==0)
         }
         else
         {
-          dserror("An error occured reading file '%s'",
+          dserror_args(__FILE__, __LINE__, "An error occured reading file '%s'",
                   include_stack[include_stack_head].filename);
         }
       }
@@ -263,7 +263,7 @@ if (par.myrank==0)
       if ((allfiles.input_file[i][p] != '/') ||
           (allfiles.input_file[i][p+1] != '/'))
       {
-        
+
         /* look for includes */
         for (p=0; isspace(allfiles.input_file[i][p]); ++p)
         {}
@@ -275,14 +275,14 @@ if (par.myrank==0)
           {
             CHAR* nameend;
             INT namelength;
-        
+
             /* So we've got an include. Prepare the stack. Find the
              * filename. */
 
             include_stack_head++;
             if (include_stack_head >= INCLUDE_STACK_DEPTH)
               dserror("include stack overflow");
-        
+
             for (p+=7; isspace(allfiles.input_file[i][p]); ++p)
             {}
             if (allfiles.input_file[i][p]!='"')
@@ -303,7 +303,7 @@ if (par.myrank==0)
               fopen(include_stack[include_stack_head].filename, "r");
             f = include_stack[include_stack_head].file;
             if (f==NULL)
-              dserror("failed to open file '%s'",
+              dserror_args(__FILE__, __LINE__, "failed to open file '%s'",
                       include_stack[include_stack_head].filename);
             continue;
           }
@@ -461,7 +461,8 @@ dstrc_enter("frread");
 #endif
 
 allfiles.actrow+=1;
-if (allfiles.actrow>=allfiles.numrows) dserror("Can't read line, end of input_file reached");
+if (allfiles.actrow>=allfiles.numrows)
+  dserror("Can't read line, end of input_file reached");
 allfiles.actplace=&(allfiles.input_file[allfiles.actrow][0]);
 
 #ifdef DEBUG

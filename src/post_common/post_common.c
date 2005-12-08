@@ -187,7 +187,8 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
     first_result = map_find_symbol(control_table, "result");
     if (first_result == NULL)
     {
-      dserror("no result sections in control file '%s'\n", control_file_name);
+      dserror_args(__FILE__, __LINE__, 
+          "no result sections in control file '%s'\n", control_file_name);
     }
     while (first_result->next != NULL)
     {
@@ -376,7 +377,8 @@ void init_translation_table(TRANSLATION_TABLE* table,
       num = map_read_int(group, names[i]);
       if ((num < 0) || (num >= count))
       {
-        dserror("illegal external number for name '%s': %d", names[i], num);
+        dserror_args(__FILE__, __LINE__, 
+            "illegal external number for name '%s': %d", names[i], num);
       }
 
       /* extern -> intern translation */
@@ -452,7 +454,8 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
     result->value_file = fopen(buf, "rb");
     if (result->value_file == NULL)
     {
-      dserror("failed to open file '%s'", filename);
+      dserror_args(__FILE__, __LINE__, 
+          "failed to open file '%s'", filename);
     }
 
     post_log(2, "open file: '%s'\n", buf);
@@ -471,7 +474,8 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
     result->size_file = fopen(buf, "rb");
     if (result->size_file == NULL)
     {
-      dserror("failed to open file '%s'", filename);
+      dserror_args(__FILE__, __LINE__, 
+          "failed to open file '%s'", filename);
     }
 
     post_log(2, "open file: '%s'\n", buf);
@@ -520,7 +524,7 @@ void init_field_data(PROBLEM_DATA* problem, FIELD_DATA* field, MAP* field_info)
   }
   if (fieldnames[i]==NULL)
   {
-    dserror("unknown field type '%s'", type);
+    dserror_args(__FILE__, __LINE__, "unknown field type '%s'", type);
   }
 
   /*--------------------------------------------------------------------*/
@@ -770,7 +774,8 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
   }
   if (problem_names[i] == NULL)
   {
-    dserror("unknown problem type '%s'", type);
+    dserror_args(__FILE__, __LINE__, 
+        "unknown problem type '%s'", type);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1174,7 +1179,8 @@ void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name)
                 length,
                 chunk->result->value_file) != length)
       {
-        dserror("failed to read value file of field '%s'", result->field->name);
+        dserror_args(__FILE__, __LINE__, 
+            "failed to read value file of field '%s'", result->field->name);
       }
       byteswap_doubles(chunk->value_data, length);
     }
@@ -1193,7 +1199,8 @@ void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name)
                 length,
                 chunk->result->size_file) != length)
       {
-        dserror("failed to read size file of field '%s'", result->field->name);
+        dserror_args(__FILE__, __LINE__, 
+            "failed to read size file of field '%s'", result->field->name);
       }
       byteswap_ints(chunk->size_data, length);
     }
@@ -1216,7 +1223,8 @@ void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name)
                           chunk->result->value_file);
       if (length_read != length)
       {
-        dserror("failed to read value file of field '%s'", result->field->name);
+        dserror_args(__FILE__, __LINE__, 
+            "failed to read value file of field '%s'", result->field->name);
       }
       byteswap_doubles(chunk->value_data, length);
     }
@@ -1237,7 +1245,8 @@ void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name)
                           chunk->result->size_file);
       if (length_read != length)
       {
-        dserror("failed to read size file of field '%s'", result->field->name);
+        dserror_args(__FILE__, __LINE__, 
+            "failed to read size file of field '%s'", result->field->name);
       }
       byteswap_ints(chunk->size_data, length);
     }
@@ -1248,7 +1257,7 @@ void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name)
   }
   else
   {
-    dserror("chunk type '%s' not supported", type);
+    dserror_args(__FILE__, __LINE__, "chunk type '%s' not supported", type);
   }
 
 #endif
@@ -1323,7 +1332,8 @@ void chunk_read_size_entry(CHUNK_DATA* chunk, INT id)
             chunk->size_entry_length,
             chunk->result->size_file) != chunk->size_entry_length)
   {
-    dserror("failed to read size file of field '%s'", chunk->result->field->name);
+    dserror_args(__FILE__, __LINE__, 
+        "failed to read size file of field '%s'", chunk->result->field->name);
   }
   byteswap_ints(chunk->size_buf, chunk->size_entry_length);
 
@@ -1365,7 +1375,8 @@ void chunk_read_value_entry(CHUNK_DATA* chunk, INT id)
             chunk->value_entry_length,
             chunk->result->value_file) != chunk->value_entry_length)
   {
-    dserror("failed to read value file of field '%s'", chunk->result->field->name);
+    dserror_args(__FILE__, __LINE__, 
+        "failed to read value file of field '%s'", chunk->result->field->name);
   }
   byteswap_doubles(chunk->value_buf, chunk->value_entry_length);
 
@@ -1407,7 +1418,7 @@ void get_element_params(FIELD_DATA* field,
   *el_type = field->ele_param.size_buf[element_variables.ep_size_eltyp];
   if ((*el_type < 0) || (*el_type >= field->problem->element_type.length))
   {
-    dserror("element type %d exceeds range", *el_type);
+    dserror_args(__FILE__, __LINE__, "element type %d exceeds range", *el_type);
   }
 
   /* translate to internal value */
@@ -1416,7 +1427,7 @@ void get_element_params(FIELD_DATA* field,
   *dis     = field->ele_param.size_buf[element_variables.ep_size_distyp];
   if ((*dis < 0) || (*dis >= field->problem->distype.length))
   {
-    dserror("element dis %d exceeds range", *dis);
+    dserror_args(__FILE__, __LINE__, "element dis %d exceeds range", *dis);
   }
 
   *numnp   = field->ele_param.size_buf[element_variables.ep_size_numnp];
