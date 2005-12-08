@@ -28,7 +28,6 @@ void s8_funct_deriv(
 
   const DOUBLE   q12 = 1.0/2.0;
   const DOUBLE   q14 = 1.0/4.0;
-  const DOUBLE   q16 = 1.0/6.0;
   DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
   DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 

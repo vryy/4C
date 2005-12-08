@@ -35,13 +35,14 @@ void s8_tmat(ELEMENT    *ele,
              INT         option,
              INT         ngauss)
 {
-INT    i;
 DOUBLE C4[3][3][3][3];
-DOUBLE stress2[6],strain2[6];
-DOUBLE E;
+
+
 #ifdef DEBUG
 dstrc_enter("s8_tmat");
 #endif
+
+
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------ switch material type */
 switch(mat->mattyp)

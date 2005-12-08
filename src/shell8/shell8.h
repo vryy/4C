@@ -123,7 +123,12 @@ void s8_funct_deriv(DOUBLE     *funct,
 /*----------------------------------------------------------------------*
  |  s8_init.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8init(FIELD *actfield, PARTITION *actpart);
+void s8init(
+    FIELD              *actfield,
+    PARTITION          *actpart,
+    INT                 disnum);
+
+
 /*----------------------------------------------------------------------*
  |  s8_inpele.c                                          m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -479,12 +484,19 @@ void s8_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
 /*----------------------------------------------------------------------*
  |  s8_mat_ogden.c                                       m.gee 06/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
-                          DOUBLE **gkonr,DOUBLE **gmkovc);
+void s8_mat_ogden_coupled(
+    COMPOGDEN          *mat,
+    DOUBLE             *stress_cart,
+    DOUBLE              C_cart[3][3][3][3],
+    DOUBLE            **gkonr,
+    DOUBLE            **gmkovc
+    );
+
+
 void s8_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3]);
 void s8_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3]);
 void s8_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3]);
-void s8_kov_CGcuca(DOUBLE T[3][3], const DOUBLE **gkon);
+void s8_kov_CGcuca(DOUBLE T[3][3], DOUBLE **gkon);
 /*----------------------------------------------------------------------*
  |  s8_mat_ogden2.c                                      m.gee 06/03    |
  *----------------------------------------------------------------------*/
@@ -500,10 +512,10 @@ void s8_mat_ogden_uncoupled2(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[
  |  s8_mattransform.c                                    m.gee 06/03    |
  *----------------------------------------------------------------------*/
 void s8_kov_cuca(DOUBLE *t, const DOUBLE **gkon);
-void s8_kon_cacu(DOUBLE *t, const DOUBLE **gkon);
+void s8_kon_cacu(DOUBLE *t, DOUBLE **gkon);
 void s8_kov_cacu(DOUBLE *t, const DOUBLE **gkov);
-void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], const DOUBLE **gkon);
-void s8_c4_to_C2(const DOUBLE C[][3][3][3],DOUBLE **CC);
+void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], DOUBLE **gkon);
+void s8_c4_to_C2(DOUBLE C[][3][3][3],DOUBLE **CC);
 void s8_mat_linel_cart(STVENANT *mat,DOUBLE C[][3][3][3],DOUBLE **CC,DOUBLE *strain);
 /*----------------------------------------------------------------------*
  |  s8_static_mass.c                                     m.gee 06/03    |
@@ -533,5 +545,17 @@ void s8jacb(DOUBLE *A, DOUBLE *V);
 
 
 
+/*----------------------------------------------------------------------*
+ | s8_mat_viscoushyper.c                                 m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_ogden_viscous(
+    ELEMENT            *ele,
+    VISCOHYPER         *mat,
+    DOUBLE             *stress_cart,
+    DOUBLE              C_cart[3][3][3][3],
+    DOUBLE            **gkonr,
+    DOUBLE            **gmkovc,
+    INT                 gp
+    );
 
 #endif

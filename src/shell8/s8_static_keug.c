@@ -35,7 +35,7 @@ INT                 ngauss;
 DOUBLE diff;
 INT                 imass;                                  /* flag for calculating mass matrix */
 DOUBLE              density;                                /* density of the material */
-DOUBLE              facv,facw,facvw;                        /* variables for mass integration */
+DOUBLE              facv=0,facw=0,facvw=0;                  /* variables for mass integration */
 DOUBLE             *thick;
 
 INT                 nir,nis,nit;                            /* num GP in r/s/t direction */
@@ -124,7 +124,7 @@ static ARRAY        work_a;      static DOUBLE **work;      /* working array to 
 /* arrays for eas */
 INT                 nhyb;                                   /* scnd dim of P */
 DOUBLE              epsh[12];                               /* transformed eas strains */
-DOUBLE             *alfa;
+DOUBLE             *alfa = NULL;
 DOUBLE            **oldDtildinv;
 DOUBLE            **oldLt;
 DOUBLE             *oldRtild;
@@ -142,7 +142,7 @@ static ARRAY        eashelp_a;   static DOUBLE  *eashelp;   /* working vector fo
 /* arrays for ANS */
 INT                 ansq;
 const INT           nsansmax=6;
-INT                 nsansq;                                  /* number of sampling points for ans */
+INT                 nsansq = 0;                              /* number of sampling points for ans */
 DOUBLE              xr1[6];                                  /* coordinates of collocation points for ANS */
 DOUBLE              xs1[6];
 DOUBLE              xr2[6];

@@ -32,7 +32,6 @@ const INT mss=9;
 const INT mrs=7;
 const INT qr=2;
 const INT qs=4;
-const INT qt=5;
 const INT sr=8;
 const INT ss=10;
 const INT st=11;

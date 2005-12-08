@@ -63,7 +63,12 @@ switch (*action)
 {
 /*----------------------------- init the element routines and directors */
 case calc_struct_init:
-   s8init(actfield,actpart);
+   s8init(actfield,actpart,container->disnum);
+   if (actfield->subdivide > 0)
+   {
+     s8init(actfield,actpart,0);
+   }
+
    s8static_ke(NULL,NULL,NULL,NULL,NULL,0,0,1);
    s8static_keug(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
    s8static_mass(NULL,NULL,NULL,NULL,NULL,NULL,0,1);

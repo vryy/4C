@@ -21,7 +21,7 @@ void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain,
                             DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
                             DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc)
 {
-INT                 i,j,k,l,p,a,b,c,d;
+INT                 i,j,k,l,p,a,c;
 DOUBLE              nue;
 DOUBLE              beta,minusbeta;
 static DOUBLE       monethird;
@@ -31,7 +31,6 @@ DOUBLE              lame1;
 DOUBLE              kappa;
 DOUBLE              mu,E;                  /* shear and Young's modulus */
 DOUBLE              work,work2,sum1,sum2;
-DOUBLE              F[3][3];               /* deformation gradient */
 DOUBLE              J;                     /* detF = third invariant */
 DOUBLE              CG[3][3];              /* right-Cauchy Green strains */
 DOUBLE              CGlambda2[3];          /* eigenvalues of CG */
@@ -45,7 +44,9 @@ DOUBLE              PK2main[3];            /* 2.PK stresses in principal directi
 DOUBLE              C[3][3][3][3];         /* components of material tangent in principal directions */
 DOUBLE              C_vol[3][3][3][3];     /* volumetric components of material tangent in principal directions */
 DOUBLE              C_cartvol[3][3][3][3];
+/*
 DOUBLE              psi,psi1,psi2;
+*/
 
 DOUBLE              Ntest[3];
 #if 0

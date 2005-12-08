@@ -46,7 +46,9 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
       DOUBLE     *alfap;
       DOUBLE      J;
 
+      /*
       DOUBLE      psi1,psi2,psi;
+      */
 
       DOUBLE      CG[3][3];
       DOUBLE      N[3][3];

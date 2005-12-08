@@ -25,7 +25,7 @@ void s8_tforce(DOUBLE **force,
              ELEMENT *ele)
 {
 INT    i,j;
-INT    option;
+INT    option = 0;
 DOUBLE sn[3][3],sm[3][3];
 DOUBLE b[3][3];/*-------------------- basis vectors of orthogonal basis */
 DOUBLE cnorm;

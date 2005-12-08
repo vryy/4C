@@ -19,7 +19,10 @@ Maintainer: Michael Gee
 void s8_mat_linel(STVENANT *mat, DOUBLE **g, DOUBLE **CC)
 {
 INT i,j,k,l;
-DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
+
+/*----- shear correction coefficient not yet introduced */
+/* DOUBLE xsi=1.0;  */
+
 DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod,nue;/*--------------------------------------- mat constants */
@@ -120,7 +123,10 @@ void s8_mat_neohooke(NEO_HOOKE *mat,
                      DOUBLE     detc)
 {
 INT i,j,k,l;
-DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
+
+/*----- shear correction coefficient not yet introduced */
+/* DOUBLE xsi=1.0; */
+
 DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE sp[3][3];/*---------------------------------------- PK2 stresses */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */

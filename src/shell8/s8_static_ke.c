@@ -114,7 +114,7 @@ static ARRAY        work_a;      static DOUBLE **work;      /* working array to 
 /* arrays for eas */
 INT                 nhyb;                                   /* scnd dim of P */
 DOUBLE              epsh[12];                               /* transformed eas strains */
-DOUBLE             *alfa;
+DOUBLE             *alfa = NULL;
 DOUBLE            **oldDtildinv;
 DOUBLE            **oldLt;
 DOUBLE             *oldRtild;

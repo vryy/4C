@@ -34,7 +34,9 @@ and the type is in partition.h
  extern struct _PAR   par;
 
 /*---------------------------------------------------- local prototype */
-double cputime_thread();
+double cputime_thread(void);
+
+
 
 #include "../headers/standardtypes.h"
 #include <sys/time.h>
@@ -197,9 +199,8 @@ DOUBLE perf_time ()
 
 #if defined(HPUX11) && !defined(HPUX_GNU)
   DOUBLE time;
-  DOUBLE cputime_thread() , zero=0.0;
 
-  time = cputime_thread( zero );
+  time = cputime_thread( );
   ret = time;
 #endif
 
@@ -212,9 +213,8 @@ DOUBLE perf_time ()
 
 #if defined(HPUXITA) && !defined(HPUX_GNU)
   DOUBLE time;
-  DOUBLE cputime_thread() , zero=0.0;
 
-  time = cputime_thread( zero );
+  time = cputime_thread( );
   ret = time;
 #endif
 

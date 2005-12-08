@@ -36,7 +36,7 @@ INT          inode,idof;
 INT          nir;
 INT          nis;
 INT          nit;
-INT          iel;
+INT          iel = 0;
 INT          nd;
 INT          foundsurface;
 
@@ -72,7 +72,7 @@ INT             gp;
 DOUBLE          xgp[3];
 DOUBLE          xgp_n[3];
 DOUBLE          wgp[3];
-INT             dir;
+INT             dir = 0;
 DOUBLE          ds;
 DOUBLE          ar[3];
 

@@ -86,7 +86,7 @@ return;
  | storage mode is t[e11 e12 e13 e22 e23 e33]                           |
  | Must be called with contravariant base vectors !                     |
  *----------------------------------------------------------------------*/
-void s8_kon_cacu(DOUBLE *t, const DOUBLE **gkon)
+void s8_kon_cacu(DOUBLE *t, DOUBLE **gkon)
 {
 INT i,j;
 DOUBLE T[3][3],Tcart[3][3];
@@ -219,7 +219,7 @@ return;
  | cartesian to curvilinear                                             |
  | Must be called with contravariant base vectors base vectors !        |
  *----------------------------------------------------------------------*/
-void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], const DOUBLE **gkon)
+void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], DOUBLE **gkon)
 {
 INT i,j,k,l;
 INT m,n,p,q;
@@ -257,7 +257,7 @@ return;
 /*----------------------------------------------------------------------*
  |                                                        m.gee 5/03    |
  *----------------------------------------------------------------------*/
-void s8_c4_to_C2(const DOUBLE C[][3][3][3],DOUBLE **CC)
+void s8_c4_to_C2(DOUBLE C[][3][3][3],DOUBLE **CC)
 {
 #ifdef DEBUG
 dstrc_enter("s8_c4_to_C2");

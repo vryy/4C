@@ -19,7 +19,7 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 DOUBLE s8_local_coord_node(INT node, INT flag, enum _DIS_TYP typ)
 {
-DOUBLE     coord;
+DOUBLE     coord = 0.0;
 const DOUBLE node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
                               {0.0,1.0},{-1.0,0.0},{0.0,-1.0},{1.0,0.0},{0.0,0.0}};
 #ifdef DEBUG

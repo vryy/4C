@@ -17,8 +17,14 @@ Maintainer: Michael Gee
  | compressible ogden-material                            m.gee 6/03    |
  | no split in volumetric and deviatoric strains                        |
  *----------------------------------------------------------------------*/
-void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
-                          DOUBLE **gkonr,DOUBLE **gmkovc)
+void s8_mat_ogden_coupled(
+    COMPOGDEN          *mat,
+    DOUBLE             *stress_cart,
+    DOUBLE              C_cart[3][3][3][3],
+    DOUBLE            **gkonr,
+    DOUBLE            **gmkovc
+    )
+
 {
       INT      i,j,k,l,p;
       DOUBLE      mu;
@@ -31,7 +37,9 @@ void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][
       DOUBLE     *alfap;
       DOUBLE      J;
       DOUBLE      Jpowmbeta;
+#if 0
       DOUBLE      psi;
+#endif
 
       DOUBLE      CG[3][3];
       DOUBLE      N[3][3];
@@ -378,10 +386,14 @@ PK2[1][2] += PK2main[2] * N[1][2]*N[2][2];
 PK2[2][0] += PK2main[2] * N[2][2]*N[0][2];
 PK2[2][1] += PK2main[2] * N[2][2]*N[1][2];
 PK2[2][2] += PK2main[2] * N[2][2]*N[2][2];
-/* make symmetry
+*/
+/* make symmetry */
+/*
 PK2[1][0] = PK2[0][1];
 PK2[2][0] = PK2[0][2];
-PK2[2][1] = PK2[1][2];*/
+PK2[2][1] = PK2[1][2];
+*/
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -461,7 +473,10 @@ return;
 void s8_mat_lineltmp(DOUBLE E, DOUBLE nue, DOUBLE **g, DOUBLE **CC)
 {
 INT i,j,k,l;
-DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
+
+/*----- shear correction coefficient not yet introduced */
+/* DOUBLE xsi=1.0; */
+
 DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod;/*--------------------------------------- mat constants */
@@ -532,7 +547,10 @@ return;
 void s8_mat_linel_carttmp(DOUBLE emod, DOUBLE nue,
                          DOUBLE C[][3][3][3])
 {
+  /*
 INT i,j,k,l;
+*/
+
 DOUBLE l1,l2,ll2;
 /*
 DOUBLE e[3][3];
@@ -608,9 +626,9 @@ return;
  | Must be called with contravariant base vectors !                     |
  | Tensor must be symmetric!                                            |
  *----------------------------------------------------------------------*/
-void s8_kov_CGcuca(DOUBLE T[3][3], const DOUBLE **gkon)
+void s8_kov_CGcuca(DOUBLE T[3][3], DOUBLE **gkon)
 {
-INT i,j,k,l;
+INT i,j;
 DOUBLE Tcart[3][3];
 /*
 DOUBLE c[3][3];
