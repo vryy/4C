@@ -26,6 +26,25 @@ typedef struct _DESIGN
 
    INT ndvol;                 /* number of design volumes */
    struct _DVOL *dvol;        /* vector of design volumes */
+
+
+
+   INT *ndnode_fenode;
+   INT **dnode_fenode;
+   INT **dnode_fenode2;
+
+   INT *ndline_fenode;
+   INT **dline_fenode;
+   INT **dline_fenode2;
+
+   INT *ndsurf_fenode;
+   INT **dsurf_fenode;
+   INT **dsurf_fenode2;
+
+   INT *ndvol_fenode;
+   INT **dvol_fenode;
+   INT **dvol_fenode2;
+
 } DESIGN;
 
 

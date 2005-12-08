@@ -254,6 +254,7 @@ typedef struct _FIELD
 enum _FIELDTYP     fieldtyp;      /* typ of field */
 INT                ndis;          /* number of discretizations in this field */
 struct _DISCRET   *dis;           /* structure holding a number of discretisations */
+INT                subdivide;     /* subdivide the elements of this field */
 } FIELD;
 /*----------------------------------------------------------------------*
  | this structure holds one discretization of a field     m.gee 2/02    |
@@ -281,11 +282,7 @@ struct _GLINE     *gline;         /* vector of geometry lines */
 struct _GSURF     *gsurf;         /* vector of geometry surfaces */
 struct _GVOL      *gvol;          /* vector of geometry volumes */
 
-INT                dismode;       /* type of discretization:
-                                       0 = normal
-                                       1 = created
-                                       2 = only for calculation
-                                   */
+enum _DISCLASS     disclass;       /* class of discretization: */
 
 } DISCRET;
 
@@ -335,7 +332,6 @@ typedef struct _GENPROB
                                      * be compared to the calculated ones. */
 #endif
 
-  NODE            **nodes;
 
 } GENPROB;
 

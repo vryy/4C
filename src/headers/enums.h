@@ -52,6 +52,23 @@ typedef enum _FIELDTYP
 #define FIELDNAMES {"none", "fluid", "ale", "structure", NULL}
 
 
+
+/*----------------------------------------------------------------------*
+ | Discretisation classes                                   mn 10/05    |
+ *----------------------------------------------------------------------*/
+typedef enum _DISCLASS
+{
+                      dc_normal,
+                      dc_created_ale,
+                      dc_created_f2p,
+                      dc_created_tu,
+                      dc_subdiv_io,
+                      dc_subdiv_io_created_ale,
+                      dc_subdiv_calc
+} DISCLASS;
+
+
+
 /*----------------------------------------------------------------------*
  | DISRCETISATION MODES                                   genk 08/02    |
  *----------------------------------------------------------------------*/
@@ -60,6 +77,8 @@ typedef enum _DISMODE
                       dm_none,        /* unknown type of discretisation */
                       dm_q2q1
 } DISMODE;
+
+
 /*----------------------------------------------------------------------*
  | enum DIS_TYP                                           m.gee 6/01    |
  | type of discretization                                               |

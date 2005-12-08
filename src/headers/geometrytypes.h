@@ -57,6 +57,12 @@ typedef struct _NODE
                                                /* with a zero intersect.*/
 #endif
      INT                        locsysId;
+
+#ifdef SUBDIV
+     struct _NODE              *slave_node;
+     struct _NODE              *master_node;
+#endif
+
 } NODE;
 
 
@@ -120,6 +126,12 @@ typedef struct _ELEMENT
 /*----------------------------------------------------------------------*/
 
   enum _ELECOSYS    locsys;
+
+#ifdef SUBDIV
+     struct _ELEMENT      *slave_ele;
+     struct _ELEMENT      *master_ele;
+#endif
+
 } ELEMENT;
 
 
@@ -199,6 +211,10 @@ typedef struct _GNODE
   struct _HISTORY        *history;
 #endif
 
+#ifdef SUBDIV
+  INT                     slave_node;
+#endif
+
 } GNODE;
 
 
@@ -236,7 +252,16 @@ typedef struct _GLINE
 #ifdef D_SSI
      struct _SSI_COUPLE_CONDITION *ssicouple;
 #endif
+
+#ifdef SUBDIV
+  INT                     slave_node[MAX_DIVIDE];
+#endif
+
 } GLINE;
+
+
+
+
 /*----------------------------------------------------------------------*
  | 1 GSURF                                                 m.gee 3/02   |
  *----------------------------------------------------------------------*/
@@ -272,6 +297,14 @@ typedef struct _GSURF
      struct _FLUID_FREESURF_CONDITION *freesurf;
 #endif
 
+#ifdef SUBDIV
+  INT                     slave_node[MAX_DIVIDE][MAX_DIVIDE];
+
+  INT                     line_ind[2][4];
+  INT                     node_ind[4];
+#endif
+
+
 } GSURF;
 /*----------------------------------------------------------------------*
  | 1 GVOL                                                  m.gee 3/02   |
@@ -295,6 +328,14 @@ typedef struct _GVOL
 
    /*----------- boundary conditions */
      struct _NEUM_CONDITION       *neum;        /* neumann conditions to this GVOL, else NULL */
+
+#ifdef SUBDIV
+  INT                     slave_node[MAX_DIVIDE][MAX_DIVIDE][MAX_DIVIDE];
+
+  INT                     line_ind[2][12];
+  INT                     surf_ind[6];
+#endif
+
 } GVOL;
 
 
