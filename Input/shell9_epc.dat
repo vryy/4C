@@ -10,6 +10,7 @@
 // #define MAXELE                (4)
 // #define MAXDOFPERNODE         (6)     /*1 kinematic layers*/
 // #define MAXGAUSS              (8)     /*tot. 9 Layers with 2x2x2 GPs*/
+// #define MAXNOD_SHELL9         (4)
 // #define MAXRECORDPERELE       (6)
 //
 // #define MAXLAY_SHELL9         (1)      /* max. total number of layers */

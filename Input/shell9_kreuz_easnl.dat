@@ -10,12 +10,13 @@
 // #define MAXELE                (4)
 // #define MAXDOFPERNODE         (6)     /*1 kinematic layer*/
 // #define MAXGAUSS              (16)    /*tot. 2 Layers with 2x2x2 GPs*/
+// #define MAXNOD_SHELL9         (8)
 // #define MAXRECORDPERELE       (6)
 //
 // #define MAXLAY_SHELL9         (2)     /* max. total number of layers */
 // #define MAXKLAY_SHELL9        (1)     /* max. number of kin layers */
 // #define MAXNODESTRESS_SHELL9  (36)    /* Numnod*lt*numlay (Numnod=4 for Quad4 | Numnod=9 for Quad8/9)
-// #define MAXHYB_SHELL9         (4)     /* max. Number of EAS-Parameters */
+// #define MAXHYB_SHELL9         (8)     /* max. Number of EAS-Parameters */
 //
 ==================================================================
                         General Data File C_CARAT

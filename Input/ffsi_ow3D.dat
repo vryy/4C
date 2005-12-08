@@ -4,12 +4,14 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 // 
-// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F UMFPACK AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX
+// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F UMFPACK AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX BINIO
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (8)
+// #define MAXNOD_F3        (8)
+// #define MAXNOD_SHELL8    (8)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -32,18 +34,19 @@ NUMFLUIDDIS  1
 NUMSTRUCDIS  1
 NUMALEDIS    1
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   Yes
-STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    Yes
-STRUCT_STRESS_GID  No
-STRUCT_STRESS_GID_SMO  No
-FLUID_SOL_FILE         Yes
-FLUID_SOL_GID          Yes
-FLUID_STRESS_GID       Yes
-FLUID_VIS_FILE         No
-ALE_DISP_FILE          Yes
-ALE_DISP_GID           Yes
-MONITORING             No
+OUTPUT_OUT        No
+OUTPUT_GID        No
+OUTPUT_BIN        Yes
+STRUCT_DISP       Yes
+STRUCT_STRESS     No
+STRUCT_STRESS_SMO No
+STRUCT_SM_DISP    No
+STRUCT_SM_STRESS  No
+FLUID_SOL         Yes
+FLUID_STRESS      No
+FLUID_VIS         No
+ALE_DISP          Yes
+MONITORING        No
 ------------------------------------------------------------STATIC
 LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS

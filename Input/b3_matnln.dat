@@ -10,6 +10,7 @@
 // #define MAXELE           (2)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (1)
+// #define MAXNOD_BEAM3     (2)
 //
                         General Data File C_CARAT
 -------------------------------------------------------------TITLE

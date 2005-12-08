@@ -11,6 +11,7 @@
 // #define MAXELE           (4)
 // #define MAXDOFPERNODE    (3)
 // #define MAXGAUSS         (4)
+// #define MAXNOD_F2        (4)
 //
 ==================================================================
                         General Data File CCARAT
@@ -18,7 +19,7 @@
 -------------------------------------------------------------TITLE
 2d fluid channel with slip walls driven by neumann boundary
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS         400 
+ELEMENTS         400
 NODES            451
 DIM                2
 MATERIALS          1

@@ -4,10 +4,12 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 //
-// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX
+// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX BINIO
 //
 // #define MAXNOD           (8)
 // #define MAXNOD_F3        (8)
+// #define MAXNOD_SHELL8    (8)
+// #define MAXNOD_ALE3      (8)
 // #define MAXELE           (8)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (8)
@@ -34,17 +36,18 @@ NUMFLUIDDIS  1
 NUMSTRUCDIS  1
 NUMALEDIS    1
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   Yes
-STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    Yes
-STRUCT_STRESS_GID  No
-STRUCT_STRESS_GID_SMO  No
-FLUID_SOL_FILE         Yes
-FLUID_SOL_GID          Yes
-FLUID_STRESS_GID       Yes
-FLUID_VIS_FILE         No
-ALE_DISP_FILE          Yes
-ALE_DISP_GID           Yes
+OUTPUT_OUT        No
+OUTPUT_GID        Yes
+OUTPUT_BIN        Yes
+STRUCT_DISP       Yes
+STRUCT_STRESS     No
+STRUCT_STRESS_SMO No
+STRUCT_SM_DISP    No
+STRUCT_SM_STRESS  No
+FLUID_SOL         Yes
+FLUID_STRESS      No
+FLUID_VIS         No
+ALE_DISP          Yes
 MONITORING             No
 ------------------------------------------------------------STATIC
 LINEAR
@@ -52,9 +55,9 @@ LINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  10
-RESEVRYSTRS  20
-RESTARTEVRY  20
+RESEVRYDISP  1
+RESEVRYSTRS  1
+RESTARTEVRY  2
 TIMESTEP     0.05
 NUMSTEP      2
 MAXTIME      5.0
@@ -89,7 +92,7 @@ NUMCONT      1
 UPPSS        1
 UPOUT        1
 UPRES        1
-RESTARTEVRY  20
+RESTARTEVRY  2
 MAXTIME      1000.0
 NUMSTEP      2
 TIMESTEP     0.05
@@ -133,22 +136,22 @@ NUMSTEP      2
 MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
-RESEVRYDISP  10
+RESEVRYDISP  1
 QUALITY      none
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        GMRES
 AZPREC         SymmGaussSeidel
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          70  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         7  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        0
+AZTOL          1.0E-10
+AZITER         2500
+AZSUB          70
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         7
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Colsol

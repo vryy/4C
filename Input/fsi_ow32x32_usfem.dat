@@ -10,6 +10,9 @@
 // #define MAXELE           (4)
 // #define MAXDOFPERNODE    (3)
 // #define MAXGAUSS         (4)
+// #define MAXNOD_F2        (4)
+// #define MAXNOD_ALE3      (4)
+// #define MAXNOD_WALL1     (4)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -28,15 +31,18 @@ NUMFIELD     3
 TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   Yes
-STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    Yes
-STRUCT_STRESS_GID  No
-FLUID_SOL_FILE     Yes
-FLUID_SOL_GID      Yes
-FLUID_VIS_FILE     No
-ALE_DISP_FILE      Yes
-ALE_DISP_GID       Yes
+OUTPUT_OUT        No
+OUTPUT_GID        Yes
+OUTPUT_BIN        No
+STRUCT_DISP       Yes
+STRUCT_STRESS     No
+STRUCT_STRESS_SMO No
+STRUCT_SM_DISP    No
+STRUCT_SM_STRESS  No
+FLUID_SOL         Yes
+FLUID_STRESS      No
+FLUID_VIS         No
+ALE_DISP          Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS

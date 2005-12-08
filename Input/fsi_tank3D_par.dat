@@ -3,13 +3,16 @@
 //             genk@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
-// 
+//
 // necessary defines: D_FLUID D_FLUID3 SPOOLES_PACKAGE AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (8)
+// #define MAXNOD_F3        (8)
+// #define MAXNOD_ALE3      (8)
+// #define MAXNOD_SHELL8    (8)
 //
 ==================================================================
                         General Data File CCARAT

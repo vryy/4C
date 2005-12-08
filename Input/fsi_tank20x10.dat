@@ -10,6 +10,9 @@
 // #define MAXELE           (4)
 // #define MAXDOFPERNODE    (5)
 // #define MAXGAUSS         (4)
+// #define MAXNOD_F2        (4)
+// #define MAXNOD_ALE3      (4)
+// #define MAXNOD_WALL1     (4)
 //
 ==================================================================
                         General Data File C_CARAT

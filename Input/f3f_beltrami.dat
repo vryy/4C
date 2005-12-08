@@ -10,6 +10,7 @@
 // #define MAXELE           (8)
 // #define MAXDOFPERNODE    (4)
 // #define MAXGAUSS         (8)
+// #define MAXNOD_F3        (8)
 //
 ==================================================================
                         General Data File C_CARAT
@@ -32,18 +33,19 @@ NUMFLUIDDIS  1
 NUMSTRUCDIS  1
 NUMALEDIS    1
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   No
-STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    No
-STRUCT_STRESS_GID  No
-STRUCT_STRESS_GID_SMO  No
-FLUID_SOL_FILE         No
-FLUID_SOL_GID          Yes
-FLUID_STRESS_GID       Yes
-FLUID_VIS_FILE         No
-ALE_DISP_FILE          No
-ALE_DISP_GID           No
-MONITORING             No
+OUTPUT_OUT        No
+OUTPUT_GID        No
+OUTPUT_BIN        Yes
+STRUCT_DISP       No
+STRUCT_STRESS     No
+STRUCT_STRESS_SMO No
+STRUCT_SM_DISP    No
+STRUCT_SM_STRESS  No
+FLUID_SOL         Yes
+FLUID_STRESS      No
+FLUID_VIS         No
+ALE_DISP          Yes
+MONITORING        No
 ------------------------------------------------------------STATIC
 LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
@@ -59,7 +61,7 @@ NUMCONT      1
 UPPSS        1
 UPOUT        1
 UPRES        1
-RESTARTEVRY  20
+RESTARTEVRY  2
 MAXTIME      0.1
 NUMSTEP      4
 TIMESTEP     0.00625
