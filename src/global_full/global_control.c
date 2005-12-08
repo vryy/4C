@@ -10,13 +10,19 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+
+
 #include "../headers/standardtypes.h"
 #include "../io/io.h"
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 struct _FIELD         *field;
+
+
 
 #ifdef D_MLSTRUCT
 /*----------------------------------------------------------------------*
@@ -26,11 +32,15 @@ struct _FIELD         *field;
 struct _FIELD         *sm_field;
 #endif /* D_MLSTRUCT */
 
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  *----------------------------------------------------------------------*/
 struct _GENPROB       genprob;
+
+
 /*!----------------------------------------------------------------------
 \brief one proc's info about his partition
 
@@ -41,12 +51,16 @@ struct _GENPROB       genprob;
 
 *----------------------------------------------------------------------*/
 struct _PARTITION    *partition;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate design if needed                                 |
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 struct _DESIGN       *design;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -54,6 +68,8 @@ struct _DESIGN       *design;
  | struct _ALLDYNA       *alldyn;                                       |
  *----------------------------------------------------------------------*/
 ALLDYNA             *alldyn;
+
+
 /*----------------------------------------------------------------------*
  |                                                          al 08/02    |
  | pointer to allocate eigensolution variables                          |
@@ -61,12 +77,16 @@ ALLDYNA             *alldyn;
  | struct _ALLEIG       *alleig;                                        |
  *----------------------------------------------------------------------*/
 ALLEIG              *alleig;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 struct _STATIC_VAR   *statvar;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -74,6 +94,8 @@ struct _STATIC_VAR   *statvar;
  *----------------------------------------------------------------------*/
 struct _MATERIAL     *mat;
 struct _MULTIMAT     *multimat;
+
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -84,6 +106,8 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+
+
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -94,12 +118,21 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;
+
+
 /*----------------------------------------------------------------------*
  | main routine                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
-void ntam(INT argc, char *argv[])
+void ntam(
+    INT                 argc,
+    char               *argv[]
+    )
+
 {
+
   DOUBLE   t0,ti,tc;
+
+
 
   /* init all time counters */
 #ifdef PERF
@@ -107,9 +140,16 @@ void ntam(INT argc, char *argv[])
   perf_begin(0);
 #endif
 
-  /*-------------------------------------- init devices, tracing, etc...*/
+
+
+  /* init devices, tracing, etc...*/
   ntaini(argc,argv);
-  /*------------------------------input phase, input of all information */
+
+
+
+
+  /* input phase, input of all information */
+
   t0=ds_cputime();
 #ifdef PERF
   perf_begin(1);
@@ -128,9 +168,15 @@ void ntam(INT argc, char *argv[])
     printf("\n");
   }
 
-  /*------------------------------close the input file, delete the copy */
-  /*-------- You cannot read anything from input file beyond this point */
+
+  /* close the input file, delete the copy */
+  /* -> You cannot read anything from input file beyond this point */
   frend();
+
+
+
+
+
   /*-------------------------------------- check for visualisation mode */
   if (genprob.visual!=0) goto visualisation;
   /*------------------------------- set up field-specific communicators */

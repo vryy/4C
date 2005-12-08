@@ -124,7 +124,42 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
   for(j=0; j<actpart->ndis; j++)  /* loop all discretisations */
   {
 
+    count_vec = 0;
+
+    num_f3f_hex8_e = 0;
+    vec_f3f_hex8_e = 0;
+    cur_vec_f3f_hex8_e = 0;
+    cur_ele_f3f_hex8_e = 0;
+
+    num_f3f_hex20_e = 0;
+    vec_f3f_hex20_e = 0;
+    cur_vec_f3f_hex20_e = 0;
+    cur_ele_f3f_hex20_e = 0;
+
+    num_f3f_tet4_e = 0;
+    vec_f3f_tet4_e = 0;
+    cur_vec_f3f_tet4_e = 0;
+    cur_ele_f3f_tet4_e = 0;
+
+    num_f3f_hex8_a = 0;
+    vec_f3f_hex8_a = 0;
+    cur_vec_f3f_hex8_a = 0;
+    cur_ele_f3f_hex8_a = 0;
+
+    num_f3f_hex20_a = 0;
+    vec_f3f_hex20_a = 0;
+    cur_vec_f3f_hex20_a = 0;
+    cur_ele_f3f_hex20_a = 0;
+
+    num_f3f_tet4_a = 0;
+    vec_f3f_tet4_a = 0;
+    cur_vec_f3f_tet4_a = 0;
+    cur_ele_f3f_tet4_a = 0;
+
     actpdis  =  &(actpart->pdis[j]);
+
+
+    printf("divide_fast!! field: %d;  dis: %d\n\n",i,j);
 
     actpdis->num_fele   = 0;
     num_f3f_hex8_e      = 0;
@@ -467,6 +502,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
     } /* end of loop all elements */
 
+
     if (vec_f3f_hex8_e != 0 && cur_ele_f3f_hex8_e != 0)
       actpdis->fast_eles[cur_vec_f3f_hex8_e].aloopl = cur_ele_f3f_hex8_e;
 
@@ -486,8 +522,9 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
       actpdis->fast_eles[cur_vec_f3f_tet4_a].aloopl = cur_ele_f3f_tet4_a;
 
 
-  } /* end of loop all diss */
-} /* end of loop all fields */
+  }  /* for(j=0; j<actpart->ndis; j++) */
+
+}  /* for(i=0; i<genprob.numfld; i++) */
 
 
 

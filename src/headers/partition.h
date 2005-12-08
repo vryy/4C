@@ -132,7 +132,7 @@ typedef struct _FAST_ELES
                                         in this set */
   INT                aloopl;         /* the number of elements in this sets */
   struct _ELEMENT  **ele_vec;        /* a vector containing pointers to the
-                                        elemenst in this set */
+                                        elements in this set */
 } FAST_ELES;
 #endif
 
