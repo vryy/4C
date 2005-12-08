@@ -52,6 +52,7 @@
 # SPLIT_HEX20        # split up hex20 elements into 8 hex8 elements
                      # when writing output to GiD
 # S8_HEX8            # write 4-noded shell8 elements as hex8 in GiD
+# SUBDIV             # subdivide elements for calculation
 
 
 

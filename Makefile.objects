@@ -21,8 +21,9 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_calrhs.o \
                 src/global_full/global_restart_control.o \
                 src/global_full/global_open_files.o \
-		src/global_full/global_check_max.o \
-                src/global_full/global_divide_fast.o
+                src/global_full/global_check_max.o \
+                src/global_full/global_divide_fast.o \
+                src/global_full/global_subdivide.o
 #               structure
 OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
                 src/structure/stru_dyn_nln_expl.o \

@@ -1,7 +1,9 @@
 NAME                                 seq_all  par_all  seq_rel  par_rel
 -----------------------------------------------------------------------
 Input/ale2_nln.dat                      x        x        x        x
+Input/ale2_nln_sub4.dat                 x        x        x        x
 Input/ale_3d_hourg.dat                  x        x        x        x
+Input/ale_3d_hourg_sub2.dat             x        x        x        x
 Input/ale_3d_oll.dat                    x        x        x        x
 Input/ale_3d_sd.dat                     x        x        x        x
 Input/ale_3d_sd2.dat                    x        x        x        x
@@ -37,16 +39,21 @@ Input/f3_beltrami_fastass2_sd2.dat      x        x        x        x
 Input/f3_beltrami_umfpack_fastass.dat   -        -        -        -
 Input/f3_ew_Q1_27x.dat                  x        x        x        x
 Input/f3f_beltrami.dat                  x        x        x        x
+Input/f3f_beltrami_sub2.dat             x        x        x        x
 Input/f3f_ew_Q1_27x.dat                 x        x        x        x
 Input/f3f_ew_Q1_27x_sd.dat              x        x        x        x
 Input/f3f_ew_Q1_27x_sd2.dat             x        x        x        x
 Input/f3f_ew_Q1_27x_usfem.dat           x        x        x        x
+Input/f3f_ew_Q1_27x_usfem_sub2.dat      x        x        x        x
 Input/ffsi_ow3D.dat                     x        x        x        x
 Input/ffsi_ow3D_usfem.dat               x        x        x        x
 Input/ffsi_ow3D_usfem_ca.dat            x        x        x        x
+Input/ffsi_ow3D_usfem_ca_sub2.dat       x        x        x        x
+Input/ffsi_ow3D_usfem_sub2.dat          x        x        x        x
 Input/fsi_mtr_dc4x4.dat                 x        x        x        x
 Input/fsi_ow32x32.dat                   x        x        x        x
 Input/fsi_ow32x32_usfem.dat             x        x        x        x
+Input/fsi_ow3D_usfem.dat                x        x        x        x
 Input/fsi_tank20x10.dat                 x        x        x        x
 Input/fsi_tank3D.dat                    x        -        x        -
 Input/fsi_tank3D_par.dat                -        -        -        -
