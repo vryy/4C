@@ -1666,6 +1666,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_none:
       dserror("Typ of element unknown");
    break;
+
    default:
       dserror("Typ of element unknown");
    }/* end of calling elements */

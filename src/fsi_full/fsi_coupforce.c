@@ -89,7 +89,7 @@ III. PARALLEL with SOLVE_DIRICH defined
                  -> fcouple is allreduced after the call of fsi_cbf
 
 </pre>
-\param   *actpdis        PARTDISCRET    (i)  
+\param   *actpdis        PARTDISCRET    (i)
 \param    init           INT            (i)   init flag
 
 \warning At the moment only elements with the same number of dofs at all
@@ -514,68 +514,75 @@ II. without SOLVE_DIRICH:
 
 ------------------------------------------------------------------------*/
 #ifdef PARALLEL
-void fsi_allreduce_coupforce( DOUBLE *fcouple,
-                              DOUBLE *recvfcouple,
-                              INT     numeq_total,
-                              INT     numddof,
-                              INTRA  *actintra,
-                              FIELD  *actfield
-                            )
+void fsi_allreduce_coupforce(
+    DOUBLE             *fcouple,
+    DOUBLE             *recvfcouple,
+    INT                 numeq_total,
+    INT                 numddof,
+    INTRA              *actintra,
+    FIELD              *actfield,
+    INT                 disnum
+    )
+
 {
-INT  i, j;
-INT  dof;
 
-NODE  *actnode;
-GNODE *actgnode;
+  INT  i, j;
+  INT  dof;
 
-/*----------------------------------------------------------------------*/
+  NODE  *actnode;
+  GNODE *actgnode;
+
+
 #ifdef DEBUG
   dstrc_enter("fsi_allreduce_coupforce");
 #endif
 
-/* I. global solution includes Dirchlet dofs */
+
+  /* I. global solution includes Dirchlet dofs */
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-/* fcouple and recvfcouple are of length 'numeq_total' */
-MPI_Allreduce(fcouple,recvfcouple,numeq_total,MPI_DOUBLE,MPI_SUM,
-              actintra->MPI_INTRA_COMM);
-for (i=0; i<actfield->dis[0].numnp; i++)
-{
-   actnode  = &(actfield->dis[0].node[i]);
-   actgnode = actnode->gnode;
-   if(actgnode->fsicouple == NULL) continue; /* do nothing for uncoupled nodes */
-   for (j=0; j<genprob.ndim; j++)
-   {
+  /* fcouple and recvfcouple are of length 'numeq_total' */
+  MPI_Allreduce(fcouple,recvfcouple,numeq_total,MPI_DOUBLE,MPI_SUM,
+      actintra->MPI_INTRA_COMM);
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
+  {
+    actnode  = &(actfield->dis[disnum].node[i]);
+    actgnode = actnode->gnode;
+    if(actgnode->fsicouple == NULL) continue; /* do nothing for uncoupled nodes */
+    for (j=0; j<genprob.ndim; j++)
+    {
       dof = actnode->dof[j];
       /* recvfcouple indicated by dof */
       actnode->sol_mf.a.da[1][j] = recvfcouple[dof];
-   }
-}
-/* II. global solution without Dirchlet dofs */
+    }
+  }
+  /* II. global solution without Dirchlet dofs */
 #else
-/* fcouple and recvfcouple are of length 'numddof' = numdf - numeq_total */
-MPI_Allreduce(fcouple,recvfcouple,numddof,MPI_DOUBLE,MPI_SUM,
-              actintra->MPI_INTRA_COMM);
-for (i=0; i<actfield->dis[0].numnp; i++)
-{
-   actnode  = &(actfield->dis[0].node[i]);
-   actgnode = actnode->gnode;
-   if(actgnode->fsicouple == NULL) continue; /* do nothing for uncoupled nodes */
-   for (j=0; j<genprob.ndim; j++)
-   {
+  /* fcouple and recvfcouple are of length 'numddof' = numdf - numeq_total */
+  MPI_Allreduce(fcouple,recvfcouple,numddof,MPI_DOUBLE,MPI_SUM,
+      actintra->MPI_INTRA_COMM);
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
+  {
+    actnode  = &(actfield->dis[disnum].node[i]);
+    actgnode = actnode->gnode;
+    if(actgnode->fsicouple == NULL) continue; /* do nothing for uncoupled nodes */
+    for (j=0; j<genprob.ndim; j++)
+    {
       dof = actnode->dof[j];
       if (dof < numeq_total)
-         dserror("something is wrong!\n");
+        dserror("something is wrong!\n");
       /* recvfcouple indicated by dof-numeq_total */
       actnode->sol_mf.a.da[1][j] = recvfcouple[dof-numeq_total];
-   }
-}
+    }
+  }
 #endif /* SOLVE_DIRICH */
 
-/*----------------------------------------------------------------------*/
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
-return;
+
+  return;
+
 }
 #endif /* PARALLEL */
 
@@ -601,46 +608,60 @@ The forces are sorted into fsiforce by their global dof number.
 \return void
 
 ------------------------------------------------------------------------*/
-void fsi_load(PARTITION *actpart, DOUBLE *fsiforce, INT global_numeq)
+void fsi_load(
+    PARTITION          *actpart,
+    INT                 disnum,
+    DOUBLE             *fsiforce,
+    INT                 global_numeq
+    )
+
 {
-INT  i,j;
-INT  numnp;  /* number of nodes of this pdis */
-INT  dof;
+  INT  i,j;
+  INT  numnp;  /* number of nodes of this pdis */
+  INT  dof;
 
-NODE  *actnode, *actfnode;
-GNODE *actsgnode;
+  NODE  *actnode, *actfnode;
+  GNODE *actsgnode;
 
-/*----------------------------------------------------------------------*/
+
 #ifdef DEBUG
   dstrc_enter("fsi_load");
 #endif
 
-/*--------------------------------------------------- initialisation ---*/
-numnp = actpart->pdis->numnp;
 
-/*--------------------------------- loop over all nodes on this proc ---*/
-for (i=0; i<numnp; i++)
-{
-   actnode = actpart->pdis->node[i];
-   actsgnode = actnode->gnode;
-   if (actsgnode->fsicouple) /* node is on FSI interface */
-   {
+  /* initialisation */
+  numnp = actpart->pdis[disnum].numnp;
+
+
+  /* loop over all nodes on this proc */
+  for (i=0; i<numnp; i++)
+  {
+    actnode = actpart->pdis[disnum].node[i];
+    actsgnode = actnode->gnode;
+    if (actsgnode->fsicouple) /* node is on FSI interface */
+    {
       for(j=0; j<actnode->numdf; j++) /* loop nodal dofs */
       {
-         actfnode  = actsgnode->mfcpnode[genprob.numff];
-         dof = actnode->dof[j];
-         if ( dof>= global_numeq) continue;
-         if (par.myrank == actnode->proc)
-            fsiforce[dof] = actfnode->sol_mf.a.da[1][j];
+        actfnode  = actsgnode->mfcpnode[genprob.numff];
+        dof = actnode->dof[j];
+        if ( dof>= global_numeq) continue;
+        if (par.myrank == actnode->proc)
+          fsiforce[dof] = actfnode->sol_mf.a.da[1][j];
       }
-   }
-} /* end loop over nodes on proc*/
+    }
+  } /* end loop over nodes on proc*/
 
-/*----------------------------------------------------------------------*/
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
-return;
+
+  return;
+
 }
+
+
+
+
 
 #endif

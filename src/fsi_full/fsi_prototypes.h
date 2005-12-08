@@ -22,232 +22,345 @@ Maintainer: Steffen Genkinger
  | fsi_aitken.c                                                         |
  ************************************************************************/
 void fsi_aitken(
-                 FIELD          *structfield,
-		 INT             itnum,
-                 INT             init
-	       );
+    FIELD              *structfield,
+    INT                 disnum,
+    INT                 itnum,
+    INT                 init
+    );
+
 
 /************************************************************************
  | fsi_ale.c                                                            |
  ************************************************************************/
 void fsi_ale(
-               FIELD            *actfield,
-               INT               mctrl
-	    );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_ale_2step.c                                                            |
  ************************************************************************/
 void fsi_ale_2step(
-                    FIELD            *actfield,
-                    INT               mctrl
-	           );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_ale_laplace.c                                                            |
  ************************************************************************/
 void fsi_ale_laplace(
-                     FIELD            *actfield,
-                     INT               mctrl
-	            );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_ale_LAS.c                                                            |
  ************************************************************************/
 void fsi_ale_LAS(
-                  FIELD            *actfield,
-                  INT               mctrl
-	       );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_ale_lin.c                                                            |
  ************************************************************************/
 void fsi_ale_lin(
-                  FIELD            *actfield,
-                  INT               mctrl
-	       );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_ale_nln.c                                                            |
  ************************************************************************/
 void fsi_ale_nln(
-                   FIELD            *actfield,
-                   INT               mctrl
-	         );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_ale_spring.c                                                            |
  ************************************************************************/
 void fsi_ale_spring(
-                    FIELD            *actfield,
-                    INT               mctrl
-	           );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_coupforce.c                                                      |
  ************************************************************************/
-void fsi_cbf(PARTDISCRET    *actpdis,
-	     DOUBLE         *fcouple,
-             ARRAY_POSITION *ipos,
-             INT             numeq_total,
-             INT             init);
+void fsi_cbf(
+    PARTDISCRET        *actpdis,
+    DOUBLE             *fcouple,
+    ARRAY_POSITION     *ipos,
+    INT                 numeq_total,
+    INT                 init
+    );
+
+
 #ifdef PARALLEL
-void fsi_allreduce_coupforce( DOUBLE *fcouple,
-                              DOUBLE *recvfcouple,
-                              INT     numeq_total,
-                              INT     numddof,
-                              INTRA  *actintra,
-                              FIELD  *actfield
-                            );
+void fsi_allreduce_coupforce(
+    DOUBLE             *fcouple,
+    DOUBLE             *recvfcouple,
+    INT                 numeq_total,
+    INT                 numddof,
+    INTRA              *actintra,
+    FIELD              *actfield,
+    INT                 disnum
+    );
 #endif
-void fsi_load(PARTITION *actpart, DOUBLE *fsiforce, INT global_numeq);
+
+
+void fsi_load(
+    PARTITION          *actpart,
+    INT                 disnum,
+    DOUBLE             *fsiforce,
+    INT                 global_numeq
+    );
+
 
 /************************************************************************
  | fsi_coupling.c                                                       |
  ************************************************************************/
 void fsi_createfsicoup(void);
+
+
 void fsi_initcoupling(
-                          FIELD       *structfield,
-                          FIELD       *fluidfield,
-		          FIELD       *alefield
-		      );
+    FIELD              *structfield,
+    INT                 disnum_s,
+    FIELD              *fluidfield,
+    INT                 disnum_f,
+    FIELD              *alefield,
+    INT                 disnum_a
+    );
+
+
 void fsi_struct_intdofs(
-                          FIELD       *structfield
-		       );
+    FIELD              *structfield,
+    INT                 disnum
+    );
+
 
 /************************************************************************
  | fsi_dyn.c                                                            |
  ************************************************************************/
-void dyn_fsi(INT mctrl);
+void dyn_fsi(
+    INT                 mctrl
+    );
+
 
 /************************************************************************
  | fsi_energy.c                                                          |
  ************************************************************************/
 void fsi_dyneint(
-                       FIELD          *structfield,
-		       INT             init
-		);
+    FIELD              *structfield,
+    INT                 disnum,
+    INT                 init
+    );
+
+
 void fsi_energycheck( void );
+
 
 /************************************************************************
  | fsi_fluid.c                                                          |
  ************************************************************************/
 void fsi_fluid(
-		       FIELD          *actfield,
-		       INT             mctrl
-	      );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl
+    );
+
+
 /************************************************************************
  | fsi_gradient.c                                                       |
  ************************************************************************/
 void fsi_gradient(
-                  FIELD          *alefield,
-                  FIELD          *structfield,
-                  FIELD          *fluidfield,
-		  INT             numfa,
-		  INT             numff,
- 		  INT             numfs
-	         );
+    FIELD              *alefield,
+    FIELD              *structfield,
+    FIELD              *fluidfield,
+    INT                 disnuma_io,
+    INT                 disnuma_calc,
+    INT                 disnums_io,
+    INT                 disnums_calc,
+    INT                 disnumf_io,
+    INT                 disnumf_calc,
+    INT                 numfa,
+    INT                 numff,
+    INT                 numfs
+    );
+
+
 /************************************************************************
  | fsi_mortar.c                                                         |
  ************************************************************************/
 #ifdef D_MORTAR
 void fsi_initcoupling_intfaces(
-                  FIELD          *masterfield,
-                  FIELD          *slavefield,
-                  INTERFACES     *int_faces
-		  );
+    FIELD              *masterfield,
+    INT                 m_disnum,
+    FIELD              *slavefield,
+    INT                 s_disnum,
+    INTERFACES         *int_faces
+    );
+
+
 void fsi_init_interfaces(
-                  FIELD          *masterfield,
-                  FIELD          *slavefield,
-                  INTERFACES     *int_faces
-                  );
+    FIELD              *masterfield,
+    INT                 m_disnum,
+    FIELD              *slavefield,
+    INT                 s_disnum,
+    INTERFACES         *int_faces
+    );
+
+
 void fsi_mortar_coeff(
-                  FSI_DYNAMIC    *fsidyn,
-                  INTERFACES     *int_faces
-                  );
+    FSI_DYNAMIC        *fsidyn,
+    INTERFACES         *int_faces
+    );
+
+
 void fsi_detect_intersection(
-                  DOUBLE         lambdr1_2,
-                  DOUBLE         lambdr2_1,
-                  DOUBLE         lambdr2_2,
-                  DOUBLE         nr1_2,
-                  DOUBLE         nr2_1,
-                  DOUBLE         nr2_2,
-                  DOUBLE         *b1,
-                  DOUBLE         *b2,
-                  INT            *intersection
-                  );
+    DOUBLE              lambdr1_2,
+    DOUBLE              lambdr2_1,
+    DOUBLE              lambdr2_2,
+    DOUBLE              nr1_2,
+    DOUBLE              nr2_1,
+    DOUBLE              nr2_2,
+    DOUBLE             *b1,
+    DOUBLE             *b2,
+    INT                *intersection
+    );
+
+
 void fsi_calc_disp4ale(
-                  FSI_DYNAMIC    *fsidyn,
-                  INTERFACES     *int_faces
-                  );
+    FSI_DYNAMIC        *fsidyn,
+    INTERFACES         *int_faces
+    );
+
+
 void fsi_calc_intforces(
-                  INTERFACES     *int_faces
-                  );
+    INTERFACES         *int_faces
+    );
+
+
 void f2_fsiload(
-                  ELEMENT        *ele
-                  );
+    ELEMENT            *ele
+    );
+
+
 void fsi_put_coupforc2struct(
-                  FIELD          *masterfield,
-                  INTERFACES     *int_faces
-                  );
+    FIELD              *masterfield,
+    INT                 disnum,
+    INTERFACES         *int_faces
+    );
+
+
 void fsiserv_rhs_point_neum(
-                  DOUBLE         *rhs,
-                  INT            dimrhs,
-                  PARTITION      *actpart
-                  );
+    DOUBLE             *rhs,
+    INT                 dimrhs,
+    PARTITION          *actpart
+    );
 #endif
+
+
 /************************************************************************
  | fsi_relax_intdisp.c                                                  |
  ************************************************************************/
 void fsi_relax_intdisp(
-                            FIELD          *structfield
-		      );
+    FIELD              *structfield,
+    INT                 disnum
+    );
+
 
 /************************************************************************
  | fsi_service.c                                                        |
  ************************************************************************/
 void fsi_alecp(
-		             FIELD           *fluidfield,
-                             DOUBLE           dt,
-		             INT              numdf,
-		             INT              phase
-	       ) ;
+    FIELD              *fluidfield,
+    INT                 disnum,
+    DOUBLE              dt,
+    INT                 numdf,
+    INT                 phase
+    );
+
+
 void fsi_aleconv(
-		             FIELD  *fluidfield,
-		             INT     numdf,
-                             INT     pos1,
-		             INT     pos2
-                );
-void fsi_copysol(
-                              FIELD           *actfield,
-                              INT              from,
-		              INT              to,
-		              INT              flag
-		  );
+    FIELD              *fluidfield,
+    INT                 disnum,
+    INT                 numdf,
+    INT                 pos1,
+    INT                 pos2
+    );
+
+
 void fsi_fluidstress_result(
-                              FIELD           *actfield,
-                              INT              numdf
-			   );
+    FIELD           *actfield,
+    INT              disnum,
+    INT              numdf
+    );
+
+
 void fsi_algoout(
-			      INT               itnum
-	        );
+    INT                 itnum
+    );
+
+
 void fsi_structpredictor(
-                              FIELD            *actfield,
-                              INT               init
-		         );
-INT fsi_convcheck(            FIELD            *structfield,
-			      INT               itnum
-		 );
-void fsi_init_ale(FIELD *actfield,INT numr);
-void fluid_init_pos_ale(FIELD* fluidfield);
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 init
+    );
+
+
+INT fsi_convcheck(
+    FIELD              *structfield,
+    INT                 disnum,
+    INT                 itnum
+    );
+
+
+void fsi_init_ale(
+    FIELD              *actfield,
+    INT                 numr
+    );
+
+
+void fluid_init_pos_ale(
+    FIELD              *fluidfield,
+    INT                 disnum
+    );
 
 /************************************************************************
  | fsi_struct.c                                                         |
  ************************************************************************/
 void fsi_struct(
-		   FIELD             *actfield,
-		   INT                mctrl,
-		   INT                fsiitnum
-	       );
+    FIELD              *actfield,
+    INT                 disnum_calc,
+    INT                 disnum_io,
+    INT                 mctrl,
+    INT                 fsiitnum
+    );
+
 
 /*! @} (documentation module close)*/

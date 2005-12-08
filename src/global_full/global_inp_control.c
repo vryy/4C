@@ -20,6 +20,16 @@ Maintainer: Malte Neumann
 #include "../ssi_full/ssi_prototypes.h"
 #endif
 
+
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate design if needed                                 |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _DESIGN *design;
+
+
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | vector of numfld FIELDs, defined in global_control.c                 |
@@ -61,12 +71,7 @@ void interpolate_axishell_conds(DISCRET  *actdis);
 void ntainp()
 {
 
-  INT i,j,k,id;
-  INT  ngnode;
-  INT  ngline;
-  INT  ngsurf;
-  INT  ngvol;
-  INT  counter1, counter2, counter3, counter4;
+  INT i,j;
 
 
   /* the input of the tracing option has not been done yet, so
@@ -184,7 +189,8 @@ void ntainp()
 
   for (i=0; i<genprob.numfld; i++)
     for (j=0; j<field[i].ndis; j++)
-      inp_detailed_topology(&(field[i].dis[j]));
+      if (field[i].dis[j].disclass != dc_subdiv_calc)
+        inp_detailed_topology(&(field[i].dis[j]));
 
 #ifdef PERF
   perf_end(8);
@@ -202,11 +208,100 @@ void ntainp()
   perf_begin(9);
 #endif
 
-  inpdesign_topology_fe();
+  for (i=0; i<genprob.numfld; i++)
+    for (j=0; j<field[i].ndis; j++)
+      if (field[i].dis[j].disclass != dc_subdiv_calc)
+        inpdesign_topology_fe(&(field[i].dis[j]));
+
+
 
 #ifdef PERF
   perf_end(9);
 #endif
+
+
+
+  /* generate the second discretization for subdivision of elements */
+  /*================================================================*/
+#ifdef SUBDIV
+
+    if (genprob.create_dis != 1 && genprob.create_ale != 1)
+    {
+      design->dnode_fenode2 = (INT**)CCACALLOC(design->ndnode,sizeof(INT*));
+      design->dline_fenode2 = (INT**)CCACALLOC(design->ndline,sizeof(INT*));;
+      design->dsurf_fenode2 = (INT**)CCACALLOC(design->ndsurf,sizeof(INT*));;
+      design->dvol_fenode2  = (INT**)CCACALLOC(design->ndvol,sizeof(INT*));;
+
+      for (i=0; i<design->ndnode; i++)
+      {
+        design->dnode_fenode2[i]= (INT*)CCAMALLOC(sizeof(INT));
+      }
+
+      for (i=0; i<design->ndline; i++)
+      {
+        design->dline_fenode2[i]= (INT*)CCAMALLOC(sizeof(INT));
+      }
+
+      for (i=0; i<design->ndsurf; i++)
+      {
+        design->dsurf_fenode2[i]= (INT*)CCAMALLOC(sizeof(INT));
+      }
+
+      for (i=0; i<design->ndvol; i++)
+      {
+        design->dvol_fenode2[i] = (INT*)CCAMALLOC(sizeof(INT));
+      }
+    }
+
+
+
+  for (i=0; i<genprob.numfld; i++)
+    if (field[i].subdivide > 0)
+    {
+      global_subdivide(&(field[i]));
+
+    }  /* if (field[i].subdivide > 0) */
+
+
+#endif /* ifdef SUBDIV */
+
+
+  /* tidy up */
+  if (design->dnode_fenode2 != NULL)
+  if (design->dnode_fenode2[0] != NULL)
+  {
+    for (i=0; i<design->ndnode; i++) CCAFREE(design->dnode_fenode2[i]);
+    CCAFREE(design->dnode_fenode2);
+    for (i=0; i<design->ndline; i++) CCAFREE(design->dline_fenode2[i]);
+    CCAFREE(design->dline_fenode2);
+    for (i=0; i<design->ndsurf; i++) CCAFREE(design->dsurf_fenode2[i]);
+    CCAFREE(design->dsurf_fenode2);
+    for (i=0; i<design->ndvol; i++) CCAFREE(design->dvol_fenode2[i]);
+    CCAFREE(design->dvol_fenode2);
+  }
+
+  if (design->dnode_fenode != NULL)
+  if (design->dnode_fenode[0] != NULL)
+  {
+    for (i=0; i<design->ndnode; i++) CCAFREE(design->dnode_fenode[i]);
+    CCAFREE(design->dnode_fenode);
+    for (i=0; i<design->ndline; i++) CCAFREE(design->dline_fenode[i]);
+    CCAFREE(design->dline_fenode);
+    for (i=0; i<design->ndsurf; i++) CCAFREE(design->dsurf_fenode[i]);
+    CCAFREE(design->dsurf_fenode);
+    for (i=0; i<design->ndvol; i++) CCAFREE(design->dvol_fenode[i]);
+    CCAFREE(design->dvol_fenode);
+  }
+
+  if (design->ndnode_fenode != NULL)
+  {
+    CCAFREE(design->ndnode_fenode);
+    CCAFREE(design->ndline_fenode);
+    CCAFREE(design->ndsurf_fenode);
+    CCAFREE(design->ndvol_fenode);
+  }
+
+
 
 
   /*--------------------------------------- input of general dynamic data */

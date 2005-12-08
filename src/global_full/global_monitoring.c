@@ -100,11 +100,12 @@ extern struct _MONITOR *moni;
  | input of monitoring data                               genk 01/03    |
  *----------------------------------------------------------------------*/
 void monitoring(
-                  FIELD         *actfield,
-                  INT            numf,
-                  INT            actpos,
-                  DOUBLE         time
-               )
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 numf,
+    INT                 actpos,
+    DOUBLE              time
+    )
 {
 #ifndef NO_TEXT_OUTPUT
 INT i,j;
@@ -139,7 +140,7 @@ for (i=0;i<numnp;i++)
       numr=actmoni->onoff.a.ia[i][j];
       if (numr==-1) continue;
       nodepos = actmoni->monnodes.a.ia[i][1];
-      actnode = &(actfield->dis[0].node[nodepos]);
+      actnode = &(actfield->dis[disnum].node[nodepos]);
       dsassert(j<actnode->sol.sdim,"Monitoring fails!\n");
       actval = actnode->sol.a.da[actpos][j];
       actmoni->val.a.dv[numr] = actval;

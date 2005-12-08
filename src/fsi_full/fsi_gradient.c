@@ -60,13 +60,19 @@ see Dissertation of D.P.MOK, p. 125 ff
 
 ------------------------------------------------------------------------*/
 void fsi_gradient(
-                  FIELD          *alefield,
-                  FIELD          *structfield,
-                  FIELD          *fluidfield,
-		  INT             numfa,
-		  INT             numff,
-		  INT             numfs
-	         )
+    FIELD              *alefield,
+    FIELD              *structfield,
+    FIELD              *fluidfield,
+    INT                 disnuma_io,
+    INT                 disnuma_calc,
+    INT                 disnums_io,
+    INT                 disnums_calc,
+    INT                 disnumf_io,
+    INT                 disnumf_calc,
+    INT                 numfa,
+    INT                 numff,
+    INT                 numfs
+    )
 {
 INT       i,j;           /* counters                                    */
 INT       numveldof;     /* number of velocity dofs                     */
@@ -95,9 +101,9 @@ fdyn   = alldyn[genprob.numff].fdyn;
 sdyn   = alldyn[genprob.numsf].sdyn;
 fsidyn = alldyn[3].fsidyn;
 
-fluid_ipos = &(fluidfield->dis[0].ipos);
+fluid_ipos = &(fluidfield->dis[disnumf_calc].ipos);
 
-numnp_fluid  = fluidfield->dis[0].numnp;
+numnp_fluid  = fluidfield->dis[disnumf_calc].numnp;
 numveldof    = fdyn->numdf - 1;
 dt           = fsidyn->dt;
 
@@ -107,23 +113,23 @@ if (par.myrank==0)
 
 /*=== 5.a ===*/
 /*-- calculate residuum g_i and write it to sol_mf[6][i] of structfield */
-solserv_sol_zero(structfield,0,node_array_sol_mf,6);
-solserv_sol_add(structfield, 0, node_array_sol_mf, node_array_sol_mf, 0, 6, 1.0);
-solserv_sol_add(structfield, 0, node_array_sol_mf, node_array_sol_mf, 1, 6,-1.0);
+solserv_sol_zero(structfield,disnums_calc,node_array_sol_mf,6);
+solserv_sol_add(structfield, disnums_calc, node_array_sol_mf, node_array_sol_mf, 0, 6, 1.0);
+solserv_sol_add(structfield, disnums_calc, node_array_sol_mf, node_array_sol_mf, 1, 6,-1.0);
 
 /*=== 5.b ===*/
 /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
-fsi_ale(alefield, 6);
+fsi_ale(alefield, disnuma_calc, disnuma_io, 6);
 /* note: The ale solution of the auxiliary problem is always performed
          linear. */
 
 /*=== 5.c,d ===*/
 /*------------------------------------- create some additional space ---*/
-solserv_sol_zero(alefield,0,node_array_sol_mf,2);
+solserv_sol_zero(alefield,disnuma_calc,node_array_sol_mf,2);
 /*------------------------------------- mesh velocity to fluid field ---*/
 for (i=0;i<numnp_fluid;i++) /*----------------------- loop all nodes ---*/
 {
-   actfnode  = &(fluidfield->dis[0].node[i]);
+   actfnode  = &(fluidfield->dis[disnumf_calc].node[i]);
    actfgnode = actfnode->gnode;
    actanode  = actfgnode->mfcpnode[numfa];
 
@@ -141,11 +147,11 @@ for (i=0;i<numnp_fluid;i++) /*----------------------- loop all nodes ---*/
 
 /*=== 5.e,f,g ===*/
 /*------------------------------------------------------ solve fluid ---*/
-fsi_fluid(fluidfield,6);
+fsi_fluid(fluidfield,disnumf_calc,disnumf_io,6);
 
 /*=== 5.h ===*/
 /*-------------------------------------------------- solve structure ---*/
-fsi_struct(structfield,6,0);
+fsi_struct(structfield,disnums_calc,disnums_io,6,0);
 
 /*=== 5.i ===*/
 /*----------------------------------- determine relaxation parameter ---*/
@@ -168,8 +174,8 @@ using the steepest descent method.
 
 omega = (g_i^T * g_i) / (g_i^T * (-d_Gamma + g_i) )
 
-g_i 		stored on node->sol_mf.a.da[6][i]
-d_Gamma		stored on node->sol.a.da[8][i]
+g_i             stored on node->sol_mf.a.da[6][i]
+d_Gamma         stored on node->sol.a.da[8][i]
 
 NOTE: This routine is called by 'fsi_gradient()' above only, where the
       static pointer fsidyn is set appropriately.

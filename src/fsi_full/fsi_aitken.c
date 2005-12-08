@@ -10,13 +10,22 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
+
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
+
+
 #include "../headers/standardtypes.h"
 #include "fsi_prototypes.h"
+
+
 #ifdef D_FSI
+
+
 static DOUBLE done = 1.0E20;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -24,18 +33,24 @@ static DOUBLE done = 1.0E20;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB       genprob;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
  extern struct _PAR   par;
+
+
 /*!---------------------------------------------------------------------*
 \brief compute relaxation parameter via AITKEN iteration
 
@@ -58,12 +73,15 @@ see also Dissertation of D.P.MOK, chapter 6.4
 \return void
 
 ------------------------------------------------------------------------*/
-void fsi_aitken(
-                 FIELD          *structfield,
-		 INT             itnum,
-                 INT             init
-	       )
+ void fsi_aitken(
+     FIELD             *structfield,
+     INT                disnum,
+     INT                itnum,
+     INT                init
+     )
+
 {
+
 INT            i,j;           /* some counters                          */
 INT            numdf;         /* number of nodal dofs                   */
 INT            dof;           /* actual dof                             */
@@ -80,9 +98,11 @@ static DOUBLE *del;           /* DELTAd(i)                              */
 NODE          *actsnode;      /* actual structural node                 */
 static FSI_DYNAMIC *fsidyn;
 
+
 #ifdef DEBUG
 dstrc_enter("fsi_aitken");
 #endif
+
 
 switch (init)
 {
@@ -93,25 +113,33 @@ case 0: /* initialisation */
       nu       = ZERO;
    else
       nu       = ONE - fsidyn->relax;
-   numnp_total = structfield->dis[0].numnp;
+
+
+   numnp_total = structfield->dis[disnum].numnp;
    sid         = fsidyn->sid.a.iv;
    numdf_total = fsidyn->sid.fdim;
    del         = amdef("del",&del_a,numdf_total,1,"DV");
 break;
+
+
 case 1: /* calculation */
    if (itnum==0)
       aminit(&del_a,&done);
-   /*-------------------- the solution history sol_mf of the structfield:
-   - sol_mf[0][j] holds the latest struct-displacements
-   - sol_mf[1][j] holds the (relaxed) displacements of the last iteration step
 
-    *------------------------------------------------------- loop nodes */
+   /* the solution history sol_mf of the structfield:
+      - sol_mf[0][j] holds the latest struct-displacements
+      - sol_mf[1][j] holds the (relaxed) displacements of the last iteration step
+    */
+
+
+   /* loop structure nodes */
    for (i=0;i<numnp_total;i++)
    {
-      actsnode  = &(structfield->dis[0].node[i]);
+      actsnode  = &(structfield->dis[disnum].node[i]);
       numdf = actsnode->numdf;
       sol_mf = actsnode->sol_mf.a.da;
-      /*------------------------------ loop dofs and check for coupling */
+
+      /* loop dofs and check for coupling */
       for (j=0;j<numdf;j++)
       {
          dof = actsnode->dof[j];
@@ -122,25 +150,36 @@ case 1: /* calculation */
          del2     = del2 - del[dof];
          top     += del2*del[dof];
          den     += del2*del2;
+
       } /* end of loop over dofs */
+
    } /* end of loop over nodes */
 
    nu = nu + (nu - ONE)*top/den;
 
-   /*------------------------------------------------------- finalising */
+   /* finalising */
    fsidyn->relax = ONE - nu;
-   /*---------------------------------------------- output to the screen */
+
+
+   /* output to the screen */
    if (par.myrank==0)
    printf("\nAITKEN ITERATION: RELAX = %.5lf\n\n",fsidyn->relax);
+
 break;
-}
+
+}  /* switch (init) */
 
 
 #ifdef DEBUG
 dstrc_exit();
 #endif
+
 return;
+
 } /* end of fsi_aitken */
+
+
+
 
 #endif
 

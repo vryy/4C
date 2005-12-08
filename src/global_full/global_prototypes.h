@@ -94,11 +94,12 @@ void locsys_trans_nodval(ELEMENT *actele, DOUBLE *val, INT numdf,
   | global_monitoring.c                                  genk 01/03    |
  *----------------------------------------------------------------------*/
 void monitoring(
-                  FIELD         *actfield,
-                  INT            numf,
-                  INT            actpos,
-                  DOUBLE         time
-               );
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 numf,
+    INT                 actpos,
+    DOUBLE              time
+    );
 
 
 /*----------------------------------------------------------------------*
@@ -171,6 +172,7 @@ void calinit(
 void calreduce(
     FIELD         *actfield,    /* the active field */
     PARTITION     *actpart,     /* my partition of this field */
+    INT            disnum,
     INTRA         *actintra,    /* the field's intra-communicator */
     CALC_ACTION   *action,      /* action for element routines */
     CONTAINER     *container);  /*!< contains variables defined in container.h */
@@ -220,6 +222,17 @@ void check_max_sizes(void);
 #ifdef D_FLUID3_F
 void divide_fast(void);
 #endif
+
+
+/*----------------------------------------------------------------------*
+  | global_subdivide.c                                        mn 09/04 |
+ *----------------------------------------------------------------------*/
+#ifdef SUBDIV
+#endif
+void global_subdivide(
+    FIELD              *actfield
+    );
+
 
 
 

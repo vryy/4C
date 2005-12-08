@@ -112,10 +112,12 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
       called by: fsi_ale()
 
 *----------------------------------------------------------------------*/
-void fsi_ale_LAS(
-                  FIELD            *actfield,
-                  INT               mctrl
-	       )
+ void fsi_ale_LAS(
+     FIELD             *actfield,
+     INT                disnum_calc,
+     INT                disnum_io,
+     INT                mctrl
+     )
 {
 INT              i,j;
 INT              mone=-1;
@@ -143,6 +145,7 @@ static ALE_DYNAMIC  *adyn;
 static BIN_OUT_FIELD out_context;
 #endif
 
+
 #ifdef DEBUG
 dstrc_enter("fsi_ale_LAS");
 #endif
@@ -168,8 +171,8 @@ actintra->intra_nprocs   = 1;
 #endif
 
 numff        = genprob.numff;
-numnp_total = actfield->dis[0].numnp;
-actdis       = &(actfield->dis[0]);
+numnp_total = actfield->dis[disnum_calc].numnp;
+actdis       = &(actfield->dis[disnum_calc]);
 actpos=0;
 outstep=0;
 pssstep=0;
@@ -215,20 +218,20 @@ for (i=0;i<numnp_total;i++)
 init_bin_out_field(&out_context,
                    NULL,
                    NULL,
-                   actfield, actpart, actintra, 0);
+                   actfield, actpart, actintra, disnum_io);
 #endif
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
 {
    out_monitor(actfield,numaf,ZERO,1);
-   monitoring(actfield,numaf,actpos,adyn->time);
+   monitoring(actfield,disnum_calc,numaf,actpos,adyn->time);
 }
 
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp==1 && ioflags.output_out==1)
 {
-    out_sol(actfield,actpart,actintra,adyn->step,actpos);
+    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
 }
 
 
@@ -273,13 +276,13 @@ case 3:
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
 {
-   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,0,2);
-   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
+   solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_mf,0,2);
+   solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_mf,1,0);
 }
 
 /*--------------------- to get the corrected free surface position copy
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
-solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol,0,actpos);
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol,0,actpos);
 
 /*---------------------------------------------- increment output flags */
 outstep++;
@@ -299,12 +302,12 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis==1 && par.myrank==0)
 if (outstep==adyn->updevry_disp && ioflags.ale_disp==1 && ioflags.output_out==1)
 {
     outstep=0;
-    out_sol(actfield,actpart,actintra,adyn->step,actpos);
+    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
 }
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numaf,actpos,adyn->time);
+monitoring(actfield,disnum_calc,numaf,actpos,adyn->time);
 
 
 /*------------------------------------------------- write restart data */
@@ -328,7 +331,9 @@ break;
  *======================================================================*/
 case 98:
 #ifdef BINIO
-  out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+  if (ioflags.output_bin)
+    if (ioflags.ale_disp==1)
+      out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
 #endif
   break;
 
@@ -342,7 +347,7 @@ if (pssstep==0) actpos--;
 
 /*------------------------------------------- print out results to .out */
 if (outstep!=0 && ioflags.ale_disp==1 && ioflags.output_out==1)
-  out_sol(actfield,actpart,actintra,adyn->step,actpos);
+  out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
 
 /*------------------------------------------- print out result to 0.pss */
 if (ioflags.fluid_vis==1 && par.myrank==0)

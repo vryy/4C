@@ -124,10 +124,12 @@ interface and at the free surface as Dirichlet boundary conditions
       called by: fsi_ale()
 
 *----------------------------------------------------------------------*/
-void fsi_ale_laplace(
-                      FIELD            *actfield,
-                      INT               mctrl
-	             )
+ void fsi_ale_laplace(
+     FIELD             *actfield,
+     INT                disnum_calc,
+     INT                disnum_io,
+     INT                mctrl
+     )
 {
 INT        	i;		  /* a counter  		                        */
 static INT      numaf;            /* actual number of ale field                         */
@@ -158,6 +160,7 @@ static ALE_DYNAMIC  *adyn;
 static BIN_OUT_FIELD out_context;
 #endif
 
+
 #ifdef DEBUG
 dstrc_enter("fsi_ale_laplace");
 #endif
@@ -178,14 +181,14 @@ adyn->nstep=fsidyn->nstep;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 container.isdyn   = 1;
-container.actndis = 0;
+container.disnum  = disnum_calc;
 container.pos     = 0;
 actpos=0;
 outstep=0;
 pssstep=0;
 restartstep=0;
 /*------------ the distributed system matrix, which is used for solving */
-actsysarray=0;
+actsysarray=disnum_calc;
 numsys = 1;  /* the number of system matrices */
 /*--------------------------------------------------- set some pointers */
 actsolv     = &(solv[numaf]);
@@ -217,7 +220,7 @@ if (fsidyn->ifsi == 6)
       formerly lenght 1, now lenght 2 */
    numsys++;
    actsolv->nsysarray=2;
-   constsysarray = 1;
+   constsysarray = actsysarray+1;
    actsolv->sysarray_typ =
    (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
    actsolv->sysarray =
@@ -259,25 +262,23 @@ actsolv->nsol=1;
 solserv_create_vec(&(actsolv->rhs),1,numeq_total,numeq,"DV");
 solserv_create_vec(&(actsolv->sol),1,numeq_total,numeq,"DV");
 /*------------------------------ init the created dist. vectors to zero */
-for (i=0; i<actsolv->nrhs; i++)
-   solserv_zero_vec(&(actsolv->rhs[i]));
-for (i=0; i<actsolv->nsol; i++)
-   solserv_zero_vec(&(actsolv->sol[i]));
+solserv_zero_vec(&(actsolv->rhs[0]));
+solserv_zero_vec(&(actsolv->sol[0]));
 /*----------- create a vector of full length for dirichlet part of rhs */
 dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 /*--------------------------- allocate one vector for storing the time */
 if (par.myrank==0) amdef("time",&time_a,1000,1,"DV");
 /*--------------------------------------------------- initialize solver */
 init=1;
-for (i = 0; i<numsys; i++)
+for (i = actsysarray; i<actsysarray+numsys; i++)
 {
    solver_control(
                        actsolv,
                        actintra,
                      &(actsolv->sysarray_typ[i]),
                      &(actsolv->sysarray[i]),
-                     &(actsolv->sol[actsysarray]),
-                     &(actsolv->rhs[actsysarray]),
+                     &(actsolv->sol[0]),
+                     &(actsolv->rhs[0]),
                        init
                     );
    /*------------------------------ init the dist sparse matrix to zero */
@@ -288,7 +289,7 @@ for (i = 0; i<numsys; i++)
                        &(actsolv->sysarray_typ[i])
                       );
    /*---------------------------- init the assembly for sparse matrices */
-   init_assembly(actpart,actsolv,actintra,actfield,i,0);
+   init_assembly(actpart,actsolv,actintra,actfield,i,disnum_calc);
 }
 
 /*------------------------------- init the element calculating routines */
@@ -304,9 +305,9 @@ fsi_init_ale(actfield,2);
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
 init_bin_out_field(&out_context,
-                   &(actsolv->sysarray_typ[0]),
-                   &(actsolv->sysarray[0]),
-                   actfield, actpart, actintra, 0);
+                   &(actsolv->sysarray_typ[actsysarray]),
+                   &(actsolv->sysarray[actsysarray]),
+                   actfield, actpart, actintra, disnum_io);
 #endif
 
 /*--------------------------------------------------- check for restart */
@@ -318,7 +319,7 @@ if (genprob.restart!=0)
                            &(actsolv->sysarray[i]),
                            actfield,
                            actpart,
-                           0,
+                           disnum_io,
                            actintra,
                            genprob.restart);
 #else
@@ -330,13 +331,13 @@ if (genprob.restart!=0)
 if (ioflags.monitor==1)
 {
    out_monitor(actfield,numaf,ZERO,1);
-   monitoring(actfield,numaf,actpos,adyn->time);
+   monitoring(actfield,disnum_calc,numaf,actpos,adyn->time);
 }
 
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL
 if (ioflags.ale_disp==1 && par.myrank==0)
-out_gid_domains(actfield);
+out_gid_domains(actfield,disnum_io);
 #endif
 
 if (fsidyn->ifsi == 6) /* if we do steepest descent method! */
@@ -376,17 +377,17 @@ if (par.myrank==0)
 /*--------------------------------------- sequential staggered schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi<3 && fsidyn->ifsi>0)
-solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_mf,1,0);
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
 
 /*------------------------------ init the created dist. vectors to zero */
-solserv_zero_vec(&(actsolv->rhs[actsysarray]));
-solserv_zero_vec(&(actsolv->sol[actsysarray]));
+solserv_zero_vec(&(actsolv->rhs[0]));
+solserv_zero_vec(&(actsolv->sol[0]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich_increment_fsi(actfield,adyn,actpos);
+ale_setdirich_increment_fsi(actfield,disnum_calc,adyn,actpos);
 /*----------------------------------------------------------------------*/
 solserv_zero_mat(actintra,
 		 &(actsolv->sysarray[actsysarray]),
@@ -423,7 +424,7 @@ calelm(actfield,actsolv,actpart,actintra,
        actsysarray,-1,&container,action);
 /*------------------------ add rhs from prescribed displacements to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
-     &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),
+     &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[0]),
      dirich,1.0);
 
 /*--------------------------------------------------------- call solver */
@@ -433,31 +434,32 @@ solver_control(
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
                   &(actsolv->sysarray[actsysarray]),
-                  &(actsolv->sol[actsysarray]),
-                  &(actsolv->rhs[actsysarray]),
+                  &(actsolv->sol[0]),
+                  &(actsolv->rhs[0]),
                     init
                  );
 /*---------------------allreduce the result and put it to sol_increment */
 solserv_result_incre(
                      actfield,
+                     disnum_calc,
                      actintra,
-                     &(actsolv->sol[actsysarray]),
+                     &(actsolv->sol[0]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray]),
-                     0);
+                     &(actsolv->sysarray_typ[actsysarray])
+                     );
 
 /*---------- add actual solution increment to sol (to serve output): ---*/
 /* step 1: */
    /* copy prev. solution form sol_increment[1][j] to sol[actpos][j] ---*/
-solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,actpos);
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_increment,node_array_sol,1,actpos);
 /* step 2: */
        /*----------- add actual solution increment to sol[actpos][j] ---*/
-solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol,0,actpos,1.0);
+solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,node_array_sol,0,actpos,1.0);
 
 /* save actual solution to be the previous one in the next time step ---*/
 /*--------- copy actual solution from sol[actpos][i] to sol_mf[1][i] ---*/
-solserv_sol_copy(actfield,0,node_array_sol,node_array_sol_mf,actpos,1);
+solserv_sol_copy(actfield,disnum_calc,node_array_sol,node_array_sol_mf,actpos,1);
 
 /*----------------------------------------------------------------------*/
 if (fsidyn->ifsi>=4 || fsidyn->ifsi<0)
@@ -471,16 +473,25 @@ case 3:
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
 {
-   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,0,2);
-   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
+   solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_mf,0,2);
+   solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_mf,1,0);
 }
 
 /*--------------------- to get the corrected free surface position copy
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
-solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol,0,actpos);
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol,0,actpos);
 
 /*---------------------------- from sol_mf[1][j] to sol_increment[1][j] */
-solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_increment,1,1);
+solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_increment,1,1);
+
+#ifdef SUBDIV
+      /* transfer the solution to the nodes of the master-dis */
+      if (actfield->subdivide > 0)
+      {
+        solserv_sol_trans(actfield, disnum_calc, node_array_sol, actpos);
+      }
+#endif
+
 
 /*------------------------------------------- print out results to .out */
 outstep++;
@@ -490,11 +501,13 @@ restartstep++;
 if (outstep==adyn->updevry_disp && ioflags.ale_disp==1 && ioflags.output_out==1)
 {
     outstep=0;
-    out_sol(actfield,actpart,actintra,adyn->step,actpos);
+    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
 }
+
+
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numaf,actpos,adyn->time);
+monitoring(actfield,disnum_calc,numaf,actpos,adyn->time);
 
 if (pssstep==fsidyn->uppss && ioflags.fluid_vis==1 && par.myrank==0)
 {
@@ -549,8 +562,8 @@ if (par.myrank==0)
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
 
 /*------------------------------ init the created dist. vectors to zero */
-solserv_zero_vec(&(actsolv->rhs[actsysarray]));
-solserv_zero_vec(&(actsolv->sol[actsysarray]));
+solserv_zero_vec(&(actsolv->rhs[0]));
+solserv_zero_vec(&(actsolv->sol[0]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 
@@ -560,16 +573,16 @@ amzero(&dirich_a);
 	 But there's no test to set all ordinary dbc = 0.0 !!!
 	 The required Dirichlet boundary conditions from fsi coupling
 	 are calculated here.						*/
-ale_setdirich(actfield,adyn,6);
+ale_setdirich(actfield,disnum_calc,adyn,6);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
-ale_rhs(actsolv,actpart,actintra,constsysarray,-1,dirich,
+ale_rhs(actsolv,actpart,disnum_calc,actintra,constsysarray,-1,dirich,
         numeq_total,&container,action);
 
 /*------ add rhs from fsi coupling (-> prescribed displacements) to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[constsysarray]),
-  &(actsolv->sysarray[constsysarray]),&(actsolv->rhs[actsysarray]),
+  &(actsolv->sysarray[constsysarray]),&(actsolv->rhs[0]),
   dirich,1.0);
 
 /*--------------------------------------------------------- call solver */
@@ -580,20 +593,21 @@ solver_control(
                     actintra,
                   &(actsolv->sysarray_typ[constsysarray]),
                   &(actsolv->sysarray[constsysarray]),
-                  &(actsolv->sol[actsysarray]),
-                  &(actsolv->rhs[actsysarray]),
+                  &(actsolv->sol[0]),
+                  &(actsolv->rhs[0]),
                     init
                  );
 
 /*-------------- allreduce the result and put it to sol_increment[0][i] */
 solserv_result_incre(
                      actfield,
+                     disnum_calc,
                      actintra,
-                     &(actsolv->sol[actsysarray]),
+                     &(actsolv->sol[0]),
                      0,
                      &(actsolv->sysarray[constsysarray]),
-                     &(actsolv->sysarray_typ[constsysarray]),
-                     0);
+                     &(actsolv->sysarray_typ[constsysarray])
+                     );
 
 break;
 
@@ -602,7 +616,9 @@ break;
  *======================================================================*/
 case 98:
 #ifdef BINIO
-  out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+  if (ioflags.output_bin)
+    if (ioflags.ale_disp==1)
+      out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
 #endif
   break;
 
@@ -617,7 +633,7 @@ if (pssstep==0) actpos--;
 
 /*------------------------------------------- print out results to .out */
 if (outstep!=0 && ioflags.ale_disp==1 && ioflags.output_out==1)
-  out_sol(actfield,actpart,actintra,adyn->step,actpos);
+  out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
 
 /*------------------------------------------- print out result to 0.pss */
 if (ioflags.fluid_vis==1 && par.myrank==0)

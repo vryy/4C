@@ -10,19 +10,28 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
+
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
+
+
 #ifdef D_FSI
+
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "fsi_prototypes.h"
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -30,6 +39,8 @@ extern struct _GENPROB     genprob;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
+
+
 /*!---------------------------------------------------------------------
 \brief relaxation of structural interface displacements
 
@@ -53,59 +64,82 @@ Relaxation of structural interface displacements:
              actsnode->sol_mf.a.da[0][j]
 
 </pre>
-\param *structfield   FIELD	     (i)   structural field
-\param *fsidyn 	      FSI_DYNAMIC    (i)
+\param *structfield   FIELD          (i)   structural field
+\param *fsidyn        FSI_DYNAMIC    (i)
 \return void
 
 ------------------------------------------------------------------------*/
-void fsi_relax_intdisp( FIELD *structfield )
+void fsi_relax_intdisp(
+    FIELD              *structfield,
+    INT                 disnum
+    )
+
 {
-INT     i,j;              /* simply some counters		        */
-INT     numdf;            /* actual number of dofs		        */
-INT     numnp_total;      /* number of struct nodes		        */
-INT     numdf_total;      /* total number of struct dofs                */
-INT     dof;              /* actual dof                                 */
-INT    *sid;              /* structural interface dofs                  */
-DOUBLE  relax;            /* actual relaxation parameter omega	        */
-DOUBLE  fac;
-NODE   *actsnode;	  /* the actual struct	node 			*/
-FSI_DYNAMIC    *fsidyn;
+
+  INT     i,j;              /* simply some counters */
+  INT     numdf;            /* actual number of dofs */
+  INT     numnp_total;      /* number of struct nodes */
+  INT     numdf_total;      /* total number of struct dofs */
+  INT     dof;              /* actual dof */
+  INT    *sid;              /* structural interface dofs */
+  DOUBLE  relax;            /* actual relaxation parameter omega */
+  DOUBLE  fac;
+  NODE   *actsnode;         /* the actual struct node */
+  FSI_DYNAMIC    *fsidyn;
+
 
 #ifdef DEBUG
-dstrc_enter("fsi_relax_intdisp");
+  dstrc_enter("fsi_relax_intdisp");
 #endif
 
-/*----------------------------------------------------- set some values */
-fsidyn      = alldyn[3].fsidyn;
 
-relax       = fsidyn->relax;
-fac         = ONE-relax;
-numnp_total = structfield->dis[0].numnp;
-sid         = fsidyn->sid.a.iv;
-numdf_total = fsidyn->sid.fdim;
+  /* set some values */
+  fsidyn      = alldyn[3].fsidyn;
 
-/*---------------------------------------------------------- loop nodes */
-for (i=0;i<numnp_total;i++)
-{
-   actsnode  = &(structfield->dis[0].node[i]);
-   numdf = actsnode->numdf;
-   /*--------------------------------- loop dofs and check for coupling */
-   for (j=0;j<numdf;j++)
-   {
+  relax       = fsidyn->relax;
+  fac         = ONE-relax;
+  numnp_total = structfield->dis[disnum].numnp;
+  sid         = fsidyn->sid.a.iv;
+  numdf_total = fsidyn->sid.fdim;
+
+
+  /* loop structure nodes */
+  for (i=0;i<numnp_total;i++)
+  {
+    actsnode  = &(structfield->dis[disnum].node[i]);
+    numdf = actsnode->numdf;
+
+    /* loop dofs and check for coupling */
+    for (j=0;j<numdf;j++)
+    {
       dof = actsnode->dof[j];
       dsassert(dof<numdf_total,"dofnumber not valid!\n");
+
       if (sid[dof]==0) continue;
+
       actsnode->sol_mf.a.da[0][j] = relax*actsnode->sol_mf.a.da[0][j]
-                                  + fac*actsnode->sol_mf.a.da[1][j];
-   } /* end of loop over dofs */
-} /* end of loop over nodes */
+        + fac*actsnode->sol_mf.a.da[1][j];
+
+    } /* end of loop over dofs */
+
+  } /* end of loop over nodes */
+
+
 
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of fsi_relax_intdisp */
 
-#endif
+#endif  /* ifdef D_FSI */
+
+
 
 /*! @} (documentation module close)*/
+
+
+
+

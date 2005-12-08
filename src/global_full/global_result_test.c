@@ -212,7 +212,7 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
     ret = actnode->sol_mf.a.da[args[0]][args[1]];
   }
   else {
-    dserror("Unknown position specifier: %s", position);
+    dserror_args(__FILE__, __LINE__, "Unknown position specifier: %s", position);
   }
 
 #ifdef DEBUG
@@ -237,7 +237,11 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESULTDESCR *res)
+static int compare_values(
+    FILE               *err,
+    DOUBLE              actresult,
+    DOUBLE              givenresult,
+    RESULTDESCR        *res)
 {
   INT ret = 0;
 
@@ -245,13 +249,15 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
   dstrc_enter("compare_values");
 #endif
 
-  fprintf(err,"actual = %24.16f, given = %24.16f, diff = %24.16f\n", actresult, givenresult, actresult-givenresult);
-  if (!(FABS(FABS(actresult-givenresult)-FABS(actresult-givenresult)) < res->tolerance)) {
+  fprintf(err,"actual = %24.16f, given = %24.16f, diff = %24.16f\n",
+      actresult, givenresult, actresult-givenresult);
+  if (!(FABS(FABS(actresult-givenresult)-FABS(actresult-givenresult)) < res->tolerance) ) {
     printf("RESULTCHECK: %s is NAN!\n", res->name);
     ret = 1;
   }
   else if (FABS(actresult-givenresult) > res->tolerance) {
-    printf("RESULTCHECK: %s not correct. actresult=%f, givenresult=%f\n", res->name, actresult, givenresult);
+    printf("RESULTCHECK: %s not correct. actresult=%f, givenresult=%f\n",
+        res->name, actresult, givenresult);
     ret = 1;
   }
 
@@ -486,7 +492,8 @@ void global_result_test()
 #endif
 
       default:
-        dserror("Nothing known about element type %d", actelement->eltyp);
+        dserror_args(__FILE__, __LINE__, "Nothing known about element type %d",
+            actelement->eltyp);
       }
 
       test_count++;
@@ -534,7 +541,8 @@ void global_result_test()
      * happen to test values of a boundary element. We don't want this
      * dserror to go off it that case. */
     if (test_count < genprob.numresults) {
-      dserror("expected %d tests but performed %d", genprob.numresults, test_count);
+      dserror_args(__FILE__, __LINE__, "expected %d tests but performed %d",
+          genprob.numresults, test_count);
     }
   }
 

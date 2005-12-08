@@ -88,94 +88,96 @@ extern struct _CURVE *curve;
 
 ------------------------------------------------------------------------*/
 void fsi_initcoupling_intfaces(
-                                FIELD       *masterfield,
-                                FIELD       *slavefield,
-                                INTERFACES  *int_faces
-		              )
+    FIELD              *masterfield,
+    INT                 m_disnum,
+    FIELD              *slavefield,
+    INT                 s_disnum,
+    INTERFACES         *int_faces
+    )
 {
-INT     i,j,a;                   /* simply some counters                */
-GLINE  *actgline;                /* actual glines                       */
-ARRAY   int_ids;                 /* a vector with the interface Ids     */
-DOUBLE  *int_ids_a;
+  INT     i,j,a;                   /* simply some counters                */
+  GLINE  *actgline;                /* actual glines                       */
+  ARRAY   int_ids;                 /* a vector with the interface Ids     */
+  DOUBLE  *int_ids_a;
 
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 #ifdef DEBUG
-dstrc_enter("fsi_initcoupling_intfaces");
+  dstrc_enter("fsi_initcoupling_intfaces");
 #endif
 
-/*------------ detect the number of glines with a coupling condition ---*/
-a = 0;
-for(i=0; i<masterfield->dis->ngline; i++)/* loop glines of master field */
-{
-  actgline = &(masterfield->dis->gline[i]);
-  if(actgline->fsicouple == NULL) continue;
-  if(actgline->fsicouple->fieldtyp == structure)
-    a++;
-}
-/*--- store the couplingId's of the glines with a coupling condition ...
-  ----------------------------------- ... in the vector int_ids.a.iv ---*/
-int_ids_a = amdef("int_ids", &int_ids,a,1,"IV");
-amzero(&int_ids);
-a=0;
-for(i=0; i<masterfield->dis->ngline; i++)
-{
-  actgline = &(masterfield->dis->gline[i]);
-  if(actgline->fsicouple == NULL) continue;
-  if(actgline->fsicouple->fieldtyp == structure)
+  /*------------ detect the number of glines with a coupling condition ---*/
+  a = 0;
+  for(i=0; i<masterfield->dis[m_disnum].ngline; i++)/* loop glines of master field */
   {
-    int_ids.a.iv[a] = actgline->fsicouple->fsi_coupleId;
-    a++;
+    actgline = &(masterfield->dis[m_disnum].gline[i]);
+    if(actgline->fsicouple == NULL) continue;
+    if(actgline->fsicouple->fieldtyp == structure)
+      a++;
   }
-}
-/*------------------------------------------ sort the vector int_ids ---*/
-a=0;
-for(i=0; i<int_ids.fdim; i++)
-{
-  for(j=0; j<int_ids.fdim-1; j++)
+  /*--- store the couplingId's of the glines with a coupling condition ...
+    ----------------------------------- ... in the vector int_ids.a.iv ---*/
+  int_ids_a = amdef("int_ids", &int_ids,a,1,"IV");
+  amzero(&int_ids);
+  a=0;
+  for(i=0; i<masterfield->dis[m_disnum].ngline; i++)
   {
-    if(int_ids.a.iv[j]>int_ids.a.iv[j+1])
+    actgline = &(masterfield->dis[m_disnum].gline[i]);
+    if(actgline->fsicouple == NULL) continue;
+    if(actgline->fsicouple->fieldtyp == structure)
     {
-      a = int_ids.a.iv[j];
-      int_ids.a.iv[j] = int_ids.a.iv[j+1];
-      int_ids.a.iv[j+1] = a;
+      int_ids.a.iv[a] = actgline->fsicouple->fsi_coupleId;
+      a++;
     }
   }
-}
-/*---------------------------------- detect the number of interfaces ---*/
-a=1;
-for(i=0; i<int_ids.fdim-1; i++)
-{
-  if(int_ids.a.iv[i] != int_ids.a.iv[i+1])
-    a++;
-}
-
-/*-------------- store the number of interfaces in int_faces->numint ---*/
-int_faces->numint = a;
-
-/*----------------- allocate memory for the vector of interface Id's ---*/
-int_faces->int_ids = (INT*)CCACALLOC(int_faces->numint,
-                     sizeof(INT));
-
-/* store the interface Id's in the vector int_faces->int_ids */
-/* loop over the vector int_ids.a.iv which contains the interface Id's*/
-a=1;
-for(i=0; i<int_ids.fdim-1; i++)
-{
-  if(i==0)
-    int_faces->int_ids[i] = int_ids.a.iv[i];
-  if(int_ids.a.iv[i] != int_ids.a.iv[i+1] && int_ids.a.iv[i+1] != 0)
+  /*------------------------------------------ sort the vector int_ids ---*/
+  a=0;
+  for(i=0; i<int_ids.fdim; i++)
   {
-    int_faces->int_ids[a] = int_ids.a.iv[i+1];
-    a++;
+    for(j=0; j<int_ids.fdim-1; j++)
+    {
+      if(int_ids.a.iv[j]>int_ids.a.iv[j+1])
+      {
+        a = int_ids.a.iv[j];
+        int_ids.a.iv[j] = int_ids.a.iv[j+1];
+        int_ids.a.iv[j+1] = a;
+      }
+    }
   }
-}
+  /*---------------------------------- detect the number of interfaces ---*/
+  a=1;
+  for(i=0; i<int_ids.fdim-1; i++)
+  {
+    if(int_ids.a.iv[i] != int_ids.a.iv[i+1])
+      a++;
+  }
 
-/*--------------------------------------------------------------------*/
+  /*-------------- store the number of interfaces in int_faces->numint ---*/
+  int_faces->numint = a;
+
+  /*----------------- allocate memory for the vector of interface Id's ---*/
+  int_faces->int_ids = (INT*)CCACALLOC(int_faces->numint,
+      sizeof(INT));
+
+  /* store the interface Id's in the vector int_faces->int_ids */
+  /* loop over the vector int_ids.a.iv which contains the interface Id's*/
+  a=1;
+  for(i=0; i<int_ids.fdim-1; i++)
+  {
+    if(i==0)
+      int_faces->int_ids[i] = int_ids.a.iv[i];
+    if(int_ids.a.iv[i] != int_ids.a.iv[i+1] && int_ids.a.iv[i+1] != 0)
+    {
+      int_faces->int_ids[a] = int_ids.a.iv[i+1];
+      a++;
+    }
+  }
+
+  /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
 
-return;
+  return;
 } /* end of fsi_initcoupling_intfaces */
 
 
@@ -195,450 +197,455 @@ interfaces.
 \return 0
 
 ------------------------------------------------------------------------*/
-void fsi_init_interfaces(FIELD *masterfield, FIELD *slavefield,
-                         INTERFACES *int_faces)
+void fsi_init_interfaces(
+    FIELD              *masterfield,
+    INT                 m_disnum,
+    FIELD              *slavefield,
+    INT                 s_disnum,
+    INTERFACES         *int_faces
+    )
 {
-INT i,j,a,l,b;                      /* counters */
-INT dof;                            /* the dof of actnode */
-NODE *actnode;                      /* actual node under consideration */
-NODE *actnode1;                     /* actual node under consideration */
-NODE *node_work;
-ELEMENT *actele;                    /* actual element under consideration */
-INT k;                              /* number of dline */
-GLINE *actgline;                    /* actual gline under consideration */
-GNODE *actgnode;                    /* actual gnode under consideration */
-INTERFACE *actinterface, *actinterface2;/* pointer to the actual interface */
-DOUBLE work;
-DOUBLE dist1, dist1x, dist1y, dist2, dist2x, dist2y; /* nodal distances */
+  INT i,j,a,l,b;                      /* counters */
+  INT dof;                            /* the dof of actnode */
+  NODE *actnode;                      /* actual node under consideration */
+  NODE *actnode1;                     /* actual node under consideration */
+  NODE *node_work;
+  ELEMENT *actele;                    /* actual element under consideration */
+  INT k;                              /* number of dline */
+  GLINE *actgline;                    /* actual gline under consideration */
+  GNODE *actgnode;                    /* actual gnode under consideration */
+  INTERFACE *actinterface, *actinterface2;/* pointer to the actual interface */
+  DOUBLE work;
+  DOUBLE dist1, dist1x, dist1y, dist2, dist2x, dist2y; /* nodal distances */
 
-FSI_DYNAMIC *fsidyn;
+  FSI_DYNAMIC *fsidyn;
 
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 #ifdef DEBUG
-dstrc_enter("fsi_init_interfaces");
+  dstrc_enter("fsi_init_interfaces");
 #endif
 
-/*--------------------------------------------------- initialisation ---*/
-fsidyn = alldyn[genprob.numaf+1].fsidyn;
+  /*--------------------------------------------------- initialisation ---*/
+  fsidyn = alldyn[genprob.numaf+1].fsidyn;
 
-/*---------------------------------- assign the Id to the interfaces ---*/
-for(i=0; i<int_faces->numint;i++)
-{
-  int_faces->interface[i].Id = int_faces->int_ids[i];
-}
-
-/*----------------------------------------------------------------------*/
-for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
-{
-  actinterface = &int_faces->interface[i];
-  /*--------------------------------------------------------------------*/
-  /*                            MASTER DOMAIN                           */
-  /*--------------------------------------------------------------------*/
-  /* -I------ detect the number of glines at the corresponding interface*/
-  a = 0;
-  for(j=0; j<masterfield->dis->ngline; j++)
+  /*---------------------------------- assign the Id to the interfaces ---*/
+  for(i=0; i<int_faces->numint;i++)
   {
-     actgline = &masterfield->dis->gline[j];
-     if(actgline->fsicouple == NULL) continue;
-
-     if((actgline->fsicouple->fieldtyp == structure) &&
-        (actgline->fsicouple->fsi_coupleId == actinterface->Id))
-        a++;
+    int_faces->interface[i].Id = int_faces->int_ids[i];
   }
-  /* -------------assign the number of master nodes at the interface to */
-  /* -----------------------------------------------actinterface->numnpm*/
-  actinterface->numnpm = a+1;
-  /* ----------assign the number of master elements at the interface to */
-  /* ----------------------------------------------actinterface->numelem*/
-  actinterface->numelem = a;
 
-  /* -II--allocate memory for the pointer vector to the master nodes and*/
-  /* -------------------------------the master elements of actinterface */
-  actinterface->nodem =
-     (NODE**)CCACALLOC(actinterface->numnpm,sizeof(NODE));
-  actinterface->elementm =
-     (ELEMENT**)CCACALLOC(actinterface->numelem,sizeof(ELEMENT));
-
-  /* -III define the pointers in actinterface->elementm to the elements */
-  /* --------------------------------------------------at the interface */
-  a = 0;
-  for(j=0; j<masterfield->dis->numele; j++)
+  /*----------------------------------------------------------------------*/
+  for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
   {
-     actele = &masterfield->dis->element[j];
-     /* loop the glines of this element */
-     for(k=0; k<actele->numnp; k++)
-     {
-       actgline = actele->g.gsurf->gline[k];
-       if(actgline->fsicouple == NULL) continue;
-       if((actgline->fsicouple->fieldtyp == structure) &&
+    actinterface = &int_faces->interface[i];
+    /*--------------------------------------------------------------------*/
+    /*                            MASTER DOMAIN                           */
+    /*--------------------------------------------------------------------*/
+    /* -I------ detect the number of glines at the corresponding interface*/
+    a = 0;
+    for(j=0; j<masterfield->dis[m_disnum].ngline; j++)
+    {
+      actgline = &masterfield->dis[m_disnum].gline[j];
+      if(actgline->fsicouple == NULL) continue;
+
+      if((actgline->fsicouple->fieldtyp == structure) &&
           (actgline->fsicouple->fsi_coupleId == actinterface->Id))
-       {
+        a++;
+    }
+    /* -------------assign the number of master nodes at the interface to */
+    /* -----------------------------------------------actinterface->numnpm*/
+    actinterface->numnpm = a+1;
+    /* ----------assign the number of master elements at the interface to */
+    /* ----------------------------------------------actinterface->numelem*/
+    actinterface->numelem = a;
+
+    /* -II--allocate memory for the pointer vector to the master nodes and*/
+    /* -------------------------------the master elements of actinterface */
+    actinterface->nodem =
+      (NODE**)CCACALLOC(actinterface->numnpm,sizeof(NODE));
+    actinterface->elementm =
+      (ELEMENT**)CCACALLOC(actinterface->numelem,sizeof(ELEMENT));
+
+    /* -III define the pointers in actinterface->elementm to the elements */
+    /* --------------------------------------------------at the interface */
+    a = 0;
+    for(j=0; j<masterfield->dis[m_disnum].numele; j++)
+    {
+      actele = &masterfield->dis[m_disnum].element[j];
+      /* loop the glines of this element */
+      for(k=0; k<actele->numnp; k++)
+      {
+        actgline = actele->g.gsurf->gline[k];
+        if(actgline->fsicouple == NULL) continue;
+        if((actgline->fsicouple->fieldtyp == structure) &&
+            (actgline->fsicouple->fsi_coupleId == actinterface->Id))
+        {
           actinterface->elementm[a] = actele;
           a++;
           goto end_of_this_ele;
-       }
-     }
-    end_of_this_ele: ;
-  }
-  /* -IV- define the pointers in actinterface->nodem to the nodes at the*/
-  /* ---------------------------------------------------------interface */
-  a = 0;
-  for(j=0; j<masterfield->dis->ngline; j++)
-  {
-    actgline = &masterfield->dis->gline[j];
-    if(actgline->fsicouple == NULL) continue;
-    if((actgline->fsicouple->fieldtyp == structure) &&
-       (actgline->fsicouple->fsi_coupleId == actinterface->Id))
-    {
-       /* loop gnodes of this gline */
-       for(k=0; k<2; k++)
-       {
-         actgnode = actgline->gnode[k];
-         actnode = actgnode->node;
-         /* loop vector of actinterface->nodem[] to detect if actnode is */
-         /* already there; this happens, because two glines share a node */
-         for(l=0; l<actinterface->numnpm; l++)
-         {
-           if(actinterface->nodem[l] == actnode)
-           {
-             goto end_of_this_node;
-           }
-         }
-         actinterface->nodem[a] = actnode;
-         a++;
-         end_of_this_node: ;
-       }
+        }
+      }
+end_of_this_ele: ;
     }
-  }
-
-
-  /*--------------------------------------------------------------------*/
-  /*                             SLAVE DOMAIN                           */
-  /*--------------------------------------------------------------------*/
-  /* -I------ detect the number of glines at the corresponding interface*/
-  a = 0;
-  for(j=0; j<slavefield->dis->ngline; j++)
-  {
-     actgline = &slavefield->dis->gline[j];
-     if (actgline->fsicouple == NULL) continue;
-     if((actgline->fsicouple->fieldtyp == fluid) &&
-        (actgline->fsicouple->fsi_coupleId == actinterface->Id))
-        a++;
-  }
-  /* --------------assign the number of slave nodes at the interface to */
-  /* -----------------------------------------------actinterface->numnps*/
-  actinterface->numnps = a+1;
-  /* -----------assign the number of slave elements at the interface to */
-  /* ----------------------------------------------actinterface->numeles*/
-  actinterface->numeles = a;
-
-  /* -II---allocate memory for the pointer vector to the slave nodes and*/
-  /* ------------------------------- the slave elements of actinterface */
-  actinterface->nodes =
-     (NODE**)CCACALLOC(actinterface->numnps,sizeof(NODE));
-  actinterface->elements =
-     (ELEMENT**)CCACALLOC(actinterface->numeles,sizeof(ELEMENT));
-
-  /* ----III define the pointers in actinterface->elements to the fluid */
-  /* ---------------------------------------- elements at the interface */
-  a = 0;
-  for(j=0; j<slavefield->dis->numele; j++)
-  {
-     actele = &slavefield->dis->element[j];
-     /* loop the glines of this element */
-     for(k=0; k<actele->g.gsurf->ngline; k++)
-     {
-       actgline = actele->g.gsurf->gline[k];
-       if(actgline->fsicouple == NULL) continue;
-       if((actgline->fsicouple->fieldtyp == fluid) &&
+    /* -IV- define the pointers in actinterface->nodem to the nodes at the*/
+    /* ---------------------------------------------------------interface */
+    a = 0;
+    for(j=0; j<masterfield->dis[m_disnum].ngline; j++)
+    {
+      actgline = &masterfield->dis[m_disnum].gline[j];
+      if(actgline->fsicouple == NULL) continue;
+      if((actgline->fsicouple->fieldtyp == structure) &&
           (actgline->fsicouple->fsi_coupleId == actinterface->Id))
-       {
+      {
+        /* loop gnodes of this gline */
+        for(k=0; k<2; k++)
+        {
+          actgnode = actgline->gnode[k];
+          actnode = actgnode->node;
+          /* loop vector of actinterface->nodem[] to detect if actnode is */
+          /* already there; this happens, because two glines share a node */
+          for(l=0; l<actinterface->numnpm; l++)
+          {
+            if(actinterface->nodem[l] == actnode)
+            {
+              goto end_of_this_node;
+            }
+          }
+          actinterface->nodem[a] = actnode;
+          a++;
+end_of_this_node: ;
+        }
+      }
+    }
+
+
+    /*--------------------------------------------------------------------*/
+    /*                             SLAVE DOMAIN                           */
+    /*--------------------------------------------------------------------*/
+    /* -I------ detect the number of glines at the corresponding interface*/
+    a = 0;
+    for(j=0; j<slavefield->dis[s_disnum].ngline; j++)
+    {
+      actgline = &slavefield->dis[s_disnum].gline[j];
+      if (actgline->fsicouple == NULL) continue;
+      if((actgline->fsicouple->fieldtyp == fluid) &&
+          (actgline->fsicouple->fsi_coupleId == actinterface->Id))
+        a++;
+    }
+    /* --------------assign the number of slave nodes at the interface to */
+    /* -----------------------------------------------actinterface->numnps*/
+    actinterface->numnps = a+1;
+    /* -----------assign the number of slave elements at the interface to */
+    /* ----------------------------------------------actinterface->numeles*/
+    actinterface->numeles = a;
+
+    /* -II---allocate memory for the pointer vector to the slave nodes and*/
+    /* ------------------------------- the slave elements of actinterface */
+    actinterface->nodes =
+      (NODE**)CCACALLOC(actinterface->numnps,sizeof(NODE));
+    actinterface->elements =
+      (ELEMENT**)CCACALLOC(actinterface->numeles,sizeof(ELEMENT));
+
+    /* ----III define the pointers in actinterface->elements to the fluid */
+    /* ---------------------------------------- elements at the interface */
+    a = 0;
+    for(j=0; j<slavefield->dis[s_disnum].numele; j++)
+    {
+      actele = &slavefield->dis[s_disnum].element[j];
+      /* loop the glines of this element */
+      for(k=0; k<actele->g.gsurf->ngline; k++)
+      {
+        actgline = actele->g.gsurf->gline[k];
+        if(actgline->fsicouple == NULL) continue;
+        if((actgline->fsicouple->fieldtyp == fluid) &&
+            (actgline->fsicouple->fsi_coupleId == actinterface->Id))
+        {
           actinterface->elements[a] = actele;
           a++;
           break;
-       }
-     }
-  }
-  /* -IV- define the pointers in actinterface->nodes to the fluid nodes */
-  /* ------------------------------------------------- at the interface */
-  a = 0;
-  for(j=0; j<slavefield->dis->ngline; j++)
-  {
-    actgline = &slavefield->dis->gline[j];
-   if(actgline->fsicouple == NULL) continue;
-   if((actgline->fsicouple->fieldtyp == fluid) &&
-       (actgline->fsicouple->fsi_coupleId == actinterface->Id))
-    /* if both gnodes at gline have fsicouple condition */
-    {
-       /* loop gnodes of this gline */
-       for(k=0; k<2; k++)
-       {
-         actgnode = actgline->gnode[k];
-         actnode = actgnode->node;
-         /* loop vector of actinterface->nodes[] to detect if actnode is */
-         /* already there; this happens, because two glines share a node */
-         for(l=0; l<actinterface->numnps; l++)
-         {
-           if(actinterface->nodes[l] == actnode)
-           {
-             goto end_of_this_node_s;
-           }
-         }
-         actinterface->nodes[a] = actnode;
-         a++;
-         end_of_this_node_s: ;
-       }
-    }
-  }
-  /* allocate memory for the gnodes which bound actinterface */
-  actinterface->gnode_bound1s = (GNODE*)CCACALLOC(1,sizeof(GNODE));
-  actinterface->gnode_bound2s = (GNODE*)CCACALLOC(1,sizeof(GNODE));
-  actinterface->gnode_bound1m = (GNODE*)CCACALLOC(1,sizeof(GNODE));
-  actinterface->gnode_bound2m = (GNODE*)CCACALLOC(1,sizeof(GNODE));
-
-  /* look for the slave gnodes which bound the interface */
-  /* loop the slave elements of actinterface */
-  b=0;
-  for(j=0; j<actinterface->numeles; j++)
-  {
-    actele = actinterface->elements[j];
-    /* loop gnodes of actele */
-    for(k=0; k<actele->numnp; k++)
-    {
-      actgnode = actele->node[k]->gnode->mfcpnode[2]->gnode;
-
-      /* loop glines of actgnode */
-      a=0;
-      for(l=0; l<actgnode->ngline; l++)
-      {
-        actgline = actgnode->gline[l];
-        if(actgline->fsicouple == NULL) continue;
-        if(actgline->fsicouple->fsi_coupleId == actinterface->Id)
-          a++;
-      }
-      if(a==1 && b==1)
-        actinterface->gnode_bound2s = actgnode;
-      if(a==1 && b==0)
-      {
-        actinterface->gnode_bound1s = actgnode;
-        b++;
-      }
-    }
-  }
-  /* look for the master gnodes which bound the interface */
-  /* loop the master elements of actinterface */
-  b=0;
-  for(j=0; j<actinterface->numelem; j++)
-  {
-    actele = actinterface->elementm[j];
-    /* loop gnodes of actele */
-    for(k=0; k<actele->numnp; k++)
-    {
-      actgnode = actele->node[k]->gnode;
-      /* loop glines of actgnode */
-      a=0;
-      for(l=0; l<actgnode->ngline; l++)
-      {
-        actgline = actgnode->gline[l];
-        if(actgline->fsicouple == NULL) continue;
-        if(actgline->fsicouple->fsi_coupleId == actinterface->Id)
-          a++;
-      }
-      if(a==1 && b==1)
-        actinterface->gnode_bound2m = actgnode;
-      if(a==1 && b==0)
-      {
-        actinterface->gnode_bound1m = actgnode;
-        b++;
-      }
-    }
-  }
-  /* define the positive interface direction */
-  actnode = actinterface->gnode_bound1s->node;
-  actnode1 = actinterface->gnode_bound2s->node;
-  /* allocate an vector to actinterface->int_vec (2-d case) */
-  /*amdef("int_vec",actinterface->int_vec, 2, 1, "DV");*/
-  actinterface->int_vec = (DOUBLE*)CCACALLOC(2,sizeof(DOUBLE));
-
-  actinterface->int_vec[0] = actnode1->x[0] - actnode->x[0];
-  actinterface->int_vec[1] = actnode1->x[1] - actnode->x[1];
-  work = sqrt(actinterface->int_vec[0] * actinterface->int_vec[0] +
-              actinterface->int_vec[1] * actinterface->int_vec[1]);
-  actinterface->int_vec[0] *=(1.0/work);
-  actinterface->int_vec[1] *=(1.0/work);
-
-/* allocate memory for the continuity equation */
-  actinterface->continuity_eq = (DENSE*)CCACALLOC(1,sizeof(DENSE));
-  amdef("LHS",&(actinterface->continuity_eq->A),actinterface->numnps,
-         actinterface->numnps,"DA");
-  amdef("ipiv",&(actinterface->continuity_eq->ipiv),actinterface->numnps,1,"IV");
-  amdef("work",&(actinterface->continuity_eq->work),2*actinterface->numnps,1,"DV");
-
-/* -------allocate memory for the continuity equation which is used in  */
-/* ----------------------------------------------------ssi_calc_disp4slv*/
-  actinterface->conti_eq_save = (DENSE*)CCACALLOC(1,sizeof(DENSE));
-  amdef("LHS",&(actinterface->conti_eq_save->A),actinterface->numnps,
-         actinterface->numnps,"DA");
-  amdef("ipiv",&(actinterface->conti_eq_save->ipiv),actinterface->numnps,1,"IV");
-
-  /* sort the vectors of nodes at the interface */
-  /* loop the slave nodes at the interface */
-  for(j=0; j<actinterface->numnps; j++)
-  {
-    actnode = actinterface->nodes[j];
-    dist1x = actnode->x[0] - actinterface->gnode_bound1s->node->x[0];
-    dist1y = actnode->x[1] - actinterface->gnode_bound1s->node->x[1];
-    dist1 = sqrt(dist1x * dist1x + dist1y * dist1y);
-    for(k=0; (k+j)<actinterface->numnps; k++)
-    {
-      actnode1 = actinterface->nodes[k+j];
-      dist2x = actnode1->x[0] - actinterface->gnode_bound1s->node->x[0];
-      dist2y = actnode1->x[1] - actinterface->gnode_bound1s->node->x[1];
-      dist2 = sqrt(dist2x * dist2x + dist2y * dist2y);
-      if(dist2<dist1)
-      {
-        /* switch the pointers in the vector */
-        node_work = actinterface->nodes[j];
-        actinterface->nodes[j] = actinterface->nodes[k+j];
-        actinterface->nodes[k+j] = node_work;
-        /* switch the distances */
-        work = dist1;
-        dist1 = dist2;
-        dist2 = work;
-      }
-    }
-  }
-  /* loop the master nodes at the interface */
-  for(j=0; j<actinterface->numnpm; j++)
-  {
-    actnode = actinterface->nodem[j];
-    dist1x = actnode->x[0] - actinterface->gnode_bound1s->node->x[0];
-    dist1y = actnode->x[1] - actinterface->gnode_bound1s->node->x[1];
-    dist1 = sqrt(dist1x * dist1x + dist1y * dist1y);
-    for(k=0; (k+j)<actinterface->numnpm; k++)
-    {
-      actnode1 = actinterface->nodem[k+j];
-      dist2x = actnode1->x[0] - actinterface->gnode_bound1s->node->x[0];
-      dist2y = actnode1->x[1] - actinterface->gnode_bound1s->node->x[1];
-      dist2 = sqrt(dist2x * dist2x + dist2y * dist2y);
-      if(dist2<dist1)
-      {
-        /* switch the pointers in the vector */
-        node_work = actinterface->nodem[j];
-        actinterface->nodem[j] = actinterface->nodem[k+j];
-        actinterface->nodem[k+j] = node_work;
-        /* switch the distances */
-        work = dist1;
-        dist1 = dist2;
-        dist2 = work;
-      }
-    }
-  }
-
-  /* store a 1 in vector actinterface->conti_eq_save->ipiv, if actnode1_1 is on the */
-  /* boundary of the interface (if it is on a dnode) */
-  actinterface->conti_eq_save->ipiv.a.iv[0] = 1;
-  actinterface->conti_eq_save->ipiv.a.iv[actinterface->numnps-1] = 1;
-
-
-} /* end of loop over the interfaces (i) */
-/* loop over the interfaces */
-for(i=0; i<int_faces->numint; i++)
-{
-  actinterface = &int_faces->interface[i];
-  /* detect the gnodes which connect the several interfaces */
-
-  /* slave domain */
-  for(j=0; j<actinterface->numnps; j++)
-  {
-    actnode = actinterface->nodes[j];
-    if(actnode->Id == actinterface->gnode_bound1s->node->Id ||
-       actnode->Id == actinterface->gnode_bound2s->node->Id)
-    {
-      /* loop the other interfaces */
-      for(k=0; k<int_faces->numint; k++)
-      {
-        actinterface2 = &int_faces->interface[k];
-        if(actinterface->Id == actinterface2->Id)
-          goto end_of_this_interface;
-        else
-        {
-          if(actnode->Id == actinterface2->gnode_bound1s->node->Id ||
-             actnode->Id == actinterface2->gnode_bound2s->node->Id)
-          {
-            if(actinterface->gnode_bound1sc == NULL)
-              actinterface->gnode_bound1sc = actnode->gnode->mfcpnode[2]->gnode;
-            else
-              actinterface->gnode_bound2sc = actnode->gnode->mfcpnode[2]->gnode;
-            break;
-          }
         }
-        end_of_this_interface: ;
       }
-
     }
-  }
-
-  /* master domain */
-  for(j=0; j<actinterface->numnpm; j++)
-  {
-    actnode = actinterface->nodem[j];
-    if(actnode->Id == actinterface->gnode_bound1m->node->Id ||
-       actnode->Id == actinterface->gnode_bound2m->node->Id)
+    /* -IV- define the pointers in actinterface->nodes to the fluid nodes */
+    /* ------------------------------------------------- at the interface */
+    a = 0;
+    for(j=0; j<slavefield->dis[s_disnum].ngline; j++)
     {
-      /* loop the other interfaces */
-      for(k=0; k<int_faces->numint; k++)
+      actgline = &slavefield->dis[s_disnum].gline[j];
+      if(actgline->fsicouple == NULL) continue;
+      if((actgline->fsicouple->fieldtyp == fluid) &&
+          (actgline->fsicouple->fsi_coupleId == actinterface->Id))
+        /* if both gnodes at gline have fsicouple condition */
       {
-        actinterface2 = &int_faces->interface[k];
-        if(actinterface->Id == actinterface2->Id)
-          goto end_of_this_interface1;
-        else
+        /* loop gnodes of this gline */
+        for(k=0; k<2; k++)
         {
-          if(actnode->Id == actinterface2->gnode_bound1m->node->Id ||
-             actnode->Id == actinterface2->gnode_bound2m->node->Id)
+          actgnode = actgline->gnode[k];
+          actnode = actgnode->node;
+          /* loop vector of actinterface->nodes[] to detect if actnode is */
+          /* already there; this happens, because two glines share a node */
+          for(l=0; l<actinterface->numnps; l++)
           {
-            if(actinterface->gnode_bound1mc == NULL)
-              actinterface->gnode_bound1mc = actnode->gnode;
-            else
-              actinterface->gnode_bound2mc = actnode->gnode;
-            break;
+            if(actinterface->nodes[l] == actnode)
+            {
+              goto end_of_this_node_s;
+            }
           }
+          actinterface->nodes[a] = actnode;
+          a++;
+end_of_this_node_s: ;
         }
-        end_of_this_interface1: ;
       }
-
     }
-  }
+    /* allocate memory for the gnodes which bound actinterface */
+    actinterface->gnode_bound1s = (GNODE*)CCACALLOC(1,sizeof(GNODE));
+    actinterface->gnode_bound2s = (GNODE*)CCACALLOC(1,sizeof(GNODE));
+    actinterface->gnode_bound1m = (GNODE*)CCACALLOC(1,sizeof(GNODE));
+    actinterface->gnode_bound2m = (GNODE*)CCACALLOC(1,sizeof(GNODE));
 
-  /* modify the entries in fsidyn->sid.a.iv, they are originally stored in
-     fsi_struct_intdofs(); but this original algorithm does not work
-     correctly for non-conforming discretizations                          */
-
-  /* loop over the structure nodes of the interface */
-  b=0;
-  for(j=0; j<actinterface->numnpm; j++)
-  {
-    actnode = actinterface->nodem[j];
-    actnode1 = actnode->gnode->mfcpnode[2];
-    /* loop over the dofs of actnode */
-    for(k=0; k<actnode->numdf; k++)
+    /* look for the slave gnodes which bound the interface */
+    /* loop the slave elements of actinterface */
+    b=0;
+    for(j=0; j<actinterface->numeles; j++)
     {
-      if(actnode->gnode->dirich == NULL)
+      actele = actinterface->elements[j];
+      /* loop gnodes of actele */
+      for(k=0; k<actele->numnp; k++)
       {
-        dof = actnode->dof[k];
-        fsidyn->sid.a.iv[dof] = 1;
-        b++;
-      }
-      else if(actnode->gnode->dirich->dirich_onoff.a.iv[k] != 1)
-      {
-        dof = actnode->dof[k];
-        fsidyn->sid.a.iv[dof] = 1;
-        b++;
+        actgnode = actele->node[k]->gnode->mfcpnode[2]->gnode;
+
+        /* loop glines of actgnode */
+        a=0;
+        for(l=0; l<actgnode->ngline; l++)
+        {
+          actgline = actgnode->gline[l];
+          if(actgline->fsicouple == NULL) continue;
+          if(actgline->fsicouple->fsi_coupleId == actinterface->Id)
+            a++;
+        }
+        if(a==1 && b==1)
+          actinterface->gnode_bound2s = actgnode;
+        if(a==1 && b==0)
+        {
+          actinterface->gnode_bound1s = actgnode;
+          b++;
+        }
       }
     }
-  }
-  fsidyn->numsid = b;
-} /* end og loop over the interfaces (i) */
+    /* look for the master gnodes which bound the interface */
+    /* loop the master elements of actinterface */
+    b=0;
+    for(j=0; j<actinterface->numelem; j++)
+    {
+      actele = actinterface->elementm[j];
+      /* loop gnodes of actele */
+      for(k=0; k<actele->numnp; k++)
+      {
+        actgnode = actele->node[k]->gnode;
+        /* loop glines of actgnode */
+        a=0;
+        for(l=0; l<actgnode->ngline; l++)
+        {
+          actgline = actgnode->gline[l];
+          if(actgline->fsicouple == NULL) continue;
+          if(actgline->fsicouple->fsi_coupleId == actinterface->Id)
+            a++;
+        }
+        if(a==1 && b==1)
+          actinterface->gnode_bound2m = actgnode;
+        if(a==1 && b==0)
+        {
+          actinterface->gnode_bound1m = actgnode;
+          b++;
+        }
+      }
+    }
+    /* define the positive interface direction */
+    actnode = actinterface->gnode_bound1s->node;
+    actnode1 = actinterface->gnode_bound2s->node;
+    /* allocate an vector to actinterface->int_vec (2-d case) */
+    /*amdef("int_vec",actinterface->int_vec, 2, 1, "DV");*/
+    actinterface->int_vec = (DOUBLE*)CCACALLOC(2,sizeof(DOUBLE));
+
+    actinterface->int_vec[0] = actnode1->x[0] - actnode->x[0];
+    actinterface->int_vec[1] = actnode1->x[1] - actnode->x[1];
+    work = sqrt(actinterface->int_vec[0] * actinterface->int_vec[0] +
+        actinterface->int_vec[1] * actinterface->int_vec[1]);
+    actinterface->int_vec[0] *=(1.0/work);
+    actinterface->int_vec[1] *=(1.0/work);
+
+    /* allocate memory for the continuity equation */
+    actinterface->continuity_eq = (DENSE*)CCACALLOC(1,sizeof(DENSE));
+    amdef("LHS",&(actinterface->continuity_eq->A),actinterface->numnps,
+        actinterface->numnps,"DA");
+    amdef("ipiv",&(actinterface->continuity_eq->ipiv),actinterface->numnps,1,"IV");
+    amdef("work",&(actinterface->continuity_eq->work),2*actinterface->numnps,1,"DV");
+
+    /* -------allocate memory for the continuity equation which is used in  */
+    /* ----------------------------------------------------ssi_calc_disp4slv*/
+    actinterface->conti_eq_save = (DENSE*)CCACALLOC(1,sizeof(DENSE));
+    amdef("LHS",&(actinterface->conti_eq_save->A),actinterface->numnps,
+        actinterface->numnps,"DA");
+    amdef("ipiv",&(actinterface->conti_eq_save->ipiv),actinterface->numnps,1,"IV");
+
+    /* sort the vectors of nodes at the interface */
+    /* loop the slave nodes at the interface */
+    for(j=0; j<actinterface->numnps; j++)
+    {
+      actnode = actinterface->nodes[j];
+      dist1x = actnode->x[0] - actinterface->gnode_bound1s->node->x[0];
+      dist1y = actnode->x[1] - actinterface->gnode_bound1s->node->x[1];
+      dist1 = sqrt(dist1x * dist1x + dist1y * dist1y);
+      for(k=0; (k+j)<actinterface->numnps; k++)
+      {
+        actnode1 = actinterface->nodes[k+j];
+        dist2x = actnode1->x[0] - actinterface->gnode_bound1s->node->x[0];
+        dist2y = actnode1->x[1] - actinterface->gnode_bound1s->node->x[1];
+        dist2 = sqrt(dist2x * dist2x + dist2y * dist2y);
+        if(dist2<dist1)
+        {
+          /* switch the pointers in the vector */
+          node_work = actinterface->nodes[j];
+          actinterface->nodes[j] = actinterface->nodes[k+j];
+          actinterface->nodes[k+j] = node_work;
+          /* switch the distances */
+          work = dist1;
+          dist1 = dist2;
+          dist2 = work;
+        }
+      }
+    }
+    /* loop the master nodes at the interface */
+    for(j=0; j<actinterface->numnpm; j++)
+    {
+      actnode = actinterface->nodem[j];
+      dist1x = actnode->x[0] - actinterface->gnode_bound1s->node->x[0];
+      dist1y = actnode->x[1] - actinterface->gnode_bound1s->node->x[1];
+      dist1 = sqrt(dist1x * dist1x + dist1y * dist1y);
+      for(k=0; (k+j)<actinterface->numnpm; k++)
+      {
+        actnode1 = actinterface->nodem[k+j];
+        dist2x = actnode1->x[0] - actinterface->gnode_bound1s->node->x[0];
+        dist2y = actnode1->x[1] - actinterface->gnode_bound1s->node->x[1];
+        dist2 = sqrt(dist2x * dist2x + dist2y * dist2y);
+        if(dist2<dist1)
+        {
+          /* switch the pointers in the vector */
+          node_work = actinterface->nodem[j];
+          actinterface->nodem[j] = actinterface->nodem[k+j];
+          actinterface->nodem[k+j] = node_work;
+          /* switch the distances */
+          work = dist1;
+          dist1 = dist2;
+          dist2 = work;
+        }
+      }
+    }
+
+    /* store a 1 in vector actinterface->conti_eq_save->ipiv, if actnode1_1 is on the */
+    /* boundary of the interface (if it is on a dnode) */
+    actinterface->conti_eq_save->ipiv.a.iv[0] = 1;
+    actinterface->conti_eq_save->ipiv.a.iv[actinterface->numnps-1] = 1;
+
+
+  } /* end of loop over the interfaces (i) */
+  /* loop over the interfaces */
+  for(i=0; i<int_faces->numint; i++)
+  {
+    actinterface = &int_faces->interface[i];
+    /* detect the gnodes which connect the several interfaces */
+
+    /* slave domain */
+    for(j=0; j<actinterface->numnps; j++)
+    {
+      actnode = actinterface->nodes[j];
+      if(actnode->Id == actinterface->gnode_bound1s->node->Id ||
+          actnode->Id == actinterface->gnode_bound2s->node->Id)
+      {
+        /* loop the other interfaces */
+        for(k=0; k<int_faces->numint; k++)
+        {
+          actinterface2 = &int_faces->interface[k];
+          if(actinterface->Id == actinterface2->Id)
+            goto end_of_this_interface;
+          else
+          {
+            if(actnode->Id == actinterface2->gnode_bound1s->node->Id ||
+                actnode->Id == actinterface2->gnode_bound2s->node->Id)
+            {
+              if(actinterface->gnode_bound1sc == NULL)
+                actinterface->gnode_bound1sc = actnode->gnode->mfcpnode[2]->gnode;
+              else
+                actinterface->gnode_bound2sc = actnode->gnode->mfcpnode[2]->gnode;
+              break;
+            }
+          }
+end_of_this_interface: ;
+        }
+
+      }
+    }
+
+    /* master domain */
+    for(j=0; j<actinterface->numnpm; j++)
+    {
+      actnode = actinterface->nodem[j];
+      if(actnode->Id == actinterface->gnode_bound1m->node->Id ||
+          actnode->Id == actinterface->gnode_bound2m->node->Id)
+      {
+        /* loop the other interfaces */
+        for(k=0; k<int_faces->numint; k++)
+        {
+          actinterface2 = &int_faces->interface[k];
+          if(actinterface->Id == actinterface2->Id)
+            goto end_of_this_interface1;
+          else
+          {
+            if(actnode->Id == actinterface2->gnode_bound1m->node->Id ||
+                actnode->Id == actinterface2->gnode_bound2m->node->Id)
+            {
+              if(actinterface->gnode_bound1mc == NULL)
+                actinterface->gnode_bound1mc = actnode->gnode;
+              else
+                actinterface->gnode_bound2mc = actnode->gnode;
+              break;
+            }
+          }
+end_of_this_interface1: ;
+        }
+
+      }
+    }
+
+    /* modify the entries in fsidyn->sid.a.iv, they are originally stored in
+       fsi_struct_intdofs(); but this original algorithm does not work
+       correctly for non-conforming discretizations                          */
+
+    /* loop over the structure nodes of the interface */
+    b=0;
+    for(j=0; j<actinterface->numnpm; j++)
+    {
+      actnode = actinterface->nodem[j];
+      actnode1 = actnode->gnode->mfcpnode[2];
+      /* loop over the dofs of actnode */
+      for(k=0; k<actnode->numdf; k++)
+      {
+        if(actnode->gnode->dirich == NULL)
+        {
+          dof = actnode->dof[k];
+          fsidyn->sid.a.iv[dof] = 1;
+          b++;
+        }
+        else if(actnode->gnode->dirich->dirich_onoff.a.iv[k] != 1)
+        {
+          dof = actnode->dof[k];
+          fsidyn->sid.a.iv[dof] = 1;
+          b++;
+        }
+      }
+    }
+    fsidyn->numsid = b;
+  } /* end og loop over the interfaces (i) */
 } /* end of fsi_init_interfaces */
 
 
@@ -2171,93 +2178,98 @@ forces on the structure nodes are stored at sol_mf.a.da[4][..].
 \return 0
 
 ------------------------------------------------------------------------*/
-void fsi_put_coupforc2struct(FIELD *masterfield, INTERFACES *int_faces)
+void fsi_put_coupforc2struct(
+    FIELD              *masterfield,
+    INT                 disnum,
+    INTERFACES         *int_faces
+    )
+
 {
-ARRAY coupforc;                    /* array of coupling forces          */
-DOUBLE *coupforc_a;
-NODE *actnode;                     /* pointer to the actual node        */
-INT a, i, j, k;                    /* counters                          */
-DOUBLE b;                          /* parameter for nodal position      */
-                                   /* on the interface                  */
-INTERFACE *actinterface;           /* the actual interface              */
+  ARRAY coupforc;                    /* array of coupling forces          */
+  DOUBLE *coupforc_a;
+  NODE *actnode;                     /* pointer to the actual node        */
+  INT a, i, j, k;                    /* counters                          */
+  DOUBLE b;                          /* parameter for nodal position      */
+  /* on the interface                  */
+  INTERFACE *actinterface;           /* the actual interface              */
 
-/* erase sol_mf[4] for all master nodes */
-solserv_sol_zero(masterfield, 0, node_array_sol_mf, 4);
+  /* erase sol_mf[4] for all master nodes */
+  solserv_sol_zero(masterfield, disnum, node_array_sol_mf, 4);
 
-/* loop over the interfaces */
-for(i=0; i<int_faces->numint; i++)
-{
-  actinterface = &int_faces->interface[i];
-  /*------------------------------------------------- values to variables */
-  coupforc_a = amdef("coupforc", &coupforc, actinterface->numnps, 2, "DA");
-  amzero(&coupforc);
-
-  /*----------------------------------------------------------------------*/
-  /*                               PART I                                 */
-  /*----------------------------------------------------------------------*/
-  /* construct array of coupling forces according to the order of nodes in*/
-
-  /* loop slave nodes at the interface */
-  for(j=0; j<actinterface->numnps; j++)
+  /* loop over the interfaces */
+  for(i=0; i<int_faces->numint; i++)
   {
-    actnode = actinterface->nodes[j];
-    /* the factor b is necessary to scale the nodal force if the actual */
-    /* node is an interface node at the intersection between two interfaces */
-    b=1.0;
-    if(actinterface->gnode_bound1sc != NULL &&
-       actnode->gnode->node->Id == actinterface->gnode_bound1sc->node->Id)
-      b=0.5;
-    if(actinterface->gnode_bound2sc != NULL &&
-       actnode->gnode->node->Id == actinterface->gnode_bound2sc->node->Id)
-      b=0.5;
+    actinterface = &int_faces->interface[i];
+    /*------------------------------------------------- values to variables */
+    coupforc_a = amdef("coupforc", &coupforc, actinterface->numnps, 2, "DA");
+    amzero(&coupforc);
 
-    /*------ the internal forces of sol_mf.a.da[3][.] are scaled by -1 to */
-    /*-------------------------------------------- obtain external forces */
-    coupforc.a.da[j][0] = -actnode->sol_mf.a.da[3][0] * b;
-    coupforc.a.da[j][1] = -actnode->sol_mf.a.da[3][1] * b;
-  }
+    /*----------------------------------------------------------------------*/
+    /*                               PART I                                 */
+    /*----------------------------------------------------------------------*/
+    /* construct array of coupling forces according to the order of nodes in*/
 
-  /*----------------------------------------------------------------------*/
-  /*                               PART II                                */
-  /*----------------------------------------------------------------------*/
-  /* ---put forces from coupforc[..][0..1] to the respective master nodes */
-
-  /* loop master nodes at the interface */
-  for(j=0; j<actinterface->numnpm; j++)
-  {
-    actnode = actinterface->nodem[j];
-    /*
-    a = actnode->nmb_zeros;
-    */
-    a=0;
-    /* loop the mortar coefficients */
-    for(k=0;k<actnode->mtr_coeff.fdim;k++)
+    /* loop slave nodes at the interface */
+    for(j=0; j<actinterface->numnps; j++)
     {
-      if((a+k)<coupforc.fdim)
+      actnode = actinterface->nodes[j];
+      /* the factor b is necessary to scale the nodal force if the actual */
+      /* node is an interface node at the intersection between two interfaces */
+      b=1.0;
+      if(actinterface->gnode_bound1sc != NULL &&
+          actnode->gnode->node->Id == actinterface->gnode_bound1sc->node->Id)
+        b=0.5;
+      if(actinterface->gnode_bound2sc != NULL &&
+          actnode->gnode->node->Id == actinterface->gnode_bound2sc->node->Id)
+        b=0.5;
+
+      /*------ the internal forces of sol_mf.a.da[3][.] are scaled by -1 to */
+      /*-------------------------------------------- obtain external forces */
+      coupforc.a.da[j][0] = -actnode->sol_mf.a.da[3][0] * b;
+      coupforc.a.da[j][1] = -actnode->sol_mf.a.da[3][1] * b;
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*                               PART II                                */
+    /*----------------------------------------------------------------------*/
+    /* ---put forces from coupforc[..][0..1] to the respective master nodes */
+
+    /* loop master nodes at the interface */
+    for(j=0; j<actinterface->numnpm; j++)
+    {
+      actnode = actinterface->nodem[j];
+      /*
+         a = actnode->nmb_zeros;
+         */
+      a=0;
+      /* loop the mortar coefficients */
+      for(k=0;k<actnode->mtr_coeff.fdim;k++)
       {
-        /* check if the actual node is on the intersection between two interfaces*/
-        if((actinterface->gnode_bound1mc != NULL &&
-           actnode->gnode->node->Id == actinterface->gnode_bound1mc->node->Id) ||
-          (actinterface->gnode_bound2mc != NULL &&
-           actnode->gnode->node->Id == actinterface->gnode_bound2mc->node->Id))
+        if((a+k)<coupforc.fdim)
         {
-          /* the index i runs with the interfaces */
-          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.da[k][i] *
-                                        coupforc.a.da[a+k][0];
-          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.da[k][i] *
-                                          coupforc.a.da[a+k][1];
+          /* check if the actual node is on the intersection between two interfaces*/
+          if((actinterface->gnode_bound1mc != NULL &&
+                actnode->gnode->node->Id == actinterface->gnode_bound1mc->node->Id) ||
+              (actinterface->gnode_bound2mc != NULL &&
+               actnode->gnode->node->Id == actinterface->gnode_bound2mc->node->Id))
+          {
+            /* the index i runs with the interfaces */
+            actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.da[k][i] *
+              coupforc.a.da[a+k][0];
+            actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.da[k][i] *
+              coupforc.a.da[a+k][1];
+          }
+          else
+          {
+            actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.dv[k] *
+              coupforc.a.da[a+k][0];
+            actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.dv[k] *
+              coupforc.a.da[a+k][1];
+          }
         }
-        else
-        {
-          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.dv[k] *
-                                         coupforc.a.da[a+k][0];
-          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.dv[k] *
-                                        coupforc.a.da[a+k][1];
-        }
-      }
-    } /* end of loop over the mortar coefficients (k)*/
-  } /* end of loop over the master nodes at the interface (i) */
-} /* end of loop over the interfaces (i)*/
+      } /* end of loop over the mortar coefficients (k)*/
+    } /* end of loop over the master nodes at the interface (i) */
+  } /* end of loop over the interfaces (i)*/
 } /* end of fsi_put_coupforc2struct */
 
 

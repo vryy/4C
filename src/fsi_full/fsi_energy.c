@@ -69,73 +69,74 @@ compute increment of energy transported across the fs - interface
 
 ------------------------------------------------------------------------*/
 void fsi_dyneint(
-                       FIELD          *structfield,
-		       INT             init
-		)
+    FIELD          *structfield,
+    INT             disnum,
+    INT             init
+    )
 {
-INT             i,j;            /* some counters                        */
-INT             numdf;          /* actual number of dofs                */
-INT             dof;            /* actual dof                           */
-static INT      numnp_total;    /* total number of structure nodes      */
-static INT      numdf_total;    /* total number of structure dofs       */
-static INT     *sid;            /* structural interface dofs            */
-DOUBLE          desint,defint;  /* energies                             */
-DOUBLE          fac;
-DOUBLE          dispi;          /* displacement increment               */
-DOUBLE        **sol_mf;         /* multifield nodal solution array      */
-static DOUBLE   alpha;          /* structural time integr. factor       */
-static DOUBLE   oma;            /* 1-alpha                              */
-static DOUBLE   theta;          /* fluid time integr. factor            */
-static DOUBLE   omt;            /* 1-theta                              */
-NODE           *actsnode;       /* actual structure node                */
-static STRUCT_DYNAMIC *sdyn;
-static FLUID_DYNAMIC  *fdyn;
+  INT             i,j;            /* some counters                        */
+  INT             numdf;          /* actual number of dofs                */
+  INT             dof;            /* actual dof                           */
+  static INT      numnp_total;    /* total number of structure nodes      */
+  static INT      numdf_total;    /* total number of structure dofs       */
+  static INT     *sid;            /* structural interface dofs            */
+  DOUBLE          desint,defint;  /* energies                             */
+  DOUBLE          fac;
+  DOUBLE          dispi;          /* displacement increment               */
+  DOUBLE        **sol_mf;         /* multifield nodal solution array      */
+  static DOUBLE   alpha;          /* structural time integr. factor       */
+  static DOUBLE   oma;            /* 1-alpha                              */
+  static DOUBLE   theta;          /* fluid time integr. factor            */
+  static DOUBLE   omt;            /* 1-theta                              */
+  NODE           *actsnode;       /* actual structure node                */
+  static STRUCT_DYNAMIC *sdyn;
+  static FLUID_DYNAMIC  *fdyn;
 
 #ifdef DEBUG
-dstrc_enter("fsi_dyneint");
+  dstrc_enter("fsi_dyneint");
 #endif
 
-fsidyn      = alldyn[3].fsidyn;
-sdyn        = alldyn[genprob.numsf].sdyn;
-fdyn        = alldyn[genprob.numff].fdyn;
+  fsidyn      = alldyn[3].fsidyn;
+  sdyn        = alldyn[genprob.numsf].sdyn;
+  fdyn        = alldyn[genprob.numff].fdyn;
 
-/*----------------------------------------------------- set some values */
-if (init==1) /* initialisation called by structure */
-{
-   sid         = fsidyn->sid.a.iv;
-   numdf_total = fsidyn->sid.fdim;
-   numnp_total = structfield->dis[0].numnp;
-   alpha       = sdyn->alpha_f;
-   oma         = ONE - alpha;
-   desint      = ZERO;
-   goto end;
-}
-else if (init==2) /* initialisation called by fluid */
-{
-   dsassert(fdyn->iop==4,
-   "computation of interface energy only implemented for ONE-STEP-THETA!\n");
-   theta       = fdyn->theta;
-   omt         = ONE-theta;
-   goto end;
-}
+  /*----------------------------------------------------- set some values */
+  if (init==1) /* initialisation called by structure */
+  {
+    sid         = fsidyn->sid.a.iv;
+    numdf_total = fsidyn->sid.fdim;
+    numnp_total = structfield->dis[disnum].numnp;
+    alpha       = sdyn->alpha_f;
+    oma         = ONE - alpha;
+    desint      = ZERO;
+    goto end;
+  }
+  else if (init==2) /* initialisation called by fluid */
+  {
+    dsassert(fdyn->iop==4,
+        "computation of interface energy only implemented for ONE-STEP-THETA!\n");
+    theta       = fdyn->theta;
+    omt         = ONE-theta;
+    goto end;
+  }
 
-dsassert(fsidyn->ifsi!=3,
-"computation of interface energy not implemented for fsi-algo with dt/2-shift!\n");
+  dsassert(fsidyn->ifsi!=3,
+      "computation of interface energy not implemented for fsi with dt/2-shift!\n");
 
 
-/*-------------------------------------------------- energy computation */
-desint = ZERO;
-defint = ZERO;
+  /*-------------------------------------------------- energy computation */
+  desint = ZERO;
+  defint = ZERO;
 
-/*---------------------------------------------------------- loop nodes */
-for (i=0;i<numnp_total;i++)
-{
-   actsnode  = &(structfield->dis[0].node[i]);
-   numdf = actsnode->numdf;
-   sol_mf = actsnode->sol_mf.a.da;
-   /*--------------------------------- loop dofs and check for coupling */
-   for (j=0;j<numdf;j++)
-   {
+  /*---------------------------------------------------------- loop nodes */
+  for (i=0;i<numnp_total;i++)
+  {
+    actsnode  = &(structfield->dis[disnum].node[i]);
+    numdf = actsnode->numdf;
+    sol_mf = actsnode->sol_mf.a.da;
+    /*--------------------------------- loop dofs and check for coupling */
+    for (j=0;j<numdf;j++)
+    {
       dof = actsnode->dof[j];
       dsassert(dof<numdf_total,"dofnumber not valid!\n");
       if (sid[dof]==0) continue;
@@ -147,18 +148,23 @@ for (i=0;i<numnp_total;i++)
       dispi   = sol_mf[1][j] - sol_mf[2][j];
       fac     = theta*sol_mf[4][j] + omt*sol_mf[5][j];
       defint -= fac*dispi;
-   } /* end of loop over dofs */
-} /* end of loop over nodes */
+    } /* end of loop over dofs */
+  } /* end of loop over nodes */
 
-/*---------------------------------- energy production at the interface */
-fsidyn->deltaeint = desint + defint;
+  /*---------------------------------- energy production at the interface */
+  fsidyn->deltaeint = desint + defint;
 
 end:
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+  return;
 } /* end of fsi_dyneint */
+
+
+
+
+
 
 /*!---------------------------------------------------------------------
 \brief inteface energy check
@@ -169,38 +175,53 @@ check energy production at the fs-interface
 
 </pre>
 
-\param *fsidyn 	      FSI_DYNAMIC    (i)
+\param *fsidyn        FSI_DYNAMIC    (i)
+
 \return void
 
 ------------------------------------------------------------------------*/
 void fsi_energycheck(void)
 {
 
-#ifdef DEBUG
-dstrc_enter("fsi_energycheck");
-#endif
-
-fsidyn = alldyn[3].fsidyn;
-
-if (fsidyn->deltaeint>fsidyn->entol)
-{
-   printf("\n");
-   printf("##################################################\n");
-   printf("SUM OF ENERGY CREATED AT FS-INTERFACE > TOLERANCE:\n");
-   printf("DELTAEINT = %10.3E > ENTOL = %10.3E\n",
-           fsidyn->deltaeint,fsidyn->entol);
-   printf("  ==> COMPUTATION BECOMES UNSTABLE ... STOPPING \n");
-   printf("##################################################\n");
-   printf("\n");
-   /*---------------------------------- stop calculation regularily!!! */
-   fsidyn->step=fsidyn->nstep;
-}
 
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_enter("fsi_energycheck");
 #endif
-return;
+
+
+  fsidyn = alldyn[3].fsidyn;
+
+  if (fsidyn->deltaeint>fsidyn->entol)
+  {
+    printf("\n");
+    printf("##################################################\n");
+    printf("SUM OF ENERGY CREATED AT FS-INTERFACE > TOLERANCE:\n");
+    printf("DELTAEINT = %10.3E > ENTOL = %10.3E\n",
+        fsidyn->deltaeint,fsidyn->entol);
+    printf("  ==> COMPUTATION BECOMES UNSTABLE ... STOPPING \n");
+    printf("##################################################\n");
+    printf("\n");
+
+
+    /* stop calculation regularily!!! */
+    fsidyn->step=fsidyn->nstep;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+
 } /* end of fsi_energycheck */
 
-#endif
+
+
+#endif  /* ifdef D_FSI */
+
+
+
 /*! @} (documentation module close)*/
+
+
+

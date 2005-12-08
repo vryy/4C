@@ -229,6 +229,7 @@ void fsi_createfsicoup()
     else
     {
 
+#if 0
       /* surface is an exterior surface */
       if (actdsurf->ndvol == 1 )
       {
@@ -250,6 +251,7 @@ void fsi_createfsicoup()
           actdsurf->ale_dirich->dirich_onoff.a.iv[j] = 1;
         actdsurf->ale_dirich->dirich_type = dirich_none;
       }
+#endif
 
 
     }  /* else */
@@ -559,10 +561,14 @@ void fsi_createfsicoup()
  */
 /*-----------------------------------------------------------------------*/
 void fsi_initcoupling(
-    FIELD       *structfield,
-    FIELD       *fluidfield,
-    FIELD       *alefield
+    FIELD              *structfield,
+    INT                 disnum_s,
+    FIELD              *fluidfield,
+    INT                 disnum_f,
+    FIELD              *alefield,
+    INT                 disnum_a
     )
+
 {
 
   INT     numfnp, numsnp, numanp;              /* number of nodes         */
@@ -574,12 +580,17 @@ void fsi_initcoupling(
   INT     dim;                                 /* dimension of problem    */
   INT     sfound,afound;                       /* flag                    */
   INT     is_ale;
+
   DOUBLE  tol=EPS4;                            /* tolerance for node dist */
+
   NODE   *actfnode=NULL, *actsnode=NULL, *actanode=NULL;  /* actual nodes */
   GNODE  *actfgnode=NULL,*actsgnode=NULL,*actagnode=NULL; /* actual gnodes*/
+
   ELEMENT *actele;
+
   ARRAY   aindex_a, sindex_a;
   INT    *aindex, *sindex;
+
   FSI_DYNAMIC    *fsidyn;
 
 
@@ -592,9 +603,9 @@ void fsi_initcoupling(
 
 
   /* find number of nodes in different fields */
-  numsnp  = structfield->dis[0].numnp;
-  numfnp  = fluidfield->dis[0].numnp;
-  numanp  = alefield->dis[0].numnp;
+  numsnp  = structfield->dis[disnum_s].numnp;
+  numfnp  = fluidfield->dis[disnum_f].numnp;
+  numanp  = alefield->dis[disnum_a].numnp;
   numaf   = genprob.numaf;
   numff   = genprob.numff;
   numsf   = genprob.numsf;
@@ -624,21 +635,28 @@ perf_begin(53);
    *     3D: SIGMA11,SIGMA22,SIGMA33,SIGMA12,SIGMA13,SIGMA23
    */
 
+
   /* loop fluid nodes */
   for (i=0;i<numfnp;i++)
   {
-    actfnode  = &(fluidfield->dis[0].node[i]);
+    actfnode  = &(fluidfield->dis[disnum_f].node[i]);
     actfgnode = actfnode->gnode;
     numdf = actfnode->numdf;
+
     if (numdf==3 || numdf==5) numc=numdf;
     else if (numdf==4 || numdf==7) numc=IMAX(6,numdf);
     else  dserror("number of fluid dofs not possible!\n");
+
     amdef("sol_mf",&actfnode->sol_mf,2,numc,"DA");
     amzero(&(actfnode->sol_mf));
+
     actfgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
+
     if (actfgnode->mfcpnode==NULL)
       dserror("Allocation of coupling node pointers failed");
+
     for (j=0;j<3;j++) actfgnode->mfcpnode[j]=NULL;
+
   } /* end of loop over fluid nodes */
 
 
@@ -656,15 +674,20 @@ perf_begin(53);
   /* loop structure nodes */
   for (i=0;i<numsnp;i++)
   {
-    actsnode  = &(structfield->dis[0].node[i]);
+    actsnode  = &(structfield->dis[disnum_s].node[i]);
     actsgnode = actsnode->gnode;
     numdf = actsnode->numdf;
+
     amdef("sol_mf",&actsnode->sol_mf,6,numdf,"DA");
     amzero(&(actsnode->sol_mf));
+
     actsgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
+
     if (actsgnode->mfcpnode==NULL)
       dserror("Allocation of coupling node pointers failed");
+
     for (j=0;j<3;j++) actsgnode->mfcpnode[j]=NULL;
+
   } /* end of loop over struct nodes */
 
 
@@ -678,23 +701,29 @@ perf_begin(53);
   /* loop ale nodes */
   for (i=0;i<numanp;i++)
   {
-    actanode  = &(alefield->dis[0].node[i]);
+    actanode  = &(alefield->dis[disnum_a].node[i]);
     actagnode = actanode->gnode;
     numdf = actanode->numdf;
+
     amdef("sol_mf",&actanode->sol_mf,3,numdf,"DA");
     amzero(&(actanode->sol_mf));
+
     actagnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
+
     if (actagnode->mfcpnode==NULL)
       dserror("Allocation of coupling node pointers failed");
+
     for (j=0;j<3;j++) actagnode->mfcpnode[j]=NULL;
+
   } /* end of loop over ale nodes */
-
-
 
 
 #ifdef PERF
 perf_end(53);
 #endif
+
+
+
 
 
   /* find fsi coupled nodes
@@ -712,15 +741,20 @@ perf_begin(54);
   for (i=0;i<numanp;i++) aindex[i]=1;
   for (i=0;i<numsnp;i++) sindex[i]=1;
 
+
+
   /* loop fluid nodes  */
   for (i=0;i<numfnp;i++)
   {
-    actfnode  = &(fluidfield->dis[0].node[i]);
+    actfnode  = &(fluidfield->dis[disnum_f].node[i]);
     actfgnode = actfnode->gnode;
     is_ale=0;
+
     for (j=0;j<actfnode->numele;j++)
     {
+
       actele= actfnode->element[j];
+
       switch (actele->eltyp)
       {
 
@@ -762,19 +796,27 @@ perf_begin(54);
 perf_begin(56);
 #endif
 
+
     /* loop struct nodes at interface and find corresponding node */
-    if (actfgnode->fsicouple!=NULL)
+    if (actfgnode->fsicouple != NULL)
       for (j=0;j<numsnp;j++)
       {
+
         if (sindex[j]==0) continue;
-        actsnode   = &(structfield->dis[0].node[j]);
+
+        actsnode   = &(structfield->dis[disnum_s].node[j]);
+
         cheque_distance(&(actfnode->x[0]),&(actsnode->x[0]),tol,&ierr);
         if(ierr==0) continue;
+
         sfound++;
         actsgnode = actsnode->gnode;
         sindex[j]=0;
+
         break;
       } /* end of loop over structnodes */
+
+
 #ifdef PERF
     perf_end(56);
 #endif
@@ -787,31 +829,31 @@ perf_begin(56);
     perf_begin(57);
 #endif
 
-
-
-    if (genprob.create_ale != 1)
+    if (genprob.create_ale != 1 || fluidfield->subdivide > 0)
     {
       /* loop ale nodes and find corresponding node */
       if (is_ale>0)
         for (j=0;j<numanp;j++)
         {
+
           if (aindex[j]==0) continue;
-          actanode  = &(alefield->dis[0].node[j]);
+
+          actanode  = &(alefield->dis[disnum_a].node[j]);
+
           cheque_distance(&(actfnode->x[0]),&(actanode->x[0]),tol,&ierr);
           if(ierr==0) continue;
+
           afound++;
           actagnode = actanode->gnode;
           aindex[j]=0;
+
           break;
+
         } /* end of loop over ale nodes */
     }
 
-
-
     else
     {
-
-      /*  */
       if (is_ale>0)
       {
         for (j=0; j<actfnode->element[0]->numnp; j++)
@@ -842,6 +884,7 @@ perf_begin(56);
 
           }  /* if (actfnode->Id == actfnode->element[0]->node[j]->Id ) */
         }
+
 
 #ifdef DEBUG
         cheque_distance(&(actfnode->x[0]),&(actanode->x[0]),tol,&ierr);
@@ -897,58 +940,88 @@ perf_begin(55);
   /* ------------------- */
   for (i=0;i<numfnp;i++)
   {
-    actfnode  = &(fluidfield->dis[0].node[i]);
+    actfnode  = &(fluidfield->dis[disnum_f].node[i]);
     actfgnode = actfnode->gnode;
+
     if (actfgnode->fsicouple==NULL) continue;
+
     actsnode = actfgnode->mfcpnode[numsf];
     actanode = actfgnode->mfcpnode[numaf];
     actsgnode = actsnode->gnode;
     actagnode = actanode->gnode;
 
+
+    if (actsgnode == NULL)
+      dserror_args(__FILE__, __LINE__,
+          "No structure node for fluid node: #%d", actfnode->Id);
+
+
+    if (actagnode == NULL)
+      dserror_args(__FILE__, __LINE__,
+          "No ale node for fluid node: #%d", actfnode->Id);
+
+
     /* check locsys */
     if (actfnode->locsysId!=0)
-      dserror("No locsys at FSI coupling node: #%d", actfnode->Id);
+      dserror_args(__FILE__, __LINE__, "No locsys at FSI coupling node: #%d", actfnode->Id);
     if (actsnode->locsysId!=0)
-      dserror("No locsys at FSI coupling node: #%d", actsnode->Id);
+      dserror_args(__FILE__, __LINE__, "No locsys at FSI coupling node: #%d", actsnode->Id);
     if (actanode->locsysId!=0)
-      dserror("No locsys at FSI coupling node: #%d", actanode->Id);
+      dserror_args(__FILE__, __LINE__, "No locsys at FSI coupling node: #%d", actanode->Id);
+
 
     /* check coupling conditions */
     if (actsgnode->fsicouple==NULL)
-      dserror("FSI Coupling Condition Fluid-Struct not the same: struct node #%d",
+    {
+      dserror_args(__FILE__, __LINE__,
+          "FSI Coupling Condition Fluid-Struct not the same: struct node #%d",
           actsnode->Id);
+    }
+
     if (actagnode->fsicouple==NULL)
-      dserror("FSI Coupling Condition Fluid-Ale not the same: ale node #%d",
+      dserror_args(__FILE__, __LINE__,
+          "FSI Coupling Condition Fluid-Ale not the same: ale node #%d",
           actanode->Id);
+
 
     /* check coupling Ids */
     if (actfgnode->fsicouple->fsi_coupleId!=actsgnode->fsicouple->fsi_coupleId)
-      dserror("FSI Coupling Condition Fluid-Struct: wrong coupleId, fluid #%d, struct #%d",
+      dserror_args(__FILE__, __LINE__,
+          "FSI Coupling Condition Fluid-Struct: wrong coupleId, fluid #%d, struct #%d",
           actfnode->Id, actsnode->Id);
+
     if (actfgnode->fsicouple->fsi_coupleId!=actagnode->fsicouple->fsi_coupleId)
-      dserror("FSI Coupling Condition Fluid-Ale: wrong coupleId, fluid #%d, ale #%d",
+      dserror_args(__FILE__, __LINE__,
+          "FSI Coupling Condition Fluid-Ale: wrong coupleId, fluid #%d, ale #%d",
           actfnode->Id, actsnode->Id);
+
 
     /* check mesh */
     if (actfgnode->fsicouple->fsi_mesh!=actsgnode->fsicouple->fsi_mesh)
-      dserror("FSI Coupling Condition Fluid-Struct: wrong mesh, fluid #%d, struct #%d",
+      dserror_args(__FILE__, __LINE__,
+          "FSI Coupling Condition Fluid-Struct: wrong mesh, fluid #%d, struct #%d",
           actfnode->Id, actsnode->Id);
+
     if (actfgnode->fsicouple->fsi_mesh!=actagnode->fsicouple->fsi_mesh)
-      dserror("FSI Coupling Condition Fluid-Ale: wrong mesh, fluid #%d, ale #%d",
+      dserror_args(__FILE__, __LINE__,
+          "FSI Coupling Condition Fluid-Ale: wrong mesh, fluid #%d, ale #%d",
           actfnode->Id, actanode->Id);
+
 
     /* check dirich conds of fluid node */
     if (actfgnode->dirich==NULL)
-      dserror("No dirich condition for fsi-coupling fluid node #%d",actfnode->Id);
+      dserror_args(__FILE__, __LINE__,
+          "No dirich condition for fsi-coupling fluid node #%d",actfnode->Id);
     if(actfgnode->dirich->dirich_type!=dirich_FSI) continue;
     if (actfnode->numdf!=dim+1)
-      dserror("numdf not possible for fluid node #%d at FSI interface!", actfnode->Id);
+      dserror_args(__FILE__, __LINE__,
+          "numdf not possible for fluid node #%d at FSI interface!", actfnode->Id);
     for (j=0;j<dim;j++)
       if (actfgnode->dirich->dirich_onoff.a.iv[j]!=1)
-        dserror("onoff(%d)=%d at fluid node #%d",
+        dserror_args(__FILE__, __LINE__, "onoff(%d)=%d at fluid node #%d",
             j,actfgnode->dirich->dirich_onoff.a.iv[j],actfnode->Id);
     if (actfgnode->dirich->dirich_onoff.a.iv[dim]!=0)
-      dserror("onoff(%d)=%d at fluid node #%d",
+      dserror_args(__FILE__, __LINE__, "onoff(%d)=%d at fluid node #%d",
           dim,actfgnode->dirich->dirich_onoff.a.iv[j],actfnode->Id);
 
   }  /* for (i=0;i<numfnp;i++) */
@@ -956,17 +1029,24 @@ perf_begin(55);
 
   for (i=0;i<numanp;i++)
   {
-    actanode  = &(alefield->dis[0].node[i]);
+    actanode  = &(alefield->dis[disnum_a].node[i]);
     actagnode = actanode->gnode;
+
     if (actagnode->fsicouple==NULL) continue;
+
     if (actagnode->dirich==NULL)
-      dserror("No dirich condition for fsi-coupling ale node #%d",actanode->Id);
+      dserror_args(__FILE__, __LINE__,
+          "No dirich condition for fsi-coupling ale node #%d",actanode->Id);
+
     if(actagnode->dirich->dirich_type!=dirich_FSI) continue;
+
     for(j=0;j<actanode->numdf;j++)
       if(actagnode->dirich->dirich_onoff.a.iv[j]!=1)
-        dserror("wrong onoff() at ale node #%d",actanode->Id);
+        dserror_args(__FILE__, __LINE__, "wrong onoff() at ale node #%d",actanode->Id);
+
     for (j=actanode->numdf;j<MAXDOFPERNODE;j++)
       actagnode->dirich->dirich_onoff.a.iv[j]=0;
+
   }  /* for (i=0;i<numanp;i++) */
 
 
@@ -1013,8 +1093,10 @@ end:
  */
 /*-----------------------------------------------------------------------*/
 void fsi_struct_intdofs(
-    FIELD       *structfield
+    FIELD              *structfield,
+    INT                 disnum
     )
+
 {
 
   INT    i,j;                    /* some counters                         */
@@ -1023,8 +1105,10 @@ void fsi_struct_intdofs(
   INT    counter=0;
   INT    numaf;
   INT   *sid;                    /* structural interface dofs             */
+
   NODE  *actsnode, *actanode;    /* actual nodes                          */
   GNODE *actsgnode, *actagnode;  /* actual gnodes                         */
+
   FSI_DYNAMIC *fsidyn;
 
 
@@ -1035,26 +1119,29 @@ void fsi_struct_intdofs(
 
   fsidyn = alldyn[3].fsidyn;
 
-  numnp_total = structfield->dis[0].numnp;
+  numnp_total = structfield->dis[disnum].numnp;
   numaf       = genprob.numaf;
 
-  sid = amdef("sid",&fsidyn->sid,structfield->dis[0].numdf,1,"IV");
+  sid = amdef("sid",&fsidyn->sid,structfield->dis[disnum].numdf,1,"IV");
   amzero(&fsidyn->sid);
 
 
-  /* loop nodes */
+  /* loop structure nodes */
   for (i=0;i<numnp_total;i++)
   {
-    actsnode  = &(structfield->dis[0].node[i]);
+    actsnode  = &(structfield->dis[disnum].node[i]);
     actsgnode = actsnode->gnode;
+
     actanode  = actsgnode->mfcpnode[numaf];
-    if (actanode==NULL) continue;
+    if (actanode == NULL) continue;
     actagnode = actanode->gnode;
 
     /* check for coupling nodes */
-    if(actagnode->dirich==NULL)
-      dserror("no dirich condition for coupled ALE node #%d",actanode->Id);
-    if (actagnode->dirich->dirich_type!=dirich_FSI) continue;
+    if(actagnode->dirich == NULL)
+      dserror_args(__FILE__, __LINE__,
+          "no dirich condition for coupled ALE node #%d",actanode->Id);
+
+    if (actagnode->dirich->dirich_type != dirich_FSI) continue;
 
     for (j=0;j<actanode->numdf;j++)
     {
