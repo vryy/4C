@@ -341,7 +341,7 @@ void out_element_control(struct _BIN_OUT_FIELD *context,
       }
 #endif
       default:
-        dserror("element type %d unsupported", i);
+        dserror_args(__FILE__, __LINE__, "element type %d unsupported", i);
       }
     }
   }
@@ -630,7 +630,7 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
     call_gather_nodes(sol_mf);
     break;
   default:
-    dserror("Node array %d unknown", array);
+    dserror_args(__FILE__, __LINE__, "Node array %d unknown", array);
   }
 
 #undef call_gather_nodes
@@ -1065,7 +1065,7 @@ static void out_pack_ele_params(BIN_OUT_CHUNK *chunk,
       }
 #endif
       default:
-        dserror("element type %d unsupported", actele->eltyp);
+        dserror_args(__FILE__, __LINE__, "element type %d unsupported", actele->eltyp);
       }
 
       counter += 1;
@@ -2121,7 +2121,7 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         }
         else
         {
-          dserror("distyp %d unsupported", actele->distyp);
+          dserror_args(__FILE__, __LINE__, "distyp %d unsupported", actele->distyp);
         }
 
         break;
@@ -2182,7 +2182,7 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         }
         else
         {
-          dserror("distyp %d unsupported", actele->distyp);
+          dserror_args(__FILE__, __LINE__, "distyp %d unsupported", actele->distyp);
         }
 
         /* copy the values */
@@ -2326,7 +2326,8 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       case el_ale2:             /* 2D pseudo structural ale element */
       case el_ale3:             /* 3D pseudo structural ale element */
       default:
-        dserror("element based stress output not supported for element type %d", actele->eltyp);
+        dserror_args(__FILE__, __LINE__,
+            "element based stress output not supported for element type %d", actele->eltyp);
       }
 
 #ifdef PARALLEL
@@ -2569,7 +2570,7 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
     break;
 
   default:
-    dserror("Unknown type %d of system matrix", sysarray_typ);
+    dserror_args(__FILE__, __LINE__, "Unknown type %d of system matrix", sysarray_typ);
     break;
   }
 
@@ -3170,7 +3171,7 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
     out_pack_restart_element(chunk, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
   default:
-    dserror("unsupported chunk type %d", type);
+    dserror_args(__FILE__, __LINE__, "unsupported chunk type %d", type);
   }
 
 #ifdef DEBUG
@@ -3292,7 +3293,7 @@ static void in_unpack_node_arrays(BIN_IN_FIELD *context,
     call_scatter_values(sol_mf);
     break;
   default:
-    dserror("Node array %d unknown", array);
+    dserror_args(__FILE__, __LINE__, "Node array %d unknown", array);
   }
 
 #undef call_scatter_values
@@ -3852,7 +3853,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 #endif
 
     default:
-      dserror("element type %d unsupported", actele->eltyp);
+      dserror_args(__FILE__, __LINE__, "element type %d unsupported", actele->eltyp);
     }
   }
 
@@ -3928,7 +3929,7 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
     in_unpack_restart_element(context, chunk, recv_buf, recv_count, recv_size_buf, recv_size_count, src);
     break;
   default:
-    dserror("unsupported chunk type %d", type);
+    dserror_args(__FILE__, __LINE__, "unsupported chunk type %d", type);
   }
 
 #ifdef DEBUG
@@ -4068,7 +4069,7 @@ void find_ele_param_item_length(struct _BIN_OUT_FIELD* context,
       break;
 #endif
     default:
-      dserror("element type %d unsupported", actele->eltyp);
+      dserror_args(__FILE__, __LINE__, "element type %d unsupported", actele->eltyp);
     }
   }
 
@@ -4318,7 +4319,7 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
       }
       else
       {
-        dserror("distyp %d unsupported", actele->distyp);
+        dserror_args(__FILE__, __LINE__, "distyp %d unsupported", actele->distyp);
       }
       break;
     }
@@ -4359,13 +4360,13 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
       }
       else
       {
-        dserror("distyp %d unsupported", actele->distyp);
+        dserror_args(__FILE__, __LINE__, "distyp %d unsupported", actele->distyp);
       }
       break;
     }
 #endif
     default:
-      dserror("element type %d not supported", actele->eltyp);
+      dserror_args(__FILE__, __LINE__, "element type %d not supported", actele->eltyp);
     }
   }
 
@@ -4673,7 +4674,7 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
 #endif
 
     default:
-      dserror("element type %d unsupported", actele->eltyp);
+      dserror_args(__FILE__, __LINE__, "element type %d unsupported", actele->eltyp);
     }
   }
 

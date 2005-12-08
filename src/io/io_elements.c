@@ -88,7 +88,7 @@ static void setup_element_variables(INT version, ELEMENT_VARIABLES* vars)
     vars->ep_size_numnp = 3;
     break;
   default:
-    dserror("element output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "element output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -149,7 +149,7 @@ static void setup_shell8_variables(INT version, SHELL8_VARIABLES* vars)
     break;
 
   default:
-    dserror("shell8 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "shell8 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -209,7 +209,7 @@ static void setup_shell9_variables(INT version, SHELL9_VARIABLES* vars)
     break;
 
   default:
-    dserror("shell9 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "shell9 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -268,7 +268,7 @@ static void setup_brick1_variables(INT version, BRICK1_VARIABLES* vars)
     break;
 
   default:
-    dserror("brick1 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "brick1 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -325,7 +325,7 @@ static void setup_fluid2_variables(INT version, FLUID2_VARIABLES* vars)
     break;
 
   default:
-    dserror("fluid2 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "fluid2 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -382,7 +382,7 @@ static void setup_fluid2_pro_variables(INT version, FLUID2_PRO_VARIABLES* vars)
     break;
 
   default:
-    dserror("fluid2_pro output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "fluid2_pro output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -439,7 +439,7 @@ static void setup_fluid2tu_variables(INT version, FLUID2TU_VARIABLES* vars)
     break;
 
   default:
-    dserror("fluid2tu output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "fluid2tu output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -497,7 +497,7 @@ static void setup_fluid3_variables(INT version, FLUID3_VARIABLES* vars)
     break;
 
   default:
-    dserror("fluid3 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "fluid3 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -555,7 +555,7 @@ static void setup_fluid3_fast_variables(INT version, FLUID3_FAST_VARIABLES* vars
     break;
 
   default:
-    dserror("fluid3_fast output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "fluid3_fast output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -612,7 +612,7 @@ static void setup_ale2_variables(INT version, ALE2_VARIABLES* vars)
     break;
 
   default:
-    dserror("ale2 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "ale2 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -670,7 +670,7 @@ static void setup_ale3_variables(INT version, ALE3_VARIABLES* vars)
     break;
 
   default:
-    dserror("ale3 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "ale3 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -732,7 +732,7 @@ static void setup_wall1_variables(INT version, WALL1_VARIABLES* vars)
     break;
 
   default:
-    dserror("wall1 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "wall1 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -788,7 +788,7 @@ static void setup_beam3_variables(INT version, BEAM3_VARIABLES* vars)
     break;
 
   default:
-    dserror("beam3 output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "beam3 output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -846,7 +846,7 @@ static void setup_axishell_variables(INT version, AXISHELL_VARIABLES* vars)
     break;
 
   default:
-    dserror("axishell output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "axishell output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -905,7 +905,7 @@ static void setup_interf_variables(INT version, INTERF_VARIABLES* vars)
     break;
 
   default:
-    dserror("interf output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "interf output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -967,7 +967,7 @@ static void setup_wallge_variables(INT version, WALLGE_VARIABLES* vars)
     break;
 
   default:
-    dserror("wallge output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "wallge output version %d unknown", version);
   }
 
 #ifdef DEBUG
@@ -1012,7 +1012,7 @@ static void setup_node_variables(INT version, NODE_VARIABLES* vars)
     vars->coords_size_eleid = 2;
     break;
   default:
-    dserror("node output version %d unknown", version);
+    dserror_args(__FILE__, __LINE__, "node output version %d unknown", version);
   }
 
 #ifdef DEBUG
