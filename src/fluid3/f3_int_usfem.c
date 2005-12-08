@@ -10,10 +10,10 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "../ale3/ale3.h"
 #include "fluid3_prototypes.h"
@@ -37,9 +37,9 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         chfoe 04/04
 
-In this routine the element 'stiffness' matrix and RHS for one 
+In this routine the element 'stiffness' matrix and RHS for one
 fluid2 element is calculated
-      
+
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *hasext    INT             (i)    element flag
@@ -59,7 +59,7 @@ fluid2 element is calculated
 \param **evhist    DOUBLE	   (i)    lin. combination of recent vel and acc
 \param **egridv    DOUBLE	   (i)    grid velocity of element
 \param  *epren     DOUBLE	   (-)    ele pres. at time n
-\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n 
+\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n
 \param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
 \param  *velint    DOUBLE	   (-)    vel at integration point
 \param  *vel2int   DOUBLE	   (-)    vel at integration point
@@ -69,7 +69,7 @@ fluid2 element is calculated
 \param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
 \param **wa1	   DOUBLE	   (-)    working array
 \param **wa2	   DOUBLE	   (-)    working array
-\return void                                                   
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_int_usfem(
@@ -95,14 +95,14 @@ void f3_int_usfem(
 	              DOUBLE         **wa1,
 	              DOUBLE         **wa2
 	             )
-{ 
+{
 INT       i;          /* a couter                                       */
 INT       iel;        /* number of nodes                                */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
 INT       ihoel=0;    /* flag for higher order elements                 */
-INT       icode=2;    /* flag for eveluation of shape functions         */     
+INT       icode=2;    /* flag for eveluation of shape functions         */
 INT       lr, ls, lt; /* counter for integration                        */
 INT       is_ale;
 DOUBLE    fac;        /* total integration vactor                       */
@@ -118,7 +118,7 @@ DIS_TYP   typ;	      /* element type                                   */
 FLUID_DYNAMIC   *fdyn;
 FLUID_DATA      *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_int_usfem");
 #endif
 
@@ -165,7 +165,7 @@ default:
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
-{    
+{
 for (ls=0;ls<nis;ls++)
 {
 for (lt=0;lt<nit;lt++)
@@ -196,11 +196,11 @@ for (lt=0;lt<nit;lt++)
       e1 = e2 = e3 = 0.0;
       dserror("typ unknown!");
    } /* end switch (typ) */
-   
+
    /*----------------------------------------- compute Jacobian matrix */
    f3_jaco(xyze,deriv,xjm,&det,ele,iel);
    fac = facr*facs*fact*det;
-   
+
    /*---------------------------------------- compute global derivates */
    f3_gder(derxy,deriv,xjm,wa1,det,iel);
 
@@ -222,10 +222,10 @@ for (lt=0;lt<nit;lt++)
 
    /*--------------------- get grid velocity at integration point ---*/
    if(is_ale) f3_veci(gridvelint,funct,egridv,iel);
-   
+
    /*------------------------------------- get pressure gradients ---*/
    gradp[0] = gradp[1] = gradp[2] = 0.0;
-   
+
    for (i=0; i<iel; i++)
    {
       gradp[0] += derxy[0][i] * epren[i];
@@ -240,22 +240,22 @@ for (lt=0;lt<nit;lt++)
 } /* end of loop over integration points lt*/
 } /* end of loop over integration points ls */
 } /* end of loop over integration points lr */
- 
+
 /*----------------------------------------------- to ensure assembly ---*/
 *hasext = 1;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f3_int_usfem_ale */
 
 
 
 /*!---------------------------------------------------------------------
-\brief integration loop for one fluid2 element residual vector 
+\brief integration loop for one fluid2 element residual vector
        basing on USFEM
 
 <pre>                                                         chfoe 11/04
@@ -264,7 +264,7 @@ This routine calculates the elemental residual vector for one converged
 fluid element. The field velint contains the converged Gauss point value
 of the velocity. The elemental residual vector is used to obtain fluid
 lift and drag forces and FSI coupling forces.
-      
+
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *hasext    INT             (i)    element flag
@@ -288,7 +288,7 @@ lift and drag forces and FSI coupling forces.
 \param   visc      DOUBLE          (i)    viscosity
 \param **wa1	   DOUBLE	   (-)    working array
 \param **wa2	   DOUBLE	   (-)    working array
-\return void                                                   
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_int_res(
@@ -340,7 +340,7 @@ FLUID_DYNAMIC   *fdyn;
 FLUID_DATA      *data;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_int_res");
 #endif
 
@@ -381,7 +381,7 @@ default:
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
-{    
+{
 for (ls=0;ls<nis;ls++)
 {
 for (lt=0;lt<nit;lt++)
@@ -410,11 +410,11 @@ for (lt=0;lt<nit;lt++)
    default:
       dserror("typ unknown!");
    } /* end switch (typ) */
-      
+
    /*----------------------------------------- compute Jacobian matrix */
    f3_jaco(xyze,deriv,xjm,&det,ele,iel);
    fac = facr*facs*fact*det;
-   
+
    /*---------------------------------------- compute global derivates */
    f3_gder(derxy,deriv,xjm,wa1,det,iel);
 
@@ -436,10 +436,10 @@ for (lt=0;lt<nit;lt++)
 
    /*-------------- get ALE convective velocity at integration point ---*/
    if(is_ale) f3_veci(aleconv,funct,ealecovng,iel);
-   
+
    /*---------------------------------------- get pressure gradients ---*/
    gradp[0] = gradp[1] = gradp[2] = 0.0;
-   
+
    for (i=0; i<iel; i++)
    {
       gradp[0] += derxy[0][i] * epren[i];
@@ -449,7 +449,7 @@ for (lt=0;lt<nit;lt++)
 
    /*----------------------------- get pressure at integration point ---*/
    presint = f3_scali(funct,epren,iel);
-      
+
    /*----------------- perform integration for entire matrix and rhs ---*/
    f3_calresvec(force,velint,histvec,vderxy,vderxy2,funct,derxy,derxy2,
                 edeadng,aleconv,&presint,gradp,fac,visc,iel,hasext,
@@ -457,13 +457,13 @@ for (lt=0;lt<nit;lt++)
 } /* end of loop over integration points lt*/
 } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
- 
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f3_int_res*/
 
 
@@ -505,10 +505,11 @@ void f3_int_beltrami_err(
 
 {
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;     /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
   INT       is_ale;     /* ALE or Euler element flag                      */
-  INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0,nit=0;
+                        /* number of integration nodesin r,s direction    */
   INT       lr, ls, lt; /* counter for integration                        */
 
   DOUBLE    fac;        /* total integration vactor                       */
@@ -520,11 +521,10 @@ void f3_int_beltrami_err(
   DIS_TYP   typ;        /* element type                                   */
   DOUBLE    presint;    /* pressure at integration point                  */
   DOUBLE    diffx, diffy,diffz, diffp;
-  DOUBLE    solx, soly,solz, solp;
+  DOUBLE    solx=0.0, soly=0.0, solz=0.0, solp=0.0;
   DOUBLE    a=2.0, t;
   FLUID_DYNAMIC   *fdyn;
   FLUID_DATA      *data;
-  NODE     *actnode;
   DOUBLE    x1,x2,x3,d;
 
 
@@ -700,7 +700,7 @@ void f3_int_beltrami_err(
             break;
 
           default:
-            dserror(
+            dserror_args(__FILE__, __LINE__,
                 "Error norm %2i not available!!",container->error_norm);
             break;
         }
