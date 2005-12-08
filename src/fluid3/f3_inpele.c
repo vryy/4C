@@ -57,7 +57,9 @@ void f3inp(
 
   INT         i;
   INT         ierr = 0;
+#if 0
   INT         lmtmp;
+#endif
   INT         create_ale;
   char        buffer[50];
   static INT  cmat;
@@ -119,10 +121,12 @@ void f3inp(
     frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
 
+#if 0
     /* rearrange element node numbers for tet4 */
     lmtmp=ele->lm[0];
     ele->lm[0]=ele->lm[1];
     ele->lm[1]=lmtmp;
+#endif
   }
 
 
