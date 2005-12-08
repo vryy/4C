@@ -3,11 +3,12 @@
 //             foerster@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/foerster/
 //             0711 - 685-6572
-// 
-// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX
+//
+// necessary defines: D_FLUID D_FLUID3 D_FLUID3_F AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_SHELL8 CHECK_MAX BINIO
 //
 // #define MAXNOD           (8)
 // #define MAXNOD_F3        (8)
+// #define MAXNOD_SHELL8    (8)
 // #define MAXELE           (8)
 // #define MAXDOFPERNODE    (6)
 // #define MAXGAUSS         (8)
@@ -18,7 +19,7 @@
 -------------------------------------------------------------TITLE
 ow3d_usfem
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS         144 
+ELEMENTS         144
 NODES            275
 DIM                3
 MATERIALS          3
@@ -51,21 +52,21 @@ LINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  10
-RESEVRYSTRS  20
-RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      200 
+RESEVRYDISP  1
+RESEVRYSTRS  1
+RESTARTEVRY  2
+TIMESTEP     0.05
+NUMSTEP      4
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
 XSI          0.0
-DAMPING      No 
-M_DAMP       0.5 
+DAMPING      No
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 CONTACT      0
@@ -88,9 +89,9 @@ NUMCONT      1
 UPPSS        1
 UPOUT        1
 UPRES        1
-RESTARTEVRY  20
+RESTARTEVRY  2
 MAXTIME      1000.0
-NUMSTEP      200  
+NUMSTEP      4
 TIMESTEP     0.05
 THETA        1.00
 ITEMAX       100
@@ -128,23 +129,23 @@ ICHOPT       no
 COUPFORCE    nodeforce
 -------------------------------------------------------ALE DYNAMIC
 TIMESTEP     0.1
-NUMSTEP      200
+NUMSTEP      4
 MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
-RESEVRYDISP  10
+RESEVRYDISP  2
 QUALITY      none
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        GMRES
 AZPREC         SymmGaussSeidel
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          70  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          70
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         7  
@@ -2818,9 +2819,9 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ------------------------------------------------------------CURVE5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0 
-// STRUCTURE 2 - 0 0 0 0 0 0 
-// ALE 3 - 0 0 0 0 0 0 
+// FLUID 1 - 0 0 0 0 0 0
+// STRUCTURE 2 - 0 0 0 0 0 0
+// ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 105 POSITION sol(1,1) NAME vel-x VALUE 0.0003781447850149 TOLERANCE 1e-6
 FLUID DIS 1 NODE 105 POSITION sol(1,2) NAME vel-y VALUE 0.0000359315113200 TOLERANCE 1e-6
