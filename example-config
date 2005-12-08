@@ -1,13 +1,13 @@
 #!/bin/sh
 #
 # CCARAT Configuration
-# 
+#
 # Create a Makefile with dependency information for a user supplied configuration file.
 #
 
 # some usability tests
 if [ "x$1" = "x" -o "x$2" = "x" -o "x$3" = "x" ]; then
-  echo usage: $0 ccarat-input-file config-file-name defines-file-name
+  echo "usage: $0 ccarat-input-file config-file-name defines-file-name [DEBUG]"
   exit 1
 fi
 
@@ -31,17 +31,14 @@ if [ ! -r "$2" ]; then
   exit 1
 fi
 
+
 makefile="Makefile"
 inputfile="$1"
 configfile="$2"
 definefile="$3"
-specialargs="$4"
+extraargs="$4"
 
 . ./scripts/extract-defines.sh
-
-if [ "x$DEBUG" = "xyes" ] ; then
-  echo "DEBUG" >> "$definefile"
-fi
 
 . ./scripts/setup-variables.sh
 . ./scripts/setup-libraries.sh

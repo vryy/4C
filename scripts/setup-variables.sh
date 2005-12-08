@@ -28,42 +28,56 @@ fi
 . "./$configfile"
 
 
+# check for DEBUG version
+IS_DEBUG=0
+
+
+# - from definefile
+if grep '^DEBUG' "$definefile" 2>&1 > /dev/null ; then
+  echo DEBUG from definefile
+  IS_DEBUG=1
+fi
+
+# - from command line
+if [ "x$extraargs" = "xDEBUG" ] ; then
+  echo DEBUG from command line
+  IS_DEBUG=1
+fi
+
+# - from environment variable
+if [ x$DEBUG = "xyes" ] ; then
+  echo DEBUG from env
+  IS_DEBUG=1
+fi
+
+
+
 # get the define flags
 
-DEFINES=`sed -e 's/#.*//' "$definefile" | awk 'BEGIN { defs = "" }
+DEFINES=`sed -e 's/#.*//' -e 's/DEBUG//' "$definefile" | awk 'BEGIN { defs = "" }
 END { print defs }
   { if (length($1) > 0) { defs = defs" -D"$1 } }'`
 
 #echo ">>>" $DEFINES "<<<"
 #exit
 
-# add special cflags from command line
-if [ "x$specialargs" != "x" ] ; then
-    echo "Found special cflags on the command line !!"
-    CFLAGS="$CFLAGS $specialargs"
-    FFLAGS="$FFLAGS $specialargs"
-fi
+
 
 
 # the debug version needs special treatment
-if grep '^DEBUG' "$definefile" 2>&1 > /dev/null ; then
-    DEBUGFLAG=-g
-    PROGRAMNAME=$PROGRAMNAME.debg
+if [ x$IS_DEBUG = "x1" ] ; then
+  DEBUGFLAG=-g
+  DEFINES=" -DDEBUG $DEFINES"
+  PROGRAMNAME=$PROGRAMNAME.debg
 else
+  DEBUGFLAG=
+  PROGRAMNAME=$PROGRAMNAME.fast
 
-    # we want to switch on debug mode by an environment variable, too
-    if [ x$DEBUG = "xyes" ] ; then
-        DEBUGFLAG=-g
-        PROGRAMNAME=$PROGRAMNAME.debg
-    else
-        DEBUGFLAG=
-        PROGRAMNAME=$PROGRAMNAME.fast
-
-        CFLAGS="$CFLAGS $CFLAGS_OPT"
-        FFLAGS="$FFLAGS $FFLAGS_OPT"
-        LDFLAGS="$LDFLAGS $LDFLAGS_OPT"
-    fi
+  CFLAGS="$CFLAGS $CFLAGS_OPT"
+  FFLAGS="$FFLAGS $FFLAGS_OPT"
+  LDFLAGS="$LDFLAGS $LDFLAGS_OPT"
 fi
+
 
 # a parallel version needs one more compile time flag
 if [ x$PARALLEL = "xyes" ] ; then

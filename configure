@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # CCARAT Configuration
-# 
+#
 # Create a Makefile with dependency information for a user supplied configuration file.
 #
 
@@ -34,7 +34,7 @@ fi
 makefile="Makefile"
 configfile="$1"
 definefile="$2"
-specialargs="$3"
+extraargs="$3"
 
 . ./scripts/setup-variables.sh
 . ./scripts/setup-libraries.sh
