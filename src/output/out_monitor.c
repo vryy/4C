@@ -92,7 +92,7 @@ INT      *valdofs;
 ARRAY     valIds_a;
 INT      *valIds;
 MONITOR  *actmoni;
-FILE     *mon ;
+FILE     *mon = NULL;
 
 #ifdef DEBUG
 dstrc_enter("out_monitor");
