@@ -58,7 +58,7 @@ NODE   *actfnode=NULL, *actanode=NULL;       /* actual nodes            */
 GNODE  *actfgnode=NULL,*actagnode=NULL;      /* actual gnodes           */
 ARRAY   aindex_a;
 INT    *aindex;
-DLINE  *actdline;
+DLINE  *actdline=NULL;
 DNODE  *actdnode;
 
 #ifdef DEBUG

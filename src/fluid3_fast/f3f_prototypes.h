@@ -507,9 +507,10 @@ void f3fsext(
 
 
 void f3f_out_gid_sol_str(
-    FILE       *out,
-    FIELD *actfield,
-    INT         init
+    FILE               *out,
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 init
     );
 
 

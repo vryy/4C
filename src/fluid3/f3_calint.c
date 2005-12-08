@@ -341,7 +341,7 @@ void f3_calinta(
 #ifdef D_FSI
 INT      i;
 INT      iel;         /* number of nodes                                */
-INT      intc;        /* "integration case" for tet for further infos
+INT      intc=0;      /* "integration case" for tet for further infos
                           see f3_inpele.c and f3_intg.c                 */
 INT      nir=0,nis=0,nit=0;
                       /* number of integration nodes in r,s,t direction */

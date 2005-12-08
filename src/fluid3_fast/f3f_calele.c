@@ -218,40 +218,40 @@ void f3fcalele(
       f3fcalelecord(ele,elecord,sizevec);
 
 
-    switch (ele[0]->e.f3->stab_type)
-    {
-      case stab_gls:
+      switch (ele[0]->e.f3->stab_type)
+      {
+        case stab_gls:
 
-      /* calculate element size and stab-parameter: */
-      f3fcalelesize(ele,funct,deriv,deriv2,
-          derxy,xjm,evelng,velint,wa1,elecord,tau,sizevec);
+          /* calculate element size and stab-parameter: */
+          f3fcalelesize(ele,funct,deriv,deriv2,
+              derxy,xjm,evelng,velint,wa1,elecord,tau,sizevec);
 
 
-      /* calculate element stiffness matrices
-         and element force vectors */
-      f3fcalint(ele,elecord,tau,hasext,estif,
-          emass,eforce,
-          funct,deriv,deriv2,
-          xjm,derxy,derxy2,evelng,
-          epren,edeadn,edeadng,velint,vel2int,
-          covint,vderxy,pderxy,vderxy2,wa1,
-          wa2,sizevec);
+          /* calculate element stiffness matrices
+             and element force vectors */
+          f3fcalint(ele,elecord,tau,hasext,estif,
+              emass,eforce,
+              funct,deriv,deriv2,
+              xjm,derxy,derxy2,evelng,
+              epren,edeadn,edeadng,velint,vel2int,
+              covint,vderxy,pderxy,vderxy2,wa1,
+              wa2,sizevec);
 
-      break; /* end WAW GLS */
+          break; /* end WAW GLS */
 
-      case stab_usfem: /* completely linearised version */
-      /* stab-parameter */
-      f3fcaltau(ele,elecord,funct,deriv,derxy,velint,xjm,evelng,
-                tau,wa1,sizevec);
+        case stab_usfem: /* completely linearised version */
+          /* stab-parameter */
+          f3fcaltau(ele,elecord,funct,deriv,derxy,velint,xjm,evelng,
+              tau,wa1,sizevec);
 
-      /* perform element integration */
-      f3fint_usfem(ele,elecord,tau,hasext,estif,eforce,
-                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
-                   evhist,NULL,epren,edeadng,velint,vel2int,NULL,
-                   vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
-      goto dirich;
+          /* perform element integration */
+          f3fint_usfem(ele,elecord,tau,hasext,estif,eforce,
+              funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+              evhist,NULL,epren,edeadng,velint,vel2int,NULL,
+              vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
+          goto dirich;
 
-      default: dserror("unknown stabilisation type");
+        default: dserror("unknown stabilisation type");
 
     } /* end switch over stab_type */
 
@@ -274,39 +274,39 @@ void f3fcalele(
     switch (ele[0]->e.f3->stab_type)
     {
       case stab_gls:
-      /* calculate element size and stab-parameter: */
-      f3fcalelesize(ele,funct,deriv,deriv2,
-          derxy,xjm,evelng,velint,wa1,elecord,tau,sizevec);
+        /* calculate element size and stab-parameter: */
+        f3fcalelesize(ele,funct,deriv,deriv2,
+            derxy,xjm,evelng,velint,wa1,elecord,tau,sizevec);
 
 
-      /* calculate element stiffness matrices
-         and element force vectors */
-      f3fcalinta(ele,elecord,tau,hasext,estif,
-          emass,eforce,
-          funct,deriv,deriv2,
-          xjm,derxy,derxy2,evelng,
-          ealecovn,ealecovng,egridv,
-          epren,edeadn,edeadng,velint,vel2int,
-          covint,alecovint,gridvint,vderxy,pderxy,vderxy2,wa1,
-          wa2,sizevec);
+        /* calculate element stiffness matrices
+           and element force vectors */
+        f3fcalinta(ele,elecord,tau,hasext,estif,
+            emass,eforce,
+            funct,deriv,deriv2,
+            xjm,derxy,derxy2,evelng,
+            ealecovn,ealecovng,egridv,
+            epren,edeadn,edeadng,velint,vel2int,
+            covint,alecovint,gridvint,vderxy,pderxy,vderxy2,wa1,
+            wa2,sizevec);
         break;/* end WAW GLS */
 
-        case stab_usfem: /* completely linearised version */
+      case stab_usfem: /* completely linearised version */
         /* stab-parameter */
         f3fcaltau(ele,elecord,funct,deriv,derxy,alecovint,xjm,ealecovng,
-                  tau,wa1,sizevec);
+            tau,wa1,sizevec);
 
         /* perform element integration */
         f3fint_usfem(ele,elecord,tau,hasext,estif,eforce,
-                     funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
-                     evhist,egridv,epren,edeadng,velint,vel2int,gridvint,
-                     vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
+            funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+            evhist,egridv,epren,edeadng,velint,vel2int,gridvint,
+            vderxy,vderxy2,pderxy,wa1,wa2,sizevec);
         goto dirich;
 
-        default: dserror("unknown stabilisation type");
-      } /* end switch over stab_type */
+      default: dserror("unknown stabilisation type");
+    } /* end switch over stab_type */
 
-      break;
+    break;
 
 #endif /* ifdef D_FSI */
 
@@ -678,11 +678,8 @@ void f3f_calerror(
     )
 {
 
-  INT l;
   INT sizevec[6];
 
-  DOUBLE thsl;
-  INT    nis;
 
 #ifdef DEBUG
   dstrc_enter("f3f_calerror");
@@ -738,11 +735,17 @@ void f3f_calerror(
   }
 
 
+  /* initialize error values */
+  container->vel_error = 0.0;
+  container->pre_error = 0.0;
+  container->vel_norm  = 0.0;
+  container->pre_norm  = 0.0;
+
   /* perform element integration */
   f3f_int_error(ele, elecord, funct, deriv, xjm, evelng, epren, velint, vel2int,
       container, sizevec);
 
-end:
+
 
 #ifdef DEBUG
   dstrc_exit();

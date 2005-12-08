@@ -167,6 +167,20 @@ C                          BDF2:           timefac = 2/3 * dt
 C========================== initialisation =============================
       timefac = paravec(3)
 
+      cix = 0
+      ciy = 0
+      ciz = 0
+      cip = 0
+
+      rix = 0
+      riy = 0
+      riz = 0
+      rip = 0
+
+      time2nue = 0.0
+
+
+
 C     evaluate rhs vector at integration point
       do l=1,sizevec(5)
         if (hasext(l).ne.0) then

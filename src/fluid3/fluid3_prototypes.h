@@ -793,10 +793,11 @@ void f3_jaco2(
 
 
 void f3_out_gid_sol_str(
-    FILE       *out,
-    FIELD *actfield,
-    INT        type,
-    INT         init
+    FILE               *out,
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 type,
+    INT                 init
     );
 
 /************************************************************************
