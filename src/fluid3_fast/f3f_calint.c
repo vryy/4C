@@ -277,7 +277,11 @@ void f3fcalint(
         f3fjaco(funct, deriv, xjm, det, elecord, sizevec);
 
         for(l=0;l<sizevec[4];l++)
+        {
+          if (det[l] <= 0.0)
+            dserror("Negative Jacobian!!");
           fac[l] = facr * facs * fact * det[l];
+        }
 
 
         /* compute global derivates */
