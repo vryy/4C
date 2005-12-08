@@ -175,34 +175,49 @@ return;
  |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
  |  DOUBLE *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
-void solserv_vecnorm_euclid(INTRA *actintra,DIST_VECTOR *dist_vec,DOUBLE *result)
+void solserv_vecnorm_euclid(
+    INTRA              *actintra,
+    DIST_VECTOR        *dist_vec,
+    DOUBLE             *result
+    )
+
 {
-INT                  i;
-DOUBLE              *vec;
-DOUBLE               sendbuff;
-INT                  numeq;
+
+  INT                  i;
+  DOUBLE              *vec;
+  DOUBLE               sendbuff;
+  INT                  numeq;
+
+
 #ifdef DEBUG
-dstrc_enter("solserv_vecnorm_euclid");
+  dstrc_enter("solserv_vecnorm_euclid");
 #endif
-/*----------------------------------------------------------------------*/
-vec      = dist_vec->vec.a.dv;
-numeq    = dist_vec->numeq;
-sendbuff = 0.0;
-for (i=0; i<dist_vec->numeq; i++)
-{
-   sendbuff += vec[i]*vec[i];
-}
+
+
+  vec      = dist_vec->vec.a.dv;
+  numeq    = dist_vec->numeq;
+  sendbuff = 0.0;
+
+  for (i=0; i<dist_vec->numeq; i++)
+  {
+    sendbuff += vec[i]*vec[i];
+  }
+
 #ifdef PARALLEL
-MPI_Allreduce(&sendbuff,result,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+  MPI_Allreduce(&sendbuff,result,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
-*result = sendbuff;
+  *result = sendbuff;
 #endif
-*result = sqrt(*result);
-/*----------------------------------------------------------------------*/
+
+  *result = sqrt(*result);
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of solserv_vecnorm_euclid */
 
 
@@ -215,33 +230,47 @@ return;
  |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
  |  DOUBLE *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
-void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,DOUBLE *result)
+void solserv_vecnorm_Linf(
+    INTRA              *actintra,
+    DIST_VECTOR        *dist_vec,
+    DOUBLE             *result
+    )
+
 {
-INT                  i;
-DOUBLE              *vec;
-DOUBLE               sendbuff=0.0;
-INT                  numeq;
+
+  INT                  i;
+  DOUBLE              *vec;
+  DOUBLE               sendbuff=0.0;
+  INT                  numeq;
+
+
 #ifdef DEBUG
-dstrc_enter("solserv_vecnorm_Linf");
+  dstrc_enter("solserv_vecnorm_Linf");
 #endif
-/*----------------------------------------------------------------------*/
-vec      = dist_vec->vec.a.dv;
-numeq    = dist_vec->numeq;
-sendbuff = 0.0;
-for (i=0; i<dist_vec->numeq; i++)
-{
-   if (FABS(vec[i])>sendbuff) sendbuff = FABS(vec[i]);
-}
+
+
+  vec      = dist_vec->vec.a.dv;
+  numeq    = dist_vec->numeq;
+  sendbuff = 0.0;
+
+  for (i=0; i<dist_vec->numeq; i++)
+  {
+    if (FABS(vec[i])>sendbuff) sendbuff = FABS(vec[i]);
+  }
+
 #ifdef PARALLEL
-MPI_Allreduce(&sendbuff,result,1,MPI_DOUBLE,MPI_MAX,actintra->MPI_INTRA_COMM);
+  MPI_Allreduce(&sendbuff,result,1,MPI_DOUBLE,MPI_MAX,actintra->MPI_INTRA_COMM);
 #else
-*result = sendbuff;
+  *result = sendbuff;
 #endif
-/*----------------------------------------------------------------------*/
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of solserv_vecnorm_Linf */
 
 
@@ -880,42 +909,57 @@ return;
  |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP *sysarray_typ)
-{
-INT      i,j;
-INT      max;
-INT      diff;
-INT      dof;
+void solserv_result_total(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    )
 
-INT      numeq_total;
-NODE    *actnode;
-ARRAY    result_a;
-DOUBLE  *result;
+{
+  INT      i,j;
+  INT      max;
+  INT      diff;
+  INT      dof;
+
+  INT      numeq_total;
+  NODE    *actnode;
+  ARRAY    result_a;
+  DOUBLE  *result;
+
 
 #ifdef DEBUG
-dstrc_enter("solserv_result_total");
+  dstrc_enter("solserv_result_total");
 #endif
-/*----------------------------------------------------------------------*/
-numeq_total = sol->numeq_total;
-/*------------------------- allocate space to allreduce the DIST_VECTOR */
-result = amdef("result",&result_a,numeq_total,1,"DV");
-         amzero(&result_a);
-solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
-/*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->dis[0].numnp; i++)
-{
-   actnode = &(actfield->dis[0].node[i]);
-   /*---------------------------------------- enlarge sol, if necessary */
-   if (place >= actnode->sol.fdim)
-   {
+
+
+  numeq_total = sol->numeq_total;
+
+
+  /* allocate space to allreduce the DIST_VECTOR */
+  result = amdef("result",&result_a,numeq_total,1,"DV");
+  amzero(&result_a);
+  solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
+
+
+  /* loop nodes and put the result back to the node structure */
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
+  {
+    actnode = &(actfield->dis[disnum].node[i]);
+
+    /* enlarge sol, if necessary */
+    if (place >= actnode->sol.fdim)
+    {
       diff = place - actnode->sol.fdim;
       max  = IMAX(diff,5);
       amredef(&(actnode->sol),actnode->sol.fdim+max+1,actnode->sol.sdim,"DA");
-   }
-   for (j=0; j<actnode->numdf; j++)
-   {
+    }
+
+    for (j=0; j<actnode->numdf; j++)
+    {
       dof = actnode->dof[j];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
@@ -925,16 +969,23 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (dof>=numeq_total) continue;
 #endif
       actnode->sol.a.da[place][j] = result[dof];
-   }
-}
-/*----------------------------------------------------------------------*/
-amdel(&result_a);
-/*----------------------------------------------------------------------*/
+    }
+  }
+
+
+  amdel(&result_a);
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of solserv_result_total */
+
+
+
 
 
 
@@ -946,42 +997,58 @@ return;
  |  field on each proc                                                  |
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
-void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ,INT ndis)
-{
-INT      i,j;
-INT      max;
-INT      diff;
-INT      dof;
+void solserv_result_incre(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    )
 
-INT      numeq_total;
-NODE    *actnode;
-ARRAY    result_a;
-DOUBLE  *result;
+{
+  INT      i,j;
+  INT      max;
+  INT      diff;
+  INT      dof;
+
+  INT      numeq_total;
+  NODE    *actnode;
+  ARRAY    result_a;
+  DOUBLE  *result;
+
 
 #ifdef DEBUG
-dstrc_enter("solserv_result_incre");
+  dstrc_enter("solserv_result_incre");
 #endif
 
-/*----------------------------------------------------------------------*/
-numeq_total = sol->numeq_total;
-/*------------------------- allocate space to allreduce the DIST_VECTOR */
-result = amdef("result",&result_a,numeq_total,1,"DV");
-         amzero(&result_a);
-solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
-/*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->dis[ndis].numnp; i++)
-{
-   actnode = &(actfield->dis[ndis].node[i]);
-   /*------------------------------ enlarge sol_increment, if necessary */
-   if (place >= actnode->sol_increment.fdim)
-   {
+
+  numeq_total = sol->numeq_total;
+
+
+  /* allocate space to allreduce the DIST_VECTOR */
+  result = amdef("result",&result_a,numeq_total,1,"DV");
+  amzero(&result_a);
+  solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
+
+
+  /* loop nodes and put the result back to the node structure */
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
+  {
+    actnode = &(actfield->dis[disnum].node[i]);
+
+    /* enlarge sol_increment, if necessary */
+    if (place >= actnode->sol_increment.fdim)
+    {
       diff = place - actnode->sol_increment.fdim;
       max  = IMAX(diff,5);
-      amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max+1,actnode->sol_increment.sdim,"DA");
-   }
-   for (j=0; j<actnode->numdf; j++)
-   {
+      amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max+1,
+          actnode->sol_increment.sdim,"DA");
+    }
+
+    for (j=0; j<actnode->numdf; j++)
+    {
       dof = actnode->dof[j];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
@@ -991,16 +1058,24 @@ for (i=0; i<actfield->dis[ndis].numnp; i++)
       if (dof>=numeq_total) continue;
 #endif
       actnode->sol_increment.a.da[place][j] = result[dof];
-   }
-}
-/*----------------------------------------------------------------------*/
-amdel(&result_a);
-/*----------------------------------------------------------------------*/
+    }
+  }
+
+
+  amdel(&result_a);
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of solserv_result_incre */
+
+
+
+
 
 
 
@@ -1012,42 +1087,58 @@ return;
  |  field on each proc                                                  |
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
-void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP *sysarray_typ)
-{
-INT      i,j;
-INT      max;
-INT      diff;
-INT      dof;
+void solserv_result_resid(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    )
 
-INT      numeq_total;
-NODE    *actnode;
-ARRAY    result_a;
-DOUBLE  *result;
+{
+  INT      i,j;
+  INT      max;
+  INT      diff;
+  INT      dof;
+
+  INT      numeq_total;
+  NODE    *actnode;
+  ARRAY    result_a;
+  DOUBLE  *result;
+
 
 #ifdef DEBUG
-dstrc_enter("solserv_result_resid");
+  dstrc_enter("solserv_result_resid");
 #endif
-/*----------------------------------------------------------------------*/
-numeq_total = sol->numeq_total;
-/*------------------------- allocate space to allreduce the DIST_VECTOR */
-result = amdef("result",&result_a,numeq_total,1,"DV");
-         amzero(&result_a);
-solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
-/*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->dis[0].numnp; i++)
-{
-   actnode = &(actfield->dis[0].node[i]);
-   /*------------------------------- enlarge sol_residual, if necessary */
-   if (place >= actnode->sol_residual.fdim)
-   {
+
+
+  numeq_total = sol->numeq_total;
+
+
+  /* allocate space to allreduce the DIST_VECTOR */
+  result = amdef("result",&result_a,numeq_total,1,"DV");
+  amzero(&result_a);
+  solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
+
+
+  /* loop nodes and put the result back to the node structure */
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
+  {
+    actnode = &(actfield->dis[disnum].node[i]);
+
+    /* enlarge sol_residual, if necessary */
+    if (place >= actnode->sol_residual.fdim)
+    {
       diff = place - actnode->sol_residual.fdim;
       max  = IMAX(diff,5);
-      amredef(&(actnode->sol_residual),actnode->sol_residual.fdim+max+1,actnode->sol_residual.sdim,"DA");
-   }
-   for (j=0; j<actnode->numdf; j++)
-   {
+      amredef(&(actnode->sol_residual),actnode->sol_residual.fdim+max+1,
+          actnode->sol_residual.sdim,"DA");
+    }
+
+    for (j=0; j<actnode->numdf; j++)
+    {
       dof = actnode->dof[j];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
@@ -1057,16 +1148,25 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (dof>=numeq_total) continue;
 #endif
       actnode->sol_residual.a.da[place][j] = result[dof];
-   }
-}
-/*----------------------------------------------------------------------*/
-amdel(&result_a);
-/*----------------------------------------------------------------------*/
+    }
+  }
+
+
+  amdel(&result_a);
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of solserv_result_resid */
+
+
+
+
+
 
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       genk 01/03 |
@@ -1075,42 +1175,58 @@ return;
  |  field on each proc                                                  |
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
-void solserv_result_mf(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP *sysarray_typ)
-{
-INT      i,j;
-INT      max;
-INT      diff;
-INT      dof;
+void solserv_result_mf(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    )
 
-INT      numeq_total;
-NODE    *actnode;
-ARRAY    result_a;
-DOUBLE  *result;
+{
+  INT      i,j;
+  INT      max;
+  INT      diff;
+  INT      dof;
+
+  INT      numeq_total;
+  NODE    *actnode;
+  ARRAY    result_a;
+  DOUBLE  *result;
+
 
 #ifdef DEBUG
-dstrc_enter("solserv_result_mf");
+  dstrc_enter("solserv_result_mf");
 #endif
-/*----------------------------------------------------------------------*/
-numeq_total = sol->numeq_total;
-/*------------------------- allocate space to allreduce the DIST_VECTOR */
-result = amdef("result",&result_a,numeq_total,1,"DV");
-         amzero(&result_a);
-solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
-/*------------ loop nodes and put the result back to the node structure */
-for (i=0; i<actfield->dis[0].numnp; i++)
-{
-   actnode = &(actfield->dis[0].node[i]);
-   /*------------------------------- enlarge sol_residual, if necessary */
-   if (place >= actnode->sol_mf.fdim)
-   {
+
+
+  numeq_total = sol->numeq_total;
+
+
+  /* allocate space to allreduce the DIST_VECTOR */
+  result = amdef("result",&result_a,numeq_total,1,"DV");
+  amzero(&result_a);
+  solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
+
+
+  /* loop nodes and put the result back to the node structure */
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
+  {
+    actnode = &(actfield->dis[disnum].node[i]);
+
+    /* enlarge sol_residual, if necessary */
+    if (place >= actnode->sol_mf.fdim)
+    {
       diff = place - actnode->sol_mf.fdim;
       max  = IMAX(diff,5);
       amredef(&(actnode->sol_mf),actnode->sol_mf.fdim+max+1,actnode->sol_mf.sdim,"DA");
-   }
-   for (j=0; j<actnode->numdf; j++)
-   {
+    }
+
+
+    for (j=0; j<actnode->numdf; j++)
+    {
       dof = actnode->dof[j];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
@@ -1120,13 +1236,24 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (dof>=numeq_total) continue;
 #endif
       actnode->sol_mf.a.da[place][j] = result[dof];
-   }
-}
-/*----------------------------------------------------------------------*/
-amdel(&result_a);
-/*----------------------------------------------------------------------*/
+    }
+  }
+
+
+  amdel(&result_a);
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
-} /* end of solserv_result_resid */
+
+  return;
+
+} /* end of solserv_result_mf */
+
+
+
+
+
+
+

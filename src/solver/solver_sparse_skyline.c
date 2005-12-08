@@ -20,6 +20,7 @@ INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
 
 
+static INT  disnum;
 
 
 /*----------------------------------------------------------------------*
@@ -30,7 +31,8 @@ void mask_skyline(
     PARTITION     *actpart,
     SOLVAR        *actsolv,
     INTRA         *actintra,
-    SKYMATRIX     *sky
+    SKYMATRIX     *sky,
+    INT            disnum_
     )
 
 {
@@ -47,6 +49,10 @@ void mask_skyline(
   dstrc_enter("mask_skyline");
 #endif
 
+
+  disnum = disnum_;
+
+
   /*----------------------------------------------------------------------*/
   /* remember some facts:
      PARTITION is different on every proc.
@@ -57,10 +63,10 @@ void mask_skyline(
      are calculated
      */
   /*------------------------------------------- put total size of problem */
-  sky->numeq_total = actfield->dis[0].numeq;
+  sky->numeq_total = actfield->dis[disnum].numeq;
   /* count number of eqns on proc and build processor-global couplingdof
      matrix */
-  mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
+  mask_numeq(actfield,actpart,actsolv,actintra,&numeq,disnum);
   sky->numeq = numeq;
   /*---------------------------------------------- allocate vector update */
   amdef("update",&(sky->update),numeq,1,"IV");
@@ -101,9 +107,9 @@ void mask_skyline(
 
 #ifdef FAST_ASS
   /* make the index vector for faster assembling */
-  for (i=0; i<actpart->pdis[0].numele; i++)
+  for (i=0; i<actpart->pdis[disnum].numele; i++)
   {
-    actele = actpart->pdis[0].element[i];
+    actele = actpart->pdis[disnum].element[i];
     sky_make_index(actfield,actpart,actintra,actele,sky);
   }
 #endif
@@ -150,18 +156,18 @@ void  skyline_update(
   imyrank = actintra->intra_rank;
   inprocs = actintra->intra_nprocs;
   /*------------------ make a local copy of the array actpart->coupledofs */
-  am_alloc_copy(&(actpart->pdis[0].coupledofs),&coupledofs);
+  am_alloc_copy(&(actpart->pdis[disnum].coupledofs),&coupledofs);
   /*------------------------------------- loop the nodes on the partition */
   update = sky->update.a.iv;
   counter=0;
-  for (i=0; i<actpart->pdis[0].numnp; i++)
+  for (i=0; i<actpart->pdis[disnum].numnp; i++)
   {
-    actnode = actpart->pdis[0].node[i];
+    actnode = actpart->pdis[disnum].node[i];
     for (l=0; l<actnode->numdf; l++)
     {
       dof = actnode->dof[l];
       /* dirichlet condition on dof */
-      if (dof >= actfield->dis[0].numeq) continue;
+      if (dof >= actfield->dis[disnum].numeq) continue;
       /* no coupling on dof */
       if (actnode->gnode->couple==NULL)
       {
@@ -254,7 +260,6 @@ void  skyline_nnz_topology(
   ARRAY     *coupledofs;
   INT        imyrank;
   INT        inprocs;
-  INT        actndis;
 
 #ifdef PARALLEL
   MPI_Status status;
@@ -267,8 +272,6 @@ void  skyline_nnz_topology(
   /*----------------------------------------------------------------------*/
   imyrank = actintra->intra_rank;
   inprocs = actintra->intra_nprocs;
-  /*------------------------------------------- set actual discretisation */
-  actndis=0;
   /*----------------------------------------------------------- shortcuts */
   sky->nnz=0;
   /*numeq  = sky->numeq;*/
@@ -288,13 +291,13 @@ void  skyline_nnz_topology(
     if (iscoupled==1) continue;
     /*--------------------------------- find the centernode for this dof */
     centernode=NULL;
-    for (j=0; j<actfield->dis[actndis].numnp; j++)
+    for (j=0; j<actfield->dis[disnum].numnp; j++)
     {
-      for (k=0; k<actfield->dis[actndis].node[j].numdf; k++)
+      for (k=0; k<actfield->dis[disnum].node[j].numdf; k++)
       {
-        if (actfield->dis[actndis].node[j].dof[k] == dof)
+        if (actfield->dis[disnum].node[j].dof[k] == dof)
         {
-          centernode = &actfield->dis[actndis].node[j];
+          centernode = &actfield->dis[disnum].node[j];
           goto nodefound1;
         }
       }
@@ -311,7 +314,7 @@ nodefound1:
         actnode = actele->node[k];
         for (l=0; l<actnode->numdf; l++)
         {
-          if (actnode->dof[l] < actfield->dis[0].numeq)
+          if (actnode->dof[l] < actfield->dis[disnum].numeq)
           {
             if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
             dofpatch.a.iv[counter] = actnode->dof[l];
@@ -362,21 +365,21 @@ nodefound1:
     }
   }  /* end of loop over numeq */
   /*--------------------------------------------- now do the coupled dofs */
-  coupledofs = &(actpart->pdis[0].coupledofs);
+  coupledofs = &(actpart->pdis[disnum].coupledofs);
   for (i=0; i<coupledofs->fdim; i++)
   {
     dof = coupledofs->a.ia[i][0];
     /*------------------------------------- find all patches to this dof */
     counter=0;
-    for (j=0; j<actfield->dis[actndis].numnp; j++)
+    for (j=0; j<actfield->dis[disnum].numnp; j++)
     {
       centernode=NULL;
       /* */
-      for (l=0; l<actfield->dis[actndis].node[j].numdf; l++)
+      for (l=0; l<actfield->dis[disnum].node[j].numdf; l++)
       {
-        if (dof == actfield->dis[actndis].node[j].dof[l])
+        if (dof == actfield->dis[disnum].node[j].dof[l])
         {
-          centernode = &actfield->dis[actndis].node[j];
+          centernode = &actfield->dis[disnum].node[j];
           break;
         }
       }
@@ -391,7 +394,7 @@ nodefound1:
             actnode = actele->node[m];
             for (l=0; l<actnode->numdf; l++)
             {
-              if (actnode->dof[l] < actfield->dis[0].numeq)
+              if (actnode->dof[l] < actfield->dis[disnum].numeq)
               {
                 if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
                 dofpatch.a.iv[counter] = actnode->dof[l];

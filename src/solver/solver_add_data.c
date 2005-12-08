@@ -594,7 +594,7 @@ return;
  |  and to perform other inits which may become necessary for assembly  |
  | #################################################################### |
  |  to the paremeter list of this function I added                      |
- |  INT actndis!!!  - number of the actual discretisation               |
+ |  INT disnum!!!  - number of the actual discretisation               |
  |  this has to be done for all other calls of init_assembly            |
  |                                                           genk 08/02 |
  | #################################################################### |
@@ -605,7 +605,7 @@ void init_assembly(
                        struct _INTRA          *actintra,
                        struct _FIELD          *actfield,
                        INT                     actsysarray,
-		       INT                     actndis
+		       INT                     disnum
                      )
 {
 
@@ -746,10 +746,10 @@ default:
 break;
 }
 /*---------------- now check for coupling dofs and interdomain coupling */
-coupledofs = &(actpart->pdis[actndis].coupledofs);
+coupledofs = &(actpart->pdis[disnum].coupledofs);
 numsend = 0;
 numrecv = 0;
-numeq   = actfield->dis[actndis].numeq;
+numeq   = actfield->dis[disnum].numeq;
 /*
    An inter-proc coupled equation produces communications calculating the
    sparsity mask of the matrix

@@ -169,14 +169,17 @@ as Neumann boundary conditions
 
 ------------------------------------------------------------------------*/
 void ssi_struct(
-                   SSI_DYNAMIC       *ssidyn,
-                   STRUCT_DYNAMIC    *sdyn,
-		   FIELD             *actfield,
-		   INT                mctrl,
-		   INT                ssiitnum,
-		   enum _SSI_COUPTYP  ssi_couptyp
-	       )
+    SSI_DYNAMIC        *ssidyn,
+    STRUCT_DYNAMIC     *sdyn,
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 mctrl,
+    INT                 ssiitnum,
+    enum _SSI_COUPTYP   ssi_couptyp
+    )
+
 {
+
 INT                  i;		         /* simply a counter		                        */
 
 DOUBLE        dirichfacs[10];	 /* factors needed for dirichlet-part of rhs            */
@@ -214,7 +217,7 @@ sdyn->dt=ssidyn->dt;
 sdyn->maxtime=ssidyn->maxtime;
 sdyn->nstep=ssidyn->nstep;
 container.isdyn   = 1;
-container.actndis = 0;
+container.disnum  = disnum;
 container.coupl_typ = ssidyn->conformmesh;
 outstep=0;
 restartstep=0;
@@ -516,7 +519,7 @@ init_bin_out_field(&out_context,
 /*----------------------------------------- output to GID postprozessor */
 if (par.myrank==0 && ioflags.output_gid==1)
 {
-   out_gid_domains_ssi(actfield, numaf);
+   out_gid_domains_ssi(actfield, disnum, numaf);
 }
 
 /*--------------------------------------------------- check for restart */
@@ -694,7 +697,7 @@ dyn_setconstants(&dynvar,sdyn,sdyn->dt);
 solserv_zero_vec(&dispi[0]);
 
 /*------------------------- set residual displacements in nodes to zero */
-solserv_result_resid(actfield,actintra,&dispi[0],0,
+solserv_result_resid(actfield,disnum,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*----------------------------------------------------------------------*/
@@ -912,13 +915,13 @@ solver_control(actsolv, actintra,
 solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
+solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,
+solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]),0);
+                     &(actsolv->sysarray_typ[stiff_array]));
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
 
 /*---------------- put the scaled prescribed displacements to the nodes */
@@ -1000,7 +1003,7 @@ solver_control(actsolv, actintra,
                init);
 
 /*-------------------------- return residual displacements to the nodes */
-solserv_result_resid(actfield,actintra,&work[0],0,
+solserv_result_resid(actfield,disnum,actintra,&work[0],0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 
@@ -1012,13 +1015,13 @@ solserv_add_vec(&work[0],&dispi[0],1.0);
 solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
+solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,
+solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]),0);
+                     &(actsolv->sysarray_typ[stiff_array]));
 
 /*----------------------------------------------- check for convergence */
 convergence = 0;
@@ -1118,7 +1121,9 @@ dyn_setconstants(&dynvar,sdyn,sdyn->dt);
 /* still needed to compute energies in dynnle                           */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
 /*------------------ update displacements, velocities and accelerations */
-dyn_nlnstructupd(actfield,
+dyn_nlnstructupd(
+    actfield,
+    disnum,
                  &dynvar,sdyn,actsolv,
                  &(actsolv->sol[0]),   /* total displacements at time t-dt */
                  &(actsolv->sol[1]),   /* total displacements at time t    */
@@ -1131,13 +1136,13 @@ dyn_nlnstructupd(actfield,
                  &work[2]);            /* working arrays                   */
 
 /*-------------------------------------- return velocities to sol[1][j] */
-solserv_result_total(actfield,actintra, &vel[0],1,
+solserv_result_total(actfield,disnum,actintra, &vel[0],1,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*---------------------------------------velocities for prescribed dofs */
 solserv_adddirich(actfield,0,0,6,0,1,1.0,0.0);
 /*------------------------------------------ return accel. to sol[2][j] */
-solserv_result_total(actfield,actintra, &acc[0],2,
+solserv_result_total(actfield,disnum,actintra, &acc[0],2,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 
@@ -1188,10 +1193,10 @@ if (outstep==sdyn->updevry_disp)
       /*----------------------- reduce stresses, so they can be written */
       *action = calc_struct_stressreduce;
       container.kstep = 0;
-      calreduce(actfield,actpart,actintra,action,&container);
+      calreduce(actfield,actpart,disnum,actintra,action,&container);
    }
    if ( (ioflags.struct_stress==1 || ioflags.struct_disp==1) && ioflags.output_out==1)
-     out_sol(actfield,actpart,actintra,sdyn->step,0);
+     out_sol(actfield,actpart,disnum,actintra,sdyn->step,0);
 }
 /*-------------------------------------- write restart data to pss file */
 restartstep++;
@@ -1270,10 +1275,10 @@ if (outstep!=0)
       /*-------------------------- reduce stresses, so they can be written */
       *action = calc_struct_stressreduce;
       container.kstep = 0;
-      calreduce(actfield,actpart,actintra,action,&container);
+      calreduce(actfield,actpart,disnum,actintra,action,&container);
    }
    if ( (ioflags.struct_stress==1 || ioflags.struct_disp==1) && ioflags.output_out==1)
-      out_sol(actfield,actpart,actintra,sdyn->step,0);
+      out_sol(actfield,actpart,disnum,actintra,sdyn->step,0);
 }
 
 amdel(&intforce_a);

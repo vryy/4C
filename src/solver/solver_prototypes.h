@@ -38,6 +38,7 @@ void conpre(
 
 void conequ(
             FIELD         *actfield,      /* the actual physical field */
+            INT            disnum,
             SOLVAR        *actsolv,       /* the field-corresponding solver */
             PARTITION     *actpart,       /* the partition of the proc */
             INTRA         *actintra,      /* the intra-communicator of this field */
@@ -127,7 +128,9 @@ void dyne(STRUCT_DYN_CALC *dynvar,
          DIST_VECTOR     *work);
 void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, DOUBLE dt);
 void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, DOUBLE dt);
-void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
+void dyn_nlnstructupd(FIELD *actfield,
+                      INT    disnum,
+                      STRUCT_DYN_CALC *dynvar,
                       STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
                       DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
                       DIST_VECTOR *rhs_new, DIST_VECTOR *rhs_old,
@@ -168,6 +171,7 @@ void calinit(FIELD       *actfield,   /* the active physical field */
 
 void calreduce(FIELD       *actfield, /* the active field */
                PARTITION   *actpart,  /* my partition of this field */
+               INT          disnum,
                INTRA       *actintra, /* the field's intra-communicator */
                CALC_ACTION *action,   /* action for element routines */
                CONTAINER   *container); /*!< contains variables defined in container.h */
@@ -244,7 +248,7 @@ void mask_msr(
     SOLVAR        *actsolv,
     INTRA         *actintra,
     AZ_ARRAY_MSR  *msr,
-    INT            actdis);
+    INT            disnum);
 
 void msr_update(
     FIELD         *actfield,
@@ -347,7 +351,8 @@ void mask_ccf(
     PARTITION     *actpart,
     SOLVAR        *actsolv,
     INTRA         *actintra,
-    CCF        *ccf);
+    CCF           *ccf,
+    INT            disnum);
 
 void  ccf_red_dof_connect(
     FIELD        *actfield,
@@ -394,11 +399,16 @@ void ccf_make_index(
 /*----------------------------------------------------------------------*
  |  global_mask_skyline.c                                m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void mask_skyline(FIELD         *actfield,
-                  PARTITION     *actpart,
-                  SOLVAR        *actsolv,
-                  INTRA         *actintra,
-                  SKYMATRIX     *sky);
+void mask_skyline(
+    FIELD         *actfield,
+    PARTITION     *actpart,
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    SKYMATRIX     *sky,
+    INT            disnum
+    );
+
+
 void  skyline_update(FIELD         *actfield,
                     PARTITION     *actpart,
                     SOLVAR        *actsolv,
@@ -435,7 +445,9 @@ void mask_spooles(
     PARTITION     *actpart,
     SOLVAR        *actsolv,
     INTRA         *actintra,
-    SPOOLMAT      *spo);
+    SPOOLMAT      *spo,
+    INT            disnum
+    );
 
 void spo_make_sparsity(
     SPOOLMAT      *spo,
@@ -487,14 +499,18 @@ void assemble(
                  struct _ELEMENT       *actele,    /* the element to assemble */
                  enum _ASSEMBLE_ACTION  assemble_action, /* the assembly option */
                  CONTAINER             *container);  /*!< contains variables defined in container.h */
+
+
 void init_assembly(
-                       struct _PARTITION      *actpart,
-                       struct _SOLVAR         *actsolv,
-                       struct _INTRA          *actintra,
-                       struct _FIELD          *actfield,
-                       INT                     actsysarray,
-		       INT                     actndis
-                     );
+    struct _PARTITION      *actpart,
+    struct _SOLVAR         *actsolv,
+    struct _INTRA          *actintra,
+    struct _FIELD          *actfield,
+    INT                     actsysarray,
+    INT                     disnum
+    );
+
+
 void assemble_vec(INTRA        *actintra,
                     SPARSE_TYP   *sysarraytyp,
                     SPARSE_ARRAY *sysarray,
@@ -1077,9 +1093,16 @@ void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
  |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP *sysarray_typ);
+void solserv_result_total(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    );
+
 
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 11/01|
@@ -1088,9 +1111,17 @@ void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
  |  field on each proc                                                  |
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
-void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP *sysarray_typ,int ndis);
+void solserv_result_incre(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    );
+
+
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 11/01|
  |  certain place in ARRAY sol_residual                                 |
@@ -1098,8 +1129,17 @@ void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
  |  field on each proc                                                  |
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
-void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ);
+void solserv_result_resid(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    );
+
+
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       genk 01/03 |
  |  certain place in ARRAY sol_mf                                       |
@@ -1107,9 +1147,18 @@ void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
  |  field on each proc                                                  |
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
-void solserv_result_mf(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP *sysarray_typ);
+void solserv_result_mf(
+    FIELD              *actfield,
+    INT                 disnum,
+    INTRA              *actintra,
+    DIST_VECTOR        *sol,
+    INT                 place,
+    SPARSE_ARRAY       *sysarray,
+    SPARSE_TYP         *sysarray_typ
+    );
+
+
+
 /*----------------------------------------------------------------------*
  |  solver_service3.c                                    m.gee 04/03    |
  *----------------------------------------------------------------------*/
@@ -1130,6 +1179,17 @@ void solserv_assdirich_fac(FIELD *actfield, INT disnum, INT arraynum,
 void solserv_cpdirich(FIELD *actfield, INT disnum, INT arraynum,
                       INT from,INT to);
 void solserv_zerodirich(FIELD *actfield, INT disnum, INT arraynum, INT place);
+
+#ifdef SUBDIV
+void solserv_sol_trans(
+    FIELD              *actfield,
+    INT                 disnum,
+    NODE_ARRAY          array,
+    INT                 place
+    );
+#endif
+
+
 /*----------------------------------------------------------------------*
  |  solver_superlu.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -1248,18 +1308,22 @@ void solserv_dmax_distvec(
  | ale_dyn_control.c                                          mn 06/02  |
  *----------------------------------------------------------------------*/
 void dyn_ale(void);
+
+
 /*----------------------------------------------------------------------*
  | ale_rhs.c                                                  mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_rhs(SOLVAR       *actsolv,
-             PARTITION    *actpart,
-             INTRA        *actintra,
-             INT           sysarray1,
-             INT           sysarray2,
-             DOUBLE       *dirich,
-             INT           global_numeq,
-             CONTAINER    *container,
-             CALC_ACTION  *action);
+void ale_rhs(
+    SOLVAR             *actsolv,
+    PARTITION          *actpart,
+    INT                 disnum,
+    INTRA              *actintra,
+    INT                 sysarray1,
+    INT                 sysarray2,
+    DOUBLE             *dirich,
+    INT                 global_numeq,
+    CONTAINER          *container,
+    CALC_ACTION        *action);
 
 
 
@@ -1306,14 +1370,16 @@ void fluid_result_incre(
  | fluid_liftdrag.c                                                     |
  ************************************************************************/
 void fluid_liftdrag(
-    INT            init,
-    CALC_ACTION   *action,
-    CONTAINER     *container,
-    FIELD         *actfield,
-    SOLVAR        *actsolv,
-    PARTITION     *actpart,
-    INTRA         *actintra,
-    ARRAY_POSITION *ipos);
+    INT                 init,
+    CALC_ACTION        *action,
+    CONTAINER          *container,
+    FIELD              *actfield,
+    INT                 disnum,
+    SOLVAR             *actsolv,
+    PARTITION          *actpart,
+    INTRA              *actintra,
+    ARRAY_POSITION     *ipos
+    );
 
 /************************************************************************
  | fluid_service_tu.c                                                   |
@@ -1625,7 +1691,7 @@ void mask_msr(
     SOLVAR        *actsolv,
     INTRA         *actintra,
     AZ_ARRAY_MSR  *msr,
-    INT            actdis);
+    INT            disnum);
 
 void msr_numeq(
     FIELD        *actfield,
@@ -1754,128 +1820,6 @@ void  rc_ptr_make_sparsity(
     INT           *bindx);
 
 
-/*----------------------------------------------------------------------*
-  |  global_mask_ccf.c                           s.offermanns 04/02    |
- *----------------------------------------------------------------------*/
-void mask_ccf(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    INTRA         *actintra,
-    CCF           *ccf);
-
-void  ccf_red_dof_connect(
-    FIELD        *actfield,
-    PARTITION    *actpart,
-    SOLVAR       *actsolv,
-    INTRA        *actintra,
-    CCF          *ccf,
-    INT         **dof_connect,
-    ARRAY        *red_dof_connect);
-
-void  ccf_update(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    INTRA         *actintra,
-    CCF           *ccf);
-
-void  ccf_nnz_topology(
-    FIELD        *actfield,
-    PARTITION    *actpart,
-    SOLVAR       *actsolv,
-    INTRA        *actintra,
-    CCF          *ccf,
-    INT         **dof_connect);
-
-void  ccf_make_bindx(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    CCF           *ccf,
-    INT           *bindx,
-    ARRAY         *red_dof_connect);
-
-void  ccf_make_sparsity(
-    CCF           *ccf,
-    INT           *bindx);
-
-
-/*----------------------------------------------------------------------*
-  |  global_mask_skyline.c                              m.gee 02/02    |
- *----------------------------------------------------------------------*/
-void mask_skyline(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    INTRA         *actintra,
-    SKYMATRIX     *sky);
-
-void  skyline_update(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    INTRA         *actintra,
-    SKYMATRIX     *sky);
-
-void  skyline_nnz_topology(
-    FIELD        *actfield,
-    PARTITION    *actpart,
-    SOLVAR       *actsolv,
-    INTRA        *actintra,
-    SKYMATRIX    *sky,
-    INT         **dof_connect);
-
-void   skyline_make_red_dof_connect(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    INTRA         *actintra,
-    SKYMATRIX     *sky,
-    INT          **dof_connect,
-    ARRAY         *red_dof_connect);
-
-void  skyline_make_sparsity(
-    SKYMATRIX     *sky,
-    ARRAY         *red_dof_connect);
-
-
-/*----------------------------------------------------------------------*
-  |  global_mask_spooles.c                              m.gee 05/02    |
- *----------------------------------------------------------------------*/
-void mask_spooles(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    INTRA         *actintra,
-    SPOOLMAT      *spo);
-
-void     spo_make_sparsity(
-    SPOOLMAT      *spo,
-    INT           *bindx);
-
-void    spo_make_bindx(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    SPOOLMAT      *spo,
-    INT          **dof_connect,
-    INT           *bindx);
-
-void  spo_nnz_topology(
-    FIELD        *actfield,
-    PARTITION    *actpart,
-    SOLVAR       *actsolv,
-    INTRA        *actintra,
-    SPOOLMAT     *spo,
-    INT         **dof_connect);
-
-void spo_update(
-    FIELD         *actfield,
-    PARTITION     *actpart,
-    SOLVAR        *actsolv,
-    INTRA         *actintra,
-    SPOOLMAT      *spo);
 
 /*----------------------------------------------------------------------*
   |  solver_mask_service.c                                 mn 07/04    |
@@ -1886,7 +1830,7 @@ void mask_numeq(
     SOLVAR       *actsolv,
     INTRA        *actintra,
     INT          *numeq,
-    INT            actndis);
+    INT           disnum);
 
 void dof_in_coupledofs(
     INT           dof,

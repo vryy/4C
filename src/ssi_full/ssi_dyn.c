@@ -101,6 +101,11 @@ INT                   **mst_nods_on_int;
 DENSE                 *lhs_dens;     /* pointer to dense structure */
 DENSE                 *lhs_dens1;    /* pointer to dense structure */
 INTERFACES            *int_faces;
+
+INT                    disnumm = 0;
+INT                    disnums = 0;
+
+
 #ifdef DEBUG 
 dstrc_enter("dyn_ssi");
 #endif
@@ -142,9 +147,9 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,ssidyn->nstep,ssidyn->dt,ssidyn->maxtime);
 
 /*--------------------------------------------- initialise master field */
-ssi_struct(ssidyn,master_sdyn,masterfield,mctrl,0,ssi_master);
+ssi_struct(ssidyn,master_sdyn,masterfield,disnumm,mctrl,0,ssi_master);
 /*---------------------------------------------- initialise slave field */
-ssi_struct(ssidyn,slave_sdyn,slavefield,mctrl,0,ssi_slave);
+ssi_struct(ssidyn,slave_sdyn,slavefield,disnums,mctrl,0,ssi_slave);
 
 /*----------------------------------------- initialise AITKEN iteration */
 if (ssidyn->ifsi==5)
@@ -156,7 +161,7 @@ if (ssidyn->ifsi==5)
 if (par.myrank==0) out_gid_msh();
 /*--------------------------------------- write initial solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
-if (par.myrank==0) out_gid_sol_ssi(slavefield,masterfield); 
+if (par.myrank==0) out_gid_sol_ssi(slavefield,masterfield,disnums,disnumm); 
 
 /* computation of the number of nodes on the slave and master interface */
 /* ------------------------------only for nonconforming discretizations */
@@ -242,7 +247,7 @@ if (ssidyn->conformmesh == 1) /* nonconforming discretization */
 /*######################################################################*/
 /*------------------------- MASTER FIELD -------------------------------*/
 /*######################################################################*/
-ssi_struct(ssidyn,master_sdyn,masterfield,mctrl,itnum,ssi_master);
+ssi_struct(ssidyn,master_sdyn,masterfield,disnumm,mctrl,itnum,ssi_master);
 
 if ((ssidyn->ifsi==5)&&(itnum > 0))
 {
@@ -271,15 +276,15 @@ if (ssidyn->conformmesh == 1)
 /*######################################################################*/
 /*------------------------- SLAVE FIELD --------------------------------*/
 /*######################################################################*/
-ssi_struct(ssidyn,master_sdyn,slavefield,mctrl,itnum,ssi_slave);
+ssi_struct(ssidyn,master_sdyn,slavefield,disnums,mctrl,itnum,ssi_slave);
 
 if (ssidyn->ifsi<4)
 {
    mctrl=3;
    /*------------------------ MASTER FIELD -----------------------------*/
-   ssi_struct(ssidyn,master_sdyn,masterfield,mctrl,itnum,ssi_master);
+   ssi_struct(ssidyn,master_sdyn,masterfield,disnumm,mctrl,itnum,ssi_master);
    /*------------------------- SLAVE FIELD -----------------------------*/
-   ssi_struct(ssidyn,master_sdyn,slavefield,mctrl,itnum,ssi_slave);
+   ssi_struct(ssidyn,master_sdyn,slavefield,disnums,mctrl,itnum,ssi_slave);
 }
 
 /*--------------------------------------------- strong coupling schemes */
@@ -308,9 +313,9 @@ if (ssidyn->ifsi>=4)
    {
       mctrl=3;
       /*------------------------- MASTER FIELD -------------------------*/
-      ssi_struct(ssidyn,master_sdyn,masterfield,mctrl,itnum,ssi_master);
+      ssi_struct(ssidyn,master_sdyn,masterfield,disnumm,mctrl,itnum,ssi_master);
       /*------------------------- SLAVE FIELD --------------------------*/
-      ssi_struct(ssidyn,master_sdyn,slavefield,mctrl,itnum,ssi_slave);
+      ssi_struct(ssidyn,master_sdyn,slavefield,disnums,mctrl,itnum,ssi_slave);
    }
 }
 
@@ -324,7 +329,7 @@ if (resstep==ssidyn->upres && par.myrank==0)
 {
    resstep=0;
    out_checkfilesize(1);
-   out_gid_sol_ssi(slavefield,masterfield);
+   out_gid_sol_ssi(slavefield,masterfield,disnums,disnumm);
 }
 
 
@@ -338,9 +343,9 @@ if (ssidyn->step < ssidyn->nstep && ssidyn->time <= ssidyn->maxtime)
  *======================================================================*/
 mctrl=99;
 /*---------------------------- MASTER FIELD ----------------------------*/
-ssi_struct(ssidyn,master_sdyn,masterfield,mctrl,itnum,ssi_master);
+ssi_struct(ssidyn,master_sdyn,masterfield,disnumm,mctrl,itnum,ssi_master);
 /*---------------------------- SLAVE FIELD -----------------------------*/
-ssi_struct(ssidyn,master_sdyn,slavefield,mctrl,itnum,ssi_slave);
+ssi_struct(ssidyn,master_sdyn,slavefield,disnums,mctrl,itnum,ssi_slave);
 
 
 

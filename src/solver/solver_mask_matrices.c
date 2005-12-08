@@ -84,394 +84,479 @@ extern struct _PARTITION  *sm_part;
 void mask_global_matrices()
 {
 
-INT i,j;               /* some counters */
+
+  INT i,j;               /* some counters */
+
 #ifdef AZTEC_PACKAGE
-INT isaztec_msr  =0;       /* flag for a certain sparsity pattern */
+  INT isaztec_msr  =0;       /* flag for a certain sparsity pattern */
 #endif
 
 #ifdef HYPRE
-INT ishypre      =0;
+  INT ishypre      =0;
 #endif
 
 #ifdef PARSUPERLU_PACKAGE
-INT isucchb      =0;
+  INT isucchb      =0;
 #endif
 
-INT isdense      =0;
+  INT isdense      =0;
 
 #ifdef MLIB_PACKAGE
-INT ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
+  INT ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
 #endif
 
 #ifdef MUMPS_PACKAGE
-INT isrc_ptr     =0;
+  INT isrc_ptr     =0;
 #endif
 
-INT iscolsol     =0;
+  INT iscolsol     =0;
 
 #ifdef SPOOLES_PACKAGE
-INT isspooles    =0;
+  INT isspooles    =0;
 #endif
 
 #ifdef UMFPACK
-INT isumfpack    =0;
+  INT isumfpack    =0;
 #endif
 
 #ifdef MLPCG
-INT ismlpcg      =0;
+  INT ismlpcg      =0;
 #endif
 
-INT nsysarray    =1;
-INT actdis       =0;
+  /*
+     INT nsysarray    =1;
+     INT disnum       =0;
+     */
 
-INT numeq;
-INT numeq_total;
+  INT numeq;
+  INT numeq_total;
 
-FIELD      *actfield;        /* the active field */
-PARTITION  *actpart;         /* my partition of the active field */
-SOLVAR     *actsolv;         /* the active SOLVAR */
-INTRA      *actintra = NULL; /* the field's intra-communicator */
+  FIELD      *actfield;        /* the active field */
+  PARTITION  *actpart;         /* my partition of the active field */
+  SOLVAR     *actsolv;         /* the active SOLVAR */
+  INTRA      *actintra = NULL; /* the field's intra-communicator */
+
 
 #ifdef DEBUG
-dstrc_enter("mask_global_matrices");
+  dstrc_enter("mask_global_matrices");
 #endif
 
-/*------------------------------------------------ loop over all fields */
-for (j=0; j<genprob.numfld; j++)
-{
-  actfield = &(field[j]);
-  actsolv  = &(solv[j]);
-  actpart  = &(partition[j]);
+
+  /* loop over all fields */
+  /*======================*/
+  for (j=0; j<genprob.numfld; j++)
+  {
+
+    actfield = &(field[j]);
+    actsolv  = &(solv[j]);
+    actpart  = &(partition[j]);
+
 #ifdef PARALLEL
-  actintra = &(par.intra[j]);
+    actintra = &(par.intra[j]);
 #else
-  /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
-  actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
-  actintra->intra_fieldtyp = actfield->fieldtyp;
-  actintra->intra_rank   = 0;
-  actintra->intra_nprocs   = 1;
+    /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
+    actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+    actintra->intra_fieldtyp = actfield->fieldtyp;
+    actintra->intra_rank   = 0;
+    actintra->intra_nprocs   = 1;
 #endif
-  /*-------------------------------------- not member of this field group */
-  if (actintra->intra_fieldtyp==none) continue;
-  /* -------------------------------------------------- matrix typ is OLL */
-  if (actsolv->matrixtyp == oll_matrix)
-  {
-    actdis = 0;
-    actsolv->nsysarray = 1;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
 
-    actsolv->sysarray_typ[0] = oll;
-    actsolv->sysarray[0].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
 
-    numeq_total = actfield->dis[actdis].numeq;
-    oll_numeq(actfield, actpart, actintra, actdis, &numeq);
+    /* not member of this field group */
+    if (actintra->intra_fieldtyp==none)
+      continue;
 
-    oll_open(actsolv->sysarray[0].oll, numeq, numeq_total,
-             actfield, actpart, actintra, actdis);
 
-    continue;
-  }
-  /*--------------------------------------------- first check some values */
-  /*----------------------------- check solver and typ of partitioning */
-  /*-------- column pointer, row index sparse matrix representation ---*/
+    /* determine number of sysarrays in this field */
+    actsolv->nsysarray = actfield->ndis;
+
+
+
+    /* special case:  matrix typ is OLL */
+    /*----------------------------------*/
+    if (actsolv->matrixtyp == oll_matrix)
+    {
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actfield->ndis; i++)
+      {
+        actsolv->sysarray_typ[i] = oll;
+        actsolv->sysarray[i].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
+
+        numeq_total = actfield->dis[i].numeq;
+        oll_numeq(actfield, actpart, actintra, i, &numeq);
+
+        oll_open(actsolv->sysarray[i].oll, numeq, numeq_total,
+            actfield, actpart, actintra, i);
+
+      }  /* for (i=0; i<actfield->ndis; i++) */
+
+      continue;
+    }
+
+
+    /* first check some values */
+    /*-------------------------*/
+
 
 #ifdef MLIB_PACKAGE
-  if (actsolv->solvertyp == mlib_d_sp)
-  {
-    ismlib_d_sp=1;
-  }
+    if (actsolv->solvertyp == mlib_d_sp)
+    {
+      ismlib_d_sp=1;
+    }
 #endif
 
+
+    /* matrix is distributed modified sparse row DMSR for Aztec */
 #ifdef AZTEC_PACKAGE
-  /*--------- matrix is distributed modified sparse row DMSR for Aztec */
-  if (actsolv->solvertyp==aztec_msr)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Aztec");
-    else isaztec_msr=1;
-  }
+    if (actsolv->solvertyp==aztec_msr)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with Aztec");
+      else isaztec_msr=1;
+    }
 #endif
 
+
+    /* matrix is hypre_parcsr */
 #ifdef HYPRE_PACKAGE
-  /*------------------------------------------- matrix is hypre_parcsr */
-  if (
-      actsolv->solvertyp==hypre_amg     ||
-      actsolv->solvertyp==hypre_pcg     ||
-      actsolv->solvertyp==hypre_gmres   ||
-      actsolv->solvertyp==hypre_bicgstab
-     )
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Hypre");
-    else ishypre=1;
-  }
+    if (
+        actsolv->solvertyp==hypre_amg     ||
+        actsolv->solvertyp==hypre_pcg     ||
+        actsolv->solvertyp==hypre_gmres   ||
+        actsolv->solvertyp==hypre_bicgstab
+       )
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with Hypre");
+      else ishypre=1;
+    }
 #endif
 
+
+    /* matrix is unsym. column compressed Harwell Boeing for superLU */
 #ifdef PARSUPERLU_PACKAGE
-  /*---- matrix is unsym. column compressed Harwell Boeing for superLU */
-  if (actsolv->solvertyp==parsuperlu)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Superlu");
-    else isucchb=1;
-  }
+    if (actsolv->solvertyp==parsuperlu)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with Superlu");
+      else isucchb=1;
+    }
 #endif
 
-  /*------------------------ matrix is (non)symmetric dense for Lapack */
-  if (actsolv->solvertyp==lapack_nonsym ||
-      actsolv->solvertyp==lapack_sym)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with LAPACK");
-    else isdense=1;
-  }
 
+    /* matrix is (non)symmetric dense for Lapack */
+    if (actsolv->solvertyp==lapack_nonsym ||
+        actsolv->solvertyp==lapack_sym)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with LAPACK");
+      else isdense=1;
+    }
+
+
+    /* matrix is row-column pointer format for Mumps */
 #ifdef MUMPS_PACKAGE
-  /*-------------------- matrix is row-column pointer format for Mumps */
-  if (actsolv->solvertyp==mumps_sym || actsolv->solvertyp==mumps_nonsym)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with MUMPS");
-    else isrc_ptr=1;
-  }
+    if (actsolv->solvertyp==mumps_sym || actsolv->solvertyp==mumps_nonsym)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with MUMPS");
+      else isrc_ptr=1;
+    }
 #endif
 
+
+    /* matrix is compressed column format for Umfpack */
 #ifdef UMFPACK
-  /*-------------------- matrix is compressed column format for Umfpack */
-  if (actsolv->solvertyp==umfpack)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Umfpack");
-    else isumfpack=1;
-  }
+    if (actsolv->solvertyp==umfpack)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with Umfpack");
+      else isumfpack=1;
+    }
 #endif
 
-  /*------------------------------ matrix is skyline format for colsol */
-  if (actsolv->solvertyp==colsol_solver)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Colsol");
-    else iscolsol=1;
-  }
 
+    /* matrix is skyline format for colsol */
+    if (actsolv->solvertyp==colsol_solver)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with Colsol");
+      else iscolsol=1;
+    }
+
+
+    /* matrix is matrix objec for solver lib Spooles */
 #ifdef SPOOLES_PACKAGE
-  /*-------------------- matrix is matrix objec for solver lib Spooles */
-  if (actsolv->solvertyp==SPOOLES_sym || actsolv->solvertyp==SPOOLES_nonsym)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with SPOOLES");
-    else isspooles=1;
-  }
+    if (actsolv->solvertyp==SPOOLES_sym || actsolv->solvertyp==SPOOLES_nonsym)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with SPOOLES");
+      else isspooles=1;
+    }
 #endif
 
+
+    /* matrix is block distributed csr format for mlpcg */
 #ifdef MLPCG
-  /*------------------------------ matrix is block distributed csr format for mlpcg */
-  if (actsolv->solvertyp==mlpcg)
-  {
-    if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with MLPCG");
-    else ismlpcg=1;
-  }
+    if (actsolv->solvertyp==mlpcg)
+    {
+      if (actsolv->parttyp != cut_elements)
+        dserror("Partitioning has to be Cut_Elements for solution with MLPCG");
+      else ismlpcg=1;
+    }
 #endif
+
 
 #ifdef MLIB_PACKAGE
-  /*----------------------------------------- determine number of sysarrays */
-  if (ismlib_d_sp==1) nsysarray = 2;
-  /* allocate only one sparse matrix for each field. The sparsity
-     pattern of the matrices for mass and damping and stiffness are
-     supposed to be the same, so they are calculated only once (expensive!) */
-  /*-------------------------- for the lower triangle of the matrix ---*/
+    /* allocate only one sparse matrix for each field. The sparsity
+       pattern of the matrices for mass and damping and stiffness are
+       supposed to be the same, so they are calculated only once (expensive!)
+       for the lower triangle of the matrix */
 
-  if (ismlib_d_sp==1)
-  {
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (ismlib_d_sp==1)
     {
-      actsolv->sysarray_typ[i] = mds;
-      actsolv->sysarray[i].mds = (ML_ARRAY_MDS*)CCACALLOC(1,sizeof(ML_ARRAY_MDS));
+      actsolv->nsysarray = 2;
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = mds;
+        actsolv->sysarray[i].mds = (ML_ARRAY_MDS*)CCACALLOC(1,sizeof(ML_ARRAY_MDS));
+      }
+      strcpy(actsolv->sysarray[0].mds->arrayname,"gstif1");
+      mask_mds(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].mds);
+      ismlib_d_sp=0;
     }
-    strcpy(actsolv->sysarray[0].mds->arrayname,"gstif1");
-    mask_mds(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].mds);
-    ismlib_d_sp=0;
-  }
 #endif
 
+
+
+    /* matrix is distributed modified sparse row */
 #ifdef AZTEC_PACKAGE
-  /*------------------------- matrix is ditributed modified sparse row */
-  if (isaztec_msr==1)
-  {
-    /*if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'AZTEC_MSR'\n");*/
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (isaztec_msr==1)
     {
-      actsolv->sysarray_typ[i] = msr;
-      actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
-      actsolv->sysarray[i].msr->bins=NULL;
-      mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,i);
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = msr;
+        actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
+        actsolv->sysarray[i].msr->bins=NULL;
+        mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,i);
+      }
+      isaztec_msr=0;
     }
-    isaztec_msr=0;
-  }
 #endif
 
+
+
+    /* matrix is Spooles's matrix  */
 #ifdef SPOOLES_PACKAGE
-  /*------------------------------------- matrix is Spooles's matrix  */
-  if (isspooles==1)
-  {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'SPOOLES'\n");
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (isspooles==1)
     {
-      actsolv->sysarray_typ[i] = spoolmatrix;
-      actsolv->sysarray[i].spo = (SPOOLMAT*)CCACALLOC(1,sizeof(SPOOLMAT));
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = spoolmatrix;
+        actsolv->sysarray[i].spo = (SPOOLMAT*)CCACALLOC(1,sizeof(SPOOLMAT));
+        mask_spooles(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].spo,i);
+      }
+
+      isspooles=0;
     }
-    mask_spooles(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].spo);
-    isspooles=0;
-  }
 #endif
 
+
+
+    /* matrix is hypre_parcsr */
 #ifdef HYPRE_PACKAGE
-  /*------------------------------------------- matrix is hypre_parcsr */
-  if (ishypre==1)
-  {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'HYPRE'\n");
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (ishypre==1)
     {
-      actsolv->sysarray_typ[i] = parcsr;
-      actsolv->sysarray[i].parcsr = (H_PARCSR*)CCACALLOC(1,sizeof(H_PARCSR));
+      if(actsolv->nsysarray>1)
+        dserror("different discretisations not possible with SOLVER_TYP 'HYPRE'\n");
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = parcsr;
+        actsolv->sysarray[i].parcsr = (H_PARCSR*)CCACALLOC(1,sizeof(H_PARCSR));
+      }
+
+      mask_parcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].parcsr);
+      ishypre=0;
     }
-    mask_parcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].parcsr);
-    ishypre=0;
-  }
 #endif
 
+
+
+    /* matrix is ucchb */
 #ifdef PARSUPERLU_PACKAGE
-  /*---------------------------------------------------- matrix is ucchb */
-  if (isucchb==1)
-  {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'parsuperlu'\n");
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (isucchb==1)
     {
-      actsolv->sysarray_typ[i] = ucchb;
-      actsolv->sysarray[i].ucchb = (UCCHB*)CCACALLOC(1,sizeof(UCCHB));
+      if(actsolv->nsysarray>1)
+        dserror("different discretisations not possible with SOLVER_TYP 'superlu'\n");
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = ucchb;
+        actsolv->sysarray[i].ucchb = (UCCHB*)CCACALLOC(1,sizeof(UCCHB));
+      }
+
+      mask_ucchb(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ucchb);
+      isucchb=0;
     }
-    mask_ucchb(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ucchb);
-    isucchb=0;
-  }
 #endif
 
-  /*---------------------------------------------------- matrix is dense */
-  if (isdense==1)
-  {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'Lapack'\n");
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
-    {
-      actsolv->sysarray_typ[i] = dense;
-      actsolv->sysarray[i].dense = (DENSE*)CCACALLOC(1,sizeof(DENSE));
-    }
-    mask_dense(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].dense);
-    isdense=0;
-  }
 
+
+
+    /* matrix is dense */
+    if (isdense==1)
+    {
+      if(actsolv->nsysarray>1)
+        dserror("different discretisations not possible with SOLVER_TYP 'Lapack'\n");
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = dense;
+        actsolv->sysarray[i].dense = (DENSE*)CCACALLOC(1,sizeof(DENSE));
+      }
+
+      mask_dense(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].dense);
+      isdense=0;
+    }
+
+
+
+
+    /* matrix is row-column pointer format  */
 #ifdef MUMPS_PACKAGE
-  /*----------------------------- matrix is row-column pointer format  */
-  if (isrc_ptr==1)
-  {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'Mumps'\n");
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (isrc_ptr==1)
     {
-      actsolv->sysarray_typ[i] = rc_ptr;
-      actsolv->sysarray[i].rc_ptr = (RC_PTR*)CCACALLOC(1,sizeof(RC_PTR));
+      if(actsolv->nsysarray>1)
+        dserror("different discretisations not possible with SOLVER_TYP 'Mumps'\n");
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = rc_ptr;
+        actsolv->sysarray[i].rc_ptr = (RC_PTR*)CCACALLOC(1,sizeof(RC_PTR));
+      }
+
+      mask_rc_ptr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].rc_ptr);
+      isrc_ptr=0;
     }
-    mask_rc_ptr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].rc_ptr);
-    isrc_ptr=0;
-  }
 #endif
 
+
+
+
+    /* matrix is row-column pointer format for umfpack solver */
 #ifdef UMFPACK
-  /*---------------- matrix is row-column pointer format for umfpack solver */
-  if (isumfpack==1)
-  {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'umfpack'\n");
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (isumfpack==1)
     {
-      actsolv->sysarray_typ[i] = ccf;
-      actsolv->sysarray[i].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = ccf;
+        actsolv->sysarray[i].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
+        mask_ccf(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].ccf,i);
+      }
+
+      isumfpack=0;
     }
-    mask_ccf(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ccf);
-    isumfpack=0;
-  }
 #endif
 
-  /*---------------------------------------- matrix is skyline format  */
-  if (iscolsol==1)
-  {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'colsol'\n");
-    actsolv->nsysarray = nsysarray;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+
+
+
+    /* matrix is skyline format  */
+    if (iscolsol==1)
     {
-      actsolv->sysarray_typ[i] = skymatrix;
-      actsolv->sysarray[i].sky = (SKYMATRIX*)CCACALLOC(1,sizeof(SKYMATRIX));
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = skymatrix;
+        actsolv->sysarray[i].sky = (SKYMATRIX*)CCACALLOC(1,sizeof(SKYMATRIX));
+        mask_skyline(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].sky,i);
+      }
+
+      iscolsol=0;
     }
-    mask_skyline(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].sky);
-    iscolsol=0;
-  }
+
+
+
 
 #ifdef MLPCG
-  /*---------------------------------------- matrix is skyline format  */
-  if (ismlpcg==1)
-  {
-    actsolv->nsysarray = 1;
-    actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-    actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-    for (i=0; i<actsolv->nsysarray; i++)
+    if (ismlpcg==1)
     {
-      actsolv->sysarray_typ[i] = bdcsr;
-      actsolv->sysarray[i].bdcsr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
+      if(actsolv->nsysarray>1)
+        dserror("different discretisations not possible with SOLVER_TYP 'MLPCG'\n");
+
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = bdcsr;
+        actsolv->sysarray[i].bdcsr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
+      }
+
+      mask_bdcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].bdcsr);
+      actsolv->mlpcgvars->fielddis = &(actfield->dis[0]);
+      actsolv->mlpcgvars->partdis  = &(actpart->pdis[0]);
+      ismlpcg=0;
     }
-    mask_bdcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].bdcsr);
-    actsolv->mlpcgvars->fielddis = &(actfield->dis[0]);
-    actsolv->mlpcgvars->partdis  = &(actpart->pdis[0]);
-    ismlpcg=0;
-  }
 #endif
 
-  /*----------------------------------------------------------------------*/
-} /* end of loop over numfld fields */
-/*----------------------------------------------------------------------*/
+
+
+
+  }  /* for (j=0; j<genprob.numfld; j++) */
+
+
 #ifndef PARALLEL
-CCAFREE(actintra);
+  CCAFREE(actintra);
 #endif
+
 
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
 
-return;
+
+  return;
 } /* end of mask_global_matrices */
+
+
+
+
+
+
+
 
 #ifdef D_MLSTRUCT
 /*----------------------------------------------------------------------*
@@ -495,8 +580,8 @@ PARTITION  *actsmpart;       /* my partition of the active submeshfield */
 SOLVAR     *actsmsolv;       /* the active submeshSOLVAR */
 INTRA      *actsmintra;      /* the field's submesh-intra-communicator */
 
-#ifdef DEBUG 
-dstrc_enter("mask_global_matrices");
+#ifdef DEBUG
+dstrc_enter("mask_submesh_matrices");
 #endif
 /*----------------------------------------------------------------------*/
 /*              mask for submesh stiffness k prime prime                */
@@ -513,10 +598,10 @@ actsmintra->intra_nprocs   = 1;
 if (actsmsolv->solvertyp==umfpack)
 {
   if (actsmsolv->parttyp != cut_elements)
-    dserror("Partitioning has to be Cut_Elements for solution with Umfpack"); 
+    dserror("Partitioning has to be Cut_Elements for solution with Umfpack");
   else isumfpack=1;
 }
-else dserror("only umpfpack for submesh solver "); 
+else dserror("only umpfpack for submesh solver ");
 /*---------------- matrix is row-column pointer format for umfpack solver */
 if (isumfpack==1)
 {
@@ -526,7 +611,7 @@ if (isumfpack==1)
   actsmsolv->sysarray_typ[0] = ccf;
   actsmsolv->sysarray[0].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
   /*--------------------------------------------------------------------*/
-  mask_ccf(actsmfield,actsmpart,actsmsolv,actsmintra,actsmsolv->sysarray[0].ccf);
+  mask_ccf(actsmfield,actsmpart,actsmsolv,actsmintra,actsmsolv->sysarray[0].ccf,0);
   isumfpack=0;
 }
 /*----------------------------------------------------------------------*/
@@ -559,7 +644,7 @@ init_assembly(actsmpart,actsmsolv,actsmintra,actsmfield,actsmsysarray,0);
 
 CCAFREE(actsmintra);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

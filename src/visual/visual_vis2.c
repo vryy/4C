@@ -309,15 +309,15 @@ if (IVORT==1)
    *action = calc_fluid_initvort;
    calinit(actfield,actpart,action,&container);
    *action = calc_fluid_vort;
-   container.actndis=0;
+   container.disnum =0;
 #ifdef D_FLUID
    container.nii=0;
-   container.is_relax = 0; 
+   container.is_relax = 0;
 #endif
    container.fieldtyp=fluid;
    container.dvec=NULL;
    container.dvec         = NULL;
-   container.actndis  = 0;
+   container.disnum   = 0;
    calelm(actfield,NULL,actpart,NULL,0,0,
           &container,action);
 } /* endif (IVORT==1) */

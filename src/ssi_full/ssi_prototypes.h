@@ -157,14 +157,17 @@ void ssi_dbg_plot_disps(     FIELD *masterfield,
 /************************************************************************
  | ssi_struct.c                                                         |
  ************************************************************************/
-void ssi_struct(   
-                   SSI_DYNAMIC       *ssidyn,
-                   STRUCT_DYNAMIC    *sdyn, 
-		   FIELD             *actfield, 
-		   INT                mctrl, 
-		   INT                ssiitnum,
-		   enum _SSI_COUPTYP  ssi_couptyp
-	       );
+void ssi_struct(
+    SSI_DYNAMIC        *ssidyn,
+    STRUCT_DYNAMIC     *sdyn,
+    FIELD              *actfield,
+    INT                 disnum,
+    INT                 mctrl,
+    INT                 ssiitnum,
+    enum _SSI_COUPTYP   ssi_couptyp
+    );
+
+
 void ssi_struct_decide(INT mctrl, INT numaf); 
 
 /*! @} (documentation module close)*/

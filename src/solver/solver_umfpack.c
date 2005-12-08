@@ -169,7 +169,7 @@ case 0:
 #else
        status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
           if (status < 0)
           {
              umfpack_di_report_info (control, info) ;

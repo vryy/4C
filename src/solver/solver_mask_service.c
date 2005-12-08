@@ -15,7 +15,7 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
-static INT kk;
+static INT disnum;
 
 /*----------------------------------------------------------------------*
  |  count processor local and global number of equations    m.gee 5/01  |
@@ -26,7 +26,7 @@ void mask_numeq(
     SOLVAR       *actsolv,
     INTRA        *actintra,
     INT          *numeq,
-    INT            actndis)
+    INT           dis_num)
 {
   INT       i,j,k,l;
   INT       counter;
@@ -50,7 +50,7 @@ void mask_numeq(
 #endif
 
   /* set actual discretisation */
-  kk=actndis;
+  disnum=dis_num;
 
 
   imyrank = actintra->intra_rank;
@@ -58,29 +58,29 @@ void mask_numeq(
 
   /* first make a list of dofs which are coupled */
   /* estimate size of coupdofs to 5000 */
-  amdef("coupledofs",&(actpart->pdis[kk].coupledofs),5000,1,"IV");
-  amzero(&(actpart->pdis[kk].coupledofs));
+  amdef("coupledofs",&(actpart->pdis[disnum].coupledofs),5000,1,"IV");
+  amzero(&(actpart->pdis[disnum].coupledofs));
 
   counter=0;
   /* loop all nodes and find coupled dofs */
-  for (i=0; i<actfield->dis[kk].numnp; i++)
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
   {
-    actnode = &(actfield->dis[kk].node[i]);
+    actnode = &(actfield->dis[disnum].node[i]);
     if (actnode->gnode->couple==NULL && actnode->gnode->dirich==NULL) continue;
     if (actnode->gnode->couple==NULL) continue;
     for (l=0; l<actnode->numdf; l++)
     {
-      if (actnode->dof[l]>=actfield->dis[kk].numeq) continue;
+      if (actnode->dof[l]>=actfield->dis[disnum].numeq) continue;
       /* there is coupling on this dof */
       if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
           actnode->gnode->couple->couple.a.ia[l][1] != 0 )
       {
-        if (counter>=actpart->pdis[kk].coupledofs.fdim)
-          amredef(&(actpart->pdis[kk].coupledofs),(actpart->pdis[kk].coupledofs.fdim+5000),1,"IV");
+        if (counter>=actpart->pdis[disnum].coupledofs.fdim)
+          amredef(&(actpart->pdis[disnum].coupledofs),(actpart->pdis[disnum].coupledofs.fdim+5000),1,"IV");
         /* the coupled dof could be dirichlet conditioned */
-        if (actnode->dof[l]<actfield->dis[kk].numeq)
+        if (actnode->dof[l]<actfield->dis[disnum].numeq)
         {
-          actpart->pdis[kk].coupledofs.a.iv[counter] = actnode->dof[l];
+          actpart->pdis[disnum].coupledofs.a.iv[counter] = actnode->dof[l];
           counter++;
         }
       }
@@ -92,38 +92,38 @@ void mask_numeq(
   else
     no_coupling = 0;
 
-  amredef(&(actpart->pdis[kk].coupledofs),counter,1,"IV");
+  amredef(&(actpart->pdis[disnum].coupledofs),counter,1,"IV");
 
   /* delete the doubles in coupledofs */
   if (!no_coupling)
   {
-    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+    for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)
     {
-      if (actpart->pdis[kk].coupledofs.a.iv[i]==-1) continue;
-      dof = actpart->pdis[kk].coupledofs.a.iv[i];
-      for (j=i+1; j<actpart->pdis[kk].coupledofs.fdim; j++)
+      if (actpart->pdis[disnum].coupledofs.a.iv[i]==-1) continue;
+      dof = actpart->pdis[disnum].coupledofs.a.iv[i];
+      for (j=i+1; j<actpart->pdis[disnum].coupledofs.fdim; j++)
       {
-        if (actpart->pdis[kk].coupledofs.a.iv[j]==dof)
-          actpart->pdis[kk].coupledofs.a.iv[j]=-1;
+        if (actpart->pdis[disnum].coupledofs.a.iv[j]==dof)
+          actpart->pdis[disnum].coupledofs.a.iv[j]=-1;
       }
     }
 
     /* move all remaining coupdofs to the front and redefine again */
     counter=0;
-    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+    for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)
     {
-      if (actpart->pdis[kk].coupledofs.a.iv[i]!=-1)
+      if (actpart->pdis[disnum].coupledofs.a.iv[i]!=-1)
       {
-        actpart->pdis[kk].coupledofs.a.iv[counter] = actpart->pdis[kk].coupledofs.a.iv[i];
+        actpart->pdis[disnum].coupledofs.a.iv[counter] = actpart->pdis[disnum].coupledofs.a.iv[i];
         counter++;
       }
     }
-    amredef(&(actpart->pdis[kk].coupledofs),counter,inprocs+1,"IA");
+    amredef(&(actpart->pdis[disnum].coupledofs),counter,inprocs+1,"IA");
 
     /* the newly allocated columns have to be initialized */
-    for (i=1; i<actpart->pdis[kk].coupledofs.sdim; i++)
-      for (j=0; j<actpart->pdis[kk].coupledofs.fdim; j++)
-        actpart->pdis[kk].coupledofs.a.ia[j][i]=0;
+    for (i=1; i<actpart->pdis[disnum].coupledofs.sdim; i++)
+      for (j=0; j<actpart->pdis[disnum].coupledofs.fdim; j++)
+        actpart->pdis[disnum].coupledofs.a.ia[j][i]=0;
 
   } /* end of if(!no_coupling) */
 
@@ -150,9 +150,9 @@ void mask_numeq(
   {
     if (inprocs==1) /* sequentiell version */
     {
-      for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
+      for (k=0; k<actpart->pdis[disnum].coupledofs.fdim; k++)
       {
-        actpart->pdis[kk].coupledofs.a.ia[k][imyrank+1]=2;
+        actpart->pdis[disnum].coupledofs.a.ia[k][imyrank+1]=2;
       }
     }
     else /* parallel version */
@@ -160,16 +160,16 @@ void mask_numeq(
       /* actpart->node[i] really loops only nodes with dofs updated on this proc */
 
       /* now loop only my nodes */
-      for (i=0; i<actpart->pdis[kk].numnp; i++)
+      for (i=0; i<actpart->pdis[disnum].numnp; i++)
       {
-        for (l=0; l<actpart->pdis[kk].node[i]->numdf; l++)
+        for (l=0; l<actpart->pdis[disnum].node[i]->numdf; l++)
         {
-          dof = actpart->pdis[kk].node[i]->dof[l];
-          for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
+          dof = actpart->pdis[disnum].node[i]->dof[l];
+          for (k=0; k<actpart->pdis[disnum].coupledofs.fdim; k++)
           {
-            if (actpart->pdis[kk].coupledofs.a.ia[k][0]==dof)
+            if (actpart->pdis[disnum].coupledofs.a.ia[k][0]==dof)
             {
-              actpart->pdis[kk].coupledofs.a.ia[k][imyrank+1]=1;
+              actpart->pdis[disnum].coupledofs.a.ia[k][imyrank+1]=1;
               break;
             }
           }
@@ -180,16 +180,16 @@ void mask_numeq(
     /* Allreduce the whole array, so every proc knows about where all
        coupledofs are */
 #ifdef PARALLEL
-    sendsize = (actpart->pdis[kk].coupledofs.fdim)*(inprocs);
+    sendsize = (actpart->pdis[disnum].coupledofs.fdim)*(inprocs);
     sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
     recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
     if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
     counter=0;
-    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+    for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)
     {
       for (j=0; j<inprocs; j++)
       {
-        sendbuff[counter] = actpart->pdis[kk].coupledofs.a.ia[i][j+1];
+        sendbuff[counter] = actpart->pdis[disnum].coupledofs.a.ia[i][j+1];
         counter++;
       }
     }
@@ -200,11 +200,11 @@ void mask_numeq(
         MPI_SUM,
         actintra->MPI_INTRA_COMM);
     counter=0;
-    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+    for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)
     {
       for (j=0; j<inprocs; j++)
       {
-        actpart->pdis[kk].coupledofs.a.ia[i][j+1] = recvbuff[counter];
+        actpart->pdis[disnum].coupledofs.a.ia[i][j+1] = recvbuff[counter];
         counter++;
       }
     }
@@ -216,22 +216,22 @@ void mask_numeq(
   /* count number of equations on partition including coupled dofs */
   /* count the coupled ones first */
   counter=0;
-  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+  for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)
   {
-    if (actpart->pdis[kk].coupledofs.a.ia[i][imyrank+1]!=0) counter++;
+    if (actpart->pdis[disnum].coupledofs.a.ia[i][imyrank+1]!=0) counter++;
   }
 
   /* count all dofs which are not coupled */
-  for (i=0; i<actpart->pdis[kk].numnp; i++)
+  for (i=0; i<actpart->pdis[disnum].numnp; i++)
   {
-    actnode = actpart->pdis[kk].node[i];
+    actnode = actpart->pdis[disnum].node[i];
     for (l=0; l<actnode->numdf; l++)
     {
       dof = actnode->dof[l];
       iscoupled=0;
-      for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
+      for (k=0; k<actpart->pdis[disnum].coupledofs.fdim; k++)
       {
-        if (dof == actpart->pdis[kk].coupledofs.a.ia[k][0])
+        if (dof == actpart->pdis[disnum].coupledofs.a.ia[k][0])
         {
           iscoupled=1;
           break;
@@ -239,7 +239,7 @@ void mask_numeq(
       }
       if (iscoupled==0)
       {
-        if (dof < actfield->dis[kk].numeq)
+        if (dof < actfield->dis[disnum].numeq)
           counter++;
       }
     }
@@ -282,19 +282,19 @@ void mask_numeq(
       if (!tmp) dserror("Allocation of temporary memory failed");
 
       /* loop coupled eqns */
-      for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+      for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)
       {
         /* check whether its inter-proc eqn */
         inter_proc=0;
-        for (j=0; j<inprocs; j++) inter_proc += actpart->pdis[kk].coupledofs.a.ia[i][j+1];
+        for (j=0; j<inprocs; j++) inter_proc += actpart->pdis[disnum].coupledofs.a.ia[i][j+1];
 
         if (inter_proc==1)/* no inter-processor coupling */
         {
           for (j=0; j<inprocs; j++)
           {
-            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1)
+            if (actpart->pdis[disnum].coupledofs.a.ia[i][j+1]==1)
             {
-              actpart->pdis[kk].coupledofs.a.ia[i][j+1]=2;
+              actpart->pdis[disnum].coupledofs.a.ia[i][j+1]=2;
               break;
             }
           }
@@ -306,7 +306,7 @@ void mask_numeq(
           proc=-1;
           for (j=0; j<inprocs; j++)
           {
-            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1)
+            if (actpart->pdis[disnum].coupledofs.a.ia[i][j+1]==1)
             {
               if (tmp[j]<=min)
               {
@@ -315,7 +315,7 @@ void mask_numeq(
               }
             }
           }
-          actpart->pdis[kk].coupledofs.a.ia[i][proc+1]=2;
+          actpart->pdis[disnum].coupledofs.a.ia[i][proc+1]=2;
           tmp[proc] += 1;
         }
       }/* end loop over coupling eqns */
@@ -326,10 +326,10 @@ void mask_numeq(
        number of equations */
     if (inprocs > 1)
     {
-      for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/* loop coupled eqns */
+      for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)/* loop coupled eqns */
       {
         /* Yes, I am slave owner of an inter_proc coupling equation */
-        if (actpart->pdis[kk].coupledofs.a.ia[i][imyrank+1]==1)
+        if (actpart->pdis[disnum].coupledofs.a.ia[i][imyrank+1]==1)
         {
           (*numeq) = (*numeq)-1;
         }
@@ -365,9 +365,9 @@ void dof_in_coupledofs(
   dstrc_enter("dof_in_coupledofs");
 #endif
 
-  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+  for (i=0; i<actpart->pdis[disnum].coupledofs.fdim; i++)
   {
-    if (dof==actpart->pdis[kk].coupledofs.a.ia[i][0])
+    if (dof==actpart->pdis[disnum].coupledofs.a.ia[i][0])
     {
       *iscoupled = 1;
       break;
@@ -399,13 +399,13 @@ void dof_find_centernode(
   dstrc_enter("dof_find_centernode");
 #endif
 
-  for (j=0; j<actpart->pdis[kk].numnp; j++)
+  for (j=0; j<actpart->pdis[disnum].numnp; j++)
   {
-    for (k=0; k<actpart->pdis[kk].node[j]->numdf; k++)
+    for (k=0; k<actpart->pdis[disnum].node[j]->numdf; k++)
     {
-      if (actpart->pdis[kk].node[j]->dof[k] == dof)
+      if (actpart->pdis[disnum].node[j]->dof[k] == dof)
       {
-        *centernode = actpart->pdis[kk].node[j];
+        *centernode = actpart->pdis[disnum].node[j];
         goto nodefound1;
       }
     }

@@ -24,6 +24,9 @@ DOUBLE cmp_double(const void *a, const void *b );
 
 
 
+static INT  disnum;
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -34,7 +37,8 @@ void mask_ccf(
     PARTITION     *actpart,
     SOLVAR        *actsolv,
     INTRA         *actintra,
-    CCF           *ccf
+    CCF           *ccf,
+    INT            disnum_
     )
 
 {
@@ -53,6 +57,10 @@ void mask_ccf(
   dstrc_enter("mask_ccf");
 #endif
 
+
+  disnum = disnum_;
+
+
   /*----------------------------------------------------------------------*/
   /* remember some facts:
      PARTITION is different on every proc.
@@ -63,10 +71,10 @@ void mask_ccf(
      are calculated
      */
   /*------------------------------------------- put size of problem */
-  ccf->numeq_total = actfield->dis[0].numeq;
-  /* count number of eq_totalns on proc and build processor-global couplingdof
+  ccf->numeq_total = actfield->dis[disnum].numeq;
+  /* count number of eqns on proc and build processor-global couplingdof
      matrix */
-  mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
+  mask_numeq(actfield,actpart,actsolv,actintra,&numeq,disnum);
   ccf->numeq = numeq;
   /*---------------------------------------------- allocate vector update */
   amdef("update",&(ccf->update),numeq,1,"IV");
@@ -117,9 +125,9 @@ void mask_ccf(
 
 #ifdef FAST_ASS
   /* make the index vector for faster assembling */
-  for (i=0; i<actpart->pdis[0].numele; i++)
+  for (i=0; i<actpart->pdis[disnum].numele; i++)
   {
-    actele = actpart->pdis[0].element[i];
+    actele = actpart->pdis[disnum].element[i];
     ccf_make_index(actfield,actpart,actintra,actele,ccf);
   }
 #endif
@@ -167,18 +175,18 @@ void  ccf_update(
   imyrank = actintra->intra_rank;
   inprocs = actintra->intra_nprocs;
   /*------------------ make a local copy of the array actpart->coupledofs */
-  am_alloc_copy(&(actpart->pdis[0].coupledofs),&coupledofs);
+  am_alloc_copy(&(actpart->pdis[disnum].coupledofs),&coupledofs);
   /*------------------------------------- loop the nodes on the partition */
   update = ccf->update.a.iv;
   counter=0;
-  for (i=0; i<actpart->pdis[0].numnp; i++)
+  for (i=0; i<actpart->pdis[disnum].numnp; i++)
   {
-    actnode = actpart->pdis[0].node[i];
+    actnode = actpart->pdis[disnum].node[i];
     for (l=0; l<actnode->numdf; l++)
     {
       dof = actnode->dof[l];
       /* dirichlet condition on dof */
-      if (dof >= actfield->dis[0].numeq) continue;
+      if (dof >= actfield->dis[disnum].numeq) continue;
       /* no coupling on dof */
       if (actnode->gnode->couple==NULL)
       {
@@ -294,7 +302,7 @@ void  ccf_nnz_topology(
   numeq  = ccf->numeq;
   update = ccf->update.a.iv;
   for (i=0; i<ccf->numeq_total; i++) dof_connect[i]=NULL;
-  amdef("tmp",&dofpatch,1000,1,"IV");
+  amdef("tmp",&dofpatch,MAX_NNZPERROW,1,"IV");
   amzero(&dofpatch);
   /*----------------------------------------------------------------------*/
   for (i=0; i<numeq; i++)
@@ -316,7 +324,7 @@ void  ccf_nnz_topology(
         actnode = actele->node[k];
         for (l=0; l<actnode->numdf; l++)
         {
-          if (actnode->dof[l] < actfield->dis[0].numeq)
+          if (actnode->dof[l] < actfield->dis[disnum].numeq)
           {
             if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
             dofpatch.a.iv[counter] = actnode->dof[l];
@@ -367,7 +375,7 @@ void  ccf_nnz_topology(
     }
   }  /* end of loop over numeq */
   /*--------------------------------------------- now do the coupled dofs */
-  coupledofs = &(actpart->pdis[0].coupledofs);
+  coupledofs = &(actpart->pdis[disnum].coupledofs);
   for (i=0; i<coupledofs->fdim; i++)
   {
     dof = coupledofs->a.ia[i][0];
@@ -377,14 +385,14 @@ void  ccf_nnz_topology(
     if (dofflag==0) continue;
     /*------------------------------------- find all patches to this dof */
     counter=0;
-    for (j=0; j<actpart->pdis[0].numnp; j++)
+    for (j=0; j<actpart->pdis[disnum].numnp; j++)
     {
       centernode=NULL;
-      for (l=0; l<actpart->pdis[0].node[j]->numdf; l++)
+      for (l=0; l<actpart->pdis[disnum].node[j]->numdf; l++)
       {
-        if (dof == actpart->pdis[0].node[j]->dof[l])
+        if (dof == actpart->pdis[disnum].node[j]->dof[l])
         {
-          centernode = actpart->pdis[0].node[j];
+          centernode = actpart->pdis[disnum].node[j];
           break;
         }
       }
@@ -399,7 +407,7 @@ void  ccf_nnz_topology(
             actnode = actele->node[m];
             for (l=0; l<actnode->numdf; l++)
             {
-              if (actnode->dof[l] < actfield->dis[0].numeq)
+              if (actnode->dof[l] < actfield->dis[disnum].numeq)
               {
                 if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
                 dofpatch.a.iv[counter] = actnode->dof[l];
@@ -841,8 +849,8 @@ void ccf_make_index(
   Ax         = ccf1->Ax.a.dv;
   Ai         = ccf1->Ai.a.iv;
   Ap         = ccf1->Ap.a.iv;
-  cdofs      = actpart->pdis[0].coupledofs.a.ia;
-  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+  cdofs      = actpart->pdis[disnum].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[disnum].coupledofs.fdim;
 
 
   /* determine the size of estiff */
@@ -1028,8 +1036,8 @@ void  add_ccf(
     Bx       = NULL;
   Ai         = ccf1->Ai.a.iv;
   Ap         = ccf1->Ap.a.iv;
-  cdofs      = actpart->pdis[0].coupledofs.a.ia;
-  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+  cdofs      = actpart->pdis[disnum].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[disnum].coupledofs.fdim;
 
   /* put pointers to sendbuffers if any */
 #ifdef PARALLEL
@@ -1198,8 +1206,8 @@ void  add_ccf_fast(
     Bx       = NULL;
   Ai         = ccf1->Ai.a.iv;
   Ap         = ccf1->Ap.a.iv;
-  cdofs      = actpart->pdis[0].coupledofs.a.ia;
-  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+  cdofs      = actpart->pdis[disnum].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[disnum].coupledofs.fdim;
 
   /* put pointers to sendbuffers if any */
 #ifdef PARALLEL
