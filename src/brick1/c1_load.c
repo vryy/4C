@@ -571,21 +571,36 @@ endsurf:
 /*--------------------------------------------- add eload to global vec */
   if (foundvolu+foundline+foundsurf != 0)
   {
-  for (inode=0; inode<12; inode++)
-  {
-    for (idof=0; idof<NUMDOF_BRICK1; idof++)
+    if (iel == 8)
     {
-      loadvec[inode*NUMDOF_BRICK1+idof] += eload[idof][inode];
+      for (inode=0; inode<8; inode++)
+      {
+        for (idof=0; idof<NUMDOF_BRICK1; idof++)
+        {
+          loadvec[inode*NUMDOF_BRICK1+idof] += eload[idof][inode];
+        }
+      }
     }
-  }
-  for (i=12; i<iel; i++)
-  {
-    for (idof=0; idof<NUMDOF_BRICK1; idof++)
+
+    else
     {
-      inode = h20perm[i-12];
-      loadvec[inode*NUMDOF_BRICK1+idof] += eload[idof][i];
+      for (inode=0; inode<12; inode++)
+      {
+        for (idof=0; idof<NUMDOF_BRICK1; idof++)
+        {
+          loadvec[inode*NUMDOF_BRICK1+idof] += eload[idof][inode];
+        }
+      }
+
+      for (i=12; i<iel; i++)
+      {
+        for (idof=0; idof<NUMDOF_BRICK1; idof++)
+        {
+          inode = h20perm[i-12];
+          loadvec[inode*NUMDOF_BRICK1+idof] += eload[idof][i];
+        }
+      }
     }
-  }
   }
 /*----------------------------------------------------------------------*/
 end:
