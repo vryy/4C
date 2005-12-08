@@ -26,7 +26,7 @@
   echo
   echo '  Making executable ...'
   make -f $makefile clean 2>&1 | cat > make.log
-  make -f $makefile 2>&1 | cat >> make.log
+  make -f $makefile all 2>&1 | cat >> make.log
 
   # get the end-time in seconds:
   h=`date +"%H"`
