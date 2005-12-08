@@ -55,6 +55,7 @@ This routine controls the calculation of the rhs for ale elements.
 *----------------------------------------------------------------------*/
 void ale_rhs(SOLVAR       *actsolv,      /* active SOLVAR */
              PARTITION    *actpart,      /* my partition of this field */
+             INT           disnum,
              INTRA        *actintra,     /* my intra-communicator */
              INT           sysarray1,    /* number of first sparse system matrix */
              INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
@@ -211,10 +212,10 @@ if (sysarray2 != -1)
 /* =======================================================call elements */
 
 /*---------------------------------------------- loop over all elements */
-for (i=0; i<actpart->pdis[0].numele; i++)
+for (i=0; i<actpart->pdis[disnum].numele; i++)
 {
    /*------------------------------------ set pointer to active element */
-   actele = actpart->pdis[0].element[i];
+   actele = actpart->pdis[disnum].element[i];
    /* if present, init the element vectors intforce_global and dirich_global */
    amzero(&intforce_global);
    hasdirich = 0;
@@ -237,11 +238,11 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       else
       {
         for(k=0; k<actele->node[j]->numdf; k++)
-	{
-	  if (actgnode->dirich->dirich_val.a.dv[k]!=0.0)
-	  {
-             hasdirich=1;
-	     goto out;
+        {
+          if (actgnode->dirich->dirich_val.a.dv[k]!=0.0)
+          {
+            hasdirich=1;
+            goto out;
           }
         }
       }
@@ -253,21 +254,21 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    {
      switch(actele->eltyp)/*======================= call element routines */
      {
-     case el_ale3:
-	ale3(actpart,actintra,actele,
-        &estif_global,
-        action,container);
-     break;
-     case el_ale2:
-	ale2(actpart,actintra,actele,
-        &estif_global,
-        action,container);
-     break;
-     case el_none:
-        dserror("Typ of element unknown");
-     break;
-     default:
-        dserror("Typ of element unknown");
+       case el_ale3:
+         ale3(actpart,actintra,actele,
+             &estif_global,
+             action,container);
+         break;
+       case el_ale2:
+         ale2(actpart,actintra,actele,
+             &estif_global,
+             action,container);
+         break;
+       case el_none:
+         dserror("Typ of element unknown");
+         break;
+       default:
+         dserror("Typ of element unknown");
      }/* end of calling elements */
 
      /*------ assemble the rhs vector of condensed dirichlet conditions */
