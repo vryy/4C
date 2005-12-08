@@ -113,7 +113,7 @@ void fluid3_fast(
   dstrc_enter("fluid3_fast");
 #endif
 
-  ipos = &(field[genprob.numff].dis[container->actndis].ipos);
+  ipos = &(field[genprob.numff].dis[container->disnum].ipos);
 
   /* switch to do option */
   switch (*action)
