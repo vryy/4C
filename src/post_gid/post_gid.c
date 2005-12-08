@@ -617,8 +617,8 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
        * are only concerned about the number of nodes. */
       if (numnp==3)
       {
-        gid->is_fluid2_3    = 1;
-        gid->fluid2_3_name  = "fluid2_3";
+        gid->is_fluid2_tri3    = 1;
+        gid->fluid2_tri3_name  = "fluid2_3";
       }
       if (numnp==6)
       {
@@ -870,7 +870,7 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
     }
 #endif
     default:
-      dserror("element type %d unknown", el_type);
+      dserror_args(__FILE__, __LINE__, "element type %d unknown", el_type);
     }
   }
 
@@ -1133,7 +1133,8 @@ static void write_fsi(PROBLEM_DATA* problem)
     }
     else
     {
-      dserror("unknown field type %d", problem->discr[i].type);
+      dserror_args(__FILE__, __LINE__,
+          "unknown field type %d", problem->discr[i].type);
     }
   }
 

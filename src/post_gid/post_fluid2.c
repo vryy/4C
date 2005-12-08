@@ -106,11 +106,11 @@ void fluid2_write_gauss(GIDSET* gid)
     GiD_EndGaussPoint();
   }
 
-  if (gid->is_fluid2_3)
+  if (gid->is_fluid2_tri3)
   {
     /* The number of gauss points here is just guessing. It's not
      * important as long as there are no element values. */
-    GiD_BeginGaussPoint(gid->fluid2_3_name, GiD_Triangle, gid->fluid2_3_name, 3, 0, 1);
+    GiD_BeginGaussPoint(gid->fluid2_tri3_name, GiD_Triangle, gid->fluid2_tri3_name, 3, 0, 1);
     GiD_EndGaussPoint();
   }
 
@@ -218,11 +218,11 @@ void fluid2_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
 
   /*--------------------------------------------------------------------*/
 
-  if (gid->is_fluid2_3)
+  if (gid->is_fluid2_tri3)
   {
     INT i;
 
-    GiD_BeginMesh(gid->fluid2_3_name, 2, GiD_Triangle, 3);
+    GiD_BeginMesh(gid->fluid2_tri3_name, 2, GiD_Triangle, 3);
 
     if (*first_mesh)
     {
