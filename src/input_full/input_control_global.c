@@ -204,7 +204,7 @@ if (genprob.nmat<=0)
    dserror("No Material defined!");
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
-/*----------------------------------------- defualt values for output */
+/*----------------------------------------- default values for output */
 ioflags.output_out          =0;
 ioflags.output_gid          =0;
 ioflags.output_bin          =0;
