@@ -54,6 +54,13 @@ Maintainer: Malte Neumann
 #endif
 
 /*----------------------------------------------------------------------*
+ | maximum number of fields                                             |
+ *----------------------------------------------------------------------*/
+#ifndef MAXDIS
+#define MAXDIS           (2)
+#endif
+
+/*----------------------------------------------------------------------*
  | maximum numberof fields                                              |
  *----------------------------------------------------------------------*/
 #ifndef MAXTIMECURVE
@@ -227,7 +234,7 @@ Maintainer: Malte Neumann
 
 
 /*----------------------------------------------------------------------*
- | hex20 elemenst                                                      |
+ | hex20 elements                                                      |
  *----------------------------------------------------------------------*/
 #ifndef NODESHIFT_HEX20
 #define NODESHIFT_HEX20  (10000) /* must be larger than genprob.nnode */
@@ -235,6 +242,14 @@ Maintainer: Malte Neumann
 
 #ifndef ELESHIFT_HEX20
 #define ELESHIFT_HEX20  (10000) /* must be larger than genprob.nele */
+#endif
+
+
+/* --------------------------------------------------------------------- *
+ * subdivide
+ * --------------------------------------------------------------------- */
+#ifndef MAX_DIVIDE
+#define MAX_DIVIDE  (10)
 #endif
 
 
