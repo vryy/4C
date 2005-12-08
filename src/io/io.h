@@ -64,7 +64,7 @@ typedef struct _BIN_OUT_MAIN {
   INT steps_per_file;
 
   /* central registration for output field contexts */
-  struct _BIN_OUT_FIELD* fields[MAXFIELD];
+  struct _BIN_OUT_FIELD* fields[MAXFIELD*MAXDIS];
 
 } BIN_OUT_MAIN;
 
