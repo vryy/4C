@@ -257,7 +257,7 @@ void init_bin_out_main(CHAR* outputname)
   bin_out_main.steps_per_file = ioflags.steps_per_file;
 
   /* explizit initialization. */
-  for (i=0; i<MAXFIELD; ++i)
+  for (i=0; i<MAXFIELD*MAXDIS; ++i)
   {
     bin_out_main.fields[i] = NULL;
   }
@@ -340,10 +340,10 @@ void init_bin_out_main(CHAR* outputname)
             "problem_type = \"%s\"\n"
             "ndim = %d\n"
             "\n",
-#ifndef WIN_MUENCH
+#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
             user_entry->pw_name,
 #else
-	    "unknown",
+            "unknown",
 #endif
             hostname,
             ctime(&time_value),
@@ -512,7 +512,7 @@ static void register_out_field(BIN_OUT_FIELD* context)
   dstrc_enter("register_out_field");
 #endif
 
-  for (i=0; i<MAXFIELD; ++i)
+  for (i=0; i<MAXFIELD*MAXDIS; ++i)
   {
     if (bin_out_main.fields[i] == NULL)
     {
@@ -520,9 +520,9 @@ static void register_out_field(BIN_OUT_FIELD* context)
       break;
     }
   }
-  if (i==MAXFIELD)
+  if (i==MAXFIELD*MAXDIS)
   {
-    dserror("overflow: more contexts than fields");
+    dserror("overflow: more contexts than MAXFIELD*MAXDIS");
   }
 
 #ifdef DEBUG
@@ -547,7 +547,7 @@ static void unregister_out_field(BIN_OUT_FIELD* context)
   dstrc_enter("unregister_out_field");
 #endif
 
-  for (i=0; i<MAXFIELD; ++i)
+  for (i=0; i<MAXFIELD*MAXDIS; ++i)
   {
     if (bin_out_main.fields[i] == context)
     {
@@ -555,7 +555,7 @@ static void unregister_out_field(BIN_OUT_FIELD* context)
       break;
     }
   }
-  if (i==MAXFIELD)
+  if (i==MAXFIELD*MAXDIS)
   {
     dserror("context not registered");
   }
@@ -585,7 +585,7 @@ void io_emergency_close_files()
   dstrc_enter("io_emergency_close_files");
 #endif
 
-  for (i=0; i<MAXFIELD; ++i)
+  for (i=0; i<MAXFIELD*MAXDIS; ++i)
   {
     if (bin_out_main.fields[i] != NULL)
     {
@@ -1619,7 +1619,7 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
     chunk->type = chunk_dist_vec;
     break;
   default:
-    dserror("unknown chunk type %d", type);
+    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", type);
   }
 
   /* Figure out how many entities are written by each processor. */
@@ -1736,7 +1736,7 @@ void out_gather_values(BIN_OUT_FIELD* context,
     num = chunk->vectors[0].numeq_total;
     break;
   default:
-    dserror("unknown chunk type %d", type);
+    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", type);
   }
 
   for (i=0; i<nprocs; ++i)
@@ -2939,7 +2939,7 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   context->value_file = fopen(buf, "rb");
   if (context->value_file == NULL)
   {
-    dserror("restart file '%s' not found", buf);
+    dserror_args(__FILE__, __LINE__, "restart file '%s' not found", buf);
   }
 #endif
 
@@ -2958,7 +2958,7 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   context->size_file = fopen(buf, "rb");
   if (context->size_file == NULL)
   {
-    dserror("restart file '%s' not found", buf);
+    dserror_args(__FILE__, __LINE__, "restart file '%s' not found", buf);
   }
 #endif
 
@@ -3172,7 +3172,7 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
     chunk->type = chunk_dist_vec;
     break;
   default:
-    dserror("unknown chunk type %d", type);
+    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", type);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3185,7 +3185,7 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
 
   if ((chunk->value_entry_length < 0) || (chunk->size_entry_length < 0))
   {
-    dserror("illegal item sites: %d, %d",
+    dserror_args(__FILE__, __LINE__, "illegal item sites: %d, %d",
             chunk->value_entry_length, chunk->size_entry_length);
   }
 
@@ -3279,7 +3279,7 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
     num = chunk->vectors[0].numeq_total;
     break;
   default:
-    dserror("unknown chunk type %d", chunk->type);
+    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", chunk->type);
   }
 
   /* distribute */
@@ -3826,7 +3826,8 @@ MAP *in_find_restart_group(BIN_IN_FIELD* context, INT disnum, INT step)
   }
   if (symbol == NULL)
   {
-    dserror("No restart entry for step %d in symbol table. Control file corrupt?", step);
+    dserror_args(__FILE__, __LINE__,
+        "No restart entry for step %d in symbol table. Control file corrupt?", step);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3874,4 +3875,4 @@ MAP *in_find_restart_group(BIN_IN_FIELD* context, INT disnum, INT step)
 
 /*! @} (documentation module close)*/
 
-#endif
+#endif  /* #ifdef BINIO */
