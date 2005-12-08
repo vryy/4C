@@ -1003,10 +1003,32 @@ switch (typ)
 {
 case tet4: /* LINEAR shape functions and their natural derivatives -----*/
 /*--------------------------------------------------- form basic values */
-   t1=r;
-   t2=s;
-   t3=t;
-   t4=ONE-r-s-t;
+
+  /*
+   Numbering of the nodes:
+   -----------------------
+   - this is the numbering used in GiD!!
+
+
+          4 o---
+            |\  ---
+            |  \   -o3
+            |   \  / \
+            |     \   \
+            |    / \   \
+            |   /    \  \
+            |  /      \  \
+            | /         \ \
+            |/            \\
+            o---------------o
+           1                2
+   */
+
+
+   t1=ONE-r-s-t;
+   t2=r;
+   t3=s;
+   t4=t;
 
    funct[0]= t1;
    funct[1]= t2;
@@ -1015,20 +1037,20 @@ case tet4: /* LINEAR shape functions and their natural derivatives -----*/
 
    if(icode>1) /* --> first derivative evaluation */
    {
-      deriv[0][0]= ONE;
-      deriv[0][1]= ZERO;
+      deriv[0][0]=-ONE;
+      deriv[0][1]= ONE;
       deriv[0][2]= ZERO;
-      deriv[0][3]=-ONE;
+      deriv[0][3]= ZERO;
 
-      deriv[1][0]= ZERO;
-      deriv[1][1]= ONE;
-      deriv[1][2]= ZERO;
-      deriv[1][3]=-ONE;
+      deriv[1][0]=-ONE;
+      deriv[1][1]= ZERO;
+      deriv[1][2]= ONE;
+      deriv[1][3]= ZERO;
 
-      deriv[2][0]= ZERO;
+      deriv[2][0]=-ONE;
       deriv[2][1]= ZERO;
-      deriv[2][2]= ONE;
-      deriv[2][3]=-ONE;
+      deriv[2][2]= ZERO;
+      deriv[2][3]= ONE;
    } /* endif (icode>1) */
 break;
 
