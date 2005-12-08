@@ -104,7 +104,18 @@ iel    = ele->numnp;
 typ    = ele->distyp;
 
 /*------------ get shape functions and derivatives at element center ---*/
-f2_rec(funct,deriv,NULL,0.0,0.0,typ,2);
+switch (ele->distyp)
+{
+  case quad4: case quad8: case quad9:
+    f2_rec(funct,deriv,NULL,0.0,0.0,typ,2);
+    break;
+  case tri3: case tri6:
+    f2_tri(funct,deriv,NULL,0.0,0.0,typ,2);
+    break;
+  default:
+    dserror("typ unknown!");
+} /* end switch(typ) */
+
 
 /*--------------------------------- get velocities at element center ---*/
 f2_veci(velint,funct,evelng,iel);
