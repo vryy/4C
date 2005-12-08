@@ -224,7 +224,7 @@ void ale3_static_ke_red(
 
   INT             nir=0,nis=0,nit=0;    /* num GP in r/s/t direction */
   INT             lr, ls, lt;           /* loopers over GP */
-  INT             iel;                  /* numnp to this element */
+  INT             iel=0;                /* numnp to this element */
   INT             nd;
 
   DOUBLE          fac;

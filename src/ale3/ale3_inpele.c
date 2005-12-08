@@ -63,7 +63,7 @@ void ale3inp(
 
   /* allocate the element */
   ele->e.ale3 = (ALE3*)CCACALLOC(1,sizeof(ALE3));
-  if (ele->e.ale3==NULL) dserror("Allocation of element ALE failed");
+  if (ele->e.ale3==NULL) dserror("Allocation of element ALE3 failed");
 
 
   /* read stuff needed for ALE element */

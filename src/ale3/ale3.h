@@ -112,19 +112,50 @@ void ale2_keku(
  | ale_dirich.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale_setdirich(
-    FIELD        *actfield,
-    ALE_DYNAMIC  *adyn,
-    INT           readstructpos
+    FIELD              *actfield,
+    INT                 disnum,
+    ALE_DYNAMIC        *adyn,
+    INT                 readstructpos
     );
-void ale_setdirich_increment(FIELD *actfield, ALE_DYNAMIC *adyn);
-void ale_caldirich(ELEMENT *actele, DOUBLE *fullvec, INT dim,
-		   ARRAY *estif_global);
-void ale_caldirich_increment(ELEMENT *actele, DOUBLE *fullvec,
-		             INT dim, ARRAY *estif_global, INT place);
-void ale_setdirich_increment_fsi(FIELD        *actfield,
-                                 ALE_DYNAMIC  *adyn,
-				 INT           actpos);
-INT check_ale_dirich(ELEMENT *actele);
+
+
+void ale_setdirich_increment(
+    FIELD              *actfield,
+    INT                 disnum,
+    ALE_DYNAMIC        *adyn
+    );
+
+
+void ale_caldirich(
+    ELEMENT            *actele,
+    DOUBLE             *fullvec,
+    INT                 dim,
+    ARRAY              *estif_global
+    );
+
+
+void ale_caldirich_increment(
+    ELEMENT            *actele,
+    DOUBLE             *fullvec,
+    INT                 dim,
+    ARRAY              *estif_global,
+    INT                 place
+    );
+
+
+void ale_setdirich_increment_fsi(
+    FIELD              *actfield,
+    INT                 disnum,
+    ALE_DYNAMIC        *adyn,
+    INT                 actpos
+    );
+
+
+INT check_ale_dirich(
+    ELEMENT            *actele
+    );
+
+
 /*----------------------------------------------------------------------*
  | ale_dyn_control.c                                         mn 06/02  |
  *----------------------------------------------------------------------*/
@@ -188,15 +219,34 @@ void ale3_mat_linel(
  | ale3_static_ke.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_static_ke(
-    ELEMENT   *ele,
-    ALE3_DATA  *data,
-    MATERIAL  *mat,
-    ARRAY     *estif_global,
-    INT        init
+    ELEMENT            *ele,
+    ALE3_DATA          *data,
+    MATERIAL           *mat,
+    ARRAY              *estif_global,
+    INT                 init
     );
+
+
+void ale3_static_ke_red(
+    ELEMENT            *ele,
+    ALE3_DATA          *data,
+    MATERIAL           *mat,
+    ARRAY              *estif_global,
+    INT                 init
+    );
+
+
 /*----------------------------------------------------------------------*
  | ale3_hourglass.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
  void ale3_hourglass(ELEMENT *ele, DOUBLE **s, DOUBLE vol);
+
+
 /*! @} (documentation module close)*/
+
+
 #endif
+
+
+
+
