@@ -872,7 +872,7 @@ void post_v2cell(FIELD_DATA *field, POST_DISCRETIZATION* discret, DIS_TYP distyp
     }
     break;
   default:
-    dserror("distyp %d not implemented yet!", distyp);
+    dserror_args(__FILE__, __LINE__,"distyp %d not implemented yet!", distyp);
   }
 
 #ifdef DEBUG
@@ -1367,7 +1367,7 @@ bgcolour+=20;
     KCELL = 4*fluid_field->numele;
     break;
   default:
-    dserror("distyp %d not implemented yet!", distype);
+    dserror_args(__FILE__, __LINE__,"distyp %d not implemented yet!", distype);
   }
 
   /* define arrays */
@@ -1767,7 +1767,7 @@ int main(int argc, char** argv)
     }
     else
     {
-      dserror("unknown field type %d", problem.discr[i].type);
+      dserror_args(__FILE__, __LINE__,"unknown field type %d", problem.discr[i].type);
     }
   }
 
@@ -1780,7 +1780,8 @@ int main(int argc, char** argv)
   case prb_fsi:
     if (problem.num_discr != 3)
     {
-      dserror("expect 3 discretizations for fsi not %d", problem.num_discr);
+      dserror_args(__FILE__, __LINE__,
+          "expect 3 discretizations for fsi not %d", problem.num_discr);
     }
     if ((fluid_field == NULL) || (ale_field == NULL) || (struct_field == NULL))
     {
@@ -1805,11 +1806,12 @@ int main(int argc, char** argv)
     }
     else
     {
-      dserror("invalid number of discretizations for fluid problem (%d)", problem.num_discr);
+      dserror_args(__FILE__, __LINE__,
+          "invalid number of discretizations for fluid problem (%d)", problem.num_discr);
     }
     break;
   default:
-    dserror("problem type %d not supported", problem.type);
+    dserror_args(__FILE__, __LINE__,"problem type %d not supported", problem.type);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1833,8 +1835,9 @@ int main(int argc, char** argv)
   INCRE=1;
   if ((res_count % problem.num_discr) != 0)
   {
-    dserror("the number of result groups (%d) doesn't match the number of discretizations (%d)",
-            res_count, problem.num_discr);
+    dserror_args(__FILE__, __LINE__,
+        "the number of result groups (%d) doesn't match the number of discretizations (%d)",
+        res_count, problem.num_discr);
   }
 
   /*--------------------------------------------------------------------*/
