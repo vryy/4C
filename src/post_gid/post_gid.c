@@ -870,7 +870,7 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
     }
 #endif
     default:
-      dserror_args(__FILE__, __LINE__, "element type %d unknown", el_type);
+      dserror("element type %d unknown", el_type);
     }
   }
 
@@ -1133,8 +1133,7 @@ static void write_fsi(PROBLEM_DATA* problem)
     }
     else
     {
-      dserror_args(__FILE__, __LINE__,
-          "unknown field type %d", problem->discr[i].type);
+      dserror("unknown field type %d", problem->discr[i].type);
     }
   }
 

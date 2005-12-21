@@ -1185,7 +1185,7 @@ void restart_read_bin_fsidyn(FSI_DYNAMIC *fsidyn, INT step)
     symbol = symbol->next;
   }
   if (symbol == NULL) {
-    dserror_args(__FILE__, __LINE__,
+    dserror(
         "No restart entry for step %d in symbol table. Control file corrupt?", step);
   }
 

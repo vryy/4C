@@ -286,7 +286,8 @@ void mask_numeq(
       {
         /* check whether its inter-proc eqn */
         inter_proc=0;
-        for (j=0; j<inprocs; j++) inter_proc += actpart->pdis[disnum].coupledofs.a.ia[i][j+1];
+        for (j=0; j<inprocs; j++)
+          inter_proc += actpart->pdis[disnum].coupledofs.a.ia[i][j+1];
 
         if (inter_proc==1)/* no inter-processor coupling */
         {

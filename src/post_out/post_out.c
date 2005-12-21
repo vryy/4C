@@ -352,8 +352,7 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
 #if 0
     if ((chunk.value_entry_length != 2) && (chunk.value_entry_length != 3))
     {
-      dserror_args(__FILE__, __LINE__, 
-          "illegal displacement entry length %d", chunk.value_entry_length);
+      dserror("illegal displacement entry length %d", chunk.value_entry_length);
     }
 #endif
 
@@ -397,14 +396,12 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
 
     if ((vel_chunk.value_entry_length != 2) && (vel_chunk.value_entry_length != 3))
     {
-      dserror_args(__FILE__, __LINE__, 
-          "illegal velocity entry length %d", vel_chunk.value_entry_length);
+      dserror("illegal velocity entry length %d", vel_chunk.value_entry_length);
     }
 
     if (press_chunk.value_entry_length != 1)
     {
-      dserror_args(__FILE__, __LINE__, 
-          "illegal pressure entry length %d", press_chunk.value_entry_length);
+      dserror("illegal pressure entry length %d", press_chunk.value_entry_length);
     }
 
     fprintf(out,DBLLINE);
@@ -450,8 +447,7 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
 
     if ((chunk.value_entry_length != 2) && (chunk.value_entry_length != 3))
     {
-      dserror_args(__FILE__, __LINE__, 
-          "illegal displacement entry length %d", chunk.value_entry_length);
+      dserror("illegal displacement entry length %d", chunk.value_entry_length);
     }
 
     fprintf(out,DBLLINE);
@@ -722,7 +718,7 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
             fprintf(out,"Gaussian     Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
             break;
           default:
-            dserror_args(__FILE__, __LINE__, "stress type %d unknown", stresstype);
+            dserror("stress type %d unknown", stresstype);
           }
 
           for (i=0; i<ngauss; i++) {
@@ -946,7 +942,7 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
             fprintf(out,"Gaussian     stresses-tangential     stresses-normal\n");
             break;
           default:
-            dserror_args(__FILE__, __LINE__, "stress type %d unknown", stresstype);
+            dserror("stress type %d unknown", stresstype);
           }
 
           for (i=0; i<ngauss; i++) {
@@ -992,7 +988,7 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
             fprintf(out,"Gaussian     Stress-rr    Stress-ss    Stress-rs    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
             break;
           default:
-            dserror_args(__FILE__, __LINE__, "stress type %d unknown", stresstype);
+            dserror("stress type %d unknown", stresstype);
           }
 
           for (i=0; i<ngauss; i++)
@@ -1096,8 +1092,7 @@ static void post_out_fsi(FILE* out, PROBLEM_DATA* problem)
     }
     else
     {
-      dserror_args(__FILE__, __LINE__, 
-          "unknown field type %d", problem->discr[i].type);
+      dserror("unknown field type %d", problem->discr[i].type);
     }
   }
 

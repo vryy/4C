@@ -169,8 +169,7 @@ int main(int argc, char** argv)
           dserror("failed to open output file");
         break;
       default:
-        dserror_args(__FILE__, __LINE__, 
-            "unknown discretization type %d", problem.discr[i].type);
+        dserror("unknown discretization type %d", problem.discr[i].type);
     }
   }
 
@@ -247,8 +246,7 @@ int main(int argc, char** argv)
       }
       if (j == field->numnp)
       {
-        dserror_args(__FILE__, __LINE__, 
-            "no node %d in field", moni[i].monnodes.a.ia[k][0]);
+        dserror("no node %d in field", moni[i].monnodes.a.ia[k][0]);
       }
     }
 
@@ -330,7 +328,7 @@ int main(int argc, char** argv)
 
           if (k >= chunk.value_entry_length)
           {
-            dserror_args(__FILE__, __LINE__, "dof %d does not exist", k);
+            dserror("dof %d does not exist", k);
           }
 
           /* we need the element parameters here */

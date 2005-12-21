@@ -700,8 +700,7 @@ void f3_int_beltrami_err(
             break;
 
           default:
-            dserror_args(__FILE__, __LINE__,
-                "Error norm %2i not available!!",container->error_norm);
+            dserror("Error norm %2i not available!!",container->error_norm);
             break;
         }
 

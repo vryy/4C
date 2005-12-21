@@ -101,8 +101,7 @@ void inp_topology(
       node_id = node_ind[actele->lm[j]];
 
       if (node_id == -1 )
-        dserror_args(__FILE__, __LINE__,
-            "MIXUP NODE-ELEMENT: element: %d; fenode; %d; nodeid: %d",
+        dserror("MIXUP NODE-ELEMENT: element: %d; fenode; %d; nodeid: %d",
             actele->Id,actele->lm[j],node_id);
 
       actele->node[j] = &(actdis->node[node_id]);
@@ -594,8 +593,7 @@ void inp_detailed_topology(DISCRET   *actdis)
         }
         break;
       default:
-        dserror_args(__FILE__, __LINE__, "Unknown type of discretization 2: %s",
-            actele->distyp);
+        dserror("Unknown type of discretization 2: %s", actele->distyp);
         break;
     }
   }

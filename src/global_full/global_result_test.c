@@ -212,7 +212,7 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
     ret = actnode->sol_mf.a.da[args[0]][args[1]];
   }
   else {
-    dserror_args(__FILE__, __LINE__, "Unknown position specifier: %s", position);
+    dserror("Unknown position specifier: %s", position);
   }
 
 #ifdef DEBUG
@@ -492,8 +492,7 @@ void global_result_test()
 #endif
 
       default:
-        dserror_args(__FILE__, __LINE__, "Nothing known about element type %d",
-            actelement->eltyp);
+        dserror("Nothing known about element type %d", actelement->eltyp);
       }
 
       test_count++;
@@ -541,8 +540,7 @@ void global_result_test()
      * happen to test values of a boundary element. We don't want this
      * dserror to go off it that case. */
     if (test_count < genprob.numresults) {
-      dserror_args(__FILE__, __LINE__, "expected %d tests but performed %d",
-          genprob.numresults, test_count);
+      dserror("expected %d tests but performed %d", genprob.numresults, test_count);
     }
   }
 

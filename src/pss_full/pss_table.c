@@ -414,7 +414,7 @@ CHAR* map_read_string(MAP* map, CHAR* key)
 #endif
 
   if (!map_find_string(map, key, &string)) {
-    dserror_args(__FILE__, __LINE__, "no string attribute '%s' in map", key);
+    dserror("no string attribute '%s' in map", key);
   }
 
 #ifdef DEBUG
@@ -442,7 +442,7 @@ INT map_read_int(MAP* map, CHAR* key)
 #endif
 
   if (!map_find_int(map, key, &integer)) {
-    dserror_args(__FILE__, __LINE__, "no int attribute '%s' in map", key);
+    dserror("no int attribute '%s' in map", key);
   }
 
 #ifdef DEBUG
@@ -470,7 +470,7 @@ DOUBLE map_read_real(MAP* map, CHAR* key)
 #endif
 
   if (!map_find_real(map, key, &real)) {
-    dserror_args(__FILE__, __LINE__, "no real attribute '%s' in map", key);
+    dserror("no real attribute '%s' in map", key);
   }
 
 #ifdef DEBUG
@@ -498,7 +498,7 @@ MAP* map_read_map(MAP* map, CHAR* key)
 #endif
 
   if (!map_find_map(map, key, &dir)) {
-    dserror_args(__FILE__, __LINE__, "no dir attribute '%s' in map", key);
+    dserror("no dir attribute '%s' in map", key);
   }
 
 #ifdef DEBUG
@@ -1053,7 +1053,7 @@ void map_prepend_symbols(MAP* map, CHAR* key, SYMBOL* symbol, INT count)
   }
   else
   {
-    dserror_args(__FILE__, __LINE__, "no node for key '%s'", key);
+    dserror("no node for key '%s'", key);
   }
 
 #ifdef DEBUG
@@ -1262,7 +1262,7 @@ CHAR* symbol_string(SYMBOL* symbol)
     ret = symbol->s.string;
   }
   else {
-    dserror_args(__FILE__, __LINE__, "Wrong symbol type %d", symbol->type);
+    dserror("Wrong symbol type %d", symbol->type);
   }
 
 #ifdef DEBUG
@@ -1291,7 +1291,7 @@ INT symbol_int(SYMBOL* symbol)
     ret = symbol->s.integer;
   }
   else {
-    dserror_args(__FILE__, __LINE__, "Wrong symbol type %d", symbol->type);
+    dserror("Wrong symbol type %d", symbol->type);
   }
 
 #ifdef DEBUG
@@ -1320,7 +1320,7 @@ DOUBLE symbol_real(SYMBOL* symbol)
     ret = symbol->s.real;
   }
   else {
-    dserror_args(__FILE__, __LINE__, "Wrong symbol type %d", symbol->type);
+    dserror("Wrong symbol type %d", symbol->type);
   }
 
 #ifdef DEBUG
@@ -1349,7 +1349,7 @@ MAP* symbol_map(SYMBOL* symbol)
     ret = symbol->s.dir;
   }
   else {
-    dserror_args(__FILE__, __LINE__, "Wrong symbol type %d", symbol->type);
+    dserror("Wrong symbol type %d", symbol->type);
   }
 
 #ifdef DEBUG
@@ -1558,7 +1558,7 @@ static void init_parser_data(struct _PARSER_DATA* data, CHAR* filename)
     file = fopen(filename, "rb");
 
     if (file==NULL) {
-      dserror_args(__FILE__, __LINE__, "cannot read file '%s'", filename);
+      dserror("cannot read file '%s'", filename);
     }
 
     /* find out the control file size */
@@ -1570,7 +1570,7 @@ static void init_parser_data(struct _PARSER_DATA* data, CHAR* filename)
     fseek(file, 0, SEEK_SET);
     bytes_read = fread(data->file_buffer, sizeof(CHAR), data->file_size, file);
     if (bytes_read != data->file_size) {
-      dserror_args(__FILE__, __LINE__, "failed to read file %s", filename);
+      dserror("failed to read file %s", filename);
     }
     /* a trailing zero helps a lot */
     data->file_buffer[data->file_size] = '\0';
@@ -1821,7 +1821,7 @@ static void lexan(PARSER_DATA* data)
               }
             }
             else {
-              dserror_args(__FILE__, __LINE__, "no digits after point at line %d",
+              dserror("no digits after point at line %d",
                   data->lineno);
             }
           }
@@ -1836,7 +1836,7 @@ static void lexan(PARSER_DATA* data)
               }
             }
             else {
-              dserror_args(__FILE__, __LINE__, "no digits after exponent at line %d",
+              dserror("no digits after exponent at line %d",
                   data->lineno);
             }
           }
@@ -1865,7 +1865,7 @@ static void lexan(PARSER_DATA* data)
           while (t != '"') {
             t = getnext(data);
             if (t==EOF) {
-              dserror_args(__FILE__, __LINE__, "expected closing \" on line %d",
+              dserror("expected closing \" on line %d",
                   data->lineno);
             }
           }
@@ -1883,10 +1883,10 @@ static void lexan(PARSER_DATA* data)
         }
         else {
           if (t >= 32)
-            dserror_args(__FILE__, __LINE__, "unexpected char '%c' at line %d",
+            dserror("unexpected char '%c' at line %d",
                 t, data->lineno);
           else
-            dserror_args(__FILE__, __LINE__, "unexpected char '%d' at line %d",
+            dserror("unexpected char '%d' at line %d",
                 t, data->lineno);
           data->tok = tok_none;
           goto end;
@@ -1947,8 +1947,7 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
 
         lexan(data);
         if ((data->tok != tok_indent) || (data->token_int != 1)) {
-          dserror_args(__FILE__, __LINE__,
-              "Syntaxerror at line %d: single indention expected", data->lineno);
+          dserror("Syntaxerror at line %d: single indention expected", data->lineno);
         }
 
         map = CCACALLOC(1, sizeof(MAP));
@@ -1985,13 +1984,12 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
           map_insert_real(dir, data->token_real, name);
           break;
         default:
-          dserror_args(__FILE__, __LINE__,
+          dserror(
               "Syntaxerror at line %d: string, int or real expected", data->lineno);
         }
         break;
       default:
-        dserror_args(__FILE__, __LINE__,
-            "Syntaxerror at line %d: ':' or '=' expected", data->lineno);
+        dserror("Syntaxerror at line %d: ':' or '=' expected", data->lineno);
       }
       break;
     }
@@ -1999,8 +1997,7 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
       data->token_int--;
       goto end;
     default:
-      dserror_args(__FILE__, __LINE__,
-          "Syntaxerror at line %d: name expected", data->lineno);
+      dserror("Syntaxerror at line %d: name expected", data->lineno);
     }
 
     lexan(data);

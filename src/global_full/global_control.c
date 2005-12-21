@@ -175,6 +175,7 @@ void ntam(
 
 
 
+  dserror("DSERROR test No. %2i",2);
 
 
   /*-------------------------------------- check for visualisation mode */

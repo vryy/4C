@@ -130,8 +130,7 @@ void global_subdivide(
 #endif
 
   if (actfield->subdivide > MAX_DIVIDE)
-    dserror_args(__FILE__, __LINE__, "MAX_DIVIDE is too small: MAX_DIVIDE >= %2i",
-        actfield->subdivide);
+    dserror("MAX_DIVIDE is too small: MAX_DIVIDE >= %2i", actfield->subdivide);
 
 
   if (par.myrank==0)
@@ -1499,11 +1498,11 @@ void global_subdivide_hex(
       }
 
       if (actgvol->gline[actgvol->line_ind[0][j]]->gnode[links] != gnode_l)
-        dserror_args(__FILE__, __LINE__, "Gline %1i, links != gnode %1i\n",
+        dserror("Gline %1i, links != gnode %1i\n",
             j,line_node_ind[j][0]);
 
       if (actgvol->gline[actgvol->line_ind[0][j]]->gnode[rechts] != gnode_r)
-        dserror_args(__FILE__, __LINE__, "Gline %1i, rechts != gnode %1i\n",
+        dserror("Gline %1i, rechts != gnode %1i\n",
             j,line_node_ind[j][1]);
     }
 
@@ -1543,7 +1542,7 @@ void global_subdivide_hex(
 
         if (gnode_r == gnode_l && j!=k)
         {
-          dserror_args(__FILE__, __LINE__, "GNODE %1i == GNODE %1i !!\n",j,k);
+          dserror("GNODE %1i == GNODE %1i !!\n",j,k);
         }
       }
     }
@@ -2105,8 +2104,7 @@ void global_subdivide_hex(
 
   /* check the number of created nodes */
   if (node_counter != numnd )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of nodes created!! numnd = %d;  node_counter = %d",
+    dserror("Wrong number of nodes created!! numnd = %d;  node_counter = %d",
         numnd,node_counter);
 
 
@@ -2118,8 +2116,7 @@ void global_subdivide_hex(
 
   /* check the number of created elelments */
   if (ele_counter != numele )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of elements created!! numnd = %d;  ele_counter = %d",
+    dserror("Wrong number of elements created!! numnd = %d;  ele_counter = %d",
         numnd,ele_counter);
 
 
@@ -2250,8 +2247,7 @@ void global_subdivide_hex(
     }
 
     if (counter != design->ndline_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
           counter,design->ndline_fenode[i] );
 
   }
@@ -2310,8 +2306,7 @@ void global_subdivide_hex(
     }
 
     if (counter != design->ndsurf_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
           counter,design->ndsurf_fenode[i] );
 
   }
@@ -2389,8 +2384,7 @@ void global_subdivide_hex(
     }
 
     if (counter != design->ndvol_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndvol_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndvol_fenode[i] =%d",
           counter,design->ndvol_fenode[i] );
 
   }
@@ -3308,8 +3302,7 @@ void global_subdivide_tet(
 
   /* check the number of created nodes */
   if (node_counter != numnd )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of nodes created!! numnd = %d;  node_counter = %d",
+    dserror("Wrong number of nodes created!! numnd = %d;  node_counter = %d",
         numnd,node_counter);
 
 
@@ -3321,8 +3314,7 @@ void global_subdivide_tet(
 
   /* check the number of created elelments */
   if (ele_counter != numele )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of elements created!! numnd = %d;  ele_counter = %d",
+    dserror("Wrong number of elements created!! numnd = %d;  ele_counter = %d",
         numnd,ele_counter);
 
 
@@ -3451,8 +3443,7 @@ void global_subdivide_tet(
     }
 
     if (counter != design->ndline_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
           counter,design->ndline_fenode[i] );
 
   }
@@ -3507,8 +3498,7 @@ void global_subdivide_tet(
     }
 
     if (counter != design->ndsurf_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
           counter,design->ndsurf_fenode[i] );
 
   }
@@ -3580,8 +3570,7 @@ void global_subdivide_tet(
     }
 
     if (counter != design->ndvol_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndvol_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndvol_fenode[i] =%d",
           counter,design->ndvol_fenode[i] );
 
   }
@@ -4127,11 +4116,11 @@ void global_subdivide_quad(
       }
 
       if (actgsurf->gline[actgsurf->line_ind[0][j]]->gnode[links] != gnode_l)
-        dserror_args(__FILE__, __LINE__, "Gline %1i, links != gnode %1i\n",
+        dserror("Gline %1i, links != gnode %1i\n",
             j,line_node_ind[j][0]);
 
       if (actgsurf->gline[actgsurf->line_ind[0][j]]->gnode[rechts] != gnode_r)
-        dserror_args(__FILE__, __LINE__, "Gline %1i, rechts != gnode %1i\n",
+        dserror("Gline %1i, rechts != gnode %1i\n",
             j,line_node_ind[j][1]);
     }
 
@@ -4163,7 +4152,7 @@ void global_subdivide_quad(
 
         if (gnode_r == gnode_l && j!=k)
         {
-          dserror_args(__FILE__, __LINE__, "GNODE %1i == GNODE %1i !!\n",j,k);
+          dserror("GNODE %1i == GNODE %1i !!\n",j,k);
         }
       }
     }
@@ -4485,8 +4474,7 @@ void global_subdivide_quad(
 
   /* check the number of created nodes */
   if (node_counter != numnd )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of nodes created!! numnd = %d;  node_counter = %d",
+    dserror("Wrong number of nodes created!! numnd = %d;  node_counter = %d",
         numnd,node_counter);
 
 
@@ -4498,8 +4486,7 @@ void global_subdivide_quad(
 
   /* check the number of created elelments */
   if (ele_counter != numele )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of elements created!! numnd = %d;  ele_counter = %d",
+    dserror("Wrong number of elements created!! numnd = %d;  ele_counter = %d",
         numnd,ele_counter);
 
 
@@ -4631,8 +4618,7 @@ void global_subdivide_quad(
     }
 
     if (counter != design->ndline_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
           counter,design->ndline_fenode[i] );
 
   }
@@ -4691,8 +4677,7 @@ void global_subdivide_quad(
     }
 
     if (counter != design->ndsurf_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
           counter,design->ndsurf_fenode[i] );
 
   }
@@ -5338,8 +5323,7 @@ void global_subdivide_tri(
 
   /* check the number of created nodes */
   if (node_counter != numnd )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of nodes created!! numnd = %d;  node_counter = %d",
+    dserror("Wrong number of nodes created!! numnd = %d;  node_counter = %d",
         numnd,node_counter);
 
 
@@ -5351,8 +5335,7 @@ void global_subdivide_tri(
 
   /* check the number of created elelments */
   if (ele_counter != numele )
-    dserror_args(__FILE__, __LINE__,
-        "Wrong number of elements created!! numnd = %d;  ele_counter = %d",
+    dserror("Wrong number of elements created!! numnd = %d;  ele_counter = %d",
         numnd,ele_counter);
 
 
@@ -5481,8 +5464,7 @@ void global_subdivide_tri(
     }
 
     if (counter != design->ndline_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndline_fenode[i] =%d",
           counter,design->ndline_fenode[i] );
 
   }
@@ -5537,8 +5519,7 @@ void global_subdivide_tri(
     }
 
     if (counter != design->ndsurf_fenode[i])
-      dserror_args(__FILE__, __LINE__,
-          "Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
+      dserror("Irgendetwas stimmt hier nicht !! counter = %d;  ndsurf_fenode[i] =%d",
           counter,design->ndsurf_fenode[i] );
 
   }

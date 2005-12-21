@@ -1619,7 +1619,7 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
     chunk->type = chunk_dist_vec;
     break;
   default:
-    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", type);
+    dserror("unknown chunk type %d", type);
   }
 
   /* Figure out how many entities are written by each processor. */
@@ -1736,7 +1736,7 @@ void out_gather_values(BIN_OUT_FIELD* context,
     num = chunk->vectors[0].numeq_total;
     break;
   default:
-    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", type);
+    dserror("unknown chunk type %d", type);
   }
 
   for (i=0; i<nprocs; ++i)
@@ -2939,7 +2939,7 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   context->value_file = fopen(buf, "rb");
   if (context->value_file == NULL)
   {
-    dserror_args(__FILE__, __LINE__, "restart file '%s' not found", buf);
+    dserror("restart file '%s' not found", buf);
   }
 #endif
 
@@ -2958,7 +2958,7 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   context->size_file = fopen(buf, "rb");
   if (context->size_file == NULL)
   {
-    dserror_args(__FILE__, __LINE__, "restart file '%s' not found", buf);
+    dserror("restart file '%s' not found", buf);
   }
 #endif
 
@@ -3172,7 +3172,7 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
     chunk->type = chunk_dist_vec;
     break;
   default:
-    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", type);
+    dserror("unknown chunk type %d", type);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3185,8 +3185,8 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
 
   if ((chunk->value_entry_length < 0) || (chunk->size_entry_length < 0))
   {
-    dserror_args(__FILE__, __LINE__, "illegal item sites: %d, %d",
-            chunk->value_entry_length, chunk->size_entry_length);
+    dserror("illegal item sites: %d, %d",
+        chunk->value_entry_length, chunk->size_entry_length);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3279,7 +3279,7 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
     num = chunk->vectors[0].numeq_total;
     break;
   default:
-    dserror_args(__FILE__, __LINE__, "unknown chunk type %d", chunk->type);
+    dserror("unknown chunk type %d", chunk->type);
   }
 
   /* distribute */
@@ -3826,8 +3826,7 @@ MAP *in_find_restart_group(BIN_IN_FIELD* context, INT disnum, INT step)
   }
   if (symbol == NULL)
   {
-    dserror_args(__FILE__, __LINE__,
-        "No restart entry for step %d in symbol table. Control file corrupt?", step);
+    dserror("No restart entry for step %d in symbol table. Control file corrupt?",step);
   }
 
   /*--------------------------------------------------------------------*/

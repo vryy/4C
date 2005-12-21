@@ -329,13 +329,13 @@ void dsmemreport( void);
  | string - (input) error message                                       |
  *----------------------------------------------------------------------*/
 void dsassert_func(
-    char               *file,
-    INT                 sline,
+    char*               file,
+    INT                 line,
     INT                 test,
     char                string[]
     );
 
-#define dsassert(test, string) dsassert_func( __FILE__, __LINE__, test, string)
+#define dsassert(test, string) dsassert_func(__FILE__, __LINE__, test, string)
 
 
 /*----------------------------------------------------------------------*
@@ -344,26 +344,29 @@ void dsassert_func(
  | prints call tree, if DEBUG was defined                               |
  | aborts parallel and sequentiell programm                             |
  *----------------------------------------------------------------------*/
-void dserror_func(
-    char               *file,
-    INT                 sline,
-    char                string[]
-    );
+void dserror_func(char *string, ...);
 
-#define dserror(string) dserror_func(__FILE__, __LINE__, string)
 
-/*----------------------------------------------------------------------*
- | report an error and stop program                       m.gee 8/00    |
- | prints error message string to console and *.err                     |
- | prints call tree, if DEBUG was defined                               |
- | aborts parallel and sequentiell programm                             |
- *----------------------------------------------------------------------*/
-void dserror_args(
-    char               *file,
-    INT                 sline,
-    char                string[],
-    ...
-    );
+/*!
+  \brief set a file name and line number to be used by the next
+  dserror_func
+ */
+void dslatest(char* file, INT line);
+
+
+/*!
+  \brief always call dslatest before dserror so that we have the right
+  position.
+
+  The point here is that the macro does not accept arguments. This way
+  the dserror name is replaced by a dslatest call and the arguments
+  the user supplied to dserror apply to the function dserror_func.
+  However, the two function calls are not separated by a semicolon (;)
+  but by a comma (,) and thus the whole line is still one
+  statement. In particular this dserror macro can be used in if
+  clauses without braces ({}).
+ */
+#define dserror dslatest(__FILE__, __LINE__), dserror_func
 
 
 /*----------------------------------------------------------------------*

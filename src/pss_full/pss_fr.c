@@ -125,7 +125,7 @@ if (par.myrank==0)
         }
         else
         {
-          dserror_args(__FILE__, __LINE__, "An error occured reading file '%s'",
+          dserror("An error occured reading file '%s'",
                   include_stack[include_stack_head].filename);
         }
       }
@@ -178,7 +178,7 @@ if (par.myrank==0)
               fopen(include_stack[include_stack_head].filename, "r");
             f = include_stack[include_stack_head].file;
             if (f==NULL)
-              dserror_args(__FILE__, __LINE__, "failed to open file '%s'",
+              dserror("failed to open file '%s'",
                       include_stack[include_stack_head].filename);
             continue;
           }
@@ -250,7 +250,7 @@ if (par.myrank==0)
         }
         else
         {
-          dserror_args(__FILE__, __LINE__, "An error occured reading file '%s'",
+          dserror("An error occured reading file '%s'",
                   include_stack[include_stack_head].filename);
         }
       }
@@ -303,7 +303,7 @@ if (par.myrank==0)
               fopen(include_stack[include_stack_head].filename, "r");
             f = include_stack[include_stack_head].file;
             if (f==NULL)
-              dserror_args(__FILE__, __LINE__, "failed to open file '%s'",
+              dserror("failed to open file '%s'",
                       include_stack[include_stack_head].filename);
             continue;
           }

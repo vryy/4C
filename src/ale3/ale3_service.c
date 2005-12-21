@@ -576,8 +576,7 @@ void ale3_jaco(
     xjm[0][0]*xjm[1][2]*xjm[2][1]-
     xjm[0][1]*xjm[1][0]*xjm[2][2];
 
-  if (*det<0.0) dserror_args(__FILE__, __LINE__,
-      "Negative Jacobian = %12.4e in element %3i",*det,ele->Id);
+  if (*det<0.0) dserror("Negative Jacobian = %12.4e in element %3i",*det,ele->Id);
 
 #ifdef DEBUG
   dstrc_exit();

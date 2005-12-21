@@ -2674,7 +2674,7 @@ void fluid_cal_error(
         break;
 
       default:
-        dserror_args(__FILE__, __LINE__, "Error norm %2i not possible!!", i);
+        dserror("Error norm %2i not possible!!", i);
         break;
 
     }  /* switch (i) */

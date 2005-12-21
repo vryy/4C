@@ -569,6 +569,17 @@ void dsmemreport()
 } /* end of dsmemreport */
 
 
+
+
+/*
+  The latest file position.
+ */
+static INT latest_line;
+static char* latest_file = "{dserror_func call without prototype}";
+
+
+
+
 /*!---------------------------------------------------------------------
 \brief asserts a boolean criterium
 
@@ -586,8 +597,8 @@ making it slow when running as fast-exe
 
 ------------------------------------------------------------------------*/
 void dsassert_func(
-    char               *file,
-    INT                 sline,
+    char*               file,
+    INT                 line,
     INT                 test,
     char                string[]
     )
@@ -596,12 +607,18 @@ void dsassert_func(
 #ifdef DEBUG
 
   if (!test)
-    dserror_func(file, sline, string);
+  {
+    latest_file = file;
+    latest_line = line;
+    dserror_func(string);
+  }
 
 #endif
 
   return;
 } /* end of dsassert */
+
+
 
 
 
@@ -620,137 +637,7 @@ void dsassert_func(
 
 ------------------------------------------------------------------------*/
 void dserror_func(
-    char               *file,
-    INT                 sline,
-    char                string[]
-    )
-
-{
-
-  char line[] = "=========================================================================\n";
-
-#ifdef DEBUG
-  INT i=0;
-  TRACEROUT *routhis = NULL;
-#endif
-
-
-
-#ifdef DEBUG
-  char message[300];
-  char *colptr=NULL;
-
-
-  printf("\n");
-  printf("\n");
-  printf(line);
-  printf("PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
-  printf(string);
-  printf("\n");
-  printf("\n");
-
-  fprintf(allfiles.out_err,"\n");
-  fprintf(allfiles.out_err,"\n");
-  fprintf(allfiles.out_err,line);
-  fprintf(allfiles.out_err,"PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
-  fprintf(allfiles.out_err,string);
-  fprintf(allfiles.out_err,"\n");
-  fprintf(allfiles.out_err,"\n");
-
-  routhis = trace.actroutine;
-
-  printf("Calling stack:\n");
-  printf("--------------\n");
-  printf("%s  <== ERROR is in here!!\n",routhis->name);
-
-  fprintf(allfiles.out_err,"Calling stack:\n");
-  fprintf(allfiles.out_err,"--------------\n");
-  fprintf(allfiles.out_err,"%s  <== ERROR is in here!!\n",routhis->name);
-
-  for (i=0; i<trace.deepness; i++)
-  {
-    routhis = routhis->prev;
-    printf("%s\n",routhis->name);
-    fprintf(allfiles.out_err,"%s\n",routhis->name);
-  }
-
-  printf(line);
-  printf("\n");
-
-  fprintf(allfiles.out_err,line);
-  fprintf(allfiles.out_err,"\n");
-
-
-#else
-
-
-  fprintf(allfiles.out_err,"\n");
-  fprintf(allfiles.out_err,"\n");
-  fprintf(allfiles.out_err,line);
-  fprintf(allfiles.out_err,"PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
-  fprintf(allfiles.out_err,string);
-  fprintf(allfiles.out_err,"\n");
-  fprintf(allfiles.out_err,line);
-  fprintf(allfiles.out_err,"\n");
-  fprintf(allfiles.out_err,"\n");
-
-  printf("\n");
-  printf("\n");
-  printf(line);
-  printf("PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
-  printf(string);
-  printf("\n");
-  printf(line);
-  printf("\n");
-  printf("\n");
-
-#endif
-
-  fflush(stdout);
-  fflush(allfiles.out_err);
-
-#ifdef BINIO
-  io_emergency_close_files();
-#endif
-
-#ifdef DSERROR_DUMP
-  /* Hehehe! */
-  *((INT*)0x0) = 123456;
-#endif
-
-
-#ifdef PARALLEL
-  MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
-#else
-  exit(EXIT_FAILURE);
-#endif
-
-  return;
-} /* end of dserror */
-
-
-
-
-
-/*!---------------------------------------------------------------------
-\brief report an error and stop program
-
-<pre>                                                        m.gee 8/00
--report an error and stop program
--prints error message string to console and *.err
--prints call tree, if DEBUG was defined
--aborts parallel and sequentiell programm
-</pre>
-\param string   char[]  (i)   error message to be printed
-\return void
-\sa dsassert()
-
-------------------------------------------------------------------------*/
-void dserror_args(
-    char               *file,
-    INT                 sline,
-    char                string[],
-    ...
+    char               *string, ...
     )
 
 {
@@ -764,17 +651,14 @@ void dserror_args(
 #endif
 
 
+  va_start(ap, string);
 
 #ifdef DEBUG
-  char message[300];
-  char *colptr=NULL;
-
-  va_start(ap, string);
 
   printf("\n");
   printf("\n");
   printf(line);
-  printf("PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
+  printf("PROC %d ERROR in %s, line %i:\n",par.myrank,latest_file,latest_line);
   vprintf(string,ap);
   printf("\n");
   printf("\n");
@@ -782,7 +666,8 @@ void dserror_args(
   fprintf(allfiles.out_err,"\n");
   fprintf(allfiles.out_err,"\n");
   fprintf(allfiles.out_err,line);
-  fprintf(allfiles.out_err,"PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
+  fprintf(allfiles.out_err,"PROC %d ERROR in %s, line %i:\n",
+      par.myrank,latest_file,latest_line);
   vfprintf(allfiles.out_err,string,ap);
   fprintf(allfiles.out_err,"\n");
   fprintf(allfiles.out_err,"\n");
@@ -810,16 +695,13 @@ void dserror_args(
   fprintf(allfiles.out_err,line);
   fprintf(allfiles.out_err,"\n");
 
-  va_end(ap);
-
 #else
-
-  va_start(ap, string);
 
   fprintf(allfiles.out_err,"\n");
   fprintf(allfiles.out_err,"\n");
   fprintf(allfiles.out_err,line);
-  fprintf(allfiles.out_err,"PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
+  fprintf(allfiles.out_err,"PROC %d ERROR in %s, line %i:\n",
+      par.myrank,latest_file,latest_line);
   vfprintf(allfiles.out_err,string,ap);
   fprintf(allfiles.out_err,"\n");
   fprintf(allfiles.out_err,line);
@@ -829,15 +711,16 @@ void dserror_args(
   printf("\n");
   printf("\n");
   printf(line);
-  printf("PROC %d ERROR in %s, line %i:\n",par.myrank,file,sline);
+  printf("PROC %d ERROR in %s, line %i:\n",par.myrank,latest_file,latest_line);
   vprintf(string,ap);
   printf("\n");
   printf(line);
   printf("\n");
   printf("\n");
 
-  va_end(ap);
 #endif
+
+  va_end(ap);
 
   fflush(stdout);
   fflush(allfiles.out_err);
@@ -847,7 +730,6 @@ void dserror_args(
 #endif
 
 #ifdef DSERROR_DUMP
-  /* Hehehe! */
   *((INT*)0x0) = 123456;
 #endif
 
@@ -859,7 +741,22 @@ void dserror_args(
 #endif
 
   return;
-} /* end of dserror_args */
+} /* end of dserror_func */
+
+
+
+/*!
+  \brief set a file name and line number to be used by the next
+  dserror_func
+
+  \return pointer to the dserror_func that uses the latest file
+  position info.
+ */
+void dslatest(char* file, INT line)
+{
+  latest_file = file;
+  latest_line = line;
+}
 
 
 
@@ -1102,7 +999,7 @@ switch (task)
   /*-------------------------------------------------------- default ---*/
   default:
      printf("in default von dswarning\n");
-     dserror_args(__FILE__, __LINE__, "warning task %2i invalid",task);
+     dserror("warning task %2i invalid",task);
   break;
 } /* end of switch init */
 /*----------------------------------------------------------------------*/
