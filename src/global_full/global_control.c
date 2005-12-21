@@ -175,9 +175,6 @@ void ntam(
 
 
 
-  dserror("DSERROR test No. %2i",2);
-
-
   /*-------------------------------------- check for visualisation mode */
   if (genprob.visual!=0) goto visualisation;
   /*------------------------------- set up field-specific communicators */
