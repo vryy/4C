@@ -149,7 +149,7 @@ flagvec[1] = ele[0]->e.f3->is_ale;               /* isale */
 paravec[0] = 1.0;
 paravec[1] = mat[actmat].m.fluid->viscosity;
 paravec[2] = fdyn->thsl;
-paravec[4] = fdyn->dta;
+paravec[3] = fdyn->dta;
 
 intc = 0;
 nir  = 0;
