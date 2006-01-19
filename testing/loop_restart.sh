@@ -121,6 +121,7 @@ for file in $liste; do
   if [ $count -ge 1 ]; then
     echo '    OK'
   else
+    fail2=`expr $fail2 + 1`
     echo '    Failed!!'
     # copy screen output to $file_ohne.scr
     cp test.tmp $file_ohne.scr
