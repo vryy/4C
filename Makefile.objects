@@ -23,7 +23,8 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_open_files.o \
                 src/global_full/global_check_max.o \
                 src/global_full/global_divide_fast.o \
-                src/global_full/global_subdivide.o
+                src/global_full/global_subdivide.o \
+                src/global_full/global_subdivide_process.o
 #               structure
 OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
                 src/structure/stru_dyn_nln_expl.o \
@@ -615,6 +616,9 @@ OBJS_FORTRAN  = src/fortran/colsol.o \
 #                 src/fortran/s8_fserv.o \
 #                 src/fortran/opt_ffsd.o \
 #                 src/fortran/eigen_subspace.o
+#
+#               C PLUS PLUS
+OBJS_NURBS_CPP  = src/nurbs/nurbs_wrappers.o
 
 #                post_common
 OBJS_POST_COMMON = src/post_common/post_common.o \

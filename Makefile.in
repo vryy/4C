@@ -136,6 +136,11 @@ $(OBJS_FORTRAN):
 $(OBJS_F3F_F):
 		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
 
+# c++
+$(OBJS_NURBS_CPP):
+		$(CP) $(CPFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).cpp -o ${SRC}/$@
+
+
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
