@@ -3,7 +3,7 @@
 //             foerster@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/foerster/index.html
 //             0711 - 685-6572
-// 
+//
 // necessary defines: D_ALE CHECK_MAX UMFPACK SUBDIV
 //
 // #define MAXNOD           (4)
@@ -18,7 +18,7 @@
 -------------------------------------------------------------TITLE
 mOVING hOLE, nonlinear ale2-test
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS         392 
+ELEMENTS         392
 NODES            438
 DIM                2
 MATERIALS          1
@@ -36,6 +36,7 @@ NUMALEDIS    2
 FLUID_SUBDIVIDE   0
 STRUCT_SUBDIVIDE  0
 ALE_SUBDIVIDE     4
+OUTPUT_DIS        1
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No
 STRUCT_STRESS_FILE No
