@@ -132,8 +132,11 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
       /* check maxele  and maxdofpernode */
       for (l=0; l<actele->numnp; l++)
       {
-        if (actele->node[l]->numele > maxele) maxele = actele->node[l]->numele;
-        if (actele->node[l]->numdf > maxdofpernode) maxdofpernode = actele->node[l]->numdf;
+        if (actele->node[l]->numele > maxele)
+          maxele = actele->node[l]->numele;
+
+        if (actele->node[l]->numdf > maxdofpernode)
+          maxdofpernode = actele->node[l]->numdf;
       }
 
       /* check max gauss */
