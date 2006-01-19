@@ -217,7 +217,7 @@ void dyn_fsi(
   if (fluidfield->subdivide > 0)
   {
     f_disnum_calc = 1;
-    f_disnum_io   = 0;
+    f_disnum_io   = ioflags.output_dis;
   }
   else
 #endif
@@ -229,7 +229,7 @@ void dyn_fsi(
   if (structfield->subdivide > 0)
   {
     s_disnum_calc = 1;
-    s_disnum_io   = 0;
+    s_disnum_io   = ioflags.output_dis;
   }
   else
 #endif
@@ -241,7 +241,7 @@ void dyn_fsi(
   if (alefield->subdivide > 0)
   {
     a_disnum_calc = 1;
-    a_disnum_io   = 0;
+    a_disnum_io   = ioflags.output_dis;
   }
   else
 #endif

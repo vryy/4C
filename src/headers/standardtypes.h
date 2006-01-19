@@ -202,6 +202,8 @@ INT               fluid_vis;          /* write fluid solution to pss-file for VI
 
 INT               ale_disp;           /* write ale displacements */
 
+INT               output_dis;         /* output discretization */
+
 INT               monitor;
 INT               relative_displ;         /* write relative displacements to .err */
 INT               steps_per_file;         /* number of result steps per binary file */

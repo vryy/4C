@@ -231,7 +231,7 @@ restart     = genprob.restart;
 if (actfield->subdivide > 0)
 {
   disnum_calc = 1;
-  disnum_io   = 0;
+  disnum_io   = ioflags.output_dis;
 }
 else
 #endif

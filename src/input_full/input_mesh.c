@@ -73,6 +73,14 @@ static ARRAY tmpnodes1;
 
 
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
+
+
+/*----------------------------------------------------------------------*
   | prototypes for this file                                           |
  *----------------------------------------------------------------------*/
 #ifdef D_SSI
@@ -503,8 +511,21 @@ end_dis:
       dserror("Unknown fieldtype");
       break;
   }
+  frrewind();
+
+
+  /* read output_dis */
+  if (frfind("--SUBDIVIDE")==0) goto end_sub;
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frint("OUTPUT_DIS", &(ioflags.output_dis),&ierr);
+    frread();
+  }
+
 
   frrewind();
+
 
 
 end_sub:

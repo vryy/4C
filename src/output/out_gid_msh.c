@@ -113,7 +113,7 @@ void out_gid_msh()
       actgid   = &(gid[i][j]);
 
 
-      /* write the openeing for the coordinates */
+      /* write the opening for the coordinates */
       if (is_firstmesh)
       {
         fprintf(out,"MESH node_mesh DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n");
@@ -336,7 +336,7 @@ elements:
 
 
       /* if this dis is not used for io, do NOT write the elements */
-      if (actfield->dis[l].disclass == dc_subdiv_calc)
+      if (ioflags.output_dis != l && ioflags.output_dis != 2)
       {
         printf("Elements not written for field: %1i; dis: %1i\n",i,l);
         continue;
@@ -2015,7 +2015,7 @@ for (i=0; i<genprob.numfld; i++)
 
 
     /* if this dis is not used for io, do NOT write the coordinates */
-    if (actfield->dis[l].disclass == dc_subdiv_calc)
+    if (ioflags.output_dis != l && ioflags.output_dis != 2)
     {
       printf("Nodes not written for field: %1i; dis: %1i\n",i,l);
       continue;
