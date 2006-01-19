@@ -84,6 +84,11 @@ typedef struct _GIDSET
      INT                        is_fluid3_333;          /* 20/27-noded fluid3 3x3x3 GP */
      char                      *fluid3_333_name;
 
+     INT                        is_fluid3_tet4;
+     char                      *fluid3_tet4_name;
+     INT                        is_fluid3_tet10;
+     char                      *fluid3_tet10_name;
+
      INT                        is_f3f_4_4;             /* 8-noded fluid3_fast 2x2x2 GP */
      char                      *f3f_4_4_name;
 

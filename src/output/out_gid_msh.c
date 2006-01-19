@@ -399,6 +399,48 @@ elements:
           actgid->is_shell8_9_22 || actgid->is_shell8_9_33)
         dserror("hexahedra output for shell8 only for Quad4 !!");
 
+    if (actgid->is_fluid3_tet4)
+    {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s FLUID3 TET4 \n",actgid->fluid3_tet4_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Tetrahedra NNODE 4\n",actgid->fluid3_tet4_name);
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+        actele = &(actfield->dis[0].element[j]);
+        if (actele->eltyp != el_fluid3 || actele->numnp != 4) continue;
+        fprintf(out," %6d ",actele->Id+1);
+        for (k=0; k<actele->numnp; k++)
+          fprintf(out,"%6d ",actele->node[k]->Id+1);
+        fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+    }
+
+
+    if (actgid->is_fluid3_tet10)
+    {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s FLUID3 TET4 \n",actgid->fluid3_tet10_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Tetrahedra NNODE 10\n",actgid->fluid3_tet10_name);
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+        actele = &(actfield->dis[0].element[j]);
+        if (actele->eltyp != el_fluid3 || actele->numnp != 10) continue;
+        fprintf(out," %6d ",actele->Id+1);
+        for (k=0; k<actele->numnp; k++)
+          fprintf(out,"%6d ",actele->node[k]->Id+1);
+        fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+    }
+
+
 
 
 #else /* ifdef S8_HEX8 */

@@ -166,6 +166,8 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_fluid2_pro_33 = 0;
    actgid->is_fluid3_222= 0;
    actgid->is_fluid3_333= 0;
+   actgid->is_fluid3_tet4 = 0;
+   actgid->is_fluid3_tet10 = 0;
 
    actgid->is_f3f_4_4   = 0;
 
@@ -418,6 +420,16 @@ for (i=0; i<genprob.numfld; i++)
          {
             actgid->is_fluid3_333   = 1;
             actgid->fluid3_333_name = "fluid3_333";
+         }
+         if (actele->numnp==4)
+         {
+            actgid->is_fluid3_tet4   = 1;
+            actgid->fluid3_tet4_name = "fluid3_tet4";
+         }
+         if (actele->numnp==10)
+         {
+            actgid->is_fluid3_tet10   = 1;
+            actgid->fluid3_tet10_name = "fluid3_tet10";
          }
       break;
 #endif
