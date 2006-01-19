@@ -1,4 +1,16 @@
 
+# set linker to CP if C++ is used
+if [ "x$USES_CPP" = "x1" ]; then
+  if [ "x$CP" = "x" ] ; then
+        echo $0: Error: C++ used, but no C++ compiler available on this platform!!
+        exit 1
+  else
+    LD=$CP
+    PLAIN_LD=$PLAIN_CP
+  fi
+fi
+
+
 # build the Makefile
 # This is done in three steps
 
@@ -11,16 +23,19 @@ cat > $makefile <<EOF
 SRC=$SRC
 
 PLAIN_CC=$PLAIN_CC
+PLAIN_CP=$PLAIN_CP
 PLAIN_F77=$PLAIN_F77
 PLAIN_LD=$PLAIN_LD
 
 CC=$CC
+CP=$CP
 F77=$F77
 LD=$LD
 
 PROGRAM=$PROGRAMNAME
 
 CFLAGS=$CFLAGS $DEBUGFLAG -D$PLATFORM $DEFINES
+CPFLAGS=$CPFLAGS $DEBUGFLAG -D$PLATFORM $DEFINES
 FFLAGS=$FFLAGS $DEBUGFLAG -D$PLATFORM $DEFINES
 
 LDFLAGS=$LDFLAGS

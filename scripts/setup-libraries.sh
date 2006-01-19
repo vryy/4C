@@ -28,6 +28,16 @@ if grep '^[ \t]*UMFPACK' "$definefile" 2>&1 > /dev/null ; then
     INCLUDEDIRS="$INCLUDEDIRS $UMFPACK_INC"
 fi
 
+# nurbs
+if grep '^[ \t]*NURBS' "$definefile" 2>&1 > /dev/null ; then
+    if [ "x$NURBS_LIB" = "x" ] ; then
+        echo $0: Warning: Variable NURBS_LIB undefined but NURBS_PACKAGE requested.
+    fi
+    LIBS="$NURBS_LIB $LIBS"
+    INCLUDEDIRS="$INCLUDEDIRS $NURBS_INC"
+fi
+
+
 # visual2
 if grep '^[ \t]*VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$VISUAL2_LIB" = "x" ] ; then

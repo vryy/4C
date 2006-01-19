@@ -179,3 +179,18 @@ fi
 if grep '^D_MAT' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_MAT)"
 fi
+
+# NURBS
+if grep '^NURBS' "$definefile" 2>&1 > /dev/null ; then
+  if [ "x$NURBS_LIB" = "x" ] ; then
+    echo $0: Warning: NURBS_PACKAGE not available on this platform.
+    echo $0: Warning: Using straight interpolation for subdivision!!
+    DEFINES1=`echo $DEFINES | sed -e 's/-DNURBS//'`
+    DEFINES=$DEFINES1
+  else
+    OBJECTS="$OBJECTS \$(OBJS_NURBS_CPP)"
+    USES_CPP=1
+  fi
+fi
+
+

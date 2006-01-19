@@ -4,6 +4,7 @@ SRC=.
 
 # for filters we need non-mip versions of these
 PLAIN_CC=cc
+PLAIN_CP=CC
 PLAIN_F77=f77
 PLAIN_LD=f77
 
@@ -12,6 +13,7 @@ PLAIN_LIBS=$LIBS
 
 # most of the time these have to begin changed
 CC=cc
+CP=CC
 F77=f77
 LD=f77
 
@@ -26,6 +28,10 @@ fi
 # source config file
 # Here we get all the variables.
 . "./$configfile"
+
+
+# C++ is used => us CP for linking
+USES_CPP=0
 
 
 # check for DEBUG version
@@ -74,6 +80,7 @@ else
   PROGRAMNAME=$PROGRAMNAME.fast
 
   CFLAGS="$CFLAGS $CFLAGS_OPT"
+  CPFLAGS="$CPFLAGS $CPFLAGS_OPT"
   FFLAGS="$FFLAGS $FFLAGS_OPT"
   LDFLAGS="$LDFLAGS $LDFLAGS_OPT"
 fi
