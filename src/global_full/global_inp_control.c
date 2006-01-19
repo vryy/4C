@@ -263,6 +263,10 @@ void ntainp()
     }  /* if (field[i].subdivide > 0) */
 
 
+  /* write warnings */
+  dswarning(2,0);
+
+
 #endif /* ifdef SUBDIV */
 
 

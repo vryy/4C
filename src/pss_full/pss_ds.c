@@ -765,251 +765,197 @@ void dslatest(char* file, INT line)
 /*!-----------------------------------------------------------------------
 \brief get warnings and writes them to the screen at the end
 
-<pre>                                                             ck 07/03
+<pre>
 depending on task it initialises all warnings to Zero (= no warning),
 collects warnings during running process and reports them to the screen at
-the end. A reoccuring warning is written once (per proc).
-In parallel processes the warnings are ordered to the fields where they
-occure. Warnings are written to the screen and the error files.
+the end. A reoccuring warning is written once.
+Warnings are written to the screen and the error files.
 
-task 	= 0 	initialisation to no warnings
-	= 1	create warning depending on 'warning'
-	= 2	plot warnings to the screen
-warning	= 1	when trinangular ale elements are monitored with wrong
-		quality meassure
-	= 2	aspect ration quality meassure for ale elements is called
-		for a distyp it has not been implemented for
-	= 3	corner angle quality criterion for ale elements is called
-		for a distyp it	has not been implemented for
-	= 4	min J quality criterion for ale elements is called for a
-		distyp it has not been implemented for
+task    = 0     initialisation to no warnings
+        = 1     create warning depending on 'index'
+        = 2     plot warnings to the screen
+
+index   = 0     unused
+        = 1     when trinangular ale elements are monitored with wrong
+                quality meassure
+        = 2     aspect ration quality meassure for ale elements is called
+                for a distyp it has not been implemented for
+        = 3     corner angle quality criterion for ale elements is called
+                for a distyp it	has not been implemented for
+        = 4     min J quality criterion for ale elements is called for a
+                distyp it has not been implemented for
         = 5     Function used for points outside the range 0 < xi < 1
         = 6     Function used for points not on the defined line
-        = 7     the value givne for MAXNOD is too large
-        = 8     the value givne for MAXELE is too large
-        = 9     the value givne for MAXDOFPERNODE is too large
-        = 10    the value givne for MAXGAUSS is too large
-        = 11    ??
-        = 12    ??
+        = 7     dirich- and fsi-coupling condition defined on same DLINE
+        = 8     the value givne for MAXNOD is too large
+        = 9     the value givne for MAXELE is too large
+        = 10    the value givne for MAXDOFPERNODE is too large
+        = 11    the value givne for MAXGAUSS is too large
+        = 12    node for result check was not found in actual partition
         = 13    more than one liftdrag Id to one element found
-        = 14    your new warning issue
+        = 14    Subdivision for an arcline not implementd: Using straight connection!!
+        = 15    Subdivision for Nurbs-line without NURBS-lib: Using straight connection!!
+        = 16    Subdivision for Nurbs-surf without NURBS-lib: Using straight connection!!
+        = 17    unused
+        = 18    unused
+        = 19    unused
+
+Increase the value of MAX_WARNINGS in 'headers/define_sizes.h' if you would like
+to create further warnings.
 
 </pre>
 
-\param task     INT (i)  flag, what to do
-\param warning  INT (i)  flag, which warning shall be printed at the end
-\return void
-\sa
+  \param task     INT (i)  flag, what to do
+  \param index    INT (i)  flag, which warning shall be printed at the end
+  \return void
+
+  \author ck - rewritten by mn
+  \date   07/03 - 01/06
+
 
 ------------------------------------------------------------------------*/
-void dswarning(INT task, INT warning)
+void dswarning(
+    INT                 task,
+    INT                 index
+    )
+
 {
+
 #ifdef PARALLEL
-INT     i;                                /* a counter                    */
-INTRA  *actintra;
-INT     recvbuf;
+  INT     recvbuf[MAX_WARNINGS];
 #endif
-static INT called;                      /* flag, if warnings occured    */
-static INT ale_quality_min_J_triangles;
-static INT ale_quality_ar;
-static INT ale_quality_ca;
-static INT ale_quality_Je;
-static INT funct_range;     /* warning 5 */
-static INT funct_line;      /* warning 6 */
-static INT dirich_fsi_line; /* warning 7 */
-static INT max_nod;         /* warning 8 */
-static INT max_ele;         /* warning 9 */
-static INT max_dofpernode;  /* warning 10 */
-static INT max_gauss;       /* warning 11 */
-static INT rescheck_nonode; /* warning 12 */
-static INT liftdragId;      /* warning 13 */
-/* DEFINE your new warning flag here!!! */
 
-FILE   *err = allfiles.out_err;
+
+  INT        i,summe=0;
+  FILE      *err = allfiles.out_err;
+
+
+  static INT warnings[MAX_WARNINGS];
+
+  static CHAR* text[MAX_WARNINGS] = {
+   /* 00 */ "A warning occured that is not in use! This is very serious!!!",
+   /* 01 */ "There is no sense in monitoring lineare triangles with min_J!!!\n The .plt-file is not useful!",
+   /* 02 */ "Aspect_ratio quality monitoring for one of the distyps not implemented!!",
+   /* 03 */ "Corner_angle quality monitoring for one of the distyps not implemented!!",
+   /* 04 */ "Min_J quality monitoring for one of the distyps not implemented!!",
+   /* 05 */ "Function used for points outside the range  0 < xi < 1 !!",
+   /* 06 */ "Function used for points not on the defined line!!",
+   /* 07 */ "dirich- and fsi-coupling condition defined on same DLINE",
+   /* 08 */ "The given value for MAXNOD was too large!! This will reduce the performance!!",
+   /* 09 */ "The given value for MAXELE was too large!! This will reduce the performance!!",
+   /* 10 */ "The given value for MAXDOFPERNODE was too large!! This will reduce the performance!!",
+   /* 11 */ "The given value for MAXGAUSS was too large!! This will reduce the performance!!",
+   /* 12 */ "The given node for result check was not found in actual partition.",
+   /* 13 */ "More than one liftdrag Id to one node. Liftdrag forces may be incorrect.",
+   /* 14 */ "Subdivision for an arcline not implemented: Using straight connection!!",
+   /* 15 */ "Subdivision for Nurbs-line without NURBS-lib: Using straight connection!!",
+   /* 16 */ "Subdivision for Nurbs-surf without NURBS-lib: Using straight connection!!",
+   /* 17 */ NULL,
+   /* 18 */ NULL,
+   /* 19 */ NULL
+  };
+
+
+
 
 #ifdef DEBUG
-dstrc_enter("dswarning");
+  dstrc_enter("dswarning");
 #endif
 
-/*----------------------------------------------------------------------*/
-switch (task)
-{
-  /*------------------------------------------------- initialisation ---*/
-  case 0:
-    called = 0;
-    ale_quality_min_J_triangles = 0;
-    ale_quality_ar = 0;
-    ale_quality_ca = 0;
-    ale_quality_Je = 0;
-    funct_range = 0;
-    funct_line  = 0;
-    dirich_fsi_line=0;
-    max_nod        = 0;
-    max_ele        = 0 ;
-    max_dofpernode = 0;
-    max_gauss      = 0;
-    rescheck_nonode= 0;
-    liftdragId     = 0;
-    /* INITIALISE your new warning here!!! */
-  break;
-  /*------------------------------------------------- create warning ---*/
-  case 1:
-    called++;
-    if (warning == 1)
-      ale_quality_min_J_triangles++;
-    else if (warning == 2)
-      ale_quality_ar++;
-    else if (warning == 3)
-      ale_quality_ca++;
-    else if (warning == 4)
-      ale_quality_Je++;
-    else if (warning == 5)
-      funct_range++;
-    else if (warning == 6)
-      funct_line++;
-    else if (warning == 7)
-      dirich_fsi_line++;
-    else if (warning == 8)
-      max_nod++;
-    else if (warning == 9)
-      max_ele++;
-    else if (warning ==10)
-      max_dofpernode++;
-    else if (warning ==11)
-      max_gauss++;
-    else if (warning ==12)
-      rescheck_nonode++;
-    else if (warning ==13)
-      liftdragId++;
-    else
-      dserror("warning out of range!\n");
-    /* COUNT your new warning here!!! */
-  break;
-  /*------------------------------------------------- write warnings ---*/
-  case 2:
-  #ifdef PARALLEL
-  MPI_Allreduce(&called,&recvbuf,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-  called=recvbuf;
-  #endif
-  if (!called) goto end;  /* supress output if there were no warnings   */
-  #ifdef PARALLEL
-    for (i=0; i<par.numfld; i++) /* loop all intra communicators        */
-    {
-      actintra = &(par.intra[i]);
-      MPI_Barrier(actintra->MPI_INTRA_COMM);
-      /* output result depends on fieldtyp (in parallel case only) */
-      switch (actintra->intra_fieldtyp)
-      {
-      case fluid:
-        if (par.myrank==0) printf("\nWARNINGS Fluid Field: \n");
-        fprintf(err,"*************************************\n");
-        fprintf(err,"WARNINGS Fluid Field: \n");
+
+
+  switch (task)
+  {
+    /* initialisation */
+    case 0:
+
+      for (i=0;i<MAX_WARNINGS;i++)
+        warnings[i] = 0;
       break;
-      case ale:
-        if (par.myrank==0) printf("\nWARNINGS ALE Field: \n");
-        fprintf(err,"*************************************\n");
-        fprintf(err,"WARNINGS ALE Field: \n");
+
+
+      /* create warning */
+    case 1:
+
+      warnings[index]++;
       break;
-      case structure:
-        if (par.myrank==0) printf("\nWARNINGS Structure Field: \n");
-        fprintf(err,"*************************************\n");
-        fprintf(err,"WARNINGS Structure Field: \n");
+
+
+
+      /* write warnings */
+    case 2:
+
+      /* Print warnings of all processor on first processor only */
+#ifdef PARALLEL
+      MPI_Allreduce(&warnings,&recvbuf,MAX_WARNINGS,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
+      for (i=0;i<MAX_WARNINGS;i++)
+        warnings[i]=recvbuf[i];
+#endif
+
+
+      /* skip this if there were no warnings */
+      for (i=0;i<MAX_WARNINGS;i++)
+        summe += warnings[i];
+      if (summe==0)
+        goto end;
+
+
+      if (par.myrank==0)
+      {
+
+        /* print everything to the screen and the err file */
+        printf("\n\n");
+        printf("Output of Warnings:\n");
+        printf("===================\n");
+
+        fprintf(err,"\n\n");
+        fprintf(err,"Output of Warnings:\n");
+        fprintf(err,"===================\n");
+
+
+        for (i=0;i<MAX_WARNINGS;i++)
+          if (warnings[i] != 0)
+          {
+            /* print to screen */
+            printf("  Warning!!  ");
+            printf("%s\n",text[i]);
+
+            /* print to err-file */
+            fprintf(err,"  Warning!!  ");
+            fprintf(err,"%s\n",text[i]);
+          }
+
+      }  /* if (par.myrank==0) */
+
+
+      printf("\n\n");
+      fprintf(err,"\n\n");
+
+
       break;
-      default: dserror("Unknown fieldtyp!");
-      }
-  #endif
-   /*-------------------------------------------------------------------*/
-      if (ale_quality_min_J_triangles)
-      {
-        printf("Warning PROC %i: There is no sense in monitoring lineare triangles with min_J!!!\n                The .plt-file is not useful!\n", par.myrank);
-        fprintf(err,"Warning PROC %i: There is no sense in monitoring lineare triangles with min_J!!!\n", par.myrank);
-        fprintf(err,"                The .plt-file is not useful!\n");
-      }
-      if (ale_quality_ar)
-      {
-        printf("Warning PROC %i: aspect_ratio quality monitoring for one of the distyps not implemented!!\n", par.myrank);
-        fprintf(err,"Warning PROC %i: aspect_ratio quality monitoring for one of the distyps not implemented!!\n", par.myrank);
-      }
-      if (ale_quality_ca)
-      {
-        printf("Warning PROC %i: corner_angle quality monitoring for one of the distyps not implemented!!\n", par.myrank);
-        fprintf(err,"Warning PROC %i: corner_angle quality monitoring for one of the distyps not implemented!!\n", par.myrank);
-      }
-      if (ale_quality_Je)
-      {
-        printf("\nWarning PROC %i: min_J quality monitoring for one of the distyps not implemented!!\n", par.myrank);
-        fprintf(err,"\n Warning PROC %i: min_J quality monitoring for one of the distyps not implemented!!\n", par.myrank);
-      }
-      if (funct_range)
-      {
-        printf("\n WARNING PROC %i: Function used for points outside the range 0<xi<1 !!\n", par.myrank);
-        fprintf(err,"\n WARNING PROC %i: Function used for points outside the range 0<xi<1 !!\n", par.myrank);
-      }
-      if (funct_line)
-      {
-        printf("\n WARNING PROC %i: Function used for points not on the defined line!!\n", par.myrank);
-        fprintf(err,"\n WARNING PROC %i: Function used for points not on the defined line!!\n", par.myrank);
-      }
-      if (dirich_fsi_line)
-      {
-        printf("\n %d WARNINGS PROC %i: dirich- and fsi-coupling condition defined on same DLINE\n", dirich_fsi_line,par.myrank);
-        fprintf(err,"\n %d WARNINGS PROC %i: dirich- and fsi-coupling condition defined on same DLINE\n", dirich_fsi_line,par.myrank);
-      }
-      if (max_nod)
-      {
-        printf("\n WARNING PROC %i: The given value for MAXNOD was too large!! This will reduce the performance!!\n", par.myrank);
-        fprintf(err,"\n WARNING PROC %i: The given value for MAXNOD was too large!! This will reduce the performance!!\n", par.myrank);
-      }
 
-      if (max_ele)
-      {
-        printf("\n WARNING PROC %i: The given value for MAXELE was too large!! This will reduce the performance!!\n", par.myrank);
-        fprintf(err,"\n WARNING PROC %i: The given value for MAXELE was too large!! This will reduce the performance!!\n", par.myrank);
-      }
 
-      if (max_dofpernode)
-      {
-        printf("\n WARNING PROC %i: The given value for MAXDOFPERNODE was too large!! This will reduce the performance!!\n", par.myrank);
-        fprintf(err,"\n WARNING PROC %i: The given value for MAXDOFPERNODE was too large!! This will reduce the performance!!\n", par.myrank);
-      }
+    default:
+      printf("in default von dswarning\n");
+      dserror("warning task %2i invalid",task);
+      break;
+  } /* end of switch init */
 
-      if (max_gauss)
-      {
-        printf("\n WARNING PROC %i: The given value for MAXGAUSS was too large!! This will reduce the performance!!\n", par.myrank);
-        fprintf(err,"\n WARNING PROC %i: The given value for MAXGAUSS was too large!! This will reduce the performance!!\n", par.myrank);
-      }
 
-      if (rescheck_nonode)
-      {
-        printf("\n %d WARNINGS PROC %i: The given node for result check was not found in actual partition.\n", rescheck_nonode,par.myrank);
-        fprintf(err,"\n %d WARNINGS PROC %i: The given node for result check was not found in actual partition.\n", rescheck_nonode,par.myrank);
-      }
-      if (liftdragId)
-      {
-        printf("\n %d WARNINGS PROC %i: More than one liftdrag Id to one node. Liftdrag forces may be incorrect.\n", rescheck_nonode,par.myrank);
-        fprintf(err,"\n %d WARNINGS PROC %i: More than one liftdrag Id to one node. Liftdrag forces may be incorrect.\n", rescheck_nonode,par.myrank);
-      }
-      /* ADD more warning messages here!!! */
-  #ifdef PARALLEL
-    MPI_Barrier(actintra->MPI_INTRA_COMM);
-    } /* end loop over intra groups */
-  #endif
-   if (par.myrank == 0) printf("\n");
-  break;
-  /*-------------------------------------------------------- default ---*/
-  default:
-     printf("in default von dswarning\n");
-     dserror("warning task %2i invalid",task);
-  break;
-} /* end of switch init */
-/*----------------------------------------------------------------------*/
+
 end:
-/*----------------------------------------------------------------------*/
+
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+
+  return;
+
 } /* end of dswarning */
+
+
+
 
 
 
