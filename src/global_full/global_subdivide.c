@@ -25,6 +25,11 @@ Maintainer: Malte Neumann
 
 #include "../headers/standardtypes.h"
 
+#ifdef NURBS
+#include "../nurbs/nurbs_wrappers.h"
+#endif
+
+
 #if defined(D_FLUID3) || defined(D_FLUID3_F)
 #include "../fluid3/fluid3.h"
 #endif
@@ -100,6 +105,29 @@ void global_subdivide_tri(
     FIELD        *actfield
     );
 
+void process_gnodes(
+    DISCRET           *io_dis,
+    DISCRET           *cal_dis,
+    INT               *node_counter,
+    INT               *nodeid
+    );
+
+void process_glines(
+    DISCRET           *io_dis,
+    DISCRET           *cal_dis,
+    INT                subdivide,
+    INT               *node_counter,
+    INT               *nodeid
+    );
+
+void process_gsurf(
+    GSURF             *actgsurf,
+    DISCRET           *cal_dis,
+    INT                subdivide,
+    GNODE             *gnode[4],
+    INT               *node_counter,
+    INT               *nodeid
+    );
 
 /*-----------------------------------------------------------------------*/
 /*!
@@ -277,7 +305,9 @@ void global_subdivide_hex(
 
   INT            node_matrix[MAX_DIVIDE+1][MAX_DIVIDE+1][MAX_DIVIDE+1];
 
-  INT            pro_total=0, pro_fac=0, p=0, p_counter=0;
+  INT            node_counter_old;
+  INT            ele_counter_old;
+
 
 #ifdef DEBUG
   dstrc_enter("global_subdivide_hex");
@@ -321,384 +351,37 @@ void global_subdivide_hex(
 
 
 
-  /* loop gnodes and create nodes on second dis */
-  for (i=0; i<io_dis->ngnode; i++)
+  /* create gnodes on second dis for all gnodes */
+  process_gnodes(io_dis, cal_dis, &node_counter, &nodeid);
+
+
+  /* create new gnodes on second dis for all glines */
+  process_glines(io_dis, cal_dis, subdivide, &node_counter, &nodeid);
+
+
+  printf("  Generating gnodes on the second dis on %7i gsurfs...",io_dis->ngsurf);
+  fflush(stdout);
+  node_counter_old = node_counter;
+
+  /* loop gsurfs */
+  for (g=0; g<io_dis->ngsurf; g++)
   {
-    actgnode = &(io_dis->gnode[i]);
+    GNODE  *gnode[4];
+    actgsurf = &(io_dis->gsurf[g]);
 
-    /* set Id of the new node */
-    cal_dis->node[node_counter].Id = nodeid;
-
-    /* set coords of the new node */
-    for (j=0; j<3; j++)
-      cal_dis->node[node_counter].x[j] = actgnode->node->x[j];
-
-    /* store slave_node Id in master gnode */
-    actgnode->slave_node = nodeid;
-
-    /* create pointer from slave to master node */
-    cal_dis->node[node_counter].slave_node  = NULL;
-    cal_dis->node[node_counter].master_node = actgnode->node;
-
-    /* create pointer from master to slave node */
-    actgnode->node->slave_node  = &(cal_dis->node[node_counter]);
-    actgnode->node->master_node = NULL;
-
-
-    node_counter++;
-    nodeid++;
+    /* create new gnodes on one gsurf */
+    process_gsurf(actgsurf, cal_dis, subdivide, gnode, &node_counter, &nodeid);
   }
 
+  printf(" %7i gnodes created.\n",node_counter-node_counter_old);
 
 
-  /* loop glines and create nodes */
-  for (i=0; i<io_dis->ngline; i++)
-  {
 
-    DOUBLE x1[3],dx[3];
 
-    actgline = &(io_dis->gline[i]);
-
-    /* coordinates of the beginning of this gline */
-    x1[0] = actgline->gnode[0]->node->x[0];
-    x1[1] = actgline->gnode[0]->node->x[1];
-    x1[2] = actgline->gnode[0]->node->x[2];
-
-    /* lenght of this gline in the three directions divided by subdivide */
-    dx[0] = (actgline->gnode[1]->node->x[0]-actgline->gnode[0]->node->x[0])/subdivide;
-    dx[1] = (actgline->gnode[1]->node->x[1]-actgline->gnode[0]->node->x[1])/subdivide;
-    dx[2] = (actgline->gnode[1]->node->x[2]-actgline->gnode[0]->node->x[2])/subdivide;
-
-    for (j=0; j<subdivide-1; j++)
-    {
-      cal_dis->node[node_counter].Id = nodeid;
-
-      /* store slave_node Id in gline */
-      actgline->slave_node[j]   = nodeid;
-
-      /* set coords of the new node */
-      for (k=0; k<3; k++)
-        cal_dis->node[node_counter].x[k] =  x1[k] + (j+1)*dx[k];
-
-
-      node_counter++;
-      nodeid++;
-    }
-
-  }  /* for (i=0; i<io_dis->ngline; i++) */
-
-
-
-
-
-
-
-
-
-
-
-  /* loop gsurfs and create nodes */
-  for (i=0; i<io_dis->ngsurf; i++)
-  {
-    GNODE  *gnode0=NULL, *gnode1=NULL, *gnode2=NULL, *gnode3=NULL;
-
-    DOUBLE x0[3],x1[3],x2[3],x3[3];
-
-    actgsurf = &(io_dis->gsurf[i]);
-
-
-    /* specify node 0 */
-    gnode0 = actgsurf->gnode[0];
-    actgsurf->node_ind[0] = 0;
-
-
-
-
-    /* find the line 0 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-      /* this line is in same direction */
-      if (gnode0 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][0] = j;
-        actgsurf->line_ind[1][0] = 0;
-
-        gnode1 = actgline->gnode[1];
-
-        /* find the node 1 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode1 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[1] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode0 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][0] = j;
-        actgsurf->line_ind[1][0] = 1;
-
-        gnode1 = actgline->gnode[0];
-
-        /* find the node 1 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode1 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[1] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-
-    /* find the line 1 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-
-      if (actgsurf->gline[j] == actgline)
-        continue;
-
-      /* this line is in same direction */
-      if (gnode1 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][1] = j;
-        actgsurf->line_ind[1][1] = 0;
-
-        gnode2 = actgline->gnode[1];
-
-        /* find the node 2 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode2 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[2] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode1 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][1] = j;
-        actgsurf->line_ind[1][1] = 1;
-
-        gnode2 = actgline->gnode[0];
-
-        /* find the node 2 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode2 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[2] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-    /* find the line 2 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-
-      if (actgsurf->gline[j] == actgline)
-        continue;
-
-      /* this line is in same direction */
-      if (gnode2 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][2] = j;
-        actgsurf->line_ind[1][2] = 0;
-
-        gnode3 = actgline->gnode[0];
-
-        /* find the node 3 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode3 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[3] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode2 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][2] = j;
-        actgsurf->line_ind[1][2] = 1;
-
-        gnode3 = actgline->gnode[1];
-
-        /* find the node 3 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode3 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[3] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-
-
-
-    /* find the line 3 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-
-      if (actgsurf->gline[j] == actgline)
-        continue;
-
-      /* this line is in same direction */
-      if (gnode3 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][3] = j;
-        actgsurf->line_ind[1][3] = 0;
-
-        actgnode = actgline->gnode[0];
-
-        if (actgnode != gnode0)
-          dserror("NODE MIXUP!!\n");
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode3 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][3] = j;
-        actgsurf->line_ind[1][3] = 1;
-
-        actgnode = actgline->gnode[1];
-
-        if (actgnode != gnode0)
-          dserror("NODE MIXUP!!\n");
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-
-
-
-
-
-    /*
-       printf("GSURF %2i:  line_ind: %1i(%1i) %1i(%1i) %1i(%1i) %1i(%1i)\n",
-       actgsurf->Id,
-       actgsurf->line_ind[0][0],actgsurf->line_ind[1][0],
-       actgsurf->line_ind[0][1],actgsurf->line_ind[1][1],
-       actgsurf->line_ind[0][2],actgsurf->line_ind[1][2],
-       actgsurf->line_ind[0][3],actgsurf->line_ind[1][3]);
-
-       printf("GSURF %2i:  actgsurf->node_ind: %1i %1i %1i %1i\n\n",
-       actgsurf->Id,
-       actgsurf->node_ind[0],actgsurf->node_ind[1],
-       actgsurf->node_ind[2],actgsurf->node_ind[3]);
-       */
-
-
-    /* set the nodal coordinates */
-    x0[0] = (actgsurf->gnode[actgsurf->node_ind[0]]->node->x[0])/(subdivide*subdivide);
-    x0[1] = (actgsurf->gnode[actgsurf->node_ind[0]]->node->x[1])/(subdivide*subdivide);
-    x0[2] = (actgsurf->gnode[actgsurf->node_ind[0]]->node->x[2])/(subdivide*subdivide);
-
-    x1[0] = (actgsurf->gnode[actgsurf->node_ind[1]]->node->x[0])/(subdivide*subdivide);
-    x1[1] = (actgsurf->gnode[actgsurf->node_ind[1]]->node->x[1])/(subdivide*subdivide);
-    x1[2] = (actgsurf->gnode[actgsurf->node_ind[1]]->node->x[2])/(subdivide*subdivide);
-
-    x2[0] = (actgsurf->gnode[actgsurf->node_ind[2]]->node->x[0])/(subdivide*subdivide);
-    x2[1] = (actgsurf->gnode[actgsurf->node_ind[2]]->node->x[1])/(subdivide*subdivide);
-    x2[2] = (actgsurf->gnode[actgsurf->node_ind[2]]->node->x[2])/(subdivide*subdivide);
-
-    x3[0] = (actgsurf->gnode[actgsurf->node_ind[3]]->node->x[0])/(subdivide*subdivide);
-    x3[1] = (actgsurf->gnode[actgsurf->node_ind[3]]->node->x[1])/(subdivide*subdivide);
-    x3[2] = (actgsurf->gnode[actgsurf->node_ind[3]]->node->x[2])/(subdivide*subdivide);
-
-
-
-    /* generate the nodes */
-    for (j=0; j<subdivide-1; j++)
-    {
-      for (k=0; k<subdivide-1; k++)
-      {
-        cal_dis->node[node_counter].Id  = nodeid;
-
-        /* store slave_node Id in gsurf */
-        actgsurf->slave_node[j][k] = nodeid;
-
-        /* set coords of the new node */
-        for (l=0; l<3; l++)
-          cal_dis->node[node_counter].x[l] =
-            (x1[l]*(j+1) + x0[l]*(subdivide-j-1)) * (subdivide-k-1) +
-            (x2[l]*(j+1) + x3[l]*(subdivide-j-1)) * (k+1);
-
-        node_counter++;
-        nodeid++;
-      }
-    }
-
-  }  /* for (i=0; i<io_dis->ngsurf; i++) */
-
-
-
-
-  if (par.myrank==0)
-  {
-    printf("  creating subelements on %3i GVOLS\n",io_dis->ngvol);
-
-    pro_fac   = io_dis->ngvol/50 + 1;
-
-    pro_total = io_dis->ngvol/pro_fac;
-
-    printf("  0");
-    for (p=0; p<pro_total; p++)
-      printf(" ");
-    printf("%3i\n",io_dis->ngvol);
-
-    printf("  |");
-    for (p=0; p<pro_total; p++)
-      printf("-");
-    printf("|\n");
-
-
-    printf("  |");
-    p_counter = 0;
-  }
+  printf("  Generating gnodes and new elements on the second dis for %7i gvols...",io_dis->ngvol);
+  fflush(stdout);
+  node_counter_old = node_counter;
+  ele_counter_old  = ele_counter;
 
   /* loop gvols and create nodes */
   for (g=0; g<io_dis->ngvol; g++)
@@ -1556,6 +1239,7 @@ void global_subdivide_hex(
        */
 
 
+
     /* generate the nodes */
     for (j=0; j<subdivide-1; j++)
     {
@@ -1734,7 +1418,7 @@ void global_subdivide_hex(
           node_matrix[subdivide-1-i][subdivide-1-j][0] = gsurf0->slave_node[i][j];
 
         if (gsurf0->gline[0]->gnode[0] == gnode3 && gsurf0->gline[0]->gnode[1] == gnode0)
-          node_matrix[j][subdivide-1-i][0] = gsurf0->slave_node[i][j];
+          node_matrix[j+1][subdivide-1-i][0] = gsurf0->slave_node[i][j];
 
         /* up side down */
         if (gsurf0->gline[0]->gnode[0] == gnode1 && gsurf0->gline[0]->gnode[1] == gnode0)
@@ -1902,7 +1586,7 @@ void global_subdivide_hex(
       {
         for (j=0; j<=subdivide;j++)
         {
-          printf(" %5i ",node_matrix[j][k][l]);
+          printf(" %7i ",node_matrix[j][k][l]);
         }
         printf("\n");
       }
@@ -1919,8 +1603,8 @@ void global_subdivide_hex(
      *                                           *
      * ==========================================*/
 
-
     oldele = actgvol->element;
+
     oldele->master_ele = NULL;
     oldele->slave_ele  = NULL;
 
@@ -2072,7 +1756,7 @@ void global_subdivide_hex(
           /* only for debugging */
           for (m=0; m<actele->numnp;m++)
           {
-            printf(" %5i ",actele->lm[m]);
+            printf(" %7i ",actele->lm[m]);
           }
           printf("\n");
 #endif
@@ -2085,20 +1769,12 @@ void global_subdivide_hex(
     }
 
 
-    if (par.myrank==0)
-    {
-      p_counter++;
-      if (p_counter == pro_fac)
-      {
-        printf("*");
-        fflush(stdout);
-        p_counter = 0;
-      }
-    }
   }  /* for (g=0; g<io_dis->ngvol; g++) */
 
-  if (par.myrank==0)
-    printf("|\n");
+  printf(" %7i gnodes and %7i elements created.\n",
+      node_counter-node_counter_old,
+      ele_counter-ele_counter_old);
+
 
 
 
@@ -2123,6 +1799,8 @@ void global_subdivide_hex(
   genprob.nele += numele;
 
 
+  printf("  Building the topology ...");
+  fflush(stdout);
 
   /* build pointers between nodes and elements */
   inp_topology(cal_dis);
@@ -2395,6 +2073,10 @@ void global_subdivide_hex(
   inpdesign_topology_fe(cal_dis);
 
 
+  printf("  Finished!!\n");
+  fflush(stdout);
+
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -2468,7 +2150,8 @@ void global_subdivide_tet(
 
   INT            node_matrix[MAX_DIVIDE+1][MAX_DIVIDE+1][MAX_DIVIDE+1];
 
-  INT            pro_total=0, pro_fac=0, p=0, p_counter=0;
+  INT            node_counter_old;
+  INT            ele_counter_old;
 
 #ifdef DEBUG
   dstrc_enter("global_subdivide_tet");
@@ -2516,135 +2199,40 @@ void global_subdivide_tet(
 
 
   /* loop gnodes and create nodes on second dis */
-  for (i=0; i<io_dis->ngnode; i++)
-  {
-    actgnode = &(io_dis->gnode[i]);
-
-    /* set Id of the new node */
-    cal_dis->node[node_counter].Id = nodeid;
-
-    /* set coords of the new node */
-    for (j=0; j<3; j++)
-      cal_dis->node[node_counter].x[j] = actgnode->node->x[j];
-
-    /* store slave_node Id in master gnode */
-    actgnode->slave_node = nodeid;
-
-    /* create pointer from slave to master node */
-    cal_dis->node[node_counter].slave_node  = NULL;
-    cal_dis->node[node_counter].master_node = actgnode->node;
-
-    /* create pointer from master to slave node */
-    actgnode->node->slave_node  = &(cal_dis->node[node_counter]);
-    actgnode->node->master_node = NULL;
+  process_gnodes(io_dis, cal_dis, &node_counter, &nodeid);
 
 
-    node_counter++;
-    nodeid++;
-  }
+  /* create new nodes on the glines */
+  process_glines(io_dis, cal_dis, 2, &node_counter, &nodeid);
 
 
 
-  /* loop glines and create nodes */
-  for (i=0; i<io_dis->ngline; i++)
-  {
-
-    DOUBLE x1[3],dx[3];
-
-    actgline = &(io_dis->gline[i]);
-
-    /* coordinates of the beginning of this gline */
-    x1[0] = actgline->gnode[0]->node->x[0];
-    x1[1] = actgline->gnode[0]->node->x[1];
-    x1[2] = actgline->gnode[0]->node->x[2];
-
-    /* lenght of this gline in the three directions divided by subdivide */
-    dx[0] = (actgline->gnode[1]->node->x[0] - actgline->gnode[0]->node->x[0])/2;
-    dx[1] = (actgline->gnode[1]->node->x[1] - actgline->gnode[0]->node->x[1])/2;
-    dx[2] = (actgline->gnode[1]->node->x[2] - actgline->gnode[0]->node->x[2])/2;
-
-    cal_dis->node[node_counter].Id = nodeid;
-
-    /* store slave_node Id in gline */
-    actgline->slave_node[0]   = nodeid;
-
-    /* set coords of the new node */
-    for (k=0; k<3; k++)
-      cal_dis->node[node_counter].x[k] =  x1[k] + dx[k];
-
-    node_counter++;
-    nodeid++;
-
-  }  /* for (i=0; i<io_dis->ngline; i++) */
-
-
-
-
-
-
-
-
-
-
+  printf("  Generating gnodes on the second dis on %7i gsurfs...",io_dis->ngsurf);
+  fflush(stdout);
+  node_counter_old = node_counter;
 
   /* loop gsurfs and create nodes */
   for (i=0; i<io_dis->ngsurf; i++)
   {
-    GNODE  *gnode0, *gnode1, *gnode2;
+    GNODE  *gnode[3];
 
     actgsurf = &(io_dis->gsurf[i]);
 
-
-    /* specify the nodes */
-    gnode0 = actgsurf->gnode[0];
-    gnode1 = actgsurf->gnode[1];
-    gnode2 = actgsurf->gnode[2];
-
-
-    /* generate the node */
-    cal_dis->node[node_counter].Id  = nodeid;
-
-    /* store slave_node Id in gsurf */
-    actgsurf->slave_node[0][0] = nodeid;
-
-    /* set coords of the new node */
-    for (l=0; l<3; l++)
-      cal_dis->node[node_counter].x[l] =
-        (gnode0->node->x[l] + gnode1->node->x[l] + gnode2->node->x[l]) / 3;
-
-
-    node_counter++;
-    nodeid++;
+    /* create new gnodes on one gsurf */
+    process_gsurf_tri(actgsurf, cal_dis, subdivide, gnode, &node_counter, &nodeid);
 
   }  /* for (i=0; i<io_dis->ngsurf; i++) */
 
+  printf(" %7i gnodes created.\n",node_counter-node_counter_old);
 
 
 
 
 
-  if (par.myrank==0)
-  {
-    printf("  creating subelements on %3i GVOLS\n",io_dis->ngvol);
-
-    pro_fac   = io_dis->ngvol/50 + 1;
-
-    pro_total = io_dis->ngvol/pro_fac;
-
-    printf("  0");
-    for (p=0; p<pro_total; p++)
-      printf(" ");
-    printf("%3i\n",io_dis->ngvol);
-
-    printf("  |");
-    for (p=0; p<pro_total; p++)
-      printf("-");
-    printf("|\n");
-
-
-    printf("  |");
-    p_counter = 0;
-  }
+  printf("  Generating gnodes and new elements on the second dis for %7i gvols...",io_dis->ngvol);
+  fflush(stdout);
+  node_counter_old = node_counter;
+  ele_counter_old  = ele_counter;
 
   /* loop gvols and create nodes */
   for (g=0; g<io_dis->ngvol; g++)
@@ -3043,7 +2631,7 @@ void global_subdivide_tet(
       {
         for (i=0; i<=2;i++)
         {
-          printf(" %5i ",node_matrix[i][j][k]);
+          printf(" %7i ",node_matrix[i][j][k]);
         }
         printf("\n");
       }
@@ -3273,7 +2861,7 @@ void global_subdivide_tet(
       /* only for debugging */
       for (m=0; m<actele->numnp;m++)
       {
-        printf(" %5i ",actele->lm[m]);
+        printf(" %7i ",actele->lm[m]);
       }
       printf("\n");
 #endif
@@ -3283,19 +2871,11 @@ void global_subdivide_tet(
       eleid++;
     }
 
-    if (par.myrank==0)
-    {
-      p_counter++;
-      if (p_counter == pro_fac)
-      {
-        printf("*");
-        p_counter = 0;
-      }
-    }
   }  /* for (g=0; g<io_dis->ngvol; g++) */
 
-  if (par.myrank==0)
-    printf("|\n");
+  printf(" %7i gnodes and %7i elements created.\n",
+      node_counter-node_counter_old,
+      ele_counter-ele_counter_old);
 
 
 
@@ -3320,6 +2900,10 @@ void global_subdivide_tet(
 
   genprob.nele += numele;
 
+
+
+  printf("  Building the topology ...");
+  fflush(stdout);
 
 
   /* build pointers between nodes and elements */
@@ -3581,6 +3165,10 @@ void global_subdivide_tet(
   inpdesign_topology_fe(cal_dis);
 
 
+  printf("  Finished!!\n");
+  fflush(stdout);
+
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -3650,7 +3238,9 @@ void global_subdivide_quad(
 
   INT            node_matrix[MAX_DIVIDE+1][MAX_DIVIDE+1];
 
-  INT            pro_total=0, pro_fac=0, p=0, p_counter=0;
+  INT            node_counter_old;
+  INT            ele_counter_old;
+
 
 #ifdef DEBUG
   dstrc_enter("global_subdivide_quad");
@@ -3691,382 +3281,33 @@ void global_subdivide_quad(
 
 
 
-
-
   /* loop gnodes and create nodes on second dis */
-  for (i=0; i<io_dis->ngnode; i++)
-  {
-    actgnode = &(io_dis->gnode[i]);
-
-    /* set Id of the new node */
-    cal_dis->node[node_counter].Id = nodeid;
-
-    /* set coords of the new node */
-    for (j=0; j<3; j++)
-      cal_dis->node[node_counter].x[j] = actgnode->node->x[j];
-
-    /* store slave_node Id in master gnode */
-    actgnode->slave_node = nodeid;
-
-    /* create pointer from slave to master node */
-    cal_dis->node[node_counter].slave_node  = NULL;
-    cal_dis->node[node_counter].master_node = actgnode->node;
-
-    /* create pointer from master to slave node */
-    actgnode->node->slave_node  = &(cal_dis->node[node_counter]);
-    actgnode->node->master_node = NULL;
-
-
-    node_counter++;
-    nodeid++;
-  }
-
-
-
-  /* loop glines and create nodes */
-  for (i=0; i<io_dis->ngline; i++)
-  {
-
-    DOUBLE x1[3],dx[3];
-
-    actgline = &(io_dis->gline[i]);
-
-    /* coordinates of the beginning of this gline */
-    x1[0] = actgline->gnode[0]->node->x[0];
-    x1[1] = actgline->gnode[0]->node->x[1];
-    x1[2] = actgline->gnode[0]->node->x[2];
-
-    /* lenght of this gline in the three directions divided by subdivide */
-    dx[0] = (actgline->gnode[1]->node->x[0] - actgline->gnode[0]->node->x[0])/subdivide;
-    dx[1] = (actgline->gnode[1]->node->x[1] - actgline->gnode[0]->node->x[1])/subdivide;
-    dx[2] = (actgline->gnode[1]->node->x[2] - actgline->gnode[0]->node->x[2])/subdivide;
-
-    for (j=0; j<subdivide-1; j++)
-    {
-      cal_dis->node[node_counter].Id = nodeid;
-
-      /* store slave_node Id in gline */
-      actgline->slave_node[j]   = nodeid;
-
-      /* set coords of the new node */
-      for (k=0; k<3; k++)
-        cal_dis->node[node_counter].x[k] =  x1[k] + (j+1)*dx[k];
-
-
-      node_counter++;
-      nodeid++;
-    }
-
-  }  /* for (i=0; i<io_dis->ngline; i++) */
+  process_gnodes(io_dis, cal_dis, &node_counter, &nodeid);
 
 
 
 
+  /* create new nodes on the glines */
+  process_glines(io_dis, cal_dis, subdivide, &node_counter, &nodeid);
 
 
 
 
-
-
-  if (par.myrank==0)
-  {
-    printf("  creating subelements on %3i GSURFS\n",io_dis->ngsurf);
-
-    pro_fac   = io_dis->ngsurf/50 + 1;
-
-    pro_total = io_dis->ngsurf/pro_fac;
-
-    printf("  0");
-    for (p=0; p<pro_total; p++)
-      printf(" ");
-    printf("%3i\n",io_dis->ngsurf);
-
-    printf("  |");
-    for (p=0; p<pro_total; p++)
-      printf("-");
-    printf("|\n");
-
-
-    printf("  |");
-    p_counter = 0;
-  }
+  printf("  Generating gnodes and new elements on the second dis for %7i gsurfs...",io_dis->ngsurf);
+  fflush(stdout);
+  node_counter_old = node_counter;
+  ele_counter_old  = ele_counter;
 
   /* loop gsurfs and create nodes */
   for (g=0; g<io_dis->ngsurf; g++)
   {
-    GNODE  *gnode0=NULL, *gnode1=NULL, *gnode2=NULL, *gnode3=NULL;
-
-    DOUBLE x0[3],x1[3],x2[3],x3[3];
+    GNODE  *gnode[4];
 
     actgsurf = &(io_dis->gsurf[g]);
 
 
-    /* specify node 0 */
-    gnode0 = actgsurf->gnode[0];
-    actgsurf->node_ind[0] = 0;
-
-
-
-    /* find the line 0 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-      /* this line is in same direction */
-      if (gnode0 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][0] = j;
-        actgsurf->line_ind[1][0] = 0;
-
-        gnode1 = actgline->gnode[1];
-
-        /* find the node 1 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode1 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[1] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode0 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][0] = j;
-        actgsurf->line_ind[1][0] = 1;
-
-        gnode1 = actgline->gnode[0];
-
-        /* find the node 1 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode1 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[1] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-
-
-    /* find the line 1 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-
-      if (actgsurf->gline[j] == actgline)
-        continue;
-
-      /* this line is in same direction */
-      if (gnode1 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][1] = j;
-        actgsurf->line_ind[1][1] = 0;
-
-        gnode2 = actgline->gnode[1];
-
-        /* find the node 2 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode2 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[2] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode1 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][1] = j;
-        actgsurf->line_ind[1][1] = 1;
-
-        gnode2 = actgline->gnode[0];
-
-        /* find the node 2 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode2 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[2] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-    /* find the line 2 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-
-      if (actgsurf->gline[j] == actgline)
-        continue;
-
-      /* this line is in same direction */
-      if (gnode2 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][2] = j;
-        actgsurf->line_ind[1][2] = 0;
-
-        gnode3 = actgline->gnode[0];
-
-        /* find the node 3 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode3 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[3] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode2 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][2] = j;
-        actgsurf->line_ind[1][2] = 1;
-
-        gnode3 = actgline->gnode[1];
-
-        /* find the node 3 */
-        for (k=0; k<actgsurf->ngnode; k++)
-        {
-          if (gnode3 == actgsurf->gnode[k])
-          {
-            actgsurf->node_ind[3] = k;
-            break;
-          }
-        }
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-
-
-
-    /* find the line 3 */
-    for (j=0; j<actgsurf->ngline; j++)
-    {
-
-      if (actgsurf->gline[j] == actgline)
-        continue;
-
-      /* this line is in same direction */
-      if (gnode3 == actgsurf->gline[j]->gnode[1])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][3] = j;
-        actgsurf->line_ind[1][3] = 0;
-
-        actgnode = actgline->gnode[0];
-
-        if (actgnode != gnode0)
-          dserror("NODE MIXUP!!\n");
-
-        break;
-      }
-
-      /* this line is in opposite direction */
-      if (gnode3 == actgsurf->gline[j]->gnode[0])
-      {
-        actgline = actgsurf->gline[j];
-        actgsurf->line_ind[0][3] = j;
-        actgsurf->line_ind[1][3] = 1;
-
-        actgnode = actgline->gnode[1];
-
-        if (actgnode != gnode0)
-          dserror("NODE MIXUP!!\n");
-
-        break;
-      }
-    }  /* for (j=1; j<gsurf->ngline; j++) */
-
-
-    /*
-       printf("GSURF %2i:  line_ind: %1i(%1i) %1i(%1i) %1i(%1i) %1i(%1i)\n",
-       actgsurf->Id,
-       actgsurf->line_ind[0][0],actgsurf->line_ind[1][0],
-       actgsurf->line_ind[0][1],actgsurf->line_ind[1][1],
-       actgsurf->line_ind[0][2],actgsurf->line_ind[1][2],
-       actgsurf->line_ind[0][3],actgsurf->line_ind[1][3]);
-
-       printf("GSURF %2i:  node_ind: %1i %1i %1i %1i\n\n",
-       actgsurf->Id,
-       actgsurf->node_ind[0],actgsurf->node_ind[1],
-       actgsurf->node_ind[2],actgsurf->node_ind[3]);
-       */
-
-
-    /* set the nodal coordinates */
-    x0[0] = (actgsurf->gnode[actgsurf->node_ind[0]]->node->x[0])/(subdivide*subdivide);
-    x0[1] = (actgsurf->gnode[actgsurf->node_ind[0]]->node->x[1])/(subdivide*subdivide);
-    x0[2] = (actgsurf->gnode[actgsurf->node_ind[0]]->node->x[2])/(subdivide*subdivide);
-
-    x1[0] = (actgsurf->gnode[actgsurf->node_ind[1]]->node->x[0])/(subdivide*subdivide);
-    x1[1] = (actgsurf->gnode[actgsurf->node_ind[1]]->node->x[1])/(subdivide*subdivide);
-    x1[2] = (actgsurf->gnode[actgsurf->node_ind[1]]->node->x[2])/(subdivide*subdivide);
-
-    x2[0] = (actgsurf->gnode[actgsurf->node_ind[2]]->node->x[0])/(subdivide*subdivide);
-    x2[1] = (actgsurf->gnode[actgsurf->node_ind[2]]->node->x[1])/(subdivide*subdivide);
-    x2[2] = (actgsurf->gnode[actgsurf->node_ind[2]]->node->x[2])/(subdivide*subdivide);
-
-    x3[0] = (actgsurf->gnode[actgsurf->node_ind[3]]->node->x[0])/(subdivide*subdivide);
-    x3[1] = (actgsurf->gnode[actgsurf->node_ind[3]]->node->x[1])/(subdivide*subdivide);
-    x3[2] = (actgsurf->gnode[actgsurf->node_ind[3]]->node->x[2])/(subdivide*subdivide);
-
-
-
-    /* generate the nodes */
-    for (j=0; j<subdivide-1; j++)
-    {
-      for (k=0; k<subdivide-1; k++)
-      {
-        cal_dis->node[node_counter].Id  = nodeid;
-
-        /* store slave_node Id in gsurf */
-        actgsurf->slave_node[j][k] = nodeid;
-
-        /* set coords of the new node */
-        for (l=0; l<3; l++)
-          cal_dis->node[node_counter].x[l] =
-            (x1[l]*(j+1) + x0[l]*(subdivide-j-1)) * (subdivide-k-1) +
-            (x2[l]*(j+1) + x3[l]*(subdivide-j-1)) * (k+1);
-
-        node_counter++;
-        nodeid++;
-      }
-    }
-
-
-
-
-
-
-
+    /* create new gnodes on one gsurf */
+    process_gsurf(actgsurf, cal_dis, subdivide, gnode, &node_counter, &nodeid);
 
 
 
@@ -4101,18 +3342,18 @@ void global_subdivide_quad(
 
       switch (line_node_ind[j][0])
       {
-        case 0: gnode_l = gnode0; break;
-        case 1: gnode_l = gnode1; break;
-        case 2: gnode_l = gnode2; break;
-        case 3: gnode_l = gnode3; break;
+        case 0: gnode_l = gnode[0]; break;
+        case 1: gnode_l = gnode[1]; break;
+        case 2: gnode_l = gnode[2]; break;
+        case 3: gnode_l = gnode[3]; break;
       }
 
       switch (line_node_ind[j][1])
       {
-        case 0: gnode_r = gnode0; break;
-        case 1: gnode_r = gnode1; break;
-        case 2: gnode_r = gnode2; break;
-        case 3: gnode_r = gnode3; break;
+        case 0: gnode_r = gnode[0]; break;
+        case 1: gnode_r = gnode[1]; break;
+        case 2: gnode_r = gnode[2]; break;
+        case 3: gnode_r = gnode[3]; break;
       }
 
       if (actgsurf->gline[actgsurf->line_ind[0][j]]->gnode[links] != gnode_l)
@@ -4137,17 +3378,17 @@ void global_subdivide_quad(
 
         switch (j)
         {
-          case 0: gnode_l = gnode0; break;
-          case 1: gnode_l = gnode1; break;
-          case 2: gnode_l = gnode2; break;
-          case 3: gnode_l = gnode3; break;
+          case 0: gnode_l = gnode[0]; break;
+          case 1: gnode_l = gnode[1]; break;
+          case 2: gnode_l = gnode[2]; break;
+          case 3: gnode_l = gnode[3]; break;
         }
         switch (k)
         {
-          case 0: gnode_r = gnode0; break;
-          case 1: gnode_r = gnode1; break;
-          case 2: gnode_r = gnode2; break;
-          case 3: gnode_r = gnode3; break;
+          case 0: gnode_r = gnode[0]; break;
+          case 1: gnode_r = gnode[1]; break;
+          case 2: gnode_r = gnode[2]; break;
+          case 3: gnode_r = gnode[3]; break;
         }
 
         if (gnode_r == gnode_l && j!=k)
@@ -4158,22 +3399,12 @@ void global_subdivide_quad(
     }
 
 
-    /*
-       printf("GVOL %2i:  line_ind: ", actgsurf->Id);
-       for (j=0; j<actgsurf->ngline; j++)
-       printf("%1i(%1i) ",
-           actgsurf->actgsurf->line_ind[0][j],actgsurf->actgsurf->line_ind[1][j]);
-       printf("\n\n");
-       */
-
-
-
 
     /* write corner nodes into node_matrix */
-    node_matrix[        0][        0] = gnode0->slave_node;
-    node_matrix[subdivide][        0] = gnode1->slave_node;
-    node_matrix[subdivide][subdivide] = gnode2->slave_node;
-    node_matrix[        0][subdivide] = gnode3->slave_node;
+    node_matrix[        0][        0] = gnode[0]->slave_node;
+    node_matrix[subdivide][        0] = gnode[1]->slave_node;
+    node_matrix[subdivide][subdivide] = gnode[2]->slave_node;
+    node_matrix[        0][subdivide] = gnode[3]->slave_node;
 
 
 
@@ -4226,10 +3457,10 @@ void global_subdivide_quad(
         GSURF *gsurf0 =  actgsurf;
 
         /* SURFACE 0 */
-        if (gsurf0->gnode[1] == gnode1)
+        if (gsurf0->gnode[1] == gnode[1])
           node_matrix[i+1][j+1] = gsurf0->slave_node[i][j];
 
-        else if (gsurf0->gnode[1] == gnode3)
+        else if (gsurf0->gnode[1] == gnode[3])
           node_matrix[j+1][i+1] = gsurf0->slave_node[i][j];
 
         else
@@ -4253,7 +3484,7 @@ void global_subdivide_quad(
       {
         for (j=0; j<=subdivide;j++)
         {
-          printf(" %5i ",node_matrix[j][k][l]);
+          printf(" %7i ",node_matrix[j][k][l]);
         }
         printf("\n");
       }
@@ -4286,7 +3517,9 @@ void global_subdivide_quad(
         for (j=0; j<subdivide; j++)
         {
 
+#ifdef D_SHELL8
           INT nhyb = 0;
+#endif
 
           actele = &(cal_dis->element[ele_counter]);
 
@@ -4444,7 +3677,7 @@ void global_subdivide_quad(
           /* only for debugging */
           for (m=0; m<actele->numnp;m++)
           {
-            printf(" %5i ",actele->lm[m]);
+            printf(" %7i ",actele->lm[m]);
           }
           printf("\n");
 #endif
@@ -4456,19 +3689,12 @@ void global_subdivide_quad(
       }
 
 
-      if (par.myrank==0)
-      {
-        p_counter++;
-        if (p_counter == pro_fac)
-        {
-          printf("*");
-          p_counter = 0;
-        }
-      }
   }  /* for (g=0; g<io_dis->ngsurf; g++) */
 
-  if (par.myrank==0)
-    printf("|\n");
+  printf(" %7i gnodes and %7i elements created.\n",
+      node_counter-node_counter_old,
+      ele_counter-ele_counter_old);
+
 
 
 
@@ -4492,6 +3718,10 @@ void global_subdivide_quad(
 
   genprob.nele += numele;
 
+
+
+  printf("  Building the topology ...");
+  fflush(stdout);
 
 
   /* build pointers between nodes and elements */
@@ -4691,6 +3921,10 @@ void global_subdivide_quad(
   inpdesign_topology_fe(cal_dis);
 
 
+  printf("  Finished!!\n");
+  fflush(stdout);
+
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -4753,7 +3987,9 @@ void global_subdivide_tri(
 
   INT            node_matrix[MAX_DIVIDE+1][MAX_DIVIDE+1];
 
-  INT            pro_total=0, pro_fac=0, p=0, p_counter=0;
+  INT            node_counter_old;
+  INT            ele_counter_old;
+
 
 #ifdef DEBUG
   dstrc_enter("global_subdivide_tri");
@@ -4798,131 +4034,33 @@ void global_subdivide_tri(
 
 
 
-
-
   /* loop gnodes and create nodes on second dis */
-  for (i=0; i<io_dis->ngnode; i++)
-  {
-    actgnode = &(io_dis->gnode[i]);
-
-    /* set Id of the new node */
-    cal_dis->node[node_counter].Id = nodeid;
-
-    /* set coords of the new node */
-    for (j=0; j<3; j++)
-      cal_dis->node[node_counter].x[j] = actgnode->node->x[j];
-
-    /* store slave_node Id in master gnode */
-    actgnode->slave_node = nodeid;
-
-    /* create pointer from slave to master node */
-    cal_dis->node[node_counter].slave_node  = NULL;
-    cal_dis->node[node_counter].master_node = actgnode->node;
-
-    /* create pointer from master to slave node */
-    actgnode->node->slave_node  = &(cal_dis->node[node_counter]);
-    actgnode->node->master_node = NULL;
-
-
-    node_counter++;
-    nodeid++;
-  }
+  process_gnodes(io_dis, cal_dis, &node_counter, &nodeid);
 
 
 
-  /* loop glines and create nodes */
-  for (i=0; i<io_dis->ngline; i++)
-  {
 
-    DOUBLE x1[3],dx[3];
-
-    actgline = &(io_dis->gline[i]);
-
-    /* coordinates of the beginning of this gline */
-    x1[0] = actgline->gnode[0]->node->x[0];
-    x1[1] = actgline->gnode[0]->node->x[1];
-    x1[2] = actgline->gnode[0]->node->x[2];
-
-    /* lenght of this gline in the three directions divided by subdivide */
-    dx[0] = (actgline->gnode[1]->node->x[0] - actgline->gnode[0]->node->x[0])/2;
-    dx[1] = (actgline->gnode[1]->node->x[1] - actgline->gnode[0]->node->x[1])/2;
-    dx[2] = (actgline->gnode[1]->node->x[2] - actgline->gnode[0]->node->x[2])/2;
-
-    cal_dis->node[node_counter].Id = nodeid;
-
-    /* store slave_node Id in gline */
-    actgline->slave_node[0]   = nodeid;
-
-    /* set coords of the new node */
-    for (k=0; k<3; k++)
-      cal_dis->node[node_counter].x[k] =  x1[k] + dx[k];
-
-    node_counter++;
-    nodeid++;
-
-  }  /* for (i=0; i<io_dis->ngline; i++) */
+  /* create new nodes on the glines */
+  process_glines(io_dis, cal_dis, 2, &node_counter, &nodeid);
 
 
 
 
 
-
-
-
-
-
-
-
-  if (par.myrank==0)
-  {
-    printf("  creating subelements on %3i GSURFS\n",io_dis->ngsurf);
-
-    pro_fac   = io_dis->ngsurf/50 + 1;
-
-    pro_total = io_dis->ngsurf/pro_fac;
-
-    printf("  0");
-    for (p=0; p<pro_total; p++)
-      printf(" ");
-    printf("%3i\n",io_dis->ngsurf);
-
-    printf("  |");
-    for (p=0; p<pro_total; p++)
-      printf("-");
-    printf("|\n");
-
-
-    printf("  |");
-    p_counter = 0;
-  }
+  printf("  Generating gnodes and new elements on the second dis for %7i gsurfs...",io_dis->ngsurf);
+  fflush(stdout);
+  node_counter_old = node_counter;
+  ele_counter_old  = ele_counter;
 
   /* loop gsurfs and create nodes */
   for (g=0; g<io_dis->ngsurf; g++)
   {
-    GNODE  *gnode0, *gnode1, *gnode2;
+    GNODE  *gnode[3];
 
     actgsurf = &(io_dis->gsurf[g]);
 
-    /* specify the nodes */
-    gnode0 = actgsurf->gnode[0];
-    gnode1 = actgsurf->gnode[1];
-    gnode2 = actgsurf->gnode[2];
-
-
-    /* generate the node */
-    cal_dis->node[node_counter].Id  = nodeid;
-
-    /* store slave_node Id in gsurf */
-    actgsurf->slave_node[0][0] = nodeid;
-
-    /* set coords of the new node */
-    for (l=0; l<3; l++)
-      cal_dis->node[node_counter].x[l] =
-        (gnode0->node->x[l] + gnode1->node->x[l] + gnode2->node->x[l]) / 3;
-
-
-    node_counter++;
-    nodeid++;
+    /* create new gnodes on one gsurf */
+    process_gsurf_tri(actgsurf, cal_dis, subdivide, gnode, &node_counter, &nodeid);
 
 
 
@@ -4934,8 +4072,8 @@ void global_subdivide_tri(
     for (j=0; j<actgsurf->ngline; j++)
     {
       /* this line is in same direction */
-      if (gnode0 == actgsurf->gline[j]->gnode[0] &&
-          gnode1 == actgsurf->gline[j]->gnode[1])
+      if (gnode[0] == actgsurf->gline[j]->gnode[0] &&
+          gnode[1] == actgsurf->gline[j]->gnode[1])
       {
         actgline = actgsurf->gline[j];
         actgsurf->line_ind[0][0] = j;
@@ -4944,8 +4082,8 @@ void global_subdivide_tri(
       }
 
       /* this line is in opposite direction */
-      if (gnode1 == actgsurf->gline[j]->gnode[0] &&
-          gnode0 == actgsurf->gline[j]->gnode[1])
+      if (gnode[1] == actgsurf->gline[j]->gnode[0] &&
+          gnode[0] == actgsurf->gline[j]->gnode[1])
       {
         actgline = actgsurf->gline[j];
         actgsurf->line_ind[0][0] = j;
@@ -4962,8 +4100,8 @@ void global_subdivide_tri(
     for (j=0; j<actgsurf->ngline; j++)
     {
       /* this line is in same direction */
-      if (gnode1 == actgsurf->gline[j]->gnode[0] &&
-          gnode2 == actgsurf->gline[j]->gnode[1])
+      if (gnode[1] == actgsurf->gline[j]->gnode[0] &&
+          gnode[2] == actgsurf->gline[j]->gnode[1])
       {
         actgline = actgsurf->gline[j];
         actgsurf->line_ind[0][1] = j;
@@ -4972,8 +4110,8 @@ void global_subdivide_tri(
       }
 
       /* this line is in opposite direction */
-      if (gnode2 == actgsurf->gline[j]->gnode[0] &&
-          gnode1 == actgsurf->gline[j]->gnode[1])
+      if (gnode[2] == actgsurf->gline[j]->gnode[0] &&
+          gnode[1] == actgsurf->gline[j]->gnode[1])
       {
         actgline = actgsurf->gline[j];
         actgsurf->line_ind[0][1] = j;
@@ -4989,8 +4127,8 @@ void global_subdivide_tri(
     for (j=0; j<actgsurf->ngline; j++)
     {
       /* this line is in same direction */
-      if (gnode2 == actgsurf->gline[j]->gnode[0] &&
-          gnode0 == actgsurf->gline[j]->gnode[1])
+      if (gnode[2] == actgsurf->gline[j]->gnode[0] &&
+          gnode[0] == actgsurf->gline[j]->gnode[1])
       {
         actgline = actgsurf->gline[j];
         actgsurf->line_ind[0][2] = j;
@@ -4999,8 +4137,8 @@ void global_subdivide_tri(
       }
 
       /* this line is in opposite direction */
-      if (gnode0 == actgsurf->gline[j]->gnode[0] &&
-          gnode2 == actgsurf->gline[j]->gnode[1])
+      if (gnode[0] == actgsurf->gline[j]->gnode[0] &&
+          gnode[2] == actgsurf->gline[j]->gnode[1])
       {
         actgline = actgsurf->gline[j];
         actgsurf->line_ind[0][2] = j;
@@ -5027,9 +4165,9 @@ void global_subdivide_tri(
 
 
     /* write corner nodes into node_matrix */
-    node_matrix[0][0] = gnode0->slave_node;
-    node_matrix[2][0] = gnode1->slave_node;
-    node_matrix[0][2] = gnode2->slave_node;
+    node_matrix[0][0] = gnode[0]->slave_node;
+    node_matrix[2][0] = gnode[1]->slave_node;
+    node_matrix[0][2] = gnode[2]->slave_node;
 
 
 
@@ -5068,7 +4206,7 @@ void global_subdivide_tri(
       {
         for (j=0; j<=2;j++)
         {
-          printf(" %5i ",node_matrix[j][l]);
+          printf(" %7i ",node_matrix[j][l]);
         }
         printf("\n");
       }
@@ -5095,7 +4233,10 @@ void global_subdivide_tri(
 
       for (l=0; l<3; l++)
       {
+
+#ifdef D_SHELL8
         INT nhyb=0;
+#endif
 
         actele = &(cal_dis->element[ele_counter]);
 
@@ -5294,7 +4435,7 @@ void global_subdivide_tri(
         /* only for debugging */
         for (m=0; m<actele->numnp;m++)
         {
-          printf(" %5i ",actele->lm[m]);
+          printf(" %7i ",actele->lm[m]);
         }
         printf("\n");
 #endif
@@ -5304,20 +4445,12 @@ void global_subdivide_tri(
         eleid++;
       }
 
-      if (par.myrank==0)
-      {
-        p_counter++;
-        if (p_counter == pro_fac)
-        {
-          printf("*");
-          p_counter = 0;
-        }
-      }
 
   }  /* for (g=0; g<io_dis->ngsurf; g++) */
+  printf(" %7i gnodes and %7i elements created.\n",
+      node_counter-node_counter_old,
+      ele_counter-ele_counter_old);
 
-  if (par.myrank==0)
-    printf("|\n");
 
 
 
@@ -5341,6 +4474,10 @@ void global_subdivide_tri(
 
   genprob.nele += numele;
 
+
+
+  printf("  Building the topology ...");
+  fflush(stdout);
 
 
   /* build pointers between nodes and elements */
@@ -5531,6 +4668,10 @@ void global_subdivide_tri(
 
   /* create the pointers between gnodes... and the design */
   inpdesign_topology_fe(cal_dis);
+
+
+  printf("  Finished!!\n");
+  fflush(stdout);
 
 
 #ifdef DEBUG
