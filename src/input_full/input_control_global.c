@@ -218,6 +218,7 @@ ioflags.fluid_stress        =0;
 ioflags.fluid_vis           =0;
 ioflags.ale_disp            =0;
 ioflags.relative_displ      =0;
+ioflags.output_dis          =0;
 
 
 if (frfind("-PROBLEM TYP")==0) dserror("frfind: PROBLEM TYP not in input file");

@@ -253,3 +253,6 @@ Maintainer: Malte Neumann
 #endif
 
 
+#ifndef MAX_WARNINGS
+#define MAX_WARNINGS (20)
+#endif

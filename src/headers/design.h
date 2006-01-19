@@ -99,6 +99,7 @@ typedef struct _DLINE
    {
      struct _ARCLINE        *arcline;       /* arcline */
      struct _STLINE         *stline;        /* stline */
+     struct _NURBLINE       *nurbline;      /* nurbline */
    }                          props;        /* name of union */
 
    /*------- design topology section */
@@ -160,6 +161,7 @@ typedef struct _ARCLINE
    DOUBLE                     endang;            /* angle in radians */
    DOUBLE                     center[2];         /* coords of the center point */
    DOUBLE                     total_length;      /* total arc length */
+   DOUBLE                     trans_matrix[4][4];/* transformation matrix */
 
 } ARCLINE;
 
@@ -178,13 +180,44 @@ typedef struct _STLINE
 } STLINE;
 
 
+/*!----------------------------------------------------------------------
+\brief structure NURBLINE
+
+<pre>                                                              mn 05/03
+This structure contains all geometric properties of a straight line.
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef struct _NURBLINE
+{
+  INT                        degree;
+  INT                        num_cp;
+  DOUBLE                   **cp;
+  INT                        num_knots;
+  DOUBLE                    *knots;
+  INT                        rational;
+  DOUBLE                    *weights;
+
+  DOUBLE                     total_length;      /* total length of the line */
+
+} NURBLINE;
+
+
 /*----------------------------------------------------------------------*
  | design surf                                            m.gee 4/01    |
  *----------------------------------------------------------------------*/
 typedef struct _DSURF
 {
    INT                       Id;          /* Id of this design surface */
+   enum _DSURF_TYP           typ;         /* typ of the dline (st,nurb,arc) */
    INT                       ncond;       /* number of conditions associated with me (not used at the moment) */
+
+   union                                    /* union pointer to surf properties */
+   {
+     struct _NURBSURF       *nurbsurf;      /* nurbsurf */
+   }                         props;         /* name of union */
+
+
    /*------- design topology section */
    ARRAY                     my_dlineId;  /* Id's and orientation of the design lines to me */
                                           /* first row: Ids of the design lines of this surface */
@@ -217,6 +250,33 @@ typedef struct _DSURF
 #endif
    INT                     locsysId;
 } DSURF;
+
+
+
+
+/*!----------------------------------------------------------------------
+\brief structure NURBSURF
+
+<pre>                                                              mn 05/03
+This structure contains all geometric properties of a nurb surface.
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef struct _NURBSURF
+{
+  INT                        degree[2];
+  INT                        num_cp[2];
+  DOUBLE                  ***cp;
+  INT                        num_knots[2];
+  DOUBLE                    *knots[2];
+  INT                        rational;
+  DOUBLE                   **weights;
+  INT                        istrimmed;
+  DOUBLE                     center[3];
+  DOUBLE                     normal[3];
+
+} NURBSURF;
+
 
 
 /*----------------------------------------------------------------------*

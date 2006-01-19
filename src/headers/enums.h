@@ -465,6 +465,9 @@ typedef enum _FLUID_STRESS
      str_liftdrag,
      str_all
 }  FLUID_STRESS;
+
+
+
 /*!----------------------------------------------------------------------
 \brief enum of DLINE types
 
@@ -479,6 +482,26 @@ typedef enum _DLINE_TYP
                        nurbline,          /* nurb line */
                        arcline            /* arc line */
 } DLINE_TYP;
+
+
+
+
+/*!----------------------------------------------------------------------
+\brief enum of DSURF types
+
+<pre>                                                              mn 05/03
+This is the enumeration of all types for DSURFs
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef enum _DSURF_TYP
+{
+                       flatsurf,         /* flat surface */
+                       nurbsurf          /* nurb surface */
+} DSURF_TYP;
+
+
+
 
 /*!----------------------------------------------------------------------
 \brief enum of SSI coupling types
