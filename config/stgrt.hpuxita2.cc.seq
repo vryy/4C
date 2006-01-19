@@ -4,10 +4,12 @@ PARALLEL=no
 
 F77=f90
 CC=cc
+CP=
 LD=f90
 
 PLAIN_F77=f90
 PLAIN_CC=cc
+PLAIN_CP=
 PLAIN_LD=f90
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_ita2"
@@ -30,6 +32,11 @@ SPOOLES_LIB=""
 # umfpack
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack_ita2_64"
+
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
 
 # visual2
 if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
@@ -57,9 +64,11 @@ PLAIN_LIBS="-lcl -lc -lm"
 # FAST
 PROGRAMNAME=cca_ita2_seq64
 CFLAGS_OPT="+O3 +Onolimit +Optrs_to_globals +Odataprefetch +Onoinitcheck +Oinline +Oclone"
+CPFLAGS_OPT=""
 FFLAGS_OPT="+O3 +Onolimit +Onoptrs_to_globals +Oinline"
 LDFLAGS_OPT="-O"
 CFLAGS="+DSitanium -Aa -Ae +DD64 +w1 -z"
+CPFLAGS=""
 FFLAGS="+DSitanium +DD64"
 LDFLAGS="+DSitanium +DD64 +A"
 

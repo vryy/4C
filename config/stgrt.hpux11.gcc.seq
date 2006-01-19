@@ -4,10 +4,12 @@ PARALLEL=no
 
 F77=g77
 CC=gcc
+CP=g++
 LD=gcc
 
 PLAIN_F77=g77
 PLAIN_CC=gcc
+PLAIN_CP=g++
 PLAIN_LD=gcc
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
@@ -27,6 +29,12 @@ SPOOLES_LIB=""
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_32"
 
+
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
+
 # fast elements
 LOOPL="-DLOOPL=64"
 
@@ -37,8 +45,10 @@ PLAIN_LIBS="-lcl -lc -lm -lg2c"
 # FAST
 PROGRAMNAME=cca_11_seq
 CFLAGS_OPT="-O"
+CPFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
 CFLAGS="-ansi -DHPUX_GNU -Wall"
+CPFLAGS="-ansi -DHPUX_GNU -Wall"
 FFLAGS="-Wall"
 LDFLAGS=""
 

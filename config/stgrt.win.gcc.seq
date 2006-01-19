@@ -9,10 +9,12 @@ fi
 
 F77=g77
 CC=gcc
+CP=g++
 LD=gcc
 
 PLAIN_F77=g77
 PLAIN_CC=gcc
+PLAIN_CP=g++
 PLAIN_LD=gcc
 
 BASEDIR="/home/ccarat/lib"
@@ -31,6 +33,11 @@ SPOOLES_LIB=""
 # umfpack
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack"
+
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
 
 # visual2
 if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
@@ -59,8 +66,10 @@ PLAIN_LIBS="-lm -lg2c"
 # FAST
 PROGRAMNAME=ccarat.exe
 CFLAGS_OPT="-O"
+CPFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
 CFLAGS="-c -ansi -Wall"
+CPFLAGS="-c -ansi -Wall"
 FFLAGS="-Wall"
 LDFLAGS=""
 

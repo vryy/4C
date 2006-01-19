@@ -9,10 +9,12 @@ fi
 
 F77=f77
 CC=cc
+CP=
 LD=cc
 
 PLAIN_F77=f77
 PLAIN_CC=cc
+PLAIN_CP=
 PLAIN_LD=cc
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
@@ -38,6 +40,11 @@ SPOOLES_LIB=""
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux10_32"
 
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
+
 # visual2
 VISUAL2_INC=""
 VISUAL2_LIB="-L$BASEDIR/visual -lVisual2 -lX11"
@@ -57,8 +64,10 @@ PLAIN_LIBS="-lcl -lc -lM -lm"
 # FAST
 PROGRAMNAME=cca_10_seq
 CFLAGS_OPT="-O +Onolimit"
+CPFLAGS_OPT=""
 FFLAGS_OPT="-O"
 CFLAGS="-D__HP__  +e -Ae +w1"
+CPFLAGS=""
 FFLAGS=""
 LDFLAGS=""
 

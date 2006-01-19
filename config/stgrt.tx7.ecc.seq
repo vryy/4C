@@ -5,10 +5,12 @@ PARALLEL=no
 
 F77=efc
 CC=ecc
+CP=
 LD=efc
 
 PLAIN_F77=efc
 PLAIN_CC=ecc
+PLAIN_CP=
 PLAIN_LD=efc
 
 BASEDIR="/nfs/home5/rus/rus/stati/lib/tx7"
@@ -28,6 +30,11 @@ SPOOLES_LIB=""
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack -lamd"
 
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
+
 # visual2
 VISUAL2_INC=""
 VISUAL2_LIB=""
@@ -44,9 +51,11 @@ PLAIN_LIBS=""
 # FAST
 PROGRAMNAME=cca_tx7_seq
 CFLAGS_OPT="-O3"
+CPFLAGS_OPT="-O3"
 FFLAGS_OPT="-O"
 LDFLAGS_OPT="-O"
 CFLAGS="-ansi -Wall"
+CPFLAGS="-ansi -Wall"
 FFLAGS="-Wall"
 LDFLAGS="-C90 -Vaxlib -openmp"
 

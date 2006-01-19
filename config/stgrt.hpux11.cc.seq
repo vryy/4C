@@ -4,10 +4,12 @@ PARALLEL=no
 
 F77=f90
 CC=cc
+CP=
 LD=f90
 
 PLAIN_F77=f90
 PLAIN_CC=cc
+PLAIN_CP=
 PLAIN_LD=f90
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
@@ -31,6 +33,11 @@ SPOOLES_LIB=""
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_$BIT"
 
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
+
 # visual2
 VISUAL2_INC=""
 VISUAL2_LIB="-L$BASEDIR/visual -lVisual2 -lX11"
@@ -53,9 +60,11 @@ PLAIN_LIBS="-lcl -lc -lm"
 # FAST
 PROGRAMNAME=cca_11_seq$BIT
 CFLAGS_OPT="-O +Onolimit"
+CPFLAGS_OPT=""
 FFLAGS_OPT="-O"
 LDFLAGS_OPT=""
 CFLAGS="-D__HP__  +e -Ae +w1"
+CPFLAGS=""
 FFLAGS=""
 LDFLAGS=""
 

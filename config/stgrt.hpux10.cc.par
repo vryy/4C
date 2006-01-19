@@ -10,10 +10,12 @@ fi
 
 F77=/opt/mpi/bin/mpif77
 CC=/opt/mpi/bin/mpicc
+CP=
 LD=/opt/mpi/bin/mpicc
 
 PLAIN_F77=f77
 PLAIN_CC=cc
+PLAIN_CP=
 PLAIN_LD=cc
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
@@ -32,6 +34,11 @@ SPOOLES_LIB="-L$BASEDIR/spooles -lspoolesMPI_10.20  -lspooles_10.20"
 # umfpack
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux10_32"
+
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
 
 # visual2
 if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
@@ -59,7 +66,9 @@ PLAIN_LIBS="-lcl -lc -lM -lm"
 # FAST
 PROGRAMNAME=cca_10_par
 CFLAGS_OPT="-O +Onolimit"
+CPFLAGS_OPT=""
 FFLAGS_OPT="-O"
 CFLAGS="-D__HP__  +e -Ae +w1"
+CPFLAGS=""
 FFLAGS=""
 LDFLAGS=""

@@ -4,10 +4,12 @@ PARALLEL=no
 
 F77=sxf90
 CC=sxc++
+CP=sxc++
 LD=sxf90
 
 PLAIN_F77=sxf90
 PLAIN_CC=sxc++
+PLAIN_CP=sxc++
 PLAIN_LD=sxf90
 
 
@@ -29,6 +31,11 @@ SPOOLES_LIB=""
 UMFPACK_INC=""
 UMFPACK_LIB=""
 
+# nurbs
+NURBS_INC=""
+NURBS_LIB=""
+
+
 # fast elements
 LOOPL="-DLOOPL=512"
 
@@ -39,8 +46,10 @@ LIBS="-lc -lm -llapack  -lblas"
 # FAST
 PROGRAMNAME=cca_sx6_seq
 CFLAGS_OPT="-O nooverlap -alias nopointer"
+CPFLAGS_OPT="-O nooverlap -alias nopointer"
 FFLAGS_OPT=""
 CFLAGS="-Xc -DSIXTYFOUR -pvctl loopcnt=500000 noassume -pspa"
+CPFLAGS="-Xc -DSIXTYFOUR -pvctl loopcnt=500000 noassume -pspa"
 FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl loopcnt=500000 noassume\" -pspa"
 LDFLAGS="-pspa"
 

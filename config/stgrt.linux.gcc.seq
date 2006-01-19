@@ -9,10 +9,12 @@ fi
 
 F77=g77
 CC=gcc
+CP=g++
 LD=gcc
 
 PLAIN_F77=g77
 PLAIN_CC=gcc
+PLAIN_CP=g++
 PLAIN_LD=gcc
 
 BASEDIR="/home/ccarat/lib/linux"
@@ -31,6 +33,12 @@ SPOOLES_LIB=""
 # umfpack
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack"
+
+
+# nurbs
+NURBS_INC=""
+NURBS_LIB="-L$BASEDIR/nurbs/ -lnurbsd -lmatrix -lmatrixI -lmatrixN -Wl,--rpath -Wl,$BASEDIR/nurbs/"
+
 
 # visual2
 VISUAL2_INC=""
@@ -55,9 +63,11 @@ PLAIN_LIBS="-lc -lm -lF77ext -lf2c -lg2c"
 # FAST
 PROGRAMNAME=cca_linux_seq
 CFLAGS_OPT="-O3"
+CPFLAGS_OPT="-O3"
 FFLAGS_OPT="-O"
 LDFLAGS_OPT="-O"
 CFLAGS="-ansi -Wall"
+CPFLAGS="-ansi -Wall"
 FFLAGS="-Wall"
 LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
 
