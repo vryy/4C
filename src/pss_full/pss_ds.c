@@ -725,12 +725,15 @@ void dserror_func(
   fflush(stdout);
   fflush(allfiles.out_err);
 
-#ifdef BINIO
-  io_emergency_close_files();
-#endif
-
+#ifdef DEBUG
 #ifdef DSERROR_DUMP
   *((INT*)0x0) = 123456;
+#endif
+#endif
+
+#ifdef BINIO
+  /* This causes communication in the parallel case. */
+  io_emergency_close_files();
 #endif
 
 

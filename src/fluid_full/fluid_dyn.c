@@ -55,7 +55,6 @@ see dissertation of W.A. WALL, chapter 4.2 'Zeitdiskretisierung'
 ------------------------------------------------------------------------*/
 void dyn_fluid()
 {
-INT dyntyp;
 INT iop   ;                         /* flag for time algorithm          */
 INT freesurf;                       /* flag for fluid problem w/ freesurface */
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
@@ -71,24 +70,18 @@ dstrc_enter("dyn_fluid");
 /*--------------------------------------------------- set some pointers */
 fdyn = alldyn[genprob.numff].fdyn;
 iop = fdyn->iop;
-dyntyp = fdyn->dyntyp;
 freesurf = fdyn->freesurf;
 
 /*------------------------------------------------------ initialisation */
 if (fdyn->init!=1) fdyn->acttime=0.0;
 fdyn->step=0;
 
+switch (fdyn->dyntyp)
+{
+case dyntyp_nln_time_int:
 /*----------------------------------------------------------------------*
 |  call algorithms                                                      |
  *----------------------------------------------------------------------*/
-if (dyntyp==1)
-#ifdef D_FLUID2_PRO 
-  fluid_pm();
-#else
-dserror("FLUID2TU needed but not compiled in!");
-#endif
-else if (dyntyp==0)
-{
    switch (iop)
    {
    case 0:		/* stationary solution algorithm		*/
@@ -107,7 +100,7 @@ else if (dyntyp==0)
          {
    	   /* implicit and semi-implicit algorithms 			*/
             if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi();
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 	   /* implicit and semi-implicit algorithms with turbulence-model	*/
             if(fdyn->turbu == 2)                    fluid_isi_tu();
 	   /* implicit and semi-implicit algorithms with turbulence-model	*/
@@ -135,8 +128,17 @@ else if (dyntyp==0)
    default:
       dserror("Unknown time integration scheme");
    }		/* end switch						*/
+   break;
+
+#ifdef D_FLUID_PM
+case dyntyp_projection_method:
+  fluid_pm();
+  break;
+#endif
+
+default:
+  dserror("Unknown time integration type %d", fdyn->dyntyp);
 }
-else     dserror("Unknown dynamic type");
 
 /*----------------------------------------------------------------------*/
 #else

@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
+#include "../pss_full/pss_parser.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -203,6 +204,19 @@ for (i=0; i<counter; i++)
       if (ierr!=1) dserror("cannot read CURVE");
       frdouble("c2",&(actcurve->c2),&ierr);
       if (ierr!=1) dserror("cannot read CURVE");
+   }
+   frchk("EXPR",&ierr);
+   if (ierr==1)
+   {
+     actcurve->curvetyp = curve_expr;
+     frchar("FUNC",buffer,&ierr);
+     if (ierr!=1) dserror("cannot read CURVE");
+     actcurve->funct = pss_parse(buffer);
+     
+     frdouble("t1",&(actcurve->c1),&ierr);
+     if (ierr!=1) dserror("cannot read CURVE");
+     frdouble("t2",&(actcurve->c2),&ierr);
+     if (ierr!=1) dserror("cannot read CURVE");
    }
 } /* end of loop over curve lines */
 /*----------------------------------------------------------------------*/

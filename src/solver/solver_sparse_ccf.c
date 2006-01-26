@@ -92,7 +92,13 @@ void mask_ccf(
   dof_connect = (INT**)CCACALLOC(ccf->numeq_total,sizeof(INT*));
   if (!dof_connect) dserror("Allocation of dof_connect failed");
   /*---------------------- make the dof_connect list locally on each proc */
+#ifdef PERF
+  perf_begin(76);
+#endif
   ccf_nnz_topology(actfield,actpart,actsolv,actintra,ccf,dof_connect);
+#ifdef PERF
+  perf_end(76);
+#endif
   /*------------------------------------------------------ make nnz_total */
 #ifdef PARALLEL
   ccf->nnz_total=0;
@@ -175,7 +181,9 @@ void  ccf_update(
   imyrank = actintra->intra_rank;
   inprocs = actintra->intra_nprocs;
   /*------------------ make a local copy of the array actpart->coupledofs */
-  am_alloc_copy(&(actpart->pdis[disnum].coupledofs),&coupledofs);
+  memset(&coupledofs, 0, sizeof(ARRAY));
+  if (actpart->pdis[disnum].coupledofs.Typ != cca_XX)
+    am_alloc_copy(&(actpart->pdis[disnum].coupledofs),&coupledofs);
   /*------------------------------------- loop the nodes on the partition */
   update = ccf->update.a.iv;
   counter=0;
@@ -237,7 +245,8 @@ void  ccf_update(
   /*---------------------------- sort the vector update just to make sure */
   qsort((INT*) update, counter, sizeof(INT), cmp_int);
   /*----------------------------------------------------------------------*/
-  amdel(&coupledofs);
+  if (coupledofs.fdim > 0)
+    amdel(&coupledofs);
   /*----------------------------------------------------------------------*/
 
 #ifdef DEBUG
@@ -305,6 +314,9 @@ void  ccf_nnz_topology(
   amdef("tmp",&dofpatch,MAX_NNZPERROW,1,"IV");
   amzero(&dofpatch);
   /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_begin(77);
+#endif
   for (i=0; i<numeq; i++)
   {
     dof = update[i];
@@ -374,7 +386,13 @@ void  ccf_nnz_topology(
       }
     }
   }  /* end of loop over numeq */
+#ifdef PERF
+  perf_end(77);
+#endif
   /*--------------------------------------------- now do the coupled dofs */
+#ifdef PERF
+  perf_begin(78);
+#endif
   coupledofs = &(actpart->pdis[disnum].coupledofs);
   for (i=0; i<coupledofs->fdim; i++)
   {
@@ -453,6 +471,9 @@ void  ccf_nnz_topology(
       }
     }
   } /* end of loop over coupled dofs */
+#ifdef PERF
+  perf_end(78);
+#endif
   /* make the who-has-to-send-whom-how-much-and-what-arrays and communicate */
 #ifdef PARALLEL
   counter=0;
@@ -540,6 +561,9 @@ void  ccf_nnz_topology(
   }
 #endif
   /*--------------------------------- now go through update and count nnz */
+#ifdef PERF
+  perf_begin(79);
+#endif
   nnz=0;
   for (i=0; i<ccf->update.fdim; i++)
   {
@@ -556,6 +580,9 @@ void  ccf_nnz_topology(
   /*----------------------------------------------------------------------*/
   amdel(&dofpatch);
   /*----------------------------------------------------------------------*/
+#ifdef PERF
+  perf_end(79);
+#endif
 
 #ifdef DEBUG
   dstrc_exit();

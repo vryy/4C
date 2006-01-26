@@ -38,10 +38,13 @@ configfile="$2"
 definefile="$3"
 extraargs="$4"
 
-. ./scripts/extract-defines.sh
+SRC=`dirname $0`
+DEST=.
 
-. ./scripts/setup-variables.sh
-. ./scripts/setup-libraries.sh
-. ./scripts/setup-objects.sh
-. ./scripts/build-define-header.sh
-. ./scripts/build-makefile.sh
+. $SRC/scripts/extract-defines.sh
+
+. $SRC/scripts/setup-variables.sh
+. $SRC/scripts/setup-libraries.sh
+. $SRC/scripts/setup-objects.sh
+. $SRC/scripts/build-define-header.sh
+. $SRC/scripts/build-makefile.sh

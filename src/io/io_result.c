@@ -200,6 +200,11 @@ void out_results(struct _BIN_OUT_FIELD* context,
     out_node_chunk(context, "pressure", cc_pressure, 1, 0, place);
   }
 
+  if (flags & OUTPUT_AV_PRESSURE)
+  {
+    out_node_chunk(context, "average_pressure", cc_av_pressure, 1, 0, place);
+  }
+
   if (flags & OUTPUT_STRESS)
   {
     INT value_length;

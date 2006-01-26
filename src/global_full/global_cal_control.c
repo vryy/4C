@@ -114,7 +114,7 @@ if (genprob.graderw>0) wge_setdof();
 #ifdef D_MLSTRUCT
 if (genprob.multisc_struct == 1)
 {
-   actsmfield = &(sm_field[0]); 
+   actsmfield = &(sm_field[0]);
    assign_dof(actsmfield);
    if (actsmfield->dis[0].numeq >= 3000)
       dserror(">3000 submesh-DOF's->size of fields ele.e.w1.fint_mi,..for static cond.have to be enlarged\n");

@@ -538,6 +538,14 @@ void frchk(
  *----------------------------------------------------------------------*/
 void frend(void);
 
+void frword(char string[],char *var, INT *ierr);
+
+/* Compare two words */
+INT frwordcmp(CHAR* p1, CHAR* p2);
+
+INT frcheckyes(CHAR* p);
+INT frcheckno(CHAR* p);
+INT frreadyes(CHAR* key, INT* flag);
 
 
 
@@ -653,28 +661,7 @@ void visual_readpss(
 /* ====================================================================
  * file: ps_perf.c
  * ==================================================================== */
-/*!---------------------------------------------------------------------
-  \brief routine to meassure the performance
-
-  <pre>                                                        mn 01/04
-  Gets the current cpu tics.
-  </pre>
-  \return void
-  ------------------------------------------------------------------------*/
-DOUBLE perf_cpu (void);
-
-
-/*!---------------------------------------------------------------------
-  \brief routine to meassure the performance
-
-  <pre>                                                        mn 01/04
-  Gets the current system time.
-  </pre>
-  \return void
-  ------------------------------------------------------------------------*/
-DOUBLE perf_time (void);
-
-
+#ifdef PERF
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
@@ -732,6 +719,24 @@ void perf_end (
   \return void
   ------------------------------------------------------------------------*/
 void perf_out (void);
+
+#else
+#define perf_init_all()
+#define perf_init()
+#define perf_begin(index)
+#define perf_end(index)
+#define perf_out()
+#endif
+
+/*!---------------------------------------------------------------------
+  \brief routine to meassure the performance
+
+  <pre>                                                        mn 01/04
+  Gets the current system time.
+  </pre>
+  \return void
+  ------------------------------------------------------------------------*/
+DOUBLE perf_time (void);
 
 
 #endif

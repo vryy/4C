@@ -76,6 +76,7 @@ typedef enum _CHUNK_CONTENT_TYPE {
   cc_displacement,
   cc_velocity,
   cc_pressure,
+  cc_av_pressure,
   cc_stress,
   cc_domain,
 
@@ -90,6 +91,10 @@ typedef enum _CHUNK_CONTENT_TYPE {
   /* general output */
   cc_mesh,
   cc_coords,
+  cc_dnode,
+  cc_dline,
+  cc_dsurf,
+  cc_dvol,
   cc_ele_params,
   cc_node_array
 } CHUNK_CONTENT_TYPE;
@@ -180,6 +185,22 @@ void out_shell9_setup(struct _BIN_OUT_FIELD *context);
 
 #endif
 
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Find the number of double and integer values that are needed
+  to store the design object ids for each node.
+
+  \author u.kue
+  \date 12/05
+  \sa out_pack_ele_params
+*/
+/*----------------------------------------------------------------------*/
+void find_design_item_length(struct _BIN_OUT_FIELD* context,
+                             INT* dnodemax,
+                             INT* dlinemax,
+                             INT* dsurfmax,
+                             INT* dvolmax);
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -346,6 +367,7 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
                     DOUBLE *send_buf,
                     INT send_count,
                     INT *send_size_buf,
+                    INT send_size_count,
                     INT dst_first_id,
                     INT dst_num);
 

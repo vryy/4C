@@ -42,6 +42,7 @@ possible). You might want to start reading the file from there.
 #include "post_fluid2_pro.h"
 #include "post_fluid3.h"
 #include "post_fluid3_fast.h"
+#include "post_fluid3_pro.h"
 #include "post_interf.h"
 #include "post_shell8.h"
 #include "post_shell9.h"
@@ -370,7 +371,7 @@ static void write_velocity(FIELD_DATA *field, RESULT_DATA* result)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void write_pressure(FIELD_DATA *field, RESULT_DATA* result)
+static void write_pressure(FIELD_DATA *field, RESULT_DATA* result, CHAR* chunkname)
 {
   INT k;
   CHAR* componentnames[] = { "pressure" };
@@ -383,14 +384,14 @@ static void write_pressure(FIELD_DATA *field, RESULT_DATA* result)
   dstrc_enter("write_pressure");
 #endif
 
-  init_chunk_data(result, &chunk, "pressure");
+  init_chunk_data(result, &chunk, chunkname);
 
   time = map_read_real(result->group, "time");
   step = map_read_int(result->group, "step");
 
-  post_log(3, "%s: Write pressure of step %d\n", field->name, step);
+  post_log(3, "%s: Write %s of step %d\n", field->name, chunkname, step);
 
-  sprintf(buf, "%s_pressure", fieldnames[field->type]);
+  sprintf(buf, "%s_%s", fieldnames[field->type], chunkname);
   GiD_BeginResult(buf, "ccarat", step, GiD_Scalar, GiD_OnNodes,
                   NULL, NULL, chunk.value_entry_length, componentnames);
 
@@ -683,6 +684,22 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
       break;
     }
 #endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+    {
+      if (numnp==8)
+      {
+        gid->is_fluid3_pro_222    = 1;
+        gid->fluid3_pro_222_name  = "fluid3_pro_222";
+      }
+      if (numnp==27)
+      {
+        gid->is_fluid3_pro_333    = 1;
+        gid->fluid3_pro_333_name  = "fluid3_pro_333";
+      }
+      break;
+    }
+#endif
 #ifdef D_ALE
     case el_ale2:
     {
@@ -921,6 +938,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #ifdef D_FLUID3_F
   fluid3_fast_write_gauss(gid);
 #endif
+#ifdef D_FLUID3_PRO
+  fluid3_pro_write_gauss(gid);
+#endif
 #ifdef D_ALE
   ale2_write_gauss(gid);
   ale3_write_gauss(gid);
@@ -969,6 +989,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #endif
 #ifdef D_FLUID3_F
   fluid3_fast_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_FLUID3_PRO
+  fluid3_pro_write_mesh(field, gid, &first_mesh);
 #endif
 #ifdef D_ALE
   ale2_write_mesh(field, gid, &first_mesh);
@@ -1065,7 +1088,11 @@ static void write_field(PROBLEM_DATA* problem, INT num)
     }
     if (map_has_map(result.group, "pressure"))
     {
-      write_pressure(field, &result);
+      write_pressure(field, &result, "pressure");
+    }
+    if (map_has_map(result.group, "average_pressure"))
+    {
+      write_pressure(field, &result, "average_pressure");
     }
 
     /* element dependend results */
@@ -1200,7 +1227,7 @@ static void write_fsi(PROBLEM_DATA* problem)
     }
     if (map_has_map(result.group, "pressure"))
     {
-      write_pressure(fluid_field, &result);
+      write_pressure(fluid_field, &result, "pressure");
     }
 
 #if 0

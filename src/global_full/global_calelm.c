@@ -26,6 +26,7 @@
 #include "../fluid_full/fluid_pm_prototypes.h"
 #include "../beam3/beam3.h"
 #include "../fluid2_pro/fluid2pro_prototypes.h"
+#include "../fluid3_pro/fluid3pro_prototypes.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
 #include "../fluid3_fast/f3f_prototypes.h"
@@ -54,16 +55,16 @@ enum _CALC_ACTION calc_action[MAXFIELD];
  *----------------------------------------------------------------------*/
 struct _ARRAY estif_global;    /* element stiffness matrix                */
 struct _ARRAY emass_global;    /* element mass matrix                     */
-struct _ARRAY lmass_global;    /* element mass matrix                     */
 struct _ARRAY gradopr_global;  /* gradient operator                       */
 struct _ARRAY eforce_global;   /* element RHS (within fluid)              */
 struct _ARRAY edforce_global;  /* element dirichlet RHS                   */
 struct _ARRAY intforce_global;
-#if defined(D_FLUID2TU) || defined(D_FLUID2_PRO)
+#if defined(D_FLUID2TU)
 struct _ARRAY etforce_global;  /* element Time RHS                        */
 #endif
-#ifdef D_FLUID2_PRO
+#ifdef D_FLUID_PM
 struct _ARRAY gforce_global;   /* element dirich for pressure  RHS (g_n+1)*/
+struct _ARRAY lmass_global;    /* element mass matrix                     */
 #endif
 #ifdef D_FLUID2TU
 struct _ARRAY eproforce_global;
@@ -336,11 +337,19 @@ dstrc_enter("calelm");
 
 #ifdef D_FLUID2_PRO
       case el_fluid2_pro:
-        actele2 = actpart->pdis[1].element[i];
-        fluid2_pro(actpart,actintra,actele,actele2,
-            &estif_global,&emass_global,&lmass_global,&gradopr_global,
-            &etforce_global,&eforce_global,
-            &edforce_global,&gforce_global,action,&hasdirich);
+        fluid2_pro(actpart,actintra,actele,
+		   &estif_global,&emass_global,&lmass_global,&gradopr_global,
+		   &eforce_global,
+		   &edforce_global,&gforce_global,action,&hasdirich,&hasext);
+        break;
+#endif
+
+#ifdef D_FLUID3_PRO
+      case el_fluid3_pro:
+        fluid3_pro(actpart,actintra,actele,
+		   &estif_global,&emass_global,&lmass_global,&gradopr_global,
+		   &eforce_global,
+		   &edforce_global,&gforce_global,action,&hasdirich,&hasext);
         break;
 #endif
 
@@ -524,14 +533,14 @@ dstrc_enter("calelm");
          container->dvec = container->frhs;
          assemble_intforce(actele,&edforce_global,container,actintra);
       }
-#ifdef D_FLUID2_PRO
-      if (*action==calc_fluid_amatrix)
-         assemble_fluid_amatrix(container,actele,actele2,actintra);
-
-      if (*action==calc_fluid_f2pro_rhs_both)
+#ifdef D_FLUID_PM
+      /*
+       * This test requires that the whole container is initialized
+       * with zero for fluid problems. */
+      if (container->fgradprhs != NULL)
       {
-         container->dvec = container->fvelrhs2;
-         assemble_intforce(actele,&etforce_global,container,actintra);
+        container->dvec = container->fgradprhs;
+        assemble_intforce(actele,&gforce_global,container,actintra);
       }
 #endif
 #ifdef D_FLUID2TU
@@ -784,6 +793,7 @@ INT is_fluid2_pro=0;
 INT is_fluid2_tu=0;
 INT is_fluid3=0;
 INT is_fluid3_fast=0;
+INT is_fluid3_pro=0;
 INT is_ale3=0;
 INT is_ale2=0;
 INT is_beam3=0;
@@ -800,9 +810,8 @@ if (estif_global.Typ != cca_DA)
 {
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
-amdef("lmass",&lmass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("gradopr",&gradopr_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
-#if defined(D_FLUID2TU) || defined(D_FLUID2_PRO)
+#if defined(D_FLUID2TU)
 amdef("etforce",  &etforce_global,  (MAXNOD*MAXDOFPERNODE),1,"DV");
 #endif
 #ifdef D_FLUID2TU
@@ -811,8 +820,9 @@ amdef("eproforce",&eproforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("eforce",   &eforce_global,   (MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("edforce",  &edforce_global,  (MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("inforce",  &intforce_global, (MAXNOD*MAXDOFPERNODE),1,"DV");
-#ifdef D_FLUID2_PRO
+#ifdef D_FLUID_PM
 amdef("gforce",   &gforce_global,   (MAXNOD*MAXDOFPERNODE),1,"DV");
+amdef("lmass",    &lmass_global,    (MAXNOD*MAXDOFPERNODE),1,"DV");
 #endif
 }
 /*--------------------what kind of elements are there in this example ? */
@@ -845,6 +855,9 @@ for (i=0; i<actfield->dis[disnum].numele; i++)
    break;
    case el_fluid2_pro:
       is_fluid2_pro=1;
+   break;
+   case el_fluid3_pro:
+      is_fluid3_pro=1;
    break;
    case el_fluid2_tu:
       is_fluid2_tu=1;
@@ -938,10 +951,20 @@ container->kstep = 0;
 #ifdef D_FLUID2_PRO
   if (is_fluid2_pro==1)
   {
-    fluid2_pro(actpart,NULL,NULL,NULL,
-        &estif_global,&emass_global,&lmass_global,&gradopr_global,
-        &etforce_global,&eforce_global,
-        &edforce_global,&gforce_global,action,NULL);
+    fluid2_pro(actpart,NULL,NULL,
+               &estif_global,&emass_global,&lmass_global,&gradopr_global,
+               &eforce_global,
+               &edforce_global,&gforce_global,action,NULL,NULL);
+  }
+#endif
+  /*----------------------------- init all kind of routines for fluid3_pro */
+#ifdef D_FLUID3_PRO
+  if (is_fluid3_pro==1)
+  {
+    fluid3_pro(actpart,NULL,NULL,
+               &estif_global,&emass_global,&lmass_global,&gradopr_global,
+               &eforce_global,
+               &edforce_global,&gforce_global,action,NULL,NULL);
   }
 #endif
   /*------------------------------ init all kind of routines for fluid2_tu */

@@ -39,6 +39,7 @@ function calls.
 #include "io_elements.h"
 
 #include "../pss_full/pss_table.h"
+#include "../pss_full/pss_set.h"
 
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
@@ -47,8 +48,11 @@ function calls.
 #include "../beam3/beam3.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid2_pro/fluid2pro.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
+#include "../fluid3_pro/fluid3pro.h"
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
+#include "../fluid3_pro/fluid3pro_prototypes.h"
 #include "../ale2/ale2.h"
 #include "../ale3/ale3.h"
 #include "../axishell/axishell.h"
@@ -68,6 +72,13 @@ extern struct _GENPROB     genprob;
   | vector of numfld FIELDs, defined in global_control.c                 |
   *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate design if needed                                 |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _DESIGN       *design;
 
 /*!----------------------------------------------------------------------
   \brief ranks and communicators
@@ -210,7 +221,7 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
   This is only called if rank==0.
 
   The purpose is to write all kinds of information that are needed to
-  interpret the elements' results. Everything is to the group that
+  interpret the elements' results. Everything goes to the group that
   describes the discretization the elements belong to.
 
   \author u.kue
@@ -262,6 +273,10 @@ void out_element_control(struct _BIN_OUT_FIELD *context,
 #endif
 #ifdef D_FLUID2_PRO
       case el_fluid2_pro:
+        break;
+#endif
+#ifdef D_FLUID3_PRO
+      case el_fluid3_pro:
         break;
 #endif
 #ifdef D_FLUID2TU
@@ -925,6 +940,19 @@ static void out_pack_ele_params(BIN_OUT_CHUNK *chunk,
 
         size_ptr[vars->ep_size_nGP0] = f2pro->nGP[0];
         size_ptr[vars->ep_size_nGP1] = f2pro->nGP[1];
+
+        break;
+      }
+#endif
+#ifdef D_FLUID3_PRO
+      case el_fluid3_pro:
+      {
+        FLUID3_PRO* f3pro = actele->e.f3pro;
+        FLUID3_PRO_VARIABLES* vars = &fluid3_pro_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f3pro->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f3pro->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = f3pro->nGP[2];
 
         break;
       }
@@ -2000,6 +2028,104 @@ static void out_pack_pressure(BIN_OUT_CHUNK *chunk,
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief Pack the averaged pressure in some buffer to send them to their
+  writing processor.
+
+  The projection method uses discontinuous pressures that are
+  difficult to plot. So here we extrapolate the pressure to the nodes
+  and average them.
+
+  \author u.kue
+  \date 01/06
+  \sa out_pack_items
+*/
+/*----------------------------------------------------------------------*/
+static void out_pack_average_pressure(BIN_OUT_CHUNK *chunk,
+                                      INT place,
+                                      PARTDISCRET *actpdis,
+                                      DOUBLE *send_buf,
+                                      INT send_count,
+                                      INT *send_size_buf,
+                                      INT dst_first_id,
+                                      INT dst_num)
+{
+  INT j, counter, ndim;
+
+#ifdef DEBUG
+  dstrc_enter("out_pack_average_pressure");
+#endif
+
+  ndim = genprob.ndim;
+
+  /* gather the nodes to be send to processor i */
+  counter = 0;
+  dsassert(chunk->size_entry_length == 0, "invalid size entry length");
+
+  for (j=0; j<actpdis->numnp; ++j)
+  {
+    NODE* actnode = actpdis->node[j];
+    if ((actnode->Id_loc >= dst_first_id) &&
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
+      INT k;
+
+#ifdef PARALLEL
+      send_size_buf[counter] = actnode->Id_loc;
+#endif
+
+      send_buf[counter] = 0;
+
+      for (k=0; k<actnode->numele; ++k)
+      {
+        INT l;
+        DOUBLE el_press;
+        ELEMENT* actele;
+        actele = actnode->element[k];
+
+        /* find element local index of node */
+        for (l=0; l<actele->numnp; ++l)
+        {
+          NODE* node;
+          node = actele->node[l];
+          if (actnode==node)
+          {
+            break;
+          }
+        }
+        if (l==actele->numnp)
+          dserror("Node %d not in element %d. Suspect!", actnode->Id, actele->Id);
+
+        switch (actele->eltyp)
+        {
+#ifdef D_FLUID2_PRO
+        case el_fluid2_pro:
+          f2pro_addnodepressure(actele, l, &el_press);
+          break;
+#endif
+#ifdef D_FLUID3_PRO
+        case el_fluid3_pro:
+          f3pro_addnodepressure(actele, l, &el_press);
+          break;
+#endif
+        default:
+          dserror("Unsupported element type %d for averaged pressure", actele->eltyp);
+        }
+
+        send_buf[counter] += el_press;
+      }
+      counter += 1;
+    }
+  }
+  dsassert(counter == send_count, "node pack count mismatch");
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief Pack the element's stresses.
 
   Here the element based stresses are handled, that is the stresses at
@@ -3030,6 +3156,84 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
       }
 #endif
 
+#ifdef D_FLUID2_PRO
+
+      /* Note that we do not reconstruct all pressure values on all
+       * elements but only on those elements that are needed for
+       * calculation. You have to calculate one time step before there
+       * are again all pressures on each processor. */
+
+      case el_fluid2_pro:
+      {
+        DOUBLE* src_ptr;
+
+	switch (actele->e.f2pro->dm)
+	{
+	case dm_q2pm1:
+	  dsassert(len >= 6, "value item too small");
+	  src_ptr = actele->e.f2pro->press;
+	  for (j=0; j<3; ++j)
+	  {
+	    *dst_ptr++ = *src_ptr++;
+	  }
+	  src_ptr = actele->e.f2pro->phi;
+	  for (j=0; j<3; ++j)
+	  {
+	    *dst_ptr++ = *src_ptr++;
+	  }
+	  break;
+	case dm_q1p0:
+	  dsassert(len >= 2, "value item too small");
+
+          src_ptr = actele->e.f2pro->press;
+          *dst_ptr++ = *src_ptr++;
+
+          src_ptr = actele->e.f2pro->phi;
+          *dst_ptr++ = *src_ptr++;
+	  break;
+	default:
+	  dserror("unsupported discretization mode %d", actele->e.f2pro->dm);
+	}
+        break;
+      }
+#endif
+
+#ifdef D_FLUID3_PRO
+      case el_fluid3_pro:
+      {
+        DOUBLE* src_ptr;
+
+	switch (actele->e.f3pro->dm)
+	{
+	case dm_q2pm1:
+	  dsassert(len >= 8, "value item too small");
+	  src_ptr = actele->e.f3pro->press;
+	  for (j=0; j<4; ++j)
+	  {
+	    *dst_ptr++ = *src_ptr++;
+	  }
+	  src_ptr = actele->e.f3pro->phi;
+	  for (j=0; j<4; ++j)
+	  {
+	    *dst_ptr++ = *src_ptr++;
+	  }
+	  break;
+	case dm_q1p0:
+	  dsassert(len >= 2, "value item too small");
+
+          src_ptr = actele->e.f3pro->press;
+          *dst_ptr++ = *src_ptr++;
+
+          src_ptr = actele->e.f3pro->phi;
+          *dst_ptr++ = *src_ptr++;
+	  break;
+	default:
+	  dserror("unsupported discretization mode %d", actele->e.f3pro->dm);
+	}
+        break;
+      }
+#endif
+
 #ifdef D_BRICK1
       case el_brick1:
         /* Nothing to do?! */
@@ -3065,6 +3269,507 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
   dstrc_exit();
 #endif
 }
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Pack the design node this node is connected with (if any).
+
+  \author u.kue
+  \date 12/05
+  \sa out_pack_items
+*/
+/*----------------------------------------------------------------------*/
+static void out_pack_dnode(BIN_OUT_CHUNK *chunk,
+                           PARTDISCRET *actpdis,
+                           DOUBLE *send_buf,
+                           INT send_count,
+                           INT *send_size_buf,
+                           INT send_size_count,
+                           INT dst_first_id,
+                           INT dst_num)
+{
+  INT i;
+  INT counter;
+  INT slen;
+
+#ifdef DEBUG
+  dstrc_enter("out_pack_dline");
+#endif
+
+  slen = chunk->size_entry_length;
+
+  dsassert(slen == 1, "invalid size entry length");
+  dsassert(chunk->value_entry_length == 0, "invalid value entry length");
+
+  for (i=0; i<send_size_count; ++i)
+  {
+    send_size_buf[i] = -1;
+  }
+
+  counter = 0;
+  for (i=0; i<actpdis->numnp; ++i)
+  {
+    NODE* actnode = actpdis->node[i];
+    if ((actnode->Id_loc >= dst_first_id) &&
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
+      DNODE* dnode;
+      INT* size_ptr;
+
+#ifdef PARALLEL
+      send_size_buf[(slen+1)*counter] = actnode->Id_loc;
+      size_ptr = &(send_size_buf[(slen+1)*counter+1]);
+#else
+      size_ptr = &(send_size_buf[slen*counter]);
+#endif
+
+      switch (actnode->gnode->ondesigntyp)
+      {
+      case ondnode:
+        dnode = actnode->gnode->d.dnode;
+        *size_ptr++ = dnode->Id;
+        break;
+      case ondline:
+      case ondsurf:
+      case ondvol:
+        /* no dnode on this node */
+        break;
+      default:
+        dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+      }
+
+      counter += 1;
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Pack all design lines this node is connected with.
+
+  That is a little troublesome because we need to take indirect
+  connections into account.
+
+  \author u.kue
+  \date 12/05
+  \sa out_pack_items
+*/
+/*----------------------------------------------------------------------*/
+static void out_pack_dline(BIN_OUT_CHUNK *chunk,
+                           PARTDISCRET *actpdis,
+                           DOUBLE *send_buf,
+                           INT send_count,
+                           INT *send_size_buf,
+                           INT send_size_count,
+                           INT dst_first_id,
+                           INT dst_num)
+{
+  INT i;
+  INT counter;
+  INT slen;
+  INTSET set;
+
+#ifdef DEBUG
+  dstrc_enter("out_pack_dline");
+#endif
+
+  slen = chunk->size_entry_length;
+
+  dsassert(slen >= 1, "invalid size entry length");
+  dsassert(chunk->value_entry_length == 0, "invalid value entry length");
+
+  for (i=0; i<send_size_count; ++i)
+  {
+    send_size_buf[i] = -1;
+  }
+
+  intset_init(&set, 10);
+
+  counter = 0;
+  for (i=0; i<actpdis->numnp; ++i)
+  {
+    NODE* actnode = actpdis->node[i];
+    if ((actnode->Id_loc >= dst_first_id) &&
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
+      INT j=0;
+      INT ndnode=0;
+      DNODE* dnode;
+      DLINE** pdline;
+      INT ndline=0;
+      DLINE* dline;
+
+      INT* size_ptr;
+
+#ifdef PARALLEL
+      send_size_buf[(slen+1)*counter] = actnode->Id_loc;
+      size_ptr = &(send_size_buf[(slen+1)*counter+1]);
+#else
+      size_ptr = &(send_size_buf[slen*counter]);
+#endif
+
+      intset_clear(&set);
+
+      /* determine starting point */
+      switch (actnode->gnode->ondesigntyp)
+      {
+      case ondnode:
+        dnode = actnode->gnode->d.dnode;
+        ndnode = 1;
+        break;
+      case ondline:
+        pdline = &(actnode->gnode->d.dline);
+        ndline = 1;
+        break;
+      case ondsurf:
+        /* Nothing to do :) */
+        break;
+      case ondvol:
+        /* Nothing to do :) */
+        break;
+      default:
+        dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+      }
+
+      /* count dnode, dline, dsurf, dvol to one gnode */
+      switch (actnode->gnode->ondesigntyp)
+      {
+      case ondnode:
+        ndline = dnode->ndline;
+        pdline = dnode->dline;
+      case ondline:
+        for (j=0; j<ndline; ++j)
+        {
+          dline = pdline[j];
+	  if (!intset_contains(&set, dline->Id))
+	  {
+	    intset_add(&set, dline->Id);
+	  }
+        }
+        break;
+      case ondsurf:
+        /* Nothing to do :) */
+        break;
+      case ondvol:
+        /* Nothing to do :) */
+        break;
+      default:
+        dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+      }
+
+      for (j=0; j<set.count; ++j)
+      {
+        *size_ptr++ = set.value[j];
+      }
+
+      counter += 1;
+    }
+  }
+
+  intset_destroy(&set);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Pack all design surfaces this node is connected with.
+
+  That is a little troublesome because we need to take indirect
+  connections into account.
+
+  \author u.kue
+  \date 12/05
+  \sa out_pack_items
+*/
+/*----------------------------------------------------------------------*/
+static void out_pack_dsurf(BIN_OUT_CHUNK *chunk,
+                           PARTDISCRET *actpdis,
+                           DOUBLE *send_buf,
+                           INT send_count,
+                           INT *send_size_buf,
+                           INT send_size_count,
+                           INT dst_first_id,
+                           INT dst_num)
+{
+  INT i;
+  INT counter;
+  INT slen;
+  INTSET set;
+
+#ifdef DEBUG
+  dstrc_enter("out_pack_dsurf");
+#endif
+
+  slen = chunk->size_entry_length;
+
+  dsassert(slen >= 1, "invalid size entry length");
+  dsassert(chunk->value_entry_length == 0, "invalid value entry length");
+
+  for (i=0; i<send_size_count; ++i)
+  {
+    send_size_buf[i] = -1;
+  }
+
+  intset_init(&set, 10);
+
+  counter = 0;
+  for (i=0; i<actpdis->numnp; ++i)
+  {
+    NODE* actnode = actpdis->node[i];
+    if ((actnode->Id_loc >= dst_first_id) &&
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
+      INT j=0;
+      INT ndnode=0;
+      DNODE* dnode;
+      DLINE** pdline;
+      INT k=0;
+      INT ndline=0;
+      DLINE* dline;
+      DSURF** pdsurf;
+      INT ndsurf=0;
+      DSURF* dsurf;
+
+      INT* size_ptr;
+
+#ifdef PARALLEL
+      send_size_buf[(slen+1)*counter] = actnode->Id_loc;
+      size_ptr = &(send_size_buf[(slen+1)*counter+1]);
+#else
+      size_ptr = &(send_size_buf[slen*counter]);
+#endif
+
+      intset_clear(&set);
+
+      /* determine starting point */
+      switch (actnode->gnode->ondesigntyp)
+      {
+      case ondnode:
+        dnode = actnode->gnode->d.dnode;
+        ndnode = 1;
+        break;
+      case ondline:
+        pdline = &(actnode->gnode->d.dline);
+        ndline = 1;
+        break;
+      case ondsurf:
+        pdsurf = &(actnode->gnode->d.dsurf);
+        ndsurf = 1;
+        break;
+      case ondvol:
+        /* Nothing to do :) */
+        break;
+      default:
+        dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+      }
+
+      /* count dnode, dline, dsurf, dvol to one gnode */
+      switch (actnode->gnode->ondesigntyp)
+      {
+      case ondnode:
+        ndline = dnode->ndline;
+        pdline = dnode->dline;
+      case ondline:
+        for (j=0; j<ndline; ++j)
+        {
+          dline = pdline[j];
+          ndsurf = dline->ndsurf;
+          pdsurf = dline->dsurf;
+        case ondsurf:
+          for (k=0; k<ndsurf; ++k)
+          {
+            dsurf = pdsurf[k];
+	    if (!intset_contains(&set, dsurf->Id))
+	    {
+	      intset_add(&set, dsurf->Id);
+	    }
+          }
+        }
+        break;
+      case ondvol:
+        /* Nothing to do :) */
+        break;
+      default:
+        dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+      }
+
+      for (j=0; j<set.count; ++j)
+      {
+        *size_ptr++ = set.value[j];
+      }
+
+      counter += 1;
+    }
+  }
+
+  intset_destroy(&set);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Pack all design volumes this node is connected with.
+
+  That is a little troublesome because we need to take indirect
+  connections into account.
+
+  \author u.kue
+  \date 12/05
+  \sa out_pack_items
+*/
+/*----------------------------------------------------------------------*/
+static void out_pack_dvol(BIN_OUT_CHUNK *chunk,
+                          PARTDISCRET *actpdis,
+                          DOUBLE *send_buf,
+                          INT send_count,
+                          INT *send_size_buf,
+                          INT send_size_count,
+                          INT dst_first_id,
+                          INT dst_num)
+{
+  INT i;
+  INT counter;
+  INT slen;
+  INTSET set;
+
+#ifdef DEBUG
+  dstrc_enter("out_pack_dvol");
+#endif
+
+  slen = chunk->size_entry_length;
+
+  dsassert(slen >= 1, "invalid size entry length");
+  dsassert(chunk->value_entry_length == 0, "invalid value entry length");
+
+  for (i=0; i<send_size_count; ++i)
+  {
+    send_size_buf[i] = -1;
+  }
+
+  intset_init(&set, 10);
+
+  counter = 0;
+  for (i=0; i<actpdis->numnp; ++i)
+  {
+    NODE* actnode = actpdis->node[i];
+    if ((actnode->Id_loc >= dst_first_id) &&
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
+      INT j=0;
+      INT ndnode=0;
+      DNODE* dnode;
+      DLINE** pdline;
+      INT k=0;
+      INT ndline=0;
+      DLINE* dline;
+      DSURF** pdsurf;
+      INT ndsurf=0;
+      DSURF* dsurf;
+      INT l=0;
+      INT ndvol=0;
+      DVOL* dvol;
+      DVOL** pdvol;
+
+      INT* size_ptr;
+
+#ifdef PARALLEL
+      send_size_buf[(slen+1)*counter] = actnode->Id_loc;
+      size_ptr = &(send_size_buf[(slen+1)*counter+1]);
+#else
+      size_ptr = &(send_size_buf[slen*counter]);
+#endif
+
+      intset_clear(&set);
+
+      /* determine starting point */
+      switch (actnode->gnode->ondesigntyp)
+      {
+      case ondnode:
+        dnode = actnode->gnode->d.dnode;
+        ndnode = 1;
+        break;
+      case ondline:
+        pdline = &(actnode->gnode->d.dline);
+        ndline = 1;
+        break;
+      case ondsurf:
+        pdsurf = &(actnode->gnode->d.dsurf);
+        ndsurf = 1;
+        break;
+      case ondvol:
+        pdvol = &(actnode->gnode->d.dvol);
+        ndvol = 1;
+        break;
+      default:
+        dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+      }
+
+      /* count dnode, dline, dsurf, dvol to one gnode */
+      switch (actnode->gnode->ondesigntyp)
+      {
+      case ondnode:
+        ndline = dnode->ndline;
+        pdline = dnode->dline;
+      case ondline:
+        for (j=0; j<ndline; ++j)
+        {
+          dline = pdline[j];
+          ndsurf = dline->ndsurf;
+          pdsurf = dline->dsurf;
+        case ondsurf:
+          for (k=0; k<ndsurf; ++k)
+          {
+            dsurf = pdsurf[k];
+            ndvol = dsurf->ndvol;
+            pdvol = dsurf->dvol;
+          case ondvol:
+            for (l=0; l<ndvol; ++l)
+            {
+              dvol = pdvol[l];
+              if (!intset_contains(&set, dvol->Id))
+              {
+                intset_add(&set, dvol->Id);
+              }
+            }
+          }
+        }
+        break;
+      default:
+        dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+      }
+
+      for (j=0; j<set.count; ++j)
+      {
+        *size_ptr++ = set.value[j];
+      }
+
+      counter += 1;
+    }
+  }
+
+  intset_destroy(&set);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 
 
 /*----------------------------------------------------------------------*/
@@ -3106,6 +3811,7 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
                     DOUBLE *send_buf,
                     INT send_count,
                     INT *send_size_buf,
+                    INT send_size_count,
                     INT dst_first_id,
                     INT dst_num)
 {
@@ -3139,6 +3845,9 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
   case cc_pressure:
     out_pack_pressure(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
+  case cc_av_pressure:
+    out_pack_average_pressure(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
+    break;
   case cc_stress:
     out_pack_stress(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
@@ -3168,6 +3877,22 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
   case cc_restart_element:
     /* array flag unused here */
     out_pack_restart_element(chunk, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
+    break;
+  case cc_dnode:
+    /* array flag unused here */
+    out_pack_dnode(chunk, actpdis, send_buf, send_count, send_size_buf, send_size_count, dst_first_id, dst_num);
+    break;
+  case cc_dline:
+    /* array flag unused here */
+    out_pack_dline(chunk, actpdis, send_buf, send_count, send_size_buf, send_size_count, dst_first_id, dst_num);
+    break;
+  case cc_dsurf:
+    /* array flag unused here */
+    out_pack_dsurf(chunk, actpdis, send_buf, send_count, send_size_buf, send_size_count, dst_first_id, dst_num);
+    break;
+  case cc_dvol:
+    /* array flag unused here */
+    out_pack_dvol(chunk, actpdis, send_buf, send_count, send_size_buf, send_size_count, dst_first_id, dst_num);
     break;
   default:
     dserror("unsupported chunk type %d", type);
@@ -3845,6 +4570,80 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
     }
 #endif
 
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+    {
+      DOUBLE* dst_ptr;
+      INT k;
+
+      switch (actele->e.f2pro->dm)
+      {
+      case dm_q2pm1:
+	dsassert(len >= 6, "value item too small");
+	dst_ptr = actele->e.f2pro->press;
+	for (k=0; k<3; ++k)
+	{
+	  *dst_ptr++ = *src_ptr++;
+	}
+	src_ptr = actele->e.f2pro->phi;
+	for (k=0; k<3; ++k)
+	{
+	  *dst_ptr++ = *src_ptr++;
+	}
+	break;
+      case dm_q1p0:
+        dsassert(len >= 2, "value item too small");
+
+	dst_ptr = actele->e.f2pro->press;
+        *dst_ptr++ = *src_ptr++;
+
+        src_ptr = actele->e.f2pro->phi;
+        *dst_ptr++ = *src_ptr++;
+        break;
+      default:
+	dserror("unsupported discretization mode %d", actele->e.f2pro->dm);
+      }
+      break;
+    }
+#endif
+
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+    {
+      DOUBLE* dst_ptr;
+      INT k;
+
+      switch (actele->e.f3pro->dm)
+      {
+      case dm_q2pm1:
+	dsassert(len >= 8, "value item too small");
+	dst_ptr = actele->e.f3pro->press;
+	for (k=0; k<4; ++k)
+	{
+	  *dst_ptr++ = *src_ptr++;
+	}
+	src_ptr = actele->e.f3pro->phi;
+	for (k=0; k<4; ++k)
+	{
+	  *dst_ptr++ = *src_ptr++;
+	}
+	break;
+      case dm_q1p0:
+        dsassert(len >= 2, "value item too small");
+
+	dst_ptr = actele->e.f3pro->press;
+        *dst_ptr++ = *src_ptr++;
+
+        src_ptr = actele->e.f3pro->phi;
+        *dst_ptr++ = *src_ptr++;
+        break;
+      default:
+	dserror("unsupported discretization mode %d", actele->e.f3pro->dm);
+      }
+      break;
+    }
+#endif
+
 #ifdef D_BRICK1
     case el_brick1:
       /* Nothing to do?! */
@@ -3949,6 +4748,165 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
 /*----------------------------------------------------------------------*/
 /*!
   \brief Find the number of double and integer values that are needed
+  to store the design object ids for each node.
+
+  \author u.kue
+  \date 12/05
+  \sa out_pack_ele_params
+*/
+/*----------------------------------------------------------------------*/
+void find_design_item_length(struct _BIN_OUT_FIELD* context,
+                             INT* dnodemax,
+                             INT* dlinemax,
+                             INT* dsurfmax,
+                             INT* dvolmax)
+{
+  INT i;
+  PARTDISCRET* actpdis = &(context->actpart->pdis[context->disnum]);
+
+  INT dobjectmax[4] = { 0, 0, 0, 0 };
+  INTSET dline_set;
+  INTSET dsurf_set;
+  INTSET dvol_set;
+
+#ifdef PARALLEL
+  INT recv_length[4];
+#endif
+
+#ifdef DEBUG
+  dstrc_enter("find_design_item_length");
+#endif
+
+  intset_init(&dline_set,10);
+  intset_init(&dsurf_set,10);
+  intset_init(&dvol_set,10);
+
+  for (i=0; i<actpdis->numnp; ++i)
+  {
+    INT dnodecount = 0;
+
+    INT j=0;
+    INT ndnode=0;
+    DNODE* dnode;
+    DLINE** pdline;
+    INT k=0;
+    INT ndline=0;
+    DLINE* dline;
+    DSURF** pdsurf;
+    INT ndsurf=0;
+    DSURF* dsurf;
+    INT l=0;
+    INT ndvol=0;
+    DVOL* dvol;
+    DVOL** pdvol;
+
+    NODE* actnode;
+    actnode = actpdis->node[i];
+
+    intset_clear(&dline_set);
+    intset_clear(&dsurf_set);
+    intset_clear(&dvol_set);
+
+    /* determine starting point */
+    switch (actnode->gnode->ondesigntyp)
+    {
+    case ondnode:
+      dnode = actnode->gnode->d.dnode;
+      ndnode = 1;
+      break;
+    case ondline:
+      pdline = &(actnode->gnode->d.dline);
+      ndline = 1;
+      break;
+    case ondsurf:
+      pdsurf = &(actnode->gnode->d.dsurf);
+      ndsurf = 1;
+      break;
+    case ondvol:
+      pdvol = &(actnode->gnode->d.dvol);
+      ndvol = 1;
+      break;
+    default:
+      dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+    }
+
+    /* count dnode, dline, dsurf, dvol to one gnode */
+    /* note the missing breaks! this switch is nothing but a
+     * structured goto construct. */
+    switch (actnode->gnode->ondesigntyp)
+    {
+    case ondnode:
+      dnodecount += ndnode;
+      ndline = dnode->ndline;
+      pdline = dnode->dline;
+    case ondline:
+      for (j=0; j<ndline; ++j)
+      {
+        dline = pdline[j];
+        ndsurf = dline->ndsurf;
+        pdsurf = dline->dsurf;
+	if (!intset_contains(&dline_set, dline->Id))
+	{
+	  intset_add(&dline_set, dline->Id);
+	}
+      case ondsurf:
+        for (k=0; k<ndsurf; ++k)
+        {
+          dsurf = pdsurf[k];
+          ndvol = dsurf->ndvol;
+	  pdvol = dsurf->dvol;
+	  if (!intset_contains(&dsurf_set, dsurf->Id))
+	  {
+	    intset_add(&dsurf_set, dsurf->Id);
+	  }
+        case ondvol:
+	  for (l=0; l<ndvol; ++l)
+	  {
+	    dvol = pdvol[l];
+	    if (!intset_contains(&dvol_set, dvol->Id))
+	    {
+	      intset_add(&dvol_set, dvol->Id);
+	    }
+	  }
+        }
+      }
+      break;
+    default:
+      dserror("invalid design type %d", actnode->gnode->ondesigntyp);
+    }
+
+    dobjectmax[0] = MAX(dobjectmax[0], dnodecount);
+    dobjectmax[1] = MAX(dobjectmax[1], dline_set.count);
+    dobjectmax[2] = MAX(dobjectmax[2], dsurf_set.count);
+    dobjectmax[3] = MAX(dobjectmax[3], dvol_set.count);
+  }
+
+#ifdef PARALLEL
+  MPI_Allreduce(dobjectmax, recv_length, 4, MPI_INT, MPI_MAX, context->actintra->MPI_INTRA_COMM);
+  *dnodemax = recv_length[0];
+  *dlinemax = recv_length[1];
+  *dsurfmax = recv_length[2];
+  *dvolmax  = recv_length[3];
+#else
+  *dnodemax = dobjectmax[0];
+  *dlinemax = dobjectmax[1];
+  *dsurfmax = dobjectmax[2];
+  *dvolmax  = dobjectmax[3];
+#endif
+
+  intset_destroy(&dline_set);
+  intset_destroy(&dsurf_set);
+  intset_destroy(&dvol_set);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Find the number of double and integer values that are needed
   to store the element parameters.
 
   \author u.kue
@@ -4005,6 +4963,12 @@ void find_ele_param_item_length(struct _BIN_OUT_FIELD* context,
     case el_fluid2_pro:
       slen = MAX(slen, fluid2_pro_variables.ep_size_length);
       vlen = MAX(vlen, fluid2_pro_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+      slen = MAX(slen, fluid3_pro_variables.ep_size_length);
+      vlen = MAX(vlen, fluid3_pro_variables.ep_value_length);
       break;
 #endif
 #ifdef D_FLUID2TU
@@ -4573,7 +5537,43 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
 
 #ifdef D_FLUID2_PRO
     case el_fluid2_pro:
+    {
+      INT numpdof;
+      switch (actele->e.f2pro->dm)
+      {
+      case dm_q2pm1:
+	numpdof = 3;
+	break;
+      case dm_q1p0:
+        numpdof = 1;
+        break;
+      default:
+	dserror("unsupported discretization mode %d", actele->e.f2pro->dm);
+      }
+
+      *value_length = MAX(*value_length, 2*numpdof);
       break;
+    }
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+    {
+      INT numpdof;
+      switch (actele->e.f3pro->dm)
+      {
+      case dm_q2pm1:
+	numpdof = 4;
+	break;
+      case dm_q1p0:
+        numpdof = 1;
+        break;
+      default:
+	dserror("unsupported discretization mode %d", actele->e.f3pro->dm);
+      }
+
+      *value_length = MAX(*value_length, 2*numpdof);
+      break;
+    }
 #endif
 #ifdef D_FLUID2TU
     case el_fluid2_tu:

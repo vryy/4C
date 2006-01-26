@@ -69,10 +69,8 @@ typedef struct _CONTAINER
   DOUBLE         pre_norm;     /*!< above given norm of the anal. sol */
 
 
-#ifdef D_FLUID2_PRO
-  struct _DBCSR *gradmatrix;   /*!< gradient matrix Projection Method */
-  struct _DBCSR *lumpedmass;   /*!< gradient matrix Projection Method */
-  DOUBLE        *fvelrhs2;     /*!< pointer to second right hand side */
+#ifdef D_FLUID_PM
+  DOUBLE        *fgradprhs;
 #endif
 
   INT            turbu;

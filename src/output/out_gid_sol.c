@@ -19,9 +19,11 @@ Maintainer: Malte Neumann
 #include "../brick1/brick1.h"
 #include "../beam3/beam3.h"
 #include "../fluid2/fluid2.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "../fluid3_fast/f3f_prototypes.h"
+#include "../fluid3_pro/fluid3pro_prototypes.h"
 #include "../ale2/ale2.h"
 #include "../ale3/ale3.h"
 #include "../axishell/axishell.h"
@@ -138,73 +140,8 @@ for (i=0; i<genprob.numfld; i++)
 
 
    /* find and set meshes and gausspointsets */
-   actgid->is_shell8_4_22 = 0;
-   actgid->is_shell8_4_33 = 0;
-   actgid->is_shell8_8_22 = 0;
-   actgid->is_shell8_8_33 = 0;
-   actgid->is_shell8_9_22 = 0;
-   actgid->is_shell8_9_33 = 0;
 
-   actgid->is_shell9_4_22 = 0;
-   actgid->is_shell9_4_33 = 0;
-   actgid->is_shell9_8_22 = 0;
-   actgid->is_shell9_8_33 = 0;
-   actgid->is_shell9_9_22 = 0;
-   actgid->is_shell9_9_33 = 0;
-   actgid->is_brick1_222= 0;
-   actgid->is_brick1_333= 0;
-
-   actgid->is_fluid2_tri3 = 0;
-   actgid->is_fluid2_22 = 0;
-   actgid->is_fluid2_33 = 0;
-
-   actgid->is_fluid2_tu_22 = 0;
-   actgid->is_fluid2_tu_33 = 0;
-
-   actgid->is_fluid2_6 = 0;
-   actgid->is_fluid2_pro_22 = 0;
-   actgid->is_fluid2_pro_33 = 0;
-   actgid->is_fluid3_222= 0;
-   actgid->is_fluid3_333= 0;
-   actgid->is_fluid3_tet4 = 0;
-   actgid->is_fluid3_tet10 = 0;
-
-   actgid->is_f3f_4_4   = 0;
-
-   actgid->is_f3f_8_222   = 0;
-   actgid->is_f3f_8_333   = 0;
-   actgid->is_f3f_20_222   = 0;
-   actgid->is_f3f_20_333   = 0;
-
-   actgid->is_ale_11    = 0;
-   actgid->is_ale_22    = 0;
-   actgid->is_ale_tri_1 = 0;
-   actgid->is_ale_tri_3 = 0;
-
-   actgid->is_ale_8_111   = 0;
-   actgid->is_ale_8_222   = 0;
-   actgid->is_ale_8_333   = 0;
-   actgid->is_ale_20_111   = 0;
-   actgid->is_ale_20_222   = 0;
-   actgid->is_ale_20_333   = 0;
-
-   actgid->is_wall1_11  = 0;
-   actgid->is_wall1_22  = 0;
-   actgid->is_wall1_33  = 0;
-   actgid->is_beam3_21  = 0;
-   actgid->is_beam3_22  = 0;
-   actgid->is_beam3_32  = 0;
-   actgid->is_beam3_33  = 0;
-   actgid->is_ale_tet_1 = 0;
-   actgid->is_ale_tet_4 = 0;
-   actgid->is_axishell  = 0;
-   actgid->is_interf_22  = 0;
-   actgid->is_interf_33  = 0;
-   actgid->is_wallge_22  = 0;
-   actgid->is_wallge_33  = 0;
-
-
-
+   /* No need to zero actgid. We used CCACALLOC after all... */
 
    /* check for different types of elements */
    for (k=0; k<actfield->dis[j].numele; k++)
@@ -430,6 +367,26 @@ for (i=0; i<genprob.numfld; i++)
          {
             actgid->is_fluid3_tet10   = 1;
             actgid->fluid3_tet10_name = "fluid3_tet10";
+         }
+      break;
+#endif
+
+
+
+   /* FLUID3_PRO */
+   /*============*/
+
+#ifdef D_FLUID3_PRO
+      case el_fluid3_pro:
+         if (actele->numnp==8)
+         {
+            actgid->is_fluid3_pro_222   = 1;
+            actgid->fluid3_pro_222_name = "fluid3_pro_222";
+         }
+         if (actele->numnp==20 || actele->numnp==27)
+         {
+            actgid->is_fluid3_pro_333   = 1;
+            actgid->fluid3_pro_333_name = "fluid3_pro_333";
          }
       break;
 #endif
@@ -4831,6 +4788,91 @@ if (strncmp(string,"pressure",stringlenght)==0)
    }
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"pressure",stringlenght)==0) */
+
+
+
+
+/*========================================= result type is pressure */
+if (strncmp(string,"average_pressure",stringlenght)==0)
+{
+  DOUBLE* pressure;
+  DOUBLE el_press[MAXNOD];
+
+  resulttype        = "SCALAR";
+  resultplace       = "ONNODES";
+  gpset             = "";
+  rangetable        = actgid->standardrangetable;
+  ncomponent        = 3;
+  componentnames[0] = "average_pressure";
+  /*-------------------------------------------------------------------*/
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",string,actgid->fieldname,disnum);
+  fprintf(out,"# TIME %18.5E \n",time);
+  fprintf(out,"# STEP %6d    \n",step);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT \"%s\" \"ccarat\" %d %s %s\n",
+          string,step,resulttype,resultplace);
+  fprintf(out,"RESULTRANGESTABLE \"%s\"\n",actgid->standardrangetable);
+  switch (genprob.ndim)
+  {
+  case 3:
+    fprintf(out,"COMPONENTNAMES \"%s\"\n",componentnames[0]);
+    break;
+  case 2:
+    fprintf(out,"COMPONENTNAMES \"%s\"\n",componentnames[0]);
+    break;
+  default:
+    dserror("Unknown numer of dimensions");
+    break;
+  }
+
+  /*
+   * We use a total vector here and require all results to be known on
+   * processor 0. */
+  pressure = (DOUBLE*)CCACALLOC(actfield->dis[disnum].numnp, sizeof(DOUBLE));
+
+  for (i=0; i<actfield->dis[disnum].numele; i++)
+  {
+    INT j;
+    INT l;
+    DOUBLE el_press;
+    ELEMENT* actele;
+    actele = &(actfield->dis[disnum].element[i]);
+
+    for (l=0; l<actele->numnp; ++l)
+    {
+      NODE* node;
+      node = actele->node[l];
+
+      switch (actele->eltyp)
+      {
+#ifdef D_FLUID2_PRO
+      case el_fluid2_pro:
+        f2pro_addnodepressure(actele, l, &el_press);
+        break;
+#endif
+#ifdef D_FLUID3_PRO
+      case el_fluid3_pro:
+        f3pro_addnodepressure(actele, l, &el_press);
+        break;
+#endif
+      default:
+        dserror("Unsupported element type %d for averaged pressure", actele->eltyp);
+      }
+
+      pressure[node->Id] += el_press;
+    }
+  }
+
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[disnum].numnp; i++)
+  {
+    actnode = &(actfield->dis[disnum].node[i]);
+    fprintf(out," %6d %22.9E \n", actnode->Id+1, pressure[actnode->Id]);
+  }
+  fprintf(out,"END VALUES\n");
+  CCAFREE(pressure);
+}
 
 
 

@@ -18,7 +18,8 @@ typedef enum _CURVTYP
 {
                        curve_none,
                        curve_polygonal,  /* polygonal, piecewise linear curve */
-                       curve_explicit    /* excplicit function */
+                       curve_explicit,   /* excplicit function */
+		       curve_expr        /* function given by expression */
 } CURVTYP;
 /*----------------------------------------------------------------------*
  | general dynamic-curves                                 m.gee 4/01    |
@@ -36,6 +37,7 @@ ARRAY                  value;         /* array for values at time steps */
 DOUBLE                 T;             /* forgot about it..... */
 DOUBLE                 c1;            /* constant for explicit functions */
 DOUBLE                 c2;            /* constant for explicit functions */
+  struct _ST_NODE*       funct;	      /* function expression */
 } CURVE;
 
 
@@ -60,7 +62,8 @@ typedef enum _FUNCTTYP
   /* special functions */
   funct_bel,           /* beltrami flow function */
   funct_kim,           /* Kim-Moin flow function */
-  funct_cyl            /* 3d cylinder */
+  funct_cyl,           /* 3d cylinder */
+  funct_explicit       /* explicit function */
 } FUNCTTYP;
 
 
@@ -87,6 +90,7 @@ typedef struct _FUNCT
     struct _FUNCT_BEL         *funct_bel;        /* Beltrami flow function */
     struct _FUNCT_KIM         *funct_kim;        /* Kim-Moin flow function */
     struct _FUNCT_CYL         *funct_cyl;        /* 3D cylinder */
+    struct _FUNCT_EXPLICIT    *funct_explicit;
   }                            typ;              /* name of union */
 
 } FUNCT;
@@ -234,3 +238,16 @@ typedef struct _FUNCT_CYL
 } FUNCT_CYL;
 
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief explicit function for internal evaluation
+
+  \author u.kue
+  \date 12/05
+*/
+/*----------------------------------------------------------------------*/
+typedef struct _FUNCT_EXPLICIT
+{
+  DOUBLE                 x[3];
+  struct _ST_NODE*       funct;
+} FUNCT_EXPLICIT;

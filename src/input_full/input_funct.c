@@ -13,6 +13,7 @@ Maintainer: Malte Neumann
 
 
 #include "../headers/standardtypes.h"
+#include "../pss_full/pss_parser.h"
 
 
 /*!----------------------------------------------------------------------
@@ -291,6 +292,23 @@ void inp_read_funct(char *string, INT id)
     actfunct->typ.funct_cyl->um = tmp[0];
   }
 
+  frchk("EXPR",&ierr);
+  if (ierr==1)
+  {
+    char expr[100];
+    actfunct->functtyp = funct_explicit;
+    actfunct->typ.funct_explicit = (FUNCT_EXPLICIT*)CCACALLOC(1,sizeof(FUNCT_EXPLICIT));
+
+    /* read the position of the function's origin */
+    frdouble_n("EXPR",actfunct->typ.funct_explicit->x,3,&ierr);
+    if (!ierr) dserror("failed to read coordinates");
+
+    /* read the expression */
+    frchar("FUNCTION", expr, &ierr);
+    if (!ierr) dserror("failed to read expression string");
+
+    actfunct->typ.funct_explicit->funct = pss_parse(expr);
+  }
 
 end:
 

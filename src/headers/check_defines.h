@@ -76,6 +76,27 @@ Maintainer: Malte Neumann
 #error "Use -DD_FLUID in the makefile."
 #endif
 
+#if defined(D_FLUID2_PRO) && !defined(D_FLUID_PM)
+#error "D_FLUID2_PRO needs D_FLUID_PM."
+#error "Use -DD_FLUID_PM in the makefile."
+#endif
+
+/* no fluid3pro without fluid */
+#if defined(D_FLUID3_PRO) && !defined(D_FLUID)
+#error "D_FLUID3_PRO needs D_FLUID."
+#error "Use -DD_FLUID in the makefile."
+#endif
+
+#if defined(D_FLUID3_PRO) && !defined(D_FLUID_PM)
+#error "D_FLUID3_PRO needs D_FLUID_PM."
+#error "Use -DD_FLUID_PM in the makefile."
+#endif
+
+#if defined(D_FLUID_PM) && !defined(AZTEC_PACKAGE)
+#error "D_FLUID_PM needs AZTEC_PACKAGE."
+#error "Use -DAZTEC_PACKAGE in the makefile."
+#endif
+
 /* no fsi with gemm */
 #if defined(D_FSI) && defined(GEMM)
 #error "FSI not possible with GEMM."

@@ -121,7 +121,7 @@ as flags and other dynamic information are stored.
 typedef struct _FLUID_DYNAMIC
 {
 /* general control variables of fluid dynamics */
-INT    dyntyp;       /*!< dynamictype                                   */
+FLUID_DYNTYPE dyntyp; /*!< dynamictype                                   */
 INT    iop;          /*!< time integration method                       */
 INT    iops;         /*!< starting algorithm                            */
 INT    init;         /*!< initialisation of starting field              */
@@ -216,7 +216,7 @@ DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS       */
 DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS       */
 DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS        */
 DOUBLE thpr;     /*!< theta-p,r: const. for "pressure" terms RHS        */
-DOUBLE sigma;    /*!< const. for nonlinear iteration                    */ 
+DOUBLE sigma;    /*!< const. for nonlinear iteration                    */
 /* tolerances */
 DOUBLE  ittol;     /*!< tolerance for iteration convergence check       */
 DOUBLE  sttol;     /*!< tolerance for steady state check                */

@@ -395,6 +395,64 @@ static void setup_fluid2_pro_variables(INT version, FLUID2_PRO_VARIABLES* vars)
 /*======================================================================*/
 /*======================================================================*/
 
+#ifdef D_FLUID3_PRO
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the fluid3_pro output.
+
+  The only instance of this structure.
+
+  \author u.kue
+  \date 11/04
+  \sa setup_fluid3_pro_variables
+ */
+/*----------------------------------------------------------------------*/
+FLUID3_PRO_VARIABLES fluid3_pro_variables;
+
+
+static void setup_fluid3_pro_variables(INT version, FLUID3_PRO_VARIABLES* vars)
+{
+#ifdef DEBUG
+  dstrc_enter("setup_fluid3_pro_variables");
+#endif
+
+  vars->init = 1;
+  vars->version = version;
+
+  switch (version)
+  {
+  case 1:
+    vars->ep_size_nGP0 = 4;
+    vars->ep_size_nGP1 = 5;
+    vars->ep_size_nGP2 = 6;
+
+    /* the length of the integer and the double entry */
+    vars->ep_size_length = 7;
+    vars->ep_value_length = 0;
+    break;
+
+  case 0:
+
+    /* Oh, no version. We are not initialized. */
+    vars->init = 0;
+    break;
+
+  default:
+    dserror("fluid3_pro output version %d unknown", version);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+
+/*======================================================================*/
+/*======================================================================*/
+
 #ifdef D_FLUID2TU
 
 
@@ -1042,7 +1100,7 @@ void setup_element_variables_current()
 
   /* we do the nodes here, too */
   setup_node_variables(NODE_IO_VERSION, &node_variables);
-  
+
   setup_element_variables(ELEMENT_IO_VERSION, &element_variables);
 
 #ifdef D_SHELL8
@@ -1059,6 +1117,9 @@ void setup_element_variables_current()
 #endif
 #ifdef D_FLUID2_PRO
   setup_fluid2_pro_variables(FLUID2_PRO_IO_VERSION, &fluid2_pro_variables);
+#endif
+#ifdef D_FLUID3_PRO
+  setup_fluid3_pro_variables(FLUID3_PRO_IO_VERSION, &fluid3_pro_variables);
 #endif
 #ifdef D_FLUID2TU
   setup_fluid2tu_variables(FLUID2TU_IO_VERSION, &fluid2tu_variables);
@@ -1116,7 +1177,7 @@ void setup_element_variables_map(MAP* group)
 
   setup_node_variables(map_read_int(group, "node_version"),
                        &node_variables);
-  
+
   setup_element_variables(map_read_int(group, "general_element_version"),
                           &element_variables);
 

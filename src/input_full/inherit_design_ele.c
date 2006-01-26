@@ -85,10 +85,17 @@ for (i=0; i<actdis->numele; i++)
       }
     break;
     /*---------------------------- do nothin in the following cases: ---*/
-    case el_fluid2_pro:       /* projection method                      */
     case el_fluid2_tu:        /* turbulence elements                    */
-#endif
     break;
+#endif
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:       /* projection method                      */
+    break;
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:       /* projection method                      */
+    break;
+#endif
     case el_fluid3:
 #ifdef D_FLUID3
       /*------------------------------------------ set some pointers ---*/

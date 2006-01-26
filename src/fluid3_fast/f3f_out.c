@@ -105,12 +105,15 @@ void f3f_out_gid_sol_str(
       stress=actele->e.f3->stress_ND.a.da;
       for(k=0; k<8; k++)
         if (actele->node[k] == sactnode) break;
+#ifndef PARALLEL
+      /* Stress output does not work in parallel execution! */
       str[0] += stress[k][0];
       str[1] += stress[k][1];
       str[2] += stress[k][2];
       str[3] += stress[k][3];
       str[4] += stress[k][4];
       str[5] += stress[k][5];
+#endif
     }
 
     invcount = 1.0/count;

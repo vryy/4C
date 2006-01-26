@@ -707,6 +707,60 @@ return;
 
 
 /*!---------------------------------------------------------------------
+\brief reads a charstring from input file
+
+<pre>                                                        m.gee 8/00
+searches for keyword string and reads continous charstring behind it
+user must assure, that the given charpointer space is long enough
+to hold the string
+
+In difference to the more simple frchar we require the keyword to be a
+word on its own, not just part of a word. In particular the keyword
+must be followed by a whitespace and must start at the beginning of
+the line or be preceded by a whitespace, too.
+
+</pre>
+\param string   char[]   (i)   string to search for in actual line
+\param var      char*    (o)   adress of variable to hold string read
+\param ierr     INT*     (o)   =0  keyword not found / =1 value read
+\return void
+\sa frdouble_n() , frint_n() , frint() , frchar()
+
+------------------------------------------------------------------------*/
+void frword(char string[],char *var, INT *ierr)
+{
+  char *foundit = NULL;
+
+#ifdef DEBUG
+  dstrc_enter("frword");
+#endif
+
+  *ierr=0;
+  foundit = strstr(allfiles.input_file[allfiles.actrow],string);
+  if (foundit != NULL)
+  {
+    if ((foundit==allfiles.input_file[allfiles.actrow]) ||
+	(foundit[-1]==' ') || (foundit[-1]=='\t'))
+    {
+      foundit += strlen(string);
+      if ((*foundit == ' ') || (*foundit == '\t'))
+      {
+	sscanf(foundit," %s ",var);
+	*ierr=1;
+      }
+    }
+  }
+
+#ifdef DEBUG
+dstrc_exit();
+#endif
+
+return;
+} /* end of frchar */
+
+
+
+/*!---------------------------------------------------------------------
 \brief checks for a keyword in actual line
 
 <pre>                                                        m.gee 8/00
@@ -756,5 +810,174 @@ allfiles.actrow=0;
 /*----------------------------------------------------------------------*/
 return;
 } /* end of frend */
+
+
+/*----------------------------------------------------------------------*/
+/*!
+ * \brief Compare two words.
+ *
+ * The purpose of this function is to avoid the explicit mention of
+ * the string length in strncmp. Both arguments are strings. The words
+ * at the beginning of these strings are compared. Words end at
+ * whitespaces (space, tab, newline) or the end of the string.
+ *
+ * \param p1  (i) word one
+ * \param p2  (i) word two
+ *
+ * \return Just like strcmp.
+ *
+ * \author u.kue
+ * \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+INT frwordcmp(CHAR* p1, CHAR* p2)
+{
+  INT diff=0;
+
+  for (;;)
+  {
+    switch (*p1)
+    {
+    case ' ':
+    case '\t':
+    case '\n':
+    case '\r':
+    case '\0':
+      /* end of word one */
+
+      switch (*p2)
+      {
+      case ' ':
+      case '\t':
+      case '\n':
+      case '\r':
+      case '\0':
+        /* end of word two */
+        /* Fine. We got here. Words are equal. */
+        return 0;
+      default:
+        /* Second word not finished yet. It's bigger. */
+        return -(*p2);
+      }
+
+      break;
+    default:
+
+      switch (*p2)
+      {
+      case ' ':
+      case '\t':
+      case '\n':
+      case '\r':
+      case '\0':
+        /* end of word two */
+        /* first word still running */
+        return *p1;
+      default:
+
+        /* Inside both words. Normal compare. */
+
+        diff = *p1 - *p2;
+        if (diff != 0)
+        {
+          return diff;
+        }
+        break;
+      }
+
+      break;
+    }
+
+    p1++;
+    p2++;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+ * \brief Check to see if the word at hand is 'yes' (any case).
+ *
+ * Requires null-terminated strings. Otherwise the string might be
+ * overrun.
+ *
+ * \param p  (i) The string to be tested for "yes".
+ *
+ * \author u.kue
+ * \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+INT frcheckyes(CHAR* p)
+{
+  /*
+   * There is no problem if the string is less than four chars long as
+   * long as it's null terminated. */
+  return (((p[0]=='y') || (p[0]=='Y')) &&
+          ((p[1]=='e') || (p[1]=='E')) &&
+          ((p[2]=='s') || (p[2]=='S')) &&
+          ((p[3]==' ') || (p[3]=='\t') || (p[3]=='\n') || (p[3]=='\r') || (p[3]=='\0')));
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+ * \brief Check to see if the word at hand is 'no' (any case).
+ *
+ * Requires null-terminated strings. Otherwise the string might be
+ * overrun.
+ *
+ * \param p  (i) The string to be tested for "no".
+ *
+ * \author u.kue
+ * \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+INT frcheckno(CHAR* p)
+{
+  /*
+   * There is no problem if the string is less than three chars long as
+   * long as it's null terminated. */
+  return (((p[0]=='n') || (p[0]=='N')) &&
+          ((p[1]=='o') || (p[1]=='O')) &&
+          ((p[2]==' ') || (p[2]=='\t') || (p[2]=='\n') || (p[2]=='\r') || (p[2]=='\0')));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+ * \brief Read the yes/no switch at the current point.
+ *
+ * \param key      (i) the flag name from the input file
+ * \param flag     (o) flag value. Only valid if true returned.
+ *
+ * \return True if the keyword could be found and a meaningful yes/no
+ * test has been performed.
+ *
+ * \author u.kue
+ * \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+INT frreadyes(CHAR* key, INT* flag)
+{
+  CHAR buffer[50];
+  INT ierr;
+#ifdef DEBUG
+  dstrc_enter("frreadyes");
+#endif
+
+  frword(key, buffer, &ierr);
+  if (ierr)
+  {
+    INT f;
+    f = frcheckyes(buffer);
+    if (!f && !frcheckno(buffer))
+      dserror("Unknown value '%s' for flag '%s'", buffer, key);
+    *flag = f;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return ierr;
+}
 
 /*! @} (documentation module close)*/

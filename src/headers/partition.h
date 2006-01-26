@@ -29,7 +29,7 @@ typedef struct _PAR
 INT               myrank;                /*!< the individual processor number */
 INT               nprocs;                /*!< total number of processors */
 #ifdef PARALLEL
-INT               numfld;                /*!< number of intra-communicators 
+INT               numfld;                /*!< number of intra-communicators
                                            == number of fields */
 struct _INTRA    *intra;                 /*!< vector of intra-communicator-structures
                                            correspondent to vector of FIELDs */
@@ -89,6 +89,8 @@ INT                 numnp;               /*!< total number of nodes on this pari
 INT                 numele;              /*!< total number of elements on this partition */
 struct _NODE      **node;                /*!< ptrs to nodes on this part. */
 struct _ELEMENT   **element;             /*!< ptrs to elements on this partition */
+
+  INT numlele;                  /* number of local elements on this partition */
 
 INT                 inner_numnp;         /*!< number of pure inner-nodes */
 struct _NODE      **inner_node;          /*!< ptrs to pure inner-nodes */

@@ -329,7 +329,6 @@ void perf_init (INT index)
   ------------------------------------------------------------------------*/
 void perf_begin (INT index)
 {
-  DOUBLE perf_cpu();
   DOUBLE perf_time();
 
 #if defined(SX6) || defined(SX8)
@@ -345,7 +344,6 @@ void perf_begin (INT index)
 }
 void perfbeginf (INT *index)
 {
-  DOUBLE perf_cpu();
   DOUBLE perf_time();
 
   begtime[*index] = perf_time();
@@ -355,7 +353,6 @@ void perfbeginf (INT *index)
 }
 void perfbeginf_ (INT *index)
 {
-  DOUBLE perf_cpu();
   DOUBLE perf_time();
 
   begtime[*index] = perf_time();

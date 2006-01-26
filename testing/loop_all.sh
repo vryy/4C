@@ -8,7 +8,7 @@ for file in $liste; do
   echo 'Testing ' $file '   ('$number'/'$total')'
 
 
-  file_ohne=`echo $file | sed -e 's/Input\///g'`
+  file_ohne=`basename $file`
   inputfile=$file
 
   # create Makefile
@@ -16,12 +16,12 @@ for file in $liste; do
   echo '  Making Makefile ...'
   echo "  NODEPS=$NODEPS ./configure $configfile $definefile"
 
-  . ./scripts/extract-defines.sh
-  . ./scripts/setup-variables.sh
-  . ./scripts/setup-libraries.sh
-  . ./scripts/setup-objects.sh
-  . ./scripts/build-define-header.sh
-  . ./scripts/build-makefile.sh
+  . $SRC/scripts/extract-defines.sh
+  . $SRC/scripts/setup-variables.sh
+  . $SRC/scripts/setup-libraries.sh
+  . $SRC/scripts/setup-objects.sh
+  . $SRC/scripts/build-define-header.sh
+  . $SRC/scripts/build-makefile.sh
 
   exe=$PROGRAMNAME
 
@@ -82,12 +82,12 @@ for file in $liste; do
     # run the executable with the inputfile
     echo
     echo '  Running Input-file...'
-    ./$exe $file test_out >test.tmp
+    ./$exe $inputfile test_out >test.tmp
   else
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
-    mpirun -np 2 ./$exe $file test_out >test.tmp
+    mpirun -np 2 ./$exe $inputfile test_out >test.tmp
   fi
 
   # get the end-time in seconds:

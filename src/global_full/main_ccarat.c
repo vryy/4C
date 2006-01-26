@@ -11,7 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/compile_settings.h"
+#include <../headers/compile_settings.h>
 
 #ifdef TRAP_FE
 

@@ -313,6 +313,9 @@ static INT iminarg1,iminarg2;
 */
 #define IMIN MIN
 
+/* exchange two integers */
+#define SWAP_INT(a, b) { INT t; t = a; a = b; b = t; }
+
 /*----------------------------------------------------------------------*
  | max number of processors                                             |
  *----------------------------------------------------------------------*/

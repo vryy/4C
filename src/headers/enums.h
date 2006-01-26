@@ -24,7 +24,7 @@ typedef enum _PROBLEM_TYP
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
- * The trailing NULL is essential or the filters to read the problem
+ * The trailing NULL is essential for the filters to read the problem
  * type! */
 #define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale", NULL }
 /*----------------------------------------------------------------------*
@@ -74,8 +74,10 @@ typedef enum _DISCLASS
  *----------------------------------------------------------------------*/
 typedef enum _DISMODE
 {
-                      dm_none,        /* unknown type of discretisation */
-                      dm_q2q1
+                      dm_none,  /* unknown type of discretisation */
+                      dm_q1p0,
+                      dm_q2q1,  /* Taylor-Hood */
+                      dm_q2pm1 	/* discontinuous pressure */
 } DISMODE;
 
 
@@ -129,6 +131,7 @@ typedef enum _ELEMENT_TYP
                        el_fluid2_tu,   /* 2D fluid element for turbulence */
                        el_fluid3,      /* 3D fluid element */
                        el_fluid3_fast,
+		       el_fluid3_pro,  /* 3D fluid element */
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3,        /* 3D pseudo structural ale element */
                        el_axishell,    /* 1D axisymmetrical shell element */
@@ -141,7 +144,25 @@ typedef enum _ELEMENT_TYP
 
 /* Mapping from element type numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define ELEMENTNAMES { "none", "shell1", "shell8", "shell9", "brick1", "wall1", "beam3", "fluid2", "fluid2_pro", "fluid2_tu", "fluid3", "fluid3_fast", "ale2", "ale3", "axishell", "interf", "wallge", NULL  }
+#define ELEMENTNAMES { "none",                                          \
+      "shell1",                                                         \
+      "shell8",                                                         \
+      "shell9",                                                         \
+      "brick1",                                                         \
+      "wall1",                                                          \
+      "beam3",                                                          \
+      "fluid2",                                                         \
+      "fluid2_pro",                                                     \
+      "fluid2_tu",                                                      \
+      "fluid3",                                                         \
+      "fluid3_fast",                                                    \
+      "fluid3_pro",                                                     \
+      "ale2",                                                           \
+      "ale3",                                                           \
+      "axishell",                                                       \
+      "interf",                                                         \
+      "wallge",                                                         \
+      NULL  }
 
 
 #ifdef D_FLUID3_F
@@ -454,6 +475,17 @@ typedef enum _SSI_MESH
      conform,
      non_conform
 } SSI_MESH;
+
+
+/*----------------------------------------------------------------------*/
+/* The known time integration methods for fluids. */
+/*----------------------------------------------------------------------*/
+typedef enum _FLUID_DYNTYPE
+{
+  dyntyp_nln_time_int=0,
+  dyntyp_projection_method=1
+} FLUID_DYNTYPE;
+
 
 /*----------------------------------------------------------------------*
  |  FSI MESHES                                            genk 10/02    |

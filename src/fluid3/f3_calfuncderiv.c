@@ -65,12 +65,49 @@ derivatives with respect to r/s/t are evaluated for
 	     /
 	    r
 
+   GiD:
+
+                           ^ t
+                           |
+                           |
+                           |
+                    8      |  19        7
+                    o---------o---------o
+                   /|                  /|
+                  / |                 / |
+                 /  |                /	|
+              20o   |   26o       18o   |
+               /    o16     24o    /	o15
+              /     |             /     |
+             /      |  17      6 /	|
+          5 o---------o---------o   23	|
+            |   o   |   27o   	|   o   |  ---------->
+            |  25   o---------o-|-------o           s
+            |      / 4       11 |      /3
+            |     /             |     /
+          13o    /  22o         o14  /
+            | 12o         o     |   o10
+            |  /         21     |  /
+            | /                 | /
+            |/	                |/
+            o---------o---------o
+	    1	/     9         2
+	       /
+	      /
+	     /
+	    r
+
+
+
    PROBLEM: GID has a different numbering of the element nodes than this one.
             So either the shape functions for hex20 and hex27 (see drawing)
 	    has to be adapted or during the input phase the numbering has to
 	    be adapted to the shape functions.
 	    This is all in progress and should be done for fluid3 and
 	    brick1 the same way!!!!
+
+   There are no HEX27 Elements in brick1 so we just go ahead here and
+   use the GiD numbering for HEX27.
 
 </pre>
 \param  *funct    DOUBLE   (o)    shape functions
@@ -98,8 +135,6 @@ void f3_hex(
 {
 DOUBLE rp,rm,sp,sm,tp,tm;
 DOUBLE rrm,ssm,ttm;
-DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
-DOUBLE rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
 
 #ifdef DEBUG
 dstrc_enter("f3_rec");
@@ -478,153 +513,322 @@ case hex20: /* QUADRATIC shape functions and their natural derivatives
 break;
 
 case hex27: /* QUADRATIC shape functions and their natural derivatives
-                         with central nodes                         ----*/
-
-   dserror("shape functions for hex27 not implemented yet - see f3_calfuncderiv!\n");
+               with central nodes                         ----*/
 /*--------------------------------------------------- form basic values */
-   rm1=Q12*r*(r - ONE);
-   r00=(ONE - r*r);
-   rp1=Q12*r*(r + ONE);
-   sm1=Q12*s*(s - ONE);
-   s00=(ONE - s*s);
-   sp1=Q12*s*(s + ONE);
-   tm1=Q12*t*(t - ONE);
-   t00=(ONE - t*t);
-   tp1=Q12*t*(t + ONE);
+{
+  DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
+  DOUBLE rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
 
-   funct[0 ]= rp1 * sm1 * tm1;
-   funct[1 ]= rp1 * sp1 * tm1;
-   funct[2 ]= rm1 * sp1 * tm1;
-   funct[3 ]= rm1 * sm1 * tm1;
-   funct[4 ]= rp1 * sm1 * tp1;
-   funct[5 ]= rp1 * sp1 * tp1;
-   funct[6 ]= rm1 * sp1 * tp1;
-   funct[7 ]= rm1 * sm1 * tp1;
-   funct[8 ]= rp1 * s00 * tm1;
-   funct[9 ]= r00 * sp1 * tm1;
-   funct[10]= rm1 * s00 * tm1;
-   funct[11]= r00 * sm1 * tm1;
-   funct[12]= rp1 * s00 * tp1;
-   funct[13]= r00 * sp1 * tp1;
-   funct[14]= rm1 * s00 * tp1;
-   funct[15]= r00 * sm1 * tp1;
-   funct[16]= rp1 * sm1 * t00;
-   funct[17]= rp1 * sp1 * t00;
-   funct[18]= rm1 * sp1 * t00;
-   funct[19]= rm1 * sm1 * t00;
-   funct[20]= rp1 * s00 * t00;
-   funct[21]= r00 * sp1 * t00;
-   funct[22]= rm1 * s00 * t00;
-   funct[23]= r00 * sm1 * t00;
-   funct[24]= r00 * s00 * tp1;
-   funct[25]= r00 * s00 * tm1;
-   funct[26]= r00 * s00 * t00;
+  rm1=Q12*r*(r - ONE);
+  r00=(ONE - r*r);
+  rp1=Q12*r*(r + ONE);
+  sm1=Q12*s*(s - ONE);
+  s00=(ONE - s*s);
+  sp1=Q12*s*(s + ONE);
+  tm1=Q12*t*(t - ONE);
+  t00=(ONE - t*t);
+  tp1=Q12*t*(t + ONE);
 
-   if(icode>1) /* --> first derivative evaluation */
-   {
-      drm1 = r - Q12;
-      dr00 = -TWO * r;
-      drp1 = r + Q12;
-      dsm1 = s - Q12;
-      ds00 = -TWO * s;
-      dsp1 = s + Q12;
-      dtm1 = t - Q12;
-      dt00 = -TWO * t;
-      dtp1 = t + Q12;
+  drm1 = r - Q12;
+  dr00 = -TWO * r;
+  drp1 = r + Q12;
+  dsm1 = s - Q12;
+  ds00 = -TWO * s;
+  dsp1 = s + Q12;
+  dtm1 = t - Q12;
+  dt00 = -TWO * t;
+  dtp1 = t + Q12;
 
-      deriv[0][0 ]= drp1 * sm1 * tm1;
-      deriv[0][1 ]= drp1 * sp1 * tm1;
-      deriv[0][2 ]= drm1 * sp1 * tm1;
-      deriv[0][3 ]= drm1 * sm1 * tm1;
-      deriv[0][4 ]= drp1 * sm1 * tp1;
-      deriv[0][5 ]= drp1 * sp1 * tp1;
-      deriv[0][6 ]= drm1 * sp1 * tp1;
-      deriv[0][7 ]= drm1 * sm1 * tp1;
-      deriv[0][8 ]= drp1 * s00 * tm1;
-      deriv[0][9 ]= dr00 * sp1 * tm1;
-      deriv[0][10]= drm1 * s00 * tm1;
-      deriv[0][11]= dr00 * sm1 * tm1;
-      deriv[0][12]= drp1 * s00 * tp1;
-      deriv[0][13]= dr00 * sp1 * tp1;
-      deriv[0][14]= drm1 * s00 * tp1;
-      deriv[0][15]= dr00 * sm1 * tp1;
-      deriv[0][16]= drp1 * sm1 * t00;
-      deriv[0][17]= drp1 * sp1 * t00;
-      deriv[0][18]= drm1 * sp1 * t00;
-      deriv[0][19]= drm1 * sm1 * t00;
-      deriv[0][20]= drp1 * s00 * t00;
-      deriv[0][21]= dr00 * sp1 * t00;
-      deriv[0][22]= drm1 * s00 * t00;
-      deriv[0][23]= dr00 * sm1 * t00;
-      deriv[0][24]= dr00 * s00 * tp1;
-      deriv[0][25]= dr00 * s00 * tm1;
-      deriv[0][26]= dr00 * s00 * t00;
+  funct[0] = rp1*sp1*tp1;
+  funct[1] = sm1*rp1*tp1;
+  funct[2] = rm1*sm1*tp1;
+  funct[3] = rm1*sp1*tp1;
+  funct[4] = tm1*rp1*sp1;
+  funct[5] = sm1*tm1*rp1;
+  funct[6] = rm1*sm1*tm1;
+  funct[7] = rm1*tm1*sp1;
+  funct[8] = s00*rp1*tp1;
+  funct[9] = r00*sm1*tp1;
+  funct[10] = s00*rm1*tp1;
+  funct[11] = r00*sp1*tp1;
+  funct[12] = t00*rp1*sp1;
+  funct[13] = t00*sm1*rp1;
+  funct[14] = t00*rm1*sm1;
+  funct[15] = t00*rm1*sp1;
+  funct[16] = s00*tm1*rp1;
+  funct[17] = r00*sm1*tm1;
+  funct[18] = s00*rm1*tm1;
+  funct[19] = r00*tm1*sp1;
+  funct[20] = r00*s00*tp1;
+  funct[21] = s00*t00*rp1;
+  funct[22] = r00*t00*sm1;
+  funct[23] = s00*t00*rm1;
+  funct[24] = r00*t00*sp1;
+  funct[25] = r00*s00*tm1;
+  funct[26] = r00*s00*t00;
 
-      deriv[1][0 ]= rp1 * dsm1 * tm1;
-      deriv[1][1 ]= rp1 * dsp1 * tm1;
-      deriv[1][2 ]= rm1 * dsp1 * tm1;
-      deriv[1][3 ]= rm1 * dsm1 * tm1;
-      deriv[1][4 ]= rp1 * dsm1 * tp1;
-      deriv[1][5 ]= rp1 * dsp1 * tp1;
-      deriv[1][6 ]= rm1 * dsp1 * tp1;
-      deriv[1][7 ]= rm1 * dsm1 * tp1;
-      deriv[1][8 ]= rp1 * ds00 * tm1;
-      deriv[1][9 ]= r00 * dsp1 * tm1;
-      deriv[1][10]= rm1 * ds00 * tm1;
-      deriv[1][11]= r00 * dsm1 * tm1;
-      deriv[1][12]= rp1 * ds00 * tp1;
-      deriv[1][13]= r00 * dsp1 * tp1;
-      deriv[1][14]= rm1 * ds00 * tp1;
-      deriv[1][15]= r00 * dsm1 * tp1;
-      deriv[1][16]= rp1 * dsm1 * t00;
-      deriv[1][17]= rp1 * dsp1 * t00;
-      deriv[1][18]= rm1 * dsp1 * t00;
-      deriv[1][19]= rm1 * dsm1 * t00;
-      deriv[1][20]= rp1 * ds00 * t00;
-      deriv[1][21]= r00 * dsp1 * t00;
-      deriv[1][22]= rm1 * ds00 * t00;
-      deriv[1][23]= r00 * dsm1 * t00;
-      deriv[1][24]= r00 * ds00 * tp1;
-      deriv[1][25]= r00 * ds00 * tm1;
-      deriv[1][26]= r00 * ds00 * t00;
+  if (icode>1) /* --> first derivative evaluation */
+  {
+    deriv[0][0] = sp1*tp1*drp1;
+    deriv[0][1] = sm1*tp1*drp1;
+    deriv[0][2] = sm1*tp1*drm1;
+    deriv[0][3] = sp1*tp1*drm1;
+    deriv[0][4] = tm1*sp1*drp1;
+    deriv[0][5] = sm1*tm1*drp1;
+    deriv[0][6] = sm1*tm1*drm1;
+    deriv[0][7] = tm1*sp1*drm1;
+    deriv[0][8] = s00*tp1*drp1;
+    deriv[0][9] = sm1*tp1*dr00;
+    deriv[0][10] = s00*tp1*drm1;
+    deriv[0][11] = sp1*tp1*dr00;
+    deriv[0][12] = t00*sp1*drp1;
+    deriv[0][13] = t00*sm1*drp1;
+    deriv[0][14] = t00*sm1*drm1;
+    deriv[0][15] = t00*sp1*drm1;
+    deriv[0][16] = s00*tm1*drp1;
+    deriv[0][17] = sm1*tm1*dr00;
+    deriv[0][18] = s00*tm1*drm1;
+    deriv[0][19] = tm1*sp1*dr00;
+    deriv[0][20] = s00*tp1*dr00;
+    deriv[0][21] = s00*t00*drp1;
+    deriv[0][22] = t00*sm1*dr00;
+    deriv[0][23] = s00*t00*drm1;
+    deriv[0][24] = t00*sp1*dr00;
+    deriv[0][25] = s00*tm1*dr00;
+    deriv[0][26] = s00*t00*dr00;
 
-      deriv[2][0 ]= rp1 * sm1 * dtm1;
-      deriv[2][1 ]= rp1 * sp1 * dtm1;
-      deriv[2][2 ]= rm1 * sp1 * dtm1;
-      deriv[2][3 ]= rm1 * sm1 * dtm1;
-      deriv[2][4 ]= rp1 * sm1 * dtp1;
-      deriv[2][5 ]= rp1 * sp1 * dtp1;
-      deriv[2][6 ]= rm1 * sp1 * dtp1;
-      deriv[2][7 ]= rm1 * sm1 * dtp1;
-      deriv[2][8 ]= rp1 * s00 * dtm1;
-      deriv[2][9 ]= r00 * sp1 * dtm1;
-      deriv[2][10]= rm1 * s00 * dtm1;
-      deriv[2][11]= r00 * sm1 * dtm1;
-      deriv[2][12]= rp1 * s00 * dtp1;
-      deriv[2][13]= r00 * sp1 * dtp1;
-      deriv[2][14]= rm1 * s00 * dtp1;
-      deriv[2][15]= r00 * sm1 * dtp1;
-      deriv[2][16]= rp1 * sm1 * dt00;
-      deriv[2][17]= rp1 * sp1 * dt00;
-      deriv[2][18]= rm1 * sp1 * dt00;
-      deriv[2][19]= rm1 * sm1 * dt00;
-      deriv[2][20]= rp1 * s00 * dt00;
-      deriv[2][21]= r00 * sp1 * dt00;
-      deriv[2][22]= rm1 * s00 * dt00;
-      deriv[2][23]= r00 * sm1 * dt00;
-      deriv[2][24]= r00 * s00 * dtp1;
-      deriv[2][25]= r00 * s00 * dtm1;
-      deriv[2][26]= r00 * s00 * dt00;
-   }  /* endif (icode>1) */
-   if(icode==3) /* --> second derivative evaluation */
-   {
-      dserror("second derivatives for hex27 not implemented yet!!!\n");
-   }
-break;
+    deriv[1][0] = rp1*tp1*dsp1;
+    deriv[1][1] = rp1*tp1*dsm1;
+    deriv[1][2] = rm1*tp1*dsm1;
+    deriv[1][3] = rm1*tp1*dsp1;
+    deriv[1][4] = tm1*rp1*dsp1;
+    deriv[1][5] = tm1*rp1*dsm1;
+    deriv[1][6] = rm1*tm1*dsm1;
+    deriv[1][7] = rm1*tm1*dsp1;
+    deriv[1][8] = rp1*tp1*ds00;
+    deriv[1][9] = r00*tp1*dsm1;
+    deriv[1][10] = rm1*tp1*ds00;
+    deriv[1][11] = r00*tp1*dsp1;
+    deriv[1][12] = t00*rp1*dsp1;
+    deriv[1][13] = t00*rp1*dsm1;
+    deriv[1][14] = t00*rm1*dsm1;
+    deriv[1][15] = t00*rm1*dsp1;
+    deriv[1][16] = tm1*rp1*ds00;
+    deriv[1][17] = r00*tm1*dsm1;
+    deriv[1][18] = rm1*tm1*ds00;
+    deriv[1][19] = r00*tm1*dsp1;
+    deriv[1][20] = r00*tp1*ds00;
+    deriv[1][21] = t00*rp1*ds00;
+    deriv[1][22] = r00*t00*dsm1;
+    deriv[1][23] = t00*rm1*ds00;
+    deriv[1][24] = r00*t00*dsp1;
+    deriv[1][25] = r00*tm1*ds00;
+    deriv[1][26] = r00*t00*ds00;
+
+    deriv[2][0] = rp1*sp1*dtp1;
+    deriv[2][1] = sm1*rp1*dtp1;
+    deriv[2][2] = rm1*sm1*dtp1;
+    deriv[2][3] = rm1*sp1*dtp1;
+    deriv[2][4] = rp1*sp1*dtm1;
+    deriv[2][5] = sm1*rp1*dtm1;
+    deriv[2][6] = rm1*sm1*dtm1;
+    deriv[2][7] = rm1*sp1*dtm1;
+    deriv[2][8] = s00*rp1*dtp1;
+    deriv[2][9] = r00*sm1*dtp1;
+    deriv[2][10] = s00*rm1*dtp1;
+    deriv[2][11] = r00*sp1*dtp1;
+    deriv[2][12] = rp1*sp1*dt00;
+    deriv[2][13] = sm1*rp1*dt00;
+    deriv[2][14] = rm1*sm1*dt00;
+    deriv[2][15] = rm1*sp1*dt00;
+    deriv[2][16] = s00*rp1*dtm1;
+    deriv[2][17] = r00*sm1*dtm1;
+    deriv[2][18] = s00*rm1*dtm1;
+    deriv[2][19] = r00*sp1*dtm1;
+    deriv[2][20] = r00*s00*dtp1;
+    deriv[2][21] = s00*rp1*dt00;
+    deriv[2][22] = r00*sm1*dt00;
+    deriv[2][23] = s00*rm1*dt00;
+    deriv[2][24] = r00*sp1*dt00;
+    deriv[2][25] = r00*s00*dtm1;
+    deriv[2][26] = r00*s00*dt00;
+  }
+  if (icode==3) /* --> second derivative evaluation */
+  {
+    deriv2[0][0] = sp1*tp1;
+    deriv2[0][1] = sm1*tp1;
+    deriv2[0][2] = sm1*tp1;
+    deriv2[0][3] = sp1*tp1;
+    deriv2[0][4] = tm1*sp1;
+    deriv2[0][5] = sm1*tm1;
+    deriv2[0][6] = sm1*tm1;
+    deriv2[0][7] = tm1*sp1;
+    deriv2[0][8] = s00*tp1;
+    deriv2[0][9] = -2*sm1*tp1;
+    deriv2[0][10] = s00*tp1;
+    deriv2[0][11] = -2*sp1*tp1;
+    deriv2[0][12] = t00*sp1;
+    deriv2[0][13] = t00*sm1;
+    deriv2[0][14] = t00*sm1;
+    deriv2[0][15] = t00*sp1;
+    deriv2[0][16] = s00*tm1;
+    deriv2[0][17] = -2*sm1*tm1;
+    deriv2[0][18] = s00*tm1;
+    deriv2[0][19] = -2*tm1*sp1;
+    deriv2[0][20] = -2*s00*tp1;
+    deriv2[0][21] = s00*t00;
+    deriv2[0][22] = -2*t00*sm1;
+    deriv2[0][23] = s00*t00;
+    deriv2[0][24] = -2*t00*sp1;
+    deriv2[0][25] = -2*s00*tm1;
+    deriv2[0][26] = -2*s00*t00;
+
+    deriv2[1][0] = rp1*tp1;
+    deriv2[1][1] = rp1*tp1;
+    deriv2[1][2] = rm1*tp1;
+    deriv2[1][3] = rm1*tp1;
+    deriv2[1][4] = tm1*rp1;
+    deriv2[1][5] = tm1*rp1;
+    deriv2[1][6] = rm1*tm1;
+    deriv2[1][7] = rm1*tm1;
+    deriv2[1][8] = -2*rp1*tp1;
+    deriv2[1][9] = r00*tp1;
+    deriv2[1][10] = -2*rm1*tp1;
+    deriv2[1][11] = r00*tp1;
+    deriv2[1][12] = t00*rp1;
+    deriv2[1][13] = t00*rp1;
+    deriv2[1][14] = t00*rm1;
+    deriv2[1][15] = t00*rm1;
+    deriv2[1][16] = -2*tm1*rp1;
+    deriv2[1][17] = r00*tm1;
+    deriv2[1][18] = -2*rm1*tm1;
+    deriv2[1][19] = r00*tm1;
+    deriv2[1][20] = -2*r00*tp1;
+    deriv2[1][21] = -2*t00*rp1;
+    deriv2[1][22] = r00*t00;
+    deriv2[1][23] = -2*t00*rm1;
+    deriv2[1][24] = r00*t00;
+    deriv2[1][25] = -2*r00*tm1;
+    deriv2[1][26] = -2*r00*t00;
+
+    deriv2[2][0] = rp1*sp1;
+    deriv2[2][1] = sm1*rp1;
+    deriv2[2][2] = rm1*sm1;
+    deriv2[2][3] = rm1*sp1;
+    deriv2[2][4] = rp1*sp1;
+    deriv2[2][5] = sm1*rp1;
+    deriv2[2][6] = rm1*sm1;
+    deriv2[2][7] = rm1*sp1;
+    deriv2[2][8] = s00*rp1;
+    deriv2[2][9] = r00*sm1;
+    deriv2[2][10] = s00*rm1;
+    deriv2[2][11] = r00*sp1;
+    deriv2[2][12] = -2*rp1*sp1;
+    deriv2[2][13] = -2*sm1*rp1;
+    deriv2[2][14] = -2*rm1*sm1;
+    deriv2[2][15] = -2*rm1*sp1;
+    deriv2[2][16] = s00*rp1;
+    deriv2[2][17] = r00*sm1;
+    deriv2[2][18] = s00*rm1;
+    deriv2[2][19] = r00*sp1;
+    deriv2[2][20] = r00*s00;
+    deriv2[2][21] = -2*s00*rp1;
+    deriv2[2][22] = -2*r00*sm1;
+    deriv2[2][23] = -2*s00*rm1;
+    deriv2[2][24] = -2*r00*sp1;
+    deriv2[2][25] = r00*s00;
+    deriv2[2][26] = -2*r00*s00;
+
+    deriv2[3][0] = tp1*drp1*dsp1;
+    deriv2[3][1] = tp1*dsm1*drp1;
+    deriv2[3][2] = tp1*drm1*dsm1;
+    deriv2[3][3] = tp1*drm1*dsp1;
+    deriv2[3][4] = tm1*drp1*dsp1;
+    deriv2[3][5] = tm1*dsm1*drp1;
+    deriv2[3][6] = tm1*drm1*dsm1;
+    deriv2[3][7] = tm1*drm1*dsp1;
+    deriv2[3][8] = tp1*ds00*drp1;
+    deriv2[3][9] = tp1*dr00*dsm1;
+    deriv2[3][10] = tp1*ds00*drm1;
+    deriv2[3][11] = tp1*dr00*dsp1;
+    deriv2[3][12] = t00*drp1*dsp1;
+    deriv2[3][13] = t00*dsm1*drp1;
+    deriv2[3][14] = t00*drm1*dsm1;
+    deriv2[3][15] = t00*drm1*dsp1;
+    deriv2[3][16] = tm1*ds00*drp1;
+    deriv2[3][17] = tm1*dr00*dsm1;
+    deriv2[3][18] = tm1*ds00*drm1;
+    deriv2[3][19] = tm1*dr00*dsp1;
+    deriv2[3][20] = 4*r*s*tp1;
+    deriv2[3][21] = t00*ds00*drp1;
+    deriv2[3][22] = t00*dr00*dsm1;
+    deriv2[3][23] = t00*ds00*drm1;
+    deriv2[3][24] = t00*dr00*dsp1;
+    deriv2[3][25] = 4*r*s*tm1;
+    deriv2[3][26] = 4*r*s*t00;
+
+    deriv2[4][0] = sp1*drp1*dtp1;
+    deriv2[4][1] = sm1*drp1*dtp1;
+    deriv2[4][2] = sm1*drm1*dtp1;
+    deriv2[4][3] = sp1*drm1*dtp1;
+    deriv2[4][4] = sp1*dtm1*drp1;
+    deriv2[4][5] = sm1*dtm1*drp1;
+    deriv2[4][6] = sm1*drm1*dtm1;
+    deriv2[4][7] = sp1*drm1*dtm1;
+    deriv2[4][8] = s00*drp1*dtp1;
+    deriv2[4][9] = sm1*dr00*dtp1;
+    deriv2[4][10] = s00*drm1*dtp1;
+    deriv2[4][11] = sp1*dr00*dtp1;
+    deriv2[4][12] = sp1*dt00*drp1;
+    deriv2[4][13] = sm1*dt00*drp1;
+    deriv2[4][14] = sm1*dt00*drm1;
+    deriv2[4][15] = sp1*dt00*drm1;
+    deriv2[4][16] = s00*dtm1*drp1;
+    deriv2[4][17] = sm1*dr00*dtm1;
+    deriv2[4][18] = s00*drm1*dtm1;
+    deriv2[4][19] = sp1*dr00*dtm1;
+    deriv2[4][20] = s00*dr00*dtp1;
+    deriv2[4][21] = s00*dt00*drp1;
+    deriv2[4][22] = 4*r*t*sm1;
+    deriv2[4][23] = s00*dt00*drm1;
+    deriv2[4][24] = 4*r*t*sp1;
+    deriv2[4][25] = s00*dr00*dtm1;
+    deriv2[4][26] = 4*r*t*s00;
+
+    deriv2[5][0] = rp1*dsp1*dtp1;
+    deriv2[5][1] = rp1*dsm1*dtp1;
+    deriv2[5][2] = rm1*dsm1*dtp1;
+    deriv2[5][3] = rm1*dsp1*dtp1;
+    deriv2[5][4] = rp1*dtm1*dsp1;
+    deriv2[5][5] = rp1*dsm1*dtm1;
+    deriv2[5][6] = rm1*dsm1*dtm1;
+    deriv2[5][7] = rm1*dtm1*dsp1;
+    deriv2[5][8] = rp1*ds00*dtp1;
+    deriv2[5][9] = r00*dsm1*dtp1;
+    deriv2[5][10] = rm1*ds00*dtp1;
+    deriv2[5][11] = r00*dsp1*dtp1;
+    deriv2[5][12] = rp1*dt00*dsp1;
+    deriv2[5][13] = rp1*dt00*dsm1;
+    deriv2[5][14] = rm1*dt00*dsm1;
+    deriv2[5][15] = rm1*dt00*dsp1;
+    deriv2[5][16] = rp1*ds00*dtm1;
+    deriv2[5][17] = r00*dsm1*dtm1;
+    deriv2[5][18] = rm1*ds00*dtm1;
+    deriv2[5][19] = r00*dtm1*dsp1;
+    deriv2[5][20] = r00*ds00*dtp1;
+    deriv2[5][21] = 4*s*t*rp1;
+    deriv2[5][22] = r00*dt00*dsm1;
+    deriv2[5][23] = 4*s*t*rm1;
+    deriv2[5][24] = r00*dt00*dsp1;
+    deriv2[5][25] = r00*ds00*dtm1;
+    deriv2[5][26] = 4*s*t*r00;
+  }
+  break;
+}
 
 /*----------------------------------------------------------------------*/
 default:
-   dserror("distyp unknown\n");
+  dserror("distyp unknown\n");
 } /* end switch (typ) */
 
 /*----------------------------------------------------------------------*/

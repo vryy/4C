@@ -86,14 +86,25 @@ if grep '^FLUID3_ML' "$definefile" 2>&1 > /dev/null ; then
     fi
 fi
 
-# FLUID2_PR
-if grep '^D_FLUID2_PR' "$definefile" 2>&1 > /dev/null ; then
+# FLUID2_PRO
+if grep '^D_FLUID2_PRO' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_F2PRO) \$(OBJS_FLUID)"
         DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_F2PRO)"
+    fi
+fi
+
+# FLUID3_PRO
+if grep '^D_FLUID3_PRO' "$definefile" 3>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_F3PRO) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F3PRO)"
     fi
 fi
 

@@ -53,14 +53,76 @@ void fluid2_pro_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
 
   if (gid->is_fluid2_pro_22)
   {
-    dserror("fluid2_pro_22 mesh not supported");
+    INT i;
+
+    GiD_BeginMesh(gid->fluid2_pro_22_name, 2, GiD_Quadrilateral, 4);
+
+    if (*first_mesh)
+    {
+      *first_mesh = 0;
+      write_coords(field, gid);
+    }
+
+    GiD_BeginElements();
+
+    for (i=0; i<field->numele; ++i)
+    {
+      INT numnp;
+      INT el_type;
+      INT Id;
+      INT mesh_entry[MAXNOD];
+      INT dis;
+
+      /* read the element's data */
+      get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+      if (el_type != el_fluid2_pro || numnp != 4) continue;
+
+      chunk_read_size_entry(&(field->mesh), i);
+      get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);
+      GiD_WriteElement(Id+1, mesh_entry);
+    }
+
+    GiD_EndElements();
+    GiD_EndMesh();
   }
 
   /*--------------------------------------------------------------------*/
 
   if (gid->is_fluid2_pro_33)
   {
-    dserror("fluid2_pro_33 mesh not supported");
+    INT i;
+
+    GiD_BeginMesh(gid->fluid2_pro_33_name, 2, GiD_Quadrilateral, 9);
+
+    if (*first_mesh)
+    {
+      *first_mesh = 0;
+      write_coords(field, gid);
+    }
+
+    GiD_BeginElements();
+
+    for (i=0; i<field->numele; ++i)
+    {
+      INT numnp;
+      INT el_type;
+      INT Id;
+      INT mesh_entry[MAXNOD];
+      INT dis;
+
+      /* read the element's data */
+      get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+      if (el_type != el_fluid2_pro || numnp != 9) continue;
+
+      chunk_read_size_entry(&(field->mesh), i);
+      get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);
+      GiD_WriteElement(Id+1, mesh_entry);
+    }
+
+    GiD_EndElements();
+    GiD_EndMesh();
   }
 
 #ifdef DEBUG

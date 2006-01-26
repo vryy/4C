@@ -15,6 +15,7 @@ Maintainer: Malte Neumann
 
 
 #include "../headers/standardtypes.h"
+#include "../pss_full/pss_parser.h"
 
 /*!
   \addtogroup Ale
@@ -277,6 +278,17 @@ void cal_dirich_fac(
       break;
 
 
+  case funct_explicit:
+  {
+    FUNCT_EXPLICIT* f = funct[funct_num].typ.funct_explicit;
+    fac = pss_evaluate_funct(f->funct,
+		       xp[0] - f->x[0],
+		       xp[1] - f->x[1],
+		       xp[2] - f->x[2]);
+    break;
+  }
+
+  
     default:  /* default: no function */
       fac = 1.0;
       break;

@@ -215,6 +215,9 @@ actfield           = &(field[0]);
 actsolv            = &(solv[0]);
 actpart            = &(partition[0]);
 action             = &(calc_action[0]);
+
+/* Zero everything so we can rely on the values we find. */
+memset(&container, 0, sizeof(CONTAINER));
 container.fieldtyp = actfield->fieldtyp;
 container.turbu    = fdyn->turbu;
 fdyn->washvel    = 1.0;

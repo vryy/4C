@@ -175,6 +175,7 @@ return;
 void inpctrprob()
 {
 INT  ierr;
+INT  flag = 0;
 INT  restart;
 char buffer[50];
 #ifdef DEBUG
@@ -228,19 +229,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frchar("PROBLEMTYP",buffer,   &ierr);
   if (ierr==1)
   {
-    if (strncmp("Structure"                  ,buffer, 9)==0) genprob.probtyp = prb_structure;
-    if (strncmp("Fluid"                      ,buffer, 5)==0) genprob.probtyp = prb_fluid;
-    if (strncmp("Fluid_Structure_Interaction",buffer,24)==0) genprob.probtyp = prb_fsi;
-    if (strncmp("Structure_Structure_Interaction",buffer,31)==0) genprob.probtyp = prb_ssi;
-    if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
-    if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
+    if (frwordcmp("Structure"                  ,buffer)==0) genprob.probtyp = prb_structure;
+    if (frwordcmp("Fluid"                      ,buffer)==0) genprob.probtyp = prb_fluid;
+    if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
+    if (frwordcmp("Structure_Structure_Interaction",buffer)==0) genprob.probtyp = prb_ssi;
+    if (frwordcmp("Optimisation"               ,buffer)==0) genprob.probtyp = prb_opt;
+    if (frwordcmp("Ale"                        ,buffer)==0) genprob.probtyp = prb_ale;
   }
 
   frchar("TIMETYP"   ,buffer,            &ierr);
   if (ierr==1)
   {
-    if (strncmp("Static" ,buffer,6)==0) genprob.timetyp=time_static;
-    if (strncmp("Dynamic",buffer,7)==0) genprob.timetyp=time_dynamic;
+    if (frwordcmp("Static" ,buffer)==0) genprob.timetyp=time_static;
+    if (frwordcmp("Dynamic",buffer)==0) genprob.timetyp=time_dynamic;
   }
   frint("RESTART"    ,&(restart),&ierr);
   if (ierr==1)
@@ -285,230 +286,104 @@ if (frfind("---IO")==1)
   ioflags.steps_per_file = 1000;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-
-    frchar("OUTPUT_OUT",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.output_out=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.output_out=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.output_out=1;
-    }
-
-    frchar("OUTPUT_GID",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.output_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.output_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.output_gid=1;
-    }
-
-    frchar("OUTPUT_BIN",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.output_bin=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.output_bin=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.output_bin=1;
-    }
-
-    frchar("STRUCT_DISP",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_disp=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_disp=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_disp=1;
-    }
-
-    frchar("STRUCT_STRESS",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress=1;
-    }
-
-    frchar("STRUCT_STRESS_SMO",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_smo=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_smo=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_smo=1;
-    }
-
-    frchar("STRUCT_SM_DISP",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_disp=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_disp=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_disp=1;
-    }
-
-    frchar("STRUCT_SM_STRESS",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_stress=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_stress=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_stress=1;
-    }
-
-    frchar("FLUID_SOL",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol=1;
-    }
-
-    frchar("FLUID_STRESS",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_stress=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_stress=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_stress=1;
-    }
-
-    frchar("FLUID_VIS",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_vis=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_vis=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_vis=1;
-    }
-
-    frchar("ALE_DISP",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) ioflags.ale_disp=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp=1;
-    }
+    frreadyes("OUTPUT_OUT",&ioflags.output_out);
+    frreadyes("OUTPUT_GID",&ioflags.output_gid);
+    frreadyes("OUTPUT_BIN",&ioflags.output_bin);
+    frreadyes("STRUCT_DISP",&ioflags.struct_disp);
+    frreadyes("STRUCT_STRESS",&ioflags.struct_stress);
+    frreadyes("STRUCT_STRESS_SMO",&ioflags.struct_stress_smo);
+    frreadyes("STRUCT_SM_DISP",&ioflags.struct_sm_disp);
+    frreadyes("STRUCT_SM_STRESS",&ioflags.struct_sm_stress);
+    frreadyes("FLUID_SOL",&ioflags.fluid_sol);
+    frreadyes("FLUID_STRESS",&ioflags.fluid_stress);
+    frreadyes("FLUID_VIS",&ioflags.fluid_vis);
+    frreadyes("ALE_DISP",&ioflags.ale_disp);
 
     /* the old keywords (only for backwards compatibility) */
-    frchar("STRUCT_DISP_FILE",buffer,&ierr);
-    if (ierr)
+    ierr = frreadyes("STRUCT_DISP_FILE",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_out=1;
-        ioflags.struct_disp=1;
-      }
+      ioflags.output_out=1;
+      ioflags.struct_disp=1;
     }
-    frchar("STRUCT_STRESS_FILE",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_out=1;
-        ioflags.struct_stress=1;
-      }
-    }
-    frchar("STRUCT_DISP_GID",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("STRUCT_STRESS_FILE",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.struct_disp=1;
-      }
+      ioflags.output_out=1;
+      ioflags.struct_stress=1;
     }
-    frchar("STRUCT_STRESS_GID",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("STRUCT_DISP_GID",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.struct_stress=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.struct_disp=1;
     }
-    frchar("STRUCT_STRESS_GID_SMO",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("STRUCT_STRESS_GID",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.struct_stress_smo=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.struct_stress=1;
     }
-    frchar("STRUCT_SM_DISP_GID",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("STRUCT_STRESS_GID_SMO",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.struct_sm_disp=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.struct_stress_smo=1;
     }
-    frchar("STRUCT_SM_STRESS_GID",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("STRUCT_SM_DISP_GID",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.struct_sm_stress=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.struct_sm_disp=1;
     }
-    frchar("FLUID_STRESS_GID",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("STRUCT_SM_STRESS_GID",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.fluid_stress=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.struct_sm_stress=1;
     }
-    frchar("FLUID_SOL_GID",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("FLUID_STRESS_GID",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.fluid_sol=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.fluid_stress=1;
     }
-    frchar("FLUID_SOL_FILE",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("FLUID_SOL_GID",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_out=1;
-        ioflags.fluid_sol=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.fluid_sol=1;
     }
-    frchar("FLUID_VIS_FILE",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("FLUID_SOL_FILE",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.fluid_vis=1;
-      }
+      ioflags.output_out=1;
+      ioflags.fluid_sol=1;
     }
-    frchar("ALE_DISP_FILE",buffer,&ierr);
 
-    if (ierr)
+    frreadyes("FLUID_VIS_FILE",&ioflags.fluid_vis);
+
+    ierr = frreadyes("ALE_DISP_FILE",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_out=1;
-        ioflags.ale_disp=1;
-      }
+      ioflags.output_out=1;
+      ioflags.ale_disp=1;
     }
-    frchar("ALE_DISP_GID",buffer,&ierr);
 
-    if (ierr)
+    ierr = frreadyes("ALE_DISP_GID",&flag);
+    if (ierr && flag)
     {
-      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
-      {
-        ioflags.output_gid=1;
-        ioflags.ale_disp=1;
-      }
+      ioflags.output_gid=1;
+      ioflags.ale_disp=1;
     }
     /* End of old keywords */
 
@@ -565,48 +440,36 @@ if (frfind("-STATIC")==1)
     frchar("MULTISCALE",buffer,&ierr);
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) statvar->multiscale=1;
-      if (strncmp(buffer,"YES",3)==0) statvar->multiscale=1;
-      if (strncmp(buffer,"Yes",3)==0) statvar->multiscale=1;
+      if (frcheckyes(buffer)) statvar->multiscale=1;
     }
     /*------------------------- read for typ of kinematic sh 03/03 */
     frchar("KINTYP",buffer,&ierr);
     if (ierr==1)
     {
-      if (strncmp(buffer,"Geo_Lin",7)==0)
+      if (frwordcmp(buffer,"Geo_Lin")==0)
         statvar->kintyp = geo_linear;
-      if (strncmp(buffer,"Upd_Lagr",8)==0)
+      if (frwordcmp(buffer,"Upd_Lagr")==0)
         statvar->kintyp = upd_lagr;
-      if (strncmp(buffer,"Tot_Lagr",8)==0)
+      if (frwordcmp(buffer,"Tot_Lagr")==0)
         statvar->kintyp = tot_lagr;
     }
     /*------------------------- read for typ of pathfollowing technique */
     frchar("NEWTONRAPHSO",buffer,&ierr);
     if (ierr==1)
     {
-      if (strncmp(buffer,"Displacement_Control",20)==0)
+      if (frwordcmp(buffer,"Displacement_Control")==0)
         statvar->nr_controltyp = control_disp;
-      if (strncmp(buffer,"Load_Control",12)==0)
+      if (frwordcmp(buffer,"Load_Control")==0)
         statvar->nr_controltyp = control_load;
-      if (strncmp(buffer,"Arc_Control",11)==0)
+      if (frwordcmp(buffer,"Arc_Control")==0)
         statvar->nr_controltyp = control_arc;
-      if (strncmp(buffer,"none",4)==0)
+      if (frwordcmp(buffer,"none")==0)
         statvar->nr_controltyp = control_none;
     }
     /*---------------------------------------- read for arcscaling flag */
-    frchar("IARC"   ,buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"Yes",3)==0) statvar->iarc=1;
-      else                            statvar->iarc=0;
-    }
+    frreadyes("IARC", &(statvar->iarc));
     /*------------------------------ read for sign-changing-by-csp flag */
-    frchar("SIGNCHCSP"   ,buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"Yes",3)==0) statvar->signchcsp=1;
-      else                            statvar->signchcsp=0;
-    }
+    frreadyes("SIGNCHCSP", &(statvar->signchcsp));
     /*-------------------------------------------------- read variables */
     frint("NUMSTEP",&(statvar->nstep)  ,&ierr);
     frint("MAXITER",&(statvar->maxiter),&ierr);
@@ -620,13 +483,7 @@ if (frfind("-STATIC")==1)
     frdouble("STEPSIZE",&(statvar->stepsize),&ierr);
     frdouble("ARCSCL"  ,&(statvar->arcscl)  ,&ierr);
     /*-------------------------------------------------------------------*/
-    frchar("VARSTEPSI",buffer,&ierr);
-    if (ierr)
-    {
-      if (strncmp(buffer,"yes",3)==0) statvar->isrelstepsize=1;
-      if (strncmp(buffer,"YES",3)==0) statvar->isrelstepsize=1;
-      if (strncmp(buffer,"Yes",3)==0) statvar->isrelstepsize=1;
-    }
+    frreadyes("VARSTEPSI", &(statvar->isrelstepsize));
     /*-------------------------------------------------------------------*/
     frread();
   }
@@ -768,8 +625,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SOLTYP"   ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"SUBSPACE",8)==0)
-
+      if (frwordcmp(buffer,"SUBSPACE")==0)
           alleig->soltyp=subspace;
       else
           alleig->soltyp=eig_none;
@@ -911,27 +767,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("DYNAMICTYP",buffer,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"Centr_Diff",10)==0) sdyn->Typ = centr_diff;
-      if (strncmp(buffer,"Gen_Alfa",8)==0)    sdyn->Typ = gen_alfa;
-      if (strncmp(buffer,"Gen_EMM",7)==0)    sdyn->Typ = Gen_EMM;
+      if (frwordcmp(buffer,"Centr_Diff")==0) sdyn->Typ = centr_diff;
+      if (frwordcmp(buffer,"Gen_Alfa")==0)   sdyn->Typ = gen_alfa;
+      if (frwordcmp(buffer,"Gen_EMM")==0)    sdyn->Typ = Gen_EMM;
    }
-   frchar("DAMPING"   ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"Yes",3)==0 ||
-          strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 )
-
-          sdyn->damp=1;
-      else
-          sdyn->damp=0;
-   }
+   frreadyes("DAMPING",&(sdyn->damp));
    frchar("ITERATION"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"full",3)==0 ||
-          strncmp(buffer,"Full",3)==0 ||
-          strncmp(buffer,"FULL",3)==0 )
+      if (frwordcmp(buffer,"full")==0 ||
+          frwordcmp(buffer,"Full")==0 ||
+          frwordcmp(buffer,"FULL")==0 )
 
           sdyn->iter=1;
       else
@@ -1017,7 +863,7 @@ dstrc_enter("inpctr_dyn_fluid");
 
 /*-------------------------------------------------- set default values */
 /* general control variables of fluid dynamics */
-fdyn->dyntyp=0;         /* default: nonlin. time integration */
+fdyn->dyntyp=dyntyp_nln_time_int; /* default: nonlin. time integration */
 fdyn->init=0;
 fdyn->iop=2;            /* default: one-step-theta */
 fdyn->iops=2;           /* default: one-step-theta */
@@ -1079,25 +925,25 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("DYNAMICTYP",buffer,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"Projection_Method",17)==0)
-         fdyn->dyntyp=1;
-      else if (strncmp(buffer,"Nlin_Time_Int",13)==0)
-         fdyn->dyntyp=0;
+      if (frwordcmp(buffer,"Projection_Method")==0)
+         fdyn->dyntyp=dyntyp_projection_method;
+      else if (frwordcmp(buffer,"Nlin_Time_Int")==0)
+         fdyn->dyntyp=dyntyp_nln_time_int;
       else
          dserror("DYNAMICTYP unknown");
    }
    frchar("TIMEINTEGR"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"Stationary",10)==0)
+      if (frwordcmp(buffer,"Stationary")==0)
          fdyn->iop=0;
-      else if (strncmp(buffer,"Gen_Alfa",8)==0)
+      else if (frwordcmp(buffer,"Gen_Alfa")==0)
          fdyn->iop=1;
-      else if (strncmp(buffer,"Gen_Alpha",9)==0)
+      else if (frwordcmp(buffer,"Gen_Alpha")==0)
          fdyn->iop=1;
-      else if (strncmp(buffer,"One_Step_Theta",14)==0)
+      else if (frwordcmp(buffer,"One_Step_Theta")==0)
          fdyn->iop=4;
-      else if (strncmp(buffer,"BDF2",4)==0)
+      else if (frwordcmp(buffer,"BDF2")==0)
          fdyn->iop=7;
       else
          dserror("TIMEINTEGR-Type unknown");
@@ -1105,7 +951,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("STARTINGALGO"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"One_Step_Theta",14)==0)
+      if (frwordcmp(buffer,"One_Step_Theta")==0)
          fdyn->iops=4;
       else
          dserror("STARTINGALGO unknown");
@@ -1113,9 +959,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("NONLINITER"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"fixed_point_like",16)==0)
+      if (frwordcmp(buffer,"fixed_point_like")==0)
          fdyn->ite=1;
-      else if (strncmp(buffer,"Newton",6)==0)
+      else if (frwordcmp(buffer,"Newton")==0)
          fdyn->ite=2;
       else
          dserror("NONLINITER-Type unknown!");
@@ -1123,15 +969,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("CONVCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0    )
+      if (frcheckno(buffer))
 	 fdyn->itnorm=fncc_no;
-      else if (strncmp(buffer,"L_infinity_norm",15)==0)
+      else if (frwordcmp(buffer,"L_infinity_norm")==0)
          fdyn->itnorm=fncc_Linf;
-      else if (strncmp(buffer,"L_1_norm",8)==0)
+      else if (frwordcmp(buffer,"L_1_norm")==0)
          fdyn->itnorm=fncc_L1;
-      else if (strncmp(buffer,"L_2_norm",8)==0)
+      else if (frwordcmp(buffer,"L_2_norm")==0)
          fdyn->itnorm=fncc_L2;
       else
          dserror("Norm for CONVCHECK unknown");
@@ -1139,15 +983,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("STEADYCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0    )
+      if (frcheckno(buffer))
 	 fdyn->stnorm=fnst_no;
-      else if (strncmp(buffer,"L_infinity_norm",15)==0)
+      else if (frwordcmp(buffer,"L_infinity_norm")==0)
          fdyn->stnorm=fnst_Linf;
-      else if (strncmp(buffer,"L_1_norm",8)==0)
+      else if (frwordcmp(buffer,"L_1_norm")==0)
          fdyn->stnorm=fnst_L1;
-      else if (strncmp(buffer,"L_2_norm",8)==0)
+      else if (frwordcmp(buffer,"L_2_norm")==0)
          fdyn->stnorm=fnst_L2;
       else
          dserror("Norm for STEADYCHECK unknown");
@@ -1155,124 +997,61 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("INITIALFIELD"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"zero_field",10)==0)
+      if (frwordcmp(buffer,"zero_field")==0)
          fdyn->init=0;
-      else if (strncmp(buffer,"field_from_file",15)==0)
+      else if (frwordcmp(buffer,"field_from_file")==0)
          fdyn->init=1;
-      else if (strncmp(buffer,"field_by_function",17)==0)
+      else if (frwordcmp(buffer,"field_by_function")==0)
          fdyn->init=-1;
-      else if (strncmp(buffer,"SOLWAVE",7)==0)
+      else if (frwordcmp(buffer,"SOLWAVE")==0)
          fdyn->init=6;
-      else if (strncmp(buffer,"WAVEBREAKING",12)==0)
+      else if (frwordcmp(buffer,"WAVEBREAKING")==0)
          fdyn->init=7;
-      else if (strncmp(buffer,"BELTRAMI-FLOW",13)==0)
+      else if (frwordcmp(buffer,"BELTRAMI-FLOW")==0)
          fdyn->init=8;
-      else if (strncmp(buffer,"KIM-MOIN-FLOW",13)==0)
+      else if (frwordcmp(buffer,"KIM-MOIN-FLOW")==0)
          fdyn->init=9;
-      else if (strncmp(buffer,"BREAKING-DAM",12)==0)
+      else if (frwordcmp(buffer,"BREAKING-DAM")==0)
          fdyn->init=10;
       else
          dserror("INITIALFIELD unknown!");
    }
-   frchar("VISCSTRESS"   ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||
-	  strncmp(buffer,"Yes",3)==0    )
-         fdyn->viscstr=1;
-      else if (strncmp(buffer,"No",2)==0 ||
-               strncmp(buffer,"NO",2)==0 ||
-	       strncmp(buffer,"no",2)==0   )
-         fdyn->viscstr=0;
-      else
-         dserror("VISCSTRESS unknown!\n");
-   }
-   frchar("STRESSPRO"   ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||
-	  strncmp(buffer,"Yes",3)==0    )
-         fdyn->stresspro=1;
-      else if (strncmp(buffer,"No",2)==0 ||
-               strncmp(buffer,"NO",2)==0 ||
-	       strncmp(buffer,"no",2)==0   )
-         fdyn->stresspro=0;
-      else
-         dserror("VISCSTRESS unknown!\n");
-   }
+   frreadyes("VISCSTRESS",&(fdyn->viscstr));
+   frreadyes("STRESSPRO",&(fdyn->stresspro));
    frchar("FREESURFACE"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   )
+      if (frcheckno(buffer))
          fdyn->freesurf=0;
-      else if (strncmp(buffer,"loclag_exp",10)==0
-               && strlen(buffer)==10)
+      else if (frwordcmp(buffer,"loclag_exp")==0)
          fdyn->freesurf=1;
-      else if (strncmp(buffer,"loclag_imp",10)==0
-               && strlen(buffer)==10)
+      else if (frwordcmp(buffer,"loclag_imp")==0)
          fdyn->freesurf=2;
-      else if (strncmp(buffer,"hf_vert_sep",11)==0
-               && strlen(buffer)==11)
+      else if (frwordcmp(buffer,"hf_vert_sep")==0)
          fdyn->freesurf=3;
-      else if (strncmp(buffer,"hf_vert_imp",11)==0
-               && strlen(buffer)==11)
+      else if (frwordcmp(buffer,"hf_vert_imp")==0)
          fdyn->freesurf=5;
-      else if (strncmp(buffer,"genfs",5)==0
-               && strlen(buffer)==5)
+      else if (frwordcmp(buffer,"genfs")==0)
          fdyn->freesurf=6;
       else
          dserror("Parameter FREESURFACE unknown!\n");
    }
-   frchar("SURFTENSION"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||
-	  strncmp(buffer,"Yes",3)==0    )
-         fdyn->surftens=1;
-      else if (strncmp(buffer,"No",2)==0 ||
-               strncmp(buffer,"NO",2)==0 ||
-	       strncmp(buffer,"no",2)==0   )
-         fdyn->surftens=0;
-      else
-         dserror("SURFTENSION unknown!\n");
-   }
-   frchar("CHECKAREA"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||
-	  strncmp(buffer,"Yes",3)==0    )
-         fdyn->checkarea=1;
-      else if (strncmp(buffer,"No",2)==0 ||
-               strncmp(buffer,"NO",2)==0 ||
-	       strncmp(buffer,"no",2)==0   )
-         fdyn->checkarea=0;
-      else
-         dserror("CHECKAREA unknown!\n");
-   }
+   frreadyes("SURFTENSION",&(fdyn->surftens));
+   frreadyes("CHECKAREA",&(fdyn->checkarea));
    frchar("LIFTDRAG"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"yes",3)==0 ||
-               strncmp(buffer,"YES",3)==0 ||
-	       strncmp(buffer,"Yes",3)==0    )
+      if (frcheckyes(buffer))
          fdyn->liftdrag=ld_stress;
-      else if (strncmp(buffer,"nodeforce",9)==0 ||
-               strncmp(buffer,"NODEFORCE",9)==0 ||
-	       strncmp(buffer,"Nodeforce",9)==0    )
+      else if (frwordcmp(buffer,"nodeforce")==0 ||
+               frwordcmp(buffer,"NODEFORCE")==0 ||
+	       frwordcmp(buffer,"Nodeforce")==0    )
          fdyn->liftdrag=ld_nodeforce;
-      else if (strncmp(buffer,"stress",6)==0 ||
-               strncmp(buffer,"STRESS",6)==0 ||
-	       strncmp(buffer,"Stress",6)==0    )
+      else if (frwordcmp(buffer,"stress")==0 ||
+               frwordcmp(buffer,"STRESS")==0 ||
+	       frwordcmp(buffer,"Stress")==0    )
          fdyn->liftdrag=ld_stress;
-      else if (strncmp(buffer,"No",2)==0 ||
-               strncmp(buffer,"NO",2)==0 ||
-	       strncmp(buffer,"no",2)==0   )
+      else if (frcheckno(buffer))
          fdyn->liftdrag=ld_none;
       else
          dserror("LIFTDRAG unknown!\n");
@@ -1280,53 +1059,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("TURBULENCE"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   )
+      if (frcheckno(buffer))
          fdyn->turbu=0;
-      else if (strncmp(buffer,"algebraic",9)==0)
+      else if (frwordcmp(buffer,"algebraic")==0)
          fdyn->turbu=1;
-      else if (strncmp(buffer,"kappa-eps",9)==0)
+      else if (frwordcmp(buffer,"kappa-eps")==0)
          fdyn->turbu=2;
-      else if (strncmp(buffer,"kappa-omega",11)==0)
+      else if (frwordcmp(buffer,"kappa-omega")==0)
          fdyn->turbu=3;
       else
          dserror("TURBULENCE unknown!");
    }
-   frchar("DISC_CAPT"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   )
-         fdyn->dis_capt=0;
-      else if (strncmp(buffer,"Yes",3)==0)
-         fdyn->dis_capt=1;
-      else
-         dserror("DISC_CAPT unknown!");
-   }
-   frchar("ADAPT_TIME"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   )
-         fdyn->adaptive=0;
-      else if (strncmp(buffer,"Yes",3)==0 ||
-               strncmp(buffer,"YES",3)==0 ||
-	       strncmp(buffer,"yes",3)==0   )
-         fdyn->adaptive=1;
-      else
-         dserror("ADAPT_TIME can not be read (yes/no)!");
-   }
+   frreadyes("DISC_CAPT",&(fdyn->dis_capt));
+   frreadyes("ADAPT_TIME",&(fdyn->adaptive));
    frchar("CONVECTERM"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"convective",10)==0)
+      if (frwordcmp(buffer,"convective")==0)
          fdyn->conte=0;
-      else if (strncmp(buffer,"divergence",10)==0)
+      else if (frwordcmp(buffer,"divergence")==0)
          fdyn->conte=1;
-      else if (strncmp(buffer,"skew_symmetric",14)==0)
+      else if (frwordcmp(buffer,"skew_symmetric")==0)
          fdyn->conte=2;
       else
          dserror("Unknown convective term!");
@@ -1334,9 +1087,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("VISCTERM"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"conventional",12)==0)
+      if (frwordcmp(buffer,"conventional")==0)
          fdyn->vite=0;
-      else if (strncmp(buffer,"stress_divergence",17)==0)
+      else if (frwordcmp(buffer,"stress_divergence")==0)
          fdyn->vite=1;
       else
          dserror("Unknown viscous term!");
@@ -1344,11 +1097,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SUBGRIDVISC"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0)
+      if (frcheckno(buffer))
          fdyn->sgvisc=0;
-      else if (strncmp(buffer,"artificial",10)==0)
+      else if (frwordcmp(buffer,"artificial")==0)
          fdyn->sgvisc=1;
-      else if (strncmp(buffer,"Smagorinsky",11)==0)
+      else if (frwordcmp(buffer,"Smagorinsky")==0)
          fdyn->sgvisc=2;
       else
          dserror("Unknown subgrid viscosity!");
@@ -1620,7 +1373,6 @@ are read and stored in fsidyn
 void inpctr_dyn_fsi(FSI_DYNAMIC *fsidyn)
 {
 INT    ierr;
-INT    length;
 char   buffer[50];
 
 #ifdef DEBUG
@@ -1655,20 +1407,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("COUPALGO"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if (strncmp(buffer,"basic_sequ_stagg",16)==0 && length==16)
+      if (frwordcmp(buffer,"basic_sequ_stagg")==0)
          fsidyn->ifsi=1;
-      else if (strncmp(buffer,"sequ_stagg_pred",15)==0 && length==15)
+      else if (frwordcmp(buffer,"sequ_stagg_pred")==0)
          fsidyn->ifsi=2;
-      else if (strncmp(buffer,"sequ_stagg_shift",15)==0 && length==15)
+      else if (frwordcmp(buffer,"sequ_stagg_shift")==0)
          fsidyn->ifsi=3;
-      else if (strncmp(buffer,"iter_stagg_fixed_rel_param",26)==0 && length==26)
+      else if (frwordcmp(buffer,"iter_stagg_fixed_rel_param")==0)
          fsidyn->ifsi=4;
-      else if (strncmp(buffer,"iter_stagg_AITKEN_rel_param",27)==0 && length==27)
+      else if (frwordcmp(buffer,"iter_stagg_AITKEN_rel_param")==0)
          fsidyn->ifsi=5;
-      else if (strncmp(buffer,"iter_stagg_steep_desc",21)==0 && length==21)
+      else if (frwordcmp(buffer,"iter_stagg_steep_desc")==0)
          fsidyn->ifsi=6;
-      else if (strncmp(buffer,"iter_stagg_CHEB_rel_param",25)==0 && length==25)
+      else if (frwordcmp(buffer,"iter_stagg_CHEB_rel_param")==0)
          fsidyn->ifsi=7;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
@@ -1676,49 +1427,32 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("PREDICTOR"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if (strncmp(buffer,"d(n)",4)==0 && length==4)
+      if (frwordcmp(buffer,"d(n)")==0)
          fsidyn->ipre=1;
-      else if (strncmp(buffer,"d(n)+dt*(1.5*v(n)-0.5*v(n-1))",29)==0 && length==29)
+      else if (frwordcmp(buffer,"d(n)+dt*(1.5*v(n)-0.5*v(n-1))")==0)
          fsidyn->ipre=2;
-      else if (strncmp(buffer,"d(n)+dt*v(n)",12)==0 && length==12)
+      else if (frwordcmp(buffer,"d(n)+dt*v(n)")==0)
             fsidyn->ipre=3;
-      else if (strncmp(buffer,"d(n)+dt*v(n)+0.5*dt^2*a(n)",26)==0 && length==26)
+      else if (frwordcmp(buffer,"d(n)+dt*v(n)+0.5*dt^2*a(n)")==0)
             fsidyn->ipre=4;
       else dserror("PREDICTOR unknown!\n");
    }
    frchar("CONVCRIT"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if (strncmp(buffer,"||g(i)||:sqrt(neq)",18)==0 && length==18)
+      if (frwordcmp(buffer,"||g(i)||:sqrt(neq)")==0)
          fsidyn->inrmfsi=1;
-      else if (strncmp(buffer,"||g(i)||:||g(0)||",17)==0 && length==17)
+      else if (frwordcmp(buffer,"||g(i)||:||g(0)||")==0)
          fsidyn->inrmfsi=2;
       else
          dserror("Convergence criterion CONVCRIT unknown!");
    }
-   frchar("ENERGYCHECK"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"No",2)==0  ||
-           strncmp(buffer,"NO",2)==0  ||
-	   strncmp(buffer,"no",2)==0) && length==2)
-         fsidyn->ichecke=0;
-      else if ((strncmp(buffer,"yes",3)==0  ||
-                strncmp(buffer,"YES",3)==0  ||
-	        strncmp(buffer,"Yes",3)==0) && length==3)
-         fsidyn->ichecke=1;
-      else
-         dserror("Parameter for ENERGYCHECK unknown!");
-   }
+   frreadyes("ENERGYCHECK", &(fsidyn->ichecke));
 
    frchar("IALE"    ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if (strncmp(buffer,"Pseudo_Structure",16)==0 && length==16)
+      if (frwordcmp(buffer,"Pseudo_Structure")==0)
          fsidyn->iale=1;
       else
          dserror("Parameter unknown: IALE");
@@ -1729,12 +1463,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("COUPMETHOD"    ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"MTR",3)==0 ||
-           strncmp(buffer,"Mtr",3)==0 ||
-           strncmp(buffer,"mtr",3)==0) && length==3)
+      if (frwordcmp(buffer,"MTR")==0 ||
+          frwordcmp(buffer,"Mtr")==0 ||
+          frwordcmp(buffer,"mtr")==0)
           fsidyn->coupmethod=0;
-      else if (strncmp(buffer,"conforming",10)==0 && length==10)
+      else if (frwordcmp(buffer,"conforming")==0)
                fsidyn->coupmethod=1;
       else
          dserror("Parameter unknown: COUPMETHOD");
@@ -1742,12 +1475,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("COUPFORCE"    ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"none",4)==0) && length==4)
+      if (frwordcmp(buffer,"none")==0)
           fsidyn->coupforce=cf_none;
-      else if (strncmp(buffer,"stress",6)==0 && length==6)
+      else if (frwordcmp(buffer,"stress")==0)
           fsidyn->coupforce=cf_stress;
-      else if (strncmp(buffer,"nodeforce",9)==0 && length==9)
+      else if (frwordcmp(buffer,"nodeforce")==0)
           fsidyn->coupforce=cf_nodeforce;
       else
          dserror("Parameter unknown: COUPFORCE");
@@ -1797,7 +1529,6 @@ are read and stored in ssidyn
 void inpctr_dyn_ssi(SSI_DYNAMIC *ssidyn)
 {
 INT    ierr;
-INT    length;
 INT    mod_res_write;
 char   buffer[50];
 #ifdef DEBUG
@@ -1837,20 +1568,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("COUPALGO"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if (strncmp(buffer,"basic_sequ_stagg",16)==0 && length==16)
+      if (frwordcmp(buffer,"basic_sequ_stagg")==0)
          ssidyn->ifsi=1;
-      else if (strncmp(buffer,"sequ_stagg_pred",15)==0 && length==15)
+      else if (frwordcmp(buffer,"sequ_stagg_pred")==0)
          ssidyn->ifsi=2;
-      else if (strncmp(buffer,"sequ_stagg_shift",15)==0 && length==15)
+      else if (frwordcmp(buffer,"sequ_stagg_shift")==0)
          ssidyn->ifsi=3;
-      else if (strncmp(buffer,"iter_stagg_fixed_rel_param",26)==0 && length==26)
+      else if (frwordcmp(buffer,"iter_stagg_fixed_rel_param")==0)
          ssidyn->ifsi=4;
-      else if (strncmp(buffer,"iter_stagg_AITKEN_rel_param",27)==0 && length==27)
+      else if (frwordcmp(buffer,"iter_stagg_AITKEN_rel_param")==0)
          ssidyn->ifsi=5;
-      else if (strncmp(buffer,"iter_stagg_steep_desc",21)==0 && length==21)
+      else if (frwordcmp(buffer,"iter_stagg_steep_desc")==0)
          ssidyn->ifsi=6;
-      else if (strncmp(buffer,"iter_stagg_CHEB_rel_param",25)==0 && length==25)
+      else if (frwordcmp(buffer,"iter_stagg_CHEB_rel_param")==0)
          ssidyn->ifsi=7;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
@@ -1858,94 +1588,57 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("CONVCRIT"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if (strncmp(buffer,"||g(i)||:sqrt(neq)",18)==0 && length==18)
+      if (frwordcmp(buffer,"||g(i)||:sqrt(neq)")==0)
          ssidyn->inrmfsi=1;
-      else if (strncmp(buffer,"||g(i)||:||g(0)||",17)==0 && length==17)
+      else if (frwordcmp(buffer,"||g(i)||:||g(0)||")==0)
          ssidyn->inrmfsi=2;
       else
          dserror("Convergence criterion CONVCRIT unknown!");
    }
-   frchar("ENERGYCHECK"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"No",2)==0 ||
-           strncmp(buffer,"NO",2)==0 ||
-	   strncmp(buffer,"no",2)==0) && length==2)
-         ssidyn->ichecke=0;
-      else if ((strncmp(buffer,"yes",3)==0 ||
-                strncmp(buffer,"YES",3)==0 ||
-	        strncmp(buffer,"Yes",3)==0) && length==3)
-         ssidyn->ichecke=1;
-      else
-         dserror("Parameter for ENERGYCHECK unknown!");
-   }
+   frreadyes("ENERGYCHECK",&(ssidyn->ichecke));
 
    frchar("NESTEDITER"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"No",2)==0 ||
-           strncmp(buffer,"NO",2)==0 ||
-	   strncmp(buffer,"no",2)==0) && length==2)
+      if (frcheckno(buffer))
          ssidyn->inest=0;
-      else if (strncmp(buffer,"fluid+structure",15)==0 && length==15)
+      else if (frwordcmp(buffer,"fluid+structure")==0)
          ssidyn->inest=1;
-      else if (strncmp(buffer,"structure",9)==0 && length==9)
+      else if (frwordcmp(buffer,"structure")==0)
          ssidyn->inest=2;
       else
          dserror("Parameter unknown: NESTEDITER");
    }
-   frchar("ICHOPT"  ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      length = strlen(buffer);
-      if (strncmp(buffer,"no",2)==0 && length==2)
-         ssidyn->ichopt=0;
-      else if (strncmp(buffer,"yes",3)==0 && length==3)
-         ssidyn->ichopt=1;
-      else
-         dserror("Parameter unknown: ICHOPT");
-   }
+   frreadyes("ICHOPT",&(ssidyn->ichopt));
    frchar("IALE"    ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if (strncmp(buffer,"Pseudo_Structure",16)==0 && length==16)
+      if (frwordcmp(buffer,"Pseudo_Structure")==0)
          ssidyn->iale=1;
       else
          dserror("Parameter unknown: IALE");
    }
-   frchar("MESHCONFORM"    ,buffer    ,&ierr);
-   if (ierr==1)
+
+   /* This flag is used the wrong way. Just to keep the code
+    * interesting. */
+   if (frreadyes("MESHCONFORM",&(ssidyn->conformmesh)))
    {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"YES",3)==0 ||
-           strncmp(buffer,"Yes",3)==0 ||
-           strncmp(buffer,"yes",3)==0) && length==3)
-          ssidyn->conformmesh=0;
-      else if ((strncmp(buffer,"NO",2)==0 ||
-                strncmp(buffer,"No",2)==0 ||
-                strncmp(buffer,"no",2)==0) && length==2)
-               ssidyn->conformmesh=1;
-      else
-         dserror("Parameter unknown: MESHCONFORM");
+     ssidyn->conformmesh = !ssidyn->conformmesh;
    }
+
    /* parameter to indicate the coupling method that is applied */
    /* mortar method --> ssidyn->coupmethod == 0 (default) */
    /* interpolation scheme --> ssidyn-->coupmethod == 1*/
    frchar("COUPMETHOD"    ,buffer    ,&ierr);
    if (ierr==1)
    {
-      length = strlen(buffer);
-      if ((strncmp(buffer,"MTR",3)==0 ||
-           strncmp(buffer,"Mtr",3)==0 ||
-           strncmp(buffer,"mtr",3)==0) && length==3)
+      if (frwordcmp(buffer,"MTR")==0 ||
+          frwordcmp(buffer,"Mtr")==0 ||
+          frwordcmp(buffer,"mtr")==0)
           ssidyn->coupmethod=0;
-      else if ((strncmp(buffer,"INT",3)==0 ||
-                strncmp(buffer,"Int",3)==0 ||
-                strncmp(buffer,"int",3)==0) && length==3)
+      else if (frwordcmp(buffer,"INT")==0 ||
+               frwordcmp(buffer,"Int")==0 ||
+               frwordcmp(buffer,"int")==0)
                ssidyn->coupmethod=1;
       else
          dserror("Parameter unknown: COUPMETHOD");
@@ -2033,25 +1726,25 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("ALE_TYPE",buffer,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"classic_lin",11)==0) adyn->typ = classic_lin;
-      else if (strncmp(buffer,"min_Je_stiff",12)==0) adyn->typ = min_Je_stiff;
-      else if (strncmp(buffer,"two_step",8)==0) adyn->typ = two_step;
-      else if (strncmp(buffer,"springs",7)==0) adyn->typ = springs;
-      else if (strncmp(buffer,"laplace",7)==0) adyn->typ = laplace;
-      else if (strncmp(buffer,"LAS",3)==0) adyn->typ = LAS;
+      if (frwordcmp(buffer,"classic_lin")==0) adyn->typ = classic_lin;
+      else if (frwordcmp(buffer,"min_Je_stiff")==0) adyn->typ = min_Je_stiff;
+      else if (frwordcmp(buffer,"two_step")==0) adyn->typ = two_step;
+      else if (frwordcmp(buffer,"springs")==0) adyn->typ = springs;
+      else if (frwordcmp(buffer,"laplace")==0) adyn->typ = laplace;
+      else if (frwordcmp(buffer,"LAS")==0) adyn->typ = LAS;
       else dserror("unknown ALE_TYPE");
    }
    frchar("QUALITY",buffer,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"aspect_ratio",12)==0) adyn->measure_quality = aspect_ratio;
-      else if (strncmp(buffer,"ASPECT_RATIO",12)==0) adyn->measure_quality = aspect_ratio;
-      else if (strncmp(buffer,"corner_angle",12)==0) adyn->measure_quality = corner_angle;
-      else if (strncmp(buffer,"CORNER_ANGLE",12)==0) adyn->measure_quality = corner_angle;
-      else if (strncmp(buffer,"min_J",5)==0) adyn->measure_quality = min_detF;
-      else if (strncmp(buffer,"MIN_J",5)==0) adyn->measure_quality = min_detF;
-      else if (strncmp(buffer,"none",4)==0) adyn->measure_quality = no_quality;
-      else if (strncmp(buffer,"NONE",4)==0) adyn->measure_quality = no_quality;
+      if (frwordcmp(buffer,"aspect_ratio")==0) adyn->measure_quality = aspect_ratio;
+      else if (frwordcmp(buffer,"ASPECT_RATIO")==0) adyn->measure_quality = aspect_ratio;
+      else if (frwordcmp(buffer,"corner_angle")==0) adyn->measure_quality = corner_angle;
+      else if (frwordcmp(buffer,"CORNER_ANGLE")==0) adyn->measure_quality = corner_angle;
+      else if (frwordcmp(buffer,"min_Je")==0) adyn->measure_quality = min_detF;
+      else if (frwordcmp(buffer,"MIN_Je")==0) adyn->measure_quality = min_detF;
+      else if (frwordcmp(buffer,"none")==0) adyn->measure_quality = no_quality;
+      else if (frwordcmp(buffer,"NONE")==0) adyn->measure_quality = no_quality;
       else dserror("unknown QUALITY in ALE DYNAMIC");
    }
 /*--------------read INT */

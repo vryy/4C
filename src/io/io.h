@@ -46,6 +46,7 @@ typedef INT OUT_FLAGS;
 #define OUTPUT_THICKNESS    0x0040
 #define OUTPUT_AXI_LOADS    0x0080
 #define OUTPUT_ACCELERATION 0x0100 /* not implemented */
+#define OUTPUT_AV_PRESSURE  0x0200
 
 
 /*----------------------------------------------------------------------*/

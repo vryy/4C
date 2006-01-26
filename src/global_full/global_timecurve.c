@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
+#include "../pss_full/pss_parser.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -84,6 +85,7 @@ case curve_polygonal:
    }
 break;
 case curve_explicit: /* there's nothing to initialise */
+case curve_expr:
 break;
 case curve_none:
    dserror("Type of timecurve unknown");
@@ -150,6 +152,20 @@ break;
 case curve_explicit:
    *fac = dyn_facexplcurve(actcurve,T);
 break;
+case curve_expr:
+{
+  DOUBLE t;
+  t = T;
+
+  /* the function expression must be evaluated inside the valid range */
+  if (t<curve[actcurve].c1)
+    t = curve[actcurve].c1;
+  else if (t>curve[actcurve].c2)
+    t = curve[actcurve].c2;
+  
+  *fac = pss_evaluate_curve(curve[actcurve].funct,t);
+  break;
+}
 case curve_none:
    dserror("Type of timecurve unknown");
 break;

@@ -107,7 +107,7 @@ void f3inp(
     ele->distyp=hex27;
     ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
     if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
-    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
+    frint_n("HEX27",&(ele->lm[0]),ele->numnp,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
   }
 

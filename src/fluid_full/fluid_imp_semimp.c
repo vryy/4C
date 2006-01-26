@@ -240,6 +240,8 @@ else
 
 actsysarray = disnum_calc;
 
+/* Zero everything so we can rely on the values we find. */
+memset(&container, 0, sizeof(CONTAINER));
 container.disnum    = disnum_calc;
 container.turbu     = fdyn->turbu;
 container.fieldtyp  = actfield->fieldtyp;

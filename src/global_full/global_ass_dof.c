@@ -114,6 +114,24 @@ for (j=0; j<actfield->dis[0].numele; j++)
       }
       break;
 
+#ifdef D_FLUID2_PRO
+   case el_fluid2_pro:
+      for (k=0; k<actele->numnp; k++)
+      {
+         if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
+      }
+      break;
+#endif
+
+#ifdef D_FLUID3_PRO
+   case el_fluid3_pro:
+      for (k=0; k<actele->numnp; k++)
+      {
+         if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
+      }
+      break;
+#endif
+
 #ifdef D_FLUID3
    case el_fluid3:
       for (k=0; k<actele->numnp; k++)

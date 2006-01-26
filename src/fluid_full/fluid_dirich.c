@@ -171,6 +171,7 @@ for (i=0;i<numnp_total;i++) /* loop all nodes */
       }
 #endif
       /* transform real pressure from input to kinematic pressure ---*/
+      if (actgnode->dirich->dirich_onoff.sdim > predof)
       if (actgnode->dirich->dirich_onoff.a.iv[predof]!=0)
           actgnode->dirich->dirich_val.a.dv[predof] /= dens;
    }
@@ -413,7 +414,7 @@ for (i=0;i<numnp_total;i++)
    break;
 #ifdef D_FSI
    case dirich_FSI: /* dirichvalues = grid velocity!!! */
-   case dirich_FSI_pseudo: 
+   case dirich_FSI_pseudo:
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[pos][j]
          =actnode->sol_increment.a.da[ipos->gridv][j];

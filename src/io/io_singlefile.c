@@ -157,6 +157,13 @@ extern struct _IO_FLAGS     ioflags;
 extern struct _PAR   par;
 
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate design if needed                                 |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _DESIGN       *design;
+
+/*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | vector of numfld FIELDs, defined in global_control.c                 |
   *----------------------------------------------------------------------*/
@@ -596,7 +603,8 @@ void io_emergency_close_files()
 
   if (par.myrank == 0)
   {
-    fclose(bin_out_main.control_file);
+    if (bin_out_main.control_file)
+      fclose(bin_out_main.control_file);
   }
 
 #ifdef DEBUG
@@ -1379,6 +1387,10 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   INT value_length;
   INT size_length;
   INT ndof = 0;
+  INT dnodemax;
+  INT dlinemax;
+  INT dsurfmax;
+  INT dvolmax;
 
 #ifdef PARALLEL
   INT max_size[4];
@@ -1507,6 +1519,33 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   {
     INT numeq;
     solserv_getmatdims(sysarray, *sysarray_typ, &numeq, &ndof);
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* store the node -- design object topology */
+
+  if (rank == 0)
+  {
+    fprintf(bin_out_main.control_file,
+            "    ndnode = %d\n"
+            "    ndline = %d\n"
+            "    ndsurf = %d\n"
+            "    ndvol = %d\n"
+            "\n",
+            design->ndnode, design->ndline, design->ndsurf, design->ndvol);
+  }
+
+  find_design_item_length(context, &dnodemax, &dlinemax, &dsurfmax, &dvolmax);
+
+  out_node_chunk(context, "dnode", cc_dnode, 0, dnodemax, 0);
+  out_node_chunk(context, "dline", cc_dline, 0, dlinemax, 0);
+  if (dsurfmax > 0)
+  {
+    out_node_chunk(context, "dsurf", cc_dsurf, 0, dsurfmax, 0);
+    if (dvolmax > 0)
+    {
+      out_node_chunk(context, "dvol", cc_dvol, 0, dvolmax, 0);
+    }
   }
 
   /*--------------------------------------------------------------------*/
@@ -1825,7 +1864,7 @@ void out_gather_values(BIN_OUT_FIELD* context,
     send_size_buf = chunk->out_sizes;
 #endif
 
-    out_pack_items(chunk, type, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
+    out_pack_items(chunk, type, array, actpdis, send_buf, send_count, send_size_buf, send_size_count, dst_first_id, dst_num);
 
 #ifdef PARALLEL
 

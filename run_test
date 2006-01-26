@@ -22,10 +22,12 @@ if [ "x$2" = "x" ]; then
 fi
 
 if [ ! -s "$2" ]; then
-  echo $0: file not found: $1
+  echo $0: file not found: $2
   exit 1
 fi
 
+SRC=`dirname $0`
+DEST=.
 
 # initialize some counters
 fail1=0
@@ -38,9 +40,10 @@ s_time=0
 e_time=0
 
 # variables used for creating the makefile
-makefile="Makefile.test"
-definefile="config/defines.test"
-reldefinefile="config/release_defs"
+makefile="$SRC/Makefile.test"
+#definefile="$SRC/config/defines.test"
+definefile="$DEST/defines.test"
+reldefinefile="$SRC/config/release_defs"
 configfile="$2"
 NODEPS=yes
 
@@ -73,7 +76,7 @@ rm -f *.dat.scr *.dat.make.log
 
 # figure out whether we are parallel or not
 touch "$definefile"
-. "./$configfile"
+. "$configfile"
 
 
 
@@ -88,7 +91,7 @@ if [ "x$1" = "xall" ]; then
   fi
 
   # create the list
-  liste=`awk '{ if ($'$typ' ~ /[xX]/) print $1 }' testing/list_of_files`
+  liste=`awk '{ if ($'$typ' ~ /[xX]/) print "'$SRC/'"$1 }' $SRC/testing/list_of_files`
 
 elif [ "x$1" = "xrel" ]; then
 
@@ -101,7 +104,7 @@ elif [ "x$1" = "xrel" ]; then
   fi
 
   # create the list
-  liste=`awk '{ if ($'$typ' ~ /[xX]/) print $1 }' testing/list_of_files`
+  liste=`awk '{ if ($'$typ' ~ /[xX]/) print "'$SRC/'"$1 }' $SRC/testing/list_of_files`
 
 elif [ "x$1" = "xrestart" ]; then
 
@@ -113,7 +116,7 @@ elif [ "x$1" = "xrestart" ]; then
   fi
 
   # create the list
-  liste=`awk '{ if ($'$typ' ~ /[xX]/) print $1 }' testing/list_of_files`
+  liste=`awk '{ if ($'$typ' ~ /[xX]/) print "'$SRC/'"$1 }' $SRC/testing/list_of_files`
 
 elif [ "x$1" = "xsingle" ]; then
 
@@ -126,7 +129,7 @@ elif [ "x$1" = "xsingle" ]; then
   fi
   # check whether the input file exists
   if [ ! -s "$3" ]; then
-    echo $0: file not found: $1
+    echo $0: file not found: $3
     exit 1
   fi
 
@@ -169,22 +172,22 @@ echo 'BEGIN OF TEST ========================================'
 if [ "x$1" = "xall" ]; then
 
   # test all files
-  . ./testing/loop_all.sh
+  . $SRC/testing/loop_all.sh
 
 elif [ "x$1" = "xrel" ]; then
 
   # test all files using one exe
-  . ./testing/loop_rel.sh
+  . $SRC/testing/loop_rel.sh
 
 elif [ "x$1" = "xrestart" ]; then
 
   # test all files with restart
-  . ./testing/loop_restart.sh
+  . $SRC/testing/loop_restart.sh
 
 elif [ "x$1" = "xsingle" ]; then
 
   # test only one file
-  . ./testing/loop_all.sh
+  . $SRC/testing/loop_all.sh
 
 else
 

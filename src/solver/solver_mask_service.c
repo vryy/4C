@@ -88,12 +88,16 @@ void mask_numeq(
   }
 
   if (counter ==0)
+  {
     no_coupling = 1;
+    amdel(&(actpart->pdis[disnum].coupledofs));
+  }
   else
+  {
     no_coupling = 0;
-
-  amredef(&(actpart->pdis[disnum].coupledofs),counter,1,"IV");
-
+    amredef(&(actpart->pdis[disnum].coupledofs),counter,1,"IV");
+  }
+  
   /* delete the doubles in coupledofs */
   if (!no_coupling)
   {

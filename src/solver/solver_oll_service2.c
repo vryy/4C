@@ -836,7 +836,9 @@ startrow1:
       }
       /* did not find the proper place */
       if(actptr->rnext == NULL)
+      {
         dserror("Failed to find correct place");
+      }
       else
         actptr = actptr->rnext;
       goto startrow1;
@@ -1027,7 +1029,7 @@ void oll_to_sky(
 
   if (sky->update.Typ != cca_XX)
     amdel(&(sky->update));
-  
+
   am_alloc_copy(&(oll->update),&(sky->update));
 
   /* --------------------------------------------- create skyline mtrix */
@@ -1036,7 +1038,7 @@ void oll_to_sky(
   /*----------------------------------------------------- allocate maxaf */
   if (sky->maxaf.Typ != cca_XX)
     amdel(&(sky->maxaf));
-  
+
   maxaf = amdef("maxaf",&(sky->maxaf),sky->numeq_total+1,1,"IV");
   /*---------------------------------------------------------allocate A */
   /* calculate size of a */
@@ -1048,7 +1050,7 @@ void oll_to_sky(
 
   if (sky->A.Typ != cca_XX)
     amdel(&(sky->A));
-  
+
   a = amdef("A",&(sky->A),adim,1,"DV");
 
   /* ------------------------------ copy oll matrix into skyline format */
@@ -1315,8 +1317,8 @@ numeq = oll->numeq;
 numeq_total = oll->numeq_total;
 oll->sysarray[0].ccf->numeq_total = oll->numeq_total;
 oll->sysarray[0].ccf->numeq = oll->numeq;
-oll->sysarray[0].ccf->nnz = oll->nnz;          
-oll->sysarray[0].ccf->nnz_total = oll->nnz;          
+oll->sysarray[0].ccf->nnz = oll->nnz;
+oll->sysarray[0].ccf->nnz_total = oll->nnz;
 
 /*--------------------------------------------- redefine matrix vectors */
 Ap = amredef(&(oll->sysarray[0].ccf->Ap),numeq_total+1,1,"IV");

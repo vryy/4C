@@ -3,10 +3,10 @@
 \brief service routines for fluid2 element
 
 <pre>
-Maintainer: Steffen Genkinger
-            genkinger@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/genkinger/
-            0711 - 685-6127
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
 </pre>
 
 ------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@ Maintainer: Steffen Genkinger
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "fluid2pro_prototypes.h"
+#include "fluid2pro.h"
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -34,67 +35,183 @@ get the element velocities and the pressure at different times
 
 ------------------------------------------------------------------------*/
 void f2pro_calset(
-	        ELEMENT         *elevel,
-		ELEMENT         *elepre,
-		DOUBLE         **xyze,
-                DOUBLE         **eveln,
-	        DOUBLE          *epren,
-                ARRAY_POSITION  *ipos
-	      )
+  ELEMENT         *ele,
+  DOUBLE         **xyze,
+  DOUBLE         **eveln,
+  DOUBLE         **evelng,
+  DOUBLE         **evhist,
+  DOUBLE          *epren,
+  ARRAY_POSITION  *ipos
+  )
 {
-INT i, veln;         /* simply some counters                            */
-NODE *actnode;       /* actual node for element                         */
+  INT i, veln, velnp, hist;
+  INT numpdof;
+  NODE *actnode;                /* actual node for element */
 
 #ifdef DEBUG
-dstrc_enter("f2pro_calset");
+  dstrc_enter("f2pro_calset");
 #endif
 
-veln = ipos->veln;
-/*--------------------------------------------- set element coordinates */
-for(i=0;i<elevel->numnp;i++)
-{
-   xyze[0][i]=elevel->node[i]->x[0];
-   xyze[1][i]=elevel->node[i]->x[1];
-}
-/*---------------------------------------------------------------------*
- | position of the different solutions:                                |
- | node->sol_incement: solution history used for calculations          |
- |       sol_increment[ipos][i]: solution at some time level           |
- |       ipos->velnp .. solution at time n+1                            |
- |       ipos->veln  .. solution at time n                              |
- |       ipos->velnm .. solution at time n-1                            |
- *---------------------------------------------------------------------*/
+  veln  = ipos->veln;
+  velnp = ipos->velnp;
+  hist  = ipos->hist;
 
-/* -> computation of time forces -------------------
-   -> velocities and pressure at (n) are needed ----*/
+  /*--------------------------------------------- set element coordinates */
+  for (i=0;i<ele->numnp;i++)
+  {
+    xyze[0][i]=ele->node[i]->x[0];
+    xyze[1][i]=ele->node[i]->x[1];
+  }
 
-      for(i=0;i<elevel->numnp;i++) /* loop nodes of element for velocity  */
-      {
-         actnode=elevel->node[i];
-/*------------------------------------- set element velocities at (n) */
-         eveln[0][i]=actnode->sol_increment.a.da[veln][0];
-	 eveln[1][i]=actnode->sol_increment.a.da[veln][1];
-/*------------------------------------------------- set pressures (n) */
-      } /* end of loop over nodes of element for velocity */
+  /*---------------------------------------------------------------------*
+   | position of the different solutions:                                |
+   | node->sol_incement: solution history used for calculations          |
+   |       sol_increment[ipos][i]: solution at some time level           |
+   |       ipos->velnp .. solution at time n+1                           |
+   |       ipos->veln  .. solution at time n                             |
+   |       ipos->velnm .. solution at time n-1                           |
+   *---------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | REMARK::in projection method that we implement here the pressure     |
- | element and velocity element have different number of nodes and      |
- | different shape functions. Therefore below loop runs up to 4 nodes.  |
- | Where it runs up to 9 in the upper loop.                             |
-/-----------------------------------------------------------------------*/
-      for(i=0;i<elepre->numnp;i++) /* loop nodes of element for pressure  */
-      {
-         actnode=elepre->node[i];
-	 epren[i]   =actnode->sol_increment.a.da[veln][0];
-      } /* end of loop over nodes of element  for pressure */
+  /* -> computation of time forces -------------------
+     -> velocities and pressure at (n) are needed ----*/
 
-/*---------------------------------------------------------------------*/
+  for(i=0;i<ele->numnp;i++)
+  {
+    actnode=ele->node[i];
+
+    /*------------------------------------- set element velocities at (n) */
+    eveln[0][i]=actnode->sol_increment.a.da[veln][0];
+    eveln[1][i]=actnode->sol_increment.a.da[veln][1];
+
+    /*----------------------------------- set element velocities (n+gamma) */
+    evelng[0][i]=actnode->sol_increment.a.da[velnp][0];
+    evelng[1][i]=actnode->sol_increment.a.da[velnp][1];
+
+    /*--------------------------------------- set vel. histories at (n) ---*/
+    evhist[0][i] = actnode->sol_increment.a.da[hist][0];
+    evhist[1][i] = actnode->sol_increment.a.da[hist][1];
+  }
+
+  switch (ele->e.f2pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
+  }
+
+  for (i=0; i<numpdof; ++i)
+  {
+    /*---------------------------------------------- set pressures (n+1) ---*/
+    epren[i]   = ele->e.f2pro->press[i];
+  }
+
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
-return;
+  return;
 } /* end of f2pro_calset */
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief calculate shape functions and derivatives of the pressure
+
+  \param pfunct       (o) shape function array
+  \param pderiv       (o) shape function derivative array
+  \param r            (i) natural coordinate
+  \param s            (i) natural coordinate
+  \param dm           (i) discontinuous mode
+  \param numpdof      (i) number of pressure dofs
+
+  \author u.kue
+  \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+void f2pro_prec(DOUBLE* pfunct, DOUBLE** pderiv, DOUBLE r, DOUBLE s, DISMODE dm, INT* numpdof)
+{
+#ifdef DEBUG
+  dstrc_enter("f2pro_prec");
+#endif
+
+  switch (dm)
+  {
+  case dm_q2pm1:
+    /* discontinuous pressure on quadratic velocity */
+    /* 9/3 */
+
+    *numpdof = 3;
+
+    pfunct[0]=1;
+    pfunct[1]=r;
+    pfunct[2]=s;
+
+    pderiv[0][0]= 0;
+    pderiv[1][0]= 0;
+
+    pderiv[0][1]= 1;
+    pderiv[1][1]= 0;
+
+    pderiv[0][2]= 0;
+    pderiv[1][2]= 1;
+    break;
+  case dm_q2q1:
+  {
+    DOUBLE rp;
+    DOUBLE rm;
+    DOUBLE sp;
+    DOUBLE sm;
+
+    rp=1.+r;
+    rm=1.-r;
+    sp=1.+s;
+    sm=1.-s;
+
+    /* Taylor-Hood */
+
+    *numpdof = 4;
+
+    pfunct[0]=.25*rp*sp;
+    pfunct[1]=.25*rm*sp;
+    pfunct[2]=.25*rm*sm;
+    pfunct[3]=.25*rp*sm;
+
+    pderiv[0][0]= .25*sp;
+    pderiv[1][0]= .25*rp;
+
+    pderiv[0][1]=-.25*sp;
+    pderiv[1][1]= .25*rm;
+
+    pderiv[0][2]=-.25*sm;
+    pderiv[1][2]=-.25*rm;
+
+    pderiv[0][3]= .25*sm;
+    pderiv[1][3]=-.25*rp;
+    break;
+  }
+  case dm_q1p0:
+    /* constant pressure */
+    *numpdof = 1;
+
+    pfunct[0]=1;
+
+    pderiv[0][0]= 0;
+    pderiv[1][0]= 0;
+
+    break;
+  default:
+    dserror("unsupported discretisation mode %d", dm);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 
 #endif
 /*! @} (documentation module close)*/

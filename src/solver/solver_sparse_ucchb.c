@@ -448,7 +448,9 @@ void  ucchb_update(
   imyrank = actintra->intra_rank;
   inprocs = actintra->intra_nprocs;
   /*------------------ make a local copy of the array actpart->coupledofs */
-  am_alloc_copy(&(actpart->pdis[0].coupledofs),&coupledofs);
+  memset(&coupledofs, 0, sizeof(ARRAY));
+  if (actpart->pdis[dis].coupledofs.Typ != cca_XX)
+    am_alloc_copy(&(actpart->pdis[0].coupledofs),&coupledofs);
   /*------------------------------------- loop the nodes on the partition */
   update = ucchb->update.a.iv;
   counter=0;
@@ -510,7 +512,8 @@ void  ucchb_update(
   /*---------------------------- sort the vector update just to make sure */
   qsort((INT*) update, counter, sizeof(INT), cmp_int);
   /*----------------------------------------------------------------------*/
-  amdel(&coupledofs);
+  if (coupledofs.fdim > 0)
+    amdel(&coupledofs);
   /*----------------------------------------------------------------------*/
 
 #ifdef DEBUG

@@ -26,20 +26,28 @@ UMFPACK_INC=
 UMFPACK_LIB="-lumfpack -lamd"
 
 # fast elements
-LOOPL="-DLOOPL=64"
+LOOPL="-DLOOPL=15"
 
 # visual2
 VISUAL2_INC=""
 VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
 
 VISUAL3_INC=""
-VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl"
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-lc -lg2c -llapack -lblas -lmetis"
 
+CFLAGS_OPT="-O2"
+FFLAGS_OPT="-O2"
+LDFLAGS_OPT="-O2"
+
+#CFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
 # Alle Bibliotheken neu übersetzen?!
 # -malign-double
-CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi"
-FFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse"
-LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
+CFLAGS="-Wall -pg -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -pg -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-pg -Xlinker -defsym -Xlinker MAIN__=main"

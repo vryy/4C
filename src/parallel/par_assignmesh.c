@@ -153,6 +153,7 @@ void part_assignfield()
 
         actpdis->numnp       = actdis->numnp;
         actpdis->numele      = actdis->numele;
+        actpdis->numlele     = actdis->numele;
         actpdis->bou_numnp   = 0;
         actpdis->bou_numele  = 0;
         actpdis->bou_element = NULL;
@@ -199,6 +200,18 @@ void part_assignfield()
 
         if (part==1)
         {
+          /* count local elements */
+          /* these are needed for discontinuous pressure calculations */
+          counter=0;
+          for (j=0; j<actdis->numele; j++)
+          {
+            if (actdis->element[j].proc == imyrank)
+            {
+              counter++;
+            }
+          }
+          actpdis->numlele  = counter;
+
           /* loop and count elements, do pointers to my elements */
           counter=0;
           for (j=0; j<actdis->numele; j++)

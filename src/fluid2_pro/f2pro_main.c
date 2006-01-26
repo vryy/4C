@@ -3,10 +3,10 @@
 \brief main routine fluid2_pro element
 
 <pre>
-Maintainer: Steffen Genkinger
-            genkinger@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/genkinger/
-            0711 - 685-6127
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
 </pre>
 
 ------------------------------------------------------------------------*/
@@ -62,80 +62,71 @@ extern struct _FIELD      *field;
 ------------------------------------------------------------------------*/
 void fluid2_pro(     PARTITION     *actpart,
                      INTRA         *actintra,
-		     ELEMENT       *elev,
-		     ELEMENT       *elep,
+		     ELEMENT       *ele,
 		     ARRAY         *estif_global,
 		     ARRAY         *emass_global,
 		     ARRAY         *lmass_global,
 		     ARRAY         *gradopr_global,
-		     ARRAY         *etforce_global,
-   	             ARRAY         *eiforce_global,
+		     ARRAY         *eforce_global,
 		     ARRAY         *edforce_global,
 		     ARRAY         *gforce_global,
 		     CALC_ACTION   *action,
-                     INT           *hasdirich
-	       )
+                     INT           *hasdirich,
+                     INT           *hasext
+  )
 {
 /*----------------------------------------------------------------------*/
 #ifdef D_FLUID2_PRO
 /*----------------------------------------------------------------------*/
-ARRAY_POSITION* ipos;
+  ARRAY_POSITION* ipos;
 
 #ifdef DEBUG
-dstrc_enter("fluid2_pro");
+  dstrc_enter("fluid2_pro");
 #endif
 
-ipos = &(field[genprob.numff].dis[0].ipos);
+  ipos = &(field[genprob.numff].dis[0].ipos);
 
 /*------------------------------------------------- switch to do option */
-switch (*action)
-{
+  switch (*action)
+  {
 /*------------------------------------------------------ initialisation */
-case calc_fluid_init:
-   /*---------------------------------------- init the element routines */
-   f2_intg(0);
-   /*----------- f2_pro element is initialized, some arrays are defined */
-   f2pro_calele(NULL,NULL,estif_global,emass_global,
-               lmass_global,gradopr_global,etforce_global,eiforce_global,
-	       edforce_global,ipos,NULL,1);
-break;
-/*---------------------------------------- calculate the A=(Ct)(Ml-1)(C)*/
-case calc_fluid_amatrix:
-   f2pro_calele(elev,elep,estif_global,emass_global,
-                lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,ipos,hasdirich,0);
-break;
+  case calc_fluid_init:
+    /*---------------------------------------- init the element routines */
+    f2_intg(0);
+    /*----------- f2_pro element is initialized, some arrays are defined */
+    f2pro_calinit(estif_global,emass_global,
+		  lmass_global,gradopr_global,eforce_global,
+		  edforce_global,gforce_global,ipos);
+    break;
 /*------------------------------------------- call the element routines */
-case calc_fluid_f2pro:
-   f2pro_calele(elev,elep,estif_global,emass_global,
-                lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,ipos,hasdirich,0);
-break;
-/*------------------------------------------- call the element routines */
-case calc_fluid_f2pro_rhs_both:
-   f2pro_calele(elev,elep,estif_global,emass_global,
-                lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,ipos,hasdirich,0);
-break;
+  case calc_fluid:
+    f2pro_calele(ele,estif_global,emass_global,
+                 lmass_global,gradopr_global,eforce_global,
+                 edforce_global,gforce_global,ipos,hasdirich,hasext);
+    break;
 /*----------------------------------------------------------------------*/
 
 /* integrate errors for beltrami and kim-moin */
-case calc_fluid_error:
-dserror("Error integration not yet implemented for fluid2pro!!\n");
-break;
+  case calc_fluid_error:
+    dserror("Error integration not yet implemented for fluid2pro!!");
+    break;
 
-default:
-   dserror("action unknown\n");
-break;
-} /* end swtich (*action) */
+  case calc_fluid_stress:
+    /* some time later. maybe. */
+    break;
+
+  default:
+    dserror("action unknown");
+    break;
+  } /* end swtich (*action) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 #endif
 /*----------------------------------------------------------------------*/
-return;
-} /* end of fluid2_pro */
+  return;
+}
 /*! @} (documentation module close)*/

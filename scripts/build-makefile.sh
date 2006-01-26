@@ -21,6 +21,7 @@ cat > $makefile <<EOF
 # Variables
 #
 SRC=$SRC
+DEST=$DEST
 
 PLAIN_CC=$PLAIN_CC
 PLAIN_CP=$PLAIN_CP
@@ -46,8 +47,11 @@ PLAIN_LIBS=$LIBDIRS $PLAIN_LIBS
 VISUAL2_LIB=$VISUAL2_LIB
 #VISUAL2_INC=$VISUAL2_INC
 
+VISUAL3_LIB=$VISUAL3_LIB
+#VISUAL3_INC=$VISUAL3_INC
+
 #----------------------- binaries -----------------------------------
-include ./Makefile.objects
+include \$(SRC)/Makefile.objects
 #--------------------------------------------------------------------
 #
 # The main rule called when no arguments are given
@@ -69,7 +73,7 @@ EOF
 
 
 # step 2: copy Makefile.in
-cat Makefile.in >> $makefile
+cat $SRC/Makefile.in >> $makefile
 #awk '$1 !~ /include/ { print $0 } $1 ~ /include/ { system("cat " $2)}' Makefile.in >> Makefile
 
 # step 3: build dependencies if gcc can be found
@@ -82,9 +86,9 @@ if [ x$NODEPS != "xyes" ] ; then
   if which gcc | grep '^no ' 2>&1 > /dev/null ; then
      echo $0: gcc not found. No dependencies generated. Use Makefile with care.
   else
-    for file in `find src -name "*.c"` ; do
+    for file in `find $SRC/src -name "*.c"` ; do
       echo "build deps for" $file
-      gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's/c$/o/'` $INCLUDEDIRS $file >> $makefile
+      gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's/c$/o/' -e "s/$SRC/$DEST/"` -I`dirname $file|sed -e "s/$SRC/$DEST/"` $INCLUDEDIRS $file >> $makefile
     done
   fi
 fi

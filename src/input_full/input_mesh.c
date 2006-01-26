@@ -21,6 +21,7 @@ Maintainer: Malte Neumann
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
+#include "../fluid3_pro/fluid3pro_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid2_pro/fluid2pro_prototypes.h"
@@ -1099,7 +1100,7 @@ void inp_fluid_field(
   char      *actplace_save;
   INT        actrow_save;
 
-#if defined(D_FLUID2TU) || defined(D_FLUID2_PRO)
+#if defined(D_FLUID2TU)
   INT        cpro = 0;
 #endif
 
@@ -1169,32 +1170,26 @@ void inp_fluid_field(
     {
 #ifndef D_FLUID2_PRO
       dserror("FLUID2_PRO needed but not defined in Makefile");
+#else
+      fluidfield->dis[0].element[counter].eltyp = el_fluid2_pro;
+      f2pro_inp(&(fluidfield->dis[0].element[counter]));
 #endif
     }
-#ifdef D_FLUID2_PRO
+
+
+    /*   elementtyp is FLUID3_PRO
+     *   ------------------------
+     */
+    frchk("FLUID3_PRO",&ierr);
     if (ierr==1)
     {
-      /* allocate elements of second discretisation */
-      if (cpro==0)
-      {
-        if(fluidfield->ndis<2)
-          dserror("NUMFLUIDDIS has to be g.t. 1 for FLUID2_PRO Elements!\n");
-        fluidfield->dis[1].numele  = fluidfield->dis[0].numele;
-        fluidfield->dis[1].element =
-          (ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
-        cpro++;
-        genprob.create_dis = 1;
-        fluidfield->dis[1].disclass = dc_created_f2p;
-      } /* endif (cpro==0) */
-
-      fluidfield->dis[0].element[counter].eltyp=el_fluid2_pro;
-      fluidfield->dis[1].element[counter].eltyp=el_fluid2_pro;
-      f2pro_inp(&(fluidfield->dis[0].element[counter]));
-      f2pro_dis(&(fluidfield->dis[0].element[counter]),
-          &(fluidfield->dis[1].element[counter]),genprob.nele,genprob.nodeshift);
-    }
+#ifndef D_FLUID3_PRO
+      dserror("FLUID3_PRO needed but not defined in Makefile");
+#else
+      fluidfield->dis[0].element[counter].eltyp = el_fluid3_pro;
+      f3pro_inp(&(fluidfield->dis[0].element[counter]));
 #endif
-
+    }
 
 
     /*   elementtyp is FLUID3

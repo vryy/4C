@@ -54,11 +54,8 @@ defined in pss_am.c
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef DEBUG
+#if defined(DEBUG) || defined(MEMDEBUG)
 long int num_byte_allocated;
-#endif
-
-#ifdef DEBUG
 
 /*!----------------------------------------------------------------------
 \brief size of a DOUBLE in byte
@@ -152,7 +149,7 @@ if compiled with DEBUG define, it counts the allocated memory
 \sa CCACALLOC() , CCAREALLOC() , CCAFREE()
 
 *----------------------------------------------------------------------*/
-#ifdef DEBUG
+#if defined(DEBUG) || defined(MEMDEBUG)
 void *CCAMALLOC(INT size)
 {
 char *buf;
@@ -190,7 +187,7 @@ if compiled with DEBUG define, it counts the allocated memory
 \sa CCAMALLOC() , CCAREALLOC() , CCAFREE()
 
 *----------------------------------------------------------------------*/
-#ifdef DEBUG
+#if defined(DEBUG) || defined(MEMDEBUG)
 void *CCACALLOC(INT num, INT size)
 {
 char *buf;
@@ -227,7 +224,7 @@ if compiled with DEBUG define, it counts the allocated memory
 \sa CCACALLOC() , CCAMALLOC() , CCAFREE()
 
 *----------------------------------------------------------------------*/
-#ifdef DEBUG
+#if defined(DEBUG) || defined(MEMDEBUG)
 void *CCAREALLOC(void *oldptr, INT size)
 {
 INT   n;
@@ -269,7 +266,7 @@ if compiled with DEBUG define, it counts the allocated memory
 \sa CCACALLOC() , CCAMALLOC() , CCAREALLOC()
 
 *----------------------------------------------------------------------*/
-#ifdef DEBUG
+#if defined(DEBUG) || defined(MEMDEBUG)
 void *CCAFREE(void *oldptr)
 {
 INT   n;
@@ -342,6 +339,8 @@ dstrc_enter("amdef");
 #ifdef PERF
   perf_begin(95);
 #endif
+
+  dsassert(fdim>0 && sdim>0,"no empty array allowed");
 
 strncpy(a->name,namstr,9);
 a->fdim = fdim;
@@ -685,6 +684,7 @@ case cca_IV:
 break;
 default:
 dserror("Unknown type of array given");
+  break;
 }
 /*---------------------------------------------------deletes dimensions */
 array->fdim=0;
@@ -949,7 +949,7 @@ case cca_IV:
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
    break;
 default:
-   dserror("Unknown type of array given");
+  dserror("Unknown type of array given");
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

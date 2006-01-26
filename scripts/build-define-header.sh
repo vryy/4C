@@ -1,7 +1,8 @@
 
 # get the define flags
 
-cat > src/headers/compile_settings.h <<EOF
+mkdir -p $DEST/src/headers
+cat > $DEST/src/headers/compile_settings.h <<EOF
 /*----------------------------------------------------------------------*/
 /*
  Created by $0 on `date`. Do not edit.

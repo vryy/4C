@@ -12,140 +12,233 @@ post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 post_visual2: $(OBJS_POST_VISUAL2) $(OBJS_POST_COMMON) src/fortran/vis2_qat2v2.o
 	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_VISUAL2) src/fortran/vis2_qat2v2.o $(OBJS_POST_COMMON) $(PLAIN_LIBS) $(VISUAL2_LIB) -o post_visual2
 
+post_visual3: $(OBJS_POST_VISUAL3) $(OBJS_POST_COMMON) 
+	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_VISUAL3) $(OBJS_POST_COMMON) $(PLAIN_LIBS) $(VISUAL3_LIB) -o post_visual3
+
 post_monitor: $(OBJS_POST_MONITOR) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_MONITOR) $(OBJS_POST_COMMON) $(PLAIN_LIBS) -o post_monitor
 
 $(OBJS_MAIN):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_GLOBAL):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_STRUCTURE):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_SOLVER):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_PSS):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_INPUT):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_FLUID3):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_F3F):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_SHELL8):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_ALE):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_PAR):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_BRICK1):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_MATH):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_OUTPUT):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_WALL1):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_FLUID2):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_FLUID):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_FSI):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_SSI):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_SHELL9):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_BEAM3):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_F2ML):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_F3ML):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_S2ML):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_OPT):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_AXISHELL):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_MAT):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_F2PRO):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
+
+$(OBJS_F3PRO):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_IF):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_WALLGE):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_VISUAL):
-		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
+
+$(OBJS_IO):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_POST_GID_BIN):
-		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_POST_GID_TXT):
-		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_POST_GID_COMMON):
-		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_POST_COMMON):
-		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_POST_OUT):
-		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_POST_VISUAL2):
-		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
+
+$(OBJS_POST_VISUAL3):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 $(OBJS_POST_MONITOR):
-		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@
 
 # fortran
 $(OBJS_FORTRAN):
-		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(F77) $(FFLAGS)  -c ${SRC}/${@D}/`basename $@ .o`.f -o ${DEST}/$@"
+	@$(F77) $(FFLAGS)  -c ${SRC}/${@D}/`basename $@ .o`.f -o ${DEST}/$@
 
 $(OBJS_F3F_F):
-		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(F77) $(FFLAGS)  -c ${SRC}/${@D}/`basename $@ .o`.f -o ${DEST}/$@"
+	@$(F77) $(FFLAGS)  -c ${SRC}/${@D}/`basename $@ .o`.f -o ${DEST}/$@
 
 # c++
 $(OBJS_NURBS_CPP):
-		$(CP) $(CPFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).cpp -o ${SRC}/$@
-
-
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-.f.o:
-	$(F77) $(FFLAGS) $(INCLUDES) -c $< -o $@
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@
 
 clean:
 	rm -f	src/*/*.o

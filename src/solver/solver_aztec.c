@@ -227,16 +227,16 @@ case 0:
         AZ_matrix_destroy(&(msr_array->Amat)); msr_array->Amat        =NULL;
       }
       if (msr_array->external != NULL) {
-        free(msr_array->external);             msr_array->external      =NULL;
+        AZ_free(msr_array->external);             msr_array->external      =NULL;
       }
       if (msr_array->update_index != NULL) {
-        free(msr_array->update_index);         msr_array->update_index  =NULL;
+        AZ_free(msr_array->update_index);         msr_array->update_index  =NULL;
       }
       if (msr_array->extern_index != NULL) {
-        free(msr_array->extern_index);         msr_array->extern_index  =NULL;
+        AZ_free(msr_array->extern_index);         msr_array->extern_index  =NULL;
       }
       if (msr_array->data_org != NULL) {
-        free(msr_array->data_org);             msr_array->data_org      =NULL;
+        AZ_free(msr_array->data_org);             msr_array->data_org      =NULL;
       }
 
       /* Make backup copy of bindx, as it is permuted in

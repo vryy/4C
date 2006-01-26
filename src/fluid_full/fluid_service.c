@@ -507,8 +507,6 @@ void fluid_init(
   ELEMENT *actele;        /* the actual element                           */
   GSURF   *actgsurf;
 
-  INT    found;
-
 #ifdef D_FSI
   INT    addcol=0;
   DOUBLE dens;            /* density                                      */
@@ -623,19 +621,12 @@ void fluid_init(
     }
   }
 #endif
-  /*---------------------- redefine solution history for projecton method */
-  if (fdyn->dyntyp==1)
-    for (i=0;i<actfield->dis[disnum_calc].numnp;i++)
-    {
-      actnode=&(actfield->dis[disnum_calc].node[i]);
-      amredef(&(actnode->sol),actnode->sol.fdim,actnode->sol.sdim+1,"DA");
-    }
 
   /*---------------------------------------------------------------------*
     INITIALISE ELEMENT ARRAYS
    *---------------------------------------------------------------------*/
   /*------------- allocate array for stabilisation parameter (only pdis) */
-  if (fdyn->dyntyp==0)
+  if (fdyn->dyntyp==dyntyp_nln_time_int)
     for (i=0;i<actpart->pdis[disnum_calc].numele;i++)
     {
       actele = actpart->pdis[disnum_calc].element[i];
@@ -680,6 +671,7 @@ void fluid_init(
     case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nodes */
       for (i=0;i<numele_total;i++)
       {
+        INT found;
         actele = &(actfield->dis[disnum_calc].element[i]);
         numnp=actele->numnp;
         found=0;
@@ -728,6 +720,7 @@ void fluid_init(
 #ifdef D_FLUID3_F
       for (i=0; i<actpart->pdis[disnum_calc].num_fele; i++)
       {
+        INT found;
 
         act_fast_eles = &(actpart->pdis[disnum_calc].fast_eles[i]);
 
@@ -1501,12 +1494,18 @@ if (vnorm<EPS5)
     printf("ATTENTION: zero vel field - norm <= 1.0e-5 set to 1.0!! \n");
 #endif
 }
-if (pnorm<EPS5)
+/* If prat==NULL we are not interessted in the pressure norm. This is
+ * the case in the projection method where we use discontinous
+ * pressures. */
+if (prat!=NULL)
 {
-   pnorm = ONE;
+  if (pnorm<EPS5)
+  {
+    pnorm = ONE;
 #ifdef DEBUG
-   printf("ATTENTION: zero pre field - norm <= 1.0e-5 set to 1.0!! \n");
+    printf("ATTENTION: zero pre field - norm <= 1.0e-5 set to 1.0!! \n");
 #endif
+  }
 }
 if (gnorm<EPS5)
 {
@@ -1514,7 +1513,8 @@ if (gnorm<EPS5)
 }
 /*------------------------------------- set final convergence ratios */
 *vrat = dvnorm/vnorm;
-*prat = dpnorm/pnorm;
+if (prat!=NULL)
+  *prat = dpnorm/pnorm;
 if (fdyn->freesurf==2 || fdyn->freesurf==5 || fdyn->freesurf==6)
    *grat = dgnorm/gnorm;
 
@@ -2081,20 +2081,31 @@ if (fdyn->itnorm!=fncc_no)
       switch(fdyn->itnorm)
       {
       case fncc_Linf: /* infinity norm */
-         printf("|  %3d/%3d   | %10.3E[L_in]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
+        if (fdyn->dyntyp==dyntyp_nln_time_int)
+          printf("|  %3d/%3d   | %10.3E[L_in]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
+        else
+          printf("|  %3d/%3d   | %10.3E[L_in]  | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
+                 itnum,fdyn->itemax,fdyn->ittol,vrat,te,ts);
       break;
       case fncc_L1: /* L_1 norm */
-         printf("|  %3d/%3d   | %10.3E[L_1 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
-              itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
+        if (fdyn->dyntyp==dyntyp_nln_time_int)
+          printf("|  %3d/%3d   | %10.3E[L_1 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
+                 itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
+        else
+          printf("|  %3d/%3d   | %10.3E[L_1 ]  | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
+                 itnum,fdyn->itemax,fdyn->ittol,vrat,te,ts);
       break;
       case fncc_L2: /* L_2 norm */
          if (fdyn->freesurf>1)
          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,grat,te,ts);
+         else if (fdyn->dyntyp==dyntyp_nln_time_int)
+           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
+                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
          else
-	 printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
-                 itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
+           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
+                  itnum,fdyn->itemax,fdyn->ittol,vrat,te,ts);
       break;
       default:
          dserror("Norm for nonlin. convergence check unknown!!\n");
@@ -2121,8 +2132,10 @@ if (fdyn->itnorm!=fncc_no)
    {
       if (fdyn->freesurf>1)
       printf("------------------------------------------------------------------------------- \n");
+      else if (fdyn->dyntyp==dyntyp_nln_time_int)
+        printf("----------------------------------------------------------------\n");
       else
-      printf("---------------------------------------------------------------- \n");
+        printf("-------------------------------------------------\n");
       printf("\n");
       fprintf(out," %3d | %10.3E | %10.3E |",
           itnum,vrat,prat);
@@ -2618,6 +2631,9 @@ void fluid_cal_error(
 
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
+
+  /* Zero everything so we can rely on the values we find. */
+  memset(&container, 0, sizeof(CONTAINER));
 
   container.disnum   = 0;
   container.fieldtyp = fluid;

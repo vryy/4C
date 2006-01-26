@@ -1,7 +1,4 @@
 
-# default values
-SRC=.
-
 # for filters we need non-mip versions of these
 PLAIN_CC=cc
 PLAIN_CP=CC
@@ -60,7 +57,7 @@ fi
 
 # get the define flags
 
-DEFINES=`sed -e 's/#.*//' -e 's/DEBUG//' "$definefile" | awk 'BEGIN { defs = "" }
+DEFINES=`sed -e 's/#.*//' -e 's/^DEBUG//' "$definefile" | awk 'BEGIN { defs = "" }
 END { print defs }
   { if (length($1) > 0) { defs = defs" -D"$1 } }'`
 

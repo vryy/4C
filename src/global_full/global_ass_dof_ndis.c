@@ -112,29 +112,6 @@ void assign_dof_ndis(
           break;
 
 
-        case el_fluid2_pro:
-          if(actele->e.f2pro->dm==dm_q2q1)
-          {
-            cpro++;
-            for (k=0; k<actele->numnp; k++)
-            {
-              nodeflag[actele->node[k]->Id_loc]=10+disnum;
-              if (disnum==0)
-                if (actele->node[k]->numdf < 2)
-                  actele->node[k]->numdf=2;
-              if (disnum==1)
-                if (actele->node[k]->numdf < 1)
-                  actele->node[k]->numdf=1;
-
-            }  /* for (k=0; k<actele->numnp; k++) */
-
-          }  /* if(actele->e.f2pro->dm==dm_q2q1) */
-
-          else
-            dserror("assign_dof for DISMODE of FLUID2_PRO not implemented yet!");
-          break;
-
-
         case el_fluid2:
           for (k=0; k<actele->numnp; k++)
             if (actele->node[k]->numdf < 3)
@@ -326,12 +303,6 @@ void assign_dof_ndis(
         {
           switch(nodeflag[actnode->Id_loc])
           {
-            case 11:
-#ifdef D_FLUID2_PRO
-              f2pro_ass_dof_q2q1(actnode,&counter);
-#endif
-              break;
-
 
             case 21:
 #ifdef D_FLUID2TU
