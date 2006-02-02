@@ -88,7 +88,7 @@ if [ x$NODEPS != "xyes" ] ; then
   else
     for file in `find $SRC/src -name "*.c"` ; do
       echo "build deps for" $file
-      gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's/c$/o/' -e "s/$SRC/$DEST/"` -I`dirname $file|sed -e "s/$SRC/$DEST/"` $INCLUDEDIRS $file >> $makefile
+      gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's,c$,o,' -e "s,$SRC,$DEST,"` -I`dirname $file|sed -e "s,$SRC,$DEST,"` $INCLUDEDIRS $file >> $makefile
     done
   fi
 fi
