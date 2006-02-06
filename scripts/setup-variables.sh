@@ -24,7 +24,7 @@ fi
 
 # source config file
 # Here we get all the variables.
-. "./$configfile"
+. "$configfile"
 
 
 # C++ is used => us CP for linking
