@@ -1292,6 +1292,7 @@ static void write_fsi(PROBLEM_DATA* problem)
       CHUNK_DATA struct_chunk;
 
       init_chunk_data(&result, &chunk, "displacement");
+      dsassert(chunk.value_entry_length <= 3, "dimension overrun");
 
       time = map_read_real(result.group, "time");
       step = map_read_int(result.group, "step");
@@ -1352,7 +1353,11 @@ static void write_fsi(PROBLEM_DATA* problem)
           INT i;
           chunk_read_size_entry(&(struct_field->coords), k);
           chunk_read_value_entry(&struct_chunk, k);
-          for (i=0; i<struct_chunk.value_entry_length; ++i)
+
+          /*
+           * shell8 possesses 6 dofs per node. But here the first 3 are
+           * relevant. */
+          for (i=0; i<MIN(3, struct_chunk.value_entry_length); ++i)
           {
             x[i] = struct_chunk.value_buf[i];
           }

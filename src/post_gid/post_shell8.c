@@ -237,9 +237,10 @@ static void shell8_write_coords(FIELD_DATA* field, GIDSET* gid)
   INT i;
   INT j;
   DOUBLE x[3];
+#if defined(S8_HEX8)
   DOUBLE d[3];
   DOUBLE thick;
-
+#endif
   CHUNK_DATA director_chunk;
 
 #ifdef DEBUG
@@ -267,6 +268,8 @@ static void shell8_write_coords(FIELD_DATA* field, GIDSET* gid)
     chunk_read_size_entry(&(field->coords), i);
     Id = field->coords.size_buf[node_variables.coords_size_Id];
 
+#if defined(S8_HEX8)
+
     shell8_read_director(field, i, &director_chunk, d, &thick);
 
     /* All GiD ids are one based. */
@@ -277,6 +280,10 @@ static void shell8_write_coords(FIELD_DATA* field, GIDSET* gid)
                          x[0]-d[0], x[1]-d[1], x[2]-d[2]);
     GiD_WriteCoordinates(Id+1 + field->problem->numnp,
                          x[0]+d[0], x[1]+d[1], x[2]+d[2]);
+
+#else
+    GiD_WriteCoordinates(Id+1, x[0], x[1], x[2]);
+#endif
   }
 
   GiD_EndCoordinates();
@@ -305,6 +312,8 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   if (gid->is_shell8_4_22)
   {
     INT i;
+
+#if defined(S8_HEX8)
     PROBLEM_DATA* problem = field->problem;
 
     /* this is the hexahedra version */
@@ -349,6 +358,42 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
 
     GiD_EndElements();
     GiD_EndMesh();
+
+#else
+
+    /* this is the surface version */
+    GiD_BeginMesh(gid->shell8_4_22_name, 3, GiD_Quadrilateral, 4);
+    if (*first_mesh)
+    {
+      *first_mesh = 0;
+      shell8_write_coords(field, gid);
+    }
+
+    GiD_BeginElements();
+
+    for (i=0; i<field->numele; ++i)
+    {
+      INT numnp;
+      INT el_type;
+      INT Id;
+      INT mesh_entry[MAXNOD];
+      INT dis;
+
+      /* read the element's data */
+      get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+      if (el_type != el_shell8 || numnp !=4) continue;
+
+      chunk_read_size_entry(&(field->mesh), i);
+      get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);
+
+      GiD_WriteElement(Id+1, mesh_entry);
+    }
+
+    GiD_EndElements();
+    GiD_EndMesh();
+
+#endif
   }
 
   /*--------------------------------------------------------------------*/

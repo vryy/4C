@@ -511,6 +511,8 @@ int GiD_EndMesh()
   level_mesh = POST_S0;
   */
 
+  fflush(MeshFile.file);
+
   return 0;
 }
 
@@ -1110,6 +1112,7 @@ int GiD_EndResult()
   assert(buffer_is_empty(&buffer_values));
 
   _fail = gid_end_values(&ResultFile);
+  fflush(ResultFile.file);
   ResultFile.LastID = -1;
   level_res = POST_S0;
   return _fail;
