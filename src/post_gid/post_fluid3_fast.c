@@ -132,7 +132,7 @@ void fluid3_fast_write_gauss(GIDSET* gid)
   }
   if (gid->is_f3f_20_333)
   {
-    GiD_BeginGaussPoint(gid->f3f_20_333_name, GiD_Hexahedra, gid->f3f_20_333_name, 20, 0, 1);
+    GiD_BeginGaussPoint(gid->f3f_20_333_name, GiD_Hexahedra, gid->f3f_20_333_name, 27, 0, 1);
     GiD_EndGaussPoint();
   }
 

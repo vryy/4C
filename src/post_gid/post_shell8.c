@@ -128,7 +128,7 @@ void shell8_write_gauss(GIDSET* gid)
   }
   if (gid->is_shell8_8_33)
   {
-    GiD_BeginGaussPoint(gid->shell8_8_33_name, GiD_Quadrilateral, gid->shell8_8_33_name, 8, 0, 1);
+    GiD_BeginGaussPoint(gid->shell8_8_33_name, GiD_Quadrilateral, gid->shell8_8_33_name, 9, 0, 1);
     GiD_EndGaussPoint();
   }
 
