@@ -68,11 +68,11 @@ void shell8_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
       /* read the element's data */
       get_element_params(field, i, &Id, &el_type, &dis, &numnp);
 
-      if (el_type != el_shell8 || numnp != 9) continue;
+      if (el_type != el_shell8 || numnp != 8) continue;
 
       chunk_read_size_entry(chunk, i);
 
-      for (j=0; j<9; j++)
+      for (j=0; j<8; j++)
         GiD_WriteScalar(Id+1, chunk->size_buf[0]);
     }
     GiD_EndResult();
@@ -128,7 +128,7 @@ void shell8_write_gauss(GIDSET* gid)
   }
   if (gid->is_shell8_8_33)
   {
-    GiD_BeginGaussPoint(gid->shell8_8_33_name, GiD_Quadrilateral, gid->shell8_8_33_name, 9, 0, 1);
+    GiD_BeginGaussPoint(gid->shell8_8_33_name, GiD_Quadrilateral, gid->shell8_8_33_name, 8, 0, 1);
     GiD_EndGaussPoint();
   }
 
@@ -402,7 +402,7 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   {
     INT i;
 
-    GiD_BeginMesh(gid->shell8_8_33_name, 3, GiD_Quadrilateral, 9);
+    GiD_BeginMesh(gid->shell8_8_33_name, 3, GiD_Quadrilateral, 8);
     if (first_mesh)
     {
       first_mesh = 0;
@@ -422,7 +422,7 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
       /* read the element's data */
       get_element_params(field, i, &Id, &el_type, &dis, &numnp);
 
-      if (el_type != el_shell8 || numnp !=9) continue;
+      if (el_type != el_shell8 || numnp !=8) continue;
 
       chunk_read_size_entry(&(field->mesh), i);
       get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);

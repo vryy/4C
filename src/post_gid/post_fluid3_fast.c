@@ -69,7 +69,7 @@ void fluid3_fast_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
 
       chunk_read_size_entry(chunk, i);
 
-      for (j=0; j<27; j++)
+      for (j=0; j<numnp; j++)
         GiD_WriteScalar(Id+1, chunk->size_buf[0]);
     }
     GiD_EndResult();
@@ -132,7 +132,7 @@ void fluid3_fast_write_gauss(GIDSET* gid)
   }
   if (gid->is_f3f_20_333)
   {
-    GiD_BeginGaussPoint(gid->f3f_20_333_name, GiD_Hexahedra, gid->f3f_20_333_name, 27, 0, 1);
+    GiD_BeginGaussPoint(gid->f3f_20_333_name, GiD_Hexahedra, gid->f3f_20_333_name, 20, 0, 1);
     GiD_EndGaussPoint();
   }
 
@@ -198,7 +198,7 @@ void fluid3_fast_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   {
     INT i;
 
-    GiD_BeginMesh(gid->fluid3_333_name, 3, GiD_Hexahedra, 27);
+    GiD_BeginMesh(gid->fluid3_333_name, 3, GiD_Hexahedra, 20);
 
     if (*first_mesh)
     {
@@ -219,7 +219,7 @@ void fluid3_fast_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
       /* read the element's data */
       get_element_params(field, i, &Id, &el_type, &dis, &numnp);
 
-      if (el_type != el_fluid3_fast || numnp != 27) continue;
+      if (el_type != el_fluid3_fast || numnp != 20) continue;
 
       chunk_read_size_entry(&(field->mesh), i);
       get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);
