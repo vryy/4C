@@ -219,6 +219,11 @@ init_bin_out_field(&out_context,
                    NULL,
                    NULL,
                    actfield, actpart, actintra, disnum_io);
+if(disnum_io != disnum_calc)
+  init_bin_out_field(&out_context,
+      NULL,
+      NULL,
+      actfield, actpart, actintra, disnum_calc);
 #endif
 
 /*---------------------------------------------------------- monitoring */

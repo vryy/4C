@@ -607,10 +607,11 @@ void fsi_struct(
           &(actsolv->sysarray[stiff_array]),
           actfield, actpart, actintra, disnum_io);
 
-      init_bin_out_field(&restart_context,
-          &(actsolv->sysarray_typ[stiff_array]),
-          &(actsolv->sysarray[stiff_array]),
-          actfield, actpart, actintra, disnum_calc);
+      if(disnum_io != disnum_calc)
+        init_bin_out_field(&restart_context,
+            &(actsolv->sysarray_typ[stiff_array]),
+            &(actsolv->sysarray[stiff_array]),
+            actfield, actpart, actintra, disnum_calc);
 #endif
 
 
