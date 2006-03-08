@@ -590,7 +590,7 @@ void frdouble_n(char string[],DOUBLE *var,INT num, INT *ierr)
 INT  i;
 char *foundit = NULL;
 #ifdef DEBUG
-dstrc_enter("frdouble");
+dstrc_enter("frdouble_n");
 #endif
 /*----------------------------------------------------------------------*/
 foundit = strstr(allfiles.input_file[allfiles.actrow],string);
@@ -613,7 +613,7 @@ else
 dstrc_exit();
 #endif
 return;
-} /* end of frdouble */
+} /* end of frdouble_n */
 
 
 
