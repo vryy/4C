@@ -801,7 +801,7 @@ void read_1_dsurf(
   while (!ierr) {frread(); frchk("Center:",&ierr);}
 
   /* read "Center:" */
-  frdouble("Center:",dsurf->props.nurbsurf->center,&ierr);
+  frdouble_n("Center:",dsurf->props.nurbsurf->center,3,&ierr);
   if (!ierr) dserror("Cannot read DSURF");
 
 
@@ -810,7 +810,7 @@ void read_1_dsurf(
   while (!ierr) {frread(); frchk("Normal:",&ierr);}
 
   /* read "Normal:" */
-  frdouble("Normal:",dsurf->props.nurbsurf->normal,&ierr);
+  frdouble_n("Normal:",dsurf->props.nurbsurf->normal,3,&ierr);
   if (!ierr) dserror("Cannot read DSURF");
 
 
