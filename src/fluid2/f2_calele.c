@@ -341,6 +341,7 @@ default:
   perf_end(21);
 #endif
 /*---------------------------------- calculate rhs: emass * vel_hist ---*/
+if (!is_relax)			/* calculation for relaxation parameter	*/
 f2_massrhs(ele,emass,evhist,edeadng,eforce,hasext);
 }
 
@@ -1050,7 +1051,7 @@ return;
 
 <pre>                                                        chfoe 11/04
 
-This routine controls the integration of the elemental matrix and rhs 
+This routine controls the integration of the elemental matrix and rhs
 to serve an L2-stress projection. The projection matrix has the structure
 of a mass matrix (i.e. int(N^T N)dx ) and the right hand side carries
 weighted stress values.
