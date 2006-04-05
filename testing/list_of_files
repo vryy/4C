@@ -56,6 +56,7 @@ Input/ffsi_ow3D_usfem_sub2.dat          x        x        x        x        x   
 Input/fsi_mtr_dc4x4.dat                 x        x        x        x        -        -
 Input/fsi_ow32x32.dat                   x        x        x        x        -        -
 Input/fsi_ow32x32_usfem.dat             x        x        x        x        -        -
+Input/fsi_ow32x32_sd.dat                x        x        x        x        -        -
 Input/fsi_ow3D_usfem.dat                x        x        x        x        -        -
 Input/fsi_tank20x10.dat                 x        x        x        x        -        -
 Input/fsi_tank3D.dat                    x        -        x        -        -        -
