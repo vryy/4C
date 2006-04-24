@@ -286,7 +286,7 @@ default:
 #endif
 
 /*------------------------------------------ calculate emass * ehist ---*/
-if (!is_relax)			/* calculation for relaxation parameter	*/
+/*if (!is_relax)*/			/* calculation for relaxation parameter	*/
 f3_massrhs(ele,emass,ehist,edeadng,eforce,hasext);
 }
 
