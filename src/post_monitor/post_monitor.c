@@ -142,17 +142,19 @@ int main(int argc, char** argv)
    * some auxiliary arrays and open the output files. */
   for (i=0; i<problem.num_discr; ++i)
   {
-    CHAR buf[100];
-
-    amdef("monnodes",&(moni[i].monnodes),moni[i].numnp,2,"IA");
-    aminit(&(moni[i].monnodes),&mone);
-    amdef("onoff",&(moni[i].onoff),moni[i].numnp,MAXDOFPERNODE,"IA");
-    aminit(&(moni[i].onoff),&mone);
-
-    group_names[i] = (CHAR**)CCACALLOC(moni[i].numnp, sizeof(CHAR*));
-
-    switch (problem.discr[i].type)
+    if (moni[i].numnp != 0)
     {
+      CHAR buf[100];
+
+      amdef("monnodes",&(moni[i].monnodes),moni[i].numnp,2,"IA");
+      aminit(&(moni[i].monnodes),&mone);
+      amdef("onoff",&(moni[i].onoff),moni[i].numnp,MAXDOFPERNODE,"IA");
+      aminit(&(moni[i].onoff),&mone);
+
+      group_names[i] = (CHAR**)CCACALLOC(moni[i].numnp, sizeof(CHAR*));
+
+      switch (problem.discr[i].type)
+      {
       case structure:
         sprintf(buf, "%s.structure.%d.mon", problem.basename, problem.discr[i].field_pos);
         if ( (allfiles.out_smoni=fopen(buf,"w"))==NULL)
@@ -170,113 +172,121 @@ int main(int argc, char** argv)
         break;
       default:
         dserror("unknown discretization type %d", problem.discr[i].type);
+      }
     }
   }
 
   /* read in global node Ids */
   for (i=0; i<problem.num_discr; ++i)
   {
-    INT j = 0;
-    FIELD_DATA* field;
-    field = &(problem.discr[i]);
-
-    sym_monitor = map_find_symbol(&monitor_table, "monitor");
-    while (sym_monitor != NULL)
+    if (moni[i].numnp != 0)
     {
-      MAP* monitor;
-      monitor = symbol_map(sym_monitor);
+      INT j = 0;
+      FIELD_DATA* field;
+      field = &(problem.discr[i]);
 
-      if (match_field_result(field, monitor)) {
-        INT node;
-        SYMBOL* sym_dof;
+      sym_monitor = map_find_symbol(&monitor_table, "monitor");
+      while (sym_monitor != NULL)
+      {
+        MAP* monitor;
+        monitor = symbol_map(sym_monitor);
 
-        node = map_read_int(monitor, "node");
-        group_names[i][j] = map_read_string(monitor, "group");
-
-        /* remember the global node id */
-        moni[i].monnodes.a.ia[j][0] = node;
-
-        /* mark the dof */
-        sym_dof = map_find_symbol(monitor, "dof");
-        while (sym_dof != NULL)
+        if (match_field_result(field, monitor))
         {
-          INT dof;
+          INT node;
+          SYMBOL* sym_dof;
 
-          dof = symbol_int(sym_dof);
-          if ((dof < 0) || (dof >= MAXDOFPERNODE))
+          node = map_read_int(monitor, "node");
+          group_names[i][j] = map_read_string(monitor, "group");
+
+          /* remember the global node id */
+          moni[i].monnodes.a.ia[j][0] = node;
+
+          /* mark the dof */
+          sym_dof = map_find_symbol(monitor, "dof");
+          while (sym_dof != NULL)
           {
-            dserror("dof out of range");
-          }
-          moni[i].onoff.a.ia[j][dof] = 1;
+            INT dof;
 
-          sym_dof = sym_dof->next;
+            dof = symbol_int(sym_dof);
+            if ((dof < 0) || (dof >= MAXDOFPERNODE))
+            {
+              dserror("dof out of range");
+            }
+            moni[i].onoff.a.ia[j][dof] = 1;
+
+            sym_dof = sym_dof->next;
+          }
+
+          j += 1;
+          dsassert(j <= moni[i].numnp, "node count inconsistency");
         }
 
-        j += 1;
-        dsassert(j <= moni[i].numnp, "node count inconsistency");
+        sym_monitor = sym_monitor->next;
       }
-
-      sym_monitor = sym_monitor->next;
     }
   }
 
   /* determine local node Ids */
   for (i=0; i<problem.num_discr; ++i)
   {
-    FIELD actfield;
-    INT j;
-    INT k;
-    INT counter;
-    FIELD_DATA* field;
-
-    field = &(problem.discr[i]);
-    amdef("val",&(moni[i].val),moni[i].numval,1,"DA");
-
-    /* find the local ids */
-    for (k=0;k<moni[i].numnp;k++)
+    if (moni[i].numnp != 0)
     {
-      for (j=0;j<field->numnp;j++)
+      FIELD actfield;
+      INT j;
+      INT k;
+      INT counter;
+      FIELD_DATA* field;
+
+      field = &(problem.discr[i]);
+      amdef("val",&(moni[i].val),moni[i].numval,1,"DA");
+
+      /* find the local ids */
+      for (k=0;k<moni[i].numnp;k++)
       {
-        chunk_read_size_entry(&(field->coords), j);
-        if (moni[i].monnodes.a.ia[k][0] == field->coords.size_buf[node_variables.coords_size_Id])
+        for (j=0;j<field->numnp;j++)
         {
-          moni[i].monnodes.a.ia[k][1] = j;
-          break;
+          chunk_read_size_entry(&(field->coords), j);
+          if (moni[i].monnodes.a.ia[k][0] == field->coords.size_buf[node_variables.coords_size_Id])
+          {
+            moni[i].monnodes.a.ia[k][1] = j;
+            break;
+          }
+        }
+        if (j == field->numnp)
+        {
+          dserror("no node %d in field", moni[i].monnodes.a.ia[k][0]);
         }
       }
-      if (j == field->numnp)
+
+      /* plausibility check */
+      for (j=0;j<moni[i].numnp;j++)
       {
-        dserror("no node %d in field", moni[i].monnodes.a.ia[k][0]);
+        if (moni[i].monnodes.a.ia[j][1]==-1)
+          dserror("Monitoring Id not existing in field!");
       }
-    }
 
-    /* plausibility check */
-    for (j=0;j<moni[i].numnp;j++)
-    {
-      if (moni[i].monnodes.a.ia[j][1]==-1)
-        dserror("Monitoring Id not existing in field!");
-    }
-
-    /* give each watched dof an internal number */
-    counter = 0;
-    for (k=0;k<moni[i].numnp; k++)
-    {
-      for (j=0;j<MAXDOFPERNODE; j++)
+      /* give each watched dof an internal number */
+      counter = 0;
+      for (k=0;k<moni[i].numnp; k++)
       {
-        if (moni[i].onoff.a.ia[k][j] != -1)
+        for (j=0;j<MAXDOFPERNODE; j++)
         {
-          moni[i].onoff.a.ia[k][j] = counter;
-          counter++;
+          if (moni[i].onoff.a.ia[k][j] != -1)
+          {
+            moni[i].onoff.a.ia[k][j] = counter;
+            counter++;
+          }
         }
       }
+      dsassert(counter == moni[i].numval, "ndof mismatch");
+
+      /* This is fake! But needed for the following function. */
+      actfield.fieldtyp = field->type;
+
+      /* initialize the output (print header) */
+      out_monitor(&actfield,i,0.0,1);
     }
-    dsassert(counter == moni[i].numval, "ndof mismatch");
-
-    /* This is fake! But needed for the following function. */
-    actfield.fieldtyp = field->type;
-
-    /* initialize the output (print header) */
-    out_monitor(&actfield,i,0.0,1);
   }
 
   /*--------------------------------------------------------------------*/
@@ -285,63 +295,66 @@ int main(int argc, char** argv)
   /* Visit all discretizations and all results to those. */
   for (i=0; i<problem.num_discr; ++i)
   {
-    RESULT_DATA result;
-    FIELD_DATA* field;
-    field = &(problem.discr[i]);
-
-    /* Iterate all results. */
-    init_result_data(field, &result);
-    while (next_result(&result))
+    if (moni[i].numnp != 0)
     {
-      FIELD actfield;
-      INT l;
-      DOUBLE time;
+      RESULT_DATA result;
+      FIELD_DATA* field;
+      field = &(problem.discr[i]);
 
-      time = map_read_real(result.group, "time");
-
-      /* This is fake! But needed for now. */
-      actfield.fieldtyp = field->type;
-
-      /*
-       * For each result search the nodes to watch and check whether
-       * there are watched nodes in here. */
-      for (l=0;l<moni[i].numnp;l++)
+      /* Iterate all results. */
+      init_result_data(field, &result);
+      while (next_result(&result))
       {
-        INT k;
-        CHUNK_DATA chunk;
+        FIELD actfield;
+        INT l;
+        DOUBLE time;
 
-        /* The chunk we are going to read. */
-        init_chunk_data(&result, &chunk, group_names[i][l]);
+        time = map_read_real(result.group, "time");
+
+        /* This is fake! But needed for now. */
+        actfield.fieldtyp = field->type;
 
         /*
-         * Collect the values to each dof by reading them directly
-         * into the appropriate array location. */
-        for (k=0;k<MAXDOFPERNODE;k++)
+         * For each result search the nodes to watch and check whether
+         * there are watched nodes in here. */
+        for (l=0;l<moni[i].numnp;l++)
         {
-          INT numr;
-          INT nodepos;
+          INT k;
+          CHUNK_DATA chunk;
 
-          numr = moni[i].onoff.a.ia[l][k];
-          if (numr==-1)
-            continue;
-          nodepos = moni[i].monnodes.a.ia[l][1];
+          /* The chunk we are going to read. */
+          init_chunk_data(&result, &chunk, group_names[i][l]);
 
-          if (k >= chunk.value_entry_length)
+          /*
+           * Collect the values to each dof by reading them directly
+           * into the appropriate array location. */
+          for (k=0;k<MAXDOFPERNODE;k++)
           {
-            dserror("dof %d does not exist", k);
+            INT numr;
+            INT nodepos;
+
+            numr = moni[i].onoff.a.ia[l][k];
+            if (numr==-1)
+              continue;
+            nodepos = moni[i].monnodes.a.ia[l][1];
+
+            if (k >= chunk.value_entry_length)
+            {
+              dserror("dof %d does not exist", k);
+            }
+
+            /* we need the element parameters here */
+            chunk_read_value_entry(&chunk, nodepos);
+
+            moni[i].val.a.dv[numr] = chunk.value_buf[k];
           }
 
-          /* we need the element parameters here */
-          chunk_read_value_entry(&chunk, nodepos);
-
-          moni[i].val.a.dv[numr] = chunk.value_buf[k];
+          destroy_chunk_data(&chunk);
         }
 
-        destroy_chunk_data(&chunk);
+        /* output this time step */
+        out_monitor(&actfield,i,time,0);
       }
-
-      /* output this time step */
-      out_monitor(&actfield,i,time,0);
     }
   }
 
