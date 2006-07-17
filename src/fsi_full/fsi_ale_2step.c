@@ -318,11 +318,13 @@ init_bin_out_field(&out_context,
                    &(actsolv->sysarray[actsysarray]),
                    actfield, actpart, actintra, disnum_io);
 
+#if 0
 if(disnum_io != disnum_calc)
   init_bin_out_field(&restart_context,
       &(actsolv->sysarray_typ[actsysarray]),
       &(actsolv->sysarray[actsysarray]),
       actfield, actpart, actintra, disnum_calc);
+#endif
 #endif
 
 /*--------------------------------------------------- check for restart */
