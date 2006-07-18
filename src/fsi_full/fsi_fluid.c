@@ -1098,7 +1098,10 @@ nonlniter:
       {
         restartstep=0;
 #ifdef BINIO
-        restart_write_bin_fluiddyn(&restart_context, fdyn);
+        if(disnum_io != disnum_calc)
+          restart_write_bin_fluiddyn(&restart_context, fdyn);
+        else
+          restart_write_bin_fluiddyn(&out_context, fdyn);
 #else
         restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 #endif
@@ -1376,7 +1379,8 @@ nonlniter:
 
 #ifdef BINIO
       destroy_bin_out_field(&out_context);
-      destroy_bin_out_field(&restart_context);
+      if(disnum_io != disnum_calc)
+        destroy_bin_out_field(&restart_context);
 #endif
 
 

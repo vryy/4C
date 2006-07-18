@@ -1427,7 +1427,19 @@ iterloop:
         restartstep=0;
 
 #ifdef BINIO
-        restart_write_bin_nlnstructdyn(&restart_context,
+        if(disnum_io != disnum_calc)
+          restart_write_bin_nlnstructdyn(&restart_context,
+            sdyn,
+            &dynvar,
+            actsolv->nrhs, actsolv->rhs,
+            actsolv->nsol, actsolv->sol,
+            1            , dispi       ,
+            1            , vel         ,
+            1            , acc         ,
+            3            , fie         ,
+            3            , work);
+        else
+          restart_write_bin_nlnstructdyn(&out_context,
             sdyn,
             &dynvar,
             actsolv->nrhs, actsolv->rhs,
@@ -1560,7 +1572,8 @@ iterloop:
 
 #ifdef BINIO
       destroy_bin_out_field(&out_context);
-      destroy_bin_out_field(&restart_context);
+      if(disnum_io != disnum_calc)
+        destroy_bin_out_field(&restart_context);
 #endif
 
 

@@ -538,7 +538,12 @@ if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
 #ifdef BINIO
-   restart_write_bin_aledyn(&out_context, adyn);
+#if 0
+   if(disnum_io != disnum_calc)
+     restart_write_bin_aledyn(&restart_context, adyn);
+   else
+#endif
+     restart_write_bin_aledyn(&out_context, adyn);
 #else
    restart_write_aledyn(adyn,actfield,actpart,actintra);
 #endif
