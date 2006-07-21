@@ -1,0 +1,50 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=no
+
+PROGRAMNAME=cca_seq_cluster
+F77=/cluster/gcc-4.1.1/bin/gfortran-4.1.1
+CC=/cluster/gcc-4.1.1/bin/gcc-4.1.1
+LD=/cluster/gcc-4.1.1/bin/gfortran-4.1.1
+
+INCLUDEDIRS="-I/lnm/include"
+LIBDIRS="-L/lnm/lib"
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec-gcc-4.1"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspooles-gcc-4.1"
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack-gcc-4.1 -lamd-gcc-4.1"
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+#LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
+#LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
+LIBS="-llapack-gcc-4.1 -lblas-gcc-4.1 -lmetis-gcc-4.1"
+
+CFLAGS_OPT="-O2"
+FFLAGS_OPT="-O2"
+LDFLAGS_OPT="-O2"
+
+#CFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
+CFLAGS="-Wall -DSIXTYFOUR -pg -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -DSIXTYFOUR -pg -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-pg -Xlinker -defsym -Xlinker MAIN__=main"
