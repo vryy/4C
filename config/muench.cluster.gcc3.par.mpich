@@ -11,8 +11,8 @@ MPIDIR=/cluster/mpich-1.2.7
 # The hostname must be provided using a file
 export PATH=$PATH:$MPIDIR/bin
 MPIRUN=mpirun
-hostname > $HOME/.`hostname`
-MPIRUNARGS="-machinefile $HOME/.`hostname`"
+#hostname > $HOME/.`hostname`
+MPIRUNARGS="-machinefile $PBS_NODEFILE"
 
 PROGRAMNAME=cca_par_mpich_cluster
 F77=$MPIDIR/bin/mpif77

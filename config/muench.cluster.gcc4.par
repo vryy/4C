@@ -10,7 +10,8 @@ MPIDIR=/usr/local/ibgd/mpi/gcc/mvapich-0.9.5-mlx1.0.3
 # we expect two test processes at most
 export PATH=$PATH:$MPIDIR/bin
 MPIRUN=mpirun_rsh
-MPIRUNARGS="`hostname` `hostname`"
+#MPIRUNARGS="`hostname` `hostname`"
+MPIRUNARGS="-hostfile $PBS_NODEFILE"
 
 PROGRAMNAME=cca_par_cluster
 F77="MPICH_F77=/cluster/gcc-4.1.1/bin/gfortran-4.1.1 $MPIDIR/bin/mpif77"
