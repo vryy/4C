@@ -85,7 +85,7 @@ for file in $liste; do
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
-    mpirun -np 2 ./$exe $inputfile test_out >test.tmp
+    $MPIRUN -np 2 $MPIRUNARGS ./$exe $inputfile test_out >test.tmp
   fi
 
   # get the end-time in seconds:

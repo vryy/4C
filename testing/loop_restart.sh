@@ -94,7 +94,7 @@ for file in $liste; do
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
-    mpirun -np 2 ./$exe $inputfile test_out >test.tmp
+    $MPIRUN -np 2 $MPIRUNARGS ./$exe $inputfile test_out >test.tmp
 
   fi
 
@@ -155,7 +155,7 @@ for file in $liste; do
     sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $inputfile > restart_input.dat
 
     echo '  Running Restart of Input-file in parallel...'
-    mpirun -np 2 ./$exe restart_input.dat test_out restart >test2.tmp
+    $MPIRUN -np 2 $MPIRUNARGS ./$exe restart_input.dat test_out restart >test2.tmp
 
   fi
 
