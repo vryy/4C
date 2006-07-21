@@ -595,7 +595,9 @@ void fsi_struct(
         /* Make sure the entry for our old solution is there. */
         solserv_sol_zero(actfield, disnum_calc, node_array_sol, 9);
       }
-
+      if (fsidyn->ifsi == 6) {
+        solserv_sol_zero(actfield, disnum_calc, node_array_sol_mf, 6);
+      }
 
 #ifdef BINIO
 
