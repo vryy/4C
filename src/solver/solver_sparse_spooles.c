@@ -638,7 +638,7 @@ void spo_update(
   inprocs = actintra->intra_nprocs;
   /*------------------ make a local copy of the array actpart->coupledofs */
   memset(&coupledofs, 0, sizeof(ARRAY));
-  if (actpart->pdis[dis].coupledofs.Typ != cca_XX)
+  if (actpart->pdis[disnum].coupledofs.Typ != cca_XX)
     am_alloc_copy(&(actpart->pdis[disnum].coupledofs),&coupledofs);
   /*----------------------------------------------------------------------*/
   update = spo->update.a.iv;
