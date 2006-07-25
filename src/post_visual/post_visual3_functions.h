@@ -10,6 +10,21 @@ void find_data_limits(POST_DISCRETIZATION* discret,
                       INT num_discr,
                       float FLIMS[][2],
                       INT ACTDIM);
+
+void set_CEL_values(int *KCEL1,
+                    int *KCEL2,
+                    int *KCEL3,
+                    int *KCEL4,
+                    int *FLUID_CEL3_offset,
+                    int *FLUID_CEL4_offset,
+                    POST_DISCRETIZATION *discret);
+void set_VISUAL_values(int *numnp3D,
+                       int *numnp2D,
+                       int *KSURF,
+                       int *KSURFELE,
+                       POST_DISCRETIZATION *discret,
+                       int numnp_tot);
+
 #ifdef D_FSI
 void post_read_shell8_info(POST_DISCRETIZATION* discret,
                            DOUBLE* node_director,

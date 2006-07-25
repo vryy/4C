@@ -28,6 +28,10 @@ typedef struct _GIDSET
      char                      *shell8_4_22_name;
      INT                        is_shell8_4_33;           /* 4-noded shell8 3x3 GP */
      char                      *shell8_4_33_name;
+     INT                        is_shell8_3_11;           /* 3-noded shell8 1 GP */
+     char                      *shell8_3_11_name;
+     INT                        is_shell8_6_33;           /* 6-noded shell8 3 GP */
+     char                      *shell8_6_33_name;
      INT                        is_shell8_8_22;           /* 8-noded shell8 2x2 GP */
      char                      *shell8_8_22_name;
      INT                        is_shell8_8_33;           /* 8-noded shell8 3x3 GP */

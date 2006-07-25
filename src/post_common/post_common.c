@@ -1637,7 +1637,7 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
     discret->element[i].Id_loc = i;
     discret->element[i].proc = 0;
 
-    if (redef_hex20 && (distype==hex20 || distype==h_hex20))
+    if (redef_hex20 && distype==hex20)
     {
       DOUBLE x[3];
       NODE* tempnode[20];
@@ -1732,16 +1732,16 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
 
       for (j=12; j<20; j++)
         tempnode[j] = discret->element[i].node[j];
-      if (distype == h_hex20)
-      { discret->element[i].node[12]=tempnode[16];
-        discret->element[i].node[13]=tempnode[17];
-        discret->element[i].node[14]=tempnode[18];
-        discret->element[i].node[15]=tempnode[19];
-        discret->element[i].node[16]=tempnode[12];
-        discret->element[i].node[17]=tempnode[13];
-        discret->element[i].node[18]=tempnode[14];
-        discret->element[i].node[19]=tempnode[15];
-      }
+/*       if (distype == h_hex20) */
+/*       { discret->element[i].node[12]=tempnode[16]; */
+/*         discret->element[i].node[13]=tempnode[17]; */
+/*         discret->element[i].node[14]=tempnode[18]; */
+/*         discret->element[i].node[15]=tempnode[19]; */
+/*         discret->element[i].node[16]=tempnode[12]; */
+/*         discret->element[i].node[17]=tempnode[13]; */
+/*         discret->element[i].node[18]=tempnode[14]; */
+/*         discret->element[i].node[19]=tempnode[15]; */
+/*       } */
 
 /* node map of hex20-elements                          */
 /*                 7              18             6     */

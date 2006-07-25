@@ -35,6 +35,8 @@ A huge part of this file was taken from the file visual_vis3.c.
 #include "../post_common/post_octtree.h"
 
 
+int strcpb(char *str1, char *str2, int len);
+
 #define INCRE 1                      /*for V3UPDATE : number of steps
                                       * forward */
 /*----------------------------------------------------------------------*/
@@ -353,12 +355,14 @@ void vis3caf(INT numff, INT numaf, INT numsf)
     /*--------------------------------------- get the data limits */
     find_data_limits(discret, num_discr,FLIMS, ACTDIM);
 
+#if 0
     /*--------------------------------- ...for hierarchical nodes */
     i=1;
     for (j=0; j<num_discr; j++)
     { if (discret[j].element[0].distyp==h_hex20)
         data_limits_h_hex20(&discret[j], FLIMS, numnp_tot[j], &i);
     }
+#endif
 
     /*-------------------------------------- needed for V3SCAL later*/
     minvx=FLIMS[0][0];
@@ -448,7 +452,9 @@ void vis3caf(INT numff, INT numaf, INT numsf)
 #ifdef DESIGN
       /*at the moment we use the design information only for fluid
        * design bodies */
-      if (map_find_int(discret[fluid_idx].field->group, "ndvol", &ndvol) && discret[fluid_idx].element[0].distyp != hex20 &&discret[fluid_idx].element[0].distyp != h_hex20) /*general check if there is design info*/
+      if (map_find_int(discret[fluid_idx].field->group, "ndvol", &ndvol) &&
+          discret[fluid_idx].element[0].distyp != hex20)
+        /* general check if there is design info */
       {
         ndvol_tot+=fluid_design.ndvol;
         ndsurf_tot+=fluid_design.ndsurf;
@@ -1849,8 +1855,10 @@ void v3update(float *TIME)
         destroy_chunk_data(&chunk);
         if (discret[h].element[0].distyp==hex20)
           lin_interpol(&discret[h], numnp_tot[h], velocity, pressure,  INPT);
+#if 0
         if (discret[h].element[0].distyp==h_hex20)
           hier_elements(&discret[h], numnp_tot[h], velocity, pressure);
+#endif
         break;
 
       case structure:
@@ -1902,8 +1910,10 @@ void v3update(float *TIME)
           lin_interpol(&discret[h], numnp_tot[h], ale_displacement, NULL,  INPT);
 
         }
+#if 0
         if (discret[h].element[0].distyp==h_hex20)
           hier_elements(&discret[h], numnp_tot[h], ale_displacement, NULL);
+#endif
         break;
         destroy_chunk_data(&chunk);
         break;
@@ -2000,7 +2010,7 @@ void v3cell(INT cel1[][4], INT cel2[][5], INT cel3[][6], INT cel4[][8],
         break;
 
       case hex20:
-      case h_hex20:
+      /* case h_hex20: */
       case hex27:
         /* every element is divided into 8 hex8 sub-elements */
         inel = 0;
@@ -2220,7 +2230,7 @@ void v3cell(INT cel1[][4], INT cel2[][5], INT cel3[][6], INT cel4[][8],
           break;
 
         case hex20:
-        case h_hex20:
+        /* case h_hex20: */
         case hex27:
           /* every element is divided into 8 hex8 sub-elements */
           inel = 0;
@@ -2678,7 +2688,7 @@ int main(int argc, char** argv)
   /* Find coupled nodes. If there's at least an ale field. */
   if (ale_field != NULL)
   {
-    if (discret[fluid_idx].element[0].distyp == hex20 || discret[fluid_idx].element[0].distyp == h_hex20)
+    if (discret[fluid_idx].element[0].distyp == hex20)
     {
       numnp_temp=discret[fluid_idx].field->numnp;
       discret[fluid_idx].field->numnp=numnp_tot[fluid_idx];
@@ -2689,7 +2699,7 @@ int main(int argc, char** argv)
 
     post_fsi_initcoupling(&discret[struct_idx], &discret[fluid_idx], &discret[ale_idx], fluid_ale_connect);
 
-    if (discret[fluid_idx].element[0].distyp == hex20 || discret[fluid_idx].element[0].distyp == h_hex20)
+    if (discret[fluid_idx].element[0].distyp == hex20)
     {
       discret[fluid_idx].field->numnp=numnp_temp;
       discret[ale_idx].field->numnp=numnp_temp;

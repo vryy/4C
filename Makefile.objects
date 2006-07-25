@@ -629,7 +629,8 @@ OBJS_POST_COMMON = src/post_common/post_common.o \
                 src/post_common/post_ds.o \
                 src/post_common/post_perf.o \
                 src/post_common/post_table.o \
-                src/post_common/post_elements.o
+                src/post_common/post_elements.o \
+                src/post_common/post_octtree.o
 
 #                post_gid
 OBJS_POST_GID_COMMON = src/post_gid/post_gid.o \
@@ -664,8 +665,15 @@ OBJS_POST_OUT = src/post_out/post_out.o
 OBJS_POST_VISUAL2 = src/post_visual/post_visual2.o
 
 #                 post_visual3
-OBJS_POST_VISUAL3 = src/post_visual/post_visual3.o
+OBJS_POST_VISUAL3 = src/post_visual/post_visual3.o \
+                src/post_visual/post_visual3_functions.o \
+                src/post_visual/post_design.o \
+                src/post_visual/post_set.o \
+                src/post_visual/post_map_functions.o
 
 #                 post_monitor
 OBJS_POST_MONITOR = src/post_monitor/post_monitor.o \
                 src/post_monitor/post_out_monitor.o
+#               post_file_manager
+OBJS_POST_FILE_MANAGER = src/post_visual/post_file_manager.o
+                #src/post_visual/post_map_functions.o 

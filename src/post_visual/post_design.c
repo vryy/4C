@@ -425,7 +425,7 @@ void post_design_coupling(POST_DISCRETIZATION* discret,
   for (i=0;i<discret->field->numele;i++)
   {
     actele=&discret->element[i];
-    if (actele->distyp==hex27 || actele->distyp==h_hex20)
+    if (actele->distyp==hex27)
     {
       maxface=36;
       KSURFELE=4;
@@ -460,9 +460,11 @@ void post_design_coupling(POST_DISCRETIZATION* discret,
           case tet4:
             surface = surface_info[actele->node[element_structure_tet4[face][0]]->Id_loc*dsurf_length+k];
             break;
+#if 0
           case h_hex20:
             surface = surface_info[actele->node[element_structure_hex27[face][0]]->Id_loc*dsurf_length+k];
             break;
+#endif
           case hex27:
             surface = surface_info[actele->node[element_structure_hex27[face][0]]->Id_loc*dsurf_length+k];
             break;
@@ -484,9 +486,11 @@ void post_design_coupling(POST_DISCRETIZATION* discret,
               case tet4:
                 node_id=actele->node[element_structure_tet4[face][j]]->Id_loc;
                 break;
+#if 0
               case h_hex20:
                 node_id=actele->node[element_structure_hex27[face][j]]->Id_loc;
                 break;
+#endif
               case hex27:
                 node_id=actele->node[element_structure_hex27[face][j]]->Id_loc;
                 break;
@@ -513,9 +517,11 @@ void post_design_coupling(POST_DISCRETIZATION* discret,
                   tmp_array[surface][counter_array[surface]*(KSURFELE+1)+j] = actele->node[element_structure_tet4[face][j]]->Id_loc;
                   tmp_array[surface][counter_array[surface]*(KSURFELE+1)+3] = -1;
                   break;
+#if 0
                 case h_hex20:
                   tmp_array[surface][counter_array[surface]*KSURFELE+j] = actele->node[element_structure_hex27[face][j]]->Id_loc;
                   break;
+#endif
                 case hex27:
                   tmp_array[surface][counter_array[surface]*KSURFELE+j] = actele->node[element_structure_hex27[face][j]]->Id_loc;
                   break;

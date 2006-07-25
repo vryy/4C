@@ -18,6 +18,9 @@ post_visual3: $(OBJS_POST_VISUAL3) $(OBJS_POST_COMMON)
 post_monitor: $(OBJS_POST_MONITOR) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_MONITOR) $(OBJS_POST_COMMON) $(PLAIN_LIBS) -o post_monitor
 
+post_file_manager: $(OBJS_POST_FILE_MANAGER) $(OBJS_POST_COMMON)
+	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_FILE_MANAGER) $(OBJS_POST_COMMON) $(PLAIN_LIBS) -o post_file_manager
+
 $(OBJS_MAIN):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"

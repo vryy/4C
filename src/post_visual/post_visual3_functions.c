@@ -130,9 +130,9 @@ int find_result_file_min_max_values(FIELD_DATA *field, char *data_name, float FL
     fflush(stdout);
     init_chunk_data(&result, &chunk, data_name);
     if (dimension==2)
-      dsassert(chunk.value_entry_length==2, "2d problem expected");
+      dsassert(chunk.value_entry_length>=2, "2d problem expected");
     if (dimension==3)
-      dsassert(chunk.value_entry_length==3, "3d problem expected");
+      dsassert(chunk.value_entry_length>=3, "3d problem expected");
 
     for (i=0; i<field->numnp; ++i) /*loop over nodes*/
     {
@@ -1681,11 +1681,13 @@ void set_CEL_values(int *KCEL1,
             *FLUID_CEL4_offset+=actfield->numele;
         break;
 
+#if 0
       case h_hex20:
         *KCEL4+=8*actfield->numele;
         if (actfield->type == 1)
             *FLUID_CEL4_offset+=8*actfield->numele;
         break;
+#endif
 
       case hex20:
         *KCEL4+=8*actfield->numele;
@@ -1764,11 +1766,13 @@ void set_VISUAL_values(int *numnp3D,
         *KSURFELE=4;
         break;
 
+#if 0
       case h_hex20:
         *numnp3D+=numnp_tot;
         *KSURF+=actfield->numele*36;
         *KSURFELE=4;
         break;
+#endif
 
       case hex20:
         *numnp3D+=numnp_tot;
