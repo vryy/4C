@@ -24,10 +24,8 @@ functions.
 
 */
 
-
 #ifndef POST_COMMON_H
 #define POST_COMMON_H
-
 
 /*
  * Preprocessor commands that make it possible to use the same sources
@@ -60,6 +58,7 @@ functions.
 #include "../pss_full/pss_table.h"
 #include "../io/io_packing.h"
 #include "../io/io_elements.h"
+#include "../pss_full/pss_set.h"
 
 
 extern struct _FILES           allfiles;
@@ -506,6 +505,81 @@ typedef struct _POST_DISCRETIZATION {
 
 } POST_DISCRETIZATION;
 
+typedef struct _DESIGNNODE {
+
+  INT                     id;
+  INT                     ndline;
+
+  NODE                   *node;
+
+  struct _LINE           **line;
+
+} DESIGNNODE;
+
+typedef struct _LINE {
+
+  INT                      id;
+  INT                      nnode;
+  INT                      ndnode;
+  INT                      ndsurf;
+
+  DESIGNNODE              **dnode;
+  NODE                    **node;
+
+  struct _SURFACE         **surface;
+
+} LINE;
+
+typedef struct _SURFACE
+{
+  INT                      id;
+  INT                      nnode;
+  INT                      ndline;
+  INT                      ndvol;
+
+
+  LINE                   **line;
+  NODE                   **node;
+
+  struct _VOLUME         **volume;
+
+  struct _INTSET          node_id;
+
+
+} SURFACE;
+
+typedef struct _VOLUME
+{
+  INT                      id;
+  INT                      nnode;
+  INT                      ndsurf;
+
+  SURFACE                **surface;
+  NODE                   **node;
+
+} VOLUME;
+
+typedef struct _POST_DESIGN {
+
+  INT ndvol;
+  INT ndsurf;
+  INT ndline;
+  INT ndnode;
+  INT nnode;
+
+
+  FIELD_DATA* field;
+
+  VOLUME* volume;
+
+  SURFACE* surface;
+
+  LINE* line;
+
+  DESIGNNODE* dnode;
+
+}POST_DESIGN;
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -524,7 +598,12 @@ typedef struct _POST_DISCRETIZATION {
 /*----------------------------------------------------------------------*/
 void init_post_discretization(POST_DISCRETIZATION* discret,
                               PROBLEM_DATA* problem,
-                              FIELD_DATA* field);
+                              FIELD_DATA* field,
+                              INT redef_hex20);
+void destroy_post_discretization(POST_DISCRETIZATION* discret);
 
+void init_post_design(POST_DESIGN* design, FIELD_DATA* field);
+
+void post_read_design_information();
 
 #endif

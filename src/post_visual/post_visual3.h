@@ -23,9 +23,6 @@ For visual we indeed do load all the results at once.
 #ifndef POST_OUT_H
 #define POST_OUT_H
 
-#include "../post_common/post_common.h"
-
-
 /* The following stems from the visual3 header file. */
 
 #ifdef mips
@@ -325,4 +322,6 @@ PREFIX	XFTNSTRING __ProtoGlarp__(( long *iwin, int *type, float *color,
 }
 #endif
 
+
 #endif
+

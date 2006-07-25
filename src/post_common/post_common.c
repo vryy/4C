@@ -27,7 +27,7 @@ functions.
 #include <assert.h>
 #include <strings.h>
 #include <stdarg.h>
-
+#include "../headers/standardtypes.h"
 #include "post_common.h"
 
 
@@ -36,6 +36,9 @@ functions.
  * properly. */
 struct _FILES           allfiles;
 struct _PAR     par;
+static INT      num_para=6;
+static INT      parameter[]={'l', 's','u', 'g', 'w', 'o'};
+static INT      first=1;
 
 #ifdef DEBUG
 struct _CCA_TRACE         trace;
@@ -258,7 +261,79 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
   dstrc_exit();
 #endif
 }
+DOUBLE linear_interpolation(INT x, INT y, INT z,  ELEMENT* element, INT k)
+{
+  DOUBLE result;
 
+  result=-0.125*(1-x)*(1-y)*(1-z)*(2+x+y+z) * (element->node[0]->x[k]);
+  result-=0.125*(1+x)*(1-y)*(1-z)*(2-x+y+z) * (element->node[1]->x[k]);
+  result-=0.125*(1+x)*(1+y)*(1-z)*(2-x-y+z) * (element->node[2]->x[k]);
+  result-=0.125*(1-x)*(1+y)*(1-z)*(2+x-y+z) * (element->node[3]->x[k]);
+  result-=0.125*(1-x)*(1-y)*(1+z)*(2+x+y-z) * (element->node[4]->x[k]);
+  result-=0.125*(1+x)*(1-y)*(1+z)*(2-x+y-z) * (element->node[5]->x[k]);
+  result-=0.125*(1+x)*(1+y)*(1+z)*(2-x-y-z) * (element->node[6]->x[k]);
+  result-=0.125*(1-x)*(1+y)*(1+z)*(2+x-y-z) * (element->node[7]->x[k]);
+  result+=0.25*(1-x*x)*(1-y)*(1-z) * (element->node[8]->x[k]);
+  result+=0.25*(1+x)*(1-y*y)*(1-z) * (element->node[9]->x[k]);
+  result+=0.25*(1-x*x)*(1+y)*(1-z) * (element->node[10]->x[k]);
+  result+=0.25*(1-x)*(1-y*y)*(1-z) * (element->node[11]->x[k]);
+  result+=0.25*(1-x)*(1-y)*(1-z*z) * (element->node[12]->x[k]);
+  result+=0.25*(1+x)*(1-y)*(1-z*z) * (element->node[13]->x[k]);
+  result+=0.25*(1+x)*(1+y)*(1-z*z) * (element->node[14]->x[k]);
+  result+=0.25*(1-x)*(1+y)*(1-z*z) * (element->node[15]->x[k]);
+  result+=0.25*(1-x*x)*(1-y)*(1+z) * (element->node[16]->x[k]);
+  result+=0.25*(1+x)*(1-y*y)*(1+z) * (element->node[17]->x[k]);
+  result+=0.25*(1-x*x)*(1+y)*(1+z) * (element->node[18]->x[k]);
+  result+=0.25*(1-x)*(1-y*y)*(1+z) * (element->node[19]->x[k]);
+
+  return result;
+}
+/*------------------------------------------------------------*/
+/* This function tests, if a generated node is yet existing.
+ * If true, it updates the existing node,
+ * if false, it creates a new node */
+INT test_node(INT numnp,INT numnp_old, POST_DISCRETIZATION* discret, INT i, INT j, DOUBLE* x_temp, INT* nodelist)
+{ INT k, m, n;
+  DOUBLE f;
+
+  if (first!=1)
+  {
+    for (m=numnp_old; m<numnp; m++)
+    {
+      if (nodelist[m-numnp_old]!=1)
+      {
+        n=0;
+        for (k=0; k<3; k++)
+        { f = fabs(discret->node[m].x[k]-x_temp[k]);
+          if (f<EPS9)
+            n++;
+        }
+        if (n==3)
+        { for (k=0; k<3; k++)
+          { f=discret->node[m].x[k]+x_temp[k];
+            discret->node[m].x[k] = f/2;
+          }
+          discret->element[i].node[j] = &discret->node[m];
+          discret->node[m].numele++;
+          nodelist[m-numnp_old]=1;
+          goto end;
+        }
+      }
+    }
+  }
+  discret->node[numnp].Id_loc = numnp;
+  discret->node[numnp].Id = numnp;
+  discret->node[numnp].proc = 0;
+  discret->node[numnp].numele = 1;
+  for (k=0; k<3; k++)
+    discret->node[numnp].x[k] = x_temp[k];
+  discret->element[i].node[j] = &(discret->node[numnp]);
+  numnp++;
+  first=0;
+
+  end:
+  return numnp;
+}
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -367,6 +442,10 @@ void init_translation_table(TRANSLATION_TABLE* table,
 
   table->group = group;
   table->table = CCACALLOC(count, sizeof(INT));
+
+  /* set everything to -1. */
+  memset(table->table, 0xff, count*sizeof(INT));
+
   table->length = count;
   for (i=0; i<count; ++i)
   {
@@ -374,9 +453,16 @@ void init_translation_table(TRANSLATION_TABLE* table,
     {
       INT num;
       num = map_read_int(group, names[i]);
-      if ((num < 0) || (num >= count))
+      /*if ((num < 0) || (num >= count))*/
+      if (num < 0)
       {
         dserror("illegal external number for name '%s': %d", names[i], num);
+      }
+      if (num >= table->length)
+      {
+        table->table = CCAREALLOC(table->table, (num+1)*sizeof(INT));
+        memset(table->table+table->length, 0xff, (num-table->length)*sizeof(INT));
+        table->length = num+1;
       }
 
       /* extern -> intern translation */
@@ -454,11 +540,12 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
     {
       dserror("failed to open file '%s'", filename);
     }
-
+#ifdef LOWMEM
     post_log(2, "open file: '%s'\n", buf);
+#endif
   }
-
   sprintf(var_name, "%s_size_file", prefix);
+
   filename = map_read_string(field_info, var_name);
   /*result->size_file = fopen(filename, "rb");
     if (result->size_file == NULL)*/
@@ -473,8 +560,9 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
     {
       dserror("failed to open file '%s'", filename);
     }
-
+#ifdef LOWMEM
     post_log(2, "open file: '%s'\n", buf);
+#endif
   }
 
 #ifdef DEBUG
@@ -586,13 +674,40 @@ void init_field_data(PROBLEM_DATA* problem, FIELD_DATA* field, MAP* field_info)
 /*----------------------------------------------------------------------*/
 static void usage(CHAR* progname)
 {
-  printf("usage: %s [options] control-file\n", progname);
-  printf("\n"
-         "  options:\n"
+  CHAR *index;
+
+  index = rindex(progname, '/');
+
+  if (strcmp(&index[1], "post_visual3")==0)
+  {
+    printf("usage: %s [options] control-file\n", progname);
+    printf("\n"
+         " options:\n"
+         "    -s beg:end[:step]        read from beg to end-1 every step\n"
+         "    -l [level]               set log level (0==none, infty==everything)\n\n"
+         "    -w                       set white background for movie creation\n"
+         "    -g                       set grey colour scale\n"
+         "    -u                       make an unsteady grid problem steady\n\n");
+    exit(1);
+  }
+  if (strcmp(&index[1], "post_file_manager")==0)
+  {
+    printf("usage: %s [options] control-file new-filename(optional)\n", progname);
+    printf("\n"
+         " options:\n"
          "    -s beg:end[:step]        read from beg to end-1 every step\n"
          "    -l [level]               set log level (0==none, infty==everything)\n"
+         "    -o                       overwrite all existing files\n"
          "\n");
-  exit(1);
+    exit(1);
+  }
+
+printf("usage: %s [options] control-file\n", progname);
+printf("\n"
+         "  options:\n"
+         "    -s beg:end[:step]        read from beg to end-1 every step\n"
+         "    -l [level]               set log level (0==none, infty==everything)\n\n");
+exit(1);
 }
 
 
@@ -612,11 +727,12 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
 {
   CHAR* problem_names[] = PROBLEMNAMES;
   CHAR* type;
-  INT i;
+  INT i, j, check;
   SYMBOL* symbol;
   CHAR* separator;
   MAP* control_table;
   CHAR* filename;
+  INT lastarg=0;
 
 #ifdef DEBUG
   dsinit();
@@ -648,7 +764,7 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
     usage(argv[0]);
   }
 
-  for (i=1; i<argc-1; ++i)
+  for (i=1; i<argc; ++i)
   {
     CHAR* arg;
 
@@ -733,10 +849,23 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
         }
         loglevel = atoi(arg);
         break;
-      default:
-        printf("unsupported option '%s'", arg);
-        usage(argv[0]);
+
+        default:
+          check=0;
+          for (j=0;j<num_para;j++)
+          {
+            if (arg[1]==parameter[j]) check=1;
+          }
+          if (check==0)
+          {
+            printf("unsupported option '%s'", arg);
+            usage(argv[0]);
+          }
+          else break;
       }
+      if (i==argc-1) usage(argv[0]);
+      if (argv[i+1][0]!='-') lastarg=i;
+
     }
   }
 
@@ -745,7 +874,7 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
 
   control_table = &(problem->control_table);
 
-  setup_filter(argv[argc-1], control_table, problem->basename);
+  setup_filter(argv[lastarg+1], control_table, problem->basename);
 
   dsassert(map_has_string(control_table, "version", "0.2"),
            "expect version 0.2 control file");
@@ -1426,6 +1555,395 @@ void get_element_params(FIELD_DATA* field,
 #endif
 }
 
+/*!
+  \brief Set up a (fake) discretization.
+
+  Create the node and element arrays, read node coordinates and mesh
+  connectivity.
+
+  \param discret       (o) Uninitialized discretization object
+  \param problem       (i) problem data
+  \param field         (i) general field data
+  \param redef_hex20   (i) make hex27 out of hex20 elements
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+void init_post_discretization(POST_DISCRETIZATION* discret,
+                              PROBLEM_DATA* problem,
+                              FIELD_DATA* field,
+                              INT redef_hex20)
+{
+  INT i;
+  INT j;
+  INT *offset;
+  INT numnp;
+  INT numnp_old;
+  INT* nodelist=NULL;
+
+#ifdef DEBUG
+  dstrc_enter("init_post_discretization");
+#endif
+
+  discret->field = field;
+
+  discret->node = (NODE*)CCACALLOC(field->numnp, sizeof(NODE));
+  discret->element = (ELEMENT*)CCACALLOC(field->numele, sizeof(ELEMENT));
+  numnp_old=field->numnp;
+
+  /*--------------------------------------------------------------------*/
+  /* read the node coordinates */
+  for (i=0; i<field->numnp; ++i)
+  {
+    discret->node[i].Id_loc = i;
+    discret->node[i].proc = 0;
+    discret->node[i].numele = 0;
+
+    chunk_read_size_entry(&(field->coords), i);
+    discret->node[i].Id = field->coords.size_buf[element_variables.ep_size_Id];
+
+    chunk_read_value_entry(&(field->coords), i);
+    for (j=0; j<field->coords.value_entry_length; ++j)
+      discret->node[i].x[j] = field->coords.value_buf[j];
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* read the mesh */
+  chunk_read_size_entry(&(field->ele_param), 0);
+  first=1;
+  for (i=0; i<field->numele; ++i)
+  {
+    INT Id;
+    INT el_type;
+    INT numnp;
+    INT distype;
+    INT j;
+
+    chunk_read_size_entry(&(field->ele_param), i);
+
+    Id      = field->ele_param.size_buf[element_variables.ep_size_Id];
+    el_type = field->ele_param.size_buf[element_variables.ep_size_eltyp];
+    distype = field->ele_param.size_buf[element_variables.ep_size_distyp];
+    numnp   = field->ele_param.size_buf[element_variables.ep_size_numnp];
+
+    /* external >= internal */
+    el_type = field->problem->element_type.table[el_type];
+    distype = field->problem->distype.table[distype];
+
+    chunk_read_size_entry(&(field->mesh), i);
+
+    discret->element[i].Id = Id;
+    discret->element[i].Id_loc = i;
+    discret->element[i].proc = 0;
+
+    if (redef_hex20 && (distype==hex20 || distype==h_hex20))
+    {
+      DOUBLE x[3];
+      NODE* tempnode[20];
+      int k;
+      /* hex20-elements are considered as hex27-elements
+       * missing nodes will be generated
+       * coordinates of the new nodes are interpolated immediately,
+       * solutions in function lin_interopol */
+      if (i==0)
+      {
+        discret->node = (NODE*)CCAREALLOC(discret->node, 2*(field->numnp*sizeof(NODE)));
+        nodelist=(INT*)CCACALLOC(field->numnp, sizeof(INT));
+        for (k=0;k<field->numnp;k++)
+        {
+          nodelist[k]=0;
+        }
+      }
+
+      discret->element[i].numnp = 27;
+      discret->element[i].node = (NODE**)CCACALLOC(27, sizeof(NODE*));
+      discret->element[i].eltyp = el_type;
+      discret->element[i].distyp = distype;
+
+      for (j=0; j<20; ++j)
+      {
+        discret->element[i].node[j] = &(discret->node[field->mesh.size_buf[j]]);
+        discret->element[i].node[j]->numele++;
+      }
+/* The node map of hierarchical hex20-elements have to be
+ * redefined, so that the nodes are on the same place like nodes with the
+ * same number in a hex27-element */
+
+/* node map of hex27 elements                       */
+/* this are the node maps used in GiD               */
+
+/*  z y           7              18             6   */
+/*  |/            o--------------o--------------o   */
+/*  o-x          /:             /              /|   */
+/*              / :            /              / |   */
+/*             /  :           /              /  |   */
+/*          19/   :        25/           17 /   |   */
+/*           o--------------o--------------o    |   */
+/*          /     :        /              /|    |   */
+/*         /    15o       /    23o       / |  14o   */
+/*        /       :      /              /  |   /|   */
+/*      4/        :  16 /             5/   |  / |   */
+/*      o--------------o--------------o    | /  |   */
+/*      |         :    |   26         |    |/   |   */
+/*      |  24o    :    |    o         |  22o    |   */
+/*      |         :    |       10     |   /|    |   */
+/*      |        3o....|.........o....|../.|....o   */
+/*      |        .     |              | /  |   / 2  */
+/*      |       .    21|            13|/   |  /     */
+/*   12 o--------------o--------------o    | /      */
+/*      |     .        |              |    |/       */
+/*      |  11o         | 20o          |    o        */
+/*      |   .          |              |   / 9       */
+/*      |  .           |              |  /          */
+/*      | .            |              | /           */
+/*      |.             |              |/            */
+/*      o--------------o--------------o             */
+/*      0              8              1             */
+
+/* node map of hierarchical hex20 elements          */
+/*                3              11             0   */
+/*  z y           o--------------o--------------o   */
+/*  |/           /:                            /|   */
+/*  o-x         / :                           / |   */
+/*             /  :                          /  |   */
+/*          10/   :                       8 /   |   */
+/*           o    :                        o    |   */
+/*          /     :                       /     |   */
+/*         /    19o                      /    16o   */
+/*        /       :                     /       |   */
+/*      2/        :    9              1/        |   */
+/*      o--------------o--------------o         |   */
+/*      |         :                   |         |   */
+/*      |         :                   |         |   */
+/*      |         :            15     |         |   */
+/*      |        7o..............o....|.........o   */
+/*      |        .                    |        / 4  */
+/*      |       .                   17|       /     */
+/*   18 o      .                      o      /      */
+/*      |     .                       |     /       */
+/*      |  14o                        |    o        */
+/*      |   .                         |   / 12      */
+/*      |  .                          |  /          */
+/*      | .                           | /           */
+/*      |.                            |/            */
+/*      o--------------o--------------o             */
+/*      6             13              5             */
+
+      for (j=12; j<20; j++)
+        tempnode[j] = discret->element[i].node[j];
+      if (distype == h_hex20)
+      { discret->element[i].node[12]=tempnode[16];
+        discret->element[i].node[13]=tempnode[17];
+        discret->element[i].node[14]=tempnode[18];
+        discret->element[i].node[15]=tempnode[19];
+        discret->element[i].node[16]=tempnode[12];
+        discret->element[i].node[17]=tempnode[13];
+        discret->element[i].node[18]=tempnode[14];
+        discret->element[i].node[19]=tempnode[15];
+      }
+
+/* node map of hex20-elements                          */
+/*                 7              18             6     */
+/*                o--------------o--------------o      */
+/*  z y          /:                            /|      */
+/*  |/          / :                           / |      */
+/*  o-x        /  :                          /  |      */
+/*          19/   :                      17 /   |      */
+/*           o    :                        o    |      */
+/*          /     :                       /     |      */
+/*         /    15o                      /    14o      */
+/*        /       :                     /       |      */
+/*      4/        :                   5/        |      */
+/*      o--------------o--------------o         |      */
+/*      |         :     16            |         |      */
+/*      |         :                   |         |      */
+/*      |         :            10     |         |      */
+/*      |        3o..............o....|.........o      */
+/*      |        .                    |        / 2     */
+/*      |       .                   13|       /        */
+/*   12 o      .                      o      /         */
+/*      |     .                       |     /          */
+/*      |  11o                        |    o           */
+/*      |   .                         |   / 9          */
+/*      |  .                          |  /             */
+/*      | .                           | /              */
+/*      |.                            |/               */
+/*      o--------------o--------------o                */
+/*      0              8              1                */
+
+      /* linear interpolation of coordinates */
+      for (k=0; k<3; k++)
+        x[k]=linear_interpolation( 0,  0, -1, &discret->element[i], k);
+      field->numnp=test_node(field->numnp,numnp_old, discret, i, 20, x, nodelist);
+
+      for (k=0; k<3; k++)
+        x[k]=linear_interpolation( 0, -1,  0, &discret->element[i], k);
+      field->numnp=test_node(field->numnp,numnp_old, discret, i, 21, x, nodelist);
+
+      for (k=0; k<3; k++)
+        x[k]=linear_interpolation( 1,  0,  0, &discret->element[i], k);
+      field->numnp=test_node(field->numnp,numnp_old, discret, i, 22, x, nodelist);
+
+      for (k=0; k<3; k++)
+        x[k]=linear_interpolation( 0,  1,  0, &discret->element[i], k);
+      field->numnp=test_node(field->numnp, numnp_old,discret, i, 23, x, nodelist);
+
+      for (k=0; k<3; k++)
+        x[k]=linear_interpolation(-1,  0,  0, &discret->element[i], k);
+      field->numnp=test_node(field->numnp, numnp_old,discret, i, 24, x, nodelist);
+
+      for (k=0; k<3; k++)
+        x[k]=linear_interpolation( 0,  0,  1, &discret->element[i], k);
+      field->numnp=test_node(field->numnp, numnp_old,discret, i, 25, x, nodelist);
+
+      for (k=0; k<3; k++)
+        x[k]=linear_interpolation( 0,  0,  0, &discret->element[i], k);
+      field->numnp=test_node(field->numnp, numnp_old,discret, i, 26, x, nodelist);
+
+      if (i==field->numele-1)
+        discret->node=(NODE*)CCAREALLOC(discret->node, (field->numnp)*sizeof(NODE));
+    }
+    else
+    {
+      discret->element[i].node = (NODE**)CCACALLOC(numnp, sizeof(NODE*));
+      discret->element[i].numnp = numnp;
+      discret->element[i].eltyp = el_type;
+      discret->element[i].distyp = distype;
+      for (j=0; j<numnp; ++j)
+      {
+        discret->element[i].node[j] = &(discret->node[field->mesh.size_buf[j]]);
+        discret->element[i].node[j]->numele++;
+      }
+    }
+  }
+
+  if (nodelist!=NULL)
+  {
+    CCAFREE(nodelist);
+  }
+
+  offset=(INT*)CCACALLOC(field->numnp, sizeof(INT));
+
+  for (i=0;i<field->numnp; ++i)
+  {
+    discret->node[i].element=(ELEMENT**)CCACALLOC(discret->node[i].numele, sizeof(ELEMENT*));
+    offset[i]=0;
+  }
+  for (i=0;i<field->numele;++i)
+  {
+    numnp = discret->element[i].numnp;
+    for (j=0;j<numnp;++j)
+    {
+      discret->element[i].node[j]->element[offset[discret->element[i].node[j]->Id_loc]]=&discret->element[i];
+      offset[discret->element[i].node[j]->Id_loc]++;
+    }
+  }
+  CCAFREE(offset);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+void destroy_post_discretization(POST_DISCRETIZATION* discret)
+{
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("destroy_post_discretization");
+#endif
+
+  for (i=0; i<discret->field->numnp; ++i)
+  {
+    CCAFREE(discret->node[i].element);
+  }
+
+  for (i=0; i<discret->field->numele; ++i)
+  {
+    CCAFREE(discret->element[i].node);
+  }
+
+  CCAFREE(discret->node);
+  CCAFREE(discret->element);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+void init_post_design(POST_DESIGN* design, FIELD_DATA* field)
+{
+  INT ndvol;
+  INT ndsurf;
+  INT ndline;
+  INT ndnode;
+  INT i;
+
+
+#ifdef DEBUG
+  dstrc_enter("init_post_design");
+#endif
+
+  design->field = field;
+  design->nnode=field->numnp;
+
+  map_find_int(field->group, "ndvol", &ndvol);
+  design->volume=(VOLUME*)CCACALLOC(ndvol, sizeof(VOLUME));
+  design->ndvol=ndvol;
+
+  map_find_int(field->group, "ndsurf", &ndsurf);
+  design->surface=(SURFACE*)CCACALLOC(ndsurf, sizeof(SURFACE));
+  design->ndsurf=ndsurf;
+
+  map_find_int(field->group, "ndline", &ndline);
+  design->line=(LINE*)CCACALLOC(ndline, sizeof(LINE));
+  design->ndline=ndline;
+
+  map_find_int(field->group, "ndnode", &ndnode);
+  design->dnode=(DESIGNNODE*)CCACALLOC(ndline, sizeof(DESIGNNODE));
+  design->ndnode=ndnode;
+
+  /*initialisation of design variables */
+  for (i=0;i<design->ndvol;i++)
+  {
+    design->volume[i].id=i;
+    design->volume[i].ndsurf=0;
+    design->volume[i].nnode=0;
+    design->volume[i].surface=(SURFACE**)CCACALLOC(design->ndsurf, sizeof(SURFACE*));
+    design->volume[i].node=(NODE**)CCACALLOC(design->nnode, sizeof(NODE*));
+  }
+
+  for (i=0;i<design->ndsurf;i++)
+  {
+    design->surface[i].id=i;
+    design->surface[i].ndline=0;
+    design->surface[i].nnode=0;
+    design->surface[i].line=(LINE**)CCACALLOC(design->ndline, sizeof(LINE*));
+    design->surface[i].node=(NODE**)CCACALLOC(design->nnode, sizeof(NODE*));
+  }
+
+  for (i=0;i<design->ndline;i++)
+  {
+    design->line[i].id=i;
+    design->line[i].nnode=0;
+    design->line[i].ndnode=0;
+    design->line[i].dnode=(DESIGNNODE**)CCACALLOC(design->ndnode, sizeof(DESIGNNODE*));
+    design->line[i].node=(NODE**)CCACALLOC(design->nnode, sizeof(NODE*));
+  }
+
+  for (i=0;i<design->ndnode;i++)
+  {
+    design->dnode[i].id=i;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
 #ifdef D_FSI
 
 /*----------------------------------------------------------------------*/
@@ -1557,95 +2075,5 @@ void post_find_fsi_coupling(PROBLEM_DATA *problem,
   dstrc_exit();
 #endif
 }
-
 #endif
 
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Set up a (fake) discretization.
-
-  Create the node and element arrays, read node coordinates and mesh
-  connectivity.
-
-  \param discret       (o) Uninitialized discretization object
-  \param problem       (i) problem data
-  \param field         (i) general field data
-
-  \author u.kue
-  \date 10/04
-*/
-/*----------------------------------------------------------------------*/
-void init_post_discretization(POST_DISCRETIZATION* discret,
-                              PROBLEM_DATA* problem,
-                              FIELD_DATA* field)
-{
-  INT i;
-  INT j;
-
-#ifdef DEBUG
-  dstrc_enter("init_post_discretization");
-#endif
-
-  discret->field = field;
-
-  discret->node = (NODE*)CCACALLOC(field->numnp, sizeof(NODE));
-  discret->element = (ELEMENT*)CCACALLOC(field->numele, sizeof(ELEMENT));
-
-  /*--------------------------------------------------------------------*/
-  /* read the node coordinates */
-
-  for (i=0; i<field->numnp; ++i)
-  {
-    discret->node[i].Id_loc = i;
-    discret->node[i].proc = 0;
-
-    chunk_read_size_entry(&(field->coords), i);
-    discret->node[i].Id = field->coords.size_buf[element_variables.ep_size_Id];
-
-    chunk_read_value_entry(&(field->coords), i);
-    for (j=0; j<field->coords.value_entry_length; ++j)
-      discret->node[i].x[j] = field->coords.value_buf[j];
-  }
-
-  /*--------------------------------------------------------------------*/
-  /* read the mesh */
-
-  for (i=0; i<field->numele; ++i)
-  {
-    INT Id;
-    INT el_type;
-    INT numnp;
-    INT distype;
-    INT j;
-
-    chunk_read_size_entry(&(field->ele_param), i);
-
-    Id      = field->ele_param.size_buf[element_variables.ep_size_Id];
-    el_type = field->ele_param.size_buf[element_variables.ep_size_eltyp];
-    distype = field->ele_param.size_buf[element_variables.ep_size_distyp];
-    numnp   = field->ele_param.size_buf[element_variables.ep_size_numnp];
-
-    /* external >= internal */
-    el_type = field->problem->element_type.table[el_type];
-    distype = field->problem->distype.table[distype];
-
-    chunk_read_size_entry(&(field->mesh), i);
-
-    discret->element[i].Id = Id;
-    discret->element[i].Id_loc = i;
-    discret->element[i].proc = 0;
-    discret->element[i].node = (NODE**)CCACALLOC(numnp, sizeof(NODE*));
-    discret->element[i].numnp = numnp;
-    discret->element[i].eltyp = el_type;
-    discret->element[i].distyp = distype;
-    for (j=0; j<numnp; ++j) {
-      discret->element[i].node[j] = &(discret->node[field->mesh.size_buf[j]]);
-    }
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}

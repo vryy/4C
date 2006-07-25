@@ -50,7 +50,7 @@ possible). You might want to start reading the file from there.
 #include "post_wallge.h"
 
 #include "../output/gid.h"
-
+#include "../post_common/post_octtree.h"
 
 
 /*----------------------------------------------------------------------*/
@@ -161,6 +161,8 @@ static void write_domain(FIELD_DATA *field, GIDSET* gid)
   dstrc_enter("write_domain");
 #endif
 
+#if 0
+
   post_log(3, "%s: Write domain\n", field->name);
   init_chunk_data(&(field->head), &chunk, "domain");
 
@@ -172,7 +174,7 @@ static void write_domain(FIELD_DATA *field, GIDSET* gid)
 
 #ifdef D_SHELL9
   shell9_write_domain(field, gid, &chunk);
-#endif /*D_SHELL9*/
+#endif
 
   /*--------------------------------------------------------------------*/
 
@@ -218,6 +220,8 @@ static void write_domain(FIELD_DATA *field, GIDSET* gid)
 #endif
 
   destroy_chunk_data(&chunk);
+
+#endif
 
 #ifdef DEBUG
   dstrc_exit();
@@ -530,6 +534,16 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
         gid->is_shell8_8_33   = 1;
         gid->shell8_8_33_name = "shell8_8_33";
       }
+      if (numnp==3)
+      {
+        gid->is_shell8_3_11   = 1;
+        gid->shell8_3_11_name = "shell8_3_11";
+      }
+      if (numnp==6)
+      {
+        gid->is_shell8_6_33   = 1;
+        gid->shell8_6_33_name = "shell8_6_33";
+      }
       break;
     }
 #endif
@@ -664,6 +678,16 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
       {
         gid->is_fluid3_333   = 1;
         gid->fluid3_333_name = "fluid3_333";
+      }
+      if (numnp==4)
+      {
+        gid->is_fluid3_tet4 = 1;
+        gid->fluid3_tet4_name = "fluid3_tet4";
+      }
+      if (numnp==10)
+      {
+        gid->is_fluid3_tet10 = 1;
+        gid->fluid3_tet10_name = "fluid3_tet10";
       }
       break;
     }
@@ -1128,8 +1152,11 @@ static void write_fsi(PROBLEM_DATA* problem)
 {
   INT i;
   FIELD_DATA* struct_field = NULL;
-  FIELD_DATA* fluid_field;
-  FIELD_DATA* ale_field;
+  FIELD_DATA* fluid_field = NULL;
+  FIELD_DATA* ale_field = NULL;
+  INT struct_idx=-1;
+  INT fluid_idx=-1;
+  INT ale_idx=-1;
 
   INT* fluid_ale_connect;
 
@@ -1149,14 +1176,17 @@ static void write_fsi(PROBLEM_DATA* problem)
     if (problem->discr[i].type == structure)
     {
       struct_field = &(problem->discr[i]);
+      struct_idx = i;
     }
     else if (problem->discr[i].type == fluid)
     {
       fluid_field = &(problem->discr[i]);
+      fluid_idx = i;
     }
     else if (problem->discr[i].type == ale)
     {
       ale_field = &(problem->discr[i]);
+      ale_idx = i;
     }
     else
     {
@@ -1200,18 +1230,27 @@ static void write_fsi(PROBLEM_DATA* problem)
   /* We need to find the connection between ale and fluid nodes. */
 
   {
-    INT *fluid_struct_connect;
-    post_find_fsi_coupling(problem,
-                           struct_field, fluid_field, ale_field,
-                           &fluid_struct_connect, &fluid_ale_connect);
+    POST_DISCRETIZATION* discret;
 
-    /*
-     * We don't need the connection to the structure field here. Free
-     * it immediately. */
-    if (struct_field != NULL)
+    /* set up the meshes */
+    discret = (POST_DISCRETIZATION*)CCACALLOC(problem->num_discr,
+                                              sizeof(POST_DISCRETIZATION));
+
+    /* Iterate all discretizations. */
+    for (i=0; i<problem->num_discr; ++i)
     {
-      CCAFREE(fluid_struct_connect);
+      init_post_discretization(&(discret[i]), problem, &(problem->discr[i]), 0);
     }
+
+    fluid_ale_connect=(INT*)CCACALLOC(fluid_field->numnp, sizeof(INT));
+    post_fsi_initcoupling(&discret[struct_idx], &discret[fluid_idx], &discret[ale_idx],
+                          fluid_ale_connect);
+
+    for (i=0; i<problem->num_discr; ++i)
+    {
+      destroy_post_discretization(&(discret[i]));
+    }
+    CCAFREE(discret);
   }
 
   /*--------------------------------------------------------------------*/

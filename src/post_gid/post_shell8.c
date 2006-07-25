@@ -132,6 +132,17 @@ void shell8_write_gauss(GIDSET* gid)
     GiD_EndGaussPoint();
   }
 
+  if (gid->is_shell8_3_11)
+  {
+    GiD_BeginGaussPoint(gid->shell8_3_11_name, GiD_Triangle, gid->shell8_3_11_name, 1, 0, 1);
+    GiD_EndGaussPoint();
+  }
+  if (gid->is_shell8_6_33)
+  {
+    GiD_BeginGaussPoint(gid->shell8_6_33_name, GiD_Triangle, gid->shell8_6_33_name, 3, 0, 1);
+    GiD_EndGaussPoint();
+  }
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -423,6 +434,76 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
       get_element_params(field, i, &Id, &el_type, &dis, &numnp);
 
       if (el_type != el_shell8 || numnp !=8) continue;
+
+      chunk_read_size_entry(&(field->mesh), i);
+      get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);
+      GiD_WriteElement(Id+1, mesh_entry);
+    }
+
+    GiD_EndElements();
+    GiD_EndMesh();
+  }
+
+  if (gid->is_shell8_3_11)
+  {
+    INT i;
+
+    GiD_BeginMesh(gid->shell8_3_11_name, 3, GiD_Triangle, 3);
+    if (first_mesh)
+    {
+      first_mesh = 0;
+      write_coords(field, gid);
+    }
+
+    GiD_BeginElements();
+
+    for (i=0; i<field->numele; ++i)
+    {
+      INT numnp;
+      INT el_type;
+      INT Id;
+      INT mesh_entry[MAXNOD];
+      INT dis;
+
+      /* read the element's data */
+      get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+      if (el_type != el_shell8 || numnp !=3) continue;
+
+      chunk_read_size_entry(&(field->mesh), i);
+      get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);
+      GiD_WriteElement(Id+1, mesh_entry);
+    }
+
+    GiD_EndElements();
+    GiD_EndMesh();
+  }
+
+  if (gid->is_shell8_6_33)
+  {
+    INT i;
+
+    GiD_BeginMesh(gid->shell8_6_33_name, 3, GiD_Triangle, 6);
+    if (first_mesh)
+    {
+      first_mesh = 0;
+      write_coords(field, gid);
+    }
+
+    GiD_BeginElements();
+
+    for (i=0; i<field->numele; ++i)
+    {
+      INT numnp;
+      INT el_type;
+      INT Id;
+      INT mesh_entry[MAXNOD];
+      INT dis;
+
+      /* read the element's data */
+      get_element_params(field, i, &Id, &el_type, &dis, &numnp);
+
+      if (el_type != el_shell8 || numnp !=6) continue;
 
       chunk_read_size_entry(&(field->mesh), i);
       get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);

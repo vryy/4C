@@ -24,6 +24,11 @@ A huge part of this file was taken from the file visual_vis2.c.
 
 #include <ctype.h>
 #include "post_visual2.h"
+#include "post_visual3.h"
+#include "post_visual3_functions.h"
+#include "post_design.h"
+#include "../post_common/post_common.h"
+#include "../post_common/post_octtree.h"
 
 
 /*----------------------------------------------------------------------*/
@@ -38,7 +43,6 @@ static INT fluid_idx;
 static INT ale_idx;
 
 #ifdef D_FSI
-static INT* fluid_struct_connect;
 static INT* fluid_ale_connect;
 #endif
 
@@ -78,7 +82,8 @@ static INT     *WFACE;
 static INT     *CEDGE;          /* pointers to arrays             */
 
 
-static DOUBLE  minxy,maxxy;
+static DOUBLE  minx,maxx;
+static DOUBLE  miny,maxy;
 static DOUBLE  centerx,centery;
 static DOUBLE  minpre,maxpre;
 static DOUBLE  minvx,maxvx;
@@ -121,6 +126,15 @@ static ARRAY  time_a;           /* time array				*/
 static ARRAY  step_a;           /* time array				*/
 
 static CHAR* yesno_options[] = { "no", "yes", NULL };
+
+#ifdef LOWMEM
+static DOUBLE *velocity;
+static DOUBLE *pressure;
+static DOUBLE *displacement;
+
+static RESULT_DATA global_fluid_result;
+static RESULT_DATA global_ale_result;
+#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -255,8 +269,13 @@ void v2grid(float XY[][2], float *XYDELT, float *XYMINP, float *XYMAXP,
         else
         {
           NODE* actanode = &(discret[ale_idx].node[fluid_ale_connect[i]]);
+#ifndef LOWMEM
           XY[i][0] = actanode->x[0] + actanode->sol.a.da[icol][0];
           XY[i][1] = actanode->x[1] + actanode->sol.a.da[icol][1];
+#else
+          XY[i][0] = actanode->x[0] + displacement[2*actanode->Id_loc + 0];
+          XY[i][1] = actanode->x[1] + displacement[2*actanode->Id_loc + 1];
+#endif
         }
       }
 #else
@@ -342,8 +361,12 @@ void v2scal(INT *JKEY, float *S)
     case 1: /* pressure */
       for (i=0;i<fluid_field->numnp;i++)
       {
+#ifndef LOWMEM
         NODE* actnode = &(discret[fluid_idx].node[i]);
         S[i] = actnode->sol.a.da[icol][2];
+#else
+        S[i] = pressure[i];
+#endif
       }
       break;
       /*-------------------------------------------------------------------*/
@@ -356,8 +379,12 @@ void v2scal(INT *JKEY, float *S)
       {
         for (i=0;i<fluid_field->numnp;i++)
         {
+#ifndef LOWMEM
           NODE* actnode = &(discret[fluid_idx].node[i]);
           S[i]=actnode->sol.a.da[icol][3];
+#else
+          S[i] = pressure[i];
+#endif
         }
       }
       else
@@ -374,25 +401,38 @@ void v2scal(INT *JKEY, float *S)
     case 5: /* horizontal velocity */
       for (i=0;i<fluid_field->numnp;i++)
       {
+#ifndef LOWMEM
         NODE* actnode = &(discret[fluid_idx].node[i]);
         S[i]=actnode->sol.a.da[icol][0];
+#else
+        S[i] = velocity[2*i];
+#endif
       }
       break;
       /*-------------------------------------------------------------------*/
     case 6: /* vertical velocity */
       for (i=0;i<fluid_field->numnp;i++)
       {
+#ifndef LOWMEM
         NODE* actnode = &(discret[fluid_idx].node[i]);
         S[i]=actnode->sol.a.da[icol][1];
+#else
+        S[i] = velocity[2*i+1];
+#endif
       }
       break;
       /*-------------------------------------------------------------------*/
     case 7: /* absolute velocity */
       for (i=0;i<fluid_field->numnp;i++)
       {
+#ifndef LOWMEM
         NODE* actnode = &(discret[fluid_idx].node[i]);
         vx=actnode->sol.a.da[icol][0];
         vy=actnode->sol.a.da[icol][1];
+#else
+        vx = velocity[2*i];
+        vy = velocity[2*i+1];
+#endif
         S[i] = sqrt(vx*vx+vy*vy);
       }
       break;
@@ -409,8 +449,12 @@ void v2scal(INT *JKEY, float *S)
       else
         isstr=0;
       for (i=0;i<fluid_field->numnp;i++) {
+#ifndef LOWMEM
         NODE* actnode = &(discret[fluid_idx].node[i]);
         S[i] = actnode->sol.a.da[icol][2];
+#else
+        S[i] = pressure[i];
+#endif
       }
       break;
       /*-------------------------------------------------------------------*/
@@ -547,9 +591,14 @@ void v2vect(INT *JKEY, float V[][2])
       case 0: /* streamlines */
         for (i=0;i<fluid_field->numnp;i++)
         {
+#ifndef LOWMEM
           NODE* actnode = &(discret[fluid_idx].node[i]);
           V[i][0] = actnode->sol.a.da[icol][0];
           V[i][1] = actnode->sol.a.da[icol][1];
+#else
+          V[i][0] = velocity[2*i];
+          V[i][1] = velocity[2*i+1];
+#endif
         }
         break;
         /*-------------------------------------------------------------------*/
@@ -557,6 +606,7 @@ void v2vect(INT *JKEY, float V[][2])
         printf("stationary streamlines not checked yet!!!!");
         for (i=0;i<fluid_field->numnp;i++)
         {
+#ifndef LOWMEM
           NODE* actnode = &(discret[fluid_idx].node[i]);
 #if 0
           actgnode=actnode->gnode;
@@ -578,6 +628,10 @@ void v2vect(INT *JKEY, float V[][2])
             V[i][0] = actnode->sol.a.da[icol][0]-sstrval;
             V[i][1] = actnode->sol.a.da[icol][1];
           }
+#else
+          V[i][0] = velocity[2*i];
+          V[i][1] = velocity[2*i+1];
+#endif
         }
         break;
       }
@@ -658,6 +712,78 @@ void v2update(float *TIME)
 
     printf("Time: %8.4f    Step: %5d/%-5d\r",time_a.a.dv[icol],ACTSTEP,LASTSTEP);
     fflush(stdout);
+
+#ifdef LOWMEM
+    {
+      CHUNK_DATA chunk;
+      INT i;
+
+      if (!next_result(&global_fluid_result))
+      {
+        destroy_result_data(&global_fluid_result);
+        init_result_data(fluid_field, &global_fluid_result);
+        if (!next_result(&global_fluid_result))
+        {
+          dserror("failed to reinitialize fluid");
+        }
+
+        destroy_result_data(&global_ale_result);
+        init_result_data(ale_field, &global_ale_result);
+        if (!next_result(&global_ale_result))
+        {
+          dserror("failed to reinitialize ale");
+        }
+      }
+      else if (!next_result(&global_ale_result))
+      {
+        dserror("failed to initialize ale");
+      }
+
+      /*--------------------------------------------------------------------*/
+      /* read the velocity */
+
+      init_chunk_data(&global_fluid_result, &chunk, "velocity");
+      dsassert(chunk.value_entry_length==2, "2d problem expected");
+
+      for (i=0; i<global_fluid_result.field->numnp; ++i)
+      {
+        chunk_read_value_entry(&chunk, i);
+
+        velocity[2*i+0] = chunk.value_buf[0];
+        velocity[2*i+1] = chunk.value_buf[1];
+      }
+      destroy_chunk_data(&chunk);
+
+      /*--------------------------------------------------------------------*/
+      /* read the pressure */
+
+      init_chunk_data(&global_fluid_result, &chunk, "pressure");
+      dsassert(chunk.value_entry_length==1, "there must be just one pressure value");
+
+      for (i=0; i<global_fluid_result.field->numnp; ++i)
+      {
+        chunk_read_value_entry(&chunk, i);
+        pressure[i] = chunk.value_buf[0];
+      }
+      destroy_chunk_data(&chunk);
+
+      /*--------------------------------------------------------------------*/
+      /* read the ale displacement */
+
+      init_chunk_data(&global_ale_result, &chunk, "displacement");
+      dsassert(chunk.value_entry_length==2, "2d problem expected");
+
+      for (i=0; i<global_ale_result.field->numnp; ++i)
+      {
+        chunk_read_value_entry(&chunk, i);
+
+        displacement[2*i+0] = chunk.value_buf[0];
+        displacement[2*i+1] = chunk.value_buf[1];
+      }
+      destroy_chunk_data(&chunk);
+    }
+#endif
+
     break;
   case structure:
     dserror("fieldtyp not implemented yet!\n");
@@ -900,8 +1026,6 @@ void post_v2cell(FIELD_DATA *field, POST_DISCRETIZATION* discret, DIS_TYP distyp
 void v2movie()
 {
   char string[100];
-  char *charpointer;
-
   char convert[100];
   char remove[100];
 
@@ -937,6 +1061,8 @@ end:
   return;
 }
 
+
+#ifndef LOWMEM
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1085,6 +1211,8 @@ static void post_read_vel_pres(POST_DISCRETIZATION* discret,
   dstrc_exit();
 #endif
 }
+
+#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -1400,79 +1528,109 @@ bgcolour+=20;
   if (IOPT>=2)
   {
 #ifdef D_FSI
+#ifndef LOWMEM
     NODE* actnode = &(discret[fluid_idx].node[0]);
-    minxy = actnode->x[0];
-    maxxy = actnode->x[0];
+    minx = actnode->x[0];
+    maxx = actnode->x[0];
+    miny = actnode->x[1];
+    maxy = actnode->x[1];
     for (i=0;i<fluid_field->numnp;i++)
     {
       actnode = &(discret[fluid_idx].node[i]);
       if (fluid_ale_connect[i] == -1)
       {
-        minxy = MIN(minxy, actnode->x[0]);
-        maxxy = MAX(maxxy, actnode->x[0]);
+        minx = MIN(minx, actnode->x[0]);
+        maxx = MAX(maxx, actnode->x[0]);
+        miny = MIN(miny, actnode->x[1]);
+        maxy = MAX(maxy, actnode->x[1]);
       }
       else
       {
         INT j;
         DOUBLE xy;
+        DOUBLE dxy;
         NODE* actanode = &(discret[ale_idx].node[fluid_ale_connect[i]]);
         xy = actanode->x[0];
         for (j=0;j<nsteps;j++)
         {
-          DOUBLE dxy;
           dxy = xy+actanode->sol.a.da[j][0];
-          minxy=DMIN(minxy,dxy);
-          maxxy=DMAX(maxxy,dxy);
+          minx=DMIN(minx,dxy);
+          maxx=DMAX(maxx,dxy);
         }
-      }
-    }
-#else
-    dserror("FSI-functions not compiled in!");
-#endif
-  }
-  else {
-    NODE* actnode = &(discret[fluid_idx].node[0]);
-    minxy = actnode->x[0];
-    maxxy = actnode->x[0];
-    for (i=1;i<fluid_field->numnp;i++) {
-      actnode = &(discret[fluid_idx].node[i]);
-      minxy = MIN(minxy, actnode->x[0]);
-      maxxy = MAX(maxxy, actnode->x[0]);
-    }
-  }
-  XYMIN[0] = minxy - (maxxy-minxy)*0.1;
-  XYMAX[0] = maxxy + (maxxy-minxy)*0.1;
-
-  /* find maximum y-coordinate */
-  if (IOPT>=2)
-  {
-#ifdef D_FSI
-    NODE* actnode = &(discret[fluid_idx].node[0]);
-    minxy = actnode->x[1];
-    maxxy = actnode->x[1];
-    for (i=0;i<fluid_field->numnp;i++)
-    {
-      actnode = &(discret[fluid_idx].node[i]);
-      if (fluid_ale_connect[i] == -1)
-      {
-        minxy = MIN(minxy, actnode->x[1]);
-        maxxy = MAX(maxxy, actnode->x[1]);
-      }
-      else
-      {
-        INT j;
-        DOUBLE xy;
-        NODE* actanode = &(discret[ale_idx].node[fluid_ale_connect[i]]);
         xy = actanode->x[1];
         for (j=0;j<nsteps;j++)
         {
           DOUBLE dxy;
           dxy = xy+actanode->sol.a.da[j][1];
-          minxy=DMIN(minxy,dxy);
-          maxxy=DMAX(maxxy,dxy);
+          miny=DMIN(miny,dxy);
+          maxy=DMAX(maxy,dxy);
         }
       }
     }
+#else
+    DOUBLE x;
+    DOUBLE dx;
+    DOUBLE y;
+    DOUBLE dy;
+    RESULT_DATA result;
+    INT counter1;
+    CHUNK_DATA chunk;
+    INT i;
+
+    NODE* actnode = &(discret[fluid_idx].node[0]);
+    minx = actnode->x[0];
+    maxx = actnode->x[0];
+    miny = actnode->x[1];
+    maxy = actnode->x[1];
+
+    for (i=0;i<fluid_field->numnp;i++)
+    {
+      if (fluid_ale_connect[i] == -1)
+      {
+        actnode = &(discret[fluid_idx].node[i]);
+        minx = MIN(minx, actnode->x[0]);
+        maxx = MAX(maxx, actnode->x[0]);
+        miny = MIN(miny, actnode->x[1]);
+        maxy = MAX(maxy, actnode->x[1]);
+      }
+    }
+
+    init_result_data(ale_field, &result);
+    for (counter1 = 0; next_result(&result); counter1++)
+    {
+      if (counter1>=nsteps)
+        dserror("too many ale result steps");
+      init_chunk_data(&result, &chunk, "displacement");
+
+      dsassert(chunk.value_entry_length==2, "2d problem expected");
+
+      for (i=0; i<result.field->numnp; ++i)
+      {
+        if (fluid_ale_connect[i] != -1)
+        {
+          actnode = &(discret[fluid_idx].node[i]);
+          x = actnode->x[0];
+          y = actnode->x[1];
+
+          chunk_read_value_entry(&chunk, i);
+
+          dx = x+chunk.value_buf[0];
+          minx=DMIN(minx,dx);
+          maxx=DMAX(maxx,dx);
+
+          dy = y+chunk.value_buf[1];
+          miny=DMIN(miny,dy);
+          maxy=DMAX(maxy,dy);
+        }
+      }
+      destroy_chunk_data(&chunk);
+    }
+    destroy_result_data(&result);
+    if (nsteps != counter1)
+    {
+      dserror("too few ale results");
+    }
+#endif
 #else
     dserror("FSI-functions not compiled in!");
 #endif
@@ -1480,17 +1638,26 @@ bgcolour+=20;
   else
   {
     NODE* actnode = &(discret[fluid_idx].node[0]);
-    minxy = actnode->x[1];
-    maxxy = actnode->x[1];
+    minx = actnode->x[0];
+    maxx = actnode->x[0];
+    miny = actnode->x[1];
+    maxy = actnode->x[1];
+    for (i=1;i<fluid_field->numnp;i++) {
+      actnode = &(discret[fluid_idx].node[i]);
+      minx = MIN(minx, actnode->x[0]);
+      maxx = MAX(maxx, actnode->x[0]);
+    }
     for (i=1;i<fluid_field->numnp;i++)
     {
       actnode = &(discret[fluid_idx].node[i]);
-      minxy = MIN(minxy, actnode->x[1]);
-      maxxy = MAX(maxxy, actnode->x[1]);
+      miny = MIN(miny, actnode->x[1]);
+      maxy = MAX(maxy, actnode->x[1]);
     }
   }
-  XYMIN[1] = minxy - (maxxy-minxy)*0.1;
-  XYMAX[1] = maxxy + (maxxy-minxy)*0.1;
+  XYMIN[0] = minx - (maxx-minx)*0.1;
+  XYMAX[0] = maxx + (maxx-minx)*0.1;
+  XYMIN[1] = miny - (maxy-miny)*0.1;
+  XYMAX[1] = maxy + (maxy-miny)*0.1;
 
   dx = XYMAX[0] - XYMIN[0];
   dy = XYMAX[1] - XYMIN[1];
@@ -1561,6 +1728,7 @@ bgcolour+=20;
   XYMIN[1] = XYMIN[1]/yscale;
   XYMAX[1] = XYMAX[1]/yscale;
 
+#ifndef LOWMEM
   /* get the data limits */
   {
     NODE* actnode = &(discret[fluid_idx].node[0]);
@@ -1617,6 +1785,87 @@ bgcolour+=20;
       }
     } /* end of loop over columns */
   } /* end of loop over nodes */
+
+#else
+
+  {
+    RESULT_DATA result;
+    INT counter1;
+    CHUNK_DATA chunk;
+    INT first=1;
+
+    init_result_data(fluid_field, &result);
+    for (counter1 = 0; next_result(&result); counter1++)
+    {
+      INT i;
+      if (counter1>=nsteps)
+        dserror("too many fluid result steps: panic");
+      /*post_read_vel_pres(&(discret[fluid_idx]), &result, counter1, nsteps);*/
+
+      /*--------------------------------------------------------------------*/
+      /* read the velocity */
+
+      init_chunk_data(&result, &chunk, "velocity");
+      dsassert(chunk.value_entry_length==2, "2d problem expected");
+
+      for (i=0; i<result.field->numnp; ++i)
+      {
+
+        chunk_read_value_entry(&chunk, i);
+
+        velx    = chunk.value_buf[0];
+        vely    = chunk.value_buf[1];
+        absv    = sqrt(velx*velx+vely*vely);
+
+        if (!first)
+        {
+          minvx   = DMIN(minvx  ,velx);
+          maxvx   = DMAX(maxvx  ,velx);
+          minvy   = DMIN(minvy  ,vely);
+          maxvy   = DMAX(maxvy  ,vely);
+          minabsv = DMIN(minabsv,absv);
+          maxabsv = DMAX(maxabsv,absv);
+        }
+        else
+        {
+          minvx   = velx;
+          maxvx   = velx;
+          minvy   = vely;
+          maxvy   = vely;
+          minabsv = absv;
+          maxabsv = absv;
+        }
+      }
+      destroy_chunk_data(&chunk);
+
+      /*--------------------------------------------------------------------*/
+      /* read the pressure */
+
+      init_chunk_data(&result, &chunk, "pressure");
+      dsassert(chunk.value_entry_length==1, "there must be just one pressure value");
+
+      for (i=0; i<result.field->numnp; ++i)
+      {
+        chunk_read_value_entry(&chunk, i);
+        pres    = chunk.value_buf[0];
+        if (!first)
+        {
+          minpre  = DMIN(minpre ,pres);
+          maxpre  = DMAX(maxpre ,pres);
+        }
+        else
+        {
+          first = 0;
+          minpre  = pres;
+          maxpre  = pres;
+        }
+      }
+      destroy_chunk_data(&chunk);
+    }
+    destroy_result_data(&result);
+  }
+
+#endif
 
 #if 0
   if (fdyn->turbu == 2 || fdyn->turbu == 3)
@@ -1706,6 +1955,15 @@ bgcolour+=20;
   FLIMS[13][1]=maxvisco;
 
   actfieldtyp = fluid;
+
+#ifdef LOWMEM
+  velocity = (DOUBLE*)CCAMALLOC(fluid_field->numnp*2*sizeof(DOUBLE));
+  pressure = (DOUBLE*)CCAMALLOC(fluid_field->numnp*sizeof(DOUBLE));
+  displacement = (DOUBLE*)CCAMALLOC(fluid_field->numnp*2*sizeof(DOUBLE));
+
+  init_result_data(fluid_field, &global_fluid_result);
+  init_result_data(ale_field, &global_ale_result);
+#endif
 
 /*-------------------------- call Fortran routine which calls VISUAL2 */
   v2call(&IOPT,&CMNCOL,&CMUNIT,
@@ -1821,7 +2079,7 @@ int main(int argc, char** argv)
   /* Iterate all discretizations. */
   for (i=0; i<problem.num_discr; ++i)
   {
-    init_post_discretization(&(discret[i]), &problem, &(problem.discr[i]));
+    init_post_discretization(&(discret[i]), &problem, &(problem.discr[i]), 0);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1945,6 +2203,8 @@ int main(int argc, char** argv)
   nsteps = counter1;
   printf("Find number of results: done.\n");
 
+#ifndef LOWMEM
+
   /*--------------------------------------------------------------------*/
   /* Now read the selected steps' results. */
 
@@ -2012,15 +2272,17 @@ int main(int argc, char** argv)
   destroy_result_data(&result);
   printf("Read fluid results: done.\n");
 
+#endif
+
 #ifdef D_FSI
   /* Find coupled nodes. If there's at least an ale field. */
   if (ale_field != NULL)
   {
     post_log(1, "Find fsi coupling...");
     fflush(stdout);
-    post_find_fsi_coupling(&problem,
-                           struct_field, fluid_field, ale_field,
-                           &fluid_struct_connect, &fluid_ale_connect);
+
+    fluid_ale_connect=(INT*)CCACALLOC(discret[fluid_idx].field->numnp, sizeof(INT));
+    post_fsi_initcoupling(&discret[struct_idx], &discret[fluid_idx], &discret[ale_idx], fluid_ale_connect);
     post_log(1, "\n");
   }
 #endif
