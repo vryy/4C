@@ -29,6 +29,7 @@ functions.
 #include <stdarg.h>
 #include "../headers/standardtypes.h"
 #include "post_common.h"
+#include "post_octtree.h"
 
 
 /* There are some global variables in ccarat that are needed by the
@@ -38,7 +39,6 @@ struct _FILES           allfiles;
 struct _PAR     par;
 static INT      num_para=6;
 static INT      parameter[]={'l', 's','u', 'g', 'w', 'o'};
-static INT      first=1;
 
 #ifdef DEBUG
 struct _CCA_TRACE         trace;
@@ -288,50 +288,54 @@ DOUBLE linear_interpolation(INT x, INT y, INT z,  ELEMENT* element, INT k)
 
   return result;
 }
+
+
 /*------------------------------------------------------------*/
 /* This function tests, if a generated node is yet existing.
- * If true, it updates the existing node,
+ * If true, it uses the existing node,
  * if false, it creates a new node */
-INT test_node(INT numnp,INT numnp_old, POST_DISCRETIZATION* discret, INT i, INT j, DOUBLE* x_temp, INT* nodelist)
-{ INT k, m, n;
-  DOUBLE f;
+/*------------------------------------------------------------*/
+INT create_auxiliary_node(INT numnp,
+                          INT numnp_old,
+                          POST_DISCRETIZATION* discret,
+                          INT i,
+                          INT j,
+                          DOUBLE* x_temp,
+                          OCTREE* octree)
+{
+  INT k;
+  NODE* n;
 
-  if (first!=1)
+#ifdef DEBUG
+  dstrc_enter("create_auxiliary_node");
+#endif
+
+  n = post_octree_find_node(octree,x_temp[0],x_temp[1],x_temp[2]);
+  if (n!=NULL)
   {
-    for (m=numnp_old; m<numnp; m++)
-    {
-      if (nodelist[m-numnp_old]!=1)
-      {
-        n=0;
-        for (k=0; k<3; k++)
-        { f = fabs(discret->node[m].x[k]-x_temp[k]);
-          if (f<EPS9)
-            n++;
-        }
-        if (n==3)
-        { for (k=0; k<3; k++)
-          { f=discret->node[m].x[k]+x_temp[k];
-            discret->node[m].x[k] = f/2;
-          }
-          discret->element[i].node[j] = &discret->node[m];
-          discret->node[m].numele++;
-          nodelist[m-numnp_old]=1;
-          goto end;
-        }
-      }
-    }
+    discret->element[i].node[j] = n;
+    n->numele++;
   }
-  discret->node[numnp].Id_loc = numnp;
-  discret->node[numnp].Id = numnp;
-  discret->node[numnp].proc = 0;
-  discret->node[numnp].numele = 1;
-  for (k=0; k<3; k++)
-    discret->node[numnp].x[k] = x_temp[k];
-  discret->element[i].node[j] = &(discret->node[numnp]);
-  numnp++;
-  first=0;
+  else
+  {
+    /* printf("(%d,%e,%e,%e),\n", numnp, x_temp[0], x_temp[1], x_temp[2]); */
+    discret->node[numnp].Id_loc = numnp;
+    discret->node[numnp].Id = numnp;
+    discret->node[numnp].proc = 0;
+    discret->node[numnp].numele = 1;
+    for (k=0; k<3; k++)
+      discret->node[numnp].x[k] = x_temp[k];
+    discret->element[i].node[j] = &(discret->node[numnp]);
+    post_octree_insert_node(octree, &discret->node[numnp]);
 
-  end:
+    dsassert(post_octree_find_node(octree,x_temp[0],x_temp[1],x_temp[2])==&discret->node[numnp],
+             "node insert failed");
+    numnp++;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
   return numnp;
 }
 
@@ -1580,7 +1584,7 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
   INT *offset;
   INT numnp;
   INT numnp_old;
-  INT* nodelist=NULL;
+  OCTREE octree;
 
 #ifdef DEBUG
   dstrc_enter("init_post_discretization");
@@ -1611,7 +1615,6 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
   /*--------------------------------------------------------------------*/
   /* read the mesh */
   chunk_read_size_entry(&(field->ele_param), 0);
-  first=1;
   for (i=0; i<field->numele; ++i)
   {
     INT Id;
@@ -1649,11 +1652,7 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
       if (i==0)
       {
         discret->node = (NODE*)CCAREALLOC(discret->node, 2*(field->numnp*sizeof(NODE)));
-        nodelist=(INT*)CCACALLOC(field->numnp, sizeof(INT));
-        for (k=0;k<field->numnp;k++)
-        {
-          nodelist[k]=0;
-        }
+        post_create_octree(discret, &octree);
       }
 
       discret->element[i].numnp = 27;
@@ -1732,6 +1731,7 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
 
       for (j=12; j<20; j++)
         tempnode[j] = discret->element[i].node[j];
+
 /*       if (distype == h_hex20) */
 /*       { discret->element[i].node[12]=tempnode[16]; */
 /*         discret->element[i].node[13]=tempnode[17]; */
@@ -1775,34 +1775,37 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
       /* linear interpolation of coordinates */
       for (k=0; k<3; k++)
         x[k]=linear_interpolation( 0,  0, -1, &discret->element[i], k);
-      field->numnp=test_node(field->numnp,numnp_old, discret, i, 20, x, nodelist);
+      field->numnp=create_auxiliary_node(field->numnp,numnp_old, discret, i, 20, x, &octree);
 
       for (k=0; k<3; k++)
         x[k]=linear_interpolation( 0, -1,  0, &discret->element[i], k);
-      field->numnp=test_node(field->numnp,numnp_old, discret, i, 21, x, nodelist);
+      field->numnp=create_auxiliary_node(field->numnp,numnp_old, discret, i, 21, x, &octree);
 
       for (k=0; k<3; k++)
         x[k]=linear_interpolation( 1,  0,  0, &discret->element[i], k);
-      field->numnp=test_node(field->numnp,numnp_old, discret, i, 22, x, nodelist);
+      field->numnp=create_auxiliary_node(field->numnp,numnp_old, discret, i, 22, x, &octree);
 
       for (k=0; k<3; k++)
         x[k]=linear_interpolation( 0,  1,  0, &discret->element[i], k);
-      field->numnp=test_node(field->numnp, numnp_old,discret, i, 23, x, nodelist);
+      field->numnp=create_auxiliary_node(field->numnp, numnp_old,discret, i, 23, x, &octree);
 
       for (k=0; k<3; k++)
         x[k]=linear_interpolation(-1,  0,  0, &discret->element[i], k);
-      field->numnp=test_node(field->numnp, numnp_old,discret, i, 24, x, nodelist);
+      field->numnp=create_auxiliary_node(field->numnp, numnp_old,discret, i, 24, x, &octree);
 
       for (k=0; k<3; k++)
         x[k]=linear_interpolation( 0,  0,  1, &discret->element[i], k);
-      field->numnp=test_node(field->numnp, numnp_old,discret, i, 25, x, nodelist);
+      field->numnp=create_auxiliary_node(field->numnp, numnp_old,discret, i, 25, x, &octree);
 
       for (k=0; k<3; k++)
         x[k]=linear_interpolation( 0,  0,  0, &discret->element[i], k);
-      field->numnp=test_node(field->numnp, numnp_old,discret, i, 26, x, nodelist);
+      field->numnp=create_auxiliary_node(field->numnp, numnp_old,discret, i, 26, x, &octree);
 
       if (i==field->numele-1)
+      {
+        post_destroy_octree(&octree);
         discret->node=(NODE*)CCAREALLOC(discret->node, (field->numnp)*sizeof(NODE));
+      }
     }
     else
     {
@@ -1816,11 +1819,6 @@ void init_post_discretization(POST_DISCRETIZATION* discret,
         discret->element[i].node[j]->numele++;
       }
     }
-  }
-
-  if (nodelist!=NULL)
-  {
-    CCAFREE(nodelist);
   }
 
   offset=(INT*)CCACALLOC(field->numnp, sizeof(INT));

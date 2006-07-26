@@ -100,7 +100,7 @@ void read_control_file_values(float *tmp, char *name, MAP* actmap)
 }
 
 
-int find_result_file_min_max_values(FIELD_DATA *field, char *data_name, float FLIMS_tmp[4][2], int dimension)
+INT find_result_file_min_max_values(FIELD_DATA *field, char *data_name, float FLIMS_tmp[4][2], int dimension)
 {
   RESULT_DATA result;
   CHUNK_DATA chunk;
@@ -232,16 +232,14 @@ void find_data_limits(POST_DISCRETIZATION* discret,
                       float FLIMS[][2],
                       INT ACTDIM)
 {
-
   INT actfieldtyp;
+  float FLIMS_tmp[4][2];
+  INT first;
+  INT h;
 
 #ifdef DEBUG
   dstrc_enter("find_data_limits");
 #endif
-
-  float FLIMS_tmp[4][2];
-  INT first;
-  INT h;
 
   for (h=0;h<num_discr;h++)
   {
@@ -249,138 +247,135 @@ void find_data_limits(POST_DISCRETIZATION* discret,
     actfieldtyp=discret[h].field->type;
     switch(actfieldtyp)
     {
-      case fluid:
-        printf("\n");
+    case fluid:
+      printf("\n");
 
-        /*read the velocity-----------------------------------*/
-        printf("  getting velocity max/min values : " );
+      /*read the velocity-----------------------------------*/
+      printf("  getting velocity max/min values : " );
 
-        /*first we try to read the min/max values from the control file*/
-        if (find_control_file_min_max_values(discret[h].field,"velocity", FLIMS_tmp))
+      /*first we try to read the min/max values from the control file*/
+      if (find_control_file_min_max_values(discret[h].field,"velocity", FLIMS_tmp))
+      {
+        sort_FLIMS_tmp_array(FLIMS_tmp, ACTDIM);
+      }
+
+      /* if there is no min/max information in the control file we
+       * have to find the limits the slow way by stepping through
+       * every result step*/
+      else
+      {
+        if (!find_result_file_min_max_values(discret[h].field, "velocity", FLIMS_tmp, ACTDIM))
+          dserror("NO VELOCITY ENTRY IN RESULT FILE");
+
+        if (ACTDIM==2)
         {
-          sort_FLIMS_tmp_array(FLIMS_tmp, ACTDIM);
+          FLIMS_tmp[2][0]=0;
+          FLIMS_tmp[2][1]=0;
         }
+      }
 
-        /* if there is no min/max information in the control file we
-         * have to find the limits the slow way by stepping through
-         * every result step*/
-        else
+      /*write the values into the FLIMS array*/
+      FLIMS[0][0]=FLIMS_tmp[0][0];
+      FLIMS[0][1]=FLIMS_tmp[0][1];
+
+      FLIMS[1][0]=FLIMS_tmp[1][0];
+      FLIMS[1][1]=FLIMS_tmp[1][1];
+
+      FLIMS[2][0]=FLIMS_tmp[2][0];
+      FLIMS[2][1]=FLIMS_tmp[2][1];
+
+      FLIMS[5][0]=FLIMS_tmp[3][0];
+      FLIMS[5][1]=FLIMS_tmp[3][1];
+
+      printf("\r  getting velocity max/min values done:");
+      printf("\nMIN/MAX velx : \t%.20lf\t%.20lf\n", FLIMS[0][0],FLIMS[0][1]);
+      printf("MIN/MAX vely : \t%.20lf\t%.20lf\n", FLIMS[1][0], FLIMS[1][1]);
+      printf("MIN/MAX velz : \t%.20lf\t%.20lf\n", FLIMS[2][0], FLIMS[2][1]);
+      printf("MIN/MAX absv : \t%.20lf\t%.20lf\n", FLIMS[5][0],FLIMS[5][1]);
+      /*end of reading the velocity----------------------------------*/
+
+      /*read the pressure--------------------------------------------------------------------*/
+      printf("\n");
+      printf("  getting pressure max/min values : " );
+
+      /*first we try to read the min/max values from the control file*/
+      if (find_control_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp) ||
+
+          find_control_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp) )
+      {
+      }
+      /* if there is no min/max information in the control file we
+       * have to find the limits the slow way by stepping through
+       * every result step*/
+      else
+      {
+        if (!find_result_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp, 1))
         {
-          if (!find_result_file_min_max_values(discret[h].field, "velocity", FLIMS_tmp, ACTDIM))
-            dserror("NO VELOCITY ENTRY IN RESULT FILE");
-
-          if (ACTDIM==2)
-          {
-            FLIMS_tmp[2][0]=0;
-            FLIMS_tmp[2][1]=0;
-          }
+          if (!find_result_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp, 1))
+            dserror("NO PRESSURE ENTRY IN RESULT FILE");
         }
+      }
+      /*write the values into the FLIMS array*/
+      FLIMS[3][0] = FLIMS_tmp[0][0];
+      FLIMS[3][1] = FLIMS_tmp[0][1];
 
-        /*write the values into the FLIMS array*/
-          FLIMS[0][0]=FLIMS_tmp[0][0];
-          FLIMS[0][1]=FLIMS_tmp[0][1];
+      printf("  getting pressure max/min values done:");
+      printf("\nMIN/MAX pressure : %.20lf\t%.20lf\n", FLIMS[3][0], FLIMS[3][1]);
+      /*end of reading the pressure ---------------------------------*/
+      break; /*end of case FLUID-----------------------------------------------*/
 
-          FLIMS[1][0]=FLIMS_tmp[1][0];
-          FLIMS[1][1]=FLIMS_tmp[1][1];
+    case structure:
+      printf("\n");
+      /*read the displacement-----------------------------------*/
+      printf("  getting displacement max/min values : " );
 
-          FLIMS[2][0]=FLIMS_tmp[2][0];
-          FLIMS[2][1]=FLIMS_tmp[2][1];
+      /*first we try to read the min/max values from the control file*/
+      if (find_control_file_min_max_values(discret[h].field,"displacement", FLIMS_tmp))
+      {
+        /*we have to turn our values around*/
+        sort_FLIMS_tmp_array(FLIMS_tmp, ACTDIM);
+      }
 
-          FLIMS[5][0]=FLIMS_tmp[3][0];
-          FLIMS[5][1]=FLIMS_tmp[3][1];
+      /*if there is no min/max information in the control file we
+       * have to find the limits the slow way*/
+      else
+      {
+        if (!find_result_file_min_max_values(discret[h].field, "displacement", FLIMS_tmp, ACTDIM))
+          dserror("NO DISPLACEMENT ENTRY IN RESULT FILE");
 
-        printf("\r  getting velocity max/min values done:");
-        printf("\nMIN/MAX velx : \t%.20lf\t%.20lf\n", FLIMS[0][0],FLIMS[0][1]);
-        printf("MIN/MAX vely : \t%.20lf\t%.20lf\n", FLIMS[1][0], FLIMS[1][1]);
-        printf("MIN/MAX velz : \t%.20lf\t%.20lf\n", FLIMS[2][0], FLIMS[2][1]);
-        printf("MIN/MAX absv : \t%.20lf\t%.20lf\n", FLIMS[5][0],FLIMS[5][1]);
-        /*end of reading the velocity----------------------------------*/
-
-        /*read the pressure--------------------------------------------------------------------*/
-        printf("\n");
-        printf("  getting pressure max/min values : " );
-
-        /*first we try to read the min/max values from the control file*/
-        if (find_control_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp) ||
-
-            find_control_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp) )
+        if (ACTDIM==2)
         {
+          FLIMS_tmp[2][0]=0;
+          FLIMS_tmp[2][1]=0;
         }
-         /* if there is no min/max information in the control file we
-         * have to find the limits the slow way by stepping through
-         * every result step*/
-        else
-        {
-          if (!find_result_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp, 1))
-          {
-            if (!find_result_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp, 1))
-              dserror("NO PRESSURE ENTRY IN RESULT FILE");
-          }
-        }
-        /*write the values into the FLIMS array*/
-        FLIMS[3][0] = FLIMS_tmp[0][0];
-        FLIMS[3][1] = FLIMS_tmp[0][1];
+      }
 
-        printf("  getting pressure max/min values done:");
-        printf("\nMIN/MAX pressure : %.20lf\t%.20lf\n", FLIMS[3][0], FLIMS[3][1]);
-        /*end of reading the pressure ---------------------------------*/
-        break; /*end of case FLUID-----------------------------------------------*/
+      /*write the values into the FLIMS array*/
+      FLIMS[7][0]=FLIMS_tmp[0][0];
+      FLIMS[7][1]=FLIMS_tmp[0][1];
 
-      case structure:
-        printf("\n");
-        /*read the displacement-----------------------------------*/
-        printf("  getting displacement max/min values : " );
+      FLIMS[8][0]=FLIMS_tmp[1][0];
+      FLIMS[8][1]=FLIMS_tmp[1][1];
 
-        /*first we try to read the min/max values from the control file*/
-        if (find_control_file_min_max_values(discret[h].field,"displacement", FLIMS_tmp))
-        {
-          /*we have to turn our values around*/
-          sort_FLIMS_tmp_array(FLIMS_tmp, ACTDIM);
-        }
+      FLIMS[9][0]=FLIMS_tmp[2][0];
+      FLIMS[9][1]=FLIMS_tmp[2][1];
 
-        /*if there is no min/max information in the control file we
-         * have to find the limits the slow way*/
-        else
-        {
-          if (!find_result_file_min_max_values(discret[h].field, "displacement", FLIMS_tmp, ACTDIM))
-            dserror("NO DISPLACEMENT ENTRY IN RESULT FILE");
+      FLIMS[10][0]=FLIMS_tmp[3][0];
+      FLIMS[10][1]=FLIMS_tmp[3][1];
 
-          if (ACTDIM==2)
-          {
-            FLIMS_tmp[2][0]=0;
-            FLIMS_tmp[2][1]=0;
-          }
-        }
+      printf("\r  getting displacement max/min values done:");
+      printf("\nMIN/MAX disx : \t%.20lf\t%.20lf\n", FLIMS[7][0], FLIMS[7][1]);
+      printf("MIN/MAX disy : \t%.20lf\t%.20lf\n", FLIMS[8][0], FLIMS[8][1]);
+      printf("MIN/MAX disz : \t%.20lf\t%.20lf\n", FLIMS[9][0], FLIMS[9][1]);
+      printf("MIN/MAX absd : \t%.20lf\t%.20lf\n", FLIMS[10][0],FLIMS[10][1]);
+      break;
 
-          /*write the values into the FLIMS array*/
-          FLIMS[7][0]=FLIMS_tmp[0][0];
-          FLIMS[7][1]=FLIMS_tmp[0][1];
+    default:
+      break;
+    }
+  }
 
-          FLIMS[8][0]=FLIMS_tmp[1][0];
-          FLIMS[8][1]=FLIMS_tmp[1][1];
-
-          FLIMS[9][0]=FLIMS_tmp[2][0];
-          FLIMS[9][1]=FLIMS_tmp[2][1];
-
-          FLIMS[10][0]=FLIMS_tmp[3][0];
-          FLIMS[10][1]=FLIMS_tmp[3][1];
-
-        printf("\r  getting displacement max/min values done:");
-        printf("\nMIN/MAX disx : \t%.20lf\t%.20lf\n", FLIMS[7][0], FLIMS[7][1]);
-        printf("MIN/MAX disy : \t%.20lf\t%.20lf\n", FLIMS[8][0], FLIMS[8][1]);
-        printf("MIN/MAX disz : \t%.20lf\t%.20lf\n", FLIMS[9][0], FLIMS[9][1]);
-        printf("MIN/MAX absd : \t%.20lf\t%.20lf\n", FLIMS[10][0],FLIMS[10][1]);
-        break;
-
-      default:
-        break;
-    }/*end of switch*/
-  }/*end of loop over discr*/
-
-
-/*write the MAX/MIN values into the FLIMS array*/
-
-
+  /* write the MAX/MIN values into the FLIMS array */
   FLIMS[4][0]=0.000000001;
   FLIMS[4][1]=1.000000001;
 
@@ -393,9 +388,7 @@ void find_data_limits(POST_DISCRETIZATION* discret,
 #ifdef DEBUG
   dstrc_exit();
 #endif
-
 }
-/*end of FIND_DATA_LIMITS*/
 
 
 /*---------------------------------------------------------*/
@@ -482,8 +475,6 @@ void post_read_shell8_info(POST_DISCRETIZATION* discret, DOUBLE* node_director, 
           }
         }
         break;
-
-
 
       default:
         dserror("DISTYP NOT IMPLEMENTED YET");
@@ -808,6 +799,7 @@ void write_colourtable_white()
   fclose(file);
 }
 
+
 void write_colourtable_grey_()
 {
   INT i;
@@ -960,6 +952,7 @@ void write_colourtable_grey_()
   }
   fclose(file);
 }
+
 
 /*****************************************************
  * lin_interpol
@@ -1228,6 +1221,8 @@ void lin_interpol(POST_DISCRETIZATION* discret, INT numnp_tot, DOUBLE* velocity,
     }
   }
 }
+
+
 /**********************************************
  * hier_elements
  *
@@ -1467,9 +1462,9 @@ void data_limits_h_hex20(POST_DISCRETIZATION* discret, float FLIMS[][2], INT num
   DOUBLE *velocity;
   DOUBLE *pressure;
 
-  #ifdef DEBUG
-    dstrc_enter("data_limits_h_hex20");
-  #endif
+#ifdef DEBUG
+  dstrc_enter("data_limits_h_hex20");
+#endif
 
   velocity=(DOUBLE*)CCACALLOC(3*numnp_tot, sizeof(DOUBLE));
   pressure=(DOUBLE*)CCACALLOC(numnp_tot, sizeof(DOUBLE));
@@ -1570,91 +1565,11 @@ void data_limits_h_hex20(POST_DISCRETIZATION* discret, float FLIMS[][2], INT num
   FLIMS[11][0]=0.000000001;
   FLIMS[11][1]=1.000000001;
 
-  #ifdef DEBUG
-    dstrc_exit();
-  #endif
-}
-
-
-void init_post_node_check_hex20(OCTREE* octree, POST_DISCRETIZATION* discret, INT numnp_old, INT numnp_act)
-{
-  INT     numnp;          /* number of nodes         */
-  INT     i;                                   /* simply some counters    */
-
-  NODE   *actnode=NULL;
-
-
-
-/**********************new************************************************************/
-  NODELIST              *nodelisttemp,*nodelistmem;        /* temporary pointers */
-
-/*************new***********************************************************************/
-
-#ifdef DEBUG
-  dstrc_enter("init_post_node_check");
-#endif
-
-
-  /* find number of nodes in different fields */
-  numnp  = discret->field->numnp;
-
-  /*Initialize the octree structure*/
-  octree->layeroct = 0;
-  octree->numnpoct = 0;
-  /*the initial values of the octree coordinates are arbitrarily set to those of the first fluid node*/
-  actnode=&(discret->node[numnp_act-1]);
-  octree->xoct[0]=actnode->x[0];
-  octree->xoct[1]=actnode->x[0];
-  octree->xoct[2]=actnode->x[1];
-  octree->xoct[3]=actnode->x[1];
-  octree->xoct[4]=actnode->x[2];
-  octree->xoct[5]=actnode->x[2];
-  octree->nodelist=NULL;
-  octree->next[0]=NULL;
-  octree->next[1]=NULL;
-
-  /*loop all fluid nodes to look for size of the FSI interface*/
-  for(i=numnp_old;i<numnp_act;i++)
-  {
-    printf("testschleife einmal durch\n");
-    actnode = &(discret->node[i]);
-    printf(" %lf %lf %lf\n", actnode->x[0], actnode->x[1], actnode->x[2]);
-    if (actnode->x[0]<octree->xoct[0]) octree->xoct[0]=actnode->x[0];
-    if (actnode->x[0]>octree->xoct[1]) octree->xoct[1]=actnode->x[0];
-    if (actnode->x[1]<octree->xoct[2]) octree->xoct[2]=actnode->x[1];
-    if (actnode->x[1]>octree->xoct[3]) octree->xoct[3]=actnode->x[1];
-    if (actnode->x[2]<octree->xoct[4]) octree->xoct[4]=actnode->x[2];
-    if (actnode->x[2]>octree->xoct[5]) octree->xoct[5]=actnode->x[2];
-
-    /*Create the initial nodelist containing all fluid nodes*/
-    nodelistmem=(NODELIST*)CCACALLOC(1,sizeof(NODELIST));
-    nodelistmem->node=actnode;
-    nodelistmem->next=NULL;
-
-    if (octree->numnpoct==0) /*if adding first node*/
-    {
-      octree->nodelist=nodelistmem;
-      nodelisttemp=octree->nodelist;
-      printf("ersten knoten hinzugefügt\n");
-    }
-    else          /*if adding any other node but the first one*/
-    {
-      nodelisttemp->next=nodelistmem;
-      nodelisttemp=nodelisttemp->next;
-      printf("weiteren knoten hinzugefügt\n");
-    }
-    octree->numnpoct++;
-  }
-  /*create the octree*/
-  printf("Kurz vor octree\n");
-  post_fsi_create_octree(octree);
-  printf("Kurz nach octree\n");
-
-
 #ifdef DEBUG
   dstrc_exit();
 #endif
 }
+
 
 void set_CEL_values(int *KCEL1,
                     int *KCEL2,
@@ -1664,9 +1579,12 @@ void set_CEL_values(int *KCEL1,
                     int *FLUID_CEL4_offset,
                     POST_DISCRETIZATION *discret)
 {
-
   FIELD_DATA *actfield;
   INT distyp;
+
+#ifdef DEBUG
+  dstrc_enter("set_CEL_values");
+#endif
 
   actfield=discret->field;
   distyp=discret->element[0].distyp;
@@ -1734,12 +1652,13 @@ void set_CEL_values(int *KCEL1,
         break;
 
       default:
-        printf("%d", distyp);
-        dserror("distyp in vis3caf not implemented yet!");
+        dserror("distyp %d in vis3caf not implemented yet!", distyp);
         break;
-
     } /* end switch(distyp) */
   }
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 void set_VISUAL_values(int *numnp3D,
@@ -1749,9 +1668,12 @@ void set_VISUAL_values(int *numnp3D,
                        POST_DISCRETIZATION *discret,
                        int numnp_tot)
 {
-
   INT distyp;
   FIELD_DATA *actfield;
+
+#ifdef DEBUG
+  dstrc_enter("set_VISUAL_values");
+#endif
 
   if (discret->field->type!=2)
   {
@@ -1814,10 +1736,10 @@ void set_VISUAL_values(int *numnp3D,
         break;
 
       default:
-        printf("%d", distyp);
-        dserror("distyp in vis3caf not implemented yet!");
-
+        dserror("distyp %d in vis3caf not implemented yet!", distyp);
     } /* end switch(distyp) */
   }
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
-

@@ -84,7 +84,9 @@ static INT      ndvol;
 static INT      ndvol_tot;
 static INT      ndline_tot;
 static INT      ndnode_tot=0;
+#ifdef DESIGN
 static INT      ndsurf_in_tot=0;
+#endif
 static INT      FLUID_NODE_offset=0; /*number of nodes in XYZ BEFORE
                                       * struct nodes*/
 static INT      FLUID_GROUP_offset=0;
@@ -1914,21 +1916,19 @@ void v3update(float *TIME)
         if (discret[h].element[0].distyp==h_hex20)
           hier_elements(&discret[h], numnp_tot[h], ale_displacement, NULL);
 #endif
-        break;
         destroy_chunk_data(&chunk);
         break;
 
       default:
         break;
-    }/*end of switch(actfieldtyp)*/
-  }/*end of loop over discretizations*/
+    }
+  }
 
-/*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
   return;
-} /* end of V3UPDATE */
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -2435,12 +2435,12 @@ void v3cell(INT cel1[][4], INT cel2[][5], INT cel3[][6], INT cel4[][8],
          cel3[p+inel][3] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
          cel3[p+inel][4] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
          cel3[p+inel][5] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
-        break;
+         break;
 
         default:
           dserror("structure distyp not implemented yet!\n");
       }
-    } /* end loop over all elements */
+    }
     /* ---------------------------------------------------- END OF STRUCT CELLS*/
   }
 
@@ -2704,7 +2704,6 @@ int main(int argc, char** argv)
       discret[fluid_idx].field->numnp=numnp_temp;
       discret[ale_idx].field->numnp=numnp_temp;
     }
-
 
     printf(" done.\n");
   }
