@@ -319,7 +319,9 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | max number of processors                                             |
  *----------------------------------------------------------------------*/
-#define MAXPROC          (16)
+#ifndef MAXPROC
+#define MAXPROC          (32)
+#endif
 
 /*----------------------------------------------------------------------*
  | size of buffer to attach to intra-communicator in byte               |
