@@ -91,7 +91,7 @@ void s8_funct_deriv(
         deriv[0][4]= -r*(1-s);
         deriv[0][5]=  q12*(1-s*s);
         deriv[0][6]= -r*(1+s);
-        deriv[0][7]=  q12*(1-s*s);
+        deriv[0][7]= -q12*(1-s*s);
 
         deriv[1][0]=  q14*(1-r)*(r+2*s);
         deriv[1][1]=  q14*(1+r)*(-r+2*s);
