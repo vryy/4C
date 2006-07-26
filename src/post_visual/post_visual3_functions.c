@@ -959,27 +959,32 @@ void write_colourtable_grey_()
  *
  * This functions interpolates missing solutions, to
  * convert hex20-elements into hex27-elements.       */
-void lin_interpol(POST_DISCRETIZATION* discret, INT numnp_tot, DOUBLE* velocity, DOUBLE* pressure, INT INPT)
+void lin_interpol(POST_DISCRETIZATION* discret,
+                  INT numnp_tot,
+                  DOUBLE* velocity,
+                  DOUBLE* pressure,
+                  INT INPT)
 {
   INT i;
-  INT v=999;
-  v_test:
-  for (i=0; i<discret->field->numnp; i++)
-  { if (velocity[3*i] == v)
-    { v++;
-      goto v_test;
-    }
-  }
 
   for (i=discret->field->numnp; i<numnp_tot; i++)
-    velocity[3*i] = v;
+  {
+    velocity[3*i  ] = 0;
+    velocity[3*i+1] = 0;
+    velocity[3*i+2] = 0;
+  }
+  if (pressure!=NULL)
+    for (i=discret->field->numnp; i<numnp_tot; i++)
+      pressure[i]=0;
 
   for (i=0; i<discret->field->numele; i++)
-  { INT h, l, m, n[8];
-
+  {
+    INT h, l, m, n[8];
     for (m=20; m<27; m++)
-    { switch (m)
-      { case 20:
+    {
+      switch (m)
+      {
+      case 20:
           n[0]=0;
           n[1]=1;
           n[2]=2;
@@ -1048,8 +1053,10 @@ void lin_interpol(POST_DISCRETIZATION* discret, INT numnp_tot, DOUBLE* velocity,
       if (INPT==1)
       {
         if (m==26)
-        { for (h=0; h<3; h++)
-          { velocity[3*l+h]  =-velocity[3*discret->element[i].node[ 0]->Id_loc+h];
+        {
+          for (h=0; h<3; h++)
+          {
+            velocity[3*l+h]  =-velocity[3*discret->element[i].node[ 0]->Id_loc+h];
             velocity[3*l+h] -= velocity[3*discret->element[i].node[ 1]->Id_loc+h];
             velocity[3*l+h] -= velocity[3*discret->element[i].node[ 2]->Id_loc+h];
             velocity[3*l+h] -= velocity[3*discret->element[i].node[ 3]->Id_loc+h];
@@ -1098,61 +1105,38 @@ void lin_interpol(POST_DISCRETIZATION* discret, INT numnp_tot, DOUBLE* velocity,
           }
         }
         else
-        { if (velocity[3*l]==v)
-          { for (h=0; h<3; h++)
-            { velocity[3*l+h]  =-0.25*velocity[3*discret->element[i].node[n[0]]->Id_loc+h];
-              velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[1]]->Id_loc+h];
-              velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[2]]->Id_loc+h];
-              velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[3]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[4]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[5]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[6]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[7]]->Id_loc+h];
-            }
-            if (pressure!=NULL)
-            {
-              pressure[l]  =-0.25*pressure[discret->element[i].node[n[0]]->Id_loc];
-              pressure[l] -= 0.25*pressure[discret->element[i].node[n[1]]->Id_loc];
-              pressure[l] -= 0.25*pressure[discret->element[i].node[n[2]]->Id_loc];
-              pressure[l] -= 0.25*pressure[discret->element[i].node[n[3]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[4]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[5]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[6]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[7]]->Id_loc];
-            }
+        {
+          for (h=0; h<3; h++)
+          {
+            velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[0]]->Id_loc+h];
+            velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[1]]->Id_loc+h];
+            velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[2]]->Id_loc+h];
+            velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[3]]->Id_loc+h];
+            velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[4]]->Id_loc+h];
+            velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[5]]->Id_loc+h];
+            velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[6]]->Id_loc+h];
+            velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[7]]->Id_loc+h];
           }
-          /* if a node belongs to two elements, the average value of the
-           * two interpolated solutions is used */
-          else
-          { for (h=0; h<3; h++)
-            { velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[0]]->Id_loc+h];
-              velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[1]]->Id_loc+h];
-              velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[2]]->Id_loc+h];
-              velocity[3*l+h] -= 0.25*velocity[3*discret->element[i].node[n[3]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[4]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[5]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[6]]->Id_loc+h];
-              velocity[3*l+h] += 0.5*velocity[3*discret->element[i].node[n[7]]->Id_loc+h];
-              velocity[3*l+h] = 0.5*velocity[3*l+h];
-            }
-            if (pressure!=NULL)
-            {
-              pressure[l] -= 0.25*pressure[discret->element[i].node[n[0]]->Id_loc];
-              pressure[l] -= 0.25*pressure[discret->element[i].node[n[1]]->Id_loc];
-              pressure[l] -= 0.25*pressure[discret->element[i].node[n[2]]->Id_loc];
-              pressure[l] -= 0.25*pressure[discret->element[i].node[n[3]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[4]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[5]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[6]]->Id_loc];
-              pressure[l] += 0.5*pressure[discret->element[i].node[n[7]]->Id_loc];
-              pressure[l] = 0.5*pressure[l];
-            }
+          if (pressure!=NULL)
+          {
+            pressure[l] -= 0.25*pressure[discret->element[i].node[n[0]]->Id_loc];
+            pressure[l] -= 0.25*pressure[discret->element[i].node[n[1]]->Id_loc];
+            pressure[l] -= 0.25*pressure[discret->element[i].node[n[2]]->Id_loc];
+            pressure[l] -= 0.25*pressure[discret->element[i].node[n[3]]->Id_loc];
+            pressure[l] += 0.5*pressure[discret->element[i].node[n[4]]->Id_loc];
+            pressure[l] += 0.5*pressure[discret->element[i].node[n[5]]->Id_loc];
+            pressure[l] += 0.5*pressure[discret->element[i].node[n[6]]->Id_loc];
+            pressure[l] += 0.5*pressure[discret->element[i].node[n[7]]->Id_loc];
           }
         }
       }
       else
-      { if (m==26)
-        { for (h=0; h<3; h++)
+      {
+        dserror("linear interpolation currently not supported");
+#if 0
+        if (m==26)
+        {
+          for (h=0; h<3; h++)
           {
             velocity[3*l+h]  = velocity[3*discret->element[i].node[0]->Id_loc+h];
             velocity[3*l+h] += velocity[3*discret->element[i].node[1]->Id_loc+h];
@@ -1177,49 +1161,49 @@ void lin_interpol(POST_DISCRETIZATION* discret, INT numnp_tot, DOUBLE* velocity,
             pressure[l] += pressure[discret->element[i].node[8]->Id_loc];
             pressure[l] += 0.125*pressure[l];
           }
-
         }
         else
-        { if (velocity[3*l]==v)
-          { for (h=0; h<3; h++)
-            { velocity[3*l+h]  = velocity[3*discret->element[i].node[n[0]]->Id_loc+h];
-              velocity[3*l+h] += velocity[3*discret->element[i].node[n[1]]->Id_loc+h];
-              velocity[3*l+h] += velocity[3*discret->element[i].node[n[2]]->Id_loc+h];
-              velocity[3*l+h] += velocity[3*discret->element[i].node[n[3]]->Id_loc+h];
-              velocity[3*l+h] = 0.25*velocity[3*l+h];
-            }
-            if (pressure!=NULL)
-            {
-              pressure[l]  = pressure[discret->element[i].node[n[0]]->Id_loc];
-              pressure[l] += pressure[discret->element[i].node[n[1]]->Id_loc];
-              pressure[l] += pressure[discret->element[i].node[n[2]]->Id_loc];
-              pressure[l] += pressure[discret->element[i].node[n[3]]->Id_loc];
-              pressure[l] = 0.25*pressure[l];
-            }
+        {
+          for (h=0; h<3; h++)
+          {
+            velocity[3*l+h] += velocity[3*discret->element[i].node[n[0]]->Id_loc+h];
+            velocity[3*l+h] += velocity[3*discret->element[i].node[n[1]]->Id_loc+h];
+            velocity[3*l+h] += velocity[3*discret->element[i].node[n[2]]->Id_loc+h];
+            velocity[3*l+h] += velocity[3*discret->element[i].node[n[3]]->Id_loc+h];
+            /* velocity[3*l+h] = 0.25*velocity[3*l+h]; */
           }
-          /* if a node belongs to two elements, the average value of the */
-          /* two interpolated solutions is used */
-          else
-          {  for (h=0; h<3; h++)
-            { velocity[3*l+h] += 0.25*velocity[3*discret->element[i].node[n[0]]->Id_loc+h];
-              velocity[3*l+h] += 0.25*velocity[3*discret->element[i].node[n[1]]->Id_loc+h];
-              velocity[3*l+h] += 0.25*velocity[3*discret->element[i].node[n[2]]->Id_loc+h];
-              velocity[3*l+h] += 0.25*velocity[3*discret->element[i].node[n[3]]->Id_loc+h];
-              velocity[3*l+h] = 0.5*velocity[3*l+h];
-            }
-            if (pressure!=NULL)
-            {
-              pressure[l] += 0.25*pressure[discret->element[i].node[n[0]]->Id_loc];
-              pressure[l] += 0.25*pressure[discret->element[i].node[n[1]]->Id_loc];
-              pressure[l] += 0.25*pressure[discret->element[i].node[n[2]]->Id_loc];
-              pressure[l] += 0.25*pressure[discret->element[i].node[n[3]]->Id_loc];
-              pressure[l] = 0.5*pressure[l];
-            }
+          if (pressure!=NULL)
+          {
+            pressure[l] += pressure[discret->element[i].node[n[0]]->Id_loc];
+            pressure[l] += pressure[discret->element[i].node[n[1]]->Id_loc];
+            pressure[l] += pressure[discret->element[i].node[n[2]]->Id_loc];
+            pressure[l] += pressure[discret->element[i].node[n[3]]->Id_loc];
+            /* pressure[l] = 0.25*pressure[l]; */
           }
         }
+#endif
       }
     }
   }
+
+  for (i=discret->field->numnp; i<numnp_tot; i++)
+  {
+    NODE* node;
+    node = &(discret->node[i]);
+
+    velocity[3*node->Id_loc+0] /= node->numele;
+    velocity[3*node->Id_loc+1] /= node->numele;
+    velocity[3*node->Id_loc+2] /= node->numele;
+  }
+
+  if (pressure!=NULL)
+    for (i=discret->field->numnp; i<numnp_tot; i++)
+    {
+      NODE* node;
+      node = &(discret->node[i]);
+
+      pressure[node->Id_loc] /= node->numele;
+    }
 }
 
 

@@ -332,7 +332,8 @@ void vis3caf(INT numff, INT numaf, INT numsf)
     if (distyp==hex20)
     {
       if (INPT==2)
-      { INT screen, dummy;
+      {
+        INT screen, dummy;
       input1:
         printf("\n");
         printf("     Please give the mode in which you want to interpolate missing solutions:\n");
@@ -1910,7 +1911,6 @@ void v3update(float *TIME)
         if (discret[h].element[0].distyp==hex20)
         {
           lin_interpol(&discret[h], numnp_tot[h], ale_displacement, NULL,  INPT);
-
         }
 #if 0
         if (discret[h].element[0].distyp==h_hex20)
