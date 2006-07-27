@@ -261,6 +261,8 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
   dstrc_exit();
 #endif
 }
+
+
 DOUBLE linear_interpolation(INT x, INT y, INT z,  ELEMENT* element, INT k)
 {
   DOUBLE result;
@@ -318,7 +320,6 @@ INT create_auxiliary_node(INT numnp,
   }
   else
   {
-    /* printf("(%d,%e,%e,%e),\n", numnp, x_temp[0], x_temp[1], x_temp[2]); */
     discret->node[numnp].Id_loc = numnp;
     discret->node[numnp].Id = numnp;
     discret->node[numnp].proc = 0;

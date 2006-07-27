@@ -26,6 +26,10 @@ void post_fsi_divide_leaf(OCTREE   *octree,
   NODELIST  *nodelist1;
   INT       i;
 
+#ifdef DEBUG
+  dstrc_enter("post_fsi_divide_leaf");
+#endif
+
   /*initialisation*/
   nodelist=octree->nodelist;
   nodelist0=lhs->nodelist;
@@ -75,6 +79,10 @@ void post_fsi_divide_leaf(OCTREE   *octree,
   if (nodelist1!=NULL) nodelist1->next=NULL;
   octree->nodelist=NULL;
   octree->numnpoct=0;
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
@@ -91,6 +99,10 @@ void post_octree_partition(OCTREE *octreetemp)
   OCTREE                *octreemem;               /*temporary pointer for memory allocation*/
   DOUBLE                x1, x2, x3, xplushalf;    /*length of the edges of the octree partition, half the length of the edge*/
   INT                   geo;                      /* flag (0,1,2)*/
+
+#ifdef DEBUG
+  dstrc_enter("post_octree_partition");
+#endif
 
   octreemem=NULL;
   if (octreetemp->numnpoct>MAXNODEPART)
@@ -187,6 +199,10 @@ void post_octree_partition(OCTREE *octreetemp)
     }
   }
   /*else: no further partition required*/
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
 
