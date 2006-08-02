@@ -35,7 +35,8 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 
 #LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
 #LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
-LIBS="-llapack-gcc-4.1 -lblas-gcc-4.1 -lmetis-gcc-4.1"
+#LIBS="-llapack-gcc-4.1 -lblas-gcc-4.1 -lmetis-gcc-4.1"
+LIBS="-L/cluster/acml-3.5.0/gfortran64/lib -lacml -lmetis-gcc-4.1"
 
 CFLAGS_OPT="-O2"
 FFLAGS_OPT="-O2"

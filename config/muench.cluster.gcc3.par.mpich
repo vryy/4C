@@ -44,7 +44,8 @@ VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
 VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
-LIBS="-llapack-gcc-3.3 -lblas-gcc-3.3 -lmetis-gcc-3.3"
+#LIBS="-llapack-gcc-3.3 -lblas-gcc-3.3 -lmetis-gcc-3.3"
+LIBS="-L/cluster/acml-3.0.0/gnu64/lib -lacml -lmetis-gcc-3.3"
 
 CFLAGS_OPT="-O2"
 FFLAGS_OPT="-O2"
