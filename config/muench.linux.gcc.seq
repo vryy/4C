@@ -8,7 +8,7 @@ MPIDIR=/opt/mpich
 PROGRAMNAME=cca_seq_linux
 F77=g77
 CC=gcc
-LD=gcc
+LD=g77
 
 INCLUDEDIRS="-I$MPIDIR/include -I/local_lnm/include -I/lnm/include"
 LIBDIRS="-L/local_lnm/lib -L/lnm/lib"
@@ -36,7 +36,7 @@ VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
-LIBS="-lc -lg2c -llapack -lblas -lmetis"
+LIBS="-llapack -lblas -lmetis"
 
 CFLAGS_OPT="-O2"
 FFLAGS_OPT="-O2"
