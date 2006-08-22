@@ -26,11 +26,6 @@ else
 fi
 
 
-# source config file
-# Here we get all the variables.
-. "$configfile"
-
-
 # C++ is used => us CP for linking
 USES_CPP=0
 
@@ -57,6 +52,10 @@ if [ x$DEBUG = "xyes" ] ; then
   IS_DEBUG=1
 fi
 
+
+# source config file
+# Here we get all the variables.
+. "$configfile"
 
 
 # get the define flags

@@ -22,8 +22,13 @@ INCLUDEDIRS="-I/lnm/include -I$MPIDIR/include"
 LIBDIRS="-L/lnm/lib"
 
 # aztec
-AZTEC_INC=""
-AZTEC_LIB="-laztec-gcc-4.1-infiniband"
+if [ $IS_DEBUG = 1 ] ; then
+  AZTEC_INC=""
+  AZTEC_LIB="-laztec-gcc-4.1-infiniband-debug"
+else
+  AZTEC_INC=""
+  AZTEC_LIB="-laztec-gcc-4.1-infiniband"
+fi
 
 # spooles
 SPOOLES_INC=""
