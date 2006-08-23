@@ -10,8 +10,8 @@ F77=g77
 CC=gcc
 LD=g77
 
-INCLUDEDIRS="-I$MPIDIR/include -I/local_lnm/include -I/lnm/include"
-LIBDIRS="-L/local_lnm/lib -L/lnm/lib"
+INCLUDEDIRS="-I$MPIDIR/include -I/lnm/include"
+LIBDIRS="-L/lnm/lib"
 
 # aztec
 AZTEC_INC=""
