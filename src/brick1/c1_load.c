@@ -494,7 +494,7 @@ dstrc_enter("c1_eleload");
   {
     gsurf[i] = ele->g.gvol->gsurf[i];
     surfneum[i] = gsurf[i]->neum;
-    if (surfneum[i]) foundsurf=1;
+    if (surfneum[i] && surfneum[i]->neum_type!=neum_FSI) foundsurf=1;
   }
   if (foundsurf==0) goto endsurf;
 /*------------------------------------------ number of nodes on element */
