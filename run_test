@@ -254,7 +254,7 @@ echo '-----------------------------'
 echo
 
 # We are done. Clean up and remove the exit trap.
-#cleanup
+cleanup
 
 # exit with non-zero return code if something went wrong
 if [ $fail1 -ge 1 ]; then
