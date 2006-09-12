@@ -489,7 +489,8 @@ void sparse_mask_list_mask_solver(SPARSE_MASK_LIST* s, SOLVAR *solvar)
 
     amdef("update",&(array_msr->update),array_msr->numeq,1,"IV");
 #ifdef PARALLEL
-    memcpy(array_msr->update.a.iv, ps->update, array_msr->numeq*sizeof(INT));
+    dserror("todo");
+    /*memcpy(array_msr->update.a.iv, ps->update, array_msr->numeq*sizeof(INT));*/
 #else
     for (i=0; i<array_msr->numeq; ++i)
     {
@@ -535,15 +536,19 @@ void sparse_mask_list_mask_solver(SPARSE_MASK_LIST* s, SOLVAR *solvar)
     }
 
 #ifdef PARALLEL
+    dserror("todo");
+    /*
     array_ccf->nnz_total=0;
     MPI_Allreduce(&(array_ccf->nnz),&(array_ccf->nnz_total),1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
+    */
 #else
     array_ccf->nnz_total = array_ccf->nnz;
 #endif
 
     amdef("update",&(array_ccf->update),array_ccf->numeq,1,"IV");
 #ifdef PARALLEL
-    memcpy(array_ccf->update.a.iv, ps->update, array_ccf->numeq*sizeof(INT));
+    dserror("todo");
+    /*memcpy(array_ccf->update.a.iv, ps->update, array_ccf->numeq*sizeof(INT));*/
 #else
     for (i=0; i<array_ccf->numeq; ++i)
     {
