@@ -1345,7 +1345,8 @@ void inp_fluid_field(
 
         /* create the corresponding ale element */
         f3_createale(&(fluidfield->dis[0].element[counter]),
-            &(alefield->dis[0].element[counter]),genprob.nele,genprob.nodeshift);
+            &(alefield->dis[0].element[ale_element]),genprob.nele,genprob.nodeshift);
+        ale_element++;
       }  /* if (genprob.create_ale == 1) */
 
 #endif
