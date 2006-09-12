@@ -862,7 +862,7 @@ dstrc_exit();
 return;
 } /* end of c1_mat_plast_mises_ls */
 /*----------------------------------------------------------------------*/
- #endif
+#endif
 /*! @} (documentation module close)*/
 
 

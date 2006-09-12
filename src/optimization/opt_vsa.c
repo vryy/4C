@@ -108,9 +108,9 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   CONTAINER     container;        /* contains variables defined in container.h */
   ELEMENT *actele;                /* active element                            */
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("optvsa");
-  #endif
+#endif
 /*------------ the distributed system matrix, which is used for solving */
   actsysarray=0;
   numvar = 0;
@@ -120,15 +120,15 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL
+#ifdef PARALLEL
   actintra    = &(par.intra[0]);
-  #else
+#else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
   if (!actintra) dserror("Allocation of INTRA failed");
   actintra->intra_fieldtyp = structure;
   actintra->intra_rank   = 0;
   actintra->intra_nprocs   = 1;
-  #endif
+#endif
   container.fieldtyp  = actfield->fieldtyp;
   container.isdyn = 0;            /* static calculation */
   container.disnum       = 0;
@@ -136,9 +136,9 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   if(init==1)
   {
     svec  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
-    #ifdef PARALLEL
+#ifdef PARALLEL
     sveh  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
-    #endif
+#endif
     /*---------------- create 1 vector grdisp for displacements deriv. */
     /*----------------------- get global and local number of equations */
     if (statvar->nonlinear==1)
@@ -338,9 +338,9 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 return;
 } /* end of optvsa */
 /*----------------------------------------------------------------------*/

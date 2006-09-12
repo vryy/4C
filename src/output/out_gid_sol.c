@@ -157,6 +157,17 @@ for (i=0; i<genprob.numfld; i++)
 
 #ifdef D_SHELL8
       case el_shell8:
+         if (actele->numnp==3)
+         {
+             actgid->is_shell8_3_11   = 1;
+             actgid->shell8_3_11_name = "shell8_3_11";
+         }
+         if (actele->numnp==6)
+         {
+             actgid->is_shell8_6_33   = 1;
+             actgid->shell8_6_33_name = "shell8_6_33";
+         }
+
          if (actele->numnp==4)
          {
            if (actele->e.s8->nGP[0]==2 && actele->e.s8->nGP[1]==2)
@@ -815,6 +826,19 @@ for (i=0; i<genprob.numfld; i++)
          sign,actgid->shell8_9_33_name,j,sign,
          sign,actgid->shell8_9_33_name,j,sign);
      fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_shell8_3_11)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i SHELL8 1 GP\n",actgid->fieldname,j);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Triangle %c%s_dis_%1i%c\n",
+         sign,actgid->shell8_3_11_name,j,sign,
+         sign,actgid->shell8_3_11_name,j,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
      fprintf(out,"NATURAL COORDINATES: Internal\n");
      fprintf(out,"END GAUSSPOINTS\n");
    }
@@ -1735,6 +1759,25 @@ if (actgid->is_shell8_9_33)
     if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
     fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
     for (j=1; j<9; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_shell8_3_11)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->shell8_3_11_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
+      sign,sign,sign,sign,sign,actgid->shell8_3_11_name,disnum,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[disnum].numele; i++)
+  {
+    actele = &(actfield->dis[disnum].element[i]);
+    if (actele->eltyp != el_shell8 || actele->numnp != 1) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<4; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
   }
   fprintf(out,"END VALUES\n");
@@ -3086,27 +3129,41 @@ for (j=0; j<place; j++)
 
 
 
+
+
+
+
+
+
+
+
 /*=============================================== result type is stress */
 if (strncmp(string,"stress",stringlenght)==0)
-{
+  {
    /*--------- ---------now go through the meshes and print the results */
    /*===============================shell8 element with 2x2 gausspoints */
    /* these shells have 18 stresses, do 2 x 3D Matrix */
    /* for shell8 stresses permutation: */
    /* ii[18] = {0,2,8,1,3,16,4,17,9,5,7,14,6,10,12,11,13,15};*/
-#if 0
-#ifdef D_SHELL8
-   if (actgid->is_shell8_22)
-   {
+ #if 1
+ #ifdef D_SHELL8
+
+   /*===============================shell8 element with 3x3 gausspoints */
+   /* these shells have 18 stresses, do 2 x 3D Matrix */
+   /* for shell8 stresses permutation: */
+   /* ii[18] = {0,2,8,1,3,16,4,17,9,5,7,14,6,10,12,11,13,15};*/
+   if (actgid->is_shell8_4_22)
+     {
       ngauss=4;
       resulttype        = "MATRIX";
       resultplace       = "ONGAUSSPOINTS";
-      gpset             = actgid->shell8_22_name;
+      gpset             = actgid->shell8_4_22_name;
       rangetable        = actgid->standardrangetable;
       /*--- print the constant-in-thickness direction forces */
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT shell8_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out, "Monsterkacke\n");
       fprintf(out,"RESULT %cshell8_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
                                                              sign,sign,
                                                              sign,sign,
@@ -3130,21 +3187,21 @@ if (strncmp(string,"stress",stringlenght)==0)
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              actele->Id+1,
-                             forces[0][gaussperm4[0]],
-                             forces[1][gaussperm4[0]],
-                             forces[9][gaussperm4[0]],
-                             forces[2][gaussperm4[0]],
-                             forces[4][gaussperm4[0]],
-                             forces[3][gaussperm4[0]]
+                             forces[0][gaussperm9[0]],
+                             forces[1][gaussperm9[0]],
+                             forces[9][gaussperm9[0]],
+                             forces[2][gaussperm9[0]],
+                             forces[4][gaussperm9[0]],
+                             forces[3][gaussperm9[0]]
                              );
          for (j=1; j<ngauss; j++)
          fprintf(out,"        %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
-                             forces[0][gaussperm4[j]],
-                             forces[1][gaussperm4[j]],
-                             forces[9][gaussperm4[j]],
-                             forces[2][gaussperm4[j]],
-                             forces[4][gaussperm4[j]],
-                             forces[3][gaussperm4[j]]
+                             forces[0][gaussperm9[j]],
+                             forces[1][gaussperm9[j]],
+                             forces[9][gaussperm9[j]],
+                             forces[2][gaussperm9[j]],
+                             forces[4][gaussperm9[j]],
+                             forces[3][gaussperm9[j]]
                              );
 
       }
@@ -3176,26 +3233,55 @@ if (strncmp(string,"stress",stringlenght)==0)
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              actele->Id+1,
-                             forces[5] [gaussperm4[0]],
-                             forces[6] [gaussperm4[0]],
-                             forces[15][gaussperm4[0]],
-                             forces[7] [gaussperm4[0]],
-                             forces[11][gaussperm4[0]],
-                             forces[10][gaussperm4[0]]
+                             forces[5] [gaussperm9[0]],
+                             forces[6] [gaussperm9[0]],
+                             forces[15][gaussperm9[0]],
+                             forces[7] [gaussperm9[0]],
+                             forces[11][gaussperm9[0]],
+                             forces[10][gaussperm9[0]]
                              );
          for (j=1; j<ngauss; j++)
          fprintf(out,"        %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
-                             forces[5] [gaussperm4[j]],
-                             forces[6] [gaussperm4[j]],
-                             forces[15][gaussperm4[j]],
-                             forces[7] [gaussperm4[j]],
-                             forces[11][gaussperm4[j]],
-                             forces[10][gaussperm4[j]]
+                             forces[5] [gaussperm9[j]],
+                             forces[6] [gaussperm9[j]],
+                             forces[15][gaussperm9[j]],
+                             forces[7] [gaussperm9[j]],
+                             forces[11][gaussperm9[j]],
+                             forces[10][gaussperm9[j]]
                              );
 
       }
       fprintf(out,"END VALUES\n");
-   }
+      }
+ #endif /* D_SHELL8*/
+ #endif /* 0 */
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*=============================================== result type is stress */
+if (strncmp(string,"stress",stringlenght)==0)
+{
+   /*--------- ---------now go through the meshes and print the results */
+   /*===============================shell8 element with 2x2 gausspoints */
+   /* these shells have 18 stresses, do 2 x 3D Matrix */
+   /* for shell8 stresses permutation: */
+   /* ii[18] = {0,2,8,1,3,16,4,17,9,5,7,14,6,10,12,11,13,15};*/
+#if 0
+#ifdef D_SHELL8
+
    /*===============================shell8 element with 3x3 gausspoints */
    /* these shells have 18 stresses, do 2 x 3D Matrix */
    /* for shell8 stresses permutation: */
@@ -5073,6 +5159,7 @@ actsmgid->is_shell8_8_22 = 0;
 actsmgid->is_shell8_8_33 = 0;
 actsmgid->is_shell8_9_22 = 0;
 actsmgid->is_shell8_9_33 = 0;
+actsmgid->is_shell8_3_11 = 0;
 
 actsmgid->is_shell9_4_22 = 0;
 actsmgid->is_shell9_4_33 = 0;

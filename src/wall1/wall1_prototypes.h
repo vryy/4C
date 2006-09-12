@@ -867,7 +867,8 @@ void w1_fsiload(ELEMENT  *ele,     /* actual element                  */
                 W1_DATA  *data,    /* wall1- Data                     */
                 DOUBLE	 *loadvec, /* global element load vector fext */
                 INT	  init,    /* flag if init or calculation     */
-                INT       imyrank);
+		ARRAY_POSITION* ipos,
+		INT       imyrank);
 void w1_iedg(INT *iegnod, ELEMENT *ele, INT line, INT init);
 /*----------------------------------------------------------------------*
  | w1_cal_fext.c                                             ah 07/02   |
@@ -1080,11 +1081,11 @@ void w1_mat_damage(DOUBLE    ym,         /* young's modulus                   */
                    INT       Damtyp,     /* flag for Damage-Typ               */
                    DOUBLE    Kappa_0,    /* initial damage equivalent strain  */
                    DOUBLE    Kappa_m,    /* factor for damage-law             */
-                   DOUBLE    Alpha,      /* factor for expon. damage-function */       
+                   DOUBLE    Alpha,      /* factor for expon. damage-function */
                    DOUBLE    Beta,       /* factor for expon. damage-function */
-                   DOUBLE    k_fac,      /* factor for de Vree                */       
+                   DOUBLE    k_fac,      /* factor for de Vree                */
                    ELEMENT  *ele,        /* actual (macro-)element            */
-                   WALL_TYPE wtype,      /* plane stress/strain...            */         
+                   WALL_TYPE wtype,      /* plane stress/strain...            */
                    DOUBLE  **bop,        /* derivative operator               */
                    DOUBLE   *gop,
                    DOUBLE   *alpha,
@@ -1095,7 +1096,7 @@ void w1_mat_damage(DOUBLE    ym,         /* young's modulus                   */
                    INT       newval,     /* controls eval. of stresses        */
                    ELEMENT  *actsmele,   /* act.smelement if small scale mat. */
                    INT       smallscale, /* is it mat. law for small scale?   */
-                   DOUBLE    *strain_tot);/* total strain if small scale mat.  */ 
+                   DOUBLE    *strain_tot);/* total strain if small scale mat.  */
 /*----------------------------------------------------------------------*
  | create tensor from vector !!!!!!only for strains!!!!   he    04/03   |
  *----------------------------------------------------------------------*/

@@ -1004,7 +1004,7 @@ DOUBLE facsr;
 DOUBLE facpr;
 DOUBLE fact[2];
 
- #ifdef DEBUG
+#ifdef DEBUG
 dstrc_enter("f2_lscalgaltfv");
 #endif
 

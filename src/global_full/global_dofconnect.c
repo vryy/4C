@@ -50,9 +50,9 @@ void dofdof_realloc(INT dof1,INT **dof_dof)
   INT *hivec;
   INT numdofconected    = 100;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("dofdof_realloc");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   ac = dof_dof[dof1][1];                /* number of allocated integers */
   hivec = (INT*)CCACALLOC(ac ,sizeof(INT));
@@ -63,9 +63,9 @@ void dofdof_realloc(INT dof1,INT **dof_dof)
   dof_dof[dof1][1]  += numdofconected;  /* number of allocated integers */
   CCAFREE(hivec);
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
 return;
 } /* end of dofdof_realloc */
@@ -78,9 +78,9 @@ void delete_redundant_dof(INT dof1,INT **dof_dof)
   INT m=0, k=0;
   INT dof11, dof22;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("delete_redundant_dof");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   dof11 = dof_dof[dof1][2];
   for (m=3; m<dof_dof[dof1][0]+2; m++)
@@ -101,9 +101,9 @@ void delete_redundant_dof(INT dof1,INT **dof_dof)
     }
   }
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
 return;
 } /* end of delete_redundant_dof */
@@ -117,9 +117,9 @@ void delete_single_dof(INT dof1,INT **dof_dof)
   INT m=0, k=0;
   INT dof22;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("delete_single_dof");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   for (m=2; m<dof_dof[dof1][0]+2; m++)
   {
@@ -134,9 +134,9 @@ void delete_single_dof(INT dof1,INT **dof_dof)
     }
   }
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
 return;
 } /* end of delete_single_dof */
@@ -159,9 +159,9 @@ void dofconnectivity(FIELD        *actfield,
 
   NODE    *actnode, *partnernode;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("dofconnectivity");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   for (j=0; j<actfield->dis[0].numnp; j++)
   {
@@ -272,9 +272,9 @@ void mds_make_colstr_rowind(SOLVAR       *actsolv,
   INT        symm;
   MLVAR        *mlvar;
 
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("mds_make_colstr_rowind");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   mlvar = actsolv->mlvar;
   symm = mlvar->symm;
@@ -303,9 +303,9 @@ void mds_make_colstr_rowind(SOLVAR       *actsolv,
   }
   mds->colstr.a.iv[numeq]=count+1;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
   return;
 } /* end of mds_make_colstr_rowind */
 /*----------------------------------------------------------------------*/

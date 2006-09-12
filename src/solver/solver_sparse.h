@@ -126,6 +126,10 @@ typedef struct _PARALLEL_SPARSE
 void sparse_mask_list_init(SPARSE_MASK_LIST* s, INT rows, INT cols, INT bandwidth);
 void sparse_mask_list_destroy(SPARSE_MASK_LIST* s);
 void sparse_mask_list_mark(SPARSE_MASK_LIST* s, INT row, INT col);
+#ifdef DEBUG
+void sparse_mask_list_dump(SPARSE_MASK_LIST* s, char* filename);
+#endif
+void sparse_mask_list_mask_solver(SPARSE_MASK_LIST* s, SOLVAR *solv);
 
 void parallel_sparse_init(PARALLEL_SPARSE* ps, INT rows, INT cols,
                           SLICING_DIRECTION slicing, INT local_cols);

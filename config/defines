@@ -56,8 +56,8 @@
                      # when writing output to GiD
 # S8_HEX8            # write 4-noded shell8 elements as hex8 in GiD
 # SUBDIV             # subdivide elements for calculation
-
-
+# FSI_NONMATCH       # nonmatching interface, simple interpolation.
+# FSI_NEWTONCOUPLING # fsi coupling with evaluation of tangent operator
 
 #   tools
 #  =======

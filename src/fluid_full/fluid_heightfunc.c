@@ -82,7 +82,6 @@ during the nonlinear iteration.
 \param   *action      CALC_ACTION
 \param   *container   CONTAINER
 \param   *ipos                           (i)   node array positions
-\param    converged   INT                 convergence flag
 
 \return void
 
@@ -94,8 +93,7 @@ void fluid_heightfunc(INT                  hctrl,
                       INTRA               *actintra,
                       CALC_ACTION         *action,
                       CONTAINER           *container,
-                      ARRAY_POSITION      *ipos,
-                      INT                  converged)
+                      ARRAY_POSITION      *ipos)
 {
 #ifdef D_FSI
 static INT             numnp_total;
@@ -329,7 +327,6 @@ during the nonlinear iteration.
 \param   *actintra    INTRA               actual intra-com.
 \param   *action      CALC_ACTION
 \param   *container   CONTAINER
-\param    converged   INT                 convergence flag
 
 \return void
 

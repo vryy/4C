@@ -507,8 +507,19 @@ void global_result_test()
       {
 #ifndef PARALLEL
         ARRAY_POSITION* ipos;
-        ipos = &(fluidfield->dis[0].ipos);
-        fluid_cal_error(fluidfield,ipos,res->dis);
+	INT             disnum_calc;
+	INT             disnum_io;
+#ifdef SUBDIV
+	if (fluidfield->subdivide > 0)
+	{
+	  disnum_calc = 1;
+	  disnum_io   = 0;
+	}
+	else
+#endif
+	  disnum_calc = disnum_io = 0;
+        ipos = &(fluidfield->dis[disnum_calc].ipos);
+        fluid_cal_error(fluidfield,disnum_calc,ipos,res->dis);
 #endif
         test_count = -1;
         break;

@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef D_SHELL9
-   #include "../shell9/shell9.h"
+#include "../shell9/shell9.h"
 #endif /*D_SHELL9*/
 
 /*----------------------------------------------------------------------*
@@ -44,7 +44,7 @@ static DOUBLE *rhsrecv;
 #endif
 SPARSE_TYP   *sysarraytyp;
 SPARSE_ARRAY *sysarray;
- #ifdef DEBUG
+#ifdef DEBUG
 dstrc_enter("calrhs");
 #endif
 /*----------------------------------------------------------------------*/
@@ -161,7 +161,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
    /*------------------------------------- set active neumann condition */
    actneum = actnode->gnode->neum;
 
-   #ifdef D_SHELL9
+#ifdef D_SHELL9
      if (actnode->element[0]->eltyp == el_shell9)
      {
        numklay = (actnode->numdf-3)/3;
@@ -189,7 +189,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
        /*switch the neum_onoff to 1 due to nsurf */
        s9_surf_onoff(actneum->neum_onoff.a.iv, nsurf, numklay);
      }
-   #endif /*D_SHELL9*/
+#endif /*D_SHELL9*/
 
    /*------------------------------------------------ loop dofs of node */
    for (j=0; j<actnode->numdf; j++)

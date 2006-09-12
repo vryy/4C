@@ -251,6 +251,326 @@ void sparse_mask_list_mark(SPARSE_MASK_LIST* s, INT row, INT col)
 #endif
 }
 
+
+#ifdef DEBUG
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief dump the matrix mask to view it with gnuplot
+
+  \param s            (i) sparse matrix mask
+  \param filename     (i) name of file to write
+
+  \author u.kue
+  \date 08/06
+ */
+/*----------------------------------------------------------------------*/
+void sparse_mask_list_dump(SPARSE_MASK_LIST* s, char* filename)
+{
+  INT i;
+  FILE* f;
+
+#ifdef DEBUG
+  dstrc_enter("sparse_mask_list_dump");
+#endif
+
+  f = fopen(filename,"w");
+  for (i=0; i<s->cols; ++i)
+  {
+    INTSET* set;
+    INT j;
+    set = &(s->columns[i]);
+    for (j=0; j<set->count; ++j)
+    {
+      fprintf(f,"%d %d\n",i,set->value[j]);
+    }
+  }
+  fclose(f);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief create an aztec-like bindx array from the given sparse mask
+  list.
+ */
+/*----------------------------------------------------------------------*/
+static void sparse_mask_list_make_bindx(SPARSE_MASK_LIST *s,
+					ARRAY* update,
+					INT nnz,
+					INT *bindx)
+{
+  INT i, c, *fill;
+
+  bindx[0] = s->rows + 1;
+  memset(bindx+1, 0, s->rows*sizeof(INT));
+
+  /* The number of entries in a row */
+
+  for (c=0; c<s->cols; ++c)
+  {
+    INTSET* set;
+    set = &s->columns[c];
+    for (i=0; i<set->count; ++i)
+    {
+      INT r;
+      r = set->value[i];
+      dsassert((r>=0) && (r<update->fdim), "update overflow");
+
+      /* Exclude diagonal entries. */
+      if (c != update->a.iv[r])
+      {
+	bindx[r+1] += 1;
+      }
+    }
+  }
+
+  /* aztec stores the number per row incrementally, excluding the
+   * diagonal entries. */
+
+  for (i=0; i<s->rows; ++i)
+  {
+    bindx[i+1] += bindx[i];
+  }
+  dsassert(bindx[s->rows] <= nnz+1, "bindx size error");
+
+  /* fill in all column positions */
+  /* Copy values */
+
+  fill = (INT*)CCACALLOC(s->rows, sizeof(INT));
+
+  for (i=0; i<s->cols; ++i)
+  {
+    INT r;
+    INTSET* set;
+    set = &s->columns[i];
+
+    for (r=0; r<set->count; ++r)
+    {
+      INT rr;
+      rr = set->value[r];
+      dsassert(rr >= 0 && rr < s->rows, "row overflow");
+      /* Exclude diagonal entries. */
+      if (i != update->a.iv[rr])
+      {
+#ifdef DEBUG
+	if (bindx[rr]+fill[rr] >= nnz+1)
+	  dserror("bindx overflow: s->rows=%d rr=%d bindx[rr]=%d fill[rr]=%d nnz=%d",
+		  s->rows, rr, bindx[rr], fill[rr], nnz);
+#endif
+	bindx[bindx[rr]+fill[rr]] = i;
+	fill[rr] += 1;
+      }
+    }
+  }
+
+#ifdef DEBUG
+  {
+    FILE* f;
+    f = fopen("bindx.mask","w");
+    for (i=0; i<s->cols; ++i)
+    {
+      INT j;
+      for (j=bindx[i]; j<bindx[i+1]; ++j)
+      {
+	fprintf(f,"%d %d\n",bindx[j],i);
+      }
+    }
+    fclose(f);
+  }
+#endif
+
+  CCAFREE(fill);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief create a transposed aztec-like bindx array from the given
+  sparse mask list.
+ */
+/*----------------------------------------------------------------------*/
+static void sparse_mask_list_make_bindx_transposed(SPARSE_MASK_LIST *s,
+						   ARRAY* update,
+						   INT nnz,
+						   INT *bindx)
+{
+  INT i, *fill;
+
+  bindx[0] = s->rows + 1;
+  memset(bindx+1, 0, s->rows*sizeof(INT));
+
+  /* fill in all column positions */
+  /* Copy values */
+
+  fill = (INT*)CCACALLOC(s->rows, sizeof(INT));
+
+  for (i=0; i<s->cols; ++i)
+  {
+    INT r;
+    INTSET* set;
+    set = &s->columns[i];
+
+    for (r=0; r<set->count; ++r)
+    {
+      INT rr;
+      rr = set->value[r];
+      dsassert(rr >= 0 && rr < s->rows, "row overflow");
+      /* Exclude diagonal entries. */
+      if (i != update->a.iv[rr])
+      {
+	bindx[bindx[i]+fill[i]] = rr;
+	fill[i] += 1;
+      }
+    }
+    bindx[i+1] = bindx[i]+fill[i];
+  }
+
+#ifdef DEBUG
+  {
+    FILE* f;
+    f = fopen("bindx.mask","w");
+    for (i=0; i<s->cols; ++i)
+    {
+      INT j;
+      for (j=bindx[i]; j<bindx[i+1]; ++j)
+      {
+	fprintf(f,"%d %d\n",bindx[j],i);
+      }
+    }
+    fclose(f);
+  }
+#endif
+
+  CCAFREE(fill);
+}
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void sparse_mask_list_mask_solver(SPARSE_MASK_LIST* s, SOLVAR *solvar)
+{
+  switch (solvar->solvertyp)
+  {
+#ifdef AZTEC_PACKAGE
+  case aztec_msr:
+  {
+    AZ_ARRAY_MSR* array_msr;
+    INT* bindx;
+    INT i;
+
+    /* We create one array */
+
+    solvar->nsysarray = 1;
+    solvar->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(solvar->nsysarray,sizeof(SPARSE_TYP));
+    solvar->sysarray     = (SPARSE_ARRAY*)CCACALLOC(solvar->nsysarray,sizeof(SPARSE_ARRAY));
+
+    solvar->sysarray_typ[0] = msr;
+    solvar->sysarray[0].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
+    array_msr = solvar->sysarray[0].msr;
+
+    /* Build up the sparse mask. */
+
+    array_msr->numeq_total = s->rows;
+    array_msr->numeq = s->rows;
+
+    array_msr->nnz = 0;
+    for (i=0; i<s->cols; ++i)
+    {
+      array_msr->nnz += s->columns[i].count;
+    }
+
+    amdef("update",&(array_msr->update),array_msr->numeq,1,"IV");
+#ifdef PARALLEL
+    memcpy(array_msr->update.a.iv, ps->update, array_msr->numeq*sizeof(INT));
+#else
+    for (i=0; i<array_msr->numeq; ++i)
+    {
+      array_msr->update.a.iv[i] = i;
+    }
+#endif
+
+    bindx =  (INT*)amdef("bindx",&(array_msr->bindx),(array_msr->nnz+1),1,"IV");
+                   amdef("val"  ,&(array_msr->val)  ,(array_msr->nnz+1),1,"DV");
+    array_msr->bindx_backup.Typ = cca_XX;
+
+    sparse_mask_list_make_bindx(s, &array_msr->update, array_msr->nnz, bindx);
+    break;
+  }
+#endif
+#ifdef UMFPACK
+  case umfpack:
+  {
+    CCF* array_ccf;
+    ARRAY bindx_a;
+    INT  *bindx;
+    INT i;
+
+    /* We create one array */
+
+    solvar->nsysarray = 1;
+    solvar->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(solvar->nsysarray,sizeof(SPARSE_TYP));
+    solvar->sysarray     = (SPARSE_ARRAY*)CCACALLOC(solvar->nsysarray,sizeof(SPARSE_ARRAY));
+
+    solvar->sysarray_typ[0] = ccf;
+    solvar->sysarray[0].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
+    array_ccf = solvar->sysarray[0].ccf;
+
+    /* Build up the sparse mask. */
+
+    array_ccf->numeq_total = s->rows;
+    array_ccf->numeq = s->rows;
+
+    array_ccf->nnz = 0;
+    for (i=0; i<s->cols; ++i)
+    {
+      array_ccf->nnz += s->columns[i].count;
+    }
+
+#ifdef PARALLEL
+    array_ccf->nnz_total=0;
+    MPI_Allreduce(&(array_ccf->nnz),&(array_ccf->nnz_total),1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
+#else
+    array_ccf->nnz_total = array_ccf->nnz;
+#endif
+
+    amdef("update",&(array_ccf->update),array_ccf->numeq,1,"IV");
+#ifdef PARALLEL
+    memcpy(array_ccf->update.a.iv, ps->update, array_ccf->numeq*sizeof(INT));
+#else
+    for (i=0; i<array_ccf->numeq; ++i)
+    {
+      array_ccf->update.a.iv[i] = i;
+    }
+#endif
+
+    amdef("Ap_loc",&(array_ccf->Ap),array_ccf->numeq_total+1 ,1,"IV");
+    amdef("Ai_loc",&(array_ccf->Ai),array_ccf->nnz_total     ,1,"IV");
+    amdef("Ax",&(array_ccf->Ax),array_ccf->nnz_total     ,1,"DV");
+    amzero(&(array_ccf->Ax));
+
+    bindx = amdef("bindx",&(bindx_a),(array_ccf->nnz_total+1),1,"IV");
+
+    sparse_mask_list_make_bindx_transposed(s, &array_ccf->update, array_ccf->nnz, bindx);
+    ccf_make_sparsity(array_ccf,bindx);
+
+    amdel(&bindx_a);
+    break;
+  }
+#endif
+  default:
+    dserror("unsupported solver type %d",solvar->solvertyp);
+  }
+}
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief create the mask out of the mask list.

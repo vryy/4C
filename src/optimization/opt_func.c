@@ -175,15 +175,15 @@ dstrc_enter("opteqc");
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL
+#ifdef PARALLEL
   actintra    = &(par.intra[0]);
-  #else
+#else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
   if (!actintra) dserror("Allocation of INTRA failed");
   actintra->intra_fieldtyp = structure;
   actintra->intra_rank   = 0;
   actintra->intra_nprocs   = 1;
-  #endif
+#endif
   container.fieldtyp  = actfield->fieldtyp;
   container.isdyn   = 0;            /* static calculation */
   container.disnum  = 0;            /* only one discretisation */
@@ -284,15 +284,15 @@ dstrc_enter("optupd");
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL
+#ifdef PARALLEL
   actintra    = &(par.intra[0]);
-  #else
+#else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
   if (!actintra) dserror("Allocation of INTRA failed");
   actintra->intra_fieldtyp = structure;
   actintra->intra_rank   = 0;
   actintra->intra_nprocs   = 1;
-  #endif
+#endif
   container.isdyn   = 0;            /* static calculation */
   container.disnum  = 0;            /* only one discretisation */
   container.fieldtyp  = actfield->fieldtyp;
@@ -441,15 +441,15 @@ dstrc_enter("optobj");
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL
+#ifdef PARALLEL
   actintra    = &(par.intra[0]);
-  #else
+#else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
   if (!actintra) dserror("Allocation of INTRA failed");
   actintra->intra_fieldtyp = structure;
   actintra->intra_rank   = 0;
   actintra->intra_nprocs   = 1;
-  #endif
+#endif
 
   container.isdyn   = 0;            /* static calculation */
   container.disnum  = 0;            /* only one discretisation */

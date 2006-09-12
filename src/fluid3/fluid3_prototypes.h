@@ -348,38 +348,39 @@ void f3_calstabifp(
 /************************************************************************
  | f3_calmatvec_usfem.c                                                 |
  ************************************************************************/
-void f3_calmat( DOUBLE **estif,  
-		DOUBLE  *eforce,  
+void f3_calmat( DOUBLE **estif,
+		DOUBLE  *eforce,
 		DOUBLE  *velint,
-		DOUBLE   histvec[3], 
+		DOUBLE   histvec[3],
 		DOUBLE   gridvint[3],
+		DOUBLE   press,
 		DOUBLE **vderxy,
                 DOUBLE **vderxy2,
                 DOUBLE   gradp[3],
-		DOUBLE  *funct,  
-		DOUBLE **derxy,   
+		DOUBLE  *funct,
+		DOUBLE **derxy,
 		DOUBLE **derxy2,
                 DOUBLE  *edeadng,
-		DOUBLE   fac,    
-		DOUBLE   visc,   
+		DOUBLE   fac,
+		DOUBLE   visc,
 		INT      iel,
                 INT     *hasext,
                 INT      isale
               );
-void f3_calresvec(  DOUBLE  *eforce,  
+void f3_calresvec(  DOUBLE  *eforce,
                     DOUBLE  *velint,
-                    DOUBLE   histvec[3], 
-                    DOUBLE **vderxy, 
+                    DOUBLE   histvec[3],
+                    DOUBLE **vderxy,
                     DOUBLE **vderxy2,
-                    DOUBLE  *funct,  
-                    DOUBLE **derxy,   
+                    DOUBLE  *funct,
+                    DOUBLE **derxy,
 		    DOUBLE **derxy2,
                     DOUBLE  *edeadng,
                     DOUBLE   aleconv[3],
                     DOUBLE  *press,
                     DOUBLE   gradp[3],
-                    DOUBLE   fac,    
-                    DOUBLE   visc,   
+                    DOUBLE   fac,
+                    DOUBLE   visc,
                     INT      iel,
                     INT     *hasext,
                     INT      is_ale
@@ -611,16 +612,16 @@ void f3_calstabpar(
 /************************************************************************
  | f3_caltau.c                                                          |
  ************************************************************************/
-void f3_caltau(			     
-	       ELEMENT         *ele, 
+void f3_caltau(
+	       ELEMENT         *ele,
 	       DOUBLE         **xyze,
-	       DOUBLE          *funct,  
-	       DOUBLE         **deriv,  
-	       DOUBLE         **derxy,              
-	       DOUBLE         **xjm,  
+	       DOUBLE          *funct,
+	       DOUBLE         **deriv,
+	       DOUBLE         **derxy,
+	       DOUBLE         **xjm,
 	       DOUBLE         **evelng,
                DOUBLE         **wa1,
-               DOUBLE           visc  
+               DOUBLE           visc
               );
 
 /************************************************************************

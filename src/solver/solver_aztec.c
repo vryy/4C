@@ -69,15 +69,15 @@ switch(option)
 /*----------------------------------------------------------------------*/
 case 1:
    /*----------- make processor configuration, dependend on parallelism */
-   #ifdef PARALLEL
+#ifdef PARALLEL
    AZ_set_proc_config(msr_array->proc_config, (MPI_AZComm)(actintra->MPI_INTRA_COMM));
-   #else
+#else
    AZ_set_proc_config(msr_array->proc_config, AZ_NOT_MPI);
-   #endif
+#endif
    /*------------------------------------- set default value to options */
    AZ_defaults(msr_array->options,msr_array->params);
    /*-------------------------------------- perform check of msr matrix */
-   #ifdef DEBUG
+#ifdef DEBUG
    AZ_check_msr(
                 &(msr_array->bindx.a.iv[0]),
                   msr_array->numeq,
@@ -85,7 +85,7 @@ case 1:
                   AZ_GLOBAL,
                   msr_array->proc_config
                );
-   #endif
+#endif
    /*----------------------- set options and params from the input file */
    switch(azvar->azsolvertyp)/*--------------------------- set solver */
    {

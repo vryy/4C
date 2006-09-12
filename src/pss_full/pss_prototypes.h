@@ -219,6 +219,8 @@ void  amadd(
     DOUBLE      factor,
     INT         init);
 
+void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim);
+
 /*----------------------------------------------------------------------*
  | define 4D array                                       m.gee 12/01    |
  | similar to amdef, but for 3D and 4D fields                           |

@@ -262,7 +262,7 @@ endopen01:;
    /*------------------------------------------------------------ loads */
    /*------------------------- allreduce rhs */
 
-    #ifdef PARALLEL
+#ifdef PARALLEL
     rhspv = amdef("rhspv",&rhspv_a,solv->rhs[0].numeq_total,1,"DV");
     /*       amdel(&rhspv_a);*/
 
@@ -270,7 +270,7 @@ endopen01:;
     solserv_reddistvec(&solv->rhs[0],
                       &(solv->sysarray[0]),&(solv->sysarray_typ[0]),
                       rhspv, solv->rhs[0].numeq_total,actintra);
-    #endif
+#endif
     /* */
  if (par.myrank==0)
  {/* proc 0 */
@@ -287,13 +287,13 @@ endopen01:;
       {
         dof = actnode->dof[k];
         /* neumann condition on dof */
-    #ifdef PARALLEL
+#ifdef PARALLEL
         if (dof >= actfield->dis[0].numeq) continue;
         if(fabs(rhspv[dof])>0.00000001) lnodeflag=1;
-    #else
+#else
         if (dof >= solv->rhs[0].numeq) continue;
         if(fabs(solv->rhs[0].vec.a.dv[dof])>0.00000001) lnodeflag=1;
-    #endif
+#endif
      }
 
       if(!lnodeflag) continue;
@@ -303,13 +303,13 @@ endopen01:;
       for (k=0; k<actnode->numdf; k++)
       {
           dof = actnode->dof[k];
-    #ifdef PARALLEL
+#ifdef PARALLEL
           if (dof >= actfield->dis[0].numeq) continue;
           else lval = rhspv[dof];
-    #else
+#else
           if (dof >= solv->rhs[0].numeq) continue;
           else lval = solv->rhs[0].vec.a.dv[dof];
-    #endif
+#endif
           fprintf(out," %-18.5#f",lval);
       }
       fprintf(out,"\n");
@@ -354,9 +354,9 @@ endopen02:;
 /*----------------------------------------------------------------------*/
  }/* proc 0 */
 /*----------------------------------------------------------------------*/
-    #ifdef PARALLEL
+#ifdef PARALLEL
     amdel(&rhspv_a);
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();

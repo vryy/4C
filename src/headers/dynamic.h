@@ -99,7 +99,7 @@ DOUBLE             dnorm;   /* square of the L2-norm of the displacements increm
  *----------------------------------------------------------------------*/
 typedef struct _FSI_DYNAMIC
 {
-INT                ifsi;            /*!< coupling algorithm */
+FSI_COUPLING       ifsi;            /*!< coupling algorithm */
 INT                ipre;            /*!< type of predictor */
 INT                inrmfsi;         /*!< convergence criterion */
 INT                ichecke;         /*!< energy check */
@@ -197,7 +197,7 @@ INT                num_initstep; /*!< number of initial steps with prestress */
 DOUBLE             dt;           /*!< stepsize */
 DOUBLE             maxtime;      /*!< maximum total time */
 DOUBLE             time;         /*!< actual time */
-INT                coupmethod;   /*!< flag, 0=mortar , 1=conforming */
+INT                coupmethod;   /*!< flag, 0=mortar , 1=conforming, 2=nonconforming */
 } ALE_DYNAMIC;
 
 

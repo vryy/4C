@@ -30,9 +30,9 @@ elaborated we can easily change this code.
 /*----------------------------------------------------------------------*/
 typedef struct _INTSET
 {
-  INT size;
-  INT count;
-  INT* value;
+  INT size;			/* number of entries allocated */
+  INT count;			/* number of entries used */
+  INT* value;			/* entry array */
 } INTSET;
 
 

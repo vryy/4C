@@ -234,6 +234,7 @@ INT symbol_is_map(SYMBOL* symbol);
 INT symbol_get_string(SYMBOL* symbol, CHAR** string);
 INT symbol_get_int(SYMBOL* symbol, INT* integer);
 INT symbol_get_real(SYMBOL* symbol, DOUBLE* real);
+INT symbol_get_real_as_float(SYMBOL* symbol, float* real);
 INT symbol_get_map(SYMBOL* symbol, MAP** map);
 
 

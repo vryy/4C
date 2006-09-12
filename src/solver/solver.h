@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+
 #ifndef SOLVER_H
 #define SOLVER_H
 

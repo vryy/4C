@@ -45,9 +45,9 @@ INT  add_mds(struct _PARTITION     *actpart,
 /*----------------------------------------------------------------------*/
   mlvar = actsolv->mlvar;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("add_mds");
-  #endif
+#endif
 /*------------------------------------- set some pointers and variables */
   estif      = elearray1->a.da;
   nd         = actele->numnp * actele->node[0]->numdf;
@@ -59,9 +59,9 @@ INT  add_mds(struct _PARTITION     *actpart,
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-      #ifdef PARALLEL
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
-      #endif
+#endif
       counter++;
     }
   }/* end of loop over element nodes */

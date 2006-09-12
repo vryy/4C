@@ -104,9 +104,9 @@ MATERIAL    *actmat;
   INT numvarlin;                    /* AS */
   INT  *adr;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("opcini");
-  #endif
+#endif
 /*--------------------------------------------------- set some pointers */
   actfield    = &(field[0]);
   actpart     = &(partition[0]);

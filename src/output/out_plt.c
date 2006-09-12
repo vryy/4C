@@ -178,7 +178,7 @@ element quality statistics
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
-void plot_ale_quality(FIELD *field,INT step, DOUBLE time,
+void plot_ale_quality(FIELD *field,INT disnum,INT step, DOUBLE time,
                       INTRA *actintra, PARTITION *actpart)
 {
 #ifndef NO_TEXT_OUTPUT
@@ -211,7 +211,7 @@ max = -1.0;
 
 for (i=0; i<numel; i++)  /* loop over all elements */
 {
-   actele = actpart->pdis[0].element[i];
+   actele = actpart->pdis[disnum].element[i];
    if (actele->proc!=par.myrank) continue;
    quality = actele->e.ale2->quality;
    average += quality;

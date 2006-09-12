@@ -25,14 +25,13 @@ A huge part of this file was taken from the file visual_vis3.c.
 #include <stdio.h>
 #include "post_visual3.h"
 #include "post_visual3_functions.h"
-#include "post_design.h"
 #include "../post_common/post_common.h"
-#include "../pss_full/pss_set.h"
+#include "../post_common/post_design.h"
+#include "../post_common/post_octtree.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "../post_common/post_octtree.h"
 
 
 int strcpb(char *str1, char *str2, int len);
@@ -161,32 +160,6 @@ INT  *surf_in;                      /*needed for surface in case of existing des
 INT  *counter_array;
 INT  **tmp_array;
 
-
-
-/*----------------------------------------------------------------------*
- |  compare the integers - qsort routine                  a.lipka 5/01  |
- |                                                                      |
- |  the call for the sorter of an INT vector is then                    |
- |                                                                      |
- |  qsort((INT*) vector, lenght, sizeof(INT), cmp_int);                 |
- |                                                                      |
- *----------------------------------------------------------------------*/
-INT cmp_int(const void *a, const void *b )
-{
-    return *(INT *)a - * (INT *)b;
-}
-/*----------------------------------------------------------------------*
- |  compare the doubles - qsort routine                   a.lipka 5/01  |
- |                                                                      |
- |  the call for the sorter of a DOUBLE vector is then                  |
- |                                                                      |
- |  qsort((DOUBLE*) vector, lenght, sizeof(DOUBLE), cmp_double);        |
- |                                                                      |
- *----------------------------------------------------------------------*/
-DOUBLE cmp_double(const void *a, const void *b )
-{
-    return *(DOUBLE *)a - * (DOUBLE *)b;
-}
 
 
 void vis3caf(INT numff, INT numaf, INT numsf)
@@ -767,8 +740,8 @@ void v3surface(INT nsurf[][2], INT surf[], INT scel[][4], CHAR tsurf[][20])
   /* -------------------------------------------------STRUCTURE SURFACES 2D & 3D*/
   if (struct_idx!=-1)
   {
-    char *name = "Fluid               "
-                 "Structure           ";
+    char *name = "Structure           "
+                 "Fluid               ";
     strncpy((char*)tsurf, name, 40);
 
     INT p=0;
@@ -2640,6 +2613,7 @@ int main(int argc, char** argv)
   }
 
   printf("  There are %d sets of results.\n", nsteps);
+
 
 
   /* create time array */

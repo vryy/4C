@@ -31,6 +31,10 @@ This structure contains all specific information for a 3D ale element
 </pre>
 
 *----------------------------------------------------------------------*/
+
+#ifndef ALE3_HEADER
+#define ALE3_HEADER
+
 typedef struct _ALE3
 {
 
@@ -244,7 +248,7 @@ void ale3_static_ke_red(
 
 /*! @} (documentation module close)*/
 
-
+#endif
 #endif
 
 

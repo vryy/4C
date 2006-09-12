@@ -103,7 +103,7 @@ DOUBLE facsr;
 DOUBLE facpr;
 DOUBLE fact[3];
 
- #ifdef DEBUG
+#ifdef DEBUG
 dstrc_enter("f3_calgaltfv");
 #endif
 

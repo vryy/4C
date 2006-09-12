@@ -49,9 +49,9 @@ defined in opt_cal_main.c
 void caloptmain()
 {
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("caloptmain");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   if(opt->objective==oj_frequency&&par.nprocs>1)
   {
@@ -75,9 +75,9 @@ void caloptmain()
 /*----------------------------------------------------------------------*/
   endoptmain:;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 return;
 } /* end of caloptmain */
 /*----------------------------------------------------------------------*/

@@ -562,6 +562,7 @@ void w1_fsiload(ELEMENT  *ele,
                 W1_DATA  *data,
                 DOUBLE	 *loadvec,
                 INT	  init,
+		ARRAY_POSITION* ipos,
                 INT       imyrank)
 {
 INT          lr;                 /* integration directions          */
@@ -651,7 +652,7 @@ for (line=0; line<ngline; line++)
       /*-- loop the 3 stresses and get values from sol_mf of fluid node */
       for (i=0;i<3;i++)
       {
-         nsigma[i][j] = actfnode->sol_mf.a.da[1][i];
+         nsigma[i][j] = actfnode->sol_mf.a.da[ipos->mf_reldisp][i];
       }
    }
    /*-------------------- coordinates and weights of integration points */

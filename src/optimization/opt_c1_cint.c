@@ -454,12 +454,12 @@ if (init==7)
 {
   krexpo = opt->oeig->rhoks;                 /* exponent in Kreiselmeier*/
   /*---------------------------------------------------- get density ---*/
-  #ifdef D_OPTIM                   /* include optimization code to ccarat */
+#ifdef D_OPTIM                   /* include optimization code to ccarat */
    if(ele->e.c1->elewa->matdata==NULL) c1_getdensity(mat, &density);
    else density = ele->e.c1[0].elewa[0].matdata[0];
-  #else
+#else
   c1_getdensity(mat, &density);
-  #endif /* stop including optimization code to ccarat :*/
+#endif /* stop including optimization code to ccarat :*/
   for (i=0; i<60; i++) lmvec[i] = 0.0;
   amzero(&estiflo_a);
 }

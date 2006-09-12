@@ -830,6 +830,7 @@ void f2_calmat( DOUBLE **estif,
 		DOUBLE  *velint,
 		DOUBLE   histvec[2],
 		DOUBLE   gridvint[2],
+		DOUBLE   press,
 		DOUBLE **vderxy,
                 DOUBLE **vderxy2,
                 DOUBLE   gradp[2],
@@ -841,7 +842,8 @@ void f2_calmat( DOUBLE **estif,
 		DOUBLE   visc,
 		INT      iel,
                 INT     *hasext,
-                INT      isale
+                INT      isale,
+                INT      is_relax
               );
 void f2_calresvec(  DOUBLE  *eforce,
                     DOUBLE  *velint,
@@ -1673,7 +1675,8 @@ void f2_int_usfem(
                       DOUBLE           visc,
 	              DOUBLE         **wa1,
 	              DOUBLE         **wa2,
-                      DOUBLE           estress[3][MAXNOD_F2]
+                      DOUBLE           estress[3][MAXNOD_F2],
+                      INT              is_relax
 	             );
 void f2_int_res(
 	        ELEMENT         *ele,

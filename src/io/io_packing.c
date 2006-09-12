@@ -2078,7 +2078,7 @@ static void out_pack_average_pressure(BIN_OUT_CHUNK *chunk,
       for (k=0; k<actnode->numele; ++k)
       {
         INT l;
-        DOUBLE el_press;
+        DOUBLE el_press=0;
         ELEMENT* actele;
         actele = actnode->element[k];
 
@@ -3400,8 +3400,8 @@ static void out_pack_dline(BIN_OUT_CHUNK *chunk,
     {
       INT j=0;
       INT ndnode=0;
-      DNODE* dnode;
-      DLINE** pdline;
+      DNODE* dnode=NULL;
+      DLINE** pdline=NULL;
       INT ndline=0;
       DLINE* dline;
 
@@ -3532,12 +3532,12 @@ static void out_pack_dsurf(BIN_OUT_CHUNK *chunk,
     {
       INT j=0;
       INT ndnode=0;
-      DNODE* dnode;
-      DLINE** pdline;
+      DNODE* dnode=NULL;
+      DLINE** pdline=NULL;
       INT k=0;
       INT ndline=0;
       DLINE* dline;
-      DSURF** pdsurf;
+      DSURF** pdsurf=NULL;
       INT ndsurf=0;
       DSURF* dsurf;
 
@@ -3673,18 +3673,18 @@ static void out_pack_dvol(BIN_OUT_CHUNK *chunk,
     {
       INT j=0;
       INT ndnode=0;
-      DNODE* dnode;
-      DLINE** pdline;
+      DNODE* dnode=NULL;
+      DLINE** pdline=NULL;
       INT k=0;
       INT ndline=0;
       DLINE* dline;
-      DSURF** pdsurf;
+      DSURF** pdsurf=NULL;
       INT ndsurf=0;
       DSURF* dsurf;
       INT l=0;
       INT ndvol=0;
       DVOL* dvol;
-      DVOL** pdvol;
+      DVOL** pdvol=NULL;
 
       INT* size_ptr;
 
@@ -4787,18 +4787,18 @@ void find_design_item_length(struct _BIN_OUT_FIELD* context,
 
     INT j=0;
     INT ndnode=0;
-    DNODE* dnode;
-    DLINE** pdline;
+    DNODE* dnode=NULL;
+    DLINE** pdline=NULL;
     INT k=0;
     INT ndline=0;
     DLINE* dline;
-    DSURF** pdsurf;
+    DSURF** pdsurf=NULL;
     INT ndsurf=0;
     DSURF* dsurf;
     INT l=0;
     INT ndvol=0;
     DVOL* dvol;
-    DVOL** pdvol;
+    DVOL** pdvol=NULL;
 
     NODE* actnode;
     actnode = actpdis->node[i];

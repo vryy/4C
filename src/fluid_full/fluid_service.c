@@ -2574,6 +2574,7 @@ beltramii and kim-moin flow are calculated.
 ------------------------------------------------------------------------*/
 void fluid_cal_error(
     FIELD             *actfield,
+    INT                disnum,
     ARRAY_POSITION    *ipos,
     INT                index
     )
@@ -2635,13 +2636,13 @@ void fluid_cal_error(
   /* Zero everything so we can rely on the values we find. */
   memset(&container, 0, sizeof(CONTAINER));
 
-  container.disnum   = 0;
+  container.disnum   = disnum;
   container.fieldtyp = fluid;
 
   fdyn = alldyn[genprob.numff].fdyn;
   numdf        = fdyn->numdf;
-  numnp_total  = actfield->dis[0].numnp;
-  numeq_total  = actfield->dis[0].numeq;
+  numnp_total  = actfield->dis[disnum].numnp;
+  numeq_total  = actfield->dis[disnum].numeq;
   predof       = numdf-1;
   numvel       = numdf-1;
 
@@ -2766,7 +2767,7 @@ if (fdyn->adaptive)
    ipos->pred  = 6;
    ipos->terr  = 7;
 
-   ipos->numsol = 8;
+   ipos->numincr = 8;
 }
 else
 {
@@ -2778,7 +2779,7 @@ else
    ipos->accn  = 4;  /* acceleration at time n */
    ipos->hist  = 5;  /* linear combination of old solutions */
 
-   ipos->numsol = 6;
+   ipos->numincr = 6;
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

@@ -25,6 +25,17 @@ Maintainer: Andrea Hund
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 #ifdef D_MLSTRUCT
 /*----------------------------------------------------------------------*
@@ -61,10 +72,17 @@ DOUBLE      *intforce;
 DOUBLE       getval;
 INT          iloc;
 #endif /* D_OPTIM*/
+ARRAY_POSITION* ipos;
 
 #ifdef DEBUG
 dstrc_enter("wall1");
 #endif
+
+if (container!=NULL)
+  ipos = &(field[genprob.numsf].dis[container->disnum].ipos);
+else
+  ipos = NULL;
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 if (intforce_global)
@@ -178,7 +196,7 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_fsiload:
    imyrank = actintra->intra_rank;
    actmat = &(mat[ele->mat-1]);
-   w1_fsiload(ele,&actdata,intforce,0,imyrank);
+   w1_fsiload(ele,&actdata,intforce,0,ipos,imyrank);
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------- update after incremental step */
 case calc_struct_update_istep:
@@ -315,7 +333,7 @@ case calc_struct_ssi_coup_force:
        w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
        break;
      }
-   } 
+   }
 break;/*----------------------------------------------------------------*/
 #endif
 default:

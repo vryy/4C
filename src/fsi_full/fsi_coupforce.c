@@ -17,15 +17,17 @@ Maintainer: Christiane Foerster
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*#include "fluid_prototypes.h"*/
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "../fluid3_fast/f3f_prototypes.h"
+#include "../shell8/shell8.h"
 #ifdef D_ALE
 #include "../ale2/ale2.h"
 #endif
+
+#define EPS   1e-7
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -68,16 +70,16 @@ dirichlet boundary lines for fsi-coupling.
 Within an init phase (init=1) all elements which participate at a fsi
 coupling line are searched and labled by setting the flag
 actele->e.f2->force_on on 1.
-In the main part these elements are visited again, its interesting nodes 
-(the ones which are situated on the fsi coupling line) are found and the 
-elemental residual vector is calculated. 
+In the main part these elements are visited again, its interesting nodes
+(the ones which are situated on the fsi coupling line) are found and the
+elemental residual vector is calculated.
 The nodal forces are written to different destinations depending on the
 code version:
 
 I.  SEQUENTIELL: -> node forces go directly into sol_mf[1] field on fluid
                 -> *fcouple pointer is NULL
 
-II. PARALLEL:    -> node forces are written into fcouple which is of 
+II. PARALLEL:    -> node forces are written into fcouple which is of
                     dimension (numdof - numeq) i.e. number of Dirichlet
                     dofs of the field.
                  -> fcouple is indicated by (dof(node) - numeq)
@@ -179,14 +181,18 @@ void fsi_cbf(
         {
           actele = actpdis->element[i];
           if (par.myrank!=actele->proc)
-            continue; /* only my elments */
+            continue; /* only my elements */
 
           for(j=0; j<actele->numnp; j++)
           {
             actgnode = actele->node[j]->gnode;
+#ifndef FSI_NONMATCH
             /* check if there is a coupled struct node */
             if (actgnode->mfcpnode[genprob.numsf]==NULL)
               continue;
+#else
+            if (actgnode->fsicouple==NULL) continue;
+#endif
 
             actele->e.f3->force_on = 1;
             break;
@@ -222,7 +228,7 @@ void fsi_cbf(
       rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
       numdf = 3;
       for(i=0; i<actpdis->numele; i++)
-      { 
+      {
         actele = actpdis->element[i];
 
 
@@ -263,8 +269,8 @@ void fsi_cbf(
           fcouple[dofy-numeq_total] += eforce[line+1]*rho;
 #endif /* SOLVE_DIRICH */
 #else
-          actnode->sol_mf.a.da[1][0] += eforce[line]*rho;
-          actnode->sol_mf.a.da[1][1] += eforce[line+1]*rho;
+          actnode->sol_mf.a.da[ipos->mf_forcenp][0] += eforce[line]*rho;
+          actnode->sol_mf.a.da[ipos->mf_forcenp][1] += eforce[line+1]*rho;
 #endif  /* PARALLEL */
         }
       }
@@ -298,9 +304,13 @@ void fsi_cbf(
         for(j=0; j<actele->numnp; j++)
         {
           actgnode = actele->node[j]->gnode;
+#ifndef FSI_NONMATCH
           /* check if there is a coupled struct node */
           if (actgnode->mfcpnode[genprob.numsf]==NULL)
             continue;
+#else
+          if (actgnode->fsicouple==NULL) continue;
+#endif
           force_on_node[nfnode] = j;
           nfnode++;
         }
@@ -335,9 +345,9 @@ void fsi_cbf(
           fcouple[dofz-numeq_total] += eforce[line+2]*rho;
 #endif /* SOLVE_DIRICH */
 #else /* the sequential case: */
-          actnode->sol_mf.a.da[1][0] += eforce[line]*rho;
-          actnode->sol_mf.a.da[1][1] += eforce[line+1]*rho;
-          actnode->sol_mf.a.da[1][2] += eforce[line+2]*rho;
+          actnode->sol_mf.a.da[ipos->mf_forcenp][0] += eforce[line]*rho;
+          actnode->sol_mf.a.da[ipos->mf_forcenp][1] += eforce[line+1]*rho;
+          actnode->sol_mf.a.da[ipos->mf_forcenp][2] += eforce[line+2]*rho;
 #endif  /* PARALLEL */
         }
       }
@@ -440,9 +450,9 @@ void fsi_cbf(
                 fcouple[dofz-numeq_total] += eforce[line*LOOPL+LOOPL*2+l]*rho;
 #endif /* SOLVE_DIRICH */
 #else /* the sequential case: */
-                actnode->sol_mf.a.da[1][0] += eforce[line*LOOPL+l]*rho;
-                actnode->sol_mf.a.da[1][1] += eforce[line*LOOPL+LOOPL+l]*rho;
-                actnode->sol_mf.a.da[1][2] += eforce[line*LOOPL+LOOPL*2+l]*rho;
+                actnode->sol_mf.a.da[ipos->mf_forcenp][0] += eforce[line*LOOPL+l]*rho;
+                actnode->sol_mf.a.da[ipos->mf_forcenp][1] += eforce[line*LOOPL+LOOPL+l]*rho;
+                actnode->sol_mf.a.da[ipos->mf_forcenp][2] += eforce[line*LOOPL+LOOPL*2+l]*rho;
 #endif  /* PARALLEL */
 
               }  /* for(j=0; j<nfnode; j++) */
@@ -488,7 +498,7 @@ end:
 
 <pre>                                                        chfoe 05/05
 
-This routine exits in parallel only. It performs an allreduce on the 
+This routine exits in parallel only. It performs an allreduce on the
 fcouple vector containing the consistent nodal fluid forces. The vector
 is of different size depending on wether or not SOLVE_DIRICH is included.
 
@@ -498,7 +508,7 @@ I. with SOLVE_DIRICH:
                  -> fcouple is allreduced here
 
 II. without SOLVE_DIRICH:
-                 -> fcouple is of dimension (numdof - numeq) i.e. number 
+                 -> fcouple is of dimension (numdof - numeq) i.e. number
                     of Dirichlet dofs of the field.
                  -> fcouple is indicated by (dof(node) - numeq)
                  -> fcouple is allreduced here
@@ -532,11 +542,13 @@ void fsi_allreduce_coupforce(
   NODE  *actnode;
   GNODE *actgnode;
 
+  ARRAY_POSITION *ipos;
 
 #ifdef DEBUG
   dstrc_enter("fsi_allreduce_coupforce");
 #endif
 
+  ipos = &(actfield->dis[disnum].ipos);
 
   /* I. global solution includes Dirchlet dofs */
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
@@ -552,7 +564,7 @@ void fsi_allreduce_coupforce(
     {
       dof = actnode->dof[j];
       /* recvfcouple indicated by dof */
-      actnode->sol_mf.a.da[1][j] = recvfcouple[dof];
+      actnode->sol_mf.a.da[ipos->mf_forcenp][j] = recvfcouple[dof];
     }
   }
   /* II. global solution without Dirchlet dofs */
@@ -571,7 +583,7 @@ void fsi_allreduce_coupforce(
       if (dof < numeq_total)
         dserror("something is wrong!\n");
       /* recvfcouple indicated by dof-numeq_total */
-      actnode->sol_mf.a.da[1][j] = recvfcouple[dof-numeq_total];
+      actnode->sol_mf.a.da[ipos->mf_forcenp][j] = recvfcouple[dof-numeq_total];
     }
   }
 #endif /* SOLVE_DIRICH */
@@ -594,7 +606,7 @@ void fsi_allreduce_coupforce(
 <pre>                                                        chfoe 05/05
 
 This routine serves to sort the consistent nodal fluid forces which have
-been evaluated on the fluid field into a full vector on the structural 
+been evaluated on the fluid field into a full vector on the structural
 field.
 The forces are sorted into fsiforce by their global dof number.
 
@@ -611,46 +623,191 @@ The forces are sorted into fsiforce by their global dof number.
 void fsi_load(
     PARTITION          *actpart,
     INT                 disnum,
+    FIELD              *fluidfield,
+    INT                 fdisnum,
     DOUBLE             *fsiforce,
     INT                 global_numeq
     )
-
 {
   INT  i,j;
   INT  numnp;  /* number of nodes of this pdis */
   INT  dof;
 
-  NODE  *actnode, *actfnode;
+  NODE  *actfnode;
   GNODE *actsgnode;
 
+  ARRAY_POSITION *fluid_ipos;
+
+#ifdef FSI_NONMATCH
+  ARRAY        funct_a;
+  DOUBLE       *funct;
+  DIS_TYP      typ;
+  INT          k,m,n;       /*counters*/
+  GNODE        *actfgnode;
+  DOUBLE       r,s,t;
+  NODE         *actsnode;
+  INT          g,h;
+  DOUBLE       structcoord[3];
+  ELEMENT      *hostele;
+#endif
 
 #ifdef DEBUG
   dstrc_enter("fsi_load");
 #endif
 
+#ifdef FSI_NONMATCH
+
+  /* initialisation */
+  /*number of nodes on this processor*/
+  numnp = actpart->pdis[disnum].numnp;
+
+  fluid_ipos = &(fluidfield->dis[fdisnum].ipos);
+
+  /*allocate space for the evaluation of the shape functions*/
+  funct = amdef("funct"  ,&funct_a  ,MAXNOD_F3,1,"DV");
+
+  /* To project the fluid nodal forces on the structure, a loop over
+   * all fluid nodes is performed. Since the position of all FSI fluid
+   * nodes in relation to their structure host elements is known
+   * (GNODE->coupleptr), the shape functions are used to interpolate
+   * the fluid loads to the structure nodes.  The sum of all
+   * contributions from fluid nodes delivers the structure nodal
+   * loads.
+   *
+   * _               _          _
+   * fsiforce = Sum( N(r,s,t) * ffluid )
+   */
+
+  /* loop all fluid nodes */
+  /* We rely on the allreduce of the fluid interface forces in a
+   * parallel setting. */
+  for (i=0;i<fluidfield->dis[fdisnum].numnp;i++)
+  {
+    actfnode = &(fluidfield->dis[fdisnum].node[i]);
+    actfgnode = actfnode->gnode;
+
+    /* node is on FSI interface */
+    if (actfgnode->fsicouple!=NULL)
+    {
+      /*access the coupled structure host element*/
+      hostele=actfgnode->coupleptr->hostele;
+      typ=hostele->distyp;
+
+      switch (hostele->eltyp)
+      {
+#ifdef D_BRICK1
+      case el_brick1:
+
+	/*access the local coordinates of the fluid node*/
+	r=actfgnode->coupleptr->x[0];
+	s=actfgnode->coupleptr->x[1];
+	t=actfgnode->coupleptr->x[2];
+
+	/*evaluate shape functions at the position of the fluid node*/
+	f3_hex(funct,NULL,NULL,r,s,t,typ,0);
+
+	/*loop all struct nodes belonging to this element*/
+	for (k=0;k<hostele->numnp;k++)
+	{
+	  actsnode=hostele->node[k];
+	  actsgnode=actsnode->gnode;
+
+	  /* loop nodal dofs */
+	  for(m=0;m<actsnode->numdf;m++)
+	  {
+	    /*get the global dof number*/
+	    dof = actsnode->dof[m];
+
+	    if (dof>= global_numeq) continue; /* falls es sich um eine
+					       * Dirichlet RB handelt
+					       * muß keine Kraft
+					       * berechnet werden*/
+	    if (par.myrank == actsnode->proc) /* falls der Knoten auf
+					       * meinem Prozessor
+					       * liegt*/
+	    {
+	      /* calculate the struct nodal force by interpolation via
+	       * the shape functions*/
+	      fsiforce[dof] += (actfnode->sol_mf.a.da[fluid_ipos->mf_forcenp][m])*(funct[k]);
+	    }
+	  }
+	}
+	break;
+#endif
+#ifdef D_SHELL8
+      case el_shell8:
+      {
+	/*access the local coordinates of the fluid node*/
+	r=actfgnode->coupleptr->x[0];
+	s=actfgnode->coupleptr->x[1];
+
+	/*evaluate shape functions at the position of the fluid node*/
+	s8_funct_deriv(funct,NULL,r,s,typ,0);
+
+	/*loop all struct nodes belonging to this element*/
+	for (k=0;k<hostele->numnp;k++)
+	{
+	  actsnode=hostele->node[k];
+	  actsgnode=actsnode->gnode;
+
+	  /* loop nodal dofs */
+	  /* for(m=0;m<actsnode->numdf;m++) */
+	  for(m=0;m<3;m++)
+	  {
+	    /*get the global dof number*/
+	    dof = actsnode->dof[m];
+
+	    if (dof>= global_numeq) continue; /* falls es sich um eine
+					       * Dirichlet RB handelt
+					       * muß keine Kraft
+					       * berechnet werden*/
+	    if (par.myrank == actsnode->proc) /* falls der Knoten auf
+					       * meinem Prozessor
+					       * liegt*/
+	    {
+	      /* calculate the struct nodal force by interpolation via
+	       * the shape functions*/
+	      fsiforce[dof] += (actfnode->sol_mf.a.da[fluid_ipos->mf_forcenp][m])*(funct[k]);
+	    }
+	  }
+	}
+        break;
+      }
+#endif
+      default:
+        dserror("unknown element type %d", hostele->eltyp);
+      }
+    }
+  }/*end of loop over fluid nodes*/
+
+  amdel(&funct_a);
+
+#else
 
   /* initialisation */
   numnp = actpart->pdis[disnum].numnp;
-
+  fluid_ipos = &(fluidfield->dis[fdisnum].ipos);
 
   /* loop over all nodes on this proc */
   for (i=0; i<numnp; i++)
   {
+    NODE* actnode;
     actnode = actpart->pdis[disnum].node[i];
     actsgnode = actnode->gnode;
     if (actsgnode->fsicouple) /* node is on FSI interface */
     {
-      for(j=0; j<actnode->numdf; j++) /* loop nodal dofs */
+      actfnode  = actsgnode->mfcpnode[genprob.numff];
+      for(j=0; j<actnode->numdf && j<actfnode->numdf-1; j++) /* loop nodal dofs */
       {
-        actfnode  = actsgnode->mfcpnode[genprob.numff];
         dof = actnode->dof[j];
         if ( dof>= global_numeq) continue;
         if (par.myrank == actnode->proc)
-          fsiforce[dof] = actfnode->sol_mf.a.da[1][j];
+          fsiforce[dof] = actfnode->sol_mf.a.da[fluid_ipos->mf_forcenp][j];
       }
     }
   } /* end loop over nodes on proc*/
 
+#endif
 
 #ifdef DEBUG
   dstrc_exit();
@@ -659,9 +816,4 @@ void fsi_load(
   return;
 
 }
-
-
-
-
-
 #endif

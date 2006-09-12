@@ -58,4 +58,10 @@ void data_limits_h_hex20(POST_DISCRETIZATION* discret,
 void read_control_file_values(float *tmp, char *name, MAP* actmap);
 
 
+void find_data_limits(POST_DISCRETIZATION* discret,
+                      INT num_discr,
+                      float FLIMS[][2],
+                      INT ACTDIM);
+
+
 #endif

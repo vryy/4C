@@ -97,11 +97,9 @@ void calelm(FIELD        *actfield,     /* active field */
 #endif
   ASSEMBLE_ACTION   assemble_action;
 
-
 #ifdef DEBUG
-dstrc_enter("calelm");
+  dstrc_enter("calelm");
 #endif
-
 
   /*----------------------------------------------------------------------*/
   /*-------------- zero the parallel coupling exchange buffers if present */
@@ -763,6 +761,7 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
     }
   }
   /*----------------------------------------------------------------------*/
+
 #ifdef DEBUG
   dstrc_exit();
 #endif

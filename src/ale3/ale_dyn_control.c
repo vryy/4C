@@ -209,6 +209,7 @@ SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
 INT           disnum_calc;
 INT           disnum_io;
+ARRAY_POSITION *ipos;
 
 #ifdef DEBUG
 dstrc_enter("dyn_ale_lin");
@@ -232,6 +233,19 @@ if (actfield->subdivide > 0)
 else
 #endif
   disnum_calc = disnum_io = 0;
+
+
+ipos   = &(actfield->dis[disnum_calc].ipos);
+
+  ipos->nummf = 4;
+  ipos->mf_dispn = 0;
+  ipos->mf_dispnp = 1;
+  ipos->mf_dispnm = 2;
+  ipos->mf_posnp = 2;
+
+  ipos->numincr = 2;
+  ipos->dispnp = 0;
+  ipos->dispn = 1;
 
 
 /*------------ the distributed system matrix, which is used for solving */
@@ -466,6 +480,7 @@ SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
 INT           disnum_calc;
 INT           disnum_io;
+ARRAY_POSITION *ipos;
 
 
 
@@ -495,6 +510,18 @@ container.fieldtyp  = actfield->fieldtyp;
 container.disnum    = disnum_calc;
 container.isdyn     = 1;
 container.pos       = 0;
+
+ipos   = &(actfield->dis[disnum_calc].ipos);
+
+  ipos->nummf = 4;
+  ipos->mf_dispn = 0;
+  ipos->mf_dispnp = 1;
+  ipos->mf_dispnm = 2;
+  ipos->mf_posnp = 2;
+
+  ipos->numincr = 2;
+  ipos->dispnp = 0;
+  ipos->dispn = 1;
 
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=disnum_calc;
@@ -677,7 +704,7 @@ if (ioflags.ale_disp==1)
 
 
 /*--------------------------------------- do mesh quality statistics ---*/
-plot_ale_quality(actfield,adyn->step,(adyn->time-adyn->dt),actintra,actpart);
+plot_ale_quality(actfield,disnum_calc,adyn->step,(adyn->time-adyn->dt),actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -750,6 +777,7 @@ SPARSE_TYP    array_typ;        /* type of sparse system matrix */
 
 INT           disnum_calc;
 INT           disnum_io;
+ARRAY_POSITION *ipos;
 
 
 
@@ -763,6 +791,7 @@ actsolv             = &(solv[0]);
 actpart             = &(partition[0]);
 action              = &(calc_action[0]);
 adyn                =   alldyn[0].adyn;
+
 /* to follow Chiandussi et al. calculation is performed in two steps,
    first step linear, second step with modified stiffness
    reference calculation is performed incremental                       */
@@ -782,6 +811,18 @@ container.fieldtyp  = actfield->fieldtyp;
 container.disnum    = disnum_calc;
 container.isdyn     = 1;
 container.pos       = 0;
+
+ipos   = &(actfield->dis[disnum_calc].ipos);
+
+  ipos->nummf = 4;
+  ipos->mf_dispn = 0;
+  ipos->mf_dispnp = 1;
+  ipos->mf_dispnm = 2;
+  ipos->mf_posnp = 2;
+
+  ipos->numincr = 2;
+  ipos->dispnp = 0;
+  ipos->dispn = 1;
 
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=disnum_calc;
@@ -1010,7 +1051,7 @@ if (ioflags.ale_disp==1)
 
 
 /*--------------------------------------- do mesh quality statistics ---*/
-plot_ale_quality(actfield,adyn->step,adyn->time,actintra,actpart);
+plot_ale_quality(actfield,disnum_calc,adyn->step,adyn->time,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -1081,6 +1122,7 @@ SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
 INT           disnum_calc;
 INT           disnum_io;
+ARRAY_POSITION *ipos;
 
 
 
@@ -1093,7 +1135,6 @@ actsolv             = &(solv[0]);
 actpart             = &(partition[0]);
 action              = &(calc_action[0]);
 adyn                =   alldyn[0].adyn;
-
 
 #ifdef SUBDIV
 if (actfield->subdivide > 0)
@@ -1110,6 +1151,19 @@ container.fieldtyp  = actfield->fieldtyp;
 container.disnum    = disnum_calc;
 container.isdyn     = 1;
 container.pos       = 0;
+
+
+ipos   = &(actfield->dis[disnum_calc].ipos);
+
+  ipos->nummf = 4;
+  ipos->mf_dispn = 0;
+  ipos->mf_dispnp = 1;
+  ipos->mf_dispnm = 2;
+  ipos->mf_posnp = 2;
+
+  ipos->numincr = 2;
+  ipos->dispnp = 0;
+  ipos->dispn = 1;
 
 
 /*------------ the distributed system matrix, which is used for solving */
@@ -1291,7 +1345,7 @@ if (ioflags.ale_disp==1)
 
 
 /*--------------------------------------- do mesh quality statistics ---*/
-plot_ale_quality(actfield,adyn->step,adyn->time,actintra,actpart);
+plot_ale_quality(actfield,disnum_calc,adyn->step,adyn->time,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -1365,6 +1419,7 @@ SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
 INT           disnum_calc;
 INT           disnum_io;
+ARRAY_POSITION *ipos;
 
 
 
@@ -1377,7 +1432,6 @@ actsolv             = &(solv[0]);
 actpart             = &(partition[0]);
 action              = &(calc_action[0]);
 adyn                =   alldyn[0].adyn;
-
 
 #ifdef SUBDIV
 if (actfield->subdivide > 0)
@@ -1395,6 +1449,18 @@ container.fieldtyp  = actfield->fieldtyp;
 container.disnum    = disnum_calc;
 container.isdyn     = 1;
 container.pos       = 0;
+
+ipos   = &(actfield->dis[disnum_calc].ipos);
+
+  ipos->nummf = 4;
+  ipos->mf_dispn = 0;
+  ipos->mf_dispnp = 1;
+  ipos->mf_dispnm = 2;
+  ipos->mf_posnp = 2;
+
+  ipos->numincr = 2;
+  ipos->dispnp = 0;
+  ipos->dispn = 1;
 
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=disnum_calc;
@@ -1574,7 +1640,7 @@ if (ioflags.ale_disp==1)
 
 
 /*--------------------------------------- do mesh quality statistics ---*/
-plot_ale_quality(actfield,adyn->step,adyn->time,actintra,actpart);
+plot_ale_quality(actfield,disnum_calc,adyn->step,adyn->time,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)

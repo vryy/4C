@@ -97,7 +97,7 @@ defined in opt_cal_main.c
  struct _OPTI *opt;
 
 
-DOUBLE acttime;
+extern DOUBLE acttime;
 
 /*----------------------------------------------------------------------*
  |  routine to control dynamic eigenvalue analysis              al 08/02|

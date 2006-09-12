@@ -122,6 +122,7 @@ if (par.myrank==0)
 #endif
 }
 
+
 if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
   if (par.myrank==0) {
     printf("\nBuilt by %s on %s\n", CREATOR, CREATION_DATE);

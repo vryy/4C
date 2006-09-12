@@ -45,9 +45,9 @@ void solver_mlib(
   DOUBLE      *vz;
   DOUBLE      *vzh;
   MLVAR        *mlvar;
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("solver_mlib");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   if(actsolv!=NULL)
   {

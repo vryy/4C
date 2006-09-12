@@ -121,7 +121,9 @@ static FLUID_DYNAMIC *fdyn;
 ------------------------------------------------------------------------*/
 void fsi_alecp(
     FIELD              *fluidfield,
-    INT                 disnum,
+    INT                 fdisnum,
+    FIELD              *alefield,
+    INT                 adisnum,
     DOUBLE              dt,
     INT                 numdf,
     INT                 phase
@@ -141,7 +143,8 @@ void fsi_alecp(
   NODE   *actfnode;        /* actual fluid node                           */
   NODE   *actanode;        /* actual ale node                             */
   GNODE  *actfgnode;       /* actual fluid gnode                          */
-  ARRAY_POSITION *ipos;
+  ARRAY_POSITION *fluid_ipos;
+  ARRAY_POSITION *ale_ipos;
 
 
 #ifdef DEBUG
@@ -151,9 +154,10 @@ void fsi_alecp(
 
   fdyn = alldyn[genprob.numff].fdyn;
 
-  ipos = &(fluidfield->dis[disnum].ipos);
+  fluid_ipos = &(fluidfield->dis[fdisnum].ipos);
+  ale_ipos   = &(alefield->dis[adisnum].ipos);
 
-  numnp_total  = fluidfield->dis[disnum].numnp;
+  numnp_total  = fluidfield->dis[fdisnum].numnp;
   numveldof    = numdf-1;
   phipos       = numdf-2;
   numaf        = genprob.numaf;
@@ -181,22 +185,22 @@ void fsi_alecp(
       /* loop all nodes */
       for (i=0;i<numnp_total;i++)
       {
-        actfnode  = &(fluidfield->dis[disnum].node[i]);
+        actfnode  = &(fluidfield->dis[fdisnum].node[i]);
         actfgnode = actfnode->gnode;
         actanode  = actfgnode->mfcpnode[numaf];
         if (actanode==NULL) continue;
         for (j=0;j<numveldof;j++)
         {
-          dxyzn  = actanode->sol_mf.a.da[0][j];
-          dxyz   = actanode->sol_mf.a.da[1][j];
+          dxyzn  = actanode->sol_mf.a.da[ale_ipos->mf_dispn ][j];
+          dxyz   = actanode->sol_mf.a.da[ale_ipos->mf_dispnp][j];
           switch (fdyn->iop)
           {
             case 4: /* BE grid velocity: 1st order accuracy */
-              actfnode->sol_increment.a.da[ipos->gridv][j] = (dxyz-dxyzn)/dt;
+              actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = (dxyz-dxyzn)/dt;
               break;
             case 7: /* BDF2 grid velocity: 2nd order accuracy */
-              dxyznm = actanode->sol_mf.a.da[2][j];
-              actfnode->sol_increment.a.da[ipos->gridv][j] =
+              dxyznm = actanode->sol_mf.a.da[ale_ipos->mf_dispnm][j];
+              actfnode->sol_increment.a.da[fluid_ipos->gridv][j] =
                 (1.5*dxyz-2.0*dxyzn+0.5*dxyznm)/dt;
               break;
             default: dserror("Time integration scheme unknown for FSI");
@@ -212,11 +216,11 @@ void fsi_alecp(
       /* loop all nodes */
       for (i=0;i<numnp_total;i++)
       {
-        actfnode  = &(fluidfield->dis[disnum].node[i]);
+        actfnode  = &(fluidfield->dis[fdisnum].node[i]);
         if (actfnode->xfs==NULL) continue;
         for (j=0;j<numveldof;j++)
-          actfnode->sol_increment.a.da[ipos->gridv][j]
-            = actfnode->sol_increment.a.da[ipos->velnp][j+numdf];
+          actfnode->sol_increment.a.da[fluid_ipos->gridv][j]
+            = actfnode->sol_increment.a.da[fluid_ipos->velnp][j+numdf];
 
       } /* end of loop over nodes */
       break;
@@ -227,11 +231,11 @@ void fsi_alecp(
                (height function separat & implicit) */
       for (i=0;i<numnp_total;i++)
       {
-        actfnode  = &(fluidfield->dis[disnum].node[i]);
+        actfnode  = &(fluidfield->dis[fdisnum].node[i]);
         if (actfnode->xfs==NULL) continue;
         phi  = actfnode->xfs[phipos];
-        phin = actfnode->sol_increment.a.da[ipos->veln][numdf];
-        actfnode->sol_increment.a.da[ipos->gridv][phipos] = (phi-phin)/dt;
+        phin = actfnode->sol_increment.a.da[fluid_ipos->veln][numdf];
+        actfnode->sol_increment.a.da[fluid_ipos->gridv][phipos] = (phi-phin)/dt;
       }  /* end of loop over nodes */
       break;
 
@@ -380,6 +384,7 @@ void fsi_fluidstress_result(
   NODE       *actnode;      /* actual node                                */
   GNODE      *actgnode;     /* actual gnode                               */
   ELEMENT    *actele;       /* actual element                             */
+  ARRAY_POSITION *ipos;
 
 #ifdef DEBUG
   dstrc_enter("fsi_fluidstress_result");
@@ -394,6 +399,7 @@ void fsi_fluidstress_result(
 
   /* set some values */
   numnp_total  = actfield->dis[disnum].numnp;
+  ipos = &(actfield->dis[disnum].ipos);
 
 
   for (i=0;i<numnp_total;i++) /* loop nodes */
@@ -418,14 +424,14 @@ void fsi_fluidstress_result(
       if (numdf==3)
       {
         for(l=0;l<3;l++)
-          actnode->sol_mf.a.da[1][l]+=actele->e.f2->stress_ND.a.da[k][l]/numele;
+          actnode->sol_mf.a.da[ipos->mf_forcenp][l]+=actele->e.f2->stress_ND.a.da[k][l]/numele;
       }
 #endif
 #ifdef D_FLUID3
       if (numdf==4)
       {
         for(l=0;l<6;l++)
-          actnode->sol_mf.a.da[1][l]+=actele->e.f3->stress_ND.a.da[k][l]/numele;
+          actnode->sol_mf.a.da[ipos->mf_forcenp][l]+=actele->e.f3->stress_ND.a.da[k][l]/numele;
       }
 #endif
     }
@@ -475,29 +481,29 @@ void fsi_algoout(
 
   switch (fsidyn->ifsi)
   {
-    case 1:
+    case fsi_basic_sequ_stagg:
       printf("BASIC SEQUENTIAL STAGGERED SCHEME\n");
-      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d\n",
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E  STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d",
           fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep);
       printf("\n");
       break;
 
-    case 2:
+    case fsi_sequ_stagg_pred:
       printf("SEQUENTIAL STAGGERED SCHEME WITH PREDICTOR\n");
-      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d\n",
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d",
           fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep);
       printf("\n");
       break;
 
-    case 4:
+    case fsi_iter_stagg_fixed_rel_param:
       printf("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER\n");
-      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
           fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
           itnum,fsidyn->itemax);
       printf("\n");
       break;
 
-    case 5:
+    case fsi_iter_stagg_AITKEN_rel_param:
       printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION\n");
       printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
           fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
@@ -505,13 +511,46 @@ void fsi_algoout(
       printf("\n");
       break;
 
-    case 6:
+    case fsi_iter_stagg_steep_desc:
       printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD\n");
       printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
           fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
           itnum,fsidyn->itemax);
       printf("\n");
       break;
+
+    case fsi_iter_stagg_AITKEN_rel_force:
+      printf("ITERATIVE STAGGERED SCHEME WITH FORCE RELAXATION VIA AITKEN ITERATION\n");
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
+          fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
+          itnum,fsidyn->itemax);
+      printf("\n");
+      break;
+
+    case fsi_iter_stagg_steep_desc_force:
+      printf("ITERATIVE STAGGERED SCHEME WITH FORCE RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD\n");
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
+          fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
+          itnum,fsidyn->itemax);
+      printf("\n");
+      break;
+
+    case fsi_iter_stagg_Newton_FD:
+      printf("ITERATIVE STAGGERED SCHEME WITH NEWTON-METHOD - APPROXIMATION BY FINITE DIFFERENC\n");
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
+          fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
+          itnum,fsidyn->itemax);
+      printf("\n");
+      break;
+
+    case fsi_iter_stagg_Newton_I:
+      printf("ITERATIVE STAGGERED SCHEME WITH NEWTON-METHOD - APPROXIMATION BY IDENTITY MATRIX\n");
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
+          fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
+          itnum,fsidyn->itemax);
+      printf("\n");
+      break;
+
 
     default:
       dserror("algoout not implemented yet\n");
@@ -560,12 +599,15 @@ void fsi_structpredictor(
   DOUBLE acttimefac, initval;
   GNODE  *actgnode;              /* actual GNODE                          */
   NODE   *actnode;               /* actual NODE                           */
+  ARRAY_POSITION *ipos;
 
 #ifdef DEBUG
   dstrc_enter("fsi_structpredictor");
 #endif
 
   fsidyn = alldyn[3].fsidyn;
+  ipos = &(actfield->dis[disnum].ipos);
+
   /*======================================================================*
    * nodal solution history structural field:                             *
    * sol[0][j]           ... total displacements at time (t)              *
@@ -651,7 +693,7 @@ void fsi_structpredictor(
         if (actgnode->dirich==NULL)
         {
           for (j=0;j<actnode->numdf;j++)
-            sol_mf[0][j] = sol[0][j];
+            sol_mf[ipos->mf_dispnp][j] = sol[0][j];
         }
         else /* if there are dirichlet values at n+1 use them!!! */
         {
@@ -659,14 +701,14 @@ void fsi_structpredictor(
           {
             if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             {
-              sol_mf[0][j]= sol[0][j];
+              sol_mf[ipos->mf_dispnp][j]= sol[0][j];
               continue;
             }
             actcurve = actgnode->dirich->curve.a.iv[j]-1;
             if (actcurve<0) acttimefac = ONE;
             else acttimefac = timefac[actcurve];
             initval  = actgnode->dirich->dirich_val.a.dv[j];
-            sol_mf[0][j] = initval*acttimefac;
+            sol_mf[ipos->mf_dispnp][j] = initval*acttimefac;
           }
         }
       }
@@ -682,7 +724,7 @@ void fsi_structpredictor(
         if (actgnode->dirich==NULL)
         {
           for (j=0;j<actnode->numdf;j++)
-            sol_mf[0][j]= sol[0][j] + dt/TWO*(THREE*sol[1][j] - sol[10][j]);
+            sol_mf[ipos->mf_dispnp][j]= sol[0][j] + dt/TWO*(THREE*sol[1][j] - sol[10][j]);
         }
         else /* if there are dirichlet values at n+1 use them!!! */
         {
@@ -690,14 +732,14 @@ void fsi_structpredictor(
           {
             if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             {
-              sol_mf[0][j]= sol[0][j] + dt/TWO*(THREE*sol[1][j]- sol[9][j]);
+              sol_mf[ipos->mf_dispnp][j]= sol[0][j] + dt/TWO*(THREE*sol[1][j]- sol[9][j]);
               continue;
             }
             actcurve = actgnode->dirich->curve.a.iv[j]-1;
             if (actcurve<0) acttimefac = ONE;
             else acttimefac = timefac[actcurve];
             initval  = actgnode->dirich->dirich_val.a.dv[j];
-            sol_mf[0][j] = initval*acttimefac;
+            sol_mf[ipos->mf_dispnp][j] = initval*acttimefac;
           }
         }
       }
@@ -713,7 +755,7 @@ void fsi_structpredictor(
         if (actgnode->dirich==NULL)
         {
           for (j=0;j<actnode->numdf;j++)
-            sol_mf[0][j]= sol[0][j] + dt*sol[1][j];
+            sol_mf[ipos->mf_dispnp][j]= sol[0][j] + dt*sol[1][j];
         }
         else /* if there are dirichlet values at n+1 use them!!! */
         {
@@ -721,14 +763,14 @@ void fsi_structpredictor(
           {
             if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             {
-              sol_mf[0][j]= sol[0][j] + dt*sol[1][j];
+              sol_mf[ipos->mf_dispnp][j]= sol[0][j] + dt*sol[1][j];
               continue;
             }
             actcurve = actgnode->dirich->curve.a.iv[j]-1;
             if (actcurve<0) acttimefac = ONE;
             else acttimefac = timefac[actcurve];
             initval  = actgnode->dirich->dirich_val.a.dv[j];
-            sol_mf[0][j] = initval*acttimefac;
+            sol_mf[ipos->mf_dispnp][j] = initval*acttimefac;
           }
         }
       }
@@ -744,7 +786,7 @@ void fsi_structpredictor(
         if (actgnode->dirich==NULL)
         {
           for (j=0;j<actnode->numdf;j++)
-            sol_mf[0][j]= sol[0][j] + dt*(sol[1][j] + (dt/TWO)*sol[2][j]);
+            sol_mf[ipos->mf_dispnp][j]= sol[0][j] + dt*(sol[1][j] + (dt/TWO)*sol[2][j]);
         }
         else /* if there are dirichlet values at n+1 use them!!! */
         {
@@ -752,14 +794,14 @@ void fsi_structpredictor(
           {
             if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             {
-              sol_mf[0][j]= sol[0][j] + dt*sol[1][j] + dt*dt/TWO*sol[2][j];
+              sol_mf[ipos->mf_dispnp][j]= sol[0][j] + dt*sol[1][j] + dt*dt/TWO*sol[2][j];
               continue;
             }
             actcurve = actgnode->dirich->curve.a.iv[j]-1;
             if (actcurve<0) acttimefac = ONE;
             else acttimefac = timefac[actcurve];
             initval  = actgnode->dirich->dirich_val.a.dv[j];
-            sol_mf[0][j] = initval*acttimefac;
+            sol_mf[ipos->mf_dispnp][j] = initval*acttimefac;
 
           }
         }
@@ -809,7 +851,8 @@ where g(i) = d~(i+1) - d(i);
 INT fsi_convcheck(
     FIELD              *structfield,
     INT                 disnum,
-    INT                 itnum
+    INT                 itnum,
+    DOUBLE             *resnorm
     )
 
 {
@@ -828,22 +871,27 @@ INT fsi_convcheck(
   static DOUBLE g0norm;  /* norm of first iteration                       */
   FILE           *out = allfiles.out_out;
 
+  ARRAY_POSITION *ipos;
+
 #ifdef DEBUG
   dstrc_enter("fsi_convcheck");
 #endif
 
   fsidyn = alldyn[3].fsidyn;
 
+#if 1
   if (itnum==0)
   {
     grat=ONE;
     goto check;
   }
+#endif
 
   /*----------------------------------------------------- set some values */
   numnp_total = structfield->dis[disnum].numnp;
   sid         = fsidyn->sid.a.iv;
   numdf_total = fsidyn->sid.fdim;
+  ipos = &(structfield->dis[disnum].ipos);
 
   /*---------------------- loop nodes and calculate norm at the interface */
   for (i=0;i<numnp_total;i++)
@@ -857,9 +905,202 @@ INT fsi_convcheck(
       dof = actsnode->dof[j];
       dsassert(dof<numdf_total,"dofnumber not valid!\n");
       if (sid[dof]==0) continue;
-      g = actsnode->sol_mf.a.da[0][j] - actsnode->sol_mf.a.da[1][j];
+      g = (actsnode->sol_mf.a.da[ipos->mf_dispnp ][j] -
+	   actsnode->sol_mf.a.da[ipos->mf_reldisp][j]);
       gnorm += g*g;
     } /* end of loop over dofs */
+  } /* end of loop over nodes */
+
+  /*-------------------------------------- determine the convegence ratio */
+  gnorm = sqrt(gnorm);
+  switch (fsidyn->inrmfsi)
+  {
+    case 1: /* scaled_2-norm_of_residual */
+      fac  = sqrt((DOUBLE)fsidyn->numsid);
+      grat = gnorm/fac;
+      break;
+    case 2: /* 2-norm_of_residual_of_1st_iter */
+      if (itnum==1)
+      {
+        g0norm = gnorm;
+        if (g0norm<EPS5) g0norm=ONE;
+      }
+      grat = gnorm/g0norm;
+      break;
+    default:
+      dserror("parameter out of range: inrmfsi\n");
+  } /* end switch (fsidyn->inrmfsi) */
+
+  /*------------------------------ check for convergence over the fields */
+check:
+  *resnorm = grat;
+  if (grat<fsidyn->convtol)
+    converged=2;
+  if (itnum==fsidyn->itemax)
+    converged++;
+
+  /*----------------------------------------------- output to the screen */
+  if (par.myrank==0)
+  {
+    printf("CONVERGENCE CHECK FOR ITERATION OVER FIELDS (ITNUM = %4d/%4d):\n",
+        itnum,fsidyn->itemax);
+    switch (fsidyn->inrmfsi)
+    {
+      case 1:
+        if (converged==0)
+        {
+          printf("|| g(i) || / sqrt(neq) = " RED_LIGHT "%10.3E" END_COLOR " >= TOL = %10.3E \n",
+              grat,fsidyn->convtol);
+          printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
+        }
+        if (converged==1)
+        {
+          printf("|| g(i) || / sqrt(neq) = " RED "%10.3E" END_COLOR " >= TOL = %10.3E \n",
+              grat,fsidyn->convtol);
+          printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
+          printf("                ***** CONTINUING ****\n\n");
+        }
+        if (converged>=2)
+        {
+          printf("|| g(i) || / sqrt(neq) = " GREEN_LIGHT "%10.3E" END_COLOR " < TOL = %10.3E \n",
+              grat,fsidyn->convtol);
+          printf("CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
+        }
+        break;
+      case 2:
+        if (converged==0)
+        {
+          printf("|| g(i) || / || g(0) || = " RED_LIGHT "%10.3E" END_COLOR " >= TOL = %10.3E \n",
+              grat,fsidyn->convtol);
+          printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
+        }
+        if (converged==1)
+        {
+          printf("|| g(i) || / || g(0) || = " RED "%10.3E" END_COLOR " >= TOL = %10.3E \n",
+              grat,fsidyn->convtol);
+          printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
+          printf("                ***** CONTINUING ****\n\n");
+        }
+        if (converged>=2)
+        {
+          printf("|| g(i) || / || g(0) || = " GREEN_LIGHT "%10.3E" END_COLOR " < TOL = %10.3E \n",
+              grat,fsidyn->convtol);
+          printf("CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
+        }
+        break;
+      default:
+        dserror("parameter out of range: inrmfsi\n");
+    }/* end switch (fsidyn->inrmfsi) */
+
+    fprintf(out," %10.3E |",grat);
+
+
+  }/* end if (par.myrank==0)*/
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return (converged);
+} /* end of  fsi_convcheck*/
+
+
+
+INT fsi_convcheck_force(
+  FIELD              *structfield,
+  INT                 sdisnum,
+  FIELD              *fluidfield,
+  INT                 fdisnum,
+  INT                 itnum,
+  INT                 numff
+    )
+{
+  INT     i,j,k,m;           /* some counters                                 */
+  INT     converged=0;   /* flag for convergence                          */
+  INT     numnp_total;   /* total number of nodes                         */
+  INT     numdf_total;   /* total number of dofs                          */
+  INT     numdf,dof;     /* actual number of dofs, actual dof             */
+  INT    *sid;           /* structural interface dofs                     */
+  DOUBLE  fac;
+  DOUBLE  gnorm=ZERO;
+  DOUBLE  g;
+  DOUBLE  grat=0.0;
+  NODE   *actsnode;      /* actual struct node                            */
+  static DOUBLE g0norm;  /* norm of first iteration                       */
+  FILE           *out = allfiles.out_out;
+  ARRAY_POSITION *fluid_ipos;
+
+#ifdef DEBUG
+  dstrc_enter("fsi_convcheck_force");
+#endif
+
+  fsidyn = alldyn[3].fsidyn;
+
+  if (itnum==0)
+  {
+    grat=ONE;
+    goto check;
+  }
+
+  /*----------------------------------------------------- set some values */
+  numnp_total = structfield->dis[sdisnum].numnp;
+  sid         = fsidyn->sid.a.iv;
+  numdf_total = fsidyn->sid.fdim;
+
+  fluid_ipos = &(fluidfield->dis[fdisnum].ipos);
+
+  /*---------------------- loop nodes and calculate norm at the interface */
+  for (i=0;i<numnp_total;i++)
+  {
+    actsnode  = &(structfield->dis[sdisnum].node[i]);
+    /*----------------------------------------- check for coupling nodes */
+    numdf = actsnode->numdf;
+    /*-------------------------------------------------------- loop dofs */
+#ifdef FSI_NONMATCH
+    for (j=0;j<numdf;j++)
+    {
+      NODE   *actfnode;
+      ELEMENT *actele;
+
+      dof = actsnode->dof[j];
+      dsassert(dof<numdf_total,"dofnumber not valid!\n");
+      if (sid[dof]==0) continue;
+
+      /* The forces are calculated by the fluid. */
+      /*actfnode = actsnode->gnode->mfcpnode[numff];*/
+      for (k=0;k<actsnode->numele;k++)
+      {
+        if (actsnode->element[k]->coupleptr==NULL) continue;
+
+        actele=actsnode->element[k];
+        /*In diesem Element sind jetzt sicher Fluid Knoten!*/
+        for (m=0;m<actele->coupleptr->numnp;m++)
+        {
+          actfnode=actele->coupleptr->couplenode[m];
+          /*actfnode = actsnode->gnode->mfcpnode[numff];*/
+          g = (actfnode->sol_mf.a.da[fluid_ipos->mf_forcenp][j] -
+               actfnode->sol_mf.a.da[fluid_ipos->mf_forcen ][j]);
+
+          gnorm += g*g;
+        }
+      }
+    } /* end of loop over dofs */
+#else
+    for (j=0;j<numdf;j++)
+    {
+      NODE   *actfnode;
+
+      dof = actsnode->dof[j];
+      dsassert(dof<numdf_total,"dofnumber not valid!\n");
+      if (sid[dof]==0) continue;
+
+      /* The forces are calculated by the fluid. */
+      actfnode = actsnode->gnode->mfcpnode[numff];
+      g = (actfnode->sol_mf.a.da[fluid_ipos->mf_forcenp][j] -
+	   actfnode->sol_mf.a.da[fluid_ipos->mf_forcen ][j]);
+
+      gnorm += g*g;
+    } /* end of loop over dofs */
+#endif
   } /* end of loop over nodes */
 
   /*-------------------------------------- determine the convegence ratio */
@@ -951,7 +1192,7 @@ check:
   dstrc_exit();
 #endif
   return (converged);
-} /* end of  fsi_convcheck*/
+}
 
 
 
@@ -1056,7 +1297,9 @@ void fluid_init_pos_ale(
       ipos->convnp = 6;
       ipos->accn   = 7;
       ipos->accnm  = 8;
-      if (fsidyn->ifsi == 6) ipos->relax = 9;
+      if ((fsidyn->ifsi == fsi_iter_stagg_steep_desc) ||
+          (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force))
+        ipos->relax = 9;
       ipos->stresspro = 9;
       ipos->pred   =-1;
       ipos->terr   =-1;
@@ -1071,7 +1314,9 @@ void fluid_init_pos_ale(
       ipos->gridv  = 4;
       ipos->convn  = 5;
       ipos->convnp = 6;
-      if (fsidyn->ifsi == 6) ipos->relax = 7;
+      if ((fsidyn->ifsi == fsi_iter_stagg_steep_desc) ||
+          (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force))
+        ipos->relax = 7;
       ipos->stresspro = 7;
       ipos->accn   =-1;
       ipos->accnm  =-1;

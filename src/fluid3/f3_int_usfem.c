@@ -114,6 +114,7 @@ DOUBLE    velint[3];  /* velocity vector at integration point           */
 DOUBLE    histvec[3]; /* history data at integration point              */
 DOUBLE    gridvelint[3]; /* grid velocity                               */
 DIS_TYP   typ;	      /* element type                                   */
+DOUBLE    press;
 
 FLUID_DYNAMIC   *fdyn;
 FLUID_DATA      *data;
@@ -222,6 +223,12 @@ for (lt=0;lt<nit;lt++)
 
    /*--------------------- get grid velocity at integration point ---*/
    if(is_ale) f3_veci(gridvelint,funct,egridv,iel);
+   else
+   {
+     gridvelint[0] = 0;
+     gridvelint[1] = 0;
+     gridvelint[2] = 0;
+   }
 
    /*------------------------------------- get pressure gradients ---*/
    gradp[0] = gradp[1] = gradp[2] = 0.0;
@@ -233,8 +240,14 @@ for (lt=0;lt<nit;lt++)
       gradp[2] += derxy[2][i] * epren[i];
    }
 
+   press = 0;
+   for (i=0;i<iel;i++)
+   {
+     press += funct[i]*epren[i];
+   }
+
    /*-------------- perform integration for entire matrix and rhs ---*/
-   f3_calmat(estif,force,velint,histvec,gridvelint,vderxy,
+   f3_calmat(estif,force,velint,histvec,gridvelint,press,vderxy,
              vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
                 visc,iel,hasext,is_ale);
 } /* end of loop over integration points lt*/

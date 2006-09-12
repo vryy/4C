@@ -226,10 +226,7 @@ void f3inp(
 
 
   /* read type of ale elements, created or read */
-  frint("CA",&(create_ale),&ierr);
-
-  /*if (ierr!=1) dserror("Reading of FLUID3 element failed: flag CA not available\n");*/
-  if (ierr!=1)
+  if (!frreadyes("CA",&create_ale))
     create_ale = 0;
 
   if (create_ale == 1 && ele->e.f3->is_ale == 1)
@@ -239,7 +236,7 @@ void f3inp(
   }
   else
   {
-    genprob.create_ale    = 0;
+    /*genprob.create_ale    = 0;*/
     ele->e.f3->create_ale = 0;
   }
 
@@ -330,6 +327,24 @@ void f3_createale(
       ele1->e.ale3->nGP[2] = 2;
       ele1->e.ale3->jacobi = 0;
       ele1->e.ale3->hex20_red = 0;
+      break;
+
+    case tet4:
+      ele1->distyp  = tet4;
+      ele1->numnp   = 4;
+      ele1->lm      = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
+      if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
+      for (j=0;j<ele1->numnp;j++)
+      {
+        ele1->lm[j] = ele0->lm[j] + nodeshift;
+      }
+
+      ele1->mat            = 1;
+      ele1->e.ale3->nGP[0] = 1;
+      ele1->e.ale3->nGP[1] = 1;
+      ele1->e.ale3->nGP[2] = 1;
+      ele1->e.ale3->jacobi = 0;
       break;
 
     case hex20:

@@ -163,45 +163,45 @@ if (eta <= Kappa_0 && kappa <= Kappa_0)
  for(k=0; k<3; k++)
  for(l=0; l<3; l++)
  delta_c[i][j][k][l] = 0.0; 
- # if 0
+# if 0
  printf("Element=%d",ele->Id);
  printf(" GP=%d",ip);
  printf(" Elastisch, D=%le",damage);
  printf(" kappa=%le\n",kappa);
- # endif 
+# endif 
 }
 
 /*-------- DAMAGED ----------------------------------------------------*/
 else
 {
- # if 0
+# if 0
  printf("Element=%d",ele->Id);
  printf(" GP=%d",ip);
- # endif 
+# endif 
 /*-------- loading ----------------------------------------------------*/
 if (eta-kappa >= tol)
 {
  kappa = eta;
  yip   = 1.0;
- # if 0
+# if 0
  printf(" schaedigung: kappa=%le",kappa);
- # endif 
+# endif 
 }
 /*-------- unloading --------------------------------------------------*/
 else
 {
  kappa = kappa;
  yip   = 0.0;
- # if 0
+# if 0
   printf(" Entlastung: kappa=%le",kappa);
- # endif 
+# endif 
 }
 
 /*----- get actual damage-variable and derivative -> damage,dam_deriv -*/
   w1_dam_typ(&damage,&dam_deriv,kappa,Kappa_0,Kappa_m,Alpha,Beta,Damtyp);
- # if 0
+# if 0
  printf(" D=%le\n",damage);
- # endif 
+# endif 
 
 /*----------------------------- get delta_c for c_tan -----------------*/
  for(i=0; i<3; i++)

@@ -24,9 +24,9 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
-struct _ARRAY estif_global;
-struct _ARRAY emass_global;
-struct _ARRAY intforce_global;
+extern struct _ARRAY estif_global;
+extern struct _ARRAY emass_global;
+extern struct _ARRAY intforce_global;
 
 /*!
 \addtogroup Ale

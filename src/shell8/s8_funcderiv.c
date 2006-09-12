@@ -146,11 +146,45 @@ void s8_funct_deriv(
 
     /* triangular elements */
     case tri3:
-      dserror("tri3 not possible for shell8!!");
+      funct[0]=1-r-s;
+      funct[1]=r;
+      funct[2]=s;
+      if (option==1)
+      {
+        deriv[0][0]=  -1.0;
+        deriv[0][1]=  1.0;
+        deriv[0][2]=  0.0;
+
+        deriv[1][0]=  -1.0;
+        deriv[1][1]=  0.0;
+        deriv[1][2]=  1.0;
+      }
       break;
 
     case tri6:
-      dserror("tri3 not possible for shell8!!");
+      funct[0]=(1-2*r-2*s)*(1-r-s);
+      funct[1]=2*r*r-r;
+      funct[2]=2*s*s-s;
+      funct[3]=4*(r-r*r-r*s);
+      funct[4]=4*r*s;
+      funct[5]=4*(s-s*s-s*r);
+      if (option==1)
+      {
+        deriv[0][0]= -3.0+4.0*r+4.0*s;
+        deriv[0][1]= 4.0*r-1.0;
+        deriv[0][2]= 0.0;
+        deriv[0][3]= 4.0*(1-2.0*r-s);
+        deriv[0][4]= 4.0*s;
+        deriv[0][5]= -4.0*s;
+
+        deriv[1][0]= -3.0+4.0*r+4.0*s;
+        deriv[1][1]= 0.0;
+        deriv[1][2]= 4.0*s-1.0;
+        deriv[1][3]= -4.0*r;
+        deriv[1][4]= 4.0*r;
+        deriv[1][5]= 4.0*(1.0-2.0*s-r);
+      }
+/*      dserror("tri3 not possible for shell8!!"); */
       break;
 
     default:

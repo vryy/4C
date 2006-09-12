@@ -415,9 +415,24 @@ for (i=0;i<numnp_total;i++)
 #ifdef D_FSI
    case dirich_FSI: /* dirichvalues = grid velocity!!! */
    case dirich_FSI_pseudo:
+#if 1
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[pos][j]
          =actnode->sol_increment.a.da[ipos->gridv][j];
+#else
+      /* Die Fluidgeschwindigkeit am Dirichletrand aus den
+       * Netzpositionen an den Zeitschrittgrenzen bestimmen. */
+      for (j=0;j<numveldof;j++)  /* loop vel-dofs */
+      {
+	NODE* ale_node;
+	DOUBLE **incr;
+	DOUBLE **mf;
+	incr = actnode->sol_increment.a.da;
+	ale_node = actnode->gnode->mfcpnode[genprob.numaf];
+	mf = ale_node->sol_mf.a.da;
+	incr[pos][j] = 2*(mf[1][j] - mf[0][j])/fdyn->dta - incr[ipos->veln][j];
+      }
+#endif
    break;
    case dirich_slip: /* slip boundary condition */
       /*--------------------------------------- get values and pointers */

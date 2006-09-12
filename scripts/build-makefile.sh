@@ -60,7 +60,7 @@ ccarat: \$(PROGRAM)
 # Build (nearly) everything.
 # Some filters (like the visual ones) are very specific and system dependent
 # and thus not included here. This rule is supposed to work everywhere.
-all: \$(PROGRAM) post_gid_txt post_out post_monitor
+all: \$(PROGRAM) post_gid_txt post_out post_monitor post_file_manager
 
 \$(PROGRAM): \\
 		$OBJECTS
@@ -83,12 +83,17 @@ cat $SRC/Makefile.in >> $makefile
 #
 if [ x$NODEPS != "xyes" ] ; then
   # hopefully nobody translates which's messages...
-  if which gcc | grep '^no ' 2>&1 > /dev/null ; then
-     echo $0: gcc not found. No dependencies generated. Use Makefile with care.
-  else
-    for file in `find $SRC/src -name "*.c"` ; do
-      echo "build deps for" $file
-      gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's,c$,o,' -e "s,$SRC,$DEST,"` -I`dirname $file|sed -e "s,$SRC,$DEST,"` $INCLUDEDIRS $file >> $makefile
-    done
-  fi
+  #if which makedepend | grep '^no ' 2>&1 > /dev/null ; then
+  #  echo $0: makedepend not found. Use gcc to create dependencies.
+    if which gcc | grep '^no ' 2>&1 > /dev/null ; then
+       echo $0: gcc not found. No dependencies generated. Use Makefile with care.
+    else
+      for file in `find $SRC/src -name "*.c"` ; do
+        echo "build deps for" $file
+        gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's,c$,o,' -e "s,$SRC,$DEST,"` -I`dirname $file|sed -e "s,$SRC,$DEST,"` $INCLUDEDIRS $file >> $makefile
+      done
+    fi
+  #else
+  #  make depend
+  #fi
 fi

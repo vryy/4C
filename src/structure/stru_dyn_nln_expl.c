@@ -93,7 +93,7 @@ extern struct _CURVE *curve;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-DOUBLE acttime;
+extern DOUBLE acttime;
 
 /*---------------------------------------------------------------------------*
  |  routine to control nonlinear dyn explicit structural analysis m.gee 05/02|

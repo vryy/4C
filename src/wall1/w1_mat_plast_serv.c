@@ -936,9 +936,9 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
     static DOUBLE vect[4], dfac1, dfac2, epsn1, epsn2;
     static DOUBLE sigym1, sigym2, q23, fac, dam, ro23, ro54, dia2, sig1;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("w1cpreva");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
     ro23 = sqrt(.66666666666666663);
     ro54 = sqrt(54.);
@@ -1704,9 +1704,9 @@ return;
 /*----------------------------------------------------------------------*/
     static INT i;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1conver");
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
       *dlamc = dlam[0] + dlam[1];
 /*----------------------------------------------------------------------*/
@@ -2411,9 +2411,9 @@ void w1acrs(DOUBLE  hte,    /* section properties                       */
     static DOUBLE sig[8], dl, alphas, fac, area, alphar, so, ds, rho, rls;
     static DOUBLE dalpha, dls[2], dgamma;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1acrs");
-    #endif
+#endif
 /*-------------------------------------------- initialized variables ---*/
   for (i=0; i<4; i++)
   {
@@ -2503,9 +2503,9 @@ void w1cpreds(DOUBLE *sigym, /* uniaxial predictor yield stress         */
     static INT i;
     static DOUBLE dn[4], fact[4], dcom[4];
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1cpreds");
-    #endif
+#endif
 /*-------------------------------------------- initialized variables ---*/
     for (i = 0; i < 3; i++) fact[i]  = 1.;
     fact[3]  = 0.;

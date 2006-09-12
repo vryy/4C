@@ -68,7 +68,7 @@ and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;
+extern struct _PAR   par;
 
 
 /*----------------------------------------------------------------------*
@@ -79,8 +79,8 @@ and the type is in partition.h
  | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
- extern INT            numcurve;
- extern struct _CURVE *curve;
+extern INT            numcurve;
+extern struct _CURVE *curve;
 
 
 /*!----------------------------------------------------------------------
@@ -127,7 +127,6 @@ void dyn_fsi(
   static INT             numaf;        /* actual number of fields */
   static INT             resstep=0;    /* counter for output control  */
   static INT             restartstep=0;/* counter for restart control */
-  const  INT             mctrlpre=4;   /* control flag */
   INT                    actcurve;     /* actual curve */
   INT                    itnum=0;      /* iteration counter */
   INT                    converged;    /* convergence flag */
@@ -139,6 +138,11 @@ void dyn_fsi(
   static FSI_DYNAMIC    *fsidyn;
   static STRUCT_DYNAMIC *sdyn;
   static ALE_DYNAMIC    *adyn;
+
+
+  static FSI_STRUCT_WORK struct_work;
+  static FSI_FLUID_WORK  fluid_work;
+  static FSI_ALE_WORK    ale_work;
 
   FILE                  *out = allfiles.out_out;
 
@@ -155,6 +159,7 @@ void dyn_fsi(
   INT                    a_disnum_io   = 0;
 
 
+
 #ifdef D_MORTAR
   INTERFACES            *int_faces; /* interface information for mortar   */
 #endif
@@ -164,7 +169,6 @@ void dyn_fsi(
 #ifdef DEBUG
   dstrc_enter("dyn_fsi");
 #endif
-
 
 
 
@@ -308,15 +312,15 @@ void dyn_fsi(
 
 
   /* initialise ale */
-  fsi_ale(alefield,a_disnum_calc,a_disnum_io,mctrl);
+  fsi_ale_setup(&ale_work,alefield,a_disnum_calc,a_disnum_io);
 
 
   /* initialise fluid */
-  fsi_fluid(fluidfield,f_disnum_calc,f_disnum_io,mctrl);
+  fsi_fluid_setup(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
 
 
   /* initialise structure */
-  fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrl,itnum);
+  fsi_struct_setup(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
 
 
 
@@ -345,9 +349,13 @@ void dyn_fsi(
 
 
   /* initialise AITKEN iteration */
-  if (fsidyn->ifsi==5)
+  if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_param)
   {
     fsi_aitken(structfield,s_disnum_calc,itnum,0);
+  }
+  else if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force)
+  {
+    fsi_aitken_force(structfield,s_disnum_calc,fluidfield,f_disnum_calc,itnum,numff,0);
   }
 
 
@@ -382,9 +390,9 @@ if (alefield->subdivide > 0)
   if (ioflags.output_bin==1)
   {
     mctrl = 98;
-    fsi_ale(alefield,a_disnum_calc,a_disnum_io,mctrl);
-    fsi_fluid(fluidfield,f_disnum_calc,f_disnum_io,mctrl);
-    fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrl,itnum);
+    fsi_ale_output(&ale_work,alefield,a_disnum_calc,a_disnum_io);
+    fsi_fluid_output(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
+    fsi_struct_output(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
   }
 
 
@@ -442,21 +450,35 @@ if (alefield->subdivide > 0)
 
     switch (fsidyn->ifsi)
     {
-      case 1:
+      case fsi_basic_sequ_stagg:
         fprintf(out,"Basic Sequential Staggered Scheme\n");
         break;
-      case 2:
+      case fsi_sequ_stagg_pred:
         fprintf(out,"Sequential Staggered Scheme with Predictor\n");
         break;
-      case 4:
+      case fsi_iter_stagg_fixed_rel_param:
         fprintf(out,"Iterative Staggered Scheme with Fixed Relaxation Parameter\n");
         break;
-      case 5:
-        fprintf(out,"Iterative Staggered Scheme with Relaxation Parameter via Aitken Iteration\n");
+      case fsi_iter_stagg_AITKEN_rel_param:
+        fprintf(out,"Iterative Staggered Scheme with Relaxation Parameter via Aitken Iteration\n L: %d \n", fsidyn->ifsi);
         break;
-      case 6:
+      case fsi_iter_stagg_steep_desc:
         fprintf(out,"Iterative Staggered Scheme with Relaxation Parameter via Steepest Descent Method\n");
         break;
+      case fsi_iter_stagg_AITKEN_rel_force:
+        fprintf(out,"Iterative Staggered Scheme with relaxation of interface forces via Aitken parameter\n");
+        break;
+      case fsi_iter_stagg_steep_desc_force:
+        fprintf(out,"Iterative Staggered Scheme with relaxation of interface forces via Steepest Descent Method\n");
+        break;
+#ifdef FSI_NEWTONCOUPLING
+      case fsi_iter_stagg_Newton_FD:
+        fprintf(out,"Iterative Staggered Scheme with Newton-Method - Approximation by finite Differenc\n");
+        break;
+      case fsi_iter_stagg_Newton_I:
+        fprintf(out,"Iterative Staggered Scheme with Newton-Method - Approximation by Identity Matrix\n");
+        break;
+#endif
       default:
         dserror("algoout not implemented yet\n");
     }
@@ -539,66 +561,51 @@ fielditer:
 
 
 
-
-  /* basic sequential staggered scheme */
-  /*===================================*/
-
-  if (fsidyn->ifsi==1 || fsidyn->ifsi==3)
+  switch (fsidyn->ifsi)
   {
 
-    dsassert(fsidyn->ifsi!=3,"Scheme with DT/2-shift not implemented yet!\n");
+    /* basic sequential staggered scheme */
+    /*===================================*/
 
-
+  case fsi_basic_sequ_stagg:
+  case fsi_sequ_stagg_shift:
+  {
+    dsassert(fsidyn->ifsi!=fsi_sequ_stagg_shift,"Scheme with DT/2-shift not implemented yet!\n");
 
     /*------------------------------- CFD -------------------------------*/
-#ifdef PERF
     perf_begin(42);
-#endif
-
-    fsi_fluid(fluidfield,f_disnum_calc,f_disnum_io,mctrl);
-
-#ifdef PERF
+    fsi_fluid_calc(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
+    fsi_fluid_final(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
     perf_end(42);
-#endif
-
-
 
     /*------------------------------- CSD -------------------------------*/
-#ifdef PERF
     perf_begin(43);
-#endif
-
-    fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrl,itnum);
-
-#ifdef PERF
+    fsi_struct_calc(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
+    fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
     perf_end(43);
-#endif
-
-
-
 
     /*------------------------------- CMD -------------------------------*/
-#ifdef PERF
     perf_begin(44);
-#endif
-
-    fsi_ale(alefield,a_disnum_calc,a_disnum_io,mctrl);
-
-#ifdef PERF
+    fsi_ale_calc(&ale_work,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
+    fsi_ale_final(&ale_work,alefield,a_disnum_calc,a_disnum_io);
     perf_end(44);
-#endif
 
-
-  } /* endif (fsidyn->ifsi==1 || fsidyn->ifsi==3) */
-
-
-
+    break;
+  }
 
 
   /* schemes with predictor */
   /*========================*/
 
-  else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
+  case fsi_sequ_stagg_pred:
+  case fsi_iter_stagg_fixed_rel_param:
+  case fsi_iter_stagg_AITKEN_rel_param:
+  case fsi_iter_stagg_steep_desc:
+  case fsi_iter_stagg_CHEB_rel_param:
+#ifdef FSI_NEWTONCOUPLING
+  case fsi_iter_stagg_Newton_FD:
+  case fsi_iter_stagg_Newton_I:
+#endif
   {
 #ifdef D_MORTAR
     if (fsidyn->coupmethod == 0) /* mortar method */
@@ -609,23 +616,13 @@ fielditer:
     }
 #endif
 
-
     /*----------------- CSD - predictor for itnum==0 --------------------*/
     if (itnum == 0)
     {
-
-#ifdef PERF
       perf_begin(43);
-#endif
-
-      fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrlpre,itnum);
-
-#ifdef PERF
+      fsi_structpredictor(structfield,s_disnum_calc,0);
       perf_end(43);
-#endif
-
-    }  /* if (itnum == 0) */
-
+    }
 
 #ifdef D_MORTAR
     if (fsidyn->coupmethod == 0) /* mortar method */
@@ -636,32 +633,29 @@ fielditer:
     }
 #endif
 
-
+#ifdef FSI_NEWTONCOUPLING
+    /* backup for Newton via finite differences */
+    {
+      ARRAY_POSITION *ipos;
+      ipos = &(structfield->dis[s_disnum_calc].ipos);
+      solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, ipos->mf_dispnp, 8);
+      solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, ipos->mf_reldisp, 9);
+      if (itnum > 0)
+        solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,9,11);
+      if (itnum == 0)
+        solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,1,12);
+    }
+#endif
 
     /*------------------------------- CMD -------------------------------*/
-#ifdef PERF
     perf_begin(44);
-#endif
-
-    fsi_ale(alefield,a_disnum_calc,a_disnum_io,mctrl);
-
-#ifdef PERF
+    fsi_ale_calc(&ale_work,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
     perf_begin(44);
-#endif
-
-
 
     /*------------------------------- CFD -------------------------------*/
-#ifdef PERF
     perf_begin(42);
-#endif
-
-    fsi_fluid(fluidfield,f_disnum_calc,f_disnum_io,mctrl);
-
-#ifdef PERF
+    fsi_fluid_calc(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
     perf_end(42);
-#endif
-
 
 #ifdef D_MORTAR
     if (fsidyn->coupmethod == 0) /* mortar method */
@@ -672,75 +666,135 @@ fielditer:
     }
 #endif
 
-
-
-
     /*------------------------------- CSD -------------------------------*/
-#ifdef PERF
     perf_begin(43);
-#endif
-
-    fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrl,itnum);
-
-#ifdef PERF
+    fsi_struct_calc(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
     perf_end(43);
+
+    break;
+  }
+
+  case fsi_iter_stagg_AITKEN_rel_force:
+  case fsi_iter_stagg_steep_desc_force:
+  {
+    /*------------------------------- CSD -------------------------------*/
+    perf_begin(43);
+    fsi_struct_calc(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
+    perf_end(43);
+
+    /*------------------------------- CMD -------------------------------*/
+    perf_begin(44);
+    fsi_ale_calc(&ale_work,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
+    perf_begin(44);
+
+    /*------------------------------- CFD -------------------------------*/
+    perf_begin(42);
+    fsi_fluid_calc(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
+    perf_end(42);
+
+    break;
+  }
+
+  default:
+    dserror("coupling method %d not supported", fsidyn->ifsi);
+  }
+
+#ifdef FSI_NEWTONCOUPLING
+
+  switch (fsidyn->ifsi)
+  {
+
+    /* Newton methods */
+    /*================*/
+
+  case fsi_iter_stagg_Newton_I:
+  case fsi_iter_stagg_Newton_FD:
+  {
+/*     perf_begin(61); */
+    solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, ipos->mf_reldisp, 7);
+
+    /* Calculate right Side*/
+    double *rS;/* Vector for right Side */
+    rS = fsi_newton_rightSide(structfield, s_disnum_calc);
+
+    /* Solving the linear Syste*/
+    double *deltaD;
+    deltaD = fsi_newton_SolveSystem(rS, structfield, fluidfield, alefield, &struct_work, &fluid_work, &ale_work, s_disnum_calc, s_disnum_io, f_disnum_calc, f_disnum_io, a_disnum_calc, a_disnum_io, itnum);
+
+    /* Update of the interface displacement */
+    fsi_newton_final(deltaD, structfield,  s_disnum_calc);
+
+    solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 7, ipos->mf_reldisp);
+
+/*     perf_end(61); */
+    break;
+  }
+  default:
+  {
+  }
+  }
+
 #endif
 
-  }  /* else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4) */
-
-
-
-
-
-  /* strong coupling schemes */
-  /*=========================*/
-
-  if (fsidyn->ifsi>=4)
+  switch (fsidyn->ifsi)
   {
+
+    /* strong coupling schemes */
+    /*=========================*/
+
+  case fsi_iter_stagg_fixed_rel_param:
+  case fsi_iter_stagg_AITKEN_rel_param:
+  case fsi_iter_stagg_steep_desc:
+  case fsi_iter_stagg_CHEB_rel_param:
+#ifdef FSI_NEWTONCOUPLING
+  case fsi_iter_stagg_Newton_FD:
+  case fsi_iter_stagg_Newton_I:
+#endif
+  {
+    DOUBLE resnorm;
+
     /* iteration convergence check */
-    converged = fsi_convcheck(structfield, s_disnum_calc, itnum);
+    converged = fsi_convcheck(structfield, s_disnum_calc, itnum, &resnorm);
 
 
     if (converged == 0) /* no convergence */
     {
-
-
       /* compute optimal relaxation parameter */
 
-#ifdef PERF
       perf_begin(45);
-#endif
 
-      if (fsidyn->ifsi==5)
+      switch (fsidyn->ifsi)
       {
+      case fsi_iter_stagg_fixed_rel_param:
+      case fsi_iter_stagg_Newton_FD:
+      case fsi_iter_stagg_Newton_I:
+        /* Nothing to do. */
+        break;
+      case fsi_iter_stagg_AITKEN_rel_param:
         fsi_aitken(structfield,s_disnum_calc,itnum,1);
-      }
-
-      else if (fsidyn->ifsi==6)
-      {
-        fsi_gradient(alefield,structfield,fluidfield,
-            a_disnum_io,a_disnum_calc,
-            s_disnum_io,s_disnum_calc,
-            f_disnum_io,f_disnum_calc,
-            numaf,numff,numsf);
-      }
-
-      else if (fsidyn->ifsi==7)
-      {
+        break;
+      case fsi_iter_stagg_steep_desc:
+        fsi_gradient(&struct_work,&fluid_work,&ale_work,
+		     alefield,structfield,fluidfield,
+                     a_disnum_io,a_disnum_calc,
+                     s_disnum_io,s_disnum_calc,
+                     f_disnum_io,f_disnum_calc,
+                     numaf,numff,numsf);
+        break;
+      case fsi_iter_stagg_CHEB_rel_param:
         dserror("RELAX via CHEBYCHEV not implemented yet!\n");
+        break;
+      default:
+        dserror("Ups");
       }
-
 
       if (par.myrank==0)
         fprintf(out,"   %7.5f  |",fsidyn->relax);
 
-
       /* relaxation of structural interface displacements */
       fsi_relax_intdisp(structfield,s_disnum_calc);
-
-#ifdef PERF
       perf_end(45);
-#endif
+
 
       itnum++;
 
@@ -750,64 +804,112 @@ fielditer:
 
       goto fielditer;
     }
-
-
     else /* convergence */
     {
+
       if (par.myrank==0)
         fprintf(out,"            |");
 
-
       mctrl=3;
 
-
       /*--------------------- update MESH data -------------------------*/
-#ifdef PERF
       perf_begin(44);
-#endif
-
-      fsi_ale(alefield,a_disnum_calc,a_disnum_io,mctrl);
-
-#ifdef PERF
+      fsi_ale_final(&ale_work,alefield,a_disnum_calc,a_disnum_io);
       perf_end(44);
-#endif
-
-
-
 
       /*-------------------- update FLUID data -------------------------*/
-#ifdef PERF
       perf_begin(42);
-#endif
-
-      fsi_fluid(fluidfield,f_disnum_calc,f_disnum_io,mctrl);
-
-#ifdef PERF
+      fsi_fluid_final(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
       perf_end(42);
-#endif
-
-
-
 
       /*------------------ update STRUCTURE data -----------------------*/
-#ifdef PERF
       perf_begin(43);
-#endif
-
-      fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrl,itnum);
-
-#ifdef PERF
+      fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
       perf_end(43);
-#endif
+
 
     }
-  }  /* if (fsidyn->ifsi>=4) */
+    break;
+  }
 
+    /* strong coupling schemes with force relaxation */
+    /*===============================================*/
 
-  else
+  case fsi_iter_stagg_AITKEN_rel_force:
+  case fsi_iter_stagg_steep_desc_force:
+  {
+    /* iteration convergence check */
+    converged = fsi_convcheck_force(structfield, s_disnum_calc, fluidfield, f_disnum_calc, itnum, numff);
+
+    if (converged == 0) /* no convergence */
+    {
+      /* compute optimal relaxation parameter */
+      perf_begin(45);
+
+      switch (fsidyn->ifsi)
+      {
+      case fsi_iter_stagg_AITKEN_rel_force:
+        fsi_aitken_force(structfield,s_disnum_calc,fluidfield,f_disnum_calc,itnum,numff,1);
+        break;
+      case fsi_iter_stagg_steep_desc_force:
+        fsi_gradient_force(&struct_work,&fluid_work,&ale_work,
+                           alefield,structfield,fluidfield,
+                           a_disnum_io,a_disnum_calc,
+                           s_disnum_io,s_disnum_calc,
+                           f_disnum_io,f_disnum_calc,
+                           numaf,numff,numsf);
+        break;
+      default:
+        dserror("Ups");
+      }
+
+      if (par.myrank==0)
+        fprintf(out,"   %7.5f  |",fsidyn->relax);
+
+      fsi_relax_intdisp_force(structfield,s_disnum_calc,fluidfield,f_disnum_calc,numff);
+
+      perf_end(45);
+
+      itnum++;
+      if (par.myrank==0)
+        fprintf(out,"            |\n");
+      fflush(out);
+
+      goto fielditer;
+    }
+    else /* convergence of iteration with relaxed interface forces */
+    {
+      if (par.myrank==0)
+        fprintf(out,"            |");
+      mctrl=33;
+
+      /*--------------------- update MESH data -------------------------*/
+      perf_begin(44);
+      fsi_ale_final(&ale_work,alefield,a_disnum_calc,a_disnum_io);
+      perf_end(44);
+
+      /*-------------------- update FLUID data -------------------------*/
+      perf_begin(42);
+      fsi_fluid_final(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
+      perf_end(42);
+
+      /*------------------ update STRUCTURE data -----------------------*/
+      perf_begin(43);
+      fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
+      perf_end(43);
+
+      if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force)
+      {
+        fsi_aitken_force(structfield,s_disnum_calc,fluidfield,f_disnum_calc,itnum,numff,2);
+      }
+    }
+    break;
+  }
+  default:
   {
     if (par.myrank==0)
       fprintf(out,"            |            |");
+  }
   }
 
 
@@ -844,9 +946,9 @@ fielditer:
     if (ioflags.output_bin==1)
     {
       mctrl = 98;
-      fsi_ale(alefield,a_disnum_calc,a_disnum_io,mctrl);
-      fsi_fluid(fluidfield,f_disnum_calc,f_disnum_io,mctrl);
-      fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrl,itnum);
+      fsi_ale_output(&ale_work,alefield,a_disnum_calc,a_disnum_io);
+      fsi_fluid_output(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
+      fsi_struct_output(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
     }
 #endif
 
@@ -884,9 +986,9 @@ fielditer:
 cleaningup:
 
   mctrl=99;
-  fsi_fluid(fluidfield,f_disnum_calc,f_disnum_io,mctrl);
-  fsi_struct(structfield,s_disnum_calc,s_disnum_io,mctrl,itnum);
-  fsi_ale(alefield,a_disnum_calc,a_disnum_io,mctrl);
+  fsi_fluid_cleanup(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
+  fsi_struct_cleanup(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
+  fsi_ale_cleanup(&ale_work,alefield,a_disnum_calc,a_disnum_io);
 
 
 

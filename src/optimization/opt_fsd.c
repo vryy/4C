@@ -72,9 +72,9 @@ void optfsd()
   DOUBLE *grdcon_lin;              /* AS */
   DOUBLE *var_lin   ;              /* AS */
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("optfsd");
-  #endif
+#endif
 /*----------------------------------------------------------------------*/
   indcon = 1;/*number of independent constraints */
 /*----------------------------------------------------------------------*/
@@ -180,9 +180,9 @@ for (fsdstep=0; fsdstep<max_fsdstep; fsdstep++)
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------- end of optimization loop ---*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 return;
 } /* end of optfsd */
 /*----------------------------------------------------------------------*/

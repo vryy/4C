@@ -14,6 +14,8 @@ Maintainer: Steffen Genkinger
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 
+#include "fsi.h"
+
 /* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
@@ -28,82 +30,357 @@ void fsi_aitken(
     INT                 init
     );
 
+void fsi_aitken_force(
+  FIELD             *structfield,
+  INT                sdisnum,
+  FIELD             *fluidfield,
+  INT                fdisnum,
+  INT                itnum,
+  INT                numff,
+  INT                init
+  );
 
 /************************************************************************
  | fsi_ale.c                                                            |
  ************************************************************************/
-void fsi_ale(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_ale_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
 
 
 /************************************************************************
  | fsi_ale_2step.c                                                            |
  ************************************************************************/
-void fsi_ale_2step(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_ale_2step_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_2step_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_2step_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_2step_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_2step_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_2step_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+
 
 
 /************************************************************************
  | fsi_ale_laplace.c                                                            |
  ************************************************************************/
-void fsi_ale_laplace(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_ale_laplace_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_laplace_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_laplace_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_laplace_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_laplace_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_laplace_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
 
 
 /************************************************************************
  | fsi_ale_LAS.c                                                            |
  ************************************************************************/
-void fsi_ale_LAS(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_ale_LAS_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_LAS_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_LAS_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_LAS_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_LAS_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_LAS_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
 
 
 /************************************************************************
  | fsi_ale_lin.c                                                            |
  ************************************************************************/
-void fsi_ale_lin(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_ale_lin_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_lin_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_lin_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_lin_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_lin_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_lin_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
 
 
 /************************************************************************
  | fsi_ale_nln.c                                                            |
  ************************************************************************/
-void fsi_ale_nln(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_ale_nln_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_nln_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_nln_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_nln_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_nln_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_nln_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
 
 
 /************************************************************************
  | fsi_ale_spring.c                                                            |
  ************************************************************************/
-void fsi_ale_spring(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_ale_spring_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_spring_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_spring_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_spring_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  );
+
+void fsi_ale_spring_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
+
+void fsi_ale_spring_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  );
 
 
 /************************************************************************
@@ -134,6 +411,8 @@ void fsi_allreduce_coupforce(
 void fsi_load(
     PARTITION          *actpart,
     INT                 disnum,
+    FIELD              *fluidfield,
+    INT                 fdisnum,
     DOUBLE             *fsiforce,
     INT                 global_numeq
     );
@@ -185,18 +464,59 @@ void fsi_energycheck( void );
 /************************************************************************
  | fsi_fluid.c                                                          |
  ************************************************************************/
-void fsi_fluid(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl
-    );
+void fsi_fluid_setup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_calc(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io,
+  FIELD          *alefield,
+  INT             adisnum_calc
+  );
+
+void fsi_fluid_final(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_sd(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_output(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_cleanup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
 
 
 /************************************************************************
  | fsi_gradient.c                                                       |
  ************************************************************************/
 void fsi_gradient(
+  FSI_STRUCT_WORK* struct_work,
+  FSI_FLUID_WORK* fluid_work,
+  FSI_ALE_WORK* ale_work,
     FIELD              *alefield,
     FIELD              *structfield,
     FIELD              *fluidfield,
@@ -211,6 +531,60 @@ void fsi_gradient(
     INT                 numfs
     );
 
+
+void fsi_gradient_force(
+  FSI_STRUCT_WORK* struct_work,
+  FSI_FLUID_WORK* fluid_work,
+  FSI_ALE_WORK* ale_work,
+  FIELD              *alefield,
+  FIELD              *structfield,
+  FIELD              *fluidfield,
+  INT                 disnuma_io,
+  INT                 disnuma_calc,
+  INT                 disnums_io,
+  INT                 disnums_calc,
+  INT                 disnumf_io,
+  INT                 disnumf_calc,
+  INT                 numfa,
+  INT                 numff,
+  INT                 numfs
+  );
+
+
+#ifdef FSI_NEWTONCOUPLING
+
+/************************************************************************
+ | fsi_newton.c                                                       |
+ ************************************************************************/
+double *fsi_newton_SolveSystem(
+    DOUBLE             *rS,
+    FIELD              *structfield,
+    FIELD              *fluidfield,
+    FIELD              *alefield,
+    FSI_STRUCT_WORK    *struct_work,
+    FSI_FLUID_WORK     *fluid_work,
+    FSI_ALE_WORK       *ale_work,
+    INT                s_disnum_calc,
+    INT                s_disnum_io,
+    INT                f_disnum_calc,
+    INT                f_disnum_io,
+    INT                a_disnum_calc,
+    INT                a_disnum_io,
+    INT                itnum
+  );
+
+double *fsi_newton_rightSide(
+  FIELD           *structfield,
+  INT             s_disnum_calc
+  );
+
+void fsi_newton_final(
+  DOUBLE          *dg,
+  FIELD           *structfield,
+  INT             s_disnum_calc
+  );
+
+#endif
 
 /************************************************************************
  | fsi_mortar.c                                                         |
@@ -292,6 +666,14 @@ void fsi_relax_intdisp(
     INT                 disnum
     );
 
+void fsi_relax_intdisp_force(
+  FIELD              *structfield,
+  INT                 sdisnum,
+  FIELD              *fluidfield,
+  INT                 fdisnum,
+  INT                 numff
+  );
+
 
 /************************************************************************
  | fsi_service.c                                                        |
@@ -299,6 +681,8 @@ void fsi_relax_intdisp(
 void fsi_alecp(
     FIELD              *fluidfield,
     INT                 disnum,
+    FIELD              *alefield,
+    INT                 adisnum,
     DOUBLE              dt,
     INT                 numdf,
     INT                 phase
@@ -336,8 +720,19 @@ void fsi_structpredictor(
 INT fsi_convcheck(
     FIELD              *structfield,
     INT                 disnum,
-    INT                 itnum
+    INT                 itnum,
+    DOUBLE             *resnorm
     );
+
+
+INT fsi_convcheck_force(
+  FIELD              *structfield,
+  INT                 sdisnum,
+  FIELD              *fluidfield,
+  INT                 fdisnum,
+  INT                 itnum,
+  INT                 numff
+  );
 
 
 void fsi_init_ale(
@@ -354,13 +749,54 @@ void fluid_init_pos_ale(
 /************************************************************************
  | fsi_struct.c                                                         |
  ************************************************************************/
-void fsi_struct(
-    FIELD              *actfield,
-    INT                 disnum_calc,
-    INT                 disnum_io,
-    INT                 mctrl,
-    INT                 fsiitnum
-    );
+void fsi_struct_setup(
+  FSI_STRUCT_WORK    *work,
+  FIELD              *actfield,
+  INT                 disnum_calc,
+  INT                 disnum_io,
+  INT                 fsiitnum
+  );
 
+void fsi_struct_calc(
+  FSI_STRUCT_WORK    *work,
+  FIELD              *actfield,
+  INT                 disnum_calc,
+  INT                 disnum_io,
+  INT                 fsiitnum,
+  FIELD              *fluidfield,
+  INT                 fdisnum_calc
+  );
+
+void fsi_struct_final(
+  FSI_STRUCT_WORK    *work,
+  FIELD              *actfield,
+  INT                 disnum_calc,
+  INT                 disnum_io,
+  INT                 fsiitnum
+  );
+
+void fsi_struct_sd(
+  FSI_STRUCT_WORK    *work,
+  FIELD              *actfield,
+  INT                 disnum_calc,
+  INT                 disnum_io,
+  INT                 fsiitnum
+  );
+
+void fsi_struct_output(
+  FSI_STRUCT_WORK    *work,
+  FIELD              *actfield,
+  INT                 disnum_calc,
+  INT                 disnum_io,
+  INT                 fsiitnum
+  );
+
+void fsi_struct_cleanup(
+  FSI_STRUCT_WORK    *work,
+  FIELD              *actfield,
+  INT                 disnum_calc,
+  INT                 disnum_io,
+  INT                 fsiitnum
+  );
 
 /*! @} (documentation module close)*/

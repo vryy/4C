@@ -15,6 +15,12 @@ Maintainer: Malte Neumann
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale3.h"
+
+#ifdef FSI_NONMATCH
+#include "../fluid3/fluid3_prototypes.h"
+#include "../shell8/shell8.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -81,7 +87,7 @@ INT                   numele_total;
 INT                   actcurve;
 INT                   numff,numsf;
 INT                   dim;
-DOUBLE     funct_fac;	             /* factor from spatial function */
+DOUBLE                funct_fac;	             /* factor from spatial function */
 DOUBLE                timefac[ALENUMTIMECURVE];
 DOUBLE                T;
 DOUBLE                dt;
@@ -89,6 +95,15 @@ DOUBLE                acttimefac;
 DOUBLE                initval;
 DOUBLE                delta, deltav[MAXDOFPERNODE];
 DOUBLE                cx,cy,win,wino,dd;
+ARRAY_POSITION       *ipos;
+#ifdef FSI_NONMATCH
+INT          m;          /*counters*/
+ARRAY        funct_a;
+DOUBLE       *funct;
+DIS_TYP      typ;
+DOUBLE       r,s,t;
+ELEMENT      *hostele;
+#endif
 
 #ifdef DEBUG
 dstrc_enter("ale_setdirich");
@@ -101,6 +116,7 @@ dt           = adyn->dt;
 numff        = genprob.numff;
 numsf        = genprob.numsf;
 dim          = genprob.ndim;
+ipos   = &(actfield->dis[disnum].ipos);
 
 /*------------------------------------------ get values from time curve */
 for (actcurve=0;actcurve<numcurve;actcurve++)
@@ -121,7 +137,7 @@ for (i=0;i<numnp_total;i++)
         for (j=0;j<actanode->numdf;j++)
         {
           /*--------- to make sure that there's no garbage we zero the sol-array */
-          actanode->sol_increment.a.da[0][j] = ZERO;
+          actanode->sol_increment.a.da[ipos->dispnp][j] = ZERO;
           if (actagnode->dirich->dirich_onoff.a.iv[j]==0)
             continue;
           actcurve = actagnode->dirich->curve.a.iv[j]-1;
@@ -138,7 +154,7 @@ for (i=0;i<numnp_total;i++)
            *=====================================================================*/
           if (FABS(initval-90.0) > EPS13)
           {
-            actanode->sol_increment.a.da[0][j] = initval*acttimefac*funct_fac;
+            actanode->sol_increment.a.da[ipos->dispnp][j] = initval*acttimefac*funct_fac;
           }
           else
           {
@@ -152,11 +168,11 @@ for (i=0;i<numnp_total;i++)
             if(cx < 0.0) wino += 3.14159265359;
             if (j==0)
             {
-              actanode->sol_increment.a.da[0][j] = dd * cos(win+wino) - cx;
+              actanode->sol_increment.a.da[ipos->dispnp][j] = dd * cos(win+wino) - cx;
             }
             else
             {
-              actanode->sol_increment.a.da[0][j] = dd * sin(win+wino) - cy;
+              actanode->sol_increment.a.da[ipos->dispnp][j] = dd * sin(win+wino) - cy;
             }
           }
         }
@@ -164,35 +180,128 @@ for (i=0;i<numnp_total;i++)
 
 #ifdef D_FSI
    case dirich_FSI: /* dirichvalues = displacements of structure -------*/
+#ifdef FSI_NONMATCH
+/**************************************************************************/
+/*The displacements are passed from the structure nodes to the ale nodes.
+ *Since the position of all FSI ale nodes in relation to their structure host
+ *elements is known (GNODE->coupleptr), the shape functions are used to
+ *interpolate the ale displacements from the structure displacements. The
+ *sum of all contributions from struct nodes delivers the nodal ale displacements.
+ *           _            _          _
+ *           u_ale = Sum( N(r,s,t) * u_struct )                             */
+/**************************************************************************/
+
+      if (adyn->coupmethod == 1) /* nonconfornming: Wurde hier einfach
+                                  * auf 0 gesetzt!!! 0 heisst eigentlich: conforming*/
+      {
+        dsassert(actanode->locsysId==0,"no locsys for ALE dirich_FSI!\n");
+
+        /*access the coupled structure host element*/
+        hostele=actagnode->coupleptr->hostele;
+        typ=hostele->distyp;
+
+        /*initialize the ale displacemants with 0*/
+        for (j=0;j<actanode->numdf;j++)
+          actanode->sol_increment.a.da[ipos->dispnp][j]=0;
+
+        switch (hostele->eltyp)
+        {
+#ifdef D_BRICK1
+         case el_brick1:
+
+         /*allocate space for evaluation of shape functions*/
+         funct=amdef("funct" ,&funct_a ,MAXNOD_F3,1,"DV");
+         /*access the local coordinates of the ale node*/
+         r=actagnode->coupleptr->x[0];
+         s=actagnode->coupleptr->x[1];
+         t=actagnode->coupleptr->x[2];
+
+         /*evaluate shape functions at the position of the ale node*/
+         f3_hex(funct,NULL,NULL,r,s,t,typ,0);
+
+         /*loop the dofs*/
+         for (j=0;j<actanode->numdf;j++)
+         {
+           /*loop all structure nodes of the host element*/
+           for (m=0;m<hostele->numnp;m++)
+           {
+             actsnode=hostele->node[m];
+             /*calculate the ale displacemant by interpolation via the shape functions*/
+             actanode->sol_increment.a.da[ipos->dispnp][j] += funct[m] * (actsnode->sol_mf.a.da[readstructpos][j]);
+           }
+         }
+         amdel(&funct_a);
+         break;
+#endif
+#ifdef D_SHELL8
+        case el_shell8:
+        {
+          funct=amdef("funct" ,&funct_a ,MAXNOD_SHELL8,1,"DV");
+          /*access the local coordinates of the ale node*/
+          r=actagnode->coupleptr->x[0];
+          s=actagnode->coupleptr->x[1];
+
+          /*evaluate shape functions at the position of the ale node*/
+          s8_funct_deriv(funct,NULL,r,s,typ,0);
+
+          /*loop the dofs*/
+          for (j=0;j<actanode->numdf;j++)
+          {
+            /*loop all structure nodes of the host element*/
+            for (m=0;m<hostele->numnp;m++)
+            {
+              actsnode=hostele->node[m];
+              /*calculate the ale displacemant by interpolation via the shape functions*/
+              actanode->sol_increment.a.da[ipos->dispnp][j] += funct[m] * (actsnode->sol_mf.a.da[readstructpos][j]);
+            }
+          }
+          amdel(&funct_a);
+          break;
+        }
+#endif
+         default:
+           dserror("unknown element type %d", hostele->eltyp);
+        }
+      }
+#else
       if(adyn->coupmethod == 1) /* conforming */
       {
         dsassert(actanode->locsysId==0,"no locsys for ALE dirich_FSI!\n");
         actsnode = actagnode->mfcpnode[numsf];
         for (j=0;j<actanode->numdf;j++)
         {
-          actanode->sol_increment.a.da[0][j] =
-	            actsnode->sol_mf.a.da[readstructpos][j];
+          actanode->sol_increment.a.da[ipos->dispnp][j] =
+	    actsnode->sol_mf.a.da[readstructpos][j];
 
         } /* readstructpos = 0 for 'ordinary' calculation *
                            = 6 for calculation for Relaxation parameter via
 	  		       steepest descent method */
       }
+#endif
       else if(adyn->coupmethod == 0) /* mortar method */
       {
         for (j=0;j<actanode->numdf;j++)
         {
-	   if (readstructpos != 6) /* 'ordinary' calculation */
-             actanode->sol_increment.a.da[0][j] =
-  	               actanode->sol_mf.a.da[3][j]; 
-           else if(readstructpos == 6) /* steepest descent method */
-             actanode->sol_increment.a.da[0][j] =
-  	               actanode->sol_mf.a.da[3][j] - 
-                       actanode->sol_mf.a.da[0][j];  
-           else dserror("parameter readstructpos not known in ale_setdirich()!!!\n");
+	   if (readstructpos != 6)
+	   {
+	     /* 'ordinary' calculation */
+             actanode->sol_increment.a.da[ipos->dispnp][j] =
+	       actanode->sol_mf.a.da[3][j];
+	   }
+           else if (readstructpos == 6)
+	   {
+	     /* steepest descent method */
+             actanode->sol_increment.a.da[ipos->dispnp][j] =
+	       actanode->sol_mf.a.da[3][j] -
+	       actanode->sol_mf.a.da[ipos->mf_dispn][j];
+	   }
+           else
+	     dserror("parameter readstructpos not known in ale_setdirich()!!!\n");
         } /* readstructpos = 0 for 'ordinary' calculation *
                            = 6 for calculation for Relaxation parameter via
 			     steepest descent method */
       }
+
       else dserror("adyn->couptyp not known in ale_setdirich()!!!");
    break;
    case dirich_freesurf: /* dirichvalues = displacement of fluid
@@ -204,7 +313,7 @@ for (i=0;i<numnp_total;i++)
          {
             dsassert(actfnode->xfs != NULL, "actfnode->xfs[j] == NULL");
             delta = actfnode->xfs[j]-actanode->x[j];
-            actanode->sol_increment.a.da[0][j]=delta;
+            actanode->sol_increment.a.da[ipos->dispnp][j]=delta;
          }
       }
       else /* local co-system */
@@ -220,7 +329,7 @@ for (i=0;i<numnp_total;i++)
          locsys_trans_nodval(actele,&(deltav[0]),actanode->numdf,
                              actanode->locsysId-1,0);
          for (j=0;j<actanode->numdf;j++)
-            actanode->sol_increment.a.da[0][j]=deltav[j];
+            actanode->sol_increment.a.da[ipos->dispnp][j]=deltav[j];
 
       }
    break;
@@ -292,7 +401,7 @@ DOUBLE                T;
 DOUBLE                dt;
 DOUBLE                acttimefac;
 DOUBLE                initval;
-
+ARRAY_POSITION       *ipos;
 
 #ifdef DEBUG
   dstrc_enter("ale_setdirich_increment_fsi");
@@ -305,6 +414,7 @@ dt           = adyn->dt;
 numff        = genprob.numff;
 numsf        = genprob.numsf;
 dim          = genprob.ndim;
+ipos         = &(actfield->dis[disnum].ipos);
 
 /*------------------------------------------ get values from time curve */
 for (actcurve=0;actcurve<numcurve;actcurve++)
@@ -352,8 +462,8 @@ for (i=0;i<numnp_total;i++)
            *=====================================================================*/
           if (FABS(initval-90.0) > EPS13)
           {
-             actanode->sol_increment.a.da[0][j] = initval*funct_fac*acttimefac
-               - actanode->sol_increment.a.da[1][j];
+             actanode->sol_increment.a.da[ipos->dispnp][j] = initval*funct_fac*acttimefac
+               - actanode->sol_increment.a.da[ipos->dispn][j];
           }
           else
           {
@@ -368,13 +478,13 @@ for (i=0;i<numnp_total;i++)
             if(cx < 0.0) wino += 3.14159265359;
             if (j==0)
             {
-              actanode->sol_increment.a.da[0][j] = dd * cos(win+wino) - cx
-               - actanode->sol_increment.a.da[1][j];
+              actanode->sol_increment.a.da[ipos->dispnp][j] = dd * cos(win+wino) - cx
+               - actanode->sol_increment.a.da[ipos->dispn][j];
             }
             else
             {
-              actanode->sol_increment.a.da[0][j] = dd * sin(win+wino) - cy
-               - actanode->sol_increment.a.da[1][j];
+              actanode->sol_increment.a.da[ipos->dispnp][j] = dd * sin(win+wino) - cy
+               - actanode->sol_increment.a.da[ipos->dispn][j];
             }
           }
         }
@@ -385,8 +495,9 @@ for (i=0;i<numnp_total;i++)
       actsnode = actagnode->mfcpnode[numsf];
       for (j=0;j<actanode->numdf;j++)
       {
-         actanode->sol_increment.a.da[0][j] = actsnode->sol_mf.a.da[0][j]
-	                                    - actanode->sol_increment.a.da[1][j];
+         actanode->sol_increment.a.da[ipos->dispnp][j] =
+	   actsnode->sol_mf.a.da[ipos->mf_dispn][j] -
+	   actanode->sol_increment.a.da[ipos->dispn][j];
       }
    break;
    case dirich_freesurf: /* dirichvalues = displacement of fluid
@@ -394,8 +505,9 @@ for (i=0;i<numnp_total;i++)
       actfnode = actagnode->mfcpnode[numff];
       for (j=0;j<actanode->numdf;j++)
       {
-            actanode->sol_increment.a.da[0][j]
-	       = actfnode->xfs[j]-actanode->x[j]-actanode->sol_increment.a.da[1][j];
+	actanode->sol_increment.a.da[ipos->dispnp][j] =
+	  actfnode->xfs[j] - actanode->x[j] -
+	  actanode->sol_increment.a.da[ipos->dispn][j];
       }
    break;
 #endif

@@ -193,9 +193,9 @@ void ssiserv_put_true_disp2slave(FIELD *actfield, CONTAINER *container)
   NODE *actmnode;                     /* used for the actual master node */
   INT i, j;                           /* counters */
 
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("ssiserv_put_true_disp2node");
-  #endif
+#endif
 
   actdis = &(actfield->dis[0]);
   /* loop nodes of slave field */

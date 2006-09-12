@@ -1,394 +1,5 @@
 #include "post_visual3_functions.h"
-#include "post_map_functions.h"
 
-/*-----------------------------------------------
- * find_control_file_min_max_values
- *
- * We check if the min/max values of data like velocity are already calculated and written in
- * the control file.
- *
- * In this case the values are read and written into the FLIMS_tmp
- * array. We assume that if the max/min values are calculated, the
- * absolute values are calculated too. If not --> dserror.
- *
- * If theres no information we just return 0 to show that the data
- * limits have to be calculated. *
- * -----------------------------------------------*/
-
-INT find_control_file_min_max_values(FIELD_DATA *field, char *data_name, float FLIMS_tmp[4][2])
-{
-  RESULT_DATA result;
-
-  MAP_NODE* actnode;
-  MAP_NODE* actnode2;
-
-  MAP_ITERATOR iterator;
-  MAP_NODE_ITERATOR node_iterator;
-  INT counter;
-  INT i;
-
-  float tmp[4]={0, 0, 0, 0};
-
-#ifdef DEBUG
-  dstrc_enter("find_control_file_min_max_values");
-#endif
-
-  init_result_data(field, &result);
-  next_result(&result);
-  /*step through the result group and look for entries min/max*/
-  init_map_iterator(&iterator, result.group);
-
-  while (next_map_node(&iterator)) /*loop over all map_nodes*/
-  {
-    actnode = iterator_get_node(&iterator);
-
-    /*check if the current node has the right key & an entry named 'min'*/
-    if (!strcmp(actnode->key, data_name) && iterator_find_symbol(&iterator, "min"))
-    {
-
-      read_control_file_values(tmp,"min", iterator_get_map(&iterator));
-
-      for (i=0;i<3;i++)
-      {
-        FLIMS_tmp[i][0]=tmp[i];
-      }
-
-      read_control_file_values(tmp, "max", iterator_get_map(&iterator));
-
-      for (i=0;i<3;i++)
-      {
-        FLIMS_tmp[i][1]=tmp[i];
-      }
-
-
-      if (strcmp(data_name, "pressure") && strcmp(data_name, "average_pressure") ) /*  pressure has no absolute min/max*/
-      {
-        FLIMS_tmp[3][0]=(float)map_read_real(actnode->symbol->s.dir, "min_abs");
-        FLIMS_tmp[3][1]=(float)map_read_real(actnode->symbol->s.dir, "max_abs");
-      }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-      return 1;
-    }
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return 0;
-}
-
-void read_control_file_values(float *tmp, char *name, MAP* actmap)
-{
-
-  MAP_NODE* actnode;
-  MAP_NODE_ITERATOR node_iterator;
-  INT counter = 0;
-
-  actnode = post_map_find_node(actmap, name);
-
-  init_map_node_iterator(&node_iterator, actnode);
-
-  /*step through all the min entries in actnode*/
-  while (next_symbol(&node_iterator)&&counter!=3)
-  {
-    node_iterator_get_real_as_float(&node_iterator, &tmp[counter]);
-    counter++;
-  }
-}
-
-
-INT find_result_file_min_max_values(FIELD_DATA *field, char *data_name, float FLIMS_tmp[4][2], int dimension)
-{
-  RESULT_DATA result;
-  CHUNK_DATA chunk;
-  float absolute_tmp;
-  INT counter, i, j;
-  INT first=1;
-
-  CHAR gimmick[]="|/-\\";
-  INT gimmick_size=4;
-
-#ifdef DEBUG
-  dstrc_enter("find_result_file_min_max_values");
-#endif
-
-  init_result_data(field, &result);
-  printf("\r");
-  for (counter = 0; next_result(&result); counter++) /*loop over every single result step*/
-  {
-    if (!map_has_map(result.group, data_name))
-    {
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-      return 0;
-    }
-    printf("  getting %s min/max values : %c\r", data_name, gimmick[counter%gimmick_size]);
-    fflush(stdout);
-    init_chunk_data(&result, &chunk, data_name);
-    if (dimension==2)
-      dsassert(chunk.value_entry_length>=2, "2d problem expected");
-    if (dimension==3)
-      dsassert(chunk.value_entry_length>=3, "3d problem expected");
-
-    for (i=0; i<field->numnp; ++i) /*loop over nodes*/
-    {
-      chunk_read_value_entry(&chunk, i);
-      absolute_tmp=0;
-
-      if (first)
-      {
-        first=0;
-        for (j=0;j<dimension;j++)
-        {
-          FLIMS_tmp[j][0]=chunk.value_buf[j];
-          FLIMS_tmp[j][1]=chunk.value_buf[j];
-          absolute_tmp += chunk.value_buf[j] * chunk.value_buf[j];
-        }
-        FLIMS_tmp[3][0]=sqrt(absolute_tmp);
-        FLIMS_tmp[3][1]=sqrt(absolute_tmp);
-      }
-      else
-      {
-        for (j=0;j<dimension;j++)
-        {
-          FLIMS_tmp[j][0]=DMIN(FLIMS_tmp[j][0], chunk.value_buf[j]);
-          FLIMS_tmp[j][1]=DMAX(FLIMS_tmp[j][1], chunk.value_buf[j]);
-          absolute_tmp += chunk.value_buf[j] * chunk.value_buf[j];
-        }
-        FLIMS_tmp[3][0]=DMIN(FLIMS_tmp[3][0], sqrt(absolute_tmp));
-        FLIMS_tmp[3][1]=DMAX(FLIMS_tmp[3][1], sqrt(absolute_tmp));
-      }
-    }
-    destroy_chunk_data(&chunk);
-  }
-  destroy_result_data(&result);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return 1;
-}
-
-/*-------------------------------------------*/
-/*sort_FLIMS_tmp_array
- *
- * We need this function because we have to turn our values around.
- * In case of reading the limits from the control file new values are
- * attached at the beginning of the symbol list and we read the list
- * from the beginning.
- *
- * For example in a 3-dimensional case the x3 min/max is in FLIMS_tmp[0] and the
- * x1 min/max is in FLIMS_tmp[2]*/
-/*-------------------------------------------*/
-
-void sort_FLIMS_tmp_array(float FLIMS_tmp[4][2], int dimension)
-{
-  float tmp_0;
-  float tmp_1;
-
-#ifdef DEBUG
-  dstrc_enter("sort_FLIMS_tmp_array");
-#endif
-
-  if (dimension==2)
-  {
-    tmp_0=FLIMS_tmp[0][0];
-    tmp_1=FLIMS_tmp[0][1];
-    FLIMS_tmp[0][0]=FLIMS_tmp[1][0];
-    FLIMS_tmp[0][1]=FLIMS_tmp[1][1];
-    FLIMS_tmp[1][0]=tmp_0;
-    FLIMS_tmp[1][1]=tmp_1;
-    FLIMS_tmp[2][0]=0;
-    FLIMS_tmp[2][1]=0;
-  }
-  if (dimension==3)
-  {
-    tmp_0=FLIMS_tmp[0][0];
-    tmp_1=FLIMS_tmp[0][1];
-    FLIMS_tmp[0][0]=FLIMS_tmp[2][0];
-    FLIMS_tmp[0][1]=FLIMS_tmp[2][1];
-    FLIMS_tmp[2][0]=tmp_0;
-    FLIMS_tmp[2][1]=tmp_1;
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}
-
-/*---------------------------------------------------------*/
-/* FIND_DATA_LIMITS                                         /
- *                                                          /
- * Get the max/min value of each parameter.                 /
- *                                                          /
- *---------------------------------------------------------*/
-
-void find_data_limits(POST_DISCRETIZATION* discret,
-                      INT num_discr,
-                      float FLIMS[][2],
-                      INT ACTDIM)
-{
-  INT actfieldtyp;
-  float FLIMS_tmp[4][2];
-  INT first;
-  INT h;
-
-#ifdef DEBUG
-  dstrc_enter("find_data_limits");
-#endif
-
-  for (h=0;h<num_discr;h++)
-  {
-    first=1;
-    actfieldtyp=discret[h].field->type;
-    switch(actfieldtyp)
-    {
-    case fluid:
-      printf("\n");
-
-      /*read the velocity-----------------------------------*/
-      printf("  getting velocity max/min values : " );
-
-      /*first we try to read the min/max values from the control file*/
-      if (find_control_file_min_max_values(discret[h].field,"velocity", FLIMS_tmp))
-      {
-        sort_FLIMS_tmp_array(FLIMS_tmp, ACTDIM);
-      }
-
-      /* if there is no min/max information in the control file we
-       * have to find the limits the slow way by stepping through
-       * every result step*/
-      else
-      {
-        if (!find_result_file_min_max_values(discret[h].field, "velocity", FLIMS_tmp, ACTDIM))
-          dserror("NO VELOCITY ENTRY IN RESULT FILE");
-
-        if (ACTDIM==2)
-        {
-          FLIMS_tmp[2][0]=0;
-          FLIMS_tmp[2][1]=0;
-        }
-      }
-
-      /*write the values into the FLIMS array*/
-      FLIMS[0][0]=FLIMS_tmp[0][0];
-      FLIMS[0][1]=FLIMS_tmp[0][1];
-
-      FLIMS[1][0]=FLIMS_tmp[1][0];
-      FLIMS[1][1]=FLIMS_tmp[1][1];
-
-      FLIMS[2][0]=FLIMS_tmp[2][0];
-      FLIMS[2][1]=FLIMS_tmp[2][1];
-
-      FLIMS[5][0]=FLIMS_tmp[3][0];
-      FLIMS[5][1]=FLIMS_tmp[3][1];
-
-      printf("\r  getting velocity max/min values done:");
-      printf("\nMIN/MAX velx : \t%.20lf\t%.20lf\n", FLIMS[0][0],FLIMS[0][1]);
-      printf("MIN/MAX vely : \t%.20lf\t%.20lf\n", FLIMS[1][0], FLIMS[1][1]);
-      printf("MIN/MAX velz : \t%.20lf\t%.20lf\n", FLIMS[2][0], FLIMS[2][1]);
-      printf("MIN/MAX absv : \t%.20lf\t%.20lf\n", FLIMS[5][0],FLIMS[5][1]);
-      /*end of reading the velocity----------------------------------*/
-
-      /*read the pressure--------------------------------------------------------------------*/
-      printf("\n");
-      printf("  getting pressure max/min values : " );
-
-      /*first we try to read the min/max values from the control file*/
-      if (find_control_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp) ||
-
-          find_control_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp) )
-      {
-      }
-      /* if there is no min/max information in the control file we
-       * have to find the limits the slow way by stepping through
-       * every result step*/
-      else
-      {
-        if (!find_result_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp, 1))
-        {
-          if (!find_result_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp, 1))
-            dserror("NO PRESSURE ENTRY IN RESULT FILE");
-        }
-      }
-      /*write the values into the FLIMS array*/
-      FLIMS[3][0] = FLIMS_tmp[0][0];
-      FLIMS[3][1] = FLIMS_tmp[0][1];
-
-      printf("  getting pressure max/min values done:");
-      printf("\nMIN/MAX pressure : %.20lf\t%.20lf\n", FLIMS[3][0], FLIMS[3][1]);
-      /*end of reading the pressure ---------------------------------*/
-      break; /*end of case FLUID-----------------------------------------------*/
-
-    case structure:
-      printf("\n");
-      /*read the displacement-----------------------------------*/
-      printf("  getting displacement max/min values : " );
-
-      /*first we try to read the min/max values from the control file*/
-      if (find_control_file_min_max_values(discret[h].field,"displacement", FLIMS_tmp))
-      {
-        /*we have to turn our values around*/
-        sort_FLIMS_tmp_array(FLIMS_tmp, ACTDIM);
-      }
-
-      /*if there is no min/max information in the control file we
-       * have to find the limits the slow way*/
-      else
-      {
-        if (!find_result_file_min_max_values(discret[h].field, "displacement", FLIMS_tmp, ACTDIM))
-          dserror("NO DISPLACEMENT ENTRY IN RESULT FILE");
-
-        if (ACTDIM==2)
-        {
-          FLIMS_tmp[2][0]=0;
-          FLIMS_tmp[2][1]=0;
-        }
-      }
-
-      /*write the values into the FLIMS array*/
-      FLIMS[7][0]=FLIMS_tmp[0][0];
-      FLIMS[7][1]=FLIMS_tmp[0][1];
-
-      FLIMS[8][0]=FLIMS_tmp[1][0];
-      FLIMS[8][1]=FLIMS_tmp[1][1];
-
-      FLIMS[9][0]=FLIMS_tmp[2][0];
-      FLIMS[9][1]=FLIMS_tmp[2][1];
-
-      FLIMS[10][0]=FLIMS_tmp[3][0];
-      FLIMS[10][1]=FLIMS_tmp[3][1];
-
-      printf("\r  getting displacement max/min values done:");
-      printf("\nMIN/MAX disx : \t%.20lf\t%.20lf\n", FLIMS[7][0], FLIMS[7][1]);
-      printf("MIN/MAX disy : \t%.20lf\t%.20lf\n", FLIMS[8][0], FLIMS[8][1]);
-      printf("MIN/MAX disz : \t%.20lf\t%.20lf\n", FLIMS[9][0], FLIMS[9][1]);
-      printf("MIN/MAX absd : \t%.20lf\t%.20lf\n", FLIMS[10][0],FLIMS[10][1]);
-      break;
-
-    default:
-      break;
-    }
-  }
-
-  /* write the MAX/MIN values into the FLIMS array */
-  FLIMS[4][0]=0.000000001;
-  FLIMS[4][1]=1.000000001;
-
-  FLIMS[6][0]=0.000000001;
-  FLIMS[6][1]=1.000000001;
-
-  FLIMS[11][0]=0.000000001;
-  FLIMS[11][1]=1.000000001;
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}
 
 
 /*---------------------------------------------------------*/
@@ -1723,6 +1334,333 @@ void set_VISUAL_values(int *numnp3D,
         dserror("distyp %d in vis3caf not implemented yet!", distyp);
     } /* end switch(distyp) */
   }
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*-----------------------------------------------
+ * find_control_file_min_max_values
+ *
+ * We check if the min/max values of data like velocity are already calculated and written in
+ * the control file.
+ *
+ * In this case the values are read and written into the FLIMS_tmp
+ * array. We assume that if the max/min values are calculated, the
+ * absolute values are calculated too. If not --> dserror.
+ *
+ * If theres no information we just return 0 to show that the data
+ * limits have to be calculated. *
+ * -----------------------------------------------*/
+
+static INT find_control_file_min_max_values(FIELD_DATA *field, char *data_name, float FLIMS_tmp[][2], INT dim)
+{
+  RESULT_DATA result;
+  MAP_NODE* actnode;
+  MAP_ITERATOR iterator;
+  INT  k;
+  INT first = 1;
+  char tmp_string[100];
+  INT ret = 0;
+
+#ifdef DEBUG
+  dstrc_enter("find_control_file_min_max_values");
+#endif
+  init_result_data(field, &result);
+
+  while (next_result(&result))
+  {
+    /*step through the result group and look for entries min/max*/
+    init_map_iterator(&iterator, result.group);
+
+    while (next_map_node(&iterator)) /*loop over all map_nodes*/
+    {
+      actnode = iterator_get_node(&iterator);
+
+      /*check if the current node has the right key & an entry named 'min0'*/
+      if (!strcmp(actnode->key, data_name) && iterator_find_symbol(&iterator, "min0"))
+      {
+        for (k=0;k<dim;k++)
+        {
+          if (first == 1)
+          {
+            sprintf(tmp_string, "min%d", k);
+            FLIMS_tmp[k][0] = (float)map_read_real(actnode->symbol->s.dir, tmp_string);
+            sprintf(tmp_string, "max%d", k);
+            FLIMS_tmp[k][1] = (float)map_read_real(actnode->symbol->s.dir, tmp_string);
+
+            FLIMS_tmp[dim][0]=(float)map_read_real(actnode->symbol->s.dir, "min_abs");
+            FLIMS_tmp[dim][1]=(float)map_read_real(actnode->symbol->s.dir, "max_abs");
+          }
+          else
+          {
+            sprintf(tmp_string, "min%d", k);
+            FLIMS_tmp[k][0] = DMIN(FLIMS_tmp[k][0], (float)map_read_real(actnode->symbol->s.dir, tmp_string));
+            sprintf(tmp_string, "max%d", k);
+            FLIMS_tmp[k][1] = DMAX(FLIMS_tmp[k][1], (float)map_read_real(actnode->symbol->s.dir, tmp_string));
+
+            FLIMS_tmp[dim][0]=DMIN(FLIMS_tmp[dim][0], (float)map_read_real(actnode->symbol->s.dir, "min_abs"));
+            FLIMS_tmp[dim][1]=DMAX(FLIMS_tmp[dim][1], (float)map_read_real(actnode->symbol->s.dir, "max_abs"));
+          }
+        }
+        ret = 1;
+        if (first == 1) first = 0;
+      }
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return ret;
+}
+
+
+static INT find_result_file_min_max_values(FIELD_DATA *field, char *data_name, float FLIMS_tmp[][2], int dimension)
+{
+  RESULT_DATA result;
+  CHUNK_DATA chunk;
+  float absolute_tmp;
+  INT counter, i, j;
+  INT first=1;
+
+  CHAR gimmick[]="|/-\\";
+  INT gimmick_size=4;
+
+#ifdef DEBUG
+  dstrc_enter("find_result_file_min_max_values");
+#endif
+
+  init_result_data(field, &result);
+  printf("\r");
+  for (counter = 0; next_result(&result); counter++) /*loop over every single result step*/
+  {
+    if (!map_has_map(result.group, data_name))
+    {
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+      return 0;
+    }
+    printf("  getting %s min/max values : %c\r", data_name, gimmick[counter%gimmick_size]);
+    fflush(stdout);
+    init_chunk_data(&result, &chunk, data_name);
+
+    for (i=0; i<field->numnp; ++i) /*loop over nodes*/
+    {
+      chunk_read_value_entry(&chunk, i);
+      absolute_tmp=0;
+
+      if (first)
+      {
+        first=0;
+        for (j=0;j<dimension;j++)
+        {
+          FLIMS_tmp[j][0]=chunk.value_buf[j];
+          FLIMS_tmp[j][1]=chunk.value_buf[j];
+          absolute_tmp += chunk.value_buf[j] * chunk.value_buf[j];
+        }
+        FLIMS_tmp[dimension][0]=sqrt(absolute_tmp);
+        FLIMS_tmp[dimension][1]=sqrt(absolute_tmp);
+      }
+      else
+      {
+        for (j=0;j<dimension;j++)
+        {
+          FLIMS_tmp[j][0]=DMIN(FLIMS_tmp[j][0], chunk.value_buf[j]);
+          FLIMS_tmp[j][1]=DMAX(FLIMS_tmp[j][1], chunk.value_buf[j]);
+          absolute_tmp += chunk.value_buf[j] * chunk.value_buf[j];
+        }
+        FLIMS_tmp[dimension][0]=DMIN(FLIMS_tmp[dimension][0], sqrt(absolute_tmp));
+        FLIMS_tmp[dimension][1]=DMAX(FLIMS_tmp[dimension][1], sqrt(absolute_tmp));
+      }
+    }
+    destroy_chunk_data(&chunk);
+  }
+  destroy_result_data(&result);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return 1;
+}
+
+
+/*---------------------------------------------------------*/
+/* FIND_DATA_LIMITS                                         /
+ *                                                          /
+ * Get the max/min value of each parameter.                 /
+ *                                                          /
+ *---------------------------------------------------------*/
+void find_data_limits(POST_DISCRETIZATION* discret,
+                      INT num_discr,
+                      float FLIMS[][2],
+                      INT ACTDIM)
+{
+  INT actfieldtyp;
+#ifdef DEBUG
+  dstrc_enter("find_data_limits");
+#endif
+
+  float FLIMS_tmp[6][2];
+  INT first;
+  INT h;
+
+  for (h=0;h<num_discr;h++)
+  {
+    first=1;
+    actfieldtyp=discret[h].field->type;
+    switch(actfieldtyp)
+    {
+      case fluid:
+        printf("\n");
+
+        /*read the velocity-----------------------------------*/
+        printf("getting velocity max/min values : ");
+
+        /*first we try to read the min/max values from the control file*/
+        if (find_control_file_min_max_values(discret[h].field,"velocity", FLIMS_tmp, ACTDIM))
+        {
+          printf("\r getting velocity max/min values from control file done:");
+        }
+
+        /* if there is no min/max information in the control file we
+         * have to find the limits the slow way by stepping through
+         * every result step*/
+        else
+        {
+          if (!find_result_file_min_max_values(discret[h].field, "velocity", FLIMS_tmp, ACTDIM))
+            dserror("NO VELOCITY ENTRY IN RESULT FILE");
+          printf("\r getting velocity max/min values from result file done:");
+        }
+
+        if (ACTDIM==2)
+        {
+          FLIMS_tmp[3][0] = FLIMS_tmp[2][0];
+          FLIMS_tmp[3][1] = FLIMS_tmp[2][1];
+
+          FLIMS_tmp[2][0]=0;
+          FLIMS_tmp[2][1]=0;
+        }
+
+        /*write the values into the FLIMS array*/
+          FLIMS[0][0]=FLIMS_tmp[0][0];
+          FLIMS[0][1]=FLIMS_tmp[0][1];
+
+          FLIMS[1][0]=FLIMS_tmp[1][0];
+          FLIMS[1][1]=FLIMS_tmp[1][1];
+
+          FLIMS[2][0]=FLIMS_tmp[2][0];
+          FLIMS[2][1]=FLIMS_tmp[2][1];
+
+          FLIMS[5][0]=FLIMS_tmp[3][0];
+          FLIMS[5][1]=FLIMS_tmp[3][1];
+
+        printf("\nMIN/MAX velx : \t%.20lf\t%.20lf\n", FLIMS[0][0],FLIMS[0][1]);
+        printf("MIN/MAX vely : \t%.20lf\t%.20lf\n", FLIMS[1][0], FLIMS[1][1]);
+        printf("MIN/MAX velz : \t%.20lf\t%.20lf\n", FLIMS[2][0], FLIMS[2][1]);
+        printf("MIN/MAX absv : \t%.20lf\t%.20lf\n", FLIMS[5][0],FLIMS[5][1]);
+        /*end of reading the velocity----------------------------------*/
+
+        /*read the pressure--------------------------------------------------------------------*/
+        printf("\n");
+        printf("  getting pressure max/min values : " );
+
+        /*first we try to read the min/max values from the control file*/
+        if (find_control_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp, 1) ||
+
+            find_control_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp, 1) )
+        {
+          printf("\r  getting pressure max/min values from control file done:");
+        }
+         /* if there is no min/max information in the control file we
+         * have to find the limits the slow way by stepping through
+         * every result step*/
+        else
+        {
+          if (!find_result_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp, 1))
+          {
+            if (!find_result_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp, 1))
+              dserror("NO PRESSURE ENTRY IN RESULT FILE");
+          }
+          printf("\r getting pressure max/min values from result file done:");
+        }
+        /*write the values into the FLIMS array*/
+        FLIMS[3][0] = FLIMS_tmp[0][0];
+        FLIMS[3][1] = FLIMS_tmp[0][1];
+
+        printf("\nMIN/MAX pressure : %.20lf\t%.20lf\n", FLIMS[3][0], FLIMS[3][1]);
+        /*end of reading the pressure ---------------------------------*/
+        break; /*end of case FLUID-----------------------------------------------*/
+
+      case structure:
+        printf("\n");
+        /*read the displacement-----------------------------------*/
+        printf("  getting displacement max/min values : " );
+
+        /*first we try to read the min/max values from the control file*/
+        if (find_control_file_min_max_values(discret[h].field,"displacement", FLIMS_tmp, ACTDIM))
+        {
+          printf("\r getting displacement max/min values from control file done:");
+        }
+
+        /*if there is no min/max information in the control file we
+         * have to find the limits the slow way*/
+        else
+        {
+          if (!find_result_file_min_max_values(discret[h].field, "displacement", FLIMS_tmp, ACTDIM))
+            dserror("NO DISPLACEMENT ENTRY IN RESULT FILE");
+          printf("\r getting displacement max/min values from result file done:");
+
+        }
+
+        if (ACTDIM==2)
+        {
+          FLIMS_tmp[3][0] = FLIMS_tmp[2][0];
+          FLIMS_tmp[3][1] = FLIMS_tmp[2][1];
+
+          FLIMS_tmp[2][0]=0;
+          FLIMS_tmp[2][1]=0;
+        }
+
+          /*write the values into the FLIMS array*/
+          FLIMS[7][0]=FLIMS_tmp[0][0];
+          FLIMS[7][1]=FLIMS_tmp[0][1];
+
+          FLIMS[8][0]=FLIMS_tmp[1][0];
+          FLIMS[8][1]=FLIMS_tmp[1][1];
+
+          FLIMS[9][0]=FLIMS_tmp[2][0];
+          FLIMS[9][1]=FLIMS_tmp[2][1];
+
+          FLIMS[10][0]=FLIMS_tmp[3][0];
+          FLIMS[10][1]=FLIMS_tmp[3][1];
+
+        printf("\nMIN/MAX disx : \t%.20lf\t%.20lf\n", FLIMS[7][0], FLIMS[7][1]);
+        printf("MIN/MAX disy : \t%.20lf\t%.20lf\n", FLIMS[8][0], FLIMS[8][1]);
+        printf("MIN/MAX disz : \t%.20lf\t%.20lf\n", FLIMS[9][0], FLIMS[9][1]);
+        printf("MIN/MAX absd : \t%.20lf\t%.20lf\n", FLIMS[10][0],FLIMS[10][1]);
+        break;
+
+      default:
+        break;
+    }/*end of switch*/
+  }/*end of loop over discr*/
+
+
+/*write the MAX/MIN values into the FLIMS array*/
+
+
+  FLIMS[4][0]=0.000000001;
+  FLIMS[4][1]=1.000000001;
+
+  FLIMS[6][0]=0.000000001;
+  FLIMS[6][1]=1.000000001;
+
+  FLIMS[11][0]=0.000000001;
+  FLIMS[11][1]=1.000000001;
+
 #ifdef DEBUG
   dstrc_exit();
 #endif

@@ -91,6 +91,7 @@ void fsi_dyneint(
   NODE           *actsnode;       /* actual structure node                */
   static STRUCT_DYNAMIC *sdyn;
   static FLUID_DYNAMIC  *fdyn;
+  ARRAY_POSITION *ipos;
 
 #ifdef DEBUG
   dstrc_enter("fsi_dyneint");
@@ -120,9 +121,10 @@ void fsi_dyneint(
     goto end;
   }
 
-  dsassert(fsidyn->ifsi!=3,
+  dsassert(fsidyn->ifsi!=fsi_sequ_stagg_shift,
       "computation of interface energy not implemented for fsi with dt/2-shift!\n");
 
+  ipos = &(structfield->dis[disnum].ipos);
 
   /*-------------------------------------------------- energy computation */
   desint = ZERO;
@@ -141,12 +143,12 @@ void fsi_dyneint(
       dsassert(dof<numdf_total,"dofnumber not valid!\n");
       if (sid[dof]==0) continue;
       /*----------------------------------------energy by the structure */
-      dispi   = sol_mf[3][j];
-      fac     = oma*sol_mf[4][j] + alpha*sol_mf[5][j];
+      dispi   = sol_mf[ipos->mf_dispi][j];
+      fac     = oma*sol_mf[ipos->mf_forcenp][j] + alpha*sol_mf[ipos->mf_forcen][j];
       desint += fac*dispi;
       /*------------------------------------------- energy by the fluid */
-      dispi   = sol_mf[1][j] - sol_mf[2][j];
-      fac     = theta*sol_mf[4][j] + omt*sol_mf[5][j];
+      dispi   = sol_mf[ipos->mf_reldisp][j] - sol_mf[ipos->mf_dispn][j];
+      fac     = theta*sol_mf[ipos->mf_forcenp][j] + omt*sol_mf[ipos->mf_forcen][j];
       defint -= fac*dispi;
     } /* end of loop over dofs */
   } /* end of loop over nodes */

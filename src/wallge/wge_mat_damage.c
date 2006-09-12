@@ -153,22 +153,22 @@ if(*eps_vnl - kappa_n >= tol)
 {
  yip = 1;
  kappa = *eps_vnl;
- # if 0
+# if 0
  printf("Element=%d",ele->Id);
  printf(" GP=%d",ip);
  printf(" Belastung: kappa=%le",kappa);
- # endif
+# endif
 }
 /*-------------------- un- or reloading (elastic or already damaged) ---*/
 else
 {
  yip = 0;
  kappa = kappa_n;
- # if 0
+# if 0
  printf("Element=%d",ele->Id);
  printf(" GP=%d",ip);
  printf(" Entlastung: kappa=%le",kappa);
- # endif
+# endif
 }
 /*----------------------------------------------------------------------*/
 /*             compute stresses, local equiv. strain and tangentes      */

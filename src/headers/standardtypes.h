@@ -27,7 +27,7 @@ Maintainer: Malte Neumann
  | includes of mpi of C                                   m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #ifdef PARALLEL
-   #include "mpi.h"
+#include "mpi.h"
 #endif
 /*----------------------------------------------------------------------*
  | definitions file                                       m.gee 8/00    |
@@ -224,21 +224,41 @@ within the nodal array of sol_increment.a.da[pos][dim].
 /*----------------------------------------------------------------------*/
 typedef struct _ARRAY_POSITION
 {
- INT numsol; /*!< number of solution fields within sol_increment (fluid)*/
- INT veln; /*!< position of sol_increment occupied by velocity at time n*/
- INT velnp; /*!< position of sol_increment occupied by vel. at time n+1 */
- INT velnm; /*!< position of sol_increment occupied by vel. at time n-1 */
- INT accn;  /*!< position of sol_increment occupied by accel. at time n */
- INT accnm; /*!< position of sol_increment occup. by accel. at time n-1 */
- INT hist;  /*!< pos. of lin. comb. of hist. values needed for mass rhs */
- INT pred;  /*!< position of sol_increment occypied by predicted vels.  */
- INT terr;  /*!< position of sol_increment occypied by truncation error */
- INT gridv; /*!< position of grid velocity in solution vector order     */
- INT relax; /*!< position of relaxation parameter solution in sol vec's */
- INT convn; /*!< position of convective velocity at n in sol vectors    */
- INT convnp; /*!< position of convective velocity at n+1 in sol vectors */
- INT stresspro; /*! position to write projected stresses to */
- INT eddy;
+  INT numincr; /*!< number of solution fields within sol_increment (fluid)*/
+  INT nummf;
+
+  INT accn;  /*!< position of sol_increment occupied by accel. at time n */
+  INT accnm; /*!< position of sol_increment occup. by accel. at time n-1 */
+  INT convn; /*!< position of convective velocity at n in sol vectors    */
+  INT convnp; /*!< position of convective velocity at n+1 in sol vectors */
+  INT dispn;
+  INT dispnp;
+  INT ddisp;
+  INT eddy;
+  INT gridv; /*!< position of grid velocity in solution vector order     */
+  INT hist;  /*!< pos. of lin. comb. of hist. values needed for mass rhs */
+  INT pred;  /*!< position of sol_increment occypied by predicted vels.  */
+  INT relax; /*!< position of relaxation parameter solution in sol vec's */
+  INT stresspro; /*! position to write projected stresses to */
+  INT terr;  /*!< position of sol_increment occypied by truncation error */
+  INT veln; /*!< position of sol_increment occupied by velocity at time n*/
+  INT velnm; /*!< position of sol_increment occupied by vel. at time n-1 */
+  INT velnp; /*!< position of sol_increment occupied by vel. at time n+1 */
+
+  INT residuum;
+
+  INT mf_dispn;
+  INT mf_dispnp;
+  INT mf_dispnm;
+  INT mf_dispi;
+  INT mf_posnp;
+  INT mf_forcenp;
+  INT mf_forcen;
+  INT mf_forcecpy;
+  INT mf_velnp;
+  INT mf_velcpy;
+  INT mf_reldisp;
+  INT mf_sd_g;
 } ARRAY_POSITION;
 
 
@@ -257,6 +277,7 @@ enum _FIELDTYP     fieldtyp;      /* typ of field */
 INT                ndis;          /* number of discretizations in this field */
 struct _DISCRET   *dis;           /* structure holding a number of discretisations */
 INT                subdivide;     /* subdivide the elements of this field */
+  struct _PARTITION *part;	/* the partition on this processor */
 } FIELD;
 /*----------------------------------------------------------------------*
  | this structure holds one discretization of a field     m.gee 2/02    |

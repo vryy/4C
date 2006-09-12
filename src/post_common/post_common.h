@@ -56,6 +56,7 @@ functions.
 
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
+#include "../pss_full/pss_table_iter.h"
 #include "../io/io_packing.h"
 #include "../io/io_elements.h"
 #include "../pss_full/pss_set.h"
@@ -605,5 +606,6 @@ void destroy_post_discretization(POST_DISCRETIZATION* discret);
 void init_post_design(POST_DESIGN* design, FIELD_DATA* field);
 
 void post_read_design_information();
+
 
 #endif

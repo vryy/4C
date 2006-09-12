@@ -16,7 +16,7 @@ Maintainer: Malte Neumann
 typedef enum _PROBLEM_TYP
 {
                        prb_fsi,       /*  fluid structure interaction problem */
-                       prb_ssi,       /*  structure structure interaction problem */
+		       prb_ssi,       /*  structure structure interaction problem */
                        prb_structure, /*  structural  problem */
                        prb_fluid,     /*  fluid  problem */
                        prb_opt,       /*  strctural optimization  problem */
@@ -487,6 +487,27 @@ typedef enum _FLUID_DYNTYPE
 } FLUID_DYNTYPE;
 
 
+/*----------------------------------------------------------------------*/
+/* The coupling methods for FSI. */
+/*----------------------------------------------------------------------*/
+typedef enum _FSI_COUPLING
+{
+  fsi_coupling_freesurface=-1,
+  fsi_coupling_undefined=0,
+  fsi_basic_sequ_stagg=1,
+  fsi_sequ_stagg_pred=2,
+  fsi_sequ_stagg_shift=3,
+  fsi_iter_stagg_fixed_rel_param=4,
+  fsi_iter_stagg_AITKEN_rel_param=5,
+  fsi_iter_stagg_steep_desc=6,
+  fsi_iter_stagg_CHEB_rel_param=7,
+  fsi_iter_stagg_AITKEN_rel_force=8,
+  fsi_iter_stagg_steep_desc_force=9,
+  fsi_iter_stagg_Newton_FD=10,
+  fsi_iter_stagg_Newton_I=11,
+} FSI_COUPLING;
+
+
 /*----------------------------------------------------------------------*
  |  FSI MESHES                                            genk 10/02    |
  *----------------------------------------------------------------------*/
@@ -529,7 +550,8 @@ This is the enumeration of all types for DSURFs
 typedef enum _DSURF_TYP
 {
                        flatsurf,         /* flat surface */
-                       nurbsurf          /* nurb surface */
+                       nurbsurf,         /* nurb surface */
+                       meshsurf
 } DSURF_TYP;
 
 

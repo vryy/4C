@@ -654,10 +654,18 @@ void inp_struct_field(
   {
     structfield->dis[0].disclass = dc_subdiv_io;
     structfield->dis[1].disclass = dc_subdiv_calc;
+
+    /* initialize array positions with -1 */
+    memset(&structfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+    memset(&structfield->dis[1].ipos, 0xff, sizeof(ARRAY_POSITION));
   }
   else
+  {
     structfield->dis[0].disclass = dc_normal;
 
+    /* initialize array positions with -1 */
+    memset(&structfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+  }
 
 
   /* count number of elements */
@@ -916,6 +924,9 @@ void inp_struct_field_ssi(
   masterfield->dis = (DISCRET*)CCACALLOC(masterfield->ndis,sizeof(DISCRET));
   slavefield->dis  = (DISCRET*)CCACALLOC(slavefield->ndis,sizeof(DISCRET));
 
+  /* initialize array positions with -1 */
+  memset(&masterfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+  memset(&slavefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
 
   slavefield->dis[0].disclass  = dc_normal;
   masterfield->dis[0].disclass = dc_normal;
@@ -1094,6 +1105,8 @@ void inp_fluid_field(
 
   INT        ierr;
   INT        counter = 0;
+  INT        ale_counter;
+  INT        ale_element;
   INT        elenumber;
   char      *colpointer;
   FIELD     *alefield;
@@ -1114,7 +1127,6 @@ void inp_fluid_field(
   /* allocate discretizations */
   fluidfield->dis = (DISCRET*)CCACALLOC(fluidfield->ndis,sizeof(DISCRET));
 
-
   /* remarks about different discretisations:
    * ----------------------------------------
    * we asume to read in one "global" discretisation from the input file.
@@ -1125,17 +1137,32 @@ void inp_fluid_field(
   {
     fluidfield->dis[0].disclass = dc_subdiv_io;
     fluidfield->dis[1].disclass = dc_subdiv_calc;
+
+    /* initialize array positions with -1 */
+    memset(&fluidfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+    memset(&fluidfield->dis[1].ipos, 0xff, sizeof(ARRAY_POSITION));
   }
   else
+  {
     fluidfield->dis[0].disclass = dc_normal;
 
+    /* initialize array positions with -1 */
+    memset(&fluidfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+  }
 
   /* count number of elements */
+  ale_counter = 0;
   if (frfind("--FLUID ELEMENTS")==1)
   {
     frread();
     while(strncmp(allfiles.actplace,"------",6)!=0)
     {
+      INT create_ale = 0;
+      if (!frreadyes("CA", &create_ale))
+        create_ale = 0;
+      if (create_ale != 0)
+        ale_counter++;
+
       counter++;
       frread();
     }
@@ -1152,6 +1179,7 @@ void inp_fluid_field(
   if (frfind("--FLUID ELEMENTS")==0) goto end;
   frread();
   counter=0;
+  ale_element=0;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
     colpointer = allfiles.actplace;
@@ -1213,6 +1241,7 @@ void inp_fluid_field(
         /* allocate discretization, if necessary */
         if( alefield->dis == NULL)
         {
+          dsassert(ale_counter>0, "implicit ale expected");
           alefield->fieldtyp = ale;
           actplace_save = allfiles.actplace;
           actrow_save   = allfiles.actrow;
@@ -1226,26 +1255,35 @@ void inp_fluid_field(
           {
             alefield->dis[0].disclass = dc_subdiv_io_created_ale;
             alefield->dis[1].disclass = dc_subdiv_calc;
+
+	    /* initialize array positions with -1 */
+	    memset(&alefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+	    memset(&alefield->dis[1].ipos, 0xff, sizeof(ARRAY_POSITION));
           }
           else
+	  {
             alefield->dis[0].disclass = dc_created_ale;
+
+	    /* initialize array positions with -1 */
+	    memset(&alefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+	  }
         }
 
 
         /* allocate elements */
         if( alefield->dis[0].element == NULL)
         {
-          alefield->dis[0].numele = fluidfield->dis[0].numele;
+          alefield->dis[0].numele = ale_counter;
           alefield->dis[0].element =
-            (ELEMENT*)CCACALLOC(alefield->dis[0].numele,sizeof(ELEMENT));
+            (ELEMENT*)CCACALLOC(ale_counter,sizeof(ELEMENT));
         }
 
 
         /* create the corresponding ale element */
         f3_createale(&(fluidfield->dis[0].element[counter]),
-            &(alefield->dis[0].element[counter]),genprob.nele,genprob.nodeshift);
+            &(alefield->dis[0].element[ale_element]),genprob.nele,genprob.nodeshift);
+        ale_element++;
       }  /* if (genprob.create_ale == 1) */
-
     }
 #endif
 
@@ -1281,9 +1319,18 @@ void inp_fluid_field(
           {
             alefield->dis[0].disclass = dc_subdiv_io_created_ale;
             alefield->dis[1].disclass = dc_subdiv_calc;
+
+	    /* initialize array positions with -1 */
+	    memset(&alefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+	    memset(&alefield->dis[1].ipos, 0xff, sizeof(ARRAY_POSITION));
           }
           else
+	  {
             alefield->dis[0].disclass = dc_created_ale;
+
+	    /* initialize array positions with -1 */
+	    memset(&alefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+	  }
         }
 
 
@@ -1339,7 +1386,10 @@ void inp_fluid_field(
             dserror("different discretisations not implemented yet for structural elements\n");
           alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
           alefield->dis[0].disclass = dc_created_ale;
-        }
+
+	  /* initialize array positions with -1 */
+	  memset(&alefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+	}
 
 
         /* allocate elements */
@@ -1386,6 +1436,7 @@ void inp_fluid_field(
     frread();
 
   }  /* while(strncmp(allfiles.actplace,"------",6)!=0) */
+  dsassert(ale_counter==ale_element, "ale element count mismatch");
 
   frrewind();
 
@@ -1448,10 +1499,18 @@ void inp_ale_field(
   {
     alefield->dis[0].disclass = dc_subdiv_io;
     alefield->dis[1].disclass = dc_subdiv_calc;
+
+    /* initialize array positions with -1 */
+    memset(&alefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+    memset(&alefield->dis[1].ipos, 0xff, sizeof(ARRAY_POSITION));
   }
   else
+  {
     alefield->dis[0].disclass = dc_normal;
 
+    /* initialize array positions with -1 */
+    memset(&alefield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+  }
 
   /* count number of elements */
   if (frfind("--ALE ELEMENTS")==1)

@@ -76,6 +76,32 @@ CHAR* distypenames[] = DISTYPENAMES;
 CHAR* elementnames[] = ELEMENTNAMES;
 
 
+/*----------------------------------------------------------------------*
+ |  compare the integers - qsort routine                  a.lipka 5/01  |
+ |                                                                      |
+ |  the call for the sorter of an INT vector is then                    |
+ |                                                                      |
+ |  qsort((INT*) vector, lenght, sizeof(INT), cmp_int);                 |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+INT cmp_int(const void *a, const void *b )
+{
+    return *(INT *)a - * (INT *)b;
+}
+/*----------------------------------------------------------------------*
+ |  compare the doubles - qsort routine                   a.lipka 5/01  |
+ |                                                                      |
+ |  the call for the sorter of a DOUBLE vector is then                  |
+ |                                                                      |
+ |  qsort((DOUBLE*) vector, lenght, sizeof(DOUBLE), cmp_double);        |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+DOUBLE cmp_double(const void *a, const void *b )
+{
+    return *(DOUBLE *)a - * (DOUBLE *)b;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief This is ccarat setup in a hurry.
@@ -687,32 +713,32 @@ static void usage(CHAR* progname)
   {
     printf("usage: %s [options] control-file\n", progname);
     printf("\n"
-         " options:\n"
-         "    -s beg:end[:step]        read from beg to end-1 every step\n"
-         "    -l [level]               set log level (0==none, infty==everything)\n\n"
-         "    -w                       set white background for movie creation\n"
-         "    -g                       set grey colour scale\n"
-         "    -u                       make an unsteady grid problem steady\n\n");
+	   " options:\n"
+	   "    -s beg:end[:step]        read from beg to end-1 every step\n"
+	   "    -l [level]               set log level (0==none, infty==everything)\n\n"
+	   "    -w                       set white background for movie creation\n"
+	   "    -g                       set grey colour scale\n"
+	   "    -u                       make an unsteady grid problem steady\n\n");
     exit(1);
   }
   if (strcmp(&index[1], "post_file_manager")==0)
   {
-    printf("usage: %s [options] control-file new-filename(optional)\n", progname);
+    printf("usage: %s [options] control-file [new-filename]\n", progname);
     printf("\n"
-         " options:\n"
-         "    -s beg:end[:step]        read from beg to end-1 every step\n"
-         "    -l [level]               set log level (0==none, infty==everything)\n"
-         "    -o                       overwrite all existing files\n"
-         "\n");
+	   " options:\n"
+	   "    -s beg:end[:step]        read from beg to end-1 every step\n"
+	   "    -l [level]               set log level (0==none, infty==everything)\n"
+	   "    -o                       overwrite all existing files\n"
+	   "\n");
     exit(1);
   }
 
-printf("usage: %s [options] control-file\n", progname);
-printf("\n"
+  printf("usage: %s [options] control-file\n", progname);
+  printf("\n"
          "  options:\n"
          "    -s beg:end[:step]        read from beg to end-1 every step\n"
          "    -l [level]               set log level (0==none, infty==everything)\n\n");
-exit(1);
+  exit(1);
 }
 
 
@@ -2075,4 +2101,3 @@ void post_find_fsi_coupling(PROBLEM_DATA *problem,
 #endif
 }
 #endif
-

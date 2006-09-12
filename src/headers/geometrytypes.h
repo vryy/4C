@@ -41,6 +41,7 @@ typedef struct _NODE
      INT                        numele;        /* number of elements to me */
      struct _ELEMENT          **element;       /* ptrs to elements to me */
 
+
      struct _GNODE             *gnode;         /* ptr to my gnode */
 #ifdef D_FLUID
      struct _FLUID_VARIA       *fluid_varia;   /* ptr to my fluid_varia */
@@ -133,6 +134,10 @@ typedef struct _ELEMENT
      struct _ELEMENT      *master_ele;
 #endif
 
+#ifdef FSI_NONMATCH
+  struct _FSI_COUPLE_NODE       *coupleptr;       /*ptr to my coupling information*/
+#endif
+
 } ELEMENT;
 
 
@@ -214,6 +219,10 @@ typedef struct _GNODE
 
 #ifdef SUBDIV
   INT                     slave_node;
+#endif
+
+#ifdef FSI_NONMATCH
+  struct _FSI_COUPLE_ELEMENT       *coupleptr;       /*ptr to my coupling information*/
 #endif
 
 } GNODE;

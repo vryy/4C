@@ -104,9 +104,9 @@ void optsmo(DOUBLE *vvar, INT init)
   ELEMENT *actele;                /* active element                            */
   ELEMENT *nctele;                /* another active element                    */
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("optsmo");
-  #endif
+#endif
 /*------------ the distributed system matrix, which is used for solving */
   actsysarray=0;
 /*--------------------------------------------------- set some pointers */
@@ -114,15 +114,15 @@ void optsmo(DOUBLE *vvar, INT init)
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL
+#ifdef PARALLEL
   actintra    = &(par.intra[0]);
-  #else
+#else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
   if (!actintra) dserror("Allocation of INTRA failed");
   actintra->intra_fieldtyp = structure;
   actintra->intra_rank   = 0;
   actintra->intra_nprocs   = 1;
-  #endif
+#endif
   container.fieldtyp  = actfield->fieldtyp;
   container.isdyn = 0;            /* static calculation */
 /*----------------------------------------------------------------------*/
@@ -249,9 +249,9 @@ void optsmo(DOUBLE *vvar, INT init)
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 return;
 } /* end of optsmo */
 /*----------------------------------------------------------------------*/

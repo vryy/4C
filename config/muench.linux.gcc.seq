@@ -48,6 +48,6 @@ LDFLAGS_OPT="-O2"
 
 # Alle Bibliotheken neu übersetzen?!
 # -malign-double
-CFLAGS="-Wall -pg -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-FFLAGS="-Wall -pg -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-LDFLAGS="-pg -Xlinker -defsym -Xlinker MAIN__=main"
+CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"

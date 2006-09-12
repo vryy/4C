@@ -93,6 +93,373 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  extern struct _FILES  allfiles;
 
 
+void fsi_ale_LAS_setup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  )
+{
+  INT              i,j;
+  INT              mone=-1;
+  DOUBLE     H = THREE*TEN;
+  DOUBLE           x1,y1,x2,y2;
+  INT       numaf;
+  INT       numnp_total;
+  INT       numff;
+  INT      *index;
+  DISCRET  *actdis;
+  NODE            *actnode;
+  PARTITION    *actpart;     /* pointer to the fields PARTITION structure          */
+  INTRA        *actintra;    /* pointer to the fields intra-communicator structure */
+  FSI_DYNAMIC  *fsidyn;
+  ALE_DYNAMIC  *adyn;
+  ARRAY_POSITION *ipos;
+
+#ifndef PARALLEL
+  work->dummy_intra.intra_fieldtyp = ale;
+  work->dummy_intra.intra_rank     = 0;
+  work->dummy_intra.intra_nprocs   = 1;
+#endif
+
+  numaf  = genprob.numaf;
+  adyn   = alldyn[numaf].adyn;
+  fsidyn = alldyn[numaf+1].fsidyn;
+  actpart     = &(partition[numaf]);
+  ipos   = &(actfield->dis[disnum_calc].ipos);
+
+  /*====================================================================*
+   * nodal solution history ale field:                                  *
+   * sol[1...0][j]  ... solution for visualisation (real pressure)	*
+   * sol_mf[0][i]        ... displacements at (n)			*
+   * sol_mf[1][i]        ... displacements at (n+1) 		        *
+   * sol_mf[2][i]        ... used in fsi_gradient.c                     *
+   * sol_mf[3][i]        ... displacements at (n+1) stored in fsi_calc_disp4ale*
+   *====================================================================*/
+  ipos->nummf = 4;
+  ipos->mf_dispn = 0;
+  ipos->mf_dispnp = 1;
+  ipos->mf_dispnm = 2;
+  ipos->mf_posnp = 2;
+
+  ipos->numincr = 2;
+  ipos->dispnp = 0;
+  ipos->dispn = 1;
+
+#ifdef PARALLEL
+  actintra    = &(par.intra[numaf]);
+#else
+  actintra    = &work->dummy_intra;
+#endif
+
+  numff        = genprob.numff;
+  numnp_total = actfield->dis[disnum_calc].numnp;
+  actdis       = &(actfield->dis[disnum_calc]);
+  work->outstep=0;
+  work->restartstep=0;
+
+/*-------------------------------------------------- define index array */
+  index = amdef("index",&work->index_a,numnp_total,1,"IV");
+  aminit(&work->index_a,&mone);
+
+  for (i=0;i<numnp_total;i++)
+  {
+    actnode = &(actdis->node[i]);
+    x1 = actnode->x[0];
+    y1 = actnode->x[1];
+    if (FABS(y1-H)<EPS8)
+      index[i]=i;
+    else
+    {
+      for (j=0;j<numnp_total;j++)
+      {
+        actnode = &(actdis->node[j]);
+        x2 = actnode->x[0];
+        y2 = actnode->x[1];
+        if (FABS(y2-H)<EPS8 && FABS(x1-x2)<EPS8)
+          index[i]=j;
+      }
+    }
+  }
+
+/*-------------------------------------------------------------- check */
+  for (i=0;i<numnp_total;i++)
+    if (index[i]==mone)
+      dserror("something went wrong!");
+
+#ifdef BINIO
+
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+  init_bin_out_field(&work->out_context,
+                     NULL,
+                     NULL,
+                     actfield, actpart, actintra, disnum_io);
+  if (disnum_io != disnum_calc)
+    init_bin_out_field(&work->restart_context,
+                       NULL,
+                       NULL,
+                       actfield, actpart, actintra, disnum_calc);
+#endif
+
+/*---------------------------------------------------------- monitoring */
+  if (ioflags.monitor==1)
+  {
+    out_monitor(actfield,numaf,ZERO,1);
+    monitoring(actfield,disnum_calc,numaf,0,adyn->time);
+  }
+
+/*------------------------------------------- print out results to .out */
+  if (ioflags.ale_disp==1 && ioflags.output_out==1)
+  {
+    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,0);
+  }
+}
+
+
+void fsi_ale_LAS_calc(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  )
+{
+  INT              i,j;
+  DOUBLE     H = THREE*TEN;
+  DOUBLE           x1,y1, dx,dy;
+  INT       numaf;
+  INT       numnp_total;
+  INT       numff;
+  INT      *index;
+  DISCRET  *actdis;
+  NODE            *actnode, *actnode2, *actfnode;
+  GNODE           *actgnode;
+  PARTITION    *actpart;     /* pointer to the fields PARTITION structure          */
+  INTRA        *actintra;    /* pointer to the fields intra-communicator structure */
+  FSI_DYNAMIC  *fsidyn;
+  ALE_DYNAMIC  *adyn;
+  ARRAY_POSITION *ipos;
+
+  index = work->index_a.a.iv;
+
+  numaf  = genprob.numaf;
+  adyn   = alldyn[numaf].adyn;
+  fsidyn = alldyn[numaf+1].fsidyn;
+  actpart     = &(partition[numaf]);
+
+#ifdef PARALLEL
+  actintra    = &(par.intra[numaf]);
+#else
+  actintra    = &work->dummy_intra;
+#endif
+
+  numff        = genprob.numff;
+  numnp_total = actfield->dis[disnum_calc].numnp;
+  actdis       = &(actfield->dis[disnum_calc]);
+  ipos   = &(actfield->dis[disnum_calc].ipos);
+
+  if (par.myrank==0)
+    printf("Solving ALE (LAS)...\n\n");
+
+  for (i=0;i<numnp_total;i++)
+  {
+    actnode = &(actdis->node[i]);
+    x1 = actnode->x[0];
+    y1 = actnode->x[1];
+    j = index[i];
+    actnode2 =  &(actdis->node[j]);
+    actgnode = actnode2->gnode;
+    actfnode = actgnode->mfcpnode[numff];
+    dx = actfnode->xfs[0]-actfnode->x[0];
+    dy = actfnode->xfs[1]-actfnode->x[1];
+    actnode->sol_mf.a.da[ipos->mf_dispnp][0] = (y1/H)*dx;
+    actnode->sol_mf.a.da[ipos->mf_dispnp][1] = (y1/H)*dy;
+  }
+}
+
+
+void fsi_ale_LAS_final(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  )
+{
+  INT       numaf;
+  INT       numnp_total;
+  INT       numff;
+  INT      *index;
+  DISCRET  *actdis;
+  PARTITION    *actpart;     /* pointer to the fields PARTITION structure          */
+  INTRA        *actintra;    /* pointer to the fields intra-communicator structure */
+  FSI_DYNAMIC  *fsidyn;
+  ALE_DYNAMIC  *adyn;
+  ARRAY_POSITION *ipos;
+
+  index = work->index_a.a.iv;
+
+  numaf  = genprob.numaf;
+  adyn   = alldyn[numaf].adyn;
+  fsidyn = alldyn[numaf+1].fsidyn;
+  actpart     = &(partition[numaf]);
+  ipos   = &(actfield->dis[disnum_calc].ipos);
+
+#ifdef PARALLEL
+  actintra    = &(par.intra[numaf]);
+#else
+  actintra    = &work->dummy_intra;
+#endif
+
+  numff        = genprob.numff;
+  numnp_total = actfield->dis[disnum_calc].numnp;
+  actdis       = &(actfield->dis[disnum_calc]);
+
+/*------------------------------------ for iterative staggared schemes: */
+/*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
+  if (fsidyn->ifsi==fsi_iter_stagg_fixed_rel_param ||
+      fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_param ||
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc ||
+      fsidyn->ifsi==fsi_iter_stagg_CHEB_rel_param ||
+      fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+      fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
+      fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
+      fsidyn->ifsi==fsi_coupling_freesurface)
+  {
+    solserv_sol_copy(actfield,disnum_calc,
+		     node_array_sol_mf,
+		     node_array_sol_mf,
+		     ipos->mf_dispn,
+		     ipos->mf_dispnm);
+    solserv_sol_copy(actfield,disnum_calc,
+		     node_array_sol_mf,
+		     node_array_sol_mf,
+		     ipos->mf_dispnp,
+		     ipos->mf_dispn);
+  }
+
+/*--------------------- to get the corrected free surface position copy
+  --------------------------------- from sol_mf[1][j] to sol[0][j] */
+  solserv_sol_copy(actfield,disnum_calc,
+		   node_array_sol_mf,
+		   node_array_sol,
+		   ipos->mf_dispn,
+		   0);
+
+/*---------------------------------------------- increment output flags */
+  work->outstep++;
+  work->restartstep++;
+
+  if (work->outstep==adyn->updevry_disp && ioflags.ale_disp==1 && ioflags.output_out==1)
+  {
+    work->outstep=0;
+    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,0);
+  }
+
+/*---------------------------------------------------------- monitoring */
+  if (ioflags.monitor==1)
+    monitoring(actfield,disnum_calc,numaf,0,adyn->time);
+
+
+/*------------------------------------------------- write restart data */
+  if (work->restartstep==fsidyn->uprestart)
+  {
+    work->restartstep=0;
+#ifdef BINIO
+    if(disnum_io != disnum_calc)
+      restart_write_bin_aledyn(&work->restart_context, adyn);
+    else
+      restart_write_bin_aledyn(&work->out_context, adyn);
+#else
+    restart_write_aledyn(adyn,actfield,actpart,actintra);
+#endif
+  }
+}
+
+
+void fsi_ale_LAS_sd(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  FIELD             *structfield,
+  INT                sdisnum
+  )
+{
+  dserror("not supported");
+}
+
+
+void fsi_ale_LAS_output(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  )
+{
+#ifdef BINIO
+  if (ioflags.output_bin)
+    if (ioflags.ale_disp==1)
+    {
+      ALE_DYNAMIC  *adyn;
+      adyn   = alldyn[genprob.numaf].adyn;
+      out_results(&work->out_context, adyn->time, adyn->step, 0, OUTPUT_DISPLACEMENT);
+    }
+#endif
+}
+
+
+void fsi_ale_LAS_cleanup(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io
+  )
+{
+  INT       numaf;
+  INT       numnp_total;
+  INT       numff;
+  INT      *index;
+  DISCRET  *actdis;
+  PARTITION    *actpart;     /* pointer to the fields PARTITION structure          */
+  INTRA        *actintra;    /* pointer to the fields intra-communicator structure */
+  FSI_DYNAMIC  *fsidyn;
+  ALE_DYNAMIC  *adyn;
+
+  index = work->index_a.a.iv;
+
+  numaf  = genprob.numaf;
+  adyn   = alldyn[numaf].adyn;
+  fsidyn = alldyn[numaf+1].fsidyn;
+  actpart     = &(partition[numaf]);
+
+#ifdef PARALLEL
+  actintra    = &(par.intra[numaf]);
+#else
+  actintra    = &work->dummy_intra;
+#endif
+
+  numff        = genprob.numff;
+  numnp_total = actfield->dis[disnum_calc].numnp;
+  actdis       = &(actfield->dis[disnum_calc]);
+
+  /*------------------------------------------- print out results to .out */
+  if (work->outstep!=0 && ioflags.ale_disp==1 && ioflags.output_out==1)
+    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,0);
+
+  /*------------------------------------------------------------- tidy up */
+  amdel(&work->index_a);
+
+#ifdef BINIO
+  destroy_bin_out_field(&work->out_context);
+  if(disnum_io != disnum_calc)
+    destroy_bin_out_field(&work->restart_context);
+#endif
+}
+
+
+#if 0
 /*!----------------------------------------------------------------------
 \brief   interpolating mesh displacements for LAS
 
@@ -112,40 +479,14 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
       called by: fsi_ale()
 
 *----------------------------------------------------------------------*/
- void fsi_ale_LAS(
-     FIELD             *actfield,
-     INT                disnum_calc,
-     INT                disnum_io,
-     INT                mctrl
-     )
+void fsi_ale_LAS(
+  FSI_ALE_WORK      *work,
+  FIELD             *actfield,
+  INT                disnum_calc,
+  INT                disnum_io,
+  INT                mctrl
+  )
 {
-INT              i,j;
-INT              mone=-1;
-const DOUBLE     H = THREE*TEN;
-DOUBLE           x1,y1,x2,y2, dx,dy;
-static INT       numaf;
-static INT       numnp_total;
-static INT       numff;
-static INT      actpos;           /* actual position in nodal solution history          */
-static INT      outstep;          /* counter for output to .out                         */
-static INT      pssstep;          /* counter for output to .pss                         */
-static INT      restartstep;      /* counter for output of restart data                 */
-static INT      *index;
-static ARRAY     index_a;
-static DISCRET  *actdis;
-NODE            *actnode, *actnode2, *actfnode;
-GNODE           *actgnode;
-static PARTITION    *actpart;     /* pointer to the fields PARTITION structure          */
-static INTRA        *actintra;    /* pointer to the fields intra-communicator structure */
-static ARRAY         time_a;      /* stored time                                        */
-static FSI_DYNAMIC  *fsidyn;
-static ALE_DYNAMIC  *adyn;
-
-#ifdef BINIO
-static BIN_OUT_FIELD out_context;
-#endif
-
-
 #ifdef DEBUG
 dstrc_enter("fsi_ale_LAS");
 #endif
@@ -156,195 +497,36 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1:
-numaf  = genprob.numaf;
-adyn   = alldyn[numaf].adyn;
-fsidyn = alldyn[numaf+1].fsidyn;
-actpart     = &(partition[numaf]);
-#ifdef PARALLEL
-actintra    = &(par.intra[numaf]);
-#else
-actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
-if (!actintra) dserror("Allocation of INTRA failed");
-actintra->intra_fieldtyp = ale;
-actintra->intra_rank   = 0;
-actintra->intra_nprocs   = 1;
-#endif
-
-numff        = genprob.numff;
-numnp_total = actfield->dis[disnum_calc].numnp;
-actdis       = &(actfield->dis[disnum_calc]);
-actpos=0;
-outstep=0;
-pssstep=0;
-restartstep=0;
-
-/*--------------------------- allocate one vector for storing the time */
-if (par.myrank==0) amdef("time",&time_a,1000,1,"DV");
-
-/*-------------------------------------------------- define index array */
-index = amdef("index",&index_a,numnp_total,1,"IV");
-aminit(&index_a,&mone);
-
-for (i=0;i<numnp_total;i++)
-{
-   actnode = &(actdis->node[i]);
-   x1 = actnode->x[0];
-   y1 = actnode->x[1];
-   if (FABS(y1-H)<EPS8)
-      index[i]=i;
-   else
-   {
-      for (j=0;j<numnp_total;j++)
-      {
-         actnode = &(actdis->node[j]);
-         x2 = actnode->x[0];
-         y2 = actnode->x[1];
-         if (FABS(y2-H)<EPS8 && FABS(x1-x2)<EPS8)
-	    index[i]=j;
-      }
-   }
-}
-
-/*-------------------------------------------------------------- check */
-for (i=0;i<numnp_total;i++)
-   if (index[i]==mone)
-      dserror("something went wrong!\n");
-
-#ifdef BINIO
-
-/* initialize binary output
- * It's important to do this only after all the node arrays are set
- * up because their sizes are used to allocate internal memory. */
-init_bin_out_field(&out_context,
-                   NULL,
-                   NULL,
-                   actfield, actpart, actintra, disnum_io);
-if(disnum_io != disnum_calc)
-  init_bin_out_field(&out_context,
-      NULL,
-      NULL,
-      actfield, actpart, actintra, disnum_calc);
-#endif
-
-/*---------------------------------------------------------- monitoring */
-if (ioflags.monitor==1)
-{
-   out_monitor(actfield,numaf,ZERO,1);
-   monitoring(actfield,disnum_calc,numaf,actpos,adyn->time);
-}
-
-/*------------------------------------------- print out results to .out */
-if (ioflags.ale_disp==1 && ioflags.output_out==1)
-{
-    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
-}
-
-
-break;
+  fsi_ale_LAS_setup(work,actfield,disnum_calc,disnum_io);
+  break;
 
 /*======================================================================*
  |                     S O L U T I O N    P H A S E                     |
  *======================================================================*
  * nodal solution history ale field:                                    *
- * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
+ * sol[1...0][j]  ... solution for visualisation (real pressure)	*
  * sol_mf[0][i]        ... displacements at (n)			        *
  * sol_mf[1][i]        ... displacements at (n+1) 		        *
  *======================================================================*/
 case 2:
-
-if (par.myrank==0)
-   printf("Solving ALE (LAS)...\n\n");
-
-for (i=0;i<numnp_total;i++)
-{
-   actnode = &(actdis->node[i]);
-   x1 = actnode->x[0];
-   y1 = actnode->x[1];
-   j = index[i];
-   actnode2 =  &(actdis->node[j]);
-   actgnode = actnode2->gnode;
-   actfnode = actgnode->mfcpnode[numff];
-   dx = actfnode->xfs[0]-actfnode->x[0];
-   dy = actfnode->xfs[1]-actfnode->x[1];
-   actnode->sol_mf.a.da[1][0] = (y1/H)*dx;
-   actnode->sol_mf.a.da[1][1] = (y1/H)*dy;
-}
-
-if (fsidyn->ifsi>=4 || fsidyn->ifsi<0)
-break;
+  fsi_ale_LAS_calc(work,actfield,disnum_calc,disnum_io);
+  if (alldyn[genprob.numaf+1].fsidyn->ifsi>=fsi_iter_stagg_fixed_rel_param ||
+      alldyn[genprob.numaf+1].fsidyn->ifsi<fsi_coupling_undefined)
+    break;
 
 /*======================================================================*
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
-/*------------------------------------ for iterative staggared schemes: */
-/*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
-if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
-{
-   solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_mf,0,2);
-   solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol_mf,1,0);
-}
-
-/*--------------------- to get the corrected free surface position copy
-  --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
-solserv_sol_copy(actfield,disnum_calc,node_array_sol_mf,node_array_sol,0,actpos);
-
-/*---------------------------------------------- increment output flags */
-outstep++;
-pssstep++;
-restartstep++;
-
-if (pssstep==fsidyn->uppss && ioflags.fluid_vis==1 && par.myrank==0)
-{
-   pssstep=0;
-   /*--------------------------------------------- store time in time_a */
-   if (actpos >= time_a.fdim)
-   amredef(&(time_a),time_a.fdim+1000,1,"DV");
-   time_a.a.dv[actpos] = adyn->time;
-   actpos++;
-}
-
-if (outstep==adyn->updevry_disp && ioflags.ale_disp==1 && ioflags.output_out==1)
-{
-    outstep=0;
-    out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
-}
-
-/*---------------------------------------------------------- monitoring */
-if (ioflags.monitor==1)
-monitoring(actfield,disnum_calc,numaf,actpos,adyn->time);
-
-
-/*------------------------------------------------- write restart data */
-if (restartstep==fsidyn->uprestart)
-{
-   restartstep=0;
-#ifdef BINIO
-#if 0
-   if(disnum_io != disnum_calc)
-     restart_write_bin_aledyn(&restart_context, adyn);
-   else
-#endif
-     restart_write_bin_aledyn(&out_context, adyn);
-#else
-   restart_write_aledyn(adyn,actfield,actpart,actintra);
-#endif
-}
-
-/*--------------------------------------------------------------------- */
-
-break;
+  fsi_ale_LAS_final(work,actfield,disnum_calc,disnum_io);
+  break;
 
 
 /*======================================================================*
                             Binary Output
  *======================================================================*/
 case 98:
-#ifdef BINIO
-  if (ioflags.output_bin)
-    if (ioflags.ale_disp==1)
-      out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
-#endif
+  fsi_ale_LAS_output(work,actfield,disnum_calc,disnum_io);
   break;
 
 
@@ -352,34 +534,8 @@ case 98:
  |                C L E A N I N G   U P   P H A S E                     |
  *======================================================================*/
 case 99:
-
-if (pssstep==0) actpos--;
-
-/*------------------------------------------- print out results to .out */
-if (outstep!=0 && ioflags.ale_disp==1 && ioflags.output_out==1)
-  out_sol(actfield,actpart,disnum_io,actintra,adyn->step,actpos);
-
-/*------------------------------------------- print out result to 0.pss */
-if (ioflags.fluid_vis==1 && par.myrank==0)
-{
-   if (pssstep!=0)
-   {
-      /*------------------------------------------ store time in time_a */
-      if (actpos >= time_a.fdim)
-      amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = adyn->time;
-   }
-   visual_writepss(actfield,actpos+1,&time_a);
-}
-
-/*------------------------------------------------------------- tidy up */
-amdel(&index_a);
-
-#ifdef BINIO
-destroy_bin_out_field(&out_context);
-#endif
-
-break;
+  fsi_ale_LAS_cleanup(work,actfield,disnum_calc,disnum_io);
+  break;
 default:
    dserror("Parameter out of range: mctrl \n");
 } /* end switch (mctrl) */
@@ -390,6 +546,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of fsi_ale_lin */
+#endif
 
 #endif
 /*! @} (documentation module close)*/

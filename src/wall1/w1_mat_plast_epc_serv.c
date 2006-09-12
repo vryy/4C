@@ -39,9 +39,9 @@ void w1iwadi (DOUBLE ym,
 /*----------------------------------------------------------------------*/
     static DOUBLE a1, b1, c1;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1iwadi");
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
     c1 = ym / (pv + 1.);
     b1 = c1 * pv / (1. - pv * 2.);
@@ -52,9 +52,9 @@ void w1iwadi (DOUBLE ym,
     di[2] = 0.;
     di[3] = a1;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_exit();
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
     return;
 } /* end of w1iwadi */
@@ -71,18 +71,18 @@ void w1yicsr (DOUBLE dev,      /* norm der deviatorischen spannungen    */
 /*----------------------------------------------------------------------*/
     static DOUBLE ro23;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1yicsr");
-    #endif
+#endif
 /*------------------------------------------------------- initialize ---*/
     *ft = 0.;
     ro23 = sqrt(2./3.);
 /*---------------------------------- yield condition: drucker-prager ---*/
     *ft  = dev + alpha * hyd - ro23 * sigym;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_exit();
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
     return;
 } /* end of w1yicsr */
@@ -99,9 +99,9 @@ void w1yiccap (DOUBLE dev,   /* norm of deviatoric predictor stresses   */
 /*----------------------------------------------------------------------*/
     static DOUBLE dum;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1yiccap");
-    #endif
+#endif
 /*------------------------------------------------------- initialize ---*/
     *ft = 0.;
 /*---------------------------------- yield condition: drucker-prager ---*/
@@ -109,9 +109,9 @@ void w1yiccap (DOUBLE dev,   /* norm of deviatoric predictor stresses   */
     *ft = sqrt(dev*dev + (dum*dum)/9.);
     *ft -= sigym[3];
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_exit();
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
     return;
 } /* end of w1yiccap */
@@ -132,9 +132,9 @@ void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
     static DOUBLE half, ro23, q13, xsi1, xsi2, xsi3, xsi4;
     static DOUBLE dsig[4], fac[4];
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1preds");
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
       half = 1./2.;
       ro23 = sqrt(2./3.);
@@ -180,9 +180,9 @@ void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
       grad[i] = dn[i] + dcom[i];
     }
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_exit();
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
     return ;
 } /* end of w1preds */
@@ -201,9 +201,9 @@ void w1pres (DOUBLE *sigma ,    /*  elastic predictor projected         */
     static INT i;
     static DOUBLE q13, ro23, xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_enter("w1pres");
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
     half = .5;
     ro23 = sqrt(.66666666666666663);
@@ -238,9 +238,9 @@ void w1pres (DOUBLE *sigma ,    /*  elastic predictor projected         */
     sm[2] = *hyd / 3.;
     sm[3] = 0.;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG
+#ifdef DEBUG
     dstrc_exit();
-    #endif
+#endif
 /*----------------------------------------------------------------------*/
     return ;
 } /* end of w1pres */

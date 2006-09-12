@@ -19,7 +19,6 @@ Maintainer: Andrea Hund
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
-#include "wall1_prototypes.h"
 
 /*!
 \addtogroup WALL1

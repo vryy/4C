@@ -299,10 +299,16 @@ void ale3_funct_deriv(
 
 
     case tet4: /* LINEAR SHAPE FUNCTIONS */
+/*
       t1=r;
       t2=s;
       t3=t;
       t4=ONE-r-s-t;
+*/
+   t1=ONE-r-s-t;
+   t2=r;
+   t3=s;
+   t4=t;
 
       funct[0]= t1;
       funct[1]= t2;
@@ -311,6 +317,7 @@ void ale3_funct_deriv(
 
       if(option==1) /* first derivative evaluation */
       {
+        /*
         deriv[0][0]= ONE;
         deriv[0][1]= ZERO;
         deriv[0][2]= ZERO;
@@ -325,6 +332,22 @@ void ale3_funct_deriv(
         deriv[2][1]= ZERO;
         deriv[2][2]= ONE;
         deriv[2][3]=-ONE;
+        */
+      deriv[0][0]=-ONE;
+      deriv[0][1]= ONE;
+      deriv[0][2]= ZERO;
+      deriv[0][3]= ZERO;
+
+      deriv[1][0]=-ONE;
+      deriv[1][1]= ZERO;
+      deriv[1][2]= ONE;
+      deriv[1][3]= ZERO;
+
+      deriv[2][0]=-ONE;
+      deriv[2][1]= ZERO;
+      deriv[2][2]= ZERO;
+      deriv[2][3]= ONE;
+
       } /* endif (option==1) */
       break;
 

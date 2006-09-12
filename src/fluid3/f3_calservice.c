@@ -115,7 +115,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes */
    ehist[1][i] = actnode->sol_increment.a.da[ipos->hist][1];
    ehist[2][i] = actnode->sol_increment.a.da[ipos->hist][2];
 /*---------------------------------------------- set pressures (n+1) ---*/
-   epren[i]    = actnode->sol_increment.a.da[ipos->velnp][PREDOF]; 
+   epren[i]    = actnode->sol_increment.a.da[ipos->velnp][PREDOF];
 } /* end of loop over nodes */
 
 /*------------------------------------------------ check for dead load */
@@ -1383,6 +1383,16 @@ void f3_iedg(
      { 0, 0, 0, 0, 0, 0, 0, 0 },   /* surf 4                    */
      { 0, 0, 0, 0, 0, 0, 0, 0 }}}; /* surf 5                    */
 
+  const INT iegh1[2][4][8] =
+   {{{ 1, 0, 2, 0, 0, 0, 0, 0 },  /* surf 0                   */
+     { 0, 1, 3, 0, 0, 0, 0, 0 },  /* surf 1                   */
+     { 0, 2, 3, 0, 0, 0, 0, 0 },  /* surf 2 for tet4 element */
+     { 1, 2, 3, 0, 0, 0, 0, 0 }},  /* surf 3                   */
+    {{ 0, 1, 2, 0, 0, 0, 0, 0 },   /* surf 0                    */
+     { 0, 1, 3, 0, 0, 0, 0, 0 },   /* surf 1                    */
+     { 0, 2, 3, 0, 0, 0, 0, 0 },   /* surf 2 for tet10 element */
+     { 1, 2, 3, 0, 0, 0, 0, 0 }}};   /* surf 3                    */
+
 
 #ifdef DEBUG
   dstrc_enter("f3_iedg");
@@ -1398,7 +1408,7 @@ void f3_iedg(
       for(i=0;i<8;i++) iegnod[i] = iegh[1][surf][i];
       break;
     case tet4:
-      dserror("iedg for tet4 not yet implemented !!\n");
+      for (i=0;i<3;i++) iegnod[i] = iegh1[0][surf][i];
       break;
     case tet10:
       dserror("iedg for tet10 not yet implemented !!\n");

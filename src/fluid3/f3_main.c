@@ -144,7 +144,6 @@ case calc_fluid_init:
 #endif
 break;
 
-
 /* call the element routines */
 case calc_fluid:
 
@@ -167,6 +166,7 @@ else
 #endif
   f3_calele(ele,estif_global,emass_global,
                  eforce_global,edforce_global,ipos,hasdirich,hasext,0);
+
 break;
 
 /*-------------------------------------------- calculate fluid stresses */

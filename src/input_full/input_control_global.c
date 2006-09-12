@@ -247,7 +247,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   if (ierr==1)
   {
      if (genprob.restart==0 && restart != 0)
-     dserror("Restart defined in input file but not as program argument!\n");
+     {
+       dserror("Restart defined in input file but not as program argument!\n");
+     }
      genprob.restart=restart;
   }
 
@@ -1342,9 +1344,9 @@ frrewind();
 
 end:
 /*-------------------------------------------------- plausibility check */
-if (fdyn->freesurf>0)
 #ifndef D_FSI
-dserror("Freesurf requires FSI functions to compile in!\n");
+if (fdyn->freesurf>0)
+  dserror("Freesurf requires FSI functions to compile in!\n");
 #endif
 
 #ifdef DEBUG
@@ -1380,7 +1382,7 @@ dstrc_enter("inpctr_dyn_fsi");
 #endif
 
 /*-------------------------------------------------- set default values */
-fsidyn->ifsi=1;             /* default: sequ. staggered */
+fsidyn->ifsi=fsi_basic_sequ_stagg;             /* default: sequ. staggered */
 fsidyn->ipre=1;             /* default: d(n) */
 fsidyn->inrmfsi=1;
 fsidyn->ichecke=0;          /* default: no energy check */
@@ -1405,25 +1407,35 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 {
 /*--------------read chars */
    frchar("COUPALGO"  ,buffer    ,&ierr);
+
    if (ierr==1)
    {
       if (frwordcmp(buffer,"basic_sequ_stagg")==0)
-         fsidyn->ifsi=1;
+         fsidyn->ifsi=fsi_basic_sequ_stagg;
       else if (frwordcmp(buffer,"sequ_stagg_pred")==0)
-         fsidyn->ifsi=2;
+         fsidyn->ifsi=fsi_sequ_stagg_pred;
       else if (frwordcmp(buffer,"sequ_stagg_shift")==0)
-         fsidyn->ifsi=3;
+         fsidyn->ifsi=fsi_sequ_stagg_shift;
       else if (frwordcmp(buffer,"iter_stagg_fixed_rel_param")==0)
-         fsidyn->ifsi=4;
+         fsidyn->ifsi=fsi_iter_stagg_fixed_rel_param;
       else if (frwordcmp(buffer,"iter_stagg_AITKEN_rel_param")==0)
-         fsidyn->ifsi=5;
+         fsidyn->ifsi=fsi_iter_stagg_AITKEN_rel_param;
       else if (frwordcmp(buffer,"iter_stagg_steep_desc")==0)
-         fsidyn->ifsi=6;
+         fsidyn->ifsi=fsi_iter_stagg_steep_desc;
       else if (frwordcmp(buffer,"iter_stagg_CHEB_rel_param")==0)
-         fsidyn->ifsi=7;
+         fsidyn->ifsi=fsi_iter_stagg_CHEB_rel_param;
+      else if (frwordcmp(buffer,"iter_stagg_AITKEN_rel_force")==0)
+         fsidyn->ifsi=fsi_iter_stagg_AITKEN_rel_force;
+      else if (frwordcmp(buffer,"iter_stagg_steep_desc_force")==0)
+         fsidyn->ifsi=fsi_iter_stagg_steep_desc_force;
+      else if (frwordcmp(buffer,"iter_stagg_Newton_FD")==0)
+        fsidyn->ifsi=fsi_iter_stagg_Newton_FD;
+      else if (frwordcmp(buffer,"iter_stagg_Newton_I")==0)
+        fsidyn->ifsi=fsi_iter_stagg_Newton_I;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
    }
+
    frchar("PREDICTOR"  ,buffer    ,&ierr);
    if (ierr==1)
    {

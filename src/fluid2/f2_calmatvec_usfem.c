@@ -140,6 +140,7 @@ void f2_calmat( DOUBLE **estif,
 		DOUBLE  *velint,
 		DOUBLE   histvec[2],
 		DOUBLE   gridvint[2],
+		DOUBLE   press,
 		DOUBLE **vderxy,
                 DOUBLE **vderxy2,
                 DOUBLE   gradp[2],
@@ -147,11 +148,12 @@ void f2_calmat( DOUBLE **estif,
 		DOUBLE **derxy,
 		DOUBLE **derxy2,
                 DOUBLE  *edeadng,
-		DOUBLE   fac,    
+		DOUBLE   fac,
 		DOUBLE   visc,
 		INT      iel,
                 INT     *hasext,
-                INT      isale
+                INT      isale,
+                INT      is_relax
               )
 {
 INT     i, j, ri, ci;
@@ -200,6 +202,8 @@ timefacfac = timefac * fac;
 
 
 /*------------------------- evaluate rhs vector at integration point ---*/
+if (!is_relax)
+{
 if (*hasext)
 {
    rhsint[0] = timefac * edeadng[0] + histvec[0];
@@ -209,6 +213,12 @@ else
 {
    rhsint[0] = histvec[0];
    rhsint[1] = histvec[1];
+}
+}
+else
+{
+  rhsint[0]=0;
+  rhsint[1]=0;
 }
 
 /*----------------- get numerical representation of single operators ---*/
@@ -220,7 +230,6 @@ conv_old[1] = vderxy[1][0] * velint[0] + vderxy[1][1] * velint[1];
 /* Viscous term  div epsilon(u_old) */
 visc_old[0] = 0.5 * (2.0*vderxy2[0][0] + vderxy2[0][1] + vderxy2[1][2]);
 visc_old[1] = 0.5 * (2.0*vderxy2[1][1] + vderxy2[1][0] + vderxy2[0][2]);
-
 
 for (i=0; i<iel; i++) /* loop over nodes of element */
 {
@@ -236,6 +245,10 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
    if(isale)
    {
      conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1];
+   }
+   else
+   {
+     conv_g[i] = 0;
    }
 
    /*--- reactive part funct * grad (u_old) ----------------------------*/
@@ -304,6 +317,7 @@ for (i=0; i<iel; i++) /* loop over nodes of element */
 }
 
 /*--------------------------------- now build single stiffness terms ---*/
+
 for (ri=0; ri<iel; ri++)      /* row index */
 {
    for (ci=0; ci<iel; ci++)   /* column index */
@@ -447,7 +461,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*3+1][ci*3+1] += (viscs2[0][2*ri+1] * conv_r[0][2*ci+1]
                                +viscs2[1][2*ri+1] * conv_r[1][2*ci+1]) * aux;
       /* -tau_M*timefac*timefac*4*nu^2(div epsilon(u), div epsilon(v)) */
-      aux = time2nue * time2nue * tau_Mp; 
+      aux = time2nue * time2nue * tau_Mp;
       estif[ri*3][ci*3]     += (viscs2[0][2*ri]   * viscs2[0][2*ci]
                                +viscs2[1][2*ri]   * viscs2[1][2*ci]) * aux;
       estif[ri*3+1][ci*3]   += (viscs2[0][2*ri+1] * viscs2[0][2*ci]
@@ -581,7 +595,6 @@ for (ri=0; ri<iel; ri++)      /* row index */
    eforce[ri*3+2] += (conv_old[0] * derxy[0][ri]
                      +conv_old[1] * derxy[1][ri]) * ttimetauMp;
 }     /* end row loop (ri) */
-
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -807,19 +820,19 @@ for (ri=0; ri<iel; ri++)      /* row index */
    eforce[ri*3+1] += funct[ri] * rhsint[1] * invtime * fac;
 
    /* viscous forces integrated by parts */
-   eforce[ri*3]   -= ( viscous[0][0][ri*2] * eps_u[0][0] 
-                      +viscous[0][1][ri*2] * eps_u[0][1]  
-                      +viscous[1][0][ri*2] * eps_u[1][0]  
+   eforce[ri*3]   -= ( viscous[0][0][ri*2] * eps_u[0][0]
+                      +viscous[0][1][ri*2] * eps_u[0][1]
+                      +viscous[1][0][ri*2] * eps_u[1][0]
                       +viscous[1][1][ri*2] * eps_u[1][1] ) * twovisc * fac;
-   eforce[ri*3+1] -= ( viscous[0][0][ri*2+1] * eps_u[0][0] 
-                      +viscous[0][1][ri*2+1] * eps_u[0][1]  
-                      +viscous[1][0][ri*2+1] * eps_u[1][0]  
+   eforce[ri*3+1] -= ( viscous[0][0][ri*2+1] * eps_u[0][0]
+                      +viscous[0][1][ri*2+1] * eps_u[0][1]
+                      +viscous[1][0][ri*2+1] * eps_u[1][0]
                       +viscous[1][1][ri*2+1] * eps_u[1][1] ) * twovisc * fac;
 
    /* pressure forces integrated by parts*/
    eforce[ri*3]   += *press * derxy[0][ri] * fac;
    eforce[ri*3+1] += *press * derxy[1][ri] * fac;
-   
+
    /* stabilisation part - impulse stabilisation */
    eforce[ri*3]   += tau_M * conv_c[ri] * resid[0];
    eforce[ri*3+1] += tau_M * conv_c[ri] * resid[1];

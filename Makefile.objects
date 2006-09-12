@@ -90,6 +90,7 @@ OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_perf.o \
                 src/pss_full/pss_visual.o \
                 src/pss_full/pss_table.o \
+                src/pss_full/pss_table_iter.o \
                 src/pss_full/pss_set.o \
 		src/pss_full/pss_parser.o
 #                input_full
@@ -422,6 +423,7 @@ OBJS_FSI      = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_ale_LAS.o \
                 src/fsi_full/fsi_coupforce.o \
                 src/fsi_full/fsi_coupling.o \
+                src/fsi_full/fsi_coupling_oct.o \
                 src/fsi_full/fsi_dyn.o \
                 src/fsi_full/fsi_energy.o \
                 src/fsi_full/fsi_fluid.o \
@@ -429,7 +431,8 @@ OBJS_FSI      = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_relax_intdisp.o \
                 src/fsi_full/fsi_service.o \
                 src/fsi_full/fsi_mortar.o \
-                src/fsi_full/fsi_struct.o
+                src/fsi_full/fsi_struct.o \
+                src/fsi_full/fsi_newton.o
 #                shell9
 OBJS_SHELL9   = src/shell9/s9_main.o \
                 src/shell9/s9_a3.o \
@@ -624,13 +627,16 @@ OBJS_FORTRAN  = src/fortran/colsol.o \
 OBJS_NURBS_CPP  = src/nurbs/nurbs_wrappers.o
 
 #                post_common
-OBJS_POST_COMMON = src/post_common/post_common.o \
-                src/post_common/post_am.o \
+OBJS_POST_COMMON = src/post_common/post_am.o \
                 src/post_common/post_ds.o \
                 src/post_common/post_perf.o \
                 src/post_common/post_table.o \
+                src/post_common/post_table_iter.o \
                 src/post_common/post_elements.o \
-                src/post_common/post_octtree.o
+                src/post_common/post_set.o \
+                src/post_common/post_design.o \
+                src/post_common/post_octtree.o \
+                src/post_common/post_common.o
 
 #                post_gid
 OBJS_POST_GID_COMMON = src/post_gid/post_gid.o \
@@ -666,14 +672,11 @@ OBJS_POST_VISUAL2 = src/post_visual/post_visual2.o
 
 #                 post_visual3
 OBJS_POST_VISUAL3 = src/post_visual/post_visual3.o \
-                src/post_visual/post_visual3_functions.o \
-                src/post_visual/post_design.o \
-                src/post_visual/post_set.o \
-                src/post_visual/post_map_functions.o
+                src/post_visual/post_visual3_functions.o
 
 #                 post_monitor
 OBJS_POST_MONITOR = src/post_monitor/post_monitor.o \
                 src/post_monitor/post_out_monitor.o
 #               post_file_manager
-OBJS_POST_FILE_MANAGER = src/post_visual/post_file_manager.o
+OBJS_POST_FILE_MANAGER = src/post_file_manager/post_file_manager.o
                 #src/post_visual/post_map_functions.o 

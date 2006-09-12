@@ -21,7 +21,7 @@ Maintainer: Steffen Genkinger
 
 
 #ifdef D_FSI
-
+#ifndef FSI_NONMATCH
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -647,7 +647,7 @@ perf_begin(53);
     else if (numdf==4 || numdf==7) numc=IMAX(6,numdf);
     else  dserror("number of fluid dofs not possible!\n");
 
-    amdef("sol_mf",&actfnode->sol_mf,2,numc,"DA");
+    amdef("sol_mf",&actfnode->sol_mf,3,numc,"DA");
     amzero(&(actfnode->sol_mf));
 
     actfgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
@@ -668,7 +668,12 @@ perf_begin(53);
    * actsnode->sol_mf.a.da[2][i]: displacements of old time step
    * actsnode->sol_mf.a.da[3][i]: dispi
    * actsnode->sol_mf.a.da[4][i]: couplingforces at the end of time step
-   * actsnode->sol_mf.a.da[5][i]: coupling forces at the beginning of time step
+   * actsnode->sol_mf.a.da[5][i]: coupling forces at the beginning of
+   * time step
+   * actsnode->sol_mf.a.da[6][i]: used in Gradientenverf
+   * actsnode->sol_mf.a.da[7][i]: used in Newton
+   * actsnode->sol_mf.a.da[8][i]: used in Newton
+   * [9]
    */
 
   /* loop structure nodes */
@@ -678,7 +683,7 @@ perf_begin(53);
     actsgnode = actsnode->gnode;
     numdf = actsnode->numdf;
 
-    amdef("sol_mf",&actsnode->sol_mf,6,numdf,"DA");
+    amdef("sol_mf",&actsnode->sol_mf,10,numdf,"DA");
     amzero(&(actsnode->sol_mf));
 
     actsgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
@@ -705,7 +710,7 @@ perf_begin(53);
     actagnode = actanode->gnode;
     numdf = actanode->numdf;
 
-    amdef("sol_mf",&actanode->sol_mf,3,numdf,"DA");
+    amdef("sol_mf",&actanode->sol_mf,4,numdf,"DA");
     amzero(&(actanode->sol_mf));
 
     actagnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
@@ -928,7 +933,6 @@ perf_end(54);
 
   if (genprob.visual>0) goto end;
   if (fsidyn->coupmethod == 0) goto end;
-
 
 #ifdef PERF
 perf_begin(55);
@@ -1154,7 +1158,7 @@ void fsi_struct_intdofs(
 
 
 
-
+#endif
 #endif  /* ifdef D_FSI */
 
 /*! @} (documentation module close)*/

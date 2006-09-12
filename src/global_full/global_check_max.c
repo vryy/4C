@@ -20,11 +20,11 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef D_SHELL8
-   #include "../shell8/shell8.h"
+#include "../shell8/shell8.h"
 #endif
 
 #ifdef D_SHELL9
-   #include "../shell9/shell9.h"
+#include "../shell9/shell9.h"
 #endif
 
 #ifdef D_BRICK1

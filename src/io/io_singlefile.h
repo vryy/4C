@@ -258,7 +258,8 @@ void out_activate_restart(BIN_OUT_FIELD *context);
 /*----------------------------------------------------------------------*/
 void out_write_chunk(BIN_OUT_FIELD *context,
                      BIN_OUT_CHUNK* array_data,
-                     CHAR* entry_name);
+                     CHAR* entry_name,
+                     INT restart);
 
 
 /*----------------------------------------------------------------------*/

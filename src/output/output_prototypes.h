@@ -119,7 +119,7 @@ void plot_lte(	DOUBLE  time,
                 DOUBLE  norm,
                 DOUBLE  dt,
                 INT     itnum);
-void plot_ale_quality(FIELD *field,INT step, DOUBLE time,
+void plot_ale_quality(FIELD *field,INT disnum,INT step, DOUBLE time,
                       INTRA *actintra, PARTITION *actpart);
 
 /*----------------------------------------------------------------------*

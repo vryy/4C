@@ -22,7 +22,7 @@ Maintainer: Andrea Hund
  | vector of numfld submesh-FIELDs, defined in global_control.c         |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *sm_field;
-/*- ist eine globale Variable und dafuer global in global_control.c  
+/*- ist eine globale Variable und dafuer global in global_control.c
     definiert, deshalb hier extern */
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -35,7 +35,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -80,19 +80,22 @@ char *colpointer;
 struct _ELEMENT    *actsmele;
 struct _NODE       *actsmnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_submesh");
 #endif
 
 
-/*---------------------------------------- allocate the SUBMESH-FIELD */      
+/*---------------------------------------- allocate the SUBMESH-FIELD */
 if(genprob.numfld != 1) dserror("NUMFIELD has to be 1 for structural multiscale problem");
 sm_field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
 
 sm_field[0].fieldtyp = structure;
 sm_field[0].ndis     = 1;
-/*------------------------------------ allocate the SUBMESH-FIELD->DIS */      
+/*------------------------------------ allocate the SUBMESH-FIELD->DIS */
 sm_field[0].dis = (DISCRET*)CCACALLOC(sm_field[0].ndis,sizeof(DISCRET));
+
+/* initialize array positions with -1 */
+memset(&sm_field[0].dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
 
 /*----------------------------------------------------------------------*
  |                   Einlesen der Submeshinformationen                  |
@@ -115,44 +118,44 @@ if (frfind("--SMSIZE")==1)
  |                   Einlesen der SubmeshELEMENTE                       |
  *----------------------------------------------------------------------*/
 
-/*--------------------------- allocate the SUBMESH-FIELD->DIS->ELEMENTS */      
+/*--------------------------- allocate the SUBMESH-FIELD->DIS->ELEMENTS */
 sm_field[0].dis[0].element=(ELEMENT*)CCACALLOC(sm_field[0].dis[0].numele,sizeof(ELEMENT));
 
 if (frfind("--SMELE")==1)
 {
   frread();
-  counter=0;  
+  counter=0;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
     colpointer = allfiles.actplace;
     elenumber  = strtol(colpointer,&colpointer,10);
-    sm_field[0].dis[0].element[counter].Id = --elenumber;  
+    sm_field[0].dis[0].element[counter].Id = --elenumber;
    /*--------------------------------------------------- discretisation */
    frchk("QUAD4",&ierr);
    if (ierr==1)
    {
      sm_field[0].dis[0].element[counter].distyp = quad4;
      sm_field[0].dis[0].element[counter].numnp  = 4;
-     /*------------------------------------------------ allocate the LM */      
+     /*------------------------------------------------ allocate the LM */
      sm_field[0].dis[0].element[counter].lm  = (INT*)CCACALLOC(sm_field[0].dis[0].element[counter].numnp,sizeof(INT));
      /*-- da ich mehrere elemente in submech allociert habe, und mit [couter] die einzelnen
        dereferenziere, kommt vor lm ein . und kein ->, obwohl mit *lm in sm_element deklariert */
      if (sm_field[0].dis[0].element[counter].lm==NULL) dserror("Allocation of lm for submesh in ELEMENT failed");
      frint_n("QUAD4",&(sm_field[0].dis[0].element[counter].lm[0]),sm_field[0].dis[0].element[counter].numnp,&ierr);
      if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
-   } 
+   }
 
    frchk("QUAD8",&ierr);
    if (ierr==1)
    {
      sm_field[0].dis[0].element[counter].distyp = quad8;
      sm_field[0].dis[0].element[counter].numnp  = 8;
-     /*------------------------------------------------ allocate the LM */      
+     /*------------------------------------------------ allocate the LM */
      sm_field[0].dis[0].element[counter].lm  = (INT*)CCACALLOC(sm_field[0].dis[0].element[counter].numnp,sizeof(INT));
      if (sm_field[0].dis[0].element[counter].lm==NULL) dserror("Allocation of lm for submesh in ELEMENT failed");
      frint_n("QUAD8",&(sm_field[0].dis[0].element[counter].lm[0]),sm_field[0].dis[0].element[counter].numnp,&ierr);
      if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
-   } 
+   }
    /*-------------------- reduce node numbers in location matrix by one */
    for (i=0; i<sm_field[0].dis[0].element[counter].numnp; i++) (sm_field[0].dis[0].element[counter].lm[i])--;
    /*----------------------------------------- read the material number */
@@ -164,7 +167,7 @@ if (frfind("--SMELE")==1)
    if (ierr==1)
    {
      sm_field[0].dis[0].element[counter].eltyp = el_wall1;
-     /*--------------------------------------- allocate the WALLelement */      
+     /*--------------------------------------- allocate the WALLelement */
      sm_field[0].dis[0].element[counter].e.w1 = (WALL1*)CCACALLOC(1,sizeof(WALL1));
      if (sm_field[0].dis[0].element[counter].e.w1==NULL) dserror("Allocation of submesh-WALLelement failed");
      /*------------------------------------ read WALL element thickness */
@@ -186,7 +189,7 @@ if (frfind("--SMELE")==1)
    if (ierr==1)
    {
       sm_field[0].dis[0].element[counter].eltyp = el_interf;
-      /*---------------------------------------- allocate the IFelement */      
+      /*---------------------------------------- allocate the IFelement */
       sm_field[0].dis[0].element[counter].e.interf = (INTERF*)CCACALLOC(1,sizeof(INTERF));
       if (sm_field[0].dis[0].element[counter].e.interf==NULL) dserror("Allocation of IFelement failed");
      /*-------------------------------------- read IFelement thickness */
@@ -206,23 +209,23 @@ frrewind();
 /*----------------------------------------------------------------------*
  |                   Einlesen der SubmeshNODES                          |
  *----------------------------------------------------------------------*/
-/*------------------------------ allocate the SUBMESH-FIELD->DIS->NODES */      
+/*------------------------------ allocate the SUBMESH-FIELD->DIS->NODES */
 sm_field[0].dis[0].node = (NODE*)CCACALLOC(sm_field[0].dis[0].numnp,sizeof(NODE));
-/*-------------------------------------------------------------------- */      
+/*-------------------------------------------------------------------- */
 if (frfind("--SMNODECOORD")==1)
 {
   frread();
-  counter=0;  
+  counter=0;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    /*------------------------------------------------------- NODE-Id */      
+    /*------------------------------------------------------- NODE-Id */
     frint("NODE",&(sm_field[0].dis[0].node[counter].Id),&ierr);
     if (ierr!=1) dserror("reading of submeshnodes failed");
     (sm_field[0].dis[0].node[counter].Id)--;
-    /*---------------------------------------------- NODE-Coordinates */      
+    /*---------------------------------------------- NODE-Coordinates */
     frdouble_n("COORD",&(sm_field[0].dis[0].node[counter].x[0]),3,&ierr);
     if (ierr!=1) dserror("reading of submeshnodes failed");
-    
+
     counter++;
     frread();
   }/*----- end while (strncmp(allfiles.actplace,"------",6)!=0) -------*/
@@ -233,11 +236,11 @@ frrewind();
  |                  Submesh-Topologie NODE-ELEMENT                      |
  *----------------------------------------------------------------------*/
 
-/*-------------------------------------- pointer from ELEMENTS to NODES */      
+/*-------------------------------------- pointer from ELEMENTS to NODES */
 for (i=0; i<sm_field[0].dis[0].numele; i++)
 {
   actsmele = &(sm_field[0].dis[0].element[i]);
-  /*------------------------------------------------ localID = globalID */      
+  /*------------------------------------------------ localID = globalID */
   actsmele->Id_loc = actsmele->Id;
   actsmele->node = (NODE**)CCACALLOC(actsmele->numnp,sizeof(NODE*));
 
@@ -245,14 +248,14 @@ for (i=0; i<sm_field[0].dis[0].numele; i++)
   {
     nodeId = actsmele->lm[j];
     actsmele->node[j] = &(sm_field[0].dis[0].node[nodeId]);
-  } 
+  }
 }
 
-/*-------------------------------------- pointer from NODES to ELEMENTS */      
-for (i=0; i<sm_field[0].dis[0].numnp; i++) 
+/*-------------------------------------- pointer from NODES to ELEMENTS */
+for (i=0; i<sm_field[0].dis[0].numnp; i++)
 {
    sm_field[0].dis[0].node[i].numele = 0;
-   /*-------------------------------------------------- NODE-number DOF */      
+   /*-------------------------------------------------- NODE-number DOF */
    sm_field[0].dis[0].node[i].numdf = 2;
 }
 
@@ -262,7 +265,7 @@ for (i=0; i<sm_field[0].dis[0].numele; i++)
    actsmele = &(sm_field[0].dis[0].element[i]);
    for (j=0; j<actsmele->numnp; j++)
    {
-      (actsmele->node[j]->numele)++; 
+      (actsmele->node[j]->numele)++;
    }
 }
 
@@ -270,7 +273,7 @@ for (i=0; i<sm_field[0].dis[0].numele; i++)
 for (i=0; i<sm_field[0].dis[0].numnp; i++)
 {
    actsmnode = &(sm_field[0].dis[0].node[i]);
-  /*------------------------------------------------ localID = globalID */      
+  /*------------------------------------------------ localID = globalID */
    actsmnode->Id_loc = actsmnode->Id;
    actsmnode->element = (ELEMENT**)CCACALLOC(actsmnode->numele,sizeof(ELEMENT*));
    for (j=0; j<actsmnode->numele; j++) actsmnode->element[j] = NULL;
@@ -296,7 +299,7 @@ for (i=0; i<sm_field[0].dis[0].numele; i++)
  *----------------------------------------------------------------------*/
 sm_field[0].dis[0].ngnode = sm_field[0].dis[0].numnp;
 
-/*----------------------------- allocate the SUBMESH-FIELD->DIS->GNODES */      
+/*----------------------------- allocate the SUBMESH-FIELD->DIS->GNODES */
 sm_field[0].dis[0].gnode = (GNODE*)CCACALLOC(sm_field[0].dis[0].ngnode,sizeof(GNODE));
 /*----------------------------------------- set pointers gnode <-> node */
 for (i=0; i<sm_field[0].dis[0].numnp; i++)
@@ -308,7 +311,7 @@ for (i=0; i<sm_field[0].dis[0].numnp; i++)
 /*----------------------------------------------------------------------*
  |                 Einlesen der Submesh-MATERIALS                      |
  *---------------------------------------------------------------------*/
-/*------------------------------------------ allocate Submesh-Material */      
+/*------------------------------------------ allocate Submesh-Material */
 sm_mat = (MATERIAL*)CCACALLOC(genprob.nmat_sm,sizeof(MATERIAL));
 /*---------------------------------------------------------------------*/
 if (frfind("--SMMAT")==0) dserror("frfind: submesh-MATERIAL is not in input file");
@@ -336,9 +339,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(sm_mat[i].m.pl_mises->possionratio)  ,&ierr);
       frdouble("ALFAT",&(sm_mat[i].m.pl_mises->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(sm_mat[i].m.pl_mises->Sigy)          ,&ierr);
-      sm_mat[i].m.pl_mises->Hard = 0.; 
-      sm_mat[i].m.pl_mises->GF   = 0.; 
-      sm_mat[i].m.pl_mises->betah= 1.; 
+      sm_mat[i].m.pl_mises->Hard = 0.;
+      sm_mat[i].m.pl_mises->GF   = 0.;
+      sm_mat[i].m.pl_mises->betah= 1.;
       frdouble("Hard" ,&(sm_mat[i].m.pl_mises->Hard)          ,&ierr);
       frdouble("GF"   ,&(sm_mat[i].m.pl_mises->GF)            ,&ierr);
       frdouble("BETAH",&(sm_mat[i].m.pl_mises->betah)         ,&ierr);
@@ -443,18 +446,18 @@ for (i=0; i<sm_field[0].dis[0].numnp; i++)
       amdef("curve",&(actsmnode->gnode->dirich->curve),       6,1,"IV");
 
     /*----------------------- Null-RB auf die beiden FHG'e vorschreiben */
-      actsmnode->gnode->dirich->dirich_onoff.a.iv[0] = 1; 
-      actsmnode->gnode->dirich->dirich_onoff.a.iv[1] = 1; 
+      actsmnode->gnode->dirich->dirich_onoff.a.iv[0] = 1;
+      actsmnode->gnode->dirich->dirich_onoff.a.iv[1] = 1;
       for (j=2; j<6; j++)
       actsmnode->gnode->dirich->dirich_onoff.a.iv[j] = 0;
-   
+
       for (j=0; j<6; j++)
       {
-        actsmnode->gnode->dirich->dirich_val.a.dv[j] = 0.0; 
-        actsmnode->gnode->dirich->curve.a.iv[j] = 0; 
+        actsmnode->gnode->dirich->dirich_val.a.dv[j] = 0.0;
+        actsmnode->gnode->dirich->curve.a.iv[j] = 0;
       }
    }
-/*------------------------------- allocate macro info at submesh nodes */      
+/*------------------------------- allocate macro info at submesh nodes */
    actsmnode->sm_macroinfo = (SM_MACRO_INFO*)CCACALLOC(1,sizeof(SM_MACRO_INFO));
 }
 
@@ -463,7 +466,7 @@ for (i=0; i<sm_field[0].dis[0].numnp; i++)
  |             (werden nicht im Eingeabefile eingelesen)                |
  *----------------------------------------------------------------------*/
 
-/*--------------------------------------------- allocate Submesh-SOLVAR */      
+/*--------------------------------------------- allocate Submesh-SOLVAR */
 sm_solv = (SOLVAR*)CCACALLOC(1,sizeof(SOLVAR));
 
 sm_solv->matrixtyp = matrix_none;
@@ -471,7 +474,7 @@ sm_solv->solvertyp = umfpack;
 sm_solv->parttyp   = cut_elements;
 sm_solv->nsysarray = 1;
 
-/*------------------------------------------ allocate Submesh-PARTITION */      
+/*------------------------------------------ allocate Submesh-PARTITION */
 sm_part = (PARTITION*)CCACALLOC(1,sizeof(PARTITION));
 sm_part->ndis = 1;
 /*---------------------------- -> sm_part->pdis[0]->coupledofs.fdim==0; */
@@ -491,17 +494,17 @@ for (i=0;i<sm_part->ndis;i++)
    sm_part->pdis[i].node    = (NODE**)CCACALLOC(sm_part->pdis[i].numnp,sizeof(NODE*));
    if (sm_part->pdis[i].element==NULL) dserror("Allocation of element pointer in PARTITION failed");
    if (sm_part->pdis[i].node==NULL)    dserror("Allocation of node pointer in PARTITION failed");
-   for (j=0; j<sm_field[0].dis[i].numele; j++) 
+   for (j=0; j<sm_field[0].dis[i].numele; j++)
    sm_part->pdis[i].element[j] = &(sm_field[0].dis[i].element[j]);
-   for (j=0; j<sm_field[0].dis[i].numnp; j++)  
-   sm_part->pdis[i].node[j] = &(sm_field[0].dis[i].node[j]);      
+   for (j=0; j<sm_field[0].dis[i].numnp; j++)
+   sm_part->pdis[i].node[j] = &(sm_field[0].dis[i].node[j]);
 }
-/*------------------------------------------------ allocate Submesh-PAR */      
+/*------------------------------------------------ allocate Submesh-PAR */
 sm_par = (PAR*)CCACALLOC(1,sizeof(PAR));
 sm_par->nprocs = 1;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

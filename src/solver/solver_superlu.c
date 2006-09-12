@@ -158,9 +158,9 @@ case 0:
       tmp[dof] = rhs->vec.a.dv[i];
    }
    /*--------------------------------------------- allreduce rhs vector */
-   #ifdef PARALLEL
+#ifdef PARALLEL
    MPI_Allreduce(tmp,b,ucchb->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
-   #endif
+#endif
    amdel(&tmp_a);
    /*------------------------------------------- set additional options */
    if (ucchb->is_factored==1)/*-------- matrix has been factored before */

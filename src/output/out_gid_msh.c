@@ -405,7 +405,7 @@ elements:
       if (actgid->is_shell8_4_22)
       {
         fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: SHELL8 2x2 GP\n",
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: SHELL8 1 GP\n",
             actgid->shell8_4_22_name,actgid->fieldname,l);
         fprintf(out,"#-------------------------------------------------------------------------------\n");
         fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Quadrilateral NNODE 4\n",
@@ -417,6 +417,52 @@ elements:
         {
           actele = &(actfield->dis[l].element[j]);
           if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+
+      if (actgid->is_shell8_3_11)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: SHELL8 1 GP\n",
+            actgid->shell8_3_11_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Triangle NNODE 3\n",
+            actgid->shell8_3_11_name,l);
+
+        /* print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_shell8 || actele->numnp !=3) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+
+      if (actgid->is_shell8_6_33)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: SHELL8 3 GP\n",
+            actgid->shell8_6_33_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Triangle NNODE 6\n",
+            actgid->shell8_6_33_name,l);
+
+        /* print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_shell8 || actele->numnp !=6) continue;
           fprintf(out," %6d ",actele->Id+1);
           for (k=0; k<actele->numnp; k++)
             fprintf(out,"%6d ",actele->node[k]->Id+1);

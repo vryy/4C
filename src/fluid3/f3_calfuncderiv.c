@@ -1268,17 +1268,18 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
    t3=t;
    t4=ONE-r-s-t;
 
-   funct[0] =  ;
-   funct[1] =  ;
-   funct[2] = ;
-   funct[3] = ;
-   funct[4] = ;
-   funct[5] = ;
-   funct[6] = ;
-   funct[7] = ;
-   funct[8] = ;
-   funct[9] = ;
-
+   /*These are the shape functions used by Bathe (p. 439) using the corresponding numbering (p.438).*/
+   /*If these shape functions go together with the numbering used for the elements, was not checked. -> could be wrong!*/
+   funct[0] =1-r-s-t-2*r*(1-r-s-t)-2*s*(1-r-s-t)-2*t*(1-r-s-t);
+   funct[1] =r-2*r*(1-r-s-t)-2*r*s-2*r*t;
+   funct[2] =(s-2*r*s-2*s*(1-r-s-t)-2*s*t;
+   funct[3] =t-2*r*t-2*s*t-2*t*(1-r-s-t);
+   funct[4] =4*r*(1-r-s-t);
+   funct[5] =4*r*s;
+   funct[6] =4*s*(1-r-s-t);
+   funct[7] =4*r*t;
+   funct[8] =4*s*t;
+   funct[9] =4*t*(1-r-s-t);
 
    if(icode>1) /* --> first derivative evaluation */
    {

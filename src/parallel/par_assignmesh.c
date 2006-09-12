@@ -118,6 +118,7 @@ void part_assignfield()
   {
     actsolv  = &(solv[i]);
     actfield = &(field[i]);
+    actfield->part = &(partition[i]);
 
     /* every partition[i] allocates discretizations */
     partition[i].ndis = actfield->ndis;

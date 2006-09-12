@@ -1211,6 +1211,36 @@ INT symbol_get_real(SYMBOL* symbol, DOUBLE* real)
   return ret;
 }
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Extract the value if its a real.
+
+  \author m.geppert (u.kue)
+  \date 08/06
+ */
+/*----------------------------------------------------------------------*/
+INT symbol_get_real_as_float(SYMBOL* symbol, float* real)
+{
+  INT ret;
+
+#ifdef DEBUG
+  dstrc_enter("symbol_get_real_as_float");
+#endif
+
+  if (symbol && (symbol->type == sym_real)) {
+    *real = (float)symbol->s.real;
+    ret = 1;
+  }
+  else {
+    ret = 0;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return ret;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*!

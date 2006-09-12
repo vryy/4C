@@ -249,7 +249,7 @@ case 0:
       f2_int_usfem(ele,hasext,estif,eforce,xyze,
                    funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
                    evhist,NULL,epren,edeadng,
-                   vderxy,vderxy2,visc,wa1,wa2,estress);
+                   vderxy,vderxy2,visc,wa1,wa2,estress, is_relax);
    break;
    default: dserror("unknown stabilisation type");
    }
@@ -300,7 +300,7 @@ case 1:
       f2_int_usfem(ele,hasext,estif,eforce,xyze,
                    funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
                    evhist,egridv,epren,edeadng,
-                   vderxy,vderxy2,visc,wa1,wa2,estress);
+                   vderxy,vderxy2,visc,wa1,wa2,estress, is_relax);
       break;
       }
     default: dserror("unknown stabilisation type");
@@ -1216,3 +1216,4 @@ void f2_calerr(
 
 #endif
 /*! @} (documentation module close)*/
+

@@ -117,6 +117,28 @@ typedef struct _FSI_COUPLE_CONDITION
 	   fsi_pseudo
 	  }                   fsi_typ;
 } FSI_COUPLE_CONDITION;
+#ifdef FSI_NONMATCH
+/*----------------------------------------------------------------------------*
+ | struct for fsi problems with nonmatching discretizations       henke 04/06 |
+ | this does not really belong here, but I had no idea where else to put it   |
+ *----------------------------------------------------------------------------*/
+typedef struct _FSI_COUPLE_ELEMENT
+{
+   struct _ELEMENT    *hostele;     /*pointer to my structure host element*/
+   DOUBLE             x[3];         /*vector of local coordinates in the hostelement*/
+
+} FSI_COUPLE_ELEMENT;
+/*----------------------------------------------------------------------------*
+ | struct for fsi problems with nonmatching discretizations       henke 04/06 |
+ | this does not really belong here, but I had no idea where else to put it   |
+ *----------------------------------------------------------------------------*/
+typedef struct _FSI_COUPLE_NODE
+{
+  INT                numnp;         /*number of (fluid)nodes paired with this (structure)element*/
+  struct _NODE       **couplenode;  /*pointer to my structure host element*/
+
+} FSI_COUPLE_NODE;
+#endif
 /*----------------------------------------------------------------------*
  | ssi coupling condition                                 genk 10/02    |
  |                                                                      |
@@ -126,7 +148,7 @@ typedef struct _SSI_COUPLE_CONDITION
      enum _SSI_COUPTYP         ssi_couptyp;        /* type of field this structure is in */
      INT                       ssi_coupleId;
      enum _SSI_MESH            ssi_mesh;
-     
+
 } SSI_COUPLE_CONDITION;
 
 /*----------------------------------------------------------------------*

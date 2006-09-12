@@ -1984,7 +1984,8 @@ void out_activate_restart(BIN_OUT_FIELD *context)
 /*----------------------------------------------------------------------*/
 void out_write_chunk(BIN_OUT_FIELD *context,
                      BIN_OUT_CHUNK* chunk,
-                     CHAR* entry_name)
+                     CHAR* entry_name,
+                     INT restart)
 {
   INT i;
 
@@ -2005,6 +2006,93 @@ void out_write_chunk(BIN_OUT_FIELD *context,
 #ifdef DEBUG
   dstrc_enter("out_write_chunck");
 #endif
+
+  if (rank == 0)
+  {
+    CHAR* names[] = CHUNK_TYPE_NAMES;
+    fprintf(bin_out_main.control_file, "    %s:\n", entry_name);
+    map_insert_int_cpy(&chunk->group, context->out->value_file_offset, "value_offset");
+    map_insert_int_cpy(&chunk->group, context->out->size_file_offset, "size_offset");
+    map_insert_string_cpy(&chunk->group, names[chunk->type], "type");
+  }
+
+  if (!restart)
+  {
+
+    /* find min/max values */
+    /* We do a reverse loop here because the symbols have to be
+     * ordered in the control file and map_insert_real_cpy adds its
+     * symbol to the front of the list. */
+    for (i=chunk->value_entry_length-1; i>=0; --i)
+    {
+      INT j;
+      DOUBLE minvalue;
+      DOUBLE maxvalue;
+
+      minvalue = chunk->out_values[i];
+      maxvalue = chunk->out_values[i];
+
+      for (j=1; j<chunk->num; ++j)
+      {
+        minvalue = MIN(minvalue, chunk->out_values[j*chunk->value_entry_length+i]);
+        maxvalue = MAX(maxvalue, chunk->out_values[j*chunk->value_entry_length+i]);
+      }
+
+#ifdef PARALLEL
+      {
+        DOUBLE tmp;
+        tmp = minvalue;
+        MPI_Reduce(&tmp, &minvalue, 1, MPI_DOUBLE, MPI_MIN, 0, context->actintra->MPI_INTRA_COMM);
+        tmp = maxvalue;
+        MPI_Reduce(&tmp, &maxvalue, 1, MPI_DOUBLE, MPI_MAX, 0, context->actintra->MPI_INTRA_COMM);
+      }
+#endif
+      if (rank == 0)
+      {
+        char buf[10];
+        sprintf(buf, "min%d", i);
+        map_insert_real_cpy(&chunk->group, minvalue, buf);
+        sprintf(buf, "max%d", i);
+        map_insert_real_cpy(&chunk->group, maxvalue, buf);
+      }
+    }
+
+    if (chunk->value_entry_length>0)
+    {
+      DOUBLE min_abs = 1e100;
+      DOUBLE max_abs = 0;
+
+      for (i=1; i<chunk->num; ++i)
+      {
+        INT j;
+        DOUBLE norm = 0;
+        for (j=0; j<chunk->value_entry_length && j<genprob.ndim; ++j)
+        {
+          norm += (chunk->out_values[i*chunk->value_entry_length+j] *
+                   chunk->out_values[i*chunk->value_entry_length+j]);
+        }
+        norm = sqrt(norm);
+        min_abs = MIN(min_abs, norm);
+        max_abs = MAX(max_abs, norm);
+      }
+
+#ifdef PARALLEL
+      {
+        DOUBLE tmp;
+        tmp = min_abs;
+        MPI_Reduce(&tmp, &min_abs, 1, MPI_DOUBLE, MPI_MIN, 0, context->actintra->MPI_INTRA_COMM);
+        tmp = max_abs;
+        MPI_Reduce(&tmp, &max_abs, 1, MPI_DOUBLE, MPI_MAX, 0, context->actintra->MPI_INTRA_COMM);
+      }
+#endif
+
+      if (rank == 0)
+      {
+        map_insert_real_cpy(&chunk->group, min_abs, "min_abs");
+        map_insert_real_cpy(&chunk->group, max_abs, "max_abs");
+      }
+    }
+  }
 
   /* on little endian machines we have to convert */
   /* We have 8 byte doubles and 4 byte integer by definition. Nothing
@@ -2095,11 +2183,6 @@ void out_write_chunk(BIN_OUT_FIELD *context,
 
   if (rank == 0)
   {
-    CHAR* names[] = CHUNK_TYPE_NAMES;
-    fprintf(bin_out_main.control_file, "    %s:\n", entry_name);
-    map_insert_int_cpy(&chunk->group, context->out->value_file_offset, "value_offset");
-    map_insert_int_cpy(&chunk->group, context->out->size_file_offset, "size_offset");
-    map_insert_string_cpy(&chunk->group, names[chunk->type], "type");
     map_print(bin_out_main.control_file, &chunk->group, 8);
   }
 
@@ -2179,7 +2262,7 @@ void out_node_chunk(BIN_OUT_FIELD* context,
 
   init_bin_out_chunk(context, &array_data, chunk_node, value_length, size_length);
   out_gather_values(context, &array_data, type, array);
-  out_write_chunk(context, &array_data, chunk_name);
+  out_write_chunk(context, &array_data, chunk_name, type==cc_node_array);
 
   destroy_bin_out_chunk(&array_data);
 
@@ -2211,7 +2294,7 @@ void out_element_chunk(BIN_OUT_FIELD* context,
 
   init_bin_out_chunk(context, &chunk, chunk_element, value_length, size_length);
   out_gather_values(context, &chunk, type, array);
-  out_write_chunk(context, &chunk, chunk_name);
+  out_write_chunk(context, &chunk, chunk_name, type==cc_restart_element);
 
   destroy_bin_out_chunk(&chunk);
 
@@ -2249,7 +2332,7 @@ void out_distvec_chunk(BIN_OUT_FIELD* context,
 
   init_bin_out_chunk(context, &chunk, chunk_dist_vec, length, 0);
   out_gather_values(context, &chunk, cc_dist_vector, 0);
-  out_write_chunk(context, &chunk, chunk_name);
+  out_write_chunk(context, &chunk, chunk_name, 1);
 
   destroy_bin_out_chunk(&chunk);
 

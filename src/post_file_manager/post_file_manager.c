@@ -1,8 +1,6 @@
 /*file manager to organize and rewrite ccarat files*/
 
 #include <stdio.h>
-#include "../post_common/post_common.h"
-#include "post_map_functions.h"
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -10,6 +8,7 @@
 #include <sys/stat.h>
 #include <math.h>
 
+#include "post_file_manager.h"
 
 #define MAX_STR_LENGTH 81
 #define MAX_FILE_SIZE 2000    /* [MB] max 2 GB for FAT32 compability*/
@@ -66,8 +65,9 @@ int main(int argc, char** argv)
   MAP_NODE* actnode;
 
   /*check process command line arguments*/
-  /*we need to know which argument is the last one before the filenames, so we know whether
-   * the user wants a new filename or not. */
+  /* we need to know which argument is the last one before the
+   * filenames, so we know whether the user wants a new filename or
+   * not. */
 
   for (i=1; i<argc-1; ++i)
   {
@@ -77,23 +77,23 @@ int main(int argc, char** argv)
     {
       switch (arg[1])
       {
-        case 's':
-        {
-          if (arg[2] != '\0')
-          {
-          }
-          else
-          {
-            i += 1;
-          }
-        }
-        break;
+      case 's':
+      {
+	if (arg[2] != '\0')
+	{
+	}
+	else
+	{
+	  i += 1;
+	}
+      }
+      break;
 
-        case 'o':
-          overwrite=1;
-          break;
-     }
-     if (argv[i+1][0]!='-') lastarg=i;
+      case 'o':
+	overwrite=1;
+	break;
+      }
+      if (argv[i+1][0]!='-') lastarg=i;
     }
   }
 
@@ -103,9 +103,13 @@ int main(int argc, char** argv)
   {
     ACTDIM=3;
   }
-  if (!map_has_int(&(problem.control_table), "ndim",3 ))
+  else if (!map_has_int(&(problem.control_table), "ndim",3 ))
   {
     ACTDIM=2;
+  }
+  else
+  {
+    dserror("unknown dimension");
   }
 
   discret = (POST_DISCRETIZATION*)CCACALLOC(problem.num_discr,
@@ -155,7 +159,7 @@ int main(int argc, char** argv)
   if (lastarg+1==argc-2)
   {
     if (rindex(argv[argc-1], '/')==NULL)
-    /*---------------------no path information, output_path = input_folder = '\0'*/
+      /*---------------------no path information, output_path = input_folder = '\0'*/
     {
       /*check if user typed .control at the end*/
       if (strcmp(&argv[argc-1][strlen(argv[argc-1])-8], ".control")==0)
@@ -170,10 +174,10 @@ int main(int argc, char** argv)
       {
         strcpy(filename, argv[argc-1]);
       }
-        output_path[0]='\0';
+      output_path[0]='\0';
     }
     else
-    /*--------------------path information for output_path*/
+      /*--------------------path information for output_path*/
     {
       for (i=0;&argv[argc-1][i]!=rindex(argv[argc-1], '/');i++)
       {
@@ -631,6 +635,6 @@ int main(int argc, char** argv)
 
   printf("For testing the new data enter : ./post_visual3 %s%s\n",output_path, filename);
 
-   return 0;
+  return 0;
 }
 

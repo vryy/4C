@@ -26,7 +26,6 @@ A huge part of this file was taken from the file visual_vis2.c.
 #include "post_visual2.h"
 #include "post_visual3.h"
 #include "post_visual3_functions.h"
-#include "post_design.h"
 #include "../post_common/post_common.h"
 #include "../post_common/post_octtree.h"
 

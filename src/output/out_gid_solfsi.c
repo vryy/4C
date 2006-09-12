@@ -168,7 +168,7 @@ void out_gid_sol_fsi(
       dserror("Something is wrong!!");
 
   fprintf(out,"#-------------------------------------------------------------------------------\n");
-  fprintf(out,"# Converged Solution of timestep %d\n",fdyn->step);
+  fprintf(out,"# Converged Solution of timestep %d\n",fsidyn->step);
   fprintf(out,"#-------------------------------------------------------------------------------\n");
 
 
@@ -193,7 +193,7 @@ void out_gid_sol_fsi(
     fprintf(out,"RESULT %cdisplacement%c %cccarat%c %d %s %s\n",
         sign,sign,
         sign,sign,
-        fdyn->step,
+        fsidyn->step,
         resulttype,
         resultplace
         );
@@ -276,16 +276,16 @@ void out_gid_sol_fsi(
           case 3:
             fprintf(out," %6d %18.5E %18.5E %18.5E\n",
                 actnode->Id+1,
-                actanode->sol.a.da[fsidyn->actpos][0],
-                actanode->sol.a.da[fsidyn->actpos][1],
-                actanode->sol.a.da[fsidyn->actpos][2]
+                    actanode->sol.a.da[0 /*fsidyn->actpos*/][0],
+                    actanode->sol.a.da[0 /*fsidyn->actpos*/][1],
+                    actanode->sol.a.da[0 /*fsidyn->actpos*/][2]
                 );
             break;
           case 2:
             fprintf(out," %6d %18.5E %18.5E \n",
                 actnode->Id+1,
-                actanode->sol.a.da[fsidyn->actpos][0],
-                actanode->sol.a.da[fsidyn->actpos][1]
+                    actanode->sol.a.da[0 /*fsidyn->actpos*/][0],
+                    actanode->sol.a.da[0 /*fsidyn->actpos*/][1]
                 );
             break;
           default:
@@ -467,7 +467,7 @@ void out_gid_sol_fsi(
     fprintf(out,"RESULT %cfsiload%c %cccarat%c %d %s %s\n",
         sign,sign,
         sign,sign,
-        fdyn->step,
+        fsidyn->step,
         resulttype,
         resultplace
         );
@@ -537,8 +537,8 @@ void out_gid_sol_fsi(
   /*----------------------------------------------*/
   if (ioflags.fluid_sol==1)
   {
-    out_gid_sol("velocity",fluidfield,disnumf,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
-    out_gid_sol("pressure",fluidfield,disnumf,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
+    out_gid_sol("velocity",fluidfield,disnumf,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
+    out_gid_sol("pressure",fluidfield,disnumf,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
   }
 
 
@@ -548,11 +548,11 @@ void out_gid_sol_fsi(
   /*-----------------------------------------------------------------*/
   if (ioflags.struct_disp==1 && structfield!=NULL)
   {
-    out_gid_sol("velocities",structfield,disnums,actintras,sdyn->step,1,fsidyn->time);
-    out_gid_sol("accelerations",structfield,disnums,actintras,sdyn->step,2,fsidyn->time);
+    out_gid_sol("velocities",structfield,disnums,actintras,fsidyn->step,1,fsidyn->time);
+    out_gid_sol("accelerations",structfield,disnums,actintras,fsidyn->step,2,fsidyn->time);
   }
   if (ioflags.struct_stress==1 && structfield!=NULL)
-    out_gid_sol("stress"      ,structfield,disnums,actintras,sdyn->step,0,fsidyn->time);
+    out_gid_sol("stress"      ,structfield,disnums,actintras,fsidyn->step,0,fsidyn->time);
 
 
 

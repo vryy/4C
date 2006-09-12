@@ -86,6 +86,9 @@ static FLUID_DYNAMIC  *fdyn;
 static ALE_DYNAMIC    *adyn;
 static FSI_DYNAMIC    *fsidyn;
 
+static FSI_FLUID_WORK  fluid_work;
+static FSI_ALE_WORK    ale_work;
+
 INT                    disnumf = 0;
 INT                    disnums = 0;
 INT                    disnuma = 0;
@@ -125,7 +128,7 @@ fsidyn->time=ZERO;
 fsidyn->step=0;
 
 fsidyn->ichecke=0;
-fsidyn->ifsi=-1;
+fsidyn->ifsi=fsi_coupling_freesurface;
 
 fdyn->dt=fsidyn->dt;
 adyn->dt=fsidyn->dt;
@@ -138,9 +141,9 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,fsidyn->nstep,fsidyn->dt,fsidyn->maxtime);
 
 /*------------------------------------------------------ initialise ale */
-fsi_ale(alefield,disnuma,disnuma,mctrl);
+fsi_ale_setup(&ale_work,alefield,disnuma,disnuma);
 /*---------------------------------------------------- initialise fluid */
-fsi_fluid(fluidfield,disnumf,disnumf,mctrl);
+fsi_fluid_setup(&fluid_work,fluidfield,disnumf,disnumf);
 
 if (genprob.restart>0)
 {
@@ -179,12 +182,13 @@ printf("\n");
 }
 
 /*------------------------------- CMD ----------------------------------*/
-fsi_ale(alefield,disnuma,disnuma,mctrl);
+fsi_ale_calc(&ale_work,alefield,disnuma,disnuma,NULL,0);
 /*------------------------------- CFD ----------------------------------*/
-fsi_fluid(fluidfield,disnumf,disnumf,mctrl);
+fsi_fluid_calc(&fluid_work,fluidfield,disnumf,disnumf,alefield,disnuma);
+fsi_fluid_final(&fluid_work,fluidfield,disnumf,disnumf);
 /*------------------------------- CMD ----------------------------------*/
 mctrl=3; /*------------------------------------ finalise ALE - timestep */
-fsi_ale(alefield,disnuma,disnuma,mctrl);
+fsi_ale_final(&ale_work,alefield,disnuma,disnuma);
 
 /*--------------------------------------- write current solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
@@ -205,8 +209,8 @@ if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
  *======================================================================*/
 cleaningup:
 mctrl=99;
-fsi_fluid(fluidfield,disnumf,disnumf,mctrl);
-fsi_ale(alefield,disnuma,disnuma,mctrl);
+fsi_fluid_cleanup(&fluid_work,fluidfield,disnumf,disnumf);
+fsi_ale_cleanup(&ale_work,alefield,disnuma,disnuma);
 
 #else
 dserror("FSI-functions not compiled in!\n");

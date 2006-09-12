@@ -14,5 +14,5 @@ Maintainer: Ulrich Kuettler
 
 */
 
-#include "post_visual3.h"
+#include "post_common.h"
 #include "../pss_full/pss_set.c"

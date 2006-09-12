@@ -568,7 +568,7 @@ void read_1_dsurf(
 
 {
 
-  INT    i,j,ierr;
+  INT    i,j,ierr,ierr2;
   char   buffer[100];
   INT    endloop;
 
@@ -579,245 +579,301 @@ void read_1_dsurf(
 
 
   ierr=0;
+  ierr2=0;
   frchk("NURBSURFACE",&ierr);
-  while (!ierr) {frread(); frchk("NURBSURFACE",&ierr);}
-
-  dsurf->typ = nurbsurf;
-
-  /* read surf number */
-  frchk("Num:",&ierr);
-  while (!ierr) {frread(); frchk("Num:",&ierr);}
-  frint("Num:",&i,&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-  if (i != readId) dserror("DSURF got mixed up");
-
-  /* read number of conditions to this surf */
-  frint("conditions:",&(dsurf->ncond),&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-
-  /* read dlines connected to this surf */
-  frchk("NumLines:",&ierr);
-  while (!ierr) {frread(); frchk("NumLines:",&ierr);}
-  frint("NumLines:",&(dsurf->ndline),&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-  amdef("my_dlineIDs",&(dsurf->my_dlineId),dsurf->ndline,2,"IA");
-
-  frchk("Line:",&ierr);
-  while (!ierr) {frread(); frchk("Line:",&ierr);}
-  for (i=0; i<dsurf->ndline; i++)
+  frchk("MESHSURFACE",&ierr2);
+  while (!ierr && !ierr2)
   {
-    frint("Line:",&(dsurf->my_dlineId.a.ia[i][0]),&ierr);
-    if (!ierr) dserror("Cannot read DSURF");
-    dsurf->my_dlineId.a.ia[i][0]--;
-    frchar("Orientation:",buffer,&ierr);
-    if (!ierr) dserror("Cannot read DSURF");
-    if (strncmp("SAME1ST",buffer,7)==0) dsurf->my_dlineId.a.ia[i][1]=0;
-    else                                dsurf->my_dlineId.a.ia[i][1]=1;
     frread();
+    frchk("NURBSURFACE",&ierr);
+    frchk("MESHSURFACE",&ierr2);
   }
 
-
-  /* allocate nurbsurf porperties */
-  dsurf->props.nurbsurf = (NURBSURF*)CCACALLOC(1,sizeof(NURBSURF));
-  if (dsurf->props.nurbsurf==NULL) dserror("Allocation of dsurf failed");
-
-  /* find "Number of Control Points" */
-  frchk("Number of Control Points",&ierr);
-  while (!ierr) {frread(); frchk("Number of Control Points",&ierr);}
-
-  /* read "Number of Control Points" */
-  frint_n("Number of Control Points=",dsurf->props.nurbsurf->num_cp,2,&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-  /* read degree */
-  frint_n("Degree=",dsurf->props.nurbsurf->degree,2,&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-
-
-  /* ---------------- *
-   *  Control points  *
-   * ---------------- */
-
-  /* allocate cp */
-  dsurf->props.nurbsurf->cp       =
-    (DOUBLE***)
-    CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*sizeof(DOUBLE**)));
-
-  dsurf->props.nurbsurf->cp[0]    =
-    (DOUBLE**)
-    CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1]*sizeof(DOUBLE*)));
-
-  dsurf->props.nurbsurf->cp[0][0] =
-    (DOUBLE*)
-    CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1]*3*sizeof(DOUBLE)));
-
-  for (i=1; i<dsurf->props.nurbsurf->num_cp[0]; i++)
-    dsurf->props.nurbsurf->cp[i]    =
-      &(dsurf->props.nurbsurf->cp[0][i*dsurf->props.nurbsurf->num_cp[1]]);
-
-  endloop=dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1];
-  for (i=1; i<endloop; i++)
-    dsurf->props.nurbsurf->cp[0][i] = &(dsurf->props.nurbsurf->cp[0][0][i*3]);
-
-
-  /* read cp's */
-  for (j=0; j<dsurf->props.nurbsurf->num_cp[1]; j++)
+  if (ierr != 0)
   {
-    for (i=0; i<dsurf->props.nurbsurf->num_cp[0]; i++)
+    dsurf->typ = nurbsurf;
+
+    /* read surf number */
+    frchk("Num:",&ierr);
+    while (!ierr) {frread(); frchk("Num:",&ierr);}
+    frint("Num:",&i,&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+    if (i != readId) dserror("DSURF got mixed up");
+
+    /* read number of conditions to this surf */
+    frint("conditions:",&(dsurf->ncond),&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+
+    /* read dlines connected to this surf */
+    frchk("NumLines:",&ierr);
+    while (!ierr) {frread(); frchk("NumLines:",&ierr);}
+    frint("NumLines:",&(dsurf->ndline),&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+    amdef("my_dlineIDs",&(dsurf->my_dlineId),dsurf->ndline,2,"IA");
+
+    frchk("Line:",&ierr);
+    while (!ierr) {frread(); frchk("Line:",&ierr);}
+    for (i=0; i<dsurf->ndline; i++)
     {
-      /* read next line */
-      frread();
-      frdouble_n("coords:",dsurf->props.nurbsurf->cp[i][j],3,&ierr);
+      frint("Line:",&(dsurf->my_dlineId.a.ia[i][0]),&ierr);
       if (!ierr) dserror("Cannot read DSURF");
+      dsurf->my_dlineId.a.ia[i][0]--;
+      frchar("Orientation:",buffer,&ierr);
+      if (!ierr) dserror("Cannot read DSURF");
+      if (strncmp("SAME1ST",buffer,7)==0) dsurf->my_dlineId.a.ia[i][1]=0;
+      else                                dsurf->my_dlineId.a.ia[i][1]=1;
+      frread();
     }
-  }
 
 
+    /* allocate nurbsurf porperties */
+    dsurf->props.nurbsurf = (NURBSURF*)CCACALLOC(1,sizeof(NURBSURF));
+    if (dsurf->props.nurbsurf==NULL) dserror("Allocation of dsurf failed");
 
-  /* ---------------------- *
-   *  Knots in U direction  *
-   * ---------------------- */
+    /* find "Number of Control Points" */
+    frchk("Number of Control Points",&ierr);
+    while (!ierr) {frread(); frchk("Number of Control Points",&ierr);}
 
-  /* find "Number of knots in U" */
-  frchk("Number of knots in U",&ierr);
-  while (!ierr) {frread(); frchk("Number of knots in U",&ierr);}
-
-  /* read "Number of knots in U" */
-  frint("Number of knots in U=",&(dsurf->props.nurbsurf->num_knots[0]),&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-  /* allocate knots */
-  dsurf->props.nurbsurf->knots[0] =
-    (DOUBLE*)CCAMALLOC((dsurf->props.nurbsurf->num_knots[0]*sizeof(DOUBLE)));
-
-  /* read knots */
-  for (i=0; i<dsurf->props.nurbsurf->num_knots[0]; i++)
-  {
-    /* read next line */
-    frread();
-    frdouble("value=",&(dsurf->props.nurbsurf->knots[0][i]),&ierr);
+    /* read "Number of Control Points" */
+    frint_n("Number of Control Points=",dsurf->props.nurbsurf->num_cp,2,&ierr);
     if (!ierr) dserror("Cannot read DSURF");
-  }
 
-
-
-  /* ---------------------- *
-   *  Knots in V direction  *
-   * ---------------------- */
-
-  /* find "Number of knots in V" */
-  frchk("Number of knots in V",&ierr);
-  while (!ierr) {frread(); frchk("Number of knots in V",&ierr);}
-
-  /* read "Number of knots in V" */
-  frint("Number of knots in V=",&(dsurf->props.nurbsurf->num_knots[1]),&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-  /* allocate knots */
-  dsurf->props.nurbsurf->knots[1] =
-    (DOUBLE*)CCAMALLOC((dsurf->props.nurbsurf->num_knots[1]*sizeof(DOUBLE)));
-
-  /* read knots */
-  for (i=0; i<dsurf->props.nurbsurf->num_knots[1]; i++)
-  {
-    /* read next line */
-    frread();
-    frdouble("value=",&(dsurf->props.nurbsurf->knots[1][i]),&ierr);
+    /* read degree */
+    frint_n("Degree=",dsurf->props.nurbsurf->degree,2,&ierr);
     if (!ierr) dserror("Cannot read DSURF");
-  }
 
 
 
+    /* ---------------- *
+     *  Control points  *
+     * ---------------- */
 
-  /* ------------------ *
-   *  Rational Weights  *
-   * ------------------ */
+    /* allocate cp */
+    dsurf->props.nurbsurf->cp       =
+      (DOUBLE***)
+      CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*sizeof(DOUBLE**)));
 
-  /* allocate weights */
-  dsurf->props.nurbsurf->weights =
-    (DOUBLE**)
-    CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*sizeof(DOUBLE*)));
+    dsurf->props.nurbsurf->cp[0]    =
+      (DOUBLE**)
+      CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1]*sizeof(DOUBLE*)));
 
-  dsurf->props.nurbsurf->weights[0] =
-    (DOUBLE*)
-    CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1]*sizeof(DOUBLE)));
+    dsurf->props.nurbsurf->cp[0][0] =
+      (DOUBLE*)
+      CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1]*3*sizeof(DOUBLE)));
 
-  for (i=1; i<dsurf->props.nurbsurf->num_cp[0]; i++)
-    dsurf->props.nurbsurf->weights[i] =
-      &(dsurf->props.nurbsurf->weights[0][i*dsurf->props.nurbsurf->num_cp[1]]);
+    for (i=1; i<dsurf->props.nurbsurf->num_cp[0]; i++)
+      dsurf->props.nurbsurf->cp[i]    =
+        &(dsurf->props.nurbsurf->cp[0][i*dsurf->props.nurbsurf->num_cp[1]]);
 
-
-  /* find "ational" */
-  frchk("ational",&ierr);
-  while (!ierr) {frread(); frchk("ational",&ierr);}
+    endloop=dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1];
+    for (i=1; i<endloop; i++)
+      dsurf->props.nurbsurf->cp[0][i] = &(dsurf->props.nurbsurf->cp[0][0][i*3]);
 
 
-  frchk("Rational weights:",&ierr);
-  if (ierr==1)
-  {
-    dsurf->props.nurbsurf->rational = 1;
-
-    /* read weights */
+    /* read cp's */
     for (j=0; j<dsurf->props.nurbsurf->num_cp[1]; j++)
     {
       for (i=0; i<dsurf->props.nurbsurf->num_cp[0]; i++)
       {
         /* read next line */
         frread();
-        frdouble("",&(dsurf->props.nurbsurf->weights[i][j]),&ierr);
+        frdouble_n("coords:",dsurf->props.nurbsurf->cp[i][j],3,&ierr);
         if (!ierr) dserror("Cannot read DSURF");
       }
     }
-  }
 
 
-  frchk("Non rational",&ierr);
-  if (ierr==1)
-  {
-    dsurf->props.nurbsurf->rational = 0;
 
-    for (i=0; i<dsurf->props.nurbsurf->num_cp[0]; i++)
+    /* ---------------------- *
+     *  Knots in U direction  *
+     * ---------------------- */
+
+    /* find "Number of knots in U" */
+    frchk("Number of knots in U",&ierr);
+    while (!ierr) {frread(); frchk("Number of knots in U",&ierr);}
+
+    /* read "Number of knots in U" */
+    frint("Number of knots in U=",&(dsurf->props.nurbsurf->num_knots[0]),&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+    /* allocate knots */
+    dsurf->props.nurbsurf->knots[0] =
+      (DOUBLE*)CCAMALLOC((dsurf->props.nurbsurf->num_knots[0]*sizeof(DOUBLE)));
+
+    /* read knots */
+    for (i=0; i<dsurf->props.nurbsurf->num_knots[0]; i++)
+    {
+      /* read next line */
+      frread();
+      frdouble("value=",&(dsurf->props.nurbsurf->knots[0][i]),&ierr);
+      if (!ierr) dserror("Cannot read DSURF");
+    }
+
+
+
+    /* ---------------------- *
+     *  Knots in V direction  *
+     * ---------------------- */
+
+    /* find "Number of knots in V" */
+    frchk("Number of knots in V",&ierr);
+    while (!ierr) {frread(); frchk("Number of knots in V",&ierr);}
+
+    /* read "Number of knots in V" */
+    frint("Number of knots in V=",&(dsurf->props.nurbsurf->num_knots[1]),&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+    /* allocate knots */
+    dsurf->props.nurbsurf->knots[1] =
+      (DOUBLE*)CCAMALLOC((dsurf->props.nurbsurf->num_knots[1]*sizeof(DOUBLE)));
+
+    /* read knots */
+    for (i=0; i<dsurf->props.nurbsurf->num_knots[1]; i++)
+    {
+      /* read next line */
+      frread();
+      frdouble("value=",&(dsurf->props.nurbsurf->knots[1][i]),&ierr);
+      if (!ierr) dserror("Cannot read DSURF");
+    }
+
+
+
+
+    /* ------------------ *
+     *  Rational Weights  *
+     * ------------------ */
+
+    /* allocate weights */
+    dsurf->props.nurbsurf->weights =
+      (DOUBLE**)
+      CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*sizeof(DOUBLE*)));
+
+    dsurf->props.nurbsurf->weights[0] =
+      (DOUBLE*)
+      CCAMALLOC((dsurf->props.nurbsurf->num_cp[0]*dsurf->props.nurbsurf->num_cp[1]*sizeof(DOUBLE)));
+
+    for (i=1; i<dsurf->props.nurbsurf->num_cp[0]; i++)
+      dsurf->props.nurbsurf->weights[i] =
+        &(dsurf->props.nurbsurf->weights[0][i*dsurf->props.nurbsurf->num_cp[1]]);
+
+
+    /* find "ational" */
+    frchk("ational",&ierr);
+    while (!ierr) {frread(); frchk("ational",&ierr);}
+
+
+    frchk("Rational weights:",&ierr);
+    if (ierr==1)
+    {
+      dsurf->props.nurbsurf->rational = 1;
+
+      /* read weights */
       for (j=0; j<dsurf->props.nurbsurf->num_cp[1]; j++)
-        dsurf->props.nurbsurf->weights[i][j] = 1.0;
+      {
+        for (i=0; i<dsurf->props.nurbsurf->num_cp[0]; i++)
+        {
+          /* read next line */
+          frread();
+          frdouble("",&(dsurf->props.nurbsurf->weights[i][j]),&ierr);
+          if (!ierr) dserror("Cannot read DSURF");
+        }
+      }
+    }
 
+
+    frchk("Non rational",&ierr);
+    if (ierr==1)
+    {
+      dsurf->props.nurbsurf->rational = 0;
+
+      for (i=0; i<dsurf->props.nurbsurf->num_cp[0]; i++)
+        for (j=0; j<dsurf->props.nurbsurf->num_cp[1]; j++)
+          dsurf->props.nurbsurf->weights[i][j] = 1.0;
+
+    }
+
+
+    /* find "IsTrimmed" */
+    frchk("IsTrimmed",&ierr);
+    while (!ierr) {frread(); frchk("IsTrimmed",&ierr);}
+
+    /* read "IsTrimmed" */
+    frint("IsTrimmed:",&(dsurf->props.nurbsurf->istrimmed),&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+
+
+    /* find "Center:" */
+    frchk("Center:",&ierr);
+    while (!ierr) {frread(); frchk("Center:",&ierr);}
+
+    /* read "Center:" */
+    frdouble("Center:",dsurf->props.nurbsurf->center,&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+
+    /* find "Normal:" */
+    frchk("Normal:",&ierr);
+    while (!ierr) {frread(); frchk("Normal:",&ierr);}
+
+    /* read "Normal:" */
+    frdouble("Normal:",dsurf->props.nurbsurf->normal,&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+
+
+    frchk("END NURBSURFACE",&ierr);
+    while (!ierr) {frread(); frchk("END NURBSURFACE",&ierr);}
+    frread();
   }
+  else if (ierr2 != 0)
+  {
+    dsurf->typ = meshsurf;
+
+    /* read surf number */
+    frchk("Num:",&ierr);
+    while (!ierr) {frread(); frchk("Num:",&ierr);}
+    frint("Num:",&i,&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+
+    if (i != readId) dserror("DSURF got mixed up");
+
+    /* read number of conditions to this surf */
+    frint("conditions:",&(dsurf->ncond),&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
 
 
-  /* find "IsTrimmed" */
-  frchk("IsTrimmed",&ierr);
-  while (!ierr) {frread(); frchk("IsTrimmed",&ierr);}
+    /* read dlines connected to this surf */
+    frchk("NumLines:",&ierr);
+    while (!ierr) {frread(); frchk("NumLines:",&ierr);}
+    frint("NumLines:",&(dsurf->ndline),&ierr);
+    if (!ierr) dserror("Cannot read DSURF");
+    amdef("my_dlineIDs",&(dsurf->my_dlineId),dsurf->ndline,2,"IA");
 
-  /* read "IsTrimmed" */
-  frint("IsTrimmed:",&(dsurf->props.nurbsurf->istrimmed),&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
+    frchk("Line:",&ierr);
+    while (!ierr) {frread(); frchk("Line:",&ierr);}
+    for (i=0; i<dsurf->ndline; i++)
+    {
+      frint("Line:",&(dsurf->my_dlineId.a.ia[i][0]),&ierr);
+      if (!ierr) dserror("Cannot read DSURF");
+      dsurf->my_dlineId.a.ia[i][0]--;
+      frchar("Orientation:",buffer,&ierr);
+      if (!ierr) dserror("Cannot read DSURF");
+      if (strncmp("SAME1ST",buffer,7)==0) dsurf->my_dlineId.a.ia[i][1]=0;
+      else                                dsurf->my_dlineId.a.ia[i][1]=1;
+      frread();
+    }
 
+    /* "Flag: 0" is supposed to be the last line in each meshsurf entry. */
+    frchk("Flag: 0",&ierr);
+    while (!ierr) {frread(); frchk("Flag: 0",&ierr);}
+    frread();
+  }
+  else
+    dserror("confused while reading design surfaces");
 
-
-  /* find "Center:" */
-  frchk("Center:",&ierr);
-  while (!ierr) {frread(); frchk("Center:",&ierr);}
-
-  /* read "Center:" */
-  frdouble_n("Center:",dsurf->props.nurbsurf->center,3,&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-
-  /* find "Normal:" */
-  frchk("Normal:",&ierr);
-  while (!ierr) {frread(); frchk("Normal:",&ierr);}
-
-  /* read "Normal:" */
-  frdouble_n("Normal:",dsurf->props.nurbsurf->normal,3,&ierr);
-  if (!ierr) dserror("Cannot read DSURF");
-
-
-
-  frchk("END NURBSURFACE",&ierr);
-  while (!ierr) {frread(); frchk("END NURBSURFACE",&ierr);}
-  frread();
   /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();

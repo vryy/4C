@@ -108,7 +108,7 @@ extern struct _WALL_CONTACT contact;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-DOUBLE acttime;
+extern DOUBLE acttime;
 
 /*----------------------------------------------------------------------------*
  |  routine to control nonlinear dynamic structural analysis(GEMM) m.gee 02/02|

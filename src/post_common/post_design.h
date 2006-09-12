@@ -1,9 +1,8 @@
-/*-----------------------------------------*/
-/*If there is any design information we got /
- *to use it!                               */
 
-#include "post_visual3.h"
-#include "../post_common/post_common.h"
+/* If there is any design information we got to use it! */
+
+/* #include "post_visual3.h" */
+#include "post_common.h"
 
 void post_read_dnodes(POST_DISCRETIZATION* discret,
                       INT* dnode_info);

@@ -75,9 +75,9 @@ dstrc_enter("w1_call_mat");
      /*---- szz ist zwar nicht Null, wird aber nicht gebraucht ---*/
       stress[3]=0.0;
      break;
-     
+
      case rotat_symmet:
-      disd2=(disd[2]+disd[3]);           
+      disd2=(disd[2]+disd[3]);
       stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2+d[0][3]*disd[4];
       stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2+d[1][3]*disd[4];
       stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2+d[2][3]*disd[4];

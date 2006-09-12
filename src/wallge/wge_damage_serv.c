@@ -72,9 +72,9 @@ case 2:
   {
     *damage    = 0.0;
     *dam_deriv = 0.0;
-     # if 0
+# if 0
      printf(" Elastisch: D=%le\n",*damage);
-     # endif
+# endif
   }
   /*-------------------------------------------------------- damaged ---*/
   else
@@ -82,9 +82,9 @@ case 2:
     *damage    = 1 - (kappa_0*(1-alpha+alpha*exp(beta*kappa_0-beta*kappa)))/kappa;
     *dam_deriv = (kappa_0*(1-alpha))/(kappa*kappa)
                + (alpha*kappa_0*exp(beta*kappa_0-beta*kappa))*(beta/kappa+1/(kappa*kappa));
-     # if 0
+# if 0
      printf(" Schaedigung: D=%le\n",*damage);
-     # endif
+# endif
   }
 break;
 /*----------------------------------------------------------------------*/

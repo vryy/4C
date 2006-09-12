@@ -245,8 +245,7 @@ void fluid_heightfunc(
     INTRA              *actintra,
     CALC_ACTION        *action,
     CONTAINER          *container,
-    ARRAY_POSITION     *ipos,
-    INT                 converged
+    ARRAY_POSITION     *ipos
     );
 
 
@@ -559,6 +558,7 @@ void fluid_reducestress(
 
 void fluid_cal_error(
     FIELD              *actfield,
+    INT                 disnum,
     ARRAY_POSITION     *ipos,
     INT                 index
     );

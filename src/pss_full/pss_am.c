@@ -1722,10 +1722,10 @@ return((void*)(array->a.d3));
 } /* end of am4redef */
 
 
-void amprint(ARRAY *a,INT fdim, INT sdim)
+void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim)
 {
 INT i,j;
-FILE *err=allfiles.out_err;
+/* FILE *err=allfiles.out_err; */
 
 #ifdef DEBUG
 dstrc_enter("amprint");
@@ -1745,7 +1745,7 @@ case cca_DA: /* -------------------------------------------DOUBLE array */
       fprintf(err,"%3d: ",i);
       for(j=0;j<sdim;j++)
       {
-         fprintf(err,"%6.16lf ",a->a.da[i][j]);
+         fprintf(err,"% 26.10e ",a->a.da[i][j]);
       }
       fprintf(err,"\n");
    }
@@ -1766,7 +1766,7 @@ case cca_DV: /* ------------------------------------------DOUBLE vector */
    for (i=0;i<fdim;i++)
    {
       fprintf(err,"%3d: ",i);
-      fprintf(err,"%6.16lf ",a->a.dv[i]);
+      fprintf(err,"% 26.10e ",a->a.dv[i]);
       fprintf(err,"\n");
    }
 break;

@@ -38,9 +38,9 @@ void w1_inverse_matrix
   static ARRAY    Ycopy_a;
   static DOUBLE **Ycopy;
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("w1_inverse_matrix");
-  #endif
+#endif
   /*----------------------------------------------------------------------*/
   col   = amdef("col"  ,&col_a  ,N+1,1,"DV");
   indx  = amdef("indx" ,&indx_a ,N+1,1,"IV");
@@ -80,9 +80,9 @@ void w1_inverse_matrix
   amdel(&Acopy_a);
   amdel(&Ycopy_a);
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
   return;
 } /* end of w1_inverse_matrix */
 
@@ -103,9 +103,9 @@ void w1_ludcmp(DOUBLE **a, /* I: Original Matrix (will be rearanged)     */
   DOUBLE big,dum,sum,temp;
   DOUBLE *vv;
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("w1_ludcmp");
-  #endif
+#endif
   /*----------------------------------------------------------------------*/
 
   vv=w1_vector(1,n);
@@ -152,9 +152,9 @@ void w1_ludcmp(DOUBLE **a, /* I: Original Matrix (will be rearanged)     */
   }
   w1_free_vector(vv,1);
   /*------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 }/* end of w1_ludcmp */
 #undef TINY
 #undef NRANSI
@@ -170,9 +170,9 @@ void w1_lubksb(DOUBLE **a,      /* I: LU-decomposed matrix                 */
   INT i,ii=0,ip,j;
   DOUBLE sum;
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_enter("w1_lubksb");
-  #endif
+#endif
   /*----------------------------------------------------------------------*/
   for (i=1;i<=n;i++) {
         ip=indx[i];
@@ -189,9 +189,9 @@ void w1_lubksb(DOUBLE **a,      /* I: LU-decomposed matrix                 */
         b[i]=sum/a[i][i];
   }
   /*---------------------------------------------------------------------*/
-  #ifdef DEBUG
+#ifdef DEBUG
   dstrc_exit();
-  #endif
+#endif
 }/* end of w1_lubksb */
 
 #define NR_END 1

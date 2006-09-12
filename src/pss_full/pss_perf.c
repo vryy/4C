@@ -478,7 +478,6 @@ void perf_out ()
   /* for the sequential case just print the timers to the screen and the error file */
 #ifndef PARALLEL
 
-
   /* print out the headings */
   fprintf(err, "\n%2s %25s: %7s %12s %5s%3s\n",
       "ID",
