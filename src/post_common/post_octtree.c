@@ -1,8 +1,6 @@
 
 #include "post_octtree.h"
 
-#ifdef D_FSI
-
 /*-----------------------------------------------------------------------*/
 /*!
   \brief Split the octree leaf
@@ -487,5 +485,3 @@ void post_fsi_initcoupling(POST_DISCRETIZATION* struct_discret,
 #endif
   return;
 }
-
-#endif
