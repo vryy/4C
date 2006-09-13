@@ -2019,11 +2019,17 @@ void out_write_chunk(BIN_OUT_FIELD *context,
   if (!restart)
   {
 
+    /*
+     * There is the odd test Input/w1dyn.dat with just one element. This
+     * means no element at all for the second processor in a parallel
+     * test. We cannot handle that! That's ill posed. */
+    dsassert(chunk->num > 0, "empty partitions not supported");
+
     /* find min/max values */
     /* We do a reverse loop here because the symbols have to be
      * ordered in the control file and map_insert_real_cpy adds its
      * symbol to the front of the list. */
-    for (i=chunk->value_count-1; i>=0; --i)
+    for (i=chunk->value_entry_length-1; i>=0; --i)
     {
       INT j;
       DOUBLE minvalue;
@@ -2034,8 +2040,8 @@ void out_write_chunk(BIN_OUT_FIELD *context,
 
       for (j=1; j<chunk->num; ++j)
       {
-        minvalue = MIN(minvalue, chunk->out_values[j*chunk->value_count+i]);
-        maxvalue = MAX(maxvalue, chunk->out_values[j*chunk->value_count+i]);
+        minvalue = MIN(minvalue, chunk->out_values[j*chunk->value_entry_length+i]);
+        maxvalue = MAX(maxvalue, chunk->out_values[j*chunk->value_entry_length+i]);
       }
 
 #ifdef PARALLEL
@@ -2057,7 +2063,7 @@ void out_write_chunk(BIN_OUT_FIELD *context,
       }
     }
 
-    if (chunk->value_count>0)
+    if (chunk->value_entry_length>0)
     {
       DOUBLE min_abs = 1e100;
       DOUBLE max_abs = 0;
@@ -2066,10 +2072,10 @@ void out_write_chunk(BIN_OUT_FIELD *context,
       {
         INT j;
         DOUBLE norm = 0;
-        for (j=0; j<chunk->value_count && j<genprob.ndim; ++j)
+        for (j=0; j<chunk->value_entry_length && j<genprob.ndim; ++j)
         {
-          norm += (chunk->out_values[i*chunk->value_count+j] *
-                   chunk->out_values[i*chunk->value_count+j]);
+          norm += (chunk->out_values[i*chunk->value_entry_length+j] *
+                   chunk->out_values[i*chunk->value_entry_length+j]);
         }
         norm = sqrt(norm);
         min_abs = MIN(min_abs, norm);
