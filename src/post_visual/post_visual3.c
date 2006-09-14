@@ -23,15 +23,13 @@ A huge part of this file was taken from the file visual_vis3.c.
 
 #include <ctype.h>
 #include <stdio.h>
-#include "post_visual3.h"
-#include "post_visual3_functions.h"
-#include "../post_common/post_common.h"
-#include "../post_common/post_design.h"
-#include "../post_common/post_octtree.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include "post_visual3.h"
+#include "post_visual3_functions.h"
 
 
 int strcpb(char *str1, char *str2, int len);
@@ -169,22 +167,25 @@ void vis3caf(INT numff, INT numaf, INT numsf)
   FILE* test;
   char TITL[10]="Picture";
   char TKEYS[NKEYS][16];
-  strcpy(TKEYS[0], "VELOCITY Ux     ");
-  strcpy(TKEYS[1], "VELOCITY Uy     ");
-  strcpy(TKEYS[2], "VELOCITY Uz     ");
-  strcpy(TKEYS[3], "PRESSURE        ");
-  strcpy(TKEYS[4], "FLOW VECTORS    ");
-  strcpy(TKEYS[5], "ABS VEL         ");
-  strcpy(TKEYS[6], "MOVIE CREATION  ");
-  strcpy(TKEYS[7], "DISPLACEMENT Dx ");
-  strcpy(TKEYS[8], "DISPLACEMENT Dy ");
-  strcpy(TKEYS[9], "DISPLACEMENT Dz ");
-  strcpy(TKEYS[10],"ABS DIS         ");
-  strcpy(TKEYS[11],"TOGGLE MOV 3D/2D");
+  char path[256];
 
 #ifdef DEBUG
   dstrc_enter("vis3caf");
 #endif
+
+  memcpy(TKEYS[0],
+         "VELOCITY Ux     "
+         "VELOCITY Uy     "
+         "VELOCITY Uz     "
+         "PRESSURE        "
+         "FLOW VECTORS    "
+         "ABS VEL         "
+         "MOVIE CREATION  "
+         "DISPLACEMENT Dx "
+         "DISPLACEMENT Dy "
+         "DISPLACEMENT Dz "
+         "ABS DIS         "
+         "TOGGLE MOV 3D/2D", NKEYS*16);
 
   /* Setting up the right colourtable.
    *
@@ -195,15 +196,16 @@ void vis3caf(INT numff, INT numaf, INT numsf)
    *       1  :  white background
    *       2  :  grey colourscale */
 
-  char path[strlen(getenv("HOME"))+25];  /*   +25 = strlen(/.Visual3/spec_black.col)+1  */
   strcpy(path, getenv("HOME"));
   strcat(path, "/.Visual3/");
 
   /*check if .Visual3 folder exists, if not --> mkdir*/
   if (stat(path, &folder_check)==-1)
   {
-    if (mkdir(path, S_IRWXU)==0) printf("\n  Created directory %s  \n", path);
-    else dserror("ERROR WHILE TRYING TO CREATE FOLDER : %s", path);
+    if (mkdir(path, S_IRWXU)==0)
+      printf("\n  Created directory %s  \n", path);
+    else
+      dserror("ERROR WHILE TRYING TO CREATE FOLDER : %s", path);
   }
 
   switch(COLOUR)
@@ -277,7 +279,6 @@ void vis3caf(INT numff, INT numaf, INT numsf)
 
   for (j=0;j<num_discr;j++) /*loop all discretizations*/
   {
-
     actele = &(discret[j].element[0]);
     distyp = actele->distyp;
 
@@ -2569,7 +2570,6 @@ int main(int argc, char** argv)
   discret = (POST_DISCRETIZATION*)CCACALLOC(problem.num_discr,
                                             sizeof(POST_DISCRETIZATION));
 
-
   numnp_tot = (INT*)CCACALLOC(problem.num_discr, sizeof(INT));
 
   /* Iterate all discretizations. */
@@ -2596,7 +2596,6 @@ int main(int argc, char** argv)
     }
     else
       printf("  fluid has got no design information\n");
-
   }
 
   /*--------------------------------------------------------------------*/
@@ -2613,8 +2612,6 @@ int main(int argc, char** argv)
   }
 
   printf("  There are %d sets of results.\n", nsteps);
-
-
 
   /* create time array */
   amdef("time",&time_a,nsteps,1,"DV");

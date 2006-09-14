@@ -23,6 +23,12 @@ For visual we indeed do load all the results at once.
 #ifndef POST_OUT_H
 #define POST_OUT_H
 
+/* Include these first. */
+
+#include "../post_common/post_common.h"
+#include "../post_common/post_design.h"
+#include "../post_common/post_octtree.h"
+
 /* The following stems from the visual3 header file. */
 
 #ifdef mips

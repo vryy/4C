@@ -2,9 +2,6 @@
 #define POST_VISUAL3_FUNCTIONS_H
 
 #include "post_visual3.h"
-#include "../post_common/post_common.h"
-#include "../post_common/post_octtree.h"
-#include "../headers/standardtypes.h"
 
 void find_data_limits(POST_DISCRETIZATION* discret,
                       INT num_discr,

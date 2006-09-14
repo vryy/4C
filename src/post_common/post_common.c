@@ -27,7 +27,7 @@ functions.
 #include <assert.h>
 #include <strings.h>
 #include <stdarg.h>
-#include "../headers/standardtypes.h"
+
 #include "post_common.h"
 #include "post_octtree.h"
 
