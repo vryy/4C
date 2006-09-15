@@ -202,6 +202,7 @@ container.disnum  = disnum;                /* only one discretisation */
 #ifdef DEBUG
 dstrc_enter("dyn_nln_structural");
 #endif
+
 /*----------------------------------------------------------------------*/
 restart = genprob.restart;
 /*--------------------------------------------------- set some pointers */

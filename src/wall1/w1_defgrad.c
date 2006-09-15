@@ -22,6 +22,15 @@ Maintainer: Andrea Hund
 
 /*----------------------------------------------------------------------*
  | calc deformation gradient and GL strain  at gausian point r,s  ah06/02|
+ |                                                                      |
+ |    *F        DOUBLE    (o)    Deformation gradient                   |
+ |    *strain   DOUBLE    (o)    2nd Piola-Kirchhoff strain vector      |
+ |   **xrefe    DOUBLE    (i)    Reference/material coordinates of      |
+ |                                 element nodes                        |
+ |   **xcure    DOUBLE    (i)    Current/spatial coordinates of         |
+ |                                 element nodes                        |
+ |   **boplin   DOUBLE    (i)    `Linear' B-operator                    |
+ |     iel      INT       (i)    Number of element nodes                |
  *----------------------------------------------------------------------*/
 void w1_defgrad(DOUBLE    *F,
                 DOUBLE    *strain,

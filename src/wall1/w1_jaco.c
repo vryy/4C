@@ -23,9 +23,9 @@ Maintainer: Andrea Hund
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
-void w1_jaco(DOUBLE    **deriv,
-             DOUBLE    **xjm,
-             DOUBLE     *det,
+void w1_jaco(DOUBLE    **deriv, /* natural derivatives of shape functions at point r,s */
+             DOUBLE    **xjm,  /* Jacobi matrix at r,s (isoparametric concept) */
+             DOUBLE     *det,  /* Jacobi determinant at r,s */
              ELEMENT    *ele,
              INT         iel)
 {

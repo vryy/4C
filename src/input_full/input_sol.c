@@ -74,6 +74,11 @@ break;
 case ale:
 if (frfind("-ALE SOLVER")==0) goto end;
 break;
+#ifdef D_TSI
+case thermal:
+if (frfind("-THERMAL SOLVER")==0) goto end;
+break;
+#endif D_TSI
 default:
    dserror("Unknown field typ in reading solver");
 break;

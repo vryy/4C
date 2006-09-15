@@ -35,6 +35,10 @@
 #include "../ssi_full/ssi_prototypes.h"
 #endif
 
+#ifdef D_THERM2
+#include "../therm2/therm2.h"
+#endif
+
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01  |
   | general problem data                                               |
@@ -419,6 +423,16 @@ void calelm(FIELD        *actfield,     /* active field */
    break;
 #endif
 
+#ifdef D_THERM2
+      case el_therm2:
+        container->handsize = 0;
+        container->handles  = NULL;
+        therm2(actpart,actintra,actele,
+            &estif_global,&emass_global,&intforce_global,
+            action, container);
+        break;
+#endif
+
    case el_none:
       dserror("Typ of element unknown");
    break;
@@ -471,6 +485,11 @@ void calelm(FIELD        *actfield,     /* active field */
    case calc_fluid_f2pro            : assemble_action = assemble_two_matrix; break;
    case calc_fluid_amatrix          : assemble_action = assemble_do_nothing; break;
    case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_matrix; break;
+#ifdef D_TSI
+   case calc_therm_stiff            : assemble_action = assemble_one_matrix; break;
+   case calc_therm_heatload         : assemble_action = assemble_do_nothing; break;
+   case calc_therm_heatflux         : assemble_action = assemble_do_nothing; break;
+#endif
    default: assemble_action = assemble_do_nothing;
             dserror("Unknown type of assembly 1"); break;
    }
@@ -561,10 +580,6 @@ void calelm(FIELD        *actfield,     /* active field */
       container->dvec=NULL;
    break;
 #endif
-
-
-
-
 #ifdef D_ALE
       case ale:
         if (container->dirich && container->isdyn == 1)
@@ -576,6 +591,20 @@ void calelm(FIELD        *actfield,     /* active field */
                 container->pos);
         }
         break;
+#endif
+#ifdef D_TSI
+   case thermal:
+      /*------------------ assemble internal force or external forces */
+      if (container->dvec)
+      assemble_intforce(actele,&intforce_global,container,actintra);
+      /*--- assemble the rhs vector of condensed dirichlet conditions */
+      /* static case */
+      if (container->dirich && container->isdyn==0)
+      assemble_dirich(actele,&estif_global,container);
+      /* dynamic case */
+      if (container->dirich && container->isdyn==1)
+      assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
+   break;
 #endif
    default:
      dserror("fieldtyp unknown!");
@@ -638,6 +667,11 @@ case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; break;
+#ifdef D_THERM2
+case calc_therm_stiff            : assemble_action = assemble_one_exchange; break;
+case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
+case calc_therm_heatflux         : assemble_action = assemble_do_nothing;   break;
+#endif
 default: dserror("Unknown type of assembly 2"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
@@ -798,6 +832,9 @@ INT is_ale2=0;
 INT is_beam3=0;
 INT is_interf=0;
 INT is_wallge=0;
+#ifdef D_THERM2
+INT is_therm2=0;
+#endif
 
   ELEMENT *actele;              /* active element */
   /*----------------------------------------------------------------------*/
@@ -879,6 +916,11 @@ for (i=0; i<actfield->dis[disnum].numele; i++)
    case el_wallge:
       is_wallge=1;
    break;
+#ifdef D_THERM2
+   case el_therm2:
+      is_therm2=1;
+   break;
+#endif
    default:
       dserror("Unknown typ of element");
    break;
@@ -1050,6 +1092,16 @@ container->kstep = 0;
         action,container);
   }
 #endif
+  /*------------------------------ init all kind of routines for therm2 */
+#ifdef D_THERM2
+  if (is_therm2==1)
+  {
+    container->handsize = 0;
+    container->handles  = NULL;
+    therm2(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+        action,container);
+  }
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
@@ -1089,6 +1141,9 @@ void calreduce(
   INT is_beam3=0;
   INT is_interf=0;
   INT is_wallge=0;
+#ifdef D_THERM2
+  INT is_therm2=0;
+#endif
 
   ELEMENT *actele;
 
@@ -1137,6 +1192,11 @@ void calreduce(
       case el_wallge:
         is_wallge=1;
         break;
+#ifdef D_THERM2
+      case el_therm2:
+        is_therm2=1;
+        break;
+#endif
       default:
         dserror("Unknown typ of element");
         break;
@@ -1201,6 +1261,12 @@ void calreduce(
   if (is_beam3==1)
   {
   }
+  /*------------------------------------------- reduce results for therm2 */
+#ifdef D_THERM2
+  if (is_therm2==1)
+  {
+  }
+#endif
 
 
 #ifdef DEBUG

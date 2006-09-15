@@ -30,6 +30,9 @@ Maintainer: Malte Neumann
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
 #include "../struct2_ml/s2ml.h"
+#ifdef D_THERM2
+#include "../therm2/therm2.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -119,6 +122,12 @@ for (i=0; i<genprob.numfld; i++)
       actgid->fieldnamelenght = 3;
       actgid->fieldname       = "ale";
    break;
+#ifdef D_TSI
+   case thermal:
+      actgid->fieldnamelenght = 7;
+      actgid->fieldname       = "thermal";
+   break;
+#endif
    default:
       dserror("Unknown type of field");
    break;
@@ -578,11 +587,14 @@ for (i=0; i<genprob.numfld; i++)
 /*---------------------------------------------------------fh 06/02----*/
 #ifdef D_WALL1
       case el_wall1:
-         if (actele->e.w1->nGP[0]==1)
+	 switch(actele->distyp)
+	 {
+	     case quad4: case quad8: case quad9:  /* quadilateral element */
+/*		if (actele->e.w1->nGP[0]==1)
          {
             actgid->is_wall1_11    = 1;
             actgid->wall1_11_name  = "wall1_11";
-         }
+		    } */
          if (actele->e.w1->nGP[0]==2)
          {
             actgid->is_wall1_22    = 1;
@@ -592,6 +604,22 @@ for (i=0; i<genprob.numfld; i++)
          {
             actgid->is_wall1_33   = 1;
             actgid->wall1_33_name = "wall1_33";
+         }
+      break;
+             case tri3: case tri6:  /* triangle element */
+		if (actele->e.w1->nGP[0]==1)
+		{
+		    actgid->is_wall1_11    = 1;
+		    actgid->wall1_11_name  = "wall1_11";
+		}
+		if (actele->e.w1->nGP[0]==3)
+		{
+		    actgid->is_wall1_tri_31   = 1;
+		    actgid->wall1_tri_31_name = "wall1_tri_31";
+		}
+	     break;
+             default:
+                dserror("Discretisation type impossible!");
          }
       break;
 #endif /*D_WALL1*/
@@ -688,6 +716,54 @@ for (i=0; i<genprob.numfld; i++)
          }
      break;
 #endif /*D_WALLGE*/
+
+
+
+
+   /* THERM2 */
+   /* ====== */
+#ifdef D_THERM2
+     case el_therm2:
+       switch (actele->distyp)
+       {
+           case quad4:
+             if (actele->e.th2->nGP[0] == 1)
+             {
+               actgid->is_therm2_q_11 = 1;
+               actgid->therm2_q_11_name = "therm2_q_11";
+             }
+             if (actele->e.th2->nGP[0] == 2)
+             {
+               actgid->is_therm2_q_22 = 1;
+               actgid->therm2_q_22_name = "therm2_q_22";
+             }
+           case quad8: case quad9:
+             if (actele->e.th2->nGP[0] == 3)
+             {
+               actgid->is_therm2_q_33 = 1;
+               actgid->therm2_q_33_name = "therm2_q_33";
+             }
+             break;
+           case tri3:
+             if (actele->e.th2->nGP[0]==1)
+	     {
+               actgid->is_therm2_t_11 = 1;
+               actgid->therm2_t_11_name = "therm2_t_11";
+             }
+           case tri6:
+             if (actele->e.th2->nGP[0]==3)
+             {
+               actgid->is_therm2_t_31 = 1;
+               actgid->therm2_t_31_name = "therm2_t_31";
+             }
+             break;
+           default:
+             dserror("Discretisation type is impossible!");
+             break;
+       }  /* end of switch (actele->distyp) */
+     break;
+#endif
+
 
 
 
@@ -1380,6 +1456,18 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+   if (actgid->is_wall1_tri_31)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s WALL1 3x1/ GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle %c%s%c\n",
+                                                                   sign,actgid->wall1_tri_31_name,sign,
+                                                                   sign,actgid->wall1_tri_31_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
 #endif
 
 
@@ -1533,6 +1621,74 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"END GAUSSPOINTS\n");
    }
 #endif
+
+
+
+   /* THERM2 */
+   /*========*/
+   /* bborn 03/06 */
+
+
+#ifdef D_THERM2
+   /*-------------------------------------------------------------------*/
+   /* quadrilateral element with 4 nodes and 2x2 Gauss points */
+   if (actgid->is_therm2_q_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i THERM2 2x2 GP\n",actgid->fieldname,j);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Quadrilateral %c%s_dis_%1i%c\n",
+       sign,actgid->therm2_q_22_name,j,sign,
+       sign,actgid->therm2_q_22_name,j,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /*-------------------------------------------------------------------*/
+   /* quadrilateral element with 8/9 nodes and 3x3 Gauss points */
+   if (actgid->is_therm2_q_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i THERM2 3x3 GP\n",actgid->fieldname,j);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Quadrilateral %c%s_dis_%1i%c\n",
+       sign,actgid->therm2_q_33_name,j,sign,
+       sign,actgid->therm2_q_33_name,j,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /*-------------------------------------------------------------------*/
+   /* triangular element with 3 nodes and 1 Gauss point */
+   if (actgid->is_therm2_t_11)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i THERM2 1x1/ GP\n",actgid->fieldname,j);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Triangle %c%s_dis_%1i%c\n",
+       sign,actgid->therm2_t_11_name,j,sign,
+       sign,actgid->therm2_t_11_name,j,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /*-------------------------------------------------------------------*/
+   /* triangular element with 6 nodes and 3 Gauss point */
+   if (actgid->is_therm2_t_31)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s THERM2 3x1/ GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle %c%s%c\n",
+                                                                   sign,actgid->therm2_t_31_name,sign,
+                                                                   sign,actgid->therm2_t_31_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+#endif
+
+
 
   }  /* for (j=0; j<actfield->ndis; j++) */
 
@@ -2434,6 +2590,25 @@ if (actgid->is_wall1_33)
    /* BEAM3 */
    /*=======*/
 
+if (actgid->is_wall1_tri_31)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->wall1_tri_31_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->wall1_tri_31_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_wall1) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+      for (j=1; j<3; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+   }
+   fprintf(out,"END VALUES\n");
+}
+
 #ifdef D_BEAM3
 if (actgid->is_beam3_21)
 {
@@ -2535,6 +2710,74 @@ if (actgid->is_beam3_33)
 
 #ifdef D_WALLGE
 #endif
+
+
+
+   /* THERM2 */
+   /*========*/
+   /* bborn 03/06 */
+
+#ifdef D_THERM2
+/*----------------------------------------------------------------------*/
+/* triangular element with 3 nodes and 1 Gauss point */
+if (actgid->is_therm2_t_11)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->therm2_t_11_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
+       sign,sign,sign,sign,sign,actgid->therm2_t_11_name,disnum,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[disnum].numele; i++)
+   {
+      actele = &(actfield->dis[disnum].element[i]);
+      if (actele->eltyp != el_therm2 || actele->numnp != 3) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+   }
+   fprintf(out,"END VALUES\n");
+}
+/*----------------------------------------------------------------------*/
+/* quadrilateral element with 4 nodes and 2x2 Gauss points */
+if (actgid->is_therm2_q_22)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->therm2_q_22_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
+       sign,sign,sign,sign,sign,actgid->therm2_q_22_name,disnum,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[disnum].numele; i++)
+   {
+      actele = &(actfield->dis[disnum].element[i]);
+      if (actele->eltyp != el_therm2) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+      for (j=1; j<4; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+   }
+   fprintf(out,"END VALUES\n");
+}
+/*----------------------------------------------------------------------*/
+/* quadrilateral element with 8/9 nodes and 3x3 Gauss points */
+if (actgid->is_therm2_q_33)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->therm2_q_33_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
+       sign,sign,sign,sign,sign,actgid->therm2_q_33_name,disnum,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[disnum].numele; i++)
+   {
+      actele = &(actfield->dis[disnum].element[i]);
+      if (actele->eltyp != el_therm2) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+      for (j=1; j<9; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+   }
+   fprintf(out,"END VALUES\n");
+}
+#endif
+
 
 
 fflush(out);
@@ -2681,6 +2924,10 @@ INT           tot_numnp;
 #ifdef D_AXISHELL
 DOUBLE        pv,ph,pw,px;
 DOUBLE        thick;
+#endif
+
+#ifdef D_THERM2
+DOUBLE      **heatflux;
 #endif
 
 /*
@@ -3691,6 +3938,69 @@ if (strncmp(string,"stress",stringlenght)==0)
       }
       fprintf(out,"END VALUES\n");
 /*----------------------------------------------------------------------*/
+   }
+/*---------------------------------------------------------he  04/03----*/
+   /*------------------ now go through the meshes and print the results */
+   /*================== wall1 triangle-element with 1x1 gausspoint  */
+   /* these walls have 4 stresses, do 1D Matrix */
+   if (actgid->is_wall1_tri_31)
+   {
+      ngauss=1;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->wall1_tri_31_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdamage%c,%c||u||%c\n",
+             sign,sign,
+             sign,sign,
+             sign,sign,
+	       sign,sign,
+	       sign,sign,
+	       sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_wall1 ) continue;
+         stress=actele->e.w1->stress_GP.a.d3[place];
+	   fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                       actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+			     stress[3][0],
+                       0.0,
+                       0.0
+                       );
+	   fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+			     stress[3][1],
+                       0.0,
+                       0.0
+                       );
+	   fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][2],
+			     stress[1][2],
+			     stress[2][2],
+			     stress[3][2],
+                       0.0,
+                       0.0
+                       );
+      }
+      fprintf(out,"END VALUES\n");
    }
 #endif
 #ifdef D_BRICK1
@@ -5087,6 +5397,331 @@ if (strncmp(string,"axi_loads",stringlenght)==0)
   }
 } /* end of (strncmp(string,"axi_loads",stringlenght)==0) */
 #endif
+
+
+
+/*========================================== result type is temperature */
+#ifdef D_TSI
+if (strncmp(string,"temperature",stringlenght)==0)
+{
+  /*--------------------------------------------------------------------*/
+  /* header */
+   resulttype        = "SCALAR";
+   resultplace       = "ONNODES";
+   gpset             = "";
+   rangetable        = actgid->standardrangetable;
+   ncomponent        = 1;
+   componentnames[0] = "temperature";
+  /*--------------------------------------------------------------------*/
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
+           string, actgid->fieldname, disnum);
+   fprintf(out,"# TIME %18.5E \n", time);
+   fprintf(out,"# STEP %6d    \n", step);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
+           sign,string,sign,
+           sign,sign,
+           step,
+           resulttype,
+           resultplace);
+   fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+           sign,actgid->standardrangetable,sign);
+   /*-------------------------------------------------------------------*/
+   /* print value */
+   switch (genprob.ndim)
+   {
+     /* 3D case */
+     case 3:
+       fprintf(out,"COMPONENTNAMES %c%s%c\n",
+               sign,componentnames[0],sign);
+       break;
+     /* 2D case */
+     case 2:
+       fprintf(out,"COMPONENTNAMES %c%s%c\n",
+               sign,componentnames[0],sign);
+       break;
+     default:
+       dserror("Unknown numer of dimensions");
+     break;
+   }
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[disnum].numnp; i++)
+   {
+      actnode = &(actfield->dis[disnum].node[i]);
+      switch (genprob.ndim)
+      {
+	case 3:
+          fprintf(out," %6d %22.9E \n",
+                actnode->Id+1,
+                actnode->sol.a.da[place][0]);
+          break;
+	case 2:
+          fprintf(out," %6d %22.9E \n",
+                actnode->Id+1,
+                actnode->sol.a.da[place][0]);
+          break;
+	default:
+	  dserror("Unknown number of dimensions");
+          break;
+      }
+   }
+   fprintf(out,"END VALUES\n");
+}  /* end of if (strncmp(string,"temperature",stringlenght)==0) */
+#endif  /* end of #ifdef D_TSI */
+
+/*============================================ result type is heat flux */
+#ifdef D_TSI
+if (strncmp(string,"heatflux",stringlenght)==0)
+{
+  /*--------------------------------------------------------------------*/
+  /* element switch */
+#ifdef D_THERM2
+  /*--------------------------------------------------------------------*/
+  /* quadrilateral element with 4 nodes and 2x2 Gauss points */
+  if (actgid->is_therm2_q_22)
+  {
+      ngauss            = 4;
+      resulttype        = "VECTOR";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->therm2_q_22_name;
+      rangetable        = actgid->standardrangetable;
+      ncomponent        = 3;
+      componentnames[0] = "heatflux-x";
+      componentnames[1] = "heatflux-y";
+      componentnames[2] = "heatflux-z";
+      /*----------------------------------------------------------------*/
+      /* print title */
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
+              string,actgid->fieldname,disnum);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
+              sign,string,sign,
+              sign,sign,
+              step,
+              resulttype,
+              resultplace,
+              sign,gpset,disnum,sign);
+      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+               sign,componentnames[0],sign,
+               sign,componentnames[1],sign,
+               sign,componentnames[2],sign);
+      fprintf(out,"VALUES\n");
+      /*----------------------------------------------------------------*/
+      /* print values */
+      /* step through all elements */
+      for (i=0; i<actfield->dis[disnum].numele; i++)
+      {
+        /* pointer to current element */
+        actele = &(actfield->dis[disnum].element[i]);
+        /* jump to loop head if this is not a THERM2 element */
+        if (actele->eltyp == el_therm2)
+        {
+          heatflux = actele->e.th2->hflux_gp.a.d3[place];
+          /* print values at first Gauss point _with_ element index */
+          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
+                  actele->Id+1,
+                  heatflux[0][gaussperm4[0]],
+                  heatflux[1][gaussperm4[0]],
+                  heatflux[2][gaussperm4[0]]);
+          /* print values of second to ... Gauss point */
+          for (j=1; j<ngauss; j++)
+          {
+            fprintf(out,"        %18.5E %18.5E %18.5E \n",
+                    heatflux[0][gaussperm4[j]],
+                    heatflux[1][gaussperm4[j]],
+                    heatflux[2][gaussperm4[j]]);
+          }
+        }  /* end of if (actele->eltyp == el_therm2) */
+      }
+      /*----------------------------------------------------------------*/
+      /* print footer */
+      fprintf(out,"END VALUES\n");
+  }  /* end of if (actgid->is_therm2_q_22) */
+  /*--------------------------------------------------------------------*/
+  /* quadrilateral element with 8/9 nodes and 3x3 Gauss points */
+  if (actgid->is_therm2_q_33)
+  {
+      ngauss            = 9;
+      resulttype        = "VECTOR";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->therm2_q_33_name;
+      rangetable        = actgid->standardrangetable;
+      ncomponent        = 3;
+      componentnames[0] = "heatflux-x";
+      componentnames[1] = "heatflux-y";
+      componentnames[2] = "heatflux-z";
+      /*----------------------------------------------------------------*/
+      /* print title */
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
+              string,actgid->fieldname,disnum);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
+              sign,string,sign,
+              sign,sign,
+              step,
+              resulttype,
+              resultplace,
+              sign,gpset,disnum,sign);
+      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+               sign,componentnames[0],sign,
+               sign,componentnames[1],sign,
+               sign,componentnames[2],sign);
+      fprintf(out,"VALUES\n");
+      /*----------------------------------------------------------------*/
+      /* print values */
+      /* step through all elements */
+      for (i=0; i<actfield->dis[disnum].numele; i++)
+      {
+        /* pointer to current element */
+        actele = &(actfield->dis[disnum].element[i]);
+        /* jump to loop head if this is not a THERM2 element */
+        if (actele->eltyp == el_therm2)
+        {
+          heatflux = actele->e.th2->hflux_gp.a.d3[place];
+          /* print values at first Gauss point _with_ element index */
+          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
+                  actele->Id+1,
+                  heatflux[0][gaussperm4[0]],
+                  heatflux[1][gaussperm4[0]],
+                  heatflux[2][gaussperm4[0]]);
+          /* print values of second to ... Gauss point */
+          for (j=1; j<ngauss; j++)
+          {
+            fprintf(out,"        %18.5E %18.5E %18.5E \n",
+                    heatflux[0][gaussperm4[j]],
+                    heatflux[1][gaussperm4[j]],
+                    heatflux[2][gaussperm4[j]]);
+          }
+        }  /* end of if (actele->eltyp == el_therm2) */
+      }
+      /*----------------------------------------------------------------*/
+      /* print footer */
+      fprintf(out,"END VALUES\n");
+  }  /* end of if (actgid->is_therm2_q_33) */
+  /*--------------------------------------------------------------------*/
+  /* triangular element with 3 nodes and 1 Gauss point */
+  if (actgid->is_therm2_t_11)
+  {
+      ngauss            = 1;
+      resulttype        = "VECTOR";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->therm2_t_11_name;
+      rangetable        = actgid->standardrangetable;
+      ncomponent        = 3;
+      componentnames[0] = "heatflux-x";
+      componentnames[1] = "heatflux-y";
+      componentnames[2] = "heatflux-z";
+      /*----------------------------------------------------------------*/
+      /* print title */
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
+              string,actgid->fieldname,disnum);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
+              sign,string,sign,
+              sign,sign,
+              step,
+              resulttype,
+              resultplace,
+              sign,gpset,disnum,sign);
+      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+               sign,componentnames[0],sign,
+               sign,componentnames[1],sign,
+               sign,componentnames[2],sign);
+      fprintf(out,"VALUES\n");
+      /*----------------------------------------------------------------*/
+      /* print values */
+      /* step through all elements */
+      for (i=0; i<actfield->dis[disnum].numele; i++)
+      {
+        /* pointer to current element */
+        actele = &(actfield->dis[disnum].element[i]);
+        /* jump to loop head if this is not a THERM2 element */
+        if (actele->eltyp == el_therm2)
+        {
+          heatflux = actele->e.th2->hflux_gp.a.d3[place];
+          /* print values at the Gauss point _with_ element index */
+          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
+                  actele->Id+1,
+                  heatflux[0][gaussperm4[0]],
+                  heatflux[1][gaussperm4[0]],
+                  heatflux[2][gaussperm4[0]]);
+        }  /* end of if (actele->eltyp == el_therm2) */
+      }
+      /*----------------------------------------------------------------*/
+      /* print footer */
+      fprintf(out,"END VALUES\n");
+  }  /* end of if (actgid->is_therm2_t_11) */
+  /*--------------------------------------------------------------------*/
+  /* triangular element with 6 nodes and 3 Gauss points */
+  if (actgid->is_therm2_t_31)
+  {
+      ngauss            = 3;
+      resulttype        = "VECTOR";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->therm2_t_31_name;
+      rangetable        = actgid->standardrangetable;
+      ncomponent        = 3;
+      componentnames[0] = "heatflux-x";
+      componentnames[1] = "heatflux-y";
+      componentnames[2] = "heatflux-z";
+      /*----------------------------------------------------------------*/
+      /* print title */
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
+              string,actgid->fieldname,disnum);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
+              sign,string,sign,
+              sign,sign,
+              step,
+              resulttype,
+              resultplace,
+              sign,gpset,disnum,sign);
+      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+               sign,componentnames[0],sign,
+               sign,componentnames[1],sign,
+               sign,componentnames[2],sign);
+      fprintf(out,"VALUES\n");
+      /*----------------------------------------------------------------*/
+      /* print values */
+      /* step through all elements */
+      for (i=0; i<actfield->dis[disnum].numele; i++)
+      {
+        /* pointer to current element */
+        actele = &(actfield->dis[disnum].element[i]);
+        /* jump to loop head if this is not a THERM2 element */
+        if (actele->eltyp == el_therm2)
+        {
+          heatflux = actele->e.th2->hflux_gp.a.d3[place];
+          /* print values at first Gauss point _with_ element index */
+          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
+                  actele->Id+1,
+                  heatflux[0][gaussperm4[0]],
+                  heatflux[1][gaussperm4[0]],
+                  heatflux[2][gaussperm4[0]]);
+          /* print values of second to ... Gauss point */
+          for (j=1; j<ngauss; j++)
+          {
+            fprintf(out,"        %18.5E %18.5E %18.5E \n",
+                    heatflux[0][gaussperm4[j]],
+                    heatflux[1][gaussperm4[j]],
+                    heatflux[2][gaussperm4[j]]);
+          }
+        }  /* end of if (actele->eltyp == el_therm2) */
+      }
+      /*----------------------------------------------------------------*/
+      /* print footer */
+      fprintf(out,"END VALUES\n");
+  }  /* end of if (actgid->is_therm2_q_33) */
+#endif  /* end of #ifdef D_THERM2 */
+}  /* end of (strncmp(string,"heatflux",stringlenght)==0) */
+#endif  /* end of #ifdef D_TSI */
+
+
 /*----------------------------------------------------------------------*/
 fflush(out);
 #ifdef PERF

@@ -39,7 +39,7 @@ void w1intg(ELEMENT   *ele,
             W1_DATA   *data,
             INT        option)
 {
-INT i, k;
+INT i, k, intc;
 
 DOUBLE zero  = 0.0;
 DOUBLE one   = 1.0;
@@ -77,12 +77,12 @@ if (option==0)
  |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
  |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
  *----------------------------------------------------------------------*/
-      xg[0][1]  =  -0.5773502691896;
+      xg[0][1]  =  -1.0/sqrt(3.0)    ;
       xg[1][1]  =  -xg[0][1]       ;
-      xg[0][2]  =  -0.7745966692415;
+      xg[0][2]  =  -sqrt(3.0/5.0);
       xg[2][2]  =  -xg[0][2]       ;
-      xg[0][3]  =  -0.8611363115941;
-      xg[1][3]  =  -0.3399810435849;
+      xg[0][3]  =  -sqrt((15.0+sqrt(120.0))/35.0);
+      xg[1][3]  =  -sqrt((15.0-sqrt(120.0))/35.0);
       xg[2][3]  =  -xg[1][3]       ;
       xg[3][3]  =  -xg[0][3]       ;
       xg[0][4]  =  -0.9061798459387;
@@ -99,11 +99,11 @@ if (option==0)
       wgt[0][0] =  two             ;
       wgt[0][1] =  one             ;
       wgt[1][1] =  one             ;
-      wgt[0][2] =  0.5555555555556 ;
-      wgt[1][2] =  0.8888888888889 ;
+      wgt[0][2] =  5.0/9.0;
+      wgt[1][2] =  8.0/9.0;
       wgt[2][2] =  wgt[0][2]       ;
-      wgt[0][3] =  0.3478548451375 ;
-      wgt[1][3] =  0.6521451548625 ;
+      wgt[0][3] =  (18.0-sqrt(30.0))/36.0;
+      wgt[1][3] =  (18.0+sqrt(30.0))/36.0;
       wgt[2][3] =  wgt[1][3]       ;
       wgt[3][3] =  wgt[0][3]       ;
       wgt[0][4] =  0.2369268850562 ;
@@ -146,7 +146,7 @@ if (option==0)
 /*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        3 SAMPLING POINTS, DEG.OF PRECISION 2    |
  *----------------------------------------------------------------------*/
-       switch(ele->e.w1->nGP[1])/* direction s */
+       switch(ele->e.w1->nGP[1]-1)/* direction s */
        {
        case 0:
           xgr[0][1]    =  q12  ;
@@ -192,7 +192,7 @@ if (option==0)
 /*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        6 SAMPLING POINTS, DEG.OF PRECISION 4    |
  *----------------------------------------------------------------------*/
-       switch(ele->e.w1->nGP[1])/* direction s */
+       switch(ele->e.w1->nGP[1]-1)/* direction s */
        {
        case 0:
           xgr[0][3]    =  0.0915762135098   ;
@@ -241,7 +241,7 @@ if (option==0)
 /*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        7 SAMPLING POINTS, DEG.OF PRECISION 5    |
  *----------------------------------------------------------------------*/
-       switch(ele->e.w1->nGP[1])/* direction s */
+       switch(ele->e.w1->nGP[1]-1)/* direction s */
        {
        case 0:
           xgr[0][4]    =  0.1012865073235 ;
@@ -408,7 +408,7 @@ if (option==0)
 }                                                  /* initialize arrays */
 else
 {
-/*-------------------------------------- rectangualar element values ---*/
+/*--------------------------------------- rectangular element values ---*/
       for(i=0;i<ele->e.w1->nGP[0] ;i++)
       {
         data->xgrr[i] = xg[ i][ele->e.w1->nGP[0]-1];
@@ -421,16 +421,54 @@ else
         data->wgts[i] = wgt[i][ele->e.w1->nGP[1]-1];
       }
 /*----------------- TRIANGLES ------------------------------------------*/
-      for (i=0;i<MAXTINTP;i++)
+      /* integration type */
+      intc = ele->e.w1->nGP[1] - 1;
+      /* get Gauss point set number according to number og GPs and type */
+      switch (ele->e.w1->nGP[0])
       {
-       for (k=0;k<MAXTINTC;k++)
+        case 1:  /* constant */
+          k = 0;
+          break;
+        case 3:  /* quadratic - type 1 and 2*/
+          k = 1;
+          break;
+        case 4:
+          k = 2;
+          break;
+        case 6: 
+          k = 3;
+          break;
+        case 7: 
+          k = 4;
+          break;
+        case 9: 
+          k = 5;
+          break;
+        case 12:
+          k = 6;
+          break;
+        case 13:
+          k = 7;
+          break;
+        default:
+          k = 0;
+          break;
+      }
+      intc = ele->e.w1->nGP[1] - 1;  /* integration type */
+      for (i=0; i<ele->e.w1->nGP[0]; i++)
        {
-        data->txgr[i][k]=xgr[i][k];
-        data->txgs[i][k]=xgs[i][k];
-	  data->twgt[i][k]=wgtt[i][k];
-       } /* end loop over k */
-      } /* end loop over i */
+        data->txgr[i][intc] = xgr[i][k];
+        data->txgs[i][intc] = xgs[i][k];
+	data->twgt[i][intc] = wgtt[i][k];
+      } /* end for loop : Gauss coordinates */
 /*------ needed for integration of lines from TRIANGLES ----------------*/
+      switch (ele->distyp)
+      {
+        case tri3:
+          /*------------------------------------------------------------*/
+          /* obsolete ?
+           * This block is only kept for consistency, but should be
+           * dropped in favour of the version used with 'tri6' */
      for (i=0;i<MAXQINTP;i++)
      {
       for (k=0;k<MAXQINTC;k++)
@@ -439,6 +477,20 @@ else
         data->qwgt[i][k]=wgt[i][k];
       } /* end loop over k */
      } /* end loop over i */
+          break;
+        case tri6:
+          /*------------------------------------------------------------*/
+          /* standard Gauss points on interval (-1,+1) are mapped
+           * to the interval (0,+1) */
+          /* number of Gauss points minus 1 */
+          k = (INT) (0.5*sqrt(8.0*ele->e.w1->nGP[0] + 1.0) - 0.5) - 1;
+          for (i=0; i<=k; i++)
+          {
+              data->qxg[i][intc] = (1.0 + xg[i][k])/2.0;
+              data->qwgt[i][intc] = wgt[i][k]/2.0;
+          }
+          break;
+      }  /* end switch (ele->distyp) */
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------*/

@@ -22,6 +22,13 @@ Maintainer: Andrea Hund
 
 /*----------------------------------------------------------------------*
  | select proper material law                               ah 06/02    |
+ |                                                                      |
+ |   *mat     MATERIAL    (i)     material type                         |
+ |    wtype   WALL_TYPE   (i)     plane strain, plane stress, rota.     |
+ |   *strain  DOUBLE      (i)     strain vector                         |
+ |  **stress  DOUBLE      (o)     stress matrix                         |
+ |  **d       DOUBLE      (o)     constutive matrix                     |
+ |    numeps  INT         (i)     dimension of strin vector strain      |
  *----------------------------------------------------------------------*/
 void w1_call_matgeononl(MATERIAL  *mat,
                         WALL_TYPE  wtype,

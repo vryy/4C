@@ -186,6 +186,10 @@ struct _ARRAY4D PK_history;
 #ifdef D_FSI
    enum _FSI_COUPTYP         fsi_couptyp;
 #endif
+#ifdef D_TSI
+  enum _TSI_COUPTYP tsi_couptyp;  /* TSI coupling type */
+  struct _ELEMENT *therm_ele;      /* pointer to conforming thermal2 element */
+#endif
 } WALL1;
 /*----------------------------------------------------------------------*
  |  prototypes of main and input routines                   al 11/01    |

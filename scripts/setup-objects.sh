@@ -171,6 +171,11 @@ if grep '^[[:blank:]]*D_MLSTRUCT' "$definefile" 2>&1 > /dev/null ; then
     fi
 fi
 
+# THERM2
+if grep '^[[:blank:]]*D_THERM2' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_THERM2)"
+fi
+
 # FSI
 if grep '^[[:blank:]]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_FSI)"
@@ -184,6 +189,11 @@ fi
 # OPTIM
 if grep '^[[:blank:]]*D_OPTIM' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_OPT)"
+fi
+
+# TSI
+if grep '^[[:blank:]]*D_TSI' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_TSI)"
 fi
 
 # MAT

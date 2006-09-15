@@ -59,6 +59,8 @@ typedef struct _GIDSET
      char                      *wall1_22_name;
      INT                        is_wall1_33;            /* 8/9-noded wall1 3x3 GP */
      char                      *wall1_33_name;
+     INT                        is_wall1_tri_31;            /* 6-noded wall1 3x1 GP */
+     char                      *wall1_tri_31_name;
      INT                        is_brick1_222;          /* 8-noded brick1 2x2x2 GP */
      char                      *brick1_222_name;
      INT                        is_brick1_333;          /* 20/27 noded brick1 3x3x3 GP */
@@ -155,6 +157,17 @@ typedef struct _GIDSET
      char                      *wallge_22_name;
      INT                        is_wallge_33;           /* gradient enhanced wall 3x3 GP */
      char                      *wallge_33_name;
+
+     INT                        is_therm2_q_11;            /* 4-noded therm2 1x1 GP */
+     char                      *therm2_q_11_name;
+     INT                        is_therm2_q_22;            /* 4-noded wall1 2x2 GP */
+     char                      *therm2_q_22_name;
+     INT                        is_therm2_q_33;            /* 8/9-noded wall1 3x3 GP */
+     char                      *therm2_q_33_name;
+     INT                        is_therm2_t_11;            /* 3-noded wall1 1x1 GP */
+     char                      *therm2_t_11_name;
+     INT                        is_therm2_t_31;            /* 6-noded wall1 3x1 GP */
+     char                      *therm2_t_31_name;
 
 } GIDSET;
 

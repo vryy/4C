@@ -34,6 +34,9 @@ Maintainer: Malte Neumann
 #ifdef D_WALLGE
   #include "../wallge/wallge.h"
 #endif /*D_WALLGE*/
+#ifdef D_THERM2
+  #include "../therm2/therm2.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -173,6 +176,11 @@ void out_general()
       case prb_ale:
         fprintf(out,"Type of Problem           : Ale\n");
         break;
+#ifdef D_TSI
+      case prb_tsi:
+        fprintf(out,"Type of Problem           : Thermal-Structure-Interaction\n");
+        break;
+#endif
       default:
         dserror("Cannot print problem type");
         break;
@@ -220,6 +228,12 @@ void out_general()
           fprintf(out,"FIELD: structure\n");
           fprintf(out,"================\n");
           break;
+#ifdef D_TSI
+        case thermal:
+          fprintf(out,"FIELD: thermal\n");
+          fprintf(out,"================\n");
+          break;
+#endif
         default:
           dserror("Cannot print fieldtype");
           break;
@@ -310,6 +324,11 @@ void out_general()
           case el_wallge:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",actele->Id,actele->Id_loc);
             break;
+#ifdef D_THERM2
+          case el_therm2:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d THERM2\n",actele->Id,actele->Id_loc);
+            break;
+#endif
           default:
             dserror("Cannot print elementtype");
             break;
@@ -350,6 +369,12 @@ void out_general()
 
         switch (actnode->numdf)
         {
+#ifdef D_TSI
+          case 1:
+            fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d\n",
+                actnode->Id,actnode->Id_loc,actnode->dof[0]);
+            break;
+#endif         
           case 2:
             fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
                 actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
@@ -464,6 +489,11 @@ break;
 case structure:
 fprintf(out,"FIELD: structure\n");
 break;
+#ifdef D_TSI
+case thermal:
+fprintf(out,"FIELD: thermal\n");
+break;
+#endif
 default:
 dserror("Cannot print fieldtype");
 break;
@@ -562,6 +592,28 @@ case ale:
    fprintf(out,"________________________________________________________________________________\n\n");
    }
 break;
+
+
+case thermal:
+  if (ioflags.output_out==1 && ioflags.therm_temper==1)
+  {
+    fprintf(out,"================================================================================\n");
+    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",disnum,step);
+    fprintf(out,"================================================================================\n");
+    for (j=0; j<actfield->dis[disnum].numnp; j++)
+    {
+      actnode = &(actfield->dis[disnum].node[j]);
+      fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+      for (k=0; k<actnode->numdf; k++)
+      {
+        if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+        fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
+      }
+      fprintf(out,"\n");
+    }
+    fprintf(out,"________________________________________________________________________________\n\n");
+  }
+  break;
 default: dserror("Cannot print fieldtype");
 }
 /*------------------------------------------------ print element values */
@@ -981,6 +1033,86 @@ case fluid:
 break;
 case ale:
 break;
+#ifdef D_TSI
+case thermal:
+  if (ioflags.therm_heatflux == 1)
+  {
+    for (j=0; j<actfield->dis[disnum].numele; j++)
+    {
+      actele = &(actfield->dis[disnum].element[j]);
+      switch (actele->eltyp)
+      {
+        case el_therm2:
+#ifdef D_THERM2
+          /* print title */
+          fprintf(out, "_________________________________________________"
+                  "_______________________________\n");
+          fprintf(out, "Element glob_Id %d loc_Id %d"
+                  "                THERM2\n", actele->Id, actele->Id_loc);
+          fprintf(out, "\n");
+          /* check heat flux type */
+          switch (actele->e.th2->hfluxtype)
+          {
+            /* none */
+            case th2_hflux_none:
+              break;
+            /* at Gauss points */
+            case th2_hflux_gpxy:
+            case th2_hflux_gp12:
+            case th2_hflux_gpxy12:
+              fprintf(out, "Gaussian   "
+                      "  heatflux-x   heatflux-y   heatflux-z"
+                      "   abs.hflux        angle   heatflux-z\n");
+              /* loop all Gauss points */
+              for (i=0; i<actele->e.th2->gptotal; i++)
+              {
+                fprintf(out, "Gauss %2d   "
+                        "%12.3E %12.3E %12.3E"
+                        "%12.3E %12.3E %12.3E \n",
+                        i,
+                        actele->e.th2->hflux_gp.a.d3[place][0][i],
+                        actele->e.th2->hflux_gp.a.d3[place][1][i],
+                        actele->e.th2->hflux_gp.a.d3[place][2][i],
+                        actele->e.th2->hflux_gp.a.d3[place][3][i],
+                        actele->e.th2->hflux_gp.a.d3[place][4][i],
+                        actele->e.th2->hflux_gp.a.d3[place][5][i]);
+              }
+              break;
+            /* at element nodes */
+            case th2_hflux_ndxy:
+            case th2_hflux_nd12:
+            case th2_hflux_ndxy12:
+              fprintf(out, "Nodal      "
+                      "  heatflux-x   heatflux-y   heatflux-z"
+                      "   abs.hflux        angle   heatflux-z\n");
+              /* loop all element nodes */
+              for (i=0; i<actele->numnp; i++)
+              {
+                fprintf(out, "Node  %2d   "
+                        "%12.3E %12.3E %12.3E"
+                        "%12.3E %12.3E %12.3E \n",
+                        i,
+                        actele->e.th2->hflux_nd.a.d3[place][0][i],
+                        actele->e.th2->hflux_nd.a.d3[place][1][i],
+                        actele->e.th2->hflux_nd.a.d3[place][2][i],
+                        actele->e.th2->hflux_nd.a.d3[place][3][i],
+                        actele->e.th2->hflux_nd.a.d3[place][4][i],
+                        actele->e.th2->hflux_nd.a.d3[place][5][i]);
+              }
+              break;
+            default:
+              dserror("Heat flux type is not available for printing!");
+          }  /* end of */
+#endif  /* end of #ifdef D_THERM2 */
+          break;
+        default:
+          dserror("Unknown element type!");
+          break;
+      }  /* end of switch (actele->eltyp) */
+    }  /* end of for (j=0; j<actfield->dis[disnum].numele; j++) */
+  }  /* end of if (ioflags.therm_heatflux == 1) */
+#endif  /* end of #ifdef D_TSI */
+break;
 default:
 break;
 } /* end switch(actfield->fieldtyp) */
@@ -1263,6 +1395,198 @@ dstrc_exit();
 return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of out_ssi */
+
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Print TSI coupling informations
+
+\param *structfield    FIELD   (i)
+\return void
+
+\author bborn
+\date 03/06
+
+*/
+/*----------------------------------------------------------------------*/
+#ifdef D_TSI
+void out_tsi(FIELD *structfield)
+{
+
+#if !defined(NO_TEXT_OUTPUT) && defined(DEBUG)
+
+  INT        i;
+  INT        idis;  /* number of discretisations in structure field */
+  FILE      *out = allfiles.out_out;
+  NODE      *actsnode, *acttnode;
+  GNODE     *actsgnode;
+  ELEMENT   *actsele, *acttele;
+  INT        myrank;
+  INT        nprocs;
+  INT        numtf;
+
+#ifdef DEBUG
+  dstrc_enter("out_tsi");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  myrank = par.myrank;
+  nprocs = par.nprocs;
+  numtf  = genprob.numtf;
+  /*--------------------------------------------------------------------*/
+  if (myrank==0)
+  {
+    /*------------------------------------------------------------------*/
+    /* check wether multiple discretisations */
+    if (structfield->ndis > 1)
+    {
+      dserror("Cannot print more than 1 structure discretisation!");
+    }
+    else
+    {
+      idis = 0;  /* hello again, this is C, therefore, 0-based index */
+    }
+
+    /*------------------------------------------------------------------*/
+    /* connectivity of nodes */
+
+    /*------------------------------------------------------------------*/
+    /* global connectivity */
+
+    /* print title */
+    fprintf(out, "======================================================="
+            "=========================\n");
+    fprintf(out, "TSI node connectivity global Ids:\n");
+    fprintf(out, "======================================================="
+            "=========================\n");
+    fprintf(out, "\n");
+    fprintf(out, "STRUCTURE          THERMAL\n");
+
+    /* loop over structure nodes */
+    for (i=0; i<structfield->dis[idis].numnp; i++)
+    {
+      actsnode  = &(structfield->dis[idis].node[i]);
+      actsgnode = actsnode->gnode;
+      acttnode  = actsgnode->mfcpnode[numtf];
+
+      if (acttnode != NULL)
+      {
+        fprintf(out, "%-6d             %-6d\n",
+                actsnode->Id, acttnode->Id);
+      }
+      else
+      {
+        fprintf(out, "%-6d             ------\n", actsnode->Id);
+      }
+    }  /* end of for (i=0; i<fluidfield->dis[idis].numnp; i++) */
+
+
+    /*------------------------------------------------------------------*/
+    /* local connectivity */
+
+    /* print title */
+    fprintf(out, "_______________________________________________________"
+            "_________________________\n\n");
+    fprintf(out, "======================================================="
+            "=========================\n");
+    fprintf(out, "TSI node connectivity local Ids:\n");
+    fprintf(out, "======================================================="
+            "=========================\n");
+    fprintf(out, "\n");
+    fprintf(out,"STRUCTURE          THERMAL\n");
+
+    /* loop all structure nodes */
+    for (i=0; i<structfield->dis[idis].numnp; i++)
+    {
+      actsnode = &(structfield->dis[idis].node[i]);
+      actsgnode = actsnode->gnode;
+      acttnode = actsgnode->mfcpnode[numtf];
+      if (acttnode != NULL)
+      {
+        fprintf(out, "%-6d             %-6d\n",
+                actsnode->Id_loc, acttnode->Id_loc);
+      }
+      else
+      {
+        fprintf(out, "%-6d             ------\n", 
+                actsnode->Id_loc);
+      }
+
+    }  /* end of for (i=0; i<structfield->dis[idis].numnp; i++) */
+    
+    /* print footer */
+    fprintf(out, "_______________________________________________________"
+            "_________________________\n\n");
+
+    /*------------------------------------------------------------------*/
+    /* connectivity of elements */
+    
+    /* print title */
+    fprintf(out, "======================================================="
+            "=========================\n");
+    fprintf(out, "TSI element connectivity global/local Ids:\n");
+    fprintf(out, "======================================================="
+            "=========================\n");
+    fprintf(out, "\n");
+    fprintf(out, "STRUCTURE glob     "
+                 "STRUCTURE loc      "
+                 "THERMAL glob       "
+                 "THERMAL loc\n");
+
+    /* loop over structure elements */
+    for (i=0; i<structfield->dis[idis].numele; i++)
+    {
+      actsele = &(structfield->dis[idis].element[i]);
+      acttele = NULL;
+      switch (actsele->eltyp)
+      {
+#ifdef D_WALL1
+          case el_wall1:
+            acttele = actsele->e.w1->therm_ele;
+            break;
+#endif
+          default:
+            continue;
+      }  /* end of switch */
+
+      if (acttele != NULL)
+      {
+        fprintf(out, "%-6d             "
+                     "%-6d             "
+                     "%-6d             "
+                     "%-6d\n",
+                actsele->Id, actsele->Id_loc, acttele->Id, acttele->Id_loc);
+      }
+      else
+      {
+        fprintf(out, "%-6d             ------\n", actsele->Id);
+      }
+    }  /* end of for (i=0; i<fluidfield->dis[idis].numele; i++) */
+
+    /* print footer */
+    fprintf(out, "_______________________________________________________"
+            "_________________________\n\n");
+
+
+  } /* end of if (myrank==0 && imyrank==0) */
+  /*----------------------------------------------------------------------*/
+  if (myrank == 0) 
+  {
+    fflush(out);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+
+#endif /* end of #ifdef !(NO_TEXT_OUTPUT) && defined(DEBUG) */
+
+} /* end of out_tsi */
+#endif /* end of #ifdef D_TSI */
+
+
 
 /*!---------------------------------------------------------------------
 \brief  print fluid multifield coupling informations

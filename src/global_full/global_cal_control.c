@@ -26,6 +26,10 @@ Maintainer: Malte Neumann
 #include "../ssi_full/ssi_prototypes.h"
 #endif
 
+#ifdef D_TSI
+#include "../tsi_full/tsi_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -218,6 +222,12 @@ case prb_ale:
 #ifdef D_OPTIM
 case prb_opt:
   caloptmain();
+  break;
+#endif
+
+#ifdef D_TSI
+case prb_tsi:
+  tsi_dyn();
   break;
 #endif
 

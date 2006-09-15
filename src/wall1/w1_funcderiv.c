@@ -34,7 +34,7 @@ void w1_funct_deriv(DOUBLE     *funct,
 INT            i, ii;
 const DOUBLE   q12 = ONE/TWO;
 const DOUBLE   q14 = ONE/FOUR;
-DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
+DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2,t;
 DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG
 dstrc_enter("w1_funct_deriv");
@@ -169,7 +169,34 @@ case tri3: /* LINEAR shape functions and their natural derivatives -----*/
       deriv[1][2]= ONE;
    } /* endif (option==1) */
 break;
-case tri6:
+/*-------------------------------------------------------------------------*/
+case tri6: /* Quadratic shape functions and their natural derivatives -----*/
+    t = ONE-r-s;
+
+    funct[0] = t*(TWO*t-ONE);
+    funct[1] = r*(TWO*r-ONE);
+    funct[2] = s*(TWO*s-ONE);
+    funct[3] = FOUR*r*t;
+    funct[4] = FOUR*r*s;
+    funct[5] = FOUR*s*t;
+    
+    if (option == 1) /* --> first derivative evaluation */
+    {
+        /* first natural derivative of funct[0] with respect to r */
+        deriv[0][0] = -FOUR*t + ONE;
+        /* first natural derivative of funct[0] with respect to s */
+        deriv[1][0] = -FOUR*t + ONE;
+        deriv[0][1] = FOUR*r - ONE;
+        deriv[1][1] = ZERO;
+        deriv[0][2] = ZERO;
+        deriv[1][2] = FOUR*s - ONE;
+        deriv[0][3] = FOUR*t - FOUR*r;
+        deriv[1][3] = -FOUR*r;
+        deriv[0][4] = FOUR*s;
+        deriv[1][4] = FOUR*r;
+        deriv[0][5] = -FOUR*s;
+        deriv[1][5] = FOUR*t - FOUR*s;
+    } /* end if (option==1) */
 break;
 default:
    dserror("unknown typ of interpolation");

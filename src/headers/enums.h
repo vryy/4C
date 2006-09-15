@@ -20,13 +20,14 @@ typedef enum _PROBLEM_TYP
                        prb_structure, /*  structural  problem */
                        prb_fluid,     /*  fluid  problem */
                        prb_opt,       /*  strctural optimization  problem */
-		       prb_ale        /*  pure ale problem */
+		       prb_ale,       /*  pure ale problem */
+                       prb_tsi        /*  thermal structure interaction */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale", NULL }
+#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi", NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -45,11 +46,12 @@ typedef enum _FIELDTYP
                        none,        /* unknown type of mechanical field */
                        fluid,       /* fluid field */
                        ale,         /* pseudo structural field */
-                       structure    /* structural field */
+                       structure,   /* structural field */
+                       thermal      /* thermal field */
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "ale", "structure", NULL}
+#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", NULL}
 
 
 
@@ -137,6 +139,8 @@ typedef enum _ELEMENT_TYP
                        el_axishell,    /* 1D axisymmetrical shell element */
                        el_interf,      /* 1D interface element (combination only with wall) */
                        el_wallge,      /* gradient enhanced wall element */
+                       el_therm2,      /* 2D thermal element 
+                                        * (planar heat conduction) */
                        el_count        /* The number of known
                                         * elements. This must be the
                                         * last entry! */
@@ -161,6 +165,7 @@ typedef enum _ELEMENT_TYP
       "ale3",                                                           \
       "axishell",                                                       \
       "interf",                                                         \
+      "therm2",                                                         \
       "wallge",                                                         \
       NULL  }
 
@@ -240,7 +245,9 @@ typedef enum _MATERIAL_TYP
                        m_ifmat,        /* interface surface elasto-damage-plasto material*/
                        m_interf_therm, /* themodyn. based interface elasto-damage surface material*/
                        m_dam_mp,       /* isotropic damage model -> mazars/pijadier-cabot*/
-                       m_damage_ge     /* isotropic gradient enhanced damage model */
+                       m_damage_ge,     /* isotropic gradient enhanced damage model */
+                       m_th_fourier_iso,  /* isotropic (linear) Fourier's law of heat conduction */
+                       m_th_fourier_gen  /* general (linear) Fourier's law of heat conduction */
 } MATERIAL_TYP;
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
@@ -331,7 +338,13 @@ typedef enum _CALC_ACTION
                        calc_deriv_self_adj,/*         selfadjoint problem */
                        update_struct_odens,/* updata density in ele wa    */
                        upd_optvar,
-                       put_optvar
+                       put_optvar,
+                       /* thermal */
+                       calc_therm_init,  /* initialise thermal calc. */
+                       calc_therm_stiff,  /* stiffness matrix */
+                       calc_therm_heatload,  /* external heat source + BC */
+                       calc_therm_heatflux,  /* postproc. heat flux */
+                       calc_therm_final  /* finalise thermal calc. */
 } CALC_ACTION;
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
@@ -603,5 +616,25 @@ typedef enum _STABILISATION_TYP
    stab_usfem,  /*! Unusual 'least square' stabilisation                */
    stab_prespro	/*! Stabilisation based on pressure projection		*/
 } STABILISATION_TYP;
+
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Enum type of thermal partner in thermal-structure 
+interaction analysis
+
+\author bborn
+\date 03/06
+*/
+/*----------------------------------------------------------------------*/
+typedef enum _TSI_COUPTYP
+{
+  tsi_coup_none,  /* structure element has not a thermal partner */
+  tsi_coup_thermconf,  /* structure element has a conforming thermal partner, 
+                        * which is defined separately in the input file */
+  tsi_coup_thermcreate  /* structure has a conforming thermal partner, 
+                         * but it is not given in the input file. The thermal 
+                         * element will be created.  */
+} TSI_COUPTYP;
 
 

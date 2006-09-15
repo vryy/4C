@@ -92,6 +92,7 @@ dstrc_enter("inpctr");
 /*--------------------------------------- input of general problem data */
    inpctrprob();
 /*---------------------------------------- input of general solver data */
+   /* for FSI */
    if (genprob.probtyp == prb_fsi)
    {
       if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
@@ -107,6 +108,7 @@ dstrc_enter("inpctr");
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
    }
+   /* for SSI */
    if (genprob.probtyp == prb_ssi)
    {
       if (genprob.numfld!=2) dserror("numfld != 2 for SSI");
@@ -119,6 +121,7 @@ dstrc_enter("inpctr");
       solv[1].fieldtyp = structure;
       inpctrsol(&(solv[1]));
    }
+   /* for structure */
    if (genprob.probtyp == prb_structure)
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
@@ -128,6 +131,7 @@ dstrc_enter("inpctr");
       solv[genprob.numsf].fieldtyp = structure;
       inpctrsol(&(solv[genprob.numsf]));
    }
+   /* for optimisation */
    if (genprob.probtyp == prb_opt)
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
@@ -137,6 +141,7 @@ dstrc_enter("inpctr");
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
    }
+   /* for fluid */
    if (genprob.probtyp == prb_fluid)
    {
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
@@ -150,6 +155,7 @@ dstrc_enter("inpctr");
 	inpctrsol(&(solv[genprob.numaf]));
       }
    }
+   /* for (plain) ALE */
    if (genprob.probtyp == prb_ale)
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Ale Problem");
@@ -159,6 +165,27 @@ dstrc_enter("inpctr");
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
    }
+#ifdef D_TSI
+   /* for TSI */
+   if (genprob.probtyp == prb_tsi)
+   {
+      if (genprob.numfld != 2)
+      {
+        dserror("numfld != 2 for TSI: impossible");
+      }
+
+      /* allocate memory for solver entries */
+      solv = (SOLVAR *) CCACALLOC(genprob.numfld, sizeof(SOLVAR));
+
+      /* set solver details of structure solver */
+      solv[genprob.numsf].fieldtyp = structure;
+      inpctrsol(&(solv[genprob.numsf]));
+
+      /* set solver details of thermal solver */
+      solv[genprob.numtf].fieldtyp = thermal;
+      inpctrsol(&(solv[genprob.numtf]));
+   }
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -183,12 +210,18 @@ dstrc_enter("inpctrprob");
 #endif
 
 /*------------------------------------------ set initial field numbers */
-genprob.numsf=-1;
-genprob.numff=-1;
-genprob.numaf=-1;
+genprob.numsf=-1;  /* structure fields */
+genprob.numff=-1;  /* fluid fields */
+genprob.numaf=-1;  /* ALE fields */
 genprob.numls=-1;
+#ifdef D_TSI
+genprob.numtf=-1;  /* thermal fields */
+#endif
 
-if (frfind("-PROBLEM SIZE")==0) dserror("frfind: PROBLEM SIZE not in input file");
+if (frfind("-PROBLEM SIZE")==0) 
+{
+  dserror("frfind: PROBLEM SIZE not in input file");
+}
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -218,6 +251,10 @@ ioflags.fluid_sol           =0;
 ioflags.fluid_stress        =0;
 ioflags.fluid_vis           =0;
 ioflags.ale_disp            =0;
+#ifdef D_TSI
+ioflags.therm_temper        =0;
+ioflags.therm_heatflux      =0;
+#endif
 ioflags.relative_displ      =0;
 ioflags.output_dis          =0;
 
@@ -226,6 +263,7 @@ if (frfind("-PROBLEM TYP")==0) dserror("frfind: PROBLEM TYP not in input file");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
+  /* read problem type */
   frchar("PROBLEMTYP",buffer,   &ierr);
   if (ierr==1)
   {
@@ -235,14 +273,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (frwordcmp("Structure_Structure_Interaction",buffer)==0) genprob.probtyp = prb_ssi;
     if (frwordcmp("Optimisation"               ,buffer)==0) genprob.probtyp = prb_opt;
     if (frwordcmp("Ale"                        ,buffer)==0) genprob.probtyp = prb_ale;
+#ifdef D_TSI
+    if (frwordcmp("Thermal_Structure_Interaction",buffer)==0) genprob.probtyp = prb_tsi;
+#endif
   }
 
+  /* read time type : time-dependent/time-independent analysis */
   frchar("TIMETYP"   ,buffer,            &ierr);
   if (ierr==1)
   {
     if (frwordcmp("Static" ,buffer)==0) genprob.timetyp=time_static;
     if (frwordcmp("Dynamic",buffer)==0) genprob.timetyp=time_dynamic;
   }
+
+  /* restarting flag */
   frint("RESTART"    ,&(restart),&ierr);
   if (ierr==1)
   {
@@ -253,6 +297,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      genprob.restart=restart;
   }
 
+  /* read number of fields */
   frint("NUMFIELD",&(genprob.numfld),&ierr);
 
   frint("GRADERW",&(genprob.graderw),&ierr);
@@ -281,7 +326,16 @@ if (genprob.probtyp==prb_ssi)
    genprob.numsf=0;
 }
 #endif
+#ifdef D_TSI
+if (genprob.probtyp == prb_tsi)
+{
+   genprob.numsf = 0;  /* structural field index */
+   genprob.numtf = 1;  /* thermal field index */
+}
+#endif
 
+/*----------------------------------------------------------------------*/
+/* input / output file choices */
 if (frfind("---IO")==1)
 {
   frread();
@@ -300,6 +354,10 @@ if (frfind("---IO")==1)
     frreadyes("FLUID_STRESS",&ioflags.fluid_stress);
     frreadyes("FLUID_VIS",&ioflags.fluid_vis);
     frreadyes("ALE_DISP",&ioflags.ale_disp);
+#ifdef D_TSI
+    frreadyes("THERM_TEMPERATURE",&ioflags.therm_temper);
+    frreadyes("THERM_HEATFLUX",&ioflags.therm_heatflux);
+#endif
 
     /* the old keywords (only for backwards compatibility) */
     ierr = frreadyes("STRUCT_DISP_FILE",&flag);
@@ -592,6 +650,10 @@ for (i=0; i<genprob.numfld; i++)
    case structure:
      inpctr_eig_struct(alleig);
    break;
+#ifdef D_TSI
+   case thermal:
+   break;
+#endif
    case none:
       dserror("Cannot find type of field");
    break;
@@ -677,6 +739,10 @@ if (genprob.probtyp==prb_fsi ||
    alldyn = (ALLDYNA*)CCACALLOC((genprob.numfld+1),sizeof(ALLDYNA));
 else if (genprob.probtyp==prb_ssi)
    alldyn = (ALLDYNA*)CCACALLOC((genprob.numfld+1),sizeof(ALLDYNA));
+#ifdef D_TSI
+else if (genprob.probtyp == prb_tsi)
+   alldyn = (ALLDYNA *) CCACALLOC((genprob.numfld+1), sizeof(ALLDYNA));
+#endif
 else
    alldyn = (ALLDYNA*)CCACALLOC(genprob.numfld,sizeof(ALLDYNA));
 if (!alldyn) dserror("Allocation of ALLDYNA failed");
@@ -706,6 +772,12 @@ for (i=0; i<genprob.numfld; i++)
          alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
          inpctr_dyn_struct(alldyn[i].sdyn);
          break;
+#ifdef D_TSI
+       case thermal:
+         alldyn[i].tdyn = (THERM_DYNAMIC*)CCACALLOC(1,sizeof(THERM_DYNAMIC));
+         /* this is empty right now, come back later */
+         break;
+#endif
        case none:
          dserror("Cannot find type of field");
          break;
@@ -733,6 +805,20 @@ if (genprob.probtyp==prb_ssi)
    inpctr_dyn_ssi(alldyn[i].ssidyn);
 #else
    dserror("General SSI problem not defined in Makefile!!!");
+#endif
+}
+
+/*----------------------------------------------------------------------*/
+if (genprob.probtyp == prb_tsi)
+{
+#ifdef D_TSI
+  /* We allocated an additional ALLDYNA component, the (numfld+1)th,
+     this is now set with the interaction dyn controls */
+  /* counter i==genprob.numfld */
+  alldyn[i].tsidyn = (TSI_DYNAMIC*) CCACALLOC(1, sizeof(TSI_DYNAMIC));
+  inpctr_dyn_tsi(alldyn[i].tsidyn);
+#else
+  dserror("General TSI problem not defined in Makefile!!!");
 #endif
 }
 
@@ -769,9 +855,24 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("DYNAMICTYP",buffer,&ierr);
    if (ierr==1)
    {
-      if (frwordcmp(buffer,"Centr_Diff")==0) sdyn->Typ = centr_diff;
-      if (frwordcmp(buffer,"Gen_Alfa")==0)   sdyn->Typ = gen_alfa;
-      if (frwordcmp(buffer,"Gen_EMM")==0)    sdyn->Typ = Gen_EMM;
+      if (frwordcmp(buffer,"Centr_Diff")==0) 
+      {
+        sdyn->Typ = centr_diff;
+      }
+      else if (frwordcmp(buffer,"Gen_Alfa")==0)
+      { 
+        sdyn->Typ = gen_alfa;
+      }
+      else if (frwordcmp(buffer,"Gen_EMM")==0)
+      {
+        sdyn->Typ = Gen_EMM;
+      }
+      else
+      {
+        sdyn->Typ = gen_alfa;
+        printf("DYNAMICTYP unknown (the time integration scheme) "
+          "using default: Generalised-alpha");
+      }
    }
    frreadyes("DAMPING",&(sdyn->damp));
    frchar("ITERATION"  ,buffer    ,&ierr);
@@ -1779,3 +1880,80 @@ return;
 } /* end of inpctr_dyn_ale */
 #endif
 
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Input of the TSI DYNAMIC block in the input-file
+
+In this routine the data in the TSI DYNAMIC block of the input file
+are read and stored in tsidyn
+
+\param  *tsidyn 	  TSI_DYNAMIC       (o)
+\return void
+
+\author bborn
+\date 03/06
+*/
+/*------------------------------------------------------------------------*/
+#ifdef D_TSI
+void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
+{
+  INT    ierr;
+  char   buffer[50];
+
+#ifdef DEBUG
+  dstrc_enter("inpctr_dyn_tsi");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* set important defaults */
+  tsidyn->kind = tsi_full;  /* default: full thermostructural coupling */
+
+  /*--------------------------------------------------------------------*/
+  /* read settings in input file */
+  if (frfind("-TSI DYNAMIC") == 0) goto end;
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /* read chars */
+    frchar("KIND", buffer, &ierr);
+    if (ierr == 1)
+    {
+      if (frwordcmp(buffer,"full") == 0)
+      {
+	 tsidyn->kind = tsi_full;
+      }
+      else if (frwordcmp(buffer, "thermal_static_structure_dynamic") == 0)
+      {
+	 tsidyn->kind = tsi_therm_stat_struct_dyn;
+      }
+      else if (frwordcmp(buffer, "thermal_predefined_structure_dynamic") == 0)
+      {
+         tsidyn->kind = tsi_therm_pred_struct_dyn;
+      }
+      else
+      {
+         dserror("KIND of TSI unknown");
+      }
+    }
+
+    frint("NUMSTEP", &(tsidyn->nstep), &ierr);
+    frint("TIMESTEP", &(tsidyn->dt), &ierr);
+    frdouble("MAXTIME", &(tsidyn->maxtime), &ierr);
+
+    frint("ITEMAX", &(tsidyn->maxiter), &ierr);
+
+    frread();
+  }
+  frrewind();
+
+  end:
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+} /* end of inpctr_dyn_tsi */
+#endif  /* end of #ifdef D_TSI */

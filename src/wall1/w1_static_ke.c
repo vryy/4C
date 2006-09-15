@@ -210,7 +210,7 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.w1->nGP[0];
    nis = ele->e.w1->nGP[1];
 break;
-case tri3: /* --> tri - element */
+case tri3: case tri6:  /* --> tri - element */
    nir  = ele->e.w1->nGP[0];
    nis  = 1;
    intc = ele->e.w1->nGP[1]-1;
@@ -233,7 +233,7 @@ for (lr=0; lr<nir; lr++)
        e2   = data->xgss[ls];
        facs = data->wgts[ls];
       break;
-      case tri3:   /* --> tri - element */
+      case tri3: case tri6:  /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];

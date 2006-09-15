@@ -110,6 +110,7 @@ typedef struct _ELEMENT
      struct _AXISHELL   *saxi;                  /* axisymmetric shell */
      struct _INTERF     *interf;                /* 1D interface */
      struct _WALLGE     *wallge;                /* gradient enhance wall element */
+     struct _THERM2     *th2;                   /* 2D thermal element */
      }                          e;              /* name of union */
 
      union
@@ -201,6 +202,12 @@ typedef struct _GNODE
 
 #ifdef D_SSI
   struct _SSI_COUPLE_CONDITION *ssicouple;
+#ifndef D_FSI
+  struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
+#endif
+#endif
+
+#ifdef D_TSI
 #ifndef D_FSI
   struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
 #endif

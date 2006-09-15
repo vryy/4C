@@ -502,6 +502,7 @@ return;
  | INT    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
+ |                                          3 = sol_mf                  |
  | DOUBLE scale    (i) scaling factor for dirichlet condition           |
  | INT place       (i) row to put values in the ARRAY sol               |
  *----------------------------------------------------------------------*/

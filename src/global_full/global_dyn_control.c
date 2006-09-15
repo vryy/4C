@@ -35,7 +35,24 @@ void caldyn()
 #ifdef DEBUG
 dstrc_enter("caldyn");
 #endif
-/*----------------------------------------------------------------------*/
+/*------------------------------ switch into different time integrators */
+/*   switch (alldyn[0].sdyn->Typ) */
+/*   { */
+/*     /\* central differences time integration *\/ */
+/*     case centr_diff: */
+/*       dyn_nln_stru_expl(); */
+/*     /\* generalized alfa time integration *\/ */
+/*     case gen_alfa: */
+/*       dyn_nln_structural(); */
+/*     /\* Generalized Energy-Momentum time integration *\/ */
+/*     case Gen_EMM: */
+/* #ifdef GEMM */
+/*       dyn_nln_gemm(); */
+/* #else */
+/*       dserror("GEMM not supported"); */
+/* #endif */
+/*   } */
+
 
 if (alldyn[0].sdyn->Typ == centr_diff) {
   /* central difference time integration */

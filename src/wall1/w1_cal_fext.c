@@ -65,23 +65,23 @@ static ARRAY xjm_a;   static DOUBLE **xjm;    /* jacobian matrix            */
  | in here, line and surface loads are integrated                       |
  *----------------------------------------------------------------------*/
  /*----------------------------------------------------------------------*
- |                  s                                                   |
- |                 |                                                    |
- |                 2                                                    |
- |                ||                                                    |
- |               | |                                                    |
- |              l  |                                                    |
- |             i   l                                                    |
- |            n    i                                                    |
- |           e     n                                                    |
- |          3      e                                                    |
- |         |       2                                                    |
- |        |        |                                                    |
- |       |         |                                                    |
- |      |          |                                                    |
- |  r--0--line 1---1--r                                                 |
- |    |                                                                 |
- |   s                                                                  |
+ |                  s                                   s                | 
+ |                 |                                   /                 |
+ |                 2                                  2                  |
+ |                ||                                 /|                  |
+ |               | |                                / |                  |
+ |              l  |                               /  |                  |
+ |             i   l                              /   |                  |
+ |            n    i                             /    |                  |
+ |           e     n                            5     4                  |
+ |          3      e                           /      |                  |
+ |         |       2                          /       |                  |
+ |        |        |                         /        |                  |
+ |       |   tri3  |                        /   tri6  |                  |
+ |      |          |                       /          |                  |
+ |  r--0--line 1---1--r                r--0-----3-----1--r->             |
+ |    |                                  /                               |
+ |   s                                  s                                |
  *----------------------------------------------------------------------*/
 
 void w1_eleload(ELEMENT  *ele,     /* actual element                  */
@@ -98,7 +98,7 @@ INT          nis=0;            /* number of GP's in r-s direction */
 INT          nil;                /* number of GP's in for triangle  */
 INT          iel;                /* number of element nodes         */
 INT          nd;                 /* element DOF                     */
-INT          intc=0;               /* "integration case" for tri-element */
+INT          intc=0;               /* "integratsion case" for tri-element */
 const INT    numdf  = 2;         /* dof per node                    */
 INT          foundsurface;       /* flag for surfaceload present    */
 INT          iedgnod[3];
@@ -173,7 +173,7 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.w1->nGP[0];
    nis = ele->e.w1->nGP[1];
 break;
-case tri3: /* --> tri - element */
+case tri3: case tri6: /* --> tri - element */
    nir  = ele->e.w1->nGP[0];
    nis  = 1;
    intc = ele->e.w1->nGP[1]-1;
@@ -212,7 +212,7 @@ if (imyrank==ele->proc)
        e2   = data->xgss[ls];
        facs = data->wgts[ls];
       break;
-      case tri3:   /* --> tri - element */
+      case tri3: case tri6:  /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
@@ -281,11 +281,6 @@ for (line=0; line<ngline; line++)
       ygp[i] = data->xgss[i];
       wgy[i] = data->wgts[i];
     }
-
-    for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
-                            wgx[i] = data->wgtr[i]; }
-    for (i=0; i<ngs; i++) { ygp[i] = data->xgss[i];
-                            wgy[i] = data->wgts[i]; }
    /*--------- degeneration to line-integration-info for r-s directions */
     switch (line)
     {
@@ -410,7 +405,23 @@ for (line=0; line<ngline; line++)
     /* line number lie has been done,switch of the neumann pointer of it */
    break;
    case tri3:   /* --> tri - element */
-
+      /* obsolete ?
+       * This block is kept for consistency, but should be dropped
+       * in favor of the version used with 'tri6' */
+      /* The quadrature along the element edges is carried out by
+       * providing "degenerated" shape functions at these edges.
+       * With "degenerated" shape functions one-dimenional (line-like)
+       * shape functions are meant in contrast to two-dimensional (area-like)
+       * occuring anyway for the triangle wall element.
+       * These "degenerated" shape functions are the common linear 
+       * (quadratic) functions for each tri3 (tri6) element edge
+       * as found eg in planar beams ('w1_degrectri').
+       * They always stretch on (-1,+1) and a specific functional vector
+       * and its norm (dubbed "edge Jacobian determinant") is accordingly 
+       * calculated ('w1_edgejaco').
+       * The common Gauss points are used for numerical quadrature as stored
+       * in 'qxg', 'qwgt'.
+       */
       /*------------------------------------------------ get edge nodes */
       w1_iedg(iedgnod,ele,line,0);
 
@@ -450,6 +461,145 @@ for (line=0; line<ngline; line++)
              }
        }
  break;
+    case tri6:
+        /*---------------------------------------------------------------*/
+        /* Integration is performed along the edge 'line' of the element.
+         * The integration is established along the line==0: r-axis, 
+         * line==1: diagonal xi, line==2: s-axis. The _common_ triangular shape
+         * functions, their derivatives and functional matrix 'xfm'
+         * are used for the integration along the edges as defined in 
+         * 'w1_funct_deri' and 'w1_jaco'. The integration of
+         * the edges line==0 and line==2 is straightfowardly carried out with
+         * a Gauss quadrature where the common Gauss points in the range
+         * (-1,+1) are mapped to the interval (0,+1) (cf. triangular 
+         * parameter space) in 'w1_gint'. The diagonal requires a "special" 
+         * treatment regarding its absolute of the functional matrix:
+         * al = || [ dx/dxi, dy/dxi ] ||
+         * The diagonal line==1 are the set of points {(r,s) | 0<=s<=1,r=1-s}.
+         * A coordinate xi, 0<=xi<=sqrt(2), is considered which follows
+         * the diagonal in the paramter space. With the help of this coordinate
+         * the usual natural coords are r(xi)=1-xi/sqrt(2), s(xi)=xi/sqrt(2).
+         * The coordinate mappings are used to express the line integral along
+         * xi, 0<=xi<=sqrt(2) dependent on s, 0<=s<=1:
+         * using isoparametry x=sum(N^k*xx^k,k), y=sum(N^k*yy^k,k)
+         * (xx^k x-coord vertices, yy^k y-coord vertices)                        
+         * al = || [ dx/dr dr/dxi + dx/ds ds/dxi, dy/dr dr/dxi + dy/ds ds/dxi ] ||
+         *      = ds/dxi || [ -dx/dr + dx/ds, -dy/dr + dy/ds ] ||
+         * as ds/dxi = 1/sqrt(2) = -dr/dxi, dx/dr=jac00, dx/ds=jac10, etc of 
+         * the Jacobian determinant.
+         * The actual quadrature is carried out along s and, therefore, 
+         * the functional matrix al above is multiplied by dxi/ds which leads to
+         * 'ds' = || [ -jac00+jac10, -jac01+jac11 ] ||
+         */
+        /*------------------- number of Gauss points for edge quadrature */
+        /* Consider the distribution of Gauss points
+         *     +---+
+         *     | x | *   *   * 
+         *     |   +---+
+         *     | x   x | *   *
+         *     |       +---+
+         *     | x   x   x | *
+         *     |           +---+
+         *     | x   x   x   x |-- x : set of Gausspoints dim='nir' (=10 here)
+         *     +-X---X---X---X-+   for triangle area
+         *           \ X : corresp. set of Gausspoints dim='nil' (=4 here)
+         *                 for line (edge) integrals
+         * Then the following heuristical formula emerges
+         * ('nil'^2 - 'nil')/2 + 'nil' = 'nir'
+         * or resolved for 'nil' = ROUND((SQRT(8*'nir'+1) - 1)/2)
+         * Range: 'nir'<=13 leading to 'nis'<=4 (cf. w1intg)
+         */
+        nil = (INT) (0.5*sqrt(8.0*nir + 1.0) - 0.5);
+        /* integration type */
+        /* intc = ele->e.w1->nGP[1]-1; */
+        /*---------------------------------------------------------------*/
+        /* Gauss quadrature to obtain consistent element load contriution */
+        for (lr=0; lr<nil; lr++)  /* loop over Gauss points */
+        {
+          /*-------------------------------------------------------------*/
+          /* Gauss points and weights on each edge */
+          switch (line)
+          {
+            case 0:
+              /* line 1 : quadrature along r-axis 0<=r<=1 */
+              e1 = data->qxg[lr][intc];
+              e2 = 0.0;
+              fac = data->qwgt[lr][intc];  /* weight */
+              break;
+            case 1:
+              /* line 2 : quadrature along diagonal 0<=xi<=sqrt(2)
+               * replaced by integration along s-axis 0<=s<=1 */
+              e2 = data->qxg[lr][intc];  /* s-coord of Gauss point */
+              e1 = 1.0 - e2;  /* r-coord of Gauss point */
+              fac = data->qwgt[lr][intc];
+              break;
+            case 2:
+              /* line 3 : quadrature along s-axis, 0<=s<=1 */
+              e1 = 0.0;
+              e2 = data->qxg[lr][intc];
+              fac = data->qwgt[lr][intc];
+              break;
+          } /* end switch */
+          /*------------------------------------------------------------*/
+          /* shape functions and their derivatives at Gauss point */
+          w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
+          /*------------------------------------------------------------*/
+          /* Functional / Jacobian matrix 'xjm' at Gauss point */
+          w1_jaco(deriv,xjm,&det,ele,iel);
+          /*------------------------------------------------------------*/
+          /* (Euclidean) norm 'ds' of functional matrix at Gauss point
+           * (dubbed Jacobian determinat) */
+          switch (line)
+          {
+            case 0:
+              ds = xjm[0][0]*xjm[0][0] + xjm[0][1]*xjm[0][1];
+              ds = sqrt(ds);
+              break;
+            case 1:
+              ds = (-xjm[0][0]+xjm[1][0])*(-xjm[0][0]+xjm[1][0]) 
+                  + (-xjm[0][1]+xjm[1][1])*(-xjm[0][1]+xjm[1][1]);
+              ds = sqrt(ds);
+              break;
+            case 2:
+              ds = xjm[1][0]* xjm[1][0] + xjm[1][1]*xjm[1][1];
+              ds = sqrt(ds);
+              break;
+          } /* end switch */
+          /*------------------------------------------------------------*/
+          /* quadrature factor */
+          facline = ds * fac;
+          /*----------------- integration factor for rotational symmetry*/
+          if(ele->e.w1->wtype == rotat_symmet)
+          {
+              dserror("'w1_eleload' : rotational kinematics not supported with TRI6");
+          }
+          /*------------------------------------------------------------*/
+          /* traction type */
+          switch(gline[line]->neum->neum_type)
+          {
+            case neum_orthopressure:
+              /* orthonormal pressure */
+              dserror("'w1_eleload' : no orthonormal pressure for triangles yet");
+              break;
+            default:
+              /* uniform prescribed load for each spatial 
+               * direction (x,y)*/
+              for (i=0; i<numdf; i++)
+              {
+                  forceline[i] = gline[line]->neum->neum_val.a.dv[i];
+              }
+              /* add load vector components to element load vector */
+              for (j=0; j<iel; j++)  /* loop over element nodes */
+              {
+                  for (i=0; i<numdf; i++)  /* loop over nodal DOFs */
+                  {
+                      eload[i][j] += funct[j] * forceline[i] * facline;
+                  }  /* end for loop */
+              }  /* end for loop */
+              break;
+          }  /* end switch : load types */
+        }  /* end for loop : Gauss points */
+    break;
  default:
     dserror("ele->distyp unknown in 'w1_eleload'");
  break;
@@ -801,7 +951,7 @@ else if (init==0)
    break;
    case tri6:
       for(i=0;i<3;i++) iegnod[i] = iegt[i][line][1];
-      dserror("iegnode for tri6 not tested yet\n");
+/*      dserror("iegnode for tri6 not tested yet\n"); */
    break;
    default:
       dserror("distyp unknown\n");

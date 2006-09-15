@@ -83,6 +83,16 @@ and the type is in partition.h
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;
 /*----------------------------------------------------------------------*
+ |                                                          bb 08/05    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | INT                   numcurve;                                      |
+ | struct _CURVE      *curve;                                           |
+ *----------------------------------------------------------------------*/
+extern INT            numcurve;
+extern struct _CURVE *curve;
+/*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
  | to tell element routines what to do                                  |
@@ -109,6 +119,8 @@ INT           nstep;              /* total number of steps */
 INT           itnum;              /* number of iterations taken by corrector */
 INT           maxiter;            /* max. number of iterations allowed */
 DOUBLE        stepsi;             /* load step size for temp. storage*/
+
+INT           actcurve;           /* index of active load (time) curve */
 
 INT           mod_displ;          /* write or not dicplacements of this step in output */
 INT           mod_stress;         /* write or not stresses of this step in output */
@@ -276,6 +288,12 @@ solver_control(actsolv, actintra,
                 init);
 /*----------------------------- init the assembly for ONE sparse matrix */
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+/*--------------------- init all (theoretically) applicable load curves */
+for (actcurve=0; actcurve<numcurve; actcurve++)
+{
+  dyn_init_curve(actcurve,statvar->nstep,statvar->stepsize,
+                 statvar->stepsize*statvar->nstep);
+}
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
 calinit(actfield,actpart,action,&container);
@@ -375,6 +393,38 @@ for (kstep=0; kstep<nstep; kstep++)
    if (statvar->isrelstepsize==1)
    {
      get_stepsize(kstep,statvar);
+   }
+   /*-------------------------------------------------------------------*/
+   /* multiply rhs[sysarray+1] by actual load factor from curve 0
+    * this control routine at the moment solely uses curve 0 for the rhs
+    * and is only used for load control. */
+   /*-------------------------------------------------------------------*/
+   /* get factor at load point */
+   switch(controltyp)
+   {
+     case control_load:
+       /*---------------------------------------------------------------*/
+       /* set load factor on total external load */
+       if (numcurve == 0)  /* simple load factor from stepsize */
+       {
+         nln_data.rlold = (kstep + 1) * statvar->stepsize;
+       }
+       else  /* sophisticated load factor from load curve */
+       {
+         actcurve = 0;
+         dyn_facfromcurve(actcurve, 
+                          kstep*statvar->stepsize, 
+                          &(nln_data.rlold));
+       }  /* end if : numcurve == 0 */
+       break;
+     default:
+#ifdef DEBUG
+       if (numcurve != 0)
+       {
+         printf("Load curve not implemented for the applied control type\n");
+       }
+#endif
+       break;
    }
    /*---------- write report about all ARRAYs and ARRAY4Ds to .err file */
    /*dstrace_to_err();*/
@@ -555,10 +605,30 @@ for (kstep=0; kstep<nstep; kstep++)
       dserror("restart for arclengh not yet impl.");
     break;
     case control_load:
-      dserror("load control not yet impl.");
+#ifdef BINIO
+      restart_write_bin_nlnstructstat(&out_context,
+                                      statvar,
+                                      &nln_data,
+                                      kstep,
+                                      actsolv->nrhs, actsolv->rhs,
+                                      actsolv->nsol, actsolv->sol,
+                                      1            , dispi);
+#else
+      restart_write_nlnstructstat(statvar,
+                           &nln_data,
+                           actfield,
+                           actpart,
+                           actintra,
+                           action,
+                           kstep,
+                           actsolv->nrhs, actsolv->rhs,
+                           actsolv->nsol, actsolv->sol,
+                           1            , dispi,
+                           &container);  /* contains variables defined in container.h */
+#endif
     break;
     case control_none:
-      dserror("Unknown typ of path following technique");
+      dserror("control type not yet impl.");
     break;
     default:
       dserror("Unknown typ of path following technique");
@@ -684,9 +754,8 @@ case control_arc:
    }
    rldiff = (statvar->stepsize) / (sqrt(prenorm*prenorm + statvar->arcscl*statvar->arcscl));
 break;
-case control_none:
+case control_load:
    rldiff = 0.0;
-   dserror("Unknown typ of path following control");
 break;
 default:
    rldiff = 0.0;
@@ -950,8 +1019,8 @@ case control_arc:/*=================================== arlenght control */
    increment_controlarc(actintra,actsolv,actsysarray,rsd,dispi,&(actsolv->sol[0]),
                         rlnew,rlold,stepsize,&rli);
 break;
-case control_load:
-   dserror("load control not yet impl.");
+case control_load:  /* load controlled */
+   increment_controlload(rsd,dispi,&rli);
 break;
 case control_none:
    dserror("Unknown typ of path following technique");
@@ -1258,7 +1327,31 @@ dstrc_exit();
 return;
 } /* end of increment_controldisp */
 
-
+/*----------------------------------------------------------------------*
+ |  make increment for control load                           bb 09/05  |
+ |  which is none                                                       |
+ *----------------------------------------------------------------------*/
+void increment_controlload(DIST_VECTOR   *rsd,
+                           DIST_VECTOR   *dispi,
+                           DOUBLE        *rli)
+{
+#ifdef DEBUG
+  dstrc_enter("increment_controlload");
+#endif
+  /*--------------------------------------------------------------------*/
+  /* load increment in NR equilibrium iteration is zero,
+   * as the load factor is prescribed in statvar->rlold */
+  *rli = 0.0;
+  /*---------------------------------------------- make rsd[0] = rsd[2] */
+  /*--------------------------------- make dispi[0] = dispi[0] + rsd[2] */
+  solserv_copy_vec(&(rsd[2]),&(rsd[0]));
+  solserv_add_vec(&(rsd[2]),&(dispi[0]),1.0);
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+} /* end of increment_controlload */
 
 
 /*----------------------------------------------------------------------*
@@ -1322,7 +1415,8 @@ dstrc_enter("conequ_printhead");
    fprintf(allfiles.out_err,"Load control\n");
    break;
    case control_none:
-      dserror("Unknown typ of path following technique");
+       printf("Control none\n"); /* bb */
+       /* dserror("Unknown typ of path following technique"); */
    break;
    default:
       dserror("Unknown typ of path following technique");

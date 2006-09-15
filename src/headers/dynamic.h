@@ -17,9 +17,13 @@ typedef union _ALLDYNA
 {
    struct _STRUCT_DYNAMIC    *sdyn;   /* ptr for allocation of structural dynamic data */
    struct _FLUID_DYNAMIC     *fdyn;   /* ptr for allocation of fluid dynamic data */
-   struct _FSI_DYNAMIC       *fsidyn; /*ptr for allocation of fsi dynamic data */
-   struct _SSI_DYNAMIC       *ssidyn; /*ptr for allocation of ssi dynamic data */
+   struct _FSI_DYNAMIC       *fsidyn; /* ptr for allocation of fsi dynamic data */
+   struct _SSI_DYNAMIC       *ssidyn; /* ptr for allocation of ssi dynamic data */
    struct _ALE_DYNAMIC       *adyn;   /* ptr for allocation of ale dynamic data */
+   struct _THERM_DYNAMIC     *tdyn;  /* ptr for allocation of THERMAL 
+                                          dynamic control data */
+   struct _TSI_DYNAMIC       *tsidyn;  /* ptr for allocation of TSI 
+                                          dynamic control data */
 } ALLDYNA;
 
 
@@ -31,9 +35,9 @@ typedef struct _STRUCT_DYNAMIC
 {
 enum
    {
-    gen_alfa,
-    centr_diff,
-    Gen_EMM
+    gen_alfa,                   /* generalised alpha-time integrator */
+    centr_diff,                 /* central differences */
+    Gen_EMM                     /* generalised energy-momentum method */
    }               Typ;         /* type of time integration algorithm */
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */
@@ -201,4 +205,52 @@ INT                coupmethod;   /*!< flag, 0=mortar , 1=conforming, 2=nonconfor
 } ALE_DYNAMIC;
 
 
+/*----------------------------------------------------------------------*
+ | general thermal dynamic control                        bborn 03/06   |
+ *----------------------------------------------------------------------*/
+typedef struct _THERM_DYNAMIC
+{
+  /* time thingies */
+  DOUBLE             maxtime;    /* maximum total time */
+  INT                nstep;      /* number of steps */
+  DOUBLE             dt;         /* stepsize */
+  DOUBLE             time;       /* actual time */
+  INT                step;       /* actual step */
+  /* NRI thingies */
+  INT                iter;       /* number of active iteration */
+  INT                maxiter;    /* maximum number of iterations */
+  DOUBLE             toldisp;    /* displacement tolerance */
 
+} THERM_DYNAMIC;
+
+
+/*----------------------------------------------------------------------*
+ | general TSI dynamic control variables                  bborn 03/06   |
+ *----------------------------------------------------------------------*/
+typedef struct _TSI_DYNAMIC
+{
+  enum
+  {
+    tsi_full,                       /* fully coupled analysis,
+                                     * both fields vary in time */
+    tsi_therm_stat_struct_dyn,      /* thermal field is initially
+                                     * solved, then only the structure
+                                     * is integrated temporally */
+    tsi_therm_pred_struct_dyn       /* thermal field is predefined 
+                                     * initially, ie it is not solved,
+                                     * later on only the structural field
+                                     * is integrated in time */
+  }                kind;            /* kind of analysis */
+
+  /* time thingies */
+  DOUBLE           maxtime;         /* total (final) time */
+  INT              nstep;           /* number of steps */
+  DOUBLE           dt;              /* time step size */
+  DOUBLE           time;            /* time */
+  INT              step;            /* current time step */
+
+  /* iteration thingies */
+  INT              maxiter;         /* maximum number of iterations */
+  DOUBLE           entol;           /* tolerance for energy check 
+                                       over fields */
+} TSI_DYNAMIC;

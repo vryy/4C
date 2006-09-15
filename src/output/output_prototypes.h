@@ -34,6 +34,7 @@ void out_sol(
 void out_fluidmf(FIELD *fluidfield);
 void out_fsi(FIELD *fluidfield);
 void out_ssi(FIELD *masterfield);
+void out_tsi(FIELD *structfield);
 void out_fluidtu(FIELD *actfield, INTRA *actintra, INT step, INT place);
 /*----------------------------------------------------------------------*
  |  out_gid_sol.c                                        m.gee 12/01    |

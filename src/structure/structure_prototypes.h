@@ -125,6 +125,11 @@ void increment_controldisp(
     DIST_VECTOR   *dispi,
     DOUBLE        *rli);
 
+void increment_controlload(
+    DIST_VECTOR   *rsd,
+    DIST_VECTOR   *dispi,
+    DOUBLE        *rli);
+
 
 /*----------------------------------------------------------------------*
   | stru_dyn_nln.c                                        m.gee 02/02    |

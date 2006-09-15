@@ -20,6 +20,10 @@ Maintainer: Malte Neumann
 #include "../ssi_full/ssi_prototypes.h"
 #endif
 
+#ifdef D_TSI
+#include "../tsi_full/tsi_prototypes.h"
+#endif
+
 
 
 /*----------------------------------------------------------------------*
@@ -72,6 +76,7 @@ void ntainp()
 {
 
   INT i,j;
+  DOUBLE b_temp;
 
 
   /* the input of the tracing option has not been done yet, so
@@ -306,7 +311,40 @@ void ntainp()
   }
 
 
-
+  /*--------------------------------------------------------------------*/
+  /* BEGIN --- QUICK AND DIRTY HACK */ 
+/*   for (i=0; i<field[0].dis[0].numnp; i++) */
+/*   { */
+/*     if ( (field[0].dis[0].gnode[i].ondesigntyp == ondline) */
+/*          && ( (field[0].dis[0].gnode[i].d.dline->Id == 5) */
+/*               || (field[0].dis[0].gnode[i].d.dline->Id == 5) ) ) */
+/*     { */
+/*       b_temp = (4.0-field[0].dis[0].gnode[i].node->x[0]) */
+/*           * (4.0-field[0].dis[0].gnode[i].node->x[0]) */
+/*         + field[0].dis[0].gnode[i].node->x[1] */
+/*           * field[0].dis[0].gnode[i].node->x[1]; */
+/*       printf("dl %d : node %d : (%e, %e) : Diff ? %e\n",  */
+/*              field[0].dis[0].gnode[i].d.dline->Id, */
+/*              field[0].dis[0].gnode[i].Id, */
+/*              field[0].dis[0].gnode[i].node->x[0], */
+/*              field[0].dis[0].gnode[i].node->x[1], */
+/*              1.0-b_temp); */
+/*       /\* modify y-coordinate *\/ */
+/*       b_temp = sqrt(1.0 - DSQR(4.0-field[0].dis[0].gnode[i].node->x[0])); */
+/*       field[0].dis[0].gnode[i].node->x[1] = b_temp; */
+/*       b_temp = (4.0-field[0].dis[0].gnode[i].node->x[0]) */
+/*           * (4.0-field[0].dis[0].gnode[i].node->x[0]) */
+/*         + field[0].dis[0].gnode[i].node->x[1] */
+/*           * field[0].dis[0].gnode[i].node->x[1]; */
+/*       printf("dl %d : node %d : (%e, %e) : Diff ? %e\n",  */
+/*              field[0].dis[0].gnode[i].d.dline->Id, */
+/*              field[0].dis[0].gnode[i].Id, */
+/*              field[0].dis[0].gnode[i].node->x[0], */
+/*              field[0].dis[0].gnode[i].node->x[1], */
+/*              1.0-b_temp); */
+/*     }     */
+/*   } */
+  /* END --- QUICK AND DIRTY HACK */ 
 
   /*--------------------------------------- input of general dynamic data */
   if (genprob.timetyp==time_dynamic) inpctrdyn();
@@ -314,17 +352,19 @@ void ntainp()
   else inpctrstat();
   /*----------------------------------------- input of eigensolution data */
   inpctreig();
+
+#ifdef PERF
+  perf_begin(10);
+#endif
   /*------------------------------------------------- input of conditions */
   /* dirichlet/coupling/neumann conditions are read from file to the
      DVOLS/DSURFS/DLINES/DNODES
      */
-#ifdef PERF
-  perf_begin(10);
-#endif
   inp_conditions();
 #ifdef PERF
   perf_end(10);
 #endif
+
   /*----------- inherit the fsi coupling conditions inside the design
     condition is transformed in a dirichlet condition for fluid- and
     ale-field and into a neumann condition for structure-field           */

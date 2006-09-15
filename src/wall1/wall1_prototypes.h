@@ -1234,6 +1234,17 @@ void w1_edgejaco(ELEMENT    *ele,
                  DOUBLE     *det,
                  INT         iel,
                  INT        *iedgnod);
+/*----------------------------------------------------------------------*
+ |  w1_tsi.c                                                            |
+ *----------------------------------------------------------------------*/
+#ifdef D_TSI
+void w1_tsi_thstrain(ELEMENT *ele,  /* pointer to current (wall) element */
+                     MATERIAL *mat,  /* material type */
+                     DOUBLE r,  /* r-coord of (r,s) */
+                     DOUBLE s,  /* s-coord of (r,s) */
+                     INT numstr,  /* dimension of strain vector 'strain' */
+                     DOUBLE *strain);  /* strain vector */
+#endif /* end of #ifdef D_TSI */
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/

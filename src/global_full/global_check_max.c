@@ -66,6 +66,10 @@ Maintainer: Malte Neumann
 #include "../fluid2/fluid2_tu.h"
 #endif
 
+#ifdef D_THERM2
+#include "../therm2/therm2.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -251,6 +255,12 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 #ifdef D_FLUID2
         case el_fluid2_tu:
           gauss = actele->e.f2_tu->nGP[0]*actele->e.f2_tu->nGP[1];
+          break;
+#endif
+
+#ifdef D_THERM2
+        case el_therm2:
+          gauss = actele->e.th2->nGP[0]*actele->e.th2->nGP[1];
           break;
 #endif
 

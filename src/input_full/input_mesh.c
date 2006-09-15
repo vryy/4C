@@ -39,6 +39,10 @@ Maintainer: Malte Neumann
 #include "../fluid2_pro/fluid2pro_prototypes.h"
 #endif
 
+#ifdef D_THERM2
+#include "../therm2/therm2.h"
+#endif
+
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01  |
@@ -122,6 +126,8 @@ void inpfield()
 
 
   /* read node coordinates from file */
+  /* nodes coordinates are temporarily stored in global variable
+   * tmpnodes1, which used later on */
   inpnodes();
 
 
@@ -243,6 +249,44 @@ void inpfield()
     inpdis(&(field[genprob.numaf]));
     inp_ale_field(&(field[genprob.numaf]));
   }
+
+
+#ifdef D_TSI
+  /* TSI typ of problem:
+   * -------------------
+   */
+  if (genprob.probtyp == prb_tsi)
+  {
+    if (genprob.numfld != 2) 
+    {
+      dserror("numfld != 2 for TSI");
+    }
+
+    /* allocate global field variable */
+    field = (FIELD*) CCACALLOC(genprob.numfld, sizeof(FIELD));
+
+    /* structure field */
+    field[genprob.numsf].fieldtyp = structure;
+    inpdis(&(field[genprob.numsf]));
+    inp_struct_field(&(field[genprob.numsf]));
+
+    /* thermal field */
+    field[genprob.numtf].fieldtyp = thermal;
+    inpdis(&(field[genprob.numtf]));
+    inp_therm_field(&(field[genprob.numtf]));
+
+    /* automatic creation of thermal mesh */
+    /* ---> stay tuned ---> needs to be accomplished */
+    /*
+    if (genprob.create_ale == 0)
+    {
+      field[genprob.numaf].fieldtyp = ale;
+      inpdis(&(field[genprob.numaf]));
+      inp_ale_field  (&(field[genprob.numaf]));
+    }
+    */
+  }
+#endif
 
 
 
@@ -461,6 +505,17 @@ void inpdis(
       break;
 
 
+#ifdef D_TSI
+    case thermal:
+      while (strncmp(allfiles.actplace, "------", 6) != 0)
+      {
+        frint("NUMTHERMDIS", &(actfield->ndis), &ierr);
+        frread();
+      }
+      break;
+#endif
+
+
     default:
       dserror("Unknown fieldtype");
       break;
@@ -506,6 +561,13 @@ end_dis:
         frread();
       }
       break;
+
+
+#ifdef D_TSI      
+    case thermal:
+      dserror("SUBDIVIDE is not available for thermal field!");
+      break;
+#endif  
 
 
     default:
@@ -1605,3 +1667,132 @@ end:
 
 
 
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief  Input of thermal field
+
+  Create the thermal field: Allocate the discretisations, the required
+  number of elements and then read and create the elements
+
+  \param  thermfield    FIELD  (i) pointer to the thermal field
+  \return  void
+
+  \author  bborn
+  \date  03/06
+
+ */
+/*-----------------------------------------------------------------------*/
+#ifdef D_TSI
+void inp_therm_field(
+  FIELD *thermfield)
+{
+  INT idis;  /* index of "current" discretisation */
+  INT ierr;
+  INT elecounter;  /* all element counter */
+  INT elenumber;  /* index/ID of currently read element */
+  char *colpointer;
+
+
+#ifdef DEBUG
+  dstrc_enter("inp_therm_field");
+#endif
+
+
+  /* allocate discretizations */
+  thermfield->dis 
+    = (DISCRET*) CCACALLOC(thermfield->ndis, sizeof(DISCRET));
+
+  /* several thermal discretisations */
+  if (thermfield->ndis <= 0)
+  {
+    dserror("Thermal field does not have any discretisations!");
+  }
+  else if (thermfield->ndis > 1)
+  {
+    dserror("Thermal field can only deal with a single discretisation!");
+  }
+  else
+  {
+    idis = 0;
+  }
+
+  /* subdivison */
+  if (thermfield->subdivide > 0)
+  {
+    dserror("Subdivision is not available for thermal discretisations!");
+    /*
+    structfield->dis[0].disclass = dc_subdiv_io;
+    structfield->dis[1].disclass = dc_subdiv_calc;
+    */
+  }
+  else
+  {
+    thermfield->dis[idis].disclass = dc_normal;
+  }
+
+
+  /* count number of elements */
+  elecounter = 0;  /* initialise element counter */
+  if (frfind("--THERMAL ELEMENTS") == 1)
+  {
+    frread();
+    while (strncmp(allfiles.actplace,"------",6) != 0)
+    {
+      elecounter++;
+      frread();
+    }
+  }
+  thermfield->dis[idis].numele = elecounter;
+
+
+  /* allocate elements */
+  thermfield->dis[idis].element 
+    = (ELEMENT*) CCACALLOC(thermfield->dis[idis].numele, sizeof(ELEMENT));
+
+
+  /* read elements */
+  if (frfind("--THERMAL ELEMENTS")==0) goto end;
+  frread();
+  elecounter = 0;  /* initialise element counter */
+  while (strncmp(allfiles.actplace,"------",6) != 0)
+  {
+    colpointer = allfiles.actplace;
+    elenumber  = strtol(colpointer, &colpointer, 10);  /* ? */
+    /* set ID */
+    thermfield->dis[idis].element[elecounter].Id = --elenumber;
+
+    /*------------------------------------------------------------------*/
+    /* read the typ of element and call element readning function */
+
+
+    /*------------------------------------------------------------------*/
+    /* elementtype THERM2: */
+    frchk("THERM2", &ierr);
+    if (ierr == 1)
+    {
+#ifndef D_THERM2
+      dserror("THERM2 needed but not defined in Makefile");
+#else
+      thermfield->dis[idis].element[elecounter].eltyp = el_therm2;
+      th2_inp(&(thermfield->dis[idis].element[elecounter]));
+#endif
+    }
+
+
+    elecounter++;  /* increment element counter */
+    frread();
+
+  }  /* while(strncmp(allfiles.actplace,"------",6)!=0) */
+
+  frrewind();
+
+
+end:
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of inp_therm_field */
+#endif  /* end of #ifdef D_TSI */

@@ -149,6 +149,26 @@ case calc_struct_nlnstiff:
      }
    }/* end of else: if (genprob.multisc_struct == 1) */
 break;/*----------------------------------------------------------------*/
+/*---------------------------------- calculate nonlinear internal force */
+case calc_struct_internalforce:
+   actmat = &(mat[ele->mat-1]);
+   if(ele->e.w1->kintype==total_lagr)
+   {
+     w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,0);
+   }
+   else 
+   { 
+     if(ele->e.w1->kintype==geo_lin)
+     {
+       w1static_ke(ele,&actdata,actmat,estif_global,NULL,intforce,0);
+     }
+     else
+     {
+       dserror("action unknown");
+       break;
+     }
+   }
+break;/*----------------------------------------------------------------*/
 /*-------------------------- calculate linear stiffness and mass matrix */
 case calc_struct_linstiffmass:
       actmat = &(mat[ele->mat-1]);

@@ -128,7 +128,7 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.w1->nGP[0];
    nis = ele->e.w1->nGP[1];
 break;
-case tri3: /* --> tri - element */
+case tri3: case tri6: /* --> tri - element */
    nir  = ele->e.w1->nGP[0];
    nis  = 1;
    intc = ele->e.w1->nGP[1]-1;
@@ -192,7 +192,7 @@ for (lr=0; lr<nir; lr++)
        e1   = data->xgrr[lr];
        e2   = data->xgss[ls];
       break;
-      case tri3:   /* --> tri - element */
+      case tri3: case tri6:  /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 e2   = data->txgs[lr][intc];
       break;
@@ -249,15 +249,19 @@ for (node=1; node<=iel; node++)
   r = w1rsn (node,1,iel) ;
   s = w1rsn (node,2,iel) ;
 /*------------------------------------------- extrapolate values now ---*/
+  /* stress in xx-direction (sig_11) */
   w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][0][0],spar[0],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][0][node-1] = fv;
 
+  /* stress in yy-direction (sig_22) */
   w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][1][0],spar[1],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][1][node-1] = fv;
 
+  /* stress in xy-direction (sig_12) */
   w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][2][0],spar[2],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][2][node-1] = fv;
 
+  /* stress in zz-direction (sig_33), sometimes set to zero */
   w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][3][0],spar[3],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][3][node-1] = fv;
 
@@ -429,7 +433,8 @@ dstrc_enter("w1rsn");
     }
 /*----------------------------- set r/s coordinates for nodal points ---*/
 
-
+/* although bitwise left-shift <<, ie node << 1, appears pretty cool, it 
+   translates simply to 2*node, yours bb 8/05 */
 L1:
     ret_val = xr489[irs + (node << 1) - 3];
     goto L100;
@@ -488,6 +493,9 @@ dstrc_enter("w1recs");
 	    p1 = fval[1];
 	    p2 = fval[2];
 	}
+	if (igauss >= 3) {
+	    p3 = fval[3];
+        }
 	if (igauss >= 4) {
 	    p2 = fval[2];
 	    p3 = fval[3];
@@ -516,6 +524,11 @@ dstrc_enter("w1recs");
 /*------------------------ constant stress function for TRIANGLES ------*/
 	    fpar[1] = p1;
 	    fpar[2] = p2;
+        } else if (igauss == 3) {
+/*-------------------------- linear stress function for TRIANGLES ------*/
+	    fpar[1] = p1;
+	    fpar[2] = p2;
+	    fpar[3] = p3;
 	} else if (igauss == 4) {
 /*------------------------------------------- linear stress function ---*/
 	    f1 = .25;
@@ -613,6 +626,13 @@ dstrc_enter("w1recs");
 	p1 = fpar[1];
 	p2 = fpar[2];
 	*funval = (p1+p2)/2.0;
+    } else if (igauss == 3) {
+/*------------------- linear function extrapolation for TRIANGLES ------*/
+        /* assumes (ele->w1.e->nGP[1] == 1) type of Gauss-points */
+	p1 = fpar[1];
+	p2 = fpar[2];
+	p3 = fpar[3];
+	*funval = p2 + 2.0*(p2-p1)*(s-0.5) + 2.0*(p2-p3)*(r-0.5);
     } else if (igauss == 4) {
 /*------------------------------------ linear function extrapolation ---*/
 	p1 = fpar[1];

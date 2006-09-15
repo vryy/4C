@@ -69,9 +69,19 @@ if (ierr==1)
 {
    ele->distyp = tri3;
    ele->numnp=3;
-   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
+}
+frchk("TRI6",&ierr);  /* bb */
+if (ierr==1)
+{
+   ele->distyp = tri6;
+   ele->numnp=6;
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
+   frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
 }
 /*------------------------------------------ reduce node numbers by one */
@@ -129,6 +139,17 @@ if (ierr)
 }
 else
    ele->e.w1->ssi_couptyp = ssi_none;
+#endif
+/*--------------------------------------------------- read TSI coupling */
+#ifdef D_TSI
+ele->e.w1->tsi_couptyp = tsi_coup_none;  /* default */
+frchar("TSI_COUPTYP",buffer,&ierr);
+if (ierr)
+{
+  if (strncmp(buffer,"None",4)==0) ele->e.w1->tsi_couptyp = tsi_coup_none;
+  if (strncmp(buffer,"Thermconf",9)==0) ele->e.w1->tsi_couptyp = tsi_coup_thermconf;
+  if (strncmp(buffer,"Thermcreate",11)==0) ele->e.w1->tsi_couptyp = tsi_coup_thermcreate;
+}
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

@@ -108,13 +108,22 @@ INT node;
 dstrc_enter("w1_edgejaco");
 #endif
 
-/*---------------------------------- determine jacobian at point r,s ---*/
+/*---------------------------------- determine jacobian at point xi  ---*/
+/* coordinate xi along element line (edge), -1 <= xi <= +1 */
 xjm[0][0] = ZERO ;
 xjm[0][1] = ZERO ;
 
-for (k=0; k<iel; k++) /* loop all nodes of the element */
+for (k=0; k<iel; k++) /* loop all nodes of the line (edge) */
 {
      node=iedgnod[k];
+     /* The derivative with respect to xi of parameter
+      * vector function [x(xi),y(xi)] describing
+      * the element line (edge) geometry.
+      * The line geometry is obtained (as usually)
+      * with the isoparametric concept, ie using
+      * the (here "degenerated") shape functions 
+      * on the line and the adjacent nodal coordinates
+      */ 
      xjm[0][0] += deriv[0][k] * ele->node[node]->x[0];
      xjm[0][1] += deriv[0][k] * ele->node[node]->x[1];
 } /* end loop over iel */

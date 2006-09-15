@@ -66,7 +66,7 @@ and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;
+extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -253,7 +253,7 @@ for (i=0; i<actsolv->nrhs; i++) solserv_zero_vec(&(actsolv->rhs[i]));
 
 /*-------------------- there are 2 solution vector to hold total displ.*/
 /*                                  one at time t and one at time t-dt */
-actsolv->nsol= 2;
+actsolv->nsol = 2;
 solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
 for (i=0; i<actsolv->nsol; i++) solserv_zero_vec(&(actsolv->sol[i]));
 
@@ -344,7 +344,7 @@ if (sdyn->eigen==1)
    if (actintra->intra_nprocs > 1) dserror("Eigenanalysis only on 1 processor");
    dyn_eigen(actfield,actpart,actsolv,actintra,stiff_array,mass_array);
 }
-/*-------------------------------------------- calculate damping matrix */
+/*----------------------------------- calculate Rayleigh damping matrix */
 if (damp_array>0)
 {
    solserv_add_mat(actintra,
@@ -401,7 +401,8 @@ sdyn->time = 0.0;
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
 init_bin_out_field(&out_context,
-                   &(actsolv->sysarray_typ[stiff_array]), &(actsolv->sysarray[stiff_array]),
+                   &(actsolv->sysarray_typ[stiff_array]), 
+                   &(actsolv->sysarray[stiff_array]),
                    actfield, actpart, actintra, 0);
 #endif
 
@@ -415,12 +416,15 @@ if (par.myrank==0) dyn_nlnstru_outhead_expl();
 /*-------------------------------------------------- set some constants */
 dyn_setconstants_expl(&dynvar,sdyn,sdyn->dt);
 /*--------------------------------------- form effective left hand side */
-solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_zero_mat(actintra,
+                 &(actsolv->sysarray[stiff_array]),
+                 &(actsolv->sysarray_typ[stiff_array]));
 dyn_keff_expl(actintra,actsolv->sysarray_typ,actsolv->sysarray,
               stiff_array, mass_array, damp_array,
-              &dynvar, sdyn);
+              &dynvar, sdyn); /* stiff_array is the mass matrix if no damping */
 
 /*-------------------------------- make triangulation of left hand side */
+/*                          ie factorise/decompose "stiff_array" matrix */
 init=0;
 solver_control(actsolv, actintra,
                &(actsolv->sysarray_typ[stiff_array]),
@@ -446,6 +450,7 @@ solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 timeloop:
+printf("Entered time loop\n");
 t0 = ds_cputime();
 /*------------------------------------------------- write memory report */
 if (par.myrank==0) dsmemreport();
@@ -490,7 +495,8 @@ if (restart)
                              3            , work        ,
                              &intforce_a,
                              &dirich_a,
-                             &container /* contains variables defined in container.h */
+                             &container /* contains variables defined 
+                                           in container.h */
                              );
 #endif
    /*-------------------------------------- put the dt to the structure */
@@ -503,8 +509,10 @@ if (restart)
    restart=0;
    /*----------------------------------------------------- measure time */
    t1_res = ds_cputime();
-   fprintf(allfiles.out_err,"TIME for restart reading of step %d is %f sec\n",sdyn->step,t1_res-t0_res);
-}
+   fprintf(allfiles.out_err,
+           "TIME for restart reading of step %d is %f sec\n",
+           sdyn->step,t1_res-t0_res);
+}  /* end if(restart) */
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
 /*------------------------------------------------ set new absolue time */
@@ -561,7 +569,7 @@ dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 /*-------------------------------------- make internal forces at time t */
 amzero(&intforce_a);
-*action = calc_struct_internalforce;
+*action = calc_struct_internalforce;  /* stiff mat will not be assembled */
 container.dvec         = intforce;
 container.dirich       = NULL;
 container.global_numeq = numeq_total;
@@ -574,12 +582,15 @@ solserv_zero_vec(&fie[2]);
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
           &(actsolv->sysarray[stiff_array]),&(fie[2]),intforce,1.0);
 /*--------------------------------------- make rhs[0] = rhs[1] - fie[2] */
+/*                                        rhs = load - internal force   */
 solserv_copy_vec(&(actsolv->rhs[1]),&(actsolv->rhs[0]));
 solserv_add_vec(&(fie[2]),&(actsolv->rhs[0]),-1.0);
 /*------------------------------------------ make effective load vector */
 pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
               mass_array,damp_array);
 /*---------------------------------------------------- solve for system */
+/* stiff_array is not the real stiffness matrix (tangent of internal
+ * forces), but more or less the mass matrix */
 solserv_zero_vec(&work[0]);
 init=0;
 solver_control(actsolv, actintra,

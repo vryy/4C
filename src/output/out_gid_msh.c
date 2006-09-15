@@ -330,6 +330,7 @@ elements:
   {
     actfield = &(field[i]);
 
+    /* loop over discretisations */
     for(l=0; l<actfield->ndis; l++)
     {
 
@@ -1711,6 +1712,36 @@ elements:
       }
 
 
+      if (actgid->is_wall1_tri_31)
+      {
+        /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+        firstele = &(actfield->dis[0].element[0]);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s WALL1 3x1 GP\n",actgid->wall1_tri_31_name,actgid->fieldname);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Triangle NNODE  %d \n",actgid->wall1_tri_31_name,firstele->numnp);
+        /*-------------- if this is first mesh, print coodinates of nodes */
+        if (is_firstmesh)
+        {
+          is_firstmesh=0;
+          fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+          fprintf(out,"COORDINATES\n");
+          out_gid_allcoords(out);
+          fprintf(out,"END COORDINATES\n");
+        }
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[0].numele; j++)
+        {
+          actele = &(actfield->dis[0].element[j]);
+          if (actele->eltyp != el_wall1 || actele->numnp != 6) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
 
 
       /* BEAM3 */
@@ -1948,6 +1979,124 @@ elements:
         }
         fprintf(out,"END ELEMENTS\n");
       }
+
+
+
+      /* THERM2 */
+      /*========*/
+      /* bborn 03/06 */
+
+      /*----------------------------------------------------------------*/
+      /* quadrilateral element with 4 nodes and 2x2 Gauss points */
+      if (actgid->is_therm2_q_22)
+      {
+        /*-NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+        firstele = &(actfield->dis[l].element[0]);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: THERM2 2x2 GP\n",
+            actgid->therm2_q_22_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE %d \n",
+            actgid->therm2_q_22_name,l,firstele->numnp);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_therm2) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+
+      /*----------------------------------------------------------------*/
+      /* quadrilateral element with 8 nodes and 3x3 Gauss points */
+      if (actgid->is_therm2_q_33)
+      {
+        /*-NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+        firstele = &(actfield->dis[l].element[0]);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: THERM2 3x3 GP\n",
+            actgid->therm2_q_33_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Quadrilateral NNODE  %d \n",
+            actgid->therm2_q_33_name,l,firstele->numnp);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_therm2 || actele->numnp < 8) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+
+      /*----------------------------------------------------------------*/
+      /* triangular element with 3 nodes and 1 Gauss point */
+      if (actgid->is_therm2_t_11)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: THERM2 1x1 GP\n",
+            actgid->therm2_t_11_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Triangle NNODE 3\n",
+            actgid->therm2_t_11_name,l);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_therm2 || actele->numnp !=3) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }  /* end of if (actgid->is_therm_t_11) */
+
+      /*----------------------------------------------------------------*/
+      /* triangular element with 6 nodes and 3 Gauss points */
+      if (actgid->is_therm2_t_31)
+      {
+        /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+        firstele = &(actfield->dis[0].element[0]);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s THERM2 3x1 GP\n",actgid->therm2_t_31_name,actgid->fieldname);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Triangle NNODE  %d \n",actgid->wall1_tri_31_name,firstele->numnp);
+        /*-------------- if this is first mesh, print coodinates of nodes */
+        if (is_firstmesh)
+        {
+          is_firstmesh=0;
+          fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+          fprintf(out,"COORDINATES\n");
+          out_gid_allcoords(out);
+          fprintf(out,"END COORDINATES\n");
+        }
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[0].numele; j++)
+        {
+          actele = &(actfield->dis[0].element[j]);
+          if (actele->eltyp != el_therm2 || actele->numnp != 6) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }  /* end of if (actgid->is_therm2_t_31) */
+
+
+
 
 
     }  /* for(l=0; l<actfield->ndis; l++) */

@@ -202,6 +202,9 @@ INT               fluid_vis;          /* write fluid solution to pss-file for VI
 
 INT               ale_disp;           /* write ale displacements */
 
+INT               therm_temper;       /* write thermal temperature */
+INT               therm_heatflux;     /* write thermal heat flux */
+
 INT               output_dis;         /* output discretization */
 
 INT               monitor;
@@ -345,6 +348,7 @@ typedef struct _GENPROB
   INT               numff;         /* actual number of fluid field */
   INT               numaf;         /* actual number of ale field */
   INT               numls;         /* actual number of ls field */
+  INT               numtf;         /* actual number of the thermal field */
 
   INT               graderw;       /* flag is gradient enhanced material model */
   INT               multisc_struct;/* flag is structural multiscale analysis */

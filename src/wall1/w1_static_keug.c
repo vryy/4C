@@ -16,6 +16,19 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief General problem data
+
+struct _GENPROB       genprob; defined in global_control.c 
+
+\author bborn
+\date 03/06
+*/
+extern struct _GENPROB genprob;
+
+
 /*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
@@ -83,6 +96,14 @@ static ARRAY    kg_a;    /* element stiffness matrix kg */
 static DOUBLE **kg;
 
 
+#ifdef D_TSI
+INT             numtf;     /* index of thermal field */
+NODE           *acttnode;  /* actual thermal node */
+static ARRAY    ndtemp_a;  /* nodal temperatures */
+static DOUBLE  *ndtemp;
+DOUBLE          tem;       /* temperature at Gauss point (r,s) */
+#endif
+
 static DOUBLE **estif;    /* element stiffness matrix keug */
 static DOUBLE **emass;    /* mass matrix */
 
@@ -113,7 +134,9 @@ if (init==1)
   stress    = amdef("stress" ,&stress_a ,numeps,numeps,"DA");
   kg        = amdef("kg"     ,&kg_a,2*MAXNOD_WALL1,2*MAXNOD_WALL1,"DA");
   keu       = amdef("keu"    ,&keu_a,2*MAXNOD_WALL1,2*MAXNOD_WALL1,"DA");
-
+#ifdef D_TSI
+  ndtemp     = amdef("ndtemp",&ndtemp_a,MAXNOD_WALL1,1,"DV");
+#endif
   goto end;
 }
 /*----------------------------------------------------------------------*/
@@ -135,6 +158,9 @@ else if (init==-1)
    amdel(&stress_a);
    amdel(&kg_a);
    amdel(&keu_a);
+#ifdef D_TSI
+   amdel(&ndtemp_a);
+#endif
    goto end;
 }
 
@@ -194,6 +220,19 @@ if(ele->e.w1->kintype==updated_lagr)
 {
  dserror("action unknown");
 }
+/*----------------------------------------------------------------------*/
+/* nodal temperatures of conforming thermal element */
+#ifdef D_TSI
+if (genprob.probtyp == prb_tsi)
+{
+  numtf = genprob.numtf;
+  for (k=0; k<iel; k++)
+  {
+    acttnode = ele->node[k]->gnode->mfcpnode[numtf];
+    ndtemp[k] = acttnode->sol_mf.a.da[0][0];
+  }
+}
+#endif
 /*------- get integraton data ---------------------------------------- */
 switch (ele->distyp)
 {
@@ -201,10 +240,10 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.w1->nGP[0];
    nis = ele->e.w1->nGP[1];
 break;
-case tri3: /* --> tri - element */
+case tri3: case tri6:  /* --> tri - element */
    nir  = ele->e.w1->nGP[0];
    nis  = 1;
-   intc = ele->e.w1->nGP[1]-1;
+   intc = ele->e.w1->nGP[1]-1;  /* integration type, ie set of Gauss points */
 break;
 default:
    dserror("ele->distyp unknown! in 'w1_statik_ke.c' ");
@@ -224,7 +263,7 @@ for (lr=0; lr<nir; lr++)
        e2   = data->xgss[ls];
        facs = data->wgts[ls];
       break;
-      case tri3:   /* --> tri - element */
+      case tri3: case tri6:  /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
@@ -260,6 +299,13 @@ for (lr=0; lr<nir; lr++)
       amzero(&F_a);
       amzero(&strain_a);
       w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
+#ifdef D_TSI
+      /*--------------------------------- add strain due to temperature */
+      if (genprob.probtyp == prb_tsi)
+      {
+        w1_tsi_thstrain(ele, mat, e1, e2, numeps, strain);
+      }
+#endif
       /*----------------------------------------calculate b_bar operator*/
       amzero(&b_bar_a);
       amzero(&int_b_bar_a);

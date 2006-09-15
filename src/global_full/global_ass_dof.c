@@ -196,6 +196,15 @@ for (j=0; j<actfield->dis[0].numele; j++)
       break;
 #endif
 
+#ifdef D_THERM2
+   case el_therm2:
+     for (k=0; k<actele->numnp; k++)  
+     {
+         if (actele->node[k]->numdf < NUMDOF_THERM2) actele->node[k]->numdf=NUMDOF_THERM2;
+     }
+     break;
+#endif
+
    default:
       dserror("Unknown type of element, cannot assign number of dofs");
       break;

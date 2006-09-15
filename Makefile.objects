@@ -332,7 +332,8 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_mat_dam_mp.o \
                 src/wall1/w1_mat_damage.o \
                 src/wall1/w1_dam_service.o \
-                src/wall1/w1_tri_service.o
+                src/wall1/w1_tri_service.o \
+                src/wall1/w1_tsi.o
 #               fluid2
 OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \
@@ -599,6 +600,25 @@ OBJS_WALLGE   = src/wallge/wge_setdof.o \
                 src/wallge/wge_stiff.o \
                 src/wallge/wge_stress.o \
                 src/wallge/wge_fext.o
+#                thermal structure interaction
+OBJS_TSI      = src/tsi_full/tsi_coupling.o \
+                src/tsi_full/tsi_dyn.o \
+                src/tsi_full/tsi_dyn_struct.o \
+                src/tsi_full/tsi_stat_therm.o
+#                planar thermal
+OBJS_THERM2   = src/therm2/th2_bop.o \
+                src/therm2/th2_cfg.o \
+                src/therm2/th2_hflux.o \
+                src/therm2/th2_inp.o \
+		src/therm2/th2_intg.o \
+		src/therm2/th2_jaco.o \
+                src/therm2/th2_lin.o \
+                src/therm2/th2_load.o \
+                src/therm2/th2_main.o \
+                src/therm2/th2_mat.o \
+                src/therm2/th2_matlin.o \
+                src/therm2/th2_shape.o \
+                src/therm2/th2_temper.o
 #               visual
 OBJS_VISUAL   = src/visual/visual_global.o \
                 src/visual/visual_readflaviares.o \
