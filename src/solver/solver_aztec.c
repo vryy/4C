@@ -26,7 +26,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/* checking this comment in */
 
 /*----------------------------------------------------------------------*
  |  control solver lib AZTEC                             m.gee 9/01     |
