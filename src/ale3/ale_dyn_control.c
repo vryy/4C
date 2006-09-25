@@ -287,7 +287,7 @@ solserv_zero_vec(&(actsolv->sol[0]));
 dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(
+solver_control(     actfield,disnum_calc,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -352,7 +352,7 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
      dirich,1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
-solver_control(
+solver_control(     actfield,disnum_calc,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -558,7 +558,7 @@ solserv_zero_vec(&(actsolv->sol[0]));
 dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(
+solver_control(     actfield,disnum_calc,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -653,7 +653,7 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
      dirich,1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
-solver_control(   actsolv,
+solver_control(   actfield,disnum_calc,actsolv,
                   actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
@@ -859,7 +859,7 @@ solserv_zero_vec(&(actsolv->sol[0]));
 dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(
+solver_control(     actfield,disnum_calc,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -936,7 +936,7 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
      dirich,1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
-solver_control(   actsolv,
+solver_control(   actfield,disnum_calc,actsolv,
                   actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
@@ -1002,7 +1002,7 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
    dirich,1.0);
 /*------------------------------------------------------ call solver ---*/
 init=0;
-solver_control(actsolv,
+solver_control(actfield,disnum_calc,actsolv,
      	       actintra,
      	      &(actsolv->sysarray_typ[actsysarray]),
      	      &(actsolv->sysarray[actsysarray]),
@@ -1201,7 +1201,7 @@ solserv_zero_vec(&(actsolv->sol[0]));
 dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(
+solver_control(     actfield,disnum_calc,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -1294,7 +1294,7 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
      dirich,1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
-solver_control(   actsolv,
+solver_control(   actfield,disnum_calc,actsolv,
                   actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
@@ -1497,7 +1497,7 @@ solserv_zero_vec(&(actsolv->sol[0]));
 dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(
+solver_control(     actfield,disnum_calc,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -1589,7 +1589,7 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
      dirich,1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
-solver_control(   actsolv,
+solver_control(   actfield,disnum_calc,actsolv,
                   actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
