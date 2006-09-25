@@ -1,15 +1,15 @@
-/*!---------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file
 \brief
 
 <pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
 </pre>
 
----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | type definitions of geometry based information         m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ typedef struct _ELEMENT
 #endif                   /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/
 
-  enum _ELECOSYS    locsys;
+     enum _ELECOSYS        locsys;
 
 #ifdef SUBDIV
      struct _ELEMENT      *slave_ele;
