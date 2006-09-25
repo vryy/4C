@@ -41,6 +41,10 @@ Maintainer: Malte Neumann
 #include "../../../lib_sun/metis-4.0/Lib/metis.h"
 #endif
 
+#ifdef LINUX_MUENCH
+#include "metis.h"
+#endif
+
 #endif
 
 
