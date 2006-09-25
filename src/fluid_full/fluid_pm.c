@@ -406,7 +406,8 @@ void fluid_pm()
   /* Setup the solver for the pressure matrix. That is again special
    * because this matrix is not (directly) connected to a
    * discretization. */
-  solver_control(&presolv, actintra,
+  solver_control(actfield,disnum_calc,
+                 &presolv, actintra,
                  &(presolv.sysarray_typ[0]),
                  &(presolv.sysarray[0]),
                  &(presolv.sol[0]),
@@ -494,7 +495,7 @@ void fluid_pm()
   */
   /*--------------------------------------------------- initialize solver */
   init=1;
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
                  &(actsolv->sol[0]),
@@ -502,7 +503,7 @@ void fluid_pm()
                  init);
   /* initialize the mass matrix, too, so we can use the global
    * matrix-vector product */
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
                  &(actsolv->sysarray_typ[mass_array]),
                  &(actsolv->sysarray[mass_array]),
                  &(actsolv->sol[0]),
@@ -816,7 +817,7 @@ void fluid_pm()
 
       init=0;
       t1=ds_cputime();
-      solver_control(actsolv, actintra,
+      solver_control(actfield,disnum_calc,actsolv, actintra,
                      &(actsolv->sysarray_typ[actsysarray]),
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sol[0]),
@@ -869,7 +870,7 @@ void fluid_pm()
     pm_calprhs(actfield, actpart, disnum_calc, actintra, ipos, numpdof, &(presolv.rhs[0]));
 
     /* solve for the pressure increment */
-    solver_control(&presolv, actintra,
+    solver_control(actfield,disnum_calc,&presolv, actintra,
                    &(presolv.sysarray_typ[0]),
                    &(presolv.sysarray[0]),
                    &(presolv.sol[0]),

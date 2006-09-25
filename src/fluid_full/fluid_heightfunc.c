@@ -213,7 +213,7 @@ fluid_calelm_hf(actpart,actintra,action,container,hfmat_oll,rhs,0);
 
 /*------------------------------------------ initialise solver function */
 init=1;
-solver_control(hfsolv, actintra,
+solver_control(actfield,0,hfsolv, actintra,
                &(hfsolv->sysarray_typ[0]),
                &(hfsolv->sysarray[0]),
                sol,
@@ -252,7 +252,7 @@ fluid_calelm_hf(actpart,actintra,action,container,hfmat_oll,rhs,1);
 
 /*------------------------------------ solve for height function values */
 init=0;
-solver_control(hfsolv, actintra,
+solver_control(actfield,0,hfsolv, actintra,
                &(hfsolv->sysarray_typ[0]),
                &(hfsolv->sysarray[0]),
                sol,

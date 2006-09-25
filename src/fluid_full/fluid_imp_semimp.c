@@ -494,7 +494,7 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,
+solver_control(actfield,disnum_calc,actsolv, actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(actsolv->sol[0]),
@@ -739,7 +739,7 @@ assemble_vec(actintra,
 
 init=0;
 t1=ds_cputime();
-solver_control(actsolv, actintra,
+solver_control(actfield,disnum_calc,actsolv, actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(actsolv->sol[0]),
