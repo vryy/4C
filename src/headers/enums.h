@@ -366,22 +366,24 @@ typedef enum _ASSEMBLE_ACTION
  *----------------------------------------------------------------------*/
 typedef enum _SOLVER_TYP
 {
-                       mlib_d_sp,     /* solver package, hp's mlib, ect-sparse-symmetric-unsymmetric*/
-                       aztec_msr,     /* solver package aztec 2.1, matrix in dmsr format */
-                       hypre_amg,     /* solver package hypre, amg-solver, matrix in parcsr format */
-                       hypre_pcg,     /* solver package hypre, cg, matrix in parcsr format */
-                       hypre_gmres,   /* solver package hypre, gmres, matrix in parcsr format */
-                       hypre_bicgstab,/* solver package hypre, bicgstab, matrix in parcsr format */
-                       parsuperlu,    /* solver package superlu, direkt parallel LU, matrix in redundant harwell-boeing */
-                       lapack_sym,    /* symmetric lapack LU decomposition, matrix is dense */
-                       lapack_nonsym, /* unsymmetric lapack LU decomposition, matrix is dense */
-                       mumps_sym,     /* solver package mumps, multifrontal parallel LU, matrixin row/column pointer format */
-                       mumps_nonsym,  /* same but unsymmetric */
-                       colsol_solver, /* colsol */
-                       SPOOLES_sym,   /* spooles parallel direct solver */
-                       SPOOLES_nonsym,/* spooles parallel direct solver */
-                       umfpack,       /* solver package umfpack, matrix in compressed column format */
-                       mlpcg          /* solver package umfpack, matrix in compressed column format */
+                       mlib_d_sp,        /* solver package, hp's mlib, ect-sparse-symmetric-unsymmetric*/
+                       aztec_msr,        /* solver package aztec 2.1, matrix in dmsr format */
+                       hypre_amg,        /* solver package hypre, amg-solver, matrix in parcsr format */
+                       hypre_pcg,        /* solver package hypre, cg, matrix in parcsr format */
+                       hypre_gmres,      /* solver package hypre, gmres, matrix in parcsr format */
+                       hypre_bicgstab,   /* solver package hypre, bicgstab, matrix in parcsr format */
+                       parsuperlu,       /* solver package superlu, direkt parallel LU, matrix in redundant harwell-boeing */
+                       lapack_sym,       /* symmetric lapack LU decomposition, matrix is dense */
+                       lapack_nonsym,    /* unsymmetric lapack LU decomposition, matrix is dense */
+                       mumps_sym,        /* solver package mumps, multifrontal parallel LU, matrixin row/column pointer format */
+                       mumps_nonsym,     /* same but unsymmetric */
+                       colsol_solver,    /* colsol */
+                       SPOOLES_sym,      /* spooles parallel direct solver */
+                       SPOOLES_nonsym,   /* spooles parallel direct solver */
+                       umfpack,          /* solver package umfpack, matrix in compressed column format */
+                       mlpcg,            /* internal solver package mlpcg */
+                       amesos_klu_sym,   /* Trilinos' solver interface Amesos using KLU */
+                       amesos_klu_nonsym /* Trilinos' solver interface Amesos using KLU */
 } SOLVER_TYP;
 /*!----------------------------------------------------------------------
 \brief enum of possible matrix types
@@ -426,7 +428,10 @@ typedef enum _AZPRECTYP
                        azprec_LU,                /* ? */
                        azprec_RILU,              /* relaxed incomplete LU */
                        azprec_BILU,              /* block incomplete LU (only with matrix in DVBR format*/
-                       azprec_ICC                /* ? */
+                       azprec_ICC,               /* incomplete cholesky */
+                       azprec_MLfluid,           /* ML for Fluids */
+                       azprec_MLfluid2,          /* energy optimal unsymmetric ML for Fluids */
+                       azprec_ML                 /* standard ML for structures */
 } AZPRECTYP;
 /*----------------------------------------------------------------------*
  | enum HYPREPRECTYP                                       m.gee 10/01  |
