@@ -1,13 +1,26 @@
 
 # check the different solvers
 
-# aztec
-if grep '^[ \t]*AZTEC_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
-    if [ "x$AZTEC_LIB" = "x" ] ; then
-        echo $0: Warning: Variable AZTEC_LIB undefined but AZTEC_PACKAGE requested.
+# trilinos
+if grep '^[ \t]*TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+    if [ "x$TRILINOS_LIB" = "x" ] ; then
+        echo $0: Warning: Variable TRILINOS_LIB undefined but TRILINOS_PACKAGE requested.
     fi
-    LIBS="$AZTEC_LIB $LIBS"
-    INCLUDEDIRS="$INCLUDEDIRS $AZTEC_INC"
+    LIBS="-L$TRILINOS_LIBDIR $TRILINOS_LIB $LIBS"
+    INCLUDEDIRS="$INCLUDEDIRS -I$TRILINOS_INCDIR"
+fi
+
+# aztec (only if no trilinos, bcause trilinos contains aztec anyway)
+if grep '^[ \t]*TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+  IS_TRILINOS=1
+else
+  if grep '^[ \t]*AZTEC_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+      if [ "x$AZTEC_LIB" = "x" ] ; then
+          echo $0: Warning: Variable AZTEC_LIB undefined but AZTEC_PACKAGE requested.
+      fi
+      LIBS="$AZTEC_LIB $LIBS"
+      INCLUDEDIRS="$INCLUDEDIRS $AZTEC_INC"
+  fi
 fi
 
 # spooles

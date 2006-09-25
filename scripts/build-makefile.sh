@@ -10,6 +10,20 @@ if [ "x$USES_CPP" = "x1" ]; then
   fi
 fi
 
+# set linker to cpp if trilinos is used
+if grep '^TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+  if [ "x$CP" = "x" ] ; then
+        echo $0: Error: C++ used, but no C++ compiler available on this platform!!
+        exit 1
+  else
+    LD=$CP
+    LDFLAGS=-Wall
+    LIBS="$LIBS -lz  -lc -lm -lg2c"
+    PLAIN_LD=$PLAIN_CP
+  fi
+fi
+
+
 
 # build the Makefile
 # This is done in three steps

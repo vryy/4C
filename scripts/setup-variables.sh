@@ -33,6 +33,11 @@ USES_CPP=0
 # check for DEBUG version
 IS_DEBUG=0
 
+# check for trilinos usage
+IS_TRILINOS=0
+if grep '^TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+  IS_TRILINOS=1
+fi
 
 # - from definefile
 if grep '^DEBUG' "$definefile" 2>&1 > /dev/null ; then
@@ -59,15 +64,16 @@ fi
 
 
 # get the define flags
-
 DEFINES=`sed -e 's/#.*//' -e 's/^DEBUG//' "$definefile" | awk 'BEGIN { defs = "" }
-END { print defs }
-  { if (length($1) > 0) { defs = defs" -D"$1 } }'`
+END { print defs } { if ( $NF ) { if ( $1 != "" ) { defs = defs" -D"$1 } } }'`
 
 #echo ">>>" $DEFINES "<<<"
 #exit
 
-
+# if we use trilinos, we have to add some more trilinos defines
+if [ x$IS_TRILINOS = "x1" ] ; then
+  DEFINES="$DEFINES $TRILINOS_DEFINES"
+fi
 
 
 # the debug version needs special treatment
@@ -93,3 +99,6 @@ fi
 
 # define the length of the loops for fast elements
 DEFINES="$DEFINES $LOOPL"
+
+#echo ">>>" $DEFINES "<<<"
+#exit
