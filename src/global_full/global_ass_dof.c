@@ -215,8 +215,6 @@ counter=0;
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
    actfield->dis[0].node[j].dof  = (INT*)CCACALLOC(actfield->dis[0].node[j].numdf,sizeof(INT));
-   if (!(actfield->dis[0].node[j].dof))
-      dserror("Allocation of dof in NODE failed");
    /*------------------------- allocate the arrays to hold solutions */
    max = IMAX(3,actfield->dis[0].node[j].numdf);
 
