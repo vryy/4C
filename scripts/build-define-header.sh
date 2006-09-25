@@ -14,7 +14,7 @@ cat > $DEST/src/headers/compile_settings.h <<EOF
 
 #define DEFINE_STRING "`sed -e 's/#.*//' "$definefile" | awk '{ print $1 }' | sort | awk 'BEGIN { defs = "" }
 END { print defs }
-  { if (length($1) > 0) { defs = defs"\\\\n\\\\t"$1 } }' | sort`"
+  { if ( $NF ) { if ( $1 != "" ) { defs = defs"\\\\n\\\\t"$1 } } }' | sort`"
 
 #define CREATOR "`whoami`@`hostname`"
 #define CREATION_DATE "`date`"
