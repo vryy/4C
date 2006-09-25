@@ -93,9 +93,11 @@ void calelm(FIELD        *actfield,     /* active field */
 /*----------------------------------------------------------------------*/
 {
   INT               i,disnum;
+  ELEMENT          *actele;
+#ifdef D_FLUID
   INT               hasdirich=0;      /* flag                             */
   INT               hasext=0;         /* flag                             */
-  ELEMENT          *actele;
+#endif
 #if defined(D_FLUID2) || defined(D_FLUID2_PRO)
   ELEMENT          *actele2 = NULL;
 #endif
@@ -113,6 +115,12 @@ void calelm(FIELD        *actfield,     /* active field */
   {
     switch(actsolv->sysarray_typ[sysarray1])
     {
+      case trilinos:
+        if (actsolv->sysarray[sysarray1].trilinos->couple_d_send)
+          amzero(actsolv->sysarray[sysarray1].trilinos->couple_d_send);
+        if (actsolv->sysarray[sysarray1].trilinos->couple_d_recv)
+          amzero(actsolv->sysarray[sysarray1].trilinos->couple_d_recv);
+        break;
       case msr:
         if (actsolv->sysarray[sysarray1].msr->couple_d_send)
           amzero(actsolv->sysarray[sysarray1].msr->couple_d_send);
@@ -179,6 +187,12 @@ void calelm(FIELD        *actfield,     /* active field */
   {
     switch(actsolv->sysarray_typ[sysarray2])
     {
+      case trilinos:
+        if (actsolv->sysarray[sysarray2].trilinos->couple_d_send)
+          amzero(actsolv->sysarray[sysarray2].trilinos->couple_d_send);
+        if (actsolv->sysarray[sysarray2].trilinos->couple_d_recv)
+          amzero(actsolv->sysarray[sysarray2].trilinos->couple_d_send);
+        break;
       case msr:
         if (actsolv->sysarray[sysarray2].msr->couple_d_send)
           amzero(actsolv->sysarray[sysarray2].msr->couple_d_send);
@@ -519,14 +533,14 @@ void calelm(FIELD        *actfield,     /* active field */
    case structure:
       /*------------------ assemble internal force or external forces */
       if (container->dvec)
-      assemble_intforce(actele,&intforce_global,container,actintra);
+        assemble_intforce(actele,&intforce_global,container,actintra);
       /*--- assemble the rhs vector of condensed dirichlet conditions */
       /* static case */
       if (container->dirich && container->isdyn==0)
-      assemble_dirich(actele,&estif_global,container);
+        assemble_dirich(actele,&estif_global,container);
       /* dynamic case */
       if (container->dirich && container->isdyn==1)
-      assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
+        assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
       /*-- calculate internal forces at dirichlet nodes, used for ssi */
 #ifdef D_SSI
       /*-------------------------------------------- firl / genk 10/03*/
@@ -698,10 +712,10 @@ default: dserror("Unknown type of assembly 2"); break;
 
   /*----------------------------------------------------------------------*/
   /*
-     in the case of dynamically increasing sparse matrices (spooles) the
+     in the case of dynamically increasing sparse matrices the
      matrix has to be closed after assembly
      */
-#ifdef D_CONTACT
+/*#ifdef D_CONTACT*/
 switch(*action)
 {
 case calc_struct_linstiff        : assemble_action = assemble_close_1matrix; break;
@@ -752,7 +766,7 @@ assemble(sysarray1,
          NULL,
          assemble_action,
          container);
-#endif
+/*#endif*/
   /*----------------------------------------------------------------------*/
 if(actsolv != NULL)
 if(actsolv->sysarray_typ[sysarray1]==oll)
