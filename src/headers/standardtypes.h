@@ -355,9 +355,13 @@ typedef struct _GENPROB
 
 
 #ifdef RESULTTEST
-  INT             numresults;       /* number of known results waiting to
-                                     * be compared to the calculated ones. */
+  INT               numresults;    /* number of known results waiting to
+                                    * be compared to the calculated ones. */
 #endif
+
+  INT               usetrilinosalgebra; /* use trilinos for vectors/matrices or 
+                                         * ccarat internal (solver dependent) 
+                                         * vectors/marices */
 
 
 } GENPROB;
@@ -365,7 +369,7 @@ typedef struct _GENPROB
 
 
 /*---------------------------------------------------------------------*
- | monotoring informations                                  genk 01/03 |
+ | monitoring informations                                  genk 01/03 |
  *---------------------------------------------------------------------*/
 typedef struct _MONITOR
 {
@@ -422,6 +426,7 @@ typedef struct _INTERFACE
      struct _DENSE    *conti_eq_save;        /* pointer to a dense */
                                              /* structure*/
 } INTERFACE;
+
 /*----------------------------------------------------------------------*
  | INTERFACES                               (mfirl 02/04)  chfoe 07/04  |
  *----------------------------------------------------------------------*/
