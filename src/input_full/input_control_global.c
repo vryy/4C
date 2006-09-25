@@ -259,6 +259,9 @@ ioflags.relative_displ      =0;
 ioflags.output_dis          =0;
 
 
+/* set default values */
+genprob.usetrilinosalgebra=0;
+/* read values */
 if (frfind("-PROBLEM TYP")==0) dserror("frfind: PROBLEM TYP not in input file");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -303,6 +306,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("GRADERW",&(genprob.graderw),&ierr);
 
   frint("MULTISC_STRUCT",&(genprob.multisc_struct),&ierr);
+  
+  frchar("ALGEBRA",buffer,   &ierr);
+  if (ierr)
+  {
+    if (frwordcmp("Trilinos",buffer)==0) genprob.usetrilinosalgebra = 1;
+    if (frwordcmp("ccarat"  ,buffer)==0) genprob.usetrilinosalgebra = 0; /* default */
+#ifndef TRILINOS_PACKAGE
+    if (genprob.usetrilinosalgebra) dserror("ALGEBRA Trilinos in input file requires -DTRILINOS_PACKAGE");
+#endif
+    
+  }
+  
   frread();
 }
 

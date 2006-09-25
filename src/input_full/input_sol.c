@@ -22,6 +22,12 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  | input of solver control variables  structure           m.gee 4/01    |
@@ -90,6 +96,29 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SOLVER"    ,buffer,&ierr);
    if (ierr==1)
    {
+      
+      /*--------------------------------------------------- Amesos solver KLU */
+      /* note that all Amesos solvers work only with Trilinos enabled */
+      if (strncmp("Amesos_KLU_sym",buffer,14)==0)
+      {
+#ifndef TRILINOS_PACKAGE
+         dserror("TRILINOS_PACKAGE package is not compiled in");
+#else
+         if (!genprob.usetrilinosalgebra)
+           dserror("You have to use ALGEBRA Trilinos to use Amesos_KLU");
+         solv->solvertyp = amesos_klu_sym;
+#endif
+      }
+      if (strncmp("Amesos_KLU_nonsym",buffer,17)==0)
+      {
+#ifndef TRILINOS_PACKAGE
+         dserror("TRILINOS_PACKAGE package is not compiled in");
+#else
+         if (!genprob.usetrilinosalgebra)
+           dserror("You have to use ALGEBRA Trilinos to use Amesos_KLU");
+         solv->solvertyp = amesos_klu_nonsym;
+#endif
+      }
       /*--------------------------------------------------- MLIB solver */
       if (strncmp("MLIB_D_SP",buffer,9)==0)
       {
@@ -252,6 +281,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*------------------------------------------- read solver specific data */
    switch (solv->solvertyp)
    {
+#ifdef TRILINOS_PACKAGE
+   case amesos_klu_sym:/*----------------------- read solver Amesos_KLU */
+   case amesos_klu_nonsym:/*-------------------- read solver Amesos_KLU */
+   break;
+#endif
 #ifdef AZTEC_PACKAGE
    case aztec_msr:/*--------------------------------- read solver aztec */
       frchar("AZSOLVE"   ,buffer,&ierr);
@@ -278,18 +312,75 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (strncmp("Least_Squares",buffer,13)==0)   azvar->azprectyp = azprec_Least_Squares;
          if (strncmp("Neumann",buffer,7)==0)          azvar->azprectyp = azprec_Neumann;
          if (strncmp("ICC",buffer,3)==0)              azvar->azprectyp = azprec_ICC;
+#ifdef TRILINOS_PACKAGE
+         if (strncmp("ML",buffer,2)==0)               azvar->azprectyp = azprec_ML;
+         if (strncmp("MLFLUID",buffer,7)==0)          azvar->azprectyp = azprec_MLfluid;
+         if (strncmp("MLFLUID2",buffer,7)==0)         azvar->azprectyp = azprec_MLfluid2;
+#endif
       }
-      frint("AZREUSE",&(azvar->azreuse),&ierr);
-      frint("AZGFILL",&(azvar->azgfill),&ierr);
-      frint("AZITER" ,&(azvar->aziter),&ierr);
-      frint("AZSUB"  ,&(azvar->azsub),&ierr);
-      frint("AZGRAPH",&(azvar->azgraph),&ierr);
-      frint("AZPOLY" ,&(azvar->azpoly),&ierr);
+      frint("AZOUTPUT",&(azvar->azoutput),&ierr);
+      frint("AZREUSE" ,&(azvar->azreuse),&ierr);
+      frint("AZGFILL" ,&(azvar->azgfill),&ierr);
+      frint("AZITER"  ,&(azvar->aziter),&ierr);
+      frint("AZSUB"   ,&(azvar->azsub),&ierr);
+      frint("AZGRAPH" ,&(azvar->azgraph),&ierr);
+      frint("AZPOLY"  ,&(azvar->azpoly),&ierr);
       frint("AZBDIAG" ,&(azvar->blockdiag),&ierr);
       frdouble("AZDROP" ,&(azvar->azdrop)  ,&ierr);
       frdouble("AZFILL" ,&(azvar->azfill)  ,&ierr);
       frdouble("AZTOL"  ,&(azvar->aztol)   ,&ierr);
       frdouble("AZOMEGA",&(azvar->azomega) ,&ierr);
+#ifdef TRILINOS_PACKAGE
+      /* parameters of ML preconditioner */
+      frint("ML_PRINT"           ,&(azvar->mlprint),&ierr);
+      frint("ML_MAXCOARSESIZE"   ,&(azvar->mlcsize),&ierr);
+      frint("ML_MAXLEVEL"        ,&(azvar->mlmaxlevel),&ierr);
+      frdouble("ML_DAMPFINE"     ,&(azvar->mldamp_fine),&ierr);
+      frdouble("ML_DAMPMED"      ,&(azvar->mldamp_med),&ierr);
+      frdouble("ML_DAMPCOARSE"   ,&(azvar->mldamp_coarse),&ierr);
+      frdouble("ML_PROLONG_SMO"  ,&(azvar->mldamp_prolong),&ierr);
+      frdouble("ML_PROLONG_THRES",&(azvar->ml_threshold),&ierr);
+      if (azvar->mlmaxlevel)
+      frint_n("ML_SMOTIMES",azvar->mlsmotimes,azvar->mlmaxlevel,&ierr);
+      frchar("ML_COARSEN",buffer,&ierr);
+      if (ierr==1)
+      {
+        if (strncmp("UC",buffer,2)==0)      azvar->mlcoarsentype = 0;
+        if (strncmp("METIS",buffer,5)==0)   azvar->mlcoarsentype = 1;
+        if (strncmp("VBMETIS",buffer,7)==0) azvar->mlcoarsentype = 2;
+        if (strncmp("MIS",buffer,3)==0)     azvar->mlcoarsentype = 3;
+      }
+      frchar("ML_SMOOTHERFINE",buffer,&ierr);
+      if (ierr==1)
+      {
+        if (strncmp("SGS",buffer,3)==0)       azvar->mlsmotype_fine = 0;
+        if (strncmp("Jacobi",buffer,6)==0)    azvar->mlsmotype_fine = 1;
+        if (strncmp("Chebychev",buffer,9)==0) azvar->mlsmotype_fine = 2;
+        if (strncmp("MLS",buffer,3)==0)       azvar->mlsmotype_fine = 3;
+        if (strncmp("ILU",buffer,3)==0)       azvar->mlsmotype_fine = 4;
+        if (strncmp("KLU",buffer,3)==0)       azvar->mlsmotype_fine = 5;
+      }
+      frchar("ML_SMOOTHERMED",buffer,&ierr);
+      if (ierr==1)
+      {
+        if (strncmp("SGS",buffer,3)==0)       azvar->mlsmotype_med = 0;
+        if (strncmp("Jacobi",buffer,6)==0)    azvar->mlsmotype_med = 1;
+        if (strncmp("Chebychev",buffer,9)==0) azvar->mlsmotype_med = 2;
+        if (strncmp("MLS",buffer,3)==0)       azvar->mlsmotype_med = 3;
+        if (strncmp("ILU",buffer,3)==0)       azvar->mlsmotype_med = 4;
+        if (strncmp("KLU",buffer,3)==0)       azvar->mlsmotype_med = 5;
+      }
+      frchar("ML_SMOOTHERCOARSE",buffer,&ierr);
+      if (ierr==1)
+      {
+        if (strncmp("SGS",buffer,3)==0)       azvar->mlsmotype_coarse = 0;
+        if (strncmp("Jacobi",buffer,6)==0)    azvar->mlsmotype_coarse = 1;
+        if (strncmp("Chebychev",buffer,9)==0) azvar->mlsmotype_coarse = 2;
+        if (strncmp("MLS",buffer,3)==0)       azvar->mlsmotype_coarse = 3;
+        if (strncmp("ILU",buffer,3)==0)       azvar->mlsmotype_coarse = 4;
+        if (strncmp("KLU",buffer,3)==0)       azvar->mlsmotype_coarse = 5;
+      }
+#endif
    break;
 #endif
 
