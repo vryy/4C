@@ -94,8 +94,8 @@ void calelm(FIELD        *actfield,     /* active field */
 {
   INT               i,disnum;
   ELEMENT          *actele;
-#ifdef D_FLUID
   INT               hasdirich=0;      /* flag                             */
+#ifdef D_FLUID
   INT               hasext=0;         /* flag                             */
 #endif
 #if defined(D_FLUID2) || defined(D_FLUID2_PRO)
