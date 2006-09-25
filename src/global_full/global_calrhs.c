@@ -73,7 +73,7 @@ if (rhsrecv_a.fdim < rhs1->numeq_total)
 }
 amzero(&rhsrecv_a);
 #endif
-/*--------- inherit the neuman conditions from design to discretization */
+/*--------- inherit the Neumann conditions from design to discretization */
 if (container->inherit>0)
 for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
 /*---------------------------------- calculate point neumann conditions */
@@ -199,7 +199,13 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
       /*----------------------------------- get dof which has the value */
       dof = actnode->dof[j];
       /*---------- check whether this dof is inside free dofs (<dimrhs) */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+      if (actnode->gnode->dirich!=NULL &&
+          actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+#else
       if (dof >= dimrhs) continue;
+#endif
       /*-------------------------------------------- assemble the value */
       rhs[dof] += actneum->neum_val.a.dv[j];
    }
