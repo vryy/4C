@@ -407,14 +407,14 @@ void fsi_struct_setup(
 
   /* initialize solver */
   init=1;
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
                  &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &(work->dispi[0]),
                  &(actsolv->rhs[0]),
                  init);
 
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
                  &(actsolv->sysarray_typ[mass_array]),
                  &(actsolv->sysarray[mass_array]),
                  &work->work[0],
@@ -422,7 +422,7 @@ void fsi_struct_setup(
                  init);
 
   if (damp_array>0)
-    solver_control(actsolv, actintra,
+    solver_control(actfield,disnum_calc,actsolv, actintra,
                    &(actsolv->sysarray_typ[damp_array]),
                    &(actsolv->sysarray[damp_array]),
                    &work->work[0],
@@ -1030,7 +1030,7 @@ void fsi_struct_calc(
 
   /* call for solution of system dispi[0] = Keff^-1 * rhs[0] */
   init=0;
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
                  &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &(work->dispi[0]),
@@ -1161,7 +1161,7 @@ iterloop:
   /* solve keff * rsd[0] = rhs[0] */
   /* solve for residual displacements to correct incremental displacements*/
   init=0;
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
                  &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &(work->work[0]),
@@ -1628,7 +1628,7 @@ void fsi_struct_sd(
 
   /* call for solution of system dispi[0] = Keff^-1 * rhs[0] */
   init=0;
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
                  &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &(work->dispi[0]),

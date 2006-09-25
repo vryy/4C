@@ -255,6 +255,8 @@ void fsi_ale_2step_setup(
   for (i = actsysarray; i<actsysarray+numsys; i++)
   {
     solver_control(
+      actfield,
+      disnum_calc,
       actsolv,
       actintra,
       &(actsolv->sysarray_typ[i]),
@@ -480,6 +482,8 @@ void fsi_ale_2step_calc(
 /*--------------------------------------------------------- call solver */
   init=0;
   solver_control(
+    actfield,
+    disnum_calc,
     actsolv,
     actintra,
     &(actsolv->sysarray_typ[actsysarray]),
@@ -567,6 +571,8 @@ void fsi_ale_2step_calc(
 /*--------------------------------------------------- call solver */
   init=0;
   solver_control(actsolv,
+                 actfield,
+                 disnum_calc,
                  actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
@@ -845,6 +851,8 @@ void fsi_ale_2step_sd(
 /*---- system matrix has been calculated within initialisation phase ---*/
   init=0;
   solver_control(
+    actfield,
+    disnum_calc,
     actsolv,
     actintra,
     &(actsolv->sysarray_typ[constsysarray]),

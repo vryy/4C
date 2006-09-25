@@ -227,6 +227,8 @@ void fsi_ale_lin_setup(
 /*--------------------------------------------------- initialize solver */
   init=1;
   solver_control(
+    actfield,
+    disnum_calc,
     actsolv,
     actintra,
     &(actsolv->sysarray_typ[actsysarray]),
@@ -437,6 +439,8 @@ void fsi_ale_lin_calc(
 /*--------------------------------------------------------- call solver */
   init=0;
   solver_control(
+    actfield,
+    disnum_calc,
     actsolv,
     actintra,
     &(actsolv->sysarray_typ[actsysarray]),
@@ -682,6 +686,8 @@ void fsi_ale_lin_sd(
 /*--------- the system matrix has been calculated within the init phase */
   init=0;
   solver_control(
+    actfield,
+    disnum_calc,
     actsolv,
     actintra,
     &(actsolv->sysarray_typ[actsysarray]),

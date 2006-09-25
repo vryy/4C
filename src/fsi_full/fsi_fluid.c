@@ -366,7 +366,7 @@ void fsi_fluid_setup(
 
   /* initialize solver */
   init=1;
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
 		 &(actsolv->sysarray_typ[actsysarray]),
 		 &(actsolv->sysarray[actsysarray]),
 		 &(actsolv->sol[0]),
@@ -803,7 +803,7 @@ nonlniter:
 
   init=0;
   t1=ds_cputime();
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
 		 &(actsolv->sysarray_typ[actsysarray]),
 		 &(actsolv->sysarray[actsysarray]),
 		 &(actsolv->sol[0]),
@@ -875,7 +875,7 @@ nonlniter:
     /* solve system */
     init=0;
     t1=ds_cputime();
-    solver_control(actsolv, actintra,
+    solver_control(actfield,disnum_calc,actsolv, actintra,
 		   &(actsolv->sysarray_typ[actsysarray]),
 		   &(actsolv->sysarray[actsysarray]),
 		   &(actsolv->sol[1]),
@@ -1496,7 +1496,7 @@ void fsi_fluid_sd(
   /* solve system */
   init=0;
   t1=ds_cputime();
-  solver_control(actsolv, actintra,
+  solver_control(actfield,disnum_calc,actsolv, actintra,
 		 &(actsolv->sysarray_typ[actsysarray]),
 		 &(actsolv->sysarray[actsysarray]),
 		 &(actsolv->sol[0]),

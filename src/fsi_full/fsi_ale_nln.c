@@ -253,6 +253,8 @@ void fsi_ale_nln_setup(
   for (i = actsysarray; i<actsysarray+numsys; i++)
   {
     solver_control(
+      actfield,
+      disnum_calc,
       actsolv,
       actintra,
       &(actsolv->sysarray_typ[i]),
@@ -482,6 +484,8 @@ void fsi_ale_nln_calc(
 /*--------------------------------------------------------- call solver */
   init=0;
   solver_control(
+    actfield,
+    disnum_calc,
     actsolv,
     actintra,
     &(actsolv->sysarray_typ[actsysarray]),
@@ -787,6 +791,8 @@ void fsi_ale_nln_sd(
 /*---- system matrix has been calculated within initialisation phase ---*/
   init=0;
   solver_control(
+    actfield,
+    disnum_calc,
     actsolv,
     actintra,
     &(actsolv->sysarray_typ[constsysarray]),
