@@ -40,15 +40,18 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 LIBS="-llapack -lblas -lmetis"
 
 CFLAGS_OPT="-O2"
+CPFLAGS_OPT="-O2"
 FFLAGS_OPT="-O2"
 LDFLAGS_OPT="-O2"
 
 #CFLAGS_OPT="-g"
+#CPPFLAGS_OPT="-g"
 #FFLAGS_OPT="-g"
 #LDFLAGS_OPT="-g"
 
 # Alle Bibliotheken neu übersetzen?!
 # -malign-double
 CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 FFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
