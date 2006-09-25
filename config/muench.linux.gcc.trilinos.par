@@ -15,6 +15,14 @@ LD=$MPIDIR/bin/mpicxx
 INCLUDEDIRS="-I$MPIDIR/include -I/local_lnm/include -I/lnm/include"
 LIBDIRS="-L/local_lnm/lib -L/lnm/lib"
 
+# Trilinos
+TRILINOS_HOME=/lnm/lib/Trilinos
+TRILINOS_ARCH=LINUX_MPICH_OPT
+TRILINOS_INCDIR=$TRILINOS_HOME/$TRILINOS_ARCH/include
+TRILINOS_LIBDIR=$TRILINOS_HOME/$TRILINOS_ARCH/lib
+TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
+TRILINOS_LIB="-lmoertel -lml -lnoxepetra  -lnox  -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra"
+
 # aztec
 AZTEC_INC=""
 AZTEC_LIB="-laztec_gcc_par"
@@ -39,16 +47,18 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 
 #LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
 #LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
-LIBS="-lc -lg2c -llapack -lblas -lmetis"
+LIBS="-lc -lg2c -lmetis -llapack -lblas "
 
-CFLAGS_OPT="-O2"
-FFLAGS_OPT="-O2"
-LDFLAGS_OPT="-O2"
+CFLAGS_OPT="-O3"
+CPFLAGS_OPT="-O3"
+FFLAGS_OPT="-O5 -funroll-all-loops -malign-double"
+LDFLAGS_OPT="-O"
 
 #CFLAGS_OPT="-g"
 #FFLAGS_OPT="-g"
 #LDFLAGS_OPT="-g"
 
 CFLAGS="-Wall -pg -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -pg -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 FFLAGS="-Wall -pg -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 LDFLAGS="-pg -Xlinker -defsym -Xlinker MAIN__=main"

@@ -8,6 +8,7 @@ MPIDIR=/opt/mpich
 PROGRAMNAME=cca_seq_linux
 F77=g77
 CC=gcc
+CP=g++
 LD=g77
 
 INCLUDEDIRS="-I$MPIDIR/include -I/lnm/include"

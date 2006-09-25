@@ -51,6 +51,7 @@
 # BINIO              # binary io
 # NO_TEXT_OUTPUT     # suppress output to text files
 # SOLVE_DIRICH       # solve also for dirichlet dofs
+# SOLVE_DIRICH2      # solve also for dirichlet dofs (normal main diag, zero off diagonal)
 # OUTPUT_INPUT       # write a copy of the input-file to *.err
 # SPLIT_HEX20        # split up hex20 elements into 8 hex8 elements
                      # when writing output to GiD
@@ -80,7 +81,8 @@
 # UMFPACK            # solver library Umfpack
 # SPOOLES_PACKAGE    # solver library Spooles (only in parallel)
 # MLPCG              # interface and solver mlpcg
-
+# TRILINOS_PACKAGE   # linear algebra subsystem Trillinos recommended 
+                     # to combine with SOLVE_DIRICH, SOLVE_DIRICH2, AZTEC_PACKAGE
 
 #   inactive solvers
 #  ==================
@@ -96,3 +98,12 @@
 # VISUAL2_PACKAGE    # visualisation tool VISUAL2
 # VISUAL3_PACKAGE    # visualisation tool VISUAL3
 
+#   constants
+#  ===================================
+# MAXNOD=4              # max number of noder per element
+# MAXNOD_BRICK1=MAXNOD  # ---------"--------------------- for brick1
+# MAXNOD_SHELL8=MAXNOD  # ---------"--------------------- for shell8
+# MAXNOD_WALL1=MAXNOD   # ---------"--------------------- for wall1
+# MAXELE=9              # max no. of elements per node
+# MAXDOFPERNODE=3       # max no. of degrees of freedom per node
+# MAXGAUSS=4            # max no. of Gaussian points per element
