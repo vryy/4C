@@ -3,15 +3,35 @@
 \brief
 
 <pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+
+#ifdef TRILINOS_PACKAGE
+extern void add_trilinos(
+    struct _PARTITION       *actpart,
+    struct _SOLVAR          *actsolv,
+    struct _INTRA           *actintra,
+    struct _ELEMENT         *actele,
+    struct _TRILINOSMATRIX  *tri1,
+    struct _TRILINOSMATRIX  *tri2,
+    struct _ARRAY           *elearray1,
+    struct _ARRAY           *elearray2
+    );
+extern void close_trilinos_matrix(struct _TRILINOSMATRIX *tri);  
+extern void exchange_coup_trilinos(
+    PARTITION*      actpart,
+    SOLVAR*         actsolv,
+    INTRA*          actintra,
+    TRILINOSMATRIX* tri
+    );
+#endif
 
 /*----------------------------------------------------------------------*
  |  routine to assemble element arrays to global sparse arrays m.gee 9/01|
@@ -35,11 +55,12 @@ union _SPARSE_ARRAY *sysa1;
 enum  _SPARSE_TYP    sysa2_typ;
 union _SPARSE_ARRAY *sysa2;
 
-  DOUBLE    **estif;                /* element matrix to be added to system matrix */
-  DOUBLE    **emass;                /* element matrix to be added to system matrix */
+DOUBLE **estif;                /* element matrix to be added to system matrix */
+DOUBLE **emass;                /* element matrix to be added to system matrix */
+
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-  INT         i,j,ii,jj,counter,counter2;
-  INT         numdf;
+INT           i,j,ii,jj,counter,counter2;
+static ARRAY  copyelearray1,copyelearray2;
 #endif
 
 #ifdef DEBUG
@@ -55,7 +76,7 @@ if (sysarray1>=0)
    sysa1       = &(actsolv->sysarray[sysarray1]);
    sysa1_typ   =   actsolv->sysarray_typ[sysarray1];
    if (elearray1 != NULL)
-     estif       = elearray1->a.da;
+     estif     = elearray1->a.da;
 }
 else
 {
@@ -67,7 +88,7 @@ if (sysarray2>=0)
    sysa2     = &(actsolv->sysarray[sysarray2]);
    sysa2_typ =   actsolv->sysarray_typ[sysarray2];
    if (elearray2 != NULL)
-     emass     = elearray2->a.da;
+     emass   = elearray2->a.da;
 }
 else
 {
@@ -76,9 +97,53 @@ else
 }
 
 /* for SOLVE_DIRICH, manipulate the element matrices */
+/* gee:
+  this is a pure assembly routine, it's not supposed to manipulate
+  anything! Actually, the manipulation of element matrices here breaks
+  the correct calculation of forces due to nonzero dirichlet boundary conditions
+  in assemble_dirich_dyn which comes AFTER this routine.
+  For this reason (though I hate to due this beccause its expensive) element matrices are 
+  copied here and the copy is modified and assembled.
+  Maybe find a better place/way to introduce this manipulation?
+  If we support SOLVE_DIRICH for only one matrix format (e.g. trilinos), we could do
+  the same manipulation in the assembly and leave element matrices untouched.
+  This way, we would also not assemble a bunch of zeros (some solvers look carefully
+  on the system graph and detect dirichlet boundary conditions buy a single entry in
+  a row)
+*/  
+  
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
 if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix)
 {
+  /* do copy of first element matrix */
+  if (copyelearray1.Typ == cca_XX)
+    am_alloc_copy(elearray1,&copyelearray1);
+  else if (copyelearray1.fdim < elearray1->fdim)
+  {
+    amdel(&copyelearray1);
+    am_alloc_copy(elearray1,&copyelearray1);
+  }
+  else
+    amcopy(elearray1,&copyelearray1);
+  estif     = copyelearray1.a.da;
+  elearray1 = &copyelearray1;
+  
+  /* do copy of second element matrix */
+  if (sysarray2>=0)
+  {
+    if (copyelearray2.Typ == cca_XX)
+      am_alloc_copy(elearray2,&copyelearray2);
+    else if (copyelearray2.fdim < elearray2->fdim)
+    {
+      amdel(&copyelearray2);
+      am_alloc_copy(elearray2,&copyelearray2);
+    }
+    else
+      amcopy(elearray2,&copyelearray2);
+    emass     = copyelearray2.a.da;
+    elearray2 = &copyelearray2;
+  }
+  
   counter = 0;
   for (i=0; i<actele->numnp; i++)
   {
@@ -89,7 +154,7 @@ if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix
       {
 #ifdef SOLVE_DIRICH2
         /* set the whole row and column of the constraint dof to zero
-         * and the main diagonal to one */
+         * and leave the main diagonal as is */
         counter2 = 0;
         for (ii=0; ii<actele->numnp; ii++)
         {
@@ -99,19 +164,19 @@ if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix
             {
               estif[counter2][counter] = 0.0;
               estif[counter][counter2] = 0.0;
-              /*estif[counter][counter]  = 1.0;*/
+              /*estif[counter][counter]  = 1.0; the original value is better than 1 (eigenvalue spectrum)*/
               if (sysarray2>=0)
               {
                 emass[counter2][counter] = 0.0;
                 emass[counter][counter2] = 0.0;
-                /*emass[counter][counter]  = 1.0;*/
+                /*emass[counter][counter]  = 1.0; the original value is better than 1 (eigenvalue spectrum)*/
               }
             }
             counter2++;
           }
         }
 #else
-        /* set the main diagonal of the onstraint dof to a very lareg number */
+        /* set the main diagonal of the onstraint dof to a very large number */
         estif[counter][counter] = 9.99e29;
         if (sysarray2>=0) emass[counter][counter] = 9.99e29;
 #endif
@@ -134,6 +199,12 @@ if (assemble_action==assemble_two_matrix)
 #ifdef MLIB_PACKAGE
    case mds:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
+   break;
+#endif
+
+#ifdef TRILINOS_PACKAGE
+   case trilinos:
+      add_trilinos(actpart,actsolv,actintra,actele,sysa1->trilinos,sysa2->trilinos,elearray1,elearray2);
    break;
 #endif
 
@@ -230,6 +301,12 @@ if (assemble_action==assemble_one_matrix)
    break;
 #endif
 
+#ifdef TRILINOS_PACKAGE
+   case trilinos:
+      add_trilinos(actpart,actsolv,actintra,actele,sysa1->trilinos,NULL,elearray1,NULL);
+   break;
+#endif
+
 #ifdef AZTEC_PACKAGE
    case msr:
 #if defined(FAST_ASS2) && !defined(FAST_ASS)
@@ -321,6 +398,12 @@ if (assemble_action==assemble_close_1matrix)
    break;
 #endif
 
+#ifdef TRILINOS_PACKAGE
+   case trilinos:
+      close_trilinos_matrix(sysa1->trilinos); 
+   break;
+#endif
+
 #ifdef AZTEC_PACKAGE
    case msr:
    break;
@@ -376,6 +459,13 @@ if (assemble_action==assemble_close_2matrix)
    {
 #ifdef MLIB_PACKAGE
    case mds:
+   break;
+#endif
+
+#ifdef TRILINOS_PACKAGE
+   case trilinos:
+      close_trilinos_matrix(sysa1->trilinos); 
+      close_trilinos_matrix(sysa2->trilinos); 
    break;
 #endif
 
@@ -440,10 +530,17 @@ if (assemble_action==assemble_two_exchange)
       switch(sysa1_typ)
       {
 
+#ifdef TRILINOS_PACKAGE
+      case trilinos:
+        exchange_coup_trilinos(actpart,actsolv,actintra,sysa1->trilinos);   
+        exchange_coup_trilinos(actpart,actsolv,actintra,sysa2->trilinos);   
+      break;
+#endif
+
 #ifdef AZTEC_PACKAGE
       case msr:
-         exchange_coup_msr(actpart,actsolv,actintra,sysa1->msr);
-         exchange_coup_msr(actpart,actsolv,actintra,sysa2->msr);
+        exchange_coup_msr(actpart,actsolv,actintra,sysa1->msr);
+        exchange_coup_msr(actpart,actsolv,actintra,sysa2->msr);
       break;
 #endif
 
@@ -511,6 +608,11 @@ if (assemble_action==assemble_one_exchange)
 {
       switch(sysa1_typ)
       {
+#ifdef TRILINOS_PACKAGE
+      case trilinos:
+        exchange_coup_trilinos(actpart,actsolv,actintra,sysa1->trilinos);   
+      break;
+#endif
 
 #ifdef AZTEC_PACKAGE
       case msr:
@@ -610,7 +712,7 @@ void init_assembly(
 {
 
 #ifdef PARALLEL
-INT         i,j,k,counter;
+INT         i,j,counter;
 INT         numeq;
 INT         numsend;
 INT         numrecv;
@@ -619,7 +721,6 @@ INT         imyrank;
 INT         inprocs;
 SPARSE_TYP  sysarraytyp;
 ARRAY      *coupledofs;
-ELEMENT    *actele;
 
 INT        *numcoupsend;
 INT        *numcouprecv;
@@ -627,7 +728,6 @@ ARRAY     **couple_d_send_ptr;
 ARRAY     **couple_i_send_ptr;
 ARRAY     **couple_d_recv_ptr;
 ARRAY     **couple_i_recv_ptr;
-ARRAY      *dummyarray;
 #endif
 
 #ifdef DEBUG
@@ -642,6 +742,17 @@ inprocs = actintra->intra_nprocs;
 sysarraytyp = actsolv->sysarray_typ[actsysarray];
 switch(sysarraytyp)
 {
+
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+   numcoupsend       = &(actsolv->sysarray[actsysarray].trilinos->numcoupsend);
+   numcouprecv       = &(actsolv->sysarray[actsysarray].trilinos->numcouprecv);
+   couple_d_send_ptr = &(actsolv->sysarray[actsysarray].trilinos->couple_d_send);
+   couple_i_send_ptr = &(actsolv->sysarray[actsysarray].trilinos->couple_i_send);
+   couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].trilinos->couple_d_recv);
+   couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].trilinos->couple_i_recv);
+break;
+#endif
 
 #ifdef AZTEC_PACKAGE
 case msr:
@@ -773,7 +884,7 @@ numeq   = actfield->dis[disnum].numeq;
                column 1 - inprocs+1 : proc has coupled equation or not
                                          2 indicates owner of equation
 */
-/* calculate the number of sends and receives to expect during assemblage */
+/* calculate the number of sends and receives to expect during assembly */
 for (i=0; i<coupledofs->fdim; i++)
 {
    /*--------------------------- check whether I am master owner of dof */
@@ -840,6 +951,8 @@ if (numrecv) /* I am master of a coupled dof and expect entries from other procs
 
    amdef("c_d_recv",(*couple_d_recv_ptr),numrecv,numeq,"DA");
    amdef("c_i_recv",(*couple_i_recv_ptr),numrecv,2,"IA");
+   amzero(*couple_d_recv_ptr);
+   amzero(*couple_i_recv_ptr);
 }
 else /*----------------------- I do not expect entries from other procs */
 {
@@ -847,7 +960,6 @@ else /*----------------------- I do not expect entries from other procs */
    *couple_i_recv_ptr = NULL;
 }
 /*----------------------------------------------------------------------*/
-end:
 #endif /* end of PARALLEL */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -874,167 +986,102 @@ void assemble_vec(INTRA        *actintra,
                   DOUBLE        factor)
 {
 INT                   i;
-INT                   dof;
-INT                   imyrank;
+INT*                  update;
 
-#ifdef MLIB_PACKAGE
-ML_ARRAY_MDS         *mds_array;
-#endif
-
-#ifdef AZTEC_PACKAGE
-AZ_ARRAY_MSR         *msr_array;
-#endif
-
-#ifdef HYPRE_PACKAGE
-H_PARCSR             *parcsr_array;
-#endif
-
-#ifdef PARSUPERLU_PACKAGE
-UCCHB                *ucchb_array;
-#endif
-
-DENSE                *dense_array;
-
-#ifdef MUMPS_PACKAGE
-RC_PTR               *rcptr_array;
-#endif
-
-#ifdef UMFPACK
-CCF                  *ccf_array;
-#endif
-
-SKYMATRIX            *sky_array;
-
-#ifdef SPOOLES_PACKAGE
-SPOOLMAT             *spo;
-#endif
-
-#ifdef MLPCG
-DBCSR                *bdcsr_array;
-#endif
-
-OLL                  *oll_array;
 #ifdef DEBUG
 dstrc_enter("assemble_vec");
 #endif
-/*----------------------------------------------------------------------*/
-imyrank = actintra->intra_rank;
 /*----------------------------------------------------------------------*/
 switch(*sysarraytyp)
 {
 
 #ifdef MLIB_PACKAGE
 case mds:
-    mds_array = sysarray->mds;
     for (i=0; i<rhs->numeq; i++)
-    {
        rhs->vec.a.dv[i] += drhs[i]*factor;
-    }
+break;
+#endif
+
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+    update = sysarray->trilinos->update.a.iv;
+    for (i=0; i<rhs->numeq; i++)
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 #ifdef AZTEC_PACKAGE
 case msr:
-    msr_array = sysarray->msr;
+    update = sysarray->msr->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = msr_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 #ifdef HYPRE_PACKAGE
 case parcsr:
-    parcsr_array = sysarray->parcsr;
+    update = sysarray->parcsr->update.a.ia[actintra->intra_rank];
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof     = parcsr_array->update.a.ia[imyrank][i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 #ifdef PARSUPERLU_PACKAGE
 case ucchb:
-    ucchb_array = sysarray->ucchb;
+    update = sysarray->ucchb->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = ucchb_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 case dense:
-    dense_array = sysarray->dense;
+    update = sysarray->dense->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = dense_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 
 case skymatrix:
-    sky_array = sysarray->sky;
+    update = sysarray->sky->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = sky_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 
 #ifdef MUMPS_PACKAGE
 case rc_ptr:
-    rcptr_array = sysarray->rc_ptr;
+    update = sysarray->rc_ptr->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = rcptr_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 #ifdef UMFPACK
 case ccf:
-    ccf_array = sysarray->ccf;
+    update = sysarray->ccf->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = ccf_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 #ifdef SPOOLES_PACKAGE
 case spoolmatrix:
-    spo = sysarray->spo;
+    update = sysarray->spo->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = spo->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 #ifdef MLPCG
 case bdcsr:
-    bdcsr_array = sysarray->bdcsr;
+    update = sysarray->bdcsr->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = bdcsr_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 #endif
 
 case oll:
-    oll_array = sysarray->oll;
+    update = sysarray->oll->update.a.iv;
     for (i=0; i<rhs->numeq; i++)
-    {
-       dof = oll_array->update.a.iv[i];
-       rhs->vec.a.dv[i] += drhs[dof]*factor;
-    }
+       rhs->vec.a.dv[i] += drhs[update[i]]*factor;
 break;
 
 default:
@@ -1272,7 +1319,13 @@ for (i=0; i<actele->numnp; i++)
    {
       irow++;
       dof = actele->node[i]->dof[j];
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+      if (actele->node[i]->gnode->dirich!=NULL &&
+          actele->node[i]->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+#else
       if (dof >= container->global_numeq) continue;
+#endif
        container->dvec[dof] += elevec[irow];
 /*      container->dvec[dof] += elevec[i*numdf+j]; */
    }
@@ -1301,6 +1354,10 @@ DOUBLE                dforces[MAXDOFPERELE];
 INT                   dirich_onoff[MAXDOFPERELE];
 INT                   lm[MAXDOFPERELE];
 GNODE                *actgnode;
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+NODE*                 actnode;
+#endif
+
 #ifdef DEBUG
 dstrc_enter("assemble_dirich");
 #endif
@@ -1342,11 +1399,25 @@ for (i=0; i<nd; i++)
    }/* loop j over columns */
 }/* loop i over rows */
 /*-------- now assemble the vector dforces to the global vector fullvec */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+for (i=0; i<actele->numnp; i++)
+{
+  actnode = actele->node[i];
+  for (j=0; j<actnode->numdf; j++)
+  {
+    if (actnode->gnode->dirich!=NULL &&
+        actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+    container->dirich[actnode->dof[j]] += dforces[i*numdf+j];
+  }
+}
+#else
 for (i=0; i<nd; i++)
 {
    if (lm[i] >= container->global_numeq) continue;
    container->dirich[lm[i]] += dforces[i];
 }
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
