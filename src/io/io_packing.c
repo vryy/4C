@@ -2587,6 +2587,20 @@ static void out_pack_dist_vector(BIN_OUT_CHUNK *chunk,
   switch (sysarray_typ)
   {
 
+#ifdef TRILINOS_PACKAGE
+  case trilinos:
+    {
+      const int numeq = sysarray.trilinos->numeq;
+      int* update = sysarray.trilinos->update.a.iv;
+      for (i=0; i<numeq; ++i)
+      {
+        INT dof = update[i];
+        boilerplate_copying_code;
+      }
+    }
+    break;
+#endif
+
 #ifdef AZTEC_PACKAGE
   case msr:
     for (i=0; i<sysarray.msr->numeq; ++i)

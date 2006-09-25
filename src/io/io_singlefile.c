@@ -876,6 +876,19 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
   switch (*sysarray_typ)
   {
 
+#ifdef TRILINOS_PACKAGE
+  case trilinos:
+    calc_max_number(sysarray->trilinos->numeq_total);
+    const int numeq = sysarray->trilinos->numeq;
+    int* update = sysarray->trilinos->update.a.iv;
+    for (i=0; i<numeq; ++i)
+    {
+      INT dof = update[i];
+      boilerplate_code;
+    }
+    break;
+#endif
+
 #ifdef AZTEC_PACKAGE
   case msr:
     calc_max_number(sysarray->msr->numeq_total);
