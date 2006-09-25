@@ -137,6 +137,7 @@ for (i=0; i<par.numfld; i++)
    MPI_Comm_size(par.intra[i].MPI_INTRA_COMM,&(par.intra[i].intra_nprocs));
    if (par.intra[i].intra_nprocs>MAXPROC) dserror("Define of MAXPROC too small");
 
+#if 0
    /* SPOOLES requires the MPI_TAG_UB (that contains the highest
       possible tag value) in every communicator. It's guaranteed to be
       defined in MPI_COMM_WORLD, but apparently mpich doesn't copy it
@@ -154,6 +155,7 @@ for (i=0; i<par.numfld; i++)
        MPI_Attr_put(par.intra[i].MPI_INTRA_COMM, MPI_TAG_UB, (void *) iptr);
      }
    }
+#endif   
 /*-----------------------------------------------------------------------*/
 }/* end of loop over fields */
 /*--------------------------- free the MPI_WORLD_GROUP, no longer needed */
