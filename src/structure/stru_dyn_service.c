@@ -4,9 +4,9 @@
 
 <pre>
 Maintainer: Michael Gee
-            gee@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/gee/
-            0711 - 685-6572
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -1239,6 +1239,15 @@ for (i=0; i<nd; i++)
 
 
 /*-------- now assemble the vector dforces to the global vector fullvec */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+for (i=0; i<nd; i++)
+{
+  /* do nothing for a dirichlet dof itself */
+  if (dirich_onoff[i]!=0) continue;
+  /* assemble a free dof */
+  container->dirich[lm[i]] += dforces[i];
+}
+#else
 for (i=0; i<nd; i++)
 {
    /*if (lm[i] >= dim) continue;
@@ -1246,6 +1255,7 @@ for (i=0; i<nd; i++)
    if (lm[i] >= container->global_numeq) continue;
    container->dirich[lm[i]] += dforces[i];
 }
+#endif
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG

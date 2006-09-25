@@ -179,7 +179,8 @@ for (i=0; i<actsolv->nsol; i++)
    solserv_zero_vec(&(actsolv->sol[i]));
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(
+solver_control(     actfield,
+                    disnum,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -239,7 +240,8 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
 	     &(actsolv->rhs[actsysarray]),dirich,-1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
-solver_control(
+solver_control(     actfield,
+                    disnum,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),

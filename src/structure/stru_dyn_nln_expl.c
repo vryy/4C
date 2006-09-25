@@ -296,20 +296,20 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,
+solver_control(actfield, disnum, actsolv, actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(dispi[0]),
                &(actsolv->rhs[0]),
                init);
-solver_control(actsolv, actintra,
+solver_control(actfield, disnum, actsolv, actintra,
                &(actsolv->sysarray_typ[mass_array]),
                &(actsolv->sysarray[mass_array]),
                &work[0],
                &work[1],
                init);
 if (damp_array>0)
-solver_control(actsolv, actintra,
+solver_control(actfield, disnum, actsolv, actintra,
                &(actsolv->sysarray_typ[damp_array]),
                &(actsolv->sysarray[damp_array]),
                &work[0],
@@ -426,7 +426,7 @@ dyn_keff_expl(actintra,actsolv->sysarray_typ,actsolv->sysarray,
 /*-------------------------------- make triangulation of left hand side */
 /*                          ie factorise/decompose "stiff_array" matrix */
 init=0;
-solver_control(actsolv, actintra,
+solver_control(actfield, disnum, actsolv, actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(dispi[0]),
@@ -593,7 +593,7 @@ pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
  * forces), but more or less the mass matrix */
 solserv_zero_vec(&work[0]);
 init=0;
-solver_control(actsolv, actintra,
+solver_control(actfield, disnum, actsolv, actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(work[0]),

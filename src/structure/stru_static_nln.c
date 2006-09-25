@@ -280,7 +280,7 @@ solserv_zero_vec(&(dispi[0]));
 solserv_zero_vec(&(dispi[1]));
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,
+solver_control(actfield,disnum,actsolv, actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(actsolv->sol[actsysarray]),
@@ -686,7 +686,7 @@ DOUBLE               prenorm;          /* norm of predictor step */
 DOUBLE               controldisp;      /* displacment value at controled dof */
 DOUBLE               rldiff;           /* forgot.... */
 DOUBLE               spi;              /* forgot.... */
-
+INT                  disnum=0;         /* discreitzation number */
 
 #ifdef DEBUG
 dstrc_enter("conpre");
@@ -722,7 +722,8 @@ init=0;
 /*
 oll_print(actsolv->sysarray[actsysarray].oll,200);
 */
-solver_control(
+solver_control(  actfield,                            /* field to be solved       */
+                 disnum,                              /* discretization number    */ 
                  actsolv,                             /* active solver typ        */
                  actintra,                            /* my intra-comunicators    */
                &(actsolv->sysarray_typ[actsysarray]), /* Systemmatrixtyp          */
@@ -991,7 +992,7 @@ assemble_vec(actintra, &(actsolv->sysarray_typ[actsysarray]), &(actsolv->sysarra
 /*                                                initial guess is zero */
 init=0;
 solserv_zero_vec(&(rsd[2]));
-solver_control(  actsolv,
+solver_control(  actfield,disnum,actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
@@ -1002,7 +1003,7 @@ solver_control(  actsolv,
 /*                                                          K * du1 = P */
 /*                                 initial guess is value of last solve */
 init=0;
-solver_control(  actsolv,
+solver_control(  actfield,disnum,actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),

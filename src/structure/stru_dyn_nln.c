@@ -346,14 +346,14 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
                &(dispi[0]),&(actsolv->rhs[0]),init);
 
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[mass_array]),&(actsolv->sysarray[mass_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[mass_array]),&(actsolv->sysarray[mass_array]),
                &work[0],&work[1],init);
 
 if (damp_array>0)
-solver_control(actsolv, actintra, &(actsolv->sysarray_typ[damp_array]),&(actsolv->sysarray[damp_array]),
+solver_control(actfield,disnum,actsolv, actintra, &(actsolv->sysarray_typ[damp_array]),&(actsolv->sysarray[damp_array]),
                &work[0],&work[1],init);
 /*----------------- init the assembly for stiffness and for mass matrix */
 /*                                           (damping is not assembled) */
@@ -404,6 +404,8 @@ if (damp_array>0)
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
                    sdyn->m_damp);
+   
+   solserv_close_mat(actintra,&(actsolv->sysarray_typ[damp_array]),&(actsolv->sysarray[damp_array]));
 }
 
 /*------------------------------------------- set initial step and time */
@@ -724,7 +726,7 @@ pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,mass_arr
 kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,damp_array);
 /*------------- call for solution of system dispi[0] = Keff^-1 * rhs[0] */
 init=0;
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
                &(dispi[0]),&(actsolv->rhs[0]),init);
 
 /*------------------------------------------------ update displacements */
@@ -875,7 +877,7 @@ kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array
 /*---------------------------------------- solve keff * rsd[0] = rhs[0] */
 /* solve for residual displacements to correct incremental displacements*/
 init=0;
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
                &(work[0]),&(actsolv->rhs[0]),init);
 
 /*-------------------------- return residual displacements to the nodes */
