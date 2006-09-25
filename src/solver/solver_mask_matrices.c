@@ -13,6 +13,9 @@ Maintainer: Malte Neumann
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+#ifdef TRILINOS_PACKAGE
+#include "solver_trilinos_service.H"
+#endif
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -136,6 +139,8 @@ void mask_global_matrices()
   SOLVAR     *actsolv;         /* the active SOLVAR */
   INTRA      *actintra = NULL; /* the field's intra-communicator */
 
+  /* use trilinos for internal vectors/matrices */
+  INT  usetrilinosalgebra = genprob.usetrilinosalgebra;
 
 #ifdef DEBUG
   dstrc_enter("mask_global_matrices");
@@ -171,6 +176,25 @@ void mask_global_matrices()
     actsolv->nsysarray = actfield->ndis;
 
 
+    /* special case:  matrix typ is trilinos for ALL fields */
+    /* (to be precise: Epetra_CrsMatrix)                    */
+    /*------------------------------------------------------*/
+    if (usetrilinosalgebra)
+    { 
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+        actsolv->sysarray_typ[i] = trilinos;
+        actsolv->sysarray[i].trilinos = (TRILINOSMATRIX*)CCACALLOC(1,sizeof(TRILINOSMATRIX));
+#ifdef TRILINOS_PACKAGE
+        init_trilinos_matrix(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].trilinos,i);
+#else
+        dserror("TRILINOS_PACKAGE not defined");
+#endif
+      }  /* for (i=0; i<actfield->ndis; i++) */
+      continue;
+    }
 
     /* special case:  matrix typ is OLL */
     /*----------------------------------*/
@@ -181,7 +205,7 @@ void mask_global_matrices()
 
       for (i=0; i<actfield->ndis; i++)
       {
-        actsolv->sysarray_typ[i] = oll;
+        actsolv->sysarray_typ[i] = trilinos;
         actsolv->sysarray[i].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
 
         numeq_total = actfield->dis[i].numeq;

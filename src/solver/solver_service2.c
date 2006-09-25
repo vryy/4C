@@ -33,8 +33,7 @@ dstrc_enter("solserv_create_vec");
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------ allocate the vectors */
 *vector = (DIST_VECTOR*)CCACALLOC(numvectors,sizeof(DIST_VECTOR));
-if (*vector==NULL) dserror("Allocation of DIST_VECTOR failed");
-/*--------------------------- loop the created vectors and perfrom init */
+/*--------------------------- loop the created vectors and perform init */
 for (i=0; i<numvectors; i++)
 {
    actvector = &((*vector)[i]);
@@ -550,6 +549,22 @@ inprocs = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
 switch(*sysarray_typ)
 {
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+   for (i=0; i<sysarray->trilinos->numeq; i++)
+   {
+      dof = sysarray->trilinos->update.a.iv[i];
+#ifdef PARALLEL
+      recvbuff[dof] = distvec->vec.a.dv[i];
+#else
+      fullvec[dof] = distvec->vec.a.dv[i];
+#endif
+   }
+#ifdef PARALLEL
+   MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+break;
+#endif
 
 #ifdef AZTEC_PACKAGE
 case msr:
@@ -567,7 +582,6 @@ case msr:
 #endif
 break;
 #endif
-
 
 
 #ifdef HYPRE_PACKAGE
@@ -1119,7 +1133,7 @@ void solserv_result_resid(
 
   /* allocate space to allreduce the DIST_VECTOR */
   result = amdef("result",&result_a,numeq_total,1,"DV");
-  amzero(&result_a);
+  /*amzero(&result_a); this is done in solserv_reddistvec anyway */
   solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
 
 

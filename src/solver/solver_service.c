@@ -14,6 +14,13 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+/*----------------------------------------------------------------------*
  |                                                           m.gee 03/02|
  | prototypes of functions only visible in this file                    |
  *----------------------------------------------------------------------*/
@@ -54,6 +61,19 @@ static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to);
 static void oll_matvec(INTRA *actintra, OLL *oll, DOUBLE *work1, DOUBLE *work2);
 
 /*----------------------------------------------------------------------*
+ |                                                           m.gee 09/06|
+ | prototypes of functions from solver_trilinos_service.cpp             |
+ *----------------------------------------------------------------------*/
+#ifdef TRILINOS_PACKAGE
+extern void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to);
+extern void trilinos_zero_matrix(TRILINOSMATRIX *tri);
+extern void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor);
+extern void close_trilinos_matrix(struct _TRILINOSMATRIX *tri);
+extern void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A);
+extern void scale_trilinos_matrix(TRILINOSMATRIX* A, double factor);
+#endif
+
+/*----------------------------------------------------------------------*
  |  make A = A * factor                                      m.gee 02/02|
  | SPARSE_TYP *Atyp (i)        type of sparse matrix                    |
  | SPARSE_ARRAY *A  (i/o)      sparse matrix                            |
@@ -72,6 +92,12 @@ switch (*Atyp)
 #ifdef MLIB_PACKAGE
 case mds:
    dserror("not implemented for MLIB yet");
+break;
+#endif
+
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+   scale_trilinos_matrix(A->trilinos,factor);
 break;
 #endif
 
@@ -146,6 +172,94 @@ return;
 
 
 /*----------------------------------------------------------------------*
+ |                                                           m.gee 09/06|
+ | close a system matrix                                                |
+ | this might be necessary for certain dynamic system matrices          |
+ | such as spooles, oll, trilinos                                       |
+ *----------------------------------------------------------------------*/
+void solserv_close_mat(INTRA *actintra, SPARSE_TYP* Atyp,SPARSE_ARRAY* A)
+{
+
+#ifdef DEBUG
+dstrc_enter("solserv_close_mat");
+#endif
+/*----------------------------------------------------------------------*/
+switch (*Atyp)
+{
+
+#ifdef MLIB_PACKAGE
+case mds:
+break;
+#endif
+
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+  close_trilinos_matrix(A->trilinos); 
+break;
+#endif
+
+#ifdef AZTEC_PACKAGE
+case msr:
+break;
+#endif
+
+#ifdef HYPRE_PARCSR
+case parcsr:
+break;
+#endif
+
+#ifdef PARSUPERLU_PACKAGE
+case ucchb:
+break;
+#endif
+
+case dense:
+break;
+
+#ifdef MUMPS_PACKAGE
+case rc_ptr:
+break;
+#endif
+
+#ifdef SPOOLES_PACKAGE
+case spoolmatrix:
+   close_spooles_matrix(A->spo,actintra);
+break;
+#endif
+
+#ifdef MLPCG
+case bdcsr:
+break;
+#endif
+
+case ccf:
+#ifdef UMFPACK
+break;
+#endif
+
+case skymatrix:
+break;
+
+case oll:
+break;
+
+case sparse_none:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+
+default:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_close_mat */
+
+
+/*----------------------------------------------------------------------*
  |  make A = A + B * factor                                  m.gee 02/02|
  | INTRA *actintra  (i)     intra-communicator the matrices live on     |
  | SPARSE_TYP *Atyp (i)     type of sparse matrix                       |
@@ -173,6 +287,12 @@ switch (*Atyp)
 #ifdef MLIB_PACKAGE
 case mds:
    dserror("not implemented for MLIB yet");
+break;
+#endif
+
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+  add_trilinos_matrix(B->trilinos,A->trilinos,factor);
 break;
 #endif
 
@@ -348,6 +468,13 @@ case oll:
    *numeq_total = mat->oll->numeq_total;
 break;
 
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+   *numeq       = mat->trilinos->numeq;
+   *numeq_total = mat->trilinos->numeq_total;
+break;
+#endif 
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -496,6 +623,12 @@ case oll:
    /*solserv_zero_mat(actintra,&(mat->oll->sysarray[0]),&(mat->oll->sysarray_typ[0]));*/
 break;
 
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+   trilinos_zero_matrix(mat->trilinos);
+break;
+#endif
+
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -607,6 +740,13 @@ case oll:
    matto->oll = (OLL*)CCACALLOC(1,sizeof(OLL));
    oll_cp_mask(matfrom->oll,matto->oll);
 break;
+
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+   matto->trilinos = (TRILINOSMATRIX*)CCACALLOC(1,sizeof(TRILINOSMATRIX));
+   trilinos_cp_matrixmask(matfrom->trilinos,matto->trilinos);
+break;
+#endif
 
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
@@ -954,12 +1094,26 @@ dstrc_enter("solserv_sparsematvec");
 #endif
 
 /*----------------------------------------------------------------------*/
-  if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
-  if (work2_a.Typ != cca_DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
-  if (work1_a.fdim < vec->numeq_total) {
-    amdel(&work1_a); work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
-    amdel(&work2_a); work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
-  }
+#ifdef TRILINOS_PACKAGE
+if (genprob.usetrilinosalgebra)
+if (*mattyp==trilinos)
+{
+  matvec_trilinos(result,vec,mat->trilinos);
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  
+#endif
+/*----------------------------------------------------------------------*/
+/* these are redundant working vectors needed by some matvec versions */
+if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
+if (work2_a.Typ != cca_DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+if (work1_a.fdim < vec->numeq_total) 
+{
+  amdel(&work1_a); work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
+  amdel(&work2_a); work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+}
 
 /*----------------------------------------------------------------------*/
 switch (*mattyp)
@@ -967,6 +1121,12 @@ switch (*mattyp)
 #ifdef MLIB_PACKAGE
 case mds:
    dserror("Matrix-Vector Product for MLIB not implemented");
+break;
+#endif
+
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+  dserror("Put 'ALGEBRA Trilinos' in the '---PROBLEM TYP' block of your input file to use trilinos algebra");
 break;
 #endif
 
@@ -1070,7 +1230,7 @@ static void solserv_matvec_spo(INTRA        *actintra,
                                   DOUBLE       *work2)/* work2 is the result */
 {
 INT         i,j,dof;
-INT         start,end,lenght,j_index;
+/*INT         start,end,lenght,j_index;*/
 INT         myrank;
 INT         nprocs;
 INT         numeq;

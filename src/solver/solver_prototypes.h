@@ -807,7 +807,9 @@ void solver_spooles(
 /*----------------------------------------------------------------------*
  |  solver_control.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void solver_control(
+void solver_control(   
+                       struct _FIELD          *actfield,
+                       INT                     disnum,
                        struct _SOLVAR         *actsolv,
                        struct _INTRA          *actintra,
                        enum   _SPARSE_TYP     *sysarray_typ,
@@ -901,6 +903,13 @@ void solserv_getmatdims(SPARSE_ARRAY* mat,SPARSE_TYP mattyp,
  *----------------------------------------------------------------------*/
 void solserv_zero_mat(INTRA *actintra,SPARSE_ARRAY *mat,
                                       SPARSE_TYP *mattyp);
+/*----------------------------------------------------------------------*
+ |                                                           m.gee 09/06|
+ | close a system matrix                                                |
+ | this might be necessary for certain dynamic system matrices          |
+ | such as spooles, oll, trilinos                                       |
+ *----------------------------------------------------------------------*/
+void solserv_close_mat(INTRA *actintra, SPARSE_TYP* Atyp,SPARSE_ARRAY* A);
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a system matrix              m.gee 02/02|
  |  for the new sparsity mask, a suitable structure is allocated        |

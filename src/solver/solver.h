@@ -63,7 +63,11 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef LINUX_MUENCH
+#ifdef TRILINOS_PACKAGE
+#include <az_aztec.h>
+#else
 #include <aztec21/lib/az_aztec.h>
+#endif
 #endif
 
 #ifdef HPUX_MUENCH
@@ -109,7 +113,11 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef LINUX_MUENCH
+#ifdef TRILINOS_PACKAGE
+#include <az_aztec.h>
+#else
 #include <aztec21/lib/az_aztec.h>
+#endif
 #endif
 
 #ifdef HPUX_MUENCH
@@ -239,7 +247,8 @@ typedef enum _SPARSE_TYP
   spoolmatrix,            /* matrix object for solver spooles */
   ccf,                    /* compressed column format for umfpack */
   bdcsr,                  /* block distributed compressed sparse row format */
-  oll                     /* orthogonal linked list matrix */
+  oll,                    /* orthogonal linked list matrix */
+  trilinos                /* use Trilinos' Epetra_CrsMatrix matrix */
 } SPARSE_TYP;
 
 
@@ -248,17 +257,18 @@ typedef enum _SPARSE_TYP
  *----------------------------------------------------------------------*/
 typedef union _SPARSE_ARRAY
 {
-  struct _ML_ARRAY_MDS   *mds;    /* mlib - symm. - unsymm. - sparse */
-  struct _AZ_ARRAY_MSR   *msr;    /* pointer to Aztec's DMSR matrix */
-  struct _H_PARCSR       *parcsr; /*         to HYPRE's ParCSR matrix */
-  struct _UCCHB          *ucchb;  /*         to Superlu's UCCHB matrix */
-  struct _DENSE          *dense;  /*         to dense matrix */
-  struct _RC_PTR         *rc_ptr; /*         to Mump's row/column ptr matrix */
-  struct _CCF            *ccf;    /*         to Umfpack compressed column matrix */
-  struct _SKYMATRIX      *sky;    /*         to Colsol's skyline matrix */
-  struct _SPOOLMAT       *spo;    /*         to Spoole's matrix */
-  struct _DBCSR          *bdcsr;  /* matrix needed by the MLPCG solver on the finest grid only */
-  struct _OLL            *oll;    /* pointer to orthogonal linked list matrix */
+  struct _ML_ARRAY_MDS   *mds;      /* mlib - symm. - unsymm. - sparse */
+  struct _AZ_ARRAY_MSR   *msr;      /* pointer to Aztec's DMSR matrix */
+  struct _H_PARCSR       *parcsr;   /*         to HYPRE's ParCSR matrix */
+  struct _UCCHB          *ucchb;    /*         to Superlu's UCCHB matrix */
+  struct _DENSE          *dense;    /*         to dense matrix */
+  struct _RC_PTR         *rc_ptr;   /*         to Mump's row/column ptr matrix */
+  struct _CCF            *ccf;      /*         to Umfpack compressed column matrix */
+  struct _SKYMATRIX      *sky;      /*         to Colsol's skyline matrix */
+  struct _SPOOLMAT       *spo;      /*         to Spoole's matrix */
+  struct _DBCSR          *bdcsr;    /* matrix needed by the MLPCG solver on the finest grid only */
+  struct _OLL            *oll;      /* pointer to orthogonal linked list matrix */
+  struct _TRILINOSMATRIX *trilinos; /* pointer to orthogonal linked list matrix */
 } SPARSE_ARRAY;
 
 
@@ -339,6 +349,7 @@ typedef struct _AZVAR
   enum   _AZPRECTYP       azprectyp;          /* type of aztec preconditioner, see enums.h */
   INT                     azreuse;            /* reuse of preconditioning feature, important,
                                                  but not yet implemented */
+  INT                     azoutput;           /* output level for AztecOO 0=no output */
   INT                     azgfill;            /* percentage fill in allowed */
   INT                     aziter;             /* maximum number of iterations allowed */
   INT                     azsub;              /* number of krylov subspaces for certain solvers
@@ -353,6 +364,22 @@ typedef struct _AZVAR
   DOUBLE                  aztol;              /* tolerance */
   DOUBLE                  azomega;            /* relaxation parameter for some preconditioners */
   INT                     blockdiag;
+
+#ifdef TRILINOS_PACKAGE
+  int                     mlprint;            /* ml print level 0 - 10 */
+  int                     mlcsize;            /* size where to stop coarsening */
+  int                     mlmaxlevel;         /* max no. of grids */
+  int                     mlsmotimes[15];     /* no. smoothing steps on each level */
+  int                     mlcoarsentype;      /* 0 UC 1 METIS 2 VBMETIS 3 MIS */
+  int                     mlsmotype_fine;     /* 0 SGS 1 Jacobi 2 Chebychev 3 MLS 4 ILU 5 KLU */
+  int                     mlsmotype_med;      /* 0 SGS 1 Jacobi 2 Chebychev 3 MLS 4 ILU 5 KLU */
+  int                     mlsmotype_coarse;   /* 0 SGS 1 Jacobi 2 Chebychev 3 MLS 4 ILU 5 KLU 6 Superlu*/
+  double                  mldamp_fine;        /* damping factor fine grid */
+  double                  mldamp_med;         /* damping factor fine grid */
+  double                  mldamp_coarse;      /* damping factor fine grid */
+  double                  mldamp_prolong;     /* damping factor for prolongator smoother */
+  double                  ml_threshold;       /* threshold for aggregation/prolongator smoother */  
+#endif
 } AZVAR;
 
 
@@ -901,6 +928,52 @@ typedef struct _MATENTRY
 } MATENTRY;
 
 
+/*!---------------------------------------------------------------------
+  \brief a wrapper for Trilinos' Epetra_CrsMatrix
+
+  <pre>                                                              gee 09/06
+  This structure contains a Trilinos' Epetra_CrsMatrix
+  </pre>
+  -------------------------------------------------------------------------*/
+typedef struct _TRILINOSMATRIX
+{
+  INT                     is_init;       /*!< was this matrix initialized ? */
+  INT                     is_factored;   /*!< was this matrix factored ? */
+  INT                     ncall;         /*!< no. of calls to solver */
+  INT                     numeq_total;   /*!< total number of unknowns */
+  INT                     numeq;         /*!< number of unknowns updated on this proc */
+
+  struct _ARRAY           update;        /*!< list of dofs updated on this proc */
+
+  void*                   epetracomm;    /*!< either Epetra_SerialComm or Epetra_MpiComm */
+  void*                   rowmap;        /*!< rowmap of the matrix actually ptr to Epetra_Map */
+  void*                   matrix;        /*!< Epetra_CrsMatrix */
+
+  void*                   linearproblem; /*!< ptr to the Epetra_LinearProblem */
+  void*                   solver;        /*!< ptr to any Trilinos solver */
+  void*                   params;        /*!< ptr to Teuchos parameter list */
+
+  void*                   prec;          /*!< ptr to any Trilinos preconditioner (type Epetra_Operator) */
+  void*                   precmatrix;    /*!< copy of matrix, needed to reuse preconditioner */
+  double*                 nullspace;     /*!< ptr to nullspace of this operator (used by ML) */
+
+  union _SPARSE_ARRAY    *sysarray;      /*!< sparse array in solver format (used ofr spooles as subsolver only)*/
+  enum  _SPARSE_TYP      *sysarray_typ;  /*!< typ for sparse array */
+
+  /* some arrays that are used for parallel assembly, mainly in the
+     case of inter-proc-coupling conditions */
+#ifdef PARALLEL
+  INT                     numcoupsend;   /*!< number of coupling information
+                                           to be send by this proc */
+  INT                     numcouprecv;   /*!< number of coupling information
+                                           to be recv. by this proc */
+  struct _ARRAY          *couple_d_send; /*!< send and receive buffers if necessary */
+  struct _ARRAY          *couple_i_send;
+  struct _ARRAY          *couple_d_recv;
+  struct _ARRAY          *couple_i_recv;
+#endif
+} TRILINOSMATRIX;
+
 /*!------------------------------------------------------------------------
   \brief matrix needed by the MLPCG solver on the finest grid only
 
@@ -953,8 +1026,10 @@ typedef struct _DBCSR
 
   struct _DBCSR          *csc;           /*!< the treansposed matrix in compressed
                                            sparse column format */
+#ifdef MLPCG
   struct _DBCSR          *ilu;           /*!< the ilu-decomposed asm - matrix */
   struct _DBCSR          *asm;           /*!< the asm splitted matrix */
+#endif
   ARRAY                  *dense;         /*!< for dense solve on coarsest grid */
   ARRAY                  *ipiv;          /*!< for dense solve on coarsest grid */
 
