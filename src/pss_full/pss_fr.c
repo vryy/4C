@@ -340,9 +340,10 @@ if (par.nprocs>1)
 #if defined(DEBUG) || defined(OUTPUT_INPUT)
 if (par.myrank==0)
 {
+#if 0
   printf("\nNow writing a copy of the input file into the *.err-file.");
   printf("\nThis takes a lot of time and is usually not necessary...\n\n");
-
+#endif
   fprintf(allfiles.out_err,"===========================================\n");
   fprintf(allfiles.out_err,"broadcasted copy of input file:            \n");
   fprintf(allfiles.out_err,"===========================================\n");
