@@ -2898,12 +2898,12 @@ INT           i,j;
 FILE         *out = allfiles.gidres;
 
 NODE         *actnode;
-ELEMENT      *actele;
+ELEMENT      *actele = NULL;
 GIDSET       *actgid = NULL;
 
 char         *resulttype;
 char         *resultplace;
-char         *gpset;
+char         *gpset = NULL;
 char         *rangetable;
 INT           ncomponent;
 char         *componentnames[18];
@@ -4479,7 +4479,6 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[5][0]
 			     );
 	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             actele->Id+1,
 			     stress[0][1],
 			     stress[1][1],
 			     stress[2][1],
@@ -4533,7 +4532,6 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[5][0]
 			     );
 	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             actele->Id+1,
 			     stress[0][1],
 			     stress[1][1],
 			     stress[2][1],
@@ -4596,7 +4594,6 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[5][1]
 			     );
 	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             actele->Id+1,
 			     stress[0][2],
 			     stress[1][2],
 			     stress[2][2],

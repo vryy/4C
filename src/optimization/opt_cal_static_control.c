@@ -195,7 +195,7 @@ for (i=0; i<actsolv->nsol; i++)
 if(stalact==calsta_init || stalact==calsta_init_solve)
 {
   init=1;
-  solver_control(
+  solver_control(actfield, 0,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -251,7 +251,7 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
 if(stalact==calsta_init_solve || stalact==calsta_solve)
 {
   init=0;
-  solver_control(
+  solver_control(actfield, 0,
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),

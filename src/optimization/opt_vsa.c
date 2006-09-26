@@ -225,7 +225,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
     solserv_scalarprod_vec(&(actsolv->rhs[actsysarray]),act_loadfac);
 /*------------------------------------------ solve for incremental load */
     init=0;
-    solver_control(
+    solver_control(actfield, 0,
                  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),

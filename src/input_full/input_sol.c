@@ -84,7 +84,7 @@ break;
 case thermal:
 if (frfind("-THERMAL SOLVER")==0) goto end;
 break;
-#endif D_TSI
+#endif /* D_TSI */
 default:
    dserror("Unknown field typ in reading solver");
 break;
@@ -96,7 +96,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SOLVER"    ,buffer,&ierr);
    if (ierr==1)
    {
-      
+
       /*--------------------------------------------------- Amesos solver KLU */
       /* note that all Amesos solvers work only with Trilinos enabled */
       if (strncmp("Amesos_KLU_sym",buffer,14)==0)

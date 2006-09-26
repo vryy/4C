@@ -113,7 +113,7 @@ void out_gid_sol_fsi(
   static FSI_DYNAMIC    *fsidyn;
   static STRUCT_DYNAMIC *sdyn;
 
-  INTRA        *actintras;
+  INTRA        *actintras = NULL;
   INTRA        *actintraf;
 
   FILE         *out = allfiles.gidres;

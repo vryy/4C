@@ -378,14 +378,16 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,
+solver_control(actfield,0,
+               actsolv, actintra,
                &(actsolv->sysarray_typ[k_array]),
                &(actsolv->sysarray[k_array]),
                &(actsolv->sol[0]),
                &(actsolv->rhs[0]),
                init);
 
-solver_control(kosolv, actintra,
+solver_control(actfield,0,
+               kosolv, actintra,
                &(kosolv->sysarray_typ[0]),
                &(kosolv->sysarray[0]),
                sol_ko,
@@ -501,7 +503,8 @@ assemble_vec(actintra,
 /*-------------------------------------------------------- solve system */
 init=0;
 t1=ds_cputime();
-solver_control(actsolv, actintra,
+solver_control(actfield,0,
+               actsolv, actintra,
                &(actsolv->sysarray_typ[k_array]),
                &(actsolv->sysarray[k_array]),
                &(actsolv->sol[0]),
@@ -708,7 +711,8 @@ assemble_vec(actintra,
 /*-------------------------------------------------------- solve system */
 init=0;
 t1=ds_cputime();
-solver_control(kosolv, actintra,
+solver_control(actfield,0,
+               kosolv, actintra,
                &(kosolv->sysarray_typ[0]),
                &(kosolv->sysarray[0]),
                sol_ko,

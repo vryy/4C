@@ -187,7 +187,7 @@ dstrc_enter("calfrq");
 #endif
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/* if (par.myrank==0) out_cgs(1); /* initialize cgs */
+/* if (par.myrank==0) out_cgs(1); / * initialize cgs */
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
@@ -304,13 +304,15 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
   init=1;
-  solver_control(actsolv, actintra,
+  solver_control(actfield, 0,
+                 actsolv, actintra,
                  &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &work[0],
                  &work[1],
                  init);
-  solver_control(actsolv, actintra,
+  solver_control(actfield, 0,
+                 actsolv, actintra,
                  &(actsolv->sysarray_typ[stiffa_copy]),
                  &(actsolv->sysarray[stiffa_copy]),
                  &work[0],
@@ -318,7 +320,8 @@ NOTE: solver init phase has to be called with each matrix one wants to
                  init);
   if(!alleig->ilmp)
   {
-    solver_control(actsolv, actintra,
+    solver_control(actfield, 0,
+                   actsolv, actintra,
                  &(actsolv->sysarray_typ[mass_array]),
                  &(actsolv->sysarray[mass_array]),
                  &work[0],

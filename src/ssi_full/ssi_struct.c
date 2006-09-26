@@ -409,20 +409,23 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,
+solver_control(actfield, 0,
+               actsolv, actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(dispi[0]),
                &(actsolv->rhs[0]),
                init);
-solver_control(actsolv, actintra,
+solver_control(actfield, 0,
+               actsolv, actintra,
                &(actsolv->sysarray_typ[mass_array]),
                &(actsolv->sysarray[mass_array]),
                &work[0],
                &work[1],
                init);
 if (damp_array>0)
-solver_control(actsolv, actintra,
+solver_control(actfield, 0,
+               actsolv, actintra,
                &(actsolv->sysarray_typ[damp_array]),
                &(actsolv->sysarray[damp_array]),
                &work[0],
@@ -904,7 +907,8 @@ kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array
               damp_array);
 /*------------- call for solution of system dispi[0] = Keff^-1 * rhs[0] */
 init=0;
-solver_control(actsolv, actintra,
+solver_control(actfield, 0,
+               actsolv, actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(dispi[0]),
@@ -995,7 +999,8 @@ kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array
 /*---------------------------------------- solve keff * rsd[0] = rhs[0] */
 /* solve for residual displacements to correct incremental displacements*/
 init=0;
-solver_control(actsolv, actintra,
+solver_control(actfield, 0,
+               actsolv, actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(work[0]),

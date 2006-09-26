@@ -334,7 +334,8 @@ solserv_zero_vec(&(dispi[1]));
 if(stalact == calsta_init || stalact==calsta_init_solve)
 {
   init=1;
-  solver_control(actsolv, actintra,
+  solver_control(actfield, 0,
+                 actsolv, actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(actsolv->sol[actsysarray]),
@@ -427,9 +428,9 @@ act_loadfac = 0.;
 /*
 if(oflag==1)
 {
-   act_loadfac = (fin_loadfac-1)*step_fac; /* final value ! */
+   act_loadfac = (fin_loadfac-1)*step_fac; / * final value ! */
 /*}
-/*--- load controlled ---*/
+/ *--- load controlled ---*/
 
 for (kstep=0; kstep<nstep; kstep++)
 {
@@ -779,7 +780,7 @@ solserv_vecnorm_euclid(actintra,&(actsolv->rhs[actsysarray]),
 nln_data->rrnorm = nln_data->rinorm;
 /*------------------------------------------ solve for incremental load */
 init=0;
-solver_control(
+solver_control(actfield, 0,
                  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
@@ -1002,7 +1003,7 @@ assemble_vec(actintra,
 /*                                                initial guess is zero */
 init=0;
 solserv_zero_vec(&(rsd[2]));
-solver_control(
+solver_control(actfield, 0,
                  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),

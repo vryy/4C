@@ -180,7 +180,7 @@ void mask_global_matrices()
     /* (to be precise: Epetra_CrsMatrix)                    */
     /*------------------------------------------------------*/
     if (usetrilinosalgebra)
-    { 
+    {
       actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       for (i=0; i<actsolv->nsysarray; i++)
@@ -655,7 +655,8 @@ solserv_create_vec(&(actsmsolv->sol),actsmsolv->nsol,numeq_total,numeq,"DV");
 for (i=0; i<actsmsolv->nsol; i++) solserv_zero_vec(&(actsmsolv->sol[i]));
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsmsolv, actsmintra,
+solver_control(actsmfield, 0,
+               actsmsolv, actsmintra,
              &(actsmsolv->sysarray_typ[0]),
              &(actsmsolv->sysarray[0]),
              &(actsmsolv->sol[0]),

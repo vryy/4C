@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 's2static_ke_ml' which calculates the 
+\brief contains the routine 's2static_ke_ml' which calculates the
 stiffness matrix and internal forces for a structural multiscale analysis
 
 <pre>
@@ -19,27 +19,27 @@ Maintainer: Andrea Hund
 #include "s2ml.h"
 #include "../solver/solver.h"
 
-/*! 
+/*!
 \addtogroup MLSTRUCT
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates stiffness matrix and internal forcees  
+\brief calculates stiffness matrix and internal forcees
 
 <pre>                                                            ah 06/04
 This routine calculates stiffness matrix for small strains formulation.
 </pre>
 
-\param  *actmaele       ELEMENT    (I)  actual macroelement 
+\param  *actmaele       ELEMENT    (I)  actual macroelement
 \param  *data           W1_DATA    (I)  Integration data
-\param  *mat            MATERIAL   (I)  material of the actual macroelement 
-\param  *estif_global   ARRAY      (O)  condensed stiffness matrix for macro-element-DOF's 
+\param  *mat            MATERIAL   (I)  material of the actual macroelement
+\param  *estif_global   ARRAY      (O)  condensed stiffness matrix for macro-element-DOF's
 \param  *emass_global   ARRAY      (O)  condensed mass matrix for macro-element-DOF's if dynamic (not jet!)
 \param  *force          DOUBLE     (O)  condensed internal forcees for macro-element-DOF's
 \param   init           INT        (I)  init-phase 0:calc_nlnstiff 2: update 3: calc_stress
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -56,7 +56,7 @@ extern struct _STATIC_VAR  *statvar;
  | vector of numfld submesh-FIELDs, defined in global_control.c         |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *sm_field;
-/*- ist eine globale Variable und dafuer global in global_control.c  
+/*- ist eine globale Variable und dafuer global in global_control.c
     definiert, deshalb hier extern */
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -65,8 +65,8 @@ extern struct _FIELD      *sm_field;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *sm_solv;
 /*----------------------------------------------------------------------*/
-void s2ml_static_ke(ELEMENT       *actmaele, 
-                    W1_DATA       *data, 
+void s2ml_static_ke(ELEMENT       *actmaele,
+                    W1_DATA       *data,
                     MATERIAL      *mat,
                     ARRAY         *estif_global,
                     ARRAY         *emass_global,
@@ -92,16 +92,16 @@ DOUBLE              nue;              /* poission ratio   */
 DOUBLE              facr,facs;        /* weights at GP                  */
 DOUBLE              fac;              /* integration factor            */
 
-static ARRAY    functma_a;     /* Makro-shape functions */    
-static DOUBLE  *functma;     
-static ARRAY    derivma_a;     /* derivatives of Makro-shape functions */   
-static DOUBLE **derivma;     
-static ARRAY    xjmma_a;       /* Makro-jacobian matrix */     
-static DOUBLE **xjmma;         
-static ARRAY    bopma_a;       /*  Makro-B-operator */   
-static DOUBLE **bopma;       
-static ARRAY    D_a;           /* material tensor */     
-static DOUBLE **D;         
+static ARRAY    functma_a;     /* Makro-shape functions */
+static DOUBLE  *functma;
+static ARRAY    derivma_a;     /* derivatives of Makro-shape functions */
+static DOUBLE **derivma;
+static ARRAY    xjmma_a;       /* Makro-jacobian matrix */
+static DOUBLE **xjmma;
+static ARRAY    bopma_a;       /*  Makro-B-operator */
+static DOUBLE **bopma;
+static ARRAY    D_a;           /* material tensor */
+static DOUBLE **D;
 
 static DOUBLE **estif;          /* (reduced) element stiffness matrix */
 
@@ -123,7 +123,7 @@ static ARRAY         smstiffmama_a;    /* "assembled"  vector of submesh stiffne
 static DOUBLE      **smstiffmama;      /* pointer to  */
 
 static ARRAY         densesmstiffmimaT_a;   /* dense assebled sm-stiffness_mi_ma*/
-static DOUBLE      **densesmstiffmimaT;     
+static DOUBLE      **densesmstiffmimaT;
 static DBCSR        *smstiffmima_csr; /* over submesh assebled stiffness_mi_ma*/
 static DBCSR        *smstiffmami_csr; /* over submesh assebled stiffness_ma_mi*/
 
@@ -131,7 +131,7 @@ static ARRAY         workforce_a;    /* stiff_mi_ma*DELTAdbar (needed for calc. 
 static DOUBLE       *workforce;      /* pointer to */
 
 SOLVAR        *actsmsolv;       /* the active submeshSOLVAR */
-static INTRA  *actsmintra;      /* submesh Pseudo intra-communicator 
+static INTRA  *actsmintra;      /* submesh Pseudo intra-communicator
 (static: dann muss ich ihn nur einmal allociern und er wird tortxdem nicht vergessen) */
 
 FIELD        *actsmfield;      /* pointer to active submeshfield */
@@ -144,7 +144,7 @@ NODE         *actsmnode;       /* actual submeshnode                    */
 INT           ID;              /* ID of actual submeshnode */
 INT           dof;             /* degree of freedom number of submesh-dof */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_static_ke");
 #endif
 /*----------------------------------------------------------------------*/
@@ -153,11 +153,11 @@ dstrc_enter("s2ml_static_ke");
 numeq_sm = sm_field[0].dis[0].numeq;
 if (init==1)
 {
-  functma     = amdef("functma"  ,&functma_a ,MAXNOD_WALL1,1 ,"DV");       
-  derivma     = amdef("derivma"  ,&derivma_a ,2,MAXNOD_WALL1 ,"DA");       
-  xjmma       = amdef("xjmma"    ,&xjmma_a   ,numdf,numdf    ,"DA");           
-  bopma       = amdef("bopma"    ,&bopma_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");           
-  D           = amdef("D"        ,&D_a       ,6,6             ,"DA");           
+  functma     = amdef("functma"  ,&functma_a ,MAXNOD_WALL1,1 ,"DV");
+  derivma     = amdef("derivma"  ,&derivma_a ,2,MAXNOD_WALL1 ,"DA");
+  xjmma       = amdef("xjmma"    ,&xjmma_a   ,numdf,numdf    ,"DA");
+  bopma       = amdef("bopma"    ,&bopma_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");
+  D           = amdef("D"        ,&D_a       ,6,6             ,"DA");
 /*----------------------------------------------------------------------*/
   smintforcemi  = amdef("smintforcemi",&smintforcemi_a,numeq_sm,1,"DV");
   smintforcema  = amdef("smintforcema",&smintforcema_a,8,1,"DV");
@@ -214,7 +214,7 @@ ndma    = numdf * ielma;
 nue     = mat->m.damage->possionratio;
 
 
-# if 0 
+# if 0
 
 /*  check if Makroelement has already been in Omega' in last load step  */
 if(actmaele->e.w1->isinomegaprime == 0)
@@ -229,14 +229,14 @@ if(actmaele->e.w1->isinomegaprime == 0)
        e2   = data->xgss[ls];
        /*------------------  Makro shape functions and their derivatives */
        w1_funct_deriv(functma,derivma,e1,e2,actmaele->distyp,1);
-       /*------------------------------ compute Makro-jacobian matrix ---*/       
-       w1_jaco (functma,derivma,xjmma,&detma,actmaele,ielma);                         
+       /*------------------------------ compute Makro-jacobian matrix ---*/
+       w1_jaco (functma,derivma,xjmma,&detma,actmaele,ielma);
        /*--------------------------------- calculate Makro-operator B ---*/
        amzero(&bopma_a);
        w1_bop(bopma,derivma,xjmma,detma,ielma);
        /*-------------------------- calculate equivalent strain in GP ---*/
        s2ml_aequistrain(actmaele,actmaele->e.w1->wtype,bopma,nue,&eps_equiv);
-       if(eps_equiv >= statvar->eps_equiv)  multiscale = 1;   
+       if(eps_equiv >= statvar->eps_equiv)  multiscale = 1;
     }
   }
 }/*  end: if(actmaele->e.w1->isinomegaprime == 0)                   */
@@ -266,9 +266,9 @@ if(actmaele->e.w1->isinomegaprime == 0 && multiscale ==0)
         facs = data->wgts[ls];
         /*----------------------- shape functions and their derivatives */
         w1_funct_deriv(functma,derivma,e1,e2,actmaele->distyp,1);
-        /*---------------------------------- compute jacobian matrix ---*/       
-        w1_jaco (derivma,xjmma,&detma,actmaele,ielma);                         
-        /*---------------------------------- integration factor  -------*/ 
+        /*---------------------------------- compute jacobian matrix ---*/
+        w1_jaco (derivma,xjmma,&detma,actmaele,ielma);
+        /*---------------------------------- integration factor  -------*/
         fac = facr * facs * detma * actmaele->e.w1->thick;
         /*------------------------------------- calculate operator B ---*/
         amzero(&bopma_a);
@@ -287,13 +287,13 @@ if(actmaele->e.w1->isinomegaprime == 0 && multiscale ==0)
         {
          /*----------------------------- element stiffness matrix ke ---*/
          w1_keku(estif,bopma,D,fac,ndma,numeps);
-         /*------------ nodal forces fi from integration of stresses ---*/        
+         /*------------ nodal forces fi from integration of stresses ---*/
          if (force)
-         { 
+         {
            w1fi (Stress,fac,bopma,ndma,force);
-         }                    
-       } 
-     }/*=========================================== end of loop over ls */ 
+         }
+       }
+     }/*=========================================== end of loop over ls */
   }/*============================================== end of loop over lr */
 }/*  end: if(actmaele->e.w1->isinomegaprime == 0 && multiscale ==0) */
 
@@ -304,7 +304,7 @@ else if(init!=3)/* if action is not calc_stress */
 {
 
   actsmsolv  = &(sm_solv[0]);
-  actsmfield = &(sm_field[0]);  
+  actsmfield = &(sm_field[0]);
 /*-------------------------------------------------- !Zeilenanzahl! ----*/
   smstiffmima_csr->numeq       = numeq_sm;
   smstiffmima_csr->numeq_total = numeq_sm;
@@ -319,8 +319,8 @@ else if(init!=3)/* if action is not calc_stress */
 /*   allocation of some arrays if element is first time in Omega prime  */
   if(actmaele->e.w1->firstinomegaprime == 1)
   {
-    s2ml_init(actmaele,actsmfield->dis[0].numnp,actsmfield->dis[0].numele); 
-       
+    s2ml_init(actmaele,actsmfield->dis[0].numnp,actsmfield->dis[0].numele);
+
   }
 /*----------------------------------------------------------------------*/
 /*   calculate Bbar,Nbar and strainbar at submesh-nodes and store there */
@@ -351,7 +351,8 @@ else if(init!=3)/* if action is not calc_stress */
     /* solve for DELTA d'= K''^-1 * workforce(do not use an old LU-decomp of K'')  */
     actmaele->e.w1->stiff_mi_mi_ccf->ccf->reuse = 0;
     init_sol = 0;
-    solver_control(actsmsolv,
+    solver_control(actsmfield,0,
+                   actsmsolv,
                    actsmintra,
                  &(actsmsolv->sysarray_typ[0]),    /* der Typ ist ccf, genau wie bei sysarray */
                  &(actmaele->e.w1->stiff_mi_mi_ccf[0]),
@@ -359,11 +360,11 @@ else if(init!=3)/* if action is not calc_stress */
                  &(actsmsolv->rhs[9]),
                    init_sol);
     /* update u' = u'+DELTAu' and store at macroelement                 */
-    for (smnodei=0; smnodei<actsmfield->dis[0].numnp; smnodei++) 
+    for (smnodei=0; smnodei<actsmfield->dis[0].numnp; smnodei++)
     {
       actsmnode = &(actsmfield->dis[0].node[smnodei]);
       ID = actsmnode->Id;
-      for (j=0; j<numdf; j++) 
+      for (j=0; j<numdf; j++)
       {
         dof = actsmnode->dof[j];
         if(dof >= numeq_sm) continue;
@@ -375,7 +376,7 @@ else if(init!=3)/* if action is not calc_stress */
     }
   }/* end: if((statvar->praedictor == 2 || statvar->praedictor == 3) && actmaele->e.w1->firstinomegaprime != 1) */
 /*----------------------------------------------------------------------*/
-  
+
 /*--------------------------------- init the dist sparse matrix to zero */
   solserv_zero_mat(actsmintra,
                  &(actsmsolv->sysarray[0]),
@@ -399,7 +400,7 @@ else if(init!=3)/* if action is not calc_stress */
 /*   da ich auf die einzelnen SPALTEN als Vektoren zugreifen moechte,   */
 /*   aber bei arrays name[i] die ZEILE des arrays name[i][j] ist.       */
 /*                    -> T fuer transposed                              */
-  for (i=0; i<numeq_sm; i++) 
+  for (i=0; i<numeq_sm; i++)
   {
     for(j=smstiffmima_csr->ia.a.iv[i]; j<smstiffmima_csr->ia.a.iv[i+1]; j++)
     {
@@ -413,12 +414,13 @@ else if(init!=3)/* if action is not calc_stress */
   {
      assemble_vec(actsmintra,&(actsmsolv->sysarray_typ[0]),
                 &(actsmsolv->sysarray[0]),&(actsmsolv->rhs[i+1]),densesmstiffmimaT[i],1.0);
-  } 
+  }
 /*----------------------------------------------------------------------*/
 /*     solve for K'' * sol[0] = Fint'    -> LU- decomposition of K''    */
   init_sol = 0;
   actsmsolv->sysarray[0].ccf->reuse = 0;
-  solver_control(actsmsolv,
+  solver_control(actsmfield, 0,
+                 actsmsolv,
                  actsmintra,
                &(actsmsolv->sysarray_typ[0]),
                &(actsmsolv->sysarray[0]),
@@ -430,8 +432,9 @@ else if(init!=3)/* if action is not calc_stress */
 /*solve for K''*sol[i]=K'bar[i.Spalte] LU-dec.of K''not to be done again*/
   actsmsolv->sysarray[0].ccf->reuse = 1;
   for (i=0; i<8; i++)
-  { 
-    solver_control(actsmsolv,
+  {
+    solver_control(actsmfield, 0,
+                   actsmsolv,
                    actsmintra,
                  &(actsmsolv->sysarray_typ[0]),
                  &(actsmsolv->sysarray[0]),
@@ -446,8 +449,8 @@ else if(init!=3)/* if action is not calc_stress */
     DELTA_F[i] = 0.0;
     for(j=smstiffmami_csr->ia.a.iv[i]; j<smstiffmami_csr->ia.a.iv[i+1]; j++)
     {
-      DELTA_F[i] -= smstiffmami_csr->a.a.dv[j] * 
-                    actsmsolv->sol[0].vec.a.dv[smstiffmami_csr->ja.a.iv[j]]; 
+      DELTA_F[i] -= smstiffmami_csr->a.a.dv[j] *
+                    actsmsolv->sol[0].vec.a.dv[smstiffmami_csr->ja.a.iv[j]];
     }
   }
 /*----------------------------------------------------------------------*/
@@ -459,7 +462,7 @@ else if(init!=3)/* if action is not calc_stress */
       DELTA_K[a][b] = 0.0;
       for(j=smstiffmami_csr->ia.a.iv[a]; j<smstiffmami_csr->ia.a.iv[a+1]; j++)
       {
-        DELTA_K[a][b] += smstiffmami_csr->a.a.dv[j] * 
+        DELTA_K[a][b] += smstiffmami_csr->a.a.dv[j] *
                          actsmsolv->sol[b+1].vec.a.dv[smstiffmami_csr->ja.a.iv[j]];
       }
     }
@@ -481,7 +484,7 @@ else if(init!=3)/* if action is not calc_stress */
   if(istore != 1)
   {
     /* store fint' */
-    for (i=0; i<numeq_sm; i++) 
+    for (i=0; i<numeq_sm; i++)
     {
       actmaele->e.w1->fint_mi[i] = smintforcemi[i];
     }
@@ -525,7 +528,7 @@ else if(init!=3)/* if action is not calc_stress */
 /*   if it's the first time multiscale for this macroele,               */
 /*   update can only take place after calc. of stif. and int.forces     */
 /*----------------------------------------------------------------------*/
-  if((statvar->praedictor == 2 || statvar->praedictor == 3) && actmaele->e.w1->firstinomegaprime == 1) 
+  if((statvar->praedictor == 2 || statvar->praedictor == 3) && actmaele->e.w1->firstinomegaprime == 1)
   {
     if(statvar->praedictor == 2)
     {/* -> use incremental solution! */
@@ -559,7 +562,8 @@ else if(init!=3)/* if action is not calc_stress */
     /* solve for DELTA d'= K''^-1 * workforce(use old LU-decomp of K'')  */
     actsmsolv->sysarray[0].ccf->reuse = 1;
     init_sol = 0;
-    solver_control(actsmsolv,
+    solver_control(actsmfield, 0,
+                   actsmsolv,
                    actsmintra,
                  &(actsmsolv->sysarray_typ[0]),
                  &(actsmsolv->sysarray[0]),
@@ -567,11 +571,11 @@ else if(init!=3)/* if action is not calc_stress */
                  &(actsmsolv->rhs[9]),
                    init_sol);
     /* update u' = u'+DELTAu' and store at macroelement                 */
-    for (smnodei=0; smnodei<actsmfield->dis[0].numnp; smnodei++) 
+    for (smnodei=0; smnodei<actsmfield->dis[0].numnp; smnodei++)
     {
       actsmnode = &(actsmfield->dis[0].node[smnodei]);
       ID = actsmnode->Id;
-      for (j=0; j<numdf; j++) 
+      for (j=0; j<numdf; j++)
       {
         dof = actsmnode->dof[j];
         if(dof >= numeq_sm) continue;
@@ -610,10 +614,10 @@ else if(init!=3)/* if action is not calc_stress */
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s2ml_static_ke*/
 
 
