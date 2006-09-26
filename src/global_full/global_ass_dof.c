@@ -263,9 +263,6 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 
 /* dirichlet conditioned dofs are solved for */
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-
-printf("\nSolve also for dirichlet b.c.!!\n\n");
-
 /* include dirichlet conditioned dofs in the global matrix */
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
