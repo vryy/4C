@@ -51,7 +51,7 @@
   else
     echo '    Making executable failed!!!'
     mv make.log make.err
-    cat make.err >&2
+    cat make.err > /dev/stderr
     exit
   fi
 
@@ -115,7 +115,7 @@ for file in $liste; do
     fail2=`expr $fail2 + 1`
     # copy screen output to $file_ohne.scr
     mv test.tmp $file_ohne.scr
-    cat $file_ohne.scr >&2
+    cat $file_ohne.scr > /dev/stderr
     continue
   fi
 

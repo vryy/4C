@@ -66,7 +66,7 @@ for file in $liste; do
 
     # save the log on failture
     mv make.log $file_ohne.make.log
-    cat $file_ohne.make.log >&2
+    cat $file_ohne.make.log > /dev/stderr
 
     fail1=`expr $fail1 + 1`
     continue
@@ -126,7 +126,7 @@ for file in $liste; do
     echo '    Failed!!'
     # copy screen output to $file_ohne.scr
     mv test.tmp $file_ohne.scr
-    cat $file_ohne.scr >&2
+    cat $file_ohne.scr > /dev/stderr
     continue
   fi
 
@@ -190,7 +190,7 @@ for file in $liste; do
     fail2=`expr $fail2 + 1`
     # copy screen output to $file_ohne.scr
     mv test2.tmp $file_ohne.scr_res
-    cat $file_ohne.scr_res >&2
+    cat $file_ohne.scr_res > /dev/stderr
     continue
   fi
 
