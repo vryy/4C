@@ -107,7 +107,14 @@ if [ x$NODEPS != "xyes" ] ; then
         gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's,c$,o,' -e "s,$SRC,$DEST,"` -I`dirname $file|sed -e "s,$SRC,$DEST,"` $INCLUDEDIRS $file >> $makefile
       done
     fi
-  #else
-  #  make depend
-  #fi
+
+  if which g++ | grep '^no ' 2>&1 > /dev/null ; then
+     echo $0: g++ not found. No dependencies generated. Use Makefile with care.
+  else
+    for file in `find $SRC/src -name "*.cpp"` ; do
+      echo "build deps for" $file
+      g++ -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's,cpp$,o,' -e "s,$SRC,$DEST,"` -I`dirname $file|sed -e "s,$SRC,$DEST,"` $INCLUDEDIRS $file >> $makefile
+    done
+  fi
+
 fi
