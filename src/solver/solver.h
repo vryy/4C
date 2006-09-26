@@ -357,6 +357,7 @@ typedef struct _AZVAR
   INT                     azgraph;            /* forgot about it.... */
   INT                     azpoly;             /* integer parameter with different meanings
                                                  dependent on type of precond. */
+  INT                     azoverlap;          /* amount of overlap for additive schwartz type preconditioners (e.g. ILU) */
   DOUBLE                  azdrop;             /* numerical drop tolerance for preconditioners
                                                  using it, default: 0.0 */
   DOUBLE                  azfill;             /* allowed fill-in in percent of the memory
@@ -371,6 +372,7 @@ typedef struct _AZVAR
   int                     mlmaxlevel;         /* max no. of grids */
   int                     mlsmotimes[15];     /* no. smoothing steps on each level */
   int                     mlcoarsentype;      /* 0 UC 1 METIS 2 VBMETIS 3 MIS */
+  int                     mlaggsize;
   int                     mlsmotype_fine;     /* 0 SGS 1 Jacobi 2 Chebychev 3 MLS 4 ILU 5 KLU */
   int                     mlsmotype_med;      /* 0 SGS 1 Jacobi 2 Chebychev 3 MLS 4 ILU 5 KLU */
   int                     mlsmotype_coarse;   /* 0 SGS 1 Jacobi 2 Chebychev 3 MLS 4 ILU 5 KLU 6 Superlu*/

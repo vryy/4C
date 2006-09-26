@@ -37,6 +37,9 @@ Maintainer: Michael Gee
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_RefCountPtr.hpp"
 
+#include "Ifpack.h"
+#include "Ifpack_AdditiveSchwarz.h"
+
 #include "ml_common.h"
 #include "ml_include.h"
 #include "ml_epetra_utils.h"
@@ -286,16 +289,13 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       case azprec_none:       
         azlist.set("AZ_precond",AZ_none);       
       break;
-      case azprec_ILUT:       
-        azlist.set("AZ_precond",AZ_dom_decomp);       
-        azlist.set("AZ_subdomain_solve",AZ_ilut);       
-        azlist.set("AZ_ilut_fill",azvar->azfill); // for some reason this one is not recognized by AztecOO
+      case azprec_ILUT:
+        // using ifpack, see below
+        azlist.set("AZ_precond",AZ_user_precond);
       break;
       case azprec_ILU:       
-        azlist.set("AZ_precond",AZ_dom_decomp);       
-        azlist.set("AZ_subdomain_solve",AZ_ilu);       
-        azlist.set("AZ_graph_fill",azvar->azgfill);       
-        azlist.set("AZ_ilut_fill",azvar->azfill); // for some reason this one is not recognized by AztecOO      
+        // using ifpack, see below
+        azlist.set("AZ_precond",AZ_user_precond);
       break;
       case azprec_Jacobi:       
         azlist.set("AZ_precond",AZ_Jacobi);       
@@ -310,9 +310,8 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         azlist.set("AZ_precond",AZ_sym_GS);       
       break;
       case azprec_LU:       
-        azlist.set("AZ_precond",AZ_dom_decomp);       
-        azlist.set("AZ_subdomain_solve",AZ_lu);       
-        azlist.set("AZ_drop",azvar->azdrop);       
+        // using ifpack, see below
+        azlist.set("AZ_precond",AZ_user_precond);
       break;
       case azprec_RILU:       
         azlist.set("AZ_precond",AZ_dom_decomp);       
@@ -320,9 +319,8 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         azlist.set("AZ_graph_fill",azvar->azgfill);       
       break;
       case azprec_ICC:       
-        azlist.set("AZ_precond",AZ_dom_decomp);       
-        azlist.set("AZ_subdomain_solve",AZ_icc);       
-        azlist.set("AZ_graph_fill",azvar->azgfill);       
+        // using ifpack, see below
+        azlist.set("AZ_precond",AZ_user_precond);
       break;
       case azprec_ML:
       case azprec_MLfluid:
@@ -331,8 +329,6 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         dserror("You have to use SOLVE_DIRICH and SOLVE_DIRICH2 with ML");
 #endif
         azlist.set("AZ_precond",AZ_user_precond);
-        // get/create ML's parameters list
-        //create_ml_parameterlist(actsolv,mllist,actfield,disnum,*matrix,&(tri->nullspace));
       break;
       default:
         dserror("Unknown preconditioner for AztecOO");
@@ -413,10 +409,71 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     // set parameters to be safe
     ParameterList& azlist = list->sublist("Aztec Parameters");
     // set any parameters
-    solver->SetParameters(azlist,false);
+    solver->SetParameters(azlist,true);
+    solver->SetAztecOption(AZ_subdomain_solve, AZ_ilu);
     // pass linear problem to solver
     solver->SetProblem(*lp);
     
+    //-------------------------- get IFPACK preconditioner and (re)create it
+    if (azvar->azprectyp == azprec_ILU  ||
+        azvar->azprectyp == azprec_ILUT ||
+        azvar->azprectyp == azprec_ICC  ||
+        azvar->azprectyp == azprec_LU   )
+    {
+      if (create)
+      {
+        if (tri->prec) // destroy preconditioner
+        {
+          Ifpack_Preconditioner* prec = (Ifpack_Preconditioner*)tri->prec;
+          delete prec;
+          tri->prec = NULL;
+        }
+        // create ifpack parameter list
+        ParameterList&  ifpacklist = list->sublist("IFPACK Parameters");
+        ifpacklist.set("fact: drop tolerance" ,(double)azvar->azdrop);
+        ifpacklist.set("fact: level-of-fill"  ,(int)azvar->azgfill);
+        ifpacklist.set("fact: ilut level-of-fill"  ,(double)azvar->azfill);
+        ifpacklist.set("fact: relax value"  ,1.0);
+        ifpacklist.set("schwarz: combine mode","Add"); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+        ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
+
+        // destroy the copy of the matrix we have stored and create a new copy
+        // this is needed to reuse the Ifpack operator
+        if (tri->precmatrix)
+        {
+          Epetra_CrsMatrix* tmp = (Epetra_CrsMatrix*)tri->precmatrix;
+          delete tmp;
+          tri->precmatrix=NULL;
+        }
+        // create copy of matrix
+        Epetra_CrsMatrix* precmatrix = new Epetra_CrsMatrix(*matrix);
+        tri->precmatrix = (void*)precmatrix;
+        
+        // create the preconditioner
+        string prectype = "";
+        if      (azvar->azprectyp == azprec_ILU)  prectype = "ILU";
+        else if (azvar->azprectyp == azprec_ILUT) prectype = "ILUT";
+        else if (azvar->azprectyp == azprec_ICC)  prectype = "IC";
+        else if (azvar->azprectyp == azprec_LU)   prectype = "Amesos";
+        else dserror("Unknown type of ifpack asm subdomain preconditioner");
+
+        Ifpack Factory;
+        Ifpack_Preconditioner* prec = 
+                Factory.Create(prectype,precmatrix,azvar->azoverlap);   
+        prec->SetParameters(ifpacklist);
+        prec->Initialize();
+        prec->Compute();
+        tri->prec = (void*)prec;
+        solver->SetPrecOperator(prec);
+      }
+      else // reuse
+      {
+        if (!tri->prec) dserror("Cannot reuse, prec is NULL");
+        Ifpack_Preconditioner* prec = 
+                             (Ifpack_Preconditioner*)tri->prec;
+        solver->SetPrecOperator(prec);
+      }
+    }
     //------------------------------ get ML preconditioner and (re)create it
     if (azvar->azprectyp == azprec_ML      ||
         azvar->azprectyp == azprec_MLfluid ||
@@ -572,10 +629,22 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
           azvar->azprectyp == azprec_MLfluid ||
           azvar->azprectyp == azprec_MLfluid2 )
       {
-          ML_Epetra::MultiLevelPreconditioner* prec = 
-           (ML_Epetra::MultiLevelPreconditioner*)tri->prec;
-          delete prec;
-          tri->prec = NULL;
+        ML_Epetra::MultiLevelPreconditioner* prec = 
+         (ML_Epetra::MultiLevelPreconditioner*)tri->prec;
+        delete prec;
+        tri->prec = NULL;
+      }
+      else if (azvar->azprectyp == azprec_ILU  ||
+               azvar->azprectyp == azprec_ILUT ||
+               azvar->azprectyp == azprec_ICC  ||
+               azvar->azprectyp == azprec_LU)
+      {
+        // this might die because Ifpack_Preconditioner is only a base class
+        // to the actual derived type
+        // (better dynamic_cast from Epetra_Operator?)
+        Ifpack_Preconditioner* prec = (Ifpack_Preconditioner*)tri->prec;
+        delete prec;
+        tri->prec = NULL;
       }
       else dserror("Cannot destroy preconditioner of unknown type");
     }

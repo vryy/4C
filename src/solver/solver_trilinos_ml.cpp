@@ -90,17 +90,18 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
   }
 
   // set various parameters
-  mllist.set("output"                     ,azvar->mlprint);
+  mllist.set("output"                          ,azvar->mlprint);
   if (azvar->mlprint==10)
-    mllist.set("print unused"               ,1);
+    mllist.set("print unused"                  ,1);
   else
-    mllist.set("print unused"               ,-2);
-  mllist.set("increasing or decreasing"   ,"increasing");
-  mllist.set("coarse: max size"           ,azvar->mlcsize);
-  mllist.set("max levels"                 ,azvar->mlmaxlevel);
-  mllist.set("smoother: pre or post"      ,"both");
-  mllist.set("aggregation: threshold"     ,azvar->ml_threshold);
-  mllist.set("aggregation: damping factor",azvar->mldamp_prolong);
+    mllist.set("print unused"                  ,-2);
+  mllist.set("increasing or decreasing"        ,"increasing");
+  mllist.set("coarse: max size"                ,azvar->mlcsize);
+  mllist.set("max levels"                      ,azvar->mlmaxlevel);
+  mllist.set("smoother: pre or post"           ,"both");
+  mllist.set("aggregation: threshold"          ,azvar->ml_threshold);
+  mllist.set("aggregation: damping factor"     ,azvar->mldamp_prolong);
+  mllist.set("aggregation: nodes per aggregate",azvar->mlaggsize);
   switch (azvar->mlcoarsentype)
   {
     case 0:  mllist.set("aggregation: type","Uncoupled");  break;
@@ -109,6 +110,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     case 3:  mllist.set("aggregation: type","MIS");        break;
     default: dserror("Unknown type of coarsening for ML"); break;
   }
+  
 
   // set smoothers
   for (int i=0; i<azvar->mlmaxlevel-1; ++i)
