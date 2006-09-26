@@ -24,7 +24,7 @@ extern void add_trilinos(
     struct _ARRAY           *elearray1,
     struct _ARRAY           *elearray2
     );
-extern void close_trilinos_matrix(struct _TRILINOSMATRIX *tri);  
+extern void close_trilinos_matrix(struct _TRILINOSMATRIX *tri);
 extern void exchange_coup_trilinos(
     PARTITION*      actpart,
     SOLVAR*         actsolv,
@@ -102,7 +102,7 @@ else
   anything! Actually, the manipulation of element matrices here breaks
   the correct calculation of forces due to nonzero dirichlet boundary conditions
   in assemble_dirich_dyn which comes AFTER this routine.
-  For this reason (though I hate to due this beccause its expensive) element matrices are 
+  For this reason (though I hate to due this beccause its expensive) element matrices are
   copied here and the copy is modified and assembled.
   Maybe find a better place/way to introduce this manipulation?
   If we support SOLVE_DIRICH for only one matrix format (e.g. trilinos), we could do
@@ -110,8 +110,8 @@ else
   This way, we would also not assemble a bunch of zeros (some solvers look carefully
   on the system graph and detect dirichlet boundary conditions buy a single entry in
   a row)
-*/  
-  
+*/
+
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
 if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix)
 {
@@ -127,7 +127,7 @@ if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix
     amcopy(elearray1,&copyelearray1);
   estif     = copyelearray1.a.da;
   elearray1 = &copyelearray1;
-  
+
   /* do copy of second element matrix */
   if (sysarray2>=0)
   {
@@ -143,7 +143,7 @@ if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix
     emass     = copyelearray2.a.da;
     elearray2 = &copyelearray2;
   }
-  
+
   counter = 0;
   for (i=0; i<actele->numnp; i++)
   {
@@ -400,7 +400,7 @@ if (assemble_action==assemble_close_1matrix)
 
 #ifdef TRILINOS_PACKAGE
    case trilinos:
-      close_trilinos_matrix(sysa1->trilinos); 
+      close_trilinos_matrix(sysa1->trilinos);
    break;
 #endif
 
@@ -464,8 +464,8 @@ if (assemble_action==assemble_close_2matrix)
 
 #ifdef TRILINOS_PACKAGE
    case trilinos:
-      close_trilinos_matrix(sysa1->trilinos); 
-      close_trilinos_matrix(sysa2->trilinos); 
+      close_trilinos_matrix(sysa1->trilinos);
+      close_trilinos_matrix(sysa2->trilinos);
    break;
 #endif
 
@@ -532,8 +532,8 @@ if (assemble_action==assemble_two_exchange)
 
 #ifdef TRILINOS_PACKAGE
       case trilinos:
-        exchange_coup_trilinos(actpart,actsolv,actintra,sysa1->trilinos);   
-        exchange_coup_trilinos(actpart,actsolv,actintra,sysa2->trilinos);   
+        exchange_coup_trilinos(actpart,actsolv,actintra,sysa1->trilinos);
+        exchange_coup_trilinos(actpart,actsolv,actintra,sysa2->trilinos);
       break;
 #endif
 
@@ -610,7 +610,7 @@ if (assemble_action==assemble_one_exchange)
       {
 #ifdef TRILINOS_PACKAGE
       case trilinos:
-        exchange_coup_trilinos(actpart,actsolv,actintra,sysa1->trilinos);   
+        exchange_coup_trilinos(actpart,actsolv,actintra,sysa1->trilinos);
       break;
 #endif
 
@@ -960,6 +960,7 @@ else /*----------------------- I do not expect entries from other procs */
    *couple_i_recv_ptr = NULL;
 }
 /*----------------------------------------------------------------------*/
+end:
 #endif /* end of PARALLEL */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
