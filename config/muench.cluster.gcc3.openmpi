@@ -1,0 +1,60 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=yes
+
+# just for convenience
+MPIDIR=/cluster/openmpi-1.1.1
+
+# these are needed for the test runs
+# we expect two test processes at most
+export PATH=$PATH:$MPIDIR/bin
+MPIRUN=mpirun_rsh
+#MPIRUNARGS="`hostname` `hostname`"
+MPIRUNARGS="-hostfile $PBS_NODEFILE"
+
+PROGRAMNAME=cca_par_ompi_cluster
+F77=$MPIDIR/bin/mpif77
+CC=$MPIDIR/bin/mpicc
+CP=$MPIDIR/bin/mpic++
+LD=$MPIDIR/bin/mpif77
+
+INCLUDEDIRS="-I/lnm/include -I$MPIDIR/include"
+LIBDIRS="-L/lnm/lib -L/usr/local/ibgd/driver/infinihost/lib64"
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec-gcc-3.3-openmpi"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI-gcc-3.3-openmpi -lspooles-gcc-3.3"
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack-gcc-3.3 -lamd-gcc-3.3"
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+#LIBS="-llapack-gcc-3.3 -lblas-gcc-3.3 -lmetis-gcc-3.3"
+LIBS="-L/cluster/acml-3.0.0/gnu64/lib -lacml -lmetis-gcc-3.3"
+
+CFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+FFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+LDFLAGS_OPT="-O2"
+
+#CFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
+CFLAGS="-Wall -DSIXTYFOUR -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -DSIXTYFOUR -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
