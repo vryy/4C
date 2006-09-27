@@ -315,26 +315,28 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef TRILINOS_PACKAGE
          if (strncmp("ML",buffer,2)==0)               azvar->azprectyp = azprec_ML;
          if (strncmp("MLFLUID",buffer,7)==0)          azvar->azprectyp = azprec_MLfluid;
-         if (strncmp("MLFLUID2",buffer,7)==0)         azvar->azprectyp = azprec_MLfluid2;
+         if (strncmp("MLFLUID2",buffer,8)==0)         azvar->azprectyp = azprec_MLfluid2;
 #endif
       }
-      frint("AZOUTPUT",&(azvar->azoutput),&ierr);
-      frint("AZREUSE" ,&(azvar->azreuse),&ierr);
-      frint("AZGFILL" ,&(azvar->azgfill),&ierr);
-      frint("AZITER"  ,&(azvar->aziter),&ierr);
-      frint("AZSUB"   ,&(azvar->azsub),&ierr);
-      frint("AZGRAPH" ,&(azvar->azgraph),&ierr);
-      frint("AZPOLY"  ,&(azvar->azpoly),&ierr);
-      frint("AZBDIAG" ,&(azvar->blockdiag),&ierr);
-      frdouble("AZDROP" ,&(azvar->azdrop)  ,&ierr);
-      frdouble("AZFILL" ,&(azvar->azfill)  ,&ierr);
-      frdouble("AZTOL"  ,&(azvar->aztol)   ,&ierr);
-      frdouble("AZOMEGA",&(azvar->azomega) ,&ierr);
+      frint("AZOUTPUT"  ,&(azvar->azoutput) ,&ierr);
+      frint("AZREUSE"   ,&(azvar->azreuse)  ,&ierr);
+      frint("AZGFILL"   ,&(azvar->azgfill)  ,&ierr);
+      frint("AZITER"    ,&(azvar->aziter)   ,&ierr);
+      frint("AZSUB"     ,&(azvar->azsub)    ,&ierr);
+      frint("AZGRAPH"   ,&(azvar->azgraph)  ,&ierr);
+      frint("AZPOLY"    ,&(azvar->azpoly)   ,&ierr);
+      frint("AZBDIAG"   ,&(azvar->blockdiag),&ierr);
+      frint("AZOVERLAP" ,&(azvar->azoverlap),&ierr);
+      frdouble("AZDROP" ,&(azvar->azdrop)   ,&ierr);
+      frdouble("AZFILL" ,&(azvar->azfill)   ,&ierr);
+      frdouble("AZTOL"  ,&(azvar->aztol)    ,&ierr);
+      frdouble("AZOMEGA",&(azvar->azomega)  ,&ierr);
 #ifdef TRILINOS_PACKAGE
       /* parameters of ML preconditioner */
       frint("ML_PRINT"           ,&(azvar->mlprint),&ierr);
       frint("ML_MAXCOARSESIZE"   ,&(azvar->mlcsize),&ierr);
       frint("ML_MAXLEVEL"        ,&(azvar->mlmaxlevel),&ierr);
+      frint("ML_AGG_SIZE"        ,&(azvar->mlaggsize),&ierr);
       frdouble("ML_DAMPFINE"     ,&(azvar->mldamp_fine),&ierr);
       frdouble("ML_DAMPMED"      ,&(azvar->mldamp_med),&ierr);
       frdouble("ML_DAMPCOARSE"   ,&(azvar->mldamp_coarse),&ierr);
