@@ -84,7 +84,10 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
       mllist.set("energy minimization: enable",true);
       mllist.set("energy minimization: type",2); // 1,2,3 cheap -> expensive
-      mllist.set("aggregation: block scaling",false);
+      if (matrix.Comm().NumProc()==1)
+        mllist.set("aggregation: block scaling",true); // crashes in parallel
+      else
+        mllist.set("aggregation: block scaling",false); // crashes in parallel
     break;
     default: dserror("Unknown type of preconditioner");
   }
@@ -159,6 +162,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
         mllist.set("smoother: ifpack type "+(string)levelstr             ,"ILU");        
         mllist.set("smoother: ifpack overlap "+(string)levelstr          ,0);        
         mllist.sublist("smoother: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[i]);
+        mllist.sublist("smoother: ifpack list").set("schwarz: reordering type","rcm");
       break;
       case 5:  
         mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");        
@@ -194,6 +198,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
       mllist.set("coarse: ifpack type"   ,"ILU");        
       mllist.set("coarse: ifpack overlap",0);        
       mllist.sublist("coarse: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[coarse]);
+      mllist.sublist("coarse: ifpack list").set("schwarz: reordering type","rcm");
     break;
     case 5:  
       mllist.set("coarse: type","Amesos-KLU");        
