@@ -205,7 +205,7 @@ void mask_global_matrices()
 
       for (i=0; i<actfield->ndis; i++)
       {
-        actsolv->sysarray_typ[i] = trilinos;
+        actsolv->sysarray_typ[i] = oll;
         actsolv->sysarray[i].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
 
         numeq_total = actfield->dis[i].numeq;

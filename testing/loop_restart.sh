@@ -96,6 +96,7 @@ for file in $liste; do
     echo
     echo '  Running Input-file in parallel...'
     $MPIRUN -np 2 $MPIRUNARGS ./$exe $inputfile test_out >test.tmp
+    killall $exe >& /dev/null
 
   fi
 
@@ -158,6 +159,7 @@ for file in $liste; do
 
     echo '  Running Restart of Input-file in parallel...'
     $MPIRUN -np 2 $MPIRUNARGS ./$exe restart_input.dat test_out restart >test2.tmp
+    killall $exe >& /dev/null
 
   fi
 
