@@ -359,7 +359,9 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
   else if (option==0)
   {
     // use scaled linear system (be careful with ML though, try without as well)
-    bool doscaling = true;
+    bool scaling_infnorm = true;
+    bool scaling_symdiag = false;
+    
     // get parameter list
     if (!tri->params) dserror("AztecOO parameters is NULL");
     ParameterList* list = (ParameterList*)tri->params;
@@ -388,7 +390,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     // Of course, the 2 scalings could be introduced as options....
     RefCountPtr<Epetra_Vector> rowsum;
     RefCountPtr<Epetra_Vector> colsum;
-    if (doscaling)
+    if (scaling_infnorm)
     {
       rowsum = rcp(new Epetra_Vector(matrix->RowMap(),false));
       colsum = rcp(new Epetra_Vector(matrix->RowMap(),false));
@@ -396,6 +398,16 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       matrix->InvColSums(*colsum);
       lp->LeftScale(*rowsum);
       lp->RightScale(*colsum);
+    }
+    RefCountPtr<Epetra_Vector> diag;
+    if (scaling_symdiag)
+    {
+      Epetra_Vector invdiag(matrix->RowMap(),false);
+      diag = rcp(new Epetra_Vector(matrix->RowMap(),false));
+      matrix->ExtractDiagonalCopy(*diag);
+      invdiag.Reciprocal(*diag);
+      lp->LeftScale(invdiag);
+      lp->RightScale(invdiag);
     }
     
     //---- get solver and recreate it (currently dies when trying to reuse)
@@ -409,8 +421,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     // set parameters to be safe
     ParameterList& azlist = list->sublist("Aztec Parameters");
     // set any parameters
-    solver->SetParameters(azlist,true);
-    solver->SetAztecOption(AZ_subdomain_solve, AZ_ilu);
+    solver->SetParameters(azlist,false);
     // pass linear problem to solver
     solver->SetProblem(*lp);
     
@@ -430,11 +441,13 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         }
         // create ifpack parameter list
         ParameterList&  ifpacklist = list->sublist("IFPACK Parameters");
-        ifpacklist.set("fact: drop tolerance" ,(double)azvar->azdrop);
-        ifpacklist.set("fact: level-of-fill"  ,(int)azvar->azgfill);
-        ifpacklist.set("fact: ilut level-of-fill"  ,(double)azvar->azfill);
-        ifpacklist.set("fact: relax value"  ,1.0);
+        ifpacklist.set("fact: drop tolerance",azvar->azdrop);
+        ifpacklist.set("fact: level-of-fill",azvar->azgfill);
+        ifpacklist.set("fact: ilut level-of-fill",azvar->azfill);
+        //ifpacklist.set("fact: relax value",0.0);
+        //ifpacklist.set("fact: absolute threshold",0.1);
         ifpacklist.set("schwarz: combine mode","Add"); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+        ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
         ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
 
         // destroy the copy of the matrix we have stored and create a new copy
@@ -523,15 +536,12 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     //-------------------------------------------- iterate a max of 5 times
     for (int i=0; i<5; ++i)
     {
-      //cout << *matrix;
       solver->Iterate(azvar->aziter,azvar->aztol);
       const double* status = solver->GetAztecStatus();
       if (status[AZ_why] == AZ_breakdown)
       {
         if (matrix->Comm().MyPID()==0)
           printf("Numerical breakdown in AztecOO, try again with refined initial guess...\n");
-        //azlist.set("AZ_pre_calc",AZ_reuse); // this does not work with external preconditioners
-        //solver->SetParameters(azlist,false);
       }
       else break;
     }
@@ -575,7 +585,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     }
     
     //------------------------------------ undo scaling of linear problem
-    if (doscaling)
+    if (scaling_infnorm)
     {
       Epetra_Vector invrowsum(matrix->RowMap(),false);
       invrowsum.Reciprocal(*rowsum);
@@ -585,6 +595,12 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       colsum = null;
       lp->LeftScale(invrowsum);
       lp->RightScale(invcolsum);
+    }
+    if (scaling_symdiag)
+    {
+      lp->LeftScale(*diag);
+      lp->RightScale(*diag);
+      diag = null;
     }
 
     // set flags important for reuse
