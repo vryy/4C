@@ -311,7 +311,11 @@ vec      = dist_vec->vec.a.dv;
 numeq    = dist_vec->numeq;
 switch(*sysarray_typ)
 {
-
+#ifdef TRILINOS_PACKAGE
+case trilinos:
+  update = sysarray->trilinos->update.a.iv;
+break;
+#endif
 #ifdef AZTEC_PACKAGE
 case msr:
    update = sysarray->msr->update.a.iv;
