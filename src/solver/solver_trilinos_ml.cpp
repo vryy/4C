@@ -167,6 +167,9 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
       case 5:  
         mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");        
       break;
+      case 6:  
+        mllist.set("smoother: type "+(string)levelstr,"Amesos-Superludist");        
+      break;
       default: dserror("Unknown type of smoother for ML"); break;
     }
   }
@@ -202,6 +205,9 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     break;
     case 5:  
       mllist.set("coarse: type","Amesos-KLU");        
+    break;
+    case 6:  
+      mllist.set("coarse: type","Amesos-Superludist");        
     break;
     default: dserror("Unknown type of coarse solver for ML"); break;
   }
@@ -402,25 +408,31 @@ void ml_compute_nullspace(DISCRET*          actdis,
             mode[0][index] = 0.0;
             mode[1][index] = 0.0;
             mode[2][index] = 0.0;
+#ifdef D_SHELL8
             mode[3][index] = 0.0; 
             mode[4][index] = dir(count,2);
             mode[5][index] = -dir(count,1);
+#endif
         break;
         case 4:
             mode[0][index] = 0.0;
             mode[1][index] = 0.0;
             mode[2][index] = 0.0;
+#ifdef D_SHELL8
             mode[3][index] = -dir(count,2); 
             mode[4][index] = 0.0;
             mode[5][index] = dir(count,0);
+#endif
         break;
         case 5:
             mode[0][index] = 0.0;
             mode[1][index] = 0.0;
             mode[2][index] = 0.0;
+#ifdef D_SHELL8
             mode[3][index] = dir(count,1); 
             mode[4][index] = -dir(count,0);
             mode[5][index] = 0.0;
+#endif
         break;
         default: dserror("Only modes 0 to 5 supported"); break;
         }
