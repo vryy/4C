@@ -60,18 +60,29 @@ Maintainer: Burkhard Bornemann
 
 #define NUMHFLX_THERM3   (3)    /* number of heat fluxes : q_x, q_y, q_z */
 
-#define GLINTC_THERM3    (6)    /* line domain Gauss integration cases */
+#ifndef GLINTC_THERM3
+#define GLINTC_THERM3    (6)    /* line Gauss integration cases */
+#endif
 
+#ifndef GLMAXP_THERM3
 #define GLMAXP_THERM3    (6)    /* line domain max. number of Gauss points */
+#endif
 
+#ifndef GTINTC_THERM3 
 #define GTINTC_THERM3    (3)    /* triangle domain Gauss integration cases */
+#endif
 
+#ifndef GTMAXP_THERM3
 #define GTMAXP_THERM3    (5)    /* max. number of Gauss points */
+#endif
 
+#ifndef GSINTC_THERM3
 #define GSINTC_THERM3    (5)    /* triangle domain Gauss integration cases */
+#endif
 
+#ifndef GSMAXP_THERM3
 #define GSMAXP_THERM3    (6)    /* max. number of Gauss points */
-
+#endif
 
 
 /*======================================================================*/
@@ -215,11 +226,12 @@ void th3_bop(INT        enod,
 
 /*---------------------------------------------------------------------*/
 /* file th3_cfg.c */
+void th3_cfg_chkdef();
 void th3_cfg_init(TH3_DATA *data);
-void th3_cfg_noders(ELEMENT *ele,
-                    TH3_DATA *data,
-                    INT inode,
-                    DOUBLE *rst)
+void th3_cfg_noderst(ELEMENT *ele,
+		     TH3_DATA *data,
+		     INT inode,
+		     DOUBLE *rst);
 
 /*----------------------------------------------------------------------*/
 /* file th2_hflux.c */

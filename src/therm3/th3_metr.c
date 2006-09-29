@@ -72,7 +72,24 @@ void th3_metr_jaco(ELEMENT *ele,
 
   /*--------------------------------------------------------------------*/
   /* loop all element nodes / shape functions and dimensions */
-  /* inod = ele->numnp; */
+  /* The Jacobian matrix looks like:
+   *         [ x_,r  y_,r  z_,r ]
+   *     J = [ x_,s  y_,s  z_,s ]
+   *         [ x_,t  y_,t  z_,t ]
+   * This is a usual form used in the finite element environment,
+   * however, it is the transpose of the common Jacobian
+   *              d x_i
+   *     J_ij^T = ------
+   *              d r_j
+   * This form is for instance applied in the material
+   * deformation tensors  F  in geometrically non-linear mechanics.
+   * In finite elements  J  and not  J^T  is used, because we want to
+   * multiply on the _left_ with its inverse  J^{-1}
+   *     [ N_,x ]^k           [ N_,r ]^k
+   *     [ N_,y ]   =  J^{-1} [ N_,s ]
+   *     [ N_,z ]             [ N_,t ]
+   * with node index  k=1,...,elenod, shape functions  N
+   */
   for (k=0; k<enod; k++)
   {
     for (i=0; i<NDIM_THERM3; i++)
@@ -137,7 +154,7 @@ void th3_metr_jaco(ELEMENT *ele,
 \param ele     ELEMENT*     (i)  pointer to current element
 \param nelelod INT          (i)  number of element nodes
 \param deriv   DOUBLE**     (i)  derivatives of shape fct at Gauss point
-\param sired   DOUBLE**     (i)  matrix for dimension reduction
+\param sidredm DOUBLE**     (i)  matrix for dimension reduction
 \param metr    DOUBLE*      (o)  metric
 \return void
 
@@ -147,15 +164,15 @@ void th3_metr_jaco(ELEMENT *ele,
 void th3_metr_surf(ELEMENT *ele, 
                    INT nelenod, 
                    DOUBLE **deriv, 
-                   DOUBLE **sidred,
+                   DOUBLE **sidredm,
                    DOUBLE *metr)
 {
   DOUBLE xjm[NDIM_THERM3][NDIM_THERM3];  /* Jacobian matrix */
   DOUBLE det;  /* determinat of Jacobian matrix */
-  DOUBLE xji[NDIM_THERM3][NDIM_THERM3];  /* inverse Jacobian matrix */
+  DOUBLE xji[NDIM_THERM3][NDIM_THERM3];  /* inverse Jacobian (dummy) */
   DOUBLE gamt[DIMSID_THERM3][NDIM_THERM3];  /* differential */
   DOUBLE metm[DIMSID_THERM3][DIMSID_THERM3];  /* metric matrix */
-  INT idim, jdim, kdimsid;  /* dimension indices */
+  INT idim, jdim, kdimsid, jdimsid;  /* dimension indices */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -163,57 +180,78 @@ void th3_metr_surf(ELEMENT *ele,
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* get Jacobian matrix (xji is flagged off)
-   * The Jacobian matrix looks like:
-   *         [ x_,r  y_,r  z_,r ]
-   *     J = [ x_,s  y_,s  z_,s ]
-   *         [ x_,t  y_,t  z_,t ]
-   * This is a usual form used in the finite element environment,
-   * however, it is the transpose of the common Jacobian
-   *              d x_i
-   *     J_ij^T = ------
-   *              d r_j
-   * This form is for instance applied in the material
-   * deformation tensors  F  in geometrically non-linear mechanics.
-   * In finite elements  J  and not  J^T  is used, because we want to
-   * multiply on the _left_ with its inverse  J^{-1}
-   *     [ N_,x ]^k           [ N_,r ]
-   *     [ N_,y ]   =  J^{-1} [ N_,s ]
-   *     [ N_,z ]             [ N_,t ]
-   */
+  /* get Jacobian matrix (xji is flagged off) */
   th3_metr_jaco(ele, nelenod, deriv, 0, xjm, &det, xji);
 
   /*--------------------------------------------------------------------*/
   /* build gamma tensor */
+  /* Assume this integration is applied for a surface of the volumetric
+   * element for which  t=0  . The surface is a plane in parameter space
+   * with the Cartesian coordinates (r,s). The surface in 3dim
+   * physical space is generally not a plane but a hypersuface.
+   * The physical surface is described by
+   *     { [-1,1]x[-1,1]  --->  R^3
+   *     {     (r,s)      +-->  (x,y,z)
+   * which assumes a surface of hexadron element.
+   * If the physical coordinates  (x,y,z)  are varied with respect
+   * to the parameters  (r,s)  the  gamma  tensor (a Jacobian) is
+   * obtained
+   *             [ x_,r  x_,s ]|
+   *     gamma = [ y_,r  y_,s ]|
+   *             [ z_,r  z_,s ]|(r,s)
+   * The  gamma  tensor transforms locally (at (r,s)) parameter 
+   * to physical coordinates.
+   * Here the transposed of  gamma  is determined:
+   *                               [ x_,r  y_,r  z_,r ]|
+   *    gamma^T(r,s) = [ 1  0  0 ] [ x_,s  y_,s  z_,s ]|
+   *                   [ 0  1  0 ] [ x_,t  y_,t  z_,t ]|(r,s)
+   *                  =   sidredm            J
+   * with  sidredm  the side reduction matrix and  J  the Jacobian
+   * matrix (xjm) defined in FE-fashion (see th3_metr_jaco).
+   * sidredm  depends on the surface parameter space (r,s). 
+   */
   for (kdimsid=0; kdimsid<DIMSID_THERM3; kdimsid++)
   {
     for (idim=0; idim<NDIM_THERM3; idim++)
     {
       for (jdim=0; jdim<NDIM_THERM3; jdim++)
       {
-        gamt[kdimsid][jdim] = sidred[kdimsid][idim] * xjm[idim][jdim];
+        gamt[kdimsid][jdim] = sidredm[kdimsid][idim] * xjm[idim][jdim];
       }
     }
   }
 
   /*--------------------------------------------------------------------*/
-  /* build metric tensor --- might be swapped, but it does not affect
-   * its determinant
+  /* build metric tensor */
+  /* The metric tensor  g  (i.e. metm) is achieved by
+   *    g = gamma^T gamma
+   *      = [ x_,r^2 + y_,r^2 + z_,r^2   x_,r*x_,s + y_,r*y_,s + y_,r*y_,s ]
+   *        [          sym               (x_,s)^2 + (y_,s)^2 + (z_,s)^2    ]
+   */
+  /* Tensor  g  might be swapped, but it does not affect its determinant
    * instead of [ m_00  m_01 ] swapped means [ m_11 m_10 ]
-   *            [ m_10  m_11 ]               [ m_01 m_00 ] */
+   *            [ m_10  m_11 ]               [ m_01 m_00 ]
+   */
   for (kdimsid=0; kdimsid<DIMSID_THERM3; kdimsid++)
   {
-    for (jdim=0; jdim<DIMSID_THERM3; jdim++)
+    for (jdimsid=0; jdim<DIMSID_THERM3; jdim++)
     {
       for (idim=0; idim<NDIM_THERM3; idim++)
       {
-        metm[kdimsid][jdim] = gamt[kdimsid][idim] * gamt[jdim][idim];
+        metm[kdimsid][jdimsid] = gamt[kdimsid][idim] * gamt[jdimsid][idim];
       }
     }
   }
 
   /*--------------------------------------------------------------------*/
-  /* determinat of metric tensor -- metric */
+  /* determinat of metric tensor = squared scalar density */
+  /* This result is equivalent to
+   *    metr = || gamma_r x gamma_s ||
+   * in which
+   *    gamma_r = [ x_,r  y_,r  z_,r ]^T
+   *    gamma_s = [ x_,s  y_,s  z_,s ]^T
+   * and || () || is the Euclidean norm.
+   */
   *metr = sqrt( metm[0][0] * metm[1][1] - metm[0][1] * metm[1][0] );
 
   /*--------------------------------------------------------------------*/
@@ -247,7 +285,7 @@ void th3_metr_line(ELEMENT *ele,
 {
   DOUBLE xjm[NDIM_THERM3][NDIM_THERM3];  /* Jacobian matrix */
   DOUBLE det;  /* determinat of Jacobian matrix */
-  DOUBLE xji[NDIM_THERM3][NDIM_THERM3];  /* inverse Jacobian matrix */
+  DOUBLE xji[NDIM_THERM3][NDIM_THERM3];  /* inverse Jacobian (dummy) */
   DOUBLE gamt[NDIM_THERM3];  /* differential */
   DOUBLE mets;  /* metric scalar */
   INT idim, jdim;  /* dimension indices */
@@ -272,15 +310,16 @@ void th3_metr_line(ELEMENT *ele,
   }
 
   /*--------------------------------------------------------------------*/
-  /* build metric scalar */
+  /* build squared metric scalar by inner product */
+  mets = 0.0;
   for (idim=0; idim<NDIM_THERM3; idim++)
   {
-    mets = gamt[idim] * gamt[idim];
+    mets = mets + gamt[idim] * gamt[idim];
   }
 
   /*--------------------------------------------------------------------*/
-  /* determinat of metric tensor -- metric */
-  *metr = mets;
+  /* metric */
+  *metr = sqrt(mets);
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

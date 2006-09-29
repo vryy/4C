@@ -142,119 +142,119 @@ void th3_cfg_init(TH3_DATA *data)
   if (MAXNOD_THERM3 >= 8)
   {
     /* node 0 */
-    data.nodhrst[0][0] = -1.0;  /* r-coordinate */
-    data.nodhrst[0][1] = -1.0;  /* s-coordinate */
-    data.nodhrst[0][2] = -1.0;  /* t-coordinate */
+    data->nodhrst[0][0] = -1.0;  /* r-coordinate */
+    data->nodhrst[0][1] = -1.0;  /* s-coordinate */
+    data->nodhrst[0][2] = -1.0;  /* t-coordinate */
     /* node 1 */
-    data.nodhrst[1][0] = +1.0;
-    data.nodhrst[1][1] = -1.0;
-    data.nodhrst[1][2] = -1.0;
+    data->nodhrst[1][0] = +1.0;
+    data->nodhrst[1][1] = -1.0;
+    data->nodhrst[1][2] = -1.0;
     /* node 2 */
-    data.nodhrst[2][0] = +1.0;
-    data.nodhrst[2][1] = +1.0;
-    data.nodhrst[2][2] = -1.0;
+    data->nodhrst[2][0] = +1.0;
+    data->nodhrst[2][1] = +1.0;
+    data->nodhrst[2][2] = -1.0;
     /* node 3 */
-    data.nodhrst[3][0] = -1.0;
-    data.nodhrst[3][1] = +1.0;
-    data.nodhrst[3][2] = -1.0;
+    data->nodhrst[3][0] = -1.0;
+    data->nodhrst[3][1] = +1.0;
+    data->nodhrst[3][2] = -1.0;
     /* node 4 */
-    data.nodhrst[4][0] = -1.0;
-    data.nodhrst[4][1] = -1.0;
-    data.nodhrst[4][2] = +1.0;
+    data->nodhrst[4][0] = -1.0;
+    data->nodhrst[4][1] = -1.0;
+    data->nodhrst[4][2] = +1.0;
     /* node 5 */
-    data.nodhrst[5][0] = +1.0;
-    data.nodhrst[5][1] = -1.0;
-    data.nodhrst[5][2] = +1.0;
+    data->nodhrst[5][0] = +1.0;
+    data->nodhrst[5][1] = -1.0;
+    data->nodhrst[5][2] = +1.0;
     /* node 6 */
-    data.nodhrst[6][0] = +1.0;
-    data.nodhrst[6][1] = +1.0;
-    data.nodhrst[6][2] = +1.0;
+    data->nodhrst[6][0] = +1.0;
+    data->nodhrst[6][1] = +1.0;
+    data->nodhrst[6][2] = +1.0;
     /* node 7 */
-    data.nodhrst[7][0] = -1.0;
-    data.nodhrst[7][1] = +1.0;
-    data.nodhrst[7][2] = +1.0;
+    data->nodhrst[7][0] = -1.0;
+    data->nodhrst[7][1] = +1.0;
+    data->nodhrst[7][2] = +1.0;
   }
   if (MAXNOD_THERM3 >=20)
   {
     /* node 8 */
-    data.nodhrst[8][0] =  0.0;
-    data.nodhrst[8][1] = -1.0;
-    data.nodhrst[8][2] = -1.0;
+    data->nodhrst[8][0] =  0.0;
+    data->nodhrst[8][1] = -1.0;
+    data->nodhrst[8][2] = -1.0;
     /* node 9 */
-    data.nodhrst[9][0] =  1.0;
-    data.nodhrst[9][1] =  0.0;
-    data.nodhrst[9][2] = -1.0;
+    data->nodhrst[9][0] =  1.0;
+    data->nodhrst[9][1] =  0.0;
+    data->nodhrst[9][2] = -1.0;
     /* node 10 */
-    data.nodhrst[10][0] =  0.0;
-    data.nodhrst[10][1] =  1.0;
-    data.nodhrst[10][2] = -1.0;
+    data->nodhrst[10][0] =  0.0;
+    data->nodhrst[10][1] =  1.0;
+    data->nodhrst[10][2] = -1.0;
     /* node 11 */
-    data.nodhrst[11][0] = -1.0;
-    data.nodhrst[11][1] =  0.0;
-    data.nodhrst[11][2] =  1.0;
+    data->nodhrst[11][0] = -1.0;
+    data->nodhrst[11][1] =  0.0;
+    data->nodhrst[11][2] =  1.0;
     /* node 16 */
-    data.nodhrst[16][0] =  0.0;
-    data.nodhrst[16][1] = -1.0;
-    data.nodhrst[16][2] =  1.0;
+    data->nodhrst[16][0] =  0.0;
+    data->nodhrst[16][1] = -1.0;
+    data->nodhrst[16][2] =  1.0;
     /* node 17 */
-    data.nodhrst[17][0] =  1.0;
-    data.nodhrst[17][1] =  0.0;
-    data.nodhrst[17][2] =  1.0;
+    data->nodhrst[17][0] =  1.0;
+    data->nodhrst[17][1] =  0.0;
+    data->nodhrst[17][2] =  1.0;
     /* node 18 */
-    data.nodhrst[18][0] =  0.0;
-    data.nodhrst[18][1] =  1.0;
-    data.nodhrst[18][2] =  1.0;
+    data->nodhrst[18][0] =  0.0;
+    data->nodhrst[18][1] =  1.0;
+    data->nodhrst[18][2] =  1.0;
     /* node 19 */
-    data.nodhrst[19][0] = -1.0;
-    data.nodhrst[19][1] =  0.0;
-    data.nodhrst[19][2] =  1.0;
+    data->nodhrst[19][0] = -1.0;
+    data->nodhrst[19][1] =  0.0;
+    data->nodhrst[19][2] =  1.0;
     /* node 12 */
-    data.nodhrst[12][0] = -1.0;
-    data.nodhrst[12][1] = -1.0;
-    data.nodhrst[12][2] =  0.0;
+    data->nodhrst[12][0] = -1.0;
+    data->nodhrst[12][1] = -1.0;
+    data->nodhrst[12][2] =  0.0;
     /* node 13 */
-    data.nodhrst[13][0] =  1.0;
-    data.nodhrst[13][1] = -1.0;
-    data.nodhrst[13][2] =  0.0;
+    data->nodhrst[13][0] =  1.0;
+    data->nodhrst[13][1] = -1.0;
+    data->nodhrst[13][2] =  0.0;
     /* node 14 */
-    data.nodhrst[14][0] =  1.0;
-    data.nodhrst[14][1] =  1.0;
-    data.nodhrst[14][2] =  0.0;
+    data->nodhrst[14][0] =  1.0;
+    data->nodhrst[14][1] =  1.0;
+    data->nodhrst[14][2] =  0.0;
     /* node 15 */
-    data.nodhrst[15][0] = -1.0;
-    data.nodhrst[15][1] =  1.0;
-    data.nodhrst[15][2] =  0.0;
+    data->nodhrst[15][0] = -1.0;
+    data->nodhrst[15][1] =  1.0;
+    data->nodhrst[15][2] =  0.0;
   }
   if (MAXNOD_THERM3 >= 27)
   {
     /* node 20 */
-    data.nodhrst[20][0] =  0.0;
-    data.nodhrst[20][1] =  0.0;
-    data.nodhrst[20][2] = -1.0;
+    data->nodhrst[20][0] =  0.0;
+    data->nodhrst[20][1] =  0.0;
+    data->nodhrst[20][2] = -1.0;
     /* node 26 */
-    data.nodhrst[25][0] =  0.0;
-    data.nodhrst[25][1] =  0.0;
-    data.nodhrst[25][2] =  1.0;
+    data->nodhrst[25][0] =  0.0;
+    data->nodhrst[25][1] =  0.0;
+    data->nodhrst[25][2] =  1.0;
     /* node 21 */
-    data.nodhrst[21][0] =  0.0;
-    data.nodhrst[21][1] = -1.0;
-    data.nodhrst[21][2] =  0.0;
+    data->nodhrst[21][0] =  0.0;
+    data->nodhrst[21][1] = -1.0;
+    data->nodhrst[21][2] =  0.0;
     /* node 22 */
-    data.nodhrst[22][0] =  1.0;
-    data.nodhrst[22][1] =  0.0;
-    data.nodhrst[22][2] =  0.0;
+    data->nodhrst[22][0] =  1.0;
+    data->nodhrst[22][1] =  0.0;
+    data->nodhrst[22][2] =  0.0;
     /* node 23 */
-    data.nodhrst[23][0] =  0.0;
-    data.nodhrst[23][1] =  1.0;
-    data.nodhrst[23][2] =  0.0;
+    data->nodhrst[23][0] =  0.0;
+    data->nodhrst[23][1] =  1.0;
+    data->nodhrst[23][2] =  0.0;
     /* node 24 */
-    data.nodhrst[24][0] = -1.0;
-    data.nodhrst[24][1] =  0.0;
-    data.nodhrst[24][2] =  0.0;
+    data->nodhrst[24][0] = -1.0;
+    data->nodhrst[24][1] =  0.0;
+    data->nodhrst[24][2] =  0.0;
     /* node 26 */
-    data.nodhrst[26][0] =  0.0;
-    data.nodhrst[26][1] =  0.0;
-    data.nodhrst[26][2] =  0.0;
+    data->nodhrst[26][0] =  0.0;
+    data->nodhrst[26][1] =  0.0;
+    data->nodhrst[26][2] =  0.0;
   }
   /*--------------------------------------------------------------------*/
   /* sides
@@ -291,131 +291,131 @@ void th3_cfg_init(TH3_DATA *data)
   if ( (MAXSID_THERM3 >= 6) && (MAXNS_THERM3 >= 4) )
   {
     /* side 0 */
-    data.nodsidh[0][0] = 0;
-    data.nodsidh[0][1] = 1;
-    data.nodsidh[0][2] = 2;
-    data.nodsidh[0][3] = 3;
+    data->nodsidh[0][0] = 0;
+    data->nodsidh[0][1] = 1;
+    data->nodsidh[0][2] = 2;
+    data->nodsidh[0][3] = 3;
     /* side 5 */
-    data.nodsidh[5][0] = 4;
-    data.nodsidh[5][1] = 5;
-    data.nodsidh[5][2] = 6;
-    data.nodsidh[5][3] = 7;
+    data->nodsidh[5][0] = 4;
+    data->nodsidh[5][1] = 5;
+    data->nodsidh[5][2] = 6;
+    data->nodsidh[5][3] = 7;
     /* side 1 */
-    data.nodsidh[1][0] = 0;
-    data.nodsidh[1][1] = 1;
-    data.nodsidh[1][2] = 5;
-    data.nodsidh[1][3] = 4;
+    data->nodsidh[1][0] = 0;
+    data->nodsidh[1][1] = 1;
+    data->nodsidh[1][2] = 5;
+    data->nodsidh[1][3] = 4;
     /* side 2 */
-    data.nodsidh[2][0] = 1;
-    data.nodsidh[2][1] = 2;
-    data.nodsidh[2][2] = 6;
-    data.nodsidh[2][3] = 5;
+    data->nodsidh[2][0] = 1;
+    data->nodsidh[2][1] = 2;
+    data->nodsidh[2][2] = 6;
+    data->nodsidh[2][3] = 5;
     /* side 3 */
-    data.nodsidh[3][0] = 2;
-    data.nodsidh[3][1] = 3;
-    data.nodsidh[3][2] = 7;
-    data.nodsidh[3][3] = 6;
+    data->nodsidh[3][0] = 2;
+    data->nodsidh[3][1] = 3;
+    data->nodsidh[3][2] = 7;
+    data->nodsidh[3][3] = 6;
     /* side 4 */
-    data.nodsidh[4][0] = 3;
-    data.nodsidh[4][1] = 0;
-    data.nodsidh[4][2] = 4;
-    data.nodsidh[4][3] = 7;
+    data->nodsidh[4][0] = 3;
+    data->nodsidh[4][1] = 0;
+    data->nodsidh[4][2] = 4;
+    data->nodsidh[4][3] = 7;
   }
   /* 20-node hexahedron */
   if ( (MAXSID_THERM3 >= 6) && (MAXNS_THERM3 >=8 ) )
   {
     /* side 0 */
-    data.nodsidh[0][4] = 8;
-    data.nodsidh[0][5] = 9;
-    data.nodsidh[0][6] = 10;
-    data.nodsidh[0][7] = 11;
+    data->nodsidh[0][4] = 8;
+    data->nodsidh[0][5] = 9;
+    data->nodsidh[0][6] = 10;
+    data->nodsidh[0][7] = 11;
     /* side 5 */
-    data.nodsidh[5][4] = 16;
-    data.nodsidh[5][5] = 17;
-    data.nodsidh[5][6] = 18;
-    data.nodsidh[5][7] = 19;
+    data->nodsidh[5][4] = 16;
+    data->nodsidh[5][5] = 17;
+    data->nodsidh[5][6] = 18;
+    data->nodsidh[5][7] = 19;
     /* side 1 */
-    data.nodsidh[1][4] = 8;
-    data.nodsidh[1][5] = 13;
-    data.nodsidh[1][6] = 16;
-    data.nodsidh[1][7] = 12;
+    data->nodsidh[1][4] = 8;
+    data->nodsidh[1][5] = 13;
+    data->nodsidh[1][6] = 16;
+    data->nodsidh[1][7] = 12;
     /* side 2 */
-    data.nodsidh[2][4] = 9;
-    data.nodsidh[2][5] = 14;
-    data.nodsidh[2][6] = 17;
-    data.nodsidh[2][7] = 13;
+    data->nodsidh[2][4] = 9;
+    data->nodsidh[2][5] = 14;
+    data->nodsidh[2][6] = 17;
+    data->nodsidh[2][7] = 13;
     /* side 3 */
-    data.nodsidh[3][4] = 10;
-    data.nodsidh[3][5] = 15;
-    data.nodsidh[3][6] = 18;
-    data.nodsidh[3][7] = 14;
+    data->nodsidh[3][4] = 10;
+    data->nodsidh[3][5] = 15;
+    data->nodsidh[3][6] = 18;
+    data->nodsidh[3][7] = 14;
     /* side 4 */
-    data.nodsidh[4][4] = 11;
-    data.nodsidh[4][5] = 12;
-    data.nodsidh[4][6] = 19;
-    data.nodsidh[4][7] = 15;
+    data->nodsidh[4][4] = 11;
+    data->nodsidh[4][5] = 12;
+    data->nodsidh[4][6] = 19;
+    data->nodsidh[4][7] = 15;
   }
   /* 27-node hexahedron */
   if ( (MAXSID_THERM3 >= 6) && (MAXNS_THERM3 >=9 ) )
   {
     /* side 0 */
-    data.nodsidh[0][8] = 20;
+    data->nodsidh[0][8] = 20;
     /* side 5 */
-    data.nodsidh[5][8] = 25;
+    data->nodsidh[5][8] = 25;
     /* side 1 */
-    data.nodsidh[1][8] = 21;
+    data->nodsidh[1][8] = 21;
     /* side 2 */
-    data.nodsidh[2][8] = 22;
+    data->nodsidh[2][8] = 22;
     /* side 3 */
-    data.nodsidh[3][8] = 23;
+    data->nodsidh[3][8] = 23;
     /* side 4 */
-    data.nodsidh[4][8] = 24;
+    data->nodsidh[4][8] = 24;
   }
   /* hexahedra anchors and spans */
   if (MAXSID_THERM3 >= 6)
   {
     /* side 0 */
-    data.ancsidh[0][0] = 0.0;  /* anchor r-coord */
-    data.ancsidh[0][1] = 0.0;  /* anchor s-ccord */
-    data.ancsidh[0][2] = -1.0;  /* anchor t-ccord */
-    data.dirsidh[0][0] = 1;  /* if 1 : span vector in r-direction */
-    data.dirsidh[0][1] = 1;  /* if 1 : span vector in s-direction */
-    data.dirsidh[0][2] = 0;  /* if 1 : span vector in t-direction */
+    data->ancsidh[0][0] = 0.0;  /* anchor r-coord */
+    data->ancsidh[0][1] = 0.0;  /* anchor s-ccord */
+    data->ancsidh[0][2] = -1.0;  /* anchor t-ccord */
+    data->dirsidh[0][0] = 1;  /* if 1 : span vector in r-direction */
+    data->dirsidh[0][1] = 1;  /* if 1 : span vector in s-direction */
+    data->dirsidh[0][2] = 0;  /* if 1 : span vector in t-direction */
     /* side 5 */
-    data.ancsidh[5][0] = 0.0;
-    data.ancsidh[5][1] = 0.0;
-    data.ancsidh[5][2] = 1.0;
-    data.dirsidh[5][0] = 1;
-    data.dirsidh[5][1] = 1;
-    data.dirsidh[5][2] = 0;
+    data->ancsidh[5][0] = 0.0;
+    data->ancsidh[5][1] = 0.0;
+    data->ancsidh[5][2] = 1.0;
+    data->dirsidh[5][0] = 1;
+    data->dirsidh[5][1] = 1;
+    data->dirsidh[5][2] = 0;
     /* side 1 */
-    data.ancsidh[1][0] = 0.0;
-    data.ancsidh[1][1] = -1.0;
-    data.ancsidh[1][2] = 0.0;
-    data.dirsidh[1][0] = 1;
-    data.dirsidh[1][1] = 0;
-    data.dirsidh[1][2] = 1;
+    data->ancsidh[1][0] = 0.0;
+    data->ancsidh[1][1] = -1.0;
+    data->ancsidh[1][2] = 0.0;
+    data->dirsidh[1][0] = 1;
+    data->dirsidh[1][1] = 0;
+    data->dirsidh[1][2] = 1;
     /* side 2 */
-    data.ancsidh[2][0] = 1.0;
-    data.ancsidh[2][1] = 0.0;
-    data.ancsidh[2][2] = 0.0;
-    data.dirsidh[2][0] = 0;
-    data.dirsidh[2][1] = 1;
-    data.dirsidh[2][2] = 1;
+    data->ancsidh[2][0] = 1.0;
+    data->ancsidh[2][1] = 0.0;
+    data->ancsidh[2][2] = 0.0;
+    data->dirsidh[2][0] = 0;
+    data->dirsidh[2][1] = 1;
+    data->dirsidh[2][2] = 1;
     /* side 3 */
-    data.ancsidh[3][0] = 0.0;
-    data.ancsidh[3][1] = 1.0;
-    data.ancsidh[3][2] = 0.0;
-    data.dirsidh[3][0] = 1;
-    data.dirsidh[3][1] = 0;
-    data.dirsidh[3][2] = 1;
+    data->ancsidh[3][0] = 0.0;
+    data->ancsidh[3][1] = 1.0;
+    data->ancsidh[3][2] = 0.0;
+    data->dirsidh[3][0] = 1;
+    data->dirsidh[3][1] = 0;
+    data->dirsidh[3][2] = 1;
     /* side 4 */
-    data.ancsidh[4][0] = -1.0;
-    data.ancsidh[4][1] = 0.0;
-    data.ancsidh[4][2] = 0.0;
-    data.dirsidh[4][0] = 0;
-    data.dirsidh[4][1] = 1;
-    data.dirsidh[4][2] = 1;
+    data->ancsidh[4][0] = -1.0;
+    data->ancsidh[4][1] = 0.0;
+    data->ancsidh[4][2] = 0.0;
+    data->dirsidh[4][0] = 0;
+    data->dirsidh[4][1] = 1;
+    data->dirsidh[4][2] = 1;
   }
     
 
@@ -454,181 +454,181 @@ void th3_cfg_init(TH3_DATA *data)
   if ( (MAXEDG_THERM3 >= 12) && (MAXNE_THERM3 >= 2) )
   {
     /* edge 0 */
-    data.nodedghl[0][0] = 0;
-    data.nodedghl[0][1] = 1;
+    data->nodedghl[0][0] = 0;
+    data->nodedghl[0][1] = 1;
     /* edge 1 */
-    data.nodedghl[1][0] = 1;
-    data.nodedghl[1][1] = 2;
+    data->nodedghl[1][0] = 1;
+    data->nodedghl[1][1] = 2;
     /* edge 2 */
-    data.nodedghl[2][0] = 2;
-    data.nodedghl[2][1] = 3;
+    data->nodedghl[2][0] = 2;
+    data->nodedghl[2][1] = 3;
     /* edge 3 */
-    data.nodedghl[3][0] = 3;
-    data.nodedghl[3][1] = 0;
+    data->nodedghl[3][0] = 3;
+    data->nodedghl[3][1] = 0;
     /* edge 8 */
-    data.nodedghl[8][0] = 4;
-    data.nodedghl[8][1] = 5;
+    data->nodedghl[8][0] = 4;
+    data->nodedghl[8][1] = 5;
     /* edge 9 */
-    data.nodedghl[9][0] = 5;
-    data.nodedghl[9][1] = 6;
+    data->nodedghl[9][0] = 5;
+    data->nodedghl[9][1] = 6;
     /* edge 10 */
-    data.nodedghl[10][0] = 6;
-    data.nodedghl[10][1] = 7;
+    data->nodedghl[10][0] = 6;
+    data->nodedghl[10][1] = 7;
     /* edge 11 */
-    data.nodedghl[11][0] = 7;
-    data.nodedghl[11][1] = 4;
+    data->nodedghl[11][0] = 7;
+    data->nodedghl[11][1] = 4;
     /* edge 4 */
-    data.nodedghl[4][0] = 0;
-    data.nodedghl[4][1] = 4;
+    data->nodedghl[4][0] = 0;
+    data->nodedghl[4][1] = 4;
     /* edge 5 */
-    data.nodedghl[5][0] = 1;
-    data.nodedghl[5][1] = 5;
+    data->nodedghl[5][0] = 1;
+    data->nodedghl[5][1] = 5;
     /* edge 6 */
-    data.nodedghl[6][0] = 2;
-    data.nodedghl[6][1] = 6;
+    data->nodedghl[6][0] = 2;
+    data->nodedghl[6][1] = 6;
     /* edge 7 */
-    data.nodedghl[7][0] = 3;
-    data.nodedghl[7][1] = 7;
+    data->nodedghl[7][0] = 3;
+    data->nodedghl[7][1] = 7;
   }
   /* 20,27-node hexahedron */
   if ( (MAXEDG_THERM3 >= 12) && (MAXNE_THERM3 >= 3) )
   {
     /* edge 0 */
-    data.nodedghq[0][0] = 0;
-    data.nodedghq[0][1] = 8;
-    data.nodedghq[0][2] = 1;
+    data->nodedghq[0][0] = 0;
+    data->nodedghq[0][1] = 8;
+    data->nodedghq[0][2] = 1;
     /* edge 1 */
-    data.nodedghq[1][0] = 1;
-    data.nodedghq[1][1] = 9;
-    data.nodedghq[1][2] = 2;
+    data->nodedghq[1][0] = 1;
+    data->nodedghq[1][1] = 9;
+    data->nodedghq[1][2] = 2;
     /* edge 2 */
-    data.nodedghq[2][0] = 2;
-    data.nodedghq[2][1] = 10;
-    data.nodedghq[2][2] = 3;
+    data->nodedghq[2][0] = 2;
+    data->nodedghq[2][1] = 10;
+    data->nodedghq[2][2] = 3;
     /* edge 3 */
-    data.nodedghq[3][0] = 3;
-    data.nodedghq[3][1] = 11;
-    data.nodedghq[3][2] = 0;
+    data->nodedghq[3][0] = 3;
+    data->nodedghq[3][1] = 11;
+    data->nodedghq[3][2] = 0;
     /* edge 8 */
-    data.nodedghq[8][0] = 4;
-    data.nodedghq[8][1] = 16;
-    data.nodedghq[8][2] = 5;
+    data->nodedghq[8][0] = 4;
+    data->nodedghq[8][1] = 16;
+    data->nodedghq[8][2] = 5;
     /* edge 9 */
-    data.nodedghq[9][0] = 5;
-    data.nodedghq[9][1] = 17;
-    data.nodedghq[9][2] = 6;
+    data->nodedghq[9][0] = 5;
+    data->nodedghq[9][1] = 17;
+    data->nodedghq[9][2] = 6;
     /* edge 10 */
-    data.nodedghq[10][0] = 6;
-    data.nodedghq[10][1] = 18;
-    data.nodedghq[10][2] = 7;
+    data->nodedghq[10][0] = 6;
+    data->nodedghq[10][1] = 18;
+    data->nodedghq[10][2] = 7;
     /* edge 11 */
-    data.nodedghq[11][0] = 7;
-    data.nodedghq[11][1] = 19;
-    data.nodedghq[11][2] = 4;
+    data->nodedghq[11][0] = 7;
+    data->nodedghq[11][1] = 19;
+    data->nodedghq[11][2] = 4;
     /* edge 4 */
-    data.nodedghq[4][0] = 0;
-    data.nodedghq[4][1] = 12;
-    data.nodedghq[4][2] = 4;
+    data->nodedghq[4][0] = 0;
+    data->nodedghq[4][1] = 12;
+    data->nodedghq[4][2] = 4;
     /* edge 5 */
-    data.nodedghq[5][0] = 1;
-    data.nodedghq[5][1] = 13;
-    data.nodedghq[5][2] = 5;
+    data->nodedghq[5][0] = 1;
+    data->nodedghq[5][1] = 13;
+    data->nodedghq[5][2] = 5;
     /* edge 6 */
-    data.nodedghq[6][0] = 2;
-    data.nodedghq[6][1] = 14;
-    data.nodedghq[6][2] = 6;
+    data->nodedghq[6][0] = 2;
+    data->nodedghq[6][1] = 14;
+    data->nodedghq[6][2] = 6;
     /* edge 7 */
-    data.nodedghq[7][0] = 3;
-    data.nodedghq[7][1] = 15;
-    data.nodedghq[7][2] = 7;
+    data->nodedghq[7][0] = 3;
+    data->nodedghq[7][1] = 15;
+    data->nodedghq[7][2] = 7;
   }
   /* anchors and directions */
   if (MAXEDG_THERM3 >= 12)
   {
     /* edge 0 */
-    data.ancedgh[0][0] = 0.0;
-    data.ancedgh[0][1] = -1.0;
-    data.ancedgh[0][2] = -1.0;
-    data.diredgh[0][0] = 1;  /* if +/-1 : span vector in pos/neg r-direction */
-    data.diredgh[0][1] = 0;  /* if +/-1 : span vector in pos/neg s-direction */
-    data.diredgh[0][2] = 0;  /* if +/-1 : span vector in pos/neg t-direction */
+    data->ancedgh[0][0] = 0.0;
+    data->ancedgh[0][1] = -1.0;
+    data->ancedgh[0][2] = -1.0;
+    data->diredgh[0][0] = 1;  /* if +/-1 : span vector in pos/neg r-direction */
+    data->diredgh[0][1] = 0;  /* if +/-1 : span vector in pos/neg s-direction */
+    data->diredgh[0][2] = 0;  /* if +/-1 : span vector in pos/neg t-direction */
     /* edge 1 */
-    data.ancedgh[1][0] = 1.0;
-    data.ancedgh[1][1] = 0.0;
-    data.ancedgh[1][2] = -1.0;
-    data.diredgh[1][0] = 0;
-    data.diredgh[1][1] = 1;
-    data.diredgh[1][2] = 0;
+    data->ancedgh[1][0] = 1.0;
+    data->ancedgh[1][1] = 0.0;
+    data->ancedgh[1][2] = -1.0;
+    data->diredgh[1][0] = 0;
+    data->diredgh[1][1] = 1;
+    data->diredgh[1][2] = 0;
     /* edge 2 */
-    data.ancedgh[2][0] = 0.0;
-    data.ancedgh[2][1] = 1.0;
-    data.ancedgh[2][2] = -1.0;
-    data.diredgh[2][0] = -1;
-    data.diredgh[2][1] = 0;
-    data.diredgh[2][2] = 0;
+    data->ancedgh[2][0] = 0.0;
+    data->ancedgh[2][1] = 1.0;
+    data->ancedgh[2][2] = -1.0;
+    data->diredgh[2][0] = -1;
+    data->diredgh[2][1] = 0;
+    data->diredgh[2][2] = 0;
     /* edge 3 */
-    data.ancedgh[3][0] = -1.0;
-    data.ancedgh[3][1] = 0.0;
-    data.ancedgh[3][2] = -1.0;
-    data.diredgh[3][0] = 0;
-    data.diredgh[3][1] = -1;
-    data.diredgh[3][2] = 0;
+    data->ancedgh[3][0] = -1.0;
+    data->ancedgh[3][1] = 0.0;
+    data->ancedgh[3][2] = -1.0;
+    data->diredgh[3][0] = 0;
+    data->diredgh[3][1] = -1;
+    data->diredgh[3][2] = 0;
     /* edge 8 */
-    data.ancedgh[8][0] = 0.0;
-    data.ancedgh[8][1] = -1.0;
-    data.ancedgh[8][2] = 1.0;
-    data.diredgh[8][0] = 1;
-    data.diredgh[8][1] = 0;
-    data.diredgh[8][2] = 0;
+    data->ancedgh[8][0] = 0.0;
+    data->ancedgh[8][1] = -1.0;
+    data->ancedgh[8][2] = 1.0;
+    data->diredgh[8][0] = 1;
+    data->diredgh[8][1] = 0;
+    data->diredgh[8][2] = 0;
     /* edge 9 */
-    data.ancedgh[9][0] = 1.0;
-    data.ancedgh[9][1] = 0.0;
-    data.ancedgh[9][2] = 1.0;
-    data.diredgh[9][0] = 0;
-    data.diredgh[9][1] = 1;
-    data.diredgh[9][2] = 0;
+    data->ancedgh[9][0] = 1.0;
+    data->ancedgh[9][1] = 0.0;
+    data->ancedgh[9][2] = 1.0;
+    data->diredgh[9][0] = 0;
+    data->diredgh[9][1] = 1;
+    data->diredgh[9][2] = 0;
     /* edge 10 */
-    data.ancedgh[10][0] = 0.0;
-    data.ancedgh[10][1] = 1.0;
-    data.ancedgh[10][2] = 1.0;
-    data.diredgh[10][0] = -1;
-    data.diredgh[10][1] = 0;
-    data.diredgh[10][2] = 0;
+    data->ancedgh[10][0] = 0.0;
+    data->ancedgh[10][1] = 1.0;
+    data->ancedgh[10][2] = 1.0;
+    data->diredgh[10][0] = -1;
+    data->diredgh[10][1] = 0;
+    data->diredgh[10][2] = 0;
     /* edge 11 */
-    data.ancedgh[11][0] = -1.0;
-    data.ancedgh[11][1] = 0.0;
-    data.ancedgh[11][2] = 1.0;
-    data.diredgh[11][0] = 0;
-    data.diredgh[11][1] = -1;
-    data.diredgh[11][2] = 0;
+    data->ancedgh[11][0] = -1.0;
+    data->ancedgh[11][1] = 0.0;
+    data->ancedgh[11][2] = 1.0;
+    data->diredgh[11][0] = 0;
+    data->diredgh[11][1] = -1;
+    data->diredgh[11][2] = 0;
     /* edge 4 */
-    data.ancedgh[4][0] = -1.0;
-    data.ancedgh[4][1] = -1.0;
-    data.ancedgh[4][2] = 0.0;
-    data.diredgh[4][0] = 0;
-    data.diredgh[4][1] = 0;
-    data.diredgh[4][2] = 1;
+    data->ancedgh[4][0] = -1.0;
+    data->ancedgh[4][1] = -1.0;
+    data->ancedgh[4][2] = 0.0;
+    data->diredgh[4][0] = 0;
+    data->diredgh[4][1] = 0;
+    data->diredgh[4][2] = 1;
     /* edge 5 */
-    data.ancedgh[5][0] = 1.0;
-    data.ancedgh[5][1] = -1.0;
-    data.ancedgh[5][2] = 0.0;
-    data.diredgh[5][0] = 0;
-    data.diredgh[5][1] = 0;
-    data.diredgh[5][2] = 1;
+    data->ancedgh[5][0] = 1.0;
+    data->ancedgh[5][1] = -1.0;
+    data->ancedgh[5][2] = 0.0;
+    data->diredgh[5][0] = 0;
+    data->diredgh[5][1] = 0;
+    data->diredgh[5][2] = 1;
     /* edge 6 */
-    data.ancedgh[6][0] = 1.0;
-    data.ancedgh[6][1] = 1.0;
-    data.ancedgh[6][2] = 0.0;
-    data.diredgh[6][0] = 0;
-    data.diredgh[6][1] = 0;
-    data.diredgh[6][2] = 1;
+    data->ancedgh[6][0] = 1.0;
+    data->ancedgh[6][1] = 1.0;
+    data->ancedgh[6][2] = 0.0;
+    data->diredgh[6][0] = 0;
+    data->diredgh[6][1] = 0;
+    data->diredgh[6][2] = 1;
     /* edge 7 */
-    data.ancedgh[7][0] = -1.0;
-    data.ancedgh[7][1] = 1.0;
-    data.ancedgh[7][2] = 0.0;
-    data.diredgh[7][0] = 0;
-    data.diredgh[7][1] = 0;
-    data.diredgh[7][2] = 1;
+    data->ancedgh[7][0] = -1.0;
+    data->ancedgh[7][1] = 1.0;
+    data->ancedgh[7][2] = 0.0;
+    data->diredgh[7][0] = 0;
+    data->diredgh[7][1] = 0;
+    data->diredgh[7][2] = 1;
   }
   
 
@@ -645,48 +645,48 @@ void th3_cfg_init(TH3_DATA *data)
   if (MAXNOD_THERM3 >= 4)
   {
     /* node 0 */
-    data.nodtrst[0][0] = 1.0;
-    data.nodtrst[0][1] = 0.0;
-    data.nodtrst[0][2] = 0.0;
+    data->nodtrst[0][0] = 1.0;
+    data->nodtrst[0][1] = 0.0;
+    data->nodtrst[0][2] = 0.0;
     /* node 1 */
-    data.nodtrst[1][0] = 0.0;
-    data.nodtrst[1][1] = 1.0;
-    data.nodtrst[1][2] = 0.0;
+    data->nodtrst[1][0] = 0.0;
+    data->nodtrst[1][1] = 1.0;
+    data->nodtrst[1][2] = 0.0;
     /* node 2 */
-    data.nodtrst[2][0] = 0.0;
-    data.nodtrst[2][1] = 0.0;
-    data.nodtrst[2][2] = 1.0;
+    data->nodtrst[2][0] = 0.0;
+    data->nodtrst[2][1] = 0.0;
+    data->nodtrst[2][2] = 1.0;
     /* node 4 */
-    data.nodtrst[3][0] = 0.0;
-    data.nodtrst[3][1] = 0.0;
-    data.nodtrst[3][2] = 0.0;
+    data->nodtrst[3][0] = 0.0;
+    data->nodtrst[3][1] = 0.0;
+    data->nodtrst[3][2] = 0.0;
   }
   if (MAXNOD_THERM3 >= 10)
   {
     /* node 4 */
-    data.nodtrst[4][0] = 0.5;
-    data.nodtrst[4][1] = 0.0;
-    data.nodtrst[4][2] = 0.0;
+    data->nodtrst[4][0] = 0.5;
+    data->nodtrst[4][1] = 0.0;
+    data->nodtrst[4][2] = 0.0;
     /* node 5 */
-    data.nodtrst[5][0] = 0.5;
-    data.nodtrst[5][1] = 0.5;
-    data.nodtrst[5][2] = 0.0;
+    data->nodtrst[5][0] = 0.5;
+    data->nodtrst[5][1] = 0.5;
+    data->nodtrst[5][2] = 0.0;
     /* node 6 */
-    data.nodtrst[6][0] = 0.0;
-    data.nodtrst[6][1] = 0.5;
-    data.nodtrst[6][2] = 0.0;
+    data->nodtrst[6][0] = 0.0;
+    data->nodtrst[6][1] = 0.5;
+    data->nodtrst[6][2] = 0.0;
     /* node 7 */
-    data.nodtrst[7][0] = 0.5;
-    data.nodtrst[7][1] = 0.0;
-    data.nodtrst[7][2] = 0.5;
+    data->nodtrst[7][0] = 0.5;
+    data->nodtrst[7][1] = 0.0;
+    data->nodtrst[7][2] = 0.5;
     /* node 8 */
-    data.nodtrst[8][0] = 0.0;
-    data.nodtrst[8][1] = 0.5;
-    data.nodtrst[8][2] = 0.5;
+    data->nodtrst[8][0] = 0.0;
+    data->nodtrst[8][1] = 0.5;
+    data->nodtrst[8][2] = 0.5;
     /* node 9 */
-    data.nodtrst[9][0] = 0.0;
-    data.nodtrst[9][1] = 0.0;
-    data.nodtrst[9][2] = 0.5;
+    data->nodtrst[9][0] = 0.0;
+    data->nodtrst[9][1] = 0.0;
+    data->nodtrst[9][2] = 0.5;
   }
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -708,9 +708,9 @@ with 4,10)
 \date 09/06
 */
 void th3_cfg_noderst(ELEMENT *ele,
-                    TH3_DATA *data,
-                    INT inode,
-                    DOUBLE *rst)
+		     TH3_DATA *data,
+		     INT inode,
+		     DOUBLE *rst)
 {
 
   /*--------------------------------------------------------------------*/
@@ -722,14 +722,14 @@ void th3_cfg_noderst(ELEMENT *ele,
   switch (ele->distyp)
   {
     case hex8: case hex20: case hex27:
-      rst[0] = data.nodhrst[inode][0];
-      rst[1] = data.nodhrst[inode][1];
-      rst[2] = data.nodhrst[inode][2];
+      rst[0] = data->nodhrst[inode][0];
+      rst[1] = data->nodhrst[inode][1];
+      rst[2] = data->nodhrst[inode][2];
       break;
     case tet4: case tet10:
-      rst[0] = data.nodtrst[inode][0];
-      rst[1] = data.nodtrst[inode][1];
-      rst[2] = data.nodtrst[inode][2];
+      rst[0] = data->nodtrst[inode][0];
+      rst[1] = data->nodtrst[inode][1];
+      rst[2] = data->nodtrst[inode][2];
       break;
     default:
       dserror("Unknown discretisation type!");
