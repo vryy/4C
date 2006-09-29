@@ -22,6 +22,7 @@ TRILINOS_INCDIR=$TRILINOS_HOME/$TRILINOS_ARCH/include
 TRILINOS_LIBDIR=$TRILINOS_HOME/$TRILINOS_ARCH/lib
 TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
 TRILINOS_LIB="-lmoertel -lml -lnoxepetra  -lnox  -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra"
+SUPERLU_LIB="-L/lnm/lib/SuperLU_DIST_2.0 -lsuperlu_dist_2.0_mpich"
 
 # aztec
 AZTEC_INC=""

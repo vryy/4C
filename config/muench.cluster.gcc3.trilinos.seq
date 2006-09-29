@@ -1,0 +1,63 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=no
+
+PROGRAMNAME=cca_seq_cluster
+F77=g77
+CC=gcc
+CP=g++
+LD=g++
+
+INCLUDEDIRS="-I/lnm/include"
+LIBDIRS="-L/lnm/lib"
+
+# Trilinos
+TRILINOS_HOME=/lnm/lib/Trilinos
+TRILINOS_ARCH=FRONTEND_SERIAL_OPT_GCC3
+TRILINOS_INCDIR=$TRILINOS_HOME/$TRILINOS_ARCH/include
+TRILINOS_LIBDIR=$TRILINOS_HOME/$TRILINOS_ARCH/lib
+TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
+TRILINOS_LIB="-lmoertel -lml -lnoxepetra  -lnox  -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra"
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec-gcc-3.3"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspooles-gcc-3.3"
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack-gcc-3.3 -lamd-gcc-3.3"
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+#LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
+#LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
+#LIBS="-llapack-gcc-3.3 -lblas-gcc-3.3 -lmetis-gcc-3.3"
+LIBS="-L/cluster/acml-3.0.0/gnu64/lib -lacml -lmetis-gcc-3.3 -lc -lg2c"
+
+CFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+CPFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+FFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+LDFLAGS_OPT="-O2"
+
+#CFLAGS_OPT="-g"
+#CPFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
+CFLAGS="-Wall -DSIXTYFOUR -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -DSIXTYFOUR -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -DSIXTYFOUR -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
