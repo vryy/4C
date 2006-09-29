@@ -218,7 +218,7 @@ void pm_build_pmat_sparse_mask(FIELD* actfield,
   The dofs of the discontinuous pressure discretization belong to the
   elements. Thus we loop the elements here and assign dof numbers to
   the pressure dofs. These numbers start from zero. They cannot be
-  confused with dofs that live in nodes.
+  confused with dofs that life in nodes.
 
   Dirichlet boundaries on the pressure are currently not supported.
 
@@ -741,7 +741,13 @@ void pm_calelm(FIELD *actfield,
 
       for (dof=0; dof<actnode->numdf; ++dof)
       {
+	/* non-dirichlet dofs */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+	if ((actnode->gnode->dirich==NULL) ||
+	    (actnode->gnode->dirich->dirich_onoff.a.iv[dof]==0))
+#else
         if (actnode->dof[dof] < actfield->dis[disnum].numeq)
+#endif
         {
           INT k;
 
@@ -783,6 +789,16 @@ void pm_calelm(FIELD *actfield,
             }
           }
         }
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+	/* dirichlet dofs */
+	else
+	{
+          if (actnode->proc == actintra->intra_rank)
+          {
+            lmass[actnode->dof[dof]] = 1;
+          }
+	}
+#endif
       }
     }
   }

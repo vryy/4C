@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de/Members/kuettler
 //             089 - 289-15238
 //
-// necessary defines: D_FLUID D_FLUID_PM D_FLUID2 D_FLUID2_PRO AZTEC_PACKAGE BINIO RESULTTEST CHECK_MAX
+// necessary defines: D_FLUID D_FLUID_PM D_FLUID2 D_FLUID2_PRO AZTEC_PACKAGE BINIO RESULTTEST CHECK_MAX SOLVE_DIRICH2
 //
 //
 // #define MAXNOD           (9)

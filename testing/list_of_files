@@ -31,6 +31,7 @@ Input/f2_freeosz20x20.dat               x        x        x        x        -   
 Input/f2_kim-moin.dat                   x        x        x        x        -        -
 Input/f2_locsystest.dat                 x        x        x        x        -        -
 Input/f2pro_channel.dat                 x        x        x        x        x        x
+Input/f2pro_channel_sd2.dat             x        x        x        x        x        x
 Input/f2pro_channel_q1p0.dat            x        x        x        x        x        x
 Input/f3_beltrami.dat                   x        x        x        x        x        x
 Input/f3_beltrami_fastass.dat           x        x        x        x        x        x
