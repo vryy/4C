@@ -159,7 +159,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
     actpdis  =  &(actpart->pdis[j]);
 
 
-    printf("divide_fast!! field: %d;  dis: %d\n\n",i,j);
+    /*printf("divide_fast!! field: %d;  dis: %d\n\n",i,j);*/
 
     actpdis->num_fele   = 0;
     num_f3f_hex8_e      = 0;
@@ -217,7 +217,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
 
     /* calculate number of vectors necessary ... */
-    printf("LOOPL          = %5i\n\n",LOOPL);
+    /*printf("LOOPL          = %5i\n\n",LOOPL);*/
 
     /* ... for fluid3 hex8 on euler */
     vec_f3f_hex8_e = num_f3f_hex8_e/LOOPL;
