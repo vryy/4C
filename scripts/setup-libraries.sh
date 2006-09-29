@@ -6,7 +6,7 @@ if grep '^[ \t]*TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$TRILINOS_LIB" = "x" ] ; then
         echo $0: Warning: Variable TRILINOS_LIB undefined but TRILINOS_PACKAGE requested.
     fi
-    LIBS="-L$TRILINOS_LIBDIR $TRILINOS_LIB $LIBS"
+    LIBS="-L$TRILINOS_LIBDIR $TRILINOS_LIB $SUPERLU_LIB $LIBS"
     INCLUDEDIRS="$INCLUDEDIRS -I$TRILINOS_INCDIR"
 fi
 
