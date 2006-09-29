@@ -383,7 +383,8 @@ typedef enum _SOLVER_TYP
                        umfpack,          /* solver package umfpack, matrix in compressed column format */
                        mlpcg,            /* internal solver package mlpcg */
                        amesos_klu_sym,   /* Trilinos' solver interface Amesos using KLU */
-                       amesos_klu_nonsym /* Trilinos' solver interface Amesos using KLU */
+                       amesos_klu_nonsym,/* Trilinos' solver interface Amesos using KLU */
+                       superlu           /* Trilinos' solver interface Amesos using SuperLU_Dist */
 } SOLVER_TYP;
 /*!----------------------------------------------------------------------
 \brief enum of possible matrix types

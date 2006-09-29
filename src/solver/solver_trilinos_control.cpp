@@ -32,6 +32,11 @@ Maintainer: Michael Gee
 #include "Amesos_Umfpack.h"
 #include "Amesos_Lapack.h"
 
+// Trilinos is configured SuperLUDIST only in the parallel version
+#ifdef PARALLEL 
+#include "Amesos_Superludist.h"
+#endif
+
 #include "AztecOO.h"
 
 #include "Teuchos_ParameterList.hpp"
@@ -75,6 +80,12 @@ static void solve_amesos_umfpack(TRILINOSMATRIX* tri,
                                  DIST_VECTOR*    sol,
                                  DIST_VECTOR*    rhs,
                                  int             option);
+#ifdef PARALLEL
+static void solve_amesos_superlu(TRILINOSMATRIX* tri,
+                                 DIST_VECTOR*    sol,
+                                 DIST_VECTOR*    rhs,
+                                 int             option);
+#endif
 static void solve_amesos_lapack(TRILINOSMATRIX* tri,
                                 DIST_VECTOR*    sol,
                                 DIST_VECTOR*    rhs,
@@ -123,6 +134,15 @@ if (option==1)
 
 switch (actsolv->solvertyp)
 {
+  //---------------------------------------------------------------------------
+  case superlu:
+#ifdef PARALLEL
+    solve_amesos_superlu(tri,sol,rhs,option);
+#else
+    dserror("Superludist only with -DPARALLEL");
+#endif
+  break;
+  
   //---------------------------------------------------------------------------
   case amesos_klu_sym:
     solve_amesos_klu(tri,sol,rhs,option,true);
@@ -798,6 +818,135 @@ void solve_amesos_klu(TRILINOSMATRIX* tri,
   return;
 } /* end of solve_amesos_klu */
 
+
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
+  |                                                          m.gee 9/06 |
+  |  routine to control solution with Amesos_SuperLU                    |
+  |  in the case where Trilinos matrices are used internally            |
+ *----------------------------------------------------------------------*/
+void solve_amesos_superlu(TRILINOSMATRIX* tri,
+                          DIST_VECTOR*    sol,
+                          DIST_VECTOR*    rhs,
+                          int             option)
+{
+#ifdef DEBUG
+  dstrc_enter("solve_amesos_superlu");
+#endif
+//-----------------------------------------------------------------------
+  //========================================================== init phase
+  if (option==1)
+  {
+    // create the Epetra_LinearProblem
+    if (tri->linearproblem)
+    {
+      Epetra_LinearProblem* lp = (Epetra_LinearProblem*)tri->linearproblem;
+      delete lp;
+    }
+    Epetra_LinearProblem* lp = new Epetra_LinearProblem();
+    tri->linearproblem = (void*)lp;
+    // create the Amesos_Umfpack solver
+    if (tri->solver)
+    {
+      Amesos_Superludist* solver = (Amesos_Superludist*)tri->solver;
+      delete solver;
+    }
+    Amesos_Superludist* solver = new Amesos_Superludist(*lp);
+    tri->solver = (void*)solver;
+    tri->is_init=1;
+  }
+  //========================================================== solution phase
+  else if (option==0)
+  {
+    // get matrix
+    Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
+    
+    // wrap vectors
+    Epetra_Vector x(View,matrix->OperatorDomainMap(),sol->vec.a.dv);
+    Epetra_Vector b(View,matrix->OperatorDomainMap(),rhs->vec.a.dv);
+    
+    // get solver
+    Amesos_Superludist* solver = (Amesos_Superludist*)tri->solver;
+    
+    // get linear problem
+    Epetra_LinearProblem* lp = const_cast<Epetra_LinearProblem*>(solver->GetProblem());
+    
+    // set vectors into linear problem
+    lp->SetLHS(&x);
+    lp->SetRHS(&b);
+    
+    // matrix has not yet been factored
+    if (!tri->is_factored)
+    {
+      int err=0;
+      lp->SetOperator(matrix);
+      // in case of umfpack, the amesos docu says one cannot replace the matrix
+      // under the hood, so destroy and recreate
+      delete solver;
+      solver = new Amesos_Superludist(*lp);
+      tri->solver = (void*)solver;
+      err = solver->SymbolicFactorization();
+      if (err) dserror("Amesos_Superludist::SymbolicFactorization returned an err");
+      err = solver->NumericFactorization();
+      if (err) dserror("Amesos_Superludist::NumericFactorization returned an err");
+      err = solver->Solve();
+      if (err) dserror("Amesos_Superludist::Solve returned an err");
+    }
+    // matrix has been factored before
+    else
+    {
+      int err = solver->Solve();
+      if (err) dserror("Amesos_Superludist::Solve returned an err");
+    }
+    tri->is_factored=1;
+  }
+  //========================================================== destroy phase
+  else if (option==2) // destroy everything associated with this solver/matrix
+  {                   // do NOT destroy the matrix, that's done somewhere else
+    if (tri->linearproblem)
+    {
+      Epetra_LinearProblem* lp = (Epetra_LinearProblem*)tri->linearproblem;
+      delete lp;
+      tri->linearproblem=NULL;
+    }
+    if (tri->solver)
+    {
+      Amesos_Superludist* solver = (Amesos_Superludist*)tri->solver;
+      delete solver;
+      tri->solver=NULL;
+    }
+    if (tri->params)
+    {
+      ParameterList* list = (ParameterList*)tri->params;
+      delete list;
+      tri->params = NULL;
+    }
+    if (tri->precmatrix)
+    {
+          Epetra_CrsMatrix* tmp = (Epetra_CrsMatrix*)tri->precmatrix;
+          delete tmp;
+          tri->precmatrix=NULL;
+    }
+    if (tri->nullspace)
+    {
+      delete tri->nullspace;
+      tri->nullspace = NULL;
+    }
+    if (tri->prec)
+    {
+      dserror("Cannot destroy preconditioner of unknown type");
+    }
+  }
+  else
+    dserror("Unknown option flag");
+//-----------------------------------------------------------------------
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+} /* end of solve_amesos_superlu */
+#endif // PARALLEL
 
 
 /*----------------------------------------------------------------------*

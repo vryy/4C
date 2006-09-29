@@ -119,6 +119,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          solv->solvertyp = amesos_klu_nonsym;
 #endif
       }
+      if (strncmp("Superlu",buffer,7)==0)
+      {
+#ifndef TRILINOS_PACKAGE
+         dserror("TRILINOS_PACKAGE package is not compiled in");
+#else
+#ifndef PARALLEL
+         dserror("Superlu can only be used with -DPARALLEL");
+#endif
+         if (!genprob.usetrilinosalgebra)
+           dserror("You have to use ALGEBRA Trilinos to use Superlu");
+         solv->solvertyp = superlu;
+#endif
+      }
       /*--------------------------------------------------- MLIB solver */
       if (strncmp("MLIB_D_SP",buffer,9)==0)
       {
@@ -284,6 +297,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef TRILINOS_PACKAGE
    case amesos_klu_sym:/*----------------------- read solver Amesos_KLU */
    case amesos_klu_nonsym:/*-------------------- read solver Amesos_KLU */
+   case superlu:/*-------------------------- read solver Amesos_SuperLU */
    break;
 #endif
 #ifdef AZTEC_PACKAGE
@@ -361,6 +375,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         if (strncmp("MLS",buffer,3)==0)       azvar->mlsmotype_fine = 3;
         if (strncmp("ILU",buffer,3)==0)       azvar->mlsmotype_fine = 4;
         if (strncmp("KLU",buffer,3)==0)       azvar->mlsmotype_fine = 5;
+        if (strncmp("Superlu",buffer,7)==0)   azvar->mlsmotype_fine = 6;
       }
       frchar("ML_SMOOTHERMED",buffer,&ierr);
       if (ierr==1)
@@ -371,6 +386,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         if (strncmp("MLS",buffer,3)==0)       azvar->mlsmotype_med = 3;
         if (strncmp("ILU",buffer,3)==0)       azvar->mlsmotype_med = 4;
         if (strncmp("KLU",buffer,3)==0)       azvar->mlsmotype_med = 5;
+        if (strncmp("Superlu",buffer,7)==0)   azvar->mlsmotype_med = 6;
       }
       frchar("ML_SMOOTHERCOARSE",buffer,&ierr);
       if (ierr==1)
@@ -381,6 +397,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         if (strncmp("MLS",buffer,3)==0)       azvar->mlsmotype_coarse = 3;
         if (strncmp("ILU",buffer,3)==0)       azvar->mlsmotype_coarse = 4;
         if (strncmp("KLU",buffer,3)==0)       azvar->mlsmotype_coarse = 5;
+        if (strncmp("Superlu",buffer,7)==0)   azvar->mlsmotype_coarse = 6;
       }
 #endif
    break;
