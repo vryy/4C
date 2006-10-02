@@ -67,7 +67,6 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
 
   /* general variables */
   const INT heatminus = -1.0;  /* minus sign occuring in heat conduction */
-  INT i, j, k;  /* some counters */
   INT idim, inode, idof;  /* some counters */
   INT nelenod;  /* number of element nodes */
   INT neledof;  /* element DOF */
@@ -77,6 +76,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
   GVOL *gvol;  /* local pointer to geometry volume of element */
   INT foundgvolneum;  /* flag for identifying loaded volume */
   DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
+  DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3];
   DOUBLE xjm[NDIM_THERM3][NDIM_THERM3];  /* Jacobian matrix */
   DOUBLE det;  /* Jacobi determinant */
   DOUBLE xji[NDIM_THERM3][NDIM_THERM3];  /* inverse Jacobian matrix */
@@ -258,21 +258,21 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           switch (distyp)
           {
             /* hexahedra */
-            case hex10: case hex20: case hex27:
+            case hex8: case hex20: case hex27:
               for (idim=0; idim<NDIM_THERM3; idim++)
               {
                 /* r,s,t-coordinate */
-                gpc[idim] = data.ghlc[gpintc[idim]][igp[idim]];
+                gpc[idim] = data->ghlc[gpintc[idim]][igp[idim]];
                 /* weight */
-                fac = fac * data.ghlw[gpintc[idim]][igp[idim]];
+                fac = fac * data->ghlw[gpintc[idim]][igp[idim]];
               }
               break;
             /* tetrahedra */
             case tet4: case tet10:
-              gpc[0] = data.gtdcr[gpintc[2]][igp[2]];  /* r-coordinate */
-              gpc[1] = data.gtdcs[gpintc[2]][igp[2]];  /* s-coordinate */
-              gpc[2] = data.gtdct[gpintc[2]][igp[2]];  /* t-coordinate */
-              fac = data.gtdw[gpintc[2]][igp[2]];  /* weight */
+              gpc[0] = data->gtdcr[gpintc[2]][igp[2]];  /* r-coordinate */
+              gpc[1] = data->gtdcs[gpintc[2]][igp[2]];  /* s-coordinate */
+              gpc[2] = data->gtdct[gpintc[2]][igp[2]];  /* t-coordinate */
+              fac = data->gtdw[gpintc[2]][igp[2]];  /* weight */
               break;
             default:
               dserror("ele->distyp unknown!");
@@ -330,7 +330,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           for (idim=0; idim<NDIM_THERM3; idim++)
           {
             /* set number of Gauss points for side integration */
-            if (data.dirsidh[igsurf][idim] == 1)
+            if (data->dirsidh[igsurf][idim] == 1)
             {
               gpsubnum[idim] = gpnum[idim];
               gpsubintc[idim] = gpintc[idim];
@@ -366,7 +366,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
              * parameter coordinate axis */
             for (idim=0; idim<NDIM_THERM3; idim++)
             {
-              gpc[idim] = data.ancsidh[igsurf][idim];
+              gpc[idim] = data->ancsidh[igsurf][idim];
             }
             /* initialise integration factor */
             fac = 1.0;
@@ -377,19 +377,19 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
             switch (ele->distyp)
             {
               /* hexahedra */
-              case hex10: case hex20: case hex27:
+              case hex8: case hex20: case hex27:
                 /* initialise dimension reduction counter */
                 idimsid = 0;
                 /* loop potential basis vector directions */
                 for (idim=0; idim<NDIM_THERM3; idim++)
                 {
-                  if (data.dirsidh[igsurf][idim] == 1)
+                  if (data->dirsidh[igsurf][idim] == 1)
                   {
                     /* add coordinate components */
                     gpc[idim] = gpc[idim] 
-                              + data.ghlc[gpsubintc[idim]][igp[idim]];
+                              + data->ghlc[gpsubintc[idim]][igp[idim]];
                     /* add weight */
-                    fac = fac * data.ghlw[gpsubintc[idim]][igp[idim]];
+                    fac = fac * data->ghlw[gpsubintc[idim]][igp[idim]];
                     /* dimension reduction matrix */
                     sidredm[idimsid][idim] = 1.0;
                     idimsid = idimsid + 1;
@@ -415,7 +415,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
             fac = fac * metr;
             /*----------------------------------------------------------*/
             /* add surface load contribution ==> eload modified */
-            th3_load_surf(ele, nelenod, &(gsurf[igsurf]), shape, fac, 
+            th3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
                           eload);
           }  /* end of for */
         }  /* end of for */
@@ -457,7 +457,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           for (idim=0; idim<NDIM_THERM3; idim++)
           {
             /* set number of Gauss points for side integration */
-            if (data.dirsidh[igsurf][idim] == 1)
+            if (data->dirsidh[igsurf][idim] == 1)
             {
               gpsubnum[idim] = gpnum[idim];
               gpsubintc[idim] = gpintc[idim];
@@ -493,7 +493,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
              * parameter coordinate axis */
             for (idim=0; idim<NDIM_THERM3; idim++)
             {
-              gpc[idim] = data.ancedgh[igline][idim];
+              gpc[idim] = data->ancedgh[igline][idim];
             }
             /* initialise integration factor */
             fac = 1.0;
@@ -504,18 +504,18 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
             switch (distyp)
             {
               /* hexahedra */
-              case hex10: case hex20: case hex27:
+              case hex8: case hex20: case hex27:
                 /* loop potential basis vector directions */
                 for (idim=0; idim<NDIM_THERM3; idim++)
                 {
-                  if ( (data.dirsidh[igline][idim] == 1)
-                       || (data.dirsidh[igline][idim] == -1) )
+                  if ( (data->dirsidh[igline][idim] == 1)
+                       || (data->dirsidh[igline][idim] == -1) )
                   {
                     /* add coordinate components */
                     gpc[idim] = gpc[idim] 
-                              + data.ghlc[gpsubintc[idim]][igp[idim]];
+                              + data->ghlc[gpsubintc[idim]][igp[idim]];
                     /* add weight */
-                    fac = fac * data.ghlw[gpsubintc[idim]][igp[idim]];
+                    fac = fac * data->ghlw[gpsubintc[idim]][igp[idim]];
                     /* dimension reduction vector */
                     linredv[idim] = 1.0;
                   }
@@ -540,7 +540,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
             fac = fac * metr;
             /*----------------------------------------------------------*/
             /* add surface load contribution ==> eload modified */
-            th3_load_line(ele, nelenod, &(gline[igline]), shape, fac, eload);
+            th3_load_line(ele, nelenod, gline[igline], shape, fac, eload);
           }  /* end of for */
         }  /* end of for */
       }  /* end of for */
@@ -593,9 +593,9 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
 */
 void th3_load_vol(ELEMENT *ele,
                   INT nelenod,
-                  DOUBLE *shape,
+                  DOUBLE shape[MAXNOD_THERM3],
                   DOUBLE fac,
-                  DOUBLE **eload)
+                  DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
   DOUBLE heatsource[NUMDOF_THERM3];
   INT idof, inode;  /* loopers (i = loaddirection x or y)(j=node) */
@@ -668,9 +668,9 @@ void th3_load_vol(ELEMENT *ele,
 void th3_load_surf(ELEMENT *ele,
                    INT nelenod,
                    GSURF *gsurf,
-                   DOUBLE *shape,
+                   DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE fac,
-                   DOUBLE **eload)
+                   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
   INT onoff[NUMDOF_THERM3];
   DOUBLE heatflux[NUMDOF_THERM3];
@@ -689,7 +689,7 @@ void th3_load_surf(ELEMENT *ele,
     case pres_domain_load:
       for (idof=0; idof<NUMDOF_THERM3; idof++)
       {
-        onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof]
+        onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
         heatflux[idof] = gsurf->neum->neum_val.a.dv[idof];
       }
       /* add load vector component to element load vector */
@@ -700,7 +700,7 @@ void th3_load_surf(ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * heatsource[idof] * fac;
+            eload[idof][inode] += shape[inode] * heatflux[idof] * fac;
           }
         }
       }
@@ -749,9 +749,9 @@ void th3_load_surf(ELEMENT *ele,
 void th3_load_line(ELEMENT *ele,
                    INT nelenod,
                    GLINE *gline,
-                   DOUBLE *shape,
+                   DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE fac,
-                   DOUBLE **eload)
+                   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
   INT onoff[NUMDOF_THERM3];
   DOUBLE heatflux[NUMDOF_THERM3];
@@ -770,7 +770,7 @@ void th3_load_line(ELEMENT *ele,
     case pres_domain_load:
       for (idof=0; idof<NUMDOF_THERM3; idof++)
       {
-        onoff[idof] = gline->neum->neum_onoff.a.iv[idof]
+        onoff[idof] = gline->neum->neum_onoff.a.iv[idof];
         heatflux[idof] = gline->neum->neum_val.a.dv[idof];
       }
       /* add load vector component to element load vector */
@@ -781,7 +781,7 @@ void th3_load_line(ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * heatsource[idof] * fac;
+            eload[idof][inode] += shape[inode] * heatflux[idof] * fac;
           }
         }
       }

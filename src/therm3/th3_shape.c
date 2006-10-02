@@ -49,8 +49,8 @@ void th3_shape_deriv(DIS_TYP     typ,
                      DOUBLE      s,
                      DOUBLE      t,
                      INT         option,
-                     DOUBLE     *shape,
-                     DOUBLE    **deriv)
+                     DOUBLE      shape[MAXNOD_THERM3],
+                     DOUBLE      deriv[MAXNOD_THERM3][NDIM_THERM3])
 {
   DOUBLE rp, sp, tp, rm, sm, tm, rrm, ssm, ttm;
   DOUBLE u;

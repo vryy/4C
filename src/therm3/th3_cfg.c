@@ -98,7 +98,6 @@ void th3_cfg_chkdef()
 */
 void th3_cfg_init(TH3_DATA *data)
 {
-  INT i;
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -191,7 +190,7 @@ void th3_cfg_init(TH3_DATA *data)
     /* node 11 */
     data->nodhrst[11][0] = -1.0;
     data->nodhrst[11][1] =  0.0;
-    data->nodhrst[11][2] =  1.0;
+    data->nodhrst[11][2] = -1.0;
     /* node 16 */
     data->nodhrst[16][0] =  0.0;
     data->nodhrst[16][1] = -1.0;

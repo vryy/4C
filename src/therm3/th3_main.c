@@ -54,19 +54,6 @@ extern struct _MATERIAL *mat;
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief global variable th3_data
-
-Contains Gauss point coordinates and weights
-
-\author bborn
-\date 09/06
-*/
-/*----------------------------------------------------------------------*/
-static THERM3_DATA th3_data;
-
-
-/*----------------------------------------------------------------------*/
-/*!
 \brief Main THERM3 routine
 
 This routine addresses a manifold of THERM3 routines/functions. These
@@ -87,6 +74,8 @@ void therm3(PARTITION *actpart,
 	    CONTAINER *container)   /* contains variables defined 
 				     * in container.h */
 {
+
+  static TH3_DATA th3_data; /* global variable th3_data */
 
   MATERIAL *actmat;
 
@@ -111,8 +100,8 @@ void therm3(PARTITION *actpart,
     case calc_therm_init:
       /* these are only called once! */
       th3_cfg_chkdef();
-      th2_intg_init(&(th3_data));
-      th2_cfg_init(&(th3_data));
+      th3_intg_init(&(th3_data));
+      th3_cfg_init(&(th3_data));
 /*       th2_lin_init(); */
 /*       th2_load_init(); */
 /*       th2_hflux_init(actpart); */
@@ -124,12 +113,12 @@ void therm3(PARTITION *actpart,
       break;
     case calc_therm_tang:
       actmat = &(mat[ele->mat-1]);
-/*       th2_lin_stiff(ele, &(th2_data), actmat, estif_global, NULL, NULL); */
+      th3_lin_tang(ele, &(th3_data), actmat, estif_global, NULL, NULL);
       break;
     case calc_therm_heatload:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
-/*       th2_load_heat(ele, &(th2_data), intforce, imyrank); */
+       th3_load_heat(ele, &(th3_data), imyrank, intforce);
       break;
     case calc_therm_heatflux:
       imyrank = actintra->intra_rank;

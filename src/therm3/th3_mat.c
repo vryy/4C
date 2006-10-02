@@ -43,10 +43,10 @@ Maintainer: Burkhard Bornemann
 */
 void th3_mat_sel(ELEMENT *ele,
                  MATERIAL *mat,
-                 DOUBLE **bop,
+                 DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                  INT ip,
-                 DOUBLE *heatflux,
-                 DOUBLE **cmat)
+                 DOUBLE heatflux[NUMHFLX_THERM3],
+                 DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3])
 {
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

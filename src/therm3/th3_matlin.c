@@ -29,11 +29,11 @@
 \author bborn
 \date 09/06
 */
-void th2_matlin_iso(DOUBLE con,
+void th3_matlin_iso(DOUBLE con,
                     ELEMENT *ele,
-                    DOUBLE **bop,
-                    DOUBLE *heatflux,
-                    DOUBLE **cmat)
+                    DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                    DOUBLE heatflux[NUMHFLX_THERM3],
+                    DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3])
 {
   DOUBLE tmgr[NUMTMGR_THERM3];  /* temperature gradient vector */
   INT itmgr; /* temperature gradient counter */
@@ -104,11 +104,12 @@ void th2_matlin_iso(DOUBLE con,
 */
 void th3_matlin_gen(DOUBLE **con,
                     ELEMENT *ele,
-                    DOUBLE **bop,
-                    DOUBLE *heatflux,
-                    DOUBLE **cmat)
+                    DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                    DOUBLE heatflux[NUMHFLX_THERM3],
+                    DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3])
 {
   const INT heatminus = -1.0;  /* minus sign occuring in heat conduction */
+  DOUBLE tmgr[NUMTMGR_THERM3];
   INT itmgr; /* temperature gradient counter */
   DOUBLE tmgrsum;  /* temp. grad. dummy sum */
   INT ihflx;  /* heat flux component counter */
@@ -117,7 +118,7 @@ void th3_matlin_gen(DOUBLE **con,
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("th2_matlin_gen");
+  dstrc_enter("th3_matlin_gen");
 #endif
 
   /*--------------------------------------------------------------------*/

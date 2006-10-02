@@ -220,9 +220,9 @@ typedef struct _THERM3
 /*----------------------------------------------------------------------*/
 /* file th3_bop.c */
 void th3_bop(INT        enod,
-             DOUBLE   **deriv,
-             DOUBLE   **xji,
-             DOUBLE   **bop);
+             DOUBLE     deriv[MAXNOD_THERM3][NDIM_THERM3],
+             DOUBLE     xji[NDIM_THERM3][NDIM_THERM3],
+             DOUBLE     bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3]);
 
 /*---------------------------------------------------------------------*/
 /* file th3_cfg.c */
@@ -256,7 +256,6 @@ void th3_cfg_noderst(ELEMENT *ele,
 /* file th3_inp.c */
 void th3_inp(ELEMENT *ele);
 
-
 /*----------------------------------------------------------------------*/
 /* file th3_intg.c */
 void th3_intg_eleinp(ELEMENT *actele,
@@ -265,46 +264,68 @@ void th3_intg_init(TH3_DATA *data);
 
 /*----------------------------------------------------------------------*/
 /* file th3_metr.c */
-void th3_jaco(ELEMENT *ele,
-              INT      enod,
-              DOUBLE **deriv,
-              INT      flag,
-              DOUBLE **xjm,
-              DOUBLE  *det,
-              DOUBLE **xji);
+void th3_metr_jaco(ELEMENT *ele,
+                   INT      enod,
+                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3],
+                   INT      flag,
+                   DOUBLE   xjm[NDIM_THERM3][NDIM_THERM3],
+                   DOUBLE  *det,
+                   DOUBLE   xji[NDIM_THERM3][NDIM_THERM3]);
+void th3_metr_surf(ELEMENT *ele, 
+                   INT      nelenod, 
+                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3], 
+                   DOUBLE   sidredm[DIMSID_THERM3][NDIM_THERM3],
+                   DOUBLE  *metr);
+void th3_metr_line(ELEMENT *ele, 
+                   INT      nelenod, 
+                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3], 
+                   DOUBLE   linredv[NDIM_THERM3],
+                   DOUBLE  *metr);
 
 /*----------------------------------------------------------------------*/
 /* file th2_lin.c */
-void th3_lin_tang(ELEMENT *ele,
+void th3_lin_tang(ELEMENT  *ele,
                   TH3_DATA *data,
                   MATERIAL *mat,
-                  ARRAY *estif_global,
-                  ARRAY *emass_global,
-                  DOUBLE *force);
+                  ARRAY    *estif_global,
+                  ARRAY    *emass_global,
+                  DOUBLE   *force);
 void th3_lin_bcb(INT       neledof,
-                 DOUBLE  **bop,
-                 DOUBLE  **cmat,
+                 DOUBLE    bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                 DOUBLE    cmat[NUMHFLX_THERM3][NUMTMGR_THERM3],
                  DOUBLE    fac,
                  DOUBLE  **tmat);
 void th3_lin_fint(INT      neledof,
-                  DOUBLE **bop,
-                  DOUBLE  *hflux,
+                  DOUBLE   bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                  DOUBLE   hflux[NUMHFLX_THERM3],
                   DOUBLE   fac,
                   DOUBLE  *intfor);
 
 /*----------------------------------------------------------------------*/
-/* file th2_load.c */
-/* void th2_load_init(); */
-/* void th2_load_final(); */
-/* void th2_load_heat(ELEMENT *ele, */
-/*                    THERM2_DATA *data, */
-/*                    DOUBLE *loadvec, */
-/*                    INT imyrank); */
-/* void th2_load_heatsurf(ELEMENT *ele, */
-/*                        DOUBLE **eload, */
-/*                        DOUBLE *funct, */
-/*                        DOUBLE fac, */
-/*                        INT iel); */
+/* file th3_load.c */
+void th3_load_heat(ELEMENT *ele,  /* actual element */
+                   TH3_DATA *data,
+                   INT imyrank,
+                   DOUBLE *loadvec); /* global element load vector fext */
+void th3_load_vol(ELEMENT *ele,
+                  INT nelenod,
+                  DOUBLE shape[MAXNOD_THERM3],
+                  DOUBLE fac,
+                  DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3]);
+void th3_load_surf(ELEMENT *ele,
+                   INT nelenod,
+                   GSURF *gsurf,
+                   DOUBLE shape[MAXNOD_THERM3],
+                   DOUBLE fac,
+                   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3]);
+void th3_load_line(ELEMENT *ele,
+                   INT nelenod,
+                   GLINE *gline,
+                   DOUBLE shape[MAXNOD_THERM3],
+                   DOUBLE fac,
+                   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3]);
+
+
 
 /*----------------------------------------------------------------------*/
 /* file th3_main.c */
@@ -322,23 +343,23 @@ void therm3(PARTITION *actpart,
 /* file th3_mat.c */
 void th3_mat_sel(ELEMENT *ele,
                  MATERIAL *mat,
-                 DOUBLE **bop,
+                 DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                  INT ip,
-                 DOUBLE *heatflux,
-                 DOUBLE **cmat);
+                 DOUBLE heatflux[NUMHFLX_THERM3],
+                 DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3]);
 
 /*----------------------------------------------------------------------*/
 /* file th3_matlin.c */
-void th2_matlin_iso(DOUBLE con,
+void th3_matlin_iso(DOUBLE con,
                     ELEMENT *ele,
-                    DOUBLE **bop,
-                    DOUBLE *heatflux,
-                    DOUBLE **cmat);
+                    DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                    DOUBLE heatflux[NUMHFLX_THERM3],
+                    DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3]);
 void th3_matlin_gen(DOUBLE **con,
                     ELEMENT *ele,
-                    DOUBLE **bop,
-                    DOUBLE *heatflux,
-                    DOUBLE **cmat);
+                    DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                    DOUBLE heatflux[NUMHFLX_THERM3],
+                    DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3]);
 
 /*----------------------------------------------------------------------*/
 /* file th3_shape.c */
@@ -347,8 +368,8 @@ void th3_shape_deriv(DIS_TYP     typ,
                      DOUBLE      s,
                      DOUBLE      t,
                      INT         option,
-                     DOUBLE     *shape,
-                     DOUBLE    **deriv);
+                     DOUBLE      shape[MAXNOD_THERM3],
+                     DOUBLE      deriv[MAXNOD_THERM3][NDIM_THERM3]);
 
 /*----------------------------------------------------------------------*/
 /* file th2_temper.c */

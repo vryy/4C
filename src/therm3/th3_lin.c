@@ -67,6 +67,7 @@ void th3_lin_tang(ELEMENT *ele,
   /* general variables/constants */
   INT nelenod;  /* numnp of this element */
   INT neledof;  /* total number of element DOFs */
+  DIS_TYP distyp;  /* type of discretisation */
 
   /* integration */
   INT igpr, igps, igpt;  /* Gauss point indices */
@@ -108,10 +109,11 @@ void th3_lin_tang(ELEMENT *ele,
   /* element properties */
   nelenod = ele->numnp;
   neledof = NUMDOF_THERM3 * nelenod;
+  distyp = ele->distyp;
 
   /*--------------------------------------------------------------------*/
   /* Gauss integraton data */
-  switch (ele->distyp)
+  switch (distyp)
   {
       /* hexahedra elements */
       case hex8: case hex20: case hex27:
@@ -132,8 +134,8 @@ void th3_lin_tang(ELEMENT *ele,
           gpintct = ele->e.th3->gpintc[0];
           break;
       default:
-          dserror("ele->distyp unknown!");
-  }  /* end of switch(ele->distyp) */
+          dserror("distyp unknown!");
+  }  /* end of switch(distyp) */
 
   /*--------------------------------------------------------------------*/
   /* integration loops */
@@ -145,30 +147,30 @@ void th3_lin_tang(ELEMENT *ele,
       {
         /*--------------------------------------------------------------*/
         /* obtain current Gauss coordinates and weights */
-        switch (ele->distyp)
+        switch (distyp)
         {
             /* hexahedra */
-            case hex10: case hex20: case hex27:
-              gpcr = data.ghlc[gpintcr][igpr];  /* r-coordinate */
-              gpcs = data.ghlc[gpintcs][igps];  /* s-coordinate */
-              gpct = data.ghlc[gpintct][igpt];  /* t-coordinate */
-              fac = data.ghlw[gpintcr][igpr]  /* weight */
-                  * data.ghlw[gpintcs][igps]
-                  * data.ghlw[gpintct][igpt];
+            case hex8: case hex20: case hex27:
+              gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
+              gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
+              gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
+              fac = data->ghlw[gpintcr][igpr]  /* weight */
+                  * data->ghlw[gpintcs][igps]
+                  * data->ghlw[gpintct][igpt];
               break;
             /* tetrahedra */
             case tet4: case tet10:
-              gpcr = data.gtdcr[gpintct][igpt];  /* r-coordinate */
-              gpcs = data.gtdcs[gpintct][igpt];  /* s-coordinate */
-              gpct = data.gtdct[gpintct][igpt];  /* t-coordinate */
-              fac = data.gtdw[gpintct][igpt];  /* weight */
+              gpcr = data->gtdcr[gpintct][igpt];  /* r-coordinate */
+              gpcs = data->gtdcs[gpintct][igpt];  /* s-coordinate */
+              gpct = data->gtdct[gpintct][igpt];  /* t-coordinate */
+              fac = data->gtdw[gpintct][igpt];  /* weight */
               break;
             default:
-              dserror("ele->distyp unknown!");
-        }  /* end of switch (ele->distyp) */
+              dserror("distyp unknown!");
+        }  /* end of switch (distyp) */
         /*--------------------------------------------------------------*/
         /* shape functions and their derivatives */
-        th3_shape_deriv(ele->distyp, gpcr, gpcs, gpct, 1, shape, deriv);
+        th3_shape_deriv(distyp, gpcr, gpcs, gpct, 1, shape, deriv);
         /*--------------------------------------------------------------*/
         /* compute Jacobian matrix, its determinant and inverse */
         th3_metr_jaco(ele, nelenod, deriv, 1, xjm, &det, xji);
@@ -180,8 +182,8 @@ void th3_lin_tang(ELEMENT *ele,
         th3_bop(nelenod, deriv, xji, bop);
         /*--------------------------------------------------------------*/
         /* call material law */
-        ip = (igpr+1) * (igps+1) * (igpt+1)  /* total Gauss point index */
-        th3_mat_sel(ele, mat, bop, ip, hflux, cmat);
+        ip = (igpr+1) * (igps+1) * (igpt+1);  /* total Gauss point index */
+	th3_mat_sel(ele, mat, bop, ip, hflux, cmat);
         /*--------------------------------------------------------------*/
         /* element tangent matrix estif add contribution at Gauss point
          * (like element stiffness matrix) */
@@ -189,9 +191,9 @@ void th3_lin_tang(ELEMENT *ele,
         /*--------------------------------------------------------------*/
         /* element nodal heat flux from integration of heat fluxes
          * (like element internal forces) */
-        if (force == 1)
+        if (force != NULL)
         {
-          th3_lin_fint(hflux, fac, bop, neledof, force);
+          th3_lin_fint(neledof, bop, hflux, fac, force);
         }
       }  /* end of for */
     }  /* end of for */
@@ -226,13 +228,13 @@ void th3_lin_tang(ELEMENT *ele,
 \author bborn
 \date 03/06
 */
-void th2_lin_bcb(INT       neledof,
-                 DOUBLE  **bop,
-                 DOUBLE  **cmat,
+void th3_lin_bcb(INT       neledof,
+                 DOUBLE    bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                 DOUBLE    cmat[NUMHFLX_THERM3][NUMTMGR_THERM3],
                  DOUBLE    fac,
                  DOUBLE  **tmat)
 {
-  INT i, j, k, l, m;  /* counters */
+  INT i, j, k, l;  /* counters */
   DOUBLE bopcmati, tkl;  /* intermediate sums */
   DOUBLE bopcmat[NUMTMGR_THERM3];  /* bopcmat_ki = bop_kj * cmat_ji */
 
@@ -294,8 +296,8 @@ of the current Gauss point
 \date 03/06
 */
 void th3_lin_fint(INT      neledof,
-                  DOUBLE **bop,
-                  DOUBLE  *hflux,
+                  DOUBLE   bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                  DOUBLE   hflux[NUMHFLX_THERM3],
                   DOUBLE   fac,
                   DOUBLE  *intfor)
 {
@@ -313,7 +315,7 @@ void th3_lin_fint(INT      neledof,
   for (k=0; k<neledof; k++)
   {
     intfork = 0.0;
-    for (i=0, i<NUMHFLX_THERM3; i++)
+    for (i=0; i<NUMHFLX_THERM3; i++)
     {
       intfork = intfork + bop[i][k]*hflux[i]*fac;
     }

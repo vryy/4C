@@ -39,15 +39,14 @@ Maintainer: Burkhard Bornemann
 \date 09/06
 */
 void th3_bop(INT        enod,
-             DOUBLE   **deriv,
-             DOUBLE   **xji,
-             DOUBLE   **bop)
+             DOUBLE     deriv[MAXNOD_THERM3][NDIM_THERM3],
+             DOUBLE     xji[NDIM_THERM3][NDIM_THERM3],
+             DOUBLE     bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3])
 {
   /*--------------------------------------------------------------------*/
   INT i, j;  /* dimension indices */
   INT inod;  /* current node index */
   DOUBLE bopcomp;  /* temporary B-operator component */
-  DOUBLE xji[2][2];
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

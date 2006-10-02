@@ -46,11 +46,11 @@ Maintainer: Burkhard Bornemann
 */
 void th3_metr_jaco(ELEMENT *ele,
                    INT      enod,
-                   DOUBLE **deriv,
+                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3],
                    INT      flag,
-                   DOUBLE **xjm,
+                   DOUBLE   xjm[NDIM_THERM3][NDIM_THERM3],
                    DOUBLE  *det,
-                   DOUBLE **xji)
+                   DOUBLE   xji[NDIM_THERM3][NDIM_THERM3])
 {
   INT i, j, k;
   DOUBLE nodxyz;
@@ -163,8 +163,8 @@ void th3_metr_jaco(ELEMENT *ele,
 */
 void th3_metr_surf(ELEMENT *ele, 
                    INT nelenod, 
-                   DOUBLE **deriv, 
-                   DOUBLE **sidredm,
+                   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3], 
+                   DOUBLE sidredm[DIMSID_THERM3][NDIM_THERM3],
                    DOUBLE *metr)
 {
   DOUBLE xjm[NDIM_THERM3][NDIM_THERM3];  /* Jacobian matrix */
@@ -279,8 +279,8 @@ void th3_metr_surf(ELEMENT *ele,
 */
 void th3_metr_line(ELEMENT *ele, 
                    INT nelenod, 
-                   DOUBLE **deriv, 
-                   DOUBLE *linredv,
+                   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3], 
+                   DOUBLE linredv[NDIM_THERM3],
                    DOUBLE *metr)
 {
   DOUBLE xjm[NDIM_THERM3][NDIM_THERM3];  /* Jacobian matrix */

@@ -230,15 +230,15 @@ void th3_inp(ELEMENT *ele)
     }
     if (strncmp(buffer,"Ndxyz",5) == 0)
     {
-      ele->e.th3->hfluxtype = th3_hflux_npxyz;
+      ele->e.th3->hfluxtype = th3_hflux_ndxyz;
     }
     if (strncmp(buffer,"Ndrst",5) == 0)
     {
-      ele->e.th3->hfluxtype = th3_hflux_nprst;
+      ele->e.th3->hfluxtype = th3_hflux_ndrst;
     }
     if (strncmp(buffer,"Nd123",5) == 0)
     {
-      ele->e.th3->hfluxtype = th3_hflux_np123;
+      ele->e.th3->hfluxtype = th3_hflux_nd123;
     }
   }
 
