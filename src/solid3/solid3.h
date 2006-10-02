@@ -56,9 +56,9 @@ Maintainer: Moritz Frenzel
 #define NUMDOF_SOLID3    (3)    /* number of structural DOFs at each node :
                                  * displacement ux uy uz */
 #define NUMSTRN_SOLID3   (6)    /* number of strains:
-				 * u_x,u_y,u_z,u_xy,u_xz,u_yz*/
+				 * u_x,u_y,u_z,u_xy,u_yz,u_xz*/
 #define NUMSTSS_SOLID3   (6)    /* number of stresses:
-				 * sxx,syy,szz,txy,txz,tyz */
+				 * sxx,syy,szz,txy,tyz,txz */
 
 #ifndef GLINTC_SOLID3
 #define GLINTC_SOLID3    (6)    /* line domain Gauss integration cases */
@@ -214,36 +214,18 @@ typedef struct _SOLID3
 /*----------------------------------------------------------------------*/
 /* file so3_bop.c */
 void so3_bop(INT        enod,
-             DOUBLE   **deriv,
-             DOUBLE   **xji,
-             DOUBLE   **bop);
+             DOUBLE     deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+             DOUBLE     xji[NDIM_SOLID3][NDIM_SOLID3],
+             DOUBLE     bop[NDIM_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3]);
 
 /*---------------------------------------------------------------------*/
 /* file so3_cfg.c */
+void so3_cfg_chkdef();
 void so3_cfg_init(SO3_DATA *data);
 void so3_cfg_noderst(ELEMENT *ele,
-                    SO3_DATA *data,
-                    INT inode,
-                    DOUBLE *rst)
-
-/*----------------------------------------------------------------------*/
-/* file th2_hflux.c */
-/* void th2_hflux_init(PARTITION *actpart); */
-/* void th2_hflux_final(PARTITION *actpart); */
-/* void th2_hflux_cal(ELEMENT *ele, */
-/*                    THERM2_DATA *data, */
-/*                    MATERIAL *mat, */
-/*                    INT kstep); */
-/* void th2_hflux_steep(DOUBLE *hflux, */
-/*                      DOUBLE *hfluxmod, */
-/*                      DOUBLE *hfluxang, */
-/*                      DOUBLE *dum); */
-/* void th2_hflux_extrpol(ELEMENT *ele, */
-/*                        THERM2_DATA *data, */
-/*                        INT ngauss, */
-/*                        DOUBLE *hfluxgp, */
-/*                        DOUBLE *rs, */
-/*                        DOUBLE *hfluxnd); */
+                     SO3_DATA *data,
+                     INT inode,
+                     DOUBLE *rst)
 
 /*----------------------------------------------------------------------*/
 /* file so3_inp.c */
@@ -258,13 +240,23 @@ void so3_intg_init(SO3_DATA *data);
 
 /*----------------------------------------------------------------------*/
 /* file so3_metr.c */
-void so3_jaco(ELEMENT *ele,
-              INT      enod,
-              DOUBLE **deriv,
-              INT      flag,
-              DOUBLE **xjm,
-              DOUBLE  *det,
-              DOUBLE **xji);
+void so3_metr_jaco(ELEMENT *ele,
+                   INT      enod,
+                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                   INT      flag,
+                   DOUBLE   xjm[NDIM_SOLID3][NDIM_SOLID3],
+                   DOUBLE  *det,
+                   DOUBLE   xji[NDIM_SOLID3][NDIM_SOLID3]);
+void so3_metr_surf(ELEMENT *ele, 
+                   INT      nelenod, 
+                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
+                   DOUBLE   sidredm[DIMSID_SOLID3][NDIM_SOLID3],
+                   DOUBLE  *metr);
+void so3_metr_line(ELEMENT *ele, 
+                   INT      nelenod, 
+                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
+                   DOUBLE   linredv[NDIM_SOLID3],
+                   DOUBLE  *metr);
 
 /*----------------------------------------------------------------------*/
 /* file so2_stiff.c */
@@ -275,29 +267,39 @@ void so3_lin_stiff(ELEMENT *ele,
                    ARRAY *emass_global,
                    DOUBLE *force);
 void so3_lin_stiff_bcb(INT       neledof,
-                       DOUBLE  **bop,
-                       DOUBLE  **cmat,
+                       DOUBLE    bop[NUMSTRN_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3],
+                       DOUBLE    cmat[NUMSTSS_SOLID3][NUMSTRN_SOLID3],
                        DOUBLE    fac,
                        DOUBLE  **tmat);
 void so3_lin_fint(INT      neledof,
-                        DOUBLE **bop,
-                        DOUBLE  *stress,
+                        DOUBLE   bop[NUMSTRN_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3],
+                        DOUBLE   stress[NUMSTSS_SOLID3],
                         DOUBLE   fac,
                         DOUBLE  *intfor);
 
 /*----------------------------------------------------------------------*/
-/* file th2_load.c */
-/* void th2_load_init(); */
-/* void th2_load_final(); */
-/* void th2_load_heat(ELEMENT *ele, */
-/*                    THERM2_DATA *data, */
-/*                    DOUBLE *loadvec, */
-/*                    INT imyrank); */
-/* void th2_load_heatsurf(ELEMENT *ele, */
-/*                        DOUBLE **eload, */
-/*                        DOUBLE *funct, */
-/*                        DOUBLE fac, */
-/*                        INT iel); */
+/* file th3_load.c */
+void so3_eleload(ELEMENT *ele,  /* actual element */
+                   TH3_DATA *data,
+                   INT imyrank,
+                   DOUBLE *loadvec); /* global element load vector fext */
+void so3_load_vol(ELEMENT *ele,
+                  INT nelenod,
+                  DOUBLE shape[MAXNOD_SOLID3],
+                  DOUBLE fac,
+                  DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3]);
+void so3_load_surf(ELEMENT *ele,
+                   INT nelenod,
+                   GSURF *gsurf,
+                   DOUBLE shape[MAXNOD_SOLID3],
+                   DOUBLE fac,
+                   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3]);
+void so3_load_line(ELEMENT *ele,
+                   INT nelenod,
+                   GLINE *gline,
+                   DOUBLE shape[MAXNOD_SOLID3],
+                   DOUBLE fac,
+                   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_main.c */
@@ -315,23 +317,10 @@ void solid3(PARTITION *actpart,
 /* file so3_mat.c */
 void so3_mat_sel(ELEMENT *ele,
                  MATERIAL *mat,
-                 DOUBLE **bop,
+                 DOUBLE bop[NUMSTRN_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3],
                  INT ip,
-                 DOUBLE *stress,
-                 DOUBLE **cmat);
-
-/*----------------------------------------------------------------------*/
-/* /* file so3_matlin.c */ */
-/* void so2_matlin_iso(DOUBLE con, */
-/*                     ELEMENT *ele, */
-/*                     DOUBLE **bop, */
-/*                     DOUBLE *heatflux, */
-/*                     DOUBLE **cmat); */
-/* void so3_matlin_gen(DOUBLE **con, */
-/*                     ELEMENT *ele, */
-/*                     DOUBLE **bop, */
-/*                     DOUBLE *heatflux, */
-/*                     DOUBLE **cmat); */
+                 DOUBLE stress[NUMSTSS_SOLID3],
+                 DOUBLE cmat[NUMSTSS_SOLID3][NUMSTRN_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_shape.c */
@@ -340,17 +329,8 @@ void so3_shape_deriv(DIS_TYP     typ,
                      DOUBLE      s,
                      DOUBLE      t,
                      INT         option,
-                     DOUBLE     *shape,
-                     DOUBLE    **deriv);
-
-/*----------------------------------------------------------------------*/
-/* file th2_temper.c */
-/* void th2_temper_init(); */
-/* void th2_temper_final(); */
-/* void th2_temper_cal(ELEMENT *ele, */
-/*                      DOUBLE r, */
-/*                      DOUBLE s, */
-/*                      DOUBLE *tem); */
+                     DOUBLE      shape[MAXNOD_SOLID3],
+                     DOUBLE      deriv[MAXNOD_SOLID3][NDIM_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_SOLID3 */
