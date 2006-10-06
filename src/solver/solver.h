@@ -367,6 +367,8 @@ typedef struct _AZVAR
   INT                     blockdiag;
 
 #ifdef TRILINOS_PACKAGE
+  INT                     azscal;             /* 0 = none, 1 = sym, 2 = infnorm */
+  
   int                     mlprint;            /* ml print level 0 - 10 */
   int                     mlcsize;            /* size where to stop coarsening */
   int                     mlmaxlevel;         /* max no. of grids */

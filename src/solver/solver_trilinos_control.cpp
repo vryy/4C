@@ -378,9 +378,19 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
   //========================================================== solution phase
   else if (option==0)
   {
-    // use scaled linear system (be careful with ML though, try without as well)
-    bool scaling_infnorm = true;
+    // scale linear system (be careful with ML though, try without as well)
+    bool scaling_infnorm = false;
     bool scaling_symdiag = false;
+    if (azvar->azscal==1)
+    {
+      scaling_infnorm = false;
+      scaling_symdiag = true;
+    }
+    else if (azvar->azscal==2)
+    {
+      scaling_infnorm = true;
+      scaling_symdiag = false;
+    }
     
     // get parameter list
     if (!tri->params) dserror("AztecOO parameters is NULL");
