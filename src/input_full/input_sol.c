@@ -346,6 +346,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("AZTOL"  ,&(azvar->aztol)    ,&ierr);
       frdouble("AZOMEGA",&(azvar->azomega)  ,&ierr);
 #ifdef TRILINOS_PACKAGE
+      frchar("AZSCAL"    ,buffer,&ierr);
+      if (ierr==1)
+      {
+        if (strncmp("none"   ,buffer,4)==0) azvar->azscal = 0;
+        if (strncmp("sym"    ,buffer,3)==0) azvar->azscal = 1;
+        if (strncmp("infnorm",buffer,7)==0) azvar->azscal = 2;
+      }
       /* parameters of ML preconditioner */
       frint("ML_PRINT"           ,&(azvar->mlprint),&ierr);
       frint("ML_MAXCOARSESIZE"   ,&(azvar->mlcsize),&ierr);
