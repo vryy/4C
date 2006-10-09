@@ -779,7 +779,8 @@ void close_trilinos_matrix(struct _TRILINOSMATRIX *tri)
 /*----------------------------------------------------------------------*
   |                                                           m.gee 9/06|
   | add to = to + from*factor                                           |
-  | do not FillComplete to upon exit                                    |
+  | do not FillComplete to upon exit if not Filled before               |
+  | do call FillComplete to upon exit if Filled before                  |
  *----------------------------------------------------------------------*/
 void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor)
 
