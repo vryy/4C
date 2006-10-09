@@ -1,15 +1,15 @@
-/*!---------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file
 \brief
 
 <pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
 </pre>
 
----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 
 #ifndef STANDARDTYPES_H
 #define STANDARDTYPES_H
