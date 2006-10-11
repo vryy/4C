@@ -218,7 +218,7 @@ genprob.numls=-1;
 genprob.numtf=-1;  /* thermal fields */
 #endif
 
-if (frfind("-PROBLEM SIZE")==0) 
+if (frfind("-PROBLEM SIZE")==0)
 {
   dserror("frfind: PROBLEM SIZE not in input file");
 }
@@ -306,7 +306,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("GRADERW",&(genprob.graderw),&ierr);
 
   frint("MULTISC_STRUCT",&(genprob.multisc_struct),&ierr);
-  
+
   frchar("ALGEBRA",buffer,   &ierr);
   if (ierr)
   {
@@ -315,9 +315,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifndef TRILINOS_PACKAGE
     if (genprob.usetrilinosalgebra) dserror("ALGEBRA Trilinos in input file requires -DTRILINOS_PACKAGE");
 #endif
-    
+
   }
-  
+
   frread();
 }
 
@@ -870,12 +870,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("DYNAMICTYP",buffer,&ierr);
    if (ierr==1)
    {
-      if (frwordcmp(buffer,"Centr_Diff")==0) 
+      if (frwordcmp(buffer,"Centr_Diff")==0)
       {
         sdyn->Typ = centr_diff;
       }
       else if (frwordcmp(buffer,"Gen_Alfa")==0)
-      { 
+      {
         sdyn->Typ = gen_alfa;
       }
       else if (frwordcmp(buffer,"Gen_EMM")==0)
@@ -1044,11 +1044,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (frwordcmp(buffer,"Projection_Method")==0)
-         fdyn->dyntyp=dyntyp_projection_method;
+	fdyn->dyntyp=dyntyp_pm_discont;
+      else if (frwordcmp(buffer,"PM_Laplace")==0)
+	fdyn->dyntyp=dyntyp_pm_cont_laplace;
       else if (frwordcmp(buffer,"Nlin_Time_Int")==0)
-         fdyn->dyntyp=dyntyp_nln_time_int;
+	fdyn->dyntyp=dyntyp_nln_time_int;
       else
-         dserror("DYNAMICTYP unknown");
+	dserror("DYNAMICTYP unknown");
    }
    frchar("TIMEINTEGR"  ,buffer    ,&ierr);
    if (ierr==1)

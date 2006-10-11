@@ -66,6 +66,94 @@ static void add_tri_sendbuff(
 
 
 using namespace std;
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief construct the map of an Epetra_CrsMatrix from known update vector
+
+  \param actintra       (i)  the intra-communicator we do not need
+  \param trimatrix    (i/o)  the matrix object to set up
+
+  \author kuettler
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void construct_trilinos_matrix(
+                            INTRA           *actintra,
+                            TRILINOSMATRIX  *trimatrix
+                         )
+{
+  DSTraceHelper dst("construct_trilinos_matrix");
+
+  // create an epetra comm
+#ifdef PARALLEL
+  Epetra_MpiComm*    comm = new Epetra_MpiComm(actintra->MPI_INTRA_COMM);
+#else
+  Epetra_SerialComm* comm = new Epetra_SerialComm();
+#endif
+  trimatrix->epetracomm = (void*)comm;
+
+  // create an Epetra_Map
+  int nglobal = trimatrix->numeq_total;
+  int nlocal  = trimatrix->numeq;
+  int* update = trimatrix->update.a.iv;
+  Epetra_Map* map = new Epetra_Map(nglobal,nlocal,update,0,*comm);
+  trimatrix->rowmap = (void*)map;
+
+  // Allocate the Epetra_CrsMatrix
+  Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*map,81,false);
+  trimatrix->matrix = (void*)matrix;
+
+  // set flags indicating status of matrix
+  trimatrix->is_init=1;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief construct the map of a diagonal Epetra_CrsMatrix from known update vector
+
+  \param actintra       (i)  the intra-communicator we do not need
+  \param trimatrix    (i/o)  the matrix object to set up
+
+  \author kuettler
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void construct_trilinos_diagonal_matrix(INTRA *actintra,
+                                        TRILINOSMATRIX *trimatrix)
+{
+  DSTraceHelper dst("construct_trilinos_diagonal_matrix");
+
+  // create an epetra comm
+#ifdef PARALLEL
+  Epetra_MpiComm*    comm = new Epetra_MpiComm(actintra->MPI_INTRA_COMM);
+#else
+  Epetra_SerialComm* comm = new Epetra_SerialComm();
+#endif
+  trimatrix->epetracomm = (void*)comm;
+
+  // create an Epetra_Map
+  int nglobal = trimatrix->numeq_total;
+  int nlocal  = trimatrix->numeq;
+  int* update = trimatrix->update.a.iv;
+  Epetra_Map* map = new Epetra_Map(nglobal,nlocal,update,0,*comm);
+  trimatrix->rowmap = (void*)map;
+
+  // Allocate the Epetra_CrsMatrix
+  Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*map,1,true);
+  trimatrix->matrix = (void*)matrix;
+
+  // set flags indicating status of matrix
+  trimatrix->is_init=1;
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
   |  calculate the map of an Epetra_CrsMatrix from a discretization     |
   |                                                        m.gee 9/06   |
@@ -79,9 +167,7 @@ void init_trilinos_matrix(
                             int              disnum
                          )
 {
-#ifdef DEBUG
-  dstrc_enter("init_trilinos_matrix");
-#endif
+  DSTraceHelper dst("init_trilinos_matrix");
 
   // global number of dofs
   trimatrix->numeq_total = actfield->dis[disnum].numeq;
@@ -92,32 +178,9 @@ void init_trilinos_matrix(
   amdef("update",&(trimatrix->update),trimatrix->numeq,1,"IV");
   amzero(&(trimatrix->update));
   make_update(actfield,actpart,actsolv,actintra,trimatrix,disnum);
-  
-  // create an epetra comm
-#ifdef PARALLEL
-  Epetra_MpiComm*    comm = new Epetra_MpiComm(actintra->MPI_INTRA_COMM);  
-#else
-  Epetra_SerialComm* comm = new Epetra_SerialComm();
-#endif
-  trimatrix->epetracomm = (void*)comm;
-  
-  // create an Epetra_Map
-  int nglobal = trimatrix->numeq_total;
-  int nlocal  = trimatrix->numeq;
-  int* update = trimatrix->update.a.iv;
-  Epetra_Map* map = new Epetra_Map(nglobal,nlocal,update,0,*comm);
-  trimatrix->rowmap = (void*)map;
-  
-  // Allocate the Epetra_CrsMatrix
-  Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*map,81,false);
-  trimatrix->matrix = (void*)matrix;
-  
-  // set flags indicating status of matrix
-  trimatrix->is_init=1;
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
+  construct_trilinos_matrix(actintra,trimatrix);
+
   return;
 }
 
@@ -144,9 +207,7 @@ void make_update(
   NODE     *actnode;
   ARRAY     coupledofs;
 
-#ifdef DEBUG
-  dstrc_enter("make_update");
-#endif
+  DSTraceHelper dst("make_update");
 
   /*----------------------------------------------------------------------*/
   imyrank = actintra->intra_rank;
@@ -221,10 +282,6 @@ void make_update(
     amdel(&coupledofs);
   /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-
   return;
 } /* end of make_update */
 
@@ -234,15 +291,13 @@ void make_update(
  *----------------------------------------------------------------------*/
 void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to)
 {
-#ifdef DEBUG
-  dstrc_enter("trilinos_cp_matrixmask");
-#endif
+  DSTraceHelper dst("trilinos_cp_matrixmask");
 
   if (!(from->epetracomm)  || !(from->rowmap) || !(from->matrix))
     dserror("TRILINOSMATRIX from not properly initialized");
 
   am_alloc_copy(&(from->update),&(to->update));
-  
+
   // Do Epetra_Comm
 #ifdef PARALLEL
   Epetra_MpiComm*    comm = (Epetra_MpiComm*)from->epetracomm;
@@ -252,7 +307,7 @@ void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to)
   Epetra_SerialComm* newcomm = new Epetra_SerialComm(*comm);
 #endif
   to->epetracomm = (void*)newcomm;
-  
+
   // Do Epetra_Map
   int nglobal = from->numeq_total;
   int nlocal  = from->numeq;
@@ -263,15 +318,11 @@ void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to)
   // Do Epetra_CrsMatrix
   Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*rowmap,81,false);
   to->matrix = (void*)matrix;
-  
+
   // do dimensions and flags
   to->is_init     = 1;
   to->numeq_total = from->numeq_total;
   to->numeq       = from->numeq;
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 
   return;
 } /* end of trilinos_cp_matrixmask */
@@ -282,9 +333,7 @@ void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to)
  *----------------------------------------------------------------------*/
 void trilinos_zero_matrix(TRILINOSMATRIX *tri)
 {
-#ifdef DEBUG
-  dstrc_enter("trilinos_zero_matrix");
-#endif
+  DSTraceHelper dst("trilinos_zero_matrix");
 
   if (!(tri->epetracomm)  || !(tri->rowmap) || !(tri->matrix))
     dserror("TRILINOSMATRIX tri not properly initialized");
@@ -295,17 +344,17 @@ void trilinos_zero_matrix(TRILINOSMATRIX *tri)
     Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)(tri->matrix);
     delete matrix;
   }
-  
+
   // get the Epetra_Map
   Epetra_Map *rowmap = (Epetra_Map*)(tri->rowmap);
 
   // Do Epetra_CrsMatrix
   Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*rowmap,81,false);
   tri->matrix = (void*)matrix;
-  
+
   // do flag
   tri->is_factored = 0;
-  
+
   // See if matrix was used with spooles
 #ifdef SPOOLES_PACKAGE
   if (tri->sysarray_typ)
@@ -331,20 +380,47 @@ void trilinos_zero_matrix(TRILINOSMATRIX *tri)
       IVL_free(spo->symbfacIVL);
     }
   }
-#endif  
-
-#ifdef DEBUG
-  dstrc_exit();
 #endif
 
   return;
 } /* end of trilinos_zero_matrix */
 
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief add one value to a trilinos matrix
+
+  The matrix must not be completed.
+
+  \param tri  (i) matrix
+  \param v    (i) value to add
+  \param row  (i) global row number
+  \param col  (i) global col number
+
+  \author kuettler
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void add_trilinos_value(struct _TRILINOSMATRIX *tri, DOUBLE v, INT row, INT col)
+{
+  DSTraceHelper dst("add_trilinos_value");
+
+  Epetra_CrsMatrix* mat = (Epetra_CrsMatrix*)tri->matrix;
+  if (mat->Filled())
+    dserror("Epetra_CrsMatrix::FillComplete() has been called, cannot assemble anymore");
+
+  int err = mat->SumIntoGlobalValues(row,1,&v,&col);
+  if (err)
+    err = mat->InsertGlobalValues(row,1,&v,&col);
+  if (err<0)
+    dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code");
+
+}
+
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief assemble into a Epetra_CrsMatrix matrix 
+  \brief assemble into a Epetra_CrsMatrix matrix
 
   This routine assembles one or two element matrices (elearray1 and
   elearray2) into the global matrices in the Epetra format.
@@ -373,9 +449,7 @@ void  add_trilinos(
     )
 
 {
-#ifdef DEBUG
-  dstrc_enter("add_trilinos");
-#endif
+  DSTraceHelper dst("add_trilinos");
 
   /* set some pointers and variables */
   const int myrank      = actintra->intra_rank;
@@ -498,7 +572,7 @@ void  add_trilinos(
         if (err)
           err = mat1->InsertGlobalValues(ii,1,&(estif[i][j]),&jj);
         if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code");
-        
+
         // do mass matrix if present (all values)
         if (mat2)
         {
@@ -520,9 +594,6 @@ void  add_trilinos(
   }/* end loop over i */
 
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of add_trilinos */
 
@@ -542,10 +613,7 @@ void add_tri_checkcouple(
 
 {
   int         i,k;
-
-#ifdef DEBUG
-  dstrc_enter("add_tri_checkcouple");
-#endif
+  DSTraceHelper dst("add_tri_checkcouple");
 
   /*----------------------------------------------------------------------*/
   for (k=0; k<ncdofs; k++)
@@ -565,9 +633,6 @@ void add_tri_checkcouple(
   }
   /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of add_tri_checkcouple */
 #endif // PARALLEL
@@ -589,9 +654,7 @@ void add_tri_sendbuff(
     )
 
 {
-#ifdef DEBUG
-  dstrc_enter("add_tri_sendbuff");
-#endif
+  DSTraceHelper dst("add_tri_sendbuff");
   /*----------------------------------------------------------------------*/
   int k;
   for (k=0; k<numsend; ++k)
@@ -602,9 +665,6 @@ void add_tri_sendbuff(
   dsend[k][jj]+= estif[i][j];
   /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of add_tri_sendbuff */
 
@@ -620,9 +680,7 @@ void exchange_coup_trilinos(
     )
 
 {
-#ifdef DEBUG
-  dstrc_enter("exchange_coup_trilinos");
-#endif
+  DSTraceHelper dst("exchange_coup_trilinos");
 
 #ifdef PARALLEL
   int            tag;
@@ -689,7 +747,7 @@ void exchange_coup_trilinos(
   if (!tri->matrix) dserror("tri->matrix is NULL");
   Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
   if (matrix->Filled()) dserror("Epetra_CrsMatrix::FilComplete() was called on matrix, cannot assemble anymore");
-  
+
   for (int i=0; i<numrecv; ++i)
   {
     /*--------------------------- use wildcards to receive first to come */
@@ -736,45 +794,71 @@ void exchange_coup_trilinos(
   MPI_Barrier(*ACTCOMM);
 #endif /*---------------------------------------------- end of PARALLEL */
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of exchange_coup_trilinos */
 
 
 
 
- 
+
 /*----------------------------------------------------------------------*
   |  finalize the assembly of a Epetra_CrsMatrix              m.gee 9/06|
  *----------------------------------------------------------------------*/
 void close_trilinos_matrix(struct _TRILINOSMATRIX *tri)
 
 {
-#ifdef DEBUG
-  dstrc_enter("close_trilinos_matrix");
-#endif
+  DSTraceHelper dsh("close_trilinos_matrix");
   /*----------------------------------------------------------------------*/
   if (!tri) return;
   Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
   if (matrix->Filled()) return;
-  
+
   if (!tri->rowmap) dserror("Matrix has no row map");
   Epetra_Map* map = (Epetra_Map*)tri->rowmap;
-  
+
   int err = matrix->FillComplete(*map,*map);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domainmap,rowmap) returned an error");
 
-  err = matrix->OptimizeStorage();  
+  err = matrix->OptimizeStorage();
   if (err) dserror("Epetra_CrsMatrix::OptimizeStorage() returned an error");
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of close_trilinos_matrix */
 
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief call FillComplete with explicit arguments
+
+  Complete a non-square matrix. This requires an explicit
+  DomainMap. This is assumed to be the RowMap of another matrix. The
+  RowMap of the matrix to be closed is assumed to be the right
+  one. Thus one additional matrix has to be given.
+
+  \param A    (i/o) matrix to be completed
+  \param cmat   (i) matrix that brings additional rowmap
+
+  \author u.kue
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void close_nonquad_trilinos_matrix(TRILINOSMATRIX *A, TRILINOSMATRIX *cmat)
+{
+  DSTraceHelper dsh("close_nonquad_trilinos_matrix");
+
+  Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
+  if (!Amat) dserror("trilinos matrix not set");
+  if (Amat->Filled()) return;
+
+  Epetra_CrsMatrix* colmat = (Epetra_CrsMatrix*)cmat->matrix;
+  if (!colmat) dserror("trilinos matrix not set");
+
+  int err = Amat->FillComplete(colmat->RowMap(),Amat->RowMap());
+  if (err) dserror("Epetra_CrsMatrix::FillComplete(domainmap,rowmap) returned an error");
+
+  err = Amat->OptimizeStorage();
+  if (err) dserror("Epetra_CrsMatrix::OptimizeStorage() returned an error");
+}
 
 /*----------------------------------------------------------------------*
   |                                                           m.gee 9/06|
@@ -785,21 +869,19 @@ void close_trilinos_matrix(struct _TRILINOSMATRIX *tri)
 void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor)
 
 {
-#ifdef DEBUG
-  dstrc_enter("add_trilinos_matrix");
-#endif
+  DSTraceHelper dst("add_trilinos_matrix");
   /*----------------------------------------------------------------------*/
   if (!from->matrix || !to->matrix) dserror("Either from or to matrix is NULL");
-  
-  
+
+
   Epetra_CrsMatrix* mfrom = (Epetra_CrsMatrix*)from->matrix;
   Epetra_CrsMatrix* mto   = (Epetra_CrsMatrix*)to->matrix;
-  
+
   // Matrix from has to be filled
   if (!mfrom->Filled()) dserror("FillComplete() was not called on matrix mfrom");
-  
+
   // Matrix to must NOT be filled
-  if (mto->Filled()) 
+  if (mto->Filled())
   {
     // target has been called FillComplete(), we can't add to it anymore
     // Create a new one and add both old ones
@@ -813,12 +895,9 @@ void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor
   }
   else
     MOERTEL::MatrixMatrixAdd(*mfrom,false,factor,*mto,1.0);
-  
-  
+
+
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of add_trilinos_matrix */
 
@@ -829,28 +908,23 @@ void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor
  *----------------------------------------------------------------------*/
 void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
 {
-#ifdef DEBUG
-  dstrc_enter("matvec_trilinos");
-#endif
+  DSTraceHelper dst("matvec_trilinos");
   /*----------------------------------------------------------------------*/
   // get Epetra_CrsMatrix
   if (!A->matrix) dserror("Matrix is NULL");
   Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
-  
+
   // test Amat
   if (!Amat->Filled()) dserror("FillComplete() was not called on Amat");
-  
+
   // wrap y and x in Epetra_Vector classes
   Epetra_Vector ex(View,Amat->OperatorDomainMap(),x->vec.a.dv);
   Epetra_Vector ey(View,Amat->OperatorRangeMap(),y->vec.a.dv);
-  
+
   // do multiply
   int err = Amat->Multiply(false,ex,ey);
   if (err) dserror("Epetra_CrsMatrix::Multiply returned an error");
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of matvec_trilinos */
 
@@ -861,20 +935,101 @@ void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
  *----------------------------------------------------------------------*/
 void scale_trilinos_matrix(TRILINOSMATRIX* A, double factor)
 {
-#ifdef DEBUG
-  dstrc_enter("scale_trilinos_matrix");
-#endif
+  DSTraceHelper dst("scale_trilinos_matrix");
   /*----------------------------------------------------------------------*/
   // get Epetra_CrsMatrix
   if (!A->matrix) dserror("Matrix is NULL");
   Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
-  
+
   Amat->Scale(factor);
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 } /* end of scale_trilinos_matrix */
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief invert a diagonal matrix
+
+  \param tri       (i/o)  the diagonal matrix
+
+  \warning It is not tested if the matrix is really diagonal.
+
+  \author kuettler
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void invert_trilinos_diagonal_matrix(TRILINOSMATRIX* A)
+{
+  DSTraceHelper dst("invert_trilinos_diagonal_matrix");
+
+  if (!A->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
+
+  Epetra_Vector Diagonal(Amat->RowMap(),false);
+  if (Amat->ExtractDiagonalCopy(Diagonal)!=0)
+    dserror("error in ExtractDiagonalCopy(Diagonal)");
+  if (Diagonal.Reciprocal(Diagonal)!=0)
+    dserror("error in Reciprocal(Diagonal)");
+  if (Amat->ReplaceDiagonalValues(Diagonal)!=0)
+    dserror("error in ReplaceDiagonalValues(Diagonal)");
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief matrix-matrix-matrix multiplication
+
+  Needed for a particular implementation of the projection method. The
+  middle matrix is diagonal, the first is the transposed of the
+  last within that method. But this routine works with any set of
+  matrices with matching dimensions.
+
+  \param dest   (o) destination matrix
+  \param A      (i) input matrix
+  \param transA (i) transposed flag of A
+  \param B      (i) input matrix
+  \param transB (i) transposed flag of B
+  \param C      (i) input matrix
+  \param transC (i) transposed flag of C
+
+  \warning the ccarat wrapper dest is not filled completely, comm and
+  rowmap are missing. You probably do not need them.
+
+  \author u.kue
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void mult_trilinos_mmm(TRILINOSMATRIX* dest,
+                       TRILINOSMATRIX* A,
+                       INT transA,
+                       TRILINOSMATRIX* B,
+                       INT transB,
+                       TRILINOSMATRIX* C,
+                       INT transC)
+{
+  DSTraceHelper dst("invert_trilinos_diagonal_matrix");
+
+  if (!A->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
+  if (!B->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Bmat = (Epetra_CrsMatrix*)B->matrix;
+  if (!C->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Cmat = (Epetra_CrsMatrix*)C->matrix;
+
+  if (dest->matrix) dserror("destination matrix already set");
+
+  RefCountPtr<Epetra_CrsMatrix> AB = rcp(MOERTEL::MatMatMult(*Amat,transA,*Bmat,transB,0));
+
+  Epetra_CrsMatrix* ABC = MOERTEL::MatMatMult(*AB,false,*Cmat,transC,0);
+  dest->matrix = (void*)ABC;
+
+  // if these are ever used, we can set them
+  dest->epetracomm = NULL;
+  dest->rowmap = NULL;
+
+  dest->is_init=1;
+}
+
 
 #endif // TRILINOS_PACKAGE

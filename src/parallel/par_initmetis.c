@@ -117,7 +117,7 @@ void part_fields()
   GLINE   *actgline;
   ELEMENT *actele;
 
-#if D_FLUID2_PRO
+#ifdef D_FLUID2_PRO
   ELEMENT *actvele, *actpele;
 #endif
 

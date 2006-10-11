@@ -132,6 +132,7 @@ void f2pro_calgaltfv(
  | f2pro_inpele.c                                                       |
 ************************************************************************/
 void f2pro_inp(ELEMENT *ele);
+void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT nele, INT nodeshift);
 
 /************************************************************************
  | f2pro_main.c                                                         |

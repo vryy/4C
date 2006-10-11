@@ -257,7 +257,7 @@ void inpfield()
    */
   if (genprob.probtyp == prb_tsi)
   {
-    if (genprob.numfld != 2) 
+    if (genprob.numfld != 2)
     {
       dserror("numfld != 2 for TSI");
     }
@@ -563,11 +563,11 @@ end_dis:
       break;
 
 
-#ifdef D_TSI      
+#ifdef D_TSI
     case thermal:
       dserror("SUBDIVIDE is not available for thermal field!");
       break;
-#endif  
+#endif
 
 
     default:
@@ -1175,7 +1175,7 @@ void inp_fluid_field(
   char      *actplace_save;
   INT        actrow_save;
 
-#if defined(D_FLUID2TU)
+#if defined(D_FLUID2TU) || defined(D_FLUID2_PRO) || defined(D_FLUID3_PRO)
   INT        cpro = 0;
 #endif
 
@@ -1263,6 +1263,30 @@ void inp_fluid_field(
 #else
       fluidfield->dis[0].element[counter].eltyp = el_fluid2_pro;
       f2pro_inp(&(fluidfield->dis[0].element[counter]));
+
+#if 0
+      /*
+       * We always create a second discretization, even if we do not
+       * need it for this projection method. The particular kind of
+       * method is not yet known... */
+      if (cpro==0)
+      {
+	dsassert(fluidfield->subdivide==0,"no subdiv with pm at the moment");
+	dsassert(fluidfield->ndis==1,"one discretization expected");
+	fluidfield->ndis += 1;
+	fluidfield->dis = (DISCRET*)CCAREALLOC(fluidfield->dis,fluidfield->ndis*sizeof(DISCRET));
+
+	fluidfield->dis[1].numele  = fluidfield->dis[0].numele;
+	fluidfield->dis[1].element = (ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
+	cpro++;
+	genprob.create_dis = 1;
+	fluidfield->dis[1].disclass = dc_created_tu;
+      }
+      fluidfield->dis[1].element[counter].eltyp=el_fluid2_pro;
+      f2pro_dis(&(fluidfield->dis[0].element[counter]),
+		&(fluidfield->dis[1].element[counter]),
+		genprob.nele,genprob.nodeshift);
+#endif
 #endif
     }
 
@@ -1278,6 +1302,30 @@ void inp_fluid_field(
 #else
       fluidfield->dis[0].element[counter].eltyp = el_fluid3_pro;
       f3pro_inp(&(fluidfield->dis[0].element[counter]));
+
+#if 0
+      /*
+       * We always create a second discretization, even if we do not
+       * need it for this projection method. The particular kind of
+       * method is not yet known... */
+      if (cpro==0)
+      {
+	dsassert(fluidfield->subdivide==0,"no subdiv with pm at the moment");
+	dsassert(fluidfield->ndis==1,"one discretization expected");
+	fluidfield->ndis += 1;
+	fluidfield->dis = (DISCRET*)CCAREALLOC(fluidfield->dis,fluidfield->ndis*sizeof(DISCRET));
+
+	fluidfield->dis[1].numele  = fluidfield->dis[0].numele;
+	fluidfield->dis[1].element = (ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
+	cpro++;
+	genprob.create_dis = 1;
+	fluidfield->dis[1].disclass = dc_created_tu;
+      }
+      fluidfield->dis[1].element[counter].eltyp=el_fluid3_pro;
+      f3pro_dis(&(fluidfield->dis[0].element[counter]),
+		&(fluidfield->dis[1].element[counter]),
+		genprob.nele,genprob.nodeshift);
+#endif
 #endif
     }
 
@@ -1699,7 +1747,7 @@ void inp_therm_field(
 
 
   /* allocate discretizations */
-  thermfield->dis 
+  thermfield->dis
     = (DISCRET*) CCACALLOC(thermfield->ndis, sizeof(DISCRET));
 
   /* several thermal discretisations */
@@ -1746,7 +1794,7 @@ void inp_therm_field(
 
 
   /* allocate elements */
-  thermfield->dis[idis].element 
+  thermfield->dis[idis].element
     = (ELEMENT*) CCACALLOC(thermfield->dis[idis].numele, sizeof(ELEMENT));
 
 

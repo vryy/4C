@@ -139,7 +139,7 @@ typedef enum _ELEMENT_TYP
                        el_axishell,    /* 1D axisymmetrical shell element */
                        el_interf,      /* 1D interface element (combination only with wall) */
                        el_wallge,      /* gradient enhanced wall element */
-                       el_therm2,      /* 2D thermal element 
+                       el_therm2,      /* 2D thermal element
                                         * (planar heat conduction) */
                        el_count        /* The number of known
                                         * elements. This must be the
@@ -502,7 +502,9 @@ typedef enum _SSI_MESH
 typedef enum _FLUID_DYNTYPE
 {
   dyntyp_nln_time_int=0,
-  dyntyp_projection_method=1
+  dyntyp_pm_discont=1,
+  dyntyp_pm_cont=2,
+  dyntyp_pm_cont_laplace=3,
 } FLUID_DYNTYPE;
 
 
@@ -626,7 +628,7 @@ typedef enum _STABILISATION_TYP
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Enum type of thermal partner in thermal-structure 
+\brief Enum type of thermal partner in thermal-structure
 interaction analysis
 
 \author bborn
@@ -636,10 +638,10 @@ interaction analysis
 typedef enum _TSI_COUPTYP
 {
   tsi_coup_none,  /* structure element has not a thermal partner */
-  tsi_coup_thermconf,  /* structure element has a conforming thermal partner, 
+  tsi_coup_thermconf,  /* structure element has a conforming thermal partner,
                         * which is defined separately in the input file */
-  tsi_coup_thermcreate  /* structure has a conforming thermal partner, 
-                         * but it is not given in the input file. The thermal 
+  tsi_coup_thermcreate  /* structure has a conforming thermal partner,
+                         * but it is not given in the input file. The thermal
                          * element will be created.  */
 } TSI_COUPTYP;
 

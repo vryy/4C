@@ -47,6 +47,7 @@ algorithm.
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../solver/solver_sparse.h"
+#include "../solver/solver_trilinos_service.H"
 #include "fluid_prototypes.h"
 #include "fluid_pm_prototypes.h"
 #include "../io/io.h"
@@ -142,7 +143,11 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 
-
+#ifdef PM_TRILINOS
+#ifndef TRILINOS_PACKAGE
+#error TRILINOS_PACKAGE required for PM_TRILINOS
+#endif
+#endif
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -211,14 +216,20 @@ void fluid_pm()
 
   INT numpdof;
 
+#ifdef PM_TRILINOS
+  TRILINOSMATRIX grad;
+  TRILINOSMATRIX pmat;
+  TRILINOSMATRIX lmass;
+#else
   PARALLEL_SPARSE grad;
   PARALLEL_SPARSE pmat;
+
+  DOUBLE* lmass;
+#endif
 
   SOLVAR presolv;
   INT pnumeq_total;
   INT pnumeq;
-
-  DOUBLE* lmass;
 
   INT stiff_array;              /* indice of the active system sparse matrix */
   INT mass_array;               /* indice of the active system sparse matrix */
@@ -322,14 +333,63 @@ void fluid_pm()
                               &(actsolv->sysarray_typ[mass_array]),
                               &(actsolv->sysarray[mass_array]));
 
-  /* inverted lumed masses in vector form */
-  lmass = (DOUBLE*)CCAMALLOC(actfield->dis[disnum_calc].numeq*sizeof(DOUBLE));
-
   /* ------------------------------------------------ */
   /* The gradient matrix G */
   /* This is a parallel matrix, each processor owns a separate slice. */
 
   /* the discontinuous pressure version */
+
+#ifdef PM_TRILINOS
+
+  if (!genprob.usetrilinosalgebra)
+  {
+    dserror("trilinos algebra required");
+  }
+
+  {
+    TRILINOSMATRIX* global_stiff;
+
+    /* we take the update map from our global velocity solver */
+    dsassert(actsolv->sysarray_typ[stiff_array]==trilinos,"fatal: trilinos solver expected");
+
+    global_stiff = actsolv->sysarray[stiff_array].trilinos;
+
+    memset(&lmass,0,sizeof(TRILINOSMATRIX));
+    lmass.numeq_total = global_stiff->numeq_total;
+    lmass.numeq       = global_stiff->numeq;
+
+    am_alloc_copy(&global_stiff->update,&lmass.update);
+    construct_trilinos_diagonal_matrix(actintra,&lmass);
+  }
+
+  /* We need to provide the update array ourselves. */
+  /* The domain map of this matrix is still undefined here. It needs
+   * to be set with FillComplete later... */
+
+  memset(&grad,0,sizeof(TRILINOSMATRIX));
+  grad.numeq_total = numpdof*actfield->dis[disnum_calc].numele;
+  grad.numeq       = numpdof*actpart->pdis[disnum_calc].numlele;
+  amdef("update",&grad.update,grad.numeq,1,"IV");
+  pm_fill_gradient_update(actpart, disnum_calc, actintra, numpdof,
+			  grad.update.fdim, grad.update.a.iv);
+
+  construct_trilinos_matrix(actintra,&grad);
+
+  /* No need to construct a trilinos object for the pressure
+   * matrix. It comes with the multiplication. But the ccarat
+   * surroundings are needed. */
+  memset(&pmat,0,sizeof(TRILINOSMATRIX));
+  pmat.numeq_total = grad.numeq_total;
+  pmat.numeq       = grad.numeq;
+  am_alloc_copy(&grad.update,&pmat.update);
+
+  parallel_sparse_convert(&pmat, &presolv);
+
+#else /* PM_TRILINOS */
+
+  /* inverted lumed masses in vector form */
+  lmass = (DOUBLE*)CCAMALLOC(actfield->dis[disnum_calc].numeq*sizeof(DOUBLE));
+
   parallel_sparse_init(&grad,
                        actfield->dis[disnum_calc].numeq,
                        numpdof*actfield->dis[disnum_calc].numele,
@@ -339,7 +399,8 @@ void fluid_pm()
 #ifdef PARALLEL
 
   /* We need to provide the update array ourselves. */
-  pm_fill_gradient_update(actpart, disnum_calc, actintra, numpdof, &grad);
+  pm_fill_gradient_update(actpart, disnum_calc, actintra, numpdof,
+			  grad->slice.cols, grad->update);
 
 #endif
 
@@ -383,7 +444,20 @@ void fluid_pm()
 
   /* Convert the sparse matrix to something solvable. :) */
   /* Concerns the sparse mask only. */
-  parallel_sparse_convert_aztec(&pmat, &presolv);
+  if (!genprob.usetrilinosalgebra)
+  {
+    parallel_sparse_convert_aztec(&pmat, &presolv);
+  }
+  else
+  {
+#ifdef TRILINOS_PACKAGE
+    parallel_sparse_convert_trilinos(&pmat, actintra, &presolv);
+#else
+    dserror("no trilinos support");
+#endif
+  }
+
+#endif /* PM_TRILINOS */
 
   /* ------------------------------------------------ */
 
@@ -402,17 +476,6 @@ void fluid_pm()
   presolv.nsol = 1;
   solserv_create_vec(&(presolv.sol),presolv.nsol,pnumeq_total,pnumeq,"DV");
   solserv_zero_vec(&(presolv.sol[0]));
-
-  /* Setup the solver for the pressure matrix. That is again special
-   * because this matrix is not (directly) connected to a
-   * discretization. */
-  solver_control(actfield,disnum_calc,
-                 &presolv, actintra,
-                 &(presolv.sysarray_typ[0]),
-                 &(presolv.sysarray[0]),
-                 &(presolv.sol[0]),
-                 &(presolv.rhs[0]),
-                 1);
 
   /*------------------------------------ prepare lift&drag calculation ---*/
   if (fdyn->liftdrag==ld_stress)
@@ -607,6 +670,17 @@ void fluid_pm()
    * lumped mass matrix. Velocity dirichlet conditions are observed. */
   solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),
                    &(actsolv->sysarray_typ[mass_array]));
+
+#ifdef PM_TRILINOS
+
+  pm_calelm(actfield, actpart, disnum_calc,
+            actsolv, mass_array,
+            actintra, ipos, numpdof, &grad, &lmass);
+
+  mult_trilinos_mmm(&pmat,&grad,0,&lmass,0,&grad,1);
+
+#else /* PM_TRILINOS */
+
   sparse_zero(&grad.slice);
   pm_calelm(actfield, actpart, disnum_calc,
             actsolv, mass_array,
@@ -618,6 +692,20 @@ void fluid_pm()
   /* Ok. We have sparse matrices and the inner one is diagonal. */
 
   parallel_sparse_pm_matmat(&pmat, &grad, lmass, actintra);
+
+#endif /* PM_TRILINOS */
+
+  /* Setup the solver for the pressure matrix. That is again special
+   * because this matrix is not (directly) connected to a
+   * discretization. */
+  /* Do it very late so that the trilinos object already exists! */
+  solver_control(actfield,disnum_calc,
+		 &presolv, actintra,
+		 &(presolv.sysarray_typ[0]),
+		 &(presolv.sysarray[0]),
+		 &(presolv.sol[0]),
+		 &(presolv.rhs[0]),
+		 1);
 
   /*======================================================================*
    |                         T I M E L O O P                              |
@@ -749,6 +837,24 @@ void fluid_pm()
        * iteration, but maybe we'll do the convection explicit and
        * circumvent the iteration altogether.) */
 
+#ifdef PM_TRILINOS
+
+      assemble_vec(actintra,
+                   &(actsolv->sysarray_typ[actsysarray]),
+                   &(actsolv->sysarray[actsysarray]),
+                   &(actsolv->rhs[0]),
+                   fgradprhs,
+                   -fdyn->thsr
+        );
+
+      matvec_trilinos(&(actsolv->rhs[1]),
+		      &(actsolv->rhs[0]),
+		      &lmass);
+
+      solserv_zero_vec(&(actsolv->rhs[0]));
+
+#else /* PM_TRILINOS */
+
       /*
        * We do ML^-1*G*p(n) at first because that results in a vector
        * and we are left with an ordinary matrix-vector
@@ -792,6 +898,8 @@ void fluid_pm()
                    fgradprhs,
                    -fdyn->thsr
         );
+
+#endif /* PM_TRILINOS */
 
       solserv_sparsematvec(actintra,
                            &(actsolv->rhs[0]),
@@ -862,9 +970,35 @@ void fluid_pm()
      | -->  end of nonlinear iteration                                      |
      *----------------------------------------------------------------------*/
 
-    /* Now we need to solve the pressure equation. */
+#ifdef PM_TRILINOS
+
+    /* No need to copy anything. The solver object already points to
+     * our trilinos matrix. */
     solserv_zero_vec(&(presolv.rhs[0]));
-    parallel_sparse_copy_aztec(&pmat, &presolv);
+
+#else /* PM_TRILINOS */
+
+    /* Now we need to solve the pressure equation. */
+    if (genprob.usetrilinosalgebra)
+    {
+#ifdef TRILINOS_PACKAGE
+      solserv_zero_vec(&(presolv.rhs[0]));
+      parallel_sparse_copy_trilinos(&pmat, &presolv);
+#else
+      dserror("trilinos missing");
+#endif
+    }
+    else
+    {
+#ifdef AZTEC_PACKAGE
+      solserv_zero_vec(&(presolv.rhs[0]));
+      parallel_sparse_copy_aztec(&pmat, &presolv);
+#else
+      dserror("aztec missing");
+#endif
+    }
+
+#endif /* PM_TRILINOS */
 
     /* build up the rhs */
     pm_calprhs(actfield, actpart, disnum_calc, actintra, ipos, numpdof, &(presolv.rhs[0]));
@@ -881,7 +1015,17 @@ void fluid_pm()
     pm_press_update(actfield, actpart, disnum_calc, actintra, ipos, numpdof, &(presolv.sol[0]), fdyn->dta);
 
     /* update velocity */
+#ifdef PM_TRILINOS
+
+    pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
+		  &lmass, actsolv, actsysarray,
+		  frhs, fgradprhs);
+
+#else /* PM_TRILINOS */
+
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos, lmass, frhs, fgradprhs);
+
+#endif /* PM_TRILINOS */
 
     /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
     if (fdyn->iop == 1)
@@ -1156,10 +1300,18 @@ end:
 #endif
 
   /*--------------------------------------------------- cleaning up phase */
+#ifdef PM_TRILINOS
+
+  /* How to clean this mess up? */
+
+#else
+
   parallel_sparse_destroy(&grad);
   parallel_sparse_destroy(&pmat);
 
   CCAFREE(lmass);
+
+#endif
 
   amdel(&frhs_a);
   amdel(&fgradprhs_a);

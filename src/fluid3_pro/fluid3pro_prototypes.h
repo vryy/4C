@@ -132,6 +132,7 @@ void f3pro_calgaltfv(
  | f3pro_inpele.c                                                       |
 ************************************************************************/
 void f3pro_inp(ELEMENT *ele);
+void f3pro_dis(ELEMENT* vele, ELEMENT* pele, INT nele, INT nodeshift);
 
 /************************************************************************
  | f3pro_main.c                                                         |

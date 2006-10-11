@@ -229,5 +229,19 @@ void f2pro_inp(ELEMENT *ele)
   return;
 }
 
+
+void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT nele, INT nodeshift)
+{
+#ifdef DEBUG
+  dstrc_enter("f2pro_dis");
+#endif
+
+
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 #endif
 /*! @} (documentation module close)*/

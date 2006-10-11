@@ -11,6 +11,8 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#include "compile_settings.h"
+
 /*----------------------------------------------------------------------*
  *                                                                      *
  * General definitions of max. sizes                                    *
@@ -138,7 +140,7 @@ Maintainer: Malte Neumann
 #endif
 
 #ifndef FLUID_NUM_BNODE
-#define FLUID_NUM_BNODE  (10)  /* max. number of fluid boundary nodes with 
+#define FLUID_NUM_BNODE  (10)  /* max. number of fluid boundary nodes with
                                 * lift & drag condition or FSI coupling */
 #endif
 
@@ -239,7 +241,7 @@ Maintainer: Malte Neumann
 #define NDIM_THERM2      (2)    /* planar problem also genprob.ndim */
 #endif
 #ifndef MAXNOD_THERM2
-#define MAXNOD_THERM2    (9)    /* maximum of element nodes : 
+#define MAXNOD_THERM2    (9)    /* maximum of element nodes :
                                  * max quad9 */
 #endif
 #ifndef NUMDOF_THERM2
@@ -247,7 +249,7 @@ Maintainer: Malte Neumann
                                  * temperature */
 #endif
 #ifndef NUMPLST_THERM2
-#define NUMPLST_THERM2   (2)    /* number of plane states : 
+#define NUMPLST_THERM2   (2)    /* number of plane states :
                                  * plane temperature gradient,
                                  * plane heat flux */
 #endif
@@ -261,11 +263,11 @@ Maintainer: Malte Neumann
 #define GLINTC_THERM2    (6)    /* line domain Gauss integration cases */
 #endif
 #ifndef GLMAXP_THERM2
-#define GLMAXP_THERM2    (6)    /* line domain max. number of 
+#define GLMAXP_THERM2    (6)    /* line domain max. number of
                                  * Gauss points */
 #endif
 #ifndef GTINTC_THERM2
-#define GTINTC_THERM2    (11)   /* triangle domain Gauss 
+#define GTINTC_THERM2    (11)   /* triangle domain Gauss
                                  * integration cases */
 #endif
 #ifndef GTMAXP_THERM2

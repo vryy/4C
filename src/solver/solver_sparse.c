@@ -12,7 +12,6 @@ Maintainer: Ulrich Kuettler
 
 #include "solver_sparse.h"
 
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief set up an empty parallel sparse matrix
@@ -1119,6 +1118,68 @@ void parallel_sparse_pm_matmat(PARALLEL_SPARSE* pmat, PARALLEL_SPARSE* grad,
 #endif
 
 #ifdef D_FLUID_PM
+
+#ifdef PM_TRILINOS
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief create a ccarat solver wrapper for the trilinos matrix object
+
+  \warning right now aztec with hardcoded default values is used
+
+  \author u.kue
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void parallel_sparse_convert(TRILINOSMATRIX* pmat, SOLVAR* solvar)
+{
+#ifdef DEBUG
+  dstrc_enter("parallel_sparse_convert");
+#endif
+
+  /* Not very nice... */
+  solvar->fieldtyp = fluid;
+
+  solvar->solvertyp = aztec_msr;
+  solvar->parttyp = cut_elements;
+  solvar->matrixtyp = matrix_none;
+  solvar->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
+
+  /* Default values. There is no input we could read... */
+
+  /*solvar->azvar->azsolvertyp = azsolv_CG;*/
+  solvar->azvar->azsolvertyp = azsolv_GMRES;
+  solvar->azvar->azprectyp = azprec_SymmGaussSeidel;
+
+  solvar->azvar->azreuse   = 0;
+  solvar->azvar->azgfill   = 0;
+  solvar->azvar->aziter    = 2500;
+  solvar->azvar->azsub     = 50;
+  solvar->azvar->azgraph   = 1;
+  solvar->azvar->azpoly    = 5;
+  solvar->azvar->blockdiag = 0;
+
+  solvar->azvar->azdrop  = 0.;
+  solvar->azvar->azfill  = 2.;
+  solvar->azvar->aztol   = 1.e-12;
+  solvar->azvar->azomega = 1.;
+
+  /* We create one array */
+
+  solvar->nsysarray = 1;
+  solvar->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(solvar->nsysarray,sizeof(SPARSE_TYP));
+  solvar->sysarray     = (SPARSE_ARRAY*)CCACALLOC(solvar->nsysarray,sizeof(SPARSE_ARRAY));
+
+  solvar->sysarray_typ[0] = trilinos;
+  solvar->sysarray[0].trilinos = pmat;
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#else /* PM_TRILINOS */
+
 #ifdef AZTEC_PACKAGE
 
 /*----------------------------------------------------------------------*/
@@ -1411,4 +1472,181 @@ void parallel_sparse_copy_aztec(PARALLEL_SPARSE* ps, SOLVAR* solvar)
 }
 
 #endif
+
+
+#ifdef TRILINOS_PACKAGE
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief convert the given sparse matrix to a trilinos solver object
+
+  The actual values are not considered here, those might not be set
+  yet. This function is concerned with the sparse mask only.
+
+  \author u.kue
+  \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+void parallel_sparse_convert_trilinos(PARALLEL_SPARSE* ps,
+				      INTRA* actintra,
+				      SOLVAR* solvar)
+{
+#ifdef FAST_ASS
+#error No way! We want to generate a sparse matrix without connection to the element/node structure
+#endif
+
+  TRILINOSMATRIX* trimat;
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("parallel_sparse_convert_trilinos");
+#endif
+
+#ifdef PARALLEL
+
+  dsassert(ps->slicing==sd_slice_horizontal, "odd ps slicing");
+
+#endif
+
+  /* Not very nice... */
+  solvar->fieldtyp = fluid;
+
+  solvar->solvertyp = aztec_msr;
+  solvar->parttyp = cut_elements;
+  solvar->matrixtyp = matrix_none;
+  solvar->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
+
+  /* Default values. There is no input we could read... */
+
+  /*solvar->azvar->azsolvertyp = azsolv_CG;*/
+  solvar->azvar->azsolvertyp = azsolv_GMRES;
+  solvar->azvar->azprectyp = azprec_SymmGaussSeidel;
+
+  solvar->azvar->azreuse   = 0;
+  solvar->azvar->azgfill   = 0;
+  solvar->azvar->aziter    = 2500;
+  solvar->azvar->azsub     = 50;
+  solvar->azvar->azgraph   = 1;
+  solvar->azvar->azpoly    = 5;
+  solvar->azvar->blockdiag = 0;
+
+  solvar->azvar->azdrop  = 0.;
+  solvar->azvar->azfill  = 2.;
+  solvar->azvar->aztol   = 1.e-12;
+  solvar->azvar->azomega = 1.;
+
+  /* We create one array */
+
+  solvar->nsysarray = 1;
+  solvar->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(solvar->nsysarray,sizeof(SPARSE_TYP));
+  solvar->sysarray     = (SPARSE_ARRAY*)CCACALLOC(solvar->nsysarray,sizeof(SPARSE_ARRAY));
+
+  solvar->sysarray_typ[0] = trilinos;
+  solvar->sysarray[0].trilinos = (TRILINOSMATRIX*)CCACALLOC(1,sizeof(TRILINOSMATRIX));
+  trimat = solvar->sysarray[0].trilinos;
+
+  /* Build up the sparse mask. */
+
+  trimat->numeq_total = ps->total_cols;
+  trimat->numeq = ps->slice.rows;
+
+  /* trimat->nnz = ps->slice.Ap[ps->slice.cols]; */
+
+  amdef("update",&(trimat->update),trimat->numeq,1,"IV");
+#ifdef PARALLEL
+  memcpy(trimat->update.a.iv, ps->update, trimat->numeq*sizeof(INT));
+#else
+  for (i=0; i<trimat->numeq; ++i)
+  {
+    trimat->update.a.iv[i] = i;
+  }
+#endif
+
+  construct_trilinos_matrix(actintra,trimat);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief copy all values from a sparse matrix to a trilinos solver object
+
+  Both matrices must have the same structure. Most often the trilinos
+  object should be generated by \ref parallel_sparse_convert_aztec.
+
+  \author u.kue
+  \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+void parallel_sparse_copy_trilinos(PARALLEL_SPARSE* ps, SOLVAR* solvar)
+{
+#ifdef FAST_ASS
+#error No way! We want to generate a sparse matrix without connection to the element/node structure
+#endif
+
+  TRILINOSMATRIX* trimat;
+  INT Ac;
+
+#ifdef DEBUG
+  dstrc_enter("parallel_sparse_convert_trilinos");
+#endif
+
+  /* Just a few tests */
+
+  dsassert(solvar->solvertyp == aztec_msr, "wrong solver type");
+  dsassert(solvar->sysarray_typ[0] == trilinos, "wrong sparse type");
+
+  trimat = solvar->sysarray[0].trilinos;
+  dsassert(trimat->numeq_total == ps->total_cols, "dimension mismatch");
+  dsassert(trimat->numeq == ps->slice.rows, "dimension mismatch");
+
+#ifdef PARALLEL
+
+  dsassert(ps->slicing==sd_slice_horizontal, "odd ps slicing");
+
+#endif
+
+  /* We reset the values. So we reinitialize the solver. No reuse
+   * whatsoever. */
+  trilinos_zero_matrix(trimat);
+
+  /* Copy values */
+
+  for (Ac=0; Ac<ps->slice.cols; ++Ac)
+  {
+    INT Ae;
+    for (Ae=ps->slice.Ap[Ac]; Ae<ps->slice.Ap[Ac+1]; ++Ae)
+    {
+      INT Ar = ps->slice.Ai[Ae];
+      INT globalAr;
+
+#ifdef PARALLEL
+      globalAr = ps->update[Ar];
+#else
+      globalAr = Ar;
+#endif
+
+      if (Ac != globalAr)
+      {
+	add_trilinos_value(trimat,ps->slice.Ax[Ae],globalAr,Ac);
+      }
+      else
+      {
+	add_trilinos_value(trimat,ps->slice.Ax[Ae],globalAr,globalAr);
+      }
+    }
+  }
+
+  close_trilinos_matrix(trimat);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+#endif /* PM_TRILINOS */
+
 #endif

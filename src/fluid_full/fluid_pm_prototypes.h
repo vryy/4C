@@ -42,7 +42,8 @@ void pm_fill_gradient_update(PARTITION *actpart,
                              INT disnum,
                              INTRA* actintra,
                              INT numpdof,
-                             PARALLEL_SPARSE* grad);
+			     INT numldof,
+                             INT* update);
 
 void pm_gradient_mask_mat(FIELD *actfield,
                           PARTITION *actpart,
@@ -59,8 +60,14 @@ void pm_calelm(FIELD *actfield,
                INTRA *actintra,
                ARRAY_POSITION *ipos,
                INT numpdof,
+#ifdef PM_TRILINOS
+	       TRILINOSMATRIX* grad,
+	       TRILINOSMATRIX* lmass
+#else
                PARALLEL_SPARSE* grad,
-               DOUBLE* lmass_vec);
+               DOUBLE* lmass_vec
+#endif
+  );
 
 void pm_calprhs(FIELD *actfield,
                 PARTITION *actpart,
@@ -84,7 +91,13 @@ void pm_vel_update(FIELD *actfield,
                    INT disnum,
                    INTRA *actintra,
                    ARRAY_POSITION *ipos,
+#ifdef PM_TRILINOS
+		   TRILINOSMATRIX* lmass,
+		   SOLVAR *actsolv,
+		   INT actsysarray,
+#else
                    DOUBLE* lmass,
+#endif
                    DOUBLE* rhs1,
                    DOUBLE* rhs2);
 

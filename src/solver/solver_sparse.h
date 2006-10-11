@@ -19,8 +19,16 @@ fields or other variables.
 #ifndef SOLVER_SPARSE_H
 #define SOLVER_SPARSE_H
 
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_set.h"
+#include "solver_trilinos_service.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -148,12 +156,33 @@ void sparse_debugdump(SPARSE* s, INT* update, INT update_length, FILE* f, CHAR* 
 
 /* Special support for the projection method */
 #ifdef D_FLUID_PM
+
+#ifdef PM_TRILINOS
+
+void parallel_sparse_convert(TRILINOSMATRIX* pmat, SOLVAR* solvar);
+
+#else
+
 void parallel_sparse_pm_matmat(PARALLEL_SPARSE* pmat, PARALLEL_SPARSE* grad,
                                DOUBLE* lmass, INTRA* actintra);
 #ifdef AZTEC_PACKAGE
 void parallel_sparse_convert_aztec(PARALLEL_SPARSE* ps, SOLVAR* solvar);
 void parallel_sparse_copy_aztec(PARALLEL_SPARSE* ps, SOLVAR* solvar);
 #endif
+
+#ifdef TRILINOS_PACKAGE
+
+void parallel_sparse_convert_trilinos(PARALLEL_SPARSE* ps,
+				      INTRA* actintra,
+				      SOLVAR* solvar);
+void parallel_sparse_copy_trilinos(PARALLEL_SPARSE* ps, SOLVAR* solvar);
+
+#endif
+#endif /* PM_TRILINOS */
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

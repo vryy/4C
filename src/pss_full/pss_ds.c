@@ -32,7 +32,7 @@ and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;
+extern struct _PAR   par;
 /*!----------------------------------------------------------------------
 \brief counter of memory in byte
 

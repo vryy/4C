@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+#include "../solver/solver_trilinos_service.H"
 #include "fluid_prototypes.h"
 #include "fluid_pm_prototypes.h"
 
@@ -455,7 +456,7 @@ INT pm_assign_press_dof(FIELD *actfield,
 }
 
 
-#ifdef PARALLEL
+#if defined(PARALLEL) || defined(PM_TRILINOS)
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -468,7 +469,8 @@ INT pm_assign_press_dof(FIELD *actfield,
   \param disnum             (i) number of discretization
   \param actintra           (i) communicator
   \param numpdof            (i) number of pressure dofs
-  \param grad             (i/o) sparse pressure gradient
+  \param numldof            (i) number of local pressure dofs
+  \param update             (o) update array to be filled
 
   \author u.kue
   \date 12/05
@@ -478,7 +480,8 @@ void pm_fill_gradient_update(PARTITION *actpart,
                              INT disnum,
                              INTRA* actintra,
                              INT numpdof,
-                             PARALLEL_SPARSE* grad)
+			     INT numldof,
+                             INT* update)
 {
   INT i;
 #ifdef DEBUG
@@ -500,9 +503,9 @@ void pm_fill_gradient_update(PARTITION *actpart,
         {
           /*grad->update[j+numpdof*i] = actele->e.f2pro->dof[j];*/
           dsassert((actele->e.f2pro->ldof[j] >= 0) &&
-                   (actele->e.f2pro->ldof[j] < grad->slice.cols),
+                   (actele->e.f2pro->ldof[j] < numldof),
                    "local dof out of range");
-          grad->update[actele->e.f2pro->ldof[j]] = actele->e.f2pro->dof[j];
+          update[actele->e.f2pro->ldof[j]] = actele->e.f2pro->dof[j];
         }
         break;
 #endif
@@ -512,9 +515,9 @@ void pm_fill_gradient_update(PARTITION *actpart,
         {
           /*grad->update[j+numpdof*i] = actele->e.f3pro->dof[j];*/
           dsassert((actele->e.f3pro->ldof[j] >= 0) &&
-                   (actele->e.f3pro->ldof[j] < grad->slice.cols),
+                   (actele->e.f3pro->ldof[j] < numldof),
                    "local dof out of range");
-          grad->update[actele->e.f3pro->ldof[j]] = actele->e.f3pro->dof[j];
+          update[actele->e.f3pro->ldof[j]] = actele->e.f3pro->dof[j];
         }
         break;
 #endif
@@ -659,11 +662,20 @@ void pm_calelm(FIELD *actfield,
                INTRA *actintra,
                ARRAY_POSITION *ipos,
                INT numpdof,
+#ifdef PM_TRILINOS
+	       TRILINOSMATRIX* grad,
+	       TRILINOSMATRIX* lmass
+#else
                PARALLEL_SPARSE* grad,
-               DOUBLE* lmass_vec)
+               DOUBLE* lmass_vec
+#endif
+  )
 {
   INT i;
+#ifdef PM_TRILINOS
+#else
   DOUBLE* lmass;
+#endif
 
   /* Variables from global_calelm. These are filled by the element
    * routines. */
@@ -675,6 +687,8 @@ void pm_calelm(FIELD *actfield,
   dstrc_enter("pm_calelm");
 #endif
 
+#ifdef PM_TRILINOS
+#else
 #ifdef PARALLEL
   lmass = (DOUBLE*)CCAMALLOC(actfield->dis[disnum].numeq*sizeof(DOUBLE));
 #else
@@ -682,6 +696,7 @@ void pm_calelm(FIELD *actfield,
 #endif
 
   memset(lmass, 0, actfield->dis[disnum].numeq*sizeof(DOUBLE));
+#endif
 
   /* calculate matrix values */
   for (i=0; i<actpart->pdis[disnum].numele; ++i)
@@ -754,7 +769,14 @@ void pm_calelm(FIELD *actfield,
           /* But of course we assemble just to those nodes that belong to us. */
           if (actnode->proc == actintra->intra_rank)
           {
+#ifdef PM_TRILINOS
+	    add_trilinos_value(lmass,
+			       lmass_global.a.dv[j*actnode->numdf+dof],
+			       actnode->dof[dof],
+			       actnode->dof[dof]);
+#else
             lmass[actnode->dof[dof]] += lmass_global.a.dv[j*actnode->numdf+dof];
+#endif
           }
 
           if (actele->proc == actintra->intra_rank)
@@ -769,18 +791,38 @@ void pm_calelm(FIELD *actfield,
               {
 #ifdef D_FLUID2_PRO
               case el_fluid2_pro:
+#ifdef PM_TRILINOS
+		/*
+		 * The orientation of the gradient matrix differs from
+		 * the non-trilinos version! */
+		add_trilinos_value(grad,
+				   gradopr_global.a.da[actnode->numdf*j+dof][k],
+				   actele->e.f2pro->ldof[k],
+				   actnode->dof[dof]);
+#else
                 *sparse_entry(&(grad->slice),
                               actnode->dof[dof],
                               actele->e.f2pro->ldof[k]) +=
                   gradopr_global.a.da[actnode->numdf*j+dof][k];
+#endif
                 break;
 #endif
 #ifdef D_FLUID3_PRO
               case el_fluid3_pro:
+#ifdef PM_TRILINOS
+		/*
+		 * The orientation of the gradient matrix differs from
+		 * the non-trilinos version! */
+		add_trilinos_value(grad,
+				   gradopr_global.a.da[actnode->numdf*j+dof][k],
+				   actele->e.f2pro->ldof[k],
+				   actnode->dof[dof]);
+#else
                 *sparse_entry(&(grad->slice),
                               actnode->dof[dof],
                               actele->e.f3pro->ldof[k]) +=
                   gradopr_global.a.da[actnode->numdf*j+dof][k];
+#endif
                 break;
 #endif
               default:
@@ -795,13 +837,28 @@ void pm_calelm(FIELD *actfield,
 	{
           if (actnode->proc == actintra->intra_rank)
           {
+#ifdef PM_TRILINOS
+	    add_trilinos_value(lmass,
+			       1,
+			       actnode->dof[dof],
+			       actnode->dof[dof]);
+#else
             lmass[actnode->dof[dof]] = 1;
+#endif
           }
 	}
 #endif
       }
     }
   }
+
+#ifdef PM_TRILINOS
+
+  close_nonquad_trilinos_matrix(grad,lmass);
+  close_trilinos_matrix(lmass);
+  invert_trilinos_diagonal_matrix(lmass);
+
+#else /* PM_TRILINOS */
 
 #ifdef PARALLEL
   /* We need the lumped masses globally. */
@@ -815,6 +872,23 @@ void pm_calelm(FIELD *actfield,
   for (i=0; i<actfield->dis[disnum].numeq; ++i)
   {
     lmass[i] = 1./lmass[i];
+  }
+
+#endif /* PM_TRILINOS */
+
+  /* Close the full mass matrix to enable the trilinos matrix-vector
+   * product. */
+
+  if (genprob.usetrilinosalgebra)
+  {
+    if (actsolv->sysarray_typ[sysarray]==trilinos)
+    {
+#ifdef TRILINOS_PACKAGE
+      close_trilinos_matrix(actsolv->sysarray[sysarray].trilinos);
+#else
+      dserror("trilinos missing");
+#endif
+    }
   }
 
 #ifdef DEBUG
@@ -1145,7 +1219,13 @@ void pm_vel_update(FIELD *actfield,
                    INT disnum,
                    INTRA *actintra,
                    ARRAY_POSITION *ipos,
+#ifdef PM_TRILINOS
+		   TRILINOSMATRIX* lmass,
+		   SOLVAR *actsolv,
+		   INT actsysarray,
+#else
                    DOUBLE* lmass,
+#endif
                    DOUBLE* rhs1,
                    DOUBLE* rhs2)
 {
@@ -1161,7 +1241,7 @@ void pm_vel_update(FIELD *actfield,
    * to global vectors. In order to allreduce it a second one is
    * needed. */
   memset(rhs1, 0, actfield->dis[disnum].numeq*sizeof(DOUBLE));
-#ifdef PARALLEL
+#if defined(PARALLEL) || defined(PM_TRILINOS)
   memset(rhs2, 0, actfield->dis[disnum].numeq*sizeof(DOUBLE));
 #endif
 
@@ -1211,6 +1291,34 @@ void pm_vel_update(FIELD *actfield,
     }
   }
 
+#ifdef PM_TRILINOS
+
+  /* multiply the new rhs with lmass and allreduce the result */
+
+  solserv_zero_vec(&(actsolv->rhs[0]));
+  solserv_zero_vec(&(actsolv->rhs[1]));
+
+  assemble_vec(actintra,
+	       &(actsolv->sysarray_typ[actsysarray]),
+	       &(actsolv->sysarray[actsysarray]),
+	       &(actsolv->rhs[0]),
+	       rhs1,
+	       1.0
+    );
+
+  matvec_trilinos(&(actsolv->rhs[1]),
+		  &(actsolv->rhs[0]),
+		  lmass);
+
+  solserv_reddistvec(&(actsolv->rhs[1]),
+		     &(actsolv->sysarray[actsysarray]),
+		     &(actsolv->sysarray_typ[actsysarray]),
+		     rhs2,
+		     actsolv->rhs[1].numeq_total,
+		     actintra);
+
+#else /* PM_TRILINOS */
+
 #ifdef PARALLEL
   MPI_Allreduce(rhs1, rhs2, actfield->dis[disnum].numeq, MPI_DOUBLE, MPI_SUM,
                 actintra->MPI_INTRA_COMM);
@@ -1218,6 +1326,8 @@ void pm_vel_update(FIELD *actfield,
 #else
   gradip = rhs1;
 #endif
+
+#endif /* PM_TRILINOS */
 
   velnp = ipos->velnp;
 
@@ -1233,7 +1343,15 @@ void pm_vel_update(FIELD *actfield,
       gdof = actnode->dof[dof];
       if (gdof < actfield->dis[disnum].numeq)
       {
+#ifdef PM_TRILINOS
+
+        actnode->sol_increment.a.da[velnp][dof] -= rhs2[gdof];
+
+#else /* PM_TRILINOS */
+
         actnode->sol_increment.a.da[velnp][dof] -= lmass[gdof]*gradip[gdof];
+
+#endif /* PM_TRILINOS */
       }
     }
   }
