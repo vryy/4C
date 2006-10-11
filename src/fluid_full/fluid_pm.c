@@ -400,7 +400,7 @@ void fluid_pm()
 
   /* We need to provide the update array ourselves. */
   pm_fill_gradient_update(actpart, disnum_calc, actintra, numpdof,
-			  grad->slice.cols, grad->update);
+			  grad.slice.cols, grad.update);
 
 #endif
 
