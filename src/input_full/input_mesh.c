@@ -1264,7 +1264,6 @@ void inp_fluid_field(
       fluidfield->dis[0].element[counter].eltyp = el_fluid2_pro;
       f2pro_inp(&(fluidfield->dis[0].element[counter]));
 
-#if 0
       /*
        * We always create a second discretization, even if we do not
        * need it for this projection method. The particular kind of
@@ -1287,7 +1286,6 @@ void inp_fluid_field(
 		&(fluidfield->dis[1].element[counter]),
 		genprob.nele,genprob.nodeshift);
 #endif
-#endif
     }
 
 
@@ -1303,7 +1301,6 @@ void inp_fluid_field(
       fluidfield->dis[0].element[counter].eltyp = el_fluid3_pro;
       f3pro_inp(&(fluidfield->dis[0].element[counter]));
 
-#if 0
       /*
        * We always create a second discretization, even if we do not
        * need it for this projection method. The particular kind of
@@ -1325,7 +1322,6 @@ void inp_fluid_field(
       f3pro_dis(&(fluidfield->dis[0].element[counter]),
 		&(fluidfield->dis[1].element[counter]),
 		genprob.nele,genprob.nodeshift);
-#endif
 #endif
     }
 

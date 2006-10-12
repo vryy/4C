@@ -218,13 +218,31 @@ void f3pro_inp(ELEMENT *ele)
   return;
 }
 
-void f3pro_dis(ELEMENT* vele, ELEMENT* pele, INT nele, INT nodeshift)
+
+void f3pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
 {
+  INT i;
+
 #ifdef DEBUG
   dstrc_enter("f3pro_dis");
 #endif
 
+  pele->e.f3pro = (FLUID3_PRO*)CCACALLOC(1,sizeof(FLUID3_PRO));
+  pele->Id = vele->Id + numele;
+  pele->mat = vele->mat;
+  pele->e.f3pro->is_ale = vele->e.f3pro->is_ale;
+  pele->numnp = vele->numnp;
+  pele->distyp = vele->distyp;
 
+  pele->lm = (INT*)CCACALLOC(pele->numnp,sizeof(INT));
+
+  for (i=0; i<pele->numnp; i++)
+  {
+    pele->lm[i] = vele->lm[i] + nodeshift;
+  }
+
+  pele->e.f3pro->nGP[0] = vele->e.f3pro->nGP[0];
+  pele->e.f3pro->nGP[1] = vele->e.f3pro->nGP[1];
 
 #ifdef DEBUG
   dstrc_exit();

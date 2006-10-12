@@ -52,7 +52,6 @@ void assign_dof_ndis(
 
   INT         j,k,l,disnum;                  /* some counters */
   INT         counter;
-  INT         cpro;
   INT         coupleID;                      /* Id of a coupling set from gid */
   INT         dof;                           /* dof in progress */
   INT         couple,geocouple,dirich;       /* flags for conditions */
@@ -74,7 +73,6 @@ void assign_dof_ndis(
 
     nodeflag = amdef("nodeflag",&nodeflag_a,actfield->dis[disnum].numnp,1,"IV");
     amzero(&nodeflag_a);
-    cpro=0;
 
     /* find new node numbering */
     /* notice: bandwith opimization has been done by gid, so just do a
@@ -142,6 +140,35 @@ void assign_dof_ndis(
               actele->node[k]->numdf=4;
           break;
 
+#ifdef D_FLUID2_PRO
+      case el_fluid2_pro:
+	if (disnum==0)
+	  for (k=0; k<actele->numnp; k++)
+	    /* velocity dofs */
+	    actele->node[k]->numdf = MAX(actele->node[k]->numdf,2);
+	else if (disnum==1)
+	  for (k=0; k<actele->numnp; k++)
+	    /* pressure dof */
+	    actele->node[k]->numdf = MAX(actele->node[k]->numdf,1);
+	else
+	  dserror("strange disnum=%d",disnum);
+	break;
+#endif
+
+#ifdef D_FLUID3_PRO
+      case el_fluid3_pro:
+	if (disnum==0)
+	  for (k=0; k<actele->numnp; k++)
+	    /* velocity dofs */
+	    actele->node[k]->numdf = MAX(actele->node[k]->numdf,3);
+	else if (disnum==1)
+	  for (k=0; k<actele->numnp; k++)
+	    /* pressure dof */
+	    actele->node[k]->numdf = MAX(actele->node[k]->numdf,1);
+	else
+	  dserror("strange disnum=%d",disnum);
+	break;
+#endif
 
         case el_ale3:
           for (k=0; k<actele->numnp; k++)
@@ -160,27 +187,14 @@ void assign_dof_ndis(
         default:
           dserror("Unknown type of element, cannot assign number of dofs");
           break;
-
       }  /* end switch (actele->eltyp) */
-
     }  /* end of loop over elements */
-
-
-
-    /* do some checks */
-#ifdef D_FLUID2_PRO
-    if (cpro!=0)
-      if (cpro!=actfield->dis[disnum].numele)
-        dserror("FLUID2_PRO elements can not be mixed with other fluid elements!\n");
-#endif
-
 
 
     /* assign the dofs to the nodes */
     counter=0;
     for (j=0; j<actfield->dis[disnum].numnp; j++)
     {
-
       actfield->dis[disnum].node[j].dof =
         (INT*)CCACALLOC(actfield->dis[disnum].node[j].numdf,sizeof(INT));
 
@@ -191,8 +205,6 @@ void assign_dof_ndis(
 
       if (!(actfield->dis[disnum].node[j].dof))
         dserror("Allocation of dof in NODE failed");
-
-
 
       /* allocate the arrays to hold solutions */
       max = IMAX(3,actfield->dis[disnum].node[j].numdf);
@@ -206,22 +218,16 @@ void assign_dof_ndis(
       amdef("sol_res",&(actfield->dis[disnum].node[j].sol_residual),1,max,"DA");
       amzero(&(actfield->dis[disnum].node[j].sol_residual));
 
-
-
       /* init all dofs to -2 */
       for (l=0; l<actfield->dis[disnum].node[j].numdf; l++)
         actfield->dis[disnum].node[j].dof[l]=-2;
-
-    }  /* for (j=0; j<actfield->dis[disnum].numnp; j++) */
-
-
+    }
 
     /* eliminate geostationary coupling conditions that conflict with
        dofcoupling sets by putting the geostat coupling to the coupling set */
     coupleID=0;
     for (j=0; j<actfield->dis[disnum].numnp; j++)
     {
-
       actnode = &(actfield->dis[disnum].node[j]);
       if (actnode->gnode->couple==NULL) continue;
       if (nodeflag[actnode->Id_loc]==10 || nodeflag[actnode->Id_loc]==11)
@@ -259,6 +265,25 @@ void assign_dof_ndis(
 
     /* assign dofs */
     /*=============*/
+
+/* dirichlet conditioned dofs are solved for */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+
+    /* include dirichlet conditioned dofs in the global matrix */
+    for (j=0; j<actfield->dis[disnum].numnp; j++)
+    {
+      actnode = &(actfield->dis[disnum].node[j]);
+      for (l=0; l<actnode->numdf; l++)
+      {
+	actnode->dof[l] = counter;
+	counter++;
+      }
+    }
+
+    actfield->dis[disnum].numeq = counter;
+    actfield->dis[disnum].numdf = counter;
+
+#else
 
     /* this is getting a little bit more complicated for several
        discretisations. The problem is that the dirichlet conditions from the
@@ -386,19 +411,11 @@ void assign_dof_ndis(
 
                 /*  else if (dirich==1 && couple==0 && geocouple==1)
                     dserror("Case dirichlet condition in geocoupleset not yet implemented");*/
-
               }/* end of loops over dofs */
-
           }/* end switch(nodeflag[actnode->Id]) */
-
         }/* end of has dirich and/or coupling condition */
-
       }
-
     } /* end of loop over nodes */
-
-
-
 
     /* Now all free dofs are numbered, so now number the dirichlet conditioned
        dofs from here on */
@@ -414,18 +431,14 @@ void assign_dof_ndis(
           actnode->dof[l] = counter;
           counter++;
         }
-
       } /* end of loop over dofs */
-
     } /* end of loop over nodes */
+
+#endif
 
     actfield->dis[disnum].numdf = counter;
     amdel(&nodeflag_a);
-
-
-  }  /* for (disnum=0;disnum<actfield->ndis;disnum++) */
-
-
+  }
 
 #ifdef DEBUG
   dstrc_exit();

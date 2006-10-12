@@ -36,10 +36,9 @@ void f2pro_inp(ELEMENT *ele)
   dstrc_enter("f2pro_inp");
 #endif
 
-/*------------------------------------------------ allocate the element */
   ele->e.f2pro = (FLUID2_PRO*)CCACALLOC(1,sizeof(FLUID2_PRO));
-  if (ele->e.f2pro==NULL) dserror("Allocation of element FLUID2_PRO failed\n");
-/*---------------------------------------------- read the element nodes */
+
+  /* read the element nodes */
   frchk("QUAD4",&ierr);
   if (ierr==1)
   {
@@ -230,13 +229,30 @@ void f2pro_inp(ELEMENT *ele)
 }
 
 
-void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT nele, INT nodeshift)
+void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
 {
+  INT i;
+
 #ifdef DEBUG
   dstrc_enter("f2pro_dis");
 #endif
 
+  pele->e.f2pro = (FLUID2_PRO*)CCACALLOC(1,sizeof(FLUID2_PRO));
+  pele->Id = vele->Id + numele;
+  pele->mat = vele->mat;
+  pele->e.f2pro->is_ale = vele->e.f2pro->is_ale;
+  pele->numnp = vele->numnp;
+  pele->distyp = vele->distyp;
 
+  pele->lm = (INT*)CCACALLOC(pele->numnp,sizeof(INT));
+
+  for (i=0; i<pele->numnp; i++)
+  {
+    pele->lm[i] = vele->lm[i] + nodeshift;
+  }
+
+  pele->e.f2pro->nGP[0] = vele->e.f2pro->nGP[0];
+  pele->e.f2pro->nGP[1] = vele->e.f2pro->nGP[1];
 
 #ifdef DEBUG
   dstrc_exit();
