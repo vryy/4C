@@ -140,7 +140,7 @@ void fluid_pm_cont_laplace()
 #ifdef TRILINOS_PACKAGE
   dserror("fluid_pm_cont_laplace() not yet implemented");
 #else
-#error TRILINOS_PACKAGE required
+  dserror("TRILINOS_PACKAGE required");
 #endif
 }
 

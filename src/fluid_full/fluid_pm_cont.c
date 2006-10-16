@@ -1177,7 +1177,7 @@ end:
 #endif
   return;
 #else
-#error TRILINOS_PACKAGE required
+  dserror("TRILINOS_PACKAGE required");
 #endif
 }
 
