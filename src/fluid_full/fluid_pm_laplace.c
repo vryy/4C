@@ -117,15 +117,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
-
-#ifdef PM_TRILINOS
-#ifndef TRILINOS_PACKAGE
-#error TRILINOS_PACKAGE required for PM_TRILINOS
-#endif
-#else
-#error PM_TRILINOS required
-#endif
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief the projection method
